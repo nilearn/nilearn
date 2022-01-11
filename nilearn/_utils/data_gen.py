@@ -17,7 +17,7 @@ from nibabel import Nifti1Image
 
 from .. import masking
 from . import logger
-from nilearn import datasets, image, input_data
+from nilearn import datasets, image, maskers
 
 
 def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
@@ -26,7 +26,7 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
     target_affine = np.eye(3) * res
     mask_img = image.resample_img(
         mni, target_affine=target_affine, interpolation="nearest")
-    masker = input_data.NiftiMasker(mask_img).fit()
+    masker = maskers.NiftiMasker(mask_img).fit()
     n_voxels = image.get_data(mask_img).sum()
     data = rng.randn(n_scans, n_voxels)
     if mask_dilation is not None and mask_dilation > 0:

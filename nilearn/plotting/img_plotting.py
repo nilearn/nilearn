@@ -14,7 +14,7 @@ import collections.abc
 import functools
 import numbers
 import warnings
-from distutils.version import LooseVersion
+from nilearn.version import _compare_version
 
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
@@ -38,7 +38,7 @@ from .._utils.param_validation import check_threshold
 from .._utils.ndimage import get_border_data
 from ..datasets import load_mni152_template
 from ..image import new_img_like, iter_img, get_data, math_img, resample_to_img
-from ..input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from nilearn.image.resampling import reorder_img
 from ..masking import compute_epi_mask, apply_mask
 from nilearn.plotting.displays import get_slicer, get_projector
@@ -239,7 +239,7 @@ def _crop_colorbar(cbar, cbar_vmin, cbar_vmax):
     # _outline was removed in
     # https://github.com/matplotlib/matplotlib/commit/03a542e875eba091a027046d5ec652daa8be6863
     # so we use the code from there
-    if LooseVersion(matplotlib.__version__) >= LooseVersion("3.2.0"):
+    if _compare_version(matplotlib.__version__, '>=', "3.2.0"):
         cbar.ax.set_ylim(cbar_vmin, cbar_vmax)
         X = cbar._mesh()[0]
         X = np.array([X[0], X[-1]])

@@ -21,7 +21,7 @@ is included in the model.
 import numpy as np
 import matplotlib.pyplot as plt
 from nilearn import datasets
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
 from nilearn.image import get_data
 

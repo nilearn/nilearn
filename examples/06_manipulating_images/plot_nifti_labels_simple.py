@@ -34,7 +34,7 @@ print('The atlas contains {} non-overlapping regions'.format(
 ###########################################################################
 # Instantiate the mask and visualize atlas
 #
-from nilearn.input_data import NiftiLabelsMasker
+from nilearn.maskers import NiftiLabelsMasker
 
 # Instantiate the masker with label image and label values
 masker = NiftiLabelsMasker(atlas.maps,

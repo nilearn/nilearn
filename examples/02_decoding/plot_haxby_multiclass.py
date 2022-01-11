@@ -40,7 +40,7 @@ unique_conditions = unique_conditions[np.argsort(order)]
 ##############################################################################
 # Prepare the fMRI data
 # ----------------------
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 # For decoding, standardizing is often very important
 nifti_masker = NiftiMasker(mask_img=mask_filename, standardize=True,
                            sessions=session, smoothing_fwhm=4,

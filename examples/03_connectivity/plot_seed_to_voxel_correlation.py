@@ -50,18 +50,17 @@ print(confound_filename)
 pcc_coords = [(0, -52, 18)]
 
 ##########################################################################
-# We use :class:`nilearn.input_data.NiftiSpheresMasker` to extract the
+# We use :class:`nilearn.maskers.NiftiSpheresMasker` to extract the
 # **time series from the functional imaging within the sphere**. The
 # sphere is centered at pcc_coords and will have the radius we pass the
 # NiftiSpheresMasker function (here 8 mm).
 #
 # The extraction will also detrend, standardize, and bandpass filter the data.
 # This will create a NiftiSpheresMasker object.
-from nilearn import input_data
+from nilearn.maskers import NiftiSpheresMasker
 
-seed_masker = input_data.NiftiSpheresMasker(
-    pcc_coords, radius=8,
-    detrend=True, standardize=True,
+seed_masker = NiftiSpheresMasker(
+    pcc_coords, radius=8, detrend=True, standardize=True,
     low_pass=0.1, high_pass=0.01, t_r=2,
     memory='nilearn_cache', memory_level=1, verbose=0)
 
@@ -74,11 +73,12 @@ seed_time_series = seed_masker.fit_transform(func_filename,
 
 ##########################################################################
 # Next, we can proceed similarly for the **brain-wide voxel-wise time
-# series**, using :class:`nilearn.input_data.NiftiMasker` with the same input
+# series**, using :class:`nilearn.maskers.NiftiMasker` with the same input
 # arguments as in the seed_masker in addition to smoothing with a 6 mm kernel
-brain_masker = input_data.NiftiMasker(
-    smoothing_fwhm=6,
-    detrend=True, standardize=True,
+from nilearn.maskers import NiftiMasker
+
+brain_masker = NiftiMasker(
+    smoothing_fwhm=6, detrend=True, standardize=True,
     low_pass=0.1, high_pass=0.01, t_r=2,
     memory='nilearn_cache', memory_level=1, verbose=0)
 

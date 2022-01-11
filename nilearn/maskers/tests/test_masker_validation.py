@@ -5,8 +5,8 @@ import pytest
 from sklearn.base import BaseEstimator
 from joblib import Memory
 
-from nilearn.input_data.masker_validation import check_embedded_nifti_masker
-from nilearn.input_data import MultiNiftiMasker, NiftiMasker
+from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
+from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 
 
 class OwningClass(BaseEstimator):
@@ -44,7 +44,7 @@ class DummyEstimator(object):
             setattr(self, k, v)
 
     def fit(self, *args, **kwargs):
-        self.masker = check_embedded_nifti_masker(self)
+        self.masker = _check_embedded_nifti_masker(self)
 
 def test_check_embedded_nifti_masker_defaults():
     dummy = DummyEstimator(memory=None, memory_level=1)
@@ -63,13 +63,13 @@ def test_check_embedded_nifti_masker_defaults():
 
 def test_check_embedded_nifti_masker():
     owner = OwningClass()
-    masker = check_embedded_nifti_masker(owner)
+    masker = _check_embedded_nifti_masker(owner)
     assert type(masker) is MultiNiftiMasker
 
     for mask, multi_subject in (
             (MultiNiftiMasker(), True), (NiftiMasker(), False)):
         owner = OwningClass(mask=mask)
-        masker = check_embedded_nifti_masker(owner,
+        masker = _check_embedded_nifti_masker(owner,
                                              multi_subject=multi_subject)
         assert type(masker) == type(mask)
         for param_key in masker.get_params():
@@ -86,7 +86,7 @@ def test_check_embedded_nifti_masker():
     affine = np.eye(4)
     mask = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
     owner = OwningClass(mask=mask)
-    masker = check_embedded_nifti_masker(owner)
+    masker = _check_embedded_nifti_masker(owner)
     assert masker.mask_img is mask
 
     # Check attribute forwarding
@@ -96,11 +96,11 @@ def test_check_embedded_nifti_masker():
     mask = MultiNiftiMasker()
     mask.fit([[imgs]])
     owner = OwningClass(mask=mask)
-    masker = check_embedded_nifti_masker(owner)
+    masker = _check_embedded_nifti_masker(owner)
     assert masker.mask_img is mask.mask_img_
 
     # Check conflict warning
     mask = NiftiMasker(mask_strategy='epi')
     owner = OwningClass(mask=mask)
     with pytest.warns(UserWarning):
-        check_embedded_nifti_masker(owner)
+        _check_embedded_nifti_masker(owner)

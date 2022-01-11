@@ -48,13 +48,13 @@ print('First subject functional nifti image (4D) is at: %s' %
 ##############################################################################
 # Extracting region signals
 # --------------------------
-from nilearn import input_data
+from nilearn.maskers import NiftiMapsMasker
 
 # A "memory" to avoid recomputation
 from joblib import Memory
 mem = Memory('nilearn_cache')
 
-masker = input_data.NiftiMapsMasker(
+masker = NiftiMapsMasker(
     msdl_atlas_dataset.maps, resampling_target="maps", detrend=True,
     high_variance_confounds=True, low_pass=None, high_pass=0.01,
     t_r=2, standardize=True, memory='nilearn_cache', memory_level=1,

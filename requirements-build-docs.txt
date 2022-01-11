@@ -8,6 +8,8 @@ sphinx
 sphinx-gallery
 sphinxcontrib-bibtex
 sphinx-copybutton
+sphinxext-opengraph
+memory_profiler
 numpydoc
 coverage
 pillow

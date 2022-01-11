@@ -9,8 +9,7 @@ import numpy as np
 
 import nibabel
 import pytest
-from nilearn.input_data.nifti_labels_masker import NiftiLabelsMasker
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker, NiftiLabelsMasker
 from nilearn._utils import testing, as_ndarray, data_gen
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import get_data, new_img_like
