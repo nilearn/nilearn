@@ -41,11 +41,10 @@ data_dir, _ = fetch_language_localizer_demo_dataset()
 
 from nilearn.glm.first_level import first_level_from_bids
 
-task_label = 'languagelocalizer'
 models, models_run_imgs, events_dfs, models_confounds = \
     first_level_from_bids(
         data_dir,
-        task_label,
+        'languagelocalizer',
         img_filters=[('desc', 'preproc')],
     )
 
@@ -72,6 +71,10 @@ glm_parameters["signal_scaling"] = standard_glm.scaling_axis
 # :func:`~nilearn.glm.first_level.first_level_from_bids`.
 standard_glm.fit(fmri_file, events_df)
 
+# The standard design matrix has one column for each condition, along with
+# columns for the confound regressors and drifts.
+plotting.plot_design_matrix(standard_glm.design_matrices_[0])
+
 ##############################################################################
 # Define the LSA model
 # -------------------------------------
@@ -93,6 +96,11 @@ for i_trial, trial in lsa_events_df.iterrows():
 lsa_glm = FirstLevelModel(**glm_parameters)
 lsa_glm.fit(fmri_file, lsa_events_df)
 
+plotting.plot_design_matrix(lsa_glm.design_matrices_[0])
+
+##############################################################################
+# Aggregate beta maps from the LSA model based on condition
+# `````````````````````````````````````````````````````````
 # Collect the parameter estimate maps
 lsa_beta_maps = {cond: [] for cond in events_df["trial_type"].unique()}
 trialwise_conditions = lsa_events_df["trial_type"].unique()
@@ -170,6 +178,15 @@ lss_beta_maps = {
 ##############################################################################
 # Compare the three modeling approaches
 # -------------------------------------
-plotting.plot_design_matrix(standard_glm.design_matrices_[0])
-plotting.plot_design_matrix(lsa_glm.design_matrices_[0])
-plotting.plot_design_matrix(lss_design_matrices[0])
+import matplotlib.pyplot as plt
+
+fig, axes = plt.subplots(ncols=3, figsize=(20, 10))
+for i_trial in range(3):
+    plotting.plot_design_matrix(
+        lss_design_matrices[0],
+        figure=fig,
+        axes=axes[i_trial],
+    )
+    axes[i_trial].set_title(f"Trial {i_trial + 1}")
+
+fig.show()
