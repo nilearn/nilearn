@@ -15,10 +15,12 @@ from nilearn._utils.data_gen import (create_fake_bids_dataset,
                                      generate_fake_fmri)
 from nilearn._utils.glm import (_check_and_load_tables,
                                 _check_list_length_match, _check_run_tables,
-                                full_rank, get_bids_files,
-                                get_design_from_fslmat, multiple_fast_inverse,
-                                multiple_mahalanobis, parse_bids_filename,
+                                full_rank,
+                                multiple_fast_inverse,
+                                multiple_mahalanobis,
                                 positive_reciprocal, z_score)
+from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
+from nilearn.interfaces.fsl import get_design_from_fslmat
 from nilearn.maskers import NiftiMasker
 from nilearn.glm.first_level import (FirstLevelModel,
                                      make_first_level_design_matrix)
