@@ -184,8 +184,7 @@ fig, axes = plt.subplots(ncols=3, figsize=(20, 10))
 for i_trial in range(3):
     plotting.plot_design_matrix(
         lss_design_matrices[0],
-        figure=fig,
-        axes=axes[i_trial],
+        ax=axes[i_trial],
     )
     axes[i_trial].set_title(f"Trial {i_trial + 1}")
 
