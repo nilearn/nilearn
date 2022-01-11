@@ -57,7 +57,9 @@ extensions = [
               'sphinx.ext.linkcode',
               'sphinx_copybutton',
               'sphinxext.opengraph',
-              ]
+              'myst_parser',
+              'sphinx_design',
+]
 
 autosummary_generate = True
 
@@ -82,13 +84,13 @@ templates_path = ['templates']
 autosummary_generate = True
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
 
 # The encoding of source files.
 #source_encoding = 'utf-8'
 
 # Generate the plots for the gallery
-plot_gallery = True
+plot_gallery = 'True'
 
 # The master toctree document.
 master_doc = 'index'
@@ -150,7 +152,9 @@ add_function_parentheses = False
 #show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+# pygments_style = 'friendly'
+pygments_style = 'manni'
+pygments_dark_style = 'stata-dark'
 
 
 # A list of ignored prefixes for module index sorting.
@@ -161,12 +165,15 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
-html_theme = 'nilearn'
+html_theme = 'furo'
+
+# Add custom css instructions from themes/custom.css
+html_css_files = ['custom.css']
 
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
 # given in html_static_path.
-html_style = 'nature.css'
+# html_style = 'nature.css'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -174,12 +181,11 @@ html_style = 'nature.css'
 #html_theme_options = {'oldversion':False, 'collapsiblesidebar': False}
 
 # Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = ['themes']
-
+# html_theme_path = ['themes']
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = "Machine learning for NeuroImaging"
+html_title = 'Nilearn'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 html_short_title = 'Nilearn'
@@ -196,7 +202,7 @@ html_favicon = 'logos/favicon.ico'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['images']
+html_static_path = ['images', 'themes']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.

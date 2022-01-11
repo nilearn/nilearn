@@ -3,6 +3,10 @@
     We are putting the title as a raw HTML so that it doesn't appear in
     the contents
 
+.. raw:: html
+
+    <h1>Nilearn</h1>
+
 .. container:: index-paragraph
 
     Nilearn enables **approachable and versatile analyses of brain
@@ -98,16 +102,36 @@
    </div>
    <div style="clear: left"></div>
 
+
 .. toctree::
-   :hidden:
+   :includehidden:
+   :titlesonly:
+
+   quickstart.md
+
+.. toctree::
+   :includehidden:
+   :titlesonly:
+
+   auto_examples/index.rst
+
+.. toctree::
+   :includehidden:
+
+   user_guide.rst
+   modules/index.rst
+   modules/reference.rst
+   glossary.rst
+
+.. toctree::
+   :caption: Development
 
    nistats_migration.rst
-   authors.rst
-   user_guide.rst
-   auto_examples/index.rst
-   whats_new.rst
    development.rst
    maintenance.rst
-   glossary.rst
+   whats_new.rst
+   authors.rst
+   GitHub Repository <https://github.com/nilearn/nilearn>
+
 
 Nilearn is part of the `NiPy ecosystem <http://nipy.org>`_.

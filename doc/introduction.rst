@@ -5,13 +5,9 @@
     >>> if LooseVersion(np.__version__) >= LooseVersion('1.14'):
     ...     np.set_printoptions(legacy='1.13')
 
-=====================================
-Introduction: nilearn in a nutshell
-=====================================
-
-.. contents:: **Contents**
-    :local:
-    :depth: 1
+============
+Introduction
+============
 
 
 What is nilearn: MVPA, decoding, predictive models, functional connectivity
@@ -89,8 +85,72 @@ Why is machine learning relevant to NeuroImaging? A few examples!
 Installing nilearn
 ====================
 
-.. raw:: html
-   :file: install_doc_component.html
+.. tab-set::
+
+  .. tab-item:: Regular install
+
+      **1. Download and install 64-bit Anaconda**
+
+      We recommend that you install a complete
+      64-bit scientific Python distribution like
+      `Anaconda <https://www.anaconda.com/download/>`_ (or `PythonXY <http://python-xy.github.io/>`_).
+
+      Nilearn requires a Python installation and the following
+      dependencies: ipython, scipy, scikit-learn, joblib, matplotlib,
+      nibabel and pandas.
+
+      Once conda is installed, create and activte
+      a new python environment with:
+
+      .. code-block::
+
+         conda create -n nilearn-test python=3.9
+         conda activate nilearn-test
+
+      **2. Install nilearn with pip**
+
+      Execute the following command in the command prompt / terminal
+      in the proper conda environment:
+
+      .. code-block::
+
+         python -m pip install -U --user nilearn
+
+      **3. Check installation**
+
+      Try importing nilearn in a python / ipython session:
+
+      .. code-block:: python
+
+         import nilearn
+
+      If no error is raised, you have installed nilearn correctly.
+
+  .. tab-item:: Install from source
+
+      In order to access the development version of nilearn,
+      simply clone and go to the repo:
+
+      .. code-block::
+
+         git clone https://github.com/nilearn/nilearn.git
+         cd nilearn
+
+      Install the package in the proper conda environment with
+
+      .. code-block::
+
+         python -m pip install -r requirements-dev.txt
+         python -m pip install -e .
+
+      To check your install, try importing nilearn in a python session:
+
+      .. code-block:: python
+
+        import nilearn
+
+      If no error is raised, you have installed nilearn correctly.
+
 
 .. _quick_start:
 

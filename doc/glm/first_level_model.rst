@@ -13,11 +13,6 @@ First level models
   a set of predictors defined within the design matrix.
 
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
-
 HRF models
 ==========
 

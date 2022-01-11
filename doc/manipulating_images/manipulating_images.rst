@@ -8,10 +8,6 @@ This chapter discusses how nilearn can be used to do simple operations on
 brain images.
 
 
-.. contents:: **Chapter contents**
-    :local:
-    :depth: 1
-
 .. _preprocessing_functions:
 
 Functions for data preparation and image transformation

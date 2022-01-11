@@ -1,18 +1,17 @@
-===============================================
- Reference documentation: all nilearn functions
-===============================================
+==============
+API References
+==============
+
+.. warning::
+
+   This part of the documentation is no longer up to date
+   and was moved to :ref:`the modules section <modules>`.
 
 This is the class and function reference of nilearn. Please refer to
 the :ref:`user guide <user_guide>` for more information and usage examples.
 
-.. contents:: **List of modules**
-   :local:
-
-
-.. _connectome_ref:
-
 :mod:`nilearn.connectome`: Functional Connectivity
-====================================================
+==================================================
 
 .. automodule:: nilearn.connectome
    :no-members:
@@ -43,8 +42,6 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    group_sparse_covariance
    cov_to_corr
    prec_to_partial
-
-.. _datasets_ref:
 
 :mod:`nilearn.datasets`: Automatic Dataset Fetching
 ===================================================

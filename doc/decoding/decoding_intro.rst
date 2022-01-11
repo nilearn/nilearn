@@ -26,11 +26,6 @@ to capture diffusion mapping.
   refer to : :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
 
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
-
 Loading and preparing the data
 ===============================
 

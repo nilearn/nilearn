@@ -13,11 +13,6 @@ scikit-learn. This builds on the :ref:`didactic introduction to decoding <decodi
    correctly with scikit-learn. For a full code example, please check out: :ref:`sphx_glr_auto_examples_07_advanced_plot_advanced_decoding_scikit.py`
 
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
-
 Performing decoding with scikit-learn
 =======================================
 

@@ -18,3 +18,5 @@ joblib
 matplotlib
 plotly
 kaleido
+furo
+sphinx-design

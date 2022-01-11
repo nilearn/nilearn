@@ -4,11 +4,6 @@
 An introduction to GLMs in fMRI statistical analysis
 ====================================================
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
-
 A primer on BOLD-fMRI data analysis
 ===================================
 

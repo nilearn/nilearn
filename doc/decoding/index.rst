@@ -1,6 +1,3 @@
-.. include:: ../tune_toc.rst
-
-
 .. _decoding:
 
 =================================================
@@ -16,8 +13,6 @@ These are `Supervised learning
 predicting an output value.
 
 |
-
-.. include:: ../includes/big_toc_css.rst
 
 .. toctree::
 

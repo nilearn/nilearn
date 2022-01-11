@@ -10,11 +10,6 @@ Extracting times series to build a functional connectome
    interactions between regions. Here we show how to extract activation
    time-series to compute functional connectomes.
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
-
 .. topic:: **References**
 
    * `Varoquaux and Craddock, "Learning and comparing functional

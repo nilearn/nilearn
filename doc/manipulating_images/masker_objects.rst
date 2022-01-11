@@ -8,10 +8,6 @@ This chapter introduces the maskers: objects that go from
 neuroimaging volumes, on the disk or in memory, to data matrices, eg of
 time series.
 
-.. contents:: **Chapters contents**
-    :local:
-    :depth: 1
-
 
 The concept of "masker" objects
 ===============================

@@ -10,10 +10,6 @@ neuroimaging volumes and surfaces with nilearn.
 Nilearn comes with plotting function to display brain maps coming from
 Nifti-like images, in the :mod:`nilearn.plotting` module.
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
 .. topic:: **Code examples**
 
    Nilearn has a whole section of the example gallery on plotting.

@@ -1,5 +1,3 @@
-	.. -*- mode: rst -*-
-
 .. image:: https://img.shields.io/pypi/v/nilearn.svg
     :target: https://pypi.org/project/nilearn/
     :alt: Pypi Package
@@ -33,6 +31,18 @@ Important links
 - Official source code repo: https://github.com/nilearn/nilearn/
 - HTML documentation (stable release): http://nilearn.github.io/
 
+Install
+=======
+
+First make sure you have installed all the dependencies listed below.
+Then you can install nilearn by running the following command in
+a command prompt::
+
+    pip install -U --user nilearn
+
+More detailed instructions are available at
+http://nilearn.github.io/introduction.html#installation.
+
 Office Hours
 ============
 
@@ -60,19 +70,6 @@ Some plotting functions in Nilearn support both matplotlib and plotly as plottin
 In order to use the plotly engine in these functions, you will need to install both plotly and kaleido, which can both be installed with pip and anaconda.
 
 If you want to run the tests, you need pytest >= 3.9 and pytest-cov for coverage reporting.
-
-
-Install
-=======
-
-First make sure you have installed all the dependencies listed above.
-Then you can install nilearn by running the following command in
-a command prompt::
-
-    pip install -U --user nilearn
-
-More detailed instructions are available at
-http://nilearn.github.io/introduction.html#installation.
 
 Development
 ===========

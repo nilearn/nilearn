@@ -4,10 +4,6 @@
 In this tutorial, we use a General Linear Model (:term:`GLM`) to compare the
 :term:`fMRI` signal during periods of auditory stimulation versus periods of rest.
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
 The analyse described here is performed in the native space, directly on the
 original :term:`EPI` scans without any spatial or temporal preprocessing.
 (More sensitive results would likely be obtained on the corrected,
