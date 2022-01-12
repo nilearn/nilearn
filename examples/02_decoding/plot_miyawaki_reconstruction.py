@@ -50,7 +50,7 @@ sys.stderr.write(" Done (%.2fs).\n" % (time.time() - t0))
 # Then we prepare and mask the data
 # ----------------------------------
 import numpy as np
-from nilearn.input_data import MultiNiftiMasker
+from nilearn.maskers import MultiNiftiMasker
 
 sys.stderr.write("Preprocessing data...")
 t0 = time.time()

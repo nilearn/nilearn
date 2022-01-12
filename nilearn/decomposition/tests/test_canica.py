@@ -10,7 +10,7 @@ import nibabel
 from nilearn._utils.testing import write_tmp_imgs
 
 from nilearn.decomposition.canica import CanICA
-from nilearn.input_data import MultiNiftiMasker
+from nilearn.maskers import MultiNiftiMasker
 from nilearn.image import iter_img
 from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
 from nilearn.image import get_data

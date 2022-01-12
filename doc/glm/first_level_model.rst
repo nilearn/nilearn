@@ -76,10 +76,10 @@ Time series-based
 
 The time series of a seed region can also be used as the predictor for a first level model. This approach would help
 identify brain areas co-activating with the seed region. The time series is extracted using
-:class:`nilearn.input_data.NiftiSpheresMasker`. For instance, if the seed region is the posterior
+:class:`nilearn.maskers.NiftiSpheresMasker`. For instance, if the seed region is the posterior
 cingulate cortex with coordinate [pcc_coords]::
 
-  from nilearn.input_data import NiftiSpheresMasker
+  from nilearn.maskers import NiftiSpheresMasker
   seed_masker = NiftiSpheresMasker([pcc_coords], radius=10)
   seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
 
@@ -146,7 +146,7 @@ FistLevelModel is initialized with the `minimize_memory` flag set to `False`. ::
   observed_timeseries = masker.fit_transform(fmri_img)
   predicted_timeseries = masker.fit_transform(fmri_glm.predicted[0])
 
-Here, masker is an object of :class:`nilearn.input_data.NiftiSpheresMasker`. In the figure below,
+Here, masker is an object of :class:`nilearn.maskers.NiftiSpheresMasker`. In the figure below,
 predicted (red) and observed (not red) timecourses of 6 voxels are shown.
 
   .. image:: ../auto_examples/04_glm_first_level/images/sphx_glr_plot_predictions_residuals_002.png

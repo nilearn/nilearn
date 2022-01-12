@@ -69,7 +69,7 @@ def test__safe_cache_flush():
         version_file = os.path.join(temp_dir, 'joblib', 'module_versions.json')
         # Create an mock version_file with old module versions
         with open(version_file, 'w') as f:
-            json.dump({"nibabel": [0, 0]}, f)
+            json.dump({"nibabel": "0.0"}, f)
         # Create some store structure
         nibabel_dir = os.path.join(temp_dir, 'joblib', 'nibabel_')
         os.makedirs(nibabel_dir)
@@ -84,7 +84,7 @@ def test__safe_cache_flush():
         # Make sure that the check will run again
         cache_mixin.__CACHE_CHECKED = {}
         with open(version_file, 'w') as f:
-            json.dump({"nibabel": [0, 0]}, f)
+            json.dump({"nibabel": "0.0"}, f)
         cache_mixin._safe_cache(mem, f)
         assert os.path.exists(version_file)
         assert not os.path.exists(nibabel_dir)

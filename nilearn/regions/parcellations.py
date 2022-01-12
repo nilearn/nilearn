@@ -10,7 +10,7 @@ from joblib import Memory, delayed, Parallel
 
 from .rena_clustering import ReNA
 from ..decomposition.multi_pca import MultiPCA
-from ..input_data import NiftiLabelsMasker
+from nilearn.maskers import NiftiLabelsMasker
 from .._utils.niimg import _safe_get_data
 from .._utils.niimg_conversions import _iter_check_niimg
 from .._utils import fill_doc
@@ -139,8 +139,8 @@ class Parcellations(MultiPCA):
     %(random_state)s
         Default=0.
 
-    mask : Niimg-like object or :class:`nilearn.input_data.NiftiMasker`,\
- :class:`nilearn.input_data.MultiNiftiMasker`, optional
+    mask : Niimg-like object or :class:`nilearn.maskers.NiftiMasker`,\
+ :class:`nilearn.maskers.MultiNiftiMasker`, optional
         Mask/Masker used for masking the data.
         If mask image if provided, it will be used in the MultiNiftiMasker.
         If an instance of MultiNiftiMasker is provided, then this instance
@@ -226,8 +226,8 @@ class Parcellations(MultiPCA):
     `labels_img_` : :class:`nibabel.nifti1.Nifti1Image`
         Labels image to each parcellation learned on fmri images.
 
-    `masker_` : :class:`nilearn.input_data.NiftiMasker` or\
- :class:`nilearn.input_data.MultiNiftiMasker`
+    `masker_` : :class:`nilearn.maskers.NiftiMasker` or\
+ :class:`nilearn.maskers.MultiNiftiMasker`
         The masker used to mask the data.
 
     `connectivity_` : :class:`numpy.ndarray`

@@ -12,7 +12,7 @@ from scipy.stats import scoreatpercentile
 from joblib import Memory
 
 from .. import masking
-from ..input_data import NiftiMapsMasker
+from nilearn.maskers import NiftiMapsMasker
 from .._utils import (check_niimg, check_niimg_3d,
                       check_niimg_4d, fill_doc)
 from ..image import new_img_like, resample_img
@@ -253,7 +253,7 @@ class RegionExtractor(NiftiMapsMasker):
     Particularly, to show that each decomposed brain maps can be
     used to focus on a target specific Regions of Interest analysis.
 
-    See [1]_.
+    See :footcite:`abraham:hal-01093944`.
 
     .. versionadded:: 0.2
 
@@ -313,7 +313,7 @@ class RegionExtractor(NiftiMapsMasker):
 
         .. note::
             Recommended to set to True if signals are not already standardized.
-            Passed to :class:`nilearn.input_data.NiftiMapsMasker`.
+            Passed to :class:`~nilearn.maskers.NiftiMapsMasker`.
 
     %(detrend)s
 
@@ -353,9 +353,7 @@ class RegionExtractor(NiftiMapsMasker):
 
     References
     ----------
-    .. [1] Abraham et al. "Region segmentation for sparse decompositions:
-       better brain parcellations from rest fMRI", Sparsity Techniques in
-       Medical Imaging, Sep 2014, Boston, United States. pp.8
+    .. footbibliography::
 
     See Also
     --------

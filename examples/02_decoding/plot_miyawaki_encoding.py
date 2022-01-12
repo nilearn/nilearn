@@ -49,11 +49,11 @@ fmri_random_runs_filenames = dataset.func[12:]
 stimuli_random_runs_filenames = dataset.label[12:]
 
 ##############################################################################
-# We can use :func:`nilearn.input_data.MultiNiftiMasker` to load the fMRI
+# We can use :func:`nilearn.maskers.MultiNiftiMasker` to load the fMRI
 # data, clean and mask it.
 
 import numpy as np
-from nilearn.input_data import MultiNiftiMasker
+from nilearn.maskers import MultiNiftiMasker
 
 masker = MultiNiftiMasker(mask_img=dataset.mask, detrend=True,
                           standardize=True)

@@ -56,7 +56,7 @@ conditions_encoded = conditions_encoded[condition_mask]
 # Mask data
 mask_filename = haxby_dataset.mask
 from nilearn.image import index_img
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 nifti_masker = NiftiMasker(
     smoothing_fwhm=8,
     mask_img=mask_filename,

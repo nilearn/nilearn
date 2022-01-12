@@ -438,7 +438,7 @@ class FirstLevelModel(BaseGLM):
                 'confounds and events will be ignored.'
             )
         # Local import to prevent circular imports
-        from nilearn.input_data import NiftiMasker  # noqa
+        from nilearn.maskers import NiftiMasker  # noqa
 
         # Check arguments
         # Check imgs type

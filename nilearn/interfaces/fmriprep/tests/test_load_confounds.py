@@ -6,7 +6,7 @@ from scipy.stats import pearsonr
 from sklearn.preprocessing import scale
 import pytest
 from nibabel import Nifti1Image
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from nilearn.interfaces.fmriprep import load_confounds
 from nilearn.interfaces.fmriprep.load_confounds import _check_strategy
 

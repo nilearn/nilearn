@@ -2,7 +2,7 @@ import pytest
 from nibabel import Nifti1Image
 from collections import Counter
 import numpy as np
-from nilearn.input_data import NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker
+from nilearn.maskers import NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker
 from nilearn._utils import as_ndarray
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
 from nilearn.image import get_data, new_img_like

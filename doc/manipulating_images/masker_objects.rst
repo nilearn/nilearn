@@ -42,7 +42,7 @@ relevant for the research questions at hand.
 
 
 
-"masker" objects (found in modules :mod:`nilearn.input_data`)
+"masker" objects (found in module :mod:`nilearn.maskers`)
 simplify these "data folding" steps that often precede the
 statistical analysis.
 
@@ -66,7 +66,7 @@ have to call :ref:`specific functions <preprocessing_functions>`
     data themselves (e.g., extracting time series from images).
 
 
-.. currentmodule:: nilearn.input_data
+.. currentmodule:: nilearn.maskers
 
 .. _nifti_masker:
 
@@ -191,8 +191,8 @@ Common data preparation steps: smoothing, filtering, resampling
 preparation::
 
    >>> import sklearn; sklearn.set_config(print_changed_only=False)
-   >>> from nilearn import input_data
-   >>> masker = input_data.NiftiMasker()
+   >>> from nilearn import maskers
+   >>> masker = maskers.NiftiMasker()
    >>> masker # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
    NiftiMasker(detrend=False, dtype=None, high_pass=None,
          high_variance_confounds=False, low_pass=None, mask_args=None,

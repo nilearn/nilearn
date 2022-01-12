@@ -8,7 +8,7 @@ covariance.
 We use the `MSDL atlas
 <https://team.inria.fr/parietal/18-2/spatial_patterns/spatial-patterns-in-resting-state/>`_
 of functional regions in movie watching, and the
-:class:`nilearn.input_data.NiftiMapsMasker` to extract time series.
+:class:`nilearn.maskers.NiftiMapsMasker` to extract time series.
 
 Note that the inverse covariance (or precision) contains values that can
 be linked to *negated* partial correlations, so we negated it for
@@ -41,7 +41,7 @@ print('First subject functional nifti images (4D) are at: %s' %
 ##############################################################################
 # Extract time series
 # --------------------
-from nilearn.input_data import NiftiMapsMasker
+from nilearn.maskers import NiftiMapsMasker
 masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True,
                          memory='nilearn_cache', verbose=5)
 

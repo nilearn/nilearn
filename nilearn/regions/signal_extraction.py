@@ -69,7 +69,7 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     --------
     nilearn.regions.signals_to_img_labels
     nilearn.regions.img_to_signals_maps
-    nilearn.input_data.NiftiLabelsMasker : Signal extraction on labels images
+    nilearn.maskers.NiftiLabelsMasker : Signal extraction on labels images
         e.g. clusters
 
     """
@@ -171,7 +171,7 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
     --------
     nilearn.regions.img_to_signals_labels
     nilearn.regions.signals_to_img_maps
-    nilearn.input_data.NiftiLabelsMasker : Signal extraction on labels
+    nilearn.maskers.NiftiLabelsMasker : Signal extraction on labels
         images e.g. clusters
 
     """
@@ -255,7 +255,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
     --------
     nilearn.regions.img_to_signals_labels
     nilearn.regions.signals_to_img_maps
-    nilearn.input_data.NiftiMapsMasker : Signal extraction on probabilistic
+    nilearn.maskers.NiftiMapsMasker : Signal extraction on probabilistic
         maps e.g. ICA
 
     """
@@ -327,7 +327,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     --------
     nilearn.regions.signals_to_img_labels
     nilearn.regions.img_to_signals_maps
-    nilearn.input_data.NiftiMapsMasker
+    nilearn.maskers.NiftiMapsMasker
 
     """
     maps_img = _utils.check_niimg_4d(maps_img)

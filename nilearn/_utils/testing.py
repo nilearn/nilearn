@@ -8,7 +8,7 @@ import sys
 import tempfile
 import warnings
 import gc
-import distutils
+from nilearn.version import _compare_version
 from pathlib import Path
 
 import pytest
@@ -56,7 +56,7 @@ def is_64bit() -> bool:
 def check_deprecation(func, match=None):
     @functools.wraps(func)
     def wrapped(*args, **kwargs):
-        if distutils.version.LooseVersion(sklearn.__version__) < '0.22':
+        if _compare_version(sklearn.__version__, '<', '0.22'):
             with pytest.deprecated_call():
                 result = func(*args, **kwargs)
         else:
