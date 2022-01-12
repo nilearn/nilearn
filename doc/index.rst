@@ -24,6 +24,7 @@ Nilearn
         :columns: 12 12 4 4
         :class-card: sd-shadow-md
         :class-title: sd-text-primary
+        :margin: 2 2 0 0
 
         Get started with Nilearn
 
@@ -33,6 +34,7 @@ Nilearn
         :columns: 12 12 4 4
         :class-card: sd-shadow-md
         :class-title: sd-text-primary
+        :margin: 2 2 0 0
 
         Discover functionalities by reading examples
 
@@ -42,78 +44,229 @@ Nilearn
         :columns: 12 12 4 4
         :class-card: sd-shadow-md
         :class-title: sd-text-primary
+        :margin: 2 2 0 0
 
         Learn about neuroimaging analysis
 
 Featured examples
 -----------------
 
-
 .. grid::
 
-    .. grid-item-card::
-        :link: quickstart
-        :link-type: ref
-        :columns: 6 6 3 3
-        :class-card: sd-shadow-sm sd-border-none
-        :margin: 2 2 0 0
+  .. grid-item-card::
+    :link: quickstart
+    :link-type: ref
+    :columns: 12 12 9 9
+    :class-card: sd-shadow-sm sd-border-none
+    :margin: 2 2 auto auto
 
-        .. image:: logos/nilearn-desaturate-50.png
+    .. grid::
+      :gutter: 3
+      :margin: 0
+      :padding: 0
 
+      .. grid-item::
+        :columns: 3
 
-    .. grid-item-card::
-        :link: quickstart
-        :link-type: ref
-        :columns: 6 6 3 3
-        :class-card: sd-shadow-sm sd-border-none
-        :margin: 2 2 0 0
+        .. image:: logos/nilearn-desaturate-100.png
 
-        .. image:: logos/nilearn-desaturate-50.png
+      .. grid-item::
+        :columns: 9
 
-    .. grid-item-card::
-        :link: quickstart
-        :link-type: ref
-        :columns: 6 6 3 3
-        :class-card: sd-shadow-sm sd-border-none
-        :margin: 2 2 0 0
+        auto_examples/01_plotting/plot_demo_glass_brain.html
+        short example description
 
-        .. image:: logos/nilearn-desaturate-50.png
+  .. grid-item-card::
+    :link: quickstart
+    :link-type: ref
+    :columns: 12 12 9 9
+    :class-card: sd-shadow-sm sd-border-none
+    :margin: 2 2 auto auto
 
-    .. grid-item-card::
-        :link: quickstart
-        :link-type: ref
-        :columns: 6 6 3 3
-        :class-card: sd-shadow-sm sd-border-none
-        :margin: 2 2 0 0
+    .. grid::
+      :gutter: 3
+      :margin: 0
+      :padding: 0
 
-        .. image:: logos/nilearn-desaturate-50.png
+      .. grid-item::
+        :columns: 3
 
-    .. grid-item-card::
-        :link: quickstart
-        :link-type: ref
-        :columns: 6 6 3 3
-        :class-card: sd-shadow-sm sd-border-none
-        :margin: 2 2 0 0
+        .. image:: logos/nilearn-desaturate-100.png
 
-        .. image:: logos/nilearn-desaturate-50.png
+      .. grid-item::
+        :columns: 9
 
-    .. grid-item-card::
-        :link: quickstart
-        :link-type: ref
-        :columns: 6 6 3 3
-        :class-card: sd-shadow-sm sd-border-none
-        :margin: 2 2 0 0
+        auto_examples/03_connectivity/plot_inverse_covariance_connectome.html
+        a much longer description example with a lot
+        of words explaining how great this python script is
 
-        .. image:: logos/nilearn-desaturate-50.png
+  .. grid-item-card::
+    :link: quickstart
+    :link-type: ref
+    :columns: 12 12 9 9
+    :class-card: sd-shadow-sm sd-border-none
+    :margin: 2 2 auto auto
 
-    .. grid-item-card::
-        :link: quickstart
-        :link-type: ref
-        :columns: 6 6 3 3
-        :class-card: sd-shadow-sm sd-border-none
-        :margin: 2 2 0 0
+    .. grid::
+      :gutter: 3
+      :margin: 0
+      :padding: 0
 
-        .. image:: logos/nilearn-desaturate-50.png
+      .. grid-item::
+        :columns: 3
+
+        .. image:: logos/nilearn-desaturate-100.png
+
+      .. grid-item::
+        :columns: 9
+
+        auto_examples/01_plotting/plot_3d_map_to_surface_projection.html
+        a much longer description example with a lot
+        of words explaining how great this python script is
+
+  .. grid-item-card::
+    :link: quickstart
+    :link-type: ref
+    :columns: 12 12 9 9
+    :class-card: sd-shadow-sm sd-border-none
+    :margin: 2 2 auto auto
+
+    .. grid::
+      :gutter: 3
+      :margin: 0
+      :padding: 0
+
+      .. grid-item::
+        :columns: 3
+
+        .. image:: logos/nilearn-desaturate-100.png
+
+      .. grid-item::
+        :columns: 9
+
+        auto_examples/plot_decoding_tutorial.html
+        a much longer description example with a lot
+        of words explaining how great this python script is
+
+  .. grid-item-card::
+    :link: quickstart
+    :link-type: ref
+    :columns: 12 12 9 9
+    :class-card: sd-shadow-sm sd-border-none
+    :margin: 2 2 auto auto
+
+    .. grid::
+      :gutter: 3
+      :margin: 0
+      :padding: 0
+
+      .. grid-item::
+        :columns: 3
+
+        .. image:: logos/nilearn-desaturate-100.png
+
+      .. grid-item::
+        :columns: 9
+
+        auto_examples/02_decoding/plot_oasis_vbm.html
+        a much longer description example with a lot
+        of words explaining how great this python script is
+
+  .. grid-item-card::
+    :link: quickstart
+    :link-type: ref
+    :columns: 12 12 9 9
+    :class-card: sd-shadow-sm sd-border-none
+    :margin: 2 2 auto auto
+
+    .. grid::
+      :gutter: 3
+      :margin: 0
+      :padding: 0
+
+      .. grid-item::
+        :columns: 3
+
+        .. image:: logos/nilearn-desaturate-100.png
+
+      .. grid-item::
+        :columns: 9
+
+        auto_examples/03_connectivity/plot_data_driven_parcellations.html
+        a much longer description example with a lot
+        of words explaining how great this python script is
+
+  .. grid-item-card::
+    :link: quickstart
+    :link-type: ref
+    :columns: 12 12 9 9
+    :class-card: sd-shadow-sm sd-border-none
+    :margin: 2 2 auto auto
+
+    .. grid::
+      :gutter: 3
+      :margin: 0
+      :padding: 0
+
+      .. grid-item::
+        :columns: 3
+
+        .. image:: logos/nilearn-desaturate-100.png
+
+      .. grid-item::
+        :columns: 9
+
+        auto_examples/03_connectivity/plot_compare_decomposition.html
+        a much longer description example with a lot
+        of words explaining how great this python script is
+
+  .. grid-item-card::
+    :link: quickstart
+    :link-type: ref
+    :columns: 12 12 9 9
+    :class-card: sd-shadow-sm sd-border-none
+    :margin: 2 2 auto auto
+
+    .. grid::
+      :gutter: 3
+      :margin: 0
+      :padding: 0
+
+      .. grid-item::
+        :columns: 3
+
+        .. image:: logos/nilearn-desaturate-100.png
+
+      .. grid-item::
+        :columns: 9
+
+        auto_examples/02_decoding/plot_haxby_frem.html
+        a much longer description example with a lot
+        of words explaining how great this python script is
+
+  .. grid-item-card::
+    :link: quickstart
+    :link-type: ref
+    :columns: 12 12 9 9
+    :class-card: sd-shadow-sm sd-border-none
+    :margin: 2 2 auto auto
+
+    .. grid::
+      :gutter: 3
+      :margin: 0
+      :padding: 0
+
+      .. grid-item::
+        :columns: 3
+
+        .. image:: logos/nilearn-desaturate-100.png
+
+      .. grid-item::
+        :columns: 9
+
+        auto_examples/02_decoding/plot_haxby_searchlight.html
+        a much longer description example with a lot
+        of words explaining how great this python script is
 
 
 .. toctree::
