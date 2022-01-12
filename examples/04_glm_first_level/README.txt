@@ -1,6 +1,6 @@
-==================================
-GLM: First level analysis examples
-==================================
+=========================
+GLM: First level analysis
+=========================
 
 These are examples focused on showcasing first level models functionality and single subject analysis.
 

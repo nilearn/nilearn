@@ -168,7 +168,10 @@ pygments_dark_style = 'stata-dark'
 html_theme = 'furo'
 
 # Add custom css instructions from themes/custom.css
-html_css_files = ['custom.css']
+html_css_files = [
+    'custom.css',
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css',
+]
 
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
@@ -192,7 +195,7 @@ html_short_title = 'Nilearn'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = 'logos/nilearn-logo.png'
+html_logo = 'logos/nilearn-transparent.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -269,7 +272,7 @@ latex_documents = [
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-latex_logo = "logos/nilearn-logo.png"
+latex_logo = "logos/nilearn-transparent.png"
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
@@ -339,7 +342,7 @@ sphinx_gallery_conf = {
     'backreferences_dir': os.path.join('modules', 'generated'),
     'reference_url': {'nilearn': None},
     'junit': '../test-results/sphinx-gallery/junit.xml',
-    'examples_dirs': '../examples',
+    'examples_dirs': '../examples/',
     'gallery_dirs': 'auto_examples',
     # Ignore the function signature leftover by joblib
     'ignore_pattern': 'func_code\.py',
@@ -352,7 +355,8 @@ sphinx_gallery_conf = {
         'dependencies': ['../requirements-build-docs.txt',
                          'binder/requirements.txt'],
         'notebooks_dir': 'examples'
-    }
+    },
+    'default_thumb_file': 'logos/nilearn-desaturate-100.png',
 }
 
 

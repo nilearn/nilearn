@@ -1,14 +1,9 @@
-:root {
-  --color-blue3: #137CBD;
-  --color-blue2: #106BA3;
-}
-
 div.sphx-glr-download a {
-  background-color: var(--color-blue3);
+  background-color: var(--sd-color-primary);
   background-image: none;
   border-radius: 4px;
   border: 0px;
-  color: #FFFFFF;
+  color: #ffffff;
   padding: 1ex;
   text-align: center;
 }
@@ -17,7 +12,7 @@ div.sphx-glr-download a:hover {
   box-shadow: none;
   text-decoration: none;
   background-image: none;
-  background-color: var(--color-blue2);
+  background-color: var(--sd-color-primary-highlight);
 }
 
 div.sphx-glr-download a .pre {

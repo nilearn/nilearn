@@ -1,11 +1,5 @@
-
-..
-    We are putting the title as a raw HTML so that it doesn't appear in
-    the contents
-
-.. raw:: html
-
-    <h1>Nilearn</h1>
+Nilearn
+=======
 
 .. container:: index-paragraph
 
@@ -13,117 +7,128 @@
     volumes**. It provides statistical and machine-learning tools, with
     **instructive documentation & open community**.
 
-    It supports general linear model (GLM) based analysis and leverages the `scikit-learn <http://scikit-learn.org>`__ Python toolbox
+    It supports general linear model (GLM) based analysis and leverages
+    the `scikit-learn <http://scikit-learn.org>`__ Python toolbox
     for multivariate statistics with applications such as predictive modelling,
     classification, decoding, or connectivity analysis.
 
-    Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_.
-    :ref:`Here's a guide to replacing Nistats imports to work in Nilearn. <nistats_migration>`
+    Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_,
+    for which we provide a :ref:`migration guide <nistats_migration>`.
 
 
-.. Here we are building the carousel
+.. grid::
 
-.. |glass_brain| image:: auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_002.png
-   :target: auto_examples/01_plotting/plot_demo_glass_brain.html
+    .. grid-item-card:: :fas:`rocket` Quickstart
+        :link: quickstart
+        :link-type: ref
+        :columns: 12 12 4 4
+        :class-card: sd-shadow-md
+        :class-title: sd-text-primary
 
-.. |connectome| image:: auto_examples/03_connectivity/images/sphx_glr_plot_inverse_covariance_connectome_004.png
-     :target: auto_examples/03_connectivity/plot_inverse_covariance_connectome.html
+        Get started with Nilearn
 
-.. |surface_plot| image:: auto_examples/01_plotting/images/sphx_glr_plot_3d_map_to_surface_projection_001.png
-     :target: auto_examples/01_plotting/plot_3d_map_to_surface_projection.html
+    .. grid-item-card:: :fas:`th` Examples
+        :link: quickstart
+        :link-type: ref
+        :columns: 12 12 4 4
+        :class-card: sd-shadow-md
+        :class-title: sd-text-primary
 
-.. |haxby_weights| image:: auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
-   :target: auto_examples/plot_decoding_tutorial.html
+        Discover functionalities by reading examples
 
-.. |oasis_weights| image:: auto_examples/02_decoding/images/sphx_glr_plot_oasis_vbm_002.png
-   :target: auto_examples/02_decoding/plot_oasis_vbm.html
+    .. grid-item-card:: :fas:`book` User guide
+        :link: user_guide
+        :link-type: ref
+        :columns: 12 12 4 4
+        :class-card: sd-shadow-md
+        :class-title: sd-text-primary
 
-.. |rest_parcellations| image:: auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_001.png
-   :target: auto_examples/03_connectivity/plot_data_driven_parcellations.html
+        Learn about neuroimaging analysis
 
-.. |canica| image:: auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_011.png
-   :target: auto_examples/03_connectivity/plot_compare_decomposition.html
+Featured examples
+-----------------
 
-.. |tvl1_haxby| image:: auto_examples/02_decoding/images/sphx_glr_plot_haxby_frem_001.png
-   :target: auto_examples/02_decoding/plot_haxby_frem.html
 
-.. |searchlight| image:: auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_001.png
-   :target: auto_examples/02_decoding/plot_haxby_searchlight.html
+.. grid::
 
-.. raw:: html
+    .. grid-item-card::
+        :link: quickstart
+        :link-type: ref
+        :columns: 6 6 3 3
+        :class-card: sd-shadow-sm sd-border-none
+        :margin: 2 2 0 0
 
-   <div id="index-grid" class="section group">
-    <div class="col span_1_of_3">
-        <h3><a
-        href="introduction.html#python-for-neuroimaging-a-quick-start">First Steps</a></h3>
-        <p>Get started with nilearn</p>
+        .. image:: logos/nilearn-desaturate-50.png
 
-        <h3><a href="auto_examples/index.html"> Examples</a></h3>
-        <p>Visit our example gallery</p>
-        <h3><a href="user_guide.html"> User Guide</a></h3>
-        <p>Browse the full documentation</p>
-    </div>
-    <div class="col span_2_of_3">
-    <div class="jcarousel-wrapper">
-    <div class="jcarousel">
 
-* |glass_brain|
+    .. grid-item-card::
+        :link: quickstart
+        :link-type: ref
+        :columns: 6 6 3 3
+        :class-card: sd-shadow-sm sd-border-none
+        :margin: 2 2 0 0
 
-* |surface_plot|
+        .. image:: logos/nilearn-desaturate-50.png
 
-* |oasis_weights|
+    .. grid-item-card::
+        :link: quickstart
+        :link-type: ref
+        :columns: 6 6 3 3
+        :class-card: sd-shadow-sm sd-border-none
+        :margin: 2 2 0 0
 
-* |connectome|
+        .. image:: logos/nilearn-desaturate-50.png
 
-* |rest_parcellations|
+    .. grid-item-card::
+        :link: quickstart
+        :link-type: ref
+        :columns: 6 6 3 3
+        :class-card: sd-shadow-sm sd-border-none
+        :margin: 2 2 0 0
 
-* |canica|
+        .. image:: logos/nilearn-desaturate-50.png
 
-* |tvl1_haxby|
+    .. grid-item-card::
+        :link: quickstart
+        :link-type: ref
+        :columns: 6 6 3 3
+        :class-card: sd-shadow-sm sd-border-none
+        :margin: 2 2 0 0
 
-* |haxby_weights|
+        .. image:: logos/nilearn-desaturate-50.png
 
-* |searchlight|
+    .. grid-item-card::
+        :link: quickstart
+        :link-type: ref
+        :columns: 6 6 3 3
+        :class-card: sd-shadow-sm sd-border-none
+        :margin: 2 2 0 0
 
-.. raw:: html
+        .. image:: logos/nilearn-desaturate-50.png
 
-            </div>
+    .. grid-item-card::
+        :link: quickstart
+        :link-type: ref
+        :columns: 6 6 3 3
+        :class-card: sd-shadow-sm sd-border-none
+        :margin: 2 2 0 0
 
-        <a href="#" class="jcarousel-control-prev">&lsaquo;</a>
-        <a href="#" class="jcarousel-control-next">&rsaquo;</a>
-
-        <p class="jcarousel-pagination">
-
-        </p>
-
-        </div>
-        </div>
-
-   </div>
-   <div style="clear: left"></div>
+        .. image:: logos/nilearn-desaturate-50.png
 
 
 .. toctree::
+   :hidden:
    :includehidden:
    :titlesonly:
 
    quickstart.md
-
-.. toctree::
-   :includehidden:
-   :titlesonly:
-
    auto_examples/index.rst
-
-.. toctree::
-   :includehidden:
-
    user_guide.rst
    modules/index.rst
-   modules/reference.rst
    glossary.rst
 
 .. toctree::
+   :hidden:
    :caption: Development
 
    nistats_migration.rst

@@ -87,7 +87,7 @@ Installing nilearn
 
 .. tab-set::
 
-  .. tab-item:: Regular install
+  .. tab-item:: Pip install
 
       **1. Download and install 64-bit Anaconda**
 

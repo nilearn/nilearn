@@ -2,7 +2,7 @@
 API References
 ==============
 
-.. warning::
+.. danger::
 
    This part of the documentation is no longer up to date
    and was moved to :ref:`the modules section <modules>`.

@@ -23,13 +23,13 @@ nilearn
 
 Nilearn enables approachable and versatile analyses of brain volumes. It provides statistical and machine-learning tools, with instructive documentation & friendly community.
 
-It supports general linear model (GLM) based analysis and leverages the `scikit-learn <http://scikit-learn.org>`_ Python toolbox for multivariate statistics with applications such as predictive modelling, classification, decoding, or connectivity analysis.
+It supports general linear model (GLM) based analysis and leverages the `scikit-learn <https://scikit-learn.org>`_ Python toolbox for multivariate statistics with applications such as predictive modelling, classification, decoding, or connectivity analysis.
 
 Important links
 ===============
 
 - Official source code repo: https://github.com/nilearn/nilearn/
-- HTML documentation (stable release): http://nilearn.github.io/
+- HTML documentation (stable release): https://nilearn.github.io/
 
 Install
 =======
@@ -41,7 +41,7 @@ a command prompt::
     pip install -U --user nilearn
 
 More detailed instructions are available at
-http://nilearn.github.io/introduction.html#installation.
+https://nilearn.github.io/introduction.html#installation.
 
 Office Hours
 ============
