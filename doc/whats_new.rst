@@ -119,11 +119,7 @@ Enhancements
   :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_hrf.py` was
   also modified to demo how to define custom :term:`HRF` models.
   (See issue `#2940 <https://github.com/nilearn/nilearn/issues/2940>`_).
-<<<<<<< HEAD
 - :class:`nilearn.maskers.NiftiLabelsMasker` now gives a warning when some
-=======
-- :class:`nilearn.input_data.NiftiLabelsMasker` now gives a warning when some
->>>>>>> "add whats_new"
   labels are removed from the label image at transform time due to resampling
   of the label image to the data image.
 - Function :func:`~nilearn.glm.second_level.non_parametric_inference` now accepts
