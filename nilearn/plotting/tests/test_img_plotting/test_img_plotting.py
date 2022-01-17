@@ -50,6 +50,18 @@ def test_plot_functions_3d_default_params(plot_func, testdata_3d, tmpdir):  # no
     plt.close()
 
 
+@pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
+@pytest.mark.parametrize("cbar_tick_format", ["%f", "%i"])
+def test_cbar_tick_format(plot_func, testdata_3d, cbar_tick_format, tmpdir):  # noqa
+    """Test different colorbar tick format with 3D plotting functions."""
+    filename = str(tmpdir.join('temp.png'))
+    plot_func(
+        testdata_3d['img'], output_file=filename, colorbar=True,
+        cbar_tick_format=cbar_tick_format
+    )
+    plt.close()
+
+
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_4D)
 def test_plot_functions_4d_default_params(plot_func, testdata_3d, testdata_4d, tmpdir):  # noqa
     """Smoke-test for 4D plotting functions with default arguments."""

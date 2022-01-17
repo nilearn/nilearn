@@ -119,6 +119,12 @@ Enhancements
 - Importing :mod:`nilearn.plotting` will now raise a warning if the matplotlib
   backend has been changed from its original value, instead of silently modifying
   it.
+- Function :func:`~nilearn.plotting.plot_img` and deriving functions like
+  :func:`~nilearn.plotting.plot_anat`, :func:`~nilearn.plotting.plot_stat_map`, or
+  :func:`~nilearn.plotting.plot_epi` now accept an optional argument
+  ``cbar_tick_format`` to specify how numbers should be displayed on the colorbar.
+  This is consistent with the API of surface plotting functions (see release 0.7.1).
+  The default format is scientific notation.
 
 Changes
 -------
