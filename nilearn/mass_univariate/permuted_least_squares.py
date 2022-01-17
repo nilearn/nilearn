@@ -12,6 +12,7 @@ import numpy as np
 from scipy import linalg
 from sklearn.utils import check_random_state
 
+
 def _normalize_matrix_on_axis(m, axis=0):
     """ Normalize a 2D matrix on an axis.
 
@@ -433,7 +434,9 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
         targetvars_resid_covars = _normalize_matrix_on_axis(
             targetvars_resid_covars, axis=1)
         # step 2: extract effect of covars from tested vars
-        testedvars_normalized = _normalize_matrix_on_axis(tested_vars.T, axis=1)
+        testedvars_normalized = _normalize_matrix_on_axis(
+            tested_vars.T, axis=1
+        )
         beta_testedvars_covars = np.dot(testedvars_normalized,
                                         covars_orthonormalized)
         testedvars_resid_covars = testedvars_normalized - np.dot(
