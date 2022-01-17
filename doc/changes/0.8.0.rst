@@ -25,11 +25,11 @@ HIGHLIGHTS
  | - Nibabel -- v2.5
  | - Pandas -- v0.24
 
-- Class :class:`~input_data.NiftiLabelsMasker` can now generate HTML reports in the same way as the :class:`~input_data.NiftiMasker` (:gh:`2707` by `Nicolas Gensollen`_).
+- Class :class:`~maskers.NiftiLabelsMasker` can now generate HTML reports in the same way as the :class:`~maskers.NiftiMasker` (:gh:`2707` by `Nicolas Gensollen`_).
 
 - Function :func:`~signal.clean` now accepts a new parameter ``sample_mask`` of shape ``(number of scans - number of volumes removed, )`` (:gh:`2858` by `Hao-Ting Wang`_).
 
-- All inherent classes of ``nilearn.input_data.BaseMasker`` can use the parameter ``sample_mask`` for sub-sample masking (:gh:`2858` by `Hao-Ting Wang`_).
+- All inherent classes of :class:`nilearn.maskers.BaseMasker` can use the parameter ``sample_mask`` for sub-sample masking (:gh:`2858` by `Hao-Ting Wang`_).
 
 - Function :func:`~datasets.fetch_surf_fsaverage` now accepts ``fsaverage3``, ``fsaverage4`` and ``fsaverage6`` as values for parameter ``mesh``, so that all resolutions of fsaverage from 3 to 7 are now available (:gh:`2815` by `Alexis Thual`_).
 
@@ -42,9 +42,9 @@ NEW
 
 - Function :func:`~signal.clean` now accepts a new parameter ``sample_mask`` of shape ``(number of scans - number of volumes removed, )``. Masks the niimgs along time/fourth dimension to perform scrubbing (remove volumes with high motion) and/or non-steady-state volumes. Masking is applied before signal cleaning (:gh:`2858` by `Hao-Ting Wang`_).
 
-- All inherent classes of ``nilearn.input_data.BaseMasker`` can use the parameter ``sample_mask`` for sub-sample masking (:gh:`2858` by `Hao-Ting Wang`_).
+- All inherent classes of :class:`nilearn.maskers.BaseMasker` can use the parameter ``sample_mask`` for sub-sample masking (:gh:`2858` by `Hao-Ting Wang`_).
 
-- Class :class:`~input_data.NiftiLabelsMasker` can now generate HTML reports in the same way as :class:`~input_data.NiftiMasker`. The report shows the regions defined by the provided label image and provide summary statistics on each region (name, volume...). If a functional image was provided to fit, the middle image is plotted with the regions overlaid as contours. Finally, if a mask is provided, its contours are shown in green (:gh:`2707` by `Nicolas Gensollen`_).
+- Class :class:`~maskers.NiftiLabelsMasker` can now generate HTML reports in the same way as :class:`~maskers.NiftiMasker`. The report shows the regions defined by the provided label image and provide summary statistics on each region (name, volume...). If a functional image was provided to fit, the middle image is plotted with the regions overlaid as contours. Finally, if a mask is provided, its contours are shown in green (:gh:`2707` by `Nicolas Gensollen`_).
 
 Fixes
 -----
@@ -82,7 +82,7 @@ Enhancements
 
 - Function :func:`~glm.first_level.run_glm` now allows auto regressive noise models of order greater than one (:gh:`2532` by `Robert Luke`_).
 
-- Moves parameter ``sample_mask`` from :class:`~input_data.NiftiMasker` to method ``transform`` in base class `nilearn.input_data.BaseMasker` (:gh:`2858` by `Hao-Ting Wang`_).
+- Moves parameter ``sample_mask`` from :class:`~maskers.NiftiMasker` to method ``transform`` in base class :class:`nilearn.maskers.BaseMasker` (:gh:`2858` by `Hao-Ting Wang`_).
 
 - Function :func:`~datasets.fetch_surf_fsaverage` now accepts ``fsaverage3``, ``fsaverage4`` and ``fsaverage6`` as values for parameter ``mesh``, so that all resolutions of fsaverage from 3 to 7 are now available (:gh:`2815` by `Alexis Thual`_).
 
@@ -109,4 +109,4 @@ Changes
 
 - Function ``nilearn.datasets.fetch_nyu_rest`` was deprecated since release ``0.6.2`` and has been removed (:gh:`2868` by `Nicolas Gensollen`_).
 
-- Class :class:`~input_data.NiftiMasker` replaces attribute ``sessions`` with ``runs`` and deprecates attribute ``sessions`` in ``0.9.0``. Match the relevant change in function :func:`~signal.clean` (:gh:`2858` by `Hao-Ting Wang`_).
+- Class :class:`~maskers.NiftiMasker` replaces attribute ``sessions`` with ``runs`` and deprecates attribute ``sessions`` in ``0.9.0``. Match the relevant change in function :func:`~signal.clean` (:gh:`2858` by `Hao-Ting Wang`_).

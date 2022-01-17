@@ -41,7 +41,7 @@ Enhancements
 
 - Documentation enhancement by integrating ``sphinx-gallery`` notebook style examples.
 
-- Documentation about class :class:`input_data.NiftiSpheresMasker`.
+- Documentation about class :class:`maskers.NiftiSpheresMasker`.
 
 Bug fixes
 ---------

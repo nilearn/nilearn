@@ -35,7 +35,7 @@ NEW
 
 - Function :func:`~image.binarize_img` binarizes images into 0 and 1 (:gh:`2900` by `Daniel Gomez`_).
 
-- Classes :class:`~input_data.NiftiMasker`, :class:`~input_data.MultiNiftiMasker`, and objects relying on such maskers (:class:`~decoding.Decoder` or :class:`~decomposition.CanICA` for example) can now use new options for the argument ``mask_strategy``:``whole-brain-template`` for whole-brain template (same as previous option ``template``), ``gm-template`` for grey-matter template, and ``wm-template`` for white-matter template (:gh:`2904` by
+- Classes :class:`~maskers.NiftiMasker`, :class:`~maskers.MultiNiftiMasker`, and objects relying on such maskers (:class:`~decoding.Decoder` or :class:`~decomposition.CanICA` for example) can now use new options for the argument ``mask_strategy``:``whole-brain-template`` for whole-brain template (same as previous option ``template``), ``gm-template`` for grey-matter template, and ``wm-template`` for white-matter template (:gh:`2904` by
   `Nicolas Gensollen`_).
 
 Fixes

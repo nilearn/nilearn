@@ -28,7 +28,7 @@ HIGHLIGHTS
 NEW
 ---
 
-- New method for :class:`~input_data.NiftiMasker` instances for generating reports viewable in a web browser, Jupyter Notebook, or VSCode (:gh:`2019` by `Elizabeth DuPre`_).
+- New method for :class:`~maskers.NiftiMasker` instances for generating reports viewable in a web browser, Jupyter Notebook, or VSCode (:gh:`2019` by `Elizabeth DuPre`_).
 
 - New function :func:`~image.get_data` to replace the deprecated nibabel method ``Nifti1Image.get_data``. Now use ``nilearn.image.get_data(img)`` rather than ``img.get_data()``. This is because Nibabel is removing the ``get_data`` method. You may also consider using the Nibabel :meth:`nibabel.nifti1.Nifti1Image.get_fdata`, which returns the data cast to floating-point. See `BIAP8 <https://github.com/nipy/nibabel/wiki/BIAP8>`_. As a benefit, the :func:`~image.get_data` function works on niimg-like objects such as filenames (see `input_output <http://nilearn.github.io/manipulating_images/input_output.html>`_) (:gh:`2172` by `Jerome Dockes`_).
 
@@ -36,7 +36,7 @@ NEW
  
 - New function :func:`~plotting.plot_connectome_strength` to plot the strength of a connectome on a glass brain.  Strength is absolute sum of the edges at a node (:gh:`2028` by `Guillaume Lemaitre`_).
 
-- Function :func:`~image.resample_img` has been optimized to pad rather than resample images in the special case when there is only a translation between two spaces. This is a common case in class :class:`~input_data.NiftiMasker` when using the ``mask_strategy="template"`` option for brains in :term:`MNI` space (:gh:`2025` by `Greg Kiar`_).
+- Function :func:`~image.resample_img` has been optimized to pad rather than resample images in the special case when there is only a translation between two spaces. This is a common case in class :class:`~maskers.NiftiMasker` when using the ``mask_strategy="template"`` option for brains in :term:`MNI` space (:gh:`2025` by `Greg Kiar`_).
   
 - New brain development :term:`fMRI` dataset fetcher :func:`datasets.fetch_development_fmri` can be used to download movie-watching data in children and adults. A light-weight dataset implemented for teaching and usage in the examples. All the connectivity examples are changed from ADHD to brain development :term:`fMRI` dataset (:gh:`1953` by `Kamalakar Reddy Daddy`_).
 
@@ -45,9 +45,9 @@ ENHANCEMENTS
 
 - Functions :func:`~plotting.view_img_on_surf`, :func:`~plotting.view_surf` and :func:`~plotting.view_connectome` can display a title, and allow disabling the colorbar, and setting its height and the fontsize of its ticklabels (:gh:`1951` by `Jerome Dockes`_).
 
-- Rework of the standardize-options of function :func:`~signal.clean` and the various Maskers in :mod:`nilearn.input_data`. You can now set ``standardize`` to ``zscore`` or ``psc``. ``psc`` stands for ``Percent Signal Change``, which can be a meaningful metric for :term:`BOLD` (:gh:`1952` by `Gilles de Hollander`_).
+- Rework of the standardize-options of function :func:`~signal.clean` and the various Maskers in :mod:`nilearn.maskers`. You can now set ``standardize`` to ``zscore`` or ``psc``. ``psc`` stands for ``Percent Signal Change``, which can be a meaningful metric for :term:`BOLD` (:gh:`1952` by `Gilles de Hollander`_).
 
-- Class :class:`~input_data.NiftiLabelsMasker` now accepts an optional ``strategy`` parameter which allows it to change the function used to reduce values within each labelled ROI. Available functions include ``mean``, ``median``, ``minimum``, ``maximum``, ``standard_deviation`` and ``variance``. This change is also introduced in function :func:`~regions.img_to_signals_labels` (:gh:`2221` by `Daniel Gomez`_).
+- Class :class:`~maskers.NiftiLabelsMasker` now accepts an optional ``strategy`` parameter which allows it to change the function used to reduce values within each labelled ROI. Available functions include ``mean``, ``median``, ``minimum``, ``maximum``, ``standard_deviation`` and ``variance``. This change is also introduced in function :func:`~regions.img_to_signals_labels` (:gh:`2221` by `Daniel Gomez`_).
 
 - Function :func:`~plotting.view_surf` now accepts surface data provided as a file path (:gh:`2057` by `Jerome Dockes`_).
 
@@ -59,7 +59,7 @@ CHANGES
 FIXES
 -----
 
-- Class :class:`~input_data.NiftiLabelsMasker` no longer truncates region means to their integral part when input images are of integer type (:gh:`2195` by `Kshitij Chawla`_).
+- Class :class:`~maskers.NiftiLabelsMasker` no longer truncates region means to their integral part when input images are of integer type (:gh:`2195` by `Kshitij Chawla`_).
 
 - The argument ``version='det'`` in function :func:`~datasets.fetch_atlas_pauli_2017` now works as expected (:gh:`2235` by `Ryan Hammonds`_).
   
@@ -85,12 +85,12 @@ Changes
 
 - Add a warning to :class:`~regions.Parcellations` if the generated number of parcels does not match the requested number of parcels (:gh:`2240` by `Elizabeth DuPre`_).
 
-- Class :class:`~input_data.NiftiLabelsMasker` now accepts an optional ``strategy`` parameter which allows it to change the function used to reduce values within each labelled ROI. Available functions include ``mean``, ``median``, ``minimum``, ``maximum``, ``standard_deviation`` and ``variance``. This change is also introduced in function :func:`~regions.img_to_signals_labels` (:gh:`2221` by `Daniel Gomez`_).
+- Class :class:`~maskers.NiftiLabelsMasker` now accepts an optional ``strategy`` parameter which allows it to change the function used to reduce values within each labelled ROI. Available functions include ``mean``, ``median``, ``minimum``, ``maximum``, ``standard_deviation`` and ``variance``. This change is also introduced in function :func:`~regions.img_to_signals_labels` (:gh:`2221` by `Daniel Gomez`_).
 
 Fixes
 -----
 
-- Class :class:`~input_data.NiftiLabelsMasker` no longer truncates region means to their integral part when input images are of integer type (:gh:`2195` by `Kshitij Chawla`_).
+- Class :class:`~maskers.NiftiLabelsMasker` no longer truncates region means to their integral part when input images are of integer type (:gh:`2195` by `Kshitij Chawla`_).
   
 - Function :func:`~image.smooth_img` no longer fails if ``fwhm`` is a :class:`numpy.ndarray` (:gh:`2107` by `Paula Sanz-Leon`_).
   
@@ -102,7 +102,7 @@ Fixes
   
 - The argument ``version='det'`` in function :func:`~datasets.fetch_atlas_pauli_2017` now works as expected (:gh:`2235` by `Ryan Hammonds`_).
 
-- Method :meth:`~input_data.NiftiLabelsMasker.inverse_transform` now works without the need to call ``transform`` first (:gh:`2248` by `Gael Varoquaux`_).
+- Method :meth:`~maskers.NiftiLabelsMasker.inverse_transform` now works without the need to call ``transform`` first (:gh:`2248` by `Gael Varoquaux`_).
 
 Contributors
 ------------
@@ -184,7 +184,7 @@ NEW
  | - ``Scikit-learn -- v0.19``.
  | - ``Scipy -- v0.19``.
 
-- A new method for :class:`~input_data.NiftiMasker` instances for generating reports viewable in a web browser, Jupyter Notebook, or VSCode (:gh:`2019` by `Elizabeth DuPre`_).
+- A new method for :class:`~maskers.NiftiMasker` instances for generating reports viewable in a web browser, Jupyter Notebook, or VSCode (:gh:`2019` by `Elizabeth DuPre`_).
 
 - ``joblib`` is now a dependency (:gh:`2090` by `Jerome Dockes`_).
 
@@ -192,7 +192,7 @@ NEW
   
 - New function :func:`~plotting.plot_connectome_strength` to plot the strength of a connectome on a glass brain.  Strength is absolute sum of the edges at a node (:gh:`2028` by `Guillaume Lemaitre`_).
 
-- Function :func:`~image.resample_img` has been optimized to pad rather than resample images in the special case when there is only a translation between two spaces. This is a common case in class :class:`~input_data.NiftiMasker` when using the ``mask_strategy="template"`` option for brains in :term:`MNI` space (:gh:`2025` by `Greg Kiar`_).
+- Function :func:`~image.resample_img` has been optimized to pad rather than resample images in the special case when there is only a translation between two spaces. This is a common case in class :class:`~maskers.NiftiMasker` when using the ``mask_strategy="template"`` option for brains in :term:`MNI` space (:gh:`2025` by `Greg Kiar`_).
 
 - New brain development :term:`fMRI` dataset fetcher :func:`~datasets.fetch_development_fmri` can be used to download movie-watching data in children and adults; a light-weight dataset implemented for teaching and usage in the examples.
 
@@ -213,7 +213,7 @@ Changes
 
 - Functions :func:`~plotting.view_img_on_surf`, :func:`~plotting.view_surf` and :func:`~plotting.view_connectome` can display a title, and allow disabling the colorbar, and setting its height and the fontsize of its ticklabels (:gh:`1951` by `Jerome Dockes`_).
 
-- Rework of the standardize-options of function :func:`~signal.clean` and the various Maskers in :mod:`nilearn.input_data`. You can now set ``standardize`` to ``zscore`` or ``psc``. ``psc`` stands for ``Percent Signal Change``, which can be a meaningful metric for :term:`BOLD` (:gh:`1952` by `Gilles de Hollander`_).
+- Rework of the standardize-options of function :func:`~signal.clean` and the various Maskers in :mod:`nilearn.maskers`. You can now set ``standardize`` to ``zscore`` or ``psc``. ``psc`` stands for ``Percent Signal Change``, which can be a meaningful metric for :term:`BOLD` (:gh:`1952` by `Gilles de Hollander`_).
 
 - Function :func:`~plotting.plot_img` now has explicit keyword arguments ``bg_img``, ``vmin`` and ``vmax`` to control the background image and the bounds of the colormap. These arguments were already accepted in ``kwargs`` but not documented before (:gh:`2157` by `Jerome Dockes`_).
 

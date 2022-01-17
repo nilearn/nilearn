@@ -166,7 +166,7 @@ Fixes
 Changes
 -------
 
-- In function :func:`~regions.img_to_signals_labels`, the ``See Also`` section in documentation now also points to :class:`~input_data.NiftiLabelsMasker` and :class:`~input_data.NiftiMapsMasker`.
+- In function :func:`~regions.img_to_signals_labels`, the ``See Also`` section in documentation now also points to :class:`~maskers.NiftiLabelsMasker` and :class:`~maskers.NiftiMapsMasker`.
 
 - ``Scipy`` is listed as a dependency for Nilearn installation.
 

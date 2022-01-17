@@ -11,4 +11,4 @@
 Changelog
 ---------
 
-The ``0.1.2`` release is a bugfix release, specifically to fix the :class:`~input_data.NiftiMapsMasker`.
+The ``0.1.2`` release is a bugfix release, specifically to fix the :class:`~maskers.NiftiMapsMasker`.

@@ -19,7 +19,7 @@ NEW
 
 - New display mode ``tiled`` which allows 2x2 plot arrangement when plotting three cuts (see :ref:`plotting`).
 
-- Class :class:`~input_data.NiftiLabelsMasker` now consumes less memory when extracting the signal from a 3D/4D image. This is especially noteworthy when extracting signals from large 4D images.
+- Class :class:`~maskers.NiftiLabelsMasker` now consumes less memory when extracting the signal from a 3D/4D image. This is especially noteworthy when extracting signals from large 4D images.
 
 - New function :func:`~datasets.fetch_atlas_schaefer_2018`.
 
@@ -61,7 +61,7 @@ Fixes
 
 - Function ``load_niimg`` no longer drops header if ``dtype`` is changed.
 
-- Class :class:`~input_data.NiftiSpheresMasker` no longer silently ignores :term:`voxels<voxel>` if no ``mask_img`` is specified.
+- Class :class:`~maskers.NiftiSpheresMasker` no longer silently ignores :term:`voxels<voxel>` if no ``mask_img`` is specified.
 
 - Interactive brainsprites generated from ``view_img`` are correctly rendered in Jupyter Book.
 

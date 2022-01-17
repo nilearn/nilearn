@@ -40,7 +40,7 @@ Fixes
    
 - Function :func:`~plotting.find_xyz_cut_coords` raises a meaningful error when 4D data is provided instead of 3D.
    
-- Class :class:`~input_data.NiftiSpheresMasker` handles radius smaller than the size of a :term:`voxel`.
+- Class :class:`~maskers.NiftiSpheresMasker` handles radius smaller than the size of a :term:`voxel`.
    
 - Class :class:`~regions.RegionExtractor` handles data containing ``Nans``.
    
