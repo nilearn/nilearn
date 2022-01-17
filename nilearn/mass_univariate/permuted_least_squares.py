@@ -12,7 +12,7 @@ import numpy as np
 from scipy import linalg
 from sklearn.utils import check_random_state
 
-def normalize_matrix_on_axis(m, axis=0):
+def _normalize_matrix_on_axis(m, axis=0):
     """ Normalize a 2D matrix on an axis.
 
     Parameters
@@ -33,12 +33,12 @@ def normalize_matrix_on_axis(m, axis=0):
     --------
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
-    ...     normalize_matrix_on_axis)
+    ...     _normalize_matrix_on_axis)
     >>> X = np.array([[0, 4], [1, 0]])
-    >>> normalize_matrix_on_axis(X)
+    >>> _normalize_matrix_on_axis(X)
     array([[0., 1.],
            [1., 0.]])
-    >>> normalize_matrix_on_axis(X, axis=1)
+    >>> _normalize_matrix_on_axis(X, axis=1)
     array([[0., 1.],
            [1., 0.]])
 
@@ -51,13 +51,13 @@ def normalize_matrix_on_axis(m, axis=0):
         # array transposition preserves the contiguity flag of that array
         ret = (m.T / np.sqrt(np.sum(m ** 2, axis=0))[:, np.newaxis]).T
     elif axis == 1:
-        ret = normalize_matrix_on_axis(m.T).T
+        ret = _normalize_matrix_on_axis(m.T).T
     else:
         raise ValueError('axis(=%d) out of bounds' % axis)
     return ret
 
 
-def orthonormalize_matrix(m, tol=1.e-12):
+def _orthonormalize_matrix(m, tol=1.e-12):
     """ Orthonormalize a matrix.
 
     Uses a Singular Value Decomposition.
@@ -80,14 +80,14 @@ def orthonormalize_matrix(m, tol=1.e-12):
     --------
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
-    ...     orthonormalize_matrix)
+    ...     _orthonormalize_matrix)
     >>> X = np.array([[1, 2], [0, 1], [1, 1]])
-    >>> orthonormalize_matrix(X)
+    >>> _orthonormalize_matrix(X)
     array([[-0.81049889, -0.0987837 ],
            [-0.31970025, -0.75130448],
            [-0.49079864,  0.65252078]])
     >>> X = np.array([[0, 1], [4, 0]])
-    >>> orthonormalize_matrix(X)
+    >>> _orthonormalize_matrix(X)
     array([[ 0., -1.],
            [-1.,  0.]])
 
@@ -414,13 +414,13 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     ### OLS regression on original data
     if confounding_vars is not None:
         # step 1: extract effect of covars from target vars
-        covars_orthonormalized = orthonormalize_matrix(confounding_vars)
+        covars_orthonormalized = _orthonormalize_matrix(confounding_vars)
         if not covars_orthonormalized.flags['C_CONTIGUOUS']:
             # useful to developer
             warnings.warn('Confounding variates not C_CONTIGUOUS.')
             covars_orthonormalized = np.ascontiguousarray(
                 covars_orthonormalized)
-        targetvars_normalized = normalize_matrix_on_axis(
+        targetvars_normalized = _normalize_matrix_on_axis(
             target_vars).T  # faster with F-ordered target_vars_chunk
         if not targetvars_normalized.flags['C_CONTIGUOUS']:
             # useful to developer
@@ -430,19 +430,19 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
                                         covars_orthonormalized)
         targetvars_resid_covars = targetvars_normalized - np.dot(
             beta_targetvars_covars, covars_orthonormalized.T)
-        targetvars_resid_covars = normalize_matrix_on_axis(
+        targetvars_resid_covars = _normalize_matrix_on_axis(
             targetvars_resid_covars, axis=1)
         # step 2: extract effect of covars from tested vars
-        testedvars_normalized = normalize_matrix_on_axis(tested_vars.T, axis=1)
+        testedvars_normalized = _normalize_matrix_on_axis(tested_vars.T, axis=1)
         beta_testedvars_covars = np.dot(testedvars_normalized,
                                         covars_orthonormalized)
         testedvars_resid_covars = testedvars_normalized - np.dot(
             beta_testedvars_covars, covars_orthonormalized.T)
-        testedvars_resid_covars = normalize_matrix_on_axis(
+        testedvars_resid_covars = _normalize_matrix_on_axis(
             testedvars_resid_covars, axis=1).T.copy()
     else:
-        targetvars_resid_covars = normalize_matrix_on_axis(target_vars).T
-        testedvars_resid_covars = normalize_matrix_on_axis(tested_vars).copy()
+        targetvars_resid_covars = _normalize_matrix_on_axis(target_vars).T
+        testedvars_resid_covars = _normalize_matrix_on_axis(tested_vars).copy()
         covars_orthonormalized = None
     # check arrays contiguousity (for the sake of code efficiency)
     if not targetvars_resid_covars.flags['C_CONTIGUOUS']:
