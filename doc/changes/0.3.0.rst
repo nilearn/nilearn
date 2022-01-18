@@ -104,7 +104,7 @@ Enhancements
 
 - Add fetcher for Allen et al. 2011 RSN atlas in :func:`~datasets.fetch_atlas_allen_2011`.
 
-- Function :func:`~datasets.fetch_cobre` is now updated to new light release of COBRE data (schizophrenia).
+- Function ``nilearn.datasets.fetch_cobre`` is now updated to new light release of COBRE data (schizophrenia).
 
 - A new example to show how to extract regions on labels image in example section manipulating images.
 

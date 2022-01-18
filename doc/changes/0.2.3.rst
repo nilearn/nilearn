@@ -18,7 +18,7 @@ New features
 
 - Mathematical formulas based on ``numpy`` functions can be applied on an image or a list of images using function :func:`~image.math_img`.
 
-- Downloader for COBRE datasets of 146 rest :term:`fMRI` subjects with function :func:`~datasets.fetch_cobre`.
+- Downloader for COBRE datasets of 146 rest :term:`fMRI` subjects with function ``nilearn.datasets.fetch_cobre``.
 
 - Downloader for Dosenbach atlas :func:`~datasets.fetch_coords_dosenbach_2010`.
 
