@@ -73,7 +73,7 @@ svc = SVC()
 # voxels inside the mask of interest, and transform 4D input fMRI data to
 # 2D arrays(`shape=(n_timepoints, n_voxels)`) that estimators can work on.
 from nilearn.maskers import NiftiMasker
-masker = NiftiMasker(mask_img=mask_filename, sessions=session_label,
+masker = NiftiMasker(mask_img=mask_filename, runs=session_label,
                      smoothing_fwhm=4, standardize=True,
                      memory="nilearn_cache", memory_level=1)
 fmri_masked = masker.fit_transform(fmri_niimgs)
