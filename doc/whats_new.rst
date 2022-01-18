@@ -140,6 +140,11 @@ Changes
 - Deprecated parameter ``sessions`` of function :func:`~nilearn.signal.clean`
   has been removed. Use ``runs`` instead.
   (See PR `#3093 <https://github.com/nilearn/nilearn/pull/3093>`_).
+- Deprecated parameters ``sessions`` and ``sample_mask`` of
+  :class:`~nilearn.maskers.NiftiMasker` have been removed. Please use ``runs`` instead of
+  ``sessions``, and provide a ``sample_mask`` through
+  :meth:`~nilearn.maskers.NiftiMasker.transform`.
+  (See PR `#3133 <https://github.com/nilearn/nilearn/pull/3133>`_).
 - :func:`nilearn.glm.first_level.compute_regressor` will now raise an exception if
   parameter `cond_id` is not a string which could be used to name a python variable.
   For instance, number strings (ex: "1") will no longer be accepted as valid condition names.
