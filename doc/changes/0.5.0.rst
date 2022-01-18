@@ -154,7 +154,7 @@ Loads of fixes and quality of life improvements
 Fixes
 -----
 
-- Method :meth:`decoding.Searchlight.fit` now accepts 4D niimgs (by `Dan Gale`_).
+- Method :meth:`decoding.SearchLight.fit` now accepts 4D niimgs (by `Dan Gale`_).
 
 - ``plotting.view_markers.open_in_browser()`` in ``js_plotting_utils`` fixed.
 

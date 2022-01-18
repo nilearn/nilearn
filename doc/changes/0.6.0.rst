@@ -30,11 +30,11 @@ NEW
 
 - New method for :class:`~maskers.NiftiMasker` instances for generating reports viewable in a web browser, Jupyter Notebook, or VSCode (:gh:`2019` by `Elizabeth DuPre`_).
 
-- New function :func:`~image.get_data` to replace the deprecated nibabel method ``Nifti1Image.get_data``. Now use ``nilearn.image.get_data(img)`` rather than ``img.get_data()``. This is because Nibabel is removing the ``get_data`` method. You may also consider using the Nibabel :meth:`nibabel.nifti1.Nifti1Image.get_fdata`, which returns the data cast to floating-point. See `BIAP8 <https://github.com/nipy/nibabel/wiki/BIAP8>`_. As a benefit, the :func:`~image.get_data` function works on niimg-like objects such as filenames (see `input_output <http://nilearn.github.io/manipulating_images/input_output.html>`_) (:gh:`2172` by `Jerome Dockes`_).
+- New function :func:`~image.get_data` to replace the deprecated nibabel method ``Nifti1Image.get_data``. Now use ``nilearn.image.get_data(img)`` rather than ``img.get_data()``. This is because Nibabel is removing the ``get_data`` method. You may also consider using the Nibabel method ``nibabel.nifti1.Nifti1Image.get_fdata``, which returns the data cast to floating-point. See `BIAP8 <https://github.com/nipy/nibabel/wiki/BIAP8>`_. As a benefit, the :func:`~image.get_data` function works on niimg-like objects such as filenames (see `input_output <http://nilearn.github.io/manipulating_images/input_output.html>`_) (:gh:`2172` by `Jerome Dockes`_).
 
 - New class :class:`~regions.ReNA` implementing parcellation method :term:`ReNA`: Fast agglomerative clustering based on recursive nearest neighbor grouping. Yields very fast & accurate models, without creation of giant clusters (:gh:`1336` by `Andrés Hoyos Idrobo`_).
  
-- New function :func:`~plotting.plot_connectome_strength` to plot the strength of a connectome on a glass brain.  Strength is absolute sum of the edges at a node (:gh:`2028` by `Guillaume Lemaitre`_).
+- New function ``nilearn.plotting.plot_connectome_strength`` to plot the strength of a connectome on a glass brain.  Strength is absolute sum of the edges at a node (:gh:`2028` by `Guillaume Lemaitre`_).
 
 - Function :func:`~image.resample_img` has been optimized to pad rather than resample images in the special case when there is only a translation between two spaces. This is a common case in class :class:`~maskers.NiftiMasker` when using the ``mask_strategy="template"`` option for brains in :term:`MNI` space (:gh:`2025` by `Greg Kiar`_).
   
@@ -140,7 +140,7 @@ The following people contributed to this release (in alphabetical order):
 NEW
 ---
 
-- New function :func:`~image.get_data` to replace the deprecated nibabel method ``Nifti1Image.get_data``. Now use ``nilearn.image.get_data(img)`` rather than ``img.get_data()``. This is because Nibabel is removing the ``get_data`` method. You may also consider using the Nibabel :meth:`nibabel.nifti1.Nifti1Image.get_fdata`, which returns the data cast to floating-point. See `BIAP8 <https://github.com/nipy/nibabel/wiki/BIAP8>`_. As a benefit, the :func:`~image.get_data` function works on niimg-like objects such as filenames (see `input_output <http://nilearn.github.io/manipulating_images/input_output.html>`_) (:gh:`2172` by `Jerome Dockes`_).
+- New function :func:`~image.get_data` to replace the deprecated nibabel method ``Nifti1Image.get_data``. Now use ``nilearn.image.get_data(img)`` rather than ``img.get_data()``. This is because Nibabel is removing the ``get_data`` method. You may also consider using the Nibabel method ``nibabel.nifti1.Nifti1Image.get_fdata``, which returns the data cast to floating-point. See `BIAP8 <https://github.com/nipy/nibabel/wiki/BIAP8>`_. As a benefit, the :func:`~image.get_data` function works on niimg-like objects such as filenames (see `input_output <http://nilearn.github.io/manipulating_images/input_output.html>`_) (:gh:`2172` by `Jerome Dockes`_).
 
 Changes
 -------
@@ -190,7 +190,7 @@ NEW
 
 - New class :class:`~regions.ReNA` implementing parcellation method :term:`ReNA`: Fast agglomerative clustering based on recursive nearest neighbor grouping. Yields very fast & accurate models, without creation of giant clusters (:gh:`1336` by `Andrés Hoyos Idrobo`_).
   
-- New function :func:`~plotting.plot_connectome_strength` to plot the strength of a connectome on a glass brain.  Strength is absolute sum of the edges at a node (:gh:`2028` by `Guillaume Lemaitre`_).
+- New function ``nilearn.plotting.plot_connectome_strength`` to plot the strength of a connectome on a glass brain.  Strength is absolute sum of the edges at a node (:gh:`2028` by `Guillaume Lemaitre`_).
 
 - Function :func:`~image.resample_img` has been optimized to pad rather than resample images in the special case when there is only a translation between two spaces. This is a common case in class :class:`~maskers.NiftiMasker` when using the ``mask_strategy="template"`` option for brains in :term:`MNI` space (:gh:`2025` by `Greg Kiar`_).
 
