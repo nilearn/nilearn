@@ -73,6 +73,8 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None,
           the regions. The length of the label array corresponds to the
           number of dimensions requested. ``data.labels[i]`` is the label
           corresponding to volume ``i`` in the 'maps' image.
+          If ``legacy_format`` is set to ``False``, this is a
+          :class:`pandas.DataFrame`.
         - 'description': :obj:`str`, general description of the dataset.
 
     References
@@ -239,6 +241,8 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
               indices in the list of labels.
             - 'labels': :class:`numpy.recarray`, rec array containing the
               names of the ROIs.
+              If ``legacy_format`` is set to ``False``, this is a
+              :class:`pandas.DataFrame`.
             - 'description': :obj:`str`, description of the atlas.
 
     References
@@ -729,7 +733,9 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
         warnings.filterwarnings('ignore', module='numpy',
                                 category=FutureWarning)
         region_coords = csv_data[['x', 'y', 'z']].values.tolist()
-    net_names = [net_name.strip() for net_name in csv_data['net name'].tolist()]
+    net_names = [
+        net_name.strip() for net_name in csv_data['net name'].tolist()
+    ]
     fdescr = _get_dataset_descr(dataset_name)
 
     return Bunch(maps=files[1], labels=labels, region_coords=region_coords,
@@ -1207,6 +1213,8 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
 
         - 'rois': :class:`numpy.recarray`, rec array with the coordinates
           of the 160 ROIs in :term:`MNI` space.
+          If ``legacy_format`` is set to ``False``, this is a
+          :class:`pandas.DataFrame`.
         - 'labels': :class:`numpy.ndarray` of :obj:`str`, list of label
           names for the 160 ROIs.
         - 'networks': :class:`numpy.ndarray` of :obj:`str`, list of network
@@ -1271,6 +1279,8 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
 
         - 'rois': :class:`numpy.recarray`, rec array with the coordinates
           of the 300 ROIs in :term:`MNI` space.
+          If ``legacy_format`` is set to ``False``, this is a
+          :class:`pandas.DataFrame`.
         - 'radius': :class:`numpy.ndarray` of :obj:`int`, radius of each
           ROI in mm.
         - 'networks': :class:`numpy.ndarray` of :obj:`str`, names of the
@@ -1317,9 +1327,10 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
         rois = rois.to_records()
 
     params = dict(rois=rois[['x', 'y', 'z']],
-                  radius=rois['radius'],
-                  networks=rois['network'],
-                  regions=rois['region'], description=fdescr)
+                  radius=np.array(rois['radius']),
+                  networks=np.array(rois['network']),
+                  regions=np.array(rois['region']),
+                  description=fdescr)
 
     return Bunch(**params)
 
