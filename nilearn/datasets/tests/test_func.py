@@ -165,7 +165,22 @@ def test_fetch_localizer_contrasts(tmp_path, request_mocker, localizer_mocker):
         ['checkerboard'],
         n_subjects=2,
         data_dir=tmp_path,
-        verbose=1)
+        verbose=1,
+        legacy_format=True)
+    assert not hasattr(dataset, 'anats')
+    assert not hasattr(dataset, 'tmaps')
+    assert not hasattr(dataset, 'masks')
+    assert isinstance(dataset.cmaps[0], str)
+    assert isinstance(dataset.ext_vars, np.recarray)
+    assert len(dataset.cmaps) == 2
+    assert dataset.ext_vars.size == 2
+
+    dataset = func.fetch_localizer_contrasts(
+        ['checkerboard'],
+        n_subjects=2,
+        data_dir=tmp_path,
+        verbose=1,
+        legacy_format=False)
     assert not hasattr(dataset, 'anats')
     assert not hasattr(dataset, 'tmaps')
     assert not hasattr(dataset, 'masks')
@@ -179,7 +194,8 @@ def test_fetch_localizer_contrasts(tmp_path, request_mocker, localizer_mocker):
         ['checkerboard', 'horizontal checkerboard'],
         n_subjects=2,
         data_dir=tmp_path,
-        verbose=1)
+        verbose=1,
+        legacy_format=False)
     assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.cmaps[0], str)
     assert len(dataset.cmaps) == 2 * 2  # two contrasts are fetched
@@ -193,7 +209,8 @@ def test_fetch_localizer_contrasts(tmp_path, request_mocker, localizer_mocker):
         get_anats=True,
         get_masks=True,
         get_tmaps=True,
-        verbose=1)
+        verbose=1,
+        legacy_format=False)
     assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.anats[0], str)
     assert isinstance(dataset.cmaps[0], str)
@@ -211,7 +228,8 @@ def test_fetch_localizer_contrasts(tmp_path, request_mocker, localizer_mocker):
         ['checkerboard'],
         n_subjects=[2, 3, 5],
         data_dir=tmp_path,
-        verbose=1)
+        verbose=1,
+        legacy_format=False)
     assert len(dataset2['ext_vars']) == 3
     assert len(dataset2.cmaps) == 3
     assert (list(dataset2['ext_vars']['participant_id'].values) == ['S02',
@@ -225,10 +243,22 @@ def test_fetch_localizer_calculation_task(tmp_path, request_mocker,
     dataset = func.fetch_localizer_calculation_task(
         n_subjects=2,
         data_dir=tmp_path,
-        verbose=1)
+        verbose=1,
+        legacy_format=False)
     assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.cmaps[0], str)
     assert len(dataset['ext_vars']) == 2
+    assert len(dataset.cmaps) == 2
+    assert dataset.description != ''
+
+    dataset = func.fetch_localizer_calculation_task(
+        n_subjects=2,
+        data_dir=tmp_path,
+        verbose=1,
+        legacy_format=True)
+    assert isinstance(dataset.ext_vars, np.recarray)
+    assert isinstance(dataset.cmaps[0], str)
+    assert dataset.ext_vars.size == 2
     assert len(dataset.cmaps) == 2
     assert dataset.description != ''
 
