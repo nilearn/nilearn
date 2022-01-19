@@ -340,7 +340,7 @@ def _solve_cg(lap_sparse, B, tol):
     lap_sparse = lap_sparse.tocsc()
     X = []
     for i in range(len(B)):
-        x0 = cg(lap_sparse, -B[i].todense(), tol=tol)[0]
+        x0 = cg(lap_sparse, -B[i].todense(), tol=tol, atol='legacy')[0]
         X.append(x0)
 
     X = np.array(X)
