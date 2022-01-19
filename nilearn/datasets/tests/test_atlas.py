@@ -359,7 +359,7 @@ def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, lateralized):
 def test_fetch_atlas_msdl(tmp_path, request_mocker):
     labels = pd.DataFrame(
         {"x": [1.5, 1.2], "y": [1.5, 1.3],
-         "z": [1.5, 1.4], "name": ["Aud", "DMN"], "net_name": ["Aud", "DMN"]})
+         "z": [1.5, 1.4], "name": ["Aud", "DMN"], "net name": ["Aud", "DMN"]})
     root = Path("MSDL_rois")
     archive = {root / "msdl_rois_labels.csv": labels.to_csv(index=False),
                root / "msdl_rois.nii": "",
