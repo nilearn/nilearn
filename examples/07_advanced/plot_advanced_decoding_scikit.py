@@ -69,10 +69,10 @@ svc = SVC()
 # Masking the data
 # ...................................
 # To use a scikit-learn estimator on brain images, you should first mask the
-# data using a :class:`nilearn.input_data.NiftiMasker` to extract only the
+# data using a :class:`nilearn.maskers.NiftiMasker` to extract only the
 # voxels inside the mask of interest, and transform 4D input fMRI data to
 # 2D arrays(`shape=(n_timepoints, n_voxels)`) that estimators can work on.
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 masker = NiftiMasker(mask_img=mask_filename, sessions=session_label,
                      smoothing_fwhm=4, standardize=True,
                      memory="nilearn_cache", memory_level=1)

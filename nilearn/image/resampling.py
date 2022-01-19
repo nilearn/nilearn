@@ -6,7 +6,7 @@ See http://nilearn.github.io/manipulating_images/input_output.html
 # License: simplified BSD
 
 import warnings
-from distutils.version import LooseVersion
+from nilearn.version import _compare_version
 import numbers
 
 import numpy as np
@@ -277,7 +277,7 @@ def _resample_one_img(data, A, b, target_shape,
 
     # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
     with warnings.catch_warnings():
-        if LooseVersion(scipy.__version__) >= LooseVersion('0.18'):
+        if _compare_version(scipy.__version__, '>=', '0.18'):
             warnings.simplefilter("ignore", UserWarning)
         # The resampling itself
         ndimage.affine_transform(data, A,
@@ -290,7 +290,7 @@ def _resample_one_img(data, A, b, target_shape,
     if has_not_finite:
         # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
         with warnings.catch_warnings():
-            if LooseVersion(scipy.__version__) >= LooseVersion('0.18'):
+            if _compare_version(scipy.__version__, '>=', '0.18'):
                 warnings.simplefilter("ignore", UserWarning)
             # We need to resample the mask of not_finite values
             not_finite = ndimage.affine_transform(not_finite, A,
@@ -517,7 +517,7 @@ def resample_img(img, target_affine=None, target_shape=None,
         target_shape = target_shape.tolist()
     target_shape = tuple(target_shape)
 
-    if LooseVersion(scipy.__version__) < LooseVersion('0.20'):
+    if _compare_version(scipy.__version__, '<', '0.20'):
         # Before scipy 0.20, force native data types due to endian issues
         # that caused instability.
         data = data.astype(data.dtype.newbyteorder('N'))
@@ -586,7 +586,7 @@ def resample_img(img, target_affine=None, target_shape=None,
         # If A is diagonal, ndimage.affine_transform is clever enough to use a
         # better algorithm.
         if np.all(np.diag(np.diag(A)) == A):
-            if LooseVersion(scipy.__version__) < LooseVersion('0.18'):
+            if _compare_version(scipy.__version__, '<', '0.18'):
                 # Before scipy 0.18, ndimage.affine_transform was applying a
                 # different logic to the offset for diagonal affine
                 b = np.dot(linalg.inv(A), b)

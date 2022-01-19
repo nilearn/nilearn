@@ -20,7 +20,7 @@ from sklearn.base import clone
 
 from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from nilearn.glm.contrasts import (compute_contrast,
                                    expression_to_contrast_vector)
 from nilearn.glm.first_level import FirstLevelModel, run_glm

@@ -21,10 +21,10 @@ connectome              --- Set of tools for computing functional connectivity m
                             and for sparse multi-subjects learning of Gaussian graphical models
 image                   --- Set of functions defining mathematical operations
                             working on Niimg-like objects
-input_data              --- Includes scikit-learn transformers and tools to
-                            preprocess neuro-imaging data and access fMRIPrep
-                            generated confounds.
+maskers                 --- Includes scikit-learn transformers.
 masking                 --- Utilities to compute and operate on brain masks
+interfaces              --- Includes tools to preprocess neuro-imaging data
+                            from various common interfaces like fMRIPrep.
 mass_univariate         --- Defines a Massively Univariate Linear Model
                             estimated with OLS and permutation test
 plotting                --- Plotting code for nilearn
@@ -39,9 +39,9 @@ import sys
 import pkg_resources
 import warnings
 
-from distutils.version import LooseVersion
-
-from .version import _check_module_dependencies, __version__
+from .version import (
+    _check_module_dependencies, __version__, _compare_version
+)
 
 # Workaround issue discovered in intel-openmp 2019.5:
 # https://github.com/ContinuumIO/anaconda-issues/issues/11294
@@ -73,7 +73,7 @@ _python_deprecation_warnings()
 # with NumPy 1.14. NumPy had made more consistent str/repr formatting
 # of numpy arrays. Hence we print the options to old versions.
 import numpy as np
-if LooseVersion(np.__version__) >= LooseVersion("1.14"):
+if _compare_version(np.__version__, '>=', "1.14"):
     # See issue #1600 in nilearn for reason to add try and except
     try:
         from ._utils.testing import are_tests_running
@@ -101,5 +101,5 @@ CHECK_CACHE_VERSION = True
 
 # list all submodules available in nilearn and version
 __all__ = ['datasets', 'decoding', 'decomposition', 'connectome',
-           'image', 'input_data', 'masking', 'mass_univariate', 'plotting',
-           'regions', 'signal', 'surface', '__version__']
+           'image', 'maskers', 'masking', 'interfaces', 'mass_univariate',
+           'plotting', 'regions', 'signal', 'surface', '__version__']

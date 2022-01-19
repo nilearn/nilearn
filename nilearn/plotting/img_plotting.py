@@ -14,7 +14,7 @@ import collections.abc
 import functools
 import numbers
 import warnings
-from distutils.version import LooseVersion
+from nilearn.version import _compare_version
 
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
@@ -38,7 +38,7 @@ from .._utils.param_validation import check_threshold
 from .._utils.ndimage import get_border_data
 from ..datasets import load_mni152_template
 from ..image import new_img_like, iter_img, get_data, math_img, resample_to_img
-from ..input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from nilearn.image.resampling import reorder_img
 from ..masking import compute_epi_mask, apply_mask
 from nilearn.plotting.displays import get_slicer, get_projector
@@ -124,6 +124,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                       bg_vmin=None, bg_vmax=None, interpolation="nearest",
                       display_factory=get_slicer,
                       cbar_vmin=None, cbar_vmax=None,
+                      cbar_tick_format="%.2g",
                       brain_color=(0.5, 0.5, 0.5),
                       decimals=False,
                       **kwargs):
@@ -201,6 +202,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         display.add_overlay(new_img_like(img, data, affine),
                             threshold=threshold, interpolation=interpolation,
                             colorbar=colorbar, vmin=vmin, vmax=vmax,
+                            cbar_tick_format=cbar_tick_format,
                             **kwargs)
 
     if annotate:
@@ -239,7 +241,7 @@ def _crop_colorbar(cbar, cbar_vmin, cbar_vmax):
     # _outline was removed in
     # https://github.com/matplotlib/matplotlib/commit/03a542e875eba091a027046d5ec652daa8be6863
     # so we use the code from there
-    if LooseVersion(matplotlib.__version__) >= LooseVersion("3.2.0"):
+    if _compare_version(matplotlib.__version__, '>=', "3.2.0"):
         cbar.ax.set_ylim(cbar_vmin, cbar_vmax)
         X = cbar._mesh()[0]
         X = np.array([X[0], X[-1]])
@@ -268,6 +270,7 @@ def _crop_colorbar(cbar, cbar_vmin, cbar_vmax):
 def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
              figure=None, axes=None, title=None, threshold=None,
              annotate=True, draw_cross=True, black_bg=False, colorbar=False,
+             cbar_tick_format="%.2g",
              resampling_interpolation='continuous',
              bg_img=None, vmin=None, vmax=None, **kwargs):
     """ Plot cuts of a given image (by default Frontal, Axial, and Lateral)
@@ -291,6 +294,10 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         Default=False.
     %(colorbar)s
         Default=False.
+    cbar_tick_format: str, optional
+        Controls how to format the tick labels of the colorbar.
+        Ex: use "%%i" to display as integers.
+        Default is '%%.2g' for scientific notation.
     %(resampling_interpolation)s
         Default='continuous'.
     %(bg_img)s
@@ -310,6 +317,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         draw_cross=draw_cross,
         resampling_interpolation=resampling_interpolation,
         black_bg=black_bg, colorbar=colorbar,
+        cbar_tick_format=cbar_tick_format,
         bg_img=bg_img, vmin=vmin, vmax=vmax, **kwargs)
 
     return display
@@ -456,7 +464,8 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
               output_file=None, display_mode='ortho', figure=None,
               axes=None, title=None, annotate=True, threshold=None,
               draw_cross=True, black_bg='auto', dim='auto', cmap=plt.cm.gray,
-              vmin=None, vmax=None, **kwargs):
+              colorbar=False, cbar_tick_format="%.2g", vmin=None,
+              vmax=None, **kwargs):
     """Plot cuts of an anatomical image (by default 3 cuts:
     Frontal, Axial, and Lateral)
 
@@ -482,6 +491,13 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         Default='auto'.
     %(cmap)s
         Default=`plt.cm.gray`.
+    colorbar : boolean, optional
+        If True, display a colorbar on the right of the plots.
+        Default=False.
+    cbar_tick_format: str, optional
+        Controls how to format the tick labels of the colorbar.
+        Ex: use "%%i" to display as integers.
+        Default is '%%.2g' for scientific notation.
     %(vmin)s
     %(vmax)s
 
@@ -507,6 +523,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
                        figure=figure, axes=axes, title=title,
                        threshold=threshold, annotate=annotate,
                        draw_cross=draw_cross, black_bg=black_bg,
+                       colorbar=colorbar, cbar_tick_format=cbar_tick_format,
                        vmin=vmin, vmax=vmax, cmap=cmap, **kwargs)
     return display
 
@@ -515,6 +532,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
 def plot_epi(epi_img=None, cut_coords=None, output_file=None,
              display_mode='ortho', figure=None, axes=None, title=None,
              annotate=True, draw_cross=True, black_bg=True,
+             colorbar=False, cbar_tick_format="%.2g",
              cmap=plt.cm.nipy_spectral, vmin=None, vmax=None, **kwargs):
     """Plot cuts of an EPI image (by default 3 cuts:
     Frontal, Axial, and Lateral)
@@ -533,6 +551,13 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
     %(draw_cross)s
     %(black_bg)s
         Default=True.
+    colorbar : boolean, optional
+        If True, display a colorbar on the right of the plots.
+        Default=False.
+    cbar_tick_format: str, optional
+        Controls how to format the tick labels of the colorbar.
+        Ex: use "%%i" to display as integers.
+        Default is '%%.2g' for scientific notation.
     %(cmap)s
         Default=`plt.cm.nipy_spectral`.
     %(vmin)s
@@ -548,6 +573,7 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
                        figure=figure, axes=axes, title=title,
                        threshold=None, annotate=annotate,
                        draw_cross=draw_cross, black_bg=black_bg,
+                       colorbar=colorbar, cbar_tick_format=cbar_tick_format,
                        cmap=cmap, vmin=vmin, vmax=vmax, **kwargs)
     return display
 
@@ -604,8 +630,9 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
              output_file=None, display_mode='ortho', figure=None, axes=None,
              title=None, annotate=True, draw_cross=True, black_bg='auto',
              threshold=0.5, alpha=0.7, cmap=plt.cm.gist_ncar, dim='auto',
-             vmin=None, vmax=None, resampling_interpolation='nearest',
-             view_type='continuous', linewidths=2.5, **kwargs):
+             colorbar=False, cbar_tick_format="%i", vmin=None, vmax=None,
+             resampling_interpolation='nearest', view_type='continuous',
+             linewidths=2.5, **kwargs):
     """Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
     Lateral)
 
@@ -638,6 +665,13 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         Default=`plt.cm.gist_ncar`.
     %(dim)s
         Default='auto'.
+    colorbar : boolean, optional
+        If True, display a colorbar on the right of the plots.
+        Default=False.
+    cbar_tick_format: str, optional
+        Controls how to format the tick labels of the colorbar.
+        Ex: use "%%.2g" to use scientific notation.
+        Default is '%%i' to display as integers.
     %(vmin)s
     %(vmax)s
     %(resampling_interpolation)s
@@ -684,6 +718,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         draw_cross=draw_cross, black_bg=black_bg,
         threshold=threshold, bg_vmin=bg_vmin, bg_vmax=bg_vmax,
         resampling_interpolation=resampling_interpolation,
+        colorbar=colorbar, cbar_tick_format=cbar_tick_format,
         alpha=alpha, cmap=cmap, vmin=vmin, vmax=vmax, **kwargs)
 
     if view_type == 'contours':
@@ -875,9 +910,9 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
 @fill_doc
 def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                   output_file=None, display_mode='ortho', colorbar=True,
-                  figure=None, axes=None, title=None, threshold=1e-6,
-                  annotate=True, draw_cross=True, black_bg='auto',
-                  cmap=cm.cold_hot, symmetric_cbar="auto",
+                  cbar_tick_format="%.2g", figure=None, axes=None,
+                  title=None, threshold=1e-6, annotate=True, draw_cross=True,
+                  black_bg='auto', cmap=cm.cold_hot, symmetric_cbar="auto",
                   dim='auto', vmax=None, resampling_interpolation='continuous',
                   **kwargs):
     """Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
@@ -897,6 +932,10 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     %(display_mode)s
     %(colorbar)s
         Default=True.
+    cbar_tick_format: str, optional
+        Controls how to format the tick labels of the colorbar.
+        Ex: use "%%i" to display as integers.
+        Default is '%%.2g' for scientific notation.
     %(figure)s
     %(axes)s
     %(title)s
@@ -952,7 +991,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         figure=figure, axes=axes, title=title, annotate=annotate,
         draw_cross=draw_cross, black_bg=black_bg, threshold=threshold,
         bg_vmin=bg_vmin, bg_vmax=bg_vmax, cmap=cmap, vmin=vmin, vmax=vmax,
-        colorbar=colorbar, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
+        colorbar=colorbar, cbar_tick_format=cbar_tick_format,
+        cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
         resampling_interpolation=resampling_interpolation, **kwargs)
 
     return display
@@ -961,6 +1001,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 @fill_doc
 def plot_glass_brain(stat_map_img,
                      output_file=None, display_mode='ortho', colorbar=False,
+                     cbar_tick_format="%.2g",
                      figure=None, axes=None, title=None, threshold='auto',
                      annotate=True,
                      black_bg=False,
@@ -996,6 +1037,10 @@ def plot_glass_brain(stat_map_img,
         'lzry', 'lyrz'. Default='ortho'.
     %(colorbar)s
         Default=False.
+    cbar_tick_format: str, optional
+        Controls how to format the tick labels of the colorbar.
+        Ex: use "%%i" to display as integers.
+        Default is '%%.2g' for scientific notation.
     %(figure)s
     %(axes)s
     %(title)s
@@ -1056,8 +1101,8 @@ def plot_glass_brain(stat_map_img,
         img=stat_map_img, output_file=output_file, display_mode=display_mode,
         figure=figure, axes=axes, title=title, annotate=annotate,
         black_bg=black_bg, threshold=threshold, cmap=cmap, colorbar=colorbar,
-        display_factory=display_factory, vmin=vmin, vmax=vmax,
-        cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
+        cbar_tick_format=cbar_tick_format, display_factory=display_factory,
+        vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
         resampling_interpolation=resampling_interpolation, **kwargs)
 
     if stat_map_img is None and 'l' in display.axes:

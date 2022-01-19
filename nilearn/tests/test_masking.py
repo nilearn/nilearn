@@ -3,7 +3,7 @@ Test the mask-extracting utilities.
 """
 # Authors: Ana Luisa Pinho, Jerome Dockes, NicolasGensollen
 # License: simplified BSD
-import distutils.version
+from nilearn.version import _compare_version
 import warnings
 import numpy as np
 import pytest
@@ -26,11 +26,10 @@ from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
 from nilearn._utils.testing import write_tmp_imgs
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils import data_gen
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 
 np_version = (np.version.full_version if hasattr(np.version, 'full_version')
               else np.version.short_version)
-np_version = distutils.version.LooseVersion(np_version).version
 
 _TEST_DIM_ERROR_MSG = ("Input data has incompatible dimensionality: "
                        "Expected dimension is 3D and you provided "
@@ -530,7 +529,7 @@ def test_compute_multi_brain_mask():
 def test_deprecation_warning_compute_multi_gray_matter_mask():
     imgs = [Nifti1Image(np.ones((9, 9, 9)), np.eye(4)),
             Nifti1Image(np.ones((9, 9, 9)), np.eye(4))]
-    if distutils.version.LooseVersion(sklearn.__version__) < '0.22':
+    if _compare_version(sklearn.__version__, '<', '0.22'):
         with pytest.deprecated_call():
             masking.compute_multi_gray_matter_mask(imgs)
     else:

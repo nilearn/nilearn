@@ -1,4 +1,4 @@
-""" Misc utilities for function nilearn.input_data.fmriprep_confounds.
+""" Misc utilities for function nilearn.interfaces.fmriprep.load_confounds.
 
 Author: Hao-Ting Wang
 """

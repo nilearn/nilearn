@@ -106,7 +106,7 @@ used for caching.
 Using and visualizing the resulting parcellation
 ==================================================
 
-.. currentmodule:: nilearn.input_data
+.. currentmodule:: nilearn.maskers
 
 Visualizing the parcellation
 -----------------------------

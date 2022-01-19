@@ -19,7 +19,7 @@ from nilearn._utils.glm import (_check_and_load_tables,
                                 get_design_from_fslmat, multiple_fast_inverse,
                                 multiple_mahalanobis, parse_bids_filename,
                                 positive_reciprocal, z_score)
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from nilearn.glm.first_level import (FirstLevelModel,
                                      make_first_level_design_matrix)
 

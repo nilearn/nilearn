@@ -11,7 +11,7 @@ import numpy as np
 import scipy.stats as sps
 import pandas as pd
 
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from nilearn._utils.glm import z_score
 
 DEF_TINY = 1e-50

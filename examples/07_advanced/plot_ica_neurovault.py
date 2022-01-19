@@ -24,7 +24,7 @@ from nilearn.datasets import fetch_neurovault
 from nilearn.image import smooth_img
 
 from nilearn.datasets import load_mni152_brain_mask
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 
 from nilearn import plotting
 

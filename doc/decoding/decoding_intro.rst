@@ -133,7 +133,7 @@ Loading the data into nilearn
   * :ref:`masking`
     To better control this process of spatial masking and add additional signal
     processing steps (smoothing, filtering, standardizing...), we could
-    explicitly define a masker :  :class:`nilearn.input_data.NiftiMasker`.
+    explicitly define a masker :  :class:`nilearn.maskers.NiftiMasker`.
     This object extracts :term:`voxels<voxel>` belonging to a given spatial mask and converts
     their signal to a 2D data matrix with a shape (n_timepoints, n_voxels)
     (see :ref:`mask_4d_2_3d` for a discussion on using

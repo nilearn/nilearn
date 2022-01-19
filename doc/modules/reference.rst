@@ -228,12 +228,12 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    load_confounds
    load_confounds_strategy
 
-.. _io_ref:
+.. _maskers_ref:
 
-:mod:`nilearn.input_data`: Loading and Processing Files Easily
-==============================================================
+:mod:`nilearn.maskers`: Extracting Signals from Brain Images
+============================================================
 
-.. automodule:: nilearn.input_data
+.. automodule:: nilearn.maskers
    :no-members:
    :no-inherited-members:
 
@@ -241,12 +241,13 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
 
 **Classes**:
 
-.. currentmodule:: nilearn.input_data
+.. currentmodule:: nilearn.maskers
 
 .. autosummary::
    :toctree: generated/
    :template: class.rst
 
+   BaseMasker
    NiftiMasker
    MultiNiftiMasker
    NiftiLabelsMasker

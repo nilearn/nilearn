@@ -48,7 +48,7 @@ ____
 import numpy as np
 import matplotlib.pyplot as plt
 from nilearn import datasets
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from nilearn.image import get_data
 
 n_subjects = 100  # more subjects requires more memory

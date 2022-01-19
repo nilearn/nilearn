@@ -6,7 +6,7 @@ Test the signals module
 
 import os.path
 import warnings
-from distutils.version import LooseVersion
+from nilearn.version import _compare_version
 
 import numpy as np
 import pytest
@@ -133,9 +133,10 @@ def test_butterworth():
      causing it to fail tests.
      This hack prevents that and will be removed in future.
     '''
-    buggy_scipy = (LooseVersion(scipy.__version__) < LooseVersion('1.2')
-                   and LooseVersion(scipy.__version__) > LooseVersion('1.0')
-                   )
+    buggy_scipy = (
+        _compare_version(scipy.__version__, '<', '1.2')
+        and _compare_version(scipy.__version__, '>', '1.0')
+    )
     if buggy_scipy:
         warnings.simplefilter('ignore')
     ''' END HACK '''

@@ -9,7 +9,7 @@ from .multi_nifti_masker import MultiNiftiMasker
 from .nifti_masker import NiftiMasker
 
 
-def check_embedded_nifti_masker(estimator, multi_subject=True):
+def _check_embedded_nifti_masker(estimator, multi_subject=True):
     """Base function for using a masker within a BaseEstimator class
 
     This creates a masker from instance parameters :

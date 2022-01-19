@@ -4,7 +4,7 @@ import pytest
 
 from numpy.testing import assert_array_equal, assert_array_almost_equal
 
-from nilearn.input_data import NiftiSpheresMasker
+from nilearn.maskers import NiftiSpheresMasker
 from nilearn.image import get_data, new_img_like
 
 

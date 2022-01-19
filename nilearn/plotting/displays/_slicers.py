@@ -11,8 +11,7 @@ from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.transforms import Bbox
 
-from distutils.version import LooseVersion
-
+from nilearn.version import _compare_version
 from nilearn._utils import check_niimg_3d
 from nilearn.plotting.find_cuts import find_xyz_cut_coords, find_cut_slices
 from nilearn.plotting.displays import CutAxes
@@ -66,6 +65,7 @@ class BaseSlicer(object):
         self._brain_color = brain_color
         self._colorbar = False
         self._colorbar_width = 0.05 * bb.width
+        self._cbar_tick_format = "%.2g"
         self._colorbar_margin = dict(left=0.25 * bb.width,
                                      right=0.02 * bb.width,
                                      top=0.05 * bb.height,
@@ -218,8 +218,9 @@ class BaseSlicer(object):
         ax.set_zorder(1000)
 
     @fill_doc
-    def add_overlay(self, img, threshold=1e-6, colorbar=False, **kwargs):
-        """Plot a 3D map in all the views.
+    def add_overlay(self, img, threshold=1e-6, colorbar=False,
+                    cbar_tick_format="%.2g", **kwargs):
+        """ Plot a 3D map in all the views.
 
         Parameters
         ----------
@@ -236,6 +237,11 @@ class BaseSlicer(object):
 
             Default=1e-6.
 
+        cbar_tick_format: str, optional
+            Controls how to format the tick labels of the colorbar.
+            Ex: use "%%i" to display as integers.
+            Default is '%%.2g' for scientific notation.
+
         colorbar : :obj:`bool`, optional
             If ``True``, display a colorbar on the right of the plots.
             Default=False.
@@ -249,6 +255,7 @@ class BaseSlicer(object):
                              "colorbar.")
         else:
             self._colorbar = colorbar
+            self._cbar_tick_format = cbar_tick_format
 
         img = check_niimg_3d(img)
 
@@ -431,7 +438,7 @@ class BaseSlicer(object):
                          height - (self._colorbar_margin['top'] +
                                    self._colorbar_margin['bottom'])]
         self._colorbar_ax = figure.add_axes(lt_wid_top_ht)
-        if LooseVersion(matplotlib.__version__) >= LooseVersion("1.6"):
+        if _compare_version(matplotlib.__version__, '>=', "1.6"):
             self._colorbar_ax.set_facecolor('w')
         else:
             self._colorbar_ax.set_axis_bgcolor('w')
@@ -459,7 +466,7 @@ class BaseSlicer(object):
         self._cbar = ColorbarBase(
             self._colorbar_ax, ticks=ticks, norm=norm,
             orientation='vertical', cmap=our_cmap, boundaries=bounds,
-            spacing='proportional', format='%.2g')
+            spacing='proportional', format=self._cbar_tick_format)
         self._cbar.ax.set_facecolor(self._brain_color)
 
         self._colorbar_ax.yaxis.tick_left()
@@ -769,7 +776,7 @@ class OrthoSlicer(BaseSlicer):
             fh = self.frame_axes.get_figure()
             ax = fh.add_axes([0.3 * index * (x1 - x0) + x0, y0,
                               .3 * (x1 - x0), y1 - y0], aspect='equal')
-            if LooseVersion(matplotlib.__version__) >= LooseVersion("1.6"):
+            if _compare_version(matplotlib.__version__, '>=', "1.6"):
                 ax.set_facecolor(facecolor)
             else:
                 ax.set_axis_bgcolor(facecolor)
@@ -1023,7 +1030,7 @@ class TiledSlicer(BaseSlicer):
             axes_coords = self._find_initial_axes_coord(index)
             ax = fh.add_axes(axes_coords, aspect='equal')
 
-            if LooseVersion(matplotlib.__version__) >= LooseVersion("1.6"):
+            if _compare_version(matplotlib.__version__, '>=', "1.6"):
                 ax.set_facecolor(facecolor)
             else:
                 ax.set_axis_bgcolor(facecolor)
