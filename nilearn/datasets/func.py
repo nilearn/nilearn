@@ -412,7 +412,8 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
 @fill_doc
 def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                               get_masks=False, get_anats=False,
-                              data_dir=None, url=None, resume=True, verbose=1):
+                              data_dir=None, url=None, resume=True, verbose=1,
+                              legacy_format=True):
     """Download and load Brainomics/Localizer dataset (94 subjects).
 
     "The Functional Localizer is a simple and fast acquisition
@@ -525,6 +526,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     %(url)s
     %(resume)s
     %(verbose)s
+    %(legacy_format)s
 
     Returns
     -------
@@ -751,12 +753,14 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             continue
         subjects_indices.append(subject_names.index(name))
     csv_data = csv_data.iloc[subjects_indices]
+    if legacy_format:
+        csv_data = csv_data.to_records()
     return Bunch(ext_vars=csv_data, description=fdescr, **files)
 
 
 @fill_doc
 def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
-                                     verbose=1):
+                                     verbose=1, legacy_format=True):
     """Fetch calculation task contrast maps from the localizer.
 
     Parameters
@@ -767,6 +771,7 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
     %(data_dir)s
     %(url)s
     %(verbose)s
+    %(legacy_format)s
 
     Returns
     -------
@@ -790,13 +795,14 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
                                      n_subjects=n_subjects,
                                      get_tmaps=False, get_masks=False,
                                      get_anats=False, data_dir=data_dir,
-                                     url=url, resume=True, verbose=verbose)
+                                     url=url, resume=True, verbose=verbose,
+                                     legacy_format=legacy_format)
     return data
 
 
 @fill_doc
 def fetch_localizer_button_task(data_dir=None, url=None,
-                                verbose=1):
+                                verbose=1, legacy_format=True):
     """Fetch left vs right button press contrast maps from the localizer.
 
     Parameters
@@ -804,6 +810,7 @@ def fetch_localizer_button_task(data_dir=None, url=None,
     %(data_dir)s
     %(url)s
     %(verbose)s
+    %(legacy_format)s
 
     Returns
     -------
@@ -830,7 +837,8 @@ def fetch_localizer_button_task(data_dir=None, url=None,
                                      n_subjects=[2],
                                      get_tmaps=True, get_masks=False,
                                      get_anats=True, data_dir=data_dir,
-                                     url=url, resume=True, verbose=verbose)
+                                     url=url, resume=True, verbose=verbose,
+                                     legacy_format=legacy_format)
     # Additional keys for backward compatibility
     data['tmap'] = data['tmaps'][0]
     data['anat'] = data['anats'][0]
@@ -841,7 +849,8 @@ def fetch_localizer_button_task(data_dir=None, url=None,
 def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
                     band_pass_filtering=False, global_signal_regression=False,
                     derivatives=['func_preproc'],
-                    quality_checked=True, url=None, verbose=1, **kwargs):
+                    quality_checked=True, url=None, verbose=1,
+                    legacy_format=True, **kwargs):
     """Fetch ABIDE dataset.
 
     Fetch the Autism Brain Imaging Data Exchange (ABIDE) dataset wrt criteria
@@ -883,6 +892,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
         passed quality assessment for all raters. Default=True.
     %(url)s
     %(verbose)s
+    %(legacy_format)s
     kwargs : parameter list, optional
         Any extra keyword argument will be used to filter downloaded subjects
         according to the CSV phenotypic file. Some examples of filters are
@@ -997,6 +1007,9 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     if n_subjects is not None:
         file_ids = file_ids[:n_subjects]
         pheno = pheno[:n_subjects]
+
+    if legacy_format:
+        pheno = pheno.to_records()
 
     results['description'] = _get_dataset_descr(dataset_name)
     results['phenotypic'] = pheno
