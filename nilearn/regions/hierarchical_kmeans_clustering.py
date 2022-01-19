@@ -10,7 +10,7 @@ import warnings
 def _remove_empty_labels(labels):
     '''Remove empty values label values from labels list'''
     vals = np.unique(labels)
-    inverse_vals = - np.ones(labels.max() + 1).astype(np.int)
+    inverse_vals = - np.ones(labels.max() + 1, dtype=int)
     inverse_vals[vals] = np.arange(len(vals))
     return inverse_vals[labels]
 
@@ -21,24 +21,23 @@ def _adjust_small_clusters(array, n_clusters):
     least 1.
     '''
 
-    array_round = np.round(array).astype(int)
-    array_round = np.maximum(array_round, np.ones(array.size))
+    array_round = np.rint(array).astype(int)
+    array_round = np.maximum(array_round, 1)
 
     if np.sum(array_round) < n_clusters:
         while np.sum(array_round) != n_clusters:
             idx = np.argmax(array - array_round)
             array_round[idx] += 1
-        return array_round.astype(int)
     elif np.sum(array_round) == n_clusters:
-        return array_round.astype(int)
+        pass
     elif np.sum(array_round) > n_clusters:
         while np.sum(array_round) != n_clusters:
             # prevent element rounded to 1 to be decreased in edge cases
-            mask = array_round != np.ones(array.size)
+            mask = array_round != 1
             idx = np.argmin(array[mask] - array_round[mask])
             parent_idx = np.arange(array_round.shape[0])[mask][idx]
             array_round[parent_idx] -= 1
-        return array_round.astype(int)
+    return array_round
 
 
 def hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
@@ -217,9 +216,9 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
                                             self.max_no_improvement,
                                             self.verbose, self.random_state)
         sizes = np.bincount(self.labels_)
-        sizes = sizes[sizes > 0]
+        # sizes = sizes[sizes > 0]
         self.sizes_ = sizes
-        self.n_clusters = len(np.unique(self.labels_))
+        self.n_clusters = len(sizes)
         return self
 
     def transform(self, X, y=None):
@@ -239,9 +238,9 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         check_is_fitted(self, "labels_")
         unique_labels = np.unique(self.labels_)
 
-        mean_cluster = []
+        mean_cluster = np.empty((len(unique_labels), X.shape[1]), dtype=X.dtype)
         for label in unique_labels:
-            mean_cluster.append(np.mean(X[self.labels_ == label], axis=0))
+            mean_cluster[label] = np.mean(X[self.labels_ == label], axis=0)
 
         X_red = np.array(mean_cluster)
 
@@ -267,8 +266,8 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
 
         check_is_fitted(self, "labels_")
 
-        _, inverse = np.unique(self.labels_, return_inverse=True)
-
+        inverse = self.labels_
+        
         if self.scaling:
             X_red = X_red / np.sqrt(self.sizes_[:, np.newaxis])
         X_inv = X_red[inverse, ...]
