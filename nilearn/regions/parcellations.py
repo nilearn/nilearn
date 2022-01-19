@@ -28,7 +28,7 @@ def _estimator_fit(data, estimator, method=None):
     estimator : instance of estimator from sklearn
         MiniBatchKMeans or AgglomerativeClustering.
 
-    method: str, 
+    method: str,
     {'kmeans', 'ward', 'complete', 'average', 'rena', 'hierarchical_kmeans'},
     optional
 

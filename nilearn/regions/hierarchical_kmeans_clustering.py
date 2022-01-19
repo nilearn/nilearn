@@ -238,7 +238,8 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         check_is_fitted(self, "labels_")
         unique_labels = np.unique(self.labels_)
 
-        mean_cluster = np.empty((len(unique_labels), X.shape[1]), dtype=X.dtype)
+        mean_cluster = np.empty(
+            (len(unique_labels), X.shape[1]), dtype=X.dtype)
         for label in unique_labels:
             mean_cluster[label] = np.mean(X[self.labels_ == label], axis=0)
 
@@ -265,9 +266,7 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         """
 
         check_is_fitted(self, "labels_")
-
         inverse = self.labels_
-        
         if self.scaling:
             X_red = X_red / np.sqrt(self.sizes_[:, np.newaxis])
         X_inv = X_red[inverse, ...]
