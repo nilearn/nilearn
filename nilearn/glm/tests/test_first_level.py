@@ -711,6 +711,26 @@ def test_first_level_from_bids():
                 bids_path, 'main', 'T1w')  # desc not specified
 
 
+def test_first_level_with_scaling():
+    shapes, rk = [(3, 1, 1, 2)], 1
+    fmri_data = list()
+    fmri_data.append(Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, np.eye(4)))
+    design_matrices = list()
+    design_matrices.append(
+        pd.DataFrame(
+            np.ones((shapes[0][-1], rk)),
+            columns=list('abcdefghijklmnopqrstuvwxyz')[:rk])
+    )
+    fmri_glm = FirstLevelModel(
+        mask_img=False, noise_model='ols', signal_scaling=0, minimize_memory=True
+    )
+    glm_parameters = fmri_glm.get_params()
+    test_glm = FirstLevelModel(**glm_parameters)
+    fmri_glm = fmri_glm.fit(fmri_data, design_matrices=design_matrices)
+    test_glm = test_glm.fit(fmri_data, design_matrices=design_matrices)
+    assert glm_parameters['signal_scaling'] == 0
+
+
 def test_first_level_with_no_signal_scaling():
     """
     test to ensure that the FirstLevelModel works correctly with a
