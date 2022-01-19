@@ -369,8 +369,8 @@ class FirstLevelModel(BaseGLM):
         if signal_scaling is False:
             self.signal_scaling = signal_scaling
         elif signal_scaling in [0, 1, (0, 1)]:
-            self.scaling_axis = signal_scaling
-            self.signal_scaling = True
+            self.signal_scaling = signal_scaling
+            self.scaling_axis = signal_scaling  # For backward compat. deprecate?
             self.standardize = False
         else:
             raise ValueError('signal_scaling must be "False", "0", "1"'
@@ -567,7 +567,7 @@ class FirstLevelModel(BaseGLM):
                                  % t_masking)
 
             if self.signal_scaling:
-                Y, _ = mean_scaling(Y, self.scaling_axis)
+                Y, _ = mean_scaling(Y, self.signal_scaling)
             if self.memory:
                 mem_glm = self.memory.cache(run_glm, ignore=['n_jobs'])
             else:
