@@ -1114,7 +1114,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
     atlas_img, labels_file = _fetch_files(
         data_dir, filenames, resume=resume, verbose=verbose
     )
-    fdescr = _get_dataset_descr("aal_SPM12").decode('utf-8')
+    fdescr = _get_dataset_descr("aal_SPM12")
     labels = []
     indices = []
     if version == 'SPM12':
