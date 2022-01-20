@@ -69,19 +69,6 @@ _check_module_dependencies()
 _python_deprecation_warnings()
 
 
-# Temporary work around to address formatting issues in doc tests
-# with NumPy 1.14. NumPy had made more consistent str/repr formatting
-# of numpy arrays. Hence we print the options to old versions.
-import numpy as np
-if _compare_version(np.__version__, '>=', "1.14"):
-    # See issue #1600 in nilearn for reason to add try and except
-    try:
-        from ._utils.testing import are_tests_running
-        if are_tests_running():
-            np.set_printoptions(legacy='1.13')
-    except ImportError:
-        pass
-
 # Monkey-patch gzip to have faster reads on large gzip files
 if hasattr(gzip.GzipFile, 'max_read_chunk'):
     gzip.GzipFile.max_read_chunk = 100 * 1024 * 1024  # 100Mb
