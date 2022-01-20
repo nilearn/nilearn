@@ -26,7 +26,7 @@ def test_fdr():
         fdr_threshold(x, 1.5)
     # addresses #2879
     n = 10
-    pvals = np.linspace(1/n, 1, n)
+    pvals = np.linspace(1 / n, 1, n)
     pvals[0] = 0.007
     assert np.isfinite(fdr_threshold(norm.isf(pvals), .1))
 
