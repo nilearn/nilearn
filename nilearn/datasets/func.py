@@ -31,10 +31,10 @@ from nilearn.image import get_data
 
 
 LEGACY_FORMAT_MSG = (
-     "`legacy_format` will default to `False` in release 0.11. "
-     "Dataset fetchers will then return pandas dataframes instead "
-     "of recarrays."
- )
+    "`legacy_format` will default to `False` in release 0.11. "
+    "Dataset fetchers will then return pandas dataframes instead "
+    "of recarrays."
+)
 
 
 @fill_doc

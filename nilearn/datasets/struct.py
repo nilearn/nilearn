@@ -32,9 +32,9 @@ WM_MNI152_FILE_PATH = os.path.join(
 FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
 
 LEGACY_FORMAT_MSG = (
-      "`legacy_format` will default to `False` in release 0.11. "
-      "Dataset fetchers will then return pandas dataframes instead "
-      "of recarrays."
+    "`legacy_format` will default to `False` in release 0.11. "
+    "Dataset fetchers will then return pandas dataframes instead "
+    "of recarrays."
 )
 
 # workaround for
