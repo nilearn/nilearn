@@ -31,6 +31,11 @@ WM_MNI152_FILE_PATH = os.path.join(
     "mni_icbm152_wm_tal_nlin_sym_09a_converted.nii.gz")
 FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
 
+LEGACY_FORMAT_MSG = (
+      "`legacy_format` will default to `False` in release 0.11. "
+      "Dataset fetchers will then return pandas dataframes instead "
+      "of recarrays."
+)
 
 # workaround for
 # https://github.com/nilearn/nilearn/pull/2738#issuecomment-869018842
@@ -750,6 +755,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
     fdescr = _get_dataset_descr(dataset_name)
 
     if legacy_format:
+        warnings.warn(LEGACY_FORMAT_MSG)
         csv_data = csv_data.to_records()
 
     return Bunch(

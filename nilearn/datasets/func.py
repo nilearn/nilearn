@@ -30,6 +30,13 @@ from .._utils.numpy_conversions import csv_to_array
 from nilearn.image import get_data
 
 
+LEGACY_FORMAT_MSG = (
+     "`legacy_format` will default to `False` in release 0.11. "
+     "Dataset fetchers will then return pandas dataframes instead "
+     "of recarrays."
+ )
+
+
 @fill_doc
 def fetch_haxby(data_dir=None, subjects=(2,),
                 fetch_stimuli=False, url=None, resume=True, verbose=1):
@@ -754,6 +761,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         subjects_indices.append(subject_names.index(name))
     csv_data = csv_data.iloc[subjects_indices]
     if legacy_format:
+        warnings.warn(LEGACY_FORMAT_MSG)
         csv_data = csv_data.to_records()
     return Bunch(ext_vars=csv_data, description=fdescr, **files)
 
@@ -1009,6 +1017,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
         pheno = pheno[:n_subjects]
 
     if legacy_format:
+        warnings.warn(LEGACY_FORMAT_MSG)
         pheno = pheno.to_records()
 
     results['description'] = _get_dataset_descr(dataset_name)

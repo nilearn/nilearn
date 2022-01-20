@@ -21,6 +21,12 @@ from ..image import new_img_like, get_data, reorder_img
 
 _TALAIRACH_LEVELS = ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
 
+LEGACY_FORMAT_MSG = (
+    "`legacy_format` will default to `False` in release 0.11. "
+    "Dataset fetchers will then return pandas dataframes instead "
+    "of recarrays."
+)
+
 
 @fill_doc
 def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None,
@@ -119,6 +125,7 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None,
     files_ = _fetch_files(data_dir, files, verbose=verbose)
     labels = pd.read_csv(files_[0])
     if legacy_format:
+        warnings.warn(LEGACY_FORMAT_MSG)
         labels = labels.to_records()
 
     # README
@@ -273,6 +280,7 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
                   labels=pd.read_csv(files_[0], index_col=0))
 
     if legacy_format:
+        warnings.warn(LEGACY_FORMAT_MSG)
         params['labels'] = params['labels'].to_records()
 
     with open(files_[2], 'r') as rst_file:
@@ -775,6 +783,7 @@ def fetch_coords_power_2011(legacy_format=True):
     csv = os.path.join(package_directory, "data", "power_2011.csv")
     params = dict(rois=pd.read_csv(csv), description=fdescr)
     if legacy_format:
+        warnings.warn(LEGACY_FORMAT_MSG)
         params['rois'] = params['rois'].to_records()
     return Bunch(**params)
 
@@ -1245,6 +1254,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
                   networks=out_csv['network'], description=fdescr)
 
     if legacy_format:
+        warnings.warn(LEGACY_FORMAT_MSG)
         params['rois'] = params['rois'].to_records()
 
     return Bunch(**params)
@@ -1324,6 +1334,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
         rois = rois.sort_values(by=['network', 'y'])
 
     if legacy_format:
+        warnings.warn(LEGACY_FORMAT_MSG)
         rois = rois.to_records()
 
     params = dict(rois=rois[['x', 'y', 'z']],
