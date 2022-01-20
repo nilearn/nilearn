@@ -43,7 +43,7 @@ unique_conditions = unique_conditions[np.argsort(order)]
 from nilearn.maskers import NiftiMasker
 # For decoding, standardizing is often very important
 nifti_masker = NiftiMasker(mask_img=mask_filename, standardize=True,
-                           sessions=session, smoothing_fwhm=4,
+                           runs=session, smoothing_fwhm=4,
                            memory="nilearn_cache", memory_level=1)
 X = nifti_masker.fit_transform(func_filename)
 

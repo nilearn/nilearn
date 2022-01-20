@@ -87,7 +87,7 @@ searchlight.fit(fmri_img, y)
 from nilearn.maskers import NiftiMasker
 
 # For decoding, standardizing is often very important
-nifti_masker = NiftiMasker(mask_img=mask_img, sessions=session,
+nifti_masker = NiftiMasker(mask_img=mask_img, runs=session,
                            standardize=True, memory='nilearn_cache',
                            memory_level=1)
 fmri_masked = nifti_masker.fit_transform(fmri_img)
