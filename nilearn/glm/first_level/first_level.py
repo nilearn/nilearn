@@ -370,7 +370,6 @@ class FirstLevelModel(BaseGLM):
             self.signal_scaling = signal_scaling
         elif signal_scaling in [0, 1, (0, 1)]:
             self.signal_scaling = signal_scaling
-            self.scaling_axis = signal_scaling  # For backward compat. deprecate?
             self.standardize = False
         else:
             raise ValueError('signal_scaling must be "False", "0", "1"'
@@ -384,6 +383,14 @@ class FirstLevelModel(BaseGLM):
         self.labels_ = None
         self.results_ = None
         self.subject_label = subject_label
+
+    @property
+    def scaling_axis(self):
+        warn(DeprecationWarning(
+            "Deprecated. `scaling_axis` will be removed in 0.11.0. "
+            "Please use `signal_scaling` instead."
+        ))
+        return self.signal_scaling
 
     def fit(self, run_imgs, events=None, confounds=None,
             design_matrices=None, bins=100):

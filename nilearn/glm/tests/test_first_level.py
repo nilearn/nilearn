@@ -722,8 +722,14 @@ def test_first_level_with_scaling():
             columns=list('abcdefghijklmnopqrstuvwxyz')[:rk])
     )
     fmri_glm = FirstLevelModel(
-        mask_img=False, noise_model='ols', signal_scaling=0, minimize_memory=True
+        mask_img=False, noise_model='ols', signal_scaling=0,
+        minimize_memory=True
     )
+    assert fmri_glm.signal_scaling == 0
+    assert not fmri_glm.standardize
+    with pytest.warns(DeprecationWarning,
+                      match="Deprecated. `scaling_axis` will be removed"):
+        assert fmri_glm.scaling_axis == 0
     glm_parameters = fmri_glm.get_params()
     test_glm = FirstLevelModel(**glm_parameters)
     fmri_glm = fmri_glm.fit(fmri_data, design_matrices=design_matrices)
