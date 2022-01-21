@@ -8,7 +8,10 @@ import warnings
 
 
 def _remove_empty_labels(labels):
-    '''Remove empty values label values from labels list'''
+    '''Removes empty values label values from labels list. 
+    Returns labels mapped to np.arange(n_unique),
+    where n_unique is the number of unique values in labels'''
+
     vals = np.unique(labels)
     inverse_vals = - np.ones(labels.max() + 1, dtype=int)
     inverse_vals[vals] = np.arange(len(vals))
@@ -216,7 +219,7 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
                                             self.max_no_improvement,
                                             self.verbose, self.random_state)
         sizes = np.bincount(self.labels_)
-        # sizes = sizes[sizes > 0]
+
         self.sizes_ = sizes
         self.n_clusters = len(sizes)
         return self
@@ -236,7 +239,7 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         """
 
         check_is_fitted(self, "labels_")
-        unique_labels = np.unique(self.labels_)
+        unique_labels = np.arange(self.n_clusters)
 
         mean_cluster = np.empty(
             (len(unique_labels), X.shape[1]), dtype=X.dtype)
