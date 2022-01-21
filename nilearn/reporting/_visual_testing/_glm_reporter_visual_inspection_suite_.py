@@ -13,12 +13,12 @@ import numpy as np
 import pandas as pd
 
 import nilearn
-from nilearn._utils.glm import get_design_from_fslmat
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 from nilearn.glm.first_level.design_matrix import \
     make_first_level_design_matrix
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.image import resample_to_img
+from nilearn.interfaces.fsl import get_design_from_fslmat
 from nilearn.maskers import NiftiSpheresMasker
 from nilearn.reporting import make_glm_report
 
