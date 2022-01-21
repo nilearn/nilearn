@@ -23,7 +23,7 @@ In LSA, a single :term:`GLM` is run, in which each trial of each condition of
 interest is separated out into its own condition within the design matrix.
 In LSS, each trial of each condition of interest has its own :term:`GLM`,
 in which the targeted trial receives its own column within the design matrix,
-but everything else remains the ssame as the standard model.
+but everything else remains the same as the standard model.
 Trials are then looped across, and many GLMs are fitted,
 with the parameter estimate map extracted from each GLM to build the LSS beta
 series.
