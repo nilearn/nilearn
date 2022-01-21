@@ -15,7 +15,6 @@ from numpy.testing import (assert_almost_equal, assert_array_almost_equal,
 from nilearn._utils.data_gen import (create_fake_bids_dataset,
                                      generate_fake_fmri_data_and_design,
                                      write_fake_fmri_data_and_design)
-from nilearn._utils.glm import get_bids_files
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (FirstLevelModel, first_level_from_bids,
                                      mean_scaling, run_glm)
@@ -23,6 +22,7 @@ from nilearn.glm.first_level.design_matrix import (
     check_design_matrix, make_first_level_design_matrix)
 from nilearn.glm.first_level.first_level import _yule_walker
 from nilearn.image import get_data
+from nilearn.interfaces.bids import get_bids_files
 from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.maskers import NiftiMasker
 
