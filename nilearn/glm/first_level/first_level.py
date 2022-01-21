@@ -573,7 +573,7 @@ class FirstLevelModel(BaseGLM):
                 sys.stderr.write('Masker took %d seconds       \n'
                                  % t_masking)
 
-            if self.signal_scaling:
+            if self.signal_scaling is not False:  # noqa
                 Y, _ = mean_scaling(Y, self.signal_scaling)
             if self.memory:
                 mem_glm = self.memory.cache(run_glm, ignore=['n_jobs'])
