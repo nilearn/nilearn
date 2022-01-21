@@ -8,7 +8,7 @@ import warnings
 
 
 def _remove_empty_labels(labels):
-    '''Removes empty values label values from labels list. 
+    '''Removes empty values label values from labels list.
     Returns labels mapped to np.arange(n_unique),
     where n_unique is the number of unique values in labels'''
 
