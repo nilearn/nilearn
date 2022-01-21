@@ -26,19 +26,19 @@ NEW
   (See PR `#3016 <https://github.com/nilearn/nilearn/pull/3016>`_).
 - New submodule :mod:`nilearn.interfaces.bids` to implement loading utilities
   for :term:`BIDS` datasets.
-  (See PR `#3061 <https://github.com/nilearn/nilearn/pull/3126>`_).
+  (See PR `#3126 <https://github.com/nilearn/nilearn/pull/3126>`_).
 - New function :func:`nilearn.interfaces.bids.get_bids_files` to select files
   easily from :term:`BIDS` datasets.
-  (See PR `#3016 <https://github.com/nilearn/nilearn/pull/3126>`_).
+  (See PR `#3126 <https://github.com/nilearn/nilearn/pull/3126>`_).
 - New function :func:`nilearn.interfaces.bids.parse_bids_filename` to identify
   subparts of :term:`BIDS` filenames.
-  (See PR `#3016 <https://github.com/nilearn/nilearn/pull/3126>`_).
+  (See PR `#3126 <https://github.com/nilearn/nilearn/pull/3126>`_).
 - New submodule :mod:`nilearn.interfaces.fsl` to implement loading utilities
   for :term:`FSL` outputs.
-  (See PR `#3061 <https://github.com/nilearn/nilearn/pull/3126>`_).
+  (See PR `#3126 <https://github.com/nilearn/nilearn/pull/3126>`_).
 - New function :func:`nilearn.interfaces.fsl.get_design_from_fslmat` to load
   design matrices from :term:`FSL` files.
-  (See PR `#3061 <https://github.com/nilearn/nilearn/pull/3126>`_).
+  (See PR `#3126 <https://github.com/nilearn/nilearn/pull/3126>`_).
 - Surface plotting functions like :func:`nilearn.plotting.plot_surf_stat_map`
   now have an `engine` parameter, defaulting to "matplotlib", but which can be
   set to "plotly". If plotly and kaleido are installed, this will generate an
