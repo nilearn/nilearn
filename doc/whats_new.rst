@@ -34,10 +34,10 @@ NEW
   subparts of :term:`BIDS` filenames.
   (See PR `#3126 <https://github.com/nilearn/nilearn/pull/3126>`_).
 - New submodule :mod:`nilearn.interfaces.fsl` to implement loading utilities
-  for :term:`FSL` outputs.
+  for FSL outputs.
   (See PR `#3126 <https://github.com/nilearn/nilearn/pull/3126>`_).
 - New function :func:`nilearn.interfaces.fsl.get_design_from_fslmat` to load
-  design matrices from :term:`FSL` files.
+  design matrices from FSL files.
   (See PR `#3126 <https://github.com/nilearn/nilearn/pull/3126>`_).
 - Surface plotting functions like :func:`nilearn.plotting.plot_surf_stat_map`
   now have an `engine` parameter, defaulting to "matplotlib", but which can be
