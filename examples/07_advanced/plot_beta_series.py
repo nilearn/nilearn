@@ -60,7 +60,7 @@ mask = masking.compute_epi_mask(fmri_file)
 glm_parameters = standard_glm.get_params()
 # We need to override one parameter (signal_scaling) with the value of
 # scaling_axis.
-glm_parameters["signal_scaling"] = standard_glm.scaling_axis
+glm_parameters['signal_scaling'] = standard_glm.scaling_axis
 
 ##############################################################################
 # Define the standard model
@@ -82,15 +82,15 @@ plotting.plot_design_matrix(standard_glm.design_matrices_[0])
 
 # Transform the DataFrame for LSA
 lsa_events_df = events_df.copy()
-conditions = lsa_events_df["trial_type"].unique()
+conditions = lsa_events_df['trial_type'].unique()
 condition_counter = {c: 0 for c in conditions}
 for i_trial, trial in lsa_events_df.iterrows():
-    trial_condition = trial["trial_type"]
+    trial_condition = trial['trial_type']
     condition_counter[trial_condition] += 1
     # We use a unique delimiter here (``__``) that shouldn't be in the
     # original condition names.
-    trial_name = f"{trial_condition}__{condition_counter[trial_condition]:03d}"
-    lsa_events_df.loc[i_trial, "trial_type"] = trial_name
+    trial_name = f'{trial_condition}__{condition_counter[trial_condition]:03d}'
+    lsa_events_df.loc[i_trial, 'trial_type'] = trial_name
 
 lsa_glm = FirstLevelModel(**glm_parameters)
 lsa_glm.fit(fmri_file, lsa_events_df)
@@ -101,12 +101,12 @@ plotting.plot_design_matrix(lsa_glm.design_matrices_[0])
 # Aggregate beta maps from the LSA model based on condition
 # `````````````````````````````````````````````````````````
 # Collect the parameter estimate maps
-lsa_beta_maps = {cond: [] for cond in events_df["trial_type"].unique()}
-trialwise_conditions = lsa_events_df["trial_type"].unique()
+lsa_beta_maps = {cond: [] for cond in events_df['trial_type'].unique()}
+trialwise_conditions = lsa_events_df['trial_type'].unique()
 for condition in trialwise_conditions:
-    beta_map = lsa_glm.compute_contrast(condition, output_type="effect_size")
+    beta_map = lsa_glm.compute_contrast(condition, output_type='effect_size')
     # Drop the trial number from the condition name to get the original name.
-    condition_name = condition.split("__")[0]
+    condition_name = condition.split('__')[0]
     lsa_beta_maps[condition_name].append(beta_map)
 
 # We can concatenate the lists of 3D maps into a single 4D beta series for
@@ -141,8 +141,8 @@ def lss_transformer(df, row_number):
     df = df.copy()
 
     # Determine which number trial it is *within the condition*.
-    trial_condition = df.loc[row_number, "trial_type"]
-    trial_type_series = df["trial_type"]
+    trial_condition = df.loc[row_number, 'trial_type']
+    trial_type_series = df['trial_type']
     trial_type_series = trial_type_series.loc[
         trial_type_series == trial_condition
     ]
@@ -152,16 +152,16 @@ def lss_transformer(df, row_number):
     # We use a unique delimiter here (``__``) that shouldn't be in the
     # original condition names.
     # Technically, all you need is for the requested trial to have a unique
-    # "trial_type" *within* the dataframe, rather than across models.
-    # However, we may want to have meaningful "trial_type"s (e.g., "Left_001")
+    # 'trial_type' *within* the dataframe, rather than across models.
+    # However, we may want to have meaningful 'trial_type's (e.g., 'Left_001')
     # across models, so that you could track individual trials across models.
-    trial_name = f"{trial_condition}__{trial_number:03d}"
-    df.loc[row_number, "trial_type"] = trial_name
+    trial_name = f'{trial_condition}__{trial_number:03d}'
+    df.loc[row_number, 'trial_type'] = trial_name
     return df, trial_name
 
 
 # Transform the DataFrame for LSS
-lss_beta_maps = {cond: [] for cond in events_df["trial_type"].unique()}
+lss_beta_maps = {cond: [] for cond in events_df['trial_type'].unique()}
 lss_design_matrices = []
 
 for i_trial in range(events_df.shape[0]):
@@ -176,11 +176,11 @@ for i_trial in range(events_df.shape[0]):
 
     beta_map = lss_glm.compute_contrast(
         trial_condition,
-        output_type="effect_size",
+        output_type='effect_size',
     )
 
     # Drop the trial number from the condition name to get the original name.
-    condition_name = trial_condition.split("__")[0]
+    condition_name = trial_condition.split('__')[0]
     lss_beta_maps[condition_name].append(beta_map)
 
 # We can concatenate the lists of 3D maps into a single 4D beta series for
@@ -200,7 +200,7 @@ for i_trial in range(3):
         lss_design_matrices[i_trial],
         ax=axes[i_trial],
     )
-    axes[i_trial].set_title(f"Trial {i_trial + 1}")
+    axes[i_trial].set_title(f'Trial {i_trial + 1}')
 
 fig.show()
 
@@ -211,25 +211,25 @@ fig.show()
 fig, axes = plt.subplots(
     ncols=3,
     figsize=(20, 10),
-    gridspec_kw={"width_ratios": [1, 2, 1]},
+    gridspec_kw={'width_ratios': [1, 2, 1]},
 )
 
 plotting.plot_design_matrix(
     standard_glm.design_matrices_[0],
     ax=axes[0],
 )
-axes[i_trial].set_title("Standard GLM")
+axes[i_trial].set_title('Standard GLM')
 
 plotting.plot_design_matrix(
     lsa_glm.design_matrices_[0],
     ax=axes[1],
 )
-axes[i_trial].set_title("LSA Model")
+axes[i_trial].set_title('LSA Model')
 
 plotting.plot_design_matrix(
     lss_design_matrices[0],
     ax=axes[2],
 )
-axes[i_trial].set_title("LSS Model (Trial 1)")
+axes[i_trial].set_title('LSS Model (Trial 1)')
 
 fig.show()
