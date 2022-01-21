@@ -34,11 +34,12 @@ def _adjust_small_clusters(array, n_clusters):
     elif np.sum(array_round) == n_clusters:
         pass
     elif np.sum(array_round) > n_clusters:
+        parent_idx_ = np.arange(array_round.shape[0])
         while np.sum(array_round) != n_clusters:
             # prevent element rounded to 1 to be decreased in edge cases
             mask = array_round != 1
             idx = np.argmin(array[mask] - array_round[mask])
-            parent_idx = np.arange(array_round.shape[0])[mask][idx]
+            parent_idx = parent_idx_[mask][idx]
             array_round[parent_idx] -= 1
     return array_round
 
@@ -99,7 +100,8 @@ def hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
     coarse_labels = mbk.labels_
     fine_labels = np.zeros_like(coarse_labels)
     q = 0
-    exact_clusters = np.asarray([n_clusters * np.sum(coarse_labels == i) * 1.
+    counts = np.bincount(coarse_labels)
+    exact_clusters = np.asarray([n_clusters * counts[i] * 1.
                                  / X.shape[0] for i in range(n_big_clusters)])
 
     adjusted_clusters = _adjust_small_clusters(exact_clusters, n_clusters)
