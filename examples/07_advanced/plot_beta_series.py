@@ -29,12 +29,13 @@ with the parameter estimate map extracted from each GLM to build the LSS beta
 series.
 """
 from nilearn.glm.first_level import FirstLevelModel
-from nilearn import image, masking, plotting
+from nilearn import image, plotting
 
 ##############################################################################
 # Prepare data and analysis parameters
-# -------------------------------------
-# Prepare the data.
+# ------------------------------------
+# Download BIDS-compliant data and event information for one subject, and
+# create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 
 data_dir, _ = fetch_language_localizer_demo_dataset()
@@ -48,23 +49,21 @@ models, models_run_imgs, events_dfs, models_confounds = \
         img_filters=[('desc', 'preproc')],
     )
 
+# Grab the first subject's model, functional file, and events DataFrame
 standard_glm = models[0]
 fmri_file = models_run_imgs[0][0]
 events_df = events_dfs[0][0]
-confounds_df = models_confounds[0][0]
-
-mask = masking.compute_epi_mask(fmri_file)
 
 # We will use :func:`~nilearn.glm.first_level.first_level_from_bids`'s
-# parameters for the other models.
+# parameters for the other models
 glm_parameters = standard_glm.get_params()
 # We need to override one parameter (signal_scaling) with the value of
-# scaling_axis.
+# scaling_axis
 glm_parameters['signal_scaling'] = standard_glm.scaling_axis
 
 ##############################################################################
 # Define the standard model
-# -------------------------------------
+# -------------------------
 # Here, we create a basic GLM for this run, which we can use to highlight
 # differences between the standard modeling approach and beta series models.
 # We will just use the one created by
@@ -72,13 +71,18 @@ glm_parameters['signal_scaling'] = standard_glm.scaling_axis
 standard_glm.fit(fmri_file, events_df)
 
 # The standard design matrix has one column for each condition, along with
-# columns for the confound regressors and drifts.
+# columns for the confound regressors and drifts
 plotting.plot_design_matrix(standard_glm.design_matrices_[0])
 
 ##############################################################################
 # Define the LSA model
-# -------------------------------------
-# We will now create an LSA model.
+# --------------------
+# We will now create a least squares- all (LSA) model.
+# This involves a simple transformation, where each trial of interest receives
+# its own unique trial type.
+# It's important to ensure that the original trial types can be inferred from
+# the updated trial-wise trial types, in order to collect the resulting
+# beta maps into condition-wise beta series.
 
 # Transform the DataFrame for LSA
 lsa_events_df = events_df.copy()
@@ -88,7 +92,7 @@ for i_trial, trial in lsa_events_df.iterrows():
     trial_condition = trial['trial_type']
     condition_counter[trial_condition] += 1
     # We use a unique delimiter here (``__``) that shouldn't be in the
-    # original condition names.
+    # original condition names
     trial_name = f'{trial_condition}__{condition_counter[trial_condition]:03d}'
     lsa_events_df.loc[i_trial, 'trial_type'] = trial_name
 
@@ -105,19 +109,25 @@ lsa_beta_maps = {cond: [] for cond in events_df['trial_type'].unique()}
 trialwise_conditions = lsa_events_df['trial_type'].unique()
 for condition in trialwise_conditions:
     beta_map = lsa_glm.compute_contrast(condition, output_type='effect_size')
-    # Drop the trial number from the condition name to get the original name.
+    # Drop the trial number from the condition name to get the original name
     condition_name = condition.split('__')[0]
     lsa_beta_maps[condition_name].append(beta_map)
 
 # We can concatenate the lists of 3D maps into a single 4D beta series for
-# each condition, if we want.
+# each condition, if we want
 lsa_beta_maps = {
     name: image.concat_imgs(maps) for name, maps in lsa_beta_maps.items()
 }
 
 ##############################################################################
 # Define the LSS models
-# -------------------------------------
+# ---------------------
+# We will now create a separate LSS model for each trial of interest.
+# The transformation is much like the LSA approach, except that we only
+# relabel *one* trial in the DataFrame.
+# We loop through the trials, create a version of the DataFrame where the
+# targeted trial has a unique trial type, fit the model to that DataFrame,
+# and finally collect the targeted trial's beta map for the beta series.
 
 
 def lss_transformer(df, row_number):
@@ -140,7 +150,7 @@ def lss_transformer(df, row_number):
     """
     df = df.copy()
 
-    # Determine which number trial it is *within the condition*.
+    # Determine which number trial it is *within the condition*
     trial_condition = df.loc[row_number, 'trial_type']
     trial_type_series = df['trial_type']
     trial_type_series = trial_type_series.loc[
@@ -160,7 +170,7 @@ def lss_transformer(df, row_number):
     return df, trial_name
 
 
-# Transform the DataFrame for LSS
+# Loop through the trials of interest and transform the DataFrame for LSS
 lss_beta_maps = {cond: [] for cond in events_df['trial_type'].unique()}
 lss_design_matrices = []
 
@@ -179,12 +189,12 @@ for i_trial in range(events_df.shape[0]):
         output_type='effect_size',
     )
 
-    # Drop the trial number from the condition name to get the original name.
+    # Drop the trial number from the condition name to get the original name
     condition_name = trial_condition.split('__')[0]
     lss_beta_maps[condition_name].append(beta_map)
 
 # We can concatenate the lists of 3D maps into a single 4D beta series for
-# each condition, if we want.
+# each condition, if we want
 lss_beta_maps = {
     name: image.concat_imgs(maps) for name, maps in lss_beta_maps.items()
 }
