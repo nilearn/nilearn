@@ -83,10 +83,9 @@ plotting.plot_design_matrix(standard_glm.design_matrices_[0])
 # Transform the DataFrame for LSA
 lsa_events_df = events_df.copy()
 conditions = lsa_events_df["trial_type"].unique()
-lsa_events_df["old_trial_type"] = lsa_events_df["trial_type"]
 condition_counter = {c: 0 for c in conditions}
 for i_trial, trial in lsa_events_df.iterrows():
-    trial_condition = trial["old_trial_type"]
+    trial_condition = trial["trial_type"]
     condition_counter[trial_condition] += 1
     # We use a unique delimiter here (``__``) that shouldn't be in the
     # original condition names.
@@ -122,25 +121,40 @@ lsa_beta_maps = {
 
 
 def lss_transformer(df, row_number):
-    """Label one trial for one LSS model."""
+    """Label one trial for one LSS model.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        BIDS-compliant events file information.
+    row_number : int
+        Row number in the DataFrame.
+        This indexes the trial that will be isolated.
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        Update events information, with the select trial's trial type isolated.
+    trial_name : str
+        Name of the isolated trial's trial type.
+    """
     df = df.copy()
 
-    # Technically, all you need is for the requested trial to have a unique
-    # "trial_type" *within* the dataframe, rather than across models.
-    # However, we may want to have meaningful "trial_type"s (e.g., "Left_001")
-    # across models, so that you could track individual trials across models.
-    df["old_trial_type"] = df["trial_type"]
-
     # Determine which number trial it is *within the condition*.
-    trial_condition = df.loc[row_number, "old_trial_type"]
-    trial_type_series = df["old_trial_type"]
+    trial_condition = df.loc[row_number, "trial_type"]
+    trial_type_series = df["trial_type"]
     trial_type_series = trial_type_series.loc[
         trial_type_series == trial_condition
     ]
     trial_type_list = trial_type_series.index.tolist()
     trial_number = trial_type_list.index(row_number)
+
     # We use a unique delimiter here (``__``) that shouldn't be in the
     # original condition names.
+    # Technically, all you need is for the requested trial to have a unique
+    # "trial_type" *within* the dataframe, rather than across models.
+    # However, we may want to have meaningful "trial_type"s (e.g., "Left_001")
+    # across models, so that you could track individual trials across models.
     trial_name = f"{trial_condition}__{trial_number:03d}"
     df.loc[row_number, "trial_type"] = trial_name
     return df, trial_name
@@ -176,16 +190,46 @@ lss_beta_maps = {
 }
 
 ##############################################################################
-# Compare the three modeling approaches
-# -------------------------------------
+# Show the design matrices for the first few trials
+# `````````````````````````````````````````````````
 import matplotlib.pyplot as plt
 
 fig, axes = plt.subplots(ncols=3, figsize=(20, 10))
 for i_trial in range(3):
     plotting.plot_design_matrix(
-        lss_design_matrices[0],
+        lss_design_matrices[i_trial],
         ax=axes[i_trial],
     )
     axes[i_trial].set_title(f"Trial {i_trial + 1}")
+
+fig.show()
+
+##############################################################################
+# Compare the three modeling approaches
+# -------------------------------------
+
+fig, axes = plt.subplots(
+    ncols=3,
+    figsize=(20, 10),
+    gridspec_kw={"width_ratios": [1, 2, 1]},
+)
+
+plotting.plot_design_matrix(
+    standard_glm.design_matrices_[0],
+    ax=axes[0],
+)
+axes[i_trial].set_title("Standard GLM")
+
+plotting.plot_design_matrix(
+    lsa_glm.design_matrices_[0],
+    ax=axes[1],
+)
+axes[i_trial].set_title("LSA Model")
+
+plotting.plot_design_matrix(
+    lss_design_matrices[0],
+    ax=axes[2],
+)
+axes[i_trial].set_title("LSS Model (Trial 1)")
 
 fig.show()
