@@ -12,11 +12,13 @@ typical time series used in resting-state functional connectivity analyses.
 Generally, these models are most useful for event-related task designs,
 while other modeling approaches (e.g., PPI) tend to perform better in block
 designs, depending on the type of analysis.
-See Cisler, Bush, & Steele (2014)[1]_ for more information about this,
+See :cite:t:`cisler2014comparison` for more information about this,
 in the context of functional connectivity analyses.
 
 Two of the most well-known beta series modeling methods are
-Least Squares- All (LSA)[2]_ and Least Squares- Separate (LSS)[3]_[4]_.
+Least Squares- All (LSA) :cite:p:`rissman2004measuring` and
+Least Squares- Separate (LSS)
+:cite:p:`mumford2012deconvolving,turner2012spatiotemporal`.
 In LSA, a single :term:`GLM` is run, in which each trial of each condition of
 interest is separated out into its own condition within the design matrix.
 In LSS, each trial of each condition of interest has its own :term:`GLM`,
@@ -25,25 +27,6 @@ but everything else remains the same as the standard model.
 Trials are then looped across, and many GLMs are fitted,
 with the parameter estimate map extracted from each GLM to build the LSS beta
 series.
-
-References
-----------
-.. [1] Cisler, J. M., Bush, K., & Steele, J. S. (2014).
-   A comparison of statistical methods for detecting context-modulated
-   functional connectivity in fMRI. Neuroimage, 84, 1042-1052.
-   doi: 10.1016/j.neuroimage.2013.09.018.
-.. [2] Rissman, J., Gazzaley, A., & D'Esposito, M. (2004).
-   Measuring functional connectivity during distinct stages of a cognitive
-   task. Neuroimage, 23(2), 752-763.
-   doi: 10.1016/j.neuroimage.2004.06.035.
-.. [3] Mumford, J. A., Turner, B. O., Ashby, F. G., & Poldrack, R. A. (2012).
-   Deconvolving BOLD activation in event-related designs for multivoxel
-   pattern classification analyses. Neuroimage, 59(3), 2636-2643.
-   doi: 10.1016/j.neuroimage.2011.08.076.
-.. [4] Turner, B. O., Mumford, J. A., Poldrack, R. A., & Ashby, F. G. (2012).
-   Spatiotemporal activity estimation for multivoxel pattern analysis with
-   rapid event-related designs. NeuroImage, 62(3), 1429-1438.
-   doi: 10.1016/j.neuroimage.2012.05.057.
 """
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn import image, plotting
