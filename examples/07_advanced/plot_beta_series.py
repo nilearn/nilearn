@@ -303,19 +303,19 @@ brain_masker = NiftiMasker(
 # Perform the seed-to-voxel correlation for the LSS 'language' beta series
 lang_seed_beta_series = seed_masker.fit_transform(lss_beta_maps['language'])
 lang_beta_series = brain_masker.fit_transform(lss_beta_maps['language'])
-lang_corrs = (
-    np.dot(lang_beta_series.T, lang_seed_beta_series) /
-    lang_seed_beta_series.shape[0]
-)
+lang_corrs = np.dot(
+    lang_beta_series.T,
+    lang_seed_beta_series,
+) / lang_seed_beta_series.shape[0]
 language_connectivity_img = brain_masker.inverse_transform(lang_corrs.T)
 
 # Perform the seed-to-voxel correlation for the LSS 'string' beta series
 string_seed_beta_series = seed_masker.fit_transform(lss_beta_maps['string'])
 string_beta_series = brain_masker.fit_transform(lss_beta_maps['string'])
-string_corrs = (
-    np.dot(string_beta_series.T, string_seed_beta_series) /
-    string_seed_beta_series.shape[0]
-)
+string_corrs = np.dot(
+    string_beta_series.T,
+    string_seed_beta_series,
+) / string_seed_beta_series.shape[0]
 string_connectivity_img = brain_masker.inverse_transform(string_corrs.T)
 
 # Show both correlation maps
