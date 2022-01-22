@@ -29,7 +29,7 @@ Trials are then looped across, and many GLMs are fitted,
 with the parameter estimate map extracted from each GLM to build the LSS beta
 series.
 """
-# sphinx_gallery_thumbnail_number = -1
+# sphinx_gallery_thumbnail_number = -2
 import matplotlib.pyplot as plt
 
 from nilearn.glm.first_level import FirstLevelModel
