@@ -30,6 +30,8 @@ with the parameter estimate map extracted from each GLM to build the LSS beta
 series.
 """
 # sphinx_gallery_thumbnail_number = -1
+import matplotlib.pyplot as plt
+
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn import image, plotting
 
@@ -74,7 +76,9 @@ standard_glm.fit(fmri_file, events_df)
 
 # The standard design matrix has one column for each condition, along with
 # columns for the confound regressors and drifts
-plotting.plot_design_matrix(standard_glm.design_matrices_[0])
+fig, ax = plt.subplots(figsize=(5, 10))
+plotting.plot_design_matrix(standard_glm.design_matrices_[0], ax=ax)
+fig.show()
 
 ##############################################################################
 # Define the LSA model
@@ -101,7 +105,9 @@ for i_trial, trial in lsa_events_df.iterrows():
 lsa_glm = FirstLevelModel(**glm_parameters)
 lsa_glm.fit(fmri_file, lsa_events_df)
 
-plotting.plot_design_matrix(lsa_glm.design_matrices_[0])
+fig, ax = plt.subplots(figsize=(10, 10))
+plotting.plot_design_matrix(lsa_glm.design_matrices_[0], ax=ax)
+fig.show()
 
 ##############################################################################
 # Aggregate beta maps from the LSA model based on condition
@@ -204,8 +210,6 @@ lss_beta_maps = {
 ##############################################################################
 # Show the design matrices for the first few trials
 # `````````````````````````````````````````````````
-import matplotlib.pyplot as plt
-
 fig, axes = plt.subplots(ncols=3, figsize=(20, 10))
 for i_trial in range(3):
     plotting.plot_design_matrix(
