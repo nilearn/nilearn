@@ -58,8 +58,7 @@ standard_glm = models[0]
 fmri_file = models_run_imgs[0][0]
 events_df = events_dfs[0][0]
 
-# We will use :func:`~nilearn.glm.first_level.first_level_from_bids`'s
-# parameters for the other models
+# We will use first_level_from_bids's parameters for the other models
 glm_parameters = standard_glm.get_params()
 # We need to override one parameter (signal_scaling) with the value of
 # scaling_axis
@@ -247,5 +246,109 @@ plotting.plot_design_matrix(
     ax=axes[2],
 )
 axes[2].set_title('LSS Model (Trial 1)')
+
+fig.show()
+
+##############################################################################
+# Applications of beta series
+# ---------------------------
+# Beta series can be used much like resting-state data, though generally with
+# vastly reduced degrees of freedom than a typical resting-state run, given
+# that the number of trials should always be less than the number of volumes
+# in a functional MRI run.
+#
+# Two common applications of beta series are to functional connectivity and
+# decoding analyses.
+# For an example of a beta series applied to decoding, see
+# :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py`.
+# Here, we show how the beta series can be applied to functional connectivity
+# analysis.
+# The following example is based on
+# :ref:`sphx_glr_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py`,
+# which goes into more detail about seed-to-voxel functional connectivity
+# analyses.
+import numpy as np
+
+from nilearn.maskers import NiftiSpheresMasker, NiftiMasker
+
+# Coordinate taken from Neurosynth's 'language' meta-analysis
+coords = [(-54, -42, 3)]
+
+# Initialize maskers for the seed and the rest of the brain
+seed_masker = NiftiSpheresMasker(
+    coords,
+    radius=8,
+    detrend=True,
+    standardize=True,
+    low_pass=None,
+    high_pass=None,
+    t_r=None,
+    memory='nilearn_cache',
+    memory_level=1,
+    verbose=0,
+)
+
+brain_masker = NiftiMasker(
+    smoothing_fwhm=6,
+    detrend=True,
+    standardize=True,
+    low_pass=None,
+    high_pass=None,
+    t_r=None,
+    memory='nilearn_cache',
+    memory_level=1,
+    verbose=0,
+)
+
+# Perform the seed-to-voxel correlation for the LSS 'language' beta series
+lang_seed_beta_series = seed_masker.fit_transform(lss_beta_maps['language'])
+lang_beta_series = brain_masker.fit_transform(lss_beta_maps['language'])
+lang_corrs = (
+    np.dot(lang_beta_series.T, lang_seed_beta_series) /
+    lang_seed_beta_series.shape[0]
+)
+language_connectivity_img = brain_masker.inverse_transform(lang_corrs.T)
+
+# Perform the seed-to-voxel correlation for the LSS 'string' beta series
+string_seed_beta_series = seed_masker.fit_transform(lss_beta_maps['string'])
+string_beta_series = brain_masker.fit_transform(lss_beta_maps['string'])
+string_corrs = (
+    np.dot(string_beta_series.T, string_seed_beta_series) /
+    string_seed_beta_series.shape[0]
+)
+string_connectivity_img = brain_masker.inverse_transform(string_corrs.T)
+
+# Show both correlation maps
+fig, axes = plt.subplots(figsize=(10, 8), nrows=2)
+
+display = plotting.plot_stat_map(
+    language_connectivity_img,
+    threshold=0.5,
+    vmax=1,
+    cut_coords=coords[0],
+    title='Language',
+    figure=fig,
+    axes=axes[0],
+)
+display.add_markers(
+    marker_coords=coords,
+    marker_color='g',
+    marker_size=300,
+)
+
+display = plotting.plot_stat_map(
+    string_connectivity_img,
+    threshold=0.5,
+    vmax=1,
+    cut_coords=coords[0],
+    title='String',
+    figure=fig,
+    axes=axes[1],
+)
+display.add_markers(
+    marker_coords=coords,
+    marker_color='g',
+    marker_size=300,
+)
 
 fig.show()
