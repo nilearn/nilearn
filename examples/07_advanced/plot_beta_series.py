@@ -1,17 +1,18 @@
 """
 Beta-Series Modeling for Task-Based Functional Connectivity and Decoding
 ========================================================================
-This example shows how to run :term:`GLM`s for beta series models, which are a
+This example shows how to run beta series :term:`GLM` models, which are a
 common modeling approach for a variety of analyses of task-based fMRI
-data with an event-related task design, including functional connectivity,
-decoding, and representational similarity analysis.
+data with an event-related task design, including
+:term:`functional connectivity`, :term:`decoding <Decoding>`, and
+representational similarity analysis.
 
 Beta series models fit trial-wise conditions, which allow users to create
 "time series" of these trial-wise maps, which can be substituted for the
 typical time series used in resting-state functional connectivity analyses.
 Generally, these models are most useful for event-related task designs,
-while other modeling approaches (e.g., PPI) tend to perform better in block
-designs, depending on the type of analysis.
+while other modeling approaches, such as psychophysiological interactions,
+tend to perform better in block designs, depending on the type of analysis.
 See :cite:t:`cisler2014comparison` for more information about this,
 in the context of functional connectivity analyses.
 
@@ -28,14 +29,15 @@ Trials are then looped across, and many GLMs are fitted,
 with the parameter estimate map extracted from each GLM to build the LSS beta
 series.
 """
+# sphinx_gallery_thumbnail_number = -1
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn import image, plotting
 
 ##############################################################################
 # Prepare data and analysis parameters
 # ------------------------------------
-# Download BIDS-compliant data and event information for one subject, and
-# create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
+# Download data in :term:`BIDS` format and event information for one subject,
+# and create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 
 data_dir, _ = fetch_language_localizer_demo_dataset()
