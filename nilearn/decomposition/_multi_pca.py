@@ -150,23 +150,20 @@ class _MultiPCA(_BaseDecomposition):
         self.n_components = n_components
         self.do_cca = do_cca
 
-        _BaseDecomposition.__init__(self, n_components=n_components,
-                                    random_state=random_state,
-                                    mask=mask,
-                                    smoothing_fwhm=smoothing_fwhm,
-                                    standardize=standardize,
-                                    standardize_confounds=standardize_confounds,
-                                    detrend=detrend,
-                                    low_pass=low_pass,
-                                    high_pass=high_pass, t_r=t_r,
-                                    target_affine=target_affine,
-                                    target_shape=target_shape,
-                                    mask_strategy=mask_strategy,
-                                    mask_args=mask_args,
-                                    memory=memory,
-                                    memory_level=memory_level,
-                                    n_jobs=n_jobs,
-                                    verbose=verbose)
+        _BaseDecomposition.__init__(
+            self, n_components=n_components,
+            random_state=random_state,
+            mask=mask, smoothing_fwhm=smoothing_fwhm,
+            standardize=standardize,
+            standardize_confounds=standardize_confounds,
+            detrend=detrend, low_pass=low_pass,
+            high_pass=high_pass, t_r=t_r,
+            target_affine=target_affine,
+            target_shape=target_shape,
+            mask_strategy=mask_strategy, mask_args=mask_args,
+            memory=memory, memory_level=memory_level,
+            n_jobs=n_jobs, verbose=verbose
+        )
 
     def _raw_fit(self, data):
         """Helper function that directly process unmasked data"""
