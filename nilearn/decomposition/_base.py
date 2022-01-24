@@ -24,7 +24,7 @@ from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
 from ..signal import _row_sum_of_squares
 
 
-def fast_svd(X, n_components, random_state=None):
+def _fast_svd(X, n_components, random_state=None):
     """ Automatically switch between randomized and lapack SVD (heuristic
         of scikit-learn).
 
@@ -82,7 +82,7 @@ def fast_svd(X, n_components, random_state=None):
     return U, S, V
 
 
-def mask_and_reduce(masker, imgs,
+def _mask_and_reduce(masker, imgs,
                     confounds=None,
                     reduction_ratio='auto',
                     n_components=None, random_state=None,
@@ -220,7 +220,7 @@ def _mask_and_reduce_single(masker,
     else:
         n_samples = int(ceil(data_n_samples * reduction_ratio))
 
-    U, S, V = cache(fast_svd, memory,
+    U, S, V = cache(_fast_svd, memory,
                     memory_level=memory_level,
                     func_memory_level=3)(this_data.T,
                                          n_samples,
@@ -231,7 +231,7 @@ def _mask_and_reduce_single(masker,
 
 
 @fill_doc
-class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
+class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
     """Base class for matrix factorization based decomposition estimators.
 
     Handles mask logic, provides transform and inverse_transform methods
@@ -406,11 +406,11 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             self.masker_.fit()
         self.mask_img_ = self.masker_.mask_img_
 
-        # mask_and_reduce step for decomposition estimators i.e.
+        # _mask_and_reduce step for decomposition estimators i.e.
         # MultiPCA, CanICA and Dictionary Learning
         if self.verbose:
             print("[{0}] Loading data".format(self.__class__.__name__))
-        data = mask_and_reduce(
+        data = _mask_and_reduce(
             self.masker_, imgs, confounds=confounds,
             n_components=self.n_components,
             random_state=self.random_state,
@@ -499,7 +499,7 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
     def _raw_score(self, data, per_component=True):
         """Return explained variance over data of estimator components_"""
-        return self._cache(explained_variance)(data, self.components_,
+        return self._cache(_explained_variance)(data, self.components_,
                                                per_component=per_component)
 
     def score(self, imgs, confounds=None, per_component=False):
@@ -530,13 +530,13 @@ class BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
         """
         self._check_components_()
-        data = mask_and_reduce(self.masker_, imgs, confounds,
+        data = _mask_and_reduce(self.masker_, imgs, confounds,
                                reduction_ratio=1.,
                                random_state=self.random_state)
         return self._raw_score(data, per_component=per_component)
 
 
-def explained_variance(X, components, per_component=True):
+def _explained_variance(X, components, per_component=True):
     """Score function based on explained variance
 
         Parameters

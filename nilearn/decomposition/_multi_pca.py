@@ -6,12 +6,12 @@ import numpy as np
 from joblib import Memory
 from sklearn.utils.extmath import randomized_svd
 
-from .base import BaseDecomposition
+from ._base import _BaseDecomposition
 from nilearn._utils import fill_doc
 
 
 @fill_doc
-class MultiPCA(BaseDecomposition):
+class _MultiPCA(_BaseDecomposition):
     """Perform Multi Subject Principal Component Analysis.
 
     Perform a PCA on each subject, stack the results, and reduce them
@@ -150,23 +150,23 @@ class MultiPCA(BaseDecomposition):
         self.n_components = n_components
         self.do_cca = do_cca
 
-        BaseDecomposition.__init__(self, n_components=n_components,
-                                   random_state=random_state,
-                                   mask=mask,
-                                   smoothing_fwhm=smoothing_fwhm,
-                                   standardize=standardize,
-                                   standardize_confounds=standardize_confounds,
-                                   detrend=detrend,
-                                   low_pass=low_pass,
-                                   high_pass=high_pass, t_r=t_r,
-                                   target_affine=target_affine,
-                                   target_shape=target_shape,
-                                   mask_strategy=mask_strategy,
-                                   mask_args=mask_args,
-                                   memory=memory,
-                                   memory_level=memory_level,
-                                   n_jobs=n_jobs,
-                                   verbose=verbose)
+        _BaseDecomposition.__init__(self, n_components=n_components,
+                                    random_state=random_state,
+                                    mask=mask,
+                                    smoothing_fwhm=smoothing_fwhm,
+                                    standardize=standardize,
+                                    standardize_confounds=standardize_confounds,
+                                    detrend=detrend,
+                                    low_pass=low_pass,
+                                    high_pass=high_pass, t_r=t_r,
+                                    target_affine=target_affine,
+                                    target_shape=target_shape,
+                                    mask_strategy=mask_strategy,
+                                    mask_args=mask_args,
+                                    memory=memory,
+                                    memory_level=memory_level,
+                                    n_jobs=n_jobs,
+                                    verbose=verbose)
 
     def _raw_fit(self, data):
         """Helper function that directly process unmasked data"""

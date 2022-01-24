@@ -15,12 +15,12 @@ from sklearn.decomposition import fastica
 from joblib import Memory, delayed, Parallel
 from sklearn.utils import check_random_state
 
-from .multi_pca import MultiPCA
+from ._multi_pca import _MultiPCA
 from nilearn._utils import fill_doc
 
 
 @fill_doc
-class CanICA(MultiPCA):
+class CanICA(_MultiPCA):
     """Perform Canonical Independent Component Analysis [1]_ [2]_.
 
     Parameters
@@ -251,7 +251,7 @@ class CanICA(MultiPCA):
             self.components_img_ = self.masker_.inverse_transform(
                 self.components_)
 
-    # Overriding MultiPCA._raw_fit overrides MultiPCA.fit behavior
+    # Overriding _MultiPCA._raw_fit overrides _MultiPCA.fit behavior
     def _raw_fit(self, data):
         """Helper function that directly process unmasked data.
 
@@ -264,6 +264,6 @@ class CanICA(MultiPCA):
             Unmasked data to process
 
         """
-        components = MultiPCA._raw_fit(self, data)
+        components = _MultiPCA._raw_fit(self, data)
         self._unmix_components(components)
         return self
