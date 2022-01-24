@@ -84,7 +84,11 @@ Fixes
 - Convert reference in `nilearn/regions/region_extractor.py` to use footcite / footbibliography.
   (See issue `#2787 <https://github.com/nilearn/nilearn/issues/2787>`_ and PR `#3111 <https://github.com/nilearn/nilearn/pull/3111>`_).
 - Computation of Benjamini-Hocheberg threshold fixed in `nilearn/glm/thresholding.py` function (see issue `#2879 <https://github.com/nilearn/nilearn/issues/2879>`_ and PR `#3137 <https://github.com/nilearn/nilearn/pull/3137>`_)
-
+- Attribute `scaling_axis` of :class:`~nilearn.glm.first_level.FirstLevelModel` has
+  been deprecated and will be removed in 0.11.0. When scaling is performed, the
+  attribute `signal_scaling` is used to define the axis instead.
+  (See issue `#3134 <https://github.com/nilearn/nilearn/issues/3134>`_ and PR
+  `#3135 <https://github.com/nilearn/nilearn/pull/3135>`_).
 
 Enhancements
 ------------
