@@ -124,6 +124,7 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None,
     # Download the zip file, first
     files_ = _fetch_files(data_dir, files, verbose=verbose)
     labels = pd.read_csv(files_[0])
+    labels = labels.rename(columns={c: c.lower() for c in labels.columns})
     if legacy_format:
         warnings.warn(_LEGACY_FORMAT_MSG)
         labels = labels.to_records(index=False)
