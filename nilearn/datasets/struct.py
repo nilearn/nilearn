@@ -31,10 +31,10 @@ WM_MNI152_FILE_PATH = os.path.join(
     "mni_icbm152_wm_tal_nlin_sym_09a_converted.nii.gz")
 FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
 
-LEGACY_FORMAT_MSG = (
+_LEGACY_FORMAT_MSG = (
     "`legacy_format` will default to `False` in release 0.11. "
-    "Dataset fetchers will then return pandas dataframes instead "
-    "of recarrays."
+    "Dataset fetchers will then return pandas dataframes by default "
+    "instead of recarrays."
 )
 
 # workaround for
@@ -751,12 +751,13 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
     subject_mask = np.asarray([subject_id in actual_subjects_ids
                                for subject_id in csv_data['ID']])
     csv_data = csv_data[subject_mask]
-
+    csv_data = csv_data.rename(columns={c: c.lower() for c in csv_data.columns})
+    csv_data = csv_data.rename(columns={c: c.replace("/", "") for c in csv_data.columns})
     fdescr = _get_dataset_descr(dataset_name)
 
     if legacy_format:
-        warnings.warn(LEGACY_FORMAT_MSG)
-        csv_data = csv_data.to_records()
+        warnings.warn(_LEGACY_FORMAT_MSG)
+        csv_data = csv_data.to_records(index=False)
 
     return Bunch(
         gray_matter_maps=gm_maps,
