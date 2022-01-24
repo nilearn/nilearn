@@ -751,8 +751,12 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
     subject_mask = np.asarray([subject_id in actual_subjects_ids
                                for subject_id in csv_data['ID']])
     csv_data = csv_data[subject_mask]
-    csv_data = csv_data.rename(columns={c: c.lower() for c in csv_data.columns})
-    csv_data = csv_data.rename(columns={c: c.replace("/", "") for c in csv_data.columns})
+    csv_data = csv_data.rename(
+        columns={c: c.lower() for c in csv_data.columns}
+    )
+    csv_data = csv_data.rename(
+        columns={c: c.replace("/", "") for c in csv_data.columns}
+    )
     fdescr = _get_dataset_descr(dataset_name)
 
     if legacy_format:
