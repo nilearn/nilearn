@@ -24,6 +24,21 @@ NEW
   confound variables from :term:`fMRIPrep` outputs using four preset strategies:
   ``simple``, ``scrubbing``, ``compcor``, and ``ica_aroma``.
   (See PR `#3016 <https://github.com/nilearn/nilearn/pull/3016>`_).
+- New submodule :mod:`nilearn.interfaces.bids` to implement loading utilities
+  for :term:`BIDS` datasets.
+  (See PR `#3126 <https://github.com/nilearn/nilearn/pull/3126>`_).
+- New function :func:`nilearn.interfaces.bids.get_bids_files` to select files
+  easily from :term:`BIDS` datasets.
+  (See PR `#3126 <https://github.com/nilearn/nilearn/pull/3126>`_).
+- New function :func:`nilearn.interfaces.bids.parse_bids_filename` to identify
+  subparts of :term:`BIDS` filenames.
+  (See PR `#3126 <https://github.com/nilearn/nilearn/pull/3126>`_).
+- New submodule :mod:`nilearn.interfaces.fsl` to implement loading utilities
+  for FSL outputs.
+  (See PR `#3126 <https://github.com/nilearn/nilearn/pull/3126>`_).
+- New function :func:`nilearn.interfaces.fsl.get_design_from_fslmat` to load
+  design matrices from FSL files.
+  (See PR `#3126 <https://github.com/nilearn/nilearn/pull/3126>`_).
 - Surface plotting functions like :func:`nilearn.plotting.plot_surf_stat_map`
   now have an `engine` parameter, defaulting to "matplotlib", but which can be
   set to "plotly". If plotly and kaleido are installed, this will generate an
@@ -43,6 +58,12 @@ NEW
   through the spatial maps with a previous and next button. The users can filter the maps
   they wish to display by passing an integer, or a list of integers to
   :meth:`~nilearn.maskers.NiftiMapsMasker.generate_report`.
+- New function :func:`nilearn.input_data.fmriprep_confounds` to load confound
+  variables easily from :term:`fMRIPrep` outputs.
+- New class :class:`nilearn.regions.HierarchicalKMeans` which yields more
+  balanced clusters than `KMeans`. It is also callable through
+  :class:`nilearn.regions.Parcellations` using `method`=`hierarchical_kmeans`
+
 
 Fixes
 -----
@@ -70,6 +91,12 @@ Fixes
   (See issue `#2787 <https://github.com/nilearn/nilearn/issues/2787>`_ and PR `#3111 <https://github.com/nilearn/nilearn/pull/3111>`_).
 - Fixed Hommel value computation in `nilearn/glm/thresholding.py` used in the
   `cluster_level_inference` function. See PR `#3109 <https://github.com/nilearn/nilearn/pull/3109>`_
+- Computation of Benjamini-Hocheberg threshold fixed in `nilearn/glm/thresholding.py` function (see issue `#2879 <https://github.com/nilearn/nilearn/issues/2879>`_ and PR `#3137 <https://github.com/nilearn/nilearn/pull/3137>`_)
+- Attribute `scaling_axis` of :class:`~nilearn.glm.first_level.FirstLevelModel` has
+  been deprecated and will be removed in 0.11.0. When scaling is performed, the
+  attribute `signal_scaling` is used to define the axis instead.
+  (See issue `#3134 <https://github.com/nilearn/nilearn/issues/3134>`_ and PR
+  `#3135 <https://github.com/nilearn/nilearn/pull/3135>`_).
 
 Enhancements
 ------------
@@ -121,6 +148,12 @@ Enhancements
 - Importing :mod:`nilearn.plotting` will now raise a warning if the matplotlib
   backend has been changed from its original value, instead of silently modifying
   it.
+- Function :func:`~nilearn.plotting.plot_img` and deriving functions like
+  :func:`~nilearn.plotting.plot_anat`, :func:`~nilearn.plotting.plot_stat_map`, or
+  :func:`~nilearn.plotting.plot_epi` now accept an optional argument
+  ``cbar_tick_format`` to specify how numbers should be displayed on the colorbar.
+  This is consistent with the API of surface plotting functions (see release 0.7.1).
+  The default format is scientific notation.
 
 Changes
 -------
@@ -136,6 +169,11 @@ Changes
 - Deprecated parameter ``sessions`` of function :func:`~nilearn.signal.clean`
   has been removed. Use ``runs`` instead.
   (See PR `#3093 <https://github.com/nilearn/nilearn/pull/3093>`_).
+- Deprecated parameters ``sessions`` and ``sample_mask`` of
+  :class:`~nilearn.maskers.NiftiMasker` have been removed. Please use ``runs`` instead of
+  ``sessions``, and provide a ``sample_mask`` through
+  :meth:`~nilearn.maskers.NiftiMasker.transform`.
+  (See PR `#3133 <https://github.com/nilearn/nilearn/pull/3133>`_).
 - :func:`nilearn.glm.first_level.compute_regressor` will now raise an exception if
   parameter `cond_id` is not a string which could be used to name a python variable.
   For instance, number strings (ex: "1") will no longer be accepted as valid condition names.

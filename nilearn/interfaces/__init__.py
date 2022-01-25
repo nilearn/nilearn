@@ -2,6 +2,6 @@
 Interfaces for Nilearn.
 """
 
-from nilearn.interfaces import fmriprep
+from nilearn.interfaces import bids, fmriprep, fsl
 
-__all__ = ['fmriprep']
+__all__ = ['bids', 'fmriprep', 'fsl']

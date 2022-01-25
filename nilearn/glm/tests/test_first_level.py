@@ -15,7 +15,6 @@ from numpy.testing import (assert_almost_equal, assert_array_almost_equal,
 from nilearn._utils.data_gen import (create_fake_bids_dataset,
                                      generate_fake_fmri_data_and_design,
                                      write_fake_fmri_data_and_design)
-from nilearn._utils.glm import get_bids_files
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (FirstLevelModel, first_level_from_bids,
                                      mean_scaling, run_glm)
@@ -23,6 +22,7 @@ from nilearn.glm.first_level.design_matrix import (
     check_design_matrix, make_first_level_design_matrix)
 from nilearn.glm.first_level.first_level import _yule_walker
 from nilearn.image import get_data
+from nilearn.interfaces.bids import get_bids_files
 from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.maskers import NiftiMasker
 
@@ -709,6 +709,32 @@ def test_first_level_from_bids():
         with pytest.raises(ValueError):
             first_level_from_bids(
                 bids_path, 'main', 'T1w')  # desc not specified
+
+
+def test_first_level_with_scaling():
+    shapes, rk = [(3, 1, 1, 2)], 1
+    fmri_data = list()
+    fmri_data.append(Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, np.eye(4)))
+    design_matrices = list()
+    design_matrices.append(
+        pd.DataFrame(
+            np.ones((shapes[0][-1], rk)),
+            columns=list('abcdefghijklmnopqrstuvwxyz')[:rk])
+    )
+    fmri_glm = FirstLevelModel(
+        mask_img=False, noise_model='ols', signal_scaling=0,
+        minimize_memory=True
+    )
+    assert fmri_glm.signal_scaling == 0
+    assert not fmri_glm.standardize
+    with pytest.warns(DeprecationWarning,
+                      match="Deprecated. `scaling_axis` will be removed"):
+        assert fmri_glm.scaling_axis == 0
+    glm_parameters = fmri_glm.get_params()
+    test_glm = FirstLevelModel(**glm_parameters)
+    fmri_glm = fmri_glm.fit(fmri_data, design_matrices=design_matrices)
+    test_glm = test_glm.fit(fmri_data, design_matrices=design_matrices)
+    assert glm_parameters['signal_scaling'] == 0
 
 
 def test_first_level_with_no_signal_scaling():

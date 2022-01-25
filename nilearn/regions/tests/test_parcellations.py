@@ -9,7 +9,8 @@ from nilearn.regions.parcellations import (Parcellations,
                                            _check_parameters_transform)
 
 
-METHODS = ['kmeans', 'ward', 'complete', 'average', 'rena']
+METHODS = ['kmeans', 'ward', 'complete', 'average', 'rena',
+           'hierarchical_kmeans']
 
 
 @pytest.fixture
@@ -58,19 +59,18 @@ def test_parcellations_fit_on_single_nifti_image(method, n_parcel, test_image):
     parcellator = Parcellations(method=method, n_parcels=n_parcel)
     parcellator.fit(test_image)
     # Test that object returns attribute labels_img_
-    assert parcellator.labels_img_ is not None
+    labels_img = parcellator.labels_img_
+    assert labels_img is not None
+    # After inverse_transform, shape must match with
+    # original input data
+    assert labels_img.shape == test_image.shape[:3]
     # Test object returns attribute masker_
     assert parcellator.masker_ is not None
     assert parcellator.mask_img_ is not None
-    if method not in ['kmeans', 'rena']:
+    if method not in ['kmeans', 'rena', 'hierarchical_kmeans']:
         # Test that object returns attribute connectivity_
         # only for AgglomerativeClustering methods
         assert parcellator.connectivity_ is not None
-        labels_img = parcellator.labels_img_
-        assert parcellator.labels_img_ is not None
-        # After inverse_transform, shape must match with
-        # original input data
-        assert labels_img.shape == test_image.shape[:3]
 
 
 def test_parcellations_warnings(test_empty_image):
@@ -92,6 +92,15 @@ def test_parcellations_fit_on_multi_nifti_images(method, test_image):
     parcellator = Parcellations(method=method, n_parcels=5)
     parcellator.fit(fmri_imgs)
     assert parcellator.labels_img_ is not None
+
+    parcellator = Parcellations(method='rena', n_parcels=5)
+    parcellator.fit(fmri_imgs)
+    assert parcellator.labels_img_ is not None
+
+    parcellator = Parcellations(method='hierarchical_kmeans', n_parcels=5)
+    parcellator.fit(fmri_imgs)
+    assert parcellator.labels_img_ is not None
+
     # Smoke test with explicit mask image
     mask_img = np.ones((10, 11, 12))
     mask_img = nibabel.Nifti1Image(mask_img, np.eye(4))
@@ -136,6 +145,7 @@ def test_parcellations_transform_multi_nifti_images(method,
     assert len(signals) == len(fmri_imgs)
 
 
+
 def test_check_parameters_transform(test_image_2):
     rng = np.random.RandomState(42)
     # single confound
@@ -163,6 +173,7 @@ def test_check_parameters_transform(test_image_2):
     # Test the error when length of images and confounds are not same
     msg = ("Number of confounds given does not match with the "
            "given number of images")
+
     not_match_confounds_list = [confounds] * 2
     with pytest.raises(ValueError, match=msg):
         _check_parameters_transform(fmri_imgs, not_match_confounds_list)
@@ -194,7 +205,7 @@ def test_fit_transform(method, n_parcel, test_image_2):
     parcellator = Parcellations(method=method, n_parcels=n_parcel)
     signals = parcellator.fit_transform(fmri_imgs)
     assert parcellator.labels_img_ is not None
-    if method not in ['kmeans', 'rena']:
+    if method not in ['kmeans', 'rena', 'hierarchical_kmeans']:
         assert parcellator.connectivity_ is not None
     assert parcellator.masker_ is not None
     # fit_transform with confounds
