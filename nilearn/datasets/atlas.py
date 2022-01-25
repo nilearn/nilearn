@@ -783,6 +783,9 @@ def fetch_coords_power_2011(legacy_format=True):
     package_directory = os.path.dirname(os.path.abspath(__file__))
     csv = os.path.join(package_directory, "data", "power_2011.csv")
     params = dict(rois=pd.read_csv(csv), description=fdescr)
+    params['rois'] = params['rois'].rename(
+        columns={c: c.lower() for c in params['rois'].columns}
+    )
     if legacy_format:
         warnings.warn(_LEGACY_FORMAT_MSG)
         params['rois'] = params['rois'].to_records(index=False)
