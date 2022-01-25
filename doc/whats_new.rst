@@ -58,6 +58,12 @@ NEW
   through the spatial maps with a previous and next button. The users can filter the maps
   they wish to display by passing an integer, or a list of integers to
   :meth:`~nilearn.maskers.NiftiMapsMasker.generate_report`.
+- New function :func:`nilearn.input_data.fmriprep_confounds` to load confound
+  variables easily from :term:`fMRIPrep` outputs.
+- New class :class:`nilearn.regions.HierarchicalKMeans` which yields more
+  balanced clusters than `KMeans`. It is also callable through
+  :class:`nilearn.regions.Parcellations` using `method`=`hierarchical_kmeans`
+
 
 Fixes
 -----

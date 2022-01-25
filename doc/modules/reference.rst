@@ -351,6 +351,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    RegionExtractor
    Parcellations
    ReNA
+   HierarchicalKMeans
 
 
 :mod:`nilearn.mass_univariate`: Mass-Univariate Analysis
