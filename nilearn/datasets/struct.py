@@ -40,6 +40,10 @@ _MNI_RES_WARNING_ALREADY_SHOWN = False
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ICBM152 template (dated 2009).
 
+    ICBM152 is the default template of fMRIPrep, under the name
+    "MNI152NLin2009cAsym". For the related TemplateFlow repositior, please see
+    Notes.
+
     For more information, see :footcite:`FONOV2011313`,
     :footcite:`Fonov2009`, and :footcite:`Collins1999algorithm`.
 
@@ -106,6 +110,9 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     The original download URL is
     http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip
+
+    TemplateFlow repository:
+    https://github.com/templateflow/tpl-MNI152NLin2009cAsym
 
     """
     if url is None:
@@ -490,6 +497,10 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
                                 n_iter=2, verbose=1):
     """Downloads ICBM152 template first, then loads the 'gm' mask.
+
+    ICBM152 is the default template of fMRIPrep, under the name
+    "MNI152NLin2009cAsym". For the related TemplateFlow repositior, please see
+    Notes.
 
     .. versionadded:: 0.2.5
 
