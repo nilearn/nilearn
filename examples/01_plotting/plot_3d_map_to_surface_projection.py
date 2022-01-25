@@ -209,7 +209,7 @@ view
 # averaging the labels between neighboring regions. Using nearest-neighbor
 # interpolation with zero radius will achieve this.
 
-destrieux = datasets.fetch_atlas_destrieux_2009()
+destrieux = datasets.fetch_atlas_destrieux_2009(legacy_format=False)
 
 view = plotting.view_img_on_surf(
     destrieux.maps,
