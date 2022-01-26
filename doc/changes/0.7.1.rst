@@ -1,0 +1,56 @@
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.7.1
+=====
+
+**Released March 2021**
+
+HIGHLIGHTS
+----------
+
+- New atlas fetcher :func:`~datasets.fetch_atlas_difumo` to download *Dictionaries of Functional Modes*, or “DiFuMo”, that can serve as atlases to extract functional signals with different dimensionalities (64, 128, 256, 512, and 1024). These modes are optimized to represent well raw :term:`BOLD` timeseries, over a with range of experimental conditions (:gh:`2619` by `Nicolas Gensollen`_).
+
+- :class:`~decoding.Decoder` and :class:`~decoding.DecoderRegressor` are now implemented with random predictions to estimate a chance level (:gh:`2622` by `Kamalakar Reddy Daddy`_).
+
+- Functions :func:`~plotting.plot_epi`, :func:`~plotting.plot_roi`, :func:`~plotting.plot_stat_map`, :func:`~plotting.plot_prob_atlas` are now implemented with new display mode ``Mosaic``. That implies plotting 3D maps in multiple columns and rows in a single axes (:gh:`2684` by `Kamalakar Reddy Daddy`_).
+
+- Function :func:`~plotting.plot_carpet` now supports discrete atlases. When an atlas is used, a colorbar is added to the figure, optionally with labels corresponding to the different values in the atlas (:gh:`2702` by `Taylor Salo`_).
+
+NEW
+---
+
+- New atlas fetcher :func:`~datasets.fetch_atlas_difumo` to download *Dictionaries of Functional Modes*, or “DiFuMo”, that can serve as atlases to extract functional signals with different dimensionalities (64, 128, 256, 512, and 1024). These modes are optimized to represent well raw :term:`BOLD` timeseries, over a with range of experimental conditions (:gh:`2619` by `Nicolas Gensollen`_).
+
+- Function :func:`glm.Contrast.one_minus_pvalue` was added to ensure numerical stability of p-value estimation. It computes 1 - p-value using the Cumulative Distribution Function in the same way as function :func:`nilearn.glm.Contrast.p_value` computes the p-value using the Survival Function. (:gh:`2567` by `Ana Luisa Pinho`_).
+
+Fixes
+-----
+
+- Fix altered, non-zero baseline in design matrices where multiple events in the same condition end at the same time (see :gh:`2674`) (:gh:`2553` by `Martin Wegrzyn`_).
+
+- Fix testing issues on ARM machine (:gh:`2606` by `Kamalakar Reddy Daddy`_).
+
+Enhancements
+------------
+
+- :class:`~decoding.Decoder` and :class:`~decoding.DecoderRegressor` are now implemented with random predictions to estimate a chance level (:gh:`2622` by `Kamalakar Reddy Daddy`_).
+
+- :class:`~decoding.Decoder`, :class:`~decoding.DecoderRegressor`, :class:`~decoding.FREMRegressor`, and :class:`~decoding.FREMClassifier` now override the ``score`` method to use whatever scoring strategy was defined through the ``scoring`` attribute instead of the sklearn default. If the ``scoring`` attribute of the decoder is set to ``None``, the scoring strategy will default to accuracy for classifiers and to r2 score for regressors (:gh:`2669` by `Nicolas Gensollen`_).
+
+- Function :func:`~plotting.plot_surf` and deriving functions like :func:`~plotting.plot_surf_roi` now accept an optional argument ``cbar_tick_format`` to specify how numbers should be displayed on the colorbar of surface plots. The default format is scientific notation except for function :func:`~plotting.plot_surf_roi` for which it is set as integers (:gh:`2643` by `Nicolas Gensollen`_).
+
+- Function :func:`~plotting.plot_carpet` now supports discrete atlases. When an atlas is used, a colorbar is added to the figure, optionally with labels corresponding to the different values in the atlas (:gh:`2702` by `Taylor Salo`_).
+
+- :class:`~maskers.NiftiMasker`, :class:`~maskers.NiftiLabelsMasker`, :class:`~maskers.MultiNiftiMasker`, :class:`~maskers.NiftiMapsMasker`, and :class:`~maskers.NiftiSpheresMasker` can now compute high variance confounds on the images provided to ``transform`` and regress them out automatically. This behaviour is controlled through the ``high_variance_confounds`` boolean parameter of these maskers which default to ``False`` (:gh:`2697` by `Nicolas Gensollen`_).
+
+- :class:`~maskers.NiftiLabelsMasker` now automatically replaces ``NaNs`` in input data with zeros, to match the behavior of other maskers (:gh:`2712` by `Taylor Salo`_).
+
+- Function :func:`~datasets.fetch_neurovault` now implements a ``resample`` boolean argument to either perform a fixed resampling during download or keep original images. This can be handy to reduce disk usage. By default, the downloaded images are not resampled (:gh:`2696` by `Raphael Meudec`_).
+
+- Functions :func:`~plotting.plot_epi`, :func:`~plotting.plot_roi`, :func:`~plotting.plot_stat_map`, :func:`~plotting.plot_prob_atlas` are now implemented with new display mode ``Mosaic``. That implies plotting 3D maps in multiple columns and rows in a single axes (:gh:`2684` by `Kamalakar Reddy Daddy`_).
+
+- Function :func:`~signal.clean` now has a ``psc`` standardization option which allows time series with negative mean values (:gh:`2714` by `Hao-Ting Wang`_).
+
+- Functions :func:`~reporting.make_glm_report` and :func:`~reporting.get_clusters_table` have a new argument, ``two_sided``, which allows for two-sided thresholding, which is disabled by default (:gh:`2719` by `Taylor Salo`_).

@@ -105,7 +105,7 @@
    authors.rst
    user_guide.rst
    auto_examples/index.rst
-   whats_new.rst
+   changes/whats_new.rst
    development.rst
    maintenance.rst
    glossary.rst
