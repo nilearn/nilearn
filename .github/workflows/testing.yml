@@ -33,7 +33,6 @@ jobs:
         shell: bash
     env:
         MIN_REQUIREMENTS: true
-        MATPLOTLIB: false
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
