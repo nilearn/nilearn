@@ -21,9 +21,16 @@ from ..image import new_img_like, get_data, reorder_img
 
 _TALAIRACH_LEVELS = ['hemisphere', 'lobe', 'gyrus', 'tissue', 'ba']
 
+_LEGACY_FORMAT_MSG = (
+    "`legacy_format` will default to `False` in release 0.11. "
+    "Dataset fetchers will then return pandas dataframes by default "
+    "instead of recarrays."
+)
+
 
 @fill_doc
-def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True, verbose=1):
+def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None,
+                       resume=True, verbose=1, legacy_format=True):
     """Fetch DiFuMo brain atlas
 
     Dictionaries of Functional Modes, or “DiFuMo”, can serve as atlases to extract
@@ -57,6 +64,7 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
     %(data_dir)s
     %(resume)s
     %(verbose)s
+    %(legacy_format)s
 
     Returns
     -------
@@ -71,6 +79,8 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
           the regions. The length of the label array corresponds to the
           number of dimensions requested. ``data.labels[i]`` is the label
           corresponding to volume ``i`` in the 'maps' image.
+          If ``legacy_format`` is set to ``False``, this is a
+          :class:`pandas.DataFrame`.
         - 'description': :obj:`str`, general description of the dataset.
 
     References
@@ -113,7 +123,11 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None, resume=True
 
     # Download the zip file, first
     files_ = _fetch_files(data_dir, files, verbose=verbose)
-    labels = pd.read_csv(files_[0]).to_records()
+    labels = pd.read_csv(files_[0])
+    labels = labels.rename(columns={c: c.lower() for c in labels.columns})
+    if legacy_format:
+        warnings.warn(_LEGACY_FORMAT_MSG)
+        labels = labels.to_records(index=False)
 
     # README
     readme_files = [('README.md', 'https://osf.io/4k9bf/download',
@@ -200,7 +214,7 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
 
 @fill_doc
 def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
-                               resume=True, verbose=1):
+                               resume=True, verbose=1, legacy_format=True):
     """Download and load the Destrieux cortical atlas (dated 2009).
 
     See :footcite:`Fischl2004Automatically`,
@@ -221,6 +235,7 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     %(url)s
     %(resume)s
     %(verbose)s
+    %(legacy_format)s
 
     Returns
     -------
@@ -234,6 +249,8 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
               indices in the list of labels.
             - 'labels': :class:`numpy.recarray`, rec array containing the
               names of the ROIs.
+              If ``legacy_format`` is set to ``False``, this is a
+              :class:`pandas.DataFrame`.
             - 'description': :obj:`str`, description of the atlas.
 
     References
@@ -261,7 +278,11 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
                           verbose=verbose)
 
     params = dict(maps=files_[1],
-                  labels=pd.read_csv(files_[0], index_col=0).to_records())
+                  labels=pd.read_csv(files_[0], index_col=0))
+
+    if legacy_format:
+        warnings.warn(_LEGACY_FORMAT_MSG)
+        params['labels'] = params['labels'].to_records()
 
     with open(files_[2], 'r') as rst_file:
         params['description'] = rst_file.read()
@@ -721,17 +742,24 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
         warnings.filterwarnings('ignore', module='numpy',
                                 category=FutureWarning)
         region_coords = csv_data[['x', 'y', 'z']].values.tolist()
-    net_names = [net_name.strip() for net_name in csv_data['net_name'].tolist()]
+    net_names = [
+        net_name.strip() for net_name in csv_data['net name'].tolist()
+    ]
     fdescr = _get_dataset_descr(dataset_name)
 
     return Bunch(maps=files[1], labels=labels, region_coords=region_coords,
                  networks=net_names, description=fdescr)
 
 
-def fetch_coords_power_2011():
+@fill_doc
+def fetch_coords_power_2011(legacy_format=True):
     """Download and load the Power et al. brain atlas composed of 264 ROIs.
 
     See :footcite:`Power2011Functional`.
+
+    Parameters
+    ----------
+    %(legacy_format)s
 
     Returns
     -------
@@ -740,6 +768,8 @@ def fetch_coords_power_2011():
 
             - 'rois': :class:`numpy.recarray`, rec array containing the
               coordinates of 264 ROIs in :term:`MNI` space.
+              If ``legacy_format`` is set to ``False``, this is a
+              :class:`pandas.DataFrame`.
             - 'description': :obj:`str`, description of the atlas.
 
 
@@ -752,8 +782,13 @@ def fetch_coords_power_2011():
     fdescr = _get_dataset_descr(dataset_name)
     package_directory = os.path.dirname(os.path.abspath(__file__))
     csv = os.path.join(package_directory, "data", "power_2011.csv")
-    params = dict(rois=pd.read_csv(csv).to_records(), description=fdescr)
-
+    params = dict(rois=pd.read_csv(csv), description=fdescr)
+    params['rois'] = params['rois'].rename(
+        columns={c: c.lower() for c in params['rois'].columns}
+    )
+    if legacy_format:
+        warnings.warn(_LEGACY_FORMAT_MSG)
+        params['rois'] = params['rois'].to_records(index=False)
     return Bunch(**params)
 
 
@@ -1168,7 +1203,8 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None, url=None,
     return Bunch(**params)
 
 
-def fetch_coords_dosenbach_2010(ordered_regions=True):
+@fill_doc
+def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
     """Load the Dosenbach et al. 160 ROIs. These ROIs cover
     much of the cerebral cortex and cerebellum and are assigned to 6
     networks.
@@ -1181,6 +1217,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
         ROIs from same networks are grouped together and ordered with respect
         to their names and their locations (anterior to posterior).
         Default=True.
+    %(legacy_format)s
 
     Returns
     -------
@@ -1189,6 +1226,8 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
 
         - 'rois': :class:`numpy.recarray`, rec array with the coordinates
           of the 160 ROIs in :term:`MNI` space.
+          If ``legacy_format`` is set to ``False``, this is a
+          :class:`pandas.DataFrame`.
         - 'labels': :class:`numpy.ndarray` of :obj:`str`, list of label
           names for the 160 ROIs.
         - 'networks': :class:`numpy.ndarray` of :obj:`str`, list of network
@@ -1218,10 +1257,15 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
                   labels=labels,
                   networks=out_csv['network'], description=fdescr)
 
+    if legacy_format:
+        warnings.warn(_LEGACY_FORMAT_MSG)
+        params['rois'] = params['rois'].to_records(index=False)
+
     return Bunch(**params)
 
 
-def fetch_coords_seitzman_2018(ordered_regions=True):
+@fill_doc
+def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
     """Load the Seitzman et al. 300 ROIs.
 
     These ROIs cover cortical, subcortical and cerebellar regions and are
@@ -1240,6 +1284,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
     ordered_regions : :obj:`bool`, optional
         ROIs from same networks are grouped together and ordered with respect
         to their locations (anterior to posterior). Default=True.
+    %(legacy_format)s
 
     Returns
     -------
@@ -1248,6 +1293,8 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
 
         - 'rois': :class:`numpy.recarray`, rec array with the coordinates
           of the 300 ROIs in :term:`MNI` space.
+          If ``legacy_format`` is set to ``False``, this is a
+          :class:`pandas.DataFrame`.
         - 'radius': :class:`numpy.ndarray` of :obj:`int`, radius of each
           ROI in mm.
         - 'networks': :class:`numpy.ndarray` of :obj:`str`, names of the
@@ -1290,10 +1337,15 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
     if ordered_regions:
         rois = rois.sort_values(by=['network', 'y'])
 
+    if legacy_format:
+        warnings.warn(_LEGACY_FORMAT_MSG)
+        rois = rois.to_records()
+
     params = dict(rois=rois[['x', 'y', 'z']],
-                  radius=rois['radius'],
-                  networks=rois['network'],
-                  regions=rois['region'], description=fdescr)
+                  radius=np.array(rois['radius']),
+                  networks=np.array(rois['network']),
+                  regions=np.array(rois['region']),
+                  description=fdescr)
 
     return Bunch(**params)
 
