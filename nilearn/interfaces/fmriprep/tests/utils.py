@@ -48,7 +48,7 @@ def create_tmp_filepath(
     suffix="test",
     copy_confounds=False,
     copy_json=False,
-    old_deriveative_suffix=False
+    old_derivative_suffix=False
 ):
     """Create test files in temporary directory."""
     deriveative = "regressors" if old_deriveative_suffix else "timeseries"
