@@ -24,6 +24,7 @@ def test_sanitize_confounds(inputs, flag):
     _, singleflag = _sanitize_confounds(inputs)
     assert singleflag is flag
 
+
 @pytest.mark.parametrize("flag,suffix",
                          [(True, "_desc-confounds_regressors"),
                           (False, "_desc-confounds_timeseries")])

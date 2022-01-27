@@ -2,7 +2,6 @@
 import os
 import json
 import pandas as pd
-from scipy.misc import derivative
 from nilearn.interfaces.fmriprep import load_confounds_utils
 
 
