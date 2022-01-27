@@ -51,7 +51,7 @@ def create_tmp_filepath(
     old_derivative_suffix=False
 ):
     """Create test files in temporary directory."""
-    deriveative = "regressors" if old_deriveative_suffix else "timeseries"
+    deriveative = "regressors" if old_derivative_suffix else "timeseries"
 
     # confound files
     confounds_root = f"_desc-confounds_{deriveative}.tsv"
