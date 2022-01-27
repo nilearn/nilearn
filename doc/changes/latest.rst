@@ -6,6 +6,21 @@
 0.8.2.dev
 =========
 
+.. warning::
+
+ | **Python 3.6 is deprecated and will be removed in release 0.10.**
+ | **We recommend upgrading to Python 3.9.**
+ |
+ | **Nibabel 2.x is no longer supported. Please consider upgrading to Nibabel >= 3.0.**
+ |
+ | **Minimum supported versions of packages have been bumped up:**
+ | - Numpy -- v1.18
+ | - SciPy -- v1.5
+ | - Scikit-learn -- v0.22
+ | - Pandas -- v1.0
+ | - Joblib -- v0.15
+
+
 NEW
 ---
 
