@@ -53,8 +53,7 @@ The required dependencies to use the software are:
 * Nibabel >= 3.0
 * Pandas >= 0.24
 
-If you are using nilearn plotting functionalities or running the
-examples, matplotlib >= 1.5.1 is required.
+If you are using nilearn plotting functionalities or running the examples, matplotlib >= 3.0 is required.
 
 Some plotting functions in Nilearn support both matplotlib and plotly as plotting engines.
 In order to use the plotly engine in these functions, you will need to install both plotly and kaleido, which can both be installed with pip and anaconda.
