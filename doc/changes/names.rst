@@ -114,6 +114,8 @@
 
 .. _Kshitij Chawla: https://github.com/kchawla-pi
 
+.. _Leonard Sasse: https://github.com/LeSasse
+
 .. _Loic Estève: https://github.com/lesteve
 
 .. _Loic Tetrel: https://ltetrel.github.io/
@@ -135,6 +137,10 @@
 .. _Michael Waskom: https://mwaskom.github.io/
 
 .. _Moritz Boos: https://github.com/mjboos
+
+.. _Myeong Seop Song: https://github.com/NeuroVR-Song
+
+.. _Neelay Shah: https://github.com/NeelayS
 
 .. _Nicolas Gensollen: https://nicolasgensollen.github.io/
 

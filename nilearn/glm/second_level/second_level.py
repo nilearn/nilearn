@@ -677,7 +677,7 @@ def non_parametric_inference(second_level_input, confounds=None,
         is the map name to extract from the pandas dataframe map_name column.
         It has to be a 't' contrast.
 
-        .. versionadded:: 0.8.2
+        .. versionadded:: 0.9.0
 
     mask : Niimg-like, NiftiMasker or MultiNiftiMasker object, optional
         Mask to be used on data. If an instance of masker is passed,
