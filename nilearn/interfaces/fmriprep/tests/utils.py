@@ -51,10 +51,10 @@ def create_tmp_filepath(
     old_derivative_suffix=False
 ):
     """Create test files in temporary directory."""
-    deriveative = "regressors" if old_derivative_suffix else "timeseries"
+    derivative = "regressors" if old_derivative_suffix else "timeseries"
 
     # confound files
-    confounds_root = f"_desc-confounds_{deriveative}.tsv"
+    confounds_root = f"_desc-confounds_{derivative}.tsv"
     tmp_conf = base_path / (suffix + confounds_root)
 
     if copy_confounds:
@@ -64,7 +64,7 @@ def create_tmp_filepath(
         tmp_conf.touch()
 
     if copy_json:
-        meta_root = f"_desc-confounds_{deriveative}.json"
+        meta_root = f"_desc-confounds_{derivative}.json"
         tmp_meta = base_path / (suffix + meta_root)
         conf, meta = get_leagal_confound()
         with open(tmp_meta, "w") as file:
