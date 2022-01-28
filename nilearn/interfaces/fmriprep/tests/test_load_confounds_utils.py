@@ -29,6 +29,6 @@ def test_sanitize_confounds(inputs, flag):
                          [(True, "_desc-confounds_regressors"),
                           (False, "_desc-confounds_timeseries")])
 def test_get_file_name(tmp_path, flag, suffix):
-    img, _ = create_tmp_filepath(tmp_path, old_deriveative_suffix=flag)
+    img, _ = create_tmp_filepath(tmp_path, old_derivative_suffix=flag)
     conf = _get_file_name(img)
     assert suffix in conf
