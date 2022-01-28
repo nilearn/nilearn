@@ -215,3 +215,9 @@ Changes
 - Descriptions of datasets retrieved with fetchers from :mod:`nilearn.datasets` are
   now python strings rather than `bytes`. Therefore, decoding the descriptions is no
   longer necessary.
+- Dataset fetchers returning a :class:`numpy.recarray` can now return a
+  :class:`pandas.DataFrame` instead. These fetchers now have a ``legacy_format`` optional
+  argument defaulting to ``True`` for backward compatibility. Users will be warned that
+  this parameter will default to ``False`` in release 0.11.0, making
+  :class:`pandas.DataFrame` the default return type instead or :class:`numpy.recarray`.
+  (See PR `#2829 <https://github.com/nilearn/nilearn/pull/2829>`_).

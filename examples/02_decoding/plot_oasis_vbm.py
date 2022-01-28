@@ -56,9 +56,11 @@ n_subjects = 100  # more subjects requires more memory
 ############################################################################
 # Load Oasis dataset
 # -------------------
-oasis_dataset = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
+oasis_dataset = datasets.fetch_oasis_vbm(
+    n_subjects=n_subjects, legacy_format=False
+)
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
-age = oasis_dataset.ext_vars['age'].astype(float)
+age = oasis_dataset.ext_vars['age'].values
 
 # Split data into training set and test set
 from sklearn.model_selection import train_test_split
