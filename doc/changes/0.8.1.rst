@@ -1,0 +1,66 @@
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.8.1
+=====
+
+**Released September 2021**
+
+HIGHLIGHTS
+----------
+
+- New atlas fetcher :func:`~datasets.fetch_atlas_juelich` to download Juelich atlas from FSL (:gh:`2723` by `Ahmad Chamma`_).
+
+- New grey and white-matter template and mask loading functions: :func:`~datasets.load_mni152_gm_template`, :func:`~datasets.load_mni152_wm_template`, :func:`~datasets.load_mni152_gm_mask`, and :func:`~datasets.load_mni152_wm_mask` (:gh:`2738` by `Ana Luisa Pinho`_).
+
+- The :ref:`development_process` has been reworked. It now provides insights on nilearn organization as a project as well as more explicit :ref:`contribution_guidelines` (:gh:`2755` by `Thomas Bazeille`_).
+
+- Function :func:`~image.binarize_img` binarizes images into 0 and 1 (:gh:`2900` by `Daniel Gomez`_).
+
+NEW
+---
+
+- New atlas fetcher :func:`~datasets.fetch_atlas_juelich` to download Juelich atlas from FSL (:gh:`2723` by `Ahmad Chamma`_).
+
+- The :ref:`development_process` has been reworked. It now provides insights on nilearn organization as a project as well as more explicit :ref:`contribution_guidelines` (:gh:`2755` by `Thomas Bazeille`_).
+
+- Function :func:`~datasets.load_mni152_gm_template` takes the skullstripped 1mm-resolution version of the grey-matter MNI152 template and re-samples it using a different resolution, if specified (:gh:`2738` by `Ana Luisa Pinho`_).
+
+- Function :func:`~datasets.load_mni152_wm_template` takes the skullstripped 1mm-resolution version of the white-matter MNI152 template and re-samples it using a different resolution, if specified (:gh:`2738` by `Ana Luisa Pinho`_).
+
+- Function :func:`~datasets.load_mni152_gm_mask` loads mask from the grey-matter MNI152 template (:gh:`2738` by `Ana Luisa Pinho`_).
+
+- Function :func:`~datasets.load_mni152_wm_mask` loads mask from the white-matter MNI152 template (:gh:`2738` by `Ana Luisa Pinho`_).
+
+- Function :func:`~image.binarize_img` binarizes images into 0 and 1 (:gh:`2900` by `Daniel Gomez`_).
+
+- Classes :class:`~maskers.NiftiMasker`, :class:`~maskers.MultiNiftiMasker`, and objects relying on such maskers (:class:`~decoding.Decoder` or :class:`~decomposition.CanICA` for example) can now use new options for the argument ``mask_strategy``:``whole-brain-template`` for whole-brain template (same as previous option ``template``), ``gm-template`` for grey-matter template, and ``wm-template`` for white-matter template (:gh:`2904` by
+  `Nicolas Gensollen`_).
+
+Fixes
+-----
+
+- Function :func:`~masking.compute_multi_brain_mask` has replaced ``nilearn.masking.compute_multi_grey_matter_mask``. A ``mask`` parameter has been added; it accepts three types of masks---i.e. ``whole-brain``, ``grey-matter``, and ``white-matter``---following the enhancements made in the function :func:`nilearn.masking.compute_brain_mask` in this release (:gh:`2738` by `Ana Luisa Pinho`_).
+
+- Fix colorbar of function :func:`~plotting.view_img` which was not visible for some combinations of `black_bg` and `bg_img` parameters (:gh:`2876` by `Nicolas Gensollen`_).
+
+- Fix missing title with function :func:`~plotting.plot_surf` and deriving functions (:gh:`2941` by `Nicolas Gensollen`_).
+
+Enhancements
+------------
+
+- Function :func:`~datasets.load_mni152_template` resamples now the template to a preset resolution different from the resolution of the original template, i.e. 1mm. The default resolution is 2mm, which means that the new template is resampled to the resolution of the old template. Nevertheless, the shape of the template changed from ``(91, 109, 91)`` to ``(99, 117, 95)``; the affine also changed from array([[-2., 0., 0., 90.], [0., 2., 0., -126.], [0., 0., 2., -72.], [0., 0., 0., 1.]]) to array([[1., 0., 0., -98.], [0., 1., 0., -134.], [0., 0., 1., -72.], [0., 0., 0., 1.]]). Additionally, the new template has also been rescaled; whereas the old one varied between 0 and 8339, the new one varies between 0 and 255 (:gh:`2738` by `Ana Luisa Pinho`_).
+
+- Function :func:`~datasets.load_mni152_brain_mask` accepts now the parameter ``resolution``, which will set the resolution of the template used for the masking (:gh:`2738` by `Ana Luisa Pinho`_).
+
+- Function :func:`~masking.compute_brain_mask` accepts now as input the whole-brain, 1mm-resolution, MNI152 T1 template instead of the averaged, whole-brain, 2mm-resolution MNI152 T1 template; it also accepts as input the grey-matter and white-matter ICBM152 1mm-resolution templates dated from 2009 (:gh:`2738` by `Ana Luisa Pinho`_).
+
+- Common parts of docstrings across Nilearn can now be filled automatically using the decorator `nilearn._utils.fill_doc`. This can be applied to common function parameters or common lists of options for example. The standard parts are defined in a single location (`nilearn._utils.docs.py`) which makes them easier to maintain and update (:gh:`2875` by `Nicolas Gensollen`_).
+
+- The ``data_dir`` argument can now be either a :class:`pathlib.Path` or a :obj:`str`. This extension affects datasets and atlas fetchers (:gh:`2928` by `Raphael Meudec`_).
+
+Changes
+-------
+
+- The version of the script `jquery.min.js` was bumped from ``3.3.1`` to ``3.6.0`` due to potential vulnerability issues with versions ``< 3.5.0`` (:gh:`2944` by `Nicolas Gensollen`_).

@@ -16,7 +16,9 @@ See also the documentation: :ref:`space_net`.
 import numpy as np
 from nilearn import datasets
 n_subjects = 200  # increase this number if you have more RAM on your box
-dataset_files = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
+dataset_files = datasets.fetch_oasis_vbm(
+    n_subjects=n_subjects, legacy_format=False
+)
 age = dataset_files.ext_vars['age'].astype(float)
 age = np.array(age)
 gm_imgs = np.array(dataset_files.gray_matter_maps)

@@ -35,6 +35,13 @@ docdict['ax'] = """
 ax : :class:`~matplotlib.axes.Axes`
     The matplotlib axes in which the plots will be drawn."""
 
+# Legacy_format
+docdict['legacy_format'] = """
+legacy_format : :obj:`bool`, optional
+    If set to ``True``, the fetcher will return recarrays. Otherwise,
+    it will return pandas dataframes.
+    Default=True."""
+
 # Resume
 docdict['resume'] = """
 resume : :obj:`bool`, optional

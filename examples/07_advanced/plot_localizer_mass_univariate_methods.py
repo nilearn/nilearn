@@ -29,7 +29,9 @@ from nilearn.image import get_data
 # Load Localizer contrast
 n_samples = 94
 localizer_dataset = datasets.fetch_localizer_contrasts(
-    ['left button press (auditory cue)'], n_subjects=n_samples)
+    ['left button press (auditory cue)'],
+    n_subjects=n_samples, legacy_format=False
+)
 
 # print basic information on the dataset
 print('First contrast nifti image (3D) is located at: %s' %
@@ -37,11 +39,13 @@ print('First contrast nifti image (3D) is located at: %s' %
 
 tested_var = localizer_dataset.ext_vars['pseudo']
 # Quality check / Remove subjects with bad tested variate
-mask_quality_check = np.where(tested_var != b'n/a')[0]
+mask_quality_check = np.where(
+    np.logical_not(np.isnan(tested_var))
+)[0]
 n_samples = mask_quality_check.size
 contrast_map_filenames = [localizer_dataset.cmaps[i]
                           for i in mask_quality_check]
-tested_var = tested_var[mask_quality_check].astype(float).reshape((-1, 1))
+tested_var = tested_var[mask_quality_check].values.reshape((-1, 1))
 print("Actual number of subjects after quality check: %d" % n_samples)
 
 

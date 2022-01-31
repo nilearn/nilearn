@@ -27,9 +27,11 @@ def _compute_hommel_value(z_vals, alpha, verbose=False):
         return p_vals[0] > alpha
     if p_vals[0] > alpha:
         return n_samples
-    slopes = (alpha - p_vals[: - 1]) / np.arange(n_samples, 1, -1)
+    if p_vals[-1] < alpha:
+        return 0
+    slopes = (alpha - p_vals[: - 1]) / np.arange(n_samples - 1, 0, -1)
     slope = np.max(slopes)
-    hommel_value = np.trunc(n_samples + (alpha - slope * n_samples) / slope)
+    hommel_value = np.trunc(alpha / slope)
     if verbose:
         try:
             from matplotlib import pyplot as plt
@@ -38,11 +40,11 @@ def _compute_hommel_value(z_vals, alpha, verbose=False):
                           'Please install it using `pip install matplotlib`.')
         else:
             plt.figure()
-            plt.plot(p_vals, 'o')
+            plt.plot(np.arange(1, 1 + n_samples), p_vals, 'o')
             plt.plot([n_samples - hommel_value, n_samples], [0, alpha])
             plt.plot([0, n_samples], [0, 0], 'k')
             plt.show(block=False)
-    return np.minimum(hommel_value, n_samples)
+    return int(np.minimum(hommel_value, n_samples))
 
 
 def _true_positive_fraction(z_vals, hommel_value, alpha):
@@ -98,8 +100,7 @@ def fdr_threshold(z_vals, alpha):
     z_vals_ = - np.sort(- z_vals)
     p_vals = norm.sf(z_vals_)
     n_samples = len(p_vals)
-    pos = p_vals < alpha * np.linspace(
-        .5 / n_samples, 1 - .5 / n_samples, n_samples)
+    pos = p_vals < alpha * np.linspace(1 / n_samples, 1, n_samples)
     if pos.any():
         return (z_vals_[pos][-1] - 1.e-12)
 
@@ -171,6 +172,7 @@ def cluster_level_inference(stat_img, mask_img=None,
     for threshold_ in sorted(threshold):
         label_map, n_labels = label(stat_map > threshold_)
         labels = label_map[get_data(masker.mask_img_) > 0]
+
         for label_ in range(1, n_labels + 1):
             # get the z-vals in the cluster
             cluster_vals = stats[labels == label_]
