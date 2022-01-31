@@ -39,7 +39,7 @@ series.
     to the original publications and any potential updates to the literature,
     when possible.
 
-    First, as mentioned above, according to cite:t:`cisler2014comparison`,
+    First, as mentioned above, according to :cite:t:`cisler2014comparison`,
     beta series models are most appropriate for event-related task designs.
     For block designs, a PPI model is better suited- at least for
     functional connectivity analyses.
