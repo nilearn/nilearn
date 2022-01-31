@@ -11,8 +11,9 @@ Beta series models fit trial-wise conditions, which allow users to create
 "time series" of these trial-wise maps, which can be substituted for the
 typical time series used in resting-state functional connectivity analyses.
 Generally, these models are most useful for event-related task designs,
-while other modeling approaches, such as psychophysiological interactions,
-tend to perform better in block designs, depending on the type of analysis.
+while other modeling approaches, such as psychophysiological interactions
+(PPIs), tend to perform better in block designs, depending on the type of
+analysis.
 See :cite:t:`cisler2014comparison` for more information about this,
 in the context of functional connectivity analyses.
 
@@ -28,6 +29,29 @@ but everything else remains the same as the standard model.
 Trials are then looped across, and many GLMs are fitted,
 with the parameter estimate map extracted from each GLM to build the LSS beta
 series.
+
+.. topic: Choosing the right model for your analysis
+
+    We have chosen not to reproduce analyses systematically comparing beta
+    series modeling approaches in nilearn's documentation;
+    however, we do incorporate recommendations from the literature.
+    Rather than taking these recommendations at face value, please refer back
+    to the original publications and any potential updates to the literature,
+    when possible.
+
+    First, as mentioned above, according to cite:t:`cisler2014comparison`,
+    beta series models are most appropriate for event-related task designs.
+    For block designs, a PPI model is better suited- at least for
+    functional connectivity analyses.
+
+    According to :cite:t:`abdulrahman2016effect`,
+    the decision between LSA and LSS should be based on three factors:
+    inter-trial variability, scan noise, and stimulus onset timing.
+    While :cite:t:`mumford2012deconvolving` proposes LSS as a tool primarily
+    for fast event-related designs (i.e., ones with short inter-trial
+    intervals), :cite:t:`abdulrahman2016effect` finds, in simulations,
+    that LSA performs better than LSS when trial variability is greater
+    than scan noise, even in fast designs.
 """
 # sphinx_gallery_thumbnail_number = -2
 import matplotlib.pyplot as plt
