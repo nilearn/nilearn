@@ -30,7 +30,7 @@ Trials are then looped across, and many GLMs are fitted,
 with the parameter estimate map extracted from each GLM to build the LSS beta
 series.
 
-.. topic: Choosing the right model for your analysis
+.. topic:: Choosing the right model for your analysis
 
     We have chosen not to reproduce analyses systematically comparing beta
     series modeling approaches in nilearn's documentation;
