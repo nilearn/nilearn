@@ -423,11 +423,12 @@ def test_load_non_nifti(tmp_path):
 
 def test_invalid_filetype(tmp_path):
     """Invalid file types/associated files for load method."""
-    bad_nii, bad_conf = create_tmp_filepath(tmp_path, copy_confounds=True)
+    bad_nii, bad_conf = create_tmp_filepath(tmp_path, copy_confounds=True,
+                                            old_derivative_suffix=False)
     conf, _ = load_confounds(bad_nii)
 
     # more than one legal filename for confounds
-    add_conf = "test_desc-confounds_timeseries.tsv"
+    add_conf = "test_desc-confounds_regressors.tsv"
     leagal_confounds, _ = get_leagal_confound()
     leagal_confounds.to_csv(tmp_path / add_conf, sep="\t", index=False)
     with pytest.raises(ValueError) as info:

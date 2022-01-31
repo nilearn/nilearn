@@ -21,22 +21,23 @@ img_file_patterns = {
 
 def get_testdata_path(non_steady_state=True):
     """Get file path for the confound regressors."""
+    derivative = "regressors"
     path_data = os.path.join(os.path.dirname(
         load_confounds_utils.__file__), "data")
     if non_steady_state:
         return [
             os.path.join(path_data, filename)
             for filename in [
-                "test_desc-confounds_regressors.tsv",
-                "test_desc-confounds_regressors.json",
+                f"test_desc-confounds_{derivative}.tsv",
+                f"test_desc-confounds_{derivative}.json",
             ]
         ]
     else:
         return [
             os.path.join(path_data, filename)
             for filename in [
-                "no_nonsteady_desc-confounds_regressors.tsv",
-                "test_desc-confounds_regressors.json",
+                f"no_nonsteady_desc-confounds_{derivative}.tsv",
+                f"test_desc-confounds_{derivative}.json",
             ]
         ]
 
@@ -47,10 +48,13 @@ def create_tmp_filepath(
     suffix="test",
     copy_confounds=False,
     copy_json=False,
+    old_derivative_suffix=False
 ):
     """Create test files in temporary directory."""
+    derivative = "regressors" if old_derivative_suffix else "timeseries"
+
     # confound files
-    confounds_root = "_desc-confounds_regressors.tsv"
+    confounds_root = f"_desc-confounds_{derivative}.tsv"
     tmp_conf = base_path / (suffix + confounds_root)
 
     if copy_confounds:
@@ -60,7 +64,7 @@ def create_tmp_filepath(
         tmp_conf.touch()
 
     if copy_json:
-        meta_root = "_desc-confounds_regressors.json"
+        meta_root = f"_desc-confounds_{derivative}.json"
         tmp_meta = base_path / (suffix + meta_root)
         conf, meta = get_leagal_confound()
         with open(tmp_meta, "w") as file:
