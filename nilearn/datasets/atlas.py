@@ -714,7 +714,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
         Dictionary-like object, the interest attributes are :
 
         - 'maps': :obj:`str`, path to nifti file containing the
-          :term:`Probabilist atlas` image (shape is equal to
+          :term:`Probabilistic atlas` image (shape is equal to
           ``(40, 48, 35, 39)``).
         - 'labels': :obj:`list` of :obj:`str`, list containing the labels
           of the regions. There are 39 labels such that ``data.labels[i]``
