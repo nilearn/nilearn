@@ -287,7 +287,10 @@ fig.show()
 # :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py`.
 # Here, we show how the beta series can be applied to functional connectivity
 # analysis.
-# The following example is based on
+# In the following section, we perform a quick task-based functional
+# connectivity analysis of each of the two task conditions
+# ('language' and 'string'), using the LSS beta series.
+# This section is based on
 # :ref:`sphx_glr_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py`,
 # which goes into more detail about seed-to-voxel functional connectivity
 # analyses.
@@ -374,5 +377,6 @@ display.add_markers(
     marker_color='g',
     marker_size=300,
 )
+fig.suptitle('LSS Beta Series Functional Connectivity')
 
 fig.show()
