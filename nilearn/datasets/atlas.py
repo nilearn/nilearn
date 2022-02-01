@@ -905,7 +905,7 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
 def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Yeo 2011 parcellation.
 
-    This function retrieves
+    This function retrieves the so-called yeo
     :term:`deterministic atlases<Deterministic atlas>`. The provided images
     are in MNI152 space and have shapes equal to ``(256, 256, 256, 1)``.
     They contain consecutive integers values from 0 (background) to either
