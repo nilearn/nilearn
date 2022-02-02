@@ -48,14 +48,14 @@ information on the corresponding category.
    :scale: 30
    :align: left
 
-   Face stimuli
+   Cat stimuli
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_002.png
    :target: ../auto_examples/02_decoding/plot_haxby_stimuli.html
    :scale: 30
    :align: left
 
-   Cat stimuli
+   Chair stimuli
 
 .. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_haxby_masks_001.png
    :target: ../auto_examples/01_plotting/plot_haxby_masks.html
