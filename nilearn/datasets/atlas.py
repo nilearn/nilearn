@@ -147,7 +147,7 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None,
 def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Craddock 2012 parcellation.
 
-    This function returns :term:`probabilistic atlases<Probabilistic atlas>`.
+    This function returns a :term:`probabilistic atlas<Probabilistic atlas>`.
     The provided images are in MNI152 space. All images are 4D with
     shapes equal to ``(47, 56, 46, 43)``.
 
