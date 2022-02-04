@@ -46,8 +46,8 @@ _MNI_RES_WARNING_ALREADY_SHOWN = False
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ICBM152 template (dated 2009).
 
-    The default template of :term:`fMRIPrep` is the asymetrical ICBM152 2009,
-    release c (MNI152NLin2009cSAsym). The NiLearn template is asymetrical
+    The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
+    release c (MNI152NLin2009cSAsym). The NiLearn template is asymmetrical
     ICBM152 2009, release a. If you wish to use the exact same release as
     :term:`fMRIPrep`, please refer to TemplateFlow.
 
@@ -510,8 +510,8 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
                                 n_iter=2, verbose=1):
     """Downloads ICBM152 template first, then loads the 'gm' mask.
 
-    The default template of :term:`fMRIPrep` is the asymetrical ICBM152 2009,
-    release c (MNI152NLin2009cSAsym). The NiLearn template is asymetrical
+    The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
+    release c (MNI152NLin2009cSAsym). The NiLearn template is asymmetrical
     ICBM152 2009, release a. If you wish to use the exact same release as
     :term:`fMRIPrep`, please refer to TemplateFlow.
 
