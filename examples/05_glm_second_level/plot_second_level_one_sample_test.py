@@ -27,8 +27,10 @@ hemisphere, negative in the left hemisphere).
 # estimate.
 from nilearn.datasets import fetch_localizer_contrasts
 n_subjects = 16
-data = fetch_localizer_contrasts(["left vs right button press"], n_subjects,
-                                 get_tmaps=True)
+data = fetch_localizer_contrasts(
+    ["left vs right button press"], n_subjects,
+    get_tmaps=True, legacy_format=False
+)
 
 ###########################################################################
 # Display subject t_maps

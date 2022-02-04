@@ -821,7 +821,7 @@ def threshold_img(
     Thresholding can be done based on direct image intensities or selection
     threshold with given percentile.
 
-    .. versionchanged:: 0.8.2
+    .. versionchanged:: 0.9.0
         New ``cluster_threshold`` and ``two_sided`` parameters added.
 
     .. versionadded:: 0.2
@@ -846,14 +846,14 @@ def threshold_img(
         sets of connected voxels (``clusters``) with size smaller
         than this number will be removed. Default=0.
 
-        .. versionadded:: 0.8.2
+        .. versionadded:: 0.9.0
 
     two_sided : :obj:`bool`, optional
         Whether the thresholding should yield both positive and negative
         part of the maps.
         Default=True.
 
-        .. versionadded:: 0.8.2
+        .. versionadded:: 0.9.0
 
     mask_img : Niimg-like object, default None, optional
         Mask image applied to mask the input data.

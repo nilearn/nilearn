@@ -9,6 +9,7 @@ from scipy.stats import norm
 from nilearn.image import get_data
 from nilearn.glm import (cluster_level_inference, fdr_threshold,
                          threshold_stats_img)
+from nilearn.glm.thresholding import _compute_hommel_value
 
 
 def test_fdr():
@@ -106,6 +107,24 @@ def test_threshold_stats_img():
     # test 8 wrong procedure
     with pytest.raises(ValueError):
         threshold_stats_img(None, None, alpha=0.05, height_control='plop')
+
+
+def test_hommel():
+    # Check that the computation of Hommel value
+    # For these, we take the example in  Meijer et al. 2017
+    # 'A shortcut for Hommel's procedure in linearithmic time'
+    # and check that we obtain the same values
+    z = norm.isf([1.e-8, .01, .08, .1, .5, .7, .9])
+    assert _compute_hommel_value(z, 1.e-9) == 7
+    assert _compute_hommel_value(z, 1.e-7) == 6
+    assert _compute_hommel_value(z, .059) == 6
+    assert _compute_hommel_value(z, .061) == 5
+    assert _compute_hommel_value(z, .249) == 5
+    assert _compute_hommel_value(z, .251) == 4
+    assert _compute_hommel_value(z, .399) == 4
+    assert _compute_hommel_value(z, .401) == 3
+    assert _compute_hommel_value(z, .899) == 3
+    assert _compute_hommel_value(z, .901) == 0
 
 
 def test_all_resolution_inference():

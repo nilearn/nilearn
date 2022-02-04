@@ -452,7 +452,7 @@ interactive mode is available:
 
    Interactive plotting is new in nilearn 0.5
 
-.. versionadded:: 0.8.2
+.. versionadded:: 0.9.0
 
     Nilearn offers the possibility to select different plotting engines
     (either `matplotlib`_ or `plotly`_) for most surface plotting functions.
@@ -466,7 +466,7 @@ interactive mode is available:
 For 3D surface plots of statistical maps or surface atlases, you have different options
 depending on what you want to do and the packages you have installed.
 
-    - If you have `plotly`_ installed: Since Nilearn ``0.8.2``, it is possible to use
+    - If you have `plotly`_ installed: Since Nilearn ``0.9.0``, it is possible to use
       `plotly`_ as the plotting engine in most surface plotting functions of Nilearn like
       :func:`plot_surf`, :func:`plot_surf_stat_map`, or :func:`plot_surf_roi`. By default
       these functions use `matplotlib`_ as the plotting engine which results in
