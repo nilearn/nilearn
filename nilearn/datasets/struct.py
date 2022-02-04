@@ -46,9 +46,10 @@ _MNI_RES_WARNING_ALREADY_SHOWN = False
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ICBM152 template (dated 2009).
 
-    ICBM152 is the default template of fMRIPrep, under the name
-    "MNI152NLin2009cAsym". For the related TemplateFlow repositior, please see
-    Notes.
+    The default template of :term:`fMRIPrep` is the asymetrical ICBM152 2009,
+    release c (MNI152NLin2009cSAsym). The NiLearn template is asymetrical
+    ICBM152 2009, release a. If you wish to use the exact same release as
+    :term:`fMRIPrep`, please refer to TemplateFlow.
 
     For more information, see :footcite:`FONOV2011313`,
     :footcite:`Fonov2009`, and :footcite:`Collins1999algorithm`.
@@ -117,8 +118,10 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     The original download URL is
     http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip
 
-    TemplateFlow repository:
-    https://github.com/templateflow/tpl-MNI152NLin2009cAsym
+    TemplateFlow repository for ICBM152 2009:
+    https://github.com/templateflow/tpl-MNI152NLin2009cSym
+    https://github.com/templateflow/tpl-MNI152NLin2009cSAsym
+
 
     """
     if url is None:
@@ -183,6 +186,9 @@ def load_mni152_template(resolution=None):
 
     See Also
     --------
+    nilearn.datasets.fetch_icbm152_2009: for details regarding the difference
+        between NiLearn and :term:`fMRIPrep` ICBM152 template.
+
     nilearn.datasets.load_mni152_gm_template : for details about version of the
         MNI152 grey-matter template.
 
@@ -504,9 +510,10 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
                                 n_iter=2, verbose=1):
     """Downloads ICBM152 template first, then loads the 'gm' mask.
 
-    ICBM152 is the default template of fMRIPrep, under the name
-    "MNI152NLin2009cAsym". For the related TemplateFlow repositior, please see
-    Notes.
+    The default template of :term:`fMRIPrep` is the asymetrical ICBM152 2009,
+    release c (MNI152NLin2009cSAsym). The NiLearn template is asymetrical
+    ICBM152 2009, release a. If you wish to use the exact same release as
+    :term:`fMRIPrep`, please refer to TemplateFlow.
 
     .. versionadded:: 0.2.5
 
