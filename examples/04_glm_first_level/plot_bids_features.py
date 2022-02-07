@@ -79,7 +79,7 @@ model, imgs, events, confounds = (
 subject = 'sub-' + model.subject_label
 
 import os
-from nilearn._utils.glm import get_design_from_fslmat
+from nilearn.interfaces.fsl import get_design_from_fslmat
 fsl_design_matrix_path = os.path.join(
     data_dir, 'derivatives', 'task', subject, 'stopsignal.feat', 'design.mat')
 design_matrix = get_design_from_fslmat(

@@ -179,7 +179,7 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                       title_font_size=18, output_file=None):
     """Helper function for plot_surf.
 
-    .. versionadded:: 0.8.2
+    .. versionadded:: 0.9.0
 
     This function handles surface plotting when the selected
     engine is plotly.
@@ -565,7 +565,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     %(view)s
     engine : {'matplotlib', 'plotly'}, optional
 
-        .. versionadded:: 0.8.2
+        .. versionadded:: 0.9.0
 
         Selects which plotting engine will be used by ``plot_surf``.
         Currently, only ``matplotlib`` and ``plotly`` are supported.
@@ -593,7 +593,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             This option is currently only implemented for
             the ``plotly`` engine.
 
-        .. versionadded:: 0.8.2
+        .. versionadded:: 0.9.0
 
         Default=False.
     %(colorbar)s
@@ -653,7 +653,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     title_font_size : :obj:`int`, optional
         Size of the title font.
 
-        .. versionadded:: 0.8.2
+        .. versionadded:: 0.9.0
 
         Default=18.
     %(output_file)s
@@ -921,7 +921,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     %(view)s
     engine : {'matplotlib', 'plotly'}, optional
 
-        .. versionadded:: 0.8.2
+        .. versionadded:: 0.9.0
 
         Selects which plotting engine will be used by ``plot_surf_stat_map``.
         Currently, only ``matplotlib`` and ``plotly`` are supported.
@@ -987,7 +987,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     title_font_size : :obj:`int`, optional
         Size of the title font.
 
-        .. versionadded:: 0.8.2
+        .. versionadded:: 0.9.0
 
         Default=18.
     %(output_file)s
@@ -1302,7 +1302,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
     %(view)s
     engine : {'matplotlib', 'plotly'}, optional
 
-        .. versionadded:: 0.8.2
+        .. versionadded:: 0.9.0
 
         Selects which plotting engine will be used by ``plot_surf_roi``.
         Currently, only ``matplotlib`` and ``plotly`` are supported.
@@ -1358,7 +1358,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
     title_font_size : :obj:`int`, optional
         Size of the title font.
 
-        .. versionadded:: 0.8.2
+        .. versionadded:: 0.9.0
 
         Default=18.
     %(output_file)s

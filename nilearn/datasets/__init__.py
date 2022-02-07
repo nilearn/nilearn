@@ -2,7 +2,6 @@
 Helper functions to download NeuroImaging datasets
 """
 
-from warnings import warn
 from .struct import (fetch_icbm152_2009, load_mni152_template,
                      load_mni152_brain_mask, load_mni152_gm_template,
                      load_mni152_gm_mask, load_mni152_wm_template,
@@ -90,7 +89,3 @@ __all__ = ['MNI152_FILE_PATH', 'GM_MNI152_FILE_PATH', 'WM_MNI152_FILE_PATH',
            'fetch_fiac_first_level',
            ]
 
-warn("Fetchers from the nilearn.datasets module will be "
-     "updated in version 0.9 to return python strings "
-     "instead of bytes and Pandas dataframes instead of "
-     "Numpy arrays.", FutureWarning)

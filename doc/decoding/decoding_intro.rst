@@ -43,14 +43,14 @@ seeing from the :term:`fMRI` activity recorded in regions of the ventral visual 
 Significant prediction shows that the signal in the region contains
 information on the corresponding category.
 
-.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_004.png
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_007.png
    :target: ../auto_examples/02_decoding/plot_haxby_stimuli.html
    :scale: 30
    :align: left
 
    Face stimuli
 
-.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_002.png
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_004.png
    :target: ../auto_examples/02_decoding/plot_haxby_stimuli.html
    :scale: 30
    :align: left

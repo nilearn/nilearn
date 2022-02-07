@@ -158,7 +158,7 @@ view
 #
 # First we fetch the coordinates of the Power atlas
 
-power = datasets.fetch_coords_power_2011()
+power = datasets.fetch_coords_power_2011(legacy_format=False)
 print('Power atlas comes with {0}.'.format(power.keys()))
 
 
@@ -306,7 +306,7 @@ plotting.plot_markers(
 # -------------------------------------------
 #
 # We repeat the same steps for Dosenbach's atlas.
-dosenbach = datasets.fetch_coords_dosenbach_2010()
+dosenbach = datasets.fetch_coords_dosenbach_2010(legacy_format=False)
 
 coords = np.vstack((
     dosenbach.rois['x'],

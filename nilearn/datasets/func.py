@@ -30,6 +30,13 @@ from .._utils.numpy_conversions import csv_to_array
 from nilearn.image import get_data
 
 
+_LEGACY_FORMAT_MSG = (
+    "`legacy_format` will default to `False` in release 0.11. "
+    "Dataset fetchers will then return pandas dataframes by default "
+    "instead of recarrays."
+)
+
+
 @fill_doc
 def fetch_haxby(data_dir=None, subjects=(2,),
                 fetch_stimuli=False, url=None, resume=True, verbose=1):
@@ -412,7 +419,8 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
 @fill_doc
 def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                               get_masks=False, get_anats=False,
-                              data_dir=None, url=None, resume=True, verbose=1):
+                              data_dir=None, url=None, resume=True, verbose=1,
+                              legacy_format=True):
     """Download and load Brainomics/Localizer dataset (94 subjects).
 
     "The Functional Localizer is a simple and fast acquisition
@@ -525,6 +533,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     %(url)s
     %(resume)s
     %(verbose)s
+    %(legacy_format)s
 
     Returns
     -------
@@ -740,26 +749,26 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     # Load covariates file
     from numpy.lib.recfunctions import join_by
     participants_file = os.path.join(data_dir, participants_file)
-    csv_data = np.recfromcsv(participants_file, delimiter='\t')
+    csv_data = pd.read_csv(participants_file, delimiter='\t')
     behavioural_file = os.path.join(data_dir, behavioural_file)
-    csv_data2 = np.recfromcsv(behavioural_file, delimiter='\t')
-    csv_data = join_by(
-        "participant_id", csv_data, csv_data2, usemask=False, asrecarray=True)
+    csv_data2 = pd.read_csv(behavioural_file, delimiter='\t')
+    csv_data = csv_data.merge(csv_data2)
     subject_names = csv_data["participant_id"].tolist()
     subjects_indices = []
     for name in subject_ids:
-        name = name.encode("utf8")
         if name not in subject_names:
             continue
         subjects_indices.append(subject_names.index(name))
-    csv_data = csv_data[subjects_indices]
-
+    csv_data = csv_data.iloc[subjects_indices]
+    if legacy_format:
+        warnings.warn(_LEGACY_FORMAT_MSG)
+        csv_data = csv_data.to_records(index=False)
     return Bunch(ext_vars=csv_data, description=fdescr, **files)
 
 
 @fill_doc
 def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
-                                     verbose=1):
+                                     verbose=1, legacy_format=True):
     """Fetch calculation task contrast maps from the localizer.
 
     Parameters
@@ -770,6 +779,7 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
     %(data_dir)s
     %(url)s
     %(verbose)s
+    %(legacy_format)s
 
     Returns
     -------
@@ -793,13 +803,14 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
                                      n_subjects=n_subjects,
                                      get_tmaps=False, get_masks=False,
                                      get_anats=False, data_dir=data_dir,
-                                     url=url, resume=True, verbose=verbose)
+                                     url=url, resume=True, verbose=verbose,
+                                     legacy_format=legacy_format)
     return data
 
 
 @fill_doc
 def fetch_localizer_button_task(data_dir=None, url=None,
-                                verbose=1):
+                                verbose=1, legacy_format=True):
     """Fetch left vs right button press contrast maps from the localizer.
 
     Parameters
@@ -807,6 +818,7 @@ def fetch_localizer_button_task(data_dir=None, url=None,
     %(data_dir)s
     %(url)s
     %(verbose)s
+    %(legacy_format)s
 
     Returns
     -------
@@ -833,7 +845,8 @@ def fetch_localizer_button_task(data_dir=None, url=None,
                                      n_subjects=[2],
                                      get_tmaps=True, get_masks=False,
                                      get_anats=True, data_dir=data_dir,
-                                     url=url, resume=True, verbose=verbose)
+                                     url=url, resume=True, verbose=verbose,
+                                     legacy_format=legacy_format)
     # Additional keys for backward compatibility
     data['tmap'] = data['tmaps'][0]
     data['anat'] = data['anats'][0]
@@ -844,7 +857,8 @@ def fetch_localizer_button_task(data_dir=None, url=None,
 def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
                     band_pass_filtering=False, global_signal_regression=False,
                     derivatives=['func_preproc'],
-                    quality_checked=True, url=None, verbose=1, **kwargs):
+                    quality_checked=True, url=None, verbose=1,
+                    legacy_format=True, **kwargs):
     """Fetch ABIDE dataset.
 
     Fetch the Autism Brain Imaging Data Exchange (ABIDE) dataset wrt criteria
@@ -886,6 +900,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
         passed quality assessment for all raters. Default=True.
     %(url)s
     %(verbose)s
+    %(legacy_format)s
     kwargs : parameter list, optional
         Any extra keyword argument will be used to filter downloaded subjects
         according to the CSV phenotypic file. Some examples of filters are
@@ -982,10 +997,10 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     # bytes (encode()) needed for python 2/3 compat with numpy
     pheno = '\n'.join(pheno).encode()
     pheno = BytesIO(pheno)
-    pheno = np.recfromcsv(pheno, comments='$', case_sensitive=True)
+    pheno = pd.read_csv(pheno, comment='$')
 
     # First, filter subjects with no filename
-    pheno = pheno[pheno['FILE_ID'] != b'no_filename']
+    pheno = pheno[pheno['FILE_ID'] != 'no_filename']
     # Apply user defined filters
     user_filter = _filter_columns(pheno, kwargs)
     pheno = pheno[user_filter]
@@ -996,10 +1011,14 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
 
     # Get the files
     results = {}
-    file_ids = [file_id.decode() for file_id in pheno['FILE_ID']]
+    file_ids = pheno['FILE_ID'].tolist()
     if n_subjects is not None:
         file_ids = file_ids[:n_subjects]
         pheno = pheno[:n_subjects]
+
+    if legacy_format:
+        warnings.warn(_LEGACY_FORMAT_MSG)
+        pheno = pheno.to_records(index=False)
 
     results['description'] = _get_dataset_descr(dataset_name)
     results['phenotypic'] = pheno
@@ -1667,7 +1686,7 @@ def _reduce_confounds(regressors, keep_confounds):
         out_file = in_file.replace('desc-confounds',
                                    'desc-reducedConfounds')
         if not os.path.isfile(out_file):
-            confounds = np.recfromcsv(in_file, delimiter='\t')
+            confounds = pd.read_csv(in_file, delimiter='\t').to_records()
             selected_confounds = confounds[keep_confounds]
             header = '\t'.join(selected_confounds.dtype.names)
             np.savetxt(out_file, np.array(selected_confounds.tolist()),
