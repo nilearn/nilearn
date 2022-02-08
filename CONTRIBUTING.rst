@@ -315,7 +315,7 @@ Here are the key steps you need to go through to copy the repo before contributi
 
 3. install the forked version of `nilearn`::
 
-      pip install -e .[dev]
+      pip install -e '.[dev]'
 
 This installs your local version of Nilearn, along with all dependencies necessary for developers (hence the ``[dev]`` tag).
 For more information about the dependency installation options, see ``setup.cfg``.
@@ -364,7 +364,7 @@ If you wish to build documentation:
 1. First, ensure that you have installed sphinx and sphinx-gallery. When in your
    fork top folder, you can install the required packages using::
 
-      pip install .[doc]
+      pip install '.[doc]'
 
 2. Then go to ``nilearn/examples`` or ``nilearn/doc`` and make needed changes
    using `reStructuredText files <https://www.sphinx-doc.org/en/2.0/usage/restructuredtext/basics.html>`_
