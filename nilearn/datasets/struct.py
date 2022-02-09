@@ -115,9 +115,11 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     The original download URL is
     http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip
 
-    TemplateFlow repository for ICBM152 2009:
-    https://github.com/templateflow/tpl-MNI152NLin2009cSym
-    https://github.com/templateflow/tpl-MNI152NLin2009cSAsym
+    TemplateFlow repository for ICBM152 2009
+
+    Symmetric: https://github.com/templateflow/tpl-MNI152NLin2009cSym
+
+    Asymmetric: https://github.com/templateflow/tpl-MNI152NLin2009cSAsym
 
 
     """
