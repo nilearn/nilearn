@@ -697,7 +697,8 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     Returns
     -------
     Niimg-like object
-        A loaded image with the same file type (and, optionally, header) as the reference image.
+        A loaded image with the same file type (and, optionally, header)
+    as the reference image.
 
     """
     # Hand-written loading code to avoid too much memory consumption
