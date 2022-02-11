@@ -1354,7 +1354,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
 
 
 @fill_doc
-def plot_carpet(img, mask_img=None, mask_labels=None,
+def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
                 detrend=True, output_file=None,
                 figure=None, axes=None, vmin=None, vmax=None, title=None,
                 cmap=plt.cm.gist_ncar):
@@ -1379,6 +1379,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
         If ``mask_img`` corresponds to an atlas, then this dictionary maps
         values from the ``mask_img`` to labels. Dictionary keys are labels
         and values are values within the atlas.
+    %(t_r)s
 
     detrend : :obj:`bool`, optional
         Detrend and z-score the data prior to plotting. Default=True.
@@ -1391,7 +1392,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
     %(cmap)s
 
         .. note::
-            This argumeent is used only if an atlas is used.
+            This argument is used only if an atlas is used.
 
         Default=`plt.cm.gist_ncar`.
 
@@ -1415,7 +1416,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
     img = _utils.check_niimg_4d(img, dtype='auto')
 
     # Define TR and number of frames
-    tr = img.header.get_zooms()[-1]
+    t_r = t_r or img.header.get_zooms()[-1]
     n_tsteps = img.shape[-1]
 
     if mask_img is None:
@@ -1458,7 +1459,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
 
     # Detrend and standardize data
     if detrend:
-        data = clean(data, t_r=tr, detrend=True, standardize='zscore')
+        data = clean(data, t_r=t_r, detrend=True, standardize='zscore')
 
     if figure is None:
         if not axes:
@@ -1553,7 +1554,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None,
     if title:
         axes.set_title(title)
 
-    labels = tr * (np.array(xticks))
+    labels = t_r * (np.array(xticks))
     labels *= (2 ** n_decimations)
     axes.set_xticklabels(['%.02f' % t for t in labels.tolist()])
 
