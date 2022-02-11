@@ -1381,6 +1381,10 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
         and values are values within the atlas.
     %(t_r)s
 
+        .. note::
+            If ``t_r`` is not provided, it will be inferred from ``img``'s
+            header.
+
     detrend : :obj:`bool`, optional
         Detrend and z-score the data prior to plotting. Default=True.
     %(output_file)s
