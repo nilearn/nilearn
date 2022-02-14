@@ -1385,6 +1385,10 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
             If ``t_r`` is not provided, it will be inferred from ``img``'s
             header (``img.header.get_zooms()[-1]``).
 
+        .. versionadded:: 0.9.1.dev
+            Prior to this, ``t_r`` would be inferred from ``img`` without
+            user input.
+
     detrend : :obj:`bool`, optional
         Detrend and z-score the data prior to plotting. Default=True.
     %(output_file)s
