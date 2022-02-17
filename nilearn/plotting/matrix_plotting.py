@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from matplotlib.tight_layout import get_renderer
 from matplotlib.colorbar import make_axes
 from .._utils import fill_doc
 with warnings.catch_warnings():
@@ -22,7 +21,7 @@ def _fit_axes(ax):
     labels fitting.
     """
     fig = ax.get_figure()
-    renderer = get_renderer(fig)
+    renderer = fig.canvas.get_renderer()
     ylabel_width = ax.yaxis.get_tightbbox(renderer).transformed(
         ax.figure.transFigure.inverted()).width
     if ax.get_position().xmin < 1.1 * ylabel_width:
