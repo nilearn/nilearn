@@ -126,6 +126,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                       cbar_tick_format="%.2g",
                       brain_color=(0.5, 0.5, 0.5),
                       decimals=False,
+                      radiological=False,
                       **kwargs):
     """Refer to the docstring of plot_img for parameters not listed below.
 
@@ -193,7 +194,8 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         black_bg=black_bg,
         colorbar=colorbar,
         brain_color=brain_color,
-    )
+        radiological=radiological,
+        )
     if bg_img is not None:
         bg_img = _utils.check_niimg_3d(bg_img)
         display.add_overlay(bg_img,
@@ -227,7 +229,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
              annotate=True, draw_cross=True, black_bg=False, colorbar=False,
              cbar_tick_format="%.2g",
              resampling_interpolation='continuous',
-             bg_img=None, vmin=None, vmax=None, **kwargs):
+             bg_img=None, vmin=None, vmax=None, radiological=False, **kwargs):
     """Plot cuts of a given image.
 
     By default Frontal, Axial, and Lateral.
@@ -263,6 +265,9 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         Default=None.
     %(vmin)s
     %(vmax)s
+    radiological : boolean, optional
+        Invert x axis and R L labels to plot sections as a radiological view. If False (default),
+        the left hemisphere is on the left of a coronal image. If true, left hemisphere is on the right.
     kwargs : extra keyword arguments, optional
         Extra keyword arguments passed to matplotlib.pyplot.imshow.
 
@@ -276,7 +281,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         resampling_interpolation=resampling_interpolation,
         black_bg=black_bg, colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
-        bg_img=bg_img, vmin=vmin, vmax=vmax, **kwargs)
+        bg_img=bg_img, vmin=vmin, vmax=vmax,radiological=radiological, **kwargs)
 
     return display
 
@@ -418,7 +423,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
               output_file=None, display_mode='ortho', figure=None,
               axes=None, title=None, annotate=True, threshold=None,
               draw_cross=True, black_bg='auto', dim='auto', cmap=plt.cm.gray,
-              colorbar=False, cbar_tick_format="%.2g", vmin=None,
+              colorbar=False, cbar_tick_format="%.2g",radiological=False, vmin=None,
               vmax=None, **kwargs):
     """Plot cuts of an anatomical image.
 
@@ -453,6 +458,9 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
         Default is '%%.2g' for scientific notation.
+    radiological : boolean, optional
+        Invert x axis and R L labels to plot sections as a radiological view. If False (default),
+        the left hemisphere is on the left of a coronal image. If true, left hemisphere is on the right.
     %(vmin)s
     %(vmax)s
 
@@ -479,7 +487,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
                        threshold=threshold, annotate=annotate,
                        draw_cross=draw_cross, black_bg=black_bg,
                        colorbar=colorbar, cbar_tick_format=cbar_tick_format,
-                       vmin=vmin, vmax=vmax, cmap=cmap, **kwargs)
+                       vmin=vmin, vmax=vmax, cmap=cmap,radiological=radiological, **kwargs)
     return display
 
 
@@ -488,7 +496,8 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
              display_mode='ortho', figure=None, axes=None, title=None,
              annotate=True, draw_cross=True, black_bg=True,
              colorbar=False, cbar_tick_format="%.2g",
-             cmap=plt.cm.nipy_spectral, vmin=None, vmax=None, **kwargs):
+             cmap=plt.cm.nipy_spectral, vmin=None, vmax=None,
+             radiological=False, **kwargs):
     """Plot cuts of an EPI image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -518,6 +527,9 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
         Default=`plt.cm.nipy_spectral`.
     %(vmin)s
     %(vmax)s
+    radiological : boolean, optional
+        Invert x axis and R L labels to plot sections as a radiological view. If False (default),
+        the left hemisphere is on the left of a coronal image. If true, left hemisphere is on the right.
 
     Notes
     -----
@@ -530,7 +542,7 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
                        threshold=None, annotate=annotate,
                        draw_cross=draw_cross, black_bg=black_bg,
                        colorbar=colorbar, cbar_tick_format=cbar_tick_format,
-                       cmap=cmap, vmin=vmin, vmax=vmax, **kwargs)
+                       cmap=cmap, vmin=vmin, vmax=vmax,radiological = radiological, **kwargs)
     return display
 
 
@@ -588,7 +600,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
              threshold=0.5, alpha=0.7, cmap=plt.cm.gist_ncar, dim='auto',
              colorbar=False, cbar_tick_format="%i", vmin=None, vmax=None,
              resampling_interpolation='nearest', view_type='continuous',
-             linewidths=2.5, **kwargs):
+             linewidths=2.5, radiological=False, **kwargs):
     """Plot cuts of an ROI/mask image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -642,6 +654,9 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         Default='continuous'.
     %(linewidths)s
         Default=2.5.
+    radiological : boolean, optional
+        Invert x axis and R L labels to plot sections as a radiological view. If False (default),
+        the left hemisphere is on the left of a coronal image. If true, left hemisphere is on the right.
 
     Notes
     -----
@@ -677,7 +692,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         threshold=threshold, bg_vmin=bg_vmin, bg_vmax=bg_vmax,
         resampling_interpolation=resampling_interpolation,
         colorbar=colorbar, cbar_tick_format=cbar_tick_format,
-        alpha=alpha, cmap=cmap, vmin=vmin, vmax=vmax, **kwargs)
+        alpha=alpha, cmap=cmap, vmin=vmin, vmax=vmax,radiological=radiological, **kwargs)
 
     if view_type == 'contours':
         display = _plot_roi_contours(display, img, cmap=cmap, alpha=alpha,
@@ -694,7 +709,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
                     draw_cross=True, black_bg='auto', dim='auto',
                     colorbar=False,
                     cmap=plt.cm.gist_rainbow, vmin=None, vmax=None,
-                    alpha=0.7, **kwargs):
+                    alpha=0.7, radiological=False, **kwargs):
     """Plot the probabilistic atlases onto the anatomical image \
     by default MNI template.
 
@@ -772,7 +787,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
                         display_mode=display_mode,
                         figure=figure, axes=axes, title=title,
                         annotate=annotate, draw_cross=draw_cross,
-                        black_bg=black_bg, dim=dim, **kwargs)
+                        black_bg=black_bg, dim=dim, radiological=radiological,**kwargs)
 
     maps_img = _utils.check_niimg_4d(maps_img)
     n_maps = maps_img.shape[3]
@@ -871,7 +886,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                   title=None, threshold=1e-6, annotate=True, draw_cross=True,
                   black_bg='auto', cmap=cm.cold_hot, symmetric_cbar="auto",
                   dim='auto', vmax=None, resampling_interpolation='continuous',
-                  **kwargs):
+                  radiological=False, **kwargs):
     """Plot cuts of an ROI/mask image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -916,6 +931,9 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     %(vmax)s
     %(resampling_interpolation)s
         Default='continuous'.
+    radiological : boolean, optional
+        Invert x axis and R L labels to plot sections as a radiological view. If False (default),
+        the left hemisphere is on the left of a coronal image. If true, left hemisphere is on the right.
 
     Notes
     -----
@@ -951,7 +969,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         bg_vmin=bg_vmin, bg_vmax=bg_vmax, cmap=cmap, vmin=vmin, vmax=vmax,
         colorbar=colorbar, cbar_tick_format=cbar_tick_format,
         cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
-        resampling_interpolation=resampling_interpolation, **kwargs)
+        resampling_interpolation=resampling_interpolation,
+        radiological=radiological, **kwargs)
 
     return display
 
@@ -969,6 +988,7 @@ def plot_glass_brain(stat_map_img,
                      plot_abs=True,
                      symmetric_cbar="auto",
                      resampling_interpolation='continuous',
+                     radiological=False,
                      **kwargs):
     """Plot 2d projections of an ROI/mask image (by default 3 projections:
     Frontal, Axial, and Lateral). The brain glass schematics
@@ -1025,7 +1045,9 @@ def plot_glass_brain(stat_map_img,
         Default='auto'.
     %(resampling_interpolation)s
         Default='continuous'.
-
+    radiological : boolean, optional
+        Invert x axis and R L labels to plot sections as a radiological view. If False (default),
+        the left hemisphere is on the left of a coronal image. If true, left hemisphere is on the right.
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
@@ -1062,7 +1084,7 @@ def plot_glass_brain(stat_map_img,
         black_bg=black_bg, threshold=threshold, cmap=cmap, colorbar=colorbar,
         cbar_tick_format=cbar_tick_format, display_factory=display_factory,
         vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
-        resampling_interpolation=resampling_interpolation, **kwargs)
+        resampling_interpolation=resampling_interpolation, radiological = radiological, **kwargs)
 
     if stat_map_img is None and 'l' in display.axes:
         display.axes['l'].ax.invert_xaxis()
@@ -1081,7 +1103,7 @@ def plot_connectome(adjacency_matrix, node_coords,
                     annotate=True, black_bg=False,
                     alpha=0.7,
                     edge_kwargs=None, node_kwargs=None,
-                    colorbar=False):
+                    colorbar=False,radiological=False):
     """Plot connectome on top of the brain glass schematics.
 
     The plotted image should be in MNI space for this function to work
@@ -1149,6 +1171,9 @@ def plot_connectome(adjacency_matrix, node_coords,
         the nodes in one go.
     %(colorbar)s
         Default=False.
+    radiological : boolean, optional
+        Invert x axis and R L labels to plot sections as a radiological view. If False (default),
+        the left hemisphere is on the left of a coronal image. If true, left hemisphere is on the right.
 
     See Also
     --------
@@ -1163,7 +1188,7 @@ def plot_connectome(adjacency_matrix, node_coords,
                                figure=figure, axes=axes, title=title,
                                annotate=annotate,
                                black_bg=black_bg,
-                               alpha=alpha)
+                               alpha=alpha, radiological=radiological)
 
     display.add_graph(adjacency_matrix, node_coords,
                       node_color=node_color, node_size=node_size,
@@ -1187,7 +1212,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
                  node_threshold=None, alpha=0.7, output_file=None,
                  display_mode="ortho", figure=None, axes=None, title=None,
                  annotate=True, black_bg=False, node_kwargs=None,
-                 colorbar=True):
+                 colorbar=True, radiological=False):
     """Plot network nodes (markers) on top of the brain glass schematics.
 
     Nodes are color coded according to provided nodal measure. Nodal measure
@@ -1243,6 +1268,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
         the nodes in one go
     %(colorbar)s
         Default=True.
+    
 
     """
     node_values = np.array(node_values).flatten()
@@ -1258,7 +1284,8 @@ def plot_markers(node_values, node_coords, node_size='auto',
 
     display = plot_glass_brain(None, display_mode=display_mode,
                                figure=figure, axes=axes, title=title,
-                               annotate=annotate, black_bg=black_bg)
+                               annotate=annotate, black_bg=black_bg,
+                              radiological=radiological)
 
     if isinstance(node_size, str) and node_size == 'auto':
         node_size = min(1e4 / len(node_coords), 100)
