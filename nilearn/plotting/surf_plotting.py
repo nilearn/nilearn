@@ -643,12 +643,10 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     %(bg_on_data)s
         Default=False.
+    %(scale_bg_map)s
+        Default=True.
     %(darkness)s
         Default=1.
-
-        .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
 
     %(vmin)s
     %(vmax)s

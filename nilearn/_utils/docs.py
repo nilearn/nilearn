@@ -513,14 +513,25 @@ view : {'lateral', 'medial', 'dorsal', 'ventral',\
 # bg_on_data
 docdict['bg_on_data'] = """
 bg_on_data : :obj:`bool`, optional
-    If ``True``, and a ``bg_map`` is specified,
+    If ``True`` and a ``bg_map`` is specified,
     the ``surf_data`` data is multiplied by the background
-    image, so that e.g. sulcal depth is visible beneath
-    the ``surf_data``.
+    image, so that e.g. sulcal depth is jointly with ``surf_data``.
+    Otherwise, the background image will only be visible where there
+    is no surface data (either because ``surf_data`` contains ``nan``s
+    or because is was thresholded).
 
         .. note::
             This non-uniformly changes the surf_data values according
             to e.g the sulcal depth.
+
+"""
+
+# scale_bg_map
+docdict['scale_bg_map'] = """
+scale_bg_map : :obj:`bool`, optional
+    If ``True`` and a ``bg_map`` is specified,
+    the ``bg_map`` will be linearly normalized to the [0, 1] interval.
+    Otherwise, ``bg_map`` won't be changed.
 
 """
 
