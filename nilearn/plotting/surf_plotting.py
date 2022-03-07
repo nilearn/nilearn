@@ -199,16 +199,20 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
     except ImportError:
         msg = "Using engine='plotly' requires that ``plotly`` is installed."
         raise ImportError(msg)  # noqa
+
     x, y, z = coords.T
     i, j, k = faces.T
+
     if cmap is None:
         cmap = cold_hot
+
     bg_data = None
     if bg_map is not None:
         bg_data = load_surf_data(bg_map)
         if bg_data.shape[0] != coords.shape[0]:
             raise ValueError('The bg_map does not have the same number '
                              'of vertices as the mesh.')
+
     if surf_map is not None:
         _check_surf_map(surf_map, coords.shape[0])
         colors = colorscale(
@@ -227,6 +231,7 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
             bg_data, colors["cmap"], colors["norm"],
             colors["abs_threshold"]
         )
+
     mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k, vertexcolor=vertexcolor)
     fig_data = [mesh_3d]
     if colorbar:
@@ -370,7 +375,7 @@ def _get_cmap_matplotlib(cmap, vmin, vmax, threshold=None):
 
 
 def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
-                                   darkness, alpha):
+                                   darkness, alpha, scale_bg_map):
     """Helper function for plot_surf with matplotlib engine.
 
     This function computes the facecolors.
@@ -378,6 +383,7 @@ def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
     # set alpha if in auto mode
     if alpha == 'auto':
         alpha = .5 if bg_map is None else 1
+
     if bg_map is None:
         bg_data = np.ones(n_vertices) * 0.5
     else:
@@ -385,15 +391,20 @@ def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
         if bg_data.shape[0] != n_vertices:
             raise ValueError('The bg_map does not have the same number '
                              'of vertices as the mesh.')
+
     bg_faces = np.mean(bg_data[faces], axis=1)
+    if scale_bg_map:
     if bg_faces.min() != bg_faces.max():
         bg_faces = bg_faces - bg_faces.min()
         bg_faces = bg_faces / bg_faces.max()
+
     # control background darkness
     bg_faces *= darkness
     face_colors = plt.cm.gray_r(bg_faces)
+
     # modify alpha values of background
     face_colors[:, 3] = alpha * face_colors[:, 3]
+
     return face_colors
 
 
@@ -433,8 +444,8 @@ def _get_bounds(data, vmin=None, vmax=None):
 def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
                           hemi='left', view='lateral', cmap=None,
                           colorbar=False, avg_method='mean', threshold=None,
-                          alpha='auto', bg_on_data=False, darkness=1,
-                          vmin=None, vmax=None, cbar_vmin=None,
+                          alpha='auto', bg_on_data=False, scale_bg_map=True,
+                          darkness=1, vmin=None, vmax=None, cbar_vmin=None,
                           cbar_vmax=None, cbar_tick_format='%.2g',
                           title=None, title_font_size=18, output_file=None,
                           axes=None, figure=None, **kwargs):
@@ -483,7 +494,7 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
     axes.dist = 8
 
     face_colors = _compute_facecolors_matplotlib(
-        bg_map, faces, coords.shape[0], darkness, alpha
+        bg_map, faces, coords.shape[0], darkness, alpha, scale_bg_map
     )
     if surf_map is not None:
         surf_map_faces = _compute_surf_map_faces_matplotlib(
@@ -493,7 +504,8 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
         surf_map_faces, kept_indices, vmin, vmax = _threshold_and_rescale(
             surf_map_faces, threshold, vmin, vmax
         )
-        # multiply data with background if indicated
+        # multiply data with background if need be ;
+        # this is helpful to show sulci / gyri on surface map for instance.
         if bg_on_data:
             face_colors[kept_indices] = cmap(surf_map_faces[kept_indices])\
                 * face_colors[kept_indices]
@@ -532,7 +544,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               hemi='left', view='lateral', engine='matplotlib',
               cmap=None, symmetric_cmap=False, colorbar=False,
               avg_method='mean', threshold=None, alpha='auto',
-              bg_on_data=False, darkness=1, vmin=None, vmax=None,
+              bg_on_data=False, scale_bg_map=True, darkness=1,
+              vmin=None, vmax=None,
               cbar_vmin=None, cbar_vmax=None, cbar_tick_format="auto",
               title=None, title_font_size=18, output_file=None, axes=None,
               figure=None, **kwargs):
@@ -705,6 +718,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             coords, faces, surf_map=surf_map, bg_map=bg_map, hemi=hemi,
             view=view, cmap=cmap, colorbar=colorbar, avg_method=avg_method,
             threshold=threshold, alpha=alpha, bg_on_data=bg_on_data,
+            scale_bg_map=scale_bg_map,
             darkness=darkness, vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin,
             cbar_vmax=cbar_vmax, cbar_tick_format=cbar_tick_format,
             title=title, title_font_size=title_font_size,
