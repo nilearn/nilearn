@@ -21,7 +21,8 @@ class SurfaceView(HTMLDocument):
 
 
 def _get_vertexcolor(surf_map, cmap, norm,
-                     absolute_threshold=None, bg_map=None):
+                     absolute_threshold=None, bg_map=None,
+                     bg_on_data=False, scale_bg_map=True, darkness=1):
     vertexcolor = cmap(norm(surf_map).data)
     if absolute_threshold is None:
         return to_color_strings(vertexcolor)
@@ -30,11 +31,27 @@ def _get_vertexcolor(surf_map, cmap, norm,
         bg_vmin, bg_vmax = 0, 1
     else:
         bg_map = surface.load_surf_data(bg_map)
+
+    # scale background map if need be
+    if scale_bg_map:
         bg_vmin, bg_vmax = np.min(bg_map), np.max(bg_map)
-    bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
-    bg_color = mpl_cm.get_cmap('Greys')(bg_norm(bg_map))
-    vertexcolor[np.abs(surf_map) < absolute_threshold] = bg_color[
-        np.abs(surf_map) < absolute_threshold]
+        bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
+        bg_data = bg_norm(bg_map)
+    else:
+        bg_data = bg_map
+
+    bg_data *= darkness
+    bg_color = mpl_cm.get_cmap('Greys')(bg_data)
+
+    # select vertices which are filtered out by the threshold
+    under_threshold = np.abs(surf_map) < absolute_threshold
+    # replace their color with the background color
+    vertexcolor[under_threshold] = bg_color[under_threshold]
+    # and merge background color with surface map color if need be
+    if bg_on_data:
+        vertexcolor[~under_threshold] = vertexcolor[~under_threshold] * \
+            bg_color[~under_threshold]
+
     return to_color_strings(vertexcolor)
 
 

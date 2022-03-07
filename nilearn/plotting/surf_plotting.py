@@ -173,7 +173,8 @@ def _get_cbar_plotly(colorscale, vmin, vmax, cbar_tick_format,
 def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                       hemi='left', view='lateral', cmap=None,
                       symmetric_cmap=True, colorbar=False,
-                      threshold=None, vmin=None, vmax=None,
+                      threshold=None, bg_on_data=False, scale_bg_map=True,
+                      darkness=1, vmin=None, vmax=None,
                       cbar_vmin=None, cbar_vmax=None,
                       cbar_tick_format=".1f", title=None,
                       title_font_size=18, output_file=None):
@@ -220,8 +221,8 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
             symmetric_cmap=symmetric_cmap
         )
         vertexcolor = _get_vertexcolor(
-            surf_map, colors["cmap"], colors["norm"],
-            colors["abs_threshold"], bg_data
+            surf_map, colors["cmap"], colors["norm"], colors["abs_threshold"],
+            bg_data, bg_on_data, scale_bg_map, darkness
         )
     else:
         if bg_data is None:
@@ -232,6 +233,7 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
             colors["abs_threshold"]
         )
 
+    # add colorbar
     mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k, vertexcolor=vertexcolor)
     fig_data = [mesh_3d]
     if colorbar:
@@ -240,11 +242,15 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
             cbar_tick_format
         )
         fig_data.append(dummy)
+
+    # instanciate plotly figure
     cameras_view = _set_view_plot_surf_plotly(hemi, view)
     fig = go.Figure(data=fig_data)
     fig.update_layout(scene_camera=CAMERAS[cameras_view],
                       title=_configure_title_plotly(title, title_font_size),
                       **LAYOUT)
+
+    # save figure
     if output_file is not None:
         try:
             import kaleido  # noqa: F401
@@ -255,6 +261,7 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
     plotly_figure = PlotlySurfaceFigure(figure=fig, output_file=output_file)
     if output_file is not None:
         plotly_figure.savefig()
+
     return plotly_figure
 
 
@@ -717,8 +724,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         fig = _plot_surf_matplotlib(
             coords, faces, surf_map=surf_map, bg_map=bg_map, hemi=hemi,
             view=view, cmap=cmap, colorbar=colorbar, avg_method=avg_method,
-            threshold=threshold, alpha=alpha, bg_on_data=bg_on_data,
-            scale_bg_map=scale_bg_map,
+            threshold=threshold, alpha=alpha,
+            bg_on_data=bg_on_data, scale_bg_map=scale_bg_map,
             darkness=darkness, vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin,
             cbar_vmax=cbar_vmax, cbar_tick_format=cbar_tick_format,
             title=title, title_font_size=title_font_size,
@@ -729,8 +736,10 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         fig = _plot_surf_plotly(
             coords, faces, surf_map=surf_map, bg_map=bg_map, view=view,
             hemi=hemi, cmap=cmap, symmetric_cmap=symmetric_cmap,
-            colorbar=colorbar, threshold=threshold, vmin=vmin,
-            vmax=vmax, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
+            colorbar=colorbar, threshold=threshold,
+            bg_on_data=bg_on_data, scale_bg_map=scale_bg_map,
+            darkness=darkness,
+            vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
             cbar_tick_format=cbar_tick_format, title=title,
             title_font_size=title_font_size, output_file=output_file)
     else:
