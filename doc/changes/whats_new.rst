@@ -4,7 +4,10 @@
 ==========
 What's new
 ==========
+NEW
+---
 
+- New radiological view option for cross-sectional MRI plotting 
 .. _latest:
 .. include:: latest.rst
 .. _v0.10.1:
