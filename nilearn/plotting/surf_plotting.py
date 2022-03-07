@@ -394,9 +394,9 @@ def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
 
     bg_faces = np.mean(bg_data[faces], axis=1)
     if scale_bg_map:
-    if bg_faces.min() != bg_faces.max():
-        bg_faces = bg_faces - bg_faces.min()
-        bg_faces = bg_faces / bg_faces.max()
+        if bg_faces.min() != bg_faces.max():
+            bg_faces = bg_faces - bg_faces.min()
+            bg_faces = bg_faces / bg_faces.max()
 
     # control background darkness
     bg_faces *= darkness
