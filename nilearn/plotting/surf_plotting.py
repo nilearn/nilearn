@@ -243,7 +243,7 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
         )
         fig_data.append(dummy)
 
-    # instanciate plotly figure
+    # instantiate plotly figure
     cameras_view = _set_view_plot_surf_plotly(hemi, view)
     fig = go.Figure(data=fig_data)
     fig.update_layout(scene_camera=CAMERAS[cameras_view],
