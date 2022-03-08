@@ -24,8 +24,7 @@ def _get_vertexcolor(surf_map, cmap, norm,
                      absolute_threshold=None, bg_map=None,
                      bg_on_data=None, scale_bg_map=None, darkness=None):
     vertexcolor = cmap(norm(surf_map).data)
-    if absolute_threshold is None:
-        return to_color_strings(vertexcolor)
+
     if bg_map is None:
         bg_map = np.ones(len(surf_map)) * .5
         bg_vmin, bg_vmax = 0, 1
@@ -45,7 +44,9 @@ def _get_vertexcolor(surf_map, cmap, norm,
     bg_color = mpl_cm.get_cmap('Greys')(bg_data)
 
     # select vertices which are filtered out by the threshold
-    under_threshold = np.abs(surf_map) < absolute_threshold
+    under_threshold = np.abs(surf_map) < (
+        absolute_threshold if absolute_threshold is not None else 0
+    )
     # replace their color with the background color
     vertexcolor[under_threshold] = bg_color[under_threshold]
     # and merge background color with surface map color if need be
