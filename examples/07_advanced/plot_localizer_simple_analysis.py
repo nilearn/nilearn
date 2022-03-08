@@ -17,7 +17,7 @@ variates.  The user can refer to the
 import numpy as np
 import matplotlib.pyplot as plt
 from nilearn import datasets
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from nilearn.image import get_data
 
 
@@ -25,7 +25,8 @@ from nilearn.image import get_data
 # Load Localizer contrast
 n_samples = 20
 localizer_dataset = datasets.fetch_localizer_calculation_task(
-    n_subjects=n_samples)
+    n_subjects=n_samples, legacy_format=False
+)
 tested_var = np.ones((n_samples, 1))
 
 

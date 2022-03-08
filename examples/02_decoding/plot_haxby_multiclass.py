@@ -40,10 +40,10 @@ unique_conditions = unique_conditions[np.argsort(order)]
 ##############################################################################
 # Prepare the fMRI data
 # ----------------------
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 # For decoding, standardizing is often very important
 nifti_masker = NiftiMasker(mask_img=mask_filename, standardize=True,
-                           sessions=session, smoothing_fwhm=4,
+                           runs=session, smoothing_fwhm=4,
                            memory="nilearn_cache", memory_level=1)
 X = nifti_masker.fit_transform(func_filename)
 
@@ -96,7 +96,7 @@ plt.title('Prediction: accuracy score')
 ##############################################################################
 # Plot a confusion matrix
 # ------------------------
-# We fit on the the first 10 sessions and plot a confusion matrix on the
+# We fit on the first 10 sessions and plot a confusion matrix on the
 # last 2 sessions
 from sklearn.metrics import confusion_matrix
 from nilearn.plotting import plot_matrix, show

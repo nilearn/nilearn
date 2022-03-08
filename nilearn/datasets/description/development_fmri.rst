@@ -25,7 +25,7 @@ Content
 -------
     :'func': functional MRI Nifti images (4D) per subject
     :'confounds': TSV file contain nuisance information per subject
-    :'phenotypic': Phenotypic informaton for each subject such as age,
+    :'phenotypic': Phenotypic information for each subject such as age,
                    age group, gender, handedness.
 
 

@@ -25,6 +25,17 @@
 <div class=related-wrapper>
     {{relbar()}}
 </div>
+{% if build_dev_html %}
+<div class="devel-alert-banner">
+This is documentation for the <em>unstable development version</em> of Nilearn,
+the current stable version is available <a href="https://nilearn.github.io/stable/index.html">here</a>.
+</div>
+{% else %}
+<div class="stable-banner">
+This is the <em>stable</em> documentation for the latest release of Nilearn,
+the current development version is available <a href="https://nilearn.github.io/dev/index.html">here</a>.
+</div>
+{% endif %}
 {% endblock %}
 
 {% block rootrellink %}
@@ -33,6 +44,8 @@
 <li><a href="{{pathto('auto_examples/index')}}">Examples</a> |&nbsp;</li>
 <li><a href="{{pathto('modules/reference')}}">Reference</a> |&nbsp;</li>
 <li id="navbar-about"><a href="{{pathto('authors')}}">About</a>|&nbsp;</li>
+<li><a href="{{pathto('glossary')}}">Glossary</a>|&nbsp;</li>
+<li><a href="{{pathto('bibliography')}}">Bibliography</a>|&nbsp;</li>
 <li id="navbar-ecosystem"><a href="http://www.nipy.org/">Nipy ecosystem</a></li>
 {% endblock %}
 
@@ -261,16 +274,16 @@ $(function () {
 
 <h4> News </h4>
   <ul>
-      <li><p><strong>November 2020</strong>: <a href="whats_new.html#v0-7-0">Nilearn 0.7.0 released</a>
+      <li><p><strong>January 2022</strong>: <a href="changes/whats_new.html#v0-9-0">Nilearn 0.9.0 released</a>
       </p></li>
-      <li><p><strong>February 2020</strong>: <a href="whats_new.html#v0-6-2">Nilearn 0.6.2 released</a>
+      <li><p><strong>September 2021</strong>: <a href="changes/whats_new.html#v0-8-1">Nilearn 0.8.1 released</a>
       </p></li>
-      <li><p><strong>January 2020</strong>: <a href="whats_new.html#v0-6-1">Nilearn 0.6.1 released</a>
+      <li><p><strong>June 2021</strong>: <a href="changes/whats_new.html#v0-8-0">Nilearn 0.8.0 released</a>
       </p></li>
   </ul>
   <ul>
       <li><p> <strong>Ongoing</strong>:
-          <a href="whats_new.html"</a>What's new</em>.
+          <a href="changes/whats_new.html"</a>What's new</em>.
       </p></li>
   </ul>
 

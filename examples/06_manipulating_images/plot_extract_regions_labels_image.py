@@ -9,7 +9,7 @@ to assign each spatially-separated region of the atlas a unique label.
 Indeed, often in a given atlas of labels, the same label (number) may
 be used in different connected regions, for instance a region in each
 hemisphere. If we want to operate on regions and not networks (for
-instance in signal extration), it is useful to assign a different
+instance in signal extraction), it is useful to assign a different
 label to each region. We end up with a new atlas that has more labels,
 but each one points to a single region.
 
@@ -45,7 +45,7 @@ plotting.plot_roi(atlas_yeo, title='Original Yeo atlas',
 # Relabeling the atlas into separated regions
 # ---------------------------------------------
 #
-# Now we use the connected_label_regions to break appart the networks
+# Now we use the connected_label_regions to break apart the networks
 # of the Yeo atlas into separated regions
 from nilearn.regions import connected_label_regions
 region_labels = connected_label_regions(atlas_yeo)
@@ -61,7 +61,7 @@ plotting.plot_roi(region_labels, title='Relabeled Yeo atlas',
 #
 # However, you can see that the regions in the left and right hemispheres
 # now have different colors. For some regions it is difficult to tell
-# appart visually, as the colors are too close on the colormap (eg in the
+# apart visually, as the colors are too close on the colormap (eg in the
 # blue: regions labeled around 3).
 #
 # Also, we can see that there are many more labels: the colorbar goes up

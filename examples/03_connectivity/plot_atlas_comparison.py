@@ -10,8 +10,8 @@ parcellation based on labels and
 parcellation based on probabilistic values.
 
 In the intermediary steps, we make use of
-:class:`nilearn.input_data.NiftiLabelsMasker` and
-:class:`nilearn.input_data.NiftiMapsMasker` to extract time series from nifti
+:class:`nilearn.maskers.NiftiLabelsMasker` and
+:class:`nilearn.maskers.NiftiMapsMasker` to extract time series from nifti
 objects using different parcellation atlases.
 
 The time series of all subjects of the brain development dataset are concatenated and
@@ -46,7 +46,7 @@ print('Counfound csv files (of same subject) are located at : %r'
 ##########################################################################
 # Extract coordinates on Yeo atlas - parcellations
 # ------------------------------------------------
-from nilearn.input_data import NiftiLabelsMasker
+from nilearn.maskers import NiftiLabelsMasker
 from nilearn.connectome import ConnectivityMeasure
 
 # ConenctivityMeasure from Nilearn uses simple 'correlation' to compute
@@ -118,13 +118,14 @@ for lag in [0, 1]:
 # -----------------------------------------------------------------
 
 dim = 64
-difumo = datasets.fetch_atlas_difumo(dimension=dim,
-                                     resolution_mm=2)
+difumo = datasets.fetch_atlas_difumo(
+    dimension=dim, resolution_mm=2, legacy_format=False
+)
 
 ##########################################################################
 # Iterate over fetched atlases to extract coordinates - probabilistic
 # -------------------------------------------------------------------
-from nilearn.input_data import NiftiMapsMasker
+from nilearn.maskers import NiftiMapsMasker
 
 # create masker to extract functional data within atlas parcels
 masker = NiftiMapsMasker(maps_img=difumo.maps, standardize=True,

@@ -33,7 +33,7 @@ For more information see:
 PyMVPA provides a tutorial using this dataset :
 http://www.pymvpa.org/tutorial.html
 
-More informations about its structure :
+More information about its structure :
 http://dev.pymvpa.org/datadb/haxby2001.html
 
 

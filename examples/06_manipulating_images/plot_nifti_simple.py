@@ -18,7 +18,7 @@ print('First functional nifti image (4D) is at: %s' % func_filename)
 
 ###########################################################################
 # Compute the mask
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 
 # As this is raw movie watching based EPI, the background is noisy and we
 # cannot rely on the 'background' masking strategy. We need to use the 'epi'

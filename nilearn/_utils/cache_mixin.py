@@ -8,10 +8,9 @@ import json
 import warnings
 import os
 import shutil
-from distutils.version import LooseVersion
+from nilearn.version import _compare_version
 
 import nibabel
-import sklearn
 
 from joblib import Memory
 
@@ -109,11 +108,13 @@ def _safe_cache(memory, func, **kwargs):
 
     modules = (nibabel, )
     # Keep only the major + minor version numbers
-    my_versions = dict((m.__name__, LooseVersion(m.__version__).version[:2])
-                       for m in modules)
+    my_versions = dict((m.__name__, m.__version__) for m in modules)
     commons = set(versions.keys()).intersection(set(my_versions.keys()))
-    collisions = [m for m in commons if versions[m] != my_versions[m]]
-
+    collisions = [
+        m for m in commons if not _compare_version(
+            versions[m], '==', my_versions[m]
+        )
+    ]
     # Flush cache if version collision
     if len(collisions) > 0:
         if nilearn.CHECK_CACHE_VERSION:

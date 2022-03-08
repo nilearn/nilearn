@@ -5,7 +5,7 @@ from *Random walks for image segmentation*, Leo Grady, IEEE Trans
 Pattern Anal Mach Intell. 2006 Nov;28(11):1768-83.
 
 This code is mostly adapted from scikit-image 0.11.3 release.
-Location of file in scikit image: random_walker function and its suporting
+Location of file in scikit image: random_walker function and its supporting
 sub functions in skimage.segmentation
 """
 
@@ -340,7 +340,7 @@ def _solve_cg(lap_sparse, B, tol):
     lap_sparse = lap_sparse.tocsc()
     X = []
     for i in range(len(B)):
-        x0 = cg(lap_sparse, -B[i].todense(), tol=tol)[0]
+        x0 = cg(lap_sparse, -B[i].todense(), tol=tol, atol='legacy')[0]
         X.append(x0)
 
     X = np.array(X)

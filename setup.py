@@ -86,9 +86,11 @@ if __name__ == "__main__":
               'Operating System :: POSIX',
               'Operating System :: Unix',
               'Operating System :: MacOS',
-              'Programming Language :: Python :: 3.5',
               'Programming Language :: Python :: 3.6',
               'Programming Language :: Python :: 3.7',
+              'Programming Language :: Python :: 3.8',
+              'Programming Language :: Python :: 3.9',
+              'Programming Language :: Python :: 3.10',
           ],
           packages=find_packages(),
           package_data={
@@ -112,5 +114,5 @@ if __name__ == "__main__":
               'nilearn.reporting.glm_reporter_templates': ['*.html'],
           },
           install_requires=list_required_packages(),
-          python_requires='>=3.5',
+          python_requires='>=3.6',
           )

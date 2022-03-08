@@ -80,16 +80,46 @@ def test_AR_degenerate():
 def test_resid_rename_warnings_ols():
     model = OLSModel(design=X)
     results_ols = model.fit(Y)
-    with pytest.warns(FutureWarning, match="'df_resid'"):
-        assert_array_equal(results_ols.df_resid, results_ols.df_residuals)
-    with pytest.warns(FutureWarning, match="'resid'"):
-        assert_array_equal(results_ols.resid, results_ols.residuals)
-    with pytest.warns(FutureWarning, match="'wY'"):
-        assert_array_equal(results_ols.wY, results_ols.whitened_Y)
-    with pytest.warns(FutureWarning, match="'wdesign'"):
-        assert_array_equal(results_ols.wdesign, results_ols.whitened_design)
-    with pytest.warns(FutureWarning, match="'wdesign'"):
-        assert_array_equal(model.wdesign, model.whitened_design)
+
+    with pytest.warns(FutureWarning,
+                      match="'df_resid'"):
+        assert_array_equal(results_ols.df_resid,
+                           results_ols.df_residuals)
+
+    with pytest.warns(FutureWarning,
+                      match="'resid'"):
+        assert_array_equal(results_ols.resid,
+                           results_ols.residuals)
+
+    with pytest.warns(FutureWarning,
+                      match="'wresid'"):
+        assert_array_equal(results_ols.wresid,
+                           results_ols.whitened_residuals)
+
+    with pytest.warns(FutureWarning,
+                      match="'norm_resid'"):
+        assert_array_equal(results_ols.norm_resid,
+                           results_ols.normalized_residuals)
+
+    with pytest.warns(FutureWarning,
+                      match="'wY'"):
+        assert_array_equal(results_ols.wY,
+                           results_ols.whitened_Y)
+
+    with pytest.warns(FutureWarning,
+                      match="'wdesign'"):
+        assert_array_equal(results_ols.wdesign,
+                           results_ols.whitened_design)
+
+    with pytest.warns(FutureWarning,
+                      match="'df_resid'"):
+        assert_array_equal(model.df_resid,
+                           model.df_residuals)
+
+    with pytest.warns(FutureWarning,
+                      match="'wdesign'"):
+        assert_array_equal(model.wdesign,
+                           model.whitened_design)
 
 
 def test_resid_rename_warnings_ar():

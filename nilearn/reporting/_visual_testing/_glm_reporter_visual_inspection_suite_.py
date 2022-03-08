@@ -13,13 +13,13 @@ import numpy as np
 import pandas as pd
 
 import nilearn
-from nilearn._utils.glm import get_design_from_fslmat
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 from nilearn.glm.first_level.design_matrix import \
     make_first_level_design_matrix
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.image import resample_to_img
-from nilearn.input_data import NiftiSpheresMasker
+from nilearn.interfaces.fsl import get_design_from_fslmat
+from nilearn.maskers import NiftiSpheresMasker
 from nilearn.reporting import make_glm_report
 
 REPORTS_DIR = 'generated_glm_reports'
@@ -199,7 +199,8 @@ def report_slm_oasis():  # pragma: no cover
                                interpolation='nearest',
                                )
     design_matrix = _make_design_matrix_slm_oasis(oasis_dataset, n_subjects)
-    second_level_model = SecondLevelModel(smoothing_fwhm=2.0, mask=mask_img)
+    second_level_model = SecondLevelModel(smoothing_fwhm=2.0,
+                                          mask_img=mask_img)
     second_level_model.fit(oasis_dataset.gray_matter_maps,
                            design_matrix=design_matrix)
 
