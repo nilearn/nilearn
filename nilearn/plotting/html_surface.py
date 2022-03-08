@@ -22,7 +22,7 @@ class SurfaceView(HTMLDocument):
 
 def _get_vertexcolor(surf_map, cmap, norm,
                      absolute_threshold=None, bg_map=None,
-                     bg_on_data=False, scale_bg_map=True, darkness=1):
+                     bg_on_data=None, scale_bg_map=None, darkness=None):
     vertexcolor = cmap(norm(surf_map).data)
     if absolute_threshold is None:
         return to_color_strings(vertexcolor)
@@ -40,7 +40,8 @@ def _get_vertexcolor(surf_map, cmap, norm,
     else:
         bg_data = bg_map
 
-    bg_data *= darkness
+    if darkness is not None:
+        bg_data *= darkness
     bg_color = mpl_cm.get_cmap('Greys')(bg_data)
 
     # select vertices which are filtered out by the threshold
