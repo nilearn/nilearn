@@ -54,10 +54,10 @@ Featured examples
 .. grid::
 
   .. grid-item-card::
-    :link: quickstart
+    :link: sphx_glr_auto_examples_01_plotting_plot_demo_glass_brain.py
     :link-type: ref
-    :columns: 12 12 9 9
-    :class-card: sd-shadow-sm sd-border-none
+    :columns: 12 12 12 12
+    :class-card: sd-shadow-sm
     :margin: 2 2 auto auto
 
     .. grid::
@@ -66,21 +66,25 @@ Featured examples
       :padding: 0
 
       .. grid-item::
-        :columns: 3
+        :columns: 12 4 4 4
 
-        .. image:: logos/nilearn-desaturate-100.png
+        .. image:: auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_002.png
 
       .. grid-item::
-        :columns: 9
+        :columns: 12 8 8 8
 
-        auto_examples/01_plotting/plot_demo_glass_brain.html
-        short example description
+        .. div:: sd-font-weight-bold
+
+          Glass brain plotting
+
+        Explore how to retrieve data and plot whole brain cuts
+        in glass mode.
 
   .. grid-item-card::
-    :link: quickstart
+    :link: sphx_glr_auto_examples_03_connectivity_plot_inverse_covariance_connectome.py
     :link-type: ref
-    :columns: 12 12 9 9
-    :class-card: sd-shadow-sm sd-border-none
+    :columns: 12 12 12 12
+    :class-card: sd-shadow-sm
     :margin: 2 2 auto auto
 
     .. grid::
@@ -89,22 +93,25 @@ Featured examples
       :padding: 0
 
       .. grid-item::
-        :columns: 3
+        :columns: 12 4 4 4
 
-        .. image:: logos/nilearn-desaturate-100.png
+        .. image:: auto_examples/03_connectivity/images/sphx_glr_plot_inverse_covariance_connectome_004.png
 
       .. grid-item::
-        :columns: 9
+        :columns: 12 8 8 8
 
-        auto_examples/03_connectivity/plot_inverse_covariance_connectome.html
-        a much longer description example with a lot
-        of words explaining how great this python script is
+        .. div:: sd-font-weight-bold
+
+          Computing a connectome with sparse inverse covariance
+
+        Construct a functional connectome using the sparse inverse covariance,
+        and display the corresponding graph and matrix.
 
   .. grid-item-card::
-    :link: quickstart
+    :link: sphx_glr_auto_examples_01_plotting_plot_3d_map_to_surface_projection.py
     :link-type: ref
-    :columns: 12 12 9 9
-    :class-card: sd-shadow-sm sd-border-none
+    :columns: 12 12 12 12
+    :class-card: sd-shadow-sm
     :margin: 2 2 auto auto
 
     .. grid::
@@ -113,22 +120,25 @@ Featured examples
       :padding: 0
 
       .. grid-item::
-        :columns: 3
+        :columns: 12 4 4 4
 
-        .. image:: logos/nilearn-desaturate-100.png
+        .. image:: auto_examples/01_plotting/images/sphx_glr_plot_3d_map_to_surface_projection_001.png
 
       .. grid-item::
-        :columns: 9
+        :columns: 12 8 8 8
 
-        auto_examples/01_plotting/plot_3d_map_to_surface_projection.html
-        a much longer description example with a lot
-        of words explaining how great this python script is
+        .. div:: sd-font-weight-bold
+
+          Making a surface plot of a 3D statistical map
+
+        Project a 3D statistical map onto a cortical mesh
+        and display the surface map as png or in interactive mode.
 
   .. grid-item-card::
-    :link: quickstart
+    :link: sphx_glr_auto_examples_00_tutorials_plot_decoding_tutorial.py
     :link-type: ref
-    :columns: 12 12 9 9
-    :class-card: sd-shadow-sm sd-border-none
+    :columns: 12 12 12 12
+    :class-card: sd-shadow-sm
     :margin: 2 2 auto auto
 
     .. grid::
@@ -137,22 +147,24 @@ Featured examples
       :padding: 0
 
       .. grid-item::
-        :columns: 3
+        :columns: 12 4 4 4
 
-        .. image:: logos/nilearn-desaturate-100.png
+        .. image:: auto_examples/00_tutorials/images/sphx_glr_plot_decoding_tutorial_001.png
 
       .. grid-item::
-        :columns: 9
+        :columns: 12 8 8 8
 
-        auto_examples/plot_decoding_tutorial.html
-        a much longer description example with a lot
-        of words explaining how great this python script is
+        .. div:: sd-font-weight-bold
+
+          Introduction tutorial to fMRI decoding
+
+        Learn to perform decoding with nilearn. Reproduce the Haxby 2001 study on a face vs cat discrimination task in a mask of the ventral stream.
 
   .. grid-item-card::
-    :link: quickstart
+    :link: sphx_glr_auto_examples_02_decoding_plot_oasis_vbm.py
     :link-type: ref
-    :columns: 12 12 9 9
-    :class-card: sd-shadow-sm sd-border-none
+    :columns: 12 12 12 12
+    :class-card: sd-shadow-sm
     :margin: 2 2 auto auto
 
     .. grid::
@@ -161,22 +173,25 @@ Featured examples
       :padding: 0
 
       .. grid-item::
-        :columns: 3
+        :columns: 12 4 4 4
 
-        .. image:: logos/nilearn-desaturate-100.png
+        .. image:: auto_examples/02_decoding/images/sphx_glr_plot_oasis_vbm_002.png
 
       .. grid-item::
-        :columns: 9
+        :columns: 12 8 8 8
 
-        auto_examples/02_decoding/plot_oasis_vbm.html
-        a much longer description example with a lot
-        of words explaining how great this python script is
+        .. div:: sd-font-weight-bold
+
+          Voxel-Based Morphometry on Oasis dataset
+
+        Study the relationship between aging and gray matter density
+        using data from the OASIS project.
 
   .. grid-item-card::
-    :link: quickstart
+    :link: sphx_glr_auto_examples_03_connectivity_plot_data_driven_parcellations.py
     :link-type: ref
-    :columns: 12 12 9 9
-    :class-card: sd-shadow-sm sd-border-none
+    :columns: 12 12 12 12
+    :class-card: sd-shadow-sm
     :margin: 2 2 auto auto
 
     .. grid::
@@ -185,22 +200,26 @@ Featured examples
       :padding: 0
 
       .. grid-item::
-        :columns: 3
+        :columns: 12 4 4 4
 
-        .. image:: logos/nilearn-desaturate-100.png
+        .. image:: auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_001.png
 
       .. grid-item::
-        :columns: 9
+        :columns: 12 8 8 8
 
-        auto_examples/03_connectivity/plot_data_driven_parcellations.html
-        a much longer description example with a lot
-        of words explaining how great this python script is
+        .. div:: sd-font-weight-bold
+
+          Clustering methods to learn a brain parcellation from fMRI
+
+        Use spatially-constrained Ward-clustering, KMeans, Hierarchical KMeans
+        and Recursive Neighbor Agglomeration (ReNA) to create a set of parcels,
+        and display them.
 
   .. grid-item-card::
-    :link: quickstart
+    :link: sphx_glr_auto_examples_03_connectivity_plot_compare_decomposition.py
     :link-type: ref
-    :columns: 12 12 9 9
-    :class-card: sd-shadow-sm sd-border-none
+    :columns: 12 12 12 12
+    :class-card: sd-shadow-sm
     :margin: 2 2 auto auto
 
     .. grid::
@@ -209,22 +228,26 @@ Featured examples
       :padding: 0
 
       .. grid-item::
-        :columns: 3
+        :columns: 12 4 4 4
 
-        .. image:: logos/nilearn-desaturate-100.png
+        .. image:: auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_001.png
 
       .. grid-item::
-        :columns: 9
+        :columns: 12 8 8 8
 
-        auto_examples/03_connectivity/plot_compare_decomposition.html
-        a much longer description example with a lot
-        of words explaining how great this python script is
+        .. div:: sd-font-weight-bold
+
+          Deriving spatial maps from group fMRI data using ICA and Dictionary Learning
+
+        Derive spatial maps or networks from group fMRI data
+        using two popular decomposition methods, ICA and Dictionary learning
+        on data of children and young adults watching movies.
 
   .. grid-item-card::
-    :link: quickstart
+    :link: sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py
     :link-type: ref
-    :columns: 12 12 9 9
-    :class-card: sd-shadow-sm sd-border-none
+    :columns: 12 12 12 12
+    :class-card: sd-shadow-sm
     :margin: 2 2 auto auto
 
     .. grid::
@@ -233,22 +256,25 @@ Featured examples
       :padding: 0
 
       .. grid-item::
-        :columns: 3
+        :columns: 12 4 4 4
 
-        .. image:: logos/nilearn-desaturate-100.png
+        .. image:: auto_examples/02_decoding/images/sphx_glr_plot_haxby_frem_001.png
 
       .. grid-item::
-        :columns: 9
+        :columns: 12 8 8 8
 
-        auto_examples/02_decoding/plot_haxby_frem.html
-        a much longer description example with a lot
-        of words explaining how great this python script is
+        .. div:: sd-font-weight-bold
+
+          Decoding with FREM: face vs house object recognition
+
+        Use fast ensembling of regularized models (FREM)
+        to decode a face vs house discrimination task from Haxby 2001 study.
 
   .. grid-item-card::
-    :link: quickstart
+    :link: sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight.py
     :link-type: ref
-    :columns: 12 12 9 9
-    :class-card: sd-shadow-sm sd-border-none
+    :columns: 12 12 12 12
+    :class-card: sd-shadow-sm
     :margin: 2 2 auto auto
 
     .. grid::
@@ -257,16 +283,20 @@ Featured examples
       :padding: 0
 
       .. grid-item::
-        :columns: 3
+        :columns: 12 4 4 4
 
-        .. image:: logos/nilearn-desaturate-100.png
+        .. image:: auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_001.png
 
       .. grid-item::
-        :columns: 9
+        :columns: 12 8 8 8
 
-        auto_examples/02_decoding/plot_haxby_searchlight.html
-        a much longer description example with a lot
-        of words explaining how great this python script is
+        .. div:: sd-font-weight-bold
+
+          Searchlight analysis of face vs house recognition
+
+        Fit a classifier a large amount of times
+        in order to distinguish between face- and house-related
+        cortical areas.
 
 
 .. toctree::
