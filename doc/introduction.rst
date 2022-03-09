@@ -356,8 +356,8 @@ Basic numerics
 
 :Plotting and figures:
 
- .. figure:: auto_examples/images/sphx_glr_plot_python_101_001.png
-   :target: auto_examples/plot_python_101.html
+ .. figure:: auto_examples/00_tutorials/images/sphx_glr_plot_python_101_001.png
+   :target: auto_examples/00_tutorials/plot_python_101.html
    :align: right
    :scale: 30
 
