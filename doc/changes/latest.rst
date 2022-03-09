@@ -13,6 +13,7 @@ NEW
 Fixes
 -----
 
+- Fix function :func:`~datasets.fetch_abide_pcp` which was returning empty phenotypes and ``func_preproc`` after release ``0.9.0`` due to supporting pandas dataframes in fetchers (:gh:`3174` by `Nicolas Gensollen`_).
 
 Enhancements
 ------------
