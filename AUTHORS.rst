@@ -1,15 +1,8 @@
 .. -*- mode: rst -*-
 
-<<<<<<< HEAD
 ====
 Team
 ====
-=======
-.. include:: changes/names.rst
-
-People
-------
->>>>>>> e1c2f8bd9cd22d9cce9028bb3a56ac7df73810b5
 
 This work is made available by a community of people, which
 originated from
