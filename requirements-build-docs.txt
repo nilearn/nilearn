@@ -23,4 +23,4 @@ kaleido
 furo
 recommonmark
 sphinx-design
-myst_parser
+myst-parser
