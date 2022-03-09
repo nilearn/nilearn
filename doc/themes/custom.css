@@ -12,9 +12,9 @@ div.sphx-glr-download a:hover {
   box-shadow: none;
   text-decoration: none;
   background-image: none;
-  background-color: transparent;
+  background-color: var(--sd-color-primary-highlight);
   border: 1px solid var(--sd-color-primary-highlight);
-  color: var(--sd-color-primary-highlight);
+  color: var(--sd-color-light);
 }
 
 div.sphx-glr-download a .pre {
