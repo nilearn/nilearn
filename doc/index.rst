@@ -29,8 +29,8 @@ Nilearn
         Get started with Nilearn
 
     .. grid-item-card:: :fas:`th` Examples
-        :link: quickstart
-        :link-type: ref
+        :link: auto_examples/index.html
+        :link-type: url
         :columns: 12 12 4 4
         :class-card: sd-shadow-md
         :class-title: sd-text-primary
@@ -54,8 +54,8 @@ Featured examples
 .. grid::
 
   .. grid-item-card::
-    :link: sphx_glr_auto_examples_01_plotting_plot_demo_glass_brain.py
-    :link-type: ref
+    :link: auto_examples/01_plotting/plot_demo_glass_brain.html
+    :link-type: url
     :columns: 12 12 12 12
     :class-card: sd-shadow-sm
     :margin: 2 2 auto auto
@@ -81,8 +81,8 @@ Featured examples
         in glass mode.
 
   .. grid-item-card::
-    :link: sphx_glr_auto_examples_03_connectivity_plot_inverse_covariance_connectome.py
-    :link-type: ref
+    :link: auto_examples/03_connectivity/plot_inverse_covariance_connectome.html
+    :link-type: url
     :columns: 12 12 12 12
     :class-card: sd-shadow-sm
     :margin: 2 2 auto auto
@@ -108,8 +108,8 @@ Featured examples
         and display the corresponding graph and matrix.
 
   .. grid-item-card::
-    :link: sphx_glr_auto_examples_01_plotting_plot_3d_map_to_surface_projection.py
-    :link-type: ref
+    :link: auto_examples/01_plotting/plot_3d_map_to_surface_projection.html
+    :link-type: url
     :columns: 12 12 12 12
     :class-card: sd-shadow-sm
     :margin: 2 2 auto auto
@@ -135,8 +135,8 @@ Featured examples
         and display the surface map as png or in interactive mode.
 
   .. grid-item-card::
-    :link: sphx_glr_auto_examples_00_tutorials_plot_decoding_tutorial.py
-    :link-type: ref
+    :link: auto_examples/00_tutorials/plot_decoding_tutorial.html
+    :link-type: url
     :columns: 12 12 12 12
     :class-card: sd-shadow-sm
     :margin: 2 2 auto auto
@@ -161,8 +161,8 @@ Featured examples
         Learn to perform decoding with nilearn. Reproduce the Haxby 2001 study on a face vs cat discrimination task in a mask of the ventral stream.
 
   .. grid-item-card::
-    :link: sphx_glr_auto_examples_02_decoding_plot_oasis_vbm.py
-    :link-type: ref
+    :link: auto_examples/02_decoding/plot_oasis_vbm.html
+    :link-type: url
     :columns: 12 12 12 12
     :class-card: sd-shadow-sm
     :margin: 2 2 auto auto
@@ -188,8 +188,8 @@ Featured examples
         using data from the OASIS project.
 
   .. grid-item-card::
-    :link: sphx_glr_auto_examples_03_connectivity_plot_data_driven_parcellations.py
-    :link-type: ref
+    :link: auto_examples/03_connectivity/plot_data_driven_parcellations.html
+    :link-type: url
     :columns: 12 12 12 12
     :class-card: sd-shadow-sm
     :margin: 2 2 auto auto
@@ -216,8 +216,8 @@ Featured examples
         and display them.
 
   .. grid-item-card::
-    :link: sphx_glr_auto_examples_03_connectivity_plot_compare_decomposition.py
-    :link-type: ref
+    :link: auto_examples/03_connectivity/plot_compare_decomposition.html
+    :link-type: url
     :columns: 12 12 12 12
     :class-card: sd-shadow-sm
     :margin: 2 2 auto auto
@@ -244,8 +244,8 @@ Featured examples
         on data of children and young adults watching movies.
 
   .. grid-item-card::
-    :link: sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py
-    :link-type: ref
+    :link: auto_examples/02_decoding/plot_haxby_frem.html
+    :link-type: url
     :columns: 12 12 12 12
     :class-card: sd-shadow-sm
     :margin: 2 2 auto auto
@@ -271,8 +271,8 @@ Featured examples
         to decode a face vs house discrimination task from Haxby 2001 study.
 
   .. grid-item-card::
-    :link: sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight.py
-    :link-type: ref
+    :link: auto_examples/02_decoding/plot_haxby_searchlight.html
+    :link-type: url
     :columns: 12 12 12 12
     :class-card: sd-shadow-sm
     :margin: 2 2 auto auto
