@@ -35,6 +35,13 @@ docdict['ax'] = """
 ax : :class:`~matplotlib.axes.Axes`
     The matplotlib axes in which the plots will be drawn."""
 
+# Legacy_format
+docdict['legacy_format'] = """
+legacy_format : :obj:`bool`, optional
+    If set to ``True``, the fetcher will return recarrays. Otherwise,
+    it will return pandas dataframes.
+    Default=True."""
+
 # Resume
 docdict['resume'] = """
 resume : :obj:`bool`, optional
@@ -722,6 +729,15 @@ mask_strategy : {'background', 'epi', 'whole-brain-template',\
 
             .. versionadded:: 0.8.1
 
+"""
+
+# templateflow
+docdict["templateflow"] = """
+    The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
+    release c (MNI152NLin2009cSAsym). The NiLearn template is asymmetrical
+    ICBM152 2009, release a. If you wish to use the exact same release as
+    :term:`fMRIPrep`, please refer to TemplateFlow
+    (https://www.templateflow.org/).
 """
 
 docdict_indented = {}

@@ -118,8 +118,9 @@ for lag in [0, 1]:
 # -----------------------------------------------------------------
 
 dim = 64
-difumo = datasets.fetch_atlas_difumo(dimension=dim,
-                                     resolution_mm=2)
+difumo = datasets.fetch_atlas_difumo(
+    dimension=dim, resolution_mm=2, legacy_format=False
+)
 
 ##########################################################################
 # Iterate over fetched atlases to extract coordinates - probabilistic

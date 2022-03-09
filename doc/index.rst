@@ -317,7 +317,7 @@ Featured examples
    nistats_migration.rst
    development.rst
    maintenance.rst
-   whats_new.rst
+   changes/whats_new.rst
    authors.rst
    GitHub Repository <https://github.com/nilearn/nilearn>
 

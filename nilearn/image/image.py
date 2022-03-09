@@ -697,7 +697,8 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     Returns
     -------
     Niimg-like object
-        A loaded image with the same type (and header) as the reference image.
+        A loaded image with the same file type (and, optionally, header)
+        as the reference image.
 
     """
     # Hand-written loading code to avoid too much memory consumption
@@ -821,7 +822,7 @@ def threshold_img(
     Thresholding can be done based on direct image intensities or selection
     threshold with given percentile.
 
-    .. versionchanged:: 0.8.2
+    .. versionchanged:: 0.9.0
         New ``cluster_threshold`` and ``two_sided`` parameters added.
 
     .. versionadded:: 0.2
@@ -846,14 +847,14 @@ def threshold_img(
         sets of connected voxels (``clusters``) with size smaller
         than this number will be removed. Default=0.
 
-        .. versionadded:: 0.8.2
+        .. versionadded:: 0.9.0
 
     two_sided : :obj:`bool`, optional
         Whether the thresholding should yield both positive and negative
         part of the maps.
         Default=True.
 
-        .. versionadded:: 0.8.2
+        .. versionadded:: 0.9.0
 
     mask_img : Niimg-like object, default None, optional
         Mask image applied to mask the input data.

@@ -46,8 +46,9 @@ subcortex = datasets.fetch_atlas_pauli_2017()
 # Dictionaries of Functional Modes (“DiFuMo”) atlas
 dim = 64
 res = 2
-difumo = datasets.fetch_atlas_difumo(dimension=dim,
-                                     resolution_mm=res)
+difumo = datasets.fetch_atlas_difumo(
+    dimension=dim, resolution_mm=res, legacy_format=False
+)
 
 # Visualization
 from nilearn import plotting

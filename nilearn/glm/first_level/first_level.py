@@ -22,10 +22,10 @@ from nibabel import Nifti1Image
 from sklearn.base import clone
 from sklearn.cluster import KMeans
 
+from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
 from nilearn._utils import fill_doc
 from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
-                                _check_run_tables, get_bids_files,
-                                parse_bids_filename)
+                                _check_run_tables)
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn.glm.contrasts import (_compute_fixed_effect_contrast,
                                    expression_to_contrast_vector)
@@ -369,8 +369,7 @@ class FirstLevelModel(BaseGLM):
         if signal_scaling is False:
             self.signal_scaling = signal_scaling
         elif signal_scaling in [0, 1, (0, 1)]:
-            self.scaling_axis = signal_scaling
-            self.signal_scaling = True
+            self.signal_scaling = signal_scaling
             self.standardize = False
         else:
             raise ValueError('signal_scaling must be "False", "0", "1"'
@@ -384,6 +383,14 @@ class FirstLevelModel(BaseGLM):
         self.labels_ = None
         self.results_ = None
         self.subject_label = subject_label
+
+    @property
+    def scaling_axis(self):
+        warn(DeprecationWarning(
+            "Deprecated. `scaling_axis` will be removed in 0.11.0. "
+            "Please use `signal_scaling` instead."
+        ))
+        return self.signal_scaling
 
     def fit(self, run_imgs, events=None, confounds=None,
             design_matrices=None, bins=100):
@@ -566,8 +573,8 @@ class FirstLevelModel(BaseGLM):
                 sys.stderr.write('Masker took %d seconds       \n'
                                  % t_masking)
 
-            if self.signal_scaling:
-                Y, _ = mean_scaling(Y, self.scaling_axis)
+            if self.signal_scaling is not False:  # noqa
+                Y, _ = mean_scaling(Y, self.signal_scaling)
             if self.memory:
                 mem_glm = self.memory.cache(run_glm, ignore=['n_jobs'])
             else:

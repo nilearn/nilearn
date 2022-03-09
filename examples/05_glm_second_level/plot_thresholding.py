@@ -18,7 +18,8 @@ narrative sentence reading/listening.
 from nilearn import datasets
 n_samples = 20
 localizer_dataset = datasets.fetch_localizer_calculation_task(
-    n_subjects=n_samples)
+    n_subjects=n_samples, legacy_format=False
+)
 
 #########################################################################
 # Get the set of individual statstical maps (contrast estimates)

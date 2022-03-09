@@ -136,8 +136,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
     runs : numpy array, optional
         Add a run level to the preprocessing. Each run will be
         detrended independently. Must be a 1D array of n_samples elements.
-        'runs' replaces 'sessions' after release 0.9.0.
-        Using 'session' will result in an error after release 0.9.0.
     %(smoothing_fwhm)s
     standardize : {False, True, 'zscore', 'psc'}, optional
         Strategy to standardize the signal.
@@ -200,17 +198,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
         to fine-tune mask computation. Please see the related documentation
         for details.
 
-    sample_mask : Any type compatible with numpy-array indexing, optional
-        Masks the niimgs along time/fourth dimension. This complements
-        3D masking by the mask_img argument. This masking step is applied
-        before data preprocessing at the beginning of NiftiMasker.transform.
-        This is useful to perform data subselection as part of a scikit-learn
-        pipeline.
-
-            .. deprecated:: 0.8.0
-                `sample_mask` is deprecated in 0.8.0 and will be removed in
-                0.9.0.
-
     dtype : {dtype, "auto"}, optional
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
@@ -251,16 +238,11 @@ class NiftiMasker(BaseMasker, CacheMixin):
     nilearn.signal.clean
 
     """
-    @remove_parameters(['sample_mask'],
-                       ('Deprecated in 0.8.0. Supply `sample_masker` through '
-                        '`transform` or `fit_transform` methods instead. '),
-                       '0.9.0')
-    @rename_parameters({'sessions': 'runs'}, '0.9.0')
     def __init__(self, mask_img=None, runs=None, smoothing_fwhm=None,
                  standardize=False, standardize_confounds=True, detrend=False,
                  high_variance_confounds=False, low_pass=None, high_pass=None,
                  t_r=None, target_affine=None, target_shape=None,
-                 mask_strategy='background', mask_args=None, sample_mask=None,
+                 mask_strategy='background', mask_args=None,
                  dtype=None, memory_level=1, memory=Memory(location=None),
                  verbose=0, reports=True,
                  ):
@@ -279,7 +261,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self.target_shape = target_shape
         self.mask_strategy = mask_strategy
         self.mask_args = mask_args
-        self._sample_mask = sample_mask
         self.dtype = dtype
 
         self.memory = memory
@@ -296,21 +277,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
         self._overlay_text = ('\n To see the input Nifti image before '
                               'resampling, hover over the displayed image.')
         self._shelving = False
-
-    @property
-    def sessions(self):
-        warnings.warn(DeprecationWarning("`sessions` attribute is deprecated "
-                                         "and  will be removed in 0.9.0, use "
-                                         "`runs` instead."))
-        return self.runs
-
-    @property
-    def sample_mask(self):
-        warnings.warn(DeprecationWarning(
-            "Deprecated. `sample_mask` will be removed  in 0.9.0 in favor of "
-            "supplying `sample_mask` through method `transform` or "
-            "`fit_transform`."))
-        return self._sample_mask
 
     def generate_report(self):
         from nilearn.reporting.html_report import generate_report
@@ -505,16 +471,6 @@ class NiftiMasker(BaseMasker, CacheMixin):
         params = get_params(self.__class__, self,
                             ignore=['mask_img', 'mask_args', 'mask_strategy',
                                     '_sample_mask', 'sample_mask'])
-
-        if hasattr(self, '_sample_mask') and self._sample_mask is not None:
-            if sample_mask is not None:
-                warnings.warn(
-                    UserWarning("Overwriting deprecated attribute "
-                                "`NiftiMasker.sample_mask` with parameter "
-                                "`sample_mask` in method `transform`.")
-                )
-            else:
-                sample_mask = self._sample_mask
 
         data = self._cache(_filter_and_mask,
                            ignore=['verbose', 'memory', 'memory_level',

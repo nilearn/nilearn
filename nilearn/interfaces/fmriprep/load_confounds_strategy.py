@@ -59,7 +59,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
     `load_confounds_strategy` provides an interface to select confounds
     based on past literature with limited parameters for user customisation.
 
-    .. versionadded:: 0.8.2
+    .. versionadded:: 0.9.0
 
     Parameters
     ----------

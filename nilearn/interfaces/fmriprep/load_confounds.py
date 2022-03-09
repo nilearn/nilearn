@@ -87,7 +87,7 @@ def load_confounds(img_files,
     directory from the 1.2.x series. The `compcor` noise component requires
     1.4.x series or above.
 
-    .. versionadded:: 0.8.2
+    .. versionadded:: 0.9.0
 
     Parameters
     ----------

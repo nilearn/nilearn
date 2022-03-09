@@ -47,6 +47,15 @@ If you wish to add a missing term, please `create a new issue`_ or
         `Decoding`_ consists in predicting, from brain images, the conditions
         associated to trial.
 
+    Deterministic atlas
+        A deterministic atlas is a hard parcellation of the brain into
+        non-overlaping regions, that might have been obtained by segmentation or clustering methods.
+        These objects are represented as 3D images of the brain composed of
+        integer values, called 'labels', which define the different regions.
+        In such atlases, and contrary to
+        :term:`probabilistic atlases<Probabilistic atlas>`, a :term:`voxel`
+        belongs to one, and only one, region.
+
     Dictionary learning
         `Dictionary learning`_ (or sparse coding) is a representation learning
         method aiming at finding a sparse representation of the input data as
@@ -186,6 +195,16 @@ If you wish to add a missing term, please `create a new issue`_ or
 
     predictive modelling
         `Predictive modelling`_ uses statistics to predict outcomes.
+
+    Probabilistic atlas
+        Probabilistic atlases define soft parcellations of the brain in which
+        the regions may overlap. In such atlases, and contrary to
+        :term:`deterministic atlases<Deterministic atlas>`, a :term:`voxel`
+        can belong to several components. These atlases are represented by 4D
+        images where the 3D components, also called 'spatial maps', are
+        stacked along one dimension (usually the 4th dimension). In each
+        3D component, the value at a given :term:`voxel` indicates how
+        strongly this :term:`voxel` is related to this component.
 
     ReNA
         `Recursive nearest agglomeration`_.
