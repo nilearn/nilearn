@@ -170,7 +170,10 @@ html_theme = 'furo'
 # Add custom css instructions from themes/custom.css
 html_css_files = [
     'custom.css',
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css',
+    (
+        'https://cdnjs.cloudflare.com/ajax/libs/'
+        'font-awesome/5.15.4/css/all.min.css'
+    ),
 ]
 
 # The style sheet to use for HTML and HTML Help pages. A file of that name
