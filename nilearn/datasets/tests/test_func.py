@@ -291,25 +291,24 @@ def test_fetch_abide_pcp(tmp_path, request_mocker, quality_checked):
     qc_rater_1 = ['OK'] * n_subjects
     qc_rater_1[::4] = ['fail'] * int(n_subjects / 4)
     pheno = pd.DataFrame(
-            {"subject_id": ids,
-             "FILE_ID": filenames,
-             "qc_rater_1": qc_rater_1,
-             "qc_anat_rater_2": qc_rater_1,
-             "qc_func_rater_2": qc_rater_1,
-             "qc_anat_rater_3": qc_rater_1,
-             "qc_func_rater_3": qc_rater_1},
-            columns=[
-                    "subject_id", "FILE_ID",
-                    "qc_rater_1", "qc_anat_rater_2",
-                    "qc_func_rater_2", "qc_anat_rater_3",
-                    "qc_func_rater_3"]
+        {"subject_id": ids,
+         "FILE_ID": filenames,
+         "qc_rater_1": qc_rater_1,
+         "qc_anat_rater_2": qc_rater_1,
+         "qc_func_rater_2": qc_rater_1,
+         "qc_anat_rater_3": qc_rater_1,
+         "qc_func_rater_3": qc_rater_1},
+        columns=[
+            "subject_id", "FILE_ID", "qc_rater_1",
+            "qc_anat_rater_2", "qc_func_rater_2",
+            "qc_anat_rater_3", "qc_func_rater_3"]
     )
     request_mocker.url_mapping["*rocessed1.csv"] = pheno.to_csv(index=False)
 
     # All subjects
     dataset = func.fetch_abide_pcp(data_dir=tmp_path,
                                    quality_checked=quality_checked, verbose=0)
-    div = 4 if quality_checked else  2
+    div = 4 if quality_checked else 2
     assert len(dataset.func_preproc) == n_subjects / div
     assert dataset.description != ''
 
