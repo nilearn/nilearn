@@ -1103,7 +1103,7 @@ def plot_connectome(adjacency_matrix, node_coords,
                     annotate=True, black_bg=False,
                     alpha=0.7,
                     edge_kwargs=None, node_kwargs=None,
-                    colorbar=False,radiological=False):
+                    colorbar=False, radiological=False):
     """Plot connectome on top of the brain glass schematics.
 
     The plotted image should be in MNI space for this function to work
