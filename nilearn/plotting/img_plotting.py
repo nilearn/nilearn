@@ -1084,7 +1084,7 @@ def plot_glass_brain(stat_map_img,
         black_bg=black_bg, threshold=threshold, cmap=cmap, colorbar=colorbar,
         cbar_tick_format=cbar_tick_format, display_factory=display_factory,
         vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
-        resampling_interpolation=resampling_interpolation, radiological = radiological, **kwargs)
+        resampling_interpolation=resampling_interpolation, radiological=radiological, **kwargs)
 
     if stat_map_img is None and 'l' in display.axes:
         display.axes['l'].ax.invert_xaxis()
