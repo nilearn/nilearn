@@ -1285,7 +1285,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
     display = plot_glass_brain(None, display_mode=display_mode,
                                figure=figure, axes=axes, title=title,
                                annotate=annotate, black_bg=black_bg,
-                              radiological=radiological)
+                               radiological=radiological)
 
     if isinstance(node_size, str) and node_size == 'auto':
         node_size = min(1e4 / len(node_coords), 100)
