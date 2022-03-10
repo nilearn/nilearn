@@ -112,7 +112,7 @@ class BaseAxes:
         if self.direction in 'xlr':
             return
         ax = self.ax
-        annotation_on_left="L"
+        annotation_on_left = "L"
         annotation_on_right="R"
         if self.radiological:
             ax.invert_xaxis()
