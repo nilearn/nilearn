@@ -25,7 +25,7 @@ class BaseAxes:
 
     coord : :obj:`float`
         The coordinate along the direction of the cut.
-    radiological : :obj:`bool`
+    radiological : :obj:`bool`, optional
         Invert x axis and R L labels to plot sections as a radiological view
     """
 
