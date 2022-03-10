@@ -276,7 +276,7 @@ properties, before conversion to voxel signals.
 
    You can, more as a training than as an exercise, try to play with
    the parameters in
-   :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`.
+   :ref:`sphx_glr_auto_examples_00_tutorials_plot_decoding_tutorial.py`.
    Try to enable detrending and run the script:
    does it have a big impact on the result?
 

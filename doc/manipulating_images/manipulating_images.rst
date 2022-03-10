@@ -132,7 +132,7 @@ Accessing individual volumes in 4D images
 
 .. topic:: **Examples**
 
-   * :ref:`sphx_glr_auto_examples_plot_3d_and_4d_niimg.py`
+   * :ref:`sphx_glr_auto_examples_00_tutorials_plot_3d_and_4d_niimg.py`
 
    * :ref:`sphx_glr_auto_examples_01_plotting_plot_overlay.py`
 

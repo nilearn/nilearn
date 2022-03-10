@@ -1,3 +1,5 @@
+.. _tutorial_examples:
+
 ===============
 Basic tutorials
 ===============
