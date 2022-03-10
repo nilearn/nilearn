@@ -114,7 +114,7 @@ plotting.plot_epi(mean_haxby_img, title="plot_epi")
 plotting.plot_stat_map(stat_img,
                        threshold=3, title="plot_stat_map",
                        cut_coords=[36, -27, 66],
-                        radiological=True)
+                       radiological=True)
 
 
 
