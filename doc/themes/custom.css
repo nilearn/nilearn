@@ -20,3 +20,9 @@ div.sphx-glr-download a:hover {
 div.sphx-glr-download a .pre {
   font-family: var(--font-stack);
 }
+
+/* Hide note in examples' header */
+div.sphx-glr-download-link-note {
+  height: 0px;
+  visibility: hidden;
+}
