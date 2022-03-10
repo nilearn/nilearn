@@ -1268,7 +1268,6 @@ def plot_markers(node_values, node_coords, node_size='auto',
         the nodes in one go
     %(colorbar)s
         Default=True.
-    
 
     """
     node_values = np.array(node_values).flatten()
