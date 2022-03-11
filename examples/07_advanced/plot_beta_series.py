@@ -2,7 +2,7 @@
 Beta-Series Modeling for Task-Based Functional Connectivity and Decoding
 ========================================================================
 This example shows how to run beta series :term:`GLM` models, which are a
-common modeling approach for a variety of analyses of task-based fMRI
+common modeling approach for a variety of analyses of task-based :term:`fMRI`
 data with an event-related task design, including
 :term:`functional connectivity`, :term:`decoding <Decoding>`, and
 representational similarity analysis.
@@ -91,7 +91,7 @@ glm_parameters['signal_scaling'] = standard_glm.scaling_axis
 ##############################################################################
 # Define the standard model
 # -------------------------
-# Here, we create a basic GLM for this run, which we can use to highlight
+# Here, we create a basic :term:`GLM` for this run, which we can use to highlight
 # differences between the standard modeling approach and beta series models.
 # We will just use the one created by
 # :func:`~nilearn.glm.first_level.first_level_from_bids`.
