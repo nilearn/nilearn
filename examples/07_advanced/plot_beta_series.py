@@ -91,8 +91,9 @@ glm_parameters['signal_scaling'] = standard_glm.scaling_axis
 ##############################################################################
 # Define the standard model
 # -------------------------
-# Here, we create a basic :term:`GLM` for this run, which we can use to highlight
-# differences between the standard modeling approach and beta series models.
+# Here, we create a basic :term:`GLM` for this run, which we can use to
+# highlight differences between the standard modeling approach and beta series
+# models.
 # We will just use the one created by
 # :func:`~nilearn.glm.first_level.first_level_from_bids`.
 standard_glm.fit(fmri_file, events_df)
