@@ -14,13 +14,13 @@ Generally, these models are most useful for event-related task designs,
 while other modeling approaches, such as psychophysiological interactions
 (PPIs), tend to perform better in block designs, depending on the type of
 analysis.
-See :cite:t:`cisler2014comparison` for more information about this,
+See :footcite:t:`cisler2014comparison` for more information about this,
 in the context of functional connectivity analyses.
 
 Two of the most well-known beta series modeling methods are
-Least Squares- All (LSA) :cite:p:`rissman2004measuring` and
+Least Squares- All (LSA) :footcite:p:`rissman2004measuring` and
 Least Squares- Separate (LSS)
-:cite:p:`mumford2012deconvolving,turner2012spatiotemporal`.
+:footcite:p:`mumford2012deconvolving,turner2012spatiotemporal`.
 In LSA, a single :term:`GLM` is run, in which each trial of each condition of
 interest is separated out into its own condition within the design matrix.
 In LSS, each trial of each condition of interest has its own :term:`GLM`,
@@ -39,17 +39,17 @@ series.
     to the original publications and any potential updates to the literature,
     when possible.
 
-    First, as mentioned above, according to :cite:t:`cisler2014comparison`,
+    First, as mentioned above, according to :footcite:t:`cisler2014comparison`,
     beta series models are most appropriate for event-related task designs.
     For block designs, a PPI model is better suited- at least for
     functional connectivity analyses.
 
-    According to :cite:t:`abdulrahman2016effect`,
+    According to :footcite:t:`abdulrahman2016effect`,
     the decision between LSA and LSS should be based on three factors:
     inter-trial variability, scan noise, and stimulus onset timing.
-    While :cite:t:`mumford2012deconvolving` proposes LSS as a tool primarily
-    for fast event-related designs (i.e., ones with short inter-trial
-    intervals), :cite:t:`abdulrahman2016effect` finds, in simulations,
+    While :footcite:t:`mumford2012deconvolving` proposes LSS as a tool
+    primarily for fast event-related designs (i.e., ones with short inter-trial
+    intervals), :footcite:t:`abdulrahman2016effect` finds, in simulations,
     that LSA performs better than LSS when trial variability is greater
     than scan noise, even in fast designs.
 """
