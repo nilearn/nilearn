@@ -13,15 +13,14 @@ numpy array, corresponding to the data inside the mask.
 
 See also :ref:`for a similar example using cortical surface input data
 <sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py>`.
+
+Author: Franz Liem
 """
-
-# author: Franz Liem
-
 
 ##########################################################################
 # Getting the data
 # ----------------
-
+#
 # We will work with the first subject of the brain development fmri data set.
 # dataset.func is a list of filenames. We select the 1st (0-based)
 # subject by indexing with [0]).
@@ -178,7 +177,8 @@ print("Seed-to-voxel correlation Fisher-z transformed: min = %.3f; max = %.3f"
          )
       )
 
-# Finally, we can transform the correlation array back to a Nifti image
+##########################################################################
+# Eventually, we can transform the correlation array back to a Nifti image
 # object, that we can save.
 seed_to_voxel_correlations_fisher_z_img = brain_masker.inverse_transform(
     seed_to_voxel_correlations_fisher_z.T)
