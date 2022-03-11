@@ -731,6 +731,15 @@ mask_strategy : {'background', 'epi', 'whole-brain-template',\
 
 """
 
+# templateflow
+docdict["templateflow"] = """
+    The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
+    release c (MNI152NLin2009cSAsym). The NiLearn template is asymmetrical
+    ICBM152 2009, release a. If you wish to use the exact same release as
+    :term:`fMRIPrep`, please refer to TemplateFlow
+    (https://www.templateflow.org/).
+"""
+
 docdict_indented = {}
 
 

@@ -31,9 +31,10 @@ _LEGACY_FORMAT_MSG = (
 @fill_doc
 def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None,
                        resume=True, verbose=1, legacy_format=True):
-    """Fetch DiFuMo brain atlas
+    """Fetch DiFuMo brain atlas.
 
-    Dictionaries of Functional Modes, or “DiFuMo”, can serve as atlases to extract
+    Dictionaries of Functional Modes, or “DiFuMo”, can serve as
+    :term:`probabilistic atlases<Probabilistic atlas>` to extract
     functional signals with different dimensionalities (64, 128, 256, 512, and 1024).
     These modes are optimized to represent well raw :term:`BOLD` timeseries,
     over a with range of experimental conditions.
@@ -146,6 +147,7 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None,
 def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Craddock 2012 parcellation.
 
+    This function returns a :term:`probabilistic atlas<Probabilistic atlas>`.
     The provided images are in MNI152 space. All images are 4D with
     shapes equal to ``(47, 56, 46, 43)``.
 
@@ -215,7 +217,8 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
 @fill_doc
 def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
                                resume=True, verbose=1, legacy_format=True):
-    """Download and load the Destrieux cortical atlas (dated 2009).
+    """Download and load the Destrieux cortical
+    :term:`deterministic atlas<Deterministic atlas>` (dated 2009).
 
     See :footcite:`Fischl2004Automatically`,
     and :footcite:`Destrieux2009sulcal`.
@@ -306,12 +309,13 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     .. note::
 
         For atlases 'cort-prob-1mm', 'cort-prob-2mm', 'cortl-prob-1mm',
-        'cortl-prob-2mm', 'sub-prob-1mm', and 'sub-prob-2mm', the returned
-        atlas is probabilistic and the :class:`~nibabel.nifti1.Nifti1Image`
-        returned is 4D, with shape ``(182, 218, 182, 48)``.
-        For deterministic atlases, the :class:`~nibabel.nifti1.Nifti1Image`
-        returned is 3D, with shape ``(182, 218, 182)`` and 48 regions
-        (+ background).
+        'cortl-prob-2mm', 'sub-prob-1mm', and 'sub-prob-2mm', the function
+        returns a :term:`Probabilistic atlas`, and the
+        :class:`~nibabel.nifti1.Nifti1Image` returned is 4D, with shape
+        ``(182, 218, 182, 48)``.
+        For :term:`deterministic atlases<Deterministic atlas>`, the
+        :class:`~nibabel.nifti1.Nifti1Image` returned is 3D, with
+        shape ``(182, 218, 182)`` and 48 regions (+ background).
 
     Parameters
     ----------
@@ -357,10 +361,11 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
 
             - 'maps': :obj:`str`, path to nifti file containing the
               atlas :class:`~nibabel.nifti1.Nifti1Image`. It is a 4D image
-              if a probabilistic atlas is requested, and a 3D image if a
-              maximum probability atlas is requested. In the latter case,
-              the image contains integer values which can be interpreted as
-              the indices in the list of labels.
+              if a :term:`Probabilistic atlas` is requested, and a 3D image
+              if a :term:`maximum probability atlas<Deterministic atlas>` is
+              requested. In the latter case, the image contains integer
+              values which can be interpreted as the indices in the list
+              of labels.
 
                 .. note::
 
@@ -436,12 +441,13 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
 
     .. note::
 
-        For atlases 'prob-1mm', and 'prob-2mm', the returned atlas is
-        probabilistic and the :class:`~nibabel.nifti1.Nifti1Image`
-        returned is 4D, with shape ``(182, 218, 182, 62)``.
-        For deterministic atlases, the :class:`~nibabel.nifti1.Nifti1Image`
-        returned is 3D, with shape ``(182, 218, 182)`` and 62 regions
-        (+ background).
+        For atlases 'prob-1mm', and 'prob-2mm', the function returns a
+        :term:`Probabilistic atlas`, and the
+        :class:`~nibabel.nifti1.Nifti1Image` returned is 4D, with shape
+        ``(182, 218, 182, 62)``.
+        For :term:`deterministic atlases<Deterministic atlas>`, the
+        :class:`~nibabel.nifti1.Nifti1Image` returned is 3D, with shape
+        ``(182, 218, 182)`` and 62 regions (+ background).
 
     Parameters
     ----------
@@ -466,7 +472,7 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
         number of regions.
 
         .. note::
-            Not implemented for full probabilistic atlas
+            Not implemented for full :term:`Probabilistic atlas`
             (``*-prob-*`` atlases).
 
         Default=False.
@@ -479,10 +485,11 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
         Dictionary-like object, keys are:
 
             - 'maps': :class:`~nibabel.nifti1.Nifti1Image`. It is a 4D image
-              if a probabilistic atlas is requested, and a 3D image if a
-              maximum probability atlas is requested. In the latter case,
-              the image contains integer values which can be interpreted as
-              the indices in the list of labels.
+              if a :term:`Probabilistic atlas` is requested, and a 3D image
+              if a :term:`maximum probability atlas<Deterministic atlas>` is
+              requested. In the latter case, the image contains integer
+              values which can be interpreted as the indices in the list
+              of labels.
 
                 .. note::
 
@@ -688,7 +695,7 @@ def _compute_symmetric_split(source, atlas_niimg, names):
 
 @fill_doc
 def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
-    """Download and load the MSDL brain atlas.
+    """Download and load the MSDL brain :term:`Probabilistic atlas`.
 
     It can be downloaded at :footcite:`atlas_msdl`, and cited
     using :footcite:`Varoquaux2011multisubject`.
@@ -706,8 +713,9 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     data : :func:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
-        - 'maps': :obj:`str`, path to nifti file containing the probabilist
-          atlas image (shape is equal to ``(40, 48, 35, 39)``).
+        - 'maps': :obj:`str`, path to nifti file containing the
+          :term:`Probabilistic atlas` image (shape is equal to
+          ``(40, 48, 35, 39)``).
         - 'labels': :obj:`list` of :obj:`str`, list containing the labels
           of the regions. There are 39 labels such that ``data.labels[i]``
           corresponds to map ``i``.
@@ -795,7 +803,8 @@ def fetch_coords_power_2011(legacy_format=True):
 @fill_doc
 def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
                            resume=True, verbose=1):
-    """Download and load the Smith :term:`ICA` and BrainMap atlas (2009).
+    """Download and load the Smith :term:`ICA` and BrainMap
+    :term:`Probabilistic atlas` (2009).
 
     See :footcite:`Smith200913040` and :footcite:`Laird2011behavioral`.
 
@@ -896,10 +905,11 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
 def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Yeo 2011 parcellation.
 
-    The provided images are in MNI152 space and have shapes equal to
-    ``(256, 256, 256, 1)``. They contain consecutive integers values
-    from 0 (background) to either 7 or 17 depending on the atlas version
-    considered.
+    This function retrieves the so-called yeo
+    :term:`deterministic atlases<Deterministic atlas>`. The provided images
+    are in MNI152 space and have shapes equal to ``(256, 256, 256, 1)``.
+    They contain consecutive integers values from 0 (background) to either
+    7 or 17 depending on the atlas version considered.
 
     For more information on this dataset's structure,
     see :footcite:`CorticalParcellation_Yeo2011`,
@@ -991,10 +1001,10 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
                     verbose=1):
     """Downloads and returns the AAL template for SPM 12.
 
-    This atlas is the result of an automated anatomical parcellation of the
-    spatially normalized single-subject high-resolution T1 volume provided by
-    the Montreal Neurological Institute (MNI) (D. L. Collins et al., 1998,
-    Trans. Med. Imag. 17, 463-468, PubMed).
+    This :term:`Deterministic atlas` is the result of an automated anatomical
+    parcellation of the spatially normalized single-subject high-resolution
+    T1 volume provided by the Montreal Neurological Institute (:term:`MNI`)
+    (D. L. Collins et al., 1998, Trans. Med. Imag. 17, 463-468, PubMed).
 
     For more information on this dataset's structure,
     see :footcite:`AAL_atlas`,
@@ -1112,9 +1122,10 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None, url=None,
                                      resume=True, verbose=1):
     """Downloads and loads multiscale functional brain parcellations.
 
-    This atlas includes group brain parcellations generated from
-    resting-state :term:`functional magnetic resonance images<fMRI>` from
-    about 200 young healthy subjects.
+    This :term:`Deterministic atlas` includes group brain parcellations
+    generated from resting-state
+    :term:`functional magnetic resonance images<fMRI>` from about 200 young
+    healthy subjects.
 
     Multiple scales (number of networks) are available, among
     7, 12, 20, 36, 64, 122, 197, 325, 444. The brain parcellations
@@ -1353,7 +1364,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
 @fill_doc
 def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Allen and MIALAB :term:`ICA`
-    atlas (dated 2011).
+    :term:`Probabilistic atlas` (dated 2011).
 
     See :footcite:`Allen2011baseline`.
 
@@ -1448,7 +1459,8 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 @fill_doc
 def fetch_atlas_surf_destrieux(data_dir=None, url=None,
                                resume=True, verbose=1):
-    """Download and load Destrieux et al, 2010 cortical atlas.
+    """Download and load Destrieux et al, 2010 cortical
+    :term:`Deterministic atlas`.
 
     See :footcite:`DESTRIEUX20101`.
 
@@ -1612,7 +1624,7 @@ def _get_talairach_all_levels(data_dir=None, verbose=1):
 
 @fill_doc
 def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
-    """Download the Talairach atlas.
+    """Download the Talairach :term:`Deterministic atlas`.
 
     For more information, see :footcite:`talairach_atlas`,
     :footcite:`Lancaster2000Talairach`,
@@ -1673,8 +1685,8 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
     ----------
     version : {'prob', 'det'}, optional
         Which version of the atlas should be download. This can be
-        'prob' for the probabilistic atlas or 'det' for the
-        deterministic atlas. Default='prob'.
+        'prob' for the :term:`Probabilistic atlas`, or 'det' for the
+        :term:`Deterministic atlas`. Default='prob'.
     %(data_dir)s
     %(verbose)s
 
@@ -1689,14 +1701,15 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
               the image shape is ``(198, 263, 212)``, and values are indices
               in the list of labels (integers from 0 to 16).
             - 'labels': :obj:`list` of :obj:`str`. List of region names. The
-              list contains 16 values for both probabilitic and deterministic
-              versions.
+              list contains 16 values for both
+              :term:`probabilitic<Probabilistic atlas>` and
+              :term:`deterministic<Deterministic atlas>` versions.
 
                 .. warning::
-                    For the deterministic version, 'Background' is not
-                    included in the list of labels. To have proper indexing,
-                    you should either manually add 'Background' to the list of
-                    labels:
+                    For the :term:`deterministic<Deterministic atlas>` version,
+                    'Background' is not included in the list of labels.
+                    To have proper indexing, you should either manually add
+                    'Background' to the list of labels:
 
                     .. code-block:: python
 
@@ -1761,7 +1774,8 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
 
     .. versionadded:: 0.5.1
 
-    The provided images are in MNI152 space.
+    This function returns a :term:`Deterministic atlas`, and the provided
+    images are in MNI152 space.
 
     For more information on this dataset, see :footcite:`schaefer_atlas`,
     :footcite:`Schaefer2017parcellation`,

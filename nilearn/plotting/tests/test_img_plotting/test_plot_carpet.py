@@ -28,8 +28,8 @@ def test_plot_carpet(testdata_4d):  # noqa:F811
     plt.close(display)
 
     fig, ax = plt.subplots()
-    display = plot_carpet(img_4d_long, mask_img, detrend=True, title='TEST',
-                          figure=fig, axes=ax)
+    display = plot_carpet(img_4d_long, mask_img, t_r=None, detrend=True,
+                          title='TEST', figure=fig, axes=ax)
     # Next two lines retrieve the numpy array from the plot
     ax = display.axes[0]
     plotted_array = ax.images[0].get_array()
@@ -47,7 +47,8 @@ def test_plot_carpet_with_atlas(testdata_4d):  # noqa:F811
     atlas_labels = testdata_4d['atlas_labels']
 
     # Test atlas - labels
-    display = plot_carpet(img_4d, mask_img, detrend=False, title='TEST')
+    # t_r is set explicitly for this test as well
+    display = plot_carpet(img_4d, mask_img, t_r=2, detrend=False, title='TEST')
 
     # Check the output
     # Two axes: 1 for colorbar and 1 for imshow
