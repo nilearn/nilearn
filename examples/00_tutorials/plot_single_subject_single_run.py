@@ -27,11 +27,6 @@ The whole brain :term:`BOLD`/:term:`EPI` images were acquired on a 2T Siemens
 MAGNETOM Vision system. Each scan consisted of 64 contiguous slices (64x64x64
 3mm x 3mm x 3mm :term:`voxels<voxel>`). Acquisition of one scan took 6.05s, with the
 scan to scan repeat time (:term:`TR`) set arbitrarily to 7s.
-
-
-To run this example, you must launch IPython via ``ipython
---matplotlib`` in a terminal, or use ``jupyter-notebook``.
-
 """
 
 ###############################################################################
