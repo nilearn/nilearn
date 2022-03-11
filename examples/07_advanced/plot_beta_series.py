@@ -380,3 +380,9 @@ display.add_markers(
 fig.suptitle('LSS Beta Series Functional Connectivity')
 
 fig.show()
+
+##############################################################################
+# References
+# ----------
+#
+#  .. footbibliography::
