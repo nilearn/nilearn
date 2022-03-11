@@ -7,18 +7,17 @@ have to be fit separately.
 
 For details on the data, please see:
 
-Dehaene-Lambertz G, Dehaene S, Anton JL, Campagne A, Ciuciu P, Dehaene
-G, Denghien I, Jobert A, LeBihan D, Sigman M, Pallier C, Poline
-JB. Functional segregation of cortical language areas by sentence
-repetition. Hum Brain Mapp. 2006: 27:360--371.
-http://www.pubmedcentral.nih.gov/articlerender.fcgi?artid=2653076#R11
+    Dehaene-Lambertz G, Dehaene S, Anton JL, Campagne A, Ciuciu P, Dehaene
+        G, Denghien I, Jobert A, LeBihan D, Sigman M, Pallier C, Poline
+        JB. Functional segregation of cortical language areas by sentence
+        repetition. Hum Brain Mapp. 2006: 27:360--371.
+        http://www.pubmedcentral.nih.gov/articlerender.fcgi?artid=2653076#R11
 
-Please see `Simple example of two-session :term:`fMRI` model fitting
-<https://nistats.github.io/auto_examples/02_first_levels/plot_fiac_analysis.html>`_
-example for details.  The main difference is that
+Please see
+:ref:`sphx_glr_auto_examples_04_glm_first_level_plot_fiac_analysis.py`
+for details.  The main difference is that
 the fixed-effects model is run explicitly here,
 after GLM fitting on two sessions.
-
 """
 
 #########################################################################

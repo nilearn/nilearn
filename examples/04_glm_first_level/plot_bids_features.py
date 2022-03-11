@@ -18,16 +18,8 @@ More specifically:
 3. Demonstrate Quality assurance of Nistats estimation against available FSL.
    estimation in the openneuro dataset.
 4. Display contrast plot and uncorrected first level statistics table report.
-
-
-
-To run this example, you must launch IPython via ``ipython
---matplotlib`` in a terminal, or use the Jupyter notebook.
-
-.. contents:: **Contents**
-    :local:
-    :depth: 1
 """
+
 ##############################################################################
 # Fetch openneuro BIDS dataset
 # -----------------------------
