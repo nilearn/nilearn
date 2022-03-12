@@ -248,29 +248,22 @@ fig.show()
 # Compare the three modeling approaches
 # -------------------------------------
 
+DM_TITLES = ['Standard GLM', 'LSA Model', 'LSS Model (Trial 1)']
+DESIGN_MATRICES = [
+    standard_glm.design_matrices_[0],
+    lsa_glm.design_matrices_[0],
+    lss_design_matrices[0],
+]
+
 fig, axes = plt.subplots(
     ncols=3,
     figsize=(20, 10),
     gridspec_kw={'width_ratios': [1, 2, 1]},
 )
 
-plotting.plot_design_matrix(
-    standard_glm.design_matrices_[0],
-    ax=axes[0],
-)
-axes[0].set_title('Standard GLM')
-
-plotting.plot_design_matrix(
-    lsa_glm.design_matrices_[0],
-    ax=axes[1],
-)
-axes[1].set_title('LSA Model')
-
-plotting.plot_design_matrix(
-    lss_design_matrices[0],
-    ax=axes[2],
-)
-axes[2].set_title('LSS Model (Trial 1)')
+for i_ax, ax in enumerate(axes):
+    plotting.plot_design_matrix(DESIGN_MATRICES[i_ax], ax=axes[i_ax])
+    axes[i_ax].set_title(DM_TITLES[i_ax])
 
 fig.show()
 
