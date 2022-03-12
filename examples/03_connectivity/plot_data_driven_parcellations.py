@@ -20,7 +20,7 @@ References
 Which clustering method to use, an empirical comparison can be found in this
 paper:
 
-    * Bertrand Thirion, Gael Varoquaux, Elvis Dohmatob, Jean-Baptiste Poline.
+    Bertrand Thirion, Gael Varoquaux, Elvis Dohmatob, Jean-Baptiste Poline.
       `Which fMRI clustering gives good brain parcellations ?
       <https://doi.org/10.3389/fnins.2014.00167>`_ Frontiers in Neuroscience,
       2014.
@@ -28,7 +28,7 @@ paper:
 This parcellation may be useful in a supervised learning, see for
 instance:
 
-    * Vincent Michel, Alexandre Gramfort, Gael Varoquaux, Evelyn Eger,
+    Vincent Michel, Alexandre Gramfort, Gael Varoquaux, Evelyn Eger,
       Christine Keribin, Bertrand Thirion. `A supervised clustering approach
       for fMRI-based inference of brain states.
       <http://dx.doi.org/10.1016/j.patcog.2011.04.006>`_.
