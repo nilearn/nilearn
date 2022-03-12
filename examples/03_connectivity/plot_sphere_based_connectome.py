@@ -4,17 +4,9 @@ Extract signals on spheres and plot a connectome
 
 This example shows how to extract signals from spherical regions.
 We show how to build spheres around user-defined coordinates, as well as
-centered on coordinates from the Power-264 atlas [1], and the Dosenbach-160
-atlas [2].
-
-**References**
-
-    [1] Power, Jonathan D., et al. "Functional network organization of the
-        human brain." Neuron 72.4 (2011): 665-678.
-
-    [2] Dosenbach N.U., Nardos B., et al.
-        "Prediction of individual brain maturity
-        using fMRI.", 2010, Science 329, 1358-1361.
+centered on coordinates from the Power-264 atlas
+:footcite:`Power2011Functional`,
+and the Dosenbach-160 atlas :footcite:`Dosenbach20101358`
 
 We estimate connectomes using two different methods: **sparse inverse
 covariance** and **partial_correlation**, to recover the functional brain
@@ -49,7 +41,7 @@ labels = [
     'Left Temporoparietal junction',
     'Right Temporoparietal junction',
     'Medial prefrontal cortex',
-    ]
+]
 
 ##########################################################################
 # Extracts signal from sphere around DMN seeds
@@ -376,7 +368,13 @@ print('Dosenbach networks names are {0}'.format(np.unique(dosenbach.networks)))
 plotting.show()
 
 ###############################################################################
-# .. seealso::
+# References
+# ----------
+#
+#  .. footbibliography::
+#
+# See also
+# --------
 #
 #    * :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 #
