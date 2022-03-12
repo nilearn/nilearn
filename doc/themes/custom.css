@@ -26,3 +26,19 @@ div.sphx-glr-download-link-note {
   height: 0px;
   visibility: hidden;
 }
+
+/* Scripts outputs */
+.sphx-glr-script-out {
+  display: block;
+  color: var(--sd-color-light-text);
+}
+
+.sphx-glr-script-out .highlight {
+  border-radius: 0px;
+}
+
+.sphx-glr-script-out .highlight pre {
+  background-color: var(--sd-color-light);
+  color: var(--sd-color-light-text);
+  border-left: 3px solid var(--sd-color-success);
+}
