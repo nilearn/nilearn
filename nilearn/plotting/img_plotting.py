@@ -487,7 +487,8 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
                        threshold=threshold, annotate=annotate,
                        draw_cross=draw_cross, black_bg=black_bg,
                        colorbar=colorbar, cbar_tick_format=cbar_tick_format,
-                       vmin=vmin, vmax=vmax, cmap=cmap,radiological=radiological, **kwargs)
+                       vmin=vmin, vmax=vmax, cmap=cmap, radiological=radiological, 
+                       **kwargs)
     return display
 
 
@@ -542,7 +543,7 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
                        threshold=None, annotate=annotate,
                        draw_cross=draw_cross, black_bg=black_bg,
                        colorbar=colorbar, cbar_tick_format=cbar_tick_format,
-                       cmap=cmap, vmin=vmin, vmax=vmax,radiological = radiological, **kwargs)
+                       cmap=cmap, vmin=vmin, vmax=vmax, radiological=radiological, **kwargs)
     return display
 
 
@@ -692,7 +693,8 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         threshold=threshold, bg_vmin=bg_vmin, bg_vmax=bg_vmax,
         resampling_interpolation=resampling_interpolation,
         colorbar=colorbar, cbar_tick_format=cbar_tick_format,
-        alpha=alpha, cmap=cmap, vmin=vmin, vmax=vmax,radiological=radiological, **kwargs)
+        alpha=alpha, cmap=cmap, vmin=vmin, vmax=vmax, radiological=radiological, 
+        **kwargs)
 
     if view_type == 'contours':
         display = _plot_roi_contours(display, img, cmap=cmap, alpha=alpha,
@@ -787,7 +789,8 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
                         display_mode=display_mode,
                         figure=figure, axes=axes, title=title,
                         annotate=annotate, draw_cross=draw_cross,
-                        black_bg=black_bg, dim=dim, radiological=radiological,**kwargs)
+                        black_bg=black_bg, dim=dim, radiological=radiological, 
+                        **kwargs)
 
     maps_img = _utils.check_niimg_4d(maps_img)
     n_maps = maps_img.shape[3]
