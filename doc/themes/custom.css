@@ -38,18 +38,33 @@ div[class^="highlight-"].sphx-glr-script-out {
   display: block;
 }
 
+.sphx-glr-script-out::before {
+  content: "Output:";
+  display: block;
+  padding: 15px 0px;
+}
+
 .sphx-glr-script-out .highlight {
   border-radius: 0px;
+  border-left: 4px solid var(--sd-color-primary);
 }
 
 .sphx-glr-script-out .highlight pre {
   /* Use Furo color variables to handle light/dark modes */
   background-color: var(--color-background-secondary);
   color: var(--color-content-foreground);
-  border-left: 3px solid var(--sd-color-primary);
+  margin: 0;
 }
 
+/* Copy button styling */
 button.copybtn {
   top: 0.5em;
   right: 0.5em;
+}
+
+/* Code snippets styling */
+.highlight {
+  border-radius: 0px;
+  background-color: var(--color-background-secondary);
+  border-left: 4px solid var(--color-background-border);
 }
