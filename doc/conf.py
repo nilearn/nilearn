@@ -154,7 +154,8 @@ add_function_parentheses = False
 
 # The name of the Pygments (syntax highlighting) style to use.
 # pygments_style = 'friendly'
-pygments_style = 'manni'
+# pygments_style = 'manni'
+pygments_style = 'sas'
 pygments_dark_style = 'stata-dark'
 
 
