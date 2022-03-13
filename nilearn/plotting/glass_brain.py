@@ -139,7 +139,6 @@ def _get_object_bounds(json_content, transform):
     return xmin - xmargin, xmax + xmargin, ymin - ymargin, ymax + ymargin
 
 
-
 def plot_brain_schematics(ax, direction, radiological=False, **kwargs):
     """Create matplotlib patches from a json custom format and plot them \
     on a matplotlib Axes.
