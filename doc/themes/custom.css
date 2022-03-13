@@ -29,8 +29,13 @@ div.sphx-glr-download-link-note {
 
 /* Scripts outputs */
 .sphx-glr-script-out {
+  /* Use Furo color variables to handle light/dark modes */
+  color: var(--color-content-foreground);
+}
+
+div[class*=" highlight-"].sphx-glr-script-out,
+div[class^="highlight-"].sphx-glr-script-out {
   display: block;
-  color: var(--sd-color-light-text);
 }
 
 .sphx-glr-script-out .highlight {
@@ -38,7 +43,8 @@ div.sphx-glr-download-link-note {
 }
 
 .sphx-glr-script-out .highlight pre {
-  background-color: var(--sd-color-light);
-  color: var(--sd-color-light-text);
-  border-left: 3px solid var(--sd-color-success);
+  /* Use Furo color variables to handle light/dark modes */
+  background-color: var(--color-background-secondary);
+  color: var(--color-content-foreground);
+  border-left: 3px solid var(--sd-color-primary);
 }
