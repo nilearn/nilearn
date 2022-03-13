@@ -116,9 +116,6 @@ plotting.plot_stat_map(stat_img,
                        cut_coords=[36, -27, 66],
                        radiological=True)
 
-
-
-
 ###############################################################################
 # A call to plotting.show is needed to display the plots when running
 # in script mode (ie outside IPython)
