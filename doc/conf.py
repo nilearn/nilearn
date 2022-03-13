@@ -47,26 +47,26 @@ sys.path.insert(0, os.path.abspath('..'))
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
-              'sphinx_gallery.gen_gallery',
-              'sphinx.ext.autodoc',
-              'sphinx.ext.autosummary',
-              'sphinx.ext.imgmath',
-              'sphinx.ext.intersphinx',
-              'sphinxcontrib.bibtex',
-              'numpydoc',
-              'sphinx.ext.linkcode',
-              'gh_substitutions',
-              'sphinx_copybutton',
-              'sphinxext.opengraph',
-              'myst_parser',
-              'sphinx_design',
+    'sphinx_gallery.gen_gallery',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.imgmath',
+    'sphinx.ext.intersphinx',
+    'sphinxcontrib.bibtex',
+    'numpydoc',
+    'sphinx.ext.linkcode',
+    'gh_substitutions',
+    'sphinx_copybutton',
+    'sphinxext.opengraph',
+    'myst_parser',
+    'sphinx_design',
 ]
 
 autosummary_generate = True
 
 autodoc_default_options = {
     'imported-members': True,
-    'inherited-members' : True,
+    'inherited-members': True,
     'undoc-members': True,
     'member-order': 'bysource',
     # We cannot have __init__: it causes duplicated entries
