@@ -281,7 +281,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         resampling_interpolation=resampling_interpolation,
         black_bg=black_bg, colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
-        bg_img=bg_img, vmin=vmin, vmax=vmax,radiological=radiological, **kwargs)
+        bg_img=bg_img, vmin=vmin, vmax=vmax, radiological=radiological, **kwargs)
 
     return display
 
@@ -423,7 +423,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
               output_file=None, display_mode='ortho', figure=None,
               axes=None, title=None, annotate=True, threshold=None,
               draw_cross=True, black_bg='auto', dim='auto', cmap=plt.cm.gray,
-              colorbar=False, cbar_tick_format="%.2g",radiological=False, vmin=None,
+              colorbar=False, cbar_tick_format="%.2g", radiological=False, vmin=None,
               vmax=None, **kwargs):
     """Plot cuts of an anatomical image.
 
