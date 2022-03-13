@@ -35,7 +35,7 @@ class BaseAxes:
         self.coord = coord
         self._object_bounds = list()
         self.shape = None
-        self.radiological=radiological
+        self.radiological = radiological
 
     def transform_to_2d(self, data, affine):
         """Transform to a 2D."""
