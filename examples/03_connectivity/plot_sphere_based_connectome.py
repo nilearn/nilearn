@@ -371,7 +371,7 @@ plotting.show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::
 #
 # See also
 # --------
