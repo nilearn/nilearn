@@ -48,3 +48,8 @@ div[class^="highlight-"].sphx-glr-script-out {
   color: var(--color-content-foreground);
   border-left: 3px solid var(--sd-color-primary);
 }
+
+button.copybtn {
+  top: 0.5em;
+  right: 0.5em;
+}
