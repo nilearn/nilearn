@@ -971,11 +971,11 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
                'ABIDE_Initiative')
 
     if quality_checked:
-        kwargs['qc_rater_1'] = b'OK'
-        kwargs['qc_anat_rater_2'] = [b'OK', b'maybe']
-        kwargs['qc_func_rater_2'] = [b'OK', b'maybe']
-        kwargs['qc_anat_rater_3'] = b'OK'
-        kwargs['qc_func_rater_3'] = b'OK'
+        kwargs['qc_rater_1'] = 'OK'
+        kwargs['qc_anat_rater_2'] = ['OK', 'maybe']
+        kwargs['qc_func_rater_2'] = ['OK', 'maybe']
+        kwargs['qc_anat_rater_3'] = 'OK'
+        kwargs['qc_func_rater_3'] = 'OK'
 
     # Fetch the phenotypic file and load it
     csv = 'Phenotypic_V1_0b_preprocessed1.csv'
