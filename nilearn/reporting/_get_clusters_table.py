@@ -107,15 +107,22 @@ def _sort_subpeaks(ijk, vals, affine):
 
     Parameters
     ----------
-    ijk
-    vals
-    affine
+    ijk : 2D numpy.ndarray
+        The matrix indices of subpeaks to sort.
+    vals : 1D numpy.ndarray
+        The statistical value associated with each subpeak in ``ijk``.
+    affine : (4x4) numpy.ndarray
+        The affine of the img from which the subpeaks were extracted.
+        Used to convert IJK indices to XYZ coordinates.
 
     Returns
     -------
-    xyz
-    ijk
-    vals
+    xyz : 2D numpy.ndarray
+        The sorted coordinates of the subpeaks.
+    ijk : 2D numpy.ndarray
+        The sorted matrix indices of subpeaks.
+    vals : 1D numpy.ndarray
+        The sorted statistical value associated with each subpeak in ``ijk``.
     """
     order = (-vals).argsort()
     vals = vals[order]
@@ -129,15 +136,22 @@ def _pare_subpeaks(xyz, ijk, vals, min_distance):
 
     Parameters
     ----------
-    xyz
-    ijk
-    vals
-    min_distance
+    xyz : 2D numpy.ndarray
+        Subpeak coordinates to reduce. Rows correspond to peaks, columns
+        correspond to x, y, and z dimensions.
+    ijk : 2D numpy.ndarray
+        The subpeak coordinates in ``xyz``, but converted to matrix indices.
+    vals : 1D numpy.ndarray
+        The statistical value associated with each subpeak in ``xyz``/``ijk``.
+    min_distance : float
+        The minimum distance between subpeaks, in millimeters.
 
     Returns
     -------
-    ijk
-    vals
+    ijk : 2D numpy.ndarray
+        The reduced index of subpeaks.
+    vals : 1D numpy.ndarray
+        The statistical values associated with the reduced set of subpeaks.
     """
     keep_idx = np.ones(xyz.shape[0]).astype(bool)
     for i in range(xyz.shape[0]):
@@ -173,15 +187,17 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
                        two_sided=False, min_distance=8.):
     """Creates pandas dataframe with img cluster statistics.
 
-    This function should work on any statistical maps where higher values
+    This function should work on any statistical maps where more extreme values
     indicate greater statistical significance.
-    For example, a z-statistic or -log10(p) map should work, but a p-value img
-    should not.
+    For example, z-statistic or -log10(p) maps are valid inputs, but a p-value
+    map is not.
 
     .. important::
         For binary clusters (clusters comprised of only one value),
         the table reports the center of mass of the cluster,
         rather than any peaks/subpeaks.
+
+        This center of mass may, in some cases, appear outside of the cluster.
 
     Parameters
     ----------
