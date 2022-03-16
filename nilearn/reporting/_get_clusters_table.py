@@ -60,13 +60,13 @@ def _identify_subpeaks(data):
     Returns
     -------
     ijk : `numpy.ndarray`
-        (n_foci, 3) array of local maxima indices for cluster.
+        (n_foci, 3) array of local maximum indices for cluster.
     vals : `numpy.ndarray`
         (n_foci,) array of values from data at ijk.
 
     Notes
     -----
-    When a cluster's local maxima correspond to contiguous voxels with the
+    When a cluster's local maximum corresponds to contiguous voxels with the
     same values (as in a binary cluster), this function determines the center
     of mass for those voxels.
     """
@@ -103,7 +103,20 @@ def _identify_subpeaks(data):
 
 
 def _sort_subpeaks(ijk, vals, affine):
-    # Sort subpeaks in cluster in descending order of stat value
+    """Sort subpeaks in cluster in descending order of stat value.
+
+    Parameters
+    ----------
+    ijk
+    vals
+    affine
+
+    Returns
+    -------
+    xyz
+    ijk
+    vals
+    """
     order = (-vals).argsort()
     vals = vals[order]
     ijk = ijk[order, :]
@@ -112,7 +125,20 @@ def _sort_subpeaks(ijk, vals, affine):
 
 
 def _pare_subpeaks(xyz, ijk, vals, min_distance):
-    # Reduce list of subpeaks based on distance
+    """Reduce list of subpeaks based on distance.
+
+    Parameters
+    ----------
+    xyz
+    ijk
+    vals
+    min_distance
+
+    Returns
+    -------
+    ijk
+    vals
+    """
     keep_idx = np.ones(xyz.shape[0]).astype(bool)
     for i in range(xyz.shape[0]):
         for j in range(i + 1, xyz.shape[0]):
@@ -125,7 +151,19 @@ def _pare_subpeaks(xyz, ijk, vals, min_distance):
 
 
 def _get_val(row, input_arr):
-    """Small function for extracting values from array based on index.
+    """Extract values from array based on index.
+
+    Parameters
+    ----------
+    row : :obj:`tuple` of length 3
+        3-length index into ``input_arr``.
+    input_arr : 3D :obj:`numpy.ndarray`
+        Array from which to extract value.
+
+    Returns
+    -------
+    scalar
+        The value from ``input_arr`` at the row index.
     """
     i, j, k = row
     return input_arr[i, j, k]
@@ -135,33 +173,53 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
                        two_sided=False, min_distance=8.):
     """Creates pandas dataframe with img cluster statistics.
 
+    This function should work on any statistical maps where higher values
+    indicate greater statistical significance.
+    For example, a z-statistic or -log10(p) map should work, but a p-value img
+    should not.
+
+    .. important::
+        For binary clusters (clusters comprised of only one value),
+        the table reports the center of mass of the cluster,
+        rather than any peaks/subpeaks.
+
     Parameters
     ----------
-    stat_img : Niimg-like object,
-       Statistical image (presumably in z- or p-scale).
+    stat_img : Niimg-like object
+       Statistical image to threshold and summarize.
 
-    stat_threshold : `float`
-        Cluster forming threshold in same scale as `stat_img` (either a
-        p-value or z-scale value).
+    stat_threshold : :obj:`float`
+        Cluster forming threshold. This value must be in the same scale as
+        ``stat_img``.
 
-    cluster_threshold : `int` or `None`, optional
-        Cluster size threshold, in voxels.
+    cluster_threshold : :obj:`int` or None, optional
+        Cluster size threshold, in voxels. If None, then no cluster size
+        threshold will be applied. Default=None.
 
-    two_sided : `bool`, optional
+    two_sided : :obj:`bool`, optional
         Whether to employ two-sided thresholding or to evaluate positive values
         only. Default=False.
 
-    min_distance : `float`, optional
-        Minimum distance between subpeaks in mm. Default=8mm.
+    min_distance : :obj:`float`, optional
+        Minimum distance between subpeaks, in millimeters. Default=8.
 
     Returns
     -------
     df : `pandas.DataFrame`
-        Table with peaks and subpeaks from thresholded `stat_img`. For binary
-        clusters (clusters with >1 voxel containing only one value), the table
-        reports the center of mass of the cluster,
-        rather than any peaks/subpeaks.
+        Table with peaks and subpeaks from thresholded ``stat_img``.
+        The columns in this table include:
 
+        ================== ====================================================
+        Cluster ID         The cluster number. Subpeaks have letters after the
+                           number.
+        X/Y/Z              The coordinate for the peak, in millimeters.
+        Peak Stat          The statistical value associated with the peak.
+                           The statistic type is dependent on the type of the
+                           statistical image.
+        Cluster Size (mm3) The size of the cluster, in millimeters cubed.
+                           Rows corresponding to subpeaks will not have a value
+                           in this column.
+        ================== ====================================================
     """
     cols = ['Cluster ID', 'X', 'Y', 'Z', 'Peak Stat', 'Cluster Size (mm3)']
     # Replace None with 0
@@ -186,10 +244,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
                               copy_data=(cluster_threshold is not None))
 
     # Define array for 6-connectivity, aka NN1 or "faces"
-    conn_mat = np.zeros((3, 3, 3), int)
-    conn_mat[1, 1, :] = 1
-    conn_mat[1, :, 1] = 1
-    conn_mat[:, 1, 1] = 1
+    conn_mat = ndimage.generate_binary_structure(rank=3, connectivity=2)
     voxel_size = np.prod(stat_img.header.get_zooms())
 
     signs = [1, -1] if two_sided else [1]
@@ -199,7 +254,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         # Flip map if necessary
         temp_stat_map = stat_map * sign
 
-        # Binarize using CDT
+        # Binarize using cluster-defining threshold
         binarized = temp_stat_map > stat_threshold
         binarized = binarized.astype(int)
 
