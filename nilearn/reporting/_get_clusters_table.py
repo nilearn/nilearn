@@ -209,8 +209,8 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         ``stat_img``.
 
     cluster_threshold : :obj:`int` or None, optional
-        Cluster size threshold, in :term:`voxels<voxel>`. If None, then no cluster size
-        threshold will be applied. Default=None.
+        Cluster size threshold, in :term:`voxels<voxel>`.
+        If None, then no cluster size threshold will be applied. Default=None.
 
     two_sided : :obj:`bool`, optional
         Whether to employ two-sided thresholding or to evaluate positive values
