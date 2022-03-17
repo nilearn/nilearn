@@ -266,7 +266,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
     %(vmin)s
     %(vmax)s
     %(radiological)s 
-        Default=True.
+        Default=False.
     kwargs : extra keyword arguments, optional
         Extra keyword arguments passed to matplotlib.pyplot.imshow.
 
