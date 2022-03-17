@@ -193,6 +193,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     map is not.
 
     .. important::
+
         For binary clusters (clusters comprised of only one value),
         the table reports the center of mass of the cluster,
         rather than any peaks/subpeaks.
