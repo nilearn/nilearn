@@ -419,7 +419,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         verbose=verbose)
     atlas_niimg = check_niimg(atlas_img)
     if not symmetric_split or is_lateralized:
-        return Bunch(filename=atlas_img, maps=atlas_niimg, labels=names)
+        return Bunch(filename=atlas_filename, maps=atlas_niimg, labels=names)
     new_atlas_data, new_names = _compute_symmetric_split("HarvardOxford",
                                                          atlas_niimg,
                                                          names)
