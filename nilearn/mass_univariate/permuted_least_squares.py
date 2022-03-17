@@ -315,8 +315,8 @@ def permuted_ols(
     t-score amongst data descriptors can be computed directly, which avoids
     storing all the computed t-scores.
 
-    The variates should be given C-contiguous. target_vars are fortran-ordered
-    automatically to speed-up computations.
+    The variates should be given C-contiguous. ``target_vars`` are
+    fortran-ordered automatically to speed-up computations.
 
     Parameters
     ----------
@@ -324,19 +324,24 @@ def permuted_ols(
         Explanatory variates, fitted and tested independently from each others.
 
     target_vars : array-like, shape=(n_samples, n_descriptors)
-        fMRI data, trying to be explained by explanatory and confounding
+        fMRI data to analyze according to the explanatory and confounding
         variates.
+
+        In a group-level analysis, the samples will typically be voxels
+        (for volumetric data) or vertices (for surface data), while the
+        descriptors will generally be images, such as run-wise z-statistic
+        maps.
 
     confounding_vars : array-like, shape=(n_samples, n_covars), optional
         Confounding variates (covariates), fitted but not tested.
         If None, no confounding variate is added to the model
         (except maybe a constant column according to the value of
-        `model_intercept`)
+        ``model_intercept``).
 
     model_intercept : :obj:`bool`, optional
         If True, a constant column is added to the confounding variates
         unless the tested variate is already the intercept.
-        Default=True
+        Default=True.
 
     n_perm : :obj:`int`, optional
         Number of permutations to perform.
