@@ -176,7 +176,7 @@ def _get_val(row, input_arr):
 
     Returns
     -------
-    scalar
+    :obj:`float` or :obj:`int`
         The value from ``input_arr`` at the row index.
     """
     i, j, k = row
@@ -209,7 +209,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         ``stat_img``.
 
     cluster_threshold : :obj:`int` or None, optional
-        Cluster size threshold, in voxels. If None, then no cluster size
+        Cluster size threshold, in :term:`voxels<voxel>`. If None, then no cluster size
         threshold will be applied. Default=None.
 
     two_sided : :obj:`bool`, optional
@@ -221,7 +221,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
 
     Returns
     -------
-    df : `pandas.DataFrame`
+    df : :obj:`pandas.DataFrame`
         Table with peaks and subpeaks from thresholded ``stat_img``.
         The columns in this table include:
 
@@ -260,7 +260,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
                               copy_data=(cluster_threshold is not None))
 
     # Define array for 6-connectivity, aka NN1 or "faces"
-    conn_mat = ndimage.generate_binary_structure(rank=3, connectivity=2)
+    conn_mat = ndimage.generate_binary_structure(rank=3, connectivity=1)
     voxel_size = np.prod(stat_img.header.get_zooms())
 
     signs = [1, -1] if two_sided else [1]
