@@ -458,7 +458,6 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         Ex: use "%%i" to display as integers.
         Default is '%%.2g' for scientific notation.
     %(radiological)s 
-        Default=True.
     %(vmin)s
     %(vmax)s
 
@@ -527,7 +526,6 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
     %(vmin)s
     %(vmax)s
     %(radiological)s 
-        Default=True.
         
     Notes
     -----
@@ -653,7 +651,6 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     %(linewidths)s
         Default=2.5.
     %(radiological)s 
-        Default=True.
 
     Notes
     -----
@@ -776,7 +773,6 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
         Alpha sets the transparency of the color inside the filled contours.
         Default=0.7.
     %(radiological)s 
-        Default=True.
 
     See Also
     --------
@@ -933,7 +929,6 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     %(resampling_interpolation)s
         Default='continuous'.
     %(radiological)s 
-        Default=True.
 
     Notes
     -----
@@ -1046,7 +1041,6 @@ def plot_glass_brain(stat_map_img,
     %(resampling_interpolation)s
         Default='continuous'.
     %(radiological)s 
-        Default=True.
         
     Notes
     -----
@@ -1172,7 +1166,6 @@ def plot_connectome(adjacency_matrix, node_coords,
     %(colorbar)s
         Default=False.
     %(radiological)s 
-        Default=True.
 
     See Also
     --------
@@ -1268,7 +1261,6 @@ def plot_markers(node_values, node_coords, node_size='auto',
     %(colorbar)s
         Default=True.
     %(radiological)s 
-        Default=True.
 
     """
     node_values = np.array(node_values).flatten()
