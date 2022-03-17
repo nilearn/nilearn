@@ -23,3 +23,4 @@ Enhancements
 Changes
 -------
 
+- The documentation for :func:`~reporting.get_clusters_table` has been improved, with more information about what inputs are valid and what the resulting table should look like (:gh:`3178` by `Taylor Salo`_).
