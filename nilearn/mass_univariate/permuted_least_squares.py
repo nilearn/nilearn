@@ -144,62 +144,78 @@ def _t_score_with_covars_and_normalized_design(tested_vars, target_vars,
     return beta_targetvars_testedvars * np.sqrt((dof - 1.) / rss)
 
 
-def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars, thread_id,
-                           confounding_vars=None, n_perm=10000, n_perm_chunk=10000,
-                           intercept_test=True, two_sided_test=True,
-                           random_state=None, verbose=0):
-    """Massively univariate group analysis with permuted OLS on a data chunk.
+def _permuted_ols_on_chunk(
+    scores_original_data,
+    tested_vars,
+    target_vars,
+    thread_id,
+    confounding_vars=None,
+    n_perm=10000,
+    n_perm_chunk=10000,
+    intercept_test=True,
+    two_sided_test=True,
+    random_state=None,
+    verbose=0,
+):
+    """Perform massively univariate analysis with permuted OLS on a data chunk.
 
     To be used in a parallel computing context.
 
     Parameters
     ----------
     scores_original_data : array-like, shape=(n_descriptors, n_regressors)
-      t-scores obtained for the original (non-permuted) data.
+        t-scores obtained for the original (non-permuted) data.
 
     tested_vars : array-like, shape=(n_samples, n_regressors)
-      Explanatory variates.
+        Explanatory variates.
 
     target_vars : array-like, shape=(n_samples, n_targets)
-      fMRI data. F-ordered for efficient computations.
+        fMRI data. F-ordered for efficient computations.
 
     thread_id : int
         process id, used for display.
 
     confounding_vars : array-like, shape=(n_samples, n_covars), optional
-      Clinical data (covariates).
+        Clinical data (covariates).
 
     n_perm : int, optional
-      Total number of permutations to perform, only used for
-      display in this function. Default=10000.
+        Total number of permutations to perform, only used for
+        display in this function. Default=10000.
 
     n_perm_chunk : int, optional
-      Number of permutations to be performed. Default=10000.
+        Number of permutations to be performed. Default=10000.
 
     intercept_test : boolean, optional
-      Change the permutation scheme (swap signs for intercept,
-      switch labels otherwise). See [1]_.
-      Default=True.
+        Change the permutation scheme (swap signs for intercept,
+        switch labels otherwise). See [1]_.
+        Default=True.
 
     two_sided_test : boolean, optional
-      If True, performs an unsigned t-test. Both positive and negative
-      effects are considered; the null hypothesis is that the effect is zero.
-      If False, only positive effects are considered as relevant. The null
-      hypothesis is that the effect is zero or negative.
-      Default=True
+        If True, performs an unsigned t-test. Both positive and negative
+        effects are considered; the null hypothesis is that the effect is zero.
+        If False, only positive effects are considered as relevant. The null
+        hypothesis is that the effect is zero or negative.
+        Default=True
 
     random_state : int or None, optional
-      Seed for random number generator, to have the same permutations
-      in each computing units.
+        Seed for random number generator, to have the same permutations
+        in each computing units.
 
     verbose : int, optional
-      Defines the verbosity level. Default=0.
+        Defines the verbosity level. Default=0.
 
     Returns
     -------
-    h0_fmax_part : array-like, shape=(n_perm_chunk, )
-      Distribution of the (max) t-statistic under the null hypothesis
-      (limited to this permutation chunk).
+    scores_as_ranks_part : array-like, shape=(n_regressors, n_descriptors)
+        The ranks of the original scores in h0_fmax_part.
+        When ``n_descriptors`` or ``n_perm`` are large, it can be quite long to
+        find the rank of the original scores into the whole H0 distribution.
+        Here, it is performed in parallel by the workers involved in the
+        permutation computation.
+
+    h0_fmax_part : array-like, shape=(n_perm_chunk, n_regressors)
+        Distribution of the (max) t-statistic under the null hypothesis
+        (limited to this permutation chunk).
 
     References
     ----------
@@ -240,10 +256,10 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars, threa
         if two_sided_test:
             perm_scores = np.fabs(perm_scores)
         h0_fmax_part[i] = np.nanmax(perm_scores, axis=0)
-        # find the rank of the original scores in h0_part
+        # find the rank of the original scores in h0_fmax_part
         # (when n_descriptors or n_perm are large, it can be quite long to
         #  find the rank of the original scores into the whole H0 distribution.
-        #  Here, it is performed in parallel by the workers involded in the
+        #  Here, it is performed in parallel by the workers involved in the
         #  permutation computation)
         scores_as_ranks_part += (h0_fmax_part[i].reshape((-1, 1))
                                  < scores_original_data.T)
@@ -268,9 +284,17 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars, threa
     return scores_as_ranks_part, h0_fmax_part.T
 
 
-def permuted_ols(tested_vars, target_vars, confounding_vars=None,
-                 model_intercept=True, n_perm=10000, two_sided_test=True,
-                 random_state=None, n_jobs=1, verbose=0):
+def permuted_ols(
+    tested_vars,
+    target_vars,
+    confounding_vars=None,
+    model_intercept=True,
+    n_perm=10000,
+    two_sided_test=True,
+    random_state=None,
+    n_jobs=1,
+    verbose=0,
+):
     """Massively univariate group analysis with permuted OLS.
 
     Tested variates are independently fitted to target variates descriptors
@@ -297,74 +321,76 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     Parameters
     ----------
     tested_vars : array-like, shape=(n_samples, n_regressors)
-      Explanatory variates, fitted and tested independently from each others.
+        Explanatory variates, fitted and tested independently from each others.
 
     target_vars : array-like, shape=(n_samples, n_descriptors)
-      fMRI data, trying to be explained by explanatory and confounding
-      variates.
+        fMRI data, trying to be explained by explanatory and confounding
+        variates.
 
     confounding_vars : array-like, shape=(n_samples, n_covars), optional
-      Confounding variates (covariates), fitted but not tested.
-      If None, no confounding variate is added to the model
-      (except maybe a constant column according to the value of
-      `model_intercept`)
+        Confounding variates (covariates), fitted but not tested.
+        If None, no confounding variate is added to the model
+        (except maybe a constant column according to the value of
+        `model_intercept`)
 
-    model_intercept : bool, optional
-      If True, a constant column is added to the confounding variates
-      unless the tested variate is already the intercept.
-      Default=True
+    model_intercept : :obj:`bool`, optional
+        If True, a constant column is added to the confounding variates
+        unless the tested variate is already the intercept.
+        Default=True
 
-    n_perm : int, optional
-      Number of permutations to perform.
-      Permutations are costly but the more are performed, the more precision
-      one gets in the p-values estimation. Default=10000.
+    n_perm : :obj:`int`, optional
+        Number of permutations to perform.
+        Permutations are costly but the more are performed, the more precision
+        one gets in the p-values estimation. Default=10000.
 
-    two_sided_test : boolean, optional
-      If True, performs an unsigned t-test. Both positive and negative
-      effects are considered; the null hypothesis is that the effect is zero.
-      If False, only positive effects are considered as relevant. The null
-      hypothesis is that the effect is zero or negative. Default=True.
+    two_sided_test : :obj:`bool`, optional
+        If True, performs an unsigned t-test. Both positive and negative
+        effects are considered; the null hypothesis is that the effect is zero.
+        If False, only positive effects are considered as relevant. The null
+        hypothesis is that the effect is zero or negative. Default=True.
 
-    random_state : int or None, optional
-      Seed for random number generator, to have the same permutations
-      in each computing units.
+    random_state : :obj:`int` or None, optional
+        Seed for random number generator, to have the same permutations
+        in each computing units.
 
-    n_jobs : int, optional
-      Number of parallel workers.
-      If 0 is provided, all CPUs are used.
-      A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
-      ones will be used. Default=1.
+    n_jobs : :obj:`int`, optional
+        Number of parallel workers.
+        If 0 is provided, all CPUs are used.
+        A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
+        ones will be used. Default=1.
 
-    verbose : int, optional
+    verbose : :obj:`int`, optional
         verbosity level (0 means no message). Default=0.
 
     Returns
     -------
-    pvals : array-like, shape=(n_regressors, n_descriptors)
-      Negative log10 p-values associated with the significance test of the
-      n_regressors explanatory variates against the n_descriptors target
-      variates. Family-wise corrected p-values.
+    neg_log10_pvals : array-like, shape=(n_regressors, n_descriptors)
+        Negative log10 p-values associated with the significance test of the
+        ``n_regressors`` explanatory variates against the ``n_descriptors``
+        target variates. Family-wise corrected p-values.
 
     score_orig_data : numpy.ndarray, shape=(n_regressors, n_descriptors)
-      t-statistic associated with the significance test of the n_regressors
-      explanatory variates against the n_descriptors target variates.
-      The ranks of the scores into the h0 distribution correspond to the
-      p-values.
+        T-statistics associated with the significance test of the
+        ``n_regressors`` explanatory variates against the ``n_descriptors``
+        target variates.
+        The ranks of the scores into the h0 distribution correspond to the
+        p-values.
 
-    h0_fmax : array-like, shape=(n_perm, )
-      Distribution of the (max) t-statistic under the null hypothesis
-      (obtained from the permutations). Array is sorted.
+    h0_fmax : array-like, shape=(n_regressors, n_perm)
+        Distribution of the (max) t-statistic under the null hypothesis
+        (obtained from the permutations). Array is sorted.
 
     References
     ----------
     .. [1] Anderson, M. J. & Robinson, J. (2001). Permutation tests for
-       linear models. Australian & New Zealand Journal of Statistics, 43(1), 75-88.
+       linear models. Australian & New Zealand Journal of Statistics, 43(1),
+       75-88.
 
     .. [2] Winkler, A. M. et al. (2014). Permutation inference for the general
        linear model. Neuroimage.
 
-    .. [3] Freedman, D. & Lane, D. (1983). A nonstochastic interpretation of reported
-       significance levels. J. Bus. Econ. Stats., 1(4), 292-298
+    .. [3] Freedman, D. & Lane, D. (1983). A nonstochastic interpretation of
+       reported significance levels. J. Bus. Econ. Stats., 1(4), 292-298
 
     """
     # initialize the seed of the random generator
@@ -380,22 +406,27 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
         n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
     else:
         n_jobs = min(n_jobs, joblib.cpu_count())
+
     # make target_vars F-ordered to speed-up computation
     if target_vars.ndim != 2:
         raise ValueError("'target_vars' should be a 2D array. "
                          "An array with %d dimension%s was passed"
                          % (target_vars.ndim,
                             "s" if target_vars.ndim > 1 else ""))
+
     target_vars = np.asfortranarray(target_vars)  # efficient for chunking
     n_descriptors = target_vars.shape[1]
     if np.any(np.all(target_vars == 0, axis=0)):
-        warnings.warn("Some descriptors in 'target_vars' have zeros across all "
-                      "samples. These descriptors will be ignored during null "
-                      "distribution generation.")
+        warnings.warn(
+            "Some descriptors in 'target_vars' have zeros across all samples. "
+            "These descriptors will be ignored during null distribution "
+            "generation."
+        )
 
     # check explanatory variates dimensions
     if tested_vars.ndim == 1:
         tested_vars = np.atleast_2d(tested_vars).T
+
     n_samples, n_regressors = tested_vars.shape
 
     # check if explanatory variates is intercept (constant) or not
@@ -421,18 +452,21 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
             warnings.warn('Confounding variates not C_CONTIGUOUS.')
             covars_orthonormalized = np.ascontiguousarray(
                 covars_orthonormalized)
+
         targetvars_normalized = _normalize_matrix_on_axis(
             target_vars).T  # faster with F-ordered target_vars_chunk
         if not targetvars_normalized.flags['C_CONTIGUOUS']:
             # useful to developer
             warnings.warn('Target variates not C_CONTIGUOUS.')
             targetvars_normalized = np.ascontiguousarray(targetvars_normalized)
+
         beta_targetvars_covars = np.dot(targetvars_normalized,
                                         covars_orthonormalized)
         targetvars_resid_covars = targetvars_normalized - np.dot(
             beta_targetvars_covars, covars_orthonormalized.T)
         targetvars_resid_covars = _normalize_matrix_on_axis(
             targetvars_resid_covars, axis=1)
+
         # step 2: extract effect of covars from tested vars
         testedvars_normalized = _normalize_matrix_on_axis(
             tested_vars.T, axis=1
@@ -443,25 +477,33 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
             beta_testedvars_covars, covars_orthonormalized.T)
         testedvars_resid_covars = _normalize_matrix_on_axis(
             testedvars_resid_covars, axis=1).T.copy()
+
     else:
         targetvars_resid_covars = _normalize_matrix_on_axis(target_vars).T
         testedvars_resid_covars = _normalize_matrix_on_axis(tested_vars).copy()
         covars_orthonormalized = None
+
     # check arrays contiguousity (for the sake of code efficiency)
     if not targetvars_resid_covars.flags['C_CONTIGUOUS']:
         # useful to developer
         warnings.warn('Target variates not C_CONTIGUOUS.')
         targetvars_resid_covars = np.ascontiguousarray(targetvars_resid_covars)
+
     if not testedvars_resid_covars.flags['C_CONTIGUOUS']:
         # useful to developer
         warnings.warn('Tested variates not C_CONTIGUOUS.')
         testedvars_resid_covars = np.ascontiguousarray(testedvars_resid_covars)
+
     # step 3: original regression (= regression on residuals + adjust t-score)
     # compute t score for original data
     scores_original_data = _t_score_with_covars_and_normalized_design(
-        testedvars_resid_covars, targetvars_resid_covars.T,
-        covars_orthonormalized)
+        testedvars_resid_covars,
+        targetvars_resid_covars.T,
+        covars_orthonormalized,
+    )
     if two_sided_test:
+        # Ensure that all t-statistics are positive for permutation tests,
+        # so that ranks reflect significance
         sign_scores_original_data = np.sign(scores_original_data)
         scores_original_data = np.fabs(scores_original_data)
 
@@ -482,25 +524,34 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
         if two_sided_test:
             scores_original_data = (scores_original_data
                                     * sign_scores_original_data)
+
         return np.asarray([]), scores_original_data.T, np.asarray([])
 
     # actual permutations, seeded from a random integer between 0 and maximum
     # value represented by np.int32 (to have a large entropy).
     ret = joblib.Parallel(n_jobs=n_jobs, verbose=verbose)(
         joblib.delayed(_permuted_ols_on_chunk)(
-            scores_original_data, testedvars_resid_covars,
-            targetvars_resid_covars.T, thread_id + 1, covars_orthonormalized,
-            n_perm=n_perm, n_perm_chunk=n_perm_chunk,
-            intercept_test=intercept_test, two_sided_test=two_sided_test,
+            scores_original_data,
+            testedvars_resid_covars,
+            targetvars_resid_covars.T,
+            thread_id + 1,
+            covars_orthonormalized,
+            n_perm=n_perm,
+            n_perm_chunk=n_perm_chunk,
+            intercept_test=intercept_test,
+            two_sided_test=two_sided_test,
             random_state=rng.randint(1, np.iinfo(np.int32).max - 1),
-            verbose=verbose)
+            verbose=verbose,
+        )
         for thread_id, n_perm_chunk in enumerate(n_perm_chunks))
+
     # reduce results
     scores_as_ranks_parts, h0_fmax_parts = zip(*ret)
     h0_fmax = np.hstack((h0_fmax_parts))
     scores_as_ranks = np.zeros((n_regressors, n_descriptors))
     for scores_as_ranks_part in scores_as_ranks_parts:
         scores_as_ranks += scores_as_ranks_part
+
     # convert ranks into p-values
     pvals = (n_perm + 1 - scores_as_ranks) / float(1 + n_perm)
 
