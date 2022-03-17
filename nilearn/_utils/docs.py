@@ -480,7 +480,8 @@ docdict['radiological'] = """
 radiological : :obj:`bool`, optional
     Invert x axis and R L labels to plot sections as a radiological view. 
     If False (default), the left hemisphere is on the left of a coronal image.
-    If True, left hemisphere is on the right."""
+    If True, left hemisphere is on the right.
+    Default=False."""
 
 # Memory
 docdict['memory'] = """
