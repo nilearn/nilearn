@@ -265,9 +265,8 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         Default=None.
     %(vmin)s
     %(vmax)s
-    radiological : boolean, optional
-        Invert x axis and R L labels to plot sections as a radiological view. If False (default),
-        the left hemisphere is on the left of a coronal image. If true, left hemisphere is on the right.
+    %(radiological)s 
+        Default=True.
     kwargs : extra keyword arguments, optional
         Extra keyword arguments passed to matplotlib.pyplot.imshow.
 
@@ -458,9 +457,8 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
         Default is '%%.2g' for scientific notation.
-    radiological : boolean, optional
-        Invert x axis and R L labels to plot sections as a radiological view. If False (default),
-        the left hemisphere is on the left of a coronal image. If true, left hemisphere is on the right.
+    %(radiological)s 
+        Default=True.
     %(vmin)s
     %(vmax)s
 
@@ -528,10 +526,9 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
         Default=`plt.cm.nipy_spectral`.
     %(vmin)s
     %(vmax)s
-    radiological : boolean, optional
-        Invert x axis and R L labels to plot sections as a radiological view. If False (default),
-        the left hemisphere is on the left of a coronal image. If true, left hemisphere is on the right.
-
+    %(radiological)s 
+        Default=True.
+        
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
@@ -655,9 +652,8 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         Default='continuous'.
     %(linewidths)s
         Default=2.5.
-    radiological : boolean, optional
-        Invert x axis and R L labels to plot sections as a radiological view. If False (default),
-        the left hemisphere is on the left of a coronal image. If true, left hemisphere is on the right.
+    %(radiological)s 
+        Default=True.
 
     Notes
     -----
@@ -779,6 +775,8 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
     alpha : float between 0 and 1, optional
         Alpha sets the transparency of the color inside the filled contours.
         Default=0.7.
+    %(radiological)s 
+        Default=True.
 
     See Also
     --------
@@ -934,9 +932,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     %(vmax)s
     %(resampling_interpolation)s
         Default='continuous'.
-    radiological : boolean, optional
-        Invert x axis and R L labels to plot sections as a radiological view. If False (default),
-        the left hemisphere is on the left of a coronal image. If true, left hemisphere is on the right.
+    %(radiological)s 
+        Default=True.
 
     Notes
     -----
@@ -1048,9 +1045,9 @@ def plot_glass_brain(stat_map_img,
         Default='auto'.
     %(resampling_interpolation)s
         Default='continuous'.
-    radiological : boolean, optional
-        Invert x axis and R L labels to plot sections as a radiological view. If False (default),
-        the left hemisphere is on the left of a coronal image. If true, left hemisphere is on the right.
+    %(radiological)s 
+        Default=True.
+        
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
@@ -1174,9 +1171,8 @@ def plot_connectome(adjacency_matrix, node_coords,
         the nodes in one go.
     %(colorbar)s
         Default=False.
-    radiological : boolean, optional
-        Invert x axis and R L labels to plot sections as a radiological view. If False (default),
-        the left hemisphere is on the left of a coronal image. If true, left hemisphere is on the right.
+    %(radiological)s 
+        Default=True.
 
     See Also
     --------
@@ -1270,6 +1266,8 @@ def plot_markers(node_values, node_coords, node_size='auto',
         will be passed as kwargs to the plt.scatter call that plots all
         the nodes in one go
     %(colorbar)s
+        Default=True.
+    %(radiological)s 
         Default=True.
 
     """
