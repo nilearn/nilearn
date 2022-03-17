@@ -25,9 +25,7 @@ class BaseAxes:
 
     coord : :obj:`float`
         The coordinate along the direction of the cut.
-    radiological : :obj:`bool`, optional
-        Invert x axis and R L labels to plot sections as a radiological view. 
-        Default=False.
+    %(radiological)s
     """
 
     def __init__(self, ax, direction, coord, radiological=False):
