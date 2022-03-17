@@ -405,7 +405,12 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     if is_probabilistic and symmetric_split:
         raise ValueError("Region splitting not supported for probabilistic "
                          "atlases")
-    atlas_img, atlas_filename, names, is_lateralized = _get_atlas_data_and_labels(
+    (
+        atlas_img,
+        atlas_filename,
+        names,
+        is_lateralized
+    ) = _get_atlas_data_and_labels(
         "HarvardOxford",
         atlas_name,
         symmetric_split=symmetric_split,
@@ -421,7 +426,11 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     new_atlas_niimg = new_img_like(atlas_niimg,
                                    new_atlas_data,
                                    atlas_niimg.affine)
-    return Bunch(filename=atlas_filename, maps=new_atlas_niimg, labels=new_names)
+    return Bunch(
+        filename=atlas_filename,
+        maps=new_atlas_niimg,
+        labels=new_names,
+    )
 
 
 @fill_doc
