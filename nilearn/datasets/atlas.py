@@ -405,7 +405,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     if is_probabilistic and symmetric_split:
         raise ValueError("Region splitting not supported for probabilistic "
                          "atlases")
-    atlas_img, names, is_lateralized = _get_atlas_data_and_labels(
+    atlas_img, atlas_filename, names, is_lateralized = _get_atlas_data_and_labels(
         "HarvardOxford",
         atlas_name,
         symmetric_split=symmetric_split,
@@ -421,7 +421,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     new_atlas_niimg = new_img_like(atlas_niimg,
                                    new_atlas_data,
                                    atlas_niimg.affine)
-    return Bunch(filename=atlas_img, maps=new_atlas_niimg, labels=new_names)
+    return Bunch(filename=atlas_filename, maps=new_atlas_niimg, labels=new_names)
 
 
 @fill_doc
@@ -521,7 +521,7 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
     if is_probabilistic and symmetric_split:
         raise ValueError("Region splitting not supported for probabilistic "
                          "atlases")
-    atlas_img, names, _ = _get_atlas_data_and_labels("Juelich",
+    atlas_img, atlas_filename, names, _ = _get_atlas_data_and_labels("Juelich",
                                                      atlas_name,
                                                      data_dir=data_dir,
                                                      resume=resume,
@@ -542,7 +542,7 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
     new_atlas_niimg = new_img_like(atlas_niimg,
                                    new_atlas_data,
                                    atlas_niimg.affine)
-    return Bunch(filename=atlas_img, maps=new_atlas_niimg,
+    return Bunch(filename=atlas_filename, maps=new_atlas_niimg,
                  labels=list(new_names))
 
 
@@ -605,7 +605,7 @@ def _get_atlas_data_and_labels(atlas_source, atlas_name, symmetric_split=False,
     # The label indices should range from 0 to nlabel + 1
     assert list(names.keys()) == list(range(n + 2))
     names = [item[1] for item in sorted(names.items())]
-    return atlas_img, names, is_lateralized
+    return atlas_img, atlas_file, names, is_lateralized
 
 
 def _merge_probabilistic_maps_juelich(atlas_data, names):
