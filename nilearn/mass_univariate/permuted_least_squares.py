@@ -349,7 +349,7 @@ def permuted_ols(
 
     n_jobs : int, optional
         Number of parallel workers.
-        If 0 is provided, all CPUs are used.
+        If -1 is provided, all CPUs are used.
         A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
         ones will be used. Default=1.
 
