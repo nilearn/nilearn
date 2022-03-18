@@ -278,9 +278,17 @@ def _permuted_ols_on_chunk(
     return scores_as_ranks_part, h0_fmax_part.T
 
 
-def permuted_ols(tested_vars, target_vars, confounding_vars=None,
-                 model_intercept=True, n_perm=10000, two_sided_test=True,
-                 random_state=None, n_jobs=1, verbose=0):
+def permuted_ols(
+    tested_vars,
+    target_vars,
+    confounding_vars=None,
+    model_intercept=True,
+    n_perm=10000,
+    two_sided_test=True,
+    random_state=None,
+    n_jobs=1,
+    verbose=0,
+):
     """Massively univariate group analysis with permuted OLS.
 
     Tested variates are independently fitted to target variates descriptors
