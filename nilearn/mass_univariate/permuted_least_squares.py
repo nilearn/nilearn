@@ -722,7 +722,7 @@ def permuted_ols(
             f'of jobs to be performed in parallel has set to {n_jobs}. '
             f'This is incompatible so only {n_perm} jobs will be running. '
             'You may want to perform more permutations in order to take the '
-            'most of the available computing ressources.'
+            'most of the available computing resources.'
         )
         n_perm_chunks = np.ones(n_perm, dtype=int)
 
