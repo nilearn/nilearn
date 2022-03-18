@@ -808,13 +808,6 @@ def permuted_ols(
 
         p_cmfwe_vals = null_to_p(cluster_masses, cmfwe_h0[i_regressor, :], "upper")
         p_cmfwe_map = p_cmfwe_vals[np.reshape(idx, labeled_arr3d.shape)]
-        print("Cluster mass null")
-        print(cmfwe_h0[i_regressor, :])
-        print("Cluster masses observed")
-        print(cluster_masses)
-        print("Unique p-values before unmasking")
-        print(np.unique(p_cmfwe_map))
-        print(len(np.unique(p_cmfwe_map)))
 
         # Convert 3D to image, then to 1D
         cmfwe_pvals[i_regressor, :] = np.squeeze(
@@ -826,10 +819,6 @@ def permuted_ols(
                 )
             )
         )
-        print("Unique p-values")
-        print(np.unique(cmfwe_pvals[i_regressor, :]))
-        print(np.unique(cmfwe_pvals[i_regressor, :])[:10])
-        print(len(np.unique(cmfwe_pvals[i_regressor, :])))
 
         # Cluster size-based inference
         cluster_sizes[0] = 0  # replace background's "cluster size" with zeros
