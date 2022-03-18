@@ -14,7 +14,7 @@ from scipy import linalg, ndimage
 from sklearn.utils import check_random_state
 
 
-def null_to_p(test_value, null_array, tail="two", symmetric=False):
+def _null_to_p(test_value, null_array, tail='two', symmetric=False):
     """Return p-value for test value(s) against null array.
 
     Parameters
@@ -30,17 +30,18 @@ def null_to_p(test_value, null_array, tail="two", symmetric=False):
         If 'lower', then lower values for the test_value are more significant.
         Default is 'two'.
     symmetric : bool
-        When tail="two", indicates how to compute p-values. When False (default),
-        both one-tailed p-values are computed, and the two-tailed p is double
-        the minimum one-tailed p. When True, it is assumed that the null
-        distribution is zero-centered and symmetric, and the two-tailed p-value
-        is computed as P(abs(test_value) >= abs(null_array)).
+        When tail="two", indicates how to compute p-values.
+        When False (default), both one-tailed p-values are computed,
+        and the two-tailed p is double the minimum one-tailed p.
+        When True, it is assumed that the null distribution is zero-centered
+        and symmetric, and the two-tailed p-value is computed as
+        P(abs(test_value) >= abs(null_array)).
 
     Returns
     -------
     p_value : :obj:`float`
-        P-value(s) associated with the test value when compared against the null
-        distribution. Return type matches input type (i.e., a float if
+        P-value(s) associated with the test value when compared against the
+        null distribution. Return type matches input type (i.e., a float if
         test_value is a single float, and an array if test_value is an array).
 
     Notes
@@ -52,15 +53,17 @@ def null_to_p(test_value, null_array, tail="two", symmetric=False):
     and two-tailed p-values are desired, use symmetric=True, as it is
     approximately twice as efficient computationally, and has lower variance.
     """
-    if tail not in {"two", "upper", "lower"}:
-        raise ValueError('Argument "tail" must be one of ["two", "upper", "lower"]')
+    if tail not in {'two', 'upper', 'lower'}:
+        raise ValueError(
+            'Argument "tail" must be one of ["two", "upper", "lower"]'
+        )
 
     return_first = isinstance(test_value, (float, int))
     test_value = np.atleast_1d(test_value)
     null_array = np.array(null_array)
 
-    # For efficiency's sake, if there are more than 1000 values, pass only the unique
-    # values through percentileofscore(), and then reconstruct.
+    # For efficiency's sake, if there are more than 1000 values, pass only the
+    # unique values through percentileofscore(), and then reconstruct.
     if len(test_value) > 1000:
         reconstruct = True
         test_value, uniq_idx = np.unique(test_value, return_inverse=True)
@@ -69,17 +72,17 @@ def null_to_p(test_value, null_array, tail="two", symmetric=False):
 
     def compute_p(t, null):
         null = np.sort(null)
-        idx = np.searchsorted(null, t, side="left").astype(float)
+        idx = np.searchsorted(null, t, side='left').astype(float)
         return 1 - idx / len(null)
 
-    if tail == "two":
+    if tail == 'two':
         if symmetric:
             p = compute_p(np.abs(test_value), np.abs(null_array))
         else:
             p_l = compute_p(test_value, null_array)
             p_r = compute_p(test_value * -1, null_array * -1)
             p = 2 * np.minimum(p_l, p_r)
-    elif tail == "lower":
+    elif tail == 'lower':
         p = compute_p(test_value * -1, null_array * -1)
     else:
         p = compute_p(test_value, null_array)
@@ -140,14 +143,16 @@ def _calculate_cluster_measures(arr4d, threshold, conn, two_sided_test=False):
         clust_vals, clust_sizes = np.unique(labeled_arr3d, return_counts=True)
         assert clust_vals[0] == 0
 
+        clust_vals = clust_vals[1:]  # First cluster is zeros in matrix
+        clust_sizes = clust_sizes[1:]
+
         # Cluster mass-based inference
         max_mass = 0
-        for unique_val in clust_vals[1:]:
+        for unique_val in clust_vals:
             ss_vals = np.abs(arr3d[labeled_arr3d == unique_val]) - threshold
             max_mass = np.maximum(max_mass, np.sum(ss_vals))
 
         # Cluster size-based inference
-        clust_sizes = clust_sizes[1:]  # First cluster is zeros in matrix
         if clust_sizes.size:
             max_size = np.max(clust_sizes)
         else:
@@ -389,8 +394,9 @@ def _permuted_ols_on_chunk(
     for i in range(n_perm_chunk):
         if intercept_test:
             # sign swap (random multiplication by 1 or -1)
-            target_vars = (target_vars
-                           * (rng.randint(2, size=(n_samples, 1)) * 2 - 1))
+            target_vars = (
+                target_vars * (rng.randint(2, size=(n_samples, 1)) * 2 - 1)
+            )
         else:
             # shuffle data
             # Regarding computation costs, we choose to shuffle testvars
@@ -404,9 +410,10 @@ def _permuted_ols_on_chunk(
 
         # OLS regression on randomized data
         perm_scores = np.asfortranarray(
-            _t_score_with_covars_and_normalized_design(tested_vars,
-                                                       target_vars,
-                                                       confounding_vars))
+            _t_score_with_covars_and_normalized_design(
+                tested_vars, target_vars, confounding_vars
+            )
+        )
         if two_sided_test:
             perm_scores = np.fabs(perm_scores)
 
@@ -770,7 +777,9 @@ def permuted_ols(
     cmfwe_pvals = np.zeros_like(vfwe_pvals)
 
     # TODO: Eliminate need to transpose
-    scores_original_data_4d = masker.inverse_transform(scores_original_data.T).get_fdata()
+    scores_original_data_4d = masker.inverse_transform(
+        scores_original_data.T
+    ).get_fdata()
     conn = ndimage.generate_binary_structure(3, 1)
 
     for i_regressor in range(n_regressors):
@@ -803,10 +812,16 @@ def permuted_ols(
         # Cluster mass-based inference
         cluster_masses = np.zeros(cluster_labels.shape)
         for j_val in cluster_labels[1:]:  # skip background
-            cluster_mass = np.sum(scores_original_data_3d[labeled_arr3d == j_val] - cdt)
+            cluster_mass = np.sum(
+                scores_original_data_3d[labeled_arr3d == j_val] - cdt
+            )
             cluster_masses[j_val] = cluster_mass
 
-        p_cmfwe_vals = null_to_p(cluster_masses, cmfwe_h0[i_regressor, :], "upper")
+        p_cmfwe_vals = _null_to_p(
+            cluster_masses,
+            cmfwe_h0[i_regressor, :],
+            'upper',
+        )
         p_cmfwe_map = p_cmfwe_vals[np.reshape(idx, labeled_arr3d.shape)]
 
         # Convert 3D to image, then to 1D
@@ -822,7 +837,11 @@ def permuted_ols(
 
         # Cluster size-based inference
         cluster_sizes[0] = 0  # replace background's "cluster size" with zeros
-        p_csfwe_vals = null_to_p(cluster_sizes, csfwe_h0[i_regressor, :], "upper")
+        p_csfwe_vals = _null_to_p(
+            cluster_sizes,
+            csfwe_h0[i_regressor, :],
+            'upper',
+        )
         p_csfwe_map = p_csfwe_vals[np.reshape(idx, labeled_arr3d.shape)]
         csfwe_pvals[i_regressor, :] = np.squeeze(
             masker.transform(
