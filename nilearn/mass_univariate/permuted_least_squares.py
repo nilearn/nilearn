@@ -117,7 +117,8 @@ def _t_score_with_covars_and_normalized_design(tested_vars, target_vars,
     target_vars : array-like, shape=(n_samples, n_target_vars)
         Targets variates. F-ordered is better for efficient computation.
 
-    covars_orthonormalized : array-like, shape=(n_samples, n_covars) or None, optional
+    covars_orthonormalized : array-like, shape=(n_samples, n_covars) or None, \
+            optional
         Confounding variates.
 
     Returns
@@ -144,10 +145,19 @@ def _t_score_with_covars_and_normalized_design(tested_vars, target_vars,
     return beta_targetvars_testedvars * np.sqrt((dof - 1.) / rss)
 
 
-def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars, thread_id,
-                           confounding_vars=None, n_perm=10000, n_perm_chunk=10000,
-                           intercept_test=True, two_sided_test=True,
-                           random_state=None, verbose=0):
+def _permuted_ols_on_chunk(
+    scores_original_data,
+    tested_vars,
+    target_vars,
+    thread_id,
+    confounding_vars=None,
+    n_perm=10000,
+    n_perm_chunk=10000,
+    intercept_test=True,
+    two_sided_test=True,
+    random_state=None,
+    verbose=0,
+):
     """Massively univariate group analysis with permuted OLS on a data chunk.
 
     To be used in a parallel computing context.
@@ -358,13 +368,14 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     References
     ----------
     .. [1] Anderson, M. J. & Robinson, J. (2001). Permutation tests for
-       linear models. Australian & New Zealand Journal of Statistics, 43(1), 75-88.
+       linear models. Australian & New Zealand Journal of Statistics, 43(1),
+       75-88.
 
     .. [2] Winkler, A. M. et al. (2014). Permutation inference for the general
        linear model. Neuroimage.
 
-    .. [3] Freedman, D. & Lane, D. (1983). A nonstochastic interpretation of reported
-       significance levels. J. Bus. Econ. Stats., 1(4), 292-298
+    .. [3] Freedman, D. & Lane, D. (1983). A nonstochastic interpretation of
+       reported significance levels. J. Bus. Econ. Stats., 1(4), 292-298
 
     """
     # initialize the seed of the random generator
@@ -389,9 +400,11 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     target_vars = np.asfortranarray(target_vars)  # efficient for chunking
     n_descriptors = target_vars.shape[1]
     if np.any(np.all(target_vars == 0, axis=0)):
-        warnings.warn("Some descriptors in 'target_vars' have zeros across all "
-                      "samples. These descriptors will be ignored during null "
-                      "distribution generation.")
+        warnings.warn(
+            "Some descriptors in 'target_vars' have zeros across all samples. "
+            "These descriptors will be ignored during null distribution "
+            "generation."
+        )
 
     # check explanatory variates dimensions
     if tested_vars.ndim == 1:
