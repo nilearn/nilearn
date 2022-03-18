@@ -8,9 +8,154 @@ import warnings
 import sys
 import time
 import joblib
+import nibabel as nib
 import numpy as np
-from scipy import linalg
+from scipy import linalg, ndimage
 from sklearn.utils import check_random_state
+
+
+def null_to_p(test_value, null_array, tail="two", symmetric=False):
+    """Return p-value for test value(s) against null array.
+
+    Parameters
+    ----------
+    test_value : 1D array_like
+        Values for which to determine p-value.
+    null_array : 1D array_like
+        Null distribution against which test_value is compared.
+    tail : {'two', 'upper', 'lower'}, optional
+        Whether to compare value against null distribution in a two-sided
+        ('two') or one-sided ('upper' or 'lower') manner.
+        If 'upper', then higher values for the test_value are more significant.
+        If 'lower', then lower values for the test_value are more significant.
+        Default is 'two'.
+    symmetric : bool
+        When tail="two", indicates how to compute p-values. When False (default),
+        both one-tailed p-values are computed, and the two-tailed p is double
+        the minimum one-tailed p. When True, it is assumed that the null
+        distribution is zero-centered and symmetric, and the two-tailed p-value
+        is computed as P(abs(test_value) >= abs(null_array)).
+
+    Returns
+    -------
+    p_value : :obj:`float`
+        P-value(s) associated with the test value when compared against the null
+        distribution. Return type matches input type (i.e., a float if
+        test_value is a single float, and an array if test_value is an array).
+
+    Notes
+    -----
+    P-values are clipped based on the number of elements in the null array.
+    Therefore no p-values of 0 or 1 should be produced.
+
+    When the null distribution is known to be symmetric and centered on zero,
+    and two-tailed p-values are desired, use symmetric=True, as it is
+    approximately twice as efficient computationally, and has lower variance.
+    """
+    if tail not in {"two", "upper", "lower"}:
+        raise ValueError('Argument "tail" must be one of ["two", "upper", "lower"]')
+
+    return_first = isinstance(test_value, (float, int))
+    test_value = np.atleast_1d(test_value)
+    null_array = np.array(null_array)
+
+    # For efficiency's sake, if there are more than 1000 values, pass only the unique
+    # values through percentileofscore(), and then reconstruct.
+    if len(test_value) > 1000:
+        reconstruct = True
+        test_value, uniq_idx = np.unique(test_value, return_inverse=True)
+    else:
+        reconstruct = False
+
+    def compute_p(t, null):
+        null = np.sort(null)
+        idx = np.searchsorted(null, t, side="left").astype(float)
+        return 1 - idx / len(null)
+
+    if tail == "two":
+        if symmetric:
+            p = compute_p(np.abs(test_value), np.abs(null_array))
+        else:
+            p_l = compute_p(test_value, null_array)
+            p_r = compute_p(test_value * -1, null_array * -1)
+            p = 2 * np.minimum(p_l, p_r)
+    elif tail == "lower":
+        p = compute_p(test_value * -1, null_array * -1)
+    else:
+        p = compute_p(test_value, null_array)
+
+    # ensure p_value in the following range:
+    # smallest_value <= p_value <= (1.0 - smallest_value)
+    smallest_value = np.maximum(np.finfo(float).eps, 1.0 / len(null_array))
+    result = np.maximum(smallest_value, np.minimum(p, 1.0 - smallest_value))
+
+    if reconstruct:
+        result = result[uniq_idx]
+
+    return result[0] if return_first else result
+
+
+def _calculate_cluster_measures(arr4d, threshold, conn, two_sided_test=False):
+    """Calculate maximum cluster mass and size for an array.
+
+    This method assesses both positive and negative clusters.
+
+    Parameters
+    ----------
+    arr4d : :obj:`numpy.ndarray`
+        Unthresholded 4D array of 3D t-statistic maps.
+    threshold : :obj:`float`
+        Uncorrected t-statistic threshold for defining clusters.
+    conn : :obj:`numpy.ndarray` of shape (3, 3, 3)
+        Connectivity matrix for defining clusters.
+
+    Returns
+    -------
+    max_size, max_mass : :obj:`float`
+        Maximum cluster size and mass from the matrix.
+    """
+    n_regressors = arr4d.shape[3]
+
+    max_sizes = np.zeros(n_regressors, int)
+    max_masses = np.zeros(n_regressors, float)
+
+    for i_regressor in range(n_regressors):
+        arr3d = arr4d[..., i_regressor]
+
+        if two_sided_test:
+            arr3d[np.abs(arr3d) <= threshold] = 0
+        else:
+            arr3d[arr3d <= threshold] = 0
+
+        labeled_arr3d, _ = ndimage.measurements.label(arr3d > 0, conn)
+
+        if two_sided_test:
+            # Label positive and negative clusters separately
+            n_positive_clusters = np.max(labeled_arr3d)
+            temp_labeled_arr3d, _ = ndimage.measurements.label(arr3d < 0, conn)
+            temp_labeled_arr3d[temp_labeled_arr3d > 0] += n_positive_clusters
+            labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
+            del temp_labeled_arr3d
+
+        clust_vals, clust_sizes = np.unique(labeled_arr3d, return_counts=True)
+        assert clust_vals[0] == 0
+
+        # Cluster mass-based inference
+        max_mass = 0
+        for unique_val in clust_vals[1:]:
+            ss_vals = np.abs(arr3d[labeled_arr3d == unique_val]) - threshold
+            max_mass = np.maximum(max_mass, np.sum(ss_vals))
+
+        # Cluster size-based inference
+        clust_sizes = clust_sizes[1:]  # First cluster is zeros in matrix
+        if clust_sizes.size:
+            max_size = np.max(clust_sizes)
+        else:
+            max_size = 0
+
+        max_sizes[i_regressor], max_masses[i_regressor] = max_size, max_mass
+
+    return max_sizes, max_masses
 
 
 def _normalize_matrix_on_axis(m, axis=0):
@@ -150,6 +295,8 @@ def _permuted_ols_on_chunk(
     target_vars,
     thread_id,
     confounding_vars=None,
+    masker=None,
+    cdt=1.,
     n_perm=10000,
     n_perm_chunk=10000,
     intercept_test=True,
@@ -177,6 +324,10 @@ def _permuted_ols_on_chunk(
 
     confounding_vars : array-like, shape=(n_samples, n_covars), optional
         Clinical data (covariates).
+
+    masker
+
+    cdt
 
     n_perm : int, optional
         Total number of permutations to perform, only used for
@@ -230,8 +381,11 @@ def _permuted_ols_on_chunk(
 
     # run the permutations
     t0 = time.time()
-    h0_fmax_part = np.empty((n_perm_chunk, n_regressors))
-    scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
+    h0_vfwe_part = np.empty((n_perm_chunk, n_regressors))
+    h0_csfwe_part = np.empty((n_perm_chunk, n_regressors))
+    h0_cmfwe_part = np.empty((n_perm_chunk, n_regressors))
+    vfwe_scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
+
     for i in range(n_perm_chunk):
         if intercept_test:
             # sign swap (random multiplication by 1 or -1)
@@ -255,14 +409,31 @@ def _permuted_ols_on_chunk(
                                                        confounding_vars))
         if two_sided_test:
             perm_scores = np.fabs(perm_scores)
-        h0_fmax_part[i] = np.nanmax(perm_scores, axis=0)
-        # find the rank of the original scores in h0_fmax_part
+
+        h0_vfwe_part[i] = np.nanmax(perm_scores, axis=0)
+
+        # TODO: Eliminate need for transpose
+        arr4d = masker.inverse_transform(perm_scores.T).get_fdata()
+        conn = ndimage.generate_binary_structure(3, 1)
+        (
+            h0_csfwe_part[i, :],
+            h0_cmfwe_part[i, :],
+        ) = _calculate_cluster_measures(
+            arr4d,
+            cdt,
+            conn,
+            two_sided_test=two_sided_test,
+        )
+
+        # find the rank of the original scores in h0_vfwe_part
         # (when n_descriptors or n_perm are large, it can be quite long to
         #  find the rank of the original scores into the whole H0 distribution.
         #  Here, it is performed in parallel by the workers involved in the
         #  permutation computation)
-        scores_as_ranks_part += (h0_fmax_part[i].reshape((-1, 1))
-                                 < scores_original_data.T)
+        # NOTE: This is not done for the cluster-level methods.
+        vfwe_scores_as_ranks_part += (
+            h0_vfwe_part[i].reshape((-1, 1)) < scores_original_data.T
+        )
 
         if verbose > 0:
             step = 11 - min(verbose, 10)
@@ -272,6 +443,7 @@ def _permuted_ols_on_chunk(
                     crlf = "\r"
                 else:
                     crlf = "\n"
+
                 percent = float(i) / n_perm_chunk
                 percent = round(percent * 100, 2)
                 dt = time.time() - t0
@@ -281,7 +453,12 @@ def _permuted_ols_on_chunk(
                     "(%0.2f%%, %i seconds remaining)%s"
                     % (thread_id, i, n_perm_chunk, percent, remaining, crlf))
 
-    return scores_as_ranks_part, h0_fmax_part.T
+    return (
+        vfwe_scores_as_ranks_part,
+        h0_vfwe_part.T,
+        h0_csfwe_part.T,
+        h0_cmfwe_part.T,
+    )
 
 
 def permuted_ols(
@@ -289,6 +466,8 @@ def permuted_ols(
     target_vars,
     confounding_vars=None,
     model_intercept=True,
+    masker=None,
+    cdt=1.,
     n_perm=10000,
     two_sided_test=True,
     random_state=None,
@@ -342,6 +521,12 @@ def permuted_ols(
         If True, a constant column is added to the confounding variates
         unless the tested variate is already the intercept.
         Default=True.
+
+    masker
+
+    cdt : :obj:`float`, optional
+        Cluster-defining threshold, for cluster-level FWE correction.
+        The threshold should be a minimum t-statistic.
 
     n_perm : :obj:`int`, optional
         Number of permutations to perform.
@@ -403,10 +588,12 @@ def permuted_ols(
 
     # check n_jobs (number of CPUs)
     if n_jobs == 0:  # invalid according to joblib's conventions
-        raise ValueError("'n_jobs == 0' is not a valid choice. "
-                         "Please provide a positive number of CPUs, or -1 "
-                         "for all CPUs, or a negative number (-i) for "
-                         "'all but (i-1)' CPUs (joblib conventions).")
+        raise ValueError(
+            "'n_jobs == 0' is not a valid choice. "
+            "Please provide a positive number of CPUs, or -1 for all CPUs, "
+            "or a negative number (-i) for 'all but (i-1)' CPUs "
+            "(joblib conventions)."
+        )
     elif n_jobs < 0:
         n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
     else:
@@ -414,10 +601,10 @@ def permuted_ols(
 
     # make target_vars F-ordered to speed-up computation
     if target_vars.ndim != 2:
-        raise ValueError("'target_vars' should be a 2D array. "
-                         "An array with %d dimension%s was passed"
-                         % (target_vars.ndim,
-                            "s" if target_vars.ndim > 1 else ""))
+        raise ValueError(
+            "'target_vars' should be a 2D array. "
+            f"An array with {target_vars.ndim} dimension(s) was passed."
+        )
 
     target_vars = np.asfortranarray(target_vars)  # efficient for chunking
     n_descriptors = target_vars.shape[1]
@@ -428,7 +615,7 @@ def permuted_ols(
             "generation."
         )
 
-    # check explanatory variates dimensions
+    # check explanatory variates' dimensions
     if tested_vars.ndim == 1:
         tested_vars = np.atleast_2d(tested_vars).T
 
@@ -500,13 +687,17 @@ def permuted_ols(
         testedvars_resid_covars = np.ascontiguousarray(testedvars_resid_covars)
 
     # step 3: original regression (= regression on residuals + adjust t-score)
-    # compute t score for original data
+    # compute t score map of each tested var for original data
     scores_original_data = _t_score_with_covars_and_normalized_design(
         testedvars_resid_covars,
         targetvars_resid_covars.T,
         covars_orthonormalized,
     )
+
     if two_sided_test:
+        # TODO: Retain original signs in permutations, to measure cluster
+        # sizes/masses separately for positive and negative clusters.
+
         # Ensure that all t-statistics are positive for permutation tests,
         # so that ranks reflect significance
         sign_scores_original_data = np.sign(scores_original_data)
@@ -517,14 +708,17 @@ def permuted_ols(
     if n_perm > n_jobs:
         n_perm_chunks = np.asarray([n_perm / n_jobs] * n_jobs, dtype=int)
         n_perm_chunks[-1] += n_perm % n_jobs
+
     elif n_perm > 0:
-        warnings.warn('The specified number of permutations is %d and '
-                      'the number of jobs to be performed in parallel has '
-                      'set to %s. This is incompatible so only %d jobs will '
-                      'be running. You may want to perform more permutations '
-                      'in order to take the most of the available computing '
-                      'ressources.' % (n_perm, n_jobs, n_perm))
+        warnings.warn(
+            f'The specified number of permutations is {n_perm} and the number '
+            f'of jobs to be performed in parallel has set to {n_jobs}. '
+            f'This is incompatible so only {n_perm} jobs will be running. '
+            'You may want to perform more permutations in order to take the '
+            'most of the available computing ressources.'
+        )
         n_perm_chunks = np.ones(n_perm, dtype=int)
+
     else:  # 0 or negative number of permutations => original data scores only
         if two_sided_test:
             scores_original_data = (scores_original_data
@@ -541,6 +735,8 @@ def permuted_ols(
             targetvars_resid_covars.T,
             thread_id + 1,
             covars_orthonormalized,
+            masker=masker,
+            cdt=cdt,
             n_perm=n_perm,
             n_perm_chunk=n_perm_chunk,
             intercept_test=intercept_test,
@@ -551,18 +747,115 @@ def permuted_ols(
         for thread_id, n_perm_chunk in enumerate(n_perm_chunks))
 
     # reduce results
-    scores_as_ranks_parts, h0_fmax_parts = zip(*ret)
-    h0_fmax = np.hstack((h0_fmax_parts))
-    scores_as_ranks = np.zeros((n_regressors, n_descriptors))
-    for scores_as_ranks_part in scores_as_ranks_parts:
-        scores_as_ranks += scores_as_ranks_part
+    (
+        vfwe_scores_as_ranks_parts,
+        vfwe_h0_parts,
+        csfwe_h0_parts,
+        cmfwe_h0_parts,
+    ) = zip(*ret)
 
-    # convert ranks into p-values
-    pvals = (n_perm + 1 - scores_as_ranks) / float(1 + n_perm)
+    # Voxel-level FWE
+    vfwe_h0 = np.hstack((vfwe_h0_parts))
+    vfwe_scores_as_ranks = np.zeros((n_regressors, n_descriptors))
+    for vfwe_scores_as_ranks_part in vfwe_scores_as_ranks_parts:
+        vfwe_scores_as_ranks += vfwe_scores_as_ranks_part
+
+    vfwe_pvals = (n_perm + 1 - vfwe_scores_as_ranks) / float(1 + n_perm)
+
+    # Cluster-size and cluster-mass FWE
+    csfwe_h0 = np.hstack((csfwe_h0_parts))
+    cmfwe_h0 = np.hstack((cmfwe_h0_parts))
+
+    csfwe_pvals = np.zeros_like(vfwe_pvals)
+    cmfwe_pvals = np.zeros_like(vfwe_pvals)
+
+    # TODO: Eliminate need to transpose
+    scores_original_data_4d = masker.inverse_transform(scores_original_data.T).get_fdata()
+    conn = ndimage.generate_binary_structure(3, 1)
+
+    for i_regressor in range(n_regressors):
+        scores_original_data_3d = scores_original_data_4d[..., i_regressor]
+
+        # Label the clusters
+        labeled_arr3d, _ = ndimage.measurements.label(
+            scores_original_data_3d > cdt,
+            conn,
+        )
+
+        if two_sided_test:
+            # Label positive and negative clusters separately
+            n_positive_clusters = np.max(labeled_arr3d)
+            temp_labeled_arr3d, _ = ndimage.measurements.label(
+                scores_original_data_3d < cdt,
+                conn,
+            )
+            temp_labeled_arr3d[temp_labeled_arr3d > cdt] += n_positive_clusters
+            labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
+            del temp_labeled_arr3d
+
+        cluster_labels, idx, cluster_sizes = np.unique(
+            labeled_arr3d,
+            return_inverse=True,
+            return_counts=True,
+        )
+        assert cluster_labels[0] == 0  # the background
+
+        # Cluster mass-based inference
+        cluster_masses = np.zeros(cluster_labels.shape)
+        for j_val in cluster_labels[1:]:  # skip background
+            cluster_mass = np.sum(scores_original_data_3d[labeled_arr3d == j_val] - cdt)
+            cluster_masses[j_val] = cluster_mass
+
+        p_cmfwe_vals = null_to_p(cluster_masses, cmfwe_h0[i_regressor, :], "upper")
+        p_cmfwe_map = p_cmfwe_vals[np.reshape(idx, labeled_arr3d.shape)]
+        print("Cluster mass null")
+        print(cmfwe_h0[i_regressor, :])
+        print("Cluster masses observed")
+        print(cluster_masses)
+        print("Unique p-values before unmasking")
+        print(np.unique(p_cmfwe_map))
+        print(len(np.unique(p_cmfwe_map)))
+
+        # Convert 3D to image, then to 1D
+        cmfwe_pvals[i_regressor, :] = np.squeeze(
+            masker.transform(
+                nib.Nifti1Image(
+                    p_cmfwe_map,
+                    masker.mask_img_.affine,
+                    masker.mask_img_.header,
+                )
+            )
+        )
+        print("Unique p-values")
+        print(np.unique(cmfwe_pvals[i_regressor, :]))
+        print(np.unique(cmfwe_pvals[i_regressor, :])[:10])
+        print(len(np.unique(cmfwe_pvals[i_regressor, :])))
+
+        # Cluster size-based inference
+        cluster_sizes[0] = 0  # replace background's "cluster size" with zeros
+        p_csfwe_vals = null_to_p(cluster_sizes, csfwe_h0[i_regressor, :], "upper")
+        p_csfwe_map = p_csfwe_vals[np.reshape(idx, labeled_arr3d.shape)]
+        csfwe_pvals[i_regressor, :] = np.squeeze(
+            masker.transform(
+                nib.Nifti1Image(
+                    p_csfwe_map,
+                    masker.mask_img_.affine,
+                    masker.mask_img_.header,
+                )
+            )
+        )
 
     # put back sign on scores if it was removed in the case of a two-sided test
     # (useful to distinguish between positive and negative effects)
     if two_sided_test:
         scores_original_data = scores_original_data * sign_scores_original_data
 
-    return - np.log10(pvals), scores_original_data.T, h0_fmax[0]
+    return (
+        -np.log10(vfwe_pvals),
+        -np.log10(csfwe_pvals),
+        -np.log10(cmfwe_pvals),
+        scores_original_data.T,
+        vfwe_h0[0],
+        csfwe_h0[0],
+        cmfwe_h0[0],
+    )
