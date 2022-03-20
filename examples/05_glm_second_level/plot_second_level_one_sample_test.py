@@ -44,7 +44,7 @@ data = fetch_localizer_contrasts(
 from nilearn import plotting
 import matplotlib.pyplot as plt
 
-subjects = data['ext_vars']
+subjects = data['ext_vars']['participant_id'].tolist()
 fig, axes = plt.subplots(nrows=4, ncols=4)
 for cidx, tmap in enumerate(data['tmaps']):
     plotting.plot_glass_brain(
