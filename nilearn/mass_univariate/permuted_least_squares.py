@@ -10,6 +10,7 @@ import warnings
 import joblib
 import nibabel as nib
 import numpy as np
+from nilearn.masking import apply_mask
 from scipy import linalg, ndimage, stats
 from sklearn.utils import check_random_state
 
@@ -842,13 +843,16 @@ def permuted_ols(
         p_cmfwe_map = p_cmfwe_vals[np.reshape(idx, labeled_arr3d.shape)]
 
         # Convert 3D to image, then to 1D
+        # There is a problem if the masker performs preprocessing,
+        # so we use apply_mask here.
         cmfwe_pvals[i_regressor, :] = np.squeeze(
-            masker.transform(
+            apply_mask(
                 nib.Nifti1Image(
                     p_cmfwe_map,
                     masker.mask_img_.affine,
                     masker.mask_img_.header,
-                )
+                ),
+                masker.mask_img_,
             )
         )
 
@@ -860,13 +864,17 @@ def permuted_ols(
             'upper',
         )
         p_csfwe_map = p_csfwe_vals[np.reshape(idx, labeled_arr3d.shape)]
+
+        # There is a problem if the masker performs preprocessing,
+        # so we use apply_mask here.
         csfwe_pvals[i_regressor, :] = np.squeeze(
-            masker.transform(
+            apply_mask(
                 nib.Nifti1Image(
                     p_csfwe_map,
                     masker.mask_img_.affine,
                     masker.mask_img_.header,
-                )
+                ),
+                masker.mask_img_,
             )
         )
 
