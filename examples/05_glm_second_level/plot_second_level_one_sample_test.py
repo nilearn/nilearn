@@ -158,9 +158,9 @@ IMAGES = [
 ]
 TITLES = [
     "Parametric Test",
-    "Permutation Test (Voxel-Level FWE)",
-    "Permutation Test (Cluster-Size FWE)",
-    "Permutation Test (Cluster-Mass FWE)",
+    "Permutation Test\n(Voxel-Level FWE)",
+    "Permutation Test\n(Cluster-Size FWE)",
+    "Permutation Test\n(Cluster-Mass FWE)",
 ]
 
 fig, axes = plt.subplots(figsize=(8, 8), nrows=2, ncols=2)
@@ -182,7 +182,7 @@ for i_row in range(2):
         ax.set_title(TITLES[img_counter])
         img_counter += 1
 
-fig.suptitle("Group left-right button press\n(negative log10 p-values")
+fig.suptitle("Group left-right button press\n(negative log10 p-values)")
 
 # The neg-log p-values obtained with nonparametric testing are capped at 3
 # since the number of permutations is 1e3.
