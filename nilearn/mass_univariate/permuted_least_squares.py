@@ -386,12 +386,12 @@ def _permuted_ols_on_chunk(
 
     # run the permutations
     t0 = time.time()
-    h0_vfwe_part = np.empty((n_perm_chunk, n_regressors))
-    h0_csfwe_part = np.empty((n_perm_chunk, n_regressors))
-    h0_cmfwe_part = np.empty((n_perm_chunk, n_regressors))
+    h0_vfwe_part = np.empty((n_regressors, n_perm_chunk))
+    h0_csfwe_part = np.empty((n_regressors, n_perm_chunk))
+    h0_cmfwe_part = np.empty((n_regressors, n_perm_chunk))
     vfwe_scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
 
-    for i in range(n_perm_chunk):
+    for i_perm in range(n_perm_chunk):
         if intercept_test:
             # sign swap (random multiplication by 1 or -1)
             target_vars = (
@@ -417,14 +417,14 @@ def _permuted_ols_on_chunk(
         if two_sided_test:
             perm_scores = np.fabs(perm_scores)
 
-        h0_vfwe_part[i] = np.nanmax(perm_scores, axis=0)
+        h0_vfwe_part[:, i_perm] = np.nanmax(perm_scores, axis=0)
 
         # TODO: Eliminate need for transpose
         arr4d = masker.inverse_transform(perm_scores.T).get_fdata()
         conn = ndimage.generate_binary_structure(3, 1)
         (
-            h0_csfwe_part[i, :],
-            h0_cmfwe_part[i, :],
+            h0_csfwe_part[:, i_perm],
+            h0_cmfwe_part[:, i_perm],
         ) = _calculate_cluster_measures(
             arr4d,
             cdt,
@@ -439,32 +439,33 @@ def _permuted_ols_on_chunk(
         #  permutation computation)
         # NOTE: This is not done for the cluster-level methods.
         vfwe_scores_as_ranks_part += (
-            h0_vfwe_part[i].reshape((-1, 1)) < scores_original_data.T
+            h0_vfwe_part[:, i_perm].reshape((-1, 1)) < scores_original_data.T
         )
 
         if verbose > 0:
             step = 11 - min(verbose, 10)
-            if i % step == 0:
+            if i_perm % step == 0:
                 # If there is only one job, progress information is fixed
                 if n_perm == n_perm_chunk:
                     crlf = "\r"
                 else:
                     crlf = "\n"
 
-                percent = float(i) / n_perm_chunk
+                percent = float(i_perm) / n_perm_chunk
                 percent = round(percent * 100, 2)
                 dt = time.time() - t0
                 remaining = (100. - percent) / max(0.01, percent) * dt
                 sys.stderr.write(
-                    "Job #%d, processed %d/%d permutations "
-                    "(%0.2f%%, %i seconds remaining)%s"
-                    % (thread_id, i, n_perm_chunk, percent, remaining, crlf))
+                    f"Job #{thread_id}, processed {i_perm}/{n_perm_chunk} "
+                    f"permutations ({percent:0.2f}%, {remaining} seconds "
+                    f"remaining){crlf}"
+                )
 
     return (
         vfwe_scores_as_ranks_part,
-        h0_vfwe_part.T,
-        h0_csfwe_part.T,
-        h0_cmfwe_part.T,
+        h0_vfwe_part,
+        h0_csfwe_part,
+        h0_cmfwe_part,
     )
 
 
@@ -538,7 +539,9 @@ def permuted_ols(
     n_perm : :obj:`int`, optional
         Number of permutations to perform.
         Permutations are costly but the more are performed, the more precision
-        one gets in the p-values estimation. Default=10000.
+        one gets in the p-values estimation.
+        If ``n_perm`` is set to 0, then no p-values will be estimated.
+        Default=10000.
 
     two_sided_test : :obj:`bool`, optional
         If True, performs an unsigned t-test. Both positive and negative
@@ -565,6 +568,7 @@ def permuted_ols(
         Negative log10 p-values associated with the significance test of the
         ``n_regressors`` explanatory variates against the ``n_descriptors``
         target variates. Family-wise corrected p-values.
+        This will be an empty array of ``n_perms`` is 0.
 
     score_orig_data : numpy.ndarray, shape=(n_regressors, n_descriptors)
         T-statistics associated with the significance test of the
@@ -695,6 +699,7 @@ def permuted_ols(
 
     # step 3: original regression (= regression on residuals + adjust t-score)
     # compute t score map of each tested var for original data
+    # scores_original_data is in samples-by-regressors shape
     scores_original_data = _t_score_with_covars_and_normalized_design(
         testedvars_resid_covars,
         targetvars_resid_covars.T,
@@ -728,8 +733,7 @@ def permuted_ols(
 
     else:  # 0 or negative number of permutations => original data scores only
         if two_sided_test:
-            scores_original_data = (scores_original_data
-                                    * sign_scores_original_data)
+            scores_original_data *= sign_scores_original_data
 
         return np.asarray([]), scores_original_data.T, np.asarray([])
 
