@@ -581,7 +581,7 @@ def permuted_ols(
         The ranks of the scores into the h0 distribution correspond to the
         p-values.
 
-    h0_fmax : array-like, shape=(n_regressors, n_perm)
+    h0_fmax : array-like, shape=(n_perm,)
         Distribution of the (max) t-statistic under the null hypothesis
         (obtained from the permutations). Array is sorted.
 
