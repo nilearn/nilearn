@@ -3,14 +3,14 @@ Massively Univariate Linear Model estimated with OLS and permutation test.
 """
 # Author: Benoit Da Mota, <benoit.da_mota@inria.fr>, sept. 2011
 #         Virgile Fritsch, <virgile.fritsch@inria.fr>, jan. 2014
-import warnings
-
 import sys
 import time
+import warnings
+
 import joblib
 import nibabel as nib
 import numpy as np
-from scipy import linalg, ndimage
+from scipy import linalg, ndimage, stats
 from sklearn.utils import check_random_state
 
 
@@ -299,9 +299,9 @@ def _permuted_ols_on_chunk(
     tested_vars,
     target_vars,
     thread_id,
+    threshold,
     confounding_vars=None,
     masker=None,
-    cdt=1.,
     n_perm=10000,
     n_perm_chunk=10000,
     intercept_test=True,
@@ -327,12 +327,14 @@ def _permuted_ols_on_chunk(
     thread_id : int
         process id, used for display.
 
+    threshold : :obj:`float`
+        Cluster-forming threshold in t-scale.
+        This is only used for cluster-level inference.
+
     confounding_vars : array-like, shape=(n_samples, n_covars), optional
         Clinical data (covariates).
 
     masker
-
-    cdt
 
     n_perm : int, optional
         Total number of permutations to perform, only used for
@@ -427,7 +429,7 @@ def _permuted_ols_on_chunk(
             h0_cmfwe_part[:, i_perm],
         ) = _calculate_cluster_measures(
             arr4d,
-            cdt,
+            threshold,
             conn,
             two_sided_test=two_sided_test,
         )
@@ -475,7 +477,7 @@ def permuted_ols(
     confounding_vars=None,
     model_intercept=True,
     masker=None,
-    cdt=1.,
+    threshold=0.001,
     n_perm=10000,
     two_sided_test=True,
     random_state=None,
@@ -532,9 +534,10 @@ def permuted_ols(
 
     masker
 
-    cdt : :obj:`float`, optional
-        Cluster-defining threshold, for cluster-level FWE correction.
-        The threshold should be a minimum t-statistic.
+    threshold : :obj:`float`, optional
+        Cluster-forming threshold in p-scale.
+        This is only used for cluster-level inference.
+        Default=0.001.
 
     n_perm : :obj:`int`, optional
         Number of permutations to perform.
@@ -681,10 +684,13 @@ def permuted_ols(
         testedvars_resid_covars = _normalize_matrix_on_axis(
             testedvars_resid_covars, axis=1).T.copy()
 
+        n_covars = confounding_vars.shape[1]
+
     else:
         targetvars_resid_covars = _normalize_matrix_on_axis(target_vars).T
         testedvars_resid_covars = _normalize_matrix_on_axis(tested_vars).copy()
         covars_orthonormalized = None
+        n_covars = 0
 
     # check arrays contiguousity (for the sake of code efficiency)
     if not targetvars_resid_covars.flags['C_CONTIGUOUS']:
@@ -705,6 +711,11 @@ def permuted_ols(
         targetvars_resid_covars.T,
         covars_orthonormalized,
     )
+
+    # determine t-statistic threshold
+    # NOTE: This needs to be adjusted for two-sided tests
+    dof = n_samples - (n_regressors + n_covars)
+    threshold_t = stats.t.isf(threshold, df=dof)
 
     if two_sided_test:
         # TODO: Retain original signs in permutations, to measure cluster
@@ -747,7 +758,7 @@ def permuted_ols(
             thread_id + 1,
             covars_orthonormalized,
             masker=masker,
-            cdt=cdt,
+            threshold=threshold_t,
             n_perm=n_perm,
             n_perm_chunk=n_perm_chunk,
             intercept_test=intercept_test,
@@ -791,7 +802,7 @@ def permuted_ols(
 
         # Label the clusters
         labeled_arr3d, _ = ndimage.measurements.label(
-            scores_original_data_3d > cdt,
+            scores_original_data_3d > threshold_t,
             conn,
         )
 
@@ -799,10 +810,12 @@ def permuted_ols(
             # Label positive and negative clusters separately
             n_positive_clusters = np.max(labeled_arr3d)
             temp_labeled_arr3d, _ = ndimage.measurements.label(
-                scores_original_data_3d < cdt,
+                scores_original_data_3d < -threshold_t,
                 conn,
             )
-            temp_labeled_arr3d[temp_labeled_arr3d > cdt] += n_positive_clusters
+            temp_labeled_arr3d[
+                temp_labeled_arr3d > threshold_t
+            ] += n_positive_clusters
             labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
             del temp_labeled_arr3d
 
@@ -817,7 +830,7 @@ def permuted_ols(
         cluster_masses = np.zeros(cluster_labels.shape)
         for j_val in cluster_labels[1:]:  # skip background
             cluster_mass = np.sum(
-                scores_original_data_3d[labeled_arr3d == j_val] - cdt
+                scores_original_data_3d[labeled_arr3d == j_val] - threshold_t
             )
             cluster_masses[j_val] = cluster_mass
 
