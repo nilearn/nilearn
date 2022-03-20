@@ -2,8 +2,8 @@
 Second-level fMRI model: one sample test
 ========================================
 
-Full step-by-step example of fitting a :term:`GLM` to perform a second-level analysis
-(one-sample test) and visualizing the results.
+Full step-by-step example of fitting a :term:`GLM` to perform a second-level
+analysis (one-sample test) and visualizing the results.
 
 More specifically:
 
@@ -23,9 +23,10 @@ hemisphere, negative in the left hemisphere).
 # --------------
 # We download a list of left vs right button press :term:`contrasts<contrast>`
 # from a localizer dataset. Note that we fetch individual t-maps that represent
-# the :term:`Bold<BOLD>` activity estimate divided by the uncertainty about this
-# estimate.
+# the :term:`BOLD` activity estimate divided by the uncertainty about
+# this estimate.
 from nilearn.datasets import fetch_localizer_contrasts
+
 n_subjects = 16
 data = fetch_localizer_contrasts(
     ["left vs right button press"], n_subjects,
@@ -40,6 +41,7 @@ data = fetch_localizer_contrasts(
 # subjects.
 from nilearn import plotting
 import matplotlib.pyplot as plt
+
 subjects = [subject_data[0] for subject_data in data['ext_vars']]
 fig, axes = plt.subplots(nrows=4, ncols=4)
 for cidx, tmap in enumerate(data['tmaps']):
@@ -56,6 +58,7 @@ plt.show()
 # We define the input maps and the design matrix for the second level model
 # and fit it.
 import pandas as pd
+
 second_level_input = data['cmaps']
 design_matrix = pd.DataFrame([1] * len(second_level_input),
                              columns=['intercept'])
@@ -63,18 +66,20 @@ design_matrix = pd.DataFrame([1] * len(second_level_input),
 ############################################################################
 # Model specification and fit.
 from nilearn.glm.second_level import SecondLevelModel
+
 second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
 second_level_model = second_level_model.fit(second_level_input,
                                             design_matrix=design_matrix)
 
 ##########################################################################
-# To estimate the :term:`contrast` is very simple. We can just provide the column
-# name of the design matrix.
+# To estimate the :term:`contrast` is very simple. We can just provide the
+# column name of the design matrix.
 z_map = second_level_model.compute_contrast(output_type='z_score')
 
 ###########################################################################
 # We threshold the second level contrast at uncorrected p < 0.001 and plot it.
 from scipy.stats import norm
+
 p_val = 0.001
 p001_unc = norm.isf(p_val)
 display = plotting.plot_glass_brain(
@@ -117,21 +122,63 @@ plotting.show()
 ###########################################################################
 # Now, we compute the (corrected) p-values with a permutation test.
 from nilearn.glm.second_level import non_parametric_inference
-neg_log_pvals_permuted_ols_unmasked = \
-    non_parametric_inference(second_level_input,
-                             design_matrix=design_matrix,
-                             model_intercept=True, n_perm=1000,
-                             two_sided_test=False,
-                             smoothing_fwhm=8.0, n_jobs=1)
+
+(
+    neg_log10_vfwe_pvals_permuted_ols_unmasked,
+    neg_log10_csfwe_pvals_permuted_ols_unmasked,
+    neg_log10_cmfwe_pvals_permuted_ols_unmasked,
+) = non_parametric_inference(
+    second_level_input,
+    design_matrix=design_matrix,
+    model_intercept=True,
+    n_perm=1000,
+    two_sided_test=False,
+    smoothing_fwhm=8.0,
+    n_jobs=1,
+)
 
 ###########################################################################
 # Let us plot the (corrected) negative log p-values for the nonparametric test.
 title = ('Group left-right button press: \n'
-         'permutation test (FWER < 10%)')
+         'permutation test (Voxel-level FWER < 10%)')
 display = plotting.plot_glass_brain(
-    neg_log_pvals_permuted_ols_unmasked, colorbar=True, vmax=3,
-    display_mode='z', plot_abs=False, cut_coords=cut_coords,
-    threshold=threshold, title=title)
+    neg_log10_vfwe_pvals_permuted_ols_unmasked,
+    colorbar=True,
+    vmax=3,
+    display_mode='z',
+    plot_abs=False,
+    cut_coords=cut_coords,
+    threshold=threshold,
+    title=title,
+)
+plotting.show()
+
+title = ('Group left-right button press: \n'
+         'permutation test (Cluster-level FWER < 10%)')
+display = plotting.plot_glass_brain(
+    neg_log10_csfwe_pvals_permuted_ols_unmasked,
+    colorbar=True,
+    vmax=3,
+    display_mode='z',
+    plot_abs=False,
+    cut_coords=cut_coords,
+    threshold=threshold,
+    title=title,
+)
+plotting.show()
+
+title = ('Group left-right button press: \n'
+         'permutation test (Cluster-level FWER < 10%)')
+display = plotting.plot_glass_brain(
+    neg_log10_cmfwe_pvals_permuted_ols_unmasked,
+    colorbar=True,
+    vmax=3,
+    display_mode='z',
+    plot_abs=False,
+    cut_coords=cut_coords,
+    threshold=threshold,
+    title=title,
+)
 plotting.show()
 
 # The neg-log p-values obtained with nonparametric testing are capped at 3
