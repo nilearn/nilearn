@@ -623,13 +623,22 @@ class SecondLevelModel(BaseGLM):
 
 
 @fill_doc
-def non_parametric_inference(second_level_input, confounds=None,
-                             design_matrix=None, second_level_contrast=None,
-                             first_level_contrast=None,
-                             mask=None, smoothing_fwhm=None,
-                             model_intercept=True, n_perm=10000,
-                             two_sided_test=False, random_state=None,
-                             n_jobs=1, verbose=0):
+def non_parametric_inference(
+    second_level_input,
+    confounds=None,
+    design_matrix=None,
+    second_level_contrast=None,
+    first_level_contrast=None,
+    mask=None,
+    smoothing_fwhm=None,
+    model_intercept=True,
+    n_perm=10000,
+    two_sided_test=False,
+    random_state=None,
+    n_jobs=1,
+    verbose=0,
+    threshold=0.001,
+):
     """Generate p-values corresponding to the contrasts provided
     based on permutation testing. This function reuses the 'permuted_ols'
     function Nilearn.
@@ -716,6 +725,11 @@ def non_parametric_inference(second_level_input, confounds=None,
     verbose : int, optional
         Verbosity level (0 means no message). Default=0.
 
+    threshold : float, optional
+        Cluster-forming threshold in p-scale.
+        This is only used for cluster-level inference.
+        Default=0.001.
+
     Returns
     -------
     neg_log_corrected_pvals_img : Nifti1Image
@@ -730,9 +744,8 @@ def non_parametric_inference(second_level_input, confounds=None,
 
     if isinstance(second_level_input, pd.DataFrame):
         second_level_input = _sort_input_dataframe(second_level_input)
-    sample_map, _ = _process_second_level_input(
-        second_level_input
-    )
+    sample_map, _ = _process_second_level_input(second_level_input)
+
     # Report progress
     t0 = time.time()
     if verbose > 0:
@@ -744,12 +757,14 @@ def non_parametric_inference(second_level_input, confounds=None,
             mask_img=mask, smoothing_fwhm=smoothing_fwhm,
             memory=Memory(None), verbose=max(0, verbose - 1),
             memory_level=1)
+
     else:
         masker = clone(mask)
         if smoothing_fwhm is not None:
             if getattr(masker, 'smoothing_fwhm') is not None:
                 warn('Parameter smoothing_fwhm of the masker overridden')
                 setattr(masker, 'smoothing_fwhm', smoothing_fwhm)
+
     masker.fit(sample_map)
 
     # Report progress
@@ -759,6 +774,7 @@ def non_parametric_inference(second_level_input, confounds=None,
 
     # Check and obtain the contrast
     contrast = _get_contrast(second_level_contrast, design_matrix)
+
     # Get effect_maps
     effect_maps = _infer_effect_maps(second_level_input, first_level_contrast)
 
@@ -773,12 +789,39 @@ def non_parametric_inference(second_level_input, confounds=None,
     target_vars = masker.transform(effect_maps)
 
     # Perform massively univariate analysis with permuted OLS
-    neg_log_pvals_permuted_ols, _, _ = permuted_ols(
-        tested_var, target_vars, model_intercept=model_intercept,
-        n_perm=n_perm, two_sided_test=two_sided_test,
-        random_state=random_state, n_jobs=n_jobs,
-        verbose=max(0, verbose - 1))
-    neg_log_corrected_pvals_img = masker.inverse_transform(
-        np.ravel(neg_log_pvals_permuted_ols))
+    (
+        neg_log10_vfwe_pvals,
+        neg_log10_csfwe_pvals,
+        neg_log10_cmfwe_pvals,
+        _,
+        _,
+        _,
+        _,
+    ) = permuted_ols(
+        tested_var,
+        target_vars,
+        model_intercept=model_intercept,
+        n_perm=n_perm,
+        two_sided_test=two_sided_test,
+        random_state=random_state,
+        n_jobs=n_jobs,
+        verbose=max(0, verbose - 1),
+        masker=masker,
+        threshold=threshold,
+    )
 
-    return neg_log_corrected_pvals_img
+    neg_log10_vfwe_pvals_img = masker.inverse_transform(
+        np.ravel(neg_log10_vfwe_pvals),
+    )
+    neg_log10_csfwe_pvals_img = masker.inverse_transform(
+        np.ravel(neg_log10_csfwe_pvals),
+    )
+    neg_log10_cmfwe_pvals_img = masker.inverse_transform(
+        np.ravel(neg_log10_cmfwe_pvals),
+    )
+
+    return (
+        neg_log10_vfwe_pvals_img,
+        neg_log10_csfwe_pvals_img,
+        neg_log10_cmfwe_pvals_img,
+    )
