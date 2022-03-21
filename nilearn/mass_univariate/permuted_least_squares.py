@@ -756,9 +756,11 @@ def permuted_ols(
     )
 
     # determine t-statistic threshold
-    # NOTE: This needs to be adjusted for two-sided tests
     dof = n_samples - (n_regressors + n_covars)
-    threshold_t = stats.t.isf(threshold, df=dof)
+    if two_sided_test:
+        threshold_t = stats.t.isf(threshold / 2, df=dof)
+    else:
+        threshold_t = stats.t.isf(threshold, df=dof)
 
     if two_sided_test:
         # TODO: Retain original signs in permutations, to measure cluster
