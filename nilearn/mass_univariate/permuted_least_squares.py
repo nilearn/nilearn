@@ -493,20 +493,21 @@ def permuted_ols(
     Confounding variates may be included in the model.
     Permutation testing is used to assess the significance of the relationship
     between the tested variates and the target variates [1]_, [2]_.
-    A max-type procedure is used to obtain family-wise corrected p-values.
+    A max-type procedure is used to obtain family-wise corrected p-values
+    based on t-statistics (voxel-level FWE), cluster sizes, and cluster masses.
 
-    The specific permutation scheme implemented here is the one of
-    [3]_. Its has been demonstrated in [1]_ that this
-    scheme conveys more sensitivity than alternative schemes. This holds
-    for neuroimaging applications, as discussed in details in [2]_.
+    The specific permutation scheme implemented here is the one of [3]_.
+    It's has been demonstrated in [1]_ that this scheme conveys more
+    sensitivity than alternative schemes.
+    This holds for neuroimaging applications, as discussed in details in [2]_.
 
-    Permutations are performed on parallel computing units. Each of them
-    performs a fraction of permutations on the whole dataset. Thus, the max
-    t-score amongst data descriptors can be computed directly, which avoids
-    storing all the computed t-scores.
+    Permutations are performed on parallel computing units.
+    Each of them performs a fraction of permutations on the whole dataset.
+    Thus, the max t-score amongst data descriptors can be computed directly,
+    which avoids storing all the computed t-scores.
 
-    The variates should be given C-contiguous. ``target_vars`` are
-    fortran-ordered automatically to speed-up computations.
+    The variates should be given C-contiguous.
+    ``target_vars`` are fortran-ordered automatically to speed-up computations.
 
     Parameters
     ----------
@@ -533,12 +534,18 @@ def permuted_ols(
         unless the tested variate is already the intercept.
         Default=True.
 
-    masker
+    masker : NiftiMasker or MultiNiftiMasker object, optional
+        A mask to be used on the data.
+        This is only used for cluster-level inference.
+
+        .. versionadded:: 0.9.1
 
     threshold : :obj:`float`, optional
         Cluster-forming threshold in p-scale.
         This is only used for cluster-level inference.
         Default=0.001.
+
+        .. versionadded:: 0.9.1
 
     n_perm : :obj:`int`, optional
         Number of permutations to perform.
@@ -568,11 +575,30 @@ def permuted_ols(
 
     Returns
     -------
-    neg_log10_pvals : array-like, shape=(n_regressors, n_descriptors)
+    neg_log10_vfwe_pvals : array-like, shape=(n_regressors, n_descriptors)
         Negative log10 p-values associated with the significance test of the
         ``n_regressors`` explanatory variates against the ``n_descriptors``
-        target variates. Family-wise corrected p-values.
-        This will be an empty array of ``n_perms`` is 0.
+        target variates.
+        Voxel-level family-wise corrected p-values.
+        This will be an empty array if ``n_perms`` is 0.
+
+    neg_log10_csfwe_pvals : array-like, shape=(n_regressors, n_descriptors)
+        Negative log10 p-values associated with the significance test of the
+        ``n_regressors`` explanatory variates against the ``n_descriptors``
+        target variates.
+        Cluster size-based family-wise corrected p-values.
+        This will be an empty array if ``n_perms`` is 0.
+
+        .. versionadded:: 0.9.1
+
+    neg_log10_cmfwe_pvals : array-like, shape=(n_regressors, n_descriptors)
+        Negative log10 p-values associated with the significance test of the
+        ``n_regressors`` explanatory variates against the ``n_descriptors``
+        target variates.
+        Cluster mass-based family-wise corrected p-values.
+        This will be an empty array if ``n_perms`` is 0.
+
+        .. versionadded:: 0.9.1
 
     score_orig_data : numpy.ndarray, shape=(n_regressors, n_descriptors)
         T-statistics associated with the significance test of the
@@ -581,9 +607,21 @@ def permuted_ols(
         The ranks of the scores into the h0 distribution correspond to the
         p-values.
 
-    h0_fmax : array-like, shape=(n_perm,)
+    vfwe_h0 : array-like, shape=(n_perm,)
         Distribution of the (max) t-statistic under the null hypothesis
         (obtained from the permutations). Array is sorted.
+
+    csfwe_h0 : array-like, shape=(n_perm,)
+        Distribution of the (max) cluster size under the null hypothesis
+        (obtained from the permutations). Array is sorted.
+
+        .. versionadded:: 0.9.1
+
+    cmfwe_h0 : array-like, shape=(n_perm,)
+        Distribution of the (max) cluster mass under the null hypothesis
+        (obtained from the permutations). Array is sorted.
+
+        .. versionadded:: 0.9.1
 
     References
     ----------

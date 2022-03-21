@@ -640,13 +640,16 @@ def non_parametric_inference(
     threshold=0.001,
 ):
     """Generate p-values corresponding to the contrasts provided
-    based on permutation testing. This function reuses the 'permuted_ols'
-    function Nilearn.
+    based on permutation testing.
+
+    This function is a light wrapper around
+    :func:`~nilearn.mass_univariate.permuted_ols`, with additional steps to
+    ensure compatibility with the :mod:`~nilearn.glm.second_level` module.
 
     Parameters
     ----------
-    second_level_input : pandas DataFrame or list of Niimg-like objects.
-
+    second_level_input : :obj:`pandas.DataFrame` or :obj:`list` of Niimg-like \
+            objects
         If a pandas DataFrame, then they have to contain subject_label,
         map_name and effects_map_path. It can contain multiple maps that
         would be selected during contrast estimation with the argument
@@ -659,7 +662,7 @@ def non_parametric_inference(
         If list of Niimg-like objects then this is taken literally as Y
         for the model fit and design_matrix must be provided.
 
-    confounds : pandas DataFrame, optional
+    confounds : :obj:`pandas.DataFrame`, optional
         Must contain a subject_label column. All other columns are
         considered as confounds and included in the model. If
         design_matrix is provided then this argument is ignored.
@@ -667,74 +670,89 @@ def non_parametric_inference(
         names as in the given DataFrame for confounds. At least two columns
         are expected, "subject_label" and at least one confound.
 
-    design_matrix : pandas DataFrame, optional
+    design_matrix : :obj:`pandas.DataFrame`, optional
         Design matrix to fit the GLM. The number of rows
         in the design matrix must agree with the number of maps derived
         from second_level_input.
         Ensure that the order of maps given by a second_level_input
         list of Niimgs matches the order of the rows in the design matrix.
 
-    second_level_contrast : str or array of shape (n_col), optional
+    second_level_contrast : :obj:`str` or array of shape (n_col), optional
         Where ``n_col`` is the number of columns of the design matrix.
         The default (None) is accepted if the design matrix has a single
         column, in which case the only possible contrast array((1)) is
         applied; when the design matrix has multiple columns, an error is
         raised.
 
-    first_level_contrast : str, optional
+    first_level_contrast : :obj:`str`, optional
         In case a pandas DataFrame was provided as second_level_input this
         is the map name to extract from the pandas dataframe map_name column.
         It has to be a 't' contrast.
 
         .. versionadded:: 0.9.0
 
-    mask : Niimg-like, NiftiMasker or MultiNiftiMasker object, optional
+    mask : Niimg-like, :obj:`~nilearn.maskers.NiftiMasker` or \
+            :obj:`~nilearn.maskers.MultiNiftiMasker` object, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
         it will be computed automatically by a MultiNiftiMasker with default
         parameters. Automatic mask computation assumes first level imgs have
         already been masked.
     %(smoothing_fwhm)s
-    model_intercept : bool, optional
-      If True, a constant column is added to the confounding variates
-      unless the tested variate is already the intercept.
-      Default=True.
+    model_intercept : :obj:`bool`, optional
+        If True, a constant column is added to the confounding variates
+        unless the tested variate is already the intercept.
+        Default=True.
 
-    n_perm : int, optional
-      Number of permutations to perform.
-      Permutations are costly but the more are performed, the more precision
-      one gets in the p-values estimation. Default=10000.
+    n_perm : :obj:`int`, optional
+        Number of permutations to perform.
+        Permutations are costly but the more are performed, the more precision
+        one gets in the p-values estimation. Default=10000.
 
-    two_sided_test : boolean, optional
-      If True, performs an unsigned t-test. Both positive and negative
-      effects are considered; the null hypothesis is that the effect is zero.
-      If False, only positive effects are considered as relevant. The null
-      hypothesis is that the effect is zero or negative.
-      Default=False.
+    two_sided_test : :obj:`bool`, optional
+        If True, performs an unsigned t-test. Both positive and negative
+        effects are considered; the null hypothesis is that the effect is zero.
+        If False, only positive effects are considered as relevant. The null
+        hypothesis is that the effect is zero or negative.
+        Default=False.
 
-    random_state : int or None, optional
-      Seed for random number generator, to have the same permutations
-      in each computing units.
+    random_state : :obj:`int` or None, optional
+        Seed for random number generator, to have the same permutations
+        in each computing units.
 
-    n_jobs : int, optional
-      Number of parallel workers.
-      If -1 is provided, all CPUs are used.
-      A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
-      ones will be used. Default=1.
+    n_jobs : :obj:`int`, optional
+        Number of parallel workers.
+        If -1 is provided, all CPUs are used.
+        A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
+        ones will be used. Default=1.
 
-    verbose : int, optional
+    verbose : :obj:`int`, optional
         Verbosity level (0 means no message). Default=0.
 
-    threshold : float, optional
+    threshold : :obj:`float`, optional
         Cluster-forming threshold in p-scale.
         This is only used for cluster-level inference.
         Default=0.001.
 
+        .. versionadded:: 0.9.1
+
     Returns
     -------
-    neg_log_corrected_pvals_img : Nifti1Image
+    neg_log10_vfwe_pvals_img : Nifti1Image
         The image which contains negative logarithm of the
-        corrected p-values.
+        voxel-level FWER-corrected p-values.
+
+    neg_log10_csfwe_pvals_img : Nifti1Image
+        The image which contains negative logarithm of the
+        cluster size-based FWER-corrected p-values.
+
+        .. versionadded:: 0.9.1
+
+    neg_log10_cmfwe_pvals_img : Nifti1Image
+        The image which contains negative logarithm of the
+        cluster mass-based FWER-corrected p-values.
+
+        .. versionadded:: 0.9.1
 
     """
     _check_second_level_input(second_level_input, design_matrix,
