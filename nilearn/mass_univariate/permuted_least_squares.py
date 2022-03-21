@@ -688,7 +688,7 @@ def permuted_ols(
         else:
             confounding_vars = np.ones((n_samples, 1))
 
-    ### OLS regression on original data
+    # OLS regression on original data
     if confounding_vars is not None:
         # step 1: extract effect of covars from target vars
         covars_orthonormalized = _orthonormalize_matrix(confounding_vars)
@@ -705,23 +705,27 @@ def permuted_ols(
             warnings.warn('Target variates not C_CONTIGUOUS.')
             targetvars_normalized = np.ascontiguousarray(targetvars_normalized)
 
-        beta_targetvars_covars = np.dot(targetvars_normalized,
-                                        covars_orthonormalized)
+        beta_targetvars_covars = np.dot(
+            targetvars_normalized, covars_orthonormalized
+        )
         targetvars_resid_covars = targetvars_normalized - np.dot(
             beta_targetvars_covars, covars_orthonormalized.T)
         targetvars_resid_covars = _normalize_matrix_on_axis(
-            targetvars_resid_covars, axis=1)
+            targetvars_resid_covars, axis=1
+        )
 
         # step 2: extract effect of covars from tested vars
         testedvars_normalized = _normalize_matrix_on_axis(
             tested_vars.T, axis=1
         )
-        beta_testedvars_covars = np.dot(testedvars_normalized,
-                                        covars_orthonormalized)
+        beta_testedvars_covars = np.dot(
+            testedvars_normalized, covars_orthonormalized
+        )
         testedvars_resid_covars = testedvars_normalized - np.dot(
             beta_testedvars_covars, covars_orthonormalized.T)
         testedvars_resid_covars = _normalize_matrix_on_axis(
-            testedvars_resid_covars, axis=1).T.copy()
+            testedvars_resid_covars, axis=1
+        ).T.copy()
 
         n_covars = confounding_vars.shape[1]
 
@@ -765,7 +769,7 @@ def permuted_ols(
         sign_scores_original_data = np.sign(scores_original_data)
         scores_original_data = np.fabs(scores_original_data)
 
-    ### Permutations
+    # Permutations
     # parallel computing units perform a reduced number of permutations each
     if n_perm > n_jobs:
         n_perm_chunks = np.asarray([n_perm / n_jobs] * n_jobs, dtype=int)
