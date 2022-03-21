@@ -12,6 +12,8 @@ import numpy as np
 from scipy import linalg
 from sklearn.utils import check_random_state
 
+from ._utils import _calculate_tfce
+
 
 def _normalize_matrix_on_axis(m, axis=0):
     """ Normalize a 2D matrix on an axis.
@@ -144,10 +146,22 @@ def _t_score_with_covars_and_normalized_design(tested_vars, target_vars,
     return beta_targetvars_testedvars * np.sqrt((dof - 1.) / rss)
 
 
-def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars, thread_id,
-                           confounding_vars=None, n_perm=10000, n_perm_chunk=10000,
-                           intercept_test=True, two_sided_test=True,
-                           random_state=None, verbose=0):
+def _permuted_ols_on_chunk(
+    scores_original_data,
+    tested_vars,
+    target_vars,
+    thread_id,
+    confounding_vars=None,
+    masker=None,
+    n_perm=10000,
+    n_perm_chunk=10000,
+    intercept_test=True,
+    two_sided_test=True,
+    tfce=False,
+    tfce_original_data=None,
+    random_state=None,
+    verbose=0,
+):
     """Massively univariate group analysis with permuted OLS on a data chunk.
 
     To be used in a parallel computing context.
@@ -188,6 +202,12 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars, threa
       hypothesis is that the effect is zero or negative.
       Default=True
 
+    tfce : :obj:`bool`, optional
+        Whether to perform TFCE-based multiple comparisons correction or not.
+        Calculating TFCE values in each permutation can be time-consuming, so
+        this option is disabled by default.
+        Default=False.
+
     random_state : int or None, optional
       Seed for random number generator, to have the same permutations
       in each computing units.
@@ -215,6 +235,10 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars, threa
     # run the permutations
     t0 = time.time()
     h0_fmax_part = np.empty((n_perm_chunk, n_regressors))
+    if tfce:
+        h0_tfcemax_part = np.empty((n_perm_chunk, n_regressors))
+        tfce_scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
+
     scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
     for i in range(n_perm_chunk):
         if intercept_test:
@@ -240,6 +264,16 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars, threa
         if two_sided_test:
             perm_scores = np.fabs(perm_scores)
         h0_fmax_part[i] = np.nanmax(perm_scores, axis=0)
+
+        if tfce:
+            h0_tfcemax_part[i] = np.nanmax(
+                _calculate_tfce(perm_scores, masker),
+                axis=0,
+            )
+            tfce_scores_as_ranks_part += (
+                h0_tfcemax_part[i].reshape((-1, 1)) < tfce_original_data.T
+            )
+
         # find the rank of the original scores in h0_part
         # (when n_descriptors or n_perm are large, it can be quite long to
         #  find the rank of the original scores into the whole H0 distribution.
@@ -265,12 +299,30 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars, threa
                     "(%0.2f%%, %i seconds remaining)%s"
                     % (thread_id, i, n_perm_chunk, percent, remaining, crlf))
 
-    return scores_as_ranks_part, h0_fmax_part.T
+    if tfce:
+        return (
+            scores_as_ranks_part,
+            h0_fmax_part.T,
+            tfce_scores_as_ranks_part,
+            h0_tfcemax_part.T,
+        )
+    else:
+        return scores_as_ranks_part, h0_fmax_part.T
 
 
-def permuted_ols(tested_vars, target_vars, confounding_vars=None,
-                 model_intercept=True, n_perm=10000, two_sided_test=True,
-                 random_state=None, n_jobs=1, verbose=0):
+def permuted_ols(
+    tested_vars,
+    target_vars,
+    confounding_vars=None,
+    model_intercept=True,
+    masker=None,
+    n_perm=10000,
+    two_sided_test=True,
+    tfce=False,
+    random_state=None,
+    n_jobs=1,
+    verbose=0,
+):
     """Massively univariate group analysis with permuted OLS.
 
     Tested variates are independently fitted to target variates descriptors
@@ -314,6 +366,8 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
       unless the tested variate is already the intercept.
       Default=True
 
+    masker
+
     n_perm : int, optional
       Number of permutations to perform.
       Permutations are costly but the more are performed, the more precision
@@ -324,6 +378,12 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
       effects are considered; the null hypothesis is that the effect is zero.
       If False, only positive effects are considered as relevant. The null
       hypothesis is that the effect is zero or negative. Default=True.
+
+    tfce : :obj:`bool`, optional
+        Whether to perform TFCE-based multiple comparisons correction or not.
+        Calculating TFCE values in each permutation can be time-consuming, so
+        this option is disabled by default.
+        Default=False.
 
     random_state : int or None, optional
       Seed for random number generator, to have the same permutations
@@ -465,6 +525,11 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
         sign_scores_original_data = np.sign(scores_original_data)
         scores_original_data = np.fabs(scores_original_data)
 
+    if tfce:
+        tfce_original_data = _calculate_tfce(scores_original_data, masker)
+    else:
+        tfce_original_data = None
+
     ### Permutations
     # parallel computing units perform a reduced number of permutations each
     if n_perm > n_jobs:
@@ -488,15 +553,41 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     # value represented by np.int32 (to have a large entropy).
     ret = joblib.Parallel(n_jobs=n_jobs, verbose=verbose)(
         joblib.delayed(_permuted_ols_on_chunk)(
-            scores_original_data, testedvars_resid_covars,
-            targetvars_resid_covars.T, thread_id + 1, covars_orthonormalized,
-            n_perm=n_perm, n_perm_chunk=n_perm_chunk,
-            intercept_test=intercept_test, two_sided_test=two_sided_test,
+            scores_original_data,
+            testedvars_resid_covars,
+            targetvars_resid_covars.T,
+            thread_id + 1,
+            covars_orthonormalized,
+            masker=masker,
+            n_perm=n_perm,
+            n_perm_chunk=n_perm_chunk,
+            intercept_test=intercept_test,
+            two_sided_test=two_sided_test,
+            tfce=tfce,
+            tfce_original_data=tfce_original_data,
             random_state=rng.randint(1, np.iinfo(np.int32).max - 1),
-            verbose=verbose)
+            verbose=verbose,
+        )
         for thread_id, n_perm_chunk in enumerate(n_perm_chunks))
+
     # reduce results
-    scores_as_ranks_parts, h0_fmax_parts = zip(*ret)
+    if tfce:
+        (
+            scores_as_ranks_parts,
+            h0_fmax_parts,
+            tfce_scores_as_ranks_parts,
+            h0_tfcemax_parts,
+        ) = zip(*ret)
+        h0_tfcemax_parts = np.hstack(h0_tfcemax_parts)
+        tfce_scores_as_ranks = np.zeros((n_regressors, n_descriptors))
+        for tfce_scores_as_ranks_part in tfce_scores_as_ranks_parts:
+            tfce_scores_as_ranks += tfce_scores_as_ranks_part
+
+        tfce_pvals = (n_perm + 1 - tfce_scores_as_ranks) / float(1 + n_perm)
+
+    else:
+        scores_as_ranks_parts, h0_fmax_parts = zip(*ret)
+
     h0_fmax = np.hstack((h0_fmax_parts))
     scores_as_ranks = np.zeros((n_regressors, n_descriptors))
     for scores_as_ranks_part in scores_as_ranks_parts:
