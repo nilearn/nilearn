@@ -322,8 +322,9 @@ def test_permuted_ols_nocovar(random_state=0):
 
 
 def test_permuted_ols_nocovar_warning(random_state=0):
-    """
-    Ensure that a warning is raised when a given voxel has all zeros.
+    """Ensure that a warning is raised when a given voxel has all zeros.
+
+    This test also checks that an invalid n_jobs value will raise a ValueError.
     """
     rng = check_random_state(random_state)
 
@@ -350,6 +351,17 @@ def test_permuted_ols_nocovar_warning(random_state=0):
             n_perm=100, random_state=random_state)
 
     assert np.array_equal(own_score[1:], own_score2[1:])
+
+    # Ensure that passing an unacceptable n_jobs value will raise a ValueError
+    with pytest.raises(ValueError):
+        permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            n_perm=100,
+            n_jobs=0,  # not allowed
+            random_state=random_state,
+        )
 
 
 def test_permuted_ols_withcovar(random_state=0):
