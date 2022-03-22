@@ -170,16 +170,16 @@ def _normalize_matrix_on_axis(m, axis=0):
     Parameters
     ----------
     m : numpy 2D array,
-      The matrix to normalize.
+        The matrix to normalize.
 
     axis : integer in {0, 1}, optional
-      A valid axis to normalize across.
-      Default=0.
+        A valid axis to normalize across.
+        Default=0.
 
     Returns
     -------
     ret : numpy array, shape = m.shape
-      The normalized matrix
+        The normalized matrix
 
     Examples
     --------
@@ -218,15 +218,15 @@ def _orthonormalize_matrix(m, tol=1.e-12):
     Parameters
     ----------
     m : numpy array,
-      The matrix to orthonormalize.
+        The matrix to orthonormalize.
 
     tol: float, optional
-      Tolerance parameter for nullity. Default=1e-12.
+        Tolerance parameter for nullity. Default=1e-12.
 
     Returns
     -------
     ret : numpy array, shape = m.shape
-      The orthonormalized matrix.
+        The orthonormalized matrix.
 
     Examples
     --------
@@ -263,19 +263,20 @@ def _t_score_with_covars_and_normalized_design(tested_vars, target_vars,
     Parameters
     ----------
     tested_vars : array-like, shape=(n_samples, n_tested_vars)
-      Explanatory variates.
+        Explanatory variates.
 
     target_vars : array-like, shape=(n_samples, n_target_vars)
-      Targets variates. F-ordered is better for efficient computation.
+        Targets variates. F-ordered is better for efficient computation.
 
-    covars_orthonormalized : array-like, shape=(n_samples, n_covars) or None, optional
-      Confounding variates.
+    covars_orthonormalized : array-like, shape=(n_samples, n_covars) or None, \
+            optional
+        Confounding variates.
 
     Returns
     -------
     score : numpy.ndarray, shape=(n_target_vars, n_tested_vars)
-      t-scores associated with the tests of each explanatory variate against
-      each target variate (in the presence of covars).
+        t-scores associated with the tests of each explanatory variate against
+        each target variate (in the presence of covars).
 
     """
     if covars_orthonormalized is None:
@@ -566,7 +567,7 @@ def permuted_ols(
 
     n_jobs : :obj:`int`, optional
         Number of parallel workers.
-        If 0 is provided, all CPUs are used.
+        If -1 is provided, all CPUs are used.
         A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
         ones will be used. Default=1.
 
