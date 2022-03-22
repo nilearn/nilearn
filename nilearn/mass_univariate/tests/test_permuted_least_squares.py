@@ -144,6 +144,7 @@ def test_permuted_ols_check_h0_noeffect_labelswap(random_state=0):
 
     # design parameters
     n_samples = 100
+    n_regressors = 1
 
     # create dummy design with no effect
     target_var = rng.randn(n_samples, 1)
@@ -169,7 +170,8 @@ def test_permuted_ols_check_h0_noeffect_labelswap(random_state=0):
         pval, orig_scores, h0 = permuted_ols(
             tested_var, target_var, model_intercept=False,
             n_perm=n_perm, two_sided_test=False, random_state=i)
-        assert_equal(h0.size, n_perm)
+        assert_equal(h0.shape, (n_regressors, n_perm))
+
         # Kolmogorov-Smirnov test
         kstest_pval = stats.kstest(h0, stats.t(n_samples - 1).cdf)[1]
         all_kstest_pvals.append(kstest_pval)
@@ -395,6 +397,7 @@ def test_permuted_ols_nocovar_multivariate(random_state=0):
     n_samples = 50
     n_descriptors = 10
     n_regressors = 2
+    n_perm = 10
 
     # create design
     target_vars = rng.randn(n_samples, n_descriptors)
@@ -404,10 +407,16 @@ def test_permuted_ols_nocovar_multivariate(random_state=0):
     ref_scores = get_tvalue_with_alternative_library(tested_var, target_vars)
 
     # permuted OLS
-    _, own_scores, _ = permuted_ols(
-        tested_var, target_vars, model_intercept=False,
-        n_perm=0, random_state=random_state)
+    neg_log10_pvals, own_scores, h0_fmax = permuted_ols(
+        tested_var,
+        target_vars,
+        model_intercept=False,
+        n_perm=n_perm,
+        random_state=random_state,
+    )
     assert_array_almost_equal(ref_scores, own_scores, decimal=6)
+    assert neg_log10_pvals.shape == (n_regressors, n_descriptors)
+    assert h0_fmax.shape == (n_regressors, n_perm)
 
     ### Adds intercept (should be equivalent to centering variates)
     # permuted OLS
