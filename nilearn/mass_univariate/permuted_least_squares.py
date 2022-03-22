@@ -351,7 +351,7 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
       The ranks of the scores into the h0 distribution correspond to the
       p-values.
 
-    h0_fmax : array-like, shape=(n_perm, )
+    h0_fmax : array-like, shape=(n_regressors, n_perm)
       Distribution of the (max) t-statistic under the null hypothesis
       (obtained from the permutations). Array is sorted.
 
@@ -509,4 +509,4 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     if two_sided_test:
         scores_original_data = scores_original_data * sign_scores_original_data
 
-    return - np.log10(pvals), scores_original_data.T, h0_fmax[0]
+    return - np.log10(pvals), scores_original_data.T, h0_fmax
