@@ -171,38 +171,46 @@ def test_permuted_ols_check_h0_noeffect_labelswap(random_state=0):
             tested_var, target_var, model_intercept=False,
             n_perm=n_perm, two_sided_test=False, random_state=i)
         assert_equal(h0.shape, (n_regressors, n_perm))
+        h0_intercept = h0[0, :]
 
         # Kolmogorov-Smirnov test
-        kstest_pval = stats.kstest(h0, stats.t(n_samples - 1).cdf)[1]
+        kstest_pval = stats.kstest(h0_intercept, stats.t(n_samples - 1).cdf)[1]
         all_kstest_pvals.append(kstest_pval)
         mse = np.mean(
-            (stats.t(n_samples - 1).cdf(np.sort(h0))
-             - np.linspace(0, 1, h0.size + 1)[1:]) ** 2)
+            (stats.t(n_samples - 1).cdf(np.sort(h0_intercept))
+             - np.linspace(0, 1, h0_intercept.size + 1)[1:]) ** 2)
         all_mse.append(mse)
+
         ### Case no. 2: intercept in the model
         pval, orig_scores, h0 = permuted_ols(
             tested_var, target_var, model_intercept=True,
             n_perm=n_perm, two_sided_test=False, random_state=i)
         assert_array_less(pval, 1.)  # pval should not be significant
+        h0_intercept = h0[0, :]
+
         # Kolmogorov-Smirnov test
-        kstest_pval = stats.kstest(h0, stats.t(n_samples - 2).cdf)[1]
+        kstest_pval = stats.kstest(h0_intercept, stats.t(n_samples - 2).cdf)[1]
         all_kstest_pvals_intercept.append(kstest_pval)
         mse = np.mean(
-            (stats.t(n_samples - 2).cdf(np.sort(h0))
-             - np.linspace(0, 1, h0.size + 1)[1:]) ** 2)
+            (stats.t(n_samples - 2).cdf(np.sort(h0_intercept))
+             - np.linspace(0, 1, h0_intercept.size + 1)[1:]) ** 2)
         all_mse_intercept.append(mse)
+
         ### Case no. 3: intercept in the model, no centering of tested vars
         pval, orig_scores, h0 = permuted_ols(
             tested_var_not_centered, target_var, model_intercept=True,
             n_perm=n_perm, two_sided_test=False, random_state=i)
         assert_array_less(pval, 1.)  # pval should not be significant
+        h0_intercept = h0[0, :]
+
         # Kolmogorov-Smirnov test
-        kstest_pval = stats.kstest(h0, stats.t(n_samples - 2).cdf)[1]
+        kstest_pval = stats.kstest(h0_intercept, stats.t(n_samples - 2).cdf)[1]
         all_kstest_pvals_intercept2.append(kstest_pval)
         mse = np.mean(
-            (stats.t(n_samples - 2).cdf(np.sort(h0))
-             - np.linspace(0, 1, h0.size + 1)[1:]) ** 2)
+            (stats.t(n_samples - 2).cdf(np.sort(h0_intercept))
+             - np.linspace(0, 1, h0_intercept.size + 1)[1:]) ** 2)
         all_mse_intercept2.append(mse)
+
     all_kstest_pvals = np.array(all_kstest_pvals).reshape(
         (len(perm_ranges), -1))
     all_kstest_pvals_intercept = np.array(all_kstest_pvals_intercept).reshape(
@@ -229,10 +237,11 @@ def test_permuted_ols_check_h0_noeffect_signswap(random_state=0):
 
     # design parameters
     n_samples = 100
+    n_regressors = 1
 
     # create dummy design with no effect
     target_var = rng.randn(n_samples, 1)
-    tested_var = np.ones((n_samples, 1))
+    tested_var = np.ones((n_samples, n_regressors))
 
     # permuted OLS
     # We check that h0 is close to the theoretical distribution, which is
@@ -247,14 +256,17 @@ def test_permuted_ols_check_h0_noeffect_signswap(random_state=0):
         pval, orig_scores, h0 = permuted_ols(
             tested_var, target_var, model_intercept=False,
             n_perm=n_perm, two_sided_test=False, random_state=i)
-        assert_equal(h0.size, n_perm)
+        assert h0.shape == (n_regressors, n_perm)
+        h0_intercept = h0[0, :]
+
         # Kolmogorov-Smirnov test
-        kstest_pval = stats.kstest(h0, stats.t(n_samples).cdf)[1]
+        kstest_pval = stats.kstest(h0_intercept, stats.t(n_samples).cdf)[1]
         all_kstest_pvals.append(kstest_pval)
         mse = np.mean(
-            (stats.t(n_samples).cdf(np.sort(h0))
-             - np.linspace(0, 1, h0.size + 1)[1:]) ** 2)
+            (stats.t(n_samples).cdf(np.sort(h0_intercept))
+             - np.linspace(0, 1, h0_intercept.size + 1)[1:]) ** 2)
         all_mse.append(mse)
+
     all_kstest_pvals = np.array(all_kstest_pvals).reshape(
         (len(perm_ranges), -1))
     all_mse = np.array(all_mse).reshape((len(perm_ranges), -1))
