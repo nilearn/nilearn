@@ -352,8 +352,12 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
       p-values.
 
     h0_fmax : array-like, shape=(n_regressors, n_perm)
-      Distribution of the (max) t-statistic under the null hypothesis
-      (obtained from the permutations). Array is sorted.
+        Distribution of the (max) t-statistic under the null hypothesis
+        (obtained from the permutations). Array is sorted.
+
+        .. versionchanged:: 0.9.1
+
+            Return H0 for all regressors, instead of only the first one.
 
     References
     ----------
