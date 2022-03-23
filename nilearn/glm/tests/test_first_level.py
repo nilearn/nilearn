@@ -3,6 +3,7 @@ Test the first level model.
 """
 import os
 import shutil
+import unittest.mock
 
 import numpy as np
 import pandas as pd
@@ -11,6 +12,7 @@ from nibabel import Nifti1Image, load
 from nibabel.tmpdirs import InTemporaryDirectory
 from numpy.testing import (assert_almost_equal, assert_array_almost_equal,
                            assert_array_equal, assert_array_less)
+from sklearn.cluster import KMeans
 
 from nilearn._utils.data_gen import (create_fake_bids_dataset,
                                      generate_fake_fmri_data_and_design,
@@ -386,6 +388,23 @@ def test_glm_AR_estimates():
         _yule_walker(Y_orig, -2)
     with pytest.raises(TypeError, match='at least 1 dim'):
         _yule_walker(np.array(0.), 2)
+
+
+@pytest.mark.parametrize("random_state", [3, np.random.RandomState(42)])
+def test_glm_random_state(random_state):
+    rng = np.random.RandomState(42)
+    n, p, q = 33, 80, 10
+    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
+
+    init = KMeans.__init__
+    with unittest.mock.patch.object(
+        KMeans,
+        "__init__",
+        autospec=True,
+        side_effect=lambda *args, **kwargs: init(*args, **kwargs),
+    ) as spy_kmeans:
+        run_glm(Y, X, 'ar3', random_state=random_state)
+        assert spy_kmeans.call_args.kwargs["random_state"] == random_state
 
 
 def test_scaling():
