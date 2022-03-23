@@ -396,15 +396,15 @@ def test_glm_random_state(random_state):
     n, p, q = 33, 80, 10
     X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
 
-    init = KMeans.__init__
     with unittest.mock.patch.object(
         KMeans,
         "__init__",
         autospec=True,
-        side_effect=lambda *args, **kwargs: init(*args, **kwargs),
+        side_effect=KMeans.__init__,
     ) as spy_kmeans:
         run_glm(Y, X, 'ar3', random_state=random_state)
-        assert spy_kmeans.call_args.kwargs["random_state"] == random_state
+        spy_kmeans.assert_called_once_with(
+            unittest.mock.ANY, n_clusters=unittest.mock.ANY, random_state=random_state)
 
 
 def test_scaling():
