@@ -101,7 +101,7 @@ def _yule_walker(x, order):
     return rho
 
 
-def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
+def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0, random_state=None):
     """ GLM fit for an fMRI data matrix
 
     Parameters
@@ -132,6 +132,9 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
 
     verbose : int, optional
         The verbosity level. Default=0.
+        
+    random_state : int or numpy.random.RandomState, optional
+        Random state seed to sklearn.cluster.KMeans
 
     Returns
     -------
@@ -183,7 +186,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
             labels = np.array([str(val) for val in ar_coef_])
         else:  # AR(N>1) case
             n_clusters = np.min([bins, Y.shape[1]])
-            kmeans = KMeans(n_clusters=n_clusters).fit(ar_coef_)
+            kmeans = KMeans(n_clusters=n_clusters, random_state=random_state).fit(ar_coef_)
             ar_coef_ = kmeans.cluster_centers_[kmeans.labels_]
 
             # Create a set of rounded values for the labels with _ between
