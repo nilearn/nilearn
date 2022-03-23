@@ -13,8 +13,7 @@ from matplotlib.colors import Normalize, LinearSegmentedColormap
 from mpl_toolkits.mplot3d import Axes3D  # noqa
 from nilearn import image
 from nilearn.plotting.cm import cold_hot
-from nilearn.plotting.img_plotting import (_get_colorbar_and_data_ranges,
-                                           _crop_colorbar)
+from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges
 from nilearn.surface import (load_surf_data,
                              load_surf_mesh,
                              vol_to_surf)
@@ -501,19 +500,20 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
             face_colors[kept_indices] = cmap(surf_map_faces[kept_indices])
 
         if colorbar:
-            ticks = _get_ticks_matplotlib(vmin, vmax, cbar_tick_format)
-            our_cmap, norm = _get_cmap_matplotlib(cmap, vmin, vmax, threshold)
-            bounds = np.linspace(vmin, vmax, our_cmap.N)
+            cbar_vmin = cbar_vmin if cbar_vmin is not None else vmin
+            cbar_vmax = cbar_vmax if cbar_vmax is not None else vmax
+            ticks = _get_ticks_matplotlib(cbar_vmin, cbar_vmax, cbar_tick_format)
+            our_cmap, norm = _get_cmap_matplotlib(cmap, cbar_vmin, cbar_vmax, threshold)
+            bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
             # we need to create a proxy mappable
             proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
             proxy_mappable.set_array(surf_map_faces)
             cax, kw = make_axes(axes, location='right', fraction=.15,
                                 shrink=.5, pad=.0, aspect=10.)
-            cbar = figure.colorbar(
+            figure.colorbar(
                 proxy_mappable, cax=cax, ticks=ticks,
                 boundaries=bounds, spacing='proportional',
                 format=cbar_tick_format, orientation='vertical')
-            _crop_colorbar(cbar, cbar_vmin, cbar_vmax)
 
         p3dcollec.set_facecolors(face_colors)
 

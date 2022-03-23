@@ -219,7 +219,8 @@ class BaseSlicer(object):
 
     @fill_doc
     def add_overlay(self, img, threshold=1e-6, colorbar=False,
-                    cbar_tick_format="%.2g", **kwargs):
+                    cbar_tick_format="%.2g", cbar_vmin=None, cbar_vmax=None,
+                    **kwargs):
         """ Plot a 3D map in all the views.
 
         Parameters
@@ -266,7 +267,8 @@ class BaseSlicer(object):
 
         # `ims` can be empty in some corner cases, look at test_img_plotting.test_outlier_cut_coords.
         if colorbar and ims:
-            self._show_colorbar(ims[0].cmap, ims[0].norm, threshold)
+            self._show_colorbar(ims[0].cmap, ims[0].norm,
+                                cbar_vmin, cbar_vmax, threshold)
 
         plt.draw_if_interactive()
 
@@ -406,7 +408,7 @@ class BaseSlicer(object):
         return ims
 
     @fill_doc
-    def _show_colorbar(self, cmap, norm, threshold=None):
+    def _show_colorbar(self, cmap, norm, cbar_vmin=None, cbar_vmax=None, threshold=None):
         """Displays the colorbar.
 
         Parameters
@@ -425,6 +427,9 @@ class BaseSlicer(object):
             offset = threshold
         if offset > norm.vmax:
             offset = norm.vmax
+
+        cbar_vmin = cbar_vmin if cbar_vmin is not None else norm.vmin
+        cbar_vmax = cbar_vmax if cbar_vmax is not None else norm.vmax
 
         # create new  axis for the colorbar
         figure = self.frame_axes.figure
@@ -447,9 +452,9 @@ class BaseSlicer(object):
         # edge case where the data has a single value
         # yields a cryptic matplotlib error message
         # when trying to plot the color bar
-        nb_ticks = 5 if norm.vmin != norm.vmax else 1
-        ticks = np.linspace(norm.vmin, norm.vmax, nb_ticks)
-        bounds = np.linspace(norm.vmin, norm.vmax, our_cmap.N)
+        nb_ticks = 5 if cbar_vmin != cbar_vmax else 1
+        ticks = np.linspace(cbar_vmin, cbar_vmax, nb_ticks)
+        bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
 
         # some colormap hacking
         cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
@@ -457,7 +462,7 @@ class BaseSlicer(object):
         transparent_stop = int(norm(offset, clip=True) * (our_cmap.N - 1))
         for i in range(transparent_start, transparent_stop):
             cmaplist[i] = self._brain_color + (0.,)  # transparent
-        if norm.vmin == norm.vmax:  # len(np.unique(data)) == 1 ?
+        if cbar_vmin == cbar_vmax:  # len(np.unique(data)) == 1 ?
             return
         else:
             our_cmap = LinearSegmentedColormap.from_list(
