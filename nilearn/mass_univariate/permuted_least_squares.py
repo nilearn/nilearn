@@ -401,6 +401,7 @@ def _permuted_ols_on_chunk(
             target_vars = (
                 target_vars * (rng.randint(2, size=(n_samples, 1)) * 2 - 1)
             )
+
         else:
             # shuffle data
             # Regarding computation costs, we choose to shuffle testvars
@@ -418,10 +419,6 @@ def _permuted_ols_on_chunk(
                 tested_vars, target_vars, confounding_vars
             )
         )
-        if two_sided_test:
-            perm_scores = np.fabs(perm_scores)
-
-        h0_vfwe_part[:, i_perm] = np.nanmax(perm_scores, axis=0)
 
         # TODO: Eliminate need for transpose
         arr4d = masker.inverse_transform(perm_scores.T).get_fdata()
@@ -442,27 +439,38 @@ def _permuted_ols_on_chunk(
         #  Here, it is performed in parallel by the workers involved in the
         #  permutation computation)
         # NOTE: This is not done for the cluster-level methods.
-        vfwe_scores_as_ranks_part += (
-            h0_vfwe_part[:, i_perm].reshape((-1, 1)) < scores_original_data.T
-        )
+        if two_sided_test:
+            # Get maximum absolute value for voxel-level FWE
+            h0_vfwe_part[:, i_perm] = np.nanmax(np.fabs(perm_scores), axis=0)
+            vfwe_scores_as_ranks_part += (
+                h0_vfwe_part[:, i_perm].reshape((-1, 1))
+                < np.fabs(scores_original_data).T
+            )
+        else:
+            # Get maximum value for voxel-level FWE
+            h0_vfwe_part[:, i_perm] = np.nanmax(perm_scores, axis=0)
+            vfwe_scores_as_ranks_part += (
+                h0_vfwe_part[:, i_perm].reshape((-1, 1))
+                < scores_original_data.T
+            )
 
         if verbose > 0:
             step = 11 - min(verbose, 10)
             if i_perm % step == 0:
                 # If there is only one job, progress information is fixed
                 if n_perm == n_perm_chunk:
-                    crlf = "\r"
+                    crlf = '\r'
                 else:
-                    crlf = "\n"
+                    crlf = '\n'
 
                 percent = float(i_perm) / n_perm_chunk
                 percent = round(percent * 100, 2)
                 dt = time.time() - t0
                 remaining = (100. - percent) / max(0.01, percent) * dt
                 sys.stderr.write(
-                    f"Job #{thread_id}, processed {i_perm}/{n_perm_chunk} "
-                    f"permutations ({percent:0.2f}%, {remaining} seconds "
-                    f"remaining){crlf}"
+                    f'Job #{thread_id}, processed {i_perm}/{n_perm_chunk} '
+                    f'permutations ({percent:0.2f}%, {remaining} seconds '
+                    f'remaining){crlf}'
                 )
 
     return (
@@ -498,7 +506,7 @@ def permuted_ols(
     based on t-statistics (voxel-level FWE), cluster sizes, and cluster masses.
 
     The specific permutation scheme implemented here is the one of [3]_.
-    It's has been demonstrated in [1]_ that this scheme conveys more
+    It has been demonstrated in [1]_ that this scheme conveys more
     sensitivity than alternative schemes.
     This holds for neuroimaging applications, as discussed in details in [2]_.
 
@@ -763,15 +771,6 @@ def permuted_ols(
     else:
         threshold_t = stats.t.isf(threshold, df=dof)
 
-    if two_sided_test:
-        # TODO: Retain original signs in permutations, to measure cluster
-        # sizes/masses separately for positive and negative clusters.
-
-        # Ensure that all t-statistics are positive for permutation tests,
-        # so that ranks reflect significance
-        sign_scores_original_data = np.sign(scores_original_data)
-        scores_original_data = np.fabs(scores_original_data)
-
     # Permutations
     # parallel computing units perform a reduced number of permutations each
     if n_perm > n_jobs:
@@ -789,9 +788,6 @@ def permuted_ols(
         n_perm_chunks = np.ones(n_perm, dtype=int)
 
     else:  # 0 or negative number of permutations => original data scores only
-        if two_sided_test:
-            scores_original_data *= sign_scores_original_data
-
         return np.asarray([]), scores_original_data.T, np.asarray([])
 
     # actual permutations, seeded from a random integer between 0 and maximum
@@ -876,7 +872,8 @@ def permuted_ols(
         cluster_masses = np.zeros(cluster_labels.shape)
         for j_val in cluster_labels[1:]:  # skip background
             cluster_mass = np.sum(
-                scores_original_data_3d[labeled_arr3d == j_val] - threshold_t
+                np.fabs(scores_original_data_3d[labeled_arr3d == j_val])
+                - threshold_t
             )
             cluster_masses[j_val] = cluster_mass
 
@@ -922,11 +919,6 @@ def permuted_ols(
                 masker.mask_img_,
             )
         )
-
-    # put back sign on scores if it was removed in the case of a two-sided test
-    # (useful to distinguish between positive and negative effects)
-    if two_sided_test:
-        scores_original_data = scores_original_data * sign_scores_original_data
 
     return (
         -np.log10(vfwe_pvals),
