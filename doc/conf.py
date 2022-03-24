@@ -339,6 +339,7 @@ sphinx_gallery_conf = {
     # Ignore the function signature leftover by joblib
     'ignore_pattern': 'func_code\.py',
     'show_memory': not sys.platform.startswith('win'),
+    'remove_config_comments': True,
     'binder': {
         'org': 'nilearn',
         'repo': 'nilearn.github.io',
