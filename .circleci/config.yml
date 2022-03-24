@@ -210,7 +210,8 @@ jobs:
   build_docs:
 
     machine:
-      image: ubuntu-2004:202111-01
+      image: ubuntu-2004:current
+    resource_class: large
 
     steps:
       - restore_cache:
