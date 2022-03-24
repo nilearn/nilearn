@@ -133,7 +133,7 @@ The activation maps from these 3 contrasts is presented below:
      :scale: 60
 
 
-Additional example: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_fiac_analysis.py`
+Additional example: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_two_session_model.py`
 
 
 Extracting predicted time series and residuals
