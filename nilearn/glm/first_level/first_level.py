@@ -582,7 +582,7 @@ class FirstLevelModel(BaseGLM):
                 t_masking = time.time()
                 sys.stderr.write('Starting masker computation \r')
 
-            Y = self.masker_.transform(run_img, sample_mask=sample_mask)  # add sample_mask here
+            Y = self.masker_.transform(run_img, sample_mask=sample_mask)
             del run_img  # Delete unmasked image to save memory
 
             if self.verbose > 1:

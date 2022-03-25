@@ -900,6 +900,8 @@ def test_glm_sample_mask():
                             mask_img=mask,
                             minimize_memory=False)
     sample_mask = np.arange(25)[3:]  # censor the first three volumes
-    model.fit(fmri_data, design_matrices=design_matrix, sample_masks=sample_mask)
+    model.fit(fmri_data,
+              design_matrices=design_matrix,
+              sample_masks=sample_mask)
     assert model.design_matrices_[0].shape[0] == 22
     assert model.predicted[0].shape[-1] == 22
