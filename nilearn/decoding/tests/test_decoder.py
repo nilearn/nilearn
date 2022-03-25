@@ -18,7 +18,7 @@ from nilearn.decoding.decoder import (Decoder, DecoderRegressor,
                                       _BaseDecoder, _check_estimator,
                                       _check_param_grid, _parallel_fit)
 from nilearn.decoding.tests.test_same_api import to_niimgs
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
@@ -238,7 +238,7 @@ def test_decoder_dummy_classifier():
     assert model.scoring == accuracy_scorer
     assert model.score(X, y) == accuracy_score(y, y_pred)
 
-    # An error should be raise when trying to compute the score whithout having
+    # An error should be raise when trying to compute the score without having
     # called fit first.
     model = Decoder(estimator='dummy_classifier', mask=mask)
     with pytest.raises(

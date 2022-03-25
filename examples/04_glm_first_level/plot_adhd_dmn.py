@@ -15,7 +15,7 @@ More specifically:
 import numpy as np
 
 from nilearn import datasets, plotting
-from nilearn.input_data import NiftiSpheresMasker
+from nilearn.maskers import NiftiSpheresMasker
 
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.first_level import make_first_level_design_matrix

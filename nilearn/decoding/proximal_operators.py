@@ -124,7 +124,7 @@ def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
         Callable that takes the local variables at each
         steps. Useful for tracking.
 
-    init : array of shape shape as im
+    init : array of shape as im
         Starting point for the optimization.
 
     check_gap_frequency : int, optional (default 4)

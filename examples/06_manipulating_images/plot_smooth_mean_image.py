@@ -2,12 +2,12 @@
 Smoothing an image
 ===================
 
-Here we smooth a mean EPI image and plot the result
+Here we smooth a mean :term:`EPI` image and plot the result
 
-As we vary the smoothing FWHM, note how we decrease the amount of noise,
-but also loose spatial details. In general, the best amount of smoothing
-for a given analysis depends on the spatial extent of the effects that
-are expected.
+As we vary the smoothing :term:`FWHM`, note how we decrease the amount
+of noise, but also lose spatial details. In general, the best amount
+of smoothing for a given analysis depends on the spatial extent of the
+effects that are expected.
 
 """
 

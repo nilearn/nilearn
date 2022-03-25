@@ -30,7 +30,7 @@ print('First subject functional nifti image (4D) is located at: %s' %
       func_filename)
 
 # Load nilearn NiftiMasker, the practical masking and unmasking tool
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 
 # load labels
 import pandas as pd
@@ -123,7 +123,7 @@ for color, mask_name in zip('rgb', mask_names):
 
     tick_position = tick_position + .2
 
-plt.ylabel('Classification accurancy (AUC score)')
+plt.ylabel('Classification accuracy (AUC score)')
 plt.xlabel('Visual stimuli category')
 plt.ylim(0.3, 1)
 plt.legend(loc='lower right')

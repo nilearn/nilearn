@@ -1,7 +1,5 @@
-import io
 import os
 import copy
-import base64
 import warnings
 from pathlib import Path
 from string import Template
@@ -12,6 +10,7 @@ from nilearn.reporting.utils import figure_to_svg_base64
 
 ESTIMATOR_TEMPLATES = {
     'NiftiLabelsMasker': 'report_body_template_niftilabelsmasker.html',
+    'NiftiMapsMasker': 'report_body_template_niftimapsmasker.html',
     'default': 'report_body_template.html'}
 
 
@@ -52,6 +51,9 @@ def _embed_img(display):
     """
     if display is None:  # no image to display
         return None
+    # If already embedded, simply return as is
+    if isinstance(display, str):
+        return display
     return figure_to_svg_base64(display.frame_axes.figure)
 
 
@@ -158,6 +160,9 @@ def _define_overlay(estimator):
     elif len(displays) == 2:
         overlay, image = displays[0], displays[1]
 
+    else:
+        overlay, image = None, displays
+
     return overlay, image
 
 
@@ -209,12 +214,16 @@ def generate_report(estimator):
     else:  # We can create a report
         html_template = _get_estimator_template(estimator)
         overlay, image = _define_overlay(estimator)
+        if isinstance(image, list):
+            embeded_images = [_embed_img(i) for i in image]
+        else:
+            embeded_images = _embed_img(image)
         parameters = _str_params(estimator.get_params())
         docstring = estimator.__doc__
         snippet = docstring.partition('Parameters\n    ----------\n')[0]
         report = _update_template(title=estimator.__class__.__name__,
                                   docstring=snippet,
-                                  content=_embed_img(image),
+                                  content=embeded_images,
                                   overlay=_embed_img(overlay),
                                   parameters=parameters,
                                   data=data,

@@ -34,7 +34,7 @@ Cross-validation with scikit-learn
 -----------------------------------
 
 To perform cross-validation using a scikit-learn estimator, you should first
-mask the data using a :class:`nilearn.input_data.NiftiMasker`: to extract
+mask the data using a :class:`nilearn.maskers.NiftiMasker`: to extract
 only the :term:`voxels<voxel>` inside the mask of interest, and transform 4D input :term:`fMRI`
 data to 2D arrays (shape (n_timepoints, n_voxels)) that estimators can work on.
 
@@ -105,7 +105,7 @@ Using any other model in the pipeline
 -------------------------------------
 
 :term:`Anova<ANOVA>` - :term:`SVM` is a good baseline that will give reasonable results
-in common settings. However it may be interesting for you to to explore the
+in common settings. However it may be interesting for you to explore the
 `wide variety of supervised learning algorithms in the scikit-learn
 <http://scikit-learn.org/stable/supervised_learning.html>`_. These can readily
 replace the :term:`SVM` in your pipeline and might be better fitted
@@ -115,9 +115,9 @@ The feature selection step can also be tuned. For example we could use a more
 sophisticated scheme, such as `Recursive Feature Elimination (RFE)
 <http://scikit-learn.org/stable/modules/feature_selection.html#recursive-feature-elimination>`_
 or add some `a clustering step <https://scikit-learn.org/stable/modules/clustering.html>`_
-before feature selection. This always amount to creating 
-`a pipeline <https://scikit-learn.org/stable/modules/compose.html>`_ that will 
-link those steps together and apply a sensible cross-validation scheme to it. 
+before feature selection. This always amount to creating
+`a pipeline <https://scikit-learn.org/stable/modules/compose.html>`_ that will
+link those steps together and apply a sensible cross-validation scheme to it.
 Scikit-learn usually takes care of the rest for us.
 
 .. seealso::

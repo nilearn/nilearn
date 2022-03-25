@@ -87,7 +87,7 @@ def test_view_connectome():
 def test_view_markers():
     coords = np.arange(12).reshape((4, 3))
     colors = ['r', 'g', 'black', 'white']
-    labels = ["red marker", "green marker", 
+    labels = ["red marker", "green marker",
           "black marker", "white marker"]
     html = html_connectome.view_markers(coords, colors)
     check_html(html, False, 'connectome-plot')
@@ -101,10 +101,9 @@ def test_view_markers():
     html = html_connectome.view_markers(
         coords, marker_size=list(range(len(coords))))
     check_html(html, False, 'connectome-plot')
-    html = html_connectome.view_markers(coords, 
+    html = html_connectome.view_markers(coords,
                                     marker_size=5.0,
                                     marker_color=colors,
                                     marker_labels=labels)
     labels_dict = {"marker_labels": labels}
     assert json.dumps(labels_dict)[1:-1] in html.html
-

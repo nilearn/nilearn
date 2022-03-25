@@ -66,6 +66,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    fetch_atlas_craddock_2012
    fetch_atlas_destrieux_2009
    fetch_atlas_harvard_oxford
+   fetch_atlas_juelich
    fetch_atlas_msdl
    fetch_atlas_difumo
    fetch_coords_power_2011
@@ -94,7 +95,6 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    fetch_atlas_schaefer_2018
    fetch_oasis_vbm
    fetch_megatrawls_netmats
-   fetch_cobre
    fetch_neurovault
    fetch_neurovault_ids
    fetch_neurovault_auditory_computation_task
@@ -179,6 +179,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :toctree: generated/
    :template: function.rst
 
+   binarize_img
    clean_img
    concat_imgs
    coord_transform
@@ -200,12 +201,74 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    swap_img_hemispheres
    threshold_img
 
-.. _io_ref:
+.. _interfaces_ref:
 
-:mod:`nilearn.input_data`: Loading and Processing Files Easily
-==============================================================
+:mod:`nilearn.interfaces`: Loading components from interfaces
+=============================================================
 
-.. automodule:: nilearn.input_data
+.. automodule:: nilearn.interfaces
+   :no-members:
+   :no-inherited-members:
+
+:mod:`nilearn.interfaces.bids`
+----------------------------------
+
+.. automodule:: nilearn.interfaces.bids
+   :no-members:
+   :no-inherited-members:
+
+**Functions**:
+
+.. currentmodule:: nilearn.interfaces.bids
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   get_bids_files
+   parse_bids_filename
+
+:mod:`nilearn.interfaces.fmriprep`
+----------------------------------
+
+.. automodule:: nilearn.interfaces.fmriprep
+   :no-members:
+   :no-inherited-members:
+
+**Functions**:
+
+.. currentmodule:: nilearn.interfaces.fmriprep
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   load_confounds
+   load_confounds_strategy
+
+:mod:`nilearn.interfaces.fsl`
+----------------------------------
+
+.. automodule:: nilearn.interfaces.fsl
+   :no-members:
+   :no-inherited-members:
+
+**Functions**:
+
+.. currentmodule:: nilearn.interfaces.fsl
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   get_design_from_fslmat
+
+.. _maskers_ref:
+
+:mod:`nilearn.maskers`: Extracting Signals from Brain Images
+============================================================
+
+.. automodule:: nilearn.maskers
    :no-members:
    :no-inherited-members:
 
@@ -213,12 +276,13 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
 
 **Classes**:
 
-.. currentmodule:: nilearn.input_data
+.. currentmodule:: nilearn.maskers
 
 .. autosummary::
    :toctree: generated/
    :template: class.rst
 
+   BaseMasker
    NiftiMasker
    MultiNiftiMasker
    NiftiLabelsMasker
@@ -287,6 +351,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    RegionExtractor
    Parcellations
    ReNA
+   HierarchicalKMeans
 
 
 :mod:`nilearn.mass_univariate`: Mass-Univariate Analysis
@@ -340,7 +405,6 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    plot_stat_map
    plot_glass_brain
    plot_connectome
-   plot_connectome_strength
    plot_markers
    plot_prob_atlas
    plot_carpet
@@ -360,6 +424,26 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    view_img
    show
 
+:mod:`nilearn.plotting.displays`: Interacting with figures
+----------------------------------------------------------
+
+.. automodule:: nilearn.plotting.displays
+   :no-members:
+   :no-inherited-members:
+
+.. No relevant user manual section yet.
+
+**Functions**:
+
+.. currentmodule:: nilearn.plotting.displays
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+    get_projector
+    get_slicer
+
 **Classes**:
 
 .. currentmodule:: nilearn.plotting.displays
@@ -368,7 +452,35 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :toctree: generated/
    :template: class.rst
 
+   OrthoProjector
+   XZProjector
+   YZProjector
+   YXProjector
+   XProjector
+   YProjector
+   ZProjector
+   LZRYProjector
+   LYRZProjector
+   LYRProjector
+   LZRProjector
+   LRProjector
+   LProjector
+   RProjector
+   BaseAxes
+   CutAxes
+   GlassBrainAxes
+   BaseSlicer
    OrthoSlicer
+   PlotlySurfaceFigure
+   TiledSlicer
+   MosaicSlicer
+   XZSlicer
+   YZSlicer
+   YXSlicer
+   XSlicer
+   YSlicer
+   ZSlicer
+
 
 
 .. _signal_ref:
@@ -391,6 +503,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :toctree: generated/
    :template: function.rst
 
+   butterworth
    clean
    high_variance_confounds
 

@@ -34,7 +34,7 @@ print('The atlas contains {} non-overlapping regions'.format(
 ###########################################################################
 # Instantiate the mask and visualize atlas
 #
-from nilearn.input_data import NiftiLabelsMasker
+from nilearn.maskers import NiftiLabelsMasker
 
 # Instantiate the masker with label image and label values
 masker = NiftiLabelsMasker(atlas.maps,
@@ -48,7 +48,7 @@ masker.fit()
 # At this point, no functional image has been provided to the masker.
 # We can still generate a report which can be displayed in a Jupyter
 # Notebook, opened in a browser using the .open_in_browser() method,
-# or saved to a file using the .save_as_html(output_filepath) mathod.
+# or saved to a file using the .save_as_html(output_filepath) method.
 report = masker.generate_report()
 report
 

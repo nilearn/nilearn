@@ -48,7 +48,7 @@ ____
 import numpy as np
 import matplotlib.pyplot as plt
 from nilearn import datasets
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from nilearn.image import get_data
 
 n_subjects = 100  # more subjects requires more memory
@@ -56,9 +56,11 @@ n_subjects = 100  # more subjects requires more memory
 ############################################################################
 # Load Oasis dataset
 # -------------------
-oasis_dataset = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
+oasis_dataset = datasets.fetch_oasis_vbm(
+    n_subjects=n_subjects, legacy_format=False
+)
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
-age = oasis_dataset.ext_vars['age'].astype(float)
+age = oasis_dataset.ext_vars['age'].values
 
 # Split data into training set and test set
 from sklearn.model_selection import train_test_split
@@ -85,7 +87,6 @@ gm_maps_masked = nifti_masker.fit_transform(gm_imgs_train)
 from sklearn.feature_selection import VarianceThreshold
 variance_threshold = VarianceThreshold(threshold=.01)
 gm_maps_thresholded = variance_threshold.fit_transform(gm_maps_masked)
-gm_maps_masked = variance_threshold.inverse_transform(gm_maps_thresholded)
 
 # Then we convert the data back to the mask image in order to use it for
 # decoding process

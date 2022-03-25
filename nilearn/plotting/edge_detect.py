@@ -55,7 +55,7 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
     Notes
     -----
     This function is based on a Canny filter, however it has been
-    taylored to visualization purposes on brain images: don't use it
+    tailored to visualization purposes on brain images: don't use it
     in the general case.
 
     It computes the norm of the gradient, extracts the ridge by

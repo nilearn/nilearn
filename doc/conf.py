@@ -16,7 +16,7 @@ import sys
 import os
 import shutil
 import sphinx
-from distutils.version import LooseVersion
+from nilearn.version import _compare_version
 
 # jquery is included in plotting package data because it is needed for
 # interactive plots. It is also needed by the documentation, so we copy
@@ -55,6 +55,9 @@ extensions = [
               'sphinxcontrib.bibtex',
               'numpydoc',
               'sphinx.ext.linkcode',
+              'gh_substitutions',
+              'sphinx_copybutton',
+              'sphinxext.opengraph',
               ]
 
 autosummary_generate = True
@@ -86,7 +89,7 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8'
 
 # Generate the plots for the gallery
-plot_gallery = 'True'
+plot_gallery = True
 
 # The master toctree document.
 master_doc = 'index'
@@ -99,7 +102,7 @@ bibtex_footbibliography_header = ''
 
 # General information about the project.
 project = u'Nilearn'
-copyright = u'The nilearn developers 2010-2021'
+copyright = u'The nilearn developers 2010-2022'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -228,12 +231,19 @@ html_show_sourcelink = False
 # base URL from which the finished HTML is served.
 #html_use_opensearch = ''
 
+# variables to pass to HTML templating engine
+build_dev_html = bool(int(os.environ.get('BUILD_DEV_HTML', False)))
+
+html_context = {'build_dev_html': build_dev_html}
+
 # If nonempty, this is the file name suffix for HTML files (e.g. ".xhtml").
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'PythonScientic'
 
+# Sphinx copybutton config
+copybutton_prompt_text = ">>> "
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -271,7 +281,7 @@ latex_elements = {
   'printindex': '',
 }
 
-if LooseVersion(sphinx.__version__) < LooseVersion('1.5'):
+if _compare_version(sphinx.__version__, '<', '1.5'):
     latex_preamble = r"""
     \usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
     \let\oldfootnote\footnote
@@ -286,7 +296,7 @@ else:
 
 
 # If false, no module index is generated.
-if LooseVersion(sphinx.__version__) < LooseVersion('1.5'):
+if _compare_version(sphinx.__version__, '<', '1.5'):
     latex_use_modindex = False
 
 latex_domain_indices = False
@@ -304,13 +314,14 @@ _python_doc_base = 'https://docs.python.org/3.8'
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': (_python_doc_base, None),
-    'numpy': ('https://docs.scipy.org/doc/numpy', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
-    'matplotlib': ('https://matplotlib.org/', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'scipy': ('http://scipy.github.io/devdocs/', None),
+    'matplotlib': ('https://matplotlib.org/stable/', None),
     'sklearn': ('https://scikit-learn.org/stable/', None),
     'nibabel': ('https://nipy.org/nibabel', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
     'nistats': ('https://nistats.github.io', None),
+    'joblib': ('https://joblib.readthedocs.io/en/latest/', None),
 }
 
 extlinks = {
@@ -327,6 +338,8 @@ sphinx_gallery_conf = {
     'gallery_dirs': 'auto_examples',
     # Ignore the function signature leftover by joblib
     'ignore_pattern': 'func_code\.py',
+    'show_memory': not sys.platform.startswith('win'),
+    'remove_config_comments': True,
     'binder': {
         'org': 'nilearn',
         'repo': 'nilearn.github.io',
@@ -349,12 +362,9 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
         # touch file
         open(examples_path, 'w').close()
 
-# Add the 'copybutton' javascript, to hide/show the prompt in code
-# examples
 
 
 def setup(app):
-    app.add_js_file('copybutton.js')
     app.connect('autodoc-process-docstring', touch_example_backreferences)
 
 
@@ -365,3 +375,8 @@ linkcode_resolve = make_linkcode_resolve('nilearn',
                                          'nilearn/blob/{revision}/'
                                          '{package}/{path}#L{lineno}')
 
+# -- sphinxext.opengraph configuration -------------------------------------
+ogp_site_url = "https://nilearn.github.io/"
+ogp_image = "https://nilearn.github.io/_static/nilearn-logo.png"
+ogp_use_first_image = True
+ogp_site_name = "Nilearn"

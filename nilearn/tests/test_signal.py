@@ -6,7 +6,7 @@ Test the signals module
 
 import os.path
 import warnings
-from distutils.version import LooseVersion
+from nilearn.version import _compare_version
 
 import numpy as np
 import pytest
@@ -133,9 +133,10 @@ def test_butterworth():
      causing it to fail tests.
      This hack prevents that and will be removed in future.
     '''
-    buggy_scipy = (LooseVersion(scipy.__version__) < LooseVersion('1.2')
-                   and LooseVersion(scipy.__version__) > LooseVersion('1.0')
-                   )
+    buggy_scipy = (
+        _compare_version(scipy.__version__, '<', '1.2')
+        and _compare_version(scipy.__version__, '>', '1.0')
+    )
     if buggy_scipy:
         warnings.simplefilter('ignore')
     ''' END HACK '''
@@ -505,13 +506,17 @@ def test_clean_confounds():
 
     # Test without standardizing that constant parts of confounds are
     # accounted for
-    np.testing.assert_almost_equal(nisignal.clean(np.ones((20, 2)),
-                                                  standardize=False,
-                                                  confounds=np.ones(20),
-                                                  standardize_confounds=False,
-                                                  detrend=False,
-                                                  ).mean(),
-                                   np.zeros((20, 2)))
+    # passing standardize_confounds=False, detrend=False should raise warning
+    warning_message = r"must perform detrend and/or standardize confounds"
+    with pytest.warns(UserWarning, match=warning_message):
+        np.testing.assert_almost_equal(
+            nisignal.clean(np.ones((20, 2)),
+                           standardize=False,
+                           confounds=np.ones(20),
+                           standardize_confounds=False,
+                           detrend=False,
+                           ).mean(),
+            np.zeros((20, 2)))
 
     # Test to check that confounders effects are effectively removed from
     # the signals when having a detrending and filtering operation together.

@@ -1,16 +1,19 @@
 """
-This module is for hemodynamic reponse function (hrf) specification.
+This module is for hemodynamic response function (hrf) specification.
 Here we provide for SPM, Glover hrfs and finite timpulse response (FIR) models.
 This module closely follows SPM implementation
 
 Author: Bertrand Thirion, 2011--2018
 """
 
+import re
 import warnings
 
 import numpy as np
 from scipy.stats import gamma
+from collections.abc import Iterable
 
+from nilearn._utils import fill_doc
 
 def _gamma_difference_hrf(tr, oversampling=50, time_length=32., onset=0.,
                           delay=6, undershoot=16., dispersion=1.,
@@ -374,17 +377,17 @@ def _orthogonalize(X):
     return X
 
 
+@fill_doc
 def _regressor_names(con_name, hrf_model, fir_delays=None):
     """ Returns a list of regressor names, computed from con-name and hrf type
+    when this information is explicitly given. If hrf_model is
+    a custom function or a list of custom functions, return their name.
 
     Parameters
     ----------
     con_name : string
         identifier of the condition
-
-    hrf_model : string or None,
-       hrf model chosen
-
+    %(hrf_model)s
     fir_delays : 1D array_like, optional
         Delays (in scans) used in case of an FIR model
 
@@ -394,15 +397,45 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
         regressor names
 
     """
-    if hrf_model in ['glover', 'spm', None]:
-        return [con_name]
+    # Default value
+    names = [con_name]
+
+    # Handle strings
+    if hrf_model in ['glover', 'spm']:
+        names = [con_name]
     elif hrf_model in ["glover + derivative", 'spm + derivative']:
-        return [con_name, con_name + "_derivative"]
+        names = [con_name, con_name + "_derivative"]
     elif hrf_model in ['spm + derivative + dispersion',
                        'glover + derivative + dispersion']:
-        return [con_name, con_name + "_derivative", con_name + "_dispersion"]
+        names = [con_name, con_name + "_derivative", con_name + "_dispersion"]
     elif hrf_model == 'fir':
-        return [con_name + "_delay_%d" % i for i in fir_delays]
+        names = [con_name + "_delay_%d" % i for i in fir_delays]
+    # Handle callables
+    elif callable(hrf_model):
+        names = [f"{con_name}_{hrf_model.__name__}"]
+    elif (isinstance(hrf_model, Iterable)
+          and all([callable(_) for _ in hrf_model])):
+        names = [f"{con_name}_{model.__name__}" for model in hrf_model]
+    # Handle some default cases
+    else:
+        if isinstance(hrf_model, Iterable) and not isinstance(hrf_model, str):
+            names = [f"{con_name}_{i}" for i in range(len(hrf_model))]
+
+    # Check that all names within the list are different
+    if len(np.unique(names)) != len(names):
+        raise ValueError(f"Computed regressor names are not unique: {names}")
+
+    # Replace spaces with underscores
+    names = [re.sub(" +", "_", str(name)) for name in names]
+    # Remove any non-word character
+    names = [re.sub("[^a-zA-Z0-9_]+", "", str(name)) for name in names]
+
+    # Check that all names look like proper pandas.DataFrame column names
+    if not all([name.isidentifier() for name in names]):
+        raise ValueError("At least one regressor name can't be used "
+                         f"as a column identifier: {names}")
+
+    return names
 
 
 def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
@@ -411,8 +444,8 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
 
     Parameters
     ----------
-    hrf_model : string or None,
-        identifier of the hrf model
+    hrf_model : string, function, list of functions, or None,
+        HRF model to be used.
 
     tr : float
         the repetition time in seconds
@@ -435,6 +468,8 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
         'fir',
         'glover', 'glover + derivative', 'glover + derivative + dispersion',
         None]
+    error_msg = ("Could not process custom HRF model provided. "
+                 "Please refer to the related documentation.")
     if hrf_model == 'spm':
         hkernel = [spm_hrf(tr, oversampling)]
     elif hrf_model == 'spm + derivative':
@@ -457,14 +492,28 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
         hkernel = [np.hstack((np.zeros((f) * oversampling),
                               np.ones(oversampling) * 1. / oversampling))
                    for f in fir_delays]
+    elif callable(hrf_model):
+        try:
+            hkernel = [hrf_model(tr, oversampling)]
+        except TypeError:
+            raise ValueError(error_msg)
+    elif(isinstance(hrf_model, Iterable)
+         and all([callable(_) for _ in hrf_model])):
+        try:
+            hkernel = [model(tr, oversampling) for model in hrf_model]
+        except TypeError:
+            raise ValueError(error_msg)
     elif hrf_model is None:
         hkernel = [np.hstack((1, np.zeros(oversampling - 1)))]
     else:
-        raise ValueError('"{0}" is not a known hrf model. Use one of {1}'.
-                         format(hrf_model, acceptable_hrfs))
+        raise ValueError('"{0}" is not a known hrf model. '
+                         'Use either a custom model or '
+                         'one of {1}'.format(hrf_model,
+                                             acceptable_hrfs))
     return hkernel
 
 
+@fill_doc
 def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
                       oversampling=50, fir_delays=None, min_onset=-24):
     """ This is the main function to convolve regressors with hrf model
@@ -474,11 +523,7 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
     exp_condition : array-like of shape (3, n_events)
         yields description of events for this condition as a
         (onsets, durations, amplitudes) triplet
-
-    hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
-        'glover', 'glover + derivative', 'fir', None}
-        Name of the hrf model to be used
-
+    %(hrf_model)s
     frame_times : array of shape (n_scans)
         the desired sampling times
 
@@ -503,26 +548,6 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
 
     reg_names : list of strings
         Corresponding regressor names.
-
-    Notes
-    -----
-    The different hemodynamic models can be understood as follows:
-     - 'spm': this is the hrf model used in SPM
-     - 'spm + derivative': SPM model plus its time derivative (2 regressors)
-     - 'spm + time + dispersion': idem, plus dispersion derivative
-                                (3 regressors)
-     - 'glover': this one corresponds to the Glover hrf
-     - 'glover + derivative': the Glover hrf + time derivative (2 regressors)
-     - 'glover + derivative + dispersion': idem + dispersion derivative
-                                        (3 regressors)
-    'fir': list or array,
-        finite impulse response basis, a set of delayed dirac models.
-
-    It is expected that spm standard and Glover model would not yield
-    large differences in most cases.
-
-    In case of glover and spm models, the derived regressors are
-    orthogonalized wrt the main one.
 
     """
     # fir_delays should be integers

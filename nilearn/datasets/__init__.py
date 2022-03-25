@@ -2,7 +2,6 @@
 Helper functions to download NeuroImaging datasets
 """
 
-from warnings import warn
 from .struct import (fetch_icbm152_2009, load_mni152_template,
                      load_mni152_brain_mask, load_mni152_gm_template,
                      load_mni152_gm_mask, load_mni152_wm_template,
@@ -15,7 +14,7 @@ from .func import (fetch_haxby,
                    fetch_localizer_contrasts, fetch_abide_pcp,
                    fetch_localizer_button_task,
                    fetch_localizer_calculation_task, fetch_mixed_gambles,
-                   fetch_megatrawls_netmats, fetch_cobre,
+                   fetch_megatrawls_netmats,
                    fetch_surf_nki_enhanced, fetch_development_fmri,
                    fetch_language_localizer_demo_dataset,
                    fetch_bids_langloc_dataset,
@@ -29,8 +28,8 @@ from .func import (fetch_haxby,
                    fetch_fiac_first_level,
                    )
 from .atlas import (fetch_atlas_craddock_2012, fetch_atlas_destrieux_2009,
-                    fetch_atlas_harvard_oxford, fetch_atlas_msdl,
-                    fetch_coords_power_2011,
+                    fetch_atlas_juelich, fetch_atlas_harvard_oxford,
+                    fetch_atlas_msdl, fetch_coords_power_2011,
                     fetch_coords_seitzman_2018,
                     fetch_atlas_smith_2009,
                     fetch_atlas_yeo_2011, fetch_atlas_aal,
@@ -58,7 +57,8 @@ __all__ = ['MNI152_FILE_PATH', 'GM_MNI152_FILE_PATH', 'WM_MNI152_FILE_PATH',
            'fetch_localizer_button_task',
            'fetch_abide_pcp', 'fetch_localizer_calculation_task',
            'fetch_atlas_craddock_2012', 'fetch_atlas_destrieux_2009',
-           'fetch_atlas_harvard_oxford', 'fetch_atlas_msdl',
+           'fetch_atlas_juelich', 'fetch_atlas_harvard_oxford',
+           'fetch_atlas_msdl',
            'fetch_atlas_schaefer_2018',
            'fetch_coords_power_2011',
            'fetch_coords_seitzman_2018',
@@ -66,7 +66,7 @@ __all__ = ['MNI152_FILE_PATH', 'GM_MNI152_FILE_PATH', 'WM_MNI152_FILE_PATH',
            'fetch_atlas_allen_2011',
            'fetch_atlas_yeo_2011', 'fetch_mixed_gambles', 'fetch_atlas_aal',
            'fetch_atlas_difumo',
-           'fetch_megatrawls_netmats', 'fetch_cobre',
+           'fetch_megatrawls_netmats',
            'fetch_surf_nki_enhanced', 'fetch_development_fmri',
            'fetch_surf_fsaverage',
            'fetch_atlas_basc_multiscale_2015', 'fetch_coords_dosenbach_2010',
@@ -89,7 +89,3 @@ __all__ = ['MNI152_FILE_PATH', 'GM_MNI152_FILE_PATH', 'WM_MNI152_FILE_PATH',
            'fetch_fiac_first_level',
            ]
 
-warn("Fetchers from the nilearn.datasets module will be "
-     "updated in version 0.9 to return python strings "
-     "instead of bytes and Pandas dataframes instead of "
-     "Numpy arrays.", FutureWarning)

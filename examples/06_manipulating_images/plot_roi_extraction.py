@@ -77,11 +77,13 @@ haxby_labels = session_target['labels']
 # **Smoothing**: Functional MRI data have a low signal-to-noise ratio.
 # When using methods that are not robust to noise, it is useful to apply a
 # spatial filtering kernel on the data. Such data smoothing is usually applied
-# using a Gaussian function with 4mm to 12mm full-width at half-maximum (this
-# is where the FWHM comes from). The function :func:`nilearn.image.smooth_img`
-# accounts for potential anisotropy in the image affine (i.e., non-indentical
-# voxel size in all the three dimensions). Analogous to the majority of nilearn
-# functions, smooth_img function can also use file names as input parameters.
+# using a Gaussian function with 4mm to 12mm
+# :term:`full-width at half-maximum<FWHM>` (this is where the :term:`FWHM`
+# comes from). The function :func:`nilearn.image.smooth_img` accounts for
+# potential anisotropy in the image affine (i.e., non-indentical
+# :term:`voxel` size in all the three dimensions). Analogous to the
+# majority of nilearn functions, :func:`nilearn.image.smooth_img` can
+# also use file names as input parameters.
 
 # Smooth the data using image processing module from nilearn
 from nilearn import image
@@ -228,7 +230,7 @@ from nilearn.plotting import plot_roi, show
 # values in data type boolean should be converted to int data type at the same
 # time. Otherwise, an error will be raised
 bin_p_values_and_vt_img = new_img_like(fmri_img,
-                                       bin_p_values_and_vt.astype(np.int))
+                                       bin_p_values_and_vt.astype(int))
 # Visualizing goes here with background as computed mean of functional images
 plot_roi(bin_p_values_and_vt_img, mean_img, cut_coords=cut_coords,
          title='Intersection with ventral temporal mask')
@@ -252,7 +254,7 @@ dil_bin_p_values_and_vt = ndimage.binary_dilation(bin_p_values_and_vt)
 # varies with data specific
 dil_bin_p_values_and_vt_img = new_img_like(
     fmri_img,
-    dil_bin_p_values_and_vt.astype(np.int))
+    dil_bin_p_values_and_vt.astype(int))
 # Visualization goes here without 'L', 'R' annotation and coordinates being the
 # same
 plot_roi(dil_bin_p_values_and_vt_img, mean_img,
@@ -270,9 +272,9 @@ plot_roi(dil_bin_p_values_and_vt_img, mean_img,
 # integer label to each one of them.
 labels, n_labels = ndimage.label(dil_bin_p_values_and_vt)
 # we take first roi data with labels assigned as integer 1
-first_roi_data = (labels == 5).astype(np.int)
+first_roi_data = (labels == 5).astype(int)
 # Similarly, second roi data is assigned as integer 2
-second_roi_data = (labels == 3).astype(np.int)
+second_roi_data = (labels == 3).astype(int)
 # Visualizing the connected components
 # First, we create a Nifti image type from first roi data in a array
 first_roi_img = new_img_like(fmri_img, first_roi_data)
@@ -291,7 +293,7 @@ plot_roi(second_roi_img, mean_img, title='Connected components: second ROI')
 # Use the new ROIs, to extract data maps in both ROIs
 
 # We extract data from ROIs using nilearn's NiftiLabelsMasker
-from nilearn.input_data import NiftiLabelsMasker
+from nilearn.maskers import NiftiLabelsMasker
 
 # Before data extraction, we convert an array labels to Nifti like image. All
 # inputs to NiftiLabelsMasker must be Nifti-like images or filename to Nifti

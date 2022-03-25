@@ -62,7 +62,7 @@ data_dir, _ = fetch_openneuro_dataset(urls=urls)
 # To get the first level models we have to specify the dataset directory,
 # the task_label and the space_label as specified in the file names.
 # We also have to provide the folder with the desired derivatives, that in this
-# case were produced by the fmriprep :term:`BIDS` app.
+# case were produced by the :term:`fMRIPrep` :term:`BIDS` app.
 from nilearn.glm.first_level import first_level_from_bids
 task_label = 'stopsignal'
 space_label = 'MNI152NLin2009cAsym'
@@ -79,7 +79,7 @@ model, imgs, events, confounds = (
 subject = 'sub-' + model.subject_label
 
 import os
-from nilearn._utils.glm import get_design_from_fslmat
+from nilearn.interfaces.fsl import get_design_from_fslmat
 fsl_design_matrix_path = os.path.join(
     data_dir, 'derivatives', 'task', subject, 'stopsignal.feat', 'design.mat')
 design_matrix = get_design_from_fslmat(

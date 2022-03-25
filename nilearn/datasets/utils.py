@@ -216,7 +216,7 @@ def get_data_dirs(data_dir=None):
 
     # Check data_dir which force storage in a specific location
     if data_dir is not None:
-        paths.extend(data_dir.split(os.pathsep))
+        paths.extend(str(data_dir).split(os.pathsep))
 
     # If data_dir has not been specified, then we crawl default locations
     if data_dir is None:
@@ -268,7 +268,10 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
     # Search possible data-specific system paths
     if default_paths is not None:
         for default_path in default_paths:
-            paths.extend([(d, True) for d in default_path.split(os.pathsep)])
+            paths.extend([
+                (d, True)
+                for d in str(default_path).split(os.pathsep)]
+            )
 
     paths.extend([(d, False) for d in get_data_dirs(data_dir=data_dir)])
 
@@ -317,7 +320,7 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
         Path of file to be uncompressed.
 
     delete_archive : bool, optional
-        Wheteher or not to delete archive once it is uncompressed.
+        Whether or not to delete archive once it is uncompressed.
         Default=True.
     %(verbose)s
 
@@ -348,13 +351,13 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
             if ext == '.tgz':
                 filename = filename + '.tar'
             elif ext == '':
-                # For gzip file, we rely on the assumption that there is an extenstion
+                # We rely on the assumption that gzip files have an extension
                 shutil.move(file_, file_ + '.gz')
                 file_ = file_ + '.gz'
             with gzip.open(file_) as gz:
                 with open(filename, 'wb') as out:
                     shutil.copyfileobj(gz, out, 8192)
-            # If file is .tar.gz, this will be handle in the next case
+            # If file is .tar.gz, this will be handled in the next case
             if delete_archive:
                 os.remove(file_)
             file_ = filename
@@ -630,7 +633,10 @@ def _get_dataset_descr(ds_name):
         descr = ''
 
     if descr == '':
-        print("Warning: Could not find dataset description.")
+        warnings.warn("Could not find dataset description.")
+
+    if isinstance(descr, bytes):
+        descr = descr.decode('utf-8')
 
     return descr
 
@@ -669,7 +675,7 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     """Load requested dataset, downloading it if needed or requested.
 
     This function retrieves files from the hard drive or download them from
-    the given urls. Note to developpers: All the files will be first
+    the given urls. Note to developers: All the files will be first
     downloaded in a sandbox and, if everything goes well, they will be moved
     into the folder of the dataset. This prevents corrupting previously
     downloaded data. In case of a big dataset, do not hesitate to make several
@@ -772,7 +778,7 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
 
         if (abort is None and not os.path.exists(target_file) and not
                 os.path.exists(temp_target_file)):
-            warnings.warn('An error occured while fetching %s' % file_)
+            warnings.warn('An error occurred while fetching %s' % file_)
             abort = ("Dataset has been downloaded but requested file was "
                      "not provided:\nURL: %s\n"
                      "Target file: %s\nDownloaded: %s" %

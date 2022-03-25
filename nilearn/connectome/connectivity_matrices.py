@@ -250,7 +250,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
     ----------
     vec : numpy.ndarray or list of numpy arrays, shape \
         (..., n_columns * (n_columns + 1) /2) or
-        (..., (n_columns - 1) * n_columns / 2) if diagonal is given seperately.
+        (..., (n_columns - 1) * n_columns / 2) if diagonal is given separately.
         The input array.
 
     diagonal : numpy.ndarray, shape (..., n_columns), optional
@@ -327,7 +327,7 @@ def cov_to_corr(covariance):
     Returns
     -------
     correlation : 2D numpy.ndarray
-        The ouput correlation matrix.
+        The output correlation matrix.
 
     """
     diagonal = np.atleast_2d(1. / np.sqrt(np.diag(covariance)))
@@ -349,7 +349,7 @@ def prec_to_partial(precision):
     Returns
     -------
     partial_correlation : 2D numpy.ndarray
-        The 2D ouput partial correlation matrix.
+        The 2D output partial correlation matrix.
 
     """
     partial_correlation = -cov_to_corr(precision)

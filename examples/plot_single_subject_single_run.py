@@ -55,8 +55,8 @@ subject_data.func  # print the list of names of functional images
 ###############################################################################
 # We can display the first functional image and the subject's anatomy:
 from nilearn.plotting import plot_stat_map, plot_anat, plot_img
-plot_img(subject_data.func[0])
-plot_anat(subject_data.anat)
+plot_img(subject_data.func[0], colorbar=True, cbar_tick_format="%i")
+plot_anat(subject_data.anat, colorbar=True, cbar_tick_format="%i")
 
 ###############################################################################
 # Next, we concatenate all the 3D :term:`EPI` image into a single 4D image,

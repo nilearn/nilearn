@@ -41,7 +41,7 @@ class DimensionError(TypeError):
     def increment_stack_counter(self):
         """Increments the counter of recursive calls.
 
-        Called when the error is catched and re-raised to count the
+        Called when the error is caught and re-raised to count the
         number of recursive calls, ie the number of dimensions added by
         imbrication in lists.
 

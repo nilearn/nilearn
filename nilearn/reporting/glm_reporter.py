@@ -42,6 +42,8 @@ with warnings.catch_warnings():
 
 from nilearn.reporting._get_clusters_table import get_clusters_table
 from nilearn.reporting.utils import figure_to_svg_quoted
+from nilearn.maskers import NiftiMasker
+from nilearn._utils import check_niimg
 
 
 HTML_TEMPLATE_ROOT_PATH = os.path.join(os.path.dirname(__file__),
@@ -216,7 +218,18 @@ def make_glm_report(model,
                                                    )
     statistical_maps = _make_stat_maps(model, contrasts)
     html_design_matrices = _dmtx_to_svg_url(design_matrices)
-    mask_img = model.mask_img or model.masker_.mask_img_
+
+    # Select mask_img to use for plotting
+    if isinstance(model.mask_img, NiftiMasker):
+        mask_img = model.masker_.mask_img_
+    else:
+        try:
+            # check that mask_img is a niiimg-like object
+            check_niimg(model.mask_img)
+            mask_img = model.mask_img
+        except Exception:
+            mask_img = model.masker_.mask_img_
+
     mask_plot_html_code = _mask_to_svg(mask_img=mask_img,
                                        bg_img=bg_img,
                                        )
@@ -626,11 +639,11 @@ def _mask_to_svg(mask_img, bg_img):
 
     """
     if mask_img:
-        mask_plot = plot_roi(roi_img=mask_img,  # noqa: F841
-                             bg_img=bg_img,
-                             display_mode='z',
-                             cmap='Set1',
-                             )
+        plot_roi(roi_img=mask_img,
+                 bg_img=bg_img,
+                 display_mode='z',
+                 cmap='Set1',
+                 )
         mask_plot_svg = _plot_to_svg(plt.gcf())
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close()
@@ -905,7 +918,7 @@ def _stat_map_to_svg(stat_img,
         raise ValueError('Invalid plot type provided. Acceptable options are'
                          "'slice' or 'glass'.")
     with pd.option_context('display.precision', 2):
-        stat_map_plot = _add_params_to_plot(table_details, stat_map_plot)
+        _add_params_to_plot(table_details, stat_map_plot)
     fig = plt.gcf()
     stat_map_svg = _plot_to_svg(fig)
     # prevents sphinx-gallery & jupyter from scraping & inserting plots
@@ -939,10 +952,10 @@ def _add_params_to_plot(table_details, stat_map_plot):
                                  wrap=True,
                                  )
     fig = list(stat_map_plot.axes.values())[0].ax.figure
-    fig = _resize_plot_inches(plot=fig,
-                              width_change=.2,
-                              height_change=1,
-                              )
+    _resize_plot_inches(plot=fig,
+                        width_change=.2,
+                        height_change=1,
+                        )
     if stat_map_plot._black_bg:
         suptitle_text.set_color('w')
     return stat_map_plot

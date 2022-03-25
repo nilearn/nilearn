@@ -6,7 +6,7 @@ def rename_parameters(replacement_params,
                       end_version='future',
                       lib_name='Nilearn',
                       ):
-    """Decorator to deprecate & replace specificied parameters
+    """Decorator to deprecate & replace specified parameters
     in the decorated functions and methods without changing
     function definition or signature.
 

@@ -34,7 +34,7 @@ print('First subject functional nifti image (4D) is at: %s' %
 
 #####################################################################
 # Preprocess
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 
 # This is fmri timeseries data: the background has not been removed yet,
 # thus we need to use mask_strategy='epi' to compute the mask from the

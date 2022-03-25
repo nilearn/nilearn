@@ -6,7 +6,7 @@ See http://nilearn.github.io/manipulating_images/input_output.html
 # License: simplified BSD
 
 import warnings
-from distutils.version import LooseVersion
+from nilearn.version import _compare_version
 import numbers
 
 import numpy as np
@@ -277,7 +277,7 @@ def _resample_one_img(data, A, b, target_shape,
 
     # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
     with warnings.catch_warnings():
-        if LooseVersion(scipy.__version__) >= LooseVersion('0.18'):
+        if _compare_version(scipy.__version__, '>=', '0.18'):
             warnings.simplefilter("ignore", UserWarning)
         # The resampling itself
         ndimage.affine_transform(data, A,
@@ -290,7 +290,7 @@ def _resample_one_img(data, A, b, target_shape,
     if has_not_finite:
         # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
         with warnings.catch_warnings():
-            if LooseVersion(scipy.__version__) >= LooseVersion('0.18'):
+            if _compare_version(scipy.__version__, '>=', '0.18'):
                 warnings.simplefilter("ignore", UserWarning)
             # We need to resample the mask of not_finite values
             not_finite = ndimage.affine_transform(not_finite, A,
@@ -341,7 +341,7 @@ def resample_img(img, target_affine=None, target_shape=None,
         under min(img) are clipped to min(img) and max(img). Note that
         0 is added as an image value for clipping, and it is the padding
         value when extrapolating out of field of view.
-        If False no clip is preformed.
+        If False no clip is performed.
         Default=True.
 
     fill_value : float, optional
@@ -396,10 +396,10 @@ def resample_img(img, target_affine=None, target_shape=None,
     **Handling non-native endian in given Nifti images**
     This function automatically changes the byte-ordering information
     in the image dtype to new byte order. From non-native to native, which
-    implies that if the given image has non-native endianess then the output
+    implies that if the given image has non-native endianness then the output
     data in Nifti image will have native dtype. This is only the case when
     if the given target_affine (transformation matrix) is diagonal and
-    homogenous.
+    homogeneous.
 
     """
     from .image import new_img_like  # avoid circular imports
@@ -445,7 +445,11 @@ def resample_img(img, target_affine=None, target_shape=None,
         if copy and not input_img_is_string:
             img = _utils.copy_img(img)
         return img
-    if target_affine is affine and target_shape is shape:
+    if (
+        np.shape(target_affine) == np.shape(affine)
+        and np.allclose(target_affine, affine)
+        and np.array_equal(target_shape, shape)
+    ):
         return img
     if target_affine is not None:
         target_affine = np.asarray(target_affine)
@@ -513,7 +517,7 @@ def resample_img(img, target_affine=None, target_shape=None,
         target_shape = target_shape.tolist()
     target_shape = tuple(target_shape)
 
-    if LooseVersion(scipy.__version__) < LooseVersion('0.20'):
+    if _compare_version(scipy.__version__, '<', '0.20'):
         # Before scipy 0.20, force native data types due to endian issues
         # that caused instability.
         data = data.astype(data.dtype.newbyteorder('N'))
@@ -531,11 +535,11 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     # Since the release of 0.17, resampling nifti images have some issues
     # when affine is passed as 1D array and if data is of non-native
-    # endianess.
+    # endianness.
     # See issue https://github.com/nilearn/nilearn/issues/1445.
     # If affine is passed as 1D, scipy uses _nd_image.zoom_shift rather
     # than _geometric_transform (2D) where _geometric_transform is able
-    # to swap byte order in scipy later than 0.15 for nonnative endianess.
+    # to swap byte order in scipy later than 0.15 for nonnative endianness.
 
     # We convert to 'native' order to not have any issues either with
     # 'little' or 'big' endian data dtypes (non-native endians).
@@ -582,7 +586,7 @@ def resample_img(img, target_affine=None, target_shape=None,
         # If A is diagonal, ndimage.affine_transform is clever enough to use a
         # better algorithm.
         if np.all(np.diag(np.diag(A)) == A):
-            if LooseVersion(scipy.__version__) < LooseVersion('0.18'):
+            if _compare_version(scipy.__version__, '<', '0.18'):
                 # Before scipy 0.18, ndimage.affine_transform was applying a
                 # different logic to the offset for diagonal affine
                 b = np.dot(linalg.inv(A), b)
@@ -642,7 +646,7 @@ def resample_to_img(source_img, target_img,
         Fortran ordering. Default="F".
 
     clip : bool, optional
-        If False (default) no clip is preformed.
+        If False (default) no clip is performed.
         If True all resampled image values above max(img) and under min(img) are
         clipped to min(img) and max(img). Default=False.
 

@@ -13,7 +13,7 @@ import pytest
 
 from nilearn.mass_univariate import permuted_ols
 from nilearn.mass_univariate.permuted_least_squares import (
-    _t_score_with_covars_and_normalized_design, orthonormalize_matrix)
+    _t_score_with_covars_and_normalized_design, _orthonormalize_matrix)
 
 
 def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):
@@ -128,7 +128,7 @@ def test_t_score_with_covars_and_normalized_design_withcovar(random_state=0):
     var2 = var2 / np.sqrt(np.sum(var2 ** 2, 0))  # normalize
     covars = np.eye(n_samples, 3)  # covars is orthogonal
     covars[3] = -1  # covars is orthogonal to var1
-    covars = orthonormalize_matrix(covars)
+    covars = _orthonormalize_matrix(covars)
 
     # nilearn t-score
     own_score = _t_score_with_covars_and_normalized_design(var1, var2, covars)
@@ -308,8 +308,9 @@ def test_permuted_ols_nocovar(random_state=0):
 
 
 def test_permuted_ols_nocovar_warning(random_state=0):
-    """
-    Ensure that a warning is raised when a given voxel has all zeros.
+    """Ensure that a warning is raised when a given voxel has all zeros.
+
+    This test also checks that an invalid n_jobs value will raise a ValueError.
     """
     rng = check_random_state(random_state)
 
@@ -336,6 +337,17 @@ def test_permuted_ols_nocovar_warning(random_state=0):
             n_perm=100, random_state=random_state)
 
     assert np.array_equal(own_score[1:], own_score2[1:])
+
+    # Ensure that passing an unacceptable n_jobs value will raise a ValueError
+    with pytest.raises(ValueError):
+        permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            n_perm=100,
+            n_jobs=0,  # not allowed
+            random_state=random_state,
+        )
 
 
 def test_permuted_ols_withcovar(random_state=0):

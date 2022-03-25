@@ -50,7 +50,7 @@ sys.stderr.write(" Done (%.2fs).\n" % (time.time() - t0))
 # Then we prepare and mask the data
 # ----------------------------------
 import numpy as np
-from nilearn.input_data import MultiNiftiMasker
+from nilearn.maskers import MultiNiftiMasker
 
 sys.stderr.write("Preprocessing data...")
 t0 = time.time()
@@ -65,12 +65,12 @@ X_test = masker.transform(X_figure_filenames)
 # We load the visual stimuli from csv files
 y_train = []
 for y in y_random_filenames:
-    y_train.append(np.reshape(np.loadtxt(y, dtype=np.int, delimiter=','),
+    y_train.append(np.reshape(np.loadtxt(y, dtype=int, delimiter=','),
                               (-1,) + y_shape, order='F'))
 
 y_test = []
 for y in y_figure_filenames:
-    y_test.append(np.reshape(np.loadtxt(y, dtype=np.int, delimiter=','),
+    y_test.append(np.reshape(np.loadtxt(y, dtype=int, delimiter=','),
                              (-1,) + y_shape, order='F'))
 
 X_train = np.vstack([x[2:] for x in X_train])
@@ -143,14 +143,17 @@ t0 = time.time()
 from sklearn.linear_model import OrthogonalMatchingPursuit as OMP
 from sklearn.feature_selection import f_classif, SelectKBest
 from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 # Create as many OMP as voxels to predict
 clfs = []
 n_clfs = y_train.shape[1]
 for i in range(y_train.shape[1]):
     sys.stderr.write("Training classifiers %03d/%d... \r" % (i + 1, n_clfs))
-    clf = Pipeline([('selection', SelectKBest(f_classif, 500)),
-                    ('clf', OMP(n_nonzero_coefs=10))])
+
+    clf = Pipeline([('selection', SelectKBest(f_classif, k=500)),
+                    ('scl', StandardScaler()),
+                    ('clf', OMP(normalize=False, n_nonzero_coefs=10))])
     clf.fit(X_train, y_train[:, i])
     clfs.append(clf)
 
@@ -242,7 +245,8 @@ print("  - Accuracy (percent): %f" % np.mean([
 print("  - Precision: %f" % np.mean([
     precision_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)]))
 print("  - Recall: %f" % np.mean([
-    recall_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)]))
+    recall_score(y_test[:, i], y_pred[:, i] > .5, zero_division=0)
+    for i in range(100)]))
 print("  - F1-score: %f" % np.mean([
     f1_score(y_test[:, i], y_pred[:, i] > .5) for i in range(100)]))
 

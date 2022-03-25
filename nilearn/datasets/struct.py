@@ -10,6 +10,7 @@ import functools
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 from scipy import ndimage
 from sklearn.utils import Bunch
 
@@ -30,6 +31,11 @@ WM_MNI152_FILE_PATH = os.path.join(
     "mni_icbm152_wm_tal_nlin_sym_09a_converted.nii.gz")
 FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
 
+_LEGACY_FORMAT_MSG = (
+    "`legacy_format` will default to `False` in release 0.11. "
+    "Dataset fetchers will then return pandas dataframes by default "
+    "instead of recarrays."
+)
 
 # workaround for
 # https://github.com/nilearn/nilearn/pull/2738#issuecomment-869018842
@@ -39,6 +45,8 @@ _MNI_RES_WARNING_ALREADY_SHOWN = False
 @fill_doc
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ICBM152 template (dated 2009).
+
+    %(templateflow)s
 
     For more information, see :footcite:`FONOV2011313`,
     :footcite:`Fonov2009`, and :footcite:`Collins1999algorithm`.
@@ -54,13 +62,46 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     -------
     data : sklearn.datasets.base.Bunch
         Dictionary-like object, interest keys are:
-        "t1", "t2", "t2_relax", "pd": anatomical images obtained with the
-        given modality (resp. T1, T2, T2 relaxometry and proton
-        density weighted). Values are file paths.
-        "gm", "wm", "csf": segmented images, giving resp. grey matter,
-        white matter and cerebrospinal fluid. Values are file paths.
-        "eye_mask", "face_mask", "mask": use these images to mask out
-        parts of mri images. Values are file paths.
+
+        - "t1": str,
+          Path to T1-weighted anatomical image
+        - "t2": str,
+          Path to T2-weighted anatomical image
+        - "t2_relax": str,
+          Path to anatomical image obtained with the T2 relaxometry
+        - "pd": str,
+          Path to the proton density weighted anatomical image
+        - "gm": str,
+          Path to grey matter segmented image
+        - "wm": str,
+          Path to white matter segmented image
+        - "csf": str,
+          Path to cerebrospinal fluid segmented image
+        - "eye_mask": str,
+          Path to eye mask useful to mask out part of MRI images
+        - "face_mask": str,
+          Path to face mask useful to mask out part of MRI images
+        - "mask": str,
+          Path to whole brain mask useful to mask out skull areas
+
+    See Also
+    --------
+    nilearn.datasets.load_mni152_template: to load MNI152 T1 template.
+
+    nilearn.datasets.load_mni152_gm_template: to load MNI152 grey matter
+        template.
+
+    nilearn.datasets.load_mni152_wm_template: to load MNI152 white matter
+        template.
+
+    nilearn.datasets.load_mni152_brain_mask: to load MNI152 whole brain mask.
+
+    nilearn.datasets.load_mni152_gm_mask: to load MNI152 grey matter mask.
+
+    nilearn.datasets.load_mni152_wm_mask: to load MNI152 white matter mask.
+
+    nilearn.datasets.fetch_icbm152_brain_gm_mask: to fetch only ICBM grey
+        matter mask.
 
     References
     ----------
@@ -73,6 +114,13 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     The original download URL is
     http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip
+
+    TemplateFlow repository for ICBM152 2009
+
+    Symmetric: https://github.com/templateflow/tpl-MNI152NLin2009cSym
+
+    Asymmetric: https://github.com/templateflow/tpl-MNI152NLin2009cSAsym
+
 
     """
     if url is None:
@@ -137,6 +185,9 @@ def load_mni152_template(resolution=None):
 
     See Also
     --------
+    nilearn.datasets.fetch_icbm152_2009: for details regarding the difference
+        between NiLearn and :term:`fMRIPrep` ICBM152 template.
+
     nilearn.datasets.load_mni152_gm_template : for details about version of the
         MNI152 grey-matter template.
 
@@ -153,7 +204,8 @@ def load_mni152_template(resolution=None):
     if resolution is None:
         if not _MNI_RES_WARNING_ALREADY_SHOWN:
             warnings.warn("Default resolution of the MNI template will change "
-                          "from 2mm to 1mm in version 0.10.0", FutureWarning)
+                          "from 2mm to 1mm in version 0.10.0", FutureWarning,
+                          stacklevel=2)
             _MNI_RES_WARNING_ALREADY_SHOWN = True
         resolution = 2
 
@@ -457,6 +509,8 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
                                 n_iter=2, verbose=1):
     """Downloads ICBM152 template first, then loads the 'gm' mask.
 
+     %(templateflow)s
+
     .. versionadded:: 0.2.5
 
     Parameters
@@ -517,7 +571,7 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
 
 @fill_doc
 def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
-                    url=None, resume=True, verbose=1):
+                    url=None, resume=True, verbose=1, legacy_format=True):
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
     For more information, see :footcite:`OASISbrain`,
@@ -536,6 +590,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
     %(url)s
     %(resume)s
     %(verbose)s
+    %(legacy_format)s
 
     Returns
     -------
@@ -701,17 +756,23 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
     data_usage_agreement = files[-1]
 
     # Keep CSV information only for selected subjects
-    csv_data = np.recfromcsv(ext_vars_file)
+    csv_data = pd.read_csv(ext_vars_file)
     # Comparisons to recfromcsv data must be bytes.
     actual_subjects_ids = [("OAS1" +
                             str.split(os.path.basename(x),
-                                      "OAS1")[1][:9]).encode()
+                                      "OAS1")[1][:9])
                            for x in gm_maps]
     subject_mask = np.asarray([subject_id in actual_subjects_ids
-                               for subject_id in csv_data['id']])
+                               for subject_id in csv_data['ID']])
     csv_data = csv_data[subject_mask]
-
+    csv_data = csv_data.rename(
+        columns={c: c.lower().replace("/", "") for c in csv_data.columns}
+    )
     fdescr = _get_dataset_descr(dataset_name)
+
+    if legacy_format:
+        warnings.warn(_LEGACY_FORMAT_MSG)
+        csv_data = csv_data.to_records(index=False)
 
     return Bunch(
         gray_matter_maps=gm_maps,

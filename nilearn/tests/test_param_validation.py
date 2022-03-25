@@ -33,36 +33,34 @@ def test_check_threshold():
                            match='{0}.+should be a number followed by '
                                  'the percent sign'.format(name)):
             check_threshold(wrong_threshold, matrix,
-                            'fast_abs_percentile', name)
+                            fast_abs_percentile, name)
 
     threshold = object()
     with pytest.raises(TypeError,
                        match='{0}.+should be either a number '
                              'or a string'.format(name)):
         check_threshold(threshold, matrix,
-                        'fast_abs_percentile', name)
+                        fast_abs_percentile, name)
 
     # Test threshold as int, threshold=2 should return as it is
     # since it is not string
-    assert check_threshold(2, matrix, percentile_func=fast_abs_percentile) == 2
+    assert check_threshold(2, matrix, fast_abs_percentile) == 2
 
     # check whether raises a warning if given threshold is higher than expected
     with pytest.warns(UserWarning):
-        check_threshold(3., matrix,
-                        percentile_func=fast_abs_percentile)
+        check_threshold(3., matrix, fast_abs_percentile)
 
     # test with numpy scalar as argument
     threshold = 2.
     threshold_numpy_scalar = np.float64(threshold)
     assert (
-        check_threshold(threshold, matrix, percentile_func=fast_abs_percentile) ==
-        check_threshold(threshold_numpy_scalar, matrix,
-                        percentile_func=fast_abs_percentile))
+        check_threshold(threshold, matrix, fast_abs_percentile)
+        == check_threshold(threshold_numpy_scalar, matrix,
+                           fast_abs_percentile))
 
     # Test for threshold provided as a percentile of the data (str ending with a
     # %)
-    assert 1. < check_threshold("50%", matrix,
-                                percentile_func=fast_abs_percentile,
+    assert 1. < check_threshold("50%", matrix, fast_abs_percentile,
                                 name=name) <= 2.
 
 

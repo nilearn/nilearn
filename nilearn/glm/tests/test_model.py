@@ -61,7 +61,7 @@ def test_model():
 
 
 def test_t_contrast():
-    # Test indivudual t against R
+    # Test individual t against R
     assert_array_almost_equal(RESULTS.t(0), 3.25)
     assert_array_almost_equal(RESULTS.t(1), 7.181, 3)
     # And contrast

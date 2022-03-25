@@ -19,13 +19,13 @@ import numpy as np
 import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
-from nibabel.onetime import auto_attr
 from sklearn.base import clone
 from sklearn.cluster import KMeans
 
+from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
+from nilearn._utils import fill_doc
 from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
-                                _check_run_tables, get_bids_files,
-                                parse_bids_filename)
+                                _check_run_tables)
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn.glm.contrasts import (_compute_fixed_effect_contrast,
                                    expression_to_contrast_vector)
@@ -131,7 +131,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         'all CPUs'. Default=1.
 
     verbose : int, optional
-        The verbosity level. Defaut=0.
+        The verbosity level. Default=0.
 
     Returns
     -------
@@ -144,7 +144,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
 
     """
     acceptable_noise_models = ['ols', 'arN']
-    if ((noise_model[:2] != 'ar') and (noise_model is not 'ols')):
+    if ((noise_model[:2] != 'ar') and (noise_model != 'ols')):
         raise ValueError(
             "Acceptable noise models are {0}. You provided "
             "'noise_model={1}'".format(acceptable_noise_models,
@@ -164,7 +164,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
 
         err_msg = ('AR order must be a positive integer specified as arN, '
                    'where N is an integer. E.g. ar3. '
-                   'You provied {0}.'.format(noise_model))
+                   'You provided {0}.'.format(noise_model))
         try:
             ar_order = int(noise_model[2:])
         except ValueError:
@@ -179,8 +179,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         # Either bin the AR1 coefs or cluster ARN coefs
         if ar_order == 1:
             for idx in range(len(ar_coef_)):
-                ar_coef_[idx] = (ar_coef_[idx] * bins).astype(int) \
-                                * 1. / bins
+                ar_coef_[idx] = (ar_coef_[idx] * bins).astype(int) * 1. / bins
             labels = np.array([str(val) for val in ar_coef_])
         else:  # AR(N>1) case
             n_clusters = np.min([bins, Y.shape[1]])
@@ -217,6 +216,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     return labels, results
 
 
+@fill_doc
 class FirstLevelModel(BaseGLM):
     """ Implementation of the General Linear Model
     for single session fMRI data.
@@ -226,7 +226,7 @@ class FirstLevelModel(BaseGLM):
     t_r : float
         This parameter indicates repetition times of the experimental runs.
         In seconds. It is necessary to correctly consider times in the design
-        matrix. This parameter is also passed to nilearn.signal.clean.
+        matrix. This parameter is also passed to :func:`nilearn.signal.clean`.
         Please see the related documentation for details.
 
     slice_time_ref : float, optional
@@ -234,12 +234,8 @@ class FirstLevelModel(BaseGLM):
         slice timing preprocessing step of the experimental runs. It is
         expressed as a percentage of the t_r (time repetition), so it can have
         values between 0. and 1. Default=0.
-
-    hrf_model : {'glover', 'spm', 'spm + derivative', 'spm + derivative + dispersion',
-        'glover + derivative', 'glover + derivative + dispersion', 'fir', None}, optional
-        String that specifies the hemodynamic response function.
+    %(hrf_model)s
         Default='glover'.
-
     drift_model : string, optional
         This parameter specifies the desired drift model for the design
         matrices. It can be 'polynomial', 'cosine' or None.
@@ -251,7 +247,7 @@ class FirstLevelModel(BaseGLM):
         Default=0.01.
 
     drift_order : int, optional
-        This parameter specifices the order of the drift model (in case it is
+        This parameter specifies the order of the drift model (in case it is
         polynomial) for the design matrices. Default=1.
 
     fir_delays : array of shape(n_onsets) or list, optional
@@ -276,11 +272,7 @@ class FirstLevelModel(BaseGLM):
     target_shape : 3-tuple of integers, optional
         This parameter is passed to nilearn.image.resample_img.
         Please see the related documentation for details.
-
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the size in millimeters of
-        the spatial smoothing to apply to the signal.
-
+    %(smoothing_fwhm)s
     memory : string, optional
         Path to the directory used to cache the masking process and the glm
         fit. By default, no caching is done.
@@ -377,8 +369,7 @@ class FirstLevelModel(BaseGLM):
         if signal_scaling is False:
             self.signal_scaling = signal_scaling
         elif signal_scaling in [0, 1, (0, 1)]:
-            self.scaling_axis = signal_scaling
-            self.signal_scaling = True
+            self.signal_scaling = signal_scaling
             self.standardize = False
         else:
             raise ValueError('signal_scaling must be "False", "0", "1"'
@@ -392,6 +383,14 @@ class FirstLevelModel(BaseGLM):
         self.labels_ = None
         self.results_ = None
         self.subject_label = subject_label
+
+    @property
+    def scaling_axis(self):
+        warn(DeprecationWarning(
+            "Deprecated. `scaling_axis` will be removed in 0.11.0. "
+            "Please use `signal_scaling` instead."
+        ))
+        return self.signal_scaling
 
     def fit(self, run_imgs, events=None, confounds=None,
             design_matrices=None, bins=100):
@@ -408,20 +407,22 @@ class FirstLevelModel(BaseGLM):
             Data on which the GLM will be fitted. If this is a list,
             the affine is considered the same for all.
 
-        events : pandas Dataframe or string or list of pandas DataFrames or strings, optional
+        events : pandas Dataframe or string or list of pandas DataFrames \
+                 or strings, optional
             fMRI events used to build design matrices. One events object
             expected per run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
         confounds : pandas Dataframe, numpy array or string or
-            list of pandas DataFrames, numpy arays or strings, optional
+            list of pandas DataFrames, numpy arrays or strings, optional
             Each column in a DataFrame corresponds to a confound variable
             to be included in the regression model of the respective run_img.
             The number of rows must match the number of volumes in the
             respective run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        design_matrices : pandas DataFrame or list of pandas DataFrames, optional
+        design_matrices : pandas DataFrame or \
+                          list of pandas DataFrames, optional
             Design matrices that will be used to fit the GLM. If given it
             takes precedence over events and confounds.
 
@@ -437,10 +438,14 @@ class FirstLevelModel(BaseGLM):
         self.masker_ = None
 
         # Raise a warning if both design_matrices and confounds are provided
-        if design_matrices is not None and (confounds is not None or events is not None):
-            warn('If design matrices are supplied, confounds and events will be ignored.')
+        if design_matrices is not None and \
+                (confounds is not None or events is not None):
+            warn(
+                'If design matrices are supplied, '
+                'confounds and events will be ignored.'
+            )
         # Local import to prevent circular imports
-        from nilearn.input_data import NiftiMasker  # noqa
+        from nilearn.maskers import NiftiMasker  # noqa
 
         # Check arguments
         # Check imgs type
@@ -496,7 +501,7 @@ class FirstLevelModel(BaseGLM):
                         continue
                     if getattr(self.masker_, param_name) is not None:
                         warn('Parameter %s of the masker'
-                             ' overriden' % param_name)
+                             ' overridden' % param_name)
                     setattr(self.masker_, param_name, our_param)
                 self.masker_.fit(run_imgs[0])
             else:
@@ -568,8 +573,8 @@ class FirstLevelModel(BaseGLM):
                 sys.stderr.write('Masker took %d seconds       \n'
                                  % t_masking)
 
-            if self.signal_scaling:
-                Y, _ = mean_scaling(Y, self.scaling_axis)
+            if self.signal_scaling is not False:  # noqa
+                Y, _ = mean_scaling(Y, self.signal_scaling)
             if self.memory:
                 mem_glm = self.memory.cache(run_glm, ignore=['n_jobs'])
             else:
@@ -621,12 +626,12 @@ class FirstLevelModel(BaseGLM):
             with operators +-`*`/.
 
         stat_type : {'t', 'F'}, optional
-            type of the contrast
+            Type of the contrast.
 
         output_type : str, optional
             Type of the output map. Can be 'z_score', 'stat', 'p_value',
             'effect_size', 'effect_variance' or 'all'.
-            Default='z-score'.
+            Default='z_score'.
 
         Returns
         -------
@@ -652,7 +657,7 @@ class FirstLevelModel(BaseGLM):
             warn('One contrast given, assuming it for all %d runs' % n_runs)
             con_vals = con_vals * n_runs
         elif n_contrasts != n_runs:
-            raise ValueError('%n contrasts given, while there are %n runs' %
+            raise ValueError('%d contrasts given, while there are %d runs' %
                              (n_contrasts, n_runs))
 
         # Translate formulas to vectors
@@ -755,49 +760,6 @@ class FirstLevelModel(BaseGLM):
             output.append(self.masker_.inverse_transform(voxelwise_attribute))
 
         return output
-
-    @auto_attr
-    def residuals(self):
-        """Transform voxelwise residuals to the same shape
-        as the input Nifti1Image(s)
-
-        Returns
-        -------
-        output : list
-            A list of Nifti1Image(s).
-
-        """
-        return self._get_voxelwise_model_attribute('resid',
-                                                   result_as_time_series=True)
-
-    @auto_attr
-    def predicted(self):
-        """Transform voxelwise predicted values to the same shape
-        as the input Nifti1Image(s)
-
-        Returns
-        -------
-        output : list
-            A list of Nifti1Image(s).
-
-        """
-        return self._get_voxelwise_model_attribute('predicted',
-                                                   result_as_time_series=True)
-
-    @auto_attr
-    def r_square(self):
-        """Transform voxelwise r-squared values to the same shape
-        as the input Nifti1Image(s)
-
-        Returns
-        -------
-        output : list
-            A list of Nifti1Image(s).
-
-        """
-        return self._get_voxelwise_model_attribute('r_square',
-                                                   result_as_time_series=False
-                                                   )
 
 
 def first_level_from_bids(dataset_path, task_label, space_label=None,
@@ -913,7 +875,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         img_specs = get_bids_files(derivatives_path, modality_folder='func',
                                    file_tag='bold', file_type='json',
                                    filters=filters)
-        # If we dont find the parameter information in the derivatives folder
+        # If we don't find the parameter information in the derivatives folder
         # we try to search in the raw data folder
         if not img_specs:
             img_specs = get_bids_files(dataset_path, modality_folder='func',

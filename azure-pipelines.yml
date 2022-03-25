@@ -11,7 +11,7 @@ jobs:
 
 - job: 'run_tests_on_windows'
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-latest'
   strategy:
     matrix:
       Python36:
@@ -164,7 +164,7 @@ jobs:
     displayName: 'Test that required package are installed'
 
 
-- job: 'test_expeceted_to_fail_installation_on_linux'
+- job: 'test_expected_to_fail_installation_on_linux'
   pool:
     vmImage: 'ubuntu-18.04'
   strategy:

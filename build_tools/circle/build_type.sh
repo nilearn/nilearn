@@ -23,4 +23,3 @@ else
     fi;
 fi;
 echo "$PATTERN" > pattern.txt;
-

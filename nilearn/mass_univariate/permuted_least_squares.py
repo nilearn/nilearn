@@ -12,33 +12,34 @@ import numpy as np
 from scipy import linalg
 from sklearn.utils import check_random_state
 
-def normalize_matrix_on_axis(m, axis=0):
+
+def _normalize_matrix_on_axis(m, axis=0):
     """ Normalize a 2D matrix on an axis.
 
     Parameters
     ----------
     m : numpy 2D array,
-      The matrix to normalize.
+        The matrix to normalize.
 
     axis : integer in {0, 1}, optional
-      A valid axis to normalize across.
-      Default=0.
+        A valid axis to normalize across.
+        Default=0.
 
     Returns
     -------
     ret : numpy array, shape = m.shape
-      The normalized matrix
+        The normalized matrix
 
     Examples
     --------
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
-    ...     normalize_matrix_on_axis)
+    ...     _normalize_matrix_on_axis)
     >>> X = np.array([[0, 4], [1, 0]])
-    >>> normalize_matrix_on_axis(X)
+    >>> _normalize_matrix_on_axis(X)
     array([[0., 1.],
            [1., 0.]])
-    >>> normalize_matrix_on_axis(X, axis=1)
+    >>> _normalize_matrix_on_axis(X, axis=1)
     array([[0., 1.],
            [1., 0.]])
 
@@ -51,13 +52,13 @@ def normalize_matrix_on_axis(m, axis=0):
         # array transposition preserves the contiguity flag of that array
         ret = (m.T / np.sqrt(np.sum(m ** 2, axis=0))[:, np.newaxis]).T
     elif axis == 1:
-        ret = normalize_matrix_on_axis(m.T).T
+        ret = _normalize_matrix_on_axis(m.T).T
     else:
         raise ValueError('axis(=%d) out of bounds' % axis)
     return ret
 
 
-def orthonormalize_matrix(m, tol=1.e-12):
+def _orthonormalize_matrix(m, tol=1.e-12):
     """ Orthonormalize a matrix.
 
     Uses a Singular Value Decomposition.
@@ -66,28 +67,28 @@ def orthonormalize_matrix(m, tol=1.e-12):
     Parameters
     ----------
     m : numpy array,
-      The matrix to orthonormalize.
+        The matrix to orthonormalize.
 
     tol: float, optional
-      Tolerance parameter for nullity. Default=1e-12.
+        Tolerance parameter for nullity. Default=1e-12.
 
     Returns
     -------
     ret : numpy array, shape = m.shape
-      The orthonormalized matrix.
+        The orthonormalized matrix.
 
     Examples
     --------
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
-    ...     orthonormalize_matrix)
+    ...     _orthonormalize_matrix)
     >>> X = np.array([[1, 2], [0, 1], [1, 1]])
-    >>> orthonormalize_matrix(X)
+    >>> _orthonormalize_matrix(X)
     array([[-0.81049889, -0.0987837 ],
            [-0.31970025, -0.75130448],
            [-0.49079864,  0.65252078]])
     >>> X = np.array([[0, 1], [4, 0]])
-    >>> orthonormalize_matrix(X)
+    >>> _orthonormalize_matrix(X)
     array([[ 0., -1.],
            [-1.,  0.]])
 
@@ -111,19 +112,20 @@ def _t_score_with_covars_and_normalized_design(tested_vars, target_vars,
     Parameters
     ----------
     tested_vars : array-like, shape=(n_samples, n_tested_vars)
-      Explanatory variates.
+        Explanatory variates.
 
     target_vars : array-like, shape=(n_samples, n_target_vars)
-      Targets variates. F-ordered is better for efficient computation.
+        Targets variates. F-ordered is better for efficient computation.
 
-    covars_orthonormalized : array-like, shape=(n_samples, n_covars) or None, optional
-      Confounding variates.
+    covars_orthonormalized : array-like, shape=(n_samples, n_covars) or None, \
+            optional
+        Confounding variates.
 
     Returns
     -------
     score : numpy.ndarray, shape=(n_target_vars, n_tested_vars)
-      t-scores associated with the tests of each explanatory variate against
-      each target variate (in the presence of covars).
+        t-scores associated with the tests of each explanatory variate against
+        each target variate (in the presence of covars).
 
     """
     if covars_orthonormalized is None:
@@ -143,10 +145,19 @@ def _t_score_with_covars_and_normalized_design(tested_vars, target_vars,
     return beta_targetvars_testedvars * np.sqrt((dof - 1.) / rss)
 
 
-def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars, thread_id,
-                           confounding_vars=None, n_perm=10000, n_perm_chunk=10000,
-                           intercept_test=True, two_sided_test=True,
-                           random_state=None, verbose=0):
+def _permuted_ols_on_chunk(
+    scores_original_data,
+    tested_vars,
+    target_vars,
+    thread_id,
+    confounding_vars=None,
+    n_perm=10000,
+    n_perm_chunk=10000,
+    intercept_test=True,
+    two_sided_test=True,
+    random_state=None,
+    verbose=0,
+):
     """Massively univariate group analysis with permuted OLS on a data chunk.
 
     To be used in a parallel computing context.
@@ -154,51 +165,51 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars, threa
     Parameters
     ----------
     scores_original_data : array-like, shape=(n_descriptors, n_regressors)
-      t-scores obtained for the original (non-permuted) data.
+        t-scores obtained for the original (non-permuted) data.
 
     tested_vars : array-like, shape=(n_samples, n_regressors)
-      Explanatory variates.
+        Explanatory variates.
 
     target_vars : array-like, shape=(n_samples, n_targets)
-      fMRI data. F-ordered for efficient computations.
+        fMRI data. F-ordered for efficient computations.
 
     thread_id : int
         process id, used for display.
 
     confounding_vars : array-like, shape=(n_samples, n_covars), optional
-      Clinical data (covariates).
+        Clinical data (covariates).
 
     n_perm : int, optional
-      Total number of permutations to perform, only used for
-      display in this function. Default=10000.
+        Total number of permutations to perform, only used for
+        display in this function. Default=10000.
 
     n_perm_chunk : int, optional
-      Number of permutations to be performed. Default=10000.
+        Number of permutations to be performed. Default=10000.
 
     intercept_test : boolean, optional
-      Change the permutation scheme (swap signs for intercept,
-      switch labels otherwise). See [1]_.
-      Default=True.
+        Change the permutation scheme (swap signs for intercept,
+        switch labels otherwise). See [1]_.
+        Default=True.
 
     two_sided_test : boolean, optional
-      If True, performs an unsigned t-test. Both positive and negative
-      effects are considered; the null hypothesis is that the effect is zero.
-      If False, only positive effects are considered as relevant. The null
-      hypothesis is that the effect is zero or negative.
-      Default=True
+        If True, performs an unsigned t-test. Both positive and negative
+        effects are considered; the null hypothesis is that the effect is zero.
+        If False, only positive effects are considered as relevant. The null
+        hypothesis is that the effect is zero or negative.
+        Default=True
 
     random_state : int or None, optional
-      Seed for random number generator, to have the same permutations
-      in each computing units.
+        Seed for random number generator, to have the same permutations
+        in each computing units.
 
     verbose : int, optional
-      Defines the verbosity level. Default=0.
+        Defines the verbosity level. Default=0.
 
     Returns
     -------
     h0_fmax_part : array-like, shape=(n_perm_chunk, )
-      Distribution of the (max) t-statistic under the null hypothesis
-      (limited to this permutation chunk).
+        Distribution of the (max) t-statistic under the null hypothesis
+        (limited to this permutation chunk).
 
     References
     ----------
@@ -267,9 +278,17 @@ def _permuted_ols_on_chunk(scores_original_data, tested_vars, target_vars, threa
     return scores_as_ranks_part, h0_fmax_part.T
 
 
-def permuted_ols(tested_vars, target_vars, confounding_vars=None,
-                 model_intercept=True, n_perm=10000, two_sided_test=True,
-                 random_state=None, n_jobs=1, verbose=0):
+def permuted_ols(
+    tested_vars,
+    target_vars,
+    confounding_vars=None,
+    model_intercept=True,
+    n_perm=10000,
+    two_sided_test=True,
+    random_state=None,
+    n_jobs=1,
+    verbose=0,
+):
     """Massively univariate group analysis with permuted OLS.
 
     Tested variates are independently fitted to target variates descriptors
@@ -296,43 +315,43 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     Parameters
     ----------
     tested_vars : array-like, shape=(n_samples, n_regressors)
-      Explanatory variates, fitted and tested independently from each others.
+        Explanatory variates, fitted and tested independently from each others.
 
     target_vars : array-like, shape=(n_samples, n_descriptors)
-      fMRI data, trying to be explained by explanatory and confounding
-      variates.
+        fMRI data, trying to be explained by explanatory and confounding
+        variates.
 
     confounding_vars : array-like, shape=(n_samples, n_covars), optional
-      Confounding variates (covariates), fitted but not tested.
-      If None, no confounding variate is added to the model
-      (except maybe a constant column according to the value of
-      `model_intercept`)
+        Confounding variates (covariates), fitted but not tested.
+        If None, no confounding variate is added to the model
+        (except maybe a constant column according to the value of
+        `model_intercept`)
 
     model_intercept : bool, optional
-      If True, a constant column is added to the confounding variates
-      unless the tested variate is already the intercept.
-      Default=True
+        If True, a constant column is added to the confounding variates
+        unless the tested variate is already the intercept.
+        Default=True
 
     n_perm : int, optional
-      Number of permutations to perform.
-      Permutations are costly but the more are performed, the more precision
-      one gets in the p-values estimation. Default=10000.
+        Number of permutations to perform.
+        Permutations are costly but the more are performed, the more precision
+        one gets in the p-values estimation. Default=10000.
 
     two_sided_test : boolean, optional
-      If True, performs an unsigned t-test. Both positive and negative
-      effects are considered; the null hypothesis is that the effect is zero.
-      If False, only positive effects are considered as relevant. The null
-      hypothesis is that the effect is zero or negative. Default=True.
+        If True, performs an unsigned t-test. Both positive and negative
+        effects are considered; the null hypothesis is that the effect is zero.
+        If False, only positive effects are considered as relevant. The null
+        hypothesis is that the effect is zero or negative. Default=True.
 
     random_state : int or None, optional
-      Seed for random number generator, to have the same permutations
-      in each computing units.
+        Seed for random number generator, to have the same permutations
+        in each computing units.
 
     n_jobs : int, optional
-      Number of parallel workers.
-      If 0 is provided, all CPUs are used.
-      A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
-      ones will be used. Default=1.
+        Number of parallel workers.
+        If -1 is provided, all CPUs are used.
+        A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
+        ones will be used. Default=1.
 
     verbose : int, optional
         verbosity level (0 means no message). Default=0.
@@ -340,30 +359,31 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     Returns
     -------
     pvals : array-like, shape=(n_regressors, n_descriptors)
-      Negative log10 p-values associated with the significance test of the
-      n_regressors explanatory variates against the n_descriptors target
-      variates. Family-wise corrected p-values.
+        Negative log10 p-values associated with the significance test of the
+        n_regressors explanatory variates against the n_descriptors target
+        variates. Family-wise corrected p-values.
 
     score_orig_data : numpy.ndarray, shape=(n_regressors, n_descriptors)
-      t-statistic associated with the significance test of the n_regressors
-      explanatory variates against the n_descriptors target variates.
-      The ranks of the scores into the h0 distribution correspond to the
-      p-values.
+        t-statistic associated with the significance test of the n_regressors
+        explanatory variates against the n_descriptors target variates.
+        The ranks of the scores into the h0 distribution correspond to the
+        p-values.
 
     h0_fmax : array-like, shape=(n_perm, )
-      Distribution of the (max) t-statistic under the null hypothesis
-      (obtained from the permutations). Array is sorted.
+        Distribution of the (max) t-statistic under the null hypothesis
+        (obtained from the permutations). Array is sorted.
 
     References
     ----------
     .. [1] Anderson, M. J. & Robinson, J. (2001). Permutation tests for
-       linear models. Australian & New Zealand Journal of Statistics, 43(1), 75-88.
+       linear models. Australian & New Zealand Journal of Statistics, 43(1),
+       75-88.
 
     .. [2] Winkler, A. M. et al. (2014). Permutation inference for the general
        linear model. Neuroimage.
 
-    .. [3] Freedman, D. & Lane, D. (1983). A nonstochastic interpretation of reported
-       significance levels. J. Bus. Econ. Stats., 1(4), 292-298
+    .. [3] Freedman, D. & Lane, D. (1983). A nonstochastic interpretation of
+       reported significance levels. J. Bus. Econ. Stats., 1(4), 292-298
 
     """
     # initialize the seed of the random generator
@@ -388,9 +408,11 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     target_vars = np.asfortranarray(target_vars)  # efficient for chunking
     n_descriptors = target_vars.shape[1]
     if np.any(np.all(target_vars == 0, axis=0)):
-        warnings.warn("Some descriptors in 'target_vars' have zeros across all "
-                      "samples. These descriptors will be ignored during null "
-                      "distribution generation.")
+        warnings.warn(
+            "Some descriptors in 'target_vars' have zeros across all samples. "
+            "These descriptors will be ignored during null distribution "
+            "generation."
+        )
 
     # check explanatory variates dimensions
     if tested_vars.ndim == 1:
@@ -414,13 +436,13 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
     ### OLS regression on original data
     if confounding_vars is not None:
         # step 1: extract effect of covars from target vars
-        covars_orthonormalized = orthonormalize_matrix(confounding_vars)
+        covars_orthonormalized = _orthonormalize_matrix(confounding_vars)
         if not covars_orthonormalized.flags['C_CONTIGUOUS']:
             # useful to developer
             warnings.warn('Confounding variates not C_CONTIGUOUS.')
             covars_orthonormalized = np.ascontiguousarray(
                 covars_orthonormalized)
-        targetvars_normalized = normalize_matrix_on_axis(
+        targetvars_normalized = _normalize_matrix_on_axis(
             target_vars).T  # faster with F-ordered target_vars_chunk
         if not targetvars_normalized.flags['C_CONTIGUOUS']:
             # useful to developer
@@ -430,19 +452,21 @@ def permuted_ols(tested_vars, target_vars, confounding_vars=None,
                                         covars_orthonormalized)
         targetvars_resid_covars = targetvars_normalized - np.dot(
             beta_targetvars_covars, covars_orthonormalized.T)
-        targetvars_resid_covars = normalize_matrix_on_axis(
+        targetvars_resid_covars = _normalize_matrix_on_axis(
             targetvars_resid_covars, axis=1)
         # step 2: extract effect of covars from tested vars
-        testedvars_normalized = normalize_matrix_on_axis(tested_vars.T, axis=1)
+        testedvars_normalized = _normalize_matrix_on_axis(
+            tested_vars.T, axis=1
+        )
         beta_testedvars_covars = np.dot(testedvars_normalized,
                                         covars_orthonormalized)
         testedvars_resid_covars = testedvars_normalized - np.dot(
             beta_testedvars_covars, covars_orthonormalized.T)
-        testedvars_resid_covars = normalize_matrix_on_axis(
+        testedvars_resid_covars = _normalize_matrix_on_axis(
             testedvars_resid_covars, axis=1).T.copy()
     else:
-        targetvars_resid_covars = normalize_matrix_on_axis(target_vars).T
-        testedvars_resid_covars = normalize_matrix_on_axis(tested_vars).copy()
+        targetvars_resid_covars = _normalize_matrix_on_axis(target_vars).T
+        testedvars_resid_covars = _normalize_matrix_on_axis(tested_vars).copy()
         covars_orthonormalized = None
     # check arrays contiguousity (for the sake of code efficiency)
     if not targetvars_resid_covars.flags['C_CONTIGUOUS']:

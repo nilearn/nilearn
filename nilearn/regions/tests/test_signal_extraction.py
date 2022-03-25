@@ -8,7 +8,7 @@ import numpy as np
 import nibabel
 import pytest
 
-from nilearn.input_data import NiftiLabelsMasker
+from nilearn.maskers import NiftiLabelsMasker
 from nilearn.regions import signal_extraction
 from nilearn._utils.testing import write_tmp_imgs
 from nilearn._utils.data_gen import generate_timeseries, generate_regions_ts
@@ -435,4 +435,3 @@ def test_img_to_signals_labels_non_float_type(target_dtype):
     timeseries_float = masker.transform(fake_fmri_img_orig)
     assert np.sum(timeseries_int) != 0
     assert np.allclose(timeseries_int, timeseries_float)
-
