@@ -181,8 +181,8 @@ def save_glm_to_bids(
 
     Parameters
     ----------
-    model : :obj:`nilearn.glm.first_level.FirstLevelModel` or
-            :obj:`nilearn.glm.second_level.SecondLevelModel`
+    model : :obj:`~nilearn.glm.first_level.FirstLevelModel` or
+            :obj:`~nilearn.glm.second_level.SecondLevelModel`
         First- or second-level model from which to save outputs.
     contrasts : :obj:`dict` of :obj:`str`-:obj:`numpy.ndarray` pairs
         A dictionary containing contrasts. Keys are contrast names,
@@ -229,6 +229,8 @@ def save_glm_to_bids(
     - Contrast p- and z-values (contrast-[name]_stat-[p|z]_statmap.nii.gz)
     - Contrast weights figure (contrast-[name]_design.svg)
     """
+    # Define which FirstLevelModel attributes are BIDS compliant and which
+    # should be bundled in a new "ModelParameters" field.
     DATA_ATTRIBUTES = [
         't_r',
     ]
@@ -252,7 +254,7 @@ def save_glm_to_bids(
 
     if isinstance(prefix, str) and not prefix.endswith('_'):
         prefix += '_'
-    else:
+    elif not isinstance(prefix, str):
         prefix = ''
 
     out_dir = os.path.abspath(out_dir)
@@ -273,9 +275,7 @@ def save_glm_to_bids(
     # TODO: Assuming that cases of multiple design matrices correspond to
     # different runs. Not sure if this is correct. Need to check.
     for i_run, design_matrix in enumerate(design_matrices):
-        run_str = (
-            f'run-{i_run + 1}_' if len(design_matrices) > 1 else ''
-        )
+        run_str = f'run-{i_run + 1}_' if len(design_matrices) > 1 else ''
 
         # Save design matrix and associated figure
         dm_file = os.path.join(
