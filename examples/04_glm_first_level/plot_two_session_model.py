@@ -56,6 +56,16 @@ design_files = [data['design_matrix1'], data['design_matrix2']]
 design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 
 ###############################################################################
+# To define the contrasts, we will first use a small function to ease the
+# contrast definition.
+
+
+def pad_vector(contrast_, n_columns):
+    """A small routine to append zeros in contrast vectors."""
+    return np.hstack((contrast_, np.zeros(n_columns - len(contrast_))))
+
+
+###############################################################################
 # Initialize the GLM
 # ------------------
 # First, we need to specify the model before fitting it to the data.
@@ -74,7 +84,7 @@ fmri_glm = FirstLevelModel(
 # Here, we compare the activation mas produced from each session separately and
 # then the fixed effects version.
 cut_coords = [-129, -126, 49]
-contrast_id = 'Effects_of_Interest'
+contrast_id = 'DSt_minus_SSt'
 
 ###############################################################################
 # Compute the statistics for the first session.
@@ -82,8 +92,7 @@ from nilearn import plotting
 
 # Here, we define the contrast of interest for the first session.
 # This may differ across sessions depending on if the design matrices vary.
-n_columns = design_matrices[0].shape[1]
-contrast_val = np.eye(n_columns)[:5, :]
+contrast_val = pad_vector([-1, -1, 1, 1], design_matrices[0].shape[1])
 
 fmri_glm_ses1 = fmri_glm.fit(fmri_imgs[0], design_matrices=design_matrices[0])
 summary_statistics_ses1 = fmri_glm_ses1.compute_contrast(
@@ -102,8 +111,7 @@ plotting.plot_stat_map(
 # Compute the statistics for the second session.
 fmri_glm_ses2 = fmri_glm.fit(fmri_imgs[1], design_matrices=design_matrices[1])
 
-# We will assume that the design matrix for the second session has the same
-# number of columns, in the same order, as the first session's.
+contrast_val = pad_vector([-1, -1, 1, 1], design_matrices[1].shape[1])
 
 summary_statistics_ses2 = fmri_glm_ses2.compute_contrast(
     contrast_val,
@@ -164,6 +172,16 @@ plotting.plot_stat_map(
 # columns, in the same order, we can again re-use the first session's contrast
 # vector.
 fmri_glm_multises = fmri_glm.fit(fmri_imgs, design_matrices=design_matrices)
+
+# We can just define the contrast array for one session and assume that the
+# design matrix is the same for the other.
+# However, if we want to be safe, we should define each contrast separately,
+# and provide it as a list.
+contrast_val = [
+    pad_vector([-1, -1, 1, 1], design_matrices[0].shape[1]),  # session 1
+    pad_vector([-1, -1, 1, 1], design_matrices[1].shape[1]),  # session 2
+]
+
 z_map = fmri_glm_multises.compute_contrast(
     contrast_val,
     output_type='z_score',
@@ -188,14 +206,6 @@ plotting.show()
 # It may be useful to investigate a number of contrasts.
 # Therefore, we will move beyond the original contrast of interest and both
 # define and compute several.
-#
-# For this, we will first use a small function to ease the contrast definition.
-
-
-def pad_vector(contrast_, n_columns):
-    """A small routine to append zeros in contrast vectors."""
-    return np.hstack((contrast_, np.zeros(n_columns - len(contrast_))))
-
 
 ###############################################################################
 # Contrast specification
