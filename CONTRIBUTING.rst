@@ -179,12 +179,12 @@ with the tools we use for development and deployment.
 |                    |               | - Link issue through mention :"Closes #XXXX"        |
 |  `PR Structure`_   |    Any        | - Clearly outline goals and changes proposed        |
 |                    |               | - Doesn't include "unrelated" code change           |
-|                    |               | - Add entry in "doc/whats_new.rst"                  |
+|                    |               | - Add entry in "doc/changes/latest.rst"             |
 +--------------------+---------------+-----------------------------------------------------+
 |                    |               | - Variables, functions, arguments have clear names  |
 |                    |               | - Easy to read, PEP8_ compliant                     |
-|   `Coding Style`_  |    Any        | - Public functions have docstring (numpydoc_ format)|
-|                    |               | - Low redundancy                                    |
+|                    |               | - Public functions have docstring (numpydoc_ format)|
+|   `Coding Style`_  |    Any        | - Low redundancy                                    |
 |                    |               | - No new dependency                                 |
 |                    |               | - Backward compatibility                            |
 |                    |               | - All internal imports are absolute, not relative   |
