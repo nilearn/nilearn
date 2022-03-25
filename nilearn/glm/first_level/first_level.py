@@ -136,7 +136,9 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
 
     random_state : int or numpy.random.RandomState, optional
         Random state seed to sklearn.cluster.KMeans for autoregressive models
-        of order at least 2 ('ar(N)' with n >= 2).
+        of order at least 2 ('ar(N)' with n >= 2). Default=None.
+
+        .. versionadded:: 0.9.1
 
     Returns
     -------
@@ -330,7 +332,9 @@ class FirstLevelModel(BaseGLM):
 
     random_state : int or numpy.random.RandomState, optional
         Random state seed to sklearn.cluster.KMeans for autoregressive models
-        of order at least 2 ('ar(N)' with n >= 2).
+        of order at least 2 ('ar(N)' with n >= 2). Default=None.
+
+        .. versionadded:: 0.9.1
 
     Attributes
     ----------
