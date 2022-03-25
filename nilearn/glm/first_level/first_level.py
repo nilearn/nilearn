@@ -25,7 +25,7 @@ from sklearn.cluster import KMeans
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
 from nilearn._utils import fill_doc
 from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
-                                _check_run_tables)
+                                _check_run_tables, _check_run_sample_masks)
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn.glm.contrasts import (_compute_fixed_effect_contrast,
                                    expression_to_contrast_vector)
@@ -392,7 +392,7 @@ class FirstLevelModel(BaseGLM):
         ))
         return self.signal_scaling
 
-    def fit(self, run_imgs, events=None, confounds=None,
+    def fit(self, run_imgs, events=None, confounds=None, sample_masks=None,
             design_matrices=None, bins=100):
         """Fit the GLM
 
@@ -420,6 +420,13 @@ class FirstLevelModel(BaseGLM):
             The number of rows must match the number of volumes in the
             respective run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
+
+        sample_masks : Any type compatible with numpy-array indexing, or
+            list of indices, optional
+            shape of array: (number of scans - number of volumes removed, )
+            Indices of retained volumes. Masks the niimgs along time/fourth
+            dimension to perform scrubbing (remove volumes with high motion)
+            and/or non-steady-state volumes.
 
         design_matrices : pandas DataFrame or \
                           list of pandas DataFrames, optional
@@ -468,6 +475,9 @@ class FirstLevelModel(BaseGLM):
             events = _check_run_tables(run_imgs, events, 'events')
         if confounds is not None:
             confounds = _check_run_tables(run_imgs, confounds, 'confounds')
+
+        if sample_masks is not None:
+            sample_masks = _check_run_sample_masks(len(run_imgs), sample_masks)
 
         # Learn the mask
         if self.mask_img is False:
@@ -558,6 +568,13 @@ class FirstLevelModel(BaseGLM):
                                                         )
             else:
                 design = design_matrices[run_idx]
+
+            if sample_masks is not None:
+                sample_mask = sample_masks[run_idx]
+                design = design.iloc[sample_mask, :]
+            else:
+                sample_mask = None
+
             self.design_matrices_.append(design)
 
             # Mask and prepare data for GLM
@@ -565,7 +582,7 @@ class FirstLevelModel(BaseGLM):
                 t_masking = time.time()
                 sys.stderr.write('Starting masker computation \r')
 
-            Y = self.masker_.transform(run_img)
+            Y = self.masker_.transform(run_img, sample_mask=sample_mask)  # add sample_mask here
             del run_img  # Delete unmasked image to save memory
 
             if self.verbose > 1:
