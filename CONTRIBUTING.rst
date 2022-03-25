@@ -63,7 +63,7 @@ If you want to contribute code:
     * For new features, please be sure to create a `new issue`_ first, to discuss whether it can be included and its specifications.
     * To help with known `issues`_, please check `good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_ to get started, `known bugs <https://github.com/nilearn/nilearn/labels/Bug>`_, or `proposed enhancements <https://github.com/nilearn/nilearn/labels/Enhancement>`_.
 
-Please see the :ref:`contributing_code` section for more detailed information, including 
+Please see the :ref:`contributing_code` section for more detailed information, including
 instructions for  `Setting up your environment`_ and a description of the `Contribution Guidelines`_.
 
 How do we decide what code goes in?
@@ -179,14 +179,15 @@ with the tools we use for development and deployment.
 |                    |               | - Link issue through mention :"Closes #XXXX"        |
 |  `PR Structure`_   |    Any        | - Clearly outline goals and changes proposed        |
 |                    |               | - Doesn't include "unrelated" code change           |
-|                    |               | - Add entry in "doc/whats_new.rst"                  |
+|                    |               | - Add entry in "doc/changes/latest.rst"             |
 +--------------------+---------------+-----------------------------------------------------+
 |                    |               | - Variables, functions, arguments have clear names  |
-|                    |               | - Easy to read, PEP8_                               |
-|   `Coding Style`_  |    Any        | - Public functions have docstring (numpydoc_ format)|
-|                    |               | - Low redundancy                                    |
+|                    |               | - Easy to read, PEP8_ compliant                     |
+|                    |               | - Public functions have docstring (numpydoc_ format)|
+|   `Coding Style`_  |    Any        | - Low redundancy                                    |
 |                    |               | - No new dependency                                 |
 |                    |               | - Backward compatibility                            |
+|                    |               | - All internal imports are absolute, not relative   |
 +--------------------+---------------+-----------------------------------------------------+
 |                    |               | - Test type is adapted to function behavior         |
 |                    |               | - Tests pass continuous integration                 |
