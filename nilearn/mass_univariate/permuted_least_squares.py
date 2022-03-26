@@ -12,7 +12,7 @@ import numpy as np
 from scipy import linalg
 from sklearn.utils import check_random_state
 
-from ._utils import _calculate_tfce
+from nilearn.mass_univariate._utils import _calculate_tfce
 
 
 def _normalize_matrix_on_axis(m, axis=0):

@@ -5,7 +5,7 @@ from scipy import ndimage
 from nilearn.masking import apply_mask, unmask
 
 
-def calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1):
+def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1):
     """Calculate threshold-free cluster enhancement values for scores maps.
 
     The TFCE calculation is implemented as described in [1]_.
