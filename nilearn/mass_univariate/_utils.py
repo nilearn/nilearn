@@ -37,7 +37,7 @@ def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1):
     # Define connectivity matrix for cluster labeling
     conn = ndimage.generate_binary_structure(3, 1)
 
-    scores_4d_img = unmask(scores_array, masker.mask_img_)
+    scores_4d_img = unmask(scores_array.T, masker.mask_img_)
     scores_4d = scores_4d_img.get_fdata()
     tfce_4d = np.zeros_like(scores_4d)
 
@@ -78,4 +78,4 @@ def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1):
         masker.mask_img_,
     )
 
-    return tfce_arr
+    return tfce_arr.T
