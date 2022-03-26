@@ -57,6 +57,9 @@ nifti_masker = NiftiMasker(
 fmri_masked = nifti_masker.fit_transform(contrast_map_filenames)
 
 
+""
+contrast_map_filenames
+
 ##############################################################################
 # Anova (parametric F-scores)
 from sklearn.feature_selection import f_regression
@@ -71,14 +74,19 @@ neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
 
 ##############################################################################
 # Perform massively univariate analysis with permuted OLS
-neg_log_pvals_permuted_ols, _, _ = permuted_ols(
-    tested_var, fmri_masked,
+neg_log_pvals_permuted_ols, _, _, neg_log_pvals_tfce = permuted_ols(
+    tested_var,
+    fmri_masked,
     model_intercept=True,
+    tfce=True,
     n_perm=5000,  # 5,000 for the sake of time. Idealy, this should be 10,000
-    verbose=1, # display progress bar
-    n_jobs=1)  # can be changed to use more CPUs
+    verbose=1,  # display progress bar
+    n_jobs=1,  # can be changed to use more CPUs
+)
 neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(
     np.ravel(neg_log_pvals_permuted_ols))
+neg_log_pvals_tfce_unmasked = nifti_masker.inverse_transform(
+    np.ravel(neg_log_pvals_tfce))
 
 
 ##############################################################################
@@ -119,6 +127,22 @@ n_detections = (get_data(neg_log_pvals_permuted_ols_unmasked)
                 > threshold).sum()
 title = ('Negative $\\log_{10}$ p-values'
          '\n(Non-parametric + max-type correction)'
+         '\n%d detections') % n_detections
+
+display.title(title, y=1.2)
+
+# Plot permuted OLS TFCE-based p-values
+fig = plt.figure(figsize=(5, 7), facecolor='k')
+
+display = plot_stat_map(neg_log_pvals_tfce_unmasked,
+                        threshold=threshold,
+                        display_mode='z', cut_coords=[z_slice],
+                        figure=fig, vmax=vmax, black_bg=True)
+
+n_detections = (get_data(neg_log_pvals_tfce_unmasked)
+                > threshold).sum()
+title = ('Negative $\\log_{10}$ p-values'
+         '\n(Non-parametric + TFCE max-type correction)'
          '\n%d detections') % n_detections
 
 display.title(title, y=1.2)
