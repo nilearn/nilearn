@@ -382,8 +382,8 @@ def permuted_ols(
 
     tfce : :obj:`bool`, optional
         Whether to perform TFCE-based multiple comparisons correction or not.
-        Calculating TFCE values in each permutation can be time-consuming, so
-        this option is disabled by default.
+        Calculating TFCE values in each permutation can be time-consuming,
+        so this option is disabled by default.
         Default=False.
 
     random_state : int or None, optional
@@ -582,6 +582,8 @@ def permuted_ols(
             tfce_scores_as_ranks_parts,
             h0_tfcemax_parts,
         ) = zip(*ret)
+
+        # We can use the same approach for TFCE that we use for vFWE
         h0_tfcemax_parts = np.hstack(h0_tfcemax_parts)
         tfce_scores_as_ranks = np.zeros((n_regressors, n_descriptors))
         for tfce_scores_as_ranks_part in tfce_scores_as_ranks_parts:
@@ -604,4 +606,12 @@ def permuted_ols(
     if two_sided_test:
         scores_original_data = scores_original_data * sign_scores_original_data
 
-    return - np.log10(pvals), scores_original_data.T, h0_fmax[0]
+    if tfce:
+        return (
+            -np.log10(pvals),
+            scores_original_data.T,
+            h0_fmax[0],
+            -np.log10(tfce_pvals),
+        )
+    else:
+        return - np.log10(pvals), scores_original_data.T, h0_fmax[0]
