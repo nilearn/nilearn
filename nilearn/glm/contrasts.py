@@ -208,7 +208,7 @@ class Contrast:
     def effect_size(self):
         """Make access to summary statistics more straightforward \
         when computing contrasts."""
-        return self.effect[0, :]
+        return self.effect
 
     def effect_variance(self):
         """Make access to summary statistics more straightforward \
@@ -368,7 +368,7 @@ class Contrast:
 
 
 def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
-                          precision_weighted=False):
+                          precision_weighted=False, dofs=None):
     """Compute the fixed effects, given images of effects and variance.
 
     Parameters
@@ -386,6 +386,10 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
         Whether fixed effects estimates should be weighted by inverse
         variance or not. Default=False.
 
+    dofs = array-like, with len = len(variance_imgs) or None
+        the degrees of freedom of the models
+        when None, it is assumed that the degrees of freedom are 100 per input.
+
     Returns
     -------
     fixed_fx_contrast_img : Nifti1Image
@@ -395,15 +399,19 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
         The fixed effects variance computed within the mask.
 
     fixed_fx_t_img : Nifti1Image
-        The fixed effects t-test computed within the mask.
+        The fixed effects stat computed within the mask.
+
+    fixed_fx_z_score_img : Nifti1Image
+        The fixed effects corresponding z-transform
 
     """
-    if len(contrast_imgs) != len(variance_imgs):
+    n_runs = len(contrast_imgs)
+    if n_runs != len(variance_imgs):
         raise ValueError(
             f'The number of contrast images ({len(contrast_imgs)}) differs '
             f'from the number of variance images ({len(variance_imgs)}). '
         )
-
+    
     if isinstance(mask, NiftiMasker):
         masker = mask.fit()
     elif mask is None:
@@ -412,19 +420,32 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
         masker = NiftiMasker(mask_img=mask).fit()
 
     variances = masker.transform(variance_imgs)
-    contrasts = masker.transform(contrast_imgs)
+    contrasts = np.array([masker.transform(contrast_img) for contrast_img in contrast_imgs])
 
-    (fixed_fx_contrast,
-     fixed_fx_variance, fixed_fx_t) = _compute_fixed_effects_params(
-        contrasts, variances, precision_weighted)
+    if dofs is not None:
+        if len(dofs) != n_runs:
+            raise ValueError(
+                'The number of dofs (%d) '
+                'differs from the number of contrast images (%d). '
+            % (len(contrast_imgs), n_runs)
+        )
+    else:
+        dofs = [100] * n_runs
+        
+    (fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, fixed_fx_z_score)\
+        = _compute_fixed_effects_params(
+            contrasts, variances, precision_weighted, dofs)
 
     fixed_fx_contrast_img = masker.inverse_transform(fixed_fx_contrast)
     fixed_fx_variance_img = masker.inverse_transform(fixed_fx_variance)
-    fixed_fx_t_img = masker.inverse_transform(fixed_fx_t)
-    return fixed_fx_contrast_img, fixed_fx_variance_img, fixed_fx_t_img
+    fixed_fx_stat_img = masker.inverse_transform(fixed_fx_stat)
+    fixed_fx_z_score_img = masker.inverse_transform(fixed_fx_z_score)
+    return (fixed_fx_contrast_img, fixed_fx_variance_img,
+            fixed_fx_stat_img, fixed_fx_z_score_img)
 
 
-def _compute_fixed_effects_params(contrasts, variances, precision_weighted):
+def _compute_fixed_effects_params(
+        contrasts, variances, precision_weighted,  dofs):
     """Compute the fixed effects t-statistic, contrast, variance, \
     given arrays of effects and variance."""
     tiny = 1.e-16
@@ -439,5 +460,14 @@ def _compute_fixed_effects_params(contrasts, variances, precision_weighted):
         fixed_fx_variance = np.mean(variances, 0) / len(variances)
         fixed_fx_contrasts = np.mean(contrasts, 0)
 
-    fixed_fx_stat = fixed_fx_contrasts / np.sqrt(fixed_fx_variance)
-    return fixed_fx_contrasts, fixed_fx_variance, fixed_fx_stat
+    dim = 1
+    contrast_type = 't'
+    if len(fixed_fx_contrasts.shape) == 2: # for F contrasts
+        dim = fixed_fx_contrasts.shape[0]
+        contrast_type = 'F'
+    con = Contrast(effect=fixed_fx_contrasts, variance=fixed_fx_variance,
+                   dim=dim, dof=np.sum(dofs), contrast_type=contrast_type)
+    fixed_fx_z_score = con.z_score()
+    fixed_fx_stat = con.stat_
+    return (fixed_fx_contrasts, fixed_fx_variance, fixed_fx_stat,
+            fixed_fx_z_score)
