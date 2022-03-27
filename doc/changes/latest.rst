@@ -9,6 +9,7 @@
 NEW
 ---
 
+:func:`~mass_univariate.permuted_ols` and :func:`~glm.second_level.non_parametric_inference` now support TFCE-based FWE correction (:gh:`3196` by `Taylor Salo`_).
 
 Fixes
 -----
