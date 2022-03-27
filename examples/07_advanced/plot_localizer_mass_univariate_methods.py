@@ -122,7 +122,7 @@ title = (
     f'{n_detections} detections'
 )
 
-axes[0].set_title(title, y=1.2, color='white')
+axes[0].set_title(title, color='white')
 
 # Plot permuted OLS p-values
 display = plot_stat_map(
@@ -145,7 +145,7 @@ title = (
     f'{n_detections} detections'
 )
 
-axes[1].set_title(title, y=1.2, color='white')
+axes[1].set_title(title, color='white')
 
 # Plot permuted OLS TFCE-based p-values
 display = plot_stat_map(
@@ -166,6 +166,6 @@ title = (
     f'{n_detections} detections'
 )
 
-axes[2].set_title(title, y=1.2, color='white')
+axes[2].set_title(title, color='white')
 
 fig.show()
