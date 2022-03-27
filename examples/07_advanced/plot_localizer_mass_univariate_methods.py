@@ -101,7 +101,7 @@ threshold = - np.log10(0.1)  # 10% corrected
 vmax = min(np.amax(neg_log_pvals_permuted_ols),
            np.amax(neg_log_pvals_anova))
 
-fig, axes = plt.subplots(figsize=(15, 8), facecolor='k', ncols=3)
+fig, axes = plt.subplots(figsize=(12, 8), facecolor='k', ncols=3)
 
 # Plot Anova p-values
 display = plot_stat_map(
@@ -122,7 +122,7 @@ title = (
     f'{n_detections} detections'
 )
 
-axes[0].set_title(title, y=1.2)
+axes[0].set_title(title, y=1.2, color='white')
 
 # Plot permuted OLS p-values
 display = plot_stat_map(
@@ -145,7 +145,7 @@ title = (
     f'{n_detections} detections'
 )
 
-axes[1].set_title(title, y=1.2)
+axes[1].set_title(title, y=1.2, color='white')
 
 # Plot permuted OLS TFCE-based p-values
 display = plot_stat_map(
@@ -166,6 +166,6 @@ title = (
     f'{n_detections} detections'
 )
 
-axes[2].set_title(title, y=1.2)
+axes[2].set_title(title, y=1.2, color='white')
 
 fig.show()
