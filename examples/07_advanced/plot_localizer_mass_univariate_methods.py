@@ -92,7 +92,7 @@ neg_log_pvals_tfce_unmasked = nifti_masker.inverse_transform(
 
 ##############################################################################
 # Visualization
-from nilearn.plotting import plot_stat_map, show
+from nilearn.plotting import plot_stat_map
 
 # Various plotting parameters
 z_slice = 12  # plotted slice
@@ -101,51 +101,71 @@ threshold = - np.log10(0.1)  # 10% corrected
 vmax = min(np.amax(neg_log_pvals_permuted_ols),
            np.amax(neg_log_pvals_anova))
 
-# Plot Anova p-values
-fig = plt.figure(figsize=(5, 7), facecolor='k')
+fig, axes = plt.subplots(figsize=(15, 8), facecolor='k', ncols=3)
 
-display = plot_stat_map(neg_log_pvals_anova_unmasked,
-                        threshold=threshold,
-                        display_mode='z', cut_coords=[z_slice],
-                        figure=fig, vmax=vmax, black_bg=True)
+# Plot Anova p-values
+display = plot_stat_map(
+    neg_log_pvals_anova_unmasked,
+    threshold=threshold,
+    display_mode='z',
+    cut_coords=[z_slice],
+    figure=fig,
+    axes=axes[0],
+    vmax=vmax,
+    black_bg=True,
+)
 
 n_detections = (get_data(neg_log_pvals_anova_unmasked) > threshold).sum()
-title = ('Negative $\\log_{10}$ p-values'
-         '\n(Parametric + Bonferroni correction)'
-         '\n%d detections') % n_detections
+title = (
+    'Negative $\\log_{10}$ p-values\n'
+    '(Parametric + Bonferroni correction)\n'
+    f'{n_detections} detections'
+)
 
-display.title(title, y=1.2)
+axes[0].set_title(title, y=1.2)
 
 # Plot permuted OLS p-values
-fig = plt.figure(figsize=(5, 7), facecolor='k')
+display = plot_stat_map(
+    neg_log_pvals_permuted_ols_unmasked,
+    threshold=threshold,
+    display_mode='z',
+    cut_coords=[z_slice],
+    figure=fig,
+    axes=axes[1],
+    vmax=vmax,
+    black_bg=True,
+)
 
-display = plot_stat_map(neg_log_pvals_permuted_ols_unmasked,
-                        threshold=threshold,
-                        display_mode='z', cut_coords=[z_slice],
-                        figure=fig, vmax=vmax, black_bg=True)
+n_detections = (
+    get_data(neg_log_pvals_permuted_ols_unmasked) > threshold
+).sum()
+title = (
+    'Negative $\\log_{10}$ p-values\n'
+    '(Non-parametric + max-type correction)\n'
+    f'{n_detections} detections'
+)
 
-n_detections = (get_data(neg_log_pvals_permuted_ols_unmasked)
-                > threshold).sum()
-title = ('Negative $\\log_{10}$ p-values'
-         '\n(Non-parametric + max-type correction)'
-         '\n%d detections') % n_detections
-
-display.title(title, y=1.2)
+axes[1].set_title(title, y=1.2)
 
 # Plot permuted OLS TFCE-based p-values
-fig = plt.figure(figsize=(5, 7), facecolor='k')
+display = plot_stat_map(
+    neg_log_pvals_tfce_unmasked,
+    threshold=threshold,
+    display_mode='z',
+    cut_coords=[z_slice],
+    figure=fig,
+    axes=axes[2],
+    vmax=vmax,
+    black_bg=True,
+)
 
-display = plot_stat_map(neg_log_pvals_tfce_unmasked,
-                        threshold=threshold,
-                        display_mode='z', cut_coords=[z_slice],
-                        figure=fig, vmax=vmax, black_bg=True)
+n_detections = (get_data(neg_log_pvals_tfce_unmasked) > threshold).sum()
+title = (
+    'Negative $\\log_{10}$ p-values\n'
+    '(Non-parametric + TFCE max-type correction)\n'
+    f'{n_detections} detections'
+)
 
-n_detections = (get_data(neg_log_pvals_tfce_unmasked)
-                > threshold).sum()
-title = ('Negative $\\log_{10}$ p-values'
-         '\n(Non-parametric + TFCE max-type correction)'
-         '\n%d detections') % n_detections
+axes[2].set_title(title, y=1.2)
 
-display.title(title, y=1.2)
-
-show()
+fig.show()
