@@ -458,12 +458,13 @@ def permuted_ols(
        linear model. Neuroimage.
 
     .. [3] Freedman, D. & Lane, D. (1983). A nonstochastic interpretation of
-       reported significance levels. J. Bus. Econ. Stats., 1(4), 292-298
+       reported significance levels. J. Bus. Econ. Stats., 1(4), 292-298.
 
     .. [4] Smith, S. M., & Nichols, T. E. (2009).
        Threshold-free cluster enhancement: addressing problems of smoothing,
        threshold dependence and localisation in cluster inference.
        Neuroimage, 44(1), 83-98.
+       https://doi.org/10.1016/j.neuroimage.2008.03.061
 
     """
     # initialize the seed of the random generator
