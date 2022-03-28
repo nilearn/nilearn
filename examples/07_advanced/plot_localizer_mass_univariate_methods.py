@@ -98,8 +98,6 @@ from nilearn.plotting import plot_stat_map
 z_slice = 12  # plotted slice
 
 threshold = - np.log10(0.1)  # 10% corrected
-vmax = min(np.amax(neg_log_pvals_permuted_ols),
-           np.amax(neg_log_pvals_anova))
 
 fig, axes = plt.subplots(figsize=(12, 8), facecolor='k', ncols=3)
 
@@ -111,7 +109,6 @@ display = plot_stat_map(
     cut_coords=[z_slice],
     figure=fig,
     axes=axes[0],
-    vmax=vmax,
     black_bg=True,
 )
 
@@ -132,7 +129,6 @@ display = plot_stat_map(
     cut_coords=[z_slice],
     figure=fig,
     axes=axes[1],
-    vmax=vmax,
     black_bg=True,
 )
 
@@ -155,7 +151,6 @@ display = plot_stat_map(
     cut_coords=[z_slice],
     figure=fig,
     axes=axes[2],
-    vmax=vmax,
     black_bg=True,
 )
 
