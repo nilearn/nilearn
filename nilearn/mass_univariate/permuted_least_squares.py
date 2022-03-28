@@ -208,7 +208,10 @@ def _permuted_ols_on_chunk(
         or not.
         Calculating TFCE values in each permutation can be time-consuming, so
         this option is disabled by default.
+        The TFCE calculation is implemented as described in [2]_.
         Default=False.
+
+        .. versionadded:: 0.9.1
 
     random_state : int or None, optional
         Seed for random number generator, to have the same permutations
@@ -226,6 +229,11 @@ def _permuted_ols_on_chunk(
     References
     ----------
     .. [1] Fisher, R. A. (1935). The design of experiments.
+
+    .. [2] Smith, S. M., & Nichols, T. E. (2009).
+       Threshold-free cluster enhancement: addressing problems of smoothing,
+       threshold dependence and localisation in cluster inference.
+       Neuroimage, 44(1), 83-98.
 
     """
     # initialize the seed of the random generator
@@ -385,7 +393,10 @@ def permuted_ols(
         Whether to perform TFCE-based multiple comparisons correction or not.
         Calculating TFCE values in each permutation can be time-consuming,
         so this option is disabled by default.
+        The TFCE calculation is implemented as described in [4]_.
         Default=False.
+
+        .. versionadded:: 0.9.1
 
     random_state : int or None, optional
         Seed for random number generator, to have the same permutations
@@ -428,6 +439,11 @@ def permuted_ols(
 
     .. [3] Freedman, D. & Lane, D. (1983). A nonstochastic interpretation of
        reported significance levels. J. Bus. Econ. Stats., 1(4), 292-298
+
+    .. [4] Smith, S. M., & Nichols, T. E. (2009).
+       Threshold-free cluster enhancement: addressing problems of smoothing,
+       threshold dependence and localisation in cluster inference.
+       Neuroimage, 44(1), 83-98.
 
     """
     # initialize the seed of the random generator
