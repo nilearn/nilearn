@@ -408,7 +408,8 @@ class BaseSlicer(object):
         return ims
 
     @fill_doc
-    def _show_colorbar(self, cmap, norm, cbar_vmin=None, cbar_vmax=None, threshold=None):
+    def _show_colorbar(self, cmap, norm, cbar_vmin=None,
+                       cbar_vmax=None, threshold=None):
         """Displays the colorbar.
 
         Parameters

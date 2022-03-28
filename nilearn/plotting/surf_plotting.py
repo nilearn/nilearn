@@ -502,7 +502,8 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
         if colorbar:
             cbar_vmin = cbar_vmin if cbar_vmin is not None else vmin
             cbar_vmax = cbar_vmax if cbar_vmax is not None else vmax
-            ticks = _get_ticks_matplotlib(cbar_vmin, cbar_vmax, cbar_tick_format)
+            ticks = _get_ticks_matplotlib(cbar_vmin, cbar_vmax,
+                                          cbar_tick_format)
             our_cmap, norm = _get_cmap_matplotlib(cmap, vmin, vmax, threshold)
             bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
             # we need to create a proxy mappable
