@@ -57,9 +57,6 @@ nifti_masker = NiftiMasker(
 fmri_masked = nifti_masker.fit_transform(contrast_map_filenames)
 
 
-""
-contrast_map_filenames
-
 ##############################################################################
 # Anova (parametric F-scores)
 from sklearn.feature_selection import f_regression
