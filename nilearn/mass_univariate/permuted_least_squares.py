@@ -184,6 +184,12 @@ def _permuted_ols_on_chunk(
     confounding_vars : array-like, shape=(n_samples, n_covars), optional
         Clinical data (covariates).
 
+    masker : :obj:`~nilearn.maskers.NiftiMasker` or \
+            :obj:`~nilearn.maskers.MultiNiftiMasker`, optional
+        Mask to be used on data. This is necessary for TFCE-based inference.
+
+        .. versionadded:: 0.9.1
+
     n_perm : int, optional
         Total number of permutations to perform, only used for
         display in this function. Default=10000.
@@ -210,6 +216,12 @@ def _permuted_ols_on_chunk(
         this option is disabled by default.
         The TFCE calculation is implemented as described in [2]_.
         Default=False.
+
+        .. versionadded:: 0.9.1
+
+    tfce_original_data : None or array-like, \
+            shape=(n_descriptors, n_regressors), optional
+        TFCE values obtained for the original (non-permuted) data.
 
         .. versionadded:: 0.9.1
 
@@ -376,7 +388,11 @@ def permuted_ols(
         unless the tested variate is already the intercept.
         Default=True
 
-    masker
+    masker : :obj:`~nilearn.maskers.NiftiMasker` or \
+            :obj:`~nilearn.maskers.MultiNiftiMasker`, optional
+        Mask to be used on data. This is necessary for TFCE-based inference.
+
+        .. versionadded:: 0.9.1
 
     n_perm : int, optional
         Number of permutations to perform.
