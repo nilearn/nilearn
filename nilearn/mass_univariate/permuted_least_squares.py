@@ -204,7 +204,8 @@ def _permuted_ols_on_chunk(
         Default=True
 
     tfce : :obj:`bool`, optional
-        Whether to perform TFCE-based multiple comparisons correction or not.
+        Whether to perform :term:`TFCE`-based multiple comparisons correction
+        or not.
         Calculating TFCE values in each permutation can be time-consuming, so
         this option is disabled by default.
         Default=False.

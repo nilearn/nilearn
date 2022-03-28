@@ -143,7 +143,7 @@ If you wish to add a missing term, please `create a new issue`_ or
         `Family-wise error rate`_ is the probability of making one or more
         false discoveries, or type I errors when performing multiple
         hypotheses tests.
-    
+
     FWHM
         `FWHM`_ stands for "full width at half maximum". In a distribution, it
         refers to the width of a filter, expressed as the diameter of the area
@@ -267,6 +267,11 @@ If you wish to add a missing term, please `create a new issue`_ or
         `Support vector machines`_ are a set of :term:`supervised learning` methods used
         for :term:`classification`, :term:`regression` and outliers detection.
 
+    TFCE
+        Threshold-free cluster enhancement is a method for thresholding statistical maps
+        that attempts to retain the sensitivity of cluster-level inference, without needing
+        to specify an arbitrary cluster-level threshold.
+
     TR
         Repetition time. This is the time in seconds between the beginning of an
         acquisition of one volume and the beginning of acquisition of the volume following it.
@@ -352,7 +357,7 @@ If you wish to add a missing term, please `create a new issue`_ or
     https://nilearn.github.io/connectivity/functional_connectomes.html
 
 .. _`FWHM`:
-    https://en.wikipedia.org/wiki/Full_width_at_half_maximum    
+    https://en.wikipedia.org/wiki/Full_width_at_half_maximum
 
 .. _`Independent component analysis`:
     https://en.wikipedia.org/wiki/Independent_component_analysis

@@ -71,6 +71,9 @@ neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
 
 ##############################################################################
 # Perform massively univariate analysis with permuted OLS
+#
+# This method will produce both voxel-level FWE-corrected -log10 p-values and
+# :term:`TFCE`-based FWE-corrected -log10 p-values.
 neg_log_pvals_permuted_ols, _, _, neg_log_pvals_tfce = permuted_ols(
     tested_var,
     fmri_masked,
