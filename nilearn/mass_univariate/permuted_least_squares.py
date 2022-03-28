@@ -234,7 +234,7 @@ def _permuted_ols_on_chunk(
 
     Returns
     -------
-    h0_fmax_part : array-like, shape=(n_perm_chunk, )
+    h0_fmax_part : array-like, shape=(n_regressors, n_perm_chunk)
         Distribution of the (max) t-statistic under the null hypothesis
         (limited to this permutation chunk).
 
