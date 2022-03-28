@@ -49,12 +49,11 @@ def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1):
 
         for score_thresh in np.arange(dh, max_z + dh, dh):
             # Threshold map
-            thresh_scores_3d = scores_3d.copy()
-            thresh_scores_3d[thresh_scores_3d < score_thresh] = 0
+            scores_3d[scores_3d < score_thresh] = 0
 
             # Derive clusters
             labeled_arr3d, n_clusters = ndimage.measurements.label(
-                thresh_scores_3d,
+                scores_3d,
                 conn,
             )
 
