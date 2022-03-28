@@ -96,10 +96,15 @@ from nilearn.plotting import plot_stat_map
 
 # Various plotting parameters
 z_slice = 12  # plotted slice
+vmax = min(
+    np.amax(neg_log_pvals_permuted_ols),
+    np.amax(neg_log_pvals_anova),
+    np.amax(neg_log_pvals_tfce),
+)
 
 threshold = - np.log10(0.1)  # 10% corrected
 
-fig, axes = plt.subplots(figsize=(12, 8), facecolor='k', ncols=3)
+fig, axes = plt.subplots(figsize=(12, 3), facecolor='k', ncols=3)
 
 # Plot Anova p-values
 display = plot_stat_map(
@@ -109,13 +114,15 @@ display = plot_stat_map(
     cut_coords=[z_slice],
     figure=fig,
     axes=axes[0],
+    vmax=vmax,
     black_bg=True,
 )
 
 n_detections = (get_data(neg_log_pvals_anova_unmasked) > threshold).sum()
 title = (
     'Negative $\\log_{10}$ p-values\n'
-    '(Parametric + Bonferroni correction)\n'
+    '(Parametric +\n'
+    'Bonferroni correction)\n'
     f'{n_detections} detections'
 )
 
@@ -129,6 +136,7 @@ display = plot_stat_map(
     cut_coords=[z_slice],
     figure=fig,
     axes=axes[1],
+    vmax=vmax,
     black_bg=True,
 )
 
@@ -137,7 +145,8 @@ n_detections = (
 ).sum()
 title = (
     'Negative $\\log_{10}$ p-values\n'
-    '(Non-parametric + max-type correction)\n'
+    '(Non-parametric +\n'
+    'max-type correction)\n'
     f'{n_detections} detections'
 )
 
@@ -151,13 +160,15 @@ display = plot_stat_map(
     cut_coords=[z_slice],
     figure=fig,
     axes=axes[2],
+    vmax=vmax,
     black_bg=True,
 )
 
 n_detections = (get_data(neg_log_pvals_tfce_unmasked) > threshold).sum()
 title = (
     'Negative $\\log_{10}$ p-values\n'
-    '(Non-parametric + TFCE max-type correction)\n'
+    '(Non-parametric + \n'
+    'TFCE max-type correction)\n'
     f'{n_detections} detections'
 )
 
