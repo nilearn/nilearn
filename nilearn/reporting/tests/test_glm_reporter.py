@@ -10,7 +10,9 @@ from nibabel import load
 from nibabel.tmpdirs import InTemporaryDirectory
 from nilearn._utils.data_gen import write_fake_fmri_data_and_design
 from nilearn.glm.first_level import FirstLevelModel
-from nilearn.glm.first_level.design_matrix import make_first_level_design_matrix
+from nilearn.glm.first_level.design_matrix import (
+    make_first_level_design_matrix,
+)
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting import glm_reporter as glmr
