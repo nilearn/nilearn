@@ -1,16 +1,10 @@
 """Functions for generating BIDS-compliant GLM outputs."""
 import os
 
-from nilearn import glm
-from nilearn.plotting.matrix_plotting import (
-    plot_contrast_matrix,
-    plot_design_matrix,
-)
-from nilearn.reporting.glm_reporter import _make_stat_maps
 from nilearn.interfaces.bids._utils import (
     _clean_contrast_name,
     _generate_dataset_description,
-    _generate_module_metadata,
+    _generate_model_metadata,
 )
 
 
@@ -73,6 +67,14 @@ def save_glm_to_bids(
     - Contrast p- and z-values (contrast-[name]_stat-[p|z]_statmap.nii.gz)
     - Contrast weights figure (contrast-[name]_design.svg)
     """
+    # Import here to avoid circular imports
+    from nilearn import glm
+    from nilearn.plotting.matrix_plotting import (
+        plot_contrast_matrix,
+        plot_design_matrix,
+    )
+    from nilearn.reporting.glm_reporter import _make_stat_maps
+
     if isinstance(prefix, str) and not prefix.endswith('_'):
         prefix += '_'
     elif not isinstance(prefix, str):
@@ -139,7 +141,7 @@ def save_glm_to_bids(
     # Model metadata
     # TODO: Determine optimal mapping of model metadata to BIDS fields.
     metadata_file = os.path.join(out_dir, '{}statmap.json'.format(prefix))
-    _generate_module_metadata(metadata_file, model)
+    _generate_model_metadata(metadata_file, model)
 
     dset_desc_file = os.path.join(out_dir, 'dataset_description.json')
     _generate_dataset_description(dset_desc_file, model_level)
