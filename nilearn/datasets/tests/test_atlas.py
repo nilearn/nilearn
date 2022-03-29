@@ -150,7 +150,7 @@ def test_fetch_atlas_source(tmp_path, request_mocker):
         atlas._get_atlas_data_and_labels('new_source', 'not_inside')
 
 
-def _write_to_xml(ho_dir, filename, is_symm):
+def _write_sample_atlas_metadata(ho_dir, filename, is_symm):
     with open(os.path.join(ho_dir, filename + '.xml'), 'w') as dm:
         if(not is_symm):
             dm.write("<?xml version='1.0' encoding='us-ascii'?>\n"
@@ -172,26 +172,18 @@ def _write_to_xml(ho_dir, filename, is_symm):
         dm.close()
 
 
-def _test_result_xml(res, is_symm):
-    if not is_symm:
-        assert isinstance(res.maps, nibabel.Nifti1Image)
-        assert isinstance(res.labels, list)
-        assert len(res.labels) == 4
-        assert res.labels[0] == "Background"
-        assert res.labels[1] == "R1"
-        assert res.labels[2] == "R2"
-        assert res.labels[3] == "R3"
-    else:
-        assert isinstance(res.maps, nibabel.Nifti1Image)
-        assert isinstance(res.labels, list)
-        assert len(res.labels) == 7
-        assert res.labels[0] == "Background"
-        assert res.labels[1] == "Left R1"
-        assert res.labels[2] == "Right R1"
-        assert res.labels[3] == "Left R2"
-        assert res.labels[4] == "Right R2"
-        assert res.labels[5] == "Left R3"
-        assert res.labels[6] == "Right R3"
+def _test_atlas_instance_should_match_data(atlas, is_symm):
+    assert Path(atlas.filename).exists() and Path(atlas.filename).is_absolute()
+    assert isinstance(atlas.maps, nibabel.Nifti1Image)
+    assert isinstance(atlas.labels, list)
+
+    expected_atlas_labels = (
+        ["Background", "Left R1", "Right R1", "Left R2",
+         "Right R2", "Left R3", "Right R3"]
+        if is_symm
+        else ["Background", "R1", "R2", "R3"]
+    )
+    assert atlas.labels == expected_atlas_labels
 
 
 @pytest.fixture
@@ -242,17 +234,29 @@ def atlas_data():
                           ("Juelich", "", "maxprob-thr0-1mm", False, True)])
 def test_fetch_atlas_fsl(name, label_fname, fname, is_symm, split,
                          atlas_data, fsl_fetcher, tmp_path, request_mocker):
-    ho_dir = str(tmp_path / 'fsl' / 'data' / 'atlases')
-    os.makedirs(ho_dir)
-    nifti_dir = os.path.join(ho_dir, name)
-    os.makedirs(nifti_dir)
-    _write_to_xml(ho_dir, f"{name}{label_fname}", is_symm=is_symm)
-    target_atlas_fname = f'{name}-{fname}.nii.gz'
-    target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
+    # Create directory which will contain fake atlas data
+    atlas_dir = tmp_path / 'fsl' / 'data' / 'atlases'
+    nifti_dir = atlas_dir / name
+    nifti_dir.mkdir(parents=True)
+    # Write labels and sample atlas image in directory
+    _write_sample_atlas_metadata(
+        atlas_dir,
+        f"{name}{label_fname}",
+        is_symm=is_symm,
+    )
+    target_atlas_nii = nifti_dir / f'{name}-{fname}.nii.gz'
     nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
         target_atlas_nii)
-    ho_wo = fsl_fetcher(fname, data_dir=str(tmp_path), symmetric_split=split)
-    _test_result_xml(ho_wo, is_symm=is_symm or split)
+    # Check that the fetch lead to consistent results
+    atlas_instance = fsl_fetcher(
+        fname,
+        data_dir=tmp_path,
+        symmetric_split=split,
+    )
+    _test_atlas_instance_should_match_data(
+        atlas_instance,
+        is_symm=is_symm or split,
+    )
 
 
 def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
