@@ -186,7 +186,8 @@ def _permuted_ols_on_chunk(
 
     masker : :obj:`~nilearn.maskers.NiftiMasker` or \
             :obj:`~nilearn.maskers.MultiNiftiMasker`, optional
-        Mask to be used on data. This is necessary for :term:`TFCE`-based inference.
+        Mask to be used on data.
+        This is necessary for :term:`TFCE`-based inference.
 
         .. versionadded:: 0.9.1
 
@@ -353,13 +354,14 @@ def permuted_ols(
     Confounding variates may be included in the model.
     Permutation testing is used to assess the significance of the relationship
     between the tested variates and the target variates
-    :footcite:p:`anderson2001permutation`, :footcite:p:`winkler2014permutation`.
+    :footcite:p:`anderson2001permutation`,
+    :footcite:p:`winkler2014permutation`.
     A max-type procedure is used to obtain family-wise corrected p-values.
 
     The specific permutation scheme implemented here is the one of
     :footcite:t:`freedman1983nonstochastic`.
-    Its has been demonstrated in :footcite:t:`anderson2001permutation` that this
-    scheme conveys more sensitivity than alternative schemes. This holds
+    Its has been demonstrated in :footcite:t:`anderson2001permutation` that
+    this scheme conveys more sensitivity than alternative schemes. This holds
     for neuroimaging applications, as discussed in details in
     :footcite:t:`winkler2014permutation`.
 
