@@ -147,7 +147,7 @@ title = (
     'Negative $\\log_{10}$ p-values\n'
     '(Non-parametric +\n'
     'max-type correction)\n'
-    f'{n_detections} detections'
+    f'{n_detections} voxels detected'
 )
 
 axes[1].set_title(title, color='white')
