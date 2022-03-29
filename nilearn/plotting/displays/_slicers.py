@@ -250,6 +250,14 @@ class BaseSlicer(object):
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
             :func:`~matplotlib.pyplot.imshow`.
+
+        cbar_vmin : :obj:`float`, optional
+            Minimal value for the colorbar. If None, the minimal value
+            is computed based on the data.
+
+        cbar_vmax : :obj:`float`, optional
+            Maximal value for the colorbar. If None, the maximal value
+            is computed based on the data.
         """
         if colorbar and self._colorbar:
             raise ValueError("This figure already has an overlay with a "
@@ -421,6 +429,14 @@ class BaseSlicer(object):
 
         threshold : :obj:`float` or ``None``, optional
             The absolute value at which the colorbar is thresholded.
+
+        cbar_vmin : :obj:`float`, optional
+            Minimal value for the colorbar. If None, the minimal value
+            is computed based on the data.
+
+        cbar_vmax : :obj:`float`, optional
+            Maximal value for the colorbar. If None, the maximal value
+            is computed based on the data.
         """
         if threshold is None:
             offset = 0
