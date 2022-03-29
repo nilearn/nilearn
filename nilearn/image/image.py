@@ -795,7 +795,7 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
     conn_mat[1, :, 1] = 1
     conn_mat[1, 1, :] = 1
 
-    for sign in np.sign(arr):
+    for sign in np.unique(np.sign(arr)):
         # Binarize using one-sided cluster-defining threshold
         binarized = ((arr * sign) > 0).astype(int)
 
