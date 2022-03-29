@@ -268,9 +268,9 @@ If you wish to add a missing term, please `create a new issue`_ or
         for :term:`classification`, :term:`regression` and outliers detection.
 
     TFCE
-        Threshold-free cluster enhancement is a method for thresholding statistical maps
-        that attempts to retain the sensitivity of cluster-level inference, without needing
-        to specify an arbitrary cluster-level threshold.
+        Threshold-free cluster enhancement is a voxel-level metric that combines signal
+        magnitude and cluster extent to enhance the importance of clusters that are large,
+        have high magnitude, or both.
 
         For more information about TFCE, see
         `Smith and Nichols (2009) <https://doi.org/10.1016/j.neuroimage.2008.03.061>`_ or
