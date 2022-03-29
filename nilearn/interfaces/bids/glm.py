@@ -1,6 +1,8 @@
 """Functions for generating BIDS-compliant GLM outputs."""
 import os
 
+import numpy as np
+
 from nilearn.interfaces.bids._utils import (
     _clean_contrast_name,
     _generate_dataset_description,
@@ -22,10 +24,17 @@ def save_glm_to_bids(
     model : :obj:`~nilearn.glm.first_level.FirstLevelModel` or
             :obj:`~nilearn.glm.second_level.SecondLevelModel`
         First- or second-level model from which to save outputs.
-    contrasts : :obj:`dict` of :obj:`str`-:obj:`numpy.ndarray` pairs
-        A dictionary containing contrasts. Keys are contrast names,
-        while values are arrays containing contrast weights.
-        The arrays may be 1D or 2D.
+    contrasts : :obj:`str` or array of shape (n_col) or :obj:`list` \
+            of (:obj:`str` or array of shape (n_col)) or :obj:`dict`
+        Contrast definitions. This may be one of the following:
+
+        -   A string
+        -   A list of strings
+        -   A dictionary of contrast name: contrast weight key-value pairs.
+            The contrast weights may be strings, lists, or arrays.
+            Arrays may be 1D or 2D, with 1D arrays typically being t-contrasts
+            and 2D arrays typically being F-contrasts.
+
     contrast_types : None or :obj:`dict` of :obj:`str`s, optional
         An optional dictionary mapping some or all of the contrast names to
         specific contrast types ('t' or 'F'). If None, all contrast types will
@@ -80,7 +89,23 @@ def save_glm_to_bids(
     elif not isinstance(prefix, str):
         prefix = ''
 
+    if isinstance(contrasts, list):
+        contrasts = {c: c for c in contrasts}
+    elif isinstance(contrasts, str):
+        contrasts = {contrasts: contrasts}
+
+    for k, v in contrasts.items():
+        if not isinstance(k, str):
+            raise ValueError(f'contrast names must be strings, not {type(k)}')
+
+        if not isinstance(v, (str, np.ndarray, list)):
+            raise ValueError(
+                'contrast definitions must be strings or array_likes, '
+                f'not {type(v)}'
+            )
+
     out_dir = os.path.abspath(out_dir)
+    os.makedirs(out_dir, exist_ok=True)
 
     model_level = (
         1 if isinstance(model, glm.first_level.FirstLevelModel) else 2
@@ -103,7 +128,7 @@ def save_glm_to_bids(
         # Save design matrix and associated figure
         dm_file = os.path.join(
             out_dir,
-            '{}{}design.tsv'.format(prefix, run_str),
+            f'{prefix}{run_str}design.tsv',
         )
         design_matrix.to_csv(
             dm_file,
@@ -114,7 +139,7 @@ def save_glm_to_bids(
 
         dm_fig_file = os.path.join(
             out_dir,
-            '{}{}design.svg'.format(prefix, run_str),
+            f'{prefix}{run_str}design.svg',
         )
         dm_fig = plot_design_matrix(design_matrix)
         dm_fig.figure.savefig(dm_fig_file)
@@ -140,7 +165,7 @@ def save_glm_to_bids(
 
     # Model metadata
     # TODO: Determine optimal mapping of model metadata to BIDS fields.
-    metadata_file = os.path.join(out_dir, '{}statmap.json'.format(prefix))
+    metadata_file = os.path.join(out_dir, f'{prefix}statmap.json')
     _generate_model_metadata(metadata_file, model)
 
     dset_desc_file = os.path.join(out_dir, 'dataset_description.json')
@@ -150,44 +175,37 @@ def save_glm_to_bids(
     for contrast_name, contrast_maps in statistical_maps.items():
         # Extract stat_type
         contrast_matrix = contrasts[contrast_name]
-        if contrast_matrix.ndim == 2:
-            stat_type = 'F'
-        else:
+        # Strings and 1D arrays are assumed to be t-contrasts
+        if isinstance(contrast_matrix, str) or (contrast_matrix.ndim == 1):
             stat_type = 't'
+        else:
+            stat_type = 'F'
 
         # Override automatic detection with explicit type if provided
         stat_type = contrast_types.get(contrast_name, stat_type)
 
+        # Convert the contrast name to camelCase
         contrast_name = _clean_contrast_name(contrast_name)
 
         # Contrast-level images
         contrast_level_mapping = {
-            'effect_size':
-                '{}contrast-{}_stat-effect_statmap.nii.gz'.format(
-                    prefix,
-                    contrast_name,
-                ),
-            'stat':
-                '{}contrast-{}_stat-{}_statmap.nii.gz'.format(
-                    prefix,
-                    contrast_name,
-                    stat_type,
-                ),
-            'effect_variance':
-                '{}contrast-{}_stat-variance_statmap.nii.gz'.format(
-                    prefix,
-                    contrast_name,
-                ),
-            'z_score':
-                '{}contrast-{}_stat-z_statmap.nii.gz'.format(
-                    prefix,
-                    contrast_name,
-                ),
-            'p_value':
-                '{}contrast-{}_stat-p_statmap.nii.gz'.format(
-                    prefix,
-                    contrast_name,
-                ),
+            'effect_size': (
+                f'{prefix}contrast-{contrast_name}_stat-effect_statmap.nii.gz'
+            ),
+            'stat': (
+                f'{prefix}contrast-{contrast_name}_stat-{stat_type}_statmap'
+                '.nii.gz'
+            ),
+            'effect_variance': (
+                f'{prefix}contrast-{contrast_name}_stat-variance_statmap'
+                '.nii.gz'
+            ),
+            'z_score': (
+                f'{prefix}contrast-{contrast_name}_stat-z_statmap.nii.gz'
+            ),
+            'p_value': (
+                f'{prefix}contrast-{contrast_name}_stat-p_statmap.nii.gz'
+            ),
         }
         # Rename keys
         renamed_contrast_maps = {
@@ -201,11 +219,11 @@ def save_glm_to_bids(
 
     # Write out model-level statistical maps
     model_level_mapping = {
-        'residuals': '{}stat-errorts_statmap.nii.gz'.format(prefix),
-        'r_square': '{}stat-rSquare_statmap.nii.gz'.format(prefix),
+        'residuals': f'{prefix}stat-errorts_statmap.nii.gz',
+        'r_square': f'{prefix}stat-rSquare_statmap.nii.gz',
     }
     for attr, map_name in model_level_mapping.items():
-        print('Extracting and saving {}'.format(attr))
+        print(f'Extracting and saving {attr}')
         img = getattr(model, attr)
         if isinstance(img, list):
             img = img[0]
