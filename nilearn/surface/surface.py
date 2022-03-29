@@ -1010,3 +1010,61 @@ def check_surface(surface):
     mesh, data = check_mesh_and_data(surface.mesh,
                                      surface.data)
     return Surface(mesh, data)
+
+def compute_vertex_neighborhoods(surface):
+    """For each vertex, compute the neighborhood defined as all the vertices that are connected by a face.
+    
+    Parameters
+    ----------
+    surface : Surface-like (see description)
+    
+    Returns
+    -------
+    neighbors : A list of all the vertices that are connected to each vertex
+    
+    """
+    # This builds a coordiate to face dictionary 
+    # where each entry gives a list of the faces associated with that vertex
+    d = {k:[] for k in range(surface.coordinates.shape[0])}
+    for (i,(u,v,w)) in enumerate(surface.faces):
+        d[u].append(i)
+        d[v].append(i)
+        d[w].append(i)
+    
+    # This collects a list of vertices that are connected to each vertex
+    neighbors = []
+    for k in range(surface.coordinates.shape[0]):
+        neighbors.append(np.unique(surface.faces[d[k]]))
+        
+    return neighbors
+        
+def smooth_surface_data(surface, surf_data, smooth_steps = 1):
+    """Smooth values along the surface.
+    
+    Parameters
+    ----------
+    surface : Surface-like (see description)
+
+    surf_data : Array of values at each vertex. Should be a vertics X N array. In the
+    case of fmri data, N could be number of timepoints. Each column is smoothed independently
+
+    smooth_steps : How many times to repeat the smoothing operation. Defaults to 1 step
+    
+    Returns
+    -------
+    neighbors : A list of all the vertices that are connected to each vertex
+    
+    """
+
+    neighbors = compute_vertex_neighborhoods(surface)
+    
+    # Loop over smoothing steps
+    for s in range(smooth_steps):
+
+        # Loop over vertices and average each datapoint with its neighbors
+        for k in range(surf_data.shape[0]):
+            surf_data_smooth = np.zeros_like(surf_data.shape[0])
+            # If there are multiple timepoints averaging is done separately for each timepoint
+            surf_data_smooth[k] = np.mean(surf_data[neighbors[k]],axis=0)
+            
+    return surf_data_smooth
