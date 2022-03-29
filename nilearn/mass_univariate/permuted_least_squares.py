@@ -186,7 +186,7 @@ def _permuted_ols_on_chunk(
 
     masker : :obj:`~nilearn.maskers.NiftiMasker` or \
             :obj:`~nilearn.maskers.MultiNiftiMasker`, optional
-        Mask to be used on data. This is necessary for TFCE-based inference.
+        Mask to be used on data. This is necessary for :term:`TFCE`-based inference.
 
         .. versionadded:: 0.9.1
 

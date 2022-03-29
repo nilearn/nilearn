@@ -8,7 +8,7 @@ from nilearn.masking import apply_mask, unmask
 def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1):
     """Calculate threshold-free cluster enhancement values for scores maps.
 
-    The TFCE calculation is implemented as described in [1]_.
+    The :term:`TFCE` calculation is implemented as described in [1]_.
 
     Parameters
     ----------
@@ -25,7 +25,7 @@ def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1):
     Returns
     -------
     tfce_arr : :obj:`numpy.ndarray`, shape=(n_regressors, n_descriptors)
-        TFCE values.
+        :term:`TFCE` values.
 
     References
     ----------
