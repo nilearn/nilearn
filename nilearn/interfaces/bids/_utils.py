@@ -103,8 +103,8 @@ def _generate_model_metadata(out_file, model):
         'ModelParameters': model_attributes,
     }
 
-    with open(out_file, 'w') as fo:
-        json.dump(model_metadata, fo, indent=4, sort_keys=True)
+    with open(out_file, 'w') as f_obj:
+        json.dump(model_metadata, f_obj, indent=4, sort_keys=True)
 
 
 def _generate_dataset_description(out_file, model_level):
@@ -123,5 +123,5 @@ def _generate_dataset_description(out_file, model_level):
         }
     }
 
-    with open(out_file, 'w') as fo:
-        json.dump(dataset_description, fo, indent=4, sort_keys=True)
+    with open(out_file, 'w') as f_obj:
+        json.dump(dataset_description, f_obj, indent=4, sort_keys=True)
