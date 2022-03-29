@@ -272,6 +272,10 @@ If you wish to add a missing term, please `create a new issue`_ or
         that attempts to retain the sensitivity of cluster-level inference, without needing
         to specify an arbitrary cluster-level threshold.
 
+        For more information about TFCE, see
+        `Smith and Nichols (2009) <https://doi.org/10.1016/j.neuroimage.2008.03.061>`_ or
+        `Benedikt Ehinger's tutorial <https://benediktehinger.de/blog/science/threshold-free-cluster-enhancement-explained/>`_.
+
     TR
         Repetition time. This is the time in seconds between the beginning of an
         acquisition of one volume and the beginning of acquisition of the volume following it.
