@@ -155,8 +155,8 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         Minimum distance between subpeaks in mm. Default=8mm.
 
         .. note::
-            If two different clusters are closer than `min_distance`, it can
-            result in peaks closer than `min_distance`.
+            If two different clusters are closer than ``min_distance``, it can
+            result in peaks closer than ``min_distance``.
 
     Returns
     -------
