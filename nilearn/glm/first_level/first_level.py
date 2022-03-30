@@ -425,7 +425,7 @@ class FirstLevelModel(BaseGLM):
             shape of array: (number of scans - number of volumes removed, )
             Indices of retained volumes. Masks the niimgs along time/fourth
             dimension to perform scrubbing (remove volumes with high motion)
-            and/or non-steady-state volumes.
+            and/or remove non-steady-state volumes.
             Default=None.
 
             .. versionadded:: 0.9.1
