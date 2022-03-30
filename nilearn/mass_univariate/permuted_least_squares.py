@@ -477,13 +477,13 @@ def permuted_ols(
 
             Return H0 for all regressors, instead of only the first one.
 
-    csfwe_h0 : array-like, shape=(n_perm,)
+    csfwe_h0 : array-like, shape=(n_regressors, n_perm)
         Distribution of the (max) cluster size under the null hypothesis
         (obtained from the permutations). Array is sorted.
 
         .. versionadded:: 0.9.1
 
-    cmfwe_h0 : array-like, shape=(n_perm,)
+    cmfwe_h0 : array-like, shape=(n_regressors, n_perm)
         Distribution of the (max) cluster mass under the null hypothesis
         (obtained from the permutations). Array is sorted.
 
@@ -783,6 +783,6 @@ def permuted_ols(
         -np.log10(cmfwe_pvals),
         scores_original_data.T,
         vfwe_h0,
-        csfwe_h0[0],
-        cmfwe_h0[0],
+        csfwe_h0,
+        cmfwe_h0,
     )
