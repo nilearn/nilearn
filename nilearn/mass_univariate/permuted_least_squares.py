@@ -469,9 +469,13 @@ def permuted_ols(
         The ranks of the scores into the h0 distribution correspond to the
         p-values.
 
-    vfwe_h0 : array-like, shape=(n_perm,)
+    vfwe_h0 : array-like, shape=(n_regressors, n_perm)
         Distribution of the (max) t-statistic under the null hypothesis
         (obtained from the permutations). Array is sorted.
+
+        .. versionchanged:: 0.9.1
+
+            Return H0 for all regressors, instead of only the first one.
 
     csfwe_h0 : array-like, shape=(n_perm,)
         Distribution of the (max) cluster size under the null hypothesis
@@ -778,7 +782,7 @@ def permuted_ols(
         -np.log10(csfwe_pvals),
         -np.log10(cmfwe_pvals),
         scores_original_data.T,
-        vfwe_h0[0],
+        vfwe_h0,
         csfwe_h0[0],
         cmfwe_h0[0],
     )

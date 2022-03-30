@@ -47,6 +47,7 @@ Refer to the examples below for usage under the different scenarios:
   * User-defined: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_design_matrix.py`
   * Using an OpenNEURO dataset: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_bids_features.py`
   * Uing nilearn fetcher functions: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_spm_multimodal_faces.py`
+  * Advanced beta series models: :ref:`sphx_glr_auto_examples_07_advanced_plot_beta_series.py`
 
 To ascertain that the sequence of events provided to the first level model is accurate, Nilearn provides an
 event visualization function called :func:`nilearn.plotting.plot_event()`. Sample usage for this is available
