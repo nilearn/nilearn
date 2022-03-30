@@ -411,7 +411,8 @@ def permuted_ols(
         hypothesis is that the effect is zero or negative. Default=True.
 
     tfce : :obj:`bool`, optional
-        Whether to calculate :term:`TFCE` as part of the permutation procedure or not.
+        Whether to calculate :term:`TFCE` as part of the permutation procedure
+        or not.
         Calculating TFCE values in each permutation can be time-consuming,
         so this option is disabled by default.
         The TFCE calculation is implemented as described in
