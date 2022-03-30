@@ -459,15 +459,23 @@ def _compute_fixed_effects_params(
     else:
         fixed_fx_variance = np.mean(variances, 0) / len(variances)
         fixed_fx_contrasts = np.mean(contrasts, 0)
-
     dim = 1
     contrast_type = 't'
+    fixed_fx_contrasts_ = fixed_fx_contrasts
     if len(fixed_fx_contrasts.shape) == 2: # for F contrasts
         dim = fixed_fx_contrasts.shape[0]
-        contrast_type = 'F'
-    con = Contrast(effect=fixed_fx_contrasts, variance=fixed_fx_variance,
+        if dim > 1:
+            contrast_type = 'F'
+    else:
+        fixed_fx_contrasts_ = fixed_fx_contrasts[np.newaxis]
+    con = Contrast(effect=fixed_fx_contrasts_, variance=fixed_fx_variance,
                    dim=dim, dof=np.sum(dofs), contrast_type=contrast_type)
     fixed_fx_z_score = con.z_score()
     fixed_fx_stat = con.stat_
+    
+    if contrast_type == 't':
+        for stuff in [fixed_fx_z_score, fixed_fx_stat]: 
+            if len(stuff.shape) == 2:
+                stuff = stuff[:, 0]
     return (fixed_fx_contrasts, fixed_fx_variance, fixed_fx_stat,
             fixed_fx_z_score)

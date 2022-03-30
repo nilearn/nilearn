@@ -275,7 +275,6 @@ def test_high_level_glm_different_design_matrices():
         fmri_data, design_matrices=design_matrices)
     z_joint = multi_session_model.compute_contrast(
         [np.eye(rk)[:1], np.eye(rk + 1)[:1]], output_type='effect_size')
-
     assert z_joint.shape == (7, 8, 7)
 
     # compare the estimated effects to seprarately-fitted models

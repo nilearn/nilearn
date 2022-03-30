@@ -157,21 +157,22 @@ def test_low_level_fixed_effects():
     rng = np.random.RandomState(42)
     p = 100
     # X1 is some effects estimate, V1 their variance for "session 1"
-    X1, V1 = rng.standard_normal(size=p), np.ones(p)
+    X1, V1 = rng.standard_normal(p), np.ones(p)
     # same thing for a "session 2"
     X2, V2 = 2 * X1, 4 * V1
     # compute the fixed effects estimate, Xf, their variance Vf,
     # and the corresponding t statistic tf
-    Xf, Vf, tf = _compute_fixed_effects_params([X1, X2], [V1, V2],
-                                               precision_weighted=False)
+    Xf, Vf, tf, zf = _compute_fixed_effects_params(
+        [X1, X2], [V1, V2], dofs=[100, 100], precision_weighted=False)
     # check that the values are correct
     assert_almost_equal(Xf, 1.5 * X1)
     assert_almost_equal(Vf, 1.25 * V1)
-    assert_almost_equal(tf, Xf / np.sqrt(Vf))
+    assert_almost_equal(tf, (Xf / np.sqrt(Vf)).ravel())
 
     # Same thing, but now there is no precision weighting
-    Xw, Vw, _ = _compute_fixed_effects_params([X1, X2], [V1, V2],
-                                              precision_weighted=True)
+    Xw, Vw, _, _ = _compute_fixed_effects_params(
+        [X1, X2], [V1, V2], dofs=[200, 200],
+        precision_weighted=True)
     assert_almost_equal(Xw, 1.2 * X1)
     assert_almost_equal(Vw, .8 * V1)
 
