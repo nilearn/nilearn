@@ -427,6 +427,9 @@ class FirstLevelModel(BaseGLM):
             Indices of retained volumes. Masks the niimgs along time/fourth
             dimension to perform scrubbing (remove volumes with high motion)
             and/or non-steady-state volumes.
+            Default=None.
+            
+            .. versionadded:: 0.9.1
 
         design_matrices : pandas DataFrame or \
                           list of pandas DataFrames, optional

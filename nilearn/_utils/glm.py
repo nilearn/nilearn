@@ -341,7 +341,7 @@ def _check_run_sample_masks(n_runs, sample_masks):
         sample_masks = (sample_masks, )
     if len(sample_masks) != n_runs:
         raise ValueError(
-            (f"Number of sample_mask ({len(sample_masks)}) not matching "
-             "number of runs ({n_runs}).")
+            f"Number of sample_mask ({len(sample_masks)}) not matching "
+            f"number of runs ({n_runs})."
         )
     return sample_masks
