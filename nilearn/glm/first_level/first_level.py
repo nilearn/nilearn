@@ -421,14 +421,13 @@ class FirstLevelModel(BaseGLM):
             respective run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        sample_masks : Any type compatible with numpy-array indexing, or
-            list of indices, optional
+        sample_masks : array_like, or list of array_like, optional
             shape of array: (number of scans - number of volumes removed, )
             Indices of retained volumes. Masks the niimgs along time/fourth
             dimension to perform scrubbing (remove volumes with high motion)
             and/or non-steady-state volumes.
             Default=None.
-            
+
             .. versionadded:: 0.9.1
 
         design_matrices : pandas DataFrame or \
