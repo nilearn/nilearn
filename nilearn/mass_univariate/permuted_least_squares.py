@@ -685,7 +685,6 @@ def permuted_ols(
         neg_log10_tfce_pvals = -np.log10(tfce_pvals)
     else:
         scores_as_ranks_parts, h0_fmax_parts = zip(*ret)
-        neg_log10_tfce_pvals, h0_tfcemax = None, None
 
     h0_fmax = np.hstack((h0_fmax_parts))
     scores_as_ranks = np.zeros((n_regressors, n_descriptors))
@@ -704,6 +703,7 @@ def permuted_ols(
 
     elif output_type == 'dict':
         outputs = {
+            't': scores_original_data,
             'logp_max_t': -np.log10(pvals),
             'h0_max_t': h0_fmax,
         }
