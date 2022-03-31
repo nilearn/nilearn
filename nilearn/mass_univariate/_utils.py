@@ -27,6 +27,11 @@ def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1):
     tfce_arr : :obj:`numpy.ndarray`, shape=(n_regressors, n_descriptors)
         :term:`TFCE` values.
 
+    Notes
+    -----
+    The raw TFCE values are multiplied by the step size, so that TFCE values
+    are in the same scale across different step sizes.
+
     References
     ----------
     .. [1] Smith, S. M., & Nichols, T. E. (2009).
@@ -66,7 +71,9 @@ def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1):
 
             # Calculate each voxel's tfce value based on its cluster extent
             # and z-value
-            tfce_step_values = (cluster_map**E) * (score_thresh**H)
+            # NOTE: We also multiply the TFCE values by dh to standardize
+            # their scale
+            tfce_step_values = (cluster_map**E) * (score_thresh**H) * dh
             tfce_4d[..., i_regressor] += tfce_step_values
 
     tfce_arr = apply_mask(
