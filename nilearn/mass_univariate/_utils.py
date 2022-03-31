@@ -48,7 +48,7 @@ def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1):
         max_z = np.floor(np.max(scores_3d) / dh) * dh
 
         for score_thresh in np.arange(dh, max_z + dh, dh):
-            # Threshold map
+            # Threshold map at *h*
             scores_3d[scores_3d < score_thresh] = 0
 
             # Derive clusters
@@ -58,6 +58,7 @@ def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1):
             )
 
             # Label each cluster with its extent
+            # Each voxel's cluster extent at threshold *h* is thus *e(h)*
             cluster_map = np.zeros(scores_3d.shape, int)
             for cluster_val in range(1, n_clusters + 1):
                 bool_map = labeled_arr3d == cluster_val
