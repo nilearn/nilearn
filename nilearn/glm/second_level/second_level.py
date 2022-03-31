@@ -623,16 +623,27 @@ class SecondLevelModel(BaseGLM):
 
 
 @fill_doc
-def non_parametric_inference(second_level_input, confounds=None,
-                             design_matrix=None, second_level_contrast=None,
-                             first_level_contrast=None,
-                             mask=None, smoothing_fwhm=None,
-                             model_intercept=True, n_perm=10000,
-                             two_sided_test=False, random_state=None,
-                             n_jobs=1, verbose=0):
-    """Generate p-values corresponding to the contrasts provided
-    based on permutation testing. This function reuses the 'permuted_ols'
-    function Nilearn.
+def non_parametric_inference(
+    second_level_input,
+    confounds=None,
+    design_matrix=None,
+    second_level_contrast=None,
+    first_level_contrast=None,
+    mask=None,
+    smoothing_fwhm=None,
+    model_intercept=True,
+    n_perm=10000,
+    two_sided_test=False,
+    random_state=None,
+    n_jobs=1,
+    verbose=0,
+    tfce=False,
+):
+    """Massively univariate group analysis with permuted OLS.
+
+    This function is a light wrapper around
+    :func:`~nilearn.mass_univariate.permuted_ols`, with additional steps to
+    ensure compatibility with the :mod:`~nilearn.glm.second_level` module.
 
     Parameters
     ----------
@@ -716,12 +727,30 @@ def non_parametric_inference(second_level_input, confounds=None,
     verbose : int, optional
         Verbosity level (0 means no message). Default=0.
 
+    tfce : :obj:`bool`, optional
+        Whether to calculate :term:`TFCE` as part of the permutation procedure
+        or not.
+        Calculating TFCE values in each permutation can be time-consuming,
+        so this option is disabled by default.
+        The TFCE calculation is implemented as described in
+        :footcite:t:`smith2009threshold`.
+        Default=False.
+
+        .. versionadded:: 0.9.1
+
     Returns
     -------
     neg_log_corrected_pvals_img : Nifti1Image
-        The image which contains negative logarithm of the
-        corrected p-values.
+        The image which contains negative logarithm of the corrected p-values.
 
+    See also
+    --------
+    :func:`~nilearn.mass_univariate.permuted_ols` : For more information on \
+        the permutation procedure.
+
+    References
+    ----------
+    .. footbibliography::
     """
     _check_second_level_input(second_level_input, design_matrix,
                               flm_object=False, df_object=True)
@@ -773,12 +802,21 @@ def non_parametric_inference(second_level_input, confounds=None,
     target_vars = masker.transform(effect_maps)
 
     # Perform massively univariate analysis with permuted OLS
-    neg_log_pvals_permuted_ols, _, _ = permuted_ols(
-        tested_var, target_vars, model_intercept=model_intercept,
-        n_perm=n_perm, two_sided_test=two_sided_test,
-        random_state=random_state, n_jobs=n_jobs,
-        verbose=max(0, verbose - 1))
-    neg_log_corrected_pvals_img = masker.inverse_transform(
-        np.ravel(neg_log_pvals_permuted_ols))
+    ols_outputs = permuted_ols(
+        tested_var,
+        target_vars,
+        model_intercept=model_intercept,
+        n_perm=n_perm,
+        two_sided_test=two_sided_test,
+        random_state=random_state,
+        n_jobs=n_jobs,
+        verbose=max(0, verbose - 1),
+        masker=masker,
+        tfce=tfce,
+        output_type='dict',
+    )
+    neg_log_corrected_pvals_img = masker.inverse_transform(np.ravel(
+        ols_outputs['logp_max_t']
+    ))
 
     return neg_log_corrected_pvals_img
