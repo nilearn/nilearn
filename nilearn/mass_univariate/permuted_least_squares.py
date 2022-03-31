@@ -338,13 +338,14 @@ def permuted_ols(
     target_vars,
     confounding_vars=None,
     model_intercept=True,
-    masker=None,
     n_perm=10000,
     two_sided_test=True,
-    tfce=False,
     random_state=None,
     n_jobs=1,
     verbose=0,
+    masker=None,
+    tfce=False,
+    output_type='legacy',
 ):
     """Massively univariate group analysis with permuted OLS.
 
@@ -393,12 +394,6 @@ def permuted_ols(
         unless the tested variate is already the intercept.
         Default=True
 
-    masker : :obj:`~nilearn.maskers.NiftiMasker` or \
-            :obj:`~nilearn.maskers.MultiNiftiMasker`, optional
-        Mask to be used on data. This is necessary for TFCE-based inference.
-
-        .. versionadded:: 0.9.1
-
     n_perm : int, optional
         Number of permutations to perform.
         Permutations are costly but the more are performed, the more precision
@@ -409,17 +404,6 @@ def permuted_ols(
         effects are considered; the null hypothesis is that the effect is zero.
         If False, only positive effects are considered as relevant. The null
         hypothesis is that the effect is zero or negative. Default=True.
-
-    tfce : :obj:`bool`, optional
-        Whether to calculate :term:`TFCE` as part of the permutation procedure
-        or not.
-        Calculating TFCE values in each permutation can be time-consuming,
-        so this option is disabled by default.
-        The TFCE calculation is implemented as described in
-        :footcite:t:`smith2009threshold`.
-        Default=False.
-
-        .. versionadded:: 0.9.1
 
     random_state : int or None, optional
         Seed for random number generator, to have the same permutations
@@ -434,6 +418,34 @@ def permuted_ols(
     verbose : int, optional
         verbosity level (0 means no message). Default=0.
 
+    masker : :obj:`~nilearn.maskers.NiftiMasker` or \
+            :obj:`~nilearn.maskers.MultiNiftiMasker`, optional
+        Mask to be used on data. This is necessary for TFCE-based inference.
+
+        .. versionadded:: 0.9.1
+
+    tfce : :obj:`bool`, optional
+        Whether to calculate :term:`TFCE` as part of the permutation procedure
+        or not.
+        Calculating TFCE values in each permutation can be time-consuming,
+        so this option is disabled by default.
+        The TFCE calculation is implemented as described in
+        :footcite:t:`smith2009threshold`.
+        Default=False.
+
+        .. versionadded:: 0.9.1
+
+    output_type : {'legacy', 'dict'}, optional
+        Determines how outputs should be returned.
+        The two options are:
+
+        -   'legacy': return a pvals, score_orig_data, and h0_fmax
+        -   'dict': return a dictionary containing output arrays
+
+        .. warning::
+            If ``tfce`` is True, then ``output_type`` will automatically be
+            set to ``'dict'``.
+
     Returns
     -------
     pvals : array-like, shape=(n_regressors, n_descriptors)
@@ -441,19 +453,46 @@ def permuted_ols(
         n_regressors explanatory variates against the n_descriptors target
         variates. Family-wise corrected p-values.
 
+        .. note::
+            This is returned if ``output_type`` == 'legacy'.
+
     score_orig_data : numpy.ndarray, shape=(n_regressors, n_descriptors)
         t-statistic associated with the significance test of the n_regressors
         explanatory variates against the n_descriptors target variates.
         The ranks of the scores into the h0 distribution correspond to the
         p-values.
 
+        .. note::
+            This is returned if ``output_type`` == 'legacy'.
+
     h0_fmax : array-like, shape=(n_regressors, n_perm)
         Distribution of the (max) t-statistic under the null hypothesis
         (obtained from the permutations). Array is sorted.
 
+        .. note::
+            This is returned if ``output_type`` == 'legacy'.
+
         .. versionchanged:: 0.9.1
 
             Return H0 for all regressors, instead of only the first one.
+
+    outputs : :obj:`dict`
+        Output arrays, organized in a dictionary.
+        Here are the keys:
+
+        -   'logp_max_t': :obj:`numpy.ndarray`,
+            shape=(n_regressors, n_descriptors)
+        -   'h0_max_t': :obj:`numpy.ndarray`, shape=(n_regressors, n_perm)
+        -   'logp_max_tfce': :obj:`numpy.ndarray`,
+            shape=(n_regressors, n_descriptors)
+
+            Only returned if ``tfce`` is True.
+        -   'h0_max_tfce': :obj:`numpy.ndarray`, shape=(n_regressors, n_perm)
+
+            Only returned if ``tfce`` is True.
+
+        .. note::
+            This is returned if ``output_type`` == 'dict'.
 
     References
     ----------
@@ -472,6 +511,29 @@ def permuted_ols(
         n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
     else:
         n_jobs = min(n_jobs, joblib.cpu_count())
+
+    # check that masker is provided if it is needed
+    if tfce and not masker:
+        raise ValueError('A masker must be provided if tfce is True.')
+
+    if tfce and output_type == 'legacy':
+        warnings.warn(
+            'If "tfce" is set to True, "output_type" must be set to "dict". '
+            'Overriding.'
+        )
+        output_type = 'dict'
+    elif output_type == 'legacy':
+        warnings.warn(
+            category=DeprecationWarning,
+            message=(
+                'The "legacy" output structure for "permuted_ols" is '
+                'deprecated. '
+                'The default output structure will be changed to "dict" '
+                'in version 0.0.13.'
+            ),
+            stacklevel=3,
+        )
+
     # make target_vars F-ordered to speed-up computation
     if target_vars.ndim != 2:
         raise ValueError("'target_vars' should be a 2D array. "
@@ -506,7 +568,7 @@ def permuted_ols(
         else:
             confounding_vars = np.ones((n_samples, 1))
 
-    ### OLS regression on original data
+    # OLS regression on original data
     if confounding_vars is not None:
         # step 1: extract effect of covars from target vars
         covars_orthonormalized = _orthonormalize_matrix(confounding_vars)
@@ -564,7 +626,7 @@ def permuted_ols(
     else:
         tfce_original_data = None
 
-    ### Permutations
+    # Permutations
     # parallel computing units perform a reduced number of permutations each
     if n_perm > n_jobs:
         n_perm_chunks = np.asarray([n_perm / n_jobs] * n_jobs, dtype=int)
@@ -614,15 +676,16 @@ def permuted_ols(
         ) = zip(*ret)
 
         # We can use the same approach for TFCE that we use for vFWE
-        h0_tfcemax_parts = np.hstack(h0_tfcemax_parts)
+        h0_tfcemax = np.hstack(h0_tfcemax_parts)
         tfce_scores_as_ranks = np.zeros((n_regressors, n_descriptors))
         for tfce_scores_as_ranks_part in tfce_scores_as_ranks_parts:
             tfce_scores_as_ranks += tfce_scores_as_ranks_part
 
         tfce_pvals = (n_perm + 1 - tfce_scores_as_ranks) / float(1 + n_perm)
-
+        neg_log10_tfce_pvals = -np.log10(tfce_pvals)
     else:
         scores_as_ranks_parts, h0_fmax_parts = zip(*ret)
+        neg_log10_tfce_pvals, h0_tfcemax = None, None
 
     h0_fmax = np.hstack((h0_fmax_parts))
     scores_as_ranks = np.zeros((n_regressors, n_descriptors))
@@ -636,12 +699,16 @@ def permuted_ols(
     if two_sided_test:
         scores_original_data = scores_original_data * sign_scores_original_data
 
-    if tfce:
-        return (
-            -np.log10(pvals),
-            scores_original_data.T,
-            h0_fmax,
-            -np.log10(tfce_pvals),
-        )
-    else:
-        return - np.log10(pvals), scores_original_data.T, h0_fmax
+    if output_type == 'legacy':
+        return -np.log10(pvals), scores_original_data.T, h0_fmax
+
+    elif output_type == 'dict':
+        outputs = {
+            'logp_max_t': -np.log10(pvals),
+            'h0_max_t': h0_fmax,
+        }
+        if tfce:
+            outputs['logp_max_tfce'] = neg_log10_tfce_pvals
+            outputs['h0_max_tfce'] = h0_tfcemax
+
+        return outputs
