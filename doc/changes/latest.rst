@@ -15,7 +15,7 @@ Fixes
 
 - Fix function :func:`~datasets.fetch_abide_pcp` which was returning empty phenotypes and ``func_preproc`` after release ``0.9.0`` due to supporting pandas dataframes in fetchers (:gh:`3174` by `Nicolas Gensollen`_).
 - Fix function :func:`~datasets.fetch_atlas_harvard_oxford` and :func:`~datasets.fetch_atlas_juelich` which were returning the image in the `filename` attribute instead of the path to the image (:gh:`3179` by `Raphael Meudec`_).
-- Fix function :func:`~image._apply_cluster_size_threshold`, which resulted in wrong clusters extraction when cluster_size was non-zero  (:gh:`3200` by `Bertrand Thirion`_).
+- Fix function ``nilearn.image._apply_cluster_size_threshold``, which resulted in wrong clusters extraction when cluster_size was non-zero  (:gh:`3201` by `Bertrand Thirion`_).
   
 Enhancements
 ------------
