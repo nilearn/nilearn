@@ -478,21 +478,43 @@ def permuted_ols(
 
     outputs : :obj:`dict`
         Output arrays, organized in a dictionary.
+
+        .. versionadded:: 0.9.1
+
         Here are the keys:
 
-        -   'logp_max_t': :obj:`numpy.ndarray`,
-            shape=(n_regressors, n_descriptors)
-        -   'h0_max_t': :obj:`numpy.ndarray`, shape=(n_regressors, n_perm)
-        -   'logp_max_tfce': :obj:`numpy.ndarray`,
-            shape=(n_regressors, n_descriptors)
+        ============= ============== ==========================================
+        key           shape          description
+        ============= ============== ==========================================
+        t             (n_regressors, t-statistic associated with the
+                      n_descriptors) significance test of the n_regressors
+                                     explanatory variates against the
+                                     n_descriptors target variates.
+                                     The ranks of the scores into the h0
+                                     distribution correspond to the p-values.
+        logp_max_t    (n_regressors, Negative log10 p-values associated with
+                      n_descriptors) the significance test of the n_regressors
+                                     explanatory variates against the
+                                     n_descriptors target variates.
+                                     Family-wise corrected p-values, based on
+                                     ``h0_max_t``.
+        h0_max_t      (n_regressors, Distribution of the max t-statistic under
+                      n_perm)        the null hypothesis (obtained from the
+                                     permutations). Array is sorted.
+        logp_max_tfce (n_regressors, Negative log10 p-values associated with
+                      n_descriptors) the significance test of the n_regressors
+                                     explanatory variates against the
+                                     n_descriptors target variates.
+                                     Family-wise corrected p-values, based on
+                                     ``h0_max_tfce``.
 
-            Only returned if ``tfce`` is True.
-        -   'h0_max_tfce': :obj:`numpy.ndarray`, shape=(n_regressors, n_perm)
+                                     Returned only if ``tfce`` is True.
+        h0_max_tfce   (n_regressors, Distribution of the max TFCE value under
+                      n_perm)        the null hypothesis (obtained from the
+                                     permutations). Array is sorted.
 
-            Only returned if ``tfce`` is True.
-
-        .. note::
-            This is returned if ``output_type`` == 'dict'.
+                                     Returned only if ``tfce`` is True.
+        ============= ============== ==========================================
 
     References
     ----------
