@@ -444,13 +444,13 @@ plt.show()
 # Volume censoring is a common way to remove non-steady state volumes, or
 # high-motion volumes in scrubbing based noise removal strategies. In this
 # scenario, we can apply a sample mask along the time dimension to exclude
-# unwanted volumes. When using :term:`fMRIPrep` outputs from 1.4.x series or above, we
-# can use the :func:`~nilearn.interfaces.fmriprep.load_confounds` function of Nilearn to retrieve sample masks
-# based on the given scrubbing threshold and the non-steady state columns.
+# unwanted volumes. When using :term:`fMRIPrep` outputs from 1.4.x series or
+# above, wecan use the :func:`~nilearn.interfaces.fmriprep.load_confounds`
+# function of Nilearn to retrieve sample masks based on the given scrubbing
+# threshold and the non-steady state columns.
 # For non-fMRIPrep output, we can still define a sample mask. Here we apply a
 # sample mask that removes the first 50 volumes.
 #
-# .. _load_confounds: https://nilearn.github.io/stable/modules/generated/nilearn.interfaces.fmriprep.load_confounds.html
 
 sample_masks = np.arange(events.shape[0])[50:]
 first_level_model = FirstLevelModel(t_r, hrf_model='spm + derivative',

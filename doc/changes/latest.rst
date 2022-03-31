@@ -19,6 +19,7 @@ Fixes
 Enhancements
 ------------
 
+- Add `sample_masks` to :meth:`~glm.first_level.FirstLevelModel.fit` for censoring time points (:gh:`3193` by `Hao-Ting Wang`_).
 - New example in
   :ref:`sphx_glr_auto_examples_07_advanced_plot_beta_series.py`
   to demonstrate how to implement common beta series models with nilearn (:gh:`3127` by `Taylor Salo`_).
