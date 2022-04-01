@@ -593,13 +593,13 @@ def _get_atlas_data_and_labels(atlas_source, atlas_name, symmetric_split=False,
     atlas_file = os.path.join(root, atlas_source,
                               '{}-{}.nii.gz'.format(atlas_source,
                                                     atlas_name))
-    atlas_img, label_file = _fetch_files(
+    atlas_file, label_file = _fetch_files(
         data_dir,
         [(atlas_file, url, opts),
          (label_file, url, opts)],
         resume=resume, verbose=verbose)
     # Reorder image to have positive affine diagonal
-    atlas_img = reorder_img(atlas_img)
+    atlas_img = reorder_img(atlas_file)
     names = {}
     from xml.etree import ElementTree
     names[0] = 'Background'

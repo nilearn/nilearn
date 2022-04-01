@@ -26,14 +26,15 @@ jobs:
       versionSpec: '$(python.version)'
       architecture: 'x64'
 
+  # Install the standard and testing-related dependencies
+  # See setup.cfg for dependency group options
   - script: |
       python -m pip install --upgrade pip
-      pip install --prefer-binary -r requirements-dev.txt
-      pip install pytest-azurepipelines codecov
+      pip install pytest-azurepipelines
+      pip install --prefer-binary .[plotting,plotly,test]
     displayName: 'Install dependencies'
 
   - script: |
-      pip install .
       python -m pytest --pyargs nilearn --cov-report=xml --cov=nilearn --cov-append --junitxml=test-results.xml
     displayName: 'test'
 
