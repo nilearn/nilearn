@@ -788,7 +788,7 @@ def non_parametric_inference(
 
     # Check and obtain the contrast
     contrast = _get_contrast(second_level_contrast, design_matrix)
-    # Get effect_maps
+    # Get first-level effect_maps
     effect_maps = _infer_effect_maps(second_level_input, first_level_contrast)
 
     # Check design matrix and effect maps agree on number of rows
