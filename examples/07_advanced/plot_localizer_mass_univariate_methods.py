@@ -23,7 +23,6 @@ import matplotlib.pyplot as plt
 from nilearn import datasets
 from nilearn.maskers import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
-from nilearn.image import get_data
 
 ##############################################################################
 # Load Localizer contrast
@@ -86,95 +85,51 @@ ols_outputs = permuted_ols(
     output_type='dict',
 )
 neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(
-    np.ravel(ols_outputs['logp_max_t'])
+    ols_outputs['logp_max_t'][0, :]  # select first regressor
 )
 neg_log_pvals_tfce_unmasked = nifti_masker.inverse_transform(
-    np.ravel(ols_outputs['logp_max_tfce'])
+    ols_outputs['logp_max_tfce'][0, :]  # select first regressor
 )
 
 
 ##############################################################################
 # Visualization
-from nilearn.plotting import plot_stat_map
+from nilearn import plotting
+from nilearn.image import get_data
 
 # Various plotting parameters
 z_slice = 12  # plotted slice
-vmax = min(
+threshold = - np.log10(0.1)  # 10% corrected
+
+vmax = max(
     np.amax(ols_outputs['logp_max_t']),
     np.amax(neg_log_pvals_anova),
     np.amax(ols_outputs['logp_max_tfce']),
 )
 
-threshold = - np.log10(0.1)  # 10% corrected
+images_to_plot = {
+    "Parametric Test\n(Bonferroni FWE)": neg_log_pvals_anova_unmasked,
+    "Permutation Test\n(Max t-statistic FWE)": neg_log_pvals_permuted_ols_unmasked,
+    "Permutation Test\n(Max TFCE FWE)": neg_log_pvals_tfce_unmasked,
+}
 
-fig, axes = plt.subplots(figsize=(12, 3), facecolor='k', ncols=3)
+fig, axes = plt.subplots(figsize=(12, 3), ncols=3)
+for i_col, (title, img) in enumerate(images_to_plot.items()):
+    ax = axes[i_col]
+    n_detections = (get_data(img) > threshold).sum()
+    new_title = title + f"\n{n_detections} sig. voxels"
 
-# Plot Anova p-values
-display = plot_stat_map(
-    neg_log_pvals_anova_unmasked,
-    threshold=threshold,
-    display_mode='z',
-    cut_coords=[z_slice],
-    figure=fig,
-    axes=axes[0],
-    vmax=vmax,
-    black_bg=True,
-)
+    plotting.plot_glass_brain(
+        img,
+        colorbar=True,
+        vmax=vmax,
+        display_mode='z',
+        plot_abs=False,
+        cut_coords=[12],
+        threshold=threshold,
+        figure=fig,
+        axes=ax,
+    )
+    ax.set_title(new_title)
 
-n_detections = (get_data(neg_log_pvals_anova_unmasked) > threshold).sum()
-title = (
-    'Negative $\\log_{10}$ p-values\n'
-    '(Parametric +\n'
-    'Bonferroni correction)\n'
-    f'{n_detections} detections'
-)
-
-axes[0].set_title(title, color='white')
-
-# Plot permuted OLS p-values
-display = plot_stat_map(
-    neg_log_pvals_permuted_ols_unmasked,
-    threshold=threshold,
-    display_mode='z',
-    cut_coords=[z_slice],
-    figure=fig,
-    axes=axes[1],
-    vmax=vmax,
-    black_bg=True,
-)
-
-n_detections = (
-    get_data(neg_log_pvals_permuted_ols_unmasked) > threshold
-).sum()
-title = (
-    'Negative $\\log_{10}$ p-values\n'
-    '(Non-parametric +\n'
-    'max-type correction)\n'
-    f'{n_detections} voxels detected'
-)
-
-axes[1].set_title(title, color='white')
-
-# Plot permuted OLS TFCE-based p-values
-display = plot_stat_map(
-    neg_log_pvals_tfce_unmasked,
-    threshold=threshold,
-    display_mode='z',
-    cut_coords=[z_slice],
-    figure=fig,
-    axes=axes[2],
-    vmax=vmax,
-    black_bg=True,
-)
-
-n_detections = (get_data(neg_log_pvals_tfce_unmasked) > threshold).sum()
-title = (
-    'Negative $\\log_{10}$ p-values\n'
-    '(Non-parametric + \n'
-    'TFCE max-type correction)\n'
-    f'{n_detections} detections'
-)
-
-axes[2].set_title(title, color='white')
-
-fig.show()
+fig.suptitle("Group left button press ($-\\log_{10}$ p-values)", y=1.3, fontsize=16)
