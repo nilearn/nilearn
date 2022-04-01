@@ -5,7 +5,7 @@ from scipy import ndimage
 from nilearn.masking import apply_mask, unmask
 
 
-def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1, two_sided=True):
+def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh='auto', two_sided=True):
     """Calculate threshold-free cluster enhancement values for scores maps.
 
     The :term:`TFCE` calculation is implemented as described in [1]_.
@@ -19,8 +19,9 @@ def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1, two_sided=True):
         Extent weight. Default is 0.5.
     H : :obj:`float`, optional
         Height weight. Default is 2.
-    dh : :obj:`float`, optional
-        Step size for TFCE calculation. Default is 0.1.
+    dh : 'auto' or :obj:`float`, optional
+        Step size for TFCE calculation.
+        If set to 'auto', use 100 steps, as is done in fslmaths.
     two_sided : :obj:`bool`, optional
         Whether to perform two-sided thresholding or not.
         Default is True.
@@ -29,11 +30,6 @@ def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1, two_sided=True):
     -------
     tfce_arr : :obj:`numpy.ndarray`, shape=(n_descriptors, n_regressors)
         :term:`TFCE` values.
-
-    Notes
-    -----
-    The raw TFCE values are multiplied by the step size, so that TFCE values
-    are in the same scale across different step sizes.
 
     References
     ----------
@@ -58,7 +54,12 @@ def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1, two_sided=True):
         # Get the maximum statistic in the map
         max_score = np.max(np.abs(scores_3d))
 
-        for score_thresh in np.arange(dh, max_score + dh, dh):
+        if dh == 'auto':
+            step = max_score / 100
+        else:
+            step = dh
+
+        for score_thresh in np.arange(step, max_score + step, step):
             for sign in np.unique(np.sign(scores_3d)):
                 temp_scores_3d = scores_3d * sign
 
@@ -80,9 +81,7 @@ def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1, two_sided=True):
 
                 # Calculate each voxel's tfce value based on its cluster extent
                 # and z-value
-                # NOTE: We also multiply the TFCE values by dh to standardize
-                # their scale
-                tfce_step_values = (cluster_map**E) * (score_thresh**H)  # * dh
+                tfce_step_values = (cluster_map**E) * (score_thresh**H)
                 tfce_4d[..., i_regressor] += sign * tfce_step_values
 
     tfce_arr = apply_mask(
