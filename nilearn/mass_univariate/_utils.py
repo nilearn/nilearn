@@ -12,7 +12,7 @@ def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1):
 
     Parameters
     ----------
-    scores_array : :obj:`numpy.ndarray`, shape=(n_regressors, n_descriptors)
+    scores_array : :obj:`numpy.ndarray`, shape=(n_descriptors, n_regressors)
         Scores (t-statistics) for a set of regressors.
     masker
     E : :obj:`float`, optional
@@ -24,7 +24,7 @@ def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1):
 
     Returns
     -------
-    tfce_arr : :obj:`numpy.ndarray`, shape=(n_regressors, n_descriptors)
+    tfce_arr : :obj:`numpy.ndarray`, shape=(n_descriptors, n_regressors)
         :term:`TFCE` values.
 
     Notes
@@ -49,8 +49,8 @@ def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1):
     for i_regressor in range(scores_4d.shape[3]):
         scores_3d = scores_4d[..., i_regressor]
 
-        # Get the step right before the maximum z-statistic in the map
-        max_z = np.floor(np.max(scores_3d) / dh) * dh
+        # Get the step right after the maximum z-statistic in the map
+        max_z = np.ceil(np.max(scores_3d) / dh) * dh
 
         for score_thresh in np.arange(dh, max_z + dh, dh):
             # Threshold map at *h*
@@ -73,7 +73,7 @@ def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1):
             # and z-value
             # NOTE: We also multiply the TFCE values by dh to standardize
             # their scale
-            tfce_step_values = (cluster_map**E) * (score_thresh**H) * dh
+            tfce_step_values = (cluster_map**E) * (score_thresh**H)  # * dh
             tfce_4d[..., i_regressor] += tfce_step_values
 
     tfce_arr = apply_mask(
