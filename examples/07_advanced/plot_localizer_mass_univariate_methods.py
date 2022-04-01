@@ -74,7 +74,7 @@ neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
 #
 # This method will produce both voxel-level FWE-corrected -log10 p-values and
 # :term:`TFCE`-based FWE-corrected -log10 p-values.
-neg_log_pvals_permuted_ols, _, _, neg_log_pvals_tfce = permuted_ols(
+ols_outputs = permuted_ols(
     tested_var,
     fmri_masked,
     model_intercept=True,
@@ -83,11 +83,14 @@ neg_log_pvals_permuted_ols, _, _, neg_log_pvals_tfce = permuted_ols(
     n_perm=200,  # 200 for the sake of time. Ideally, this should be 10000.
     verbose=1,  # display progress bar
     n_jobs=1,  # can be changed to use more CPUs
+    output_type='dict',
 )
 neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(
-    np.ravel(neg_log_pvals_permuted_ols))
+    np.ravel(ols_outputs['logp_max_t'])
+)
 neg_log_pvals_tfce_unmasked = nifti_masker.inverse_transform(
-    np.ravel(neg_log_pvals_tfce))
+    np.ravel(ols_outputs['logp_max_tfce'])
+)
 
 
 ##############################################################################
@@ -97,9 +100,9 @@ from nilearn.plotting import plot_stat_map
 # Various plotting parameters
 z_slice = 12  # plotted slice
 vmax = min(
-    np.amax(neg_log_pvals_permuted_ols),
+    np.amax(ols_outputs['logp_max_t']),
     np.amax(neg_log_pvals_anova),
-    np.amax(neg_log_pvals_tfce),
+    np.amax(ols_outputs['logp_max_tfce']),
 )
 
 threshold = - np.log10(0.1)  # 10% corrected
