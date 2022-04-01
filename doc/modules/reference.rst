@@ -126,6 +126,7 @@ Preprocessed datasets
    fetch_language_localizer_demo_dataset
    fetch_localizer_first_level
    fetch_miyawaki2008
+   fetch_openneuro_dataset_index
    fetch_spm_auditory
    fetch_spm_multimodal_fmri
    fetch_surf_nki_enhanced
@@ -163,7 +164,6 @@ General functions
    fetch_neurovault
    fetch_neurovault_ids
    fetch_openneuro_dataset
-   fetch_openneuro_dataset_index
    get_data_dirs
    patch_openneuro_dataset
    select_from_index
