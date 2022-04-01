@@ -290,7 +290,7 @@ def _permuted_ols_on_chunk(
 
         if tfce:
             h0_tfcemax_part[i] = np.nanmax(
-                _calculate_tfce(perm_scores, masker),
+                _calculate_tfce(perm_scores, masker, two_sided=two_sided_test),
                 axis=0,
             )
             tfce_scores_as_ranks_part += (

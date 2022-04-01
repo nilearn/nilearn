@@ -5,7 +5,7 @@ from scipy import ndimage
 from nilearn.masking import apply_mask, unmask
 
 
-def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1):
+def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1, two_sided=True):
     """Calculate threshold-free cluster enhancement values for scores maps.
 
     The :term:`TFCE` calculation is implemented as described in [1]_.
@@ -21,6 +21,9 @@ def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1):
         Height weight. Default is 2.
     dh : :obj:`float`, optional
         Step size for TFCE calculation. Default is 0.1.
+    two_sided : :obj:`bool`, optional
+        Whether to perform two-sided thresholding or not.
+        Default is True.
 
     Returns
     -------
@@ -44,37 +47,43 @@ def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh=0.1):
 
     scores_4d_img = unmask(scores_array.T, masker.mask_img_)
     scores_4d = scores_4d_img.get_fdata()
+    if not two_sided:
+        scores_4d[scores_4d < 0] = 0
+
     tfce_4d = np.zeros_like(scores_4d)
 
     for i_regressor in range(scores_4d.shape[3]):
         scores_3d = scores_4d[..., i_regressor]
 
-        # Get the step right after the maximum z-statistic in the map
-        max_z = np.ceil(np.max(scores_3d) / dh) * dh
+        # Get the maximum statistic in the map
+        max_score = np.max(np.abs(scores_3d))
 
-        for score_thresh in np.arange(dh, max_z + dh, dh):
-            # Threshold map at *h*
-            scores_3d[scores_3d < score_thresh] = 0
+        for score_thresh in np.arange(dh, max_score + dh, dh):
+            for sign in np.unique(np.sign(scores_3d)):
+                temp_scores_3d = scores_3d * sign
 
-            # Derive clusters
-            labeled_arr3d, n_clusters = ndimage.measurements.label(
-                scores_3d,
-                conn,
-            )
+                # Threshold map at *h*
+                temp_scores_3d[temp_scores_3d < score_thresh] = 0
 
-            # Label each cluster with its extent
-            # Each voxel's cluster extent at threshold *h* is thus *e(h)*
-            cluster_map = np.zeros(scores_3d.shape, int)
-            for cluster_val in range(1, n_clusters + 1):
-                bool_map = labeled_arr3d == cluster_val
-                cluster_map[bool_map] = np.sum(bool_map)
+                # Derive clusters
+                labeled_arr3d, n_clusters = ndimage.measurements.label(
+                    temp_scores_3d,
+                    conn,
+                )
 
-            # Calculate each voxel's tfce value based on its cluster extent
-            # and z-value
-            # NOTE: We also multiply the TFCE values by dh to standardize
-            # their scale
-            tfce_step_values = (cluster_map**E) * (score_thresh**H)  # * dh
-            tfce_4d[..., i_regressor] += tfce_step_values
+                # Label each cluster with its extent
+                # Each voxel's cluster extent at threshold *h* is thus *e(h)*
+                cluster_map = np.zeros(temp_scores_3d.shape, int)
+                for cluster_val in range(1, n_clusters + 1):
+                    bool_map = labeled_arr3d == cluster_val
+                    cluster_map[bool_map] = np.sum(bool_map)
+
+                # Calculate each voxel's tfce value based on its cluster extent
+                # and z-value
+                # NOTE: We also multiply the TFCE values by dh to standardize
+                # their scale
+                tfce_step_values = (cluster_map**E) * (score_thresh**H)  # * dh
+                tfce_4d[..., i_regressor] += sign * tfce_step_values
 
     tfce_arr = apply_mask(
         nib.Nifti1Image(
