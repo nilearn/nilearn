@@ -109,7 +109,9 @@ vmax = max(
 
 images_to_plot = {
     "Parametric Test\n(Bonferroni FWE)": neg_log_pvals_anova_unmasked,
-    "Permutation Test\n(Max t-statistic FWE)": neg_log_pvals_permuted_ols_unmasked,
+    "Permutation Test\n(Max t-statistic FWE)": (
+        neg_log_pvals_permuted_ols_unmasked
+    ),
     "Permutation Test\n(Max TFCE FWE)": neg_log_pvals_tfce_unmasked,
 }
 
@@ -132,4 +134,8 @@ for i_col, (title, img) in enumerate(images_to_plot.items()):
     )
     ax.set_title(new_title)
 
-fig.suptitle("Group left button press ($-\\log_{10}$ p-values)", y=1.3, fontsize=16)
+fig.suptitle(
+    "Group left button press ($-\\log_{10}$ p-values)",
+    y=1.3,
+    fontsize=16,
+)
