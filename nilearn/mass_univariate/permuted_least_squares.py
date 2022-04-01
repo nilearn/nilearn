@@ -339,13 +339,14 @@ def permuted_ols(
     target_vars,
     confounding_vars=None,
     model_intercept=True,
-    masker=None,
-    threshold=0.001,
     n_perm=10000,
     two_sided_test=True,
     random_state=None,
     n_jobs=1,
     verbose=0,
+    masker=None,
+    threshold=0.001,
+    output_type='legacy',
 ):
     """Massively univariate group analysis with permuted OLS.
 
@@ -396,19 +397,6 @@ def permuted_ols(
         unless the tested variate is already the intercept.
         Default=True.
 
-    masker : NiftiMasker or MultiNiftiMasker object, optional
-        A mask to be used on the data.
-        This is only used for cluster-level inference.
-
-        .. versionadded:: 0.9.1
-
-    threshold : :obj:`float`, optional
-        Cluster-forming threshold in p-scale.
-        This is only used for cluster-level inference.
-        Default=0.001.
-
-        .. versionadded:: 0.9.1
-
     n_perm : :obj:`int`, optional
         Number of permutations to perform.
         Permutations are costly but the more are performed, the more precision
@@ -435,59 +423,108 @@ def permuted_ols(
     verbose : :obj:`int`, optional
         verbosity level (0 means no message). Default=0.
 
+    masker : NiftiMasker or MultiNiftiMasker object, optional
+        A mask to be used on the data.
+        This is only used for cluster-level inference.
+
+        .. versionadded:: 0.9.1
+
+    threshold : :obj:`float`, optional
+        Cluster-forming threshold in p-scale.
+        This is only used for cluster-level inference.
+        Default=0.001.
+
+        .. versionadded:: 0.9.1
+
+    output_type : {'legacy', 'dict'}, optional
+        Determines how outputs should be returned.
+        The two options are:
+
+        -   'legacy': return a pvals, score_orig_data, and h0_fmax
+        -   'dict': return a dictionary containing output arrays
+
     Returns
     -------
-    neg_log10_vfwe_pvals : array-like, shape=(n_regressors, n_descriptors)
+    pvals : array-like, shape=(n_regressors, n_descriptors)
         Negative log10 p-values associated with the significance test of the
-        ``n_regressors`` explanatory variates against the ``n_descriptors``
-        target variates.
-        Voxel-level family-wise corrected p-values.
-        This will be an empty array if ``n_perms`` is 0.
+        n_regressors explanatory variates against the n_descriptors target
+        variates. Family-wise corrected p-values.
 
-    neg_log10_csfwe_pvals : array-like, shape=(n_regressors, n_descriptors)
-        Negative log10 p-values associated with the significance test of the
-        ``n_regressors`` explanatory variates against the ``n_descriptors``
-        target variates.
-        Cluster size-based family-wise corrected p-values.
-        This will be an empty array if ``n_perms`` is 0.
-
-        .. versionadded:: 0.9.1
-
-    neg_log10_cmfwe_pvals : array-like, shape=(n_regressors, n_descriptors)
-        Negative log10 p-values associated with the significance test of the
-        ``n_regressors`` explanatory variates against the ``n_descriptors``
-        target variates.
-        Cluster mass-based family-wise corrected p-values.
-        This will be an empty array if ``n_perms`` is 0.
-
-        .. versionadded:: 0.9.1
+        .. note::
+            This is returned if ``output_type`` == 'legacy'.
 
     score_orig_data : numpy.ndarray, shape=(n_regressors, n_descriptors)
-        T-statistics associated with the significance test of the
-        ``n_regressors`` explanatory variates against the ``n_descriptors``
-        target variates.
+        t-statistic associated with the significance test of the n_regressors
+        explanatory variates against the n_descriptors target variates.
         The ranks of the scores into the h0 distribution correspond to the
         p-values.
 
-    vfwe_h0 : array-like, shape=(n_regressors, n_perm)
+        .. note::
+            This is returned if ``output_type`` == 'legacy'.
+
+    h0_fmax : array-like, shape=(n_regressors, n_perm)
         Distribution of the (max) t-statistic under the null hypothesis
         (obtained from the permutations). Array is sorted.
+
+        .. note::
+            This is returned if ``output_type`` == 'legacy'.
 
         .. versionchanged:: 0.9.1
 
             Return H0 for all regressors, instead of only the first one.
 
-    csfwe_h0 : array-like, shape=(n_regressors, n_perm)
-        Distribution of the (max) cluster size under the null hypothesis
-        (obtained from the permutations). Array is sorted.
+    outputs : :obj:`dict`
+        Output arrays, organized in a dictionary.
 
         .. versionadded:: 0.9.1
 
-    cmfwe_h0 : array-like, shape=(n_regressors, n_perm)
-        Distribution of the (max) cluster mass under the null hypothesis
-        (obtained from the permutations). Array is sorted.
+        Here are the keys:
 
-        .. versionadded:: 0.9.1
+        ============= ============== ==========================================
+        key           shape          description
+        ============= ============== ==========================================
+        t             (n_regressors, t-statistic associated with the
+                      n_descriptors) significance test of the n_regressors
+                                     explanatory variates against the
+                                     n_descriptors target variates.
+                                     The ranks of the scores into the h0
+                                     distribution correspond to the p-values.
+        logp_max_t    (n_regressors, Negative log10 p-values associated with
+                      n_descriptors) the significance test of the n_regressors
+                                     explanatory variates against the
+                                     n_descriptors target variates.
+                                     Family-wise corrected p-values, based on
+                                     ``h0_max_t``.
+        h0_max_t      (n_regressors, Distribution of the max t-statistic under
+                      n_perm)        the null hypothesis (obtained from the
+                                     permutations). Array is sorted.
+        logp_max_size (n_regressors, Negative log10 p-values associated with
+                      n_descriptors) the cluster-level significance test of the
+                                     n_regressors explanatory variates against
+                                     the n_descriptors target variates.
+                                     Family-wise corrected, cluster-level
+                                     p-values, based on ``h0_max_size``.
+
+                                     Returned only if ``masker`` is not None.
+        h0_max_size   (n_regressors, Distribution of the max cluster size value
+                      n_perm)        under the null hypothesis (obtained from
+                                     the permutations). Array is sorted.
+
+                                     Returned only if ``masker`` is not None.
+        logp_max_mass (n_regressors, Negative log10 p-values associated with
+                      n_descriptors) the cluster-level significance test of the
+                                     n_regressors explanatory variates against
+                                     the n_descriptors target variates.
+                                     Family-wise corrected, cluster-level
+                                     p-values, based on ``h0_max_mass``.
+
+                                     Returned only if ``masker`` is not None.
+        h0_max_mass   (n_regressors, Distribution of the max cluster mass value
+                      n_perm)        under the null hypothesis (obtained from
+                                     the permutations). Array is sorted.
+
+                                     Returned only if ``masker`` is not None.
+        ============= ============== ==========================================
 
     References
     ----------
