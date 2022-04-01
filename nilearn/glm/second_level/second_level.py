@@ -637,7 +637,7 @@ def non_parametric_inference(
     random_state=None,
     n_jobs=1,
     verbose=0,
-    threshold=0.001,
+    threshold=None,
 ):
     """Generate p-values corresponding to the contrasts provided
     based on permutation testing.
@@ -729,10 +729,11 @@ def non_parametric_inference(
     verbose : :obj:`int`, optional
         Verbosity level (0 means no message). Default=0.
 
-    threshold : :obj:`float`, optional
+    threshold : None or :obj:`float`, optional
         Cluster-forming threshold in p-scale.
         This is only used for cluster-level inference.
-        Default=0.001.
+        If None, no cluster-level inference will be performed.
+        Default=None.
 
         .. versionadded:: 0.9.1
 
@@ -742,17 +743,47 @@ def non_parametric_inference(
         The image which contains negative logarithm of the
         voxel-level FWER-corrected p-values.
 
-    neg_log10_csfwe_pvals_img : Nifti1Image
-        The image which contains negative logarithm of the
-        cluster size-based FWER-corrected p-values.
+        .. note::
+            This is returned if ``threshold`` is None (the default).
+
+    outputs : :obj:`dict`
+        Output images, organized in a dictionary.
+        Each image is 3D/4D, with the potential fourth dimension corresponding
+        to the regressors.
+
+        .. note::
+            This is returned if ``threshold`` is not None.
 
         .. versionadded:: 0.9.1
 
-    neg_log10_cmfwe_pvals_img : Nifti1Image
-        The image which contains negative logarithm of the
-        cluster mass-based FWER-corrected p-values.
+        Here are the keys:
 
-        .. versionadded:: 0.9.1
+        =============== =======================================================
+        key             description
+        =============== =======================================================
+        t               T-statistics associated with the significance test of
+                        the n_regressors explanatory variates against the
+                        n_descriptors target variates.
+        logp_max_t      Negative log10 family-wise error rate-corrected
+                        p-values corrected based on the distribution of maximum
+                        t-statistics from permutations.
+        logp_max_size   Negative log10 family-wise error rate-corrected
+                        p-values corrected based on the distribution of maximum
+                        cluster sizes from permutations.
+                        This map is generated through cluster-level methods, so
+                        the values in the map describe the significance of
+                        clusters, rather than individual voxels.
+
+                        Returned only if ``threshold`` is not None.
+        logp_max_mass   Negative log10 family-wise error rate-corrected
+                        p-values corrected based on the distribution of maximum
+                        cluster masses from permutations.
+                        This map is generated through cluster-level methods, so
+                        the values in the map describe the significance of
+                        clusters, rather than individual voxels.
+
+                        Returned only if ``threshold`` is not None.
+        ============= =======================================================
 
     """
     _check_second_level_input(second_level_input, design_matrix,
@@ -807,15 +838,7 @@ def non_parametric_inference(
     target_vars = masker.transform(effect_maps)
 
     # Perform massively univariate analysis with permuted OLS
-    (
-        neg_log10_vfwe_pvals,
-        neg_log10_csfwe_pvals,
-        neg_log10_cmfwe_pvals,
-        _,
-        _,
-        _,
-        _,
-    ) = permuted_ols(
+    outputs = permuted_ols(
         tested_var,
         target_vars,
         model_intercept=model_intercept,
@@ -826,20 +849,27 @@ def non_parametric_inference(
         verbose=max(0, verbose - 1),
         masker=masker,
         threshold=threshold,
+        output_type='dict',
     )
-
+    neg_log10_vfwe_pvals = outputs['logp_max_t']
     neg_log10_vfwe_pvals_img = masker.inverse_transform(
         np.ravel(neg_log10_vfwe_pvals),
     )
-    neg_log10_csfwe_pvals_img = masker.inverse_transform(
-        np.ravel(neg_log10_csfwe_pvals),
-    )
-    neg_log10_cmfwe_pvals_img = masker.inverse_transform(
-        np.ravel(neg_log10_cmfwe_pvals),
-    )
 
-    return (
-        neg_log10_vfwe_pvals_img,
-        neg_log10_csfwe_pvals_img,
-        neg_log10_cmfwe_pvals_img,
-    )
+    if threshold is not None:
+        t_img = masker.inverse_transform(np.ravel(outputs['t']))
+        neg_log10_csfwe_pvals_img = masker.inverse_transform(
+            np.ravel(outputs['logp_max_size']),
+        )
+        neg_log10_cmfwe_pvals_img = masker.inverse_transform(
+            np.ravel(outputs['logp_max_mass']),
+        )
+        out = {
+            't': t_img,
+            'logp_max_t': neg_log10_vfwe_pvals_img,
+            'logp_max_size': neg_log10_csfwe_pvals_img,
+            'logp_max_mass': neg_log10_cmfwe_pvals_img,
+        }
+        return out
+    else:
+        return neg_log10_vfwe_pvals_img

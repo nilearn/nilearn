@@ -185,11 +185,19 @@ def _permuted_ols_on_chunk(
     threshold : :obj:`float`
         Cluster-forming threshold in t-scale.
         This is only used for cluster-level inference.
+        If ``masker`` is set to None, it will be ignored.
+
+        .. versionadded:: 0.9.1
 
     confounding_vars : array-like, shape=(n_samples, n_covars), optional
         Clinical data (covariates).
 
-    masker
+    masker : None or NiftiMasker or MultiNiftiMasker object, optional
+        A mask to be used on the data.
+        This is only used for cluster-level inference.
+        If None, cluster-level inference will not be performed.
+
+        .. versionadded:: 0.9.1
 
     n_perm : int, optional
         Total number of permutations to perform, only used for
@@ -230,6 +238,14 @@ def _permuted_ols_on_chunk(
         Distribution of the (max) t-statistic under the null hypothesis
         (limited to this permutation chunk).
 
+    h0_csfwe_part, h0_cmfwe_part : array-like, \
+            shape=(n_perm_chunk, n_regressors)
+        Distribution of max cluster sizes/masses under the null hypothesis.
+        Only calculated if ``masker`` is not None.
+        Otherwise, these will both be None.
+
+        .. versionadded:: 0.9.1
+
     References
     ----------
     .. [1] Fisher, R. A. (1935). The design of experiments.
@@ -244,9 +260,12 @@ def _permuted_ols_on_chunk(
     # run the permutations
     t0 = time.time()
     h0_vfwe_part = np.empty((n_regressors, n_perm_chunk))
-    h0_csfwe_part = np.empty((n_regressors, n_perm_chunk))
-    h0_cmfwe_part = np.empty((n_regressors, n_perm_chunk))
     vfwe_scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
+    if masker is not None:
+        h0_csfwe_part = np.empty((n_regressors, n_perm_chunk))
+        h0_cmfwe_part = np.empty((n_regressors, n_perm_chunk))
+    else:
+        h0_csfwe_part, h0_cmfwe_part = None, None
 
     for i_perm in range(n_perm_chunk):
         if intercept_test:
@@ -273,18 +292,19 @@ def _permuted_ols_on_chunk(
             )
         )
 
-        # TODO: Eliminate need for transpose
-        arr4d = masker.inverse_transform(perm_scores.T).get_fdata()
-        conn = ndimage.generate_binary_structure(3, 1)
-        (
-            h0_csfwe_part[:, i_perm],
-            h0_cmfwe_part[:, i_perm],
-        ) = _calculate_cluster_measures(
-            arr4d,
-            threshold,
-            conn,
-            two_sided_test=two_sided_test,
-        )
+        if masker is not None:
+            # TODO: Eliminate need for transpose
+            arr4d = masker.inverse_transform(perm_scores.T).get_fdata()
+            conn = ndimage.generate_binary_structure(3, 1)
+            (
+                h0_csfwe_part[:, i_perm],
+                h0_cmfwe_part[:, i_perm],
+            ) = _calculate_cluster_measures(
+                arr4d,
+                threshold,
+                conn,
+                two_sided_test=two_sided_test,
+            )
 
         # find the rank of the original scores in h0_vfwe_part
         # (when n_descriptors or n_perm are large, it can be quite long to
@@ -345,7 +365,7 @@ def permuted_ols(
     n_jobs=1,
     verbose=0,
     masker=None,
-    threshold=0.001,
+    threshold=None,
     output_type='legacy',
 ):
     """Massively univariate group analysis with permuted OLS.
@@ -423,16 +443,18 @@ def permuted_ols(
     verbose : :obj:`int`, optional
         verbosity level (0 means no message). Default=0.
 
-    masker : NiftiMasker or MultiNiftiMasker object, optional
+    masker : None or NiftiMasker or MultiNiftiMasker object, optional
         A mask to be used on the data.
-        This is only used for cluster-level inference.
+        This is required for cluster-level inference, so it must be provided
+        if ``threshold`` is not None.
 
         .. versionadded:: 0.9.1
 
-    threshold : :obj:`float`, optional
+    threshold : None or :obj:`float`, optional
         Cluster-forming threshold in p-scale.
         This is only used for cluster-level inference.
-        Default=0.001.
+        If None, cluster-level inference will not be performed.
+        Default=None.
 
         .. versionadded:: 0.9.1
 
@@ -475,6 +497,9 @@ def permuted_ols(
 
     outputs : :obj:`dict`
         Output arrays, organized in a dictionary.
+
+        .. note::
+            This is returned if ``output_type`` == 'dict'.
 
         .. versionadded:: 0.9.1
 
@@ -554,6 +579,33 @@ def permuted_ols(
         n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
     else:
         n_jobs = min(n_jobs, joblib.cpu_count())
+
+    if (threshold is not None) and (masker is None):
+        raise ValueError(
+            'If "threshold" is not None, masker must be defined as well.'
+        )
+    elif (threshold is None) and (masker is not None):
+        warnings.warn(
+            'If "threshold" is not set, then masker will be ignored.'
+        )
+
+    if (threshold is not None) and (output_type == 'legacy'):
+        warnings.warn(
+            'If "threshold" is not None, "output_type" must be set to "dict". '
+            'Overriding.'
+        )
+        output_type = 'dict'
+    elif output_type == 'legacy':
+        warnings.warn(
+            category=DeprecationWarning,
+            message=(
+                'The "legacy" output structure for "permuted_ols" is '
+                'deprecated. '
+                'The default output structure will be changed to "dict" '
+                'in version 0.0.13.'
+            ),
+            stacklevel=3,
+        )
 
     # make target_vars F-ordered to speed-up computation
     if target_vars.ndim != 2:
@@ -720,106 +772,114 @@ def permuted_ols(
 
     vfwe_pvals = (n_perm + 1 - vfwe_scores_as_ranks) / float(1 + n_perm)
 
-    # Cluster-size and cluster-mass FWE
-    csfwe_h0 = np.hstack((csfwe_h0_parts))
-    cmfwe_h0 = np.hstack((cmfwe_h0_parts))
+    if threshold is not None:
+        # Cluster-size and cluster-mass FWE
+        csfwe_h0 = np.hstack((csfwe_h0_parts))
+        cmfwe_h0 = np.hstack((cmfwe_h0_parts))
 
-    csfwe_pvals = np.zeros_like(vfwe_pvals)
-    cmfwe_pvals = np.zeros_like(vfwe_pvals)
+        csfwe_pvals = np.zeros_like(vfwe_pvals)
+        cmfwe_pvals = np.zeros_like(vfwe_pvals)
 
-    # TODO: Eliminate need to transpose
-    scores_original_data_4d = masker.inverse_transform(
-        scores_original_data.T
-    ).get_fdata()
-    conn = ndimage.generate_binary_structure(3, 1)
+        # TODO: Eliminate need to transpose
+        scores_original_data_4d = masker.inverse_transform(
+            scores_original_data.T
+        ).get_fdata()
+        conn = ndimage.generate_binary_structure(3, 1)
 
-    for i_regressor in range(n_regressors):
-        scores_original_data_3d = scores_original_data_4d[..., i_regressor]
+        for i_regressor in range(n_regressors):
+            scores_original_data_3d = scores_original_data_4d[..., i_regressor]
 
-        # Label the clusters
-        labeled_arr3d, _ = ndimage.measurements.label(
-            scores_original_data_3d > threshold_t,
-            conn,
-        )
-
-        if two_sided_test:
-            # Label positive and negative clusters separately
-            n_positive_clusters = np.max(labeled_arr3d)
-            temp_labeled_arr3d, _ = ndimage.measurements.label(
-                scores_original_data_3d < -threshold_t,
+            # Label the clusters
+            labeled_arr3d, _ = ndimage.measurements.label(
+                scores_original_data_3d > threshold_t,
                 conn,
             )
-            temp_labeled_arr3d[
-                temp_labeled_arr3d > threshold_t
-            ] += n_positive_clusters
-            labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
-            del temp_labeled_arr3d
 
-        cluster_labels, idx, cluster_sizes = np.unique(
-            labeled_arr3d,
-            return_inverse=True,
-            return_counts=True,
-        )
-        assert cluster_labels[0] == 0  # the background
+            if two_sided_test:
+                # Label positive and negative clusters separately
+                n_positive_clusters = np.max(labeled_arr3d)
+                temp_labeled_arr3d, _ = ndimage.measurements.label(
+                    scores_original_data_3d < -threshold_t,
+                    conn,
+                )
+                temp_labeled_arr3d[
+                    temp_labeled_arr3d > threshold_t
+                ] += n_positive_clusters
+                labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
+                del temp_labeled_arr3d
 
-        # Cluster mass-based inference
-        cluster_masses = np.zeros(cluster_labels.shape)
-        for j_val in cluster_labels[1:]:  # skip background
-            cluster_mass = np.sum(
-                np.fabs(scores_original_data_3d[labeled_arr3d == j_val])
-                - threshold_t
+            cluster_labels, idx, cluster_sizes = np.unique(
+                labeled_arr3d,
+                return_inverse=True,
+                return_counts=True,
             )
-            cluster_masses[j_val] = cluster_mass
+            assert cluster_labels[0] == 0  # the background
 
-        p_cmfwe_vals = _null_to_p(
-            cluster_masses,
-            cmfwe_h0[i_regressor, :],
-            'upper',
-        )
-        p_cmfwe_map = p_cmfwe_vals[np.reshape(idx, labeled_arr3d.shape)]
+            # Cluster mass-based inference
+            cluster_masses = np.zeros(cluster_labels.shape)
+            for j_val in cluster_labels[1:]:  # skip background
+                cluster_mass = np.sum(
+                    np.fabs(scores_original_data_3d[labeled_arr3d == j_val])
+                    - threshold_t
+                )
+                cluster_masses[j_val] = cluster_mass
 
-        # Convert 3D to image, then to 1D
-        # There is a problem if the masker performs preprocessing,
-        # so we use apply_mask here.
-        cmfwe_pvals[i_regressor, :] = np.squeeze(
-            apply_mask(
-                nib.Nifti1Image(
-                    p_cmfwe_map,
-                    masker.mask_img_.affine,
-                    masker.mask_img_.header,
-                ),
-                masker.mask_img_,
+            p_cmfwe_vals = _null_to_p(
+                cluster_masses,
+                cmfwe_h0[i_regressor, :],
+                'upper',
             )
-        )
+            p_cmfwe_map = p_cmfwe_vals[np.reshape(idx, labeled_arr3d.shape)]
 
-        # Cluster size-based inference
-        cluster_sizes[0] = 0  # replace background's "cluster size" with zeros
-        p_csfwe_vals = _null_to_p(
-            cluster_sizes,
-            csfwe_h0[i_regressor, :],
-            'upper',
-        )
-        p_csfwe_map = p_csfwe_vals[np.reshape(idx, labeled_arr3d.shape)]
-
-        # There is a problem if the masker performs preprocessing,
-        # so we use apply_mask here.
-        csfwe_pvals[i_regressor, :] = np.squeeze(
-            apply_mask(
-                nib.Nifti1Image(
-                    p_csfwe_map,
-                    masker.mask_img_.affine,
-                    masker.mask_img_.header,
-                ),
-                masker.mask_img_,
+            # Convert 3D to image, then to 1D
+            # There is a problem if the masker performs preprocessing,
+            # so we use apply_mask here.
+            cmfwe_pvals[i_regressor, :] = np.squeeze(
+                apply_mask(
+                    nib.Nifti1Image(
+                        p_cmfwe_map,
+                        masker.mask_img_.affine,
+                        masker.mask_img_.header,
+                    ),
+                    masker.mask_img_,
+                )
             )
-        )
 
-    return (
-        -np.log10(vfwe_pvals),
-        -np.log10(csfwe_pvals),
-        -np.log10(cmfwe_pvals),
-        scores_original_data.T,
-        vfwe_h0,
-        csfwe_h0,
-        cmfwe_h0,
-    )
+            # Cluster size-based inference
+            cluster_sizes[0] = 0  # replace background's "cluster size" w zeros
+            p_csfwe_vals = _null_to_p(
+                cluster_sizes,
+                csfwe_h0[i_regressor, :],
+                'upper',
+            )
+            p_csfwe_map = p_csfwe_vals[np.reshape(idx, labeled_arr3d.shape)]
+
+            # There is a problem if the masker performs preprocessing,
+            # so we use apply_mask here.
+            csfwe_pvals[i_regressor, :] = np.squeeze(
+                apply_mask(
+                    nib.Nifti1Image(
+                        p_csfwe_map,
+                        masker.mask_img_.affine,
+                        masker.mask_img_.header,
+                    ),
+                    masker.mask_img_,
+                )
+            )
+
+    if output_type == 'legacy':
+        outputs = (-np.log10(vfwe_pvals), scores_original_data.T, vfwe_h0)
+    else:
+        outputs = {
+            't': scores_original_data.T,
+            'logp_max_t': -np.log10(vfwe_pvals),
+            'h0_max_t': vfwe_h0,
+        }
+
+        if threshold is not None:
+            outputs['logp_max_size'] = -np.log10(csfwe_pvals)
+            outputs['h0_max_size'] = csfwe_h0
+            outputs['logp_max_mass'] = -np.log10(cmfwe_pvals)
+            outputs['h0_max_mass'] = cmfwe_h0
+
+    return outputs
