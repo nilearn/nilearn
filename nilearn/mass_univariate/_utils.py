@@ -5,7 +5,14 @@ from scipy import ndimage
 from nilearn.masking import apply_mask, unmask
 
 
-def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh='auto', two_sided=True):
+def _calculate_tfce(
+    scores_array,
+    masker,
+    E=0.5,
+    H=2,
+    dh='auto',
+    two_sided=True,
+):
     """Calculate threshold-free cluster enhancement values for scores maps.
 
     The :term:`TFCE` calculation is implemented as described in [1]_.
@@ -22,6 +29,7 @@ def _calculate_tfce(scores_array, masker, E=0.5, H=2, dh='auto', two_sided=True)
     dh : 'auto' or :obj:`float`, optional
         Step size for TFCE calculation.
         If set to 'auto', use 100 steps, as is done in fslmaths.
+        Default is 'auto'.
     two_sided : :obj:`bool`, optional
         Whether to perform two-sided thresholding or not.
         Default is True.
