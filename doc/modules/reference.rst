@@ -146,6 +146,7 @@ Statistical maps/derivatives
    fetch_localizer_calculation_task
    fetch_localizer_contrasts
    fetch_megatrawls_netmats
+   fetch_mixed_gambles
    fetch_oasis_vbm
    fetch_neurovault_auditory_computation_task
    fetch_neurovault_motor_task
