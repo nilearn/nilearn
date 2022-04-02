@@ -158,9 +158,9 @@ IMAGES = [
 ]
 TITLES = [
     "Parametric Test",
-    "Permutation Test\n(Voxel-Level FWE)",
-    "Permutation Test\n(Cluster-Size FWE)",
-    "Permutation Test\n(Cluster-Mass FWE)",
+    "Permutation Test\n(Voxel-Level Error Control)",
+    "Permutation Test\n(Cluster-Size Error Control)",
+    "Permutation Test\n(Cluster-Mass Error Control)",
 ]
 
 fig, axes = plt.subplots(figsize=(8, 8), nrows=2, ncols=2)
