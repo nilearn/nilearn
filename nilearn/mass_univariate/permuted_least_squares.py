@@ -154,7 +154,7 @@ def _permuted_ols_on_chunk(
     tested_vars,
     target_vars,
     thread_id,
-    threshold,
+    threshold=None,
     confounding_vars=None,
     masker=None,
     n_perm=10000,
@@ -261,7 +261,7 @@ def _permuted_ols_on_chunk(
     t0 = time.time()
     h0_vfwe_part = np.empty((n_regressors, n_perm_chunk))
     vfwe_scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
-    if masker is not None:
+    if threshold is not None:
         h0_csfwe_part = np.empty((n_regressors, n_perm_chunk))
         h0_cmfwe_part = np.empty((n_regressors, n_perm_chunk))
     else:
@@ -292,7 +292,7 @@ def _permuted_ols_on_chunk(
             )
         )
 
-        if masker is not None:
+        if threshold is not None:
             # TODO: Eliminate need for transpose
             arr4d = masker.inverse_transform(perm_scores.T).get_fdata()
             bin_struct = ndimage.generate_binary_structure(3, 1)
@@ -736,8 +736,11 @@ def permuted_ols(
         )
         n_perm_chunks = np.ones(n_perm, dtype=int)
 
-    else:  # 0 or negative number of permutations => original data scores only
+    # 0 or negative number of permutations => original data scores only
+    elif output_type == 'legacy':
         return np.asarray([]), scores_original_data.T, np.asarray([])
+    else:
+        return {'t': scores_original_data.T}
 
     # actual permutations, seeded from a random integer between 0 and maximum
     # value represented by np.int32 (to have a large entropy).
@@ -782,6 +785,8 @@ def permuted_ols(
 
         csfwe_pvals = np.zeros_like(vfwe_pvals)
         cmfwe_pvals = np.zeros_like(vfwe_pvals)
+        size_arr = np.zeros_like(vfwe_pvals).astype(int)
+        mass_arr = np.zeros_like(vfwe_pvals)
 
         # TODO: Eliminate need to transpose
         scores_original_data_4d = masker.inverse_transform(
@@ -833,6 +838,7 @@ def permuted_ols(
                 'larger',
             )
             p_cmfwe_map = p_cmfwe_vals[np.reshape(idx, labeled_arr3d.shape)]
+            mass_map = cluster_masses[np.reshape(idx, labeled_arr3d.shape)]
 
             # Convert 3D to image, then to 1D
             # There is a problem if the masker performs preprocessing,
@@ -841,6 +847,16 @@ def permuted_ols(
                 apply_mask(
                     nib.Nifti1Image(
                         p_cmfwe_map,
+                        masker.mask_img_.affine,
+                        masker.mask_img_.header,
+                    ),
+                    masker.mask_img_,
+                )
+            )
+            mass_arr[i_regressor, :] = np.squeeze(
+                apply_mask(
+                    nib.Nifti1Image(
+                        mass_map,
                         masker.mask_img_.affine,
                         masker.mask_img_.header,
                     ),
@@ -856,6 +872,7 @@ def permuted_ols(
                 'larger',
             )
             p_csfwe_map = p_csfwe_vals[np.reshape(idx, labeled_arr3d.shape)]
+            size_map = cluster_sizes[np.reshape(idx, labeled_arr3d.shape)]
 
             # There is a problem if the masker performs preprocessing,
             # so we use apply_mask here.
@@ -863,6 +880,16 @@ def permuted_ols(
                 apply_mask(
                     nib.Nifti1Image(
                         p_csfwe_map,
+                        masker.mask_img_.affine,
+                        masker.mask_img_.header,
+                    ),
+                    masker.mask_img_,
+                )
+            )
+            size_arr[i_regressor, :] = np.squeeze(
+                apply_mask(
+                    nib.Nifti1Image(
+                        size_map,
                         masker.mask_img_.affine,
                         masker.mask_img_.header,
                     ),
@@ -880,8 +907,10 @@ def permuted_ols(
         }
 
         if threshold is not None:
+            outputs['size'] = size_arr
             outputs['logp_max_size'] = -np.log10(csfwe_pvals)
             outputs['h0_max_size'] = csfwe_h0
+            outputs['mass'] = mass_arr
             outputs['logp_max_mass'] = -np.log10(cmfwe_pvals)
             outputs['h0_max_mass'] = cmfwe_h0
 

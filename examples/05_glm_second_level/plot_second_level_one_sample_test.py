@@ -134,11 +134,7 @@ threshold = 1
 # Now, we compute the (corrected) p-values with a permutation test.
 from nilearn.glm.second_level import non_parametric_inference
 
-(
-    neg_log10_vfwe_pvals_permuted_ols_unmasked,
-    neg_log10_csfwe_pvals_permuted_ols_unmasked,
-    neg_log10_cmfwe_pvals_permuted_ols_unmasked,
-) = non_parametric_inference(
+out_dict = non_parametric_inference(
     second_level_input,
     design_matrix=design_matrix,
     model_intercept=True,
@@ -146,15 +142,16 @@ from nilearn.glm.second_level import non_parametric_inference
     two_sided_test=False,
     smoothing_fwhm=8.0,
     n_jobs=1,
+    threshold=0.001,
 )
 
 ###############################################################################
 # Let us plot the (corrected) negative log p-values for the nonparametric test.
 IMAGES = [
     neg_log_pval,
-    neg_log10_vfwe_pvals_permuted_ols_unmasked,
-    neg_log10_csfwe_pvals_permuted_ols_unmasked,
-    neg_log10_cmfwe_pvals_permuted_ols_unmasked,
+    out_dict['logp_max_t'],
+    out_dict['logp_max_size'],
+    out_dict['logp_max_mass'],
 ]
 TITLES = [
     "Parametric Test",
