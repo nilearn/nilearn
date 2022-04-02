@@ -3,60 +3,53 @@ import numpy as np
 from scipy import ndimage
 
 
-def _null_to_p(test_value, null_array, tail='two', symmetric=False):
+def _null_to_p(test_values, null_array, alternative='two-sided'):
     """Return p-value for test value(s) against null array.
 
     Parameters
     ----------
-    test_value : array_like of shape (n_samples,)
-        Values for which to determine p-value.
+    test_values : :obj:`int`, :obj:`float`, or array_like of shape (n_samples,)
+        Value(s) for which to determine p-value.
     null_array : array_like of shape (n_iters,)
-        Null distribution against which test_value is compared.
-    tail : {'two', 'upper', 'lower'}, optional
+        Null distribution against which test_values is compared.
+    alternative : {'two-sided', 'larger', 'smaller'}, optional
         Whether to compare value against null distribution in a two-sided
-        ('two') or one-sided ('upper' or 'lower') manner.
-        If 'upper', then higher values for the test_value are more significant.
-        If 'lower', then lower values for the test_value are more significant.
-        Default is 'two'.
-    symmetric : :obj:`bool`, optional
-        When tail="two", indicates how to compute p-values.
-        When False (default), both one-tailed p-values are computed,
-        and the two-tailed p is double the minimum one-tailed p.
-        When True, it is assumed that the null distribution is zero-centered
-        and symmetric, and the two-tailed p-value is computed as
-        P(abs(test_value) >= abs(null_array)).
-        Default=False.
+        or one-sided ('larger' or 'smaller') manner. If 'larger', then higher
+        values for the test_values are more significant. If 'smaller', then
+        lower values for the test_values are more significant.
+        Default is 'two-sided'.
 
     Returns
     -------
-    p_value : :obj:`float`
+    p_values : :obj:`float` or array_like of shape (n_samples,)
         P-value(s) associated with the test value when compared against the
         null distribution. Return type matches input type (i.e., a float if
-        test_value is a single float, and an array if test_value is an array).
+        test_values is a single float, and an array if test_values is an
+        array).
 
     Notes
     -----
     P-values are clipped based on the number of elements in the null array.
     Therefore no p-values of 0 or 1 should be produced.
 
-    When the null distribution is known to be symmetric and centered on zero,
-    and two-tailed p-values are desired, use symmetric=True, as it is
-    approximately twice as efficient computationally, and has lower variance.
+    This function assumes that the null distribution for two-sided tests is
+    symmetric around zero.
     """
-    if tail not in {'two', 'upper', 'lower'}:
+    if alternative not in {'two-sided', 'larger', 'smaller'}:
         raise ValueError(
-            'Argument "tail" must be one of ["two", "upper", "lower"]'
+            'Argument "alternative" must be one of '
+            '["two-sided", "larger", "smaller"]'
         )
 
-    return_first = isinstance(test_value, (float, int))
-    test_value = np.atleast_1d(test_value)
+    return_first = isinstance(test_values, (float, int))
+    test_values = np.atleast_1d(test_values)
     null_array = np.array(null_array)
 
     # For efficiency's sake, if there are more than 1000 values, pass only the
     # unique values through percentileofscore(), and then reconstruct.
-    if len(test_value) > 1000:
+    if len(test_values) > 1000:
         reconstruct = True
-        test_value, uniq_idx = np.unique(test_value, return_inverse=True)
+        test_values, uniq_idx = np.unique(test_values, return_inverse=True)
     else:
         reconstruct = False
 
@@ -65,17 +58,13 @@ def _null_to_p(test_value, null_array, tail='two', symmetric=False):
         idx = np.searchsorted(null, t, side='left').astype(float)
         return 1 - idx / len(null)
 
-    if tail == 'two':
-        if symmetric:
-            p = compute_p(np.abs(test_value), np.abs(null_array))
-        else:
-            p_l = compute_p(test_value, null_array)
-            p_r = compute_p(test_value * -1, null_array * -1)
-            p = 2 * np.minimum(p_l, p_r)
-    elif tail == 'lower':
-        p = compute_p(test_value * -1, null_array * -1)
+    if alternative == 'two-sided':
+        # Assumes null distribution is symmetric around 0
+        p = compute_p(np.abs(test_values), np.abs(null_array))
+    elif alternative == 'smaller':
+        p = compute_p(test_values * -1, null_array * -1)
     else:
-        p = compute_p(test_value, null_array)
+        p = compute_p(test_values, null_array)
 
     # ensure p_value in the following range:
     # smallest_value <= p_value <= (1.0 - smallest_value)
@@ -91,21 +80,24 @@ def _null_to_p(test_value, null_array, tail='two', symmetric=False):
 def _calculate_cluster_measures(arr4d, threshold, conn, two_sided_test=False):
     """Calculate maximum cluster mass and size for an array.
 
-    This method assesses both positive and negative clusters.
-
     Parameters
     ----------
-    arr4d : :obj:`numpy.ndarray` of shape (X, Y, Z, T)
+    arr4d : :obj:`numpy.ndarray` of shape (X, Y, Z, R)
         Unthresholded 4D array of 3D t-statistic maps.
+        R = regressor.
     threshold : :obj:`float`
         Uncorrected t-statistic threshold for defining clusters.
     conn : :obj:`numpy.ndarray` of shape (3, 3, 3)
         Connectivity matrix for defining clusters.
+    two_sided_test : :obj:`bool`, optional
+        Whether to assess both positive and negative clusters (True) or just
+        positive ones (False).
+        Default is False.
 
     Returns
     -------
-    max_size, max_mass : :obj:`float`
-        Maximum cluster size and mass from the matrix.
+    max_size, max_mass : :obj:`numpy.ndarray` of shape (n_regressors,)
+        Maximum cluster size and mass from the matrix, for each regressor.
     """
     n_regressors = arr4d.shape[3]
 

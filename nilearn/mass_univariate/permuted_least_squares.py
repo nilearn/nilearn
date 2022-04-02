@@ -827,7 +827,7 @@ def permuted_ols(
             p_cmfwe_vals = _null_to_p(
                 cluster_masses,
                 cmfwe_h0[i_regressor, :],
-                'upper',
+                'larger',
             )
             p_cmfwe_map = p_cmfwe_vals[np.reshape(idx, labeled_arr3d.shape)]
 
@@ -850,7 +850,7 @@ def permuted_ols(
             p_csfwe_vals = _null_to_p(
                 cluster_sizes,
                 csfwe_h0[i_regressor, :],
-                'upper',
+                'larger',
             )
             p_csfwe_map = p_csfwe_vals[np.reshape(idx, labeled_arr3d.shape)]
 
