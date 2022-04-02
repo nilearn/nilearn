@@ -710,12 +710,15 @@ def permuted_ols(
         covars_orthonormalized,
     )
 
-    # determine t-statistic threshold
-    dof = n_samples - (n_regressors + n_covars)
-    if two_sided_test:
-        threshold_t = stats.t.isf(threshold / 2, df=dof)
+    if threshold is not None:
+        # determine t-statistic threshold
+        dof = n_samples - (n_regressors + n_covars)
+        if two_sided_test:
+            threshold_t = stats.t.isf(threshold / 2, df=dof)
+        else:
+            threshold_t = stats.t.isf(threshold, df=dof)
     else:
-        threshold_t = stats.t.isf(threshold, df=dof)
+        threshold_t = None
 
     # Permutations
     # parallel computing units perform a reduced number of permutations each
