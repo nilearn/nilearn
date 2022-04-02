@@ -31,3 +31,4 @@ Changes
 -------
 
 - Requirements files have been consolidated into a ``setup.cfg`` file and installation instructions have been simplified (:gh:`2953` by `Taylor Salo`_).
+- Function :func:`~plotting.plot_carpet` argument ``cmap`` now respects behaviour specified by docs and changes the color of the carpet_plot. Changing the label colors is now delegated to a new variable ``cmap_labels`` (:gh:`3209` by `Daniel Gomez`_).
