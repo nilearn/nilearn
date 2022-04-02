@@ -295,14 +295,14 @@ def _permuted_ols_on_chunk(
         if masker is not None:
             # TODO: Eliminate need for transpose
             arr4d = masker.inverse_transform(perm_scores.T).get_fdata()
-            conn = ndimage.generate_binary_structure(3, 1)
+            bin_struct = ndimage.generate_binary_structure(3, 1)
             (
                 h0_csfwe_part[:, i_perm],
                 h0_cmfwe_part[:, i_perm],
             ) = _calculate_cluster_measures(
                 arr4d,
                 threshold,
-                conn,
+                bin_struct,
                 two_sided_test=two_sided_test,
             )
 
@@ -784,7 +784,7 @@ def permuted_ols(
         scores_original_data_4d = masker.inverse_transform(
             scores_original_data.T
         ).get_fdata()
-        conn = ndimage.generate_binary_structure(3, 1)
+        bin_struct = ndimage.generate_binary_structure(3, 1)
 
         for i_regressor in range(n_regressors):
             scores_original_data_3d = scores_original_data_4d[..., i_regressor]
@@ -792,7 +792,7 @@ def permuted_ols(
             # Label the clusters
             labeled_arr3d, _ = ndimage.measurements.label(
                 scores_original_data_3d > threshold_t,
-                conn,
+                bin_struct,
             )
 
             if two_sided_test:
@@ -800,7 +800,7 @@ def permuted_ols(
                 n_positive_clusters = np.max(labeled_arr3d)
                 temp_labeled_arr3d, _ = ndimage.measurements.label(
                     scores_original_data_3d < -threshold_t,
-                    conn,
+                    bin_struct,
                 )
                 temp_labeled_arr3d[
                     temp_labeled_arr3d > threshold_t

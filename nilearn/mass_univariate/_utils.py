@@ -77,7 +77,12 @@ def _null_to_p(test_values, null_array, alternative='two-sided'):
     return result[0] if return_first else result
 
 
-def _calculate_cluster_measures(arr4d, threshold, conn, two_sided_test=False):
+def _calculate_cluster_measures(
+    arr4d,
+    threshold,
+    bin_struct,
+    two_sided_test=False,
+):
     """Calculate maximum cluster mass and size for an array.
 
     Parameters
@@ -87,7 +92,7 @@ def _calculate_cluster_measures(arr4d, threshold, conn, two_sided_test=False):
         R = regressor.
     threshold : :obj:`float`
         Uncorrected t-statistic threshold for defining clusters.
-    conn : :obj:`numpy.ndarray` of shape (3, 3, 3)
+    bin_struct : :obj:`numpy.ndarray` of shape (3, 3, 3)
         Connectivity matrix for defining clusters.
     two_sided_test : :obj:`bool`, optional
         Whether to assess both positive and negative clusters (True) or just
@@ -112,12 +117,15 @@ def _calculate_cluster_measures(arr4d, threshold, conn, two_sided_test=False):
         else:
             arr3d[arr3d <= threshold] = 0
 
-        labeled_arr3d, _ = ndimage.measurements.label(arr3d > 0, conn)
+        labeled_arr3d, _ = ndimage.measurements.label(arr3d > 0, bin_struct)
 
         if two_sided_test:
             # Label positive and negative clusters separately
             n_positive_clusters = np.max(labeled_arr3d)
-            temp_labeled_arr3d, _ = ndimage.measurements.label(arr3d < 0, conn)
+            temp_labeled_arr3d, _ = ndimage.measurements.label(
+                arr3d < 0,
+                bin_struct,
+            )
             temp_labeled_arr3d[temp_labeled_arr3d > 0] += n_positive_clusters
             labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
             del temp_labeled_arr3d
