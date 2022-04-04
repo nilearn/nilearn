@@ -132,13 +132,21 @@ threshold = 1
 
 ###############################################################################
 # Now, we compute the (corrected) p-values with a permutation test.
+#
+# .. important::
+#   In this example, ``threshold`` is set to 0.001, which enables
+#   cluster-level inference.
+#   Performing cluster-level inference will increase the computation time of
+#   the permutation procedure.
+#   Increasing the number of parallel jobs (``n_jobs``) can reduce the time
+#   cost.
 from nilearn.glm.second_level import non_parametric_inference
 
 out_dict = non_parametric_inference(
     second_level_input,
     design_matrix=design_matrix,
     model_intercept=True,
-    n_perm=1000,
+    n_perm=500,  # 500 for the sake of time. Idealy, this should be 10,000.
     two_sided_test=False,
     smoothing_fwhm=8.0,
     n_jobs=1,
