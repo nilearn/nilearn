@@ -26,6 +26,7 @@ Enhancements
   to demonstrate how to implement common beta series models with nilearn (:gh:`3127` by `Taylor Salo`_).
 - Function :func:`~plotting.plot_carpet` now accepts a ``t_r`` parameter, which allows users to provide the TR of the image when the image's header may not be accurate. (:gh:`3165` by `Taylor Salo`_).
 - Terms :term:`Probabilistic atlas` and :term:`Deterministic atlas` were added to the glossary and references were added to atlas fetchers (:gh:`3152` by `Nicolas Gensollen`_).
+- Functions in :mod:`~datasets` have been organized by the type of data in the references page and :func:`~datasets.fetch_mixed_gambles` has been added to the documentation (:gh:`3207` by `Taylor Salo`_).
 
 Changes
 -------
