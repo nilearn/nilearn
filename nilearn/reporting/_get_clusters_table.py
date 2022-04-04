@@ -186,10 +186,8 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
                               copy_data=(cluster_threshold is not None))
 
     # Define array for 6-connectivity, aka NN1 or "faces"
-    conn_mat = np.zeros((3, 3, 3), int)
-    conn_mat[1, 1, :] = 1
-    conn_mat[1, :, 1] = 1
-    conn_mat[:, 1, 1] = 1
+    bin_struct = ndimage.generate_binary_structure(3, 1)
+
     voxel_size = np.prod(stat_img.header.get_zooms())
 
     signs = [1, -1] if two_sided else [1]
@@ -214,7 +212,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
             continue
 
         # Now re-label and create table
-        label_map = ndimage.measurements.label(binarized, conn_mat)[0]
+        label_map = ndimage.measurements.label(binarized, bin_struct)[0]
         clust_ids = sorted(list(np.unique(label_map)[1:]))
         peak_vals = np.array(
             [np.max(temp_stat_map * (label_map == c)) for c in clust_ids])
