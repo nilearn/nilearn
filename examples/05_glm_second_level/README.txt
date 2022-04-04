@@ -1,5 +1,5 @@
 ===========================
-GLM : Second level analysis
+GLM: Second level analysis
 ===========================
 
 These are examples focused on showcasing second level models functionality and group level analysis.
