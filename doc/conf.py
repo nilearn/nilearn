@@ -352,13 +352,13 @@ sphinx_gallery_conf = {
     # Ignore the function signature leftover by joblib
     'ignore_pattern': 'func_code\.py',
     'show_memory': not sys.platform.startswith('win'),
+    'remove_config_comments': True,
     'binder': {
         'org': 'nilearn',
         'repo': 'nilearn.github.io',
         'binderhub_url': 'https://mybinder.org',
         'branch': 'main',
-        'dependencies': ['../requirements-build-docs.txt',
-                         'binder/requirements.txt'],
+        'dependencies': ['binder/requirements.txt'],
         'notebooks_dir': 'examples'
     },
     'default_thumb_file': 'logos/nilearn-desaturate-100.png',

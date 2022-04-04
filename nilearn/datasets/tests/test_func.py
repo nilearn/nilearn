@@ -282,23 +282,39 @@ def test_fetch_localizer_button_task(tmp_path, request_mocker,
     assert dataset.description != ''
 
 
-def test_fetch_abide_pcp(tmp_path, request_mocker):
-    ids = list(range(800))
-    filenames = ['no_filename'] * 800
-    filenames[::2] = ['filename'] * 400
-    pheno = pd.DataFrame({"subject_id": ids, "FILE_ID": filenames},
-                         columns=["subject_id", "FILE_ID"])
+@pytest.mark.parametrize("quality_checked", [False, True])
+def test_fetch_abide_pcp(tmp_path, request_mocker, quality_checked):
+    n_subjects = 800
+    ids = list(range(n_subjects))
+    filenames = ['no_filename'] * n_subjects
+    filenames[::2] = ['filename'] * int(n_subjects / 2)
+    qc_rater_1 = ['OK'] * n_subjects
+    qc_rater_1[::4] = ['fail'] * int(n_subjects / 4)
+    pheno = pd.DataFrame(
+        {"subject_id": ids,
+         "FILE_ID": filenames,
+         "qc_rater_1": qc_rater_1,
+         "qc_anat_rater_2": qc_rater_1,
+         "qc_func_rater_2": qc_rater_1,
+         "qc_anat_rater_3": qc_rater_1,
+         "qc_func_rater_3": qc_rater_1},
+        columns=[
+            "subject_id", "FILE_ID", "qc_rater_1",
+            "qc_anat_rater_2", "qc_func_rater_2",
+            "qc_anat_rater_3", "qc_func_rater_3"]
+    )
     request_mocker.url_mapping["*rocessed1.csv"] = pheno.to_csv(index=False)
 
     # All subjects
     dataset = func.fetch_abide_pcp(data_dir=tmp_path,
-                                   quality_checked=False, verbose=0)
-    assert len(dataset.func_preproc) == 400
+                                   quality_checked=quality_checked, verbose=0)
+    div = 4 if quality_checked else 2
+    assert len(dataset.func_preproc) == n_subjects / div
     assert dataset.description != ''
 
     # Smoke test using only a string, rather than a list of strings
     dataset = func.fetch_abide_pcp(data_dir=tmp_path,
-                                   quality_checked=False, verbose=0,
+                                   quality_checked=quality_checked, verbose=0,
                                    derivatives='func_preproc')
 
 

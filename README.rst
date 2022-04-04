@@ -52,16 +52,7 @@ The nilearn team organizes regular online office hours to answer questions, disc
 Dependencies
 ============
 
-The required dependencies to use the software are:
-
-* Python >= 3.6
-* setuptools
-* Numpy >= 1.18
-* SciPy >= 1.5
-* Scikit-learn >= 0.22
-* Joblib >= 0.15
-* Nibabel >= 3.0
-* Pandas >= 1.0
+The required dependencies to use the software are listed in the file `nilearn/setup.cfg <https://github.com/nilearn/nilearn/blob/main/setup.cfg>`_.
 
 If you are using nilearn plotting functionalities or running the examples, matplotlib >= 3.0 is required.
 
