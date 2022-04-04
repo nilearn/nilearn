@@ -735,6 +735,11 @@ def non_parametric_inference(
         If None, no cluster-level inference will be performed.
         Default=None.
 
+        .. warning::
+
+            Performing cluster-level inference will increase the computation
+            time of the permutation procedure.
+
         .. versionadded:: 0.9.1
 
     Returns

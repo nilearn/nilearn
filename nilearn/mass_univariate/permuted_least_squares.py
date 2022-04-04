@@ -456,6 +456,11 @@ def permuted_ols(
         If None, cluster-level inference will not be performed.
         Default=None.
 
+        .. warning::
+
+            Performing cluster-level inference will increase the computation
+            time of the permutation procedure.
+
         .. versionadded:: 0.9.1
 
     output_type : {'legacy', 'dict'}, optional
