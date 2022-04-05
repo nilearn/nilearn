@@ -904,7 +904,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
 
 
 @fill_doc
-def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
+def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None, scale_bg_map=True,
                        hemi='left', view='lateral', engine='matplotlib',
                        threshold=None, alpha='auto', vmax=None,
                        cmap='cold_hot', colorbar=True,
@@ -997,6 +997,8 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         Default='auto'.
     %(bg_on_data)s
         Default=False.
+    %(scale_bg_map)
+        Default=True.
     %(darkness)s
         Default=1.
 
@@ -1049,7 +1051,8 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         loaded_stat_map, vmax, symmetric_cbar, kwargs)
 
     display = plot_surf(
-        surf_mesh, surf_map=loaded_stat_map, bg_map=bg_map, hemi=hemi,
+        surf_mesh, surf_map=loaded_stat_map, bg_map=bg_map, scale_bg_map=scale_bg_map,
+        hemi=hemi,
         view=view, engine=engine, avg_method='mean', threshold=threshold,
         cmap=cmap, symmetric_cmap=True, colorbar=colorbar,
         cbar_tick_format=cbar_tick_format, alpha=alpha,
