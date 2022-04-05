@@ -16,4 +16,4 @@ jobs:
       - uses: actions/checkout@v2
       - uses: codespell-project/actions-codespell@master
         with:
-          ignore_words_file: .github/codespell_ignore_words.txt
+          ignore_words_file: ./.github/codespell_ignore_words.txt
