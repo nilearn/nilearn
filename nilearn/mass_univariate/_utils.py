@@ -110,7 +110,7 @@ def _calculate_cluster_measures(
     max_masses = np.zeros(n_regressors, float)
 
     for i_regressor in range(n_regressors):
-        arr3d = arr4d[..., i_regressor]
+        arr3d = arr4d[..., i_regressor].copy()
 
         if two_sided_test:
             arr3d[np.abs(arr3d) <= threshold] = 0
