@@ -19,6 +19,9 @@ visualization & results checking be possible at each step.
 
 See also :doc:`plot_extract_rois_smith_atlas` for automatic ROI extraction
 of brain connected networks given in 4D image.
+
+.. include:: ../../../examples/masker_note.rst
+
 """
 
 ##############################################################################
