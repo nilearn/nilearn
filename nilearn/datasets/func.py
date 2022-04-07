@@ -1092,32 +1092,36 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
 
     Parameters
     ----------
-    n_subjects : int, optional
-        The number of subjects to load. If None is given, all the
+    n_subjects : :obj:`int`, optional
+        The number of subjects to load. If ``None`` is given, all the
         subjects are used. Default=1.
     %(data_dir)s
     %(url)s
     %(resume)s
     %(verbose)s
-    return_raw_data : bool, optional
-        If false, then the data will transformed into and (X, y) pair, suitable
-        for machine learning routines. X is a list of n_subjects * 48
-        Nifti1Image objects (where 48 is the number of trials),
-        and y is an array of shape (n_subjects * 48,).
+    return_raw_data : :obj:`bool`, optional
+        If ``False``, then the data will transformed into an ``(X, y)``
+        pair, suitable for machine learning routines. ``X`` is a list
+        of ``n_subjects * 48`` :class:`~nibabel.nifti1.Nifti1Image`
+        objects (where 48 is the number of trials), and ``y`` is an
+        array of shape ``(n_subjects * 48,)``.
         Default=False.
 
     Returns
     -------
-    data : Bunch
-        Dictionary-like object, the interest attributes are :
-        'zmaps': string list
-            Paths to realigned gain betamaps (one nifti per subject).
-        'gain': ..
-            If make_Xy is true, this is a list of n_subjects * 48
-            Nifti1Image objects, else it is None.
-        'y': array of shape (n_subjects * 48,) or None
-            If make_Xy is true, then this is an array of shape
-            (n_subjects * 48,), else it is None.
+    data : :func:`~sklearn.utils.Bunch`
+        Dictionary-like object, the interest attributes are:
+
+        - 'zmaps': :obj:`list` of :obj:`str`
+          Paths to realigned gain betamaps (one nifti per subject).
+        - 'gain': :obj:`list` of :class:`~nibabel.nifti1.Nifti1Image` or ``None``
+          If ``make_Xy`` is ``True``, this is a list of
+          ``n_subjects * 48`` :class:`~nibabel.nifti1.Nifti1Image`
+          objects, else it is ``None``.
+        - 'y': :class:`~numpy.ndarray` of shape ``(n_subjects * 48,)`` or ``None``
+          If ``make_Xy`` is ``True``, then this is a
+          :class:`~numpy.ndarray` of shape ``(n_subjects * 48,)``,
+          else it is ``None``.
 
     References
     ----------
