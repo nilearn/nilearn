@@ -1114,11 +1114,13 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
 
         - 'zmaps': :obj:`list` of :obj:`str`
           Paths to realigned gain betamaps (one nifti per subject).
-        - 'gain': :obj:`list` of :class:`~nibabel.nifti1.Nifti1Image` or ``None``
+        - 'gain': :obj:`list` of :class:`~nibabel.nifti1.Nifti1Image` \
+        or ``None``
           If ``make_Xy`` is ``True``, this is a list of
           ``n_subjects * 48`` :class:`~nibabel.nifti1.Nifti1Image`
           objects, else it is ``None``.
-        - 'y': :class:`~numpy.ndarray` of shape ``(n_subjects * 48,)`` or ``None``
+        - 'y': :class:`~numpy.ndarray` of shape ``(n_subjects * 48,)`` \
+        or ``None``
           If ``make_Xy`` is ``True``, then this is a
           :class:`~numpy.ndarray` of shape ``(n_subjects * 48,)``,
           else it is ``None``.
