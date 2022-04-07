@@ -11,13 +11,22 @@ def test_null_to_p_float():
     null = [-10, -9, -9, -3, -2, -1, -1, 0, 1, 1, 1, 2, 3, 3, 4, 4, 7, 8, 8, 9]
 
     # Left/lower-tailed
-    assert math.isclose(_utils._null_to_p(9, null, alternative='smaller'), 0.95)
-    assert math.isclose(_utils._null_to_p(-9, null, alternative='smaller'), 0.15)
+    assert math.isclose(
+        _utils._null_to_p(9, null, alternative='smaller'),
+        0.95,
+    )
+    assert math.isclose(
+        _utils._null_to_p(-9, null, alternative='smaller'),
+        0.15,
+    )
     assert math.isclose(_utils._null_to_p(0, null, alternative='smaller'), 0.4)
 
     # Right/upper-tailed
     assert math.isclose(_utils._null_to_p(9, null, alternative='larger'), 0.05)
-    assert math.isclose(_utils._null_to_p(-9, null, alternative='larger'), 0.95)
+    assert math.isclose(
+        _utils._null_to_p(-9, null, alternative='larger'),
+        0.95,
+    )
     assert math.isclose(_utils._null_to_p(0, null, alternative='larger'), 0.65)
 
     # Test that 1/n(null) is preserved with extreme values
@@ -32,7 +41,10 @@ def test_null_to_p_float():
     )
 
     # Two-tailed
-    assert math.isclose(_utils._null_to_p(0, null, alternative='two-sided'), 0.95)
+    assert math.isclose(
+        _utils._null_to_p(0, null, alternative='two-sided'),
+        0.95,
+    )
     result = _utils._null_to_p(9, null, alternative='two-sided')
     assert result == _utils._null_to_p(-9, null, alternative='two-sided')
     assert math.isclose(result, 0.2)
