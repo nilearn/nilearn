@@ -1965,26 +1965,29 @@ def patch_openneuro_dataset(file_list):
     file_list : :obj:`list` of :obj:`str`
         A list of filenames to update.
     """
-    rep = {'_T1w_brainmask': '_desc-brain_mask',
-           '_T1w_preproc': '_desc-preproc_T1w',
-           '_T1w_space-MNI152NLin2009cAsym_brainmask':
-               '_space-MNI152NLin2009cAsym_desc-brain_mask',
-           '_T1w_space-MNI152NLin2009cAsym_class-':
-               '_space-MNI152NLin2009cAsym_label-',
-           '_T1w_space-MNI152NLin2009cAsym_preproc':
-               '_space-MNI152NLin2009cAsym_desc-preproc_T1w',
-           '_bold_confounds': '_desc-confounds_regressors',
-           '_bold_space-MNI152NLin2009cAsym_brainmask':
-               '_space-MNI152NLin2009cAsym_desc-brain_mask',
-           '_bold_space-MNI152NLin2009cAsym_preproc':
-               '_space-MNI152NLin2009cAsym_desc-preproc_bold'
-           }
+    REPLACEMENTS = {
+        '_T1w_brainmask': '_desc-brain_mask',
+        '_T1w_preproc': '_desc-preproc_T1w',
+        '_T1w_space-MNI152NLin2009cAsym_brainmask':
+            '_space-MNI152NLin2009cAsym_desc-brain_mask',
+        '_T1w_space-MNI152NLin2009cAsym_class-':
+            '_space-MNI152NLin2009cAsym_label-',
+        '_T1w_space-MNI152NLin2009cAsym_preproc':
+            '_space-MNI152NLin2009cAsym_desc-preproc_T1w',
+        '_bold_confounds': '_desc-confounds_regressors',
+        '_bold_space-MNI152NLin2009cAsym_brainmask':
+            '_space-MNI152NLin2009cAsym_desc-brain_mask',
+        '_bold_space-MNI152NLin2009cAsym_preproc':
+            '_space-MNI152NLin2009cAsym_desc-preproc_bold'
+        }
+
     # Create a symlink if a file with the modified filename does not exist
-    for old in rep:
+    for old_pattern, new_pattern in REPLACEMENTS.items():
         for name in file_list:
-            if old in name:
-                if not os.path.exists(name.replace(old, rep[old])):
-                    os.symlink(name, name.replace(old, rep[old]))
+            if old_pattern in name:
+                new_name = name.replace(old_pattern, new_pattern)
+                if not os.path.exists(new_name):
+                    os.symlink(name, new_name)
 
 
 @fill_doc
