@@ -1982,7 +1982,7 @@ def patch_openneuro_dataset(file_list):
             '_space-MNI152NLin2009cAsym_desc-brain_mask',
         '_bold_space-MNI152NLin2009cAsym_preproc':
             '_space-MNI152NLin2009cAsym_desc-preproc_bold'
-        }
+    }
 
     # Create a symlink if a file with the modified filename does not exist
     for old_pattern, new_pattern in REPLACEMENTS.items():
