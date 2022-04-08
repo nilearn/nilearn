@@ -1954,7 +1954,16 @@ def select_from_index(urls, inclusion_filters=None, exclusion_filters=None,
 
 
 def patch_openneuro_dataset(file_list):
-    """Add symlinks for files not named according to latest :term:`BIDS` conventions.
+    """Add symlinks for files not named according to :term:`BIDS` conventions.
+
+    This function uses a series of hardcoded patterns to generate the corrected
+    filenames. These patterns are not comprehensive and this function is not
+    guaranteed to produce BIDS-compliant files.
+
+    Parameters
+    ----------
+    file_list : :obj:`list` of :obj:`str`
+        A list of filenames to update.
     """
     rep = {'_T1w_brainmask': '_desc-brain_mask',
            '_T1w_preproc': '_desc-preproc_T1w',
