@@ -1992,19 +1992,28 @@ def patch_openneuro_dataset(file_list):
 
 @fill_doc
 def fetch_openneuro_dataset(
-    urls=None, data_dir=None, dataset_version='ds000030_R1.0.4',
-    verbose=1):
+    urls=None,
+    data_dir=None,
+    dataset_version='ds000030_R1.0.4',
+    verbose=1,
+):
     """Download OpenNeuro :term:`BIDS` dataset.
+
+    This function specifically downloads files from a series of URLs.
+    Unless you use :func:`fetch_ds000030_urls` or the default parameters,
+    it is up to the user to ensure that the URLs are correct,
+    and that they associated with an OpenNeuro dataset.
 
     Parameters
     ----------
     urls : list of string, optional
-        Openneuro url list of dataset files to download. If not specified
-        all files of the specified dataset will be downloaded.
+        List of URLs to dataset files to download.
+        If not specified, all files from the default dataset
+        (``ds000030_R1.0.4``) will be downloaded.
     %(data_dir)s
     dataset_version : string, optional
         Dataset version name. Assumes it is of the form [name]_[version].
-        Default is `ds000030_R1.0.4`.
+        Default is ``ds000030_R1.0.4``.
     %(verbose)s
 
     Returns
@@ -2015,17 +2024,59 @@ def fetch_openneuro_dataset(
     downloaded_files : list of string
         Absolute paths of downloaded files on disk.
 
-    """
-    data_prefix = '{}/{}/uncompressed'.format(
-        dataset_version.split('_')[0], dataset_version)
-    data_dir = _get_dataset_dir(data_prefix, data_dir=data_dir,
-                                verbose=verbose)
+    Notes
+    -----
+    The default dataset downloaded by this function is the
+    "UCLA Consortium for Neuropsychiatric Phenomics LA5c" dataset
+    :footcite:p:`poldrack_phenome-wide_2016`.
 
+    This copy includes filenames that are not compliant with the current
+    version of :term:`BIDS`, so this function also calls
+    :func:`patch_openneuro_dataset` to generate BIDS-compliant symlinks.
+
+    See Also
+    --------
+    :func:`fetch_ds000030_urls`
+    :func:`patch_openneuro_dataset`
+
+    References
+    ----------
+    .. footbibliography::
+    """
     # if urls are not specified we download the complete dataset index
     if urls is None:
-        _, urls = fetch_openneuro_dataset_index(
-            data_dir=data_dir, dataset_version=dataset_version,
-            verbose=verbose)
+        DATASET_VERSION = 'ds000030_R1.0.4'
+        if DATASET_VERSION != dataset_version:
+            warnings.warn(
+                'If `dataset_version` is not "ds000030_R1.0.4", '
+                '`urls` must be specified. Downloading "ds000030_R1.0.4".'
+            )
+
+        data_prefix = '{}/{}/uncompressed'.format(
+            DATASET_VERSION.split('_')[0],
+            DATASET_VERSION,
+        )
+        data_dir = _get_dataset_dir(
+            data_prefix,
+            data_dir=data_dir,
+            verbose=verbose,
+        )
+
+        _, urls = fetch_ds000030_urls(
+            data_dir=data_dir,
+            dataset_version=DATASET_VERSION,
+            verbose=verbose,
+        )
+    else:
+        data_prefix = '{}/{}/uncompressed'.format(
+            dataset_version.split('_')[0],
+            dataset_version,
+        )
+        data_dir = _get_dataset_dir(
+            data_prefix,
+            data_dir=data_dir,
+            verbose=verbose,
+        )
 
     # The files_spec needed for _fetch_files
     files_spec = []
@@ -2046,13 +2097,19 @@ def fetch_openneuro_dataset(
         while download_attempts > 0 and not success:
             try:
                 downloaded_files = _fetch_files(
-                    file_dir, [file_spec], resume=True, verbose=verbose)
+                    file_dir,
+                    [file_spec],
+                    resume=True,
+                    verbose=verbose,
+                )
                 downloaded += downloaded_files
                 success = True
             except Exception:
                 download_attempts -= 1
+
         if not success:
-            raise Exception('multiple failures downloading %s' % file_spec[1])
+            raise Exception(f'multiple failures downloading {file_spec[1]}')
+
     patch_openneuro_dataset(downloaded)
 
     return data_dir, sorted(downloaded)
