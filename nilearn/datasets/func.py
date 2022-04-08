@@ -1779,10 +1779,15 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
 
 
 @fill_doc
-def fetch_openneuro_dataset_index(data_dir=None,
-                                  dataset_version='ds000030_R1.0.4',
-                                  verbose=1):
+def fetch_openneuro_dataset_index(
+    data_dir=None,
+    dataset_version='ds000030_R1.0.4',
+    verbose=1,
+):
     """Download a file with OpenNeuro :term:`BIDS` dataset index.
+
+    .. deprecated:: 0.9.1
+        `fetch_openneuro_dataset_index` will be removed in 0.13.
 
     Downloading the index allows to explore the dataset directories
     to select specific files to download. The index is a sorted list of urls.
@@ -1790,38 +1795,93 @@ def fetch_openneuro_dataset_index(data_dir=None,
     Parameters
     ----------
     %(data_dir)s
-    dataset_version : string, optional
+    dataset_version : :obj:`str`, optional
         Dataset version name. Assumes it is of the form [name]_[version].
         Default='ds000030_R1.0.4'.
+
+        .. warning:: Any value other than the default will be ignored.
+
+    %(verbose)s'
+
+    Returns
+    -------
+    urls_path : :obj:`str`
+        Path to downloaded dataset index.
+    urls : :obj:`list` of :obj:`str`
+        Sorted list of dataset directories.
+    """
+    warnings.warn(
+        (
+            'The "fetch_openneuro_dataset_index" function was deprecated in '
+            'version 0.9.1, and will be removed in 0.13. '
+            'Please use "fetch_ds000030_urls" instead.'
+        ),
+        DeprecationWarning,
+    )
+
+    DATASET_VERSION = 'ds000030_R1.0.4'
+    if dataset_version != DATASET_VERSION:
+        warnings.warn(
+            'An improper dataset_version has been provided. '
+            '"ds000030_R1.0.4" will be downloaded.'
+        )
+
+    urls_path, urls = fetch_ds000030_urls(data_dir=data_dir, verbose=verbose)
+    return urls_path, urls
+
+
+@fill_doc
+def fetch_ds000030_urls(data_dir=None, verbose=1):
+    """Fetch URLs for files from the ds000030 :term:`BIDS` dataset.
+
+    This dataset is version 1.0.4 of the "UCLA Consortium for
+    Neuropsychiatric Phenomics LA5c" dataset
+    :footcite:p:`poldrack_phenome-wide_2016`.
+
+    Downloading the index allows users to explore the dataset directories
+    to select specific files to download.
+    The index is a sorted list of urls.
+
+    Parameters
+    ----------
+    %(data_dir)s
     %(verbose)s
 
     Returns
     -------
-    urls_path : string
+    urls_path : :obj:`str`
         Path to downloaded dataset index.
 
-    urls : list of string
+    urls : :obj:`list` of :obj:`str`
         Sorted list of dataset directories.
 
+    References
+    ----------
+    .. footbibliography::
     """
-    data_prefix = '{}/{}/uncompressed'.format(dataset_version.split('_')[0],
-                                              dataset_version,
-                                              )
-    data_dir = _get_dataset_dir(data_prefix, data_dir=data_dir,
-                                verbose=verbose)
+    DATA_PREFIX = 'ds000030/R1.0.4/uncompressed'
+    FILE_URL = 'https://osf.io/86xj7/download'
 
-    file_url = 'https://osf.io/86xj7/download'
+    data_dir = _get_dataset_dir(
+        DATA_PREFIX,
+        data_dir=data_dir,
+        verbose=verbose,
+    )
+
     final_download_path = os.path.join(data_dir, 'urls.json')
-    downloaded_file_path = _fetch_files(data_dir=data_dir,
-                                        files=[(final_download_path,
-                                                file_url,
-                                                {'move': final_download_path}
-                                                )],
-                                        resume=True
-                                        )
+    downloaded_file_path = _fetch_files(
+        data_dir=data_dir,
+        files=[(
+            final_download_path,
+            FILE_URL,
+            {'move': final_download_path},
+        )],
+        resume=True
+    )
     urls_path = downloaded_file_path[0]
     with open(urls_path, 'r') as json_file:
         urls = json.load(json_file)
+
     return urls_path, urls
 
 
