@@ -1,6 +1,7 @@
 import math
 
 import numpy as np
+import pytest
 from scipy import ndimage
 
 from nilearn.mass_univariate import _utils
@@ -57,6 +58,9 @@ def test_null_to_p_float():
     assert result == _utils._null_to_p(-20, null, alternative='two-sided')
     assert math.isclose(result, 0.05)
 
+    with pytest.raises(ValueError):
+        _utils._null_to_p(9, null, alternative='raise')
+
 
 def test_null_to_p_array():
     """Test _null_to_p with 1d array input."""
@@ -73,7 +77,7 @@ def test_null_to_p_array():
 
 
 def test__calculate_cluster_measures():
-    """"""
+    """Test _calculate_cluster_measures."""
     threshold = 0.001
     bin_struct = ndimage.generate_binary_structure(3, 1)
 
@@ -109,7 +113,7 @@ def test__calculate_cluster_measures():
     assert test_size[0] == true_size
     assert test_mass[0] == true_mass
 
-    # One-sided test with edge connectivity
+    # Two-sided test with edge connectivity
     bin_struct = ndimage.generate_binary_structure(3, 2)
 
     true_size = 28  # should include edge-connected single voxel cluster
@@ -123,11 +127,24 @@ def test__calculate_cluster_measures():
     assert test_size[0] == true_size
     assert test_mass[0] == true_mass
 
-    # One-sided test with corner connectivity
+    # Two-sided test with corner connectivity
     bin_struct = ndimage.generate_binary_structure(3, 3)
 
     true_size = 29  # should include corner-connected single voxel cluster
     true_mass = 79.992  # (8 vox * 5 intensity) - (8 vox * 0.001 thresh)
+    test_size, test_mass = _utils._calculate_cluster_measures(
+        test_arr4d,
+        threshold=threshold,
+        bin_struct=bin_struct,
+        two_sided_test=True,
+    )
+    assert test_size[0] == true_size
+    assert test_mass[0] == true_mass
+
+    # Test on empty array
+    test_arr4d = np.zeros((10, 10, 10, 1))
+    true_size = 0
+    true_mass = 0
     test_size, test_mass = _utils._calculate_cluster_measures(
         test_arr4d,
         threshold=threshold,
