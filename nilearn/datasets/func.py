@@ -1862,7 +1862,7 @@ def fetch_ds000030_urls(data_dir=None, verbose=1):
     ----------
     .. footbibliography::
     """
-    DATA_PREFIX = 'ds000030/R1.0.4/uncompressed'
+    DATA_PREFIX = 'ds000030/ds000030_R1.0.4/uncompressed'
     FILE_URL = 'https://osf.io/86xj7/download'
 
     data_dir = _get_dataset_dir(
@@ -2085,6 +2085,7 @@ def fetch_openneuro_dataset(
     files_spec = []
     files_dir = []
     for url in urls:
+        # NOTE: This seems fragile. What if data_prefix isn't in the URL?
         url_path = url.split(data_prefix + '/')[1]
         file_dir = os.path.join(data_dir, url_path)
         files_spec.append((os.path.basename(file_dir), url, {}))

@@ -688,7 +688,7 @@ def test_select_from_index(request_mocker):
     assert data_prefix + '/sub-xxx/ses-02_task-rest.txt' in new_urls
 
 
-def test_fetch_openneuro_dataset_index(request_mocker):
+def test_fetch_ds000030_urls(request_mocker):
     with TemporaryDirectory() as tmpdir:
         dataset_version = 'ds000030_R1.0.4'
         subdir_names = ['ds000030', 'ds000030_R1.0.4', 'uncompressed']
@@ -702,11 +702,39 @@ def test_fetch_openneuro_dataset_index(request_mocker):
         mock_json_content = ['junk1', 'junk2']
         with open(filepath, 'w') as f:
             json.dump(mock_json_content, f)
-        urls_path, urls = func.fetch_openneuro_dataset_index(
+
+        # fetch_ds000030_urls should retrieve the appropriate URLs
+        urls_path, urls = func.fetch_ds000030_urls(
             data_dir=tmpdir,
-            dataset_version=dataset_version,
             verbose=1,
         )
+        assert urls_path == filepath
+        assert urls == mock_json_content
+
+        # fetch_openneuro_dataset_index should do the same, but with a warning
+        with pytest.warns(DeprecationWarning):
+            urls_path, urls = func.fetch_openneuro_dataset_index(
+                data_dir=tmpdir,
+                dataset_version=dataset_version,
+                verbose=1,
+            )
+
+        urls_path = urls_path.replace('/', os.sep)
+        assert urls_path == filepath
+        assert urls == mock_json_content
+
+        # fetch_openneuro_dataset_index should even grab ds000030 when you
+        # provide a different dataset name
+        with pytest.warns(
+            UserWarning,
+            match='"ds000030_R1.0.4" will be downloaded',
+        ):
+            urls_path, urls = func.fetch_openneuro_dataset_index(
+                data_dir=tmpdir,
+                dataset_version='ds500_v2',
+                verbose=1,
+            )
+
         urls_path = urls_path.replace('/', os.sep)
         assert urls_path == filepath
         assert urls == mock_json_content
