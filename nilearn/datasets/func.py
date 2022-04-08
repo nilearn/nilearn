@@ -1822,8 +1822,11 @@ def fetch_openneuro_dataset_index(
     DATASET_VERSION = 'ds000030_R1.0.4'
     if dataset_version != DATASET_VERSION:
         warnings.warn(
-            'An improper dataset_version has been provided. '
-            '"ds000030_R1.0.4" will be downloaded.'
+            (
+                'An improper dataset_version has been provided. '
+                '"ds000030_R1.0.4" will be downloaded.'
+            ),
+            UserWarning,
         )
 
     urls_path, urls = fetch_ds000030_urls(data_dir=data_dir, verbose=verbose)
