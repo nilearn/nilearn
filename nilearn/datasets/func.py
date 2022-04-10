@@ -2005,7 +2005,7 @@ def fetch_openneuro_dataset(
     This function specifically downloads files from a series of URLs.
     Unless you use :func:`fetch_ds000030_urls` or the default parameters,
     it is up to the user to ensure that the URLs are correct,
-    and that they associated with an OpenNeuro dataset.
+    and that they are associated with an OpenNeuro dataset.
 
     Parameters
     ----------
