@@ -31,5 +31,6 @@ Enhancements
 Changes
 -------
 
+- Function :func:`~datasets.fetch_openneuro_dataset_index` is now deprecated in favor of the new :func:`~datasets.fetch_ds000030_urls` function (:gh:`3216` by `Taylor Salo`_).
 - The documentation for :func:`~reporting.get_clusters_table` has been improved, with more information about what inputs are valid and what the resulting table should look like (:gh:`3178` by `Taylor Salo`_).
 - Requirements files have been consolidated into a ``setup.cfg`` file and installation instructions have been simplified (:gh:`2953` by `Taylor Salo`_).
