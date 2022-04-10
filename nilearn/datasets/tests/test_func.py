@@ -743,22 +743,28 @@ def test_fetch_ds000030_urls(request_mocker):
 def test_fetch_openneuro_dataset(request_mocker, tmp_path):
     dataset_version = 'ds000030_R1.0.4'
     data_prefix = '{}/{}/uncompressed'.format(
-        dataset_version.split('_')[0], dataset_version)
-    data_dir = _get_dataset_dir(data_prefix, data_dir=tmp_path,
-                                verbose=1)
+        dataset_version.split('_')[0],
+        dataset_version,
+    )
+    data_dir = _get_dataset_dir(
+        data_prefix,
+        data_dir=tmp_path,
+        verbose=1,
+    )
     url_file = os.path.join(data_dir, 'urls.json')
+
     # Prepare url files for subject and filter tests
     urls = [
-        "https://example.com/{}/stuff.html" + data_prefix + '',
-        "https://example.com/{}/sub-xxx.html",
-        "https://example.com/{}/sub-yyy.html",
-        "https://example.com/{}/sub-xxx/ses-01_task-rest.txt",
-        "https://example.com/{}/sub-xxx/ses-01_task-other.txt",
-        "https://example.com/{}/sub-xxx/ses-02_task-rest.txt",
-        "https://example.com/{}/sub-xxx/ses-02_task-other.txt",
-        "https://example.com/{}/sub-yyy/ses-01.txt",
-        "https://example.com/{}/sub-yyy/ses-02.txt"]
-    urls = [url.format(data_prefix) for url in urls]
+        f'https://example.com/{data_prefix}/stuff.html',
+        f'https://example.com/{data_prefix}/sub-xxx.html',
+        f'https://example.com/{data_prefix}/sub-yyy.html',
+        f'https://example.com/{data_prefix}/sub-xxx/ses-01_task-rest.txt',
+        f'https://example.com/{data_prefix}/sub-xxx/ses-01_task-other.txt',
+        f'https://example.com/{data_prefix}/sub-xxx/ses-02_task-rest.txt',
+        f'https://example.com/{data_prefix}/sub-xxx/ses-02_task-other.txt',
+        f'https://example.com/{data_prefix}/sub-yyy/ses-01.txt',
+        f'https://example.com/{data_prefix}/sub-yyy/ses-02.txt',
+    ]
     json.dump(urls, open(url_file, 'w'))
 
     # Only 1 subject and not subject specific files get downloaded
@@ -767,6 +773,27 @@ def test_fetch_openneuro_dataset(request_mocker, tmp_path):
     assert isinstance(datadir, str)
     assert isinstance(dl_files, list)
     assert len(dl_files) == 9
+
+    # URLs do not contain the data_prefix, which should raise a ValueError
+    urls = [
+        'https://example.com/stuff.html',
+        'https://example.com/sub-yyy/ses-01.txt',
+    ]
+    with pytest.raises(ValueError, match='This indicates that the URLs'):
+        func.fetch_openneuro_dataset(urls, tmp_path, dataset_version)
+
+    # Try downloading a different dataset without providing URLs
+    # This should raise a warning and download ds000030.
+    with pytest.warns(
+        UserWarning,
+        match='Downloading "ds000030_R1.0.4".',
+    ):
+        urls_path, urls = func.fetch_openneuro_dataset(
+            urls=None,
+            data_dir=tmp_path,
+            dataset_version='ds500_v2',
+            verbose=1,
+        )
 
 
 def test_fetch_localizer(request_mocker, tmp_path):

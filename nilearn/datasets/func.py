@@ -1787,7 +1787,7 @@ def fetch_openneuro_dataset_index(
     """Download a file with OpenNeuro :term:`BIDS` dataset index.
 
     .. deprecated:: 0.9.1
-        `fetch_openneuro_dataset_index` will be removed in 0.13.
+        `fetch_openneuro_dataset_index` will be removed in 0.11.
 
     Downloading the index allows to explore the dataset directories
     to select specific files to download. The index is a sorted list of urls.
@@ -1813,7 +1813,7 @@ def fetch_openneuro_dataset_index(
     warnings.warn(
         (
             'The "fetch_openneuro_dataset_index" function was deprecated in '
-            'version 0.9.1, and will be removed in 0.13. '
+            'version 0.9.1, and will be removed in 0.11. '
             'Please use "fetch_ds000030_urls" instead.'
         ),
         DeprecationWarning,
@@ -1959,9 +1959,11 @@ def select_from_index(urls, inclusion_filters=None, exclusion_filters=None,
 def patch_openneuro_dataset(file_list):
     """Add symlinks for files not named according to :term:`BIDS` conventions.
 
-    This function uses a series of hardcoded patterns to generate the corrected
-    filenames. These patterns are not comprehensive and this function is not
-    guaranteed to produce BIDS-compliant files.
+    .. warning::
+        This function uses a series of hardcoded patterns to generate the
+        corrected filenames.
+        These patterns are not comprehensive and this function is not
+        guaranteed to produce BIDS-compliant files.
 
     Parameters
     ----------
@@ -2049,7 +2051,7 @@ def fetch_openneuro_dataset(
     # if urls are not specified we download the complete dataset index
     if urls is None:
         DATASET_VERSION = 'ds000030_R1.0.4'
-        if DATASET_VERSION != dataset_version:
+        if dataset_version != DATASET_VERSION:
             warnings.warn(
                 'If `dataset_version` is not "ds000030_R1.0.4", '
                 '`urls` must be specified. Downloading "ds000030_R1.0.4".'
@@ -2059,6 +2061,7 @@ def fetch_openneuro_dataset(
             DATASET_VERSION.split('_')[0],
             DATASET_VERSION,
         )
+        orig_data_dir = data_dir
         data_dir = _get_dataset_dir(
             data_prefix,
             data_dir=data_dir,
@@ -2066,8 +2069,7 @@ def fetch_openneuro_dataset(
         )
 
         _, urls = fetch_ds000030_urls(
-            data_dir=data_dir,
-            dataset_version=DATASET_VERSION,
+            data_dir=orig_data_dir,
             verbose=verbose,
         )
     else:
@@ -2084,8 +2086,18 @@ def fetch_openneuro_dataset(
     # The files_spec needed for _fetch_files
     files_spec = []
     files_dir = []
+
+    # Check that data prefix is found in each URL
+    bad_urls = [url for url in urls if data_prefix not in url]
+    if bad_urls:
+        raise ValueError(
+            f'data_prefix ({data_prefix}) is not found in at least one URL. '
+            'This indicates that the URLs do not correspond to the '
+            'dataset_version provided.\n'
+            f'Affected URLs: {bad_urls}'
+        )
+
     for url in urls:
-        # NOTE: This seems fragile. What if data_prefix isn't in the URL?
         url_path = url.split(data_prefix + '/')[1]
         file_dir = os.path.join(data_dir, url_path)
         files_spec.append((os.path.basename(file_dir), url, {}))
