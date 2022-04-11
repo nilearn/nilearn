@@ -137,7 +137,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     Parameters
     ----------
     stat_map_img : Niimg-like object, 3D
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa: E501
 
     surf_mesh : str or dict, optional.
         If a string, it should be one of the following values:
