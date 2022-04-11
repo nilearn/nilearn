@@ -5,7 +5,7 @@
        from the ``input_data`` module instead of the ``maskers`` module.
 
        That is, you should manually replace in the following example
-       all occurences of:
+       all occurrences of:
 
        .. code-block:: python
 
