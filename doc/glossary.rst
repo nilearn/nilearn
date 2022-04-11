@@ -322,7 +322,7 @@ If you wish to add a missing term, please `create a new issue`_ or
     https://en.wikipedia.org/wiki/Contrast_(statistics)
 
 .. _`Decoding`:
-    https://nilearn.github.io/decoding/decoding_intro.html
+    https://nilearn.github.io/stable/decoding/decoding_intro.html
 
 .. _`Dictionary learning`:
     https://en.wikipedia.org/wiki/Sparse_dictionary_learning
@@ -349,7 +349,7 @@ If you wish to add a missing term, please `create a new issue`_ or
     https://www.sciencedirect.com/science/article/abs/pii/S1053811917308182
 
 .. _`functional connectome`:
-    https://nilearn.github.io/connectivity/functional_connectomes.html
+    https://nilearn.github.io/stable/connectivity/functional_connectomes.html
 
 .. _`FWHM`:
     https://en.wikipedia.org/wiki/Full_width_at_half_maximum    
@@ -382,7 +382,7 @@ If you wish to add a missing term, please `create a new issue`_ or
     https://en.wikipedia.org/wiki/Resting_state_fMRI
 
 .. _`Searchlight analysis`:
-    https://nilearn.github.io/decoding/searchlight.html
+    https://nilearn.github.io/stable/decoding/searchlight.html
 
 .. _`SNR`:
     https://en.wikipedia.org/wiki/Signal-to-noise_ratio
@@ -391,7 +391,7 @@ If you wish to add a missing term, please `create a new issue`_ or
     https://www.fil.ion.ucl.ac.uk/spm/software/
 
 .. _`SpaceNet`:
-    https://nilearn.github.io/decoding/space_net.html
+    https://nilearn.github.io/stable/decoding/space_net.html
 
 .. _`Statistical Parametric Mapping`:
     https://en.wikipedia.org/wiki/Statistical_parametric_mapping
