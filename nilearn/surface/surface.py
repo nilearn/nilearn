@@ -1106,3 +1106,11 @@ def smooth_surface_data(surface, surf_data, smooth_steps = 1, method = 'sparse')
     
             
     return surf_data_smooth
+    # from nilearn import datasets
+    # from nilearn import surface
+    # from nilearn import plotting
+    # fsaverage = datasets.fetch_surf_fsaverage('fsaverage')
+    # white_left = surface.load_surf_mesh(fsaverage.white_left)
+    # curv = surface.load_surf_data(fsaverage.curv_left)
+    # curv_smooth = surface.smooth_surface_data(surface = white_left, surf_data = curv, smooth_steps=50)
+    # plotting.plot_surf(white_left, surf_map = curv_smooth)
