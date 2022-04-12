@@ -708,6 +708,7 @@ def test_fetch_ds000030_urls(request_mocker):
             data_dir=tmpdir,
             verbose=1,
         )
+        urls_path = urls_path.replace('/', os.sep)
         assert urls_path == filepath
         assert urls == mock_json_content
 
