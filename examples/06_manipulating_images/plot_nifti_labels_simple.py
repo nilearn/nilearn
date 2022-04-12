@@ -3,9 +3,13 @@ Extracting signals from brain regions using the NiftiLabelsMasker
 =================================================================
 
 This simple example shows how to extract signals from functional
-fmri data and brain regions defined through an atlas.
-More precisely, this example shows how to use the NiftiLabelsMasker
-object to perform this operation in just a few lines of code.
+:term:`fMRI` data and brain regions defined through an atlas.
+More precisely, this example shows how to use the
+:class:`~nilearn.maskers.NiftiLabelsMasker` object to perform this
+operation in just a few lines of code.
+
+.. include:: ../../../examples/masker_note.rst
+
 """
 
 ###########################################################################

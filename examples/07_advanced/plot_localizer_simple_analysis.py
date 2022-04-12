@@ -11,6 +11,7 @@ The Localizer dataset contains many contrasts and subject-related
 variates.  The user can refer to the
 `plot_localizer_mass_univariate_methods.py` example to see how to use these.
 
+.. include:: ../../../examples/masker_note.rst
 
 """
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
