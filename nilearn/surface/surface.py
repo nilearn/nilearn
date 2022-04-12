@@ -1038,7 +1038,7 @@ def compute_vertex_neighborhoods(surface):
         
     return neighbors
         
-def smooth_surface_data(surface, surf_data, smooth_steps = 1):
+def smooth_surface_data(surface, surf_data, smooth_steps = 1, method = 'sparse'):
     """Smooth values along the surface.
     
     Parameters
@@ -1049,22 +1049,60 @@ def smooth_surface_data(surface, surf_data, smooth_steps = 1):
     case of fmri data, N could be number of timepoints. Each column is smoothed independently
 
     smooth_steps : How many times to repeat the smoothing operation. Defaults to 1 step
+
+    method : Whether to use scipy sparse matrices (default)
     
     Returns
     -------
     neighbors : A list of all the vertices that are connected to each vertex
     
     """
+    if method == 'sparse':
+        from scipy.sparse import csr_matrix
 
-    neighbors = compute_vertex_neighborhoods(surface)
+        # This is a bit of a hack to quickly find a unique set of all edges.
+        n = surface.coordinates.shape[0]
+        edges = np.vstack([surface.faces[:,[0,1]], surface.faces[:,[0,2]], surface.faces[:,[1,2]]])
+        edges = edges.astype(np.int64)
+        bigcol = edges[:,0] > edges[:,1]
+        lilcol = ~bigcol
+        edges = np.concatenate([edges[bigcol,0] + edges[bigcol,1]*n,
+                                edges[lilcol,1] + edges[lilcol,0]*n])
+        edges = np.unique(edges)
+        (u,v) = (edges // n, edges % n)
+
+        # Calculate distances between pairs.
+        edge_lens = np.sqrt(np.sum((surface.coordinates[u,:] - surface.coordinates[v,:])**2, axis=1))
+
+        # We can now make a sparse matrix.
+        ee = np.concatenate([edge_lens, edge_lens])
+        uv = np.concatenate([u, v])
+        vu = np.concatenate([v, u])
+        matrix = csr_matrix((1 / ee, (uv, vu)), shape=(n,n))
+        # Normalize it.
+        rowsums = matrix.sum(axis=1)
+        matrix = matrix.multiply(1 / rowsums)
+
+        for ii in range(smooth_steps):
+            surf_data = np.array(matrix.dot(surf_data)).flatten()
+
+        surf_data_smooth = surf_data
     
-    # Loop over smoothing steps
-    for s in range(smooth_steps):
-
-        # Loop over vertices and average each datapoint with its neighbors
-        for k in range(surf_data.shape[0]):
-            surf_data_smooth = np.zeros_like(surf_data.shape[0])
-            # If there are multiple timepoints averaging is done separately for each timepoint
-            surf_data_smooth[k] = np.mean(surf_data[neighbors[k]],axis=0)
+    else:
+    
+        neighbors = compute_vertex_neighborhoods(surface)
+        dists = [np.sqrt(np.sum((surface.coordinates[neis] - surface.coordinates[center])**2, axis=1))
+                for (center, neis) in enumerate(neighbors)]
+        nei_weights = [1 / d for d in dists]
+        # Loop over smoothing steps
+        for s in range(smooth_steps):
+            surf_data_smooth = np.zeros_like(surf_data)
+            # Loop over vertices and average each datapoint with its neighbors
+            for k in range(surf_data.shape[0]):
+                w = nei_weights[k]
+                # If there are multiple timepoints averaging is done separately for each timepoint
+                surf_data_smooth[k] = np.sum(surf_data[neighbors[k]] * w, axis=0) / np.sum(w)
+            surf_data = surf_data_smooth
+    
             
     return surf_data_smooth
