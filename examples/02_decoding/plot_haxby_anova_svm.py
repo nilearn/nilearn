@@ -73,7 +73,7 @@ y_pred = decoder.predict(func_img)
 # leave a session out scheme, then pass the cross-validator object to the cv
 # parameter of decoder.leave-one-session-out For more details please take a
 # look at:
-# <https://nilearn.github.io/auto_examples/plot_decoding_tutorial.html#measuring-prediction-scores-using-cross-validation>
+# <https://nilearn.github.io/stable/auto_examples/plot_decoding_tutorial.html#measuring-prediction-scores-using-cross-validation>
 from sklearn.model_selection import LeaveOneGroupOut
 cv = LeaveOneGroupOut()
 
