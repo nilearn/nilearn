@@ -728,6 +728,12 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         if isinstance(ref_niimg, nibabel.freesurfer.mghformat.MGHImage):
             default_dtype = np.uint8
         data = as_ndarray(data, dtype=default_dtype)
+    if data.dtype in (np.int64, np.uint64):
+        img_min, img_max = np.min(data), np.max(data)
+        type_info = np.iinfo(np.int32)
+        can_cast = type_info.min <= img_min and type_info.max >= img_max
+        if can_cast:
+            data = data.astype(np.int32)
     header = None
     if copy_header:
         header = copy.deepcopy(ref_niimg.header)

@@ -147,7 +147,7 @@ def generate_maps(shape, n_regions, overlap=0, border=1,
 
 
 def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
-                             affine=np.eye(4), dtype=int):
+                             affine=np.eye(4), dtype=np.int32):
     """Generate a 3D volume with labeled regions.
 
     Parameters

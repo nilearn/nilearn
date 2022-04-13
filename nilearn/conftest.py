@@ -1,5 +1,6 @@
 
 import numpy as np
+import nibabel
 import pytest
 
 from _pytest.doctest import DoctestItem
@@ -7,6 +8,7 @@ from _pytest.doctest import DoctestItem
 # we need to import these fixtures even if not used in this module
 from nilearn.datasets._testing import request_mocker  # noqa: F401
 from nilearn.datasets._testing import temp_nilearn_data_dir  # noqa: F401
+from nilearn import image
 from nilearn.version import _compare_version
 
 
@@ -24,6 +26,17 @@ def pytest_configure(config):
     """Use Agg so that no figures pop up."""
     if matplotlib is not None:
         matplotlib.use('Agg', force=True)
+
+
+@pytest.fixture(autouse=True)
+def no_int64_nifti(monkeypatch):
+    to_filename = nibabel.Nifti1Image.to_filename
+
+    def checked_to_filename(img, filename):
+        assert image.get_data(img).dtype != np.int64
+        return to_filename(img, filename)
+
+    monkeypatch.setattr("nibabel.Nifti1Image.to_filename", checked_to_filename)
 
 
 @pytest.fixture(autouse=True)
