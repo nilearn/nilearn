@@ -585,7 +585,7 @@ def test_threshold_img_with_cluster_threshold():
         copy=True,
     )
     assert np.array_equal(np.unique(thr_img.get_fdata()), np.array([-4, 0, 4]))
-
+    assert np.sum(thr_img.get_fdata() == 4) == 8
     # With a cluster threshold of 5 we get clusters with |values| > 0.5 and
     # cluster sizes > 5
     thr_img = threshold_img(
