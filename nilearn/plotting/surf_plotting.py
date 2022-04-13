@@ -519,7 +519,7 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
         p3dcollec.set_facecolors(face_colors)
 
     if title is not None:
-        figure.suptitle(title, x=.5, y=.95, fontsize=title_font_size)
+        axes.set_title(title)
     # save figure if output file is given
     if output_file is not None:
         figure.savefig(output_file)
