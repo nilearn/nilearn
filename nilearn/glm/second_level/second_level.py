@@ -852,7 +852,7 @@ def non_parametric_inference(
     neg_log10_vfwe_pvals_img = masker.inverse_transform(np.ravel(
         outputs['logp_max_t']
     ))
-    raise Exception(np.unique(outputs['t']))
+
     if tfce:
         t_img = masker.inverse_transform(np.ravel(outputs['t']))
         neg_log10_tfce_pvals_img = masker.inverse_transform(

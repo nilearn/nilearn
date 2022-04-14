@@ -71,8 +71,6 @@ def _calculate_tfce(
         else:
             step = dh
 
-        raise Exception(f"scores_3d: {np.unique(scores_3d)}, step:{step}, max_score:{max_score}")
-
         for score_thresh in np.arange(step, max_score + step, step):
             for sign in np.unique(np.sign(scores_3d)):
                 temp_scores_3d = scores_3d * sign
