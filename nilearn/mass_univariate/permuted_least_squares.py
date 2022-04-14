@@ -187,7 +187,7 @@ def _permuted_ols_on_chunk(
         This is only used for cluster-level inference.
         If ``masker`` is set to None, it will be ignored.
 
-        .. versionadded:: 0.9.1
+        .. versionadded:: 0.9.2
 
     confounding_vars : array-like, shape=(n_samples, n_covars), optional
         Clinical data (covariates).
@@ -197,7 +197,7 @@ def _permuted_ols_on_chunk(
         This is only used for cluster-level inference.
         If None, cluster-level inference will not be performed.
 
-        .. versionadded:: 0.9.1
+        .. versionadded:: 0.9.2
 
     n_perm : int, optional
         Total number of permutations to perform, only used for
@@ -244,7 +244,7 @@ def _permuted_ols_on_chunk(
         Only calculated if ``masker`` is not None.
         Otherwise, these will both be None.
 
-        .. versionadded:: 0.9.1
+        .. versionadded:: 0.9.2
 
     References
     ----------
@@ -448,7 +448,7 @@ def permuted_ols(
         This is required for cluster-level inference, so it must be provided
         if ``threshold`` is not None.
 
-        .. versionadded:: 0.9.1
+        .. versionadded:: 0.9.2
 
     threshold : None or :obj:`float`, optional
         Cluster-forming threshold in p-scale.
@@ -461,7 +461,7 @@ def permuted_ols(
             Performing cluster-level inference will increase the computation
             time of the permutation procedure.
 
-        .. versionadded:: 0.9.1
+        .. versionadded:: 0.9.2
 
     output_type : {'legacy', 'dict'}, optional
         Determines how outputs should be returned.
@@ -496,7 +496,7 @@ def permuted_ols(
         .. note::
             This is returned if ``output_type`` == 'legacy'.
 
-        .. versionchanged:: 0.9.1
+        .. versionchanged:: 0.9.2
 
             Return H0 for all regressors, instead of only the first one.
 
@@ -506,7 +506,7 @@ def permuted_ols(
         .. note::
             This is returned if ``output_type`` == 'dict'.
 
-        .. versionadded:: 0.9.1
+        .. versionadded:: 0.9.2
 
         Here are the keys:
 

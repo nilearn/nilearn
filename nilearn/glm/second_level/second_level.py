@@ -740,7 +740,7 @@ def non_parametric_inference(
             Performing cluster-level inference will increase the computation
             time of the permutation procedure.
 
-        .. versionadded:: 0.9.1
+        .. versionadded:: 0.9.2
 
     Returns
     -------
@@ -759,7 +759,7 @@ def non_parametric_inference(
         .. note::
             This is returned if ``threshold`` is not None.
 
-        .. versionadded:: 0.9.1
+        .. versionadded:: 0.9.2
 
         Here are the keys:
 
