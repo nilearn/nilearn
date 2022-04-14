@@ -55,10 +55,13 @@ def _calculate_tfce(
 
     scores_4d_img = unmask(scores_array.T, masker.mask_img_)
     scores_4d = scores_4d_img.get_fdata()
-    if not two_sided:
-        scores_4d[scores_4d < 0] = 0
-
     tfce_4d = np.zeros_like(scores_4d)
+
+    if two_sided:
+        signs = [-1, 1]
+    else:
+        scores_4d[scores_4d < 0] = 0
+        signs = [1]
 
     for i_regressor in range(scores_4d.shape[3]):
         scores_3d = scores_4d[..., i_regressor]
@@ -72,7 +75,7 @@ def _calculate_tfce(
             step = dh
 
         for score_thresh in np.arange(step, max_score + step, step):
-            for sign in np.unique(np.sign(scores_3d)):
+            for sign in signs:
                 temp_scores_3d = scores_3d * sign
 
                 # Threshold map at *h*
