@@ -809,7 +809,7 @@ def test_cluster_level_parameters_smoke(random_state=0):
         tested_var,
         target_var,
         model_intercept=False,
-        two_sided_test=False,
+        two_sided_test=True,
         n_perm=n_perm,
         random_state=random_state,
         threshold=0.001,
