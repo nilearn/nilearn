@@ -1786,7 +1786,7 @@ def fetch_openneuro_dataset_index(
 ):
     """Download a file with OpenNeuro :term:`BIDS` dataset index.
 
-    .. deprecated:: 0.9.1
+    .. deprecated:: 0.9.2
         `fetch_openneuro_dataset_index` will be removed in 0.11.
 
     Downloading the index allows to explore the dataset directories
@@ -1813,7 +1813,7 @@ def fetch_openneuro_dataset_index(
     warnings.warn(
         (
             'The "fetch_openneuro_dataset_index" function was deprecated in '
-            'version 0.9.1, and will be removed in 0.11. '
+            'version 0.9.2, and will be removed in 0.11. '
             'Please use "fetch_ds000030_urls" instead.'
         ),
         DeprecationWarning,
