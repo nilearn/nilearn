@@ -435,28 +435,49 @@ def test_fetch_atlas_difumo(tmp_path, request_mocker):
                                  dimension=128, resolution_mm=3.14)
 
 
-def test_fetch_atlas_aal(tmp_path, request_mocker):
-    metadata = (b"<?xml version='1.0' encoding='us-ascii'?>"
-                b"<metadata></metadata>")
-    archive_root = Path("aal", "atlas")
-    aal_data = dict_to_archive(
-        {archive_root / "AAL.xml": metadata, archive_root / "AAL.nii": ""})
+@pytest.fixture
+def aal_archive_root(version):
+    if version == 'SPM12':
+        return Path("aal", "atlas")
+    else:
+        return Path(f"aal_for_{version}")
 
-    request_mocker.url_mapping["*AAL_files*"] = aal_data
-    dataset = atlas.fetch_atlas_aal(data_dir=tmp_path, verbose=0)
+
+@pytest.mark.parametrize("version,archive_format,url_key",
+                         [('SPM5', 'zip', 'uploads'),
+                          ('SPM8', 'zip', 'uploads'),
+                          ('SPM12', 'gztar', 'AAL_files')])
+def test_fetch_atlas_aal(version, archive_format, url_key, aal_archive_root,
+                         tmp_path, request_mocker):
+    metadata = "A\tB\tC\n"
+    if version == 'SPM12':
+        metadata = (b"<?xml version='1.0' encoding='us-ascii'?>"
+                    b"<metadata><label><index>1</index>"
+                    b"<name>A</name></label></metadata>")
+    label_file = "AAL.xml" if version == 'SPM12' else "ROI_MNI_V4.txt"
+    atlas_file = "AAL.nii" if version == 'SPM12' else "ROI_MNI_V4.nii"
+    aal_data = dict_to_archive(
+        {aal_archive_root / label_file: metadata,
+         aal_archive_root / atlas_file: ""},
+        archive_format=archive_format
+    )
+    request_mocker.url_mapping[f"*{url_key}*"] = aal_data
+    dataset = atlas.fetch_atlas_aal(
+        version=version, data_dir=tmp_path, verbose=0
+    )
     assert isinstance(dataset.maps, str)
     assert isinstance(dataset.labels, list)
     assert isinstance(dataset.indices, list)
     assert request_mocker.url_count == 1
-
-    with pytest.raises(ValueError,
-                       match='The version of AAL requested "FLS33"'
-                       ):
-        atlas.fetch_atlas_aal(version="FLS33",
-                              data_dir=tmp_path,
-                              verbose=0)
-
     assert dataset.description != ''
+
+
+def test_fetch_atlas_aal_version_error(tmp_path, request_mocker):
+    with pytest.raises(ValueError,
+                       match='The version of AAL requested "FLS33"'):
+        atlas.fetch_atlas_aal(
+            version="FLS33", data_dir=tmp_path, verbose=0
+        )
 
 
 def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
