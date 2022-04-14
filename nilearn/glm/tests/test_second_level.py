@@ -574,7 +574,6 @@ def test_non_parametric_inference_permutation_computation():
                                                      mask=mask, n_perm=100)
 
         assert get_data(neg_log_pvals_img).shape == shapes[0][:3]
-        raise Exception(np.unique(neg_log_pvals_img.get_fdata()))
         del func_img, FUNCFILE, neg_log_pvals_img, X, Y
 
 
