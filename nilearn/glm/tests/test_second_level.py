@@ -581,16 +581,12 @@ def test_non_parametric_inference_permutation_computation():
 def test_non_parametric_inference_tfce():
     """Test non-parametric inference with TFCE inference."""
     with InTemporaryDirectory():
-        shapes = ((7, 8, 9, 1),)
-        mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
-        FUNCFILE = FUNCFILE[0]
-        func_img = load(FUNCFILE)
-
-        Y = [func_img] * 4
+        shapes = [(7, 8, 9, 1)] * 4
+        mask, FUNCFILES, _ = write_fake_fmri_data_and_design(shapes)
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
 
         out = non_parametric_inference(
-            Y,
+            FUNCFILES,
             design_matrix=X,
             mask=mask,
             n_perm=10,
@@ -604,7 +600,8 @@ def test_non_parametric_inference_tfce():
 
         assert get_data(out['tfce']).shape == shapes[0][:3]
         assert get_data(out['logp_max_tfce']).shape == shapes[0][:3]
-        del func_img, FUNCFILE, out, X, Y
+
+        del FUNCFILES, out, X
 
 
 def test_second_level_contrast_computation():
