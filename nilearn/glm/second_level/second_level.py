@@ -743,6 +743,40 @@ def non_parametric_inference(
     neg_log_corrected_pvals_img : Nifti1Image
         The image which contains negative logarithm of the corrected p-values.
 
+        .. note::
+            This is returned if ``tfce`` is False (the default).
+
+    outputs : :obj:`dict`
+        Output images, organized in a dictionary.
+        Each image is 3D/4D, with the potential fourth dimension corresponding
+        to the regressors.
+
+        .. note::
+            This is returned if ``tfce`` is not None.
+
+        .. versionadded:: 0.9.2
+
+        Here are the keys:
+
+        =============== =======================================================
+        key             description
+        =============== =======================================================
+        t               T-statistics associated with the significance test of
+                        the n_regressors explanatory variates against the
+                        n_descriptors target variates.
+        logp_max_t      Negative log10 family-wise error rate-corrected
+                        p-values corrected based on the distribution of maximum
+                        t-statistics from permutations.
+        tfce            TFCE values associated with the significance test of
+                        the n_regressors explanatory variates against the
+                        n_descriptors target variates.
+                        Returned only if ``tfce`` is True.
+        logp_max_tfce   Negative log10 family-wise error rate-corrected
+                        p-values corrected based on the distribution of maximum
+                        TFCE values from permutations.
+                        Returned only if ``tfce`` is True.
+        ============= =======================================================
+
     See also
     --------
     :func:`~nilearn.mass_univariate.permuted_ols` : For more information on \
@@ -802,7 +836,7 @@ def non_parametric_inference(
     target_vars = masker.transform(effect_maps)
 
     # Perform massively univariate analysis with permuted OLS
-    ols_outputs = permuted_ols(
+    outputs = permuted_ols(
         tested_var,
         target_vars,
         model_intercept=model_intercept,
@@ -815,8 +849,22 @@ def non_parametric_inference(
         tfce=tfce,
         output_type='dict',
     )
-    neg_log_corrected_pvals_img = masker.inverse_transform(np.ravel(
-        ols_outputs['logp_max_t']
+    neg_log10_vfwe_pvals_img = masker.inverse_transform(np.ravel(
+        outputs['logp_max_t']
     ))
-
-    return neg_log_corrected_pvals_img
+    raise Exception(np.unique(outputs['t']))
+    if tfce:
+        t_img = masker.inverse_transform(np.ravel(outputs['t']))
+        neg_log10_tfce_pvals_img = masker.inverse_transform(
+            np.ravel(outputs['logp_max_size']),
+        )
+        tfce_img = masker.inverse_transform(np.ravel(outputs['tfce']))
+        out = {
+            't': t_img,
+            'logp_max_t': neg_log10_vfwe_pvals_img,
+            'tfce': tfce_img,
+            'logp_max_tfce': neg_log10_tfce_pvals_img,
+        }
+        return out
+    else:
+        return neg_log10_vfwe_pvals_img

@@ -21,7 +21,10 @@ def _calculate_tfce(
     ----------
     scores_array : :obj:`numpy.ndarray`, shape=(n_descriptors, n_regressors)
         Scores (t-statistics) for a set of regressors.
-    masker
+    masker : :obj:`~nilearn.maskers.NiftiMasker` or \
+            :obj:`~nilearn.maskers.MultiNiftiMasker`, optional
+        Mask to be used on data.
+        This is necessary for :term:`TFCE`-based inference.
     E : :obj:`float`, optional
         Extent weight. Default is 0.5.
     H : :obj:`float`, optional
@@ -29,6 +32,7 @@ def _calculate_tfce(
     dh : 'auto' or :obj:`float`, optional
         Step size for TFCE calculation.
         If set to 'auto', use 100 steps, as is done in fslmaths.
+        A good alternative is 0.1 for z and t maps, as in [1]_.
         Default is 'auto'.
     two_sided : :obj:`bool`, optional
         Whether to perform two-sided thresholding or not.
@@ -66,6 +70,8 @@ def _calculate_tfce(
             step = max_score / 100
         else:
             step = dh
+
+        raise Exception(f"scores_3d: {np.unique(scores_3d)}, step:{step}, max_score:{max_score}")
 
         for score_thresh in np.arange(step, max_score + step, step):
             for sign in np.unique(np.sign(scores_3d)):
