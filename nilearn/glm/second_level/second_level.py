@@ -736,7 +736,7 @@ def non_parametric_inference(
         :footcite:t:`smith2009threshold`.
         Default=False.
 
-        .. versionadded:: 0.9.1
+        .. versionadded:: 0.9.2
 
     Returns
     -------
