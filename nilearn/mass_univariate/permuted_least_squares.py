@@ -188,7 +188,7 @@ def _permuted_ols_on_chunk(
 
     intercept_test : boolean, optional
         Change the permutation scheme (swap signs for intercept,
-        switch labels otherwise). See [1]_.
+        switch labels otherwise). See :footcite:`Fisher1935`.
         Default=True.
 
     two_sided_test : boolean, optional
@@ -213,7 +213,7 @@ def _permuted_ols_on_chunk(
 
     References
     ----------
-    .. [1] Fisher, R. A. (1935). The design of experiments.
+    .. footbibliography::
 
     """
     # initialize the seed of the random generator
@@ -296,13 +296,13 @@ def permuted_ols(
     Ordinary Least Squares criterion.
     Confounding variates may be included in the model.
     Permutation testing is used to assess the significance of the relationship
-    between the tested variates and the target variates [1]_, [2]_.
+    between the tested variates and the target variates :footcite:`Anderson2001`, :footcite:`Winkler2014`.
     A max-type procedure is used to obtain family-wise corrected p-values.
 
     The specific permutation scheme implemented here is the one of
-    [3]_. Its has been demonstrated in [1]_ that this
+    :footcite:`Freedman1983`. Its has been demonstrated in :footcite:`Anderson2001` that this
     scheme conveys more sensitivity than alternative schemes. This holds
-    for neuroimaging applications, as discussed in details in [2]_.
+    for neuroimaging applications, as discussed in details in :footcite:`Winkler2014`.
 
     Permutations are performed on parallel computing units. Each of them
     performs a fraction of permutations on the whole dataset. Thus, the max
@@ -379,15 +379,7 @@ def permuted_ols(
 
     References
     ----------
-    .. [1] Anderson, M. J. & Robinson, J. (2001). Permutation tests for
-       linear models. Australian & New Zealand Journal of Statistics, 43(1),
-       75-88.
-
-    .. [2] Winkler, A. M. et al. (2014). Permutation inference for the general
-       linear model. Neuroimage.
-
-    .. [3] Freedman, D. & Lane, D. (1983). A nonstochastic interpretation of
-       reported significance levels. J. Bus. Econ. Stats., 1(4), 292-298
+    .. footbibliography::
 
     """
     # initialize the seed of the random generator
