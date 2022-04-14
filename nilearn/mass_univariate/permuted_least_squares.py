@@ -501,6 +501,13 @@ def permuted_ols(
         h0_max_t      (n_regressors, Distribution of the max t-statistic under
                       n_perm)        the null hypothesis (obtained from the
                                      permutations). Array is sorted.
+        tfce          (n_regressors, TFCE values associated with the
+                      n_descriptors) significance test of the n_regressors
+                                     explanatory variates against the
+                                     n_descriptors target variates.
+                                     The ranks of the scores into the h0
+                                     distribution correspond to the TFCE
+                                     p-values.
         logp_max_tfce (n_regressors, Negative log10 p-values associated with
                       n_descriptors) the significance test of the n_regressors
                                      explanatory variates against the
@@ -665,7 +672,15 @@ def permuted_ols(
         if two_sided_test:
             scores_original_data = (scores_original_data
                                     * sign_scores_original_data)
-        return np.asarray([]), scores_original_data.T, np.asarray([])
+
+        if output_type == "legacy":
+            return np.asarray([]), scores_original_data.T, np.asarray([])
+        else:
+            out = {"t": scores_original_data.T}
+            if tfce:
+                out["tfce"] = tfce_original_data.T
+
+            return out
 
     # actual permutations, seeded from a random integer between 0 and maximum
     # value represented by np.int32 (to have a large entropy).
@@ -725,11 +740,12 @@ def permuted_ols(
 
     elif output_type == 'dict':
         outputs = {
-            't': scores_original_data,
+            't': scores_original_data.T,
             'logp_max_t': -np.log10(pvals),
             'h0_max_t': h0_fmax,
         }
         if tfce:
+            outputs['tfce'] = tfce_original_data.T
             outputs['logp_max_tfce'] = neg_log10_tfce_pvals
             outputs['h0_max_tfce'] = h0_tfcemax
 
