@@ -108,7 +108,7 @@ def load_niimg(niimg, dtype=None):
     -----------
 
     niimg: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
         Image to load.
 
     dtype: {dtype, "auto"}
@@ -152,7 +152,7 @@ def _is_binary_niimg(niimg):
     Parameters
     ----------
     niimg: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
         Image to test.
 
     Returns

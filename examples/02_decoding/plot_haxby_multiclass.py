@@ -5,6 +5,8 @@ The haxby dataset: different multi-class strategies
 We compare one vs all and one vs one multi-class strategies: the overall
 cross-validated accuracy and the confusion matrix.
 
+.. include:: ../../../examples/masker_note.rst
+
 """
 
 ##############################################################################

@@ -792,7 +792,7 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
     # Define array for 6-connectivity, aka NN1 or "faces"
     bin_struct = ndimage.generate_binary_structure(3, 1)
 
-    for sign in np.sign(arr):
+    for sign in np.unique(np.sign(arr)):
         # Binarize using one-sided cluster-defining threshold
         binarized = ((arr * sign) > 0).astype(int)
 

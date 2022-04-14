@@ -135,6 +135,8 @@ The :class:`NiftiMasker` can be seen as a *tube* that transforms data
 from 4D images to 2D arrays, but first it needs to 'fit' this data in
 order to learn simple parameters from it, such as its shape:
 
+.. include:: ../../examples/masker_note.rst
+
 .. code-block:: python
 
     # We first create a masker, giving it the options that we care

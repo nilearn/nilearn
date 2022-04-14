@@ -11,6 +11,9 @@ discriminate children from adults. In general, the tangent space embedding
 **outperforms** the standard correlations: see `Dadi et al 2019
 <https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
 for a careful study.
+
+.. include:: ../../../examples/masker_note.rst
+
 """
 
 ###############################################################################
