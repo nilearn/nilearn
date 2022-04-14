@@ -22,6 +22,8 @@ Mean correlation matrix is displayed on glass brain on extracted coordinates.
 
 # author: Amadeus Kanaan
 
+.. include:: ../../../examples/masker_note.rst
+
 """
 
 ####################################################################

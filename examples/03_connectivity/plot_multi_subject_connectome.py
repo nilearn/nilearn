@@ -5,6 +5,8 @@ Group Sparse inverse covariance for multi-subject connectome
 This example shows how to estimate a connectome on a group of subjects
 using the group sparse inverse covariance estimate.
 
+.. include:: ../../../examples/masker_note.rst
+
 """
 import numpy as np
 

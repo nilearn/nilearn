@@ -11,6 +11,8 @@ three different masks: the full ventral stream (mask_vt), the house
 selective areas (mask_house) and the face selective areas (mask_face),
 that have been defined via a standard GLM-based analysis.
 
+.. include:: ../../../examples/masker_note.rst
+
 """
 
 ##########################################################################

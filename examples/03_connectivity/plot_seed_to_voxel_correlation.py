@@ -2,8 +2,8 @@
 Producing single subject maps of seed-to-voxel correlation
 ==========================================================
 
-This example shows how to produce seed-to-voxel correlation maps for a single
-subject based on movie-watching fMRI scans.
+This example shows how to produce seed-to-:term:`voxel` correlation maps
+for a single subject based on movie-watching :term:`fMRI` scans.
 These maps depict the temporal correlation of a **seed region** with the
 **rest of the brain**.
 
@@ -13,6 +13,9 @@ numpy array, corresponding to the data inside the mask.
 
 See also :ref:`for a similar example using cortical surface input data
 <sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py>`.
+
+.. include:: ../../../examples/masker_note.rst
+
 """
 
 # author: Franz Liem

@@ -52,6 +52,9 @@ series.
     intervals), :footcite:t:`abdulrahman2016effect` finds, in simulations,
     that LSA performs better than LSS when trial variability is greater
     than scan noise, even in fast designs.
+
+.. include:: ../../../examples/masker_note.rst
+
 """
 # sphinx_gallery_thumbnail_number = -2
 import matplotlib.pyplot as plt

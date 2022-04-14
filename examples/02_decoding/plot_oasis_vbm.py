@@ -40,6 +40,8 @@ much clearer view of the important regions.
 
 ____
 
+.. include:: ../../../examples/masker_note.rst
+
 """
 # Authors: Elvis Dhomatob, <elvis.dohmatob@inria.fr>, Apr. 2014
 #          Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
