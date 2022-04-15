@@ -200,7 +200,7 @@ def _permuted_ols_on_chunk(
 
     intercept_test : boolean, optional
         Change the permutation scheme (swap signs for intercept,
-        switch labels otherwise). See [1]_.
+        switch labels otherwise). See :footcite:`Fisher1935`.
         Default=True.
 
     two_sided_test : boolean, optional
@@ -241,7 +241,7 @@ def _permuted_ols_on_chunk(
 
     References
     ----------
-    .. [1] Fisher, R. A. (1935). The design of experiments.
+    .. footbibliography::
 
     .. [2] Smith, S. M., & Nichols, T. E. (2009).
        Threshold-free cluster enhancement: addressing problems of smoothing,
@@ -355,16 +355,15 @@ def permuted_ols(
     Confounding variates may be included in the model.
     Permutation testing is used to assess the significance of the relationship
     between the tested variates and the target variates
-    :footcite:p:`anderson2001permutation`,
-    :footcite:p:`winkler2014permutation`.
+    :footcite:p:`Anderson2001`, :footcite:p:`Winkler2014`.
     A max-type procedure is used to obtain family-wise corrected p-values.
 
     The specific permutation scheme implemented here is the one of
-    :footcite:t:`freedman1983nonstochastic`.
-    Its has been demonstrated in :footcite:t:`anderson2001permutation` that
+    :footcite:t:`Freedman1983`.
+    Its has been demonstrated in :footcite:t:`Anderson2001` that
     this scheme conveys more sensitivity than alternative schemes. This holds
     for neuroimaging applications, as discussed in details in
-    :footcite:t:`winkler2014permutation`.
+    :footcite:t:`Winkler2014`.
 
     Permutations are performed on parallel computing units. Each of them
     performs a fraction of permutations on the whole dataset. Thus, the max
