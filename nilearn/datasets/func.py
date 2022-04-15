@@ -1837,6 +1837,8 @@ def fetch_openneuro_dataset_index(
 def fetch_ds000030_urls(data_dir=None, verbose=1):
     """Fetch URLs for files from the ds000030 :term:`BIDS` dataset.
 
+    .. versionadded:: 0.9.2
+
     This dataset is version 1.0.4 of the "UCLA Consortium for
     Neuropsychiatric Phenomics LA5c" dataset
     :footcite:p:`poldrack_phenome-wide_2016`.
