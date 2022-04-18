@@ -294,7 +294,6 @@ def _permuted_ols_on_chunk(
         )
 
         if threshold is not None:
-            # TODO: Eliminate need for transpose
             arr4d = masker.inverse_transform(perm_scores.T).get_fdata()
             (
                 h0_csfwe_part[:, i_perm],
@@ -787,7 +786,6 @@ def permuted_ols(
         size_arr = np.zeros_like(vfwe_pvals).astype(int)
         mass_arr = np.zeros_like(vfwe_pvals)
 
-        # TODO: Eliminate need to transpose
         scores_original_data_4d = masker.inverse_transform(
             scores_original_data.T
         ).get_fdata()
