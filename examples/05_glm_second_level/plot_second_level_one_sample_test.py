@@ -152,7 +152,12 @@ out_dict = non_parametric_inference(
 # This threshold is much more conservative than an uncorrected threshold, but
 # is still more liberal than a typical corrected threshold for this kind of
 # analysis, which tends to be ~0.05.
-threshold = 1  # p<0.1
+#
+# We will also cap the negative log10 p-values at 2.7, because this is the
+# maximum observable value for the nonparametric tests, which were run with
+# only 500 permutations.
+threshold = 1  # p < 0.1
+vmax = 2.7  # ~= -np.log10(1 / 500)
 
 cut_coords = [0]
 
@@ -177,7 +182,7 @@ for i_row in range(2):
         plotting.plot_glass_brain(
             IMAGES[img_counter],
             colorbar=True,
-            vmax=3,
+            vmax=vmax,
             display_mode='z',
             plot_abs=False,
             cut_coords=cut_coords,
