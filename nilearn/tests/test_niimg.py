@@ -55,7 +55,7 @@ def test_img_data_dtype():
     # Ignoring complex, binary, 128+ bit, RGBA
     nifti1_dtypes = (
         np.uint8, np.uint16, np.uint32, np.uint64,
-        np.int8, np.int16, np.int32, np.int64,
+        np.int8, np.int16, np.int32,
         np.float32, np.float64)
     dtype_matches = []
     with InTemporaryDirectory():

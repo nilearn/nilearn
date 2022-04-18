@@ -297,7 +297,7 @@ def test_unmask():
     rng = np.random.RandomState(42)
     data4D = rng.uniform(size=shape)
     data3D = data4D[..., 0]
-    mask = rng.randint(2, size=shape[:3])
+    mask = rng.randint(2, size=shape[:3], dtype=np.int32)
     mask_img = Nifti1Image(mask, np.eye(4))
     mask = mask.astype(bool)
 
@@ -363,7 +363,7 @@ def test_intersect_masks_filename():
     # Create dummy masks
     mask_a = np.zeros((4, 4, 1), dtype=bool)
     mask_a[2:4, 2:4] = 1
-    mask_a_img = Nifti1Image(mask_a.astype(int), np.eye(4))
+    mask_a_img = Nifti1Image(mask_a.astype(np.int32), np.eye(4))
 
     # +---+---+---+---+
     # |   |   |   |   |
@@ -377,7 +377,7 @@ def test_intersect_masks_filename():
 
     mask_b = np.zeros((4, 4, 1), dtype=bool)
     mask_b[1:3, 1:3] = 1
-    mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4))
+    mask_b_img = Nifti1Image(mask_b.astype(np.int32), np.eye(4))
 
     # +---+---+---+---+
     # |   |   |   |   |
