@@ -28,7 +28,7 @@ Note that more power would be obtained from using a larger sample of subjects.
 
 n_subjects = 100  # more subjects requires more memory
 
-############################################################################
+###############################################################################
 # Load Oasis dataset
 # ------------------
 
@@ -60,7 +60,7 @@ from nilearn.image import resample_to_img
 mask_img = resample_to_img(
     gm_mask, gray_matter_map_filenames[0], interpolation='nearest')
 
-#############################################################################
+###############################################################################
 # Analyse data
 # ------------
 #
@@ -72,7 +72,7 @@ intercept = np.ones(n_subjects)
 design_matrix = pd.DataFrame(np.vstack((age, sex, intercept)).T,
                              columns=['age', 'sex', 'intercept'])
 
-#############################################################################
+###############################################################################
 # Let's plot the design matrix.
 from nilearn.plotting import plot_design_matrix
 
@@ -80,7 +80,7 @@ ax = plot_design_matrix(design_matrix)
 ax.set_title('Second level design matrix', fontsize=12)
 ax.set_ylabel('maps')
 
-##########################################################################
+###############################################################################
 # Next, we specify and fit the second-level model when loading the data and
 # also smooth a little bit to improve statistical behavior.
 
@@ -89,7 +89,7 @@ second_level_model = SecondLevelModel(smoothing_fwhm=2.0, mask_img=mask_img)
 second_level_model.fit(gray_matter_map_filenames,
                        design_matrix=design_matrix)
 
-##########################################################################
+###############################################################################
 # Estimating the contrast is very simple. We can just provide the column
 # name of the design matrix.
 z_map = second_level_model.compute_contrast(second_level_contrast=[1, 0, 0],
@@ -109,7 +109,7 @@ display = plotting.plot_stat_map(
     title='age effect on grey matter density (FDR = .05)')
 plotting.show()
 
-###########################################################################
+###############################################################################
 # We can also study the effect of sex by computing the contrast, thresholding
 # it and plot the resulting map.
 
@@ -121,11 +121,11 @@ plotting.plot_stat_map(
     z_map, threshold=threshold, colorbar=True,
     title='sex effect on grey matter density (FDR = .05)')
 
-###########################################################################
+###############################################################################
 # Note that there does not seem to be any significant effect of sex on
 # grey matter density on that dataset.
 
-###########################################################################
+###############################################################################
 # Generating a report
 # -------------------
 # It can be useful to quickly generate a
@@ -141,7 +141,7 @@ report = make_glm_report(model=second_level_model,
                          bg_img=icbm152_2009['t1'],
                          )
 
-#########################################################################
+###############################################################################
 # We have several ways to access the report:
 
 # report  # This report can be viewed in a notebook
