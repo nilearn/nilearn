@@ -188,6 +188,7 @@ with the tools we use for development and deployment.
 |                    |               | - No new dependency                                 |
 |                    |               | - Backward compatibility                            |
 |                    |               | - All internal imports are absolute, not relative   |
+|                    |               | - version[added|changed] directives in docstring    |
 +--------------------+---------------+-----------------------------------------------------+
 |                    |               | - Test type is adapted to function behavior         |
 |                    |               | - Tests pass continuous integration                 |
