@@ -190,6 +190,7 @@ with the tools we use for development and deployment.
 |                    |               | - All internal imports are absolute, not relative   |
 |                    |               | - Impacted docstrings have versionadded and/or      |
 |                    |               |   versionchanged directives as needed.              |
+|                    |               |   These should use the current dev version.         |
 +--------------------+---------------+-----------------------------------------------------+
 |                    |               | - Test type is adapted to function behavior         |
 |                    |               | - Tests pass continuous integration                 |
