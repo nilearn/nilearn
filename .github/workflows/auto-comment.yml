@@ -23,6 +23,8 @@ jobs:
 
             - [ ] PR links to Github issue with mention "Closes #XXXX"
 
+            - [ ] A new changelog entry has been added to `doc/changes/latest.rst`
+
             - [ ] Code is PEP8-compliant.
 
             - [ ] (Bug fixes) There is at least one test that would fail
