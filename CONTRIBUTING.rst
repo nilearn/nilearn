@@ -235,16 +235,20 @@ Coding Style
 -------------
 
 Nilearn codebase follow PEP8_ styling.
-The main conventions we enforce are : line length < 80, spaces around operators,
-meaningful variable names, function names are underscore separated
-(e.g., ``a_nice_function``) and as short as possible,
-public functions exposed in their parent module's init file,
-private function names preceded with a "_" and very explicit,
-classes in CamelCase, 2 empty lines between functions or classes.
+The main conventions we enforce are :
+
+- line length < 80
+- spaces around operators
+- meaningful variable names
+- function names are underscore separated (e.g., ``a_nice_function``) and as short as possible
+- public functions exposed in their parent module's init file
+- private function names preceded with a "_" and very explicit
+- classes in CamelCase
+- 2 empty lines between functions or classes
+
 Each function and class must come with a “docstring” at the top of the function
 code, using numpydoc_ formatting.
 They must summarize what the function does and document every parameter.
-
 
 Tests
 ------
