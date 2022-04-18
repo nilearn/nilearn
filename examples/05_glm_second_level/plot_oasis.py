@@ -95,8 +95,8 @@ second_level_model.fit(gray_matter_map_filenames,
 z_map = second_level_model.compute_contrast(second_level_contrast=[1, 0, 0],
                                             output_type='z_score')
 
-###########################################################################
-# We threshold the second level contrast at uncorrected p < 0.001 and plot it.
+###############################################################################
+# We threshold the second level contrast at FDR-corrected p < 0.05 and plot it.
 from nilearn import plotting
 from nilearn.glm import threshold_stats_img
 _, threshold = threshold_stats_img(
