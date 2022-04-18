@@ -264,6 +264,7 @@ def _permuted_ols_on_chunk(
     if threshold is not None:
         h0_csfwe_part = np.empty((n_regressors, n_perm_chunk))
         h0_cmfwe_part = np.empty((n_regressors, n_perm_chunk))
+        bin_struct = ndimage.generate_binary_structure(3, 1)
     else:
         h0_csfwe_part, h0_cmfwe_part = None, None
 
@@ -295,7 +296,6 @@ def _permuted_ols_on_chunk(
         if threshold is not None:
             # TODO: Eliminate need for transpose
             arr4d = masker.inverse_transform(perm_scores.T).get_fdata()
-            bin_struct = ndimage.generate_binary_structure(3, 1)
             (
                 h0_csfwe_part[:, i_perm],
                 h0_cmfwe_part[:, i_perm],
