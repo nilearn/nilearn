@@ -29,7 +29,7 @@ from nilearn.datasets import fetch_localizer_contrasts
 
 n_subjects = 16
 data = fetch_localizer_contrasts(
-    ["left vs right button press"],
+    ['left vs right button press'],
     n_subjects,
     get_tmaps=True,
     legacy_format=False,
@@ -116,7 +116,7 @@ p_val = second_level_model.compute_contrast(output_type='p_value')
 n_voxels = np.sum(get_data(second_level_model.masker_.mask_img_))
 # Correcting the p-values for multiple testing and taking negative logarithm
 neg_log_pval = math_img(
-    "-np.log10(np.minimum(1, img * {}))".format(str(n_voxels)),
+    '-np.log10(np.minimum(1, img * {}))'.format(str(n_voxels)),
     img=p_val,
 )
 
@@ -168,10 +168,10 @@ IMAGES = [
     out_dict['logp_max_mass'],
 ]
 TITLES = [
-    "Parametric Test",
-    "Permutation Test\n(Voxel-Level Error Control)",
-    "Permutation Test\n(Cluster-Size Error Control)",
-    "Permutation Test\n(Cluster-Mass Error Control)",
+    'Parametric Test',
+    'Permutation Test\n(Voxel-Level Error Control)',
+    'Permutation Test\n(Cluster-Size Error Control)',
+    'Permutation Test\n(Cluster-Mass Error Control)',
 ]
 
 fig, axes = plt.subplots(figsize=(8, 8), nrows=2, ncols=2)
@@ -193,7 +193,7 @@ for i_row in range(2):
         ax.set_title(TITLES[img_counter])
         img_counter += 1
 
-fig.suptitle("Group left-right button press\n(negative log10 p-values)")
+fig.suptitle('Group left-right button press\n(negative log10 p-values)')
 
 # The nonparametric test yields many more discoveries and is more powerful than
 # the usual parametric procedure.
