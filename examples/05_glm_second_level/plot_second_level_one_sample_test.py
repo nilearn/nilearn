@@ -121,16 +121,6 @@ neg_log_pval = math_img(
 )
 
 ###############################################################################
-# Let us plot the (corrected) negative log p-values for the parametric test.
-cut_coords = [0]
-# Since we are plotting negative log p-values and using a threshold equal to 1,
-# it corresponds to corrected p-values lower than 10%, meaning that there is
-# less than 10% probability to make a single false discovery (90% chance that
-# we make no false discovery at all).  This threshold is much more conservative
-# than the previous one.
-threshold = 1
-
-###############################################################################
 # Now, we compute the (corrected) p-values with a permutation test.
 #
 # .. important::
@@ -154,7 +144,18 @@ out_dict = non_parametric_inference(
 )
 
 ###############################################################################
-# Let us plot the (corrected) negative log p-values for the nonparametric test.
+# Let us plot the (corrected) negative log p-values for the both tests.
+#
+# We will use a negative log10 p threshold of 1, which corresponds to p<0.1.
+# This threshold indicates that there is less than 10% probability to make a
+# single false discovery (90% chance that we make no false discovery at all).
+# This threshold is much more conservative than an uncorrected threshold, but
+# is still more liberal than a typical corrected threshold for this kind of
+# analysis, which tends to be ~0.05.
+threshold = 1  # p<0.1
+
+cut_coords = [0]
+
 IMAGES = [
     neg_log_pval,
     out_dict['logp_max_t'],
@@ -189,7 +190,10 @@ for i_row in range(2):
 
 fig.suptitle("Group left-right button press\n(negative log10 p-values)")
 
-# The neg-log p-values obtained with nonparametric testing are capped at 3
-# since the number of permutations is 1e3.
 # The nonparametric test yields many more discoveries and is more powerful than
 # the usual parametric procedure.
+# Even within the nonparametric test, the different correction metrics produce
+# different results.
+# The voxel-level correction is more conservative than the cluster-size or
+# cluster-mass corrections, which are very similar to one another.
+plt.show()
