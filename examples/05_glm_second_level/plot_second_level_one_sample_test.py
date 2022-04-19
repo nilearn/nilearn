@@ -153,11 +153,11 @@ out_dict = non_parametric_inference(
 # is still more liberal than a typical corrected threshold for this kind of
 # analysis, which tends to be ~0.05.
 #
-# We will also cap the negative log10 p-values at 2.7, because this is the
+# We will also cap the negative log10 p-values at 2.69, because this is the
 # maximum observable value for the nonparametric tests, which were run with
 # only 500 permutations.
 threshold = 1  # p < 0.1
-vmax = 2.7  # ~= -np.log10(1 / 500)
+vmax = 2.69  # ~= -np.log10(1 / 500)
 
 cut_coords = [0]
 
