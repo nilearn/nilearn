@@ -825,7 +825,7 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
 
     """
     available_meshes = [
-        "fsaverage3", "fsaverage4", "fsaverage5", "fsaverage5_sphere",
+        "fsaverage3", "fsaverage4", "fsaverage5",
         "fsaverage6", "fsaverage7", "fsaverage",
     ]
 
@@ -844,14 +844,6 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
 
         return _fetch_surf_fsaverage(mesh, data_dir=data_dir)
     elif mesh == "fsaverage5":
-        return _fetch_surf_fsaverage5()
-    elif mesh == "fsaverage5_sphere":
-        warnings.warn(
-            "mesh='fsaverage5_sphere' has been deprecated "
-            "and will be removed in v0.9.0.\n"
-            "fsaverage5 sphere coordinates can now be accessed through "
-            "attributes sphere_{left, right} using mesh='fsaverage5'"
-        )
         return _fetch_surf_fsaverage5()
     else:
         raise ValueError(
