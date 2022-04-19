@@ -124,14 +124,6 @@ class OLSModel(object):
         self.df_residuals = self.df_total - self.df_model
 
     @auto_attr
-    @_deprecation_warning('df_resid',
-                          'df_residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def df_resid(self):
-        return self.df_residuals
-
-    @auto_attr
     @_deprecation_warning('wdesign',
                           'whitened_design',
                           '0.7.0',
@@ -497,14 +489,6 @@ class SimpleRegressionResults(LikelihoodModelResults):
         Residuals from the fit.
         """
         return Y - self.predicted
-
-    @auto_attr
-    @_deprecation_warning('df_resid',
-                          'df_residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def df_resid(self):
-        return self.df_residuals
 
     @_deprecation_warning('norm_resid',
                           'normalized_residuals',

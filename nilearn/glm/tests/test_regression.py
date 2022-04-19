@@ -82,11 +82,6 @@ def test_resid_rename_warnings_ols():
     results_ols = model.fit(Y)
 
     with pytest.warns(FutureWarning,
-                      match="'df_resid'"):
-        assert_array_equal(results_ols.df_resid,
-                           results_ols.df_residuals)
-
-    with pytest.warns(FutureWarning,
                       match="'resid'"):
         assert_array_equal(results_ols.resid,
                            results_ols.residuals)
@@ -110,11 +105,6 @@ def test_resid_rename_warnings_ols():
                       match="'wdesign'"):
         assert_array_equal(results_ols.wdesign,
                            results_ols.whitened_design)
-
-    with pytest.warns(FutureWarning,
-                      match="'df_resid'"):
-        assert_array_equal(model.df_resid,
-                           model.df_residuals)
 
     with pytest.warns(FutureWarning,
                       match="'wdesign'"):
