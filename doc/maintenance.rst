@@ -148,7 +148,7 @@ Prepare code for the release
 
 The repository should be checked and updated in preparation for the release.
 
-One thing that **must** be done before the release is made is to Update all versionchanged and versionadded directives from the current ``[x.y.z].dev`` tag to the new version number.
+One thing that **must** be done before the release is made is to update all versionchanged and versionadded directives from the current ``[x.y.z].dev`` tag to the new version number.
 
 Additionally, make sure all deprecations that are supposed to be removed with this new version have been addressed.
 If this new release comes with dependency version bumps (Python, Numpy...), make sure to implement and test these changes beforehand.
