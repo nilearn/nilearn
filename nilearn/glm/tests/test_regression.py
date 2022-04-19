@@ -101,16 +101,6 @@ def test_resid_rename_warnings_ols():
         assert_array_equal(results_ols.wY,
                            results_ols.whitened_Y)
 
-    with pytest.warns(FutureWarning,
-                      match="'wdesign'"):
-        assert_array_equal(results_ols.wdesign,
-                           results_ols.whitened_design)
-
-    with pytest.warns(FutureWarning,
-                      match="'wdesign'"):
-        assert_array_equal(model.wdesign,
-                           model.whitened_design)
-
 
 def test_resid_rename_warnings_ar():
     model = ARModel(design=X, rho=0.4)

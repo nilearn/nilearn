@@ -123,14 +123,6 @@ class OLSModel(object):
         self.df_model = matrix_rank(self.design, eps)
         self.df_residuals = self.df_total - self.df_model
 
-    @auto_attr
-    @_deprecation_warning('wdesign',
-                          'whitened_design',
-                          '0.7.0',
-                          '0.9.0')
-    def wdesign(self):
-        return self.whitened_design
-
     def logL(self, beta, Y, nuisance=None):
         r'''Returns the value of the loglikelihood function at beta.
 
@@ -342,14 +334,6 @@ class RegressionResults(LikelihoodModelResults):
         self.whitened_Y = whitened_Y
         self.whitened_residuals = whitened_residuals
         self.whitened_design = model.whitened_design
-
-    @auto_attr
-    @_deprecation_warning('wdesign',
-                          'whitened_design',
-                          '0.7.0',
-                          '0.9.0')
-    def wdesign(self):
-        return self.whitened_design
 
     @auto_attr
     @_deprecation_warning('wY',
