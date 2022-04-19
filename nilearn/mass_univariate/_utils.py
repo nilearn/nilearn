@@ -15,7 +15,9 @@ def _calculate_tfce(
 ):
     """Calculate threshold-free cluster enhancement values for scores maps.
 
-    The :term:`TFCE` calculation is implemented as described in [1]_.
+    The :term:`TFCE` calculation is mostly implemented as described in [1]_,
+    with minor modifications to produce similar results to fslmaths, as well
+    as to support two-sided testing.
 
     Parameters
     ----------
@@ -42,6 +44,18 @@ def _calculate_tfce(
     -------
     tfce_arr : :obj:`numpy.ndarray`, shape=(n_descriptors, n_regressors)
         :term:`TFCE` values.
+
+    Notes
+    -----
+    In [1]_, each threshold's partial TFCE score is multiplied by dh,
+    which makes directly comparing TFCE values across different thresholds
+    possible.
+    However, in fslmaths, this is not done.
+    In the interest of maximizing similarity between nilearn and established
+    tools, we chose to follow fslmaths' approach.
+
+    Additionally, we have modified the method to support two-sided testing.
+    In fslmaths, only positive clusters are considered.
 
     References
     ----------
@@ -96,6 +110,8 @@ def _calculate_tfce(
 
                 # Calculate each voxel's tfce value based on its cluster extent
                 # and z-value
+                # NOTE: We do not multiply by dh, based on fslmaths'
+                # implementation. This differs from the original paper.
                 tfce_step_values = (cluster_map**E) * (score_thresh**H)
                 tfce_4d[..., i_regressor] += sign * tfce_step_values
 
