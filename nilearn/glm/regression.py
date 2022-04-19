@@ -317,7 +317,7 @@ class RegressionResults(LikelihoodModelResults):
 
     """
     @rename_parameters(
-        {'wresid': 'whitened_residuals', 'wY': 'whitened_Y'},
+        {'wY': 'whitened_Y'},
         lib_name='Nilearn',
         end_version='0.9.0',
     )
@@ -334,22 +334,6 @@ class RegressionResults(LikelihoodModelResults):
         self.whitened_Y = whitened_Y
         self.whitened_residuals = whitened_residuals
         self.whitened_design = model.whitened_design
-
-    @auto_attr
-    @_deprecation_warning('wY',
-                          'whitened_Y',
-                          '0.7.0',
-                          '0.9.0')
-    def wY(self):
-        return self.whitened_Y
-
-    @auto_attr
-    @_deprecation_warning('wresid',
-                          'whitened_residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def wresid(self):
-        return self.whitened_residuals
 
     @auto_attr
     @_deprecation_warning('resid',

@@ -87,11 +87,6 @@ def test_resid_rename_warnings_ols():
                            results_ols.residuals)
 
     with pytest.warns(FutureWarning,
-                      match="'wresid'"):
-        assert_array_equal(results_ols.wresid,
-                           results_ols.whitened_residuals)
-
-    with pytest.warns(FutureWarning,
                       match="'norm_resid'"):
         assert_array_equal(results_ols.norm_resid,
                            results_ols.normalized_residuals)
@@ -107,5 +102,3 @@ def test_resid_rename_warnings_ar():
     results_ar = model.fit(Y)
     with pytest.warns(FutureWarning, match="'resid'"):
         assert_array_equal(results_ar.resid, results_ar.residuals)
-    with pytest.warns(FutureWarning, match="'wresid"):
-        assert_array_equal(results_ar.wresid, results_ar.whitened_residuals)
