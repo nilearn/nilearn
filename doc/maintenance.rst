@@ -143,7 +143,17 @@ This section describes how to make a new release of Nilearn. It is targeted to t
 
 We assume that we are in a clean state where all the Pull Requests (PR) that we wish to include in the new release have been merged.
 
-For example, make sure all deprecations that are supposed to be removed with this new version have been addressed. Furthermore, if this new release comes with dependency version bumps (Python, Numpy...), make sure to implement and test these changes beforehand. Ideally, these would have been done before such as to update the code base if necessary. Finally, make sure the documentation can be built correctly.
+Prepare code for the release
+----------------------------
+
+The repository should be checked and updated in preparation for the release.
+
+One thing that **must** be done before the release is made is to update all versionchanged and versionadded directives from the current ``[x.y.z].dev`` tag to the new version number.
+
+Additionally, make sure all deprecations that are supposed to be removed with this new version have been addressed.
+If this new release comes with dependency version bumps (Python, Numpy...), make sure to implement and test these changes beforehand.
+Ideally, these would have been done before such as to update the code base if necessary.
+Finally, make sure the documentation can be built correctly.
 
 Prepare the release
 -------------------

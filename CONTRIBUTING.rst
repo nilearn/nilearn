@@ -184,10 +184,13 @@ with the tools we use for development and deployment.
 |                    |               | - Variables, functions, arguments have clear names  |
 |                    |               | - Easy to read, PEP8_ compliant                     |
 |                    |               | - Public functions have docstring (numpydoc_ format)|
-|   `Coding Style`_  |    Any        | - Low redundancy                                    |
-|                    |               | - No new dependency                                 |
+|                    |               | - Low redundancy                                    |
+|   `Coding Style`_  |    Any        | - No new dependency                                 |
 |                    |               | - Backward compatibility                            |
 |                    |               | - All internal imports are absolute, not relative   |
+|                    |               | - Impacted docstrings have versionadded and/or      |
+|                    |               |   versionchanged directives as needed.              |
+|                    |               |   These should use the current dev version.         |
 +--------------------+---------------+-----------------------------------------------------+
 |                    |               | - Test type is adapted to function behavior         |
 |                    |               | - Tests pass continuous integration                 |
