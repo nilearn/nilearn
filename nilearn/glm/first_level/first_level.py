@@ -428,7 +428,7 @@ class FirstLevelModel(BaseGLM):
             and/or remove non-steady-state volumes.
             Default=None.
 
-            .. versionadded:: 0.9.1
+            .. versionadded:: 0.9.2.dev
 
         design_matrices : pandas DataFrame or \
                           list of pandas DataFrames, optional
