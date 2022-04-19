@@ -351,14 +351,6 @@ class RegressionResults(LikelihoodModelResults):
         return self.Y - self.predicted
 
     @auto_attr
-    @_deprecation_warning('norm_resid',
-                          'normalized_residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def norm_resid(self):
-        return self.normalized_residuals
-
-    @auto_attr
     def normalized_residuals(self):
         """Residuals, normalized to have unit length.
 
@@ -457,13 +449,6 @@ class SimpleRegressionResults(LikelihoodModelResults):
         Residuals from the fit.
         """
         return Y - self.predicted
-
-    @_deprecation_warning('norm_resid',
-                          'normalized_residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def norm_resid(self, Y):
-        return self.normalized_residuals(Y)
 
     def normalized_residuals(self, Y):
         """Residuals, normalized to have unit length.
