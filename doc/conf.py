@@ -345,8 +345,7 @@ sphinx_gallery_conf = {
         'repo': 'nilearn.github.io',
         'binderhub_url': 'https://mybinder.org',
         'branch': 'main',
-        'dependencies': ['../requirements-build-docs.txt',
-                         'binder/requirements.txt'],
+        'dependencies': ['binder/requirements.txt'],
         'notebooks_dir': 'examples'
     }
 }

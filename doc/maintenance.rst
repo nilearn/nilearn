@@ -142,6 +142,7 @@ How to make a release?
 This section describes how to make a new release of Nilearn. It is targeted to the specific case of Nilearn although it contains generic steps for packaging and distributing projects. More detailed information can be found on `packaging.python.org <https://packaging.python.org/guides/distributing-packages-using-setuptools/#id70>`_.
 
 We assume that we are in a clean state where all the Pull Requests (PR) that we wish to include in the new release have been merged.
+
 For example, make sure all deprecations that are supposed to be removed with this new version have been addressed. Furthermore, if this new release comes with dependency version bumps (Python, Numpy...), make sure to implement and test these changes beforehand. Ideally, these would have been done before such as to update the code base if necessary. Finally, make sure the documentation can be built correctly.
 
 Prepare the release
@@ -154,25 +155,45 @@ Switch to a new branch locally:
     git checkout -b REL-x.y.z
 
 
-First we need to prepare the release by updating the file `nilearn/doc/whats_new.rst` to make sure all the new features, enhancements, and bug fixes are included in their respective sections.
-We also need to write a "Highlights" section promoting the most important additions that come with this new release, and add the version tag just above the corresponding title:
+First we need to prepare the release by updating the file ``nilearn/doc/changes/latest.rst`` to make sure all the new features, enhancements, and bug fixes are included in their respective sections.
+
+We also need to write a "Highlights" section promoting the most important additions that come with this new release. Finally, we need to change the title from ``x.y.z.dev`` to ``x.y.z``:
 
 .. code-block:: RST
 
-    .. _vx.y.z:
+   .. currentmodule:: nilearn
 
-    x.y.z
-    =====
-    **Released MONTH YEAR**
+   .. include:: names.rst
 
-    HIGHLIGHTS
-    ----------
+   x.y.z
+   =====
+   
+   **Released MONTH YEAR**
 
-    - Nilearn now includes functionality A
-    - ...
+   HIGHLIGHTS
+   ----------
+
+   - Nilearn now includes functionality A
+   - ...
+
+Once we have made all the necessary changes to ``nilearn/doc/changes/latest.rst``, we should rename it into ``nilearn/doc/changes/x.y.z.rst``, where ``x.y.z`` is the corresponding version number.
+
+We then need to update ``nilearn/doc/changes/whats_new.rst`` and replace:
+
+.. code-block:: RST
+
+   .. _latest:
+   .. include:: latest.rst
+
+By:
+
+.. code-block:: RST
+
+   .. _vx.y.z:
+   .. include:: x.y.z.rst
 
 
-Next, we need to bump the version number of Nilearn by updating the file `nilearn/version.py` with the new version number, that is edit the line:
+Next, we need to bump the version number of Nilearn by updating the file ``nilearn/version.py`` with the new version number, that is edit the line:
 
 .. code-block:: python
 
@@ -186,7 +207,7 @@ to be:
     __version__ = x.y.z
 
 
-We also need to update the website news section by editing the file `nilearn/doc/themes/nilearn/layout.html`. The news section typically contains links to the last 3 releases that should look like:
+We also need to update the website news section by editing the file ``nilearn/doc/themes/nilearn/layout.html``. The news section typically contains links to the last 3 releases that should look like:
 
 .. code-block:: html
 
@@ -305,31 +326,39 @@ This will build the documentation (beware, this is time consuming...) and push i
 Post-release
 ------------
 
-At this point, the release has been made. We can now update the file `nilearn/version.py` and update the version number by increasing the patch number and appending `.dev`:
+At this point, the release has been made. We can now update the file ``nilearn/version.py`` and update the version number by increasing the patch number and appending `.dev`:
 
 .. code-block:: python
 
     __version__ = x.y.(z+1).dev
 
 
-We can also update the file `doc/whats_new.rst` by adding a title and the usual `New`, `Enhancements`, and `Bug Fixes` sections for the version currently under development:
+We also need to create a new file ``doc/changes/latest.rst`` with a title and the usual ``New``, ``Enhancements``, ``Bug Fixes``, and ``Changes`` sections for the version currently under development:
 
 .. code-block:: RST
 
-    x.y.z+1.dev
-    =========
+   .. currentmodule:: nilearn
 
-    NEW
-    ---
+   .. include:: names.rst
 
-    Fixes
-    -----
+   x.y.z+1.dev
+   =========
 
-    Enhancements
-    ------------
+   NEW
+   ---
 
-    .. _vx.y.z:
+   Fixes
+   -----
 
-    x.y.z
-    =====
-    ...
+   Enhancements
+   ------------
+
+   Changes
+   -------
+
+Finally, we need to include this new file in ``doc/changes/whats_new.rst``:
+
+.. code-block:: RST
+
+   .. _latest:
+   .. include:: latest.rst

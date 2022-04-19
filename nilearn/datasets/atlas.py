@@ -593,13 +593,13 @@ def _get_atlas_data_and_labels(atlas_source, atlas_name, symmetric_split=False,
     atlas_file = os.path.join(root, atlas_source,
                               '{}-{}.nii.gz'.format(atlas_source,
                                                     atlas_name))
-    atlas_img, label_file = _fetch_files(
+    atlas_file, label_file = _fetch_files(
         data_dir,
         [(atlas_file, url, opts),
          (label_file, url, opts)],
         resume=resume, verbose=verbose)
     # Reorder image to have positive affine diagonal
-    atlas_img = reorder_img(atlas_img)
+    atlas_img = reorder_img(atlas_file)
     names = {}
     from xml.etree import ElementTree
     names[0] = 'Background'
@@ -1093,32 +1093,43 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
                          'Please choose one among %s.' %
                          (version, str(versions)))
 
-    if url is None:
-        baseurl = "http://www.gin.cnrs.fr/AAL_files/aal_for_%s.tar.gz"
-        url = baseurl % version
+    dataset_name = "aal_" + version
     opts = {'uncompress': True}
 
-    dataset_name = "aal_" + version
-    # keys and basenames would need to be handled for each spm_version
-    # for now spm_version 12 is hardcoded.
-    basenames = ("AAL.nii", "AAL.xml")
-    filenames = [(os.path.join('aal', 'atlas', f), url, opts)
-                 for f in basenames]
+    if url is None:
+        if version == 'SPM12':
+            url = "http://www.gin.cnrs.fr/AAL_files/aal_for_SPM12.tar.gz"
+            basenames = ("AAL.nii", "AAL.xml")
+            filenames = [(os.path.join('aal', 'atlas', f), url, opts)
+                         for f in basenames]
+        else:
+            url = f"http://www.gin.cnrs.fr/wp-content/uploads/aal_for_{version}.zip"  # noqa
+            basenames = ("ROI_MNI_V4.nii", "ROI_MNI_V4.txt")
+            filenames = [(os.path.join(f'aal_for_{version}', f), url, opts)
+                         for f in basenames]
 
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
-    atlas_img, labels_file = _fetch_files(data_dir, filenames, resume=resume,
-                                          verbose=verbose)
-
-    fdescr = _get_dataset_descr(dataset_name)
-    # We return the labels contained in the xml file as a dictionary
-    xml_tree = xml.etree.ElementTree.parse(labels_file)
-    root = xml_tree.getroot()
+    data_dir = _get_dataset_dir(
+        dataset_name, data_dir=data_dir, verbose=verbose
+    )
+    atlas_img, labels_file = _fetch_files(
+        data_dir, filenames, resume=resume, verbose=verbose
+    )
+    fdescr = _get_dataset_descr("aal_SPM12")
     labels = []
     indices = []
-    for label in root.iter('label'):
-        indices.append(label.find('index').text)
-        labels.append(label.find('name').text)
+    if version == 'SPM12':
+        xml_tree = xml.etree.ElementTree.parse(labels_file)
+        root = xml_tree.getroot()
+        for label in root.iter('label'):
+            indices.append(label.find('index').text)
+            labels.append(label.find('name').text)
+    else:
+        with open(labels_file, "r") as fp:
+            for line in fp.readlines():
+                _, label, index = line.strip().split('\t')
+                indices.append(index)
+                labels.append(label)
+        fdescr = fdescr.replace("SPM 12", version)
 
     params = {'description': fdescr, 'maps': atlas_img,
               'labels': labels, 'indices': indices}

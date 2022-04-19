@@ -11,6 +11,8 @@ More specifically:
 3. A GLM is applied to the dataset (effect/covariance, then contrast estimation).
 4. The Default Mode Network is displayed.
 
+.. include:: ../../../examples/masker_note.rst
+
 """
 import numpy as np
 

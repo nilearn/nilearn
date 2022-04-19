@@ -194,4 +194,6 @@
 
 .. _Yaroslav Halchenko: https://github.com/yarikoptic
 
+.. _Yasmin Mzayek: https://github.com/ymzayek
+
 .. _Zvi Baratz: https://github.com/ZviBaratz

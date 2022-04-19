@@ -20,6 +20,9 @@ face and cat images.
     :local:
     :depth: 1
 
+
+.. include:: ../../../examples/masker_note.rst
+
 """
 
 ###########################################################################
