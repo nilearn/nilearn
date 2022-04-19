@@ -75,13 +75,3 @@ def test_AR_degenerate():
     model = ARModel(design=Xd, rho=0.9)
     results = model.fit(Y)
     assert results.df_residuals == 31
-
-
-def test_resid_rename_warnings_ols():
-    model = OLSModel(design=X)
-    results_ols = model.fit(Y)
-
-    with pytest.warns(FutureWarning,
-                      match="'wY'"):
-        assert_array_equal(results_ols.wY,
-                           results_ols.whitened_Y)

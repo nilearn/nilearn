@@ -316,11 +316,7 @@ class RegressionResults(LikelihoodModelResults):
     It may change in any future release of Nilearn.
 
     """
-    @rename_parameters(
-        {'wY': 'whitened_Y'},
-        lib_name='Nilearn',
-        end_version='0.9.0',
-    )
+
     def __init__(self, theta, Y, model, whitened_Y, whitened_residuals,
                  cov=None, dispersion=1., nuisance=None):
         """See LikelihoodModelResults constructor.
