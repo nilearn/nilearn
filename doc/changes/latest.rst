@@ -16,6 +16,8 @@ Fixes
 Enhancements
 ------------
 
+- Add `sample_masks` to :meth:`~glm.first_level.FirstLevelModel.fit` for censoring time points (:gh:`3193` by `Hao-Ting Wang`_).
+
 Changes
 -------
 
