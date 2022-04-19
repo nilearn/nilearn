@@ -336,14 +336,6 @@ class RegressionResults(LikelihoodModelResults):
         self.whitened_design = model.whitened_design
 
     @auto_attr
-    @_deprecation_warning('resid',
-                          'residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def resid(self):
-        return self.residuals
-
-    @auto_attr
     def residuals(self):
         """
         Residuals from the fit.
@@ -436,13 +428,6 @@ class SimpleRegressionResults(LikelihoodModelResults):
         The maximized log-likelihood
         """
         raise ValueError('can not use this method for simple results')
-
-    @_deprecation_warning('resid',
-                          'residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def resid(self, Y):
-        return self.residuals(Y)
 
     def residuals(self, Y):
         """

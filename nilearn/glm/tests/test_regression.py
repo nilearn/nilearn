@@ -82,18 +82,6 @@ def test_resid_rename_warnings_ols():
     results_ols = model.fit(Y)
 
     with pytest.warns(FutureWarning,
-                      match="'resid'"):
-        assert_array_equal(results_ols.resid,
-                           results_ols.residuals)
-
-    with pytest.warns(FutureWarning,
                       match="'wY'"):
         assert_array_equal(results_ols.wY,
                            results_ols.whitened_Y)
-
-
-def test_resid_rename_warnings_ar():
-    model = ARModel(design=X, rho=0.4)
-    results_ar = model.fit(Y)
-    with pytest.warns(FutureWarning, match="'resid'"):
-        assert_array_equal(results_ar.resid, results_ar.residuals)
