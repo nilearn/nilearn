@@ -163,8 +163,8 @@ def test_resampling_with_affine():
     """
     rng = np.random.RandomState(42)
 
-    data_4d = rng.randint(4, size=(1, 4, 4, 3), dtype=np.int32)
-    data_3d = rng.randint(4, size=(1, 4, 4), dtype=np.int32)
+    data_4d = rng.randint(4, size=(1, 4, 4, 3), dtype="int32")
+    data_3d = rng.randint(4, size=(1, 4, 4), dtype="int32")
 
     for data in [data_3d, data_4d]:
         for angle in (0, np.pi, np.pi / 2., np.pi / 4., np.pi / 3.):
@@ -223,7 +223,7 @@ def test_resampling_error_checks():
     shape = (3, 2, 5, 2)
     target_shape = (5, 3, 2)
     affine = np.eye(4)
-    data = rng.randint(0, 10, shape, dtype=np.int32)
+    data = rng.randint(0, 10, shape, dtype="int32")
     img = Nifti1Image(data, affine)
 
     # Correct parameters: no exception

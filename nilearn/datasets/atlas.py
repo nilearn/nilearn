@@ -1573,7 +1573,7 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
         if verbose:
             print(level_name)
         # level with most regions, ba, has 72 regions
-        level_data = np.zeros(atlas_img.shape, dtype=np.uint8)
+        level_data = np.zeros(atlas_img.shape, dtype="uint8")
         level_labels = {'*': 0}
         for region_nb, region_name in enumerate(old_level_labels):
             level_labels.setdefault(region_name, len(level_labels))
