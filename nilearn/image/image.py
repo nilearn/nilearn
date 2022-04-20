@@ -676,6 +676,33 @@ def iter_img(imgs):
     return check_niimg_4d(imgs, return_iterator=True)
 
 
+def _downcast_from_int64_if_possible(data):
+    """If `data` is 64-bit ints and can be converted to (signed) int 32,
+    return an int32 copy, otherwise return `data` itself."""
+    if data.dtype not in (np.int64, np.uint64):
+        return data
+    img_min, img_max = np.min(data), np.max(data)
+    type_info = np.iinfo(np.int32)
+    can_cast = type_info.min <= img_min and type_info.max >= img_max
+    if can_cast:
+        warnings.warn(
+            "Data array used to create a new image contains 64-bit ints. "
+            "This is likely due to creating the array with numpy and "
+            "passing `int` as the `dtype`. Many tools such as FSL and SPM "
+            "cannot deal with int64 in Nifti images, so for compatibility the "
+            "data has been converted to int32.",
+            stacklevel=3)
+        return data.astype("int32")
+    warnings.warn(
+        "Data array used to create a new image contains 64-bit ints, and "
+        "some values too large to store in 32-bit ints. The resulting image "
+        "thus contains 64-bit ints, which may cause some compatibility issues "
+        "with some other tools or an error when saving the image to a "
+        "Nifti file.",
+        stacklevel=3)
+    return data
+
+
 def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     """Create a new image of the same class as the reference image
 
@@ -728,12 +755,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         if isinstance(ref_niimg, nibabel.freesurfer.mghformat.MGHImage):
             default_dtype = np.uint8
         data = as_ndarray(data, dtype=default_dtype)
-    if data.dtype in (np.int64, np.uint64):
-        img_min, img_max = np.min(data), np.max(data)
-        type_info = np.iinfo(np.int32)
-        can_cast = type_info.min <= img_min and type_info.max >= img_max
-        if can_cast:
-            data = data.astype(np.int32)
+    data = _downcast_from_int64_if_possible(data)
     header = None
     if copy_header:
         header = copy.deepcopy(ref_niimg.header)
