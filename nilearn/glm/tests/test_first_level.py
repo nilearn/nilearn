@@ -826,7 +826,7 @@ def test_get_voxelwise_attributes_should_return_as_many_as_design_matrices(shape
     model.fit(fmri_data, design_matrices=design_matrices)
 
     # Check that length of outputs is the same as the number of design matrices
-    assert len(model._get_voxelwise_model_attribute("resid", True)) == \
+    assert len(model._get_voxelwise_model_attribute("residuals", True)) == \
            len(shapes)
 
 

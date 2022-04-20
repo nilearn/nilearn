@@ -567,8 +567,8 @@ class SecondLevelModel(BaseGLM):
         ----------
         attribute : str
             an attribute of a RegressionResults instance.
-            possible values include: 'resid', 'norm_resid', 'predicted',
-            SSE, r_square, MSE.
+            possible values include: 'residuals', 'normalized_residuals',
+            'predicted', SSE, r_square, MSE.
 
         result_as_time_series : bool
             whether the RegressionResult attribute has a value
