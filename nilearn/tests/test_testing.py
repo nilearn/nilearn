@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 import nibabel
 
-from nilearn import image
 from nilearn._utils.testing import with_memory_profiler
 from nilearn._utils.testing import assert_memory_less_than
 from nilearn._utils.data_gen import generate_fake_fmri
