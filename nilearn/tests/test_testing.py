@@ -2,7 +2,9 @@ import itertools
 
 import numpy as np
 import pytest
+import nibabel
 
+from nilearn import image
 from nilearn._utils.testing import with_memory_profiler
 from nilearn._utils.testing import assert_memory_less_than
 from nilearn._utils.data_gen import generate_fake_fmri
@@ -68,3 +70,14 @@ def test_generate_fake_fmri():
 
     pytest.raises(ValueError, generate_fake_fmri, length=10, n_blocks=10,
                   block_size=None, rand_gen=rand_gen)
+
+
+def test_int64_niftis(tmp_path):
+    data = np.ones((3, 3, 3), dtype=bool)
+    affine = np.eye(4)
+    for dtype in "uint8", "int32", "float32":
+        img = nibabel.Nifti1Image(data.astype(dtype), affine)
+        img.to_filename(tmp_path.joinpath("img.nii.gz"))
+    for dtype in "int64", "uint64":
+        with pytest.raises(AssertionError):
+            nibabel.Nifti1Image(data.astype(dtype), affine)

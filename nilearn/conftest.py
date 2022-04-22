@@ -1,4 +1,3 @@
-
 import numpy as np
 import nibabel
 import pytest
@@ -30,13 +29,26 @@ def pytest_configure(config):
 
 @pytest.fixture(autouse=True)
 def no_int64_nifti(monkeypatch):
-    to_filename = nibabel.Nifti1Image.to_filename
+    forbidden_types = (np.int64, np.uint64)
+    error_msg = ("Creating or saving an image "
+                 "containing 64-bit ints is forbidden.")
+
+    to_filename = nibabel.nifti1.Nifti1Image.to_filename
 
     def checked_to_filename(img, filename):
-        assert image.get_data(img).dtype != np.int64
+        assert image.get_data(img).dtype not in forbidden_types, error_msg
         return to_filename(img, filename)
 
-    monkeypatch.setattr("nibabel.Nifti1Image.to_filename", checked_to_filename)
+    monkeypatch.setattr("nibabel.nifti1.Nifti1Image.to_filename",
+                        checked_to_filename)
+
+    init = nibabel.nifti1.Nifti1Image.__init__
+
+    def checked_init(self, dataobj, *args, **kwargs):
+        assert dataobj.dtype not in forbidden_types, error_msg
+        return init(self, dataobj, *args, **kwargs)
+
+    monkeypatch.setattr("nibabel.nifti1.Nifti1Image.__init__", checked_init)
 
 
 @pytest.fixture(autouse=True)

@@ -202,7 +202,7 @@ def generate_labeled_regions_large(shape, n_regions, rand_gen=None,
     """
     if rand_gen is None:
         rand_gen = np.random.RandomState(0)
-    data = rand_gen.randint(n_regions + 1, size=shape)
+    data = rand_gen.randint(n_regions + 1, size=shape, dtype="int32")
     if len(np.unique(data)) != n_regions + 1:
         raise ValueError("Some labels are missing. Maybe shape is too small.")
     return Nifti1Image(data, affine)
