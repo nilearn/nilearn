@@ -18,7 +18,7 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
             A list of Nifti1Image(s).
 
         """
-        return self._get_voxelwise_model_attribute('resid',
+        return self._get_voxelwise_model_attribute('residuals',
                                                    result_as_time_series=True)
 
     @auto_attr

@@ -56,7 +56,7 @@ def test_model():
     # Check we get the same as R
     assert_array_almost_equal(RESULTS.theta, [1.773, 2.5], 3)
     percentile = np.percentile
-    pcts = percentile(RESULTS.resid, [0, 25, 50, 75, 100])
+    pcts = percentile(RESULTS.residuals, [0, 25, 50, 75, 100])
     assert_array_almost_equal(pcts, [-1.6970, -0.6667, 0, 0.6667, 1.6970], 4)
 
 
