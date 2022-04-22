@@ -862,13 +862,19 @@ def non_parametric_inference(
     )
 
     if threshold is not None:
+        # Original t-statistics
         t_img = masker.inverse_transform(np.ravel(outputs['t']))
+
+        # Cluster size-based p-values
         neg_log10_csfwe_pvals_img = masker.inverse_transform(
             np.ravel(outputs['logp_max_size']),
         )
+
+        # Cluster mass-based p-values
         neg_log10_cmfwe_pvals_img = masker.inverse_transform(
             np.ravel(outputs['logp_max_mass']),
         )
+
         out = {
             't': t_img,
             'logp_max_t': neg_log10_vfwe_pvals_img,

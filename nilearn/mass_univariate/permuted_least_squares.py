@@ -763,9 +763,9 @@ def permuted_ols(
     # reduce results
     (
         vfwe_scores_as_ranks_parts,
-        vfwe_h0_parts,
-        csfwe_h0_parts,
-        cmfwe_h0_parts,
+        vfwe_h0_parts,  # maximum t-value null distribution
+        csfwe_h0_parts,  # cluster size null distribution
+        cmfwe_h0_parts,  # cluster mass null distribution
     ) = zip(*ret)
 
     # Voxel-level FWE
@@ -794,7 +794,7 @@ def permuted_ols(
         for i_regressor in range(n_regressors):
             scores_original_data_3d = scores_original_data_4d[..., i_regressor]
 
-            # Label the clusters
+            # Label the clusters for both cluster mass and size inference
             labeled_arr3d, _ = ndimage.measurements.label(
                 scores_original_data_3d > threshold_t,
                 bin_struct,
