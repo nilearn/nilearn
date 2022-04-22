@@ -123,7 +123,7 @@ def test_connected_regions():
     assert not np.all(get_data(extraction_without_mask_img)[mask == 0] == 0.)
 
     # mask_img with different shape
-    mask = np.zeros(shape=(10, 11, 12), dtype=np.int)
+    mask = np.zeros(shape=(10, 11, 12), dtype="uint8")
     mask[1:-1, 1:-1, 1:-1] = 1
     affine = np.array([[2., 0., 0., 0.],
                        [0., 2., 0., 0.],

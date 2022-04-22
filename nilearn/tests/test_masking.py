@@ -265,7 +265,8 @@ def test_apply_mask():
         masking.apply_mask(data_img, mask_img_4d)
 
     # Check that 3D data is accepted
-    data_3d = Nifti1Image(np.arange(27).reshape((3, 3, 3)), np.eye(4))
+    data_3d = Nifti1Image(np.arange(27, dtype="int32").reshape((3, 3, 3)),
+                          np.eye(4))
     mask_data_3d = np.zeros((3, 3, 3))
     mask_data_3d[1, 1, 0] = True
     mask_data_3d[0, 1, 0] = True
@@ -404,7 +405,7 @@ def test_intersect_masks():
     # Create dummy masks
     mask_a = np.zeros((4, 4, 1), dtype=bool)
     mask_a[2:4, 2:4] = 1
-    mask_a_img = Nifti1Image(mask_a.astype(int), np.eye(4))
+    mask_a_img = Nifti1Image(mask_a.astype("int32"), np.eye(4))
 
     # +---+---+---+---+
     # |   |   |   |   |
@@ -418,7 +419,7 @@ def test_intersect_masks():
 
     mask_b = np.zeros((4, 4, 1), dtype=bool)
     mask_b[1:3, 1:3] = 1
-    mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4))
+    mask_b_img = Nifti1Image(mask_b.astype("int32"), np.eye(4))
 
     # +---+---+---+---+
     # |   |   |   |   |
@@ -433,7 +434,7 @@ def test_intersect_masks():
     mask_c = np.zeros((4, 4, 1), dtype=bool)
     mask_c[:, 2] = 1
     mask_c[0, 0] = 1
-    mask_c_img = Nifti1Image(mask_c.astype(int), np.eye(4))
+    mask_c_img = Nifti1Image(mask_c.astype("int32"), np.eye(4))
 
     # +---+---+---+---+
     # | X |   | X |   |
@@ -489,11 +490,11 @@ def test_compute_multi_epi_mask():
     # Same masks as test_intersect_masks
     mask_a = np.zeros((4, 4, 1), dtype=bool)
     mask_a[2:4, 2:4] = 1
-    mask_a_img = Nifti1Image(mask_a.astype(int), np.eye(4))
+    mask_a_img = Nifti1Image(mask_a.astype("uint8"), np.eye(4))
 
     mask_b = np.zeros((8, 8, 1), dtype=bool)
     mask_b[2:6, 2:6] = 1
-    mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4) / 2.)
+    mask_b_img = Nifti1Image(mask_b.astype("uint8"), np.eye(4) / 2.)
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", MaskWarning)

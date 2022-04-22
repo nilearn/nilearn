@@ -506,6 +506,7 @@ def test_new_img_like_non_iterable_header():
                         copy_header=True)
 
 
+@pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
 def test_new_img_like_int64():
     img = data_gen.generate_labeled_regions((3, 3, 3), 2)
     data = image.get_data(img).astype("int32")
@@ -571,7 +572,7 @@ def test_threshold_img_with_cluster_threshold():
     # First we create a statistical image with specific characteristics
     shape = (20, 20, 30)
     affine = np.eye(4)
-    data = np.zeros(shape, dtype=int)
+    data = np.zeros(shape, dtype="int32")
     data[:2, :2, :2] = 4  # 8-voxel positive cluster
     data[4:6, :2, :2] = -4  # 8-voxel negative cluster
     data[8:11, 0, 0] = 5  # 3-voxel positive cluster
