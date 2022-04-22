@@ -1577,8 +1577,8 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
         level_labels = {'*': 0}
         for region_nb, region_name in enumerate(old_level_labels):
             level_labels.setdefault(region_name, len(level_labels))
-            level_data[get_data(atlas_img) ==
-                       region_nb] = level_labels[region_name]
+            level_data[
+                get_data(atlas_img) == region_nb] = level_labels[region_name]
         new_img_like(atlas_img, level_data).to_filename(
             str(output_dir.joinpath(f"{level_name}.nii.gz")))
         # order the labels so that image values are indices in the list of
