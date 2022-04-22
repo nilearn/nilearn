@@ -130,6 +130,10 @@ neg_log_pval = math_img(
 #   the permutation procedure.
 #   Increasing the number of parallel jobs (``n_jobs``) can reduce the time
 #   cost.
+#
+# .. hint::
+#   If you wish to only run voxel-level correction, set ``threshold`` to None
+#   (the default).
 from nilearn.glm.second_level import non_parametric_inference
 
 out_dict = non_parametric_inference(
