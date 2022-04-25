@@ -29,6 +29,23 @@ def pytest_configure(config):
 
 @pytest.fixture(autouse=True)
 def no_int64_nifti(monkeypatch):
+    """Prevent creating or writing a Nift1Image containing 64-bit ints.
+
+    It is easy to create such images by mistake because Numpy uses int64 by
+    default, but tools like FSL fail to read them and Nibabel will refuse to
+    write them in the future.
+
+    For tests that do need to manipulate int64 images, it is always possible to
+    disable this fixture by parametrizing a test to override it:
+
+    @pytest.mark.parametrize("no_int64_nifti", [None])
+    def test_behavior_when_user_provides_int64_img():
+        # ...
+
+    But by default it is used automatically so that Nilearn doesn't create such
+    images by mistake.
+
+    """
     forbidden_types = (np.int64, np.uint64)
     error_msg = ("Creating or saving an image "
                  "containing 64-bit ints is forbidden.")
