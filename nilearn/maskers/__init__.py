@@ -12,5 +12,5 @@ from .nifti_spheres_masker import NiftiSpheresMasker
 
 
 __all__ = ['BaseMasker', 'NiftiMasker', 'MultiNiftiMasker',
-           'NiftiLabelsMasker', 'NiftiMapsMasker', 'MultiNiftiLabelsMasker',
+           'NiftiLabelsMasker', 'MultiNiftiLabelsMasker', 'NiftiMapsMasker',
            'NiftiSpheresMasker']
