@@ -2,7 +2,7 @@ import numpy as np
 from scipy import linalg
 import nibabel
 from numpy.testing import assert_array_almost_equal
-from nilearn.input_data import MultiNiftiMasker
+from nilearn.maskers import MultiNiftiMasker
 from nilearn.decomposition.base import BaseDecomposition, mask_and_reduce
 from nilearn.decomposition.base import fast_svd
 

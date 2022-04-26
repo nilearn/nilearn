@@ -23,7 +23,7 @@ where the samples could be different time points, and the features derived
 from different voxels (e.g., restrict analysis to the ventral visual stream),
 regions of interest (e.g., extract local signals from spheres/cubes), or
 pre-specified networks (e.g., look at data from all voxels of a set of
-network nodes). Think of masker objects as swiss-army knifes for shaping
+network nodes). Think of masker objects as swiss-army knives for shaping
 the raw neuroimaging data in 3D space into the units of observation
 relevant for the research questions at hand.
 
@@ -42,8 +42,8 @@ relevant for the research questions at hand.
 
 
 
-"masker" objects (found in modules :mod:`nilearn.input_data`)
-simplify these "data folding" steps that often preceed the
+"masker" objects (found in module :mod:`nilearn.maskers`)
+simplify these "data folding" steps that often precede the
 statistical analysis.
 
 Note that the masker objects may not cover all the image transformations
@@ -66,7 +66,7 @@ have to call :ref:`specific functions <preprocessing_functions>`
     data themselves (e.g., extracting time series from images).
 
 
-.. currentmodule:: nilearn.input_data
+.. currentmodule:: nilearn.maskers
 
 .. _nifti_masker:
 
@@ -165,14 +165,16 @@ The `mask_strategy` argument controls how the mask is computed:
 
 * `background`: detects a continuous background
 * `epi`: suitable for EPI images
-* `template`: uses an MNI grey-matter template
+* `whole-brain-template`: uses an MNI whole-brain template
+* `gm-template`: uses an MNI grey-matter template
+* `wm-template`: uses an MNI white-matter template
 
 Extra mask parameters: opening, cutoff...
 ..........................................
 
 The underlying function is :func:`nilearn.masking.compute_epi_mask`
 called using the `mask_args` argument of the :class:`NiftiMasker`.
-Controling these arguments set the fine aspects of the mask. See the
+Controlling these arguments set the fine aspects of the mask. See the
 functions documentation, or :doc:`the NiftiMasker example
 <../auto_examples/06_manipulating_images/plot_mask_computation>`.
 
@@ -189,20 +191,16 @@ Common data preparation steps: smoothing, filtering, resampling
 preparation::
 
    >>> import sklearn; sklearn.set_config(print_changed_only=False)
-   >>> from nilearn import input_data
-   >>> masker = input_data.NiftiMasker()
+   >>> from nilearn import maskers
+   >>> masker = maskers.NiftiMasker()
    >>> masker # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-   NiftiMasker(detrend=False, dtype=None, high_pass=None, low_pass=None,
-         mask_args=None, mask_img=None, mask_strategy='background',
-         memory=Memory(...), memory_level=1, reports=True,
-         sample_mask=None, sessions=None, smoothing_fwhm=None,
-         standardize=False, standardize_confounds=True, t_r=None, 
+   NiftiMasker(detrend=False, dtype=None, high_pass=None,
+         high_variance_confounds=False, low_pass=None, mask_args=None,
+         mask_img=None, mask_strategy='background',
+         memory=Memory(location=None), memory_level=1, reports=True,
+         runs=None, smoothing_fwhm=None, standardize=False,
+         standardize_confounds=True, t_r=None,
          target_affine=None, target_shape=None, verbose=0)
-
-.. note::
-
-    From scikit-learn 0.20, the argument `cachedir` is deprecated in
-    favour of `location`. Hence `cachedir` might not be seen as here.
 
 The meaning of each parameter is described in the documentation of
 :class:`NiftiMasker` (click on the name :class:`NiftiMasker`), here we
@@ -228,13 +226,14 @@ Smoothing
 
 :class:`NiftiMasker` can apply Gaussian spatial smoothing to the
 neuroimaging data, useful to fight noise or for inter-individual
-differences in neuroanatomy. It is achieved by specifying the full-width
-half maximum (FWHM; in millimeter scale) with the `smoothing_fwhm`
-parameter. Anisotropic filtering is also possible by passing 3 scalars
-``(x, y, z)``, the FWHM along the x, y, and z direction.
+differences in neuroanatomy. It is achieved by specifying the
+:term:`full-width half maximum<FWHM>` (:term:`FWHM`; in millimeter
+scale) with the `smoothing_fwhm` parameter. Anisotropic filtering
+is also possible by passing 3 scalars ``(x, y, z)``, the
+:term:`FWHM` along the x, y, and z direction.
 
-The underlying function handles properly non-cubic voxels by scaling the
-given widths appropriately.
+The underlying function handles properly non-cubic :term:`voxels<voxel>`
+by scaling the given widths appropriately.
 
 .. seealso::
 
@@ -269,7 +268,12 @@ properties, before conversion to voxel signals.
 
   * More complex confounds, measured during the acquision, can be removed
     by passing them to :meth:`NiftiMasker.transform`. If the dataset
-    provides a confounds file, just pass its path to the masker.
+    provides a confounds file, just pass its path to the masker. For
+    :term:`fMRIPrep` outputs, one can use
+    :func:`~nilearn.interfaces.fmriprep.load_confounds` or
+    :func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` to select
+    confound variables with some basic sanity check based on
+    :term:`fMRIPrep` documentation.
 
 .. topic:: **Exercise**
    :class: green
@@ -280,6 +284,12 @@ properties, before conversion to voxel signals.
    Try to enable detrending and run the script:
    does it have a big impact on the result?
 
+.. note::
+
+   Please see the usage example of
+   :func:`~nilearn.interfaces.fmriprep.load_confounds` and
+   :func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` in
+   :doc:`plot_signal_extraction.py <../auto_examples/03_connectivity/plot_signal_extraction>`.
 
 .. seealso::
 
@@ -389,7 +399,7 @@ some explanation. The voxels that correspond to the brain or a region
 of interest in an fMRI image do not fill the entire image.
 Consequently, in the labels image, there must be a label value that corresponds
 to "outside" the brain (for which no signal should be extracted).
-By default, this label is set to zero in nilearn (refered to as "background").
+By default, this label is set to zero in nilearn (referred to as "background").
 Should some non-zero value encoding be necessary, it is possible
 to change the background value with the `background_label` keyword.
 

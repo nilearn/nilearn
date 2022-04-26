@@ -46,14 +46,14 @@ print('First subject functional nifti images (4D) are at: %s' %
 # Visualizing the fmri volume
 # ............................
 #
-# One way to visualize a fmri volume is
+# One way to visualize a :term:`fmri<fMRI>` volume is
 # using :func:`nilearn.plotting.plot_epi`.
-# We will visualize the previously fetched fmri data from Haxby dataset.
+# We will visualize the previously fetched :term:`fmri<fMRI>` data from Haxby dataset.
 #
-# Because fmri data are 4D (they consist of many 3D EPI images), we cannot
+# Because :term:`fmri<fMRI>` data are 4D (they consist of many 3D EPI images), we cannot
 # plot them directly using :func:`nilearn.plotting.plot_epi` (which accepts
 # just 3D input). Here we are using :func:`nilearn.image.mean_img` to
-# extract a single 3D EPI image from the fmri data.
+# extract a single 3D EPI image from the :term:`fmri<fMRI>` data.
 #
 from nilearn import plotting
 from nilearn.image import mean_img
@@ -106,12 +106,12 @@ print(conditions)
 #
 # As we can see from the targets above, the experiment contains many
 # conditions. As a consequence, the data is quite big. Not all of this data
-# has an interest to us for decoding, so we will keep only fmri signals
+# has an interest to us for decoding, so we will keep only :term:`fmri<fMRI>` signals
 # corresponding to faces or cats. We create a mask of the samples belonging to
-# the condition; this mask is then applied to the fmri data to restrict the
+# the condition; this mask is then applied to the :term:`fmri<fMRI>` data to restrict the
 # classification to the face vs cat discrimination.
 #
-# The input data will become much smaller (i.e. fmri signal is shorter):
+# The input data will become much smaller (i.e. :term:`fmri<fMRI>` signal is shorter):
 condition_mask = conditions.isin(['face', 'cat'])
 
 ###########################################################################
@@ -250,7 +250,7 @@ print(decoder.cv_params_['face'])
 session_label = behavioral['chunks'][condition_mask]
 
 ###########################################################################
-# The fMRI data is acquired by sessions, and the noise is autocorrelated in a
+# The :term:`fMRI` data is acquired by sessions, and the noise is autocorrelated in a
 # given session. Hence, it is better to predict across sessions when doing
 # cross-validation. To leave a session out, pass the cross-validator object
 # to the cv parameter of decoder.

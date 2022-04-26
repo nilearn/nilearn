@@ -24,4 +24,3 @@ and networks, via resting-state networks or parcellations.
    resting_state_networks.rst
    region_extraction.rst
    parcellating.rst
-

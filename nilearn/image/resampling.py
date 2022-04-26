@@ -6,7 +6,7 @@ See http://nilearn.github.io/manipulating_images/input_output.html
 # License: simplified BSD
 
 import warnings
-from distutils.version import LooseVersion
+from nilearn.version import _compare_version
 import numbers
 
 import numpy as np
@@ -33,13 +33,13 @@ def to_matrix_vector(transform):
 
     Parameters
     ----------
-    transform: numpy.ndarray
+    transform : numpy.ndarray
         Homogeneous transform matrix. Example: a (4, 4) transform representing
         linear transformation and translation in 3 dimensions.
 
     Returns
     -------
-    matrix, vector: numpy.ndarray
+    matrix, vector : numpy.ndarray
         The matrix and vector components of the transform matrix.  For
         an (N, N) transform, matrix will be (N-1, N-1) and vector will be
         a 1D array of shape (N-1,).
@@ -47,8 +47,8 @@ def to_matrix_vector(transform):
     See Also
     --------
     from_matrix_vector
-    """
 
+    """
     ndimin = transform.shape[0] - 1
     ndimout = transform.shape[1] - 1
     matrix = transform[0:ndimin, 0:ndimout]
@@ -64,10 +64,10 @@ def from_matrix_vector(matrix, vector):
 
     Parameters
     ----------
-    matrix: numpy.ndarray
+    matrix : numpy.ndarray
         An (N, N) array representing the rotation matrix.
 
-    vector: numpy.ndarray
+    vector : numpy.ndarray
         A (1, N) array representing the translation.
 
     Returns
@@ -78,8 +78,8 @@ def from_matrix_vector(matrix, vector):
     See Also
     --------
     nilearn.resampling.to_matrix_vector
-    """
 
+    """
     nin, nout = matrix.shape
     t = np.zeros((nin + 1, nout + 1), matrix.dtype)
     t[0:nin, 0:nout] = matrix
@@ -95,22 +95,27 @@ def coord_transform(x, y, z, affine):
     Parameters
     ----------
     x : number or ndarray (any shape)
-        The x coordinates in the input space
+        The x coordinates in the input space.
+
     y : number or ndarray (same shape as x)
-        The y coordinates in the input space
+        The y coordinates in the input space.
+
     z : number or ndarray
-        The z coordinates in the input space
+        The z coordinates in the input space.
+
     affine : 2D 4x4 ndarray
-        affine that maps from input to output space.
+        Affine that maps from input to output space.
 
     Returns
     -------
     x : number or ndarray (same shape as input)
-        The x coordinates in the output space
+        The x coordinates in the output space.
+
     y : number or ndarray (same shape as input)
-        The y coordinates in the output space
+        The y coordinates in the output space.
+
     z : number or ndarray (same shape as input)
-        The z coordinates in the output space
+        The z coordinates in the output space.
 
     Warning: The x, y and z have their output space (e.g. MNI) coordinate
     ordering, not 3D numpy image ordering.
@@ -125,7 +130,7 @@ def coord_transform(x, y, z, affine):
         >>> niimg = datasets.load_mni152_template()
         >>> # Find the MNI coordinates of the voxel (50, 50, 50)
         >>> image.coord_transform(50, 50, 50, niimg.affine)
-        (-10.0, -26.0, 28.0)
+        (2.0, -34.0, 28.0)
 
     """
     squeeze = (not hasattr(x, '__iter__'))
@@ -151,18 +156,19 @@ def get_bounds(shape, affine):
 
     Parameters
     ----------
-    shape: tuple
+    shape : tuple
         shape of the array. Must have 3 integer values.
 
-    affine: numpy.ndarray
+    affine : numpy.ndarray
         affine giving the linear transformation between voxel coordinates
         and world-space coordinates.
 
     Returns
     -------
-    coord: list of tuples
+    coord : list of tuples
         coord[i] is a 2-tuple giving minimal and maximal coordinates along
         i-th axis.
+
     """
     adim, bdim, cdim = shape
     adim -= 1
@@ -186,20 +192,19 @@ def get_mask_bounds(img):
 
         Parameters
         ----------
-        img: Niimg-like object
+        img : Niimg-like object
             See http://nilearn.github.io/manipulating_images/input_output.html
             The image to inspect. Zero values are considered as
             background.
 
         Returns
         --------
-        xmin, xmax, ymin, ymax, zmin, zmax: floats
+        xmin, xmax, ymin, ymax, zmin, zmax : floats
             The world-space bounds (field of view) occupied by the
             non-zero values in the image
 
         Notes
         -----
-
         The image should have only one connect component.
 
         The affine should be diagonal or diagonal-permuted, use
@@ -207,7 +212,7 @@ def get_mask_bounds(img):
 
     """
     img = _utils.check_niimg_3d(img)
-    mask = _utils.numpy_conversions._asarray(_get_data(img), dtype=np.bool)
+    mask = _utils.numpy_conversions._asarray(_get_data(img), dtype=bool)
     affine = img.affine
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
     slices = ndimage.find_objects(mask)
@@ -262,9 +267,17 @@ def _resample_one_img(data, A, b, target_shape,
         data = _extrapolate_out_mask(data, np.logical_not(not_finite),
                                      iterations=2)[0]
 
+    # If data is binary and interpolation is continuous or linear,
+    # warn the user as this might be unintentional
+    if sorted(list(np.unique(data))) == [0,1] and interpolation_order != 0:
+        warnings.warn("Resampling binary images with continuous or "
+                      "linear interpolation. This might lead to "
+                      "unexpected results. You might consider using "
+                      "nearest interpolation instead.")
+
     # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
     with warnings.catch_warnings():
-        if LooseVersion(scipy.__version__) >= LooseVersion('0.18'):
+        if _compare_version(scipy.__version__, '>=', '0.18'):
             warnings.simplefilter("ignore", UserWarning)
         # The resampling itself
         ndimage.affine_transform(data, A,
@@ -277,7 +290,7 @@ def _resample_one_img(data, A, b, target_shape,
     if has_not_finite:
         # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
         with warnings.catch_warnings():
-            if LooseVersion(scipy.__version__) >= LooseVersion('0.18'):
+            if _compare_version(scipy.__version__, '>=', '0.18'):
                 warnings.simplefilter("ignore", UserWarning)
             # We need to resample the mask of not_finite values
             not_finite = ndimage.affine_transform(not_finite, A,
@@ -295,49 +308,52 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     Parameters
     ----------
-    img: Niimg-like object
+    img : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         Image(s) to resample.
 
-    target_affine: numpy.ndarray, optional
+    target_affine : numpy.ndarray, optional
         If specified, the image is resampled corresponding to this new affine.
         target_affine can be a 3x3 or a 4x4 matrix. (See notes)
 
-    target_shape: tuple or list, optional
+    target_shape : tuple or list, optional
         If specified, the image will be resized to match this new shape.
         len(target_shape) must be equal to 3.
         If target_shape is specified, a target_affine of shape (4, 4)
         must also be given. (See notes)
 
-    interpolation: str, optional
-        Can be 'continuous' (default), 'linear', or 'nearest'. Indicates the resample
-        method.
+    interpolation : str, optional
+        Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
+        method. Default='continuous'.
 
-    copy: bool, optional
+    copy : bool, optional
         If True, guarantees that output array has no memory in common with
         input array.
         In all cases, input images are never modified by this function.
+        Default=True.
 
-    order: "F" or "C"
+    order : "F" or "C", optional
         Data ordering in output array. This function is slightly faster with
-        Fortran ordering.
+        Fortran ordering. Default='F'.
 
-    clip: bool, optional
+    clip : bool, optional
         If True (default) all resampled image values above max(img) and
         under min(img) are clipped to min(img) and max(img). Note that
         0 is added as an image value for clipping, and it is the padding
         value when extrapolating out of field of view.
-        If False no clip is preformed.
+        If False no clip is performed.
+        Default=True.
 
-    fill_value: float, optional
-        Use a fill value for points outside of input volume (default 0).
+    fill_value : float, optional
+        Use a fill value for points outside of input volume. Default=0.
 
-    force_resample: bool, optional
-        Intended for testing, this prevents the use of a padding optimzation
+    force_resample : bool, optional
+        Intended for testing, this prevents the use of a padding optimzation.
+        Default=False.
 
     Returns
     -------
-    resampled: nibabel.Nifti1Image
+    resampled : nibabel.Nifti1Image
         input image, resampled to have respectively target_shape and
         target_affine as shape and affine.
 
@@ -347,7 +363,6 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     Notes
     -----
-
     **BoundingBoxError**
     If a 4x4 transformation matrix (target_affine) is given and all of the
     transformed data points have a negative voxel index along one of the
@@ -381,10 +396,10 @@ def resample_img(img, target_affine=None, target_shape=None,
     **Handling non-native endian in given Nifti images**
     This function automatically changes the byte-ordering information
     in the image dtype to new byte order. From non-native to native, which
-    implies that if the given image has non-native endianess then the output
+    implies that if the given image has non-native endianness then the output
     data in Nifti image will have native dtype. This is only the case when
     if the given target_affine (transformation matrix) is diagonal and
-    homogenous.
+    homogeneous.
 
     """
     from .image import new_img_like  # avoid circular imports
@@ -430,7 +445,11 @@ def resample_img(img, target_affine=None, target_shape=None,
         if copy and not input_img_is_string:
             img = _utils.copy_img(img)
         return img
-    if target_affine is affine and target_shape is shape:
+    if (
+        np.shape(target_affine) == np.shape(affine)
+        and np.allclose(target_affine, affine)
+        and np.array_equal(target_shape, shape)
+    ):
         return img
     if target_affine is not None:
         target_affine = np.asarray(target_affine)
@@ -498,7 +517,7 @@ def resample_img(img, target_affine=None, target_shape=None,
         target_shape = target_shape.tolist()
     target_shape = tuple(target_shape)
 
-    if LooseVersion(scipy.__version__) < LooseVersion('0.20'):
+    if _compare_version(scipy.__version__, '<', '0.20'):
         # Before scipy 0.20, force native data types due to endian issues
         # that caused instability.
         data = data.astype(data.dtype.newbyteorder('N'))
@@ -516,11 +535,11 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     # Since the release of 0.17, resampling nifti images have some issues
     # when affine is passed as 1D array and if data is of non-native
-    # endianess.
+    # endianness.
     # See issue https://github.com/nilearn/nilearn/issues/1445.
     # If affine is passed as 1D, scipy uses _nd_image.zoom_shift rather
     # than _geometric_transform (2D) where _geometric_transform is able
-    # to swap byte order in scipy later than 0.15 for nonnative endianess.
+    # to swap byte order in scipy later than 0.15 for nonnative endianness.
 
     # We convert to 'native' order to not have any issues either with
     # 'little' or 'big' endian data dtypes (non-native endians).
@@ -567,7 +586,7 @@ def resample_img(img, target_affine=None, target_shape=None,
         # If A is diagonal, ndimage.affine_transform is clever enough to use a
         # better algorithm.
         if np.all(np.diag(np.diag(A)) == A):
-            if LooseVersion(scipy.__version__) < LooseVersion('0.18'):
+            if _compare_version(scipy.__version__, '<', '0.18'):
                 # Before scipy 0.18, ndimage.affine_transform was applying a
                 # different logic to the offset for diagonal affine
                 b = np.dot(linalg.inv(A), b)
@@ -604,37 +623,39 @@ def resample_to_img(source_img, target_img,
 
     Parameters
     ----------
-    source_img: Niimg-like object
+    source_img : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         Image(s) to resample.
 
-    target_img: Niimg-like object
+    target_img : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         Reference image taken for resampling.
 
-    interpolation: str, optional
-        Can be 'continuous' (default), 'linear', or 'nearest'. Indicates the resample
-        method.
+    interpolation : str, optional
+        Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
+        method. Default='continuous'.
 
-    copy: bool, optional
+    copy : bool, optional
         If True, guarantees that output array has no memory in common with
         input array.
         In all cases, input images are never modified by this function.
+        Default=True.
 
-    order: "F" or "C"
+    order : "F" or "C", optional
         Data ordering in output array. This function is slightly faster with
-        Fortran ordering.
+        Fortran ordering. Default="F".
 
-    clip: bool, optional
-        If False (default) no clip is preformed.
+    clip : bool, optional
+        If False (default) no clip is performed.
         If True all resampled image values above max(img) and under min(img) are
-        clipped to min(img) and max(img)
+        clipped to min(img) and max(img). Default=False.
 
-    fill_value: float, optional
-        Use a fill value for points outside of input volume (default 0).
+    fill_value : float, optional
+        Use a fill value for points outside of input volume. Default=0.
 
-    force_resample: bool, optional
-        Intended for testing, this prevents the use of a padding optimzation
+    force_resample : bool, optional
+        Intended for testing, this prevents the use of a padding optimzation.
+        Default=False.
 
     Returns
     -------
@@ -645,8 +666,8 @@ def resample_to_img(source_img, target_img,
     See Also
     --------
     nilearn.image.resample_img
-    """
 
+    """
     target = _utils.check_niimg(target_img)
     target_shape = target.shape
 
@@ -671,11 +692,11 @@ def reorder_img(img, resample=None):
 
     Parameters
     -----------
-    img: Niimg-like object
+    img : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         Image to reorder.
 
-    resample: None or string in {'continuous', 'linear', 'nearest'}, optional
+    resample : None or string in {'continuous', 'linear', 'nearest'}, optional
         If resample is None (default), no resampling is performed, the
         axes are only permuted.
         Otherwise resampling is performed and 'resample' will

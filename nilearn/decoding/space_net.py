@@ -12,7 +12,7 @@ TV-L1, Graph-Net, etc.)
 # License: simplified BSD
 
 import warnings
-import numbers
+import collections
 import time
 import sys
 from functools import partial
@@ -26,8 +26,9 @@ from sklearn.feature_selection import (SelectPercentile, f_regression,
 from joblib import Memory, Parallel, delayed
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
-from ..input_data.masker_validation import check_embedded_nifti_masker
+from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
 from .._utils.param_validation import _adjust_screening_percentile
+from .._utils import fill_doc
 from sklearn.utils import check_X_y
 from sklearn.model_selection import check_cv
 try:
@@ -60,6 +61,7 @@ def _crop_mask(mask):
     return mask[i_min:i_max + 1, j_min:j_max + 1, k_min:k_max + 1]
 
 
+@fill_doc
 def _univariate_feature_screening(
         X, y, mask, is_classif, screening_percentile, smoothing_fwhm=2.):
     """
@@ -82,10 +84,8 @@ def _univariate_feature_screening(
     screening_percentile : float in the closed interval [0., 100.]
         Only the `screening_percentile * 100" percent most import voxels will
         be retained.
-
-    smoothing_fwhm : float, optional (default 2.)
-        FWHM for isotropically smoothing the data X before F-testing. A value
-        of zero means "don't smooth".
+    %(smoothing_fwhm)s
+        Default=2.
 
     Returns
     -------
@@ -122,7 +122,7 @@ def _univariate_feature_screening(
     mask_ = mask.copy()
     mask_[mask] = (support > 0)
     mask_ = ndimage.binary_dilation(ndimage.binary_erosion(
-        mask_)).astype(np.bool)
+        mask_)).astype(bool)
     mask_[np.logical_not(mask)] = 0
     support = mask_[mask]
     X = X[:, support]
@@ -142,25 +142,28 @@ def _space_net_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1.,
     y : ndarray, shape (n_samples,)
         Target / response vector.
 
-    l1_ratio : float
+    l1_ratio : float, optional
         The ElasticNet mixing parameter, with ``0 <= l1_ratio <= 1``.
         For ``l1_ratio = 0`` the penalty is purely a spatial prior
         (Graph-Net, TV, etc.). ``For l1_ratio = 1`` it is an L1 penalty.
         For ``0 < l1_ratio < 1``, the penalty is a combination of L1
         and a spatial prior.
+        Default=1.
 
     eps : float, optional
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
+        Default=1e-3.
 
     n_alphas : int, optional
         Number of alphas along the regularization path.
+        Default=10.
 
-    logistic : bool, optional (default False)
+    logistic : bool, optional
         Indicates where the underlying loss function is logistic.
+        Default=False.
 
     """
-
     if logistic:
         # Computes the theoretical upper bound for the overall
         # regularization, as derived in "An Interior-Point Method for
@@ -282,6 +285,7 @@ class _EarlyStoppingCallback(object):
             return pearson_score, spearman_score
 
 
+@fill_doc
 def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
                 solver_params, is_classif=False, n_alphas=10, eps=1E-3,
                 key=None, debias=False, Xmean=None,
@@ -309,9 +313,10 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     test : array or list of integers
         List of indices for the test samples.
 
-    l1_ratio : float in the interval [0, 1]; optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1];
+    optional (default .5)
         Constant that mixes L1 and TV (resp. Graph-Net) penalization.
-        l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
+        l1_ratios == 0: just smooth. l1_ratios == 1: just lasso.
 
     eps : float, optional (default 1e-3)
         Length of the path. For example, ``eps=1e-3`` means that
@@ -324,8 +329,31 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     solver : function handle
        See for example tv.TVl1Classifier documentation.
 
-    solver_params: dict
+    solver_params : dict
        Dictionary of param-value pairs to be passed to solver.
+
+    is_classif : bool, optional
+        Indicates whether the loss is a classification loss or a
+        regression loss. Default=False.
+
+    Xmean: ??? TODO: Add description.
+
+    key: ??? TODO: Add description.
+
+    debias : bool, optional
+        If set, then the estimated weights maps will be debiased.
+        Default=False.
+
+    screening_percentile : float in the interval [0, 100], optional
+        Percentile value for ANOVA univariate feature selection. A value of
+        100 means 'keep all features'. This percentile is expressed
+        w.r.t the volume of a standard (MNI152) brain, and so is corrected
+        at runtime to correspond to the volume of the user-supplied mask
+        (which is typically smaller). If '100' is given, all the features
+        are used, regardless of the number of voxels.
+        Default=20.
+    %(verbose)s
+
     """
     if l1_ratios is None:
         raise ValueError("l1_ratios must be specified!")
@@ -355,7 +383,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
         copy=False)
 
     # misc
-    if isinstance(l1_ratios, numbers.Number):
+    if not isinstance(l1_ratios, collections.abc.Iterable):
         l1_ratios = [l1_ratios]
     l1_ratios = sorted(l1_ratios)[::-1]  # from large to small l1_ratios
     best_score = -np.inf
@@ -442,8 +470,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
         best_w = w_
 
     if len(best_w) == n_features:
-        if Xmean is None:
-            Xmean = np.zeros(n_features)
+        # TODO: do something with Xmean
         best_w = np.append(best_w, 0.)
 
     all_test_scores = np.array(all_test_scores)
@@ -451,12 +478,13 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
             y_train_mean, key)
 
 
+@fill_doc
 class BaseSpaceNet(LinearRegression, CacheMixin):
     """
     Regression and classification learners with sparsity and spatial priors
 
     `SpaceNet` implements Graph-Net and TV-L1 priors /
-    penalties. Thus, the penalty is a sum an L1 term and a spatial term. The
+    penalties. Thus, the penalty is a sum of an L1 term and a spatial term. The
     aim of such a hybrid prior is to obtain weights maps which are structured
     (due to the spatial prior) and sparse (enforced by L1 norm).
 
@@ -474,7 +502,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
     l1_ratios : float or list of floats in the interval [0, 1];
     optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
-        l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
+        l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
@@ -496,29 +524,13 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a NiftiMasker.
-
-    target_affine : 3x3 or 4x4 matrix, optional (default None)
-        This parameter is passed to image.resample_img. An important use-case
-        of this parameter is for downsampling the input data to a coarser
-        resolution (to speed of the model fit). Please see the related
-        documentation for details.
-
-    target_shape : 3-tuple of integers, optional (default None)
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    low_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    high_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    t_r : float, optional (default None)
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
-
+    %(target_affine)s
+        An important use-case of this parameter is for downsampling the
+        input data to a coarser resolution (to speed of the model fit).
+    %(target_shape)s
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
     screening_percentile : float in the interval [0, 100]; Optional (
     default 20)
         Percentile value for ANOVA univariate feature selection. A value of
@@ -541,22 +553,10 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
 
     tol : float, optional (default 5e-4)
         Defines the tolerance for convergence for the backend FISTA solver.
-
-    verbose : int, optional (default 1)
-        Verbosity level.
-
-    n_jobs : int, optional (default 1)
-        Number of jobs in solving the sub-problems.
-
-    memory: instance of joblib.Memory or string
-        Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
-
-    memory_level: integer, optional (default 1)
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
-
+    %(verbose)s
+    %(n_jobs)s
+    %(memory)s
+    %(memory_level1)s
     cv : int, a cv generator instance, or None (default 8)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
@@ -682,7 +682,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         """Makes sure parameters are sane"""
         if self.l1_ratios is not None:
             l1_ratios = self.l1_ratios
-            if isinstance(l1_ratios, numbers.Number):
+            if not isinstance(l1_ratios, collections.abc.Iterable):
                 l1_ratios = [l1_ratios]
             for l1_ratio in l1_ratios:
                 if not 0 <= l1_ratio <= 1.:
@@ -757,14 +757,14 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
             tic = time.time()
 
         # nifti masking
-        self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
+        self.masker_ = _check_embedded_nifti_masker(self, multi_subject=False)
         X = self.masker_.fit_transform(X)
 
-        X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=np.float,
+        X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=float,
                          multi_output=True, y_numeric=not self.is_classif)
 
         if not self.is_classif and np.all(np.diff(y) == 0.):
-            raise ValueError("The given input y must have atleast 2 targets"
+            raise ValueError("The given input y must have at least 2 targets"
                              " to do regression analysis. You provided only"
                              " one target {0}".format(np.unique(y)))
 
@@ -773,15 +773,16 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         self.Xstd_ = X.std(axis=0)
         self.Xstd_[self.Xstd_ < 1e-8] = 1
         self.mask_img_ = self.masker_.mask_img_
-        self.mask_ = get_data(self.mask_img_).astype(np.bool)
+        self.mask_ = get_data(self.mask_img_).astype(bool)
         n_samples, _ = X.shape
         y = np.array(y).copy()
         l1_ratios = self.l1_ratios
-        if isinstance(l1_ratios, numbers.Number):
+        if not isinstance(l1_ratios, collections.abc.Iterable):
             l1_ratios = [l1_ratios]
         alphas = self.alphas
-        if isinstance(alphas, numbers.Number):
-            alphas = [alphas]
+        if alphas is not None:
+            if not isinstance(alphas, collections.abc.Iterable):
+                alphas = [alphas]
         if self.loss is not None:
             loss = self.loss
         elif self.is_classif:
@@ -948,12 +949,13 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         # prediction proper
         scores = self.decision_function(X)
         if len(scores.shape) == 1:
-            indices = (scores > 0).astype(np.int)
+            indices = (scores > 0).astype(int)
         else:
             indices = scores.argmax(axis=1)
         return self.classes_[indices]
 
 
+@fill_doc
 class SpaceNetClassifier(BaseSpaceNet):
     """Classification learners with sparsity and spatial priors.
 
@@ -971,9 +973,10 @@ class SpaceNetClassifier(BaseSpaceNet):
     loss : string, optional (default "logistic")
         Loss to be used in the classifier. Must be one of "mse", or "logistic".
 
-    l1_ratios : float or list of floats in the interval [0, 1]; optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1];
+    optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
-        l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
+        l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
@@ -995,30 +998,14 @@ class SpaceNetClassifier(BaseSpaceNet):
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
-
-    target_affine : 3x3 or 4x4 matrix, optional (default None)
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    target_shape : 3-tuple of integers, optional (default None)
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    low_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    high_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    t_r : float, optional (default None)
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
-
+    %(target_affine)s
+    %(target_shape)s
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
     screening_percentile : float in the interval [0, 100]; Optional (default 20)
         Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is is expressed
+        100 means 'keep all features'. This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime by premultiplying it with the ratio of the volume of the
         mask of the data and volume of a standard brain.  If '100' is given,
@@ -1037,22 +1024,10 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
-
-    verbose : int, optional (default 1)
-        Verbosity level.
-
-    n_jobs : int, optional (default 1)
-        Number of jobs in solving the sub-problems.
-
-    memory: instance of joblib.Memory or string
-        Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
-
-    memory_level: integer, optional (default 1)
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
-
+    %(verbose)s
+    %(n_jobs)s
+    %(memory)s
+    %(memory_level1)s
     cv : int, a cv generator instance, or None (default 8)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
@@ -1132,6 +1107,11 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     `Xstd_` : array, shape (n_features,)
         Standard deviation of X across samples
+
+    See Also
+    --------
+    nilearn.decoding.SpaceNetRegressor: Graph-Net and TV-L1 priors/penalties
+
     """
 
     def __init__(self, penalty="graph-net", loss="logistic",
@@ -1185,6 +1165,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         return accuracy_score(y, self.predict(X))
 
 
+@fill_doc
 class SpaceNetRegressor(BaseSpaceNet):
     """Regression learners with sparsity and spatial priors.
 
@@ -1199,9 +1180,10 @@ class SpaceNetRegressor(BaseSpaceNet):
     penalty : string, optional (default 'graph-net')
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    l1_ratios : float or list of floats in the interval [0, 1]; optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1];
+    optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
-        l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
+        l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
@@ -1223,30 +1205,14 @@ class SpaceNetRegressor(BaseSpaceNet):
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
-
-    target_affine : 3x3 or 4x4 matrix, optional (default None)
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    target_shape : 3-tuple of integers, optional (default None)
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
-
-    low_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    high_pass: None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    t_r : float, optional (default None)
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
+    %(target_affine)s
+    %(target_shape)s
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
     screening_percentile : float in the interval [0, 100]; Optional (default 20)
         Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is is expressed
+        100 means 'keep all features'. This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime to correspond to the volume of the user-supplied mask
         (which is typically smaller).
@@ -1264,22 +1230,10 @@ class SpaceNetRegressor(BaseSpaceNet):
 
     tol : float
         Defines the tolerance for convergence. Defaults to 1e-4.
-
-    verbose : int, optional (default 1)
-        Verbosity level.
-
-    n_jobs : int, optional (default 1)
-        Number of jobs in solving the sub-problems.
-
-    memory: instance of joblib.Memory or string
-        Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
-
-    memory_level: integer, optional (default 1)
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
-
+    %(verbose)s
+    %(n_jobs)s
+    %(memory)s
+    %(memory_level1)s
     cv : int, a cv generator instance, or None (default 8)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
@@ -1346,6 +1300,11 @@ class SpaceNetRegressor(BaseSpaceNet):
 
     `Xstd_` : array, shape (n_features,)
         Standard deviation of X across samples
+
+    See Also
+    --------
+    nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
+
     """
 
     def __init__(self, penalty="graph-net", l1_ratios=.5, alphas=None,

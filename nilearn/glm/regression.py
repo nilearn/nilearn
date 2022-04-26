@@ -19,6 +19,7 @@ General reference for regression models:
 __docformat__ = 'restructuredtext en'
 
 import warnings
+import functools
 
 import numpy as np
 
@@ -29,6 +30,27 @@ import scipy.linalg as spl
 from nilearn._utils.helpers import rename_parameters
 from nilearn.glm.model import LikelihoodModelResults
 from nilearn._utils.glm import positive_reciprocal
+
+
+def _deprecation_warning(old_param,
+                         new_param,
+                         start_version,
+                         end_version='future'):
+    def _warned_func(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            warnings.warn(category=FutureWarning,
+                          message=("'{}' has been deprecated in version {} "
+                                   "and will be removed in version {}. "
+                                   "Please use '{}' instead.".format(
+                                       old_param,
+                                       start_version,
+                                       end_version,
+                                       new_param
+                                   )))
+            return func(*args, **kwargs)
+        return wrapper
+    return _warned_func
 
 
 class OLSModel(object):
@@ -68,12 +90,12 @@ class OLSModel(object):
     df_model : scalar
         Degrees of freedome of the model.  The rank of the design.
 
-    Note
-    ----
-    This class is experimental. 
+    Notes
+    -----
+    This class is experimental.
     It may change in any future release of Nilearn.
-    """
 
+    """
     def __init__(self, design):
         """
         Parameters
@@ -82,6 +104,7 @@ class OLSModel(object):
             This is your design matrix.
             Data are assumed to be column ordered with
             observations in rows.
+
         """
         super(OLSModel, self).__init__()
         self.initialize(design)
@@ -96,32 +119,16 @@ class OLSModel(object):
                                           np.transpose(self.calc_beta))
         self.df_total = self.whitened_design.shape[0]
 
-        eps = np.abs(self.design).sum() * np.finfo(np.float).eps
+        eps = np.abs(self.design).sum() * np.finfo(np.float64).eps
         self.df_model = matrix_rank(self.design, eps)
         self.df_residuals = self.df_total - self.df_model
 
-    @auto_attr
-    def df_resid(self):
-        warnings.warn("'df_resid' from OLSModel"
-                      "has been deprecated and will be removed. "
-                      "Please use 'df_residuals'.",
-                      FutureWarning)
-        return self.df_residuals
-
-    @auto_attr
-    def wdesign(self):
-        warnings.warn("'wdesign' from OLSModel"
-                      "has been deprecated and will be removed. "
-                      "Please use 'whitened_design'.",
-                      FutureWarning)
-        return self.whitened_design
-
     def logL(self, beta, Y, nuisance=None):
-        r''' Returns the value of the loglikelihood function at beta.
+        r'''Returns the value of the loglikelihood function at beta.
 
         Given the whitened design matrix, the loglikelihood is evaluated
         at the parameter vector, beta, for the dependent variable, Y
-        and the nuisance parameter, sigma.
+        and the nuisance parameter, sigma [1]_.
 
         Parameters
         ----------
@@ -168,7 +175,8 @@ class OLSModel(object):
 
         References
         ----------
-        * W. Green.  "Econometric Analysis," 5th ed., Pearson, 2003.
+        .. [1] W. Green.  "Econometric Analysis," 5th ed., Pearson, 2003.
+
         '''
         # This is overwriting an abstract method of LikelihoodModel
         X = self.whitened_design
@@ -198,11 +206,12 @@ class OLSModel(object):
             used in estimating the coefficients. For OLSModel, it is
             does nothing. For WLSmodel, ARmodel, it pre-applies
             a square root of the covariance matrix to X.
+
         """
         return X
 
     def fit(self, Y):
-        """ Fit model to data `Y`
+        """Fit model to data `Y`
 
         Full fit of the model including estimate of covariance matrix,
         (whitened) residuals and scale.
@@ -215,6 +224,7 @@ class OLSModel(object):
         Returns
         -------
         fit : RegressionResults
+
         """
         # Other estimates of the covariance matrix for a heteroscedastic
         # regression model can be implemented in WLSmodel. (Weighted least
@@ -232,30 +242,32 @@ class OLSModel(object):
 
 
 class ARModel(OLSModel):
-    """ A regression model with an AR(p) covariance structure.
+    """A regression model with an AR(p) covariance structure.
 
     In terms of a LikelihoodModel, the parameters
     are beta, the usual regression parameters,
     and sigma, a scalar nuisance parameter that
     shows up as multiplier in front of the AR(p) covariance.
 
-    Note
-    ----
-    This class is experimental. 
+    Notes
+    -----
+    This class is experimental.
     It may change in any future release of Nilearn.
-    """
 
+    """
     def __init__(self, design, rho):
         """ Initialize AR model instance
 
         Parameters
         ----------
         design : ndarray
-            2D array with design matrix
+            2D array with design matrix.
+
         rho : int or array-like
             If int, gives order of model, and initializes rho to zeros.  If
             ndarray, gives initial estimate of rho. Be careful as ``ARModel(X,
             1) != ARModel(X, 1.0)``.
+
         """
         if isinstance(rho, int):
             self.order = rho
@@ -270,17 +282,18 @@ class ARModel(OLSModel):
         super(ARModel, self).__init__(design)
 
     def whiten(self, X):
-        """ Whiten a series of columns according to AR(p) covariance structure
+        """Whiten a series of columns according to AR(p) covariance structure
 
         Parameters
         ----------
         X : array-like of shape (n_features)
-            array to whiten
+            Array to whiten.
 
         Returns
         -------
         whitened_X : ndarray
-            X whitened with order self.order AR
+            X whitened with order self.order AR.
+
         """
         X = np.asarray(X, np.float64)
         whitened_X = X.copy()
@@ -293,69 +306,30 @@ class ARModel(OLSModel):
 
 
 class RegressionResults(LikelihoodModelResults):
-    """
-    This class summarizes the fit of a linear regression model.
+    """This class summarizes the fit of a linear regression model.
 
     It handles the output of contrasts, estimates of covariance, etc.
-    
-    Note
-    ----
-    This class is experimental. 
+
+    Notes
+    -----
+    This class is experimental.
     It may change in any future release of Nilearn.
 
     """
 
-    @rename_parameters(
-        {'wresid': 'whitened_residuals', 'wY': 'whitened_Y'},
-        lib_name='Nistats'
-    )
     def __init__(self, theta, Y, model, whitened_Y, whitened_residuals,
                  cov=None, dispersion=1., nuisance=None):
         """See LikelihoodModelResults constructor.
 
         The only difference is that the whitened Y and residual values
         are stored for a regression model.
+
         """
         LikelihoodModelResults.__init__(self, theta, Y, model, cov,
                                         dispersion, nuisance)
         self.whitened_Y = whitened_Y
         self.whitened_residuals = whitened_residuals
         self.whitened_design = model.whitened_design
-
-    @auto_attr
-    def wdesign(self):
-        warnings.warn("'wdesign' from RegressionResults"
-                      "has been deprecated and will be removed. "
-                      "Please use 'whitened_design'.",
-                      FutureWarning)
-        return self.whitened_design
-
-    @auto_attr
-    def wY(self):
-        warnings.warn("'wY' from RegressionResults "
-                      "has been deprecated and will be removed. "
-                      "Please use 'whitened_Y' instead.",
-                      FutureWarning,
-                      )
-        return self.whitened_Y
-
-    @auto_attr
-    def wresid(self):
-        warnings.warn("'wresid' from RegressionResults "
-                      "has been deprecated and will be removed. "
-                      "Please use 'whitened_residuals' instead.",
-                      FutureWarning,
-                      )
-        return self.whitened_residuals
-
-    @auto_attr
-    def resid(self):
-        warnings.warn("'resid' from RegressionResults "
-                      "has been deprecated and will be removed. "
-                      "Please use 'residuals' instead.",
-                      FutureWarning,
-                      )
-        return self.residuals
 
     @auto_attr
     def residuals(self):
@@ -365,18 +339,10 @@ class RegressionResults(LikelihoodModelResults):
         return self.Y - self.predicted
 
     @auto_attr
-    def norm_resid(self):
-        warnings.warn("'norm_resid' from RegressionResults "
-                      "has been deprecated and will be removed. "
-                      "Please use 'normalized_residuals' instead.",
-                      FutureWarning,
-                      )
-        return self.normalized_residuals
-
-    @auto_attr
     def normalized_residuals(self):
-        """
-        Residuals, normalized to have unit length.
+        """Residuals, normalized to have unit length.
+
+        See [1]_ and [2]_.
 
         Notes
         -----
@@ -388,8 +354,12 @@ class RegressionResults(LikelihoodModelResults):
 
         Where MS_E = SSE / (n - k)
 
-        See: Montgomery and Peck 3.2.1 p. 68
-             Davidson and MacKinnon 15.2 p 662
+        References
+        ----------
+        .. [1] Montgomery and Peck 3.2.1 p. 68
+
+        .. [2] Davidson and MacKinnon 15.2 p 662
+
         """
         return self.residuals * positive_reciprocal(np.sqrt(self.dispersion))
 
@@ -423,16 +393,16 @@ class RegressionResults(LikelihoodModelResults):
 
 class SimpleRegressionResults(LikelihoodModelResults):
     """This class contains only information of the model fit necessary
-    for contast computation.
+    for contrast computation.
 
     Its intended to save memory when details of the model are unnecessary.
 
-    Note
-    ----
-    This class is experimental. 
+    Notes
+    -----
+    This class is experimental.
     It may change in any future release of Nilearn.
-    """
 
+    """
     def __init__(self, results):
         """See LikelihoodModelResults constructor.
 
@@ -455,39 +425,16 @@ class SimpleRegressionResults(LikelihoodModelResults):
         """
         raise ValueError('can not use this method for simple results')
 
-    def resid(self, Y):
-        warnings.warn("'resid()' from SimpleRegressionResults"
-                      " has been deprecated and will be removed. "
-                      "Please use 'residuals()'.",
-                      FutureWarning,
-                      )
-        return self.residuals(Y)
-
     def residuals(self, Y):
         """
         Residuals from the fit.
         """
         return Y - self.predicted
 
-    @auto_attr
-    def df_resid(self):
-        warnings.warn("The attribute 'df_resid' from OLSModel"
-                      "has been deprecated and will be removed. "
-                      "Please use 'df_residuals'.",
-                      FutureWarning)
-        return self.df_residuals
-
-    def norm_resid(self, Y):
-        warnings.warn("'SimpleRegressionResults.norm_resid' method "
-                      "has been deprecated and will be removed. "
-                      "Please use 'normalized_residuals'.",
-                      FutureWarning,
-                      )
-        return self.normalized_residuals(Y)
-
     def normalized_residuals(self, Y):
-        """
-        Residuals, normalized to have unit length.
+        """Residuals, normalized to have unit length.
+
+        See [1]_ and [2]_.
 
         Notes
         -----
@@ -499,13 +446,18 @@ class SimpleRegressionResults(LikelihoodModelResults):
 
         Where MS_E = SSE / (n - k)
 
-        See: Montgomery and Peck 3.2.1 p. 68
-             Davidson and MacKinnon 15.2 p 662
+        References
+        ----------
+        .. [1] Montgomery and Peck 3.2.1 p. 68
+
+        .. [2] Davidson and MacKinnon 15.2 p 662
+
         """
         return (self.residuals(Y)
                 * positive_reciprocal(np.sqrt(self.dispersion))
                 )
 
+    @auto_attr
     def predicted(self):
         """ Return linear predictor values from a design matrix.
         """

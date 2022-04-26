@@ -8,7 +8,7 @@ import sys
 import tempfile
 import warnings
 import gc
-import distutils
+from nilearn.version import _compare_version
 from pathlib import Path
 
 import pytest
@@ -48,10 +48,15 @@ except ImportError:
     memory_usage = memory_used = None
 
 
+def is_64bit() -> bool:
+    """Returns True if python is run on 64bits."""
+    return sys.maxsize > 2**32
+
+
 def check_deprecation(func, match=None):
     @functools.wraps(func)
     def wrapped(*args, **kwargs):
-        if distutils.version.LooseVersion(sklearn.__version__) < '0.22':
+        if _compare_version(sklearn.__version__, '<', '0.22'):
             with pytest.deprecated_call():
                 result = func(*args, **kwargs)
         else:
@@ -69,10 +74,12 @@ def assert_memory_less_than(memory_limit, tolerance,
     ----------
     memory_limit : int
         The expected memory limit in MiB.
-    tolerance: float
+
+    tolerance : float
         As memory_profiler results have some variability, this adds some
         tolerance around memory_limit. Accepted values are in range [0.0, 1.0].
-    callable_obj: callable
+
+    callable_obj : callable
         The function to be called to check memory consumption.
 
     """
@@ -118,26 +125,27 @@ def write_tmp_imgs(*imgs, **kwargs):
 
     Parameters
     ----------
-    imgs: Nifti1Image
+    imgs : Nifti1Image
         Several Nifti images. Every format understood by nibabel.save is
         accepted.
 
-    create_files: bool
-        if True, imgs are written on disk and filenames are returned. If
+    create_files : bool
+        If True, imgs are written on disk and filenames are returned. If
         False, nothing is written, and imgs is returned as output. This is
         useful to test the two cases (filename / Nifti1Image) in the same
         loop.
 
-    use_wildcards: bool
-        if True, and create_files is True, imgs are written on disk and a
+    use_wildcards : bool
+        If True, and create_files is True, imgs are written on disk and a
         matching glob is returned.
 
     Returns
     -------
-    filenames: string or list of
-        filename(s) where input images have been written. If a single image
+    filenames : string or list of strings
+        Filename(s) where input images have been written. If a single image
         has been given as input, a single string is returned. Otherwise, a
         list of string is returned.
+
     """
     valid_keys = set(("create_files", "use_wildcards"))
     input_keys = set(kwargs.keys())
@@ -158,9 +166,10 @@ def write_tmp_imgs(*imgs, **kwargs):
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", RuntimeWarning)
                 for img in imgs:
-                    filename = tempfile.mktemp(prefix=prefix,
-                                               suffix=suffix,
-                                               dir=None)
+                    fd, filename = tempfile.mkstemp(prefix=prefix,
+                                                    suffix=suffix,
+                                                    dir=None)
+                    os.close(fd)
                     filenames.append(filename)
                     img.to_filename(filename)
                     del img
@@ -173,9 +182,23 @@ def write_tmp_imgs(*imgs, **kwargs):
                     else:
                         yield filenames
         finally:
+            failures = []
             # Ensure all created files are removed
             for filename in filenames:
-                os.remove(filename)
+                try:
+                    os.remove(filename)
+                except FileNotFoundError:
+                    # ok, file already removed
+                    pass
+                except OSError as e:
+                    # problem eg permission, or open file descriptor
+                    failures.append(e)
+            if failures:
+                raise OSError(
+                    "The following files could not be removed:\n".format(
+                        "\n".join(str(e) for e in failures)
+                    )
+                )
     else:  # No-op
         if len(imgs) == 1:
             yield imgs[0]
@@ -194,8 +217,9 @@ def skip_if_running_tests(msg=''):
 
     Parameters
     ----------
-    msg: string, optional
-        The message issued when a test is skipped
+    msg : string, optional
+        The message issued when a test is skipped.
+
     """
     if are_tests_running():
         pytest.skip(msg)

@@ -7,6 +7,7 @@ import numpy as _np
 
 from matplotlib import cm as _cm
 from matplotlib import colors as _colors
+from matplotlib import rcParams as _rcParams
 
 ################################################################################
 # Custom colormaps for two-tailed symmetric statistics
@@ -88,13 +89,23 @@ def _concat_cmap(cmap1, cmap2):
 
 def alpha_cmap(color, name='', alpha_min=0.5, alpha_max=1.):
     """ Return a colormap with the given color, and alpha going from
-        zero to 1.
+    zero to 1.
 
-        Parameters
-        ----------
-        color: (r, g, b), or a string
-            A triplet of floats ranging from 0 to 1, or a matplotlib
-            color string
+    Parameters
+    ----------
+    color : (r, g, b), or a string
+        A triplet of floats ranging from 0 to 1, or a matplotlib
+        color string.
+
+    name : string, optional
+        Name of the colormap. Default=''.
+
+    alpha_min : Float, optional
+        Minimum value for alpha. Default=0.5.
+
+    alpha_max : Float, optional
+        Maximum value for alpha. Default=1.0.
+
     """
     red, green, blue = _colors.colorConverter.to_rgb(color)
     if name == '' and hasattr(color, 'startswith'):
@@ -103,7 +114,7 @@ def alpha_cmap(color, name='', alpha_min=0.5, alpha_max=1.):
                 (red, green, blue, 1.),
                ]
     cmap = _colors.LinearSegmentedColormap.from_list(
-                                '%s_transparent' % name, cmapspec, _cm.LUTSIZE)
+        '%s_transparent' % name, cmapspec, _rcParams['image.lut'])
     cmap._init()
     cmap._lut[:, -1] = _np.linspace(alpha_min, alpha_max, cmap._lut.shape[0])
     cmap._lut[-1, -1] = 0
@@ -168,9 +179,9 @@ for _cmapname in list(_cmaps_data.keys()):  # needed as dict changes within loop
     _cmapspec = _cmaps_data[_cmapname]
     _cmaps_data[_cmapname_r] = _revcmap(_cmapspec)
     _cmap_d[_cmapname] = _colors.LinearSegmentedColormap(
-        _cmapname, _cmapspec, _cm.LUTSIZE)
+        _cmapname, _cmapspec, _rcParams['image.lut'])
     _cmap_d[_cmapname_r] = _colors.LinearSegmentedColormap(
-        _cmapname_r, _cmaps_data[_cmapname_r], _cm.LUTSIZE)
+        _cmapname_r, _cmaps_data[_cmapname_r], _rcParams['image.lut'])
 
 ################################################################################
 # A few transparent colormaps
@@ -185,7 +196,7 @@ for color, name in (((1, 0, 0), 'red'),
 
 ###############################################################################
 # HCP Connectome Workbench colormaps
-# As seen in  https://github.com/Washington-University/workbench src/Pallete
+# As seen in  https://github.com/Washington-University/workbench src/Palette
 roy_big_bl = _np.array([(255, 255, 0), (255, 200, 0),
                         (255, 120, 0), (255, 0, 0),
                         (200, 0, 0), (150, 0, 0),
@@ -208,7 +219,7 @@ _cmap_d['videen_style'] = _colors.LinearSegmentedColormap.from_list(
     'videen_style', videen_style)
 
 # Save colormaps in the scope of the module
-locals().update(_cmap_d)
+globals().update(_cmap_d)
 # Register cmaps in matplotlib too
 for k, v in _cmap_d.items():
     try:  # "bwr" is in latest matplotlib
@@ -241,7 +252,7 @@ def dim_cmap(cmap, factor=.3, to_white=True):
         cdict[color] = color_lst
 
     return _colors.LinearSegmentedColormap(
-        '%s_dimmed' % cmap.name, cdict, _cm.LUTSIZE)
+        '%s_dimmed' % cmap.name, cdict, _rcParams['image.lut'])
 
 
 def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
@@ -301,4 +312,4 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
 
     return _colors.LinearSegmentedColormap(
         '%s_inside_%s' % (inner_cmap.name, outer_cmap.name),
-        cdict, _cm.LUTSIZE)
+        cdict, _rcParams['image.lut'])

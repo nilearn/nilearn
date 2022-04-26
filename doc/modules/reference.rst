@@ -55,6 +55,9 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
 
 **User guide:** See the :ref:`datasets` section for further details.
 
+Templates
+---------
+
 **Functions**:
 
 .. currentmodule:: nilearn.datasets
@@ -63,56 +66,109 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :toctree: generated/
    :template: function.rst
 
-   fetch_atlas_craddock_2012
-   fetch_atlas_destrieux_2009
-   fetch_atlas_harvard_oxford
-   fetch_atlas_msdl
-   fetch_atlas_difumo
-   fetch_coords_power_2011
-   fetch_coords_seitzman_2018
-   fetch_atlas_smith_2009
-   fetch_atlas_yeo_2011
-   fetch_atlas_aal
-   fetch_atlas_basc_multiscale_2015
-   fetch_atlas_allen_2011
-   fetch_atlas_pauli_2017
-   fetch_coords_dosenbach_2010
-   fetch_abide_pcp
-   fetch_adhd
-   fetch_development_fmri
-   fetch_haxby
    fetch_icbm152_2009
    fetch_icbm152_brain_gm_mask
-   fetch_localizer_button_task
-   fetch_localizer_contrasts
-   fetch_localizer_calculation_task
-   fetch_miyawaki2008
-   fetch_nyu_rest
-   fetch_surf_nki_enhanced
    fetch_surf_fsaverage
+   load_mni152_brain_mask
+   load_mni152_gm_mask
+   load_mni152_gm_template
+   load_mni152_template
+   load_mni152_wm_mask
+   load_mni152_wm_template
+
+Atlases
+-------
+
+**Functions**:
+
+.. currentmodule:: nilearn.datasets
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   fetch_atlas_aal
+   fetch_atlas_allen_2011
+   fetch_atlas_basc_multiscale_2015
+   fetch_atlas_craddock_2012
+   fetch_atlas_destrieux_2009
+   fetch_atlas_difumo
+   fetch_atlas_harvard_oxford
+   fetch_atlas_juelich
+   fetch_atlas_msdl
+   fetch_atlas_pauli_2017
+   fetch_atlas_schaefer_2018
+   fetch_atlas_smith_2009
    fetch_atlas_surf_destrieux
    fetch_atlas_talairach
-   fetch_atlas_schaefer_2018
-   fetch_oasis_vbm
-   fetch_megatrawls_netmats
-   fetch_cobre
-   fetch_neurovault
-   fetch_neurovault_ids
-   fetch_neurovault_auditory_computation_task
-   fetch_neurovault_motor_task
-   get_data_dirs
-   load_mni152_template
-   load_mni152_brain_mask
-   fetch_language_localizer_demo_dataset
+   fetch_atlas_yeo_2011
+   fetch_coords_dosenbach_2010
+   fetch_coords_power_2011
+   fetch_coords_seitzman_2018
+
+Preprocessed datasets
+---------------------
+
+**Functions**:
+
+.. currentmodule:: nilearn.datasets
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   fetch_abide_pcp
+   fetch_adhd
    fetch_bids_langloc_dataset
-   fetch_openneuro_dataset_index
-   select_from_index
-   patch_openneuro_dataset
-   fetch_openneuro_dataset
+   fetch_development_fmri
+   fetch_ds000030_urls
+   fetch_fiac_first_level
+   fetch_haxby
+   fetch_language_localizer_demo_dataset
    fetch_localizer_first_level
+   fetch_miyawaki2008
+   fetch_openneuro_dataset_index
    fetch_spm_auditory
    fetch_spm_multimodal_fmri
-   fetch_fiac_first_level
+   fetch_surf_nki_enhanced
+
+Statistical maps/derivatives
+----------------------------
+
+**Functions**:
+
+.. currentmodule:: nilearn.datasets
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   fetch_localizer_button_task
+   fetch_localizer_calculation_task
+   fetch_localizer_contrasts
+   fetch_megatrawls_netmats
+   fetch_mixed_gambles
+   fetch_oasis_vbm
+   fetch_neurovault_auditory_computation_task
+   fetch_neurovault_motor_task
+
+General functions
+-----------------
+
+**Functions**:
+
+.. currentmodule:: nilearn.datasets
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   fetch_neurovault
+   fetch_neurovault_ids
+   fetch_openneuro_dataset
+   get_data_dirs
+   patch_openneuro_dataset
+   select_from_index
 
 .. _decoding_ref:
 
@@ -176,6 +232,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :toctree: generated/
    :template: function.rst
 
+   binarize_img
    clean_img
    concat_imgs
    coord_transform
@@ -197,12 +254,74 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    swap_img_hemispheres
    threshold_img
 
-.. _io_ref:
+.. _interfaces_ref:
 
-:mod:`nilearn.input_data`: Loading and Processing Files Easily
-==============================================================
+:mod:`nilearn.interfaces`: Loading components from interfaces
+=============================================================
 
-.. automodule:: nilearn.input_data
+.. automodule:: nilearn.interfaces
+   :no-members:
+   :no-inherited-members:
+
+:mod:`nilearn.interfaces.bids`
+----------------------------------
+
+.. automodule:: nilearn.interfaces.bids
+   :no-members:
+   :no-inherited-members:
+
+**Functions**:
+
+.. currentmodule:: nilearn.interfaces.bids
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   get_bids_files
+   parse_bids_filename
+
+:mod:`nilearn.interfaces.fmriprep`
+----------------------------------
+
+.. automodule:: nilearn.interfaces.fmriprep
+   :no-members:
+   :no-inherited-members:
+
+**Functions**:
+
+.. currentmodule:: nilearn.interfaces.fmriprep
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   load_confounds
+   load_confounds_strategy
+
+:mod:`nilearn.interfaces.fsl`
+----------------------------------
+
+.. automodule:: nilearn.interfaces.fsl
+   :no-members:
+   :no-inherited-members:
+
+**Functions**:
+
+.. currentmodule:: nilearn.interfaces.fsl
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   get_design_from_fslmat
+
+.. _maskers_ref:
+
+:mod:`nilearn.maskers`: Extracting Signals from Brain Images
+============================================================
+
+.. automodule:: nilearn.maskers
    :no-members:
    :no-inherited-members:
 
@@ -210,12 +329,13 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
 
 **Classes**:
 
-.. currentmodule:: nilearn.input_data
+.. currentmodule:: nilearn.maskers
 
 .. autosummary::
    :toctree: generated/
    :template: class.rst
 
+   BaseMasker
    NiftiMasker
    MultiNiftiMasker
    NiftiLabelsMasker
@@ -245,7 +365,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    compute_epi_mask
    compute_multi_epi_mask
    compute_brain_mask
-   compute_multi_gray_matter_mask
+   compute_multi_brain_mask
    compute_background_mask
    compute_multi_background_mask
    intersect_masks
@@ -285,6 +405,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    RegionExtractor
    Parcellations
    ReNA
+   HierarchicalKMeans
 
 
 :mod:`nilearn.mass_univariate`: Mass-Univariate Analysis
@@ -338,7 +459,6 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    plot_stat_map
    plot_glass_brain
    plot_connectome
-   plot_connectome_strength
    plot_markers
    plot_prob_atlas
    plot_carpet
@@ -358,6 +478,26 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    view_img
    show
 
+:mod:`nilearn.plotting.displays`: Interacting with figures
+----------------------------------------------------------
+
+.. automodule:: nilearn.plotting.displays
+   :no-members:
+   :no-inherited-members:
+
+.. No relevant user manual section yet.
+
+**Functions**:
+
+.. currentmodule:: nilearn.plotting.displays
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+    get_projector
+    get_slicer
+
 **Classes**:
 
 .. currentmodule:: nilearn.plotting.displays
@@ -366,7 +506,35 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :toctree: generated/
    :template: class.rst
 
+   OrthoProjector
+   XZProjector
+   YZProjector
+   YXProjector
+   XProjector
+   YProjector
+   ZProjector
+   LZRYProjector
+   LYRZProjector
+   LYRProjector
+   LZRProjector
+   LRProjector
+   LProjector
+   RProjector
+   BaseAxes
+   CutAxes
+   GlassBrainAxes
+   BaseSlicer
    OrthoSlicer
+   PlotlySurfaceFigure
+   TiledSlicer
+   MosaicSlicer
+   XZSlicer
+   YZSlicer
+   YXSlicer
+   XSlicer
+   YSlicer
+   ZSlicer
+
 
 
 .. _signal_ref:
@@ -389,6 +557,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    :toctree: generated/
    :template: function.rst
 
+   butterworth
    clean
    high_variance_confounds
 

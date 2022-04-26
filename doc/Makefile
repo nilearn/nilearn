@@ -72,8 +72,14 @@ html-strict:	sym_links
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
+html-modified-examples-only: 	sym_links
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) -D sphinx_gallery_conf.filename_pattern=$(PATTERN) -D sphinx_gallery_conf.run_stale_examples=True -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	touch $(BUILDDIR)/html/.nojekyll
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
 html-noplot:
-	$(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html/.nojekyll
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
@@ -156,23 +162,24 @@ pdf: latex
 check:
 	rm -rf _build/doctrees
 	rm -rf $(BUILDDIR)/html/_images
-	$(SPHINXBUILD) -W -T -n -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W -T -n -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 
 install:
 	rm -rf _build/doctrees _build/nilearn.github.io
 	# first clone the nilearn.github.io repo because it may ask
 	# for password and we don't want to delay this long build in
 	# the middle of it
-	# --no-checkout just fetches the root folder without content
 	# --depth 1 is a speed optimization since we don't need the
 	# history prior to the last commit
-	git clone --no-checkout --depth 1 https://github.com/nilearn/nilearn.github.io.git _build/nilearn.github.io
+	git clone --depth 1 git@github.com:nilearn/nilearn.github.io.git _build/nilearn.github.io
 	touch _build/nilearn.github.io/.nojekyll
+	rm -Rf _build/nilearn.github.io/stable;
+	mkdir _build/nilearn.github.io/stable;
 	make html
 	cd _build/ && \
-	cp -r html/* nilearn.github.io && \
+	cp -r html/* nilearn.github.io/stable/ && \
 	cd nilearn.github.io && \
-	git add * && \
+	git add -A && \
 	git add .nojekyll && \
 	git commit -a -m 'Make install' && \
 	git push

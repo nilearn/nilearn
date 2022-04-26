@@ -233,9 +233,11 @@ def test_as_ndarray():
     pytest.raises(ValueError, as_ndarray, [], order="invalid")
 
 
-def test_csv_to_array():
+def test_csv_to_array(tmp_path):
     # Create a phony CSV file
-    filename = tempfile.mktemp(suffix='.csv')
+    fd, filename = tempfile.mkstemp(suffix='.csv',
+                                    dir=str(tmp_path))
+    os.close(fd)
     try:
         with open(filename, mode='wt') as fp:
             fp.write('1.,2.,3.,4.,5.\n')

@@ -200,7 +200,7 @@ def _gradient_id(img, l1_ratio=.5):
             "l1_ratio must be in the interval [0, 1]; got %s" % l1_ratio)
 
     shape = [img.ndim + 1] + list(img.shape)
-    gradient = np.zeros(shape, dtype=np.float)
+    gradient = np.zeros(shape, dtype=np.float64)
 
     # the gradient part: 'Clever' code to have a view of the gradient
     # with dimension i stop at -1

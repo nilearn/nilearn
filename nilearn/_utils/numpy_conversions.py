@@ -104,7 +104,7 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
                 # Changing order while reading through a memmap is incredibly
                 # inefficient.
                 ret = np.array(arr, copy=True)
-                ret = _asarray(arr, dtype=dtype, order=order)
+                ret = _asarray(ret, dtype=dtype, order=order)
 
     elif isinstance(arr, np.ndarray):
         ret = _asarray(arr, dtype=dtype, order=order)
@@ -155,7 +155,7 @@ def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
 
     try:
         # First, we try genfromtxt which works in most cases.
-        array = np.genfromtxt(csv_path, loose=False, **kwargs)
+        array = np.genfromtxt(csv_path, loose=False, encoding=None, **kwargs)
     except ValueError:
         # There was an error during the conversion to numpy array, probably
         # because the delimiter is wrong.
@@ -167,6 +167,7 @@ def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
             raise TypeError(
                 'Could not read CSV file [%s]: %s' % (csv_path, e.args[0]))
 
-        array = np.genfromtxt(csv_path, delimiter=dialect.delimiter, **kwargs)
+        array = np.genfromtxt(csv_path, delimiter=dialect.delimiter,
+                              encoding=None, **kwargs)
 
     return array

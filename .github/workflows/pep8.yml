@@ -1,0 +1,46 @@
+name: 'PEP8'
+
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  check_skip:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.result_step.outputs.ci-skip }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - id: result_step
+        uses: mstachniuk/ci-skip@master
+        with:
+          commit-filter: '[skip ci];[ci skip];[skip github]'
+          commit-filter-separator: ';'
+
+  pep8:
+    needs: check_skip
+    if: ${{ needs.check_skip.outputs.skip == 'false' }}
+    runs-on: ubuntu-latest
+    name: PEP8 checks
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+        name: 'Setup python'
+      - shell: bash {0}
+        run: |
+            python -m pip install --upgrade pip flake8
+        name: 'Install Flake8'
+      - shell: bash {0}
+        run: ./build_tools/flake8_diff.sh
+        name: 'Run Flake8 diff'

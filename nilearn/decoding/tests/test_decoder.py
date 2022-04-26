@@ -13,20 +13,21 @@ import warnings
 import numpy as np
 import pytest
 from nilearn._utils.param_validation import check_feature_screening
-from nilearn.decoding.decoder import (Decoder, DecoderRegressor, _BaseDecoder,
-                                      _check_estimator, _check_param_grid,
-                                      _parallel_fit, FREMClassifier,
-                                      FREMRegressor)
+from nilearn.decoding.decoder import (Decoder, DecoderRegressor,
+                                      FREMClassifier, FREMRegressor,
+                                      _BaseDecoder, _check_estimator,
+                                      _check_param_grid, _parallel_fit)
 from nilearn.decoding.tests.test_same_api import to_niimgs
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from sklearn.datasets import load_iris, make_classification, make_regression
+from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import LogisticRegression, RidgeClassifierCV, RidgeCV
-from sklearn.metrics import accuracy_score, r2_score, roc_auc_score
+from sklearn.metrics import accuracy_score, get_scorer, r2_score, roc_auc_score
 from sklearn.model_selection import KFold, LeaveOneGroupOut
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
-from sklearn.dummy import DummyClassifier, DummyRegressor
 
 try:
     from sklearn.metrics import check_scoring
@@ -173,6 +174,8 @@ def test_decoder_binary_classification():
     model = Decoder(mask=NiftiMasker())
     model.fit(X, y)
     y_pred = model.predict(X)
+    assert model.scoring == "roc_auc"
+    assert model.score(X, y) == 1.0
     assert accuracy_score(y, y_pred) > 0.95
 
     # decoder object use predict_proba for scoring with logistic model
@@ -180,43 +183,6 @@ def test_decoder_binary_classification():
     model.fit(X, y)
     y_pred = model.predict(X)
     assert accuracy_score(y, y_pred) > 0.95
-
-    # decoder object use prior as strategy (default) for dummy classifier
-    model = Decoder(estimator='dummy_classifier', mask=mask)
-    model.fit(X, y)
-    y_pred = model.predict(X)
-    assert accuracy_score(y, y_pred) == 0.5
-
-    # decoder object use other strategy for dummy classifier
-    param = dict(strategy='stratified')
-    dummy_classifier.set_params(**param)
-    model = Decoder(estimator=dummy_classifier, mask=mask)
-    model.fit(X, y)
-    y_pred = model.predict(X)
-    assert accuracy_score(y, y_pred) >= 0.5
-    # Returns model coefficients for dummy estimators as None
-    assert model.coef_ is None
-    # Dummy output are nothing but the attributes of the dummy estimators
-    assert model.dummy_output_ is not None
-    assert model.cv_scores_ is not None
-    # model attribute n_outputs_ depending on target y ndim
-    assert model.n_outputs_ == 1
-
-    # decoder object use other scoring metric for dummy classifier
-    model = Decoder(estimator='dummy_classifier', mask=mask)
-    model.fit(X, y)
-    y_pred = model.predict(X)
-    assert roc_auc_score(y, y_pred) == 0.5
-
-    model = Decoder(estimator='dummy_classifier', mask=mask, scoring='roc_auc')
-    model.fit(X, y)
-    assert np.mean(model.cv_scores_[0]) >= 0.5
-
-    # Raises a not implemented error with strategy constant
-    param = dict(strategy='constant')
-    dummy_classifier.set_params(**param)
-    model = Decoder(estimator=dummy_classifier, mask=mask)
-    pytest.raises(NotImplementedError, model.fit, X, y)
 
     # check different screening_percentile value
     for screening_percentile in [100, 20, None]:
@@ -246,6 +212,88 @@ def test_decoder_binary_classification():
         assert accuracy_score(y, y_pred) > 0.9
 
 
+def test_decoder_dummy_classifier():
+    n_samples = 400
+    X, y = make_classification(n_samples=n_samples, n_features=125, scale=3.0,
+                               n_informative=5, n_classes=2, random_state=42)
+    X, mask = to_niimgs(X, [5, 5, 5])
+
+    # We make 80% of y to have value of 1.0 to check whether the stratified
+    # strategy returns a proportion prediction value of 1.0 of roughly 80%
+    proportion = 0.8
+    y = np.zeros(n_samples)
+    y[:int(proportion * n_samples)] = 1.0
+
+    model = Decoder(estimator='dummy_classifier', mask=mask)
+    model.fit(X, y)
+    y_pred = model.predict(X)
+    assert np.sum(y_pred == 1.0) / n_samples - proportion < 0.05
+
+    # Set scoring of decoder with a callable
+    accuracy_scorer = get_scorer('accuracy')
+    model = Decoder(estimator='dummy_classifier', mask=mask,
+                    scoring=accuracy_scorer)
+    model.fit(X, y)
+    y_pred = model.predict(X)
+    assert model.scoring == accuracy_scorer
+    assert model.score(X, y) == accuracy_score(y, y_pred)
+
+    # An error should be raise when trying to compute the score without having
+    # called fit first.
+    model = Decoder(estimator='dummy_classifier', mask=mask)
+    with pytest.raises(
+            NotFittedError, match="This Decoder instance is not fitted yet."):
+        model.score(X, y)
+
+    # Decoder object use other strategy for dummy classifier.
+    param = dict(strategy='prior')
+    dummy_classifier.set_params(**param)
+    model = Decoder(estimator=dummy_classifier, mask=mask)
+    model.fit(X, y)
+    y_pred = model.predict(X)
+    assert np.all(y_pred) == 1.0
+    assert roc_auc_score(y, y_pred) == 0.5
+
+    # Same purpose with the above but for most_frequent strategy
+    param = dict(strategy='most_frequent')
+    dummy_classifier.set_params(**param)
+    model = Decoder(estimator=dummy_classifier, mask=mask)
+    model.fit(X, y)
+    y_pred = model.predict(X)
+    assert np.all(y_pred) == 1.0
+
+    # Returns model coefficients for dummy estimators as None
+    assert model.coef_ is None
+    # Dummy output are nothing but the attributes of the dummy estimators
+    assert model.dummy_output_ is not None
+    assert model.cv_scores_ is not None
+
+    # decoder object use other scoring metric for dummy classifier
+    model = Decoder(estimator='dummy_classifier', mask=mask, scoring='roc_auc')
+    model.fit(X, y)
+    assert np.mean(model.cv_scores_[0]) >= 0.45
+
+    # Raises a not implemented error with strategy constant
+    param = dict(strategy='constant')
+    dummy_classifier.set_params(**param)
+    model = Decoder(estimator=dummy_classifier, mask=mask)
+    pytest.raises(NotImplementedError, model.fit, X, y)
+
+    # Raises an error with unknown scoring metrics
+    model = Decoder(estimator=dummy_classifier, mask=mask, scoring="foo")
+    with pytest.raises(ValueError,
+                       match="'foo' is not a valid scoring value"):
+        model.fit(X, y)
+
+    # Default scoring
+    model = Decoder(estimator='dummy_classifier',
+                    scoring=None)
+    assert model.scoring is None
+    model.fit(X, y)
+    assert model.scorer_ == get_scorer("accuracy")
+    assert model.score(X, y) > 0.5
+
+
 def test_decoder_multiclass_classification():
     X, y = make_classification(n_samples=200, n_features=125, scale=3.0,
                                n_informative=5, n_classes=4, random_state=42)
@@ -258,11 +306,15 @@ def test_decoder_multiclass_classification():
     assert accuracy_score(y, y_pred) > 0.95
 
     # check classification with masker object and dummy classifier
-    model = Decoder(estimator='dummy_classifier', mask=NiftiMasker())
+    model = Decoder(estimator='dummy_classifier',
+                    mask=NiftiMasker(),
+                    scoring="accuracy")
     model.fit(X, y)
     y_pred = model.predict(X)
+    assert model.scoring == "accuracy"
     # 4-class classification
     assert accuracy_score(y, y_pred) > 0.2
+    assert model.score(X, y) == accuracy_score(y, y_pred)
 
     # check different screening_percentile value
     for screening_percentile in [100, 20, None]:
@@ -280,6 +332,7 @@ def test_decoder_multiclass_classification():
                                    cv=5)
             model.fit(X, y)
             y_pred = model.predict(X)
+            assert model.scoring == "roc_auc"
             assert accuracy_score(y, y_pred) > 0.9
 
     # check cross-validation scheme and fit attribute with groups enabled
@@ -322,26 +375,6 @@ def test_decoder_regression():
             y_pred = model.predict(X)
             assert r2_score(y, y_pred) > 0.95
 
-    # Regression with dummy estimator
-    model = DecoderRegressor(estimator='dummy_regressor', mask=mask,
-                             scoring='r2', screening_percentile=1)
-    model.fit(X, y)
-    y_pred = model.predict(X)
-    assert r2_score(y, y_pred) <= 0.
- 
-    # decoder object use other strategy for dummy regressor
-    param = dict(strategy='median')
-    dummy_regressor.set_params(**param)
-    model = DecoderRegressor(estimator=dummy_regressor, mask=mask)
-    model.fit(X, y)
-    y_pred = model.predict(X)
-    assert r2_score(y, y_pred) <= 0.
-    # Returns model coefficients for dummy estimators as None
-    assert model.coef_ is None
-    # Dummy output are nothing but the attributes of the dummy estimators
-    assert model.dummy_output_ is not None
-    assert model.cv_scores_ is not None
-
     dim = 5
     X, y = make_regression(n_samples=100, n_features=dim**3, n_informative=dim,
                            noise=1.5, bias=1.0, random_state=42)
@@ -355,7 +388,47 @@ def test_decoder_regression():
                               cv=10)
         model.fit(X, y)
         y_pred = model.predict(X)
+        assert model.scoring == "r2"
         assert r2_score(y, y_pred) > 0.95
+        assert model.score(X, y) == r2_score(y, y_pred)
+
+
+def test_decoder_dummy_regression():
+    dim = 30
+    X, y = make_regression(n_samples=100, n_features=dim**3, n_informative=dim,
+                           noise=1.5, bias=1.0, random_state=42)
+    X = StandardScaler().fit_transform(X)
+    X, mask = to_niimgs(X, [dim, dim, dim])
+
+    # Regression with dummy estimator
+    model = DecoderRegressor(estimator='dummy_regressor', mask=mask,
+                             scoring='r2', screening_percentile=1)
+    model.fit(X, y)
+    y_pred = model.predict(X)
+    assert model.scoring == "r2"
+    assert r2_score(y, y_pred) <= 0.
+    assert model.score(X, y) == r2_score(y, y_pred)
+
+    # Check that default scoring metric for regression is r2
+    model = DecoderRegressor(estimator='dummy_regressor',
+                             mask=mask,
+                             scoring=None)
+    model.fit(X, y)
+    y_pred = model.predict(X)
+    assert model.score(X, y) == r2_score(y, y_pred)
+
+    # decoder object use other strategy for dummy regressor
+    param = dict(strategy='median')
+    dummy_regressor.set_params(**param)
+    model = DecoderRegressor(estimator=dummy_regressor, mask=mask)
+    model.fit(X, y)
+    y_pred = model.predict(X)
+    assert r2_score(y, y_pred) <= 0.
+    # Returns model coefficients for dummy estimators as None
+    assert model.coef_ is None
+    # Dummy output are nothing but the attributes of the dummy estimators
+    assert model.dummy_output_ is not None
+    assert model.cv_scores_ is not None
 
 
 def test_decoder_apply_mask():

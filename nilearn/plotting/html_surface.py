@@ -6,6 +6,7 @@ import matplotlib as mpl
 from matplotlib import cm as mpl_cm
 
 from nilearn._utils.niimg_conversions import check_niimg_3d
+from nilearn._utils import fill_doc
 from nilearn import surface
 from nilearn import datasets
 from nilearn.plotting.html_document import HTMLDocument
@@ -40,9 +41,7 @@ def _get_vertexcolor(surf_map, cmap, norm,
 def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
                   black_bg=False, bg_map=None, symmetric_cmap=True,
                   vmax=None, vmin=None):
-    """
-    Prepare info for plotting one surface map on a single mesh.
-
+    """Prepare info for plotting one surface map on a single mesh.
 
     This computes the dictionary that gets inserted in the web page,
     which contains the encoded mesh, colors, min and max values, and
@@ -82,9 +81,7 @@ def _check_mesh(mesh):
 def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
                     cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
                     vmax=None, vmin=None, vol_to_surf_kwargs={}):
-    """
-    Project 3D map on cortex; prepare info to plot both hemispheres.
-
+    """Project 3D map on cortex; prepare info to plot both hemispheres.
 
     This computes the dictionary that gets inserted in the web page,
     which contains encoded meshes, colors, min and max values, and
@@ -129,71 +126,81 @@ def _fill_html_template(info, embed_js=True):
     return SurfaceView(as_html)
 
 
+@fill_doc
 def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
                      threshold=None, cmap=cm.cold_hot,
                      black_bg=False, vmax=None, vmin=None, symmetric_cmap=True,
                      colorbar=True, colorbar_height=.5, colorbar_fontsize=25,
-                     title=None, title_fontsize=25):
-    """
-    Insert a surface plot of a statistical map into an HTML page.
+                     title=None, title_fontsize=25, vol_to_surf_kwargs={}):
+    """Insert a surface plot of a statistical map into an HTML page.
 
     Parameters
     ----------
     stat_map_img : Niimg-like object, 3D
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa: E501
 
     surf_mesh : str or dict, optional.
-        if 'fsaverage5', use fsaverage5 mesh from nilearn.datasets
-        if 'fsaverage', use fsaverage mesh from nilearn.datasets
-        if a dictionary, it should have the same structure as those returned by
+        If a string, it should be one of the following values:
+        %(fsaverage_options)s
+        If a dictionary, it should have the same structure as those returned by
         nilearn.datasets.fetch_surf_fsaverage, i.e. keys should be 'infl_left',
         'pial_left', 'sulc_left', 'infl_right', 'pial_right', and 'sulc_right',
         containing inflated and pial meshes, and sulcal depth values for left
         and right hemispheres.
+        Default='fsaverage5'.
 
-    threshold : str, number or None, optional (default=None)
+    threshold : str, number or None, optional
         If None, no thresholding.
         If it is a number only values of amplitude greater
         than threshold will be shown.
         If it is a string it must finish with a percent sign,
-        e.g. "25.3%", and only values of amplitude above the
+        e.g. "25.3%%", and only values of amplitude above the
         given percentile will be shown.
 
     cmap : str or matplotlib colormap, optional
+        Colormap to use. Default=cm.cold_hot.
 
-    black_bg : bool, optional (default=False)
+    black_bg : bool, optional
         If True, image is plotted on a black background. Otherwise on a
-        white background.
+        white background. Default=False.
 
-    vmax : float or None, optional (default=None)
+    vmax : float or None, optional
         upper bound for the colorbar. if None, use the absolute max of the
         brain map.
 
-    vmin : float, or None (default=None)
+    vmin : float or None, optional
         min value for mapping colors.
         If `symmetric_cmap` is `True`, `vmin` is always equal to `-vmax` and
         cannot be chosen.
         If `symmetric_cmap` is `False`, `vmin` defaults to the min of the
         image, or 0 when a threshold is used.
 
-    symmetric_cmap : bool, optional (default=True)
+    symmetric_cmap : bool, optional
         Make colormap symmetric (ranging from -vmax to vmax).
         You can set it to False if you are plotting only positive values.
+        Default=True.
 
-    colorbar : bool, optional (default=True)
-        add a colorbar
+    colorbar : bool, optional
+        Add a colorbar or not. Default=True.
 
-    colorbar_height : float, optional (default=.5)
-        height of the colorbar, relative to the figure height
+    colorbar_height : float, optional
+        Height of the colorbar, relative to the figure height. Default=0.5.
 
-    colorbar_fontsize : int, optional (default=25)
-        fontsize of the colorbar tick labels
+    colorbar_fontsize : int, optional
+        Fontsize of the colorbar tick labels. Default=25.
 
-    title : str, optional (default=None)
-        title for the plot
+    title : str, optional
+        Title for the plot.
 
-    title_fontsize : int, optional (default=25)
-        fontsize of the title
+    title_fontsize : int, optional
+        Fontsize of the title. Default=25.
+
+    vol_to_surf_kwargs : dict, optional
+        Dictionary of keyword arguments that are passed on to
+        :func:`nilearn.surface.vol_to_surf` when extracting a surface from
+        the input image. See the function documentation for details.This
+        parameter is especially useful when plotting an atlas. See
+        https://nilearn.github.io/stable/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html
 
     Returns
     -------
@@ -214,7 +221,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     info = full_brain_info(
         volume_img=stat_map_img, mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, vmax=vmax, vmin=vmin,
-        symmetric_cmap=symmetric_cmap)
+        symmetric_cmap=symmetric_cmap, vol_to_surf_kwargs=vol_to_surf_kwargs)
     info['colorbar'] = colorbar
     info['cbar_height'] = colorbar_height
     info['cbar_fontsize'] = colorbar_fontsize
@@ -227,12 +234,11 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
               cmap=cm.cold_hot, black_bg=False, vmax=None, vmin=None,
               symmetric_cmap=True, colorbar=True, colorbar_height=.5,
               colorbar_fontsize=25, title=None, title_fontsize=25):
-    """
-    Insert a surface plot of a surface map into an HTML page.
+    """Insert a surface plot of a surface map into an HTML page.
 
     Parameters
     ----------
-    surf_mesh: str or list of two numpy.ndarray
+    surf_mesh : str or list of two numpy.ndarray
         Surface mesh geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -240,18 +246,18 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         of the mesh vertices, the second containing the indices
         (into coords) of the mesh faces.
 
-    surf_map: str or numpy.ndarray, optional.
+    surf_map : str or numpy.ndarray, optional
         Data to be displayed on the surface mesh. Can be a file (valid formats
         are .gii, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
-        .thickness, .curv, .sulc, .annot, .label) or
+        .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array
 
-    bg_map: Surface data, optional,
+    bg_map : Surface data, optional
         Background image to be plotted on the mesh underneath the
         surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
 
-    threshold : str, number or None, optional (default=None)
+    threshold : str, number or None, optional
         If None, no thresholding.
         If it is a number only values of amplitude greater
         than threshold will be shown.
@@ -261,41 +267,41 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
 
     cmap : str or matplotlib colormap, optional
         You might want to change it to 'gnist_ncar' if plotting a
-        surface atlas.
+        surface atlas. Default=cm.cold_hot.
 
-    black_bg : bool, optional (default=False)
+    black_bg : bool, optional
         If True, image is plotted on a black background. Otherwise on a
-        white background.
+        white background. Default=False.
 
-    symmetric_cmap : bool, optional (default=True)
+    symmetric_cmap : bool, optional
         Make colormap symmetric (ranging from -vmax to vmax).
-        Set it to False if you are plotting a surface atlas.
+        Set it to False if you are plotting a surface atlas. Default=True.
 
-    vmax : float or None, optional (default=None)
+    vmax : float or None, optional
         upper bound for the colorbar. if None, use the absolute max of the
         brain map.
 
-    vmin : float, or None (default=None)
+    vmin : float or None, optional
         min value for mapping colors.
         If `symmetric_cmap` is `True`, `vmin` is always equal to `-vmax` and
         cannot be chosen.
         If `symmetric_cmap` is `False`, `vmin` defaults to the min of the
         image, or 0 when a threshold is used.
 
-    colorbar : bool, optional (default=True)
-        add a colorbar
+    colorbar : bool, optional
+        Add a colorbar or not. Default=True.
 
-    colorbar_height : float, optional (default=.5)
-        height of the colorbar, relative to the figure height
+    colorbar_height : float, optional
+        Height of the colorbar, relative to the figure height. Default=0.5.
 
-    colorbar_fontsize : int, optional (default=25)
-        fontsize of the colorbar tick labels
+    colorbar_fontsize : int, optional
+        Fontsize of the colorbar tick labels. Default=25.
 
-    title : str, optional (default=None)
-        title for the plot
+    title : str, optional
+        Title for the plot.
 
-    title_fontsize : int, optional (default=25)
-        fontsize of the title
+    title_fontsize : int, optional
+        Fontsize of the title. Default=25.
 
     Returns
     -------

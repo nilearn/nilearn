@@ -8,25 +8,26 @@ import numpy as np
 
 
 def fast_abs_percentile(data, percentile=80):
-    """ A fast version of the percentile of the absolute value.
+    """A fast version of the percentile of the absolute value.
 
     Parameters
     ----------
-    data: ndarray, possibly masked array
-        The input data
-    percentile: number between 0 and 100
-        The percentile that we are asking for
+    data : ndarray, possibly masked array
+        The input data.
+
+    percentile : number between 0 and 100
+        The percentile that we are asking for.
 
     Returns
     -------
-    value: number
-        The score at percentile
+    value : number
+        The score at percentile.
 
     Notes
     -----
-
     This is a faster, and less accurate version of
     scipy.stats.scoreatpercentile(np.abs(data), percentile)
+
     """
     if hasattr(data, 'mask'):
         # Catter for masked arrays
@@ -47,16 +48,20 @@ def is_spd(M, decimal=15, verbose=1):
 
     Parameters
     ----------
-    M: numpy.ndarray
-        symmetric positive definite matrix.
+    M : numpy.ndarray
+        Symmetric positive definite matrix.
 
-    verbose: int, optional
-        verbosity level (0 means no message)
+    decimal : int, optional
+        Decimal. Default=15.
+
+    verbose : int, optional
+        Verbosity level (0 means no message). Default=1.
 
     Returns
     -------
-    answer: boolean
+    answer : boolean
         True if matrix is symmetric positive definite, False otherwise.
+
     """
     if not np.allclose(M, M.T, atol=0, rtol=10 ** -decimal):
         if verbose > 0:

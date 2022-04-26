@@ -12,10 +12,10 @@ This section gives an introduction to the main concept of decoding:
 predicting from brain images.
 
 The discussion and examples are articulated on the analysis of the Haxby
-2001 dataset, showing how to predict from fMRI images the stimuli that
+2001 dataset, showing how to predict from :term:`fMRI` images the stimuli that
 the subject is viewing. However the process is the same in other settings
 predicting from other brain imaging modalities, for instance predicting
-phenotype or diagnostic status from VBM (Voxel Based Morphometry) maps
+phenotype or diagnostic status from :term:`VBM` (Voxel Based Morphometry) maps
 (as illustrated in :ref:`a more complex example
 <sphx_glr_auto_examples_02_decoding_plot_oasis_vbm.py>`), or from FA maps
 to capture diffusion mapping.
@@ -39,18 +39,18 @@ The Haxby 2001 experiment
 
 In the Haxby experiment, subjects were presented visual stimuli from
 different categories. We are going to predict which category the subject is
-seeing from the fMRI activity recorded in regions of the ventral visual system.
+seeing from the :term:`fMRI` activity recorded in regions of the ventral visual system.
 Significant prediction shows that the signal in the region contains
 information on the corresponding category.
 
-.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_004.png
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_007.png
    :target: ../auto_examples/02_decoding/plot_haxby_stimuli.html
    :scale: 30
    :align: left
 
    Face stimuli
 
-.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_002.png
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_004.png
    :target: ../auto_examples/02_decoding/plot_haxby_stimuli.html
    :scale: 30
    :align: left
@@ -117,8 +117,8 @@ Loading the data into nilearn
   (:ref:`more on data input <loading_data>`).
 
 
-* **Masking fMRI data**: To perform the analysis on some voxels only, we will
-  provide a spatial mask of voxels to keep, which is provided with the dataset
+* **Masking fMRI data**: To perform the analysis on some :term:`voxels<voxel>` only, we will
+  provide a spatial mask of :term:`voxels<voxel>` to keep, which is provided with the dataset
   (here `mask_vt` a mask of the ventral temporal cortex that comes with data).
 
 * **Loading the behavioral labels**: Behavioral information is often stored
@@ -133,8 +133,8 @@ Loading the data into nilearn
   * :ref:`masking`
     To better control this process of spatial masking and add additional signal
     processing steps (smoothing, filtering, standardizing...), we could
-    explicitly define a masker :  :class:`nilearn.input_data.NiftiMasker`.
-    This object extracts voxels belonging to a given spatial mask and converts
+    explicitly define a masker :  :class:`nilearn.maskers.NiftiMasker`.
+    This object extracts :term:`voxels<voxel>` belonging to a given spatial mask and converts
     their signal to a 2D data matrix with a shape (n_timepoints, n_voxels)
     (see :ref:`mask_4d_2_3d` for a discussion on using
 
@@ -232,7 +232,7 @@ use 4 folds to `fit` your estimator, and 1 to `predict` and measure the errors
 made by your estimators. You repeat this for every combination of folds, and get
 5 prediction "scores", one for each fold.
 
-During the `fit`, :class:`nilearn.decoding.Decoder` object implicitely used a
+During the `fit`, :class:`nilearn.decoding.Decoder` object implicitly used a
 cross-validation: Stratified K-fold by default. You can easily inspect
 the prediction "score" it got in each fold.
 
@@ -282,9 +282,9 @@ the number of total errors. It is not always a sensible metric,
 especially in the case of very imbalanced classes, as in such situations
 choosing the dominant class can achieve a low number of errors.
 
-Other metrics, such as the AUC (Area Under the Curve, for the ROC: the
-Receiver Operating Characteristic), can be used through the `scoring` argument
-of :class:`nilearn.decoding.Decoder`.
+Other metrics, such as the :term:`AUC` (Area Under the Curve, for the
+:term:`ROC`: the Receiver Operating Characteristic), can be used through the
+`scoring` argument of :class:`nilearn.decoding.Decoder`.
 
 .. seealso::
   the `list of scoring options

@@ -10,13 +10,15 @@ We use the `MSDL atlas
 of functional regions in movie-watching.
 
 The key to extract signals is to use the
-:class:`nilearn.input_data.NiftiMapsMasker` that can transform nifti
+:class:`nilearn.maskers.NiftiMapsMasker` that can transform nifti
 objects to time series using a probabilistic atlas.
 
-As the MSDL atlas comes with (x, y, z) MNI coordinates for the different
-regions, we can visualize the matrix as a graph of interaction in a
-brain. To avoid having too dense a graph, we represent only the 20% edges
-with the highest values.
+As the MSDL atlas comes with (x, y, z) :term:`MNI` coordinates for the
+different regions, we can visualize the matrix as a graph of
+interaction in a brain. To avoid having too dense a graph, we represent
+only the 20% edges with the highest values.
+
+.. include:: ../../../examples/masker_note.rst
 
 """
 ############################################################################
@@ -38,12 +40,21 @@ print('First subject resting-state nifti image (4D) is located at: %s' %
 ############################################################################
 # Extract the time series
 # ------------------------
-from nilearn.input_data import NiftiMapsMasker
+from nilearn.maskers import NiftiMapsMasker
 masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True,
                          memory='nilearn_cache', verbose=5)
+masker.fit(data.func[0])
+time_series = masker.transform(data.func[0],
+                               confounds=data.confounds)
 
-time_series = masker.fit_transform(data.func[0],
-                                   confounds=data.confounds)
+############################################################################
+# We can generate an HTML report and visualize the components of the
+# :class:`~nilearn.maskers.NiftiMapsMasker`.
+# You can pass the indices of the spatial maps you want to include in the
+# report in the order you want them to appear.
+# Here, we only include maps 2, 6, 7, 16, and 21 in the report:
+report = masker.generate_report(displayed_maps=[2, 6, 7, 16, 21])
+report
 
 ############################################################################
 # `time_series` is now a 2D matrix, of shape (number of time points x
@@ -96,4 +107,3 @@ view
 
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
-

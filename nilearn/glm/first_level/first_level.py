@@ -19,12 +19,13 @@ import numpy as np
 import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
-from nibabel.onetime import auto_attr
 from sklearn.base import clone
+from sklearn.cluster import KMeans
 
+from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
+from nilearn._utils import fill_doc
 from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
-                                _check_run_tables, get_bids_files,
-                                parse_bids_filename)
+                                _check_run_tables, _check_run_sample_masks)
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn.glm.contrasts import (_compute_fixed_effect_contrast,
                                    expression_to_contrast_vector)
@@ -45,7 +46,8 @@ def mean_scaling(Y, axis=0):
     Y : array of shape (n_time_points, n_voxels)
        The input data.
 
-    axis : Axis along which the scaling mean should be calculated. Default 0.
+    axis : int, optional
+        Axis along which the scaling mean should be calculated. Default=0.
 
     Returns
     -------
@@ -71,6 +73,34 @@ def _ar_model_fit(X, val, Y):
     return ARModel(X, val).fit(Y)
 
 
+def _yule_walker(x, order):
+    """Compute Yule-Walker (adapted from MNE and statsmodels).
+
+    Operates along the last axis of x.
+    """
+    from scipy.linalg import toeplitz
+    if order < 1:
+        raise ValueError("AR order must be positive")
+    if type(order) is not int:
+        raise TypeError("AR order must be an integer")
+    if x.ndim < 1:
+        raise TypeError("Input data must have at least 1 dimension")
+
+    denom = x.shape[-1] - np.arange(order + 1)
+    n = np.prod(np.array(x.shape[:-1], int))
+    r = np.zeros((n, order + 1), np.float64)
+    y = x - x.mean()
+    y.shape = (n, x.shape[-1])  # inplace
+    r[:, 0] += (y[:, np.newaxis, :] @ y[:, :, np.newaxis])[:, 0, 0]
+    for k in range(1, order + 1):
+        r[:, k] += (y[:, np.newaxis, 0:-k] @ y[:, k:, np.newaxis])[:, 0, 0]
+    r /= denom * x.shape[-1]
+    rt = np.array([toeplitz(rr[:-1]) for rr in r], np.float64)
+    rho = np.linalg.solve(rt, r[:, 1:])
+    rho.shape = x.shape[:-1] + (order,)
+    return rho
+
+
 def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     """ GLM fit for an fMRI data matrix
 
@@ -82,18 +112,26 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     X : array of shape (n_time_points, n_regressors)
         The design matrix.
 
-    noise_model : {'ar1', 'ols'}, optional
-        The temporal variance model. Defaults to 'ar1'.
+    noise_model : {'ar(N)', 'ols'}, optional
+        The temporal variance model.
+        To specify the order of an autoregressive model place the
+        order after the characters `ar`, for example to specify a third order
+        model use `ar3`.
+        Default='ar1'.
 
     bins : int, optional
-        Maximum number of discrete bins for the AR(1) coef histogram.
+        Maximum number of discrete bins for the AR coef histogram.
+        If an autoregressive model with order greater than one is specified
+        then adaptive quantification is performed and the coefficients
+        will be clustered via K-means with `bins` number of clusters.
+        Default=100.
 
     n_jobs : int, optional
         The number of CPUs to use to do the computation. -1 means
-        'all CPUs'.
+        'all CPUs'. Default=1.
 
     verbose : int, optional
-        The verbosity level. Defaut is 0
+        The verbosity level. Default=0.
 
     Returns
     -------
@@ -105,8 +143,8 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
         values are RegressionResults instances corresponding to the voxels.
 
     """
-    acceptable_noise_models = ['ar1', 'ols']
-    if noise_model not in acceptable_noise_models:
+    acceptable_noise_models = ['ols', 'arN']
+    if ((noise_model[:2] != 'ar') and (noise_model != 'ols')):
         raise ValueError(
             "Acceptable noise models are {0}. You provided "
             "'noise_model={1}'".format(acceptable_noise_models,
@@ -122,26 +160,53 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     # Create the model
     ols_result = OLSModel(X).fit(Y)
 
-    if noise_model == 'ar1':
-        # compute and discretize the AR1 coefs
-        ar1 = (
-            (ols_result.residuals[1:]
-             * ols_result.residuals[:-1]).sum(axis=0)
-            / (ols_result.residuals ** 2).sum(axis=0)
-        )
+    if noise_model[:2] == 'ar':
+
+        err_msg = ('AR order must be a positive integer specified as arN, '
+                   'where N is an integer. E.g. ar3. '
+                   'You provided {0}.'.format(noise_model))
+        try:
+            ar_order = int(noise_model[2:])
+        except ValueError:
+            raise ValueError(err_msg)
+
+        # compute the AR coefficients
+        ar_coef_ = _yule_walker(ols_result.residuals.T, ar_order)
         del ols_result
-        ar1 = (ar1 * bins).astype(np.int) * 1. / bins
-        # Fit the AR model acccording to current AR(1) estimates
+        if len(ar_coef_[0]) == 1:
+            ar_coef_ = ar_coef_[:, 0]
+
+        # Either bin the AR1 coefs or cluster ARN coefs
+        if ar_order == 1:
+            for idx in range(len(ar_coef_)):
+                ar_coef_[idx] = (ar_coef_[idx] * bins).astype(int) * 1. / bins
+            labels = np.array([str(val) for val in ar_coef_])
+        else:  # AR(N>1) case
+            n_clusters = np.min([bins, Y.shape[1]])
+            kmeans = KMeans(n_clusters=n_clusters).fit(ar_coef_)
+            ar_coef_ = kmeans.cluster_centers_[kmeans.labels_]
+
+            # Create a set of rounded values for the labels with _ between
+            # each coefficient
+            cluster_labels = kmeans.cluster_centers_.copy()
+            cluster_labels = np.array(['_'.join(map(str, np.round(a, 2)))
+                                       for a in cluster_labels])
+            # Create labels and coef per voxel
+            labels = np.array([cluster_labels[i] for i in kmeans.labels_])
+
+        unique_labels = np.unique(labels)
         results = {}
-        labels = ar1
-        # Parallelize by creating a job per ARModel
-        vals = np.unique(ar1)
+
+        # Fit the AR model according to current AR(N) estimates
         ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
-            delayed(_ar_model_fit)(X, val, Y[:, labels == val])
-            for val in vals)
-        for val, result in zip(vals, ar_result):
+            delayed(_ar_model_fit)(X, ar_coef_[labels == val][0],
+                                   Y[:, labels == val])
+            for val in unique_labels)
+
+        # Converting the key to a string is required for AR(N>1) cases
+        for val, result in zip(unique_labels, ar_result):
             results[val] = result
-        del vals
+        del unique_labels
         del ar_result
 
     else:
@@ -151,6 +216,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
     return labels, results
 
 
+@fill_doc
 class FirstLevelModel(BaseGLM):
     """ Implementation of the General Linear Model
     for single session fMRI data.
@@ -160,41 +226,38 @@ class FirstLevelModel(BaseGLM):
     t_r : float
         This parameter indicates repetition times of the experimental runs.
         In seconds. It is necessary to correctly consider times in the design
-        matrix. This parameter is also passed to nilearn.signal.clean.
+        matrix. This parameter is also passed to :func:`nilearn.signal.clean`.
         Please see the related documentation for details.
 
-    slice_time_ref : float, optional (default 0.)
+    slice_time_ref : float, optional
         This parameter indicates the time of the reference slice used in the
         slice timing preprocessing step of the experimental runs. It is
         expressed as a percentage of the t_r (time repetition), so it can have
-        values between 0. and 1.
-
-    hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
-        'glover', 'glover + derivative', 'glover + derivative + dispersion',
-        'fir', None}
-        String that specifies the hemodynamic response function.
-        Defaults to 'glover'.
-
+        values between 0. and 1. Default=0.
+    %(hrf_model)s
+        Default='glover'.
     drift_model : string, optional
         This parameter specifies the desired drift model for the design
         matrices. It can be 'polynomial', 'cosine' or None.
+        Default='cosine'.
 
     high_pass : float, optional
         This parameter specifies the cut frequency of the high-pass filter in
         Hz for the design matrices. Used only if drift_model is 'cosine'.
+        Default=0.01.
 
     drift_order : int, optional
-        This parameter specifices the order of the drift model (in case it is
-        polynomial) for the design matrices.
+        This parameter specifies the order of the drift model (in case it is
+        polynomial) for the design matrices. Default=1.
 
     fir_delays : array of shape(n_onsets) or list, optional
         In case of FIR design, yields the array of delays used in the FIR
-        model, in scans.
+        model, in scans. Default=[0].
 
     min_onset : float, optional
         This parameter specifies the minimal onset relative to the design
         (in seconds). Events that start before (slice_time_ref * t_r +
-        min_onset) are not considered.
+        min_onset) are not considered. Default=-24.
 
     mask_img : Niimg-like, NiftiMasker object or False, optional
         Mask to be used on data. If an instance of masker is passed,
@@ -209,11 +272,7 @@ class FirstLevelModel(BaseGLM):
     target_shape : 3-tuple of integers, optional
         This parameter is passed to nilearn.image.resample_img.
         Please see the related documentation for details.
-
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the size in millimeters of
-        the spatial smoothing to apply to the signal.
-
+    %(smoothing_fwhm)s
     memory : string, optional
         Path to the directory used to cache the masking process and the glm
         fit. By default, no caching is done.
@@ -225,9 +284,9 @@ class FirstLevelModel(BaseGLM):
 
     standardize : boolean, optional
         If standardize is True, the time-series are centered and normed:
-        their variance is put to 1 in the time dimension.
+        their variance is put to 1 in the time dimension. Default=False.
 
-    signal_scaling : False, int or (int, int), optional,
+    signal_scaling : False, int or (int, int), optional
         If not False, fMRI signals are
         scaled to the mean value of scaling_axis given,
         which can be 0, 1 or (0, 1).
@@ -237,25 +296,27 @@ class FirstLevelModel(BaseGLM):
         which is known as grand mean scaling.
         Incompatible with standardize (standardize=False is enforced when
         signal_scaling is not False).
+        Default=0.
 
     noise_model : {'ar1', 'ols'}, optional
-        The temporal variance model. Defaults to 'ar1'
+        The temporal variance model. Default='ar1'.
 
     verbose : integer, optional
         Indicate the level of verbosity. By default, nothing is printed.
         If 0 prints nothing. If 1 prints progress by computation of
         each run. If 2 prints timing details of masker and GLM. If 3
-        prints masker computation details.
+        prints masker computation details. Default=0.
 
     n_jobs : integer, optional
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
+        Default=1.
 
     minimize_memory : boolean, optional
         Gets rid of some variables on the model fit results that are not
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
-        on memory consumption. True by default.
+        on memory consumption. Default=True.
 
     subject_label : string, optional
         This id will be used to identify a `FirstLevelModel` when passed to
@@ -272,12 +333,12 @@ class FirstLevelModel(BaseGLM):
         if minimize_memory is True,
         RegressionResults if minimize_memory is False
 
-    Note
-    ----
-    This class is experimental. 
+    Notes
+    -----
+    This class is experimental.
     It may change in any future release of Nilearn.
-    """
 
+    """
     def __init__(self, t_r=None, slice_time_ref=0., hrf_model='glover',
                  drift_model='cosine', high_pass=.01, drift_order=1,
                  fir_delays=[0], min_onset=-24, mask_img=None,
@@ -308,8 +369,7 @@ class FirstLevelModel(BaseGLM):
         if signal_scaling is False:
             self.signal_scaling = signal_scaling
         elif signal_scaling in [0, 1, (0, 1)]:
-            self.scaling_axis = signal_scaling
-            self.signal_scaling = True
+            self.signal_scaling = signal_scaling
             self.standardize = False
         else:
             raise ValueError('signal_scaling must be "False", "0", "1"'
@@ -324,9 +384,17 @@ class FirstLevelModel(BaseGLM):
         self.results_ = None
         self.subject_label = subject_label
 
-    def fit(self, run_imgs, events=None, confounds=None,
-            design_matrices=None):
-        """ Fit the GLM
+    @property
+    def scaling_axis(self):
+        warn(DeprecationWarning(
+            "Deprecated. `scaling_axis` will be removed in 0.11.0. "
+            "Please use `signal_scaling` instead."
+        ))
+        return self.signal_scaling
+
+    def fit(self, run_imgs, events=None, confounds=None, sample_masks=None,
+            design_matrices=None, bins=100):
+        """Fit the GLM
 
         For each run:
         1. create design matrix X
@@ -335,34 +403,58 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        run_imgs: Niimg-like object or list of Niimg-like objects,
-            See http://nilearn.github.io/manipulating_images/input_output.html#inputing-data-file-names-or-image-objects  # noqa:E501
+        run_imgs : Niimg-like object or list of Niimg-like objects,
             Data on which the GLM will be fitted. If this is a list,
             the affine is considered the same for all.
 
-        events: pandas Dataframe or string or list of pandas DataFrames or
-                   strings
-
+        events : pandas Dataframe or string or list of pandas DataFrames \
+                 or strings, optional
             fMRI events used to build design matrices. One events object
             expected per run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        confounds: pandas Dataframe, numpy array or string or
-                   list of pandas DataFrames, numpy arays or strings 
-
+        confounds : pandas Dataframe, numpy array or string or
+            list of pandas DataFrames, numpy arrays or strings, optional
             Each column in a DataFrame corresponds to a confound variable
             to be included in the regression model of the respective run_img.
             The number of rows must match the number of volumes in the
             respective run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
-        design_matrices: pandas DataFrame or list of pandas DataFrames,
+        sample_masks : array_like, or list of array_like, optional
+            shape of array: (number of scans - number of volumes removed, )
+            Indices of retained volumes. Masks the niimgs along time/fourth
+            dimension to perform scrubbing (remove volumes with high motion)
+            and/or remove non-steady-state volumes.
+            Default=None.
+
+            .. versionadded:: 0.9.2.dev
+
+        design_matrices : pandas DataFrame or \
+                          list of pandas DataFrames, optional
             Design matrices that will be used to fit the GLM. If given it
             takes precedence over events and confounds.
 
+        bins : int, optional
+            Maximum number of discrete bins for the AR coef histogram.
+            If an autoregressive model with order greater than one is specified
+            then adaptive quantification is performed and the coefficients
+            will be clustered via K-means with `bins` number of clusters.
+            Default=100.
+
         """
+        # Initialize masker_ to None such that attribute exists
+        self.masker_ = None
+
+        # Raise a warning if both design_matrices and confounds are provided
+        if design_matrices is not None and \
+                (confounds is not None or events is not None):
+            warn(
+                'If design matrices are supplied, '
+                'confounds and events will be ignored.'
+            )
         # Local import to prevent circular imports
-        from nilearn.input_data import NiftiMasker  # noqa
+        from nilearn.maskers import NiftiMasker  # noqa
 
         # Check arguments
         # Check imgs type
@@ -386,6 +478,9 @@ class FirstLevelModel(BaseGLM):
         if confounds is not None:
             confounds = _check_run_tables(run_imgs, confounds, 'confounds')
 
+        if sample_masks is not None:
+            sample_masks = _check_run_sample_masks(len(run_imgs), sample_masks)
+
         # Learn the mask
         if self.mask_img is False:
             # We create a dummy mask to preserve functionality of api
@@ -406,6 +501,8 @@ class FirstLevelModel(BaseGLM):
                                        )
             self.masker_.fit(run_imgs[0])
         else:
+            # Make sure masker has been fitted otherwise no attribute mask_img_
+            self.mask_img._check_fitted()
             if self.mask_img.mask_img_ is None and self.masker_ is None:
                 self.masker_ = clone(self.mask_img)
                 for param_name in ['target_affine', 'target_shape',
@@ -416,7 +513,7 @@ class FirstLevelModel(BaseGLM):
                         continue
                     if getattr(self.masker_, param_name) is not None:
                         warn('Parameter %s of the masker'
-                             ' overriden' % param_name)
+                             ' overridden' % param_name)
                     setattr(self.masker_, param_name, our_param)
                 self.masker_.fit(run_imgs[0])
             else:
@@ -473,6 +570,13 @@ class FirstLevelModel(BaseGLM):
                                                         )
             else:
                 design = design_matrices[run_idx]
+
+            if sample_masks is not None:
+                sample_mask = sample_masks[run_idx]
+                design = design.iloc[sample_mask, :]
+            else:
+                sample_mask = None
+
             self.design_matrices_.append(design)
 
             # Mask and prepare data for GLM
@@ -480,7 +584,7 @@ class FirstLevelModel(BaseGLM):
                 t_masking = time.time()
                 sys.stderr.write('Starting masker computation \r')
 
-            Y = self.masker_.transform(run_img)
+            Y = self.masker_.transform(run_img, sample_mask=sample_mask)
             del run_img  # Delete unmasked image to save memory
 
             if self.verbose > 1:
@@ -488,8 +592,8 @@ class FirstLevelModel(BaseGLM):
                 sys.stderr.write('Masker took %d seconds       \n'
                                  % t_masking)
 
-            if self.signal_scaling:
-                Y, _ = mean_scaling(Y, self.scaling_axis)
+            if self.signal_scaling is not False:  # noqa
+                Y, _ = mean_scaling(Y, self.signal_scaling)
             if self.memory:
                 mem_glm = self.memory.cache(run_glm, ignore=['n_jobs'])
             else:
@@ -501,7 +605,7 @@ class FirstLevelModel(BaseGLM):
                 sys.stderr.write('Performing GLM computation\r')
             labels, results = mem_glm(Y, design.values,
                                       noise_model=self.noise_model,
-                                      bins=100, n_jobs=self.n_jobs)
+                                      bins=bins, n_jobs=self.n_jobs)
             if self.verbose > 1:
                 t_glm = time.time() - t_glm
                 sys.stderr.write('GLM took %d seconds         \n' % t_glm)
@@ -518,7 +622,6 @@ class FirstLevelModel(BaseGLM):
         if self.verbose > 0:
             sys.stderr.write("\nComputation of %d runs done in %i seconds\n\n"
                              % (n_runs, time.time() - t0))
-
         return self
 
     def compute_contrast(self, contrast_def, stat_type=None,
@@ -542,11 +645,12 @@ class FirstLevelModel(BaseGLM):
             with operators +-`*`/.
 
         stat_type : {'t', 'F'}, optional
-            type of the contrast
+            Type of the contrast.
 
         output_type : str, optional
             Type of the output map. Can be 'z_score', 'stat', 'p_value',
-            'effect_size', 'effect_variance' or 'all'
+            'effect_size', 'effect_variance' or 'all'.
+            Default='z_score'.
 
         Returns
         -------
@@ -566,6 +670,15 @@ class FirstLevelModel(BaseGLM):
             raise ValueError('contrast_def must be an array or str or list of'
                              ' (array or str)')
 
+        n_runs = len(self.labels_)
+        n_contrasts = len(con_vals)
+        if n_contrasts == 1 and n_runs > 1:
+            warn('One contrast given, assuming it for all %d runs' % n_runs)
+            con_vals = con_vals * n_runs
+        elif n_contrasts != n_runs:
+            raise ValueError('%d contrasts given, while there are %d runs' %
+                             (n_contrasts, n_runs))
+
         # Translate formulas to vectors
         for cidx, (con, design_mat) in enumerate(zip(con_vals,
                                                      self.design_matrices_)
@@ -574,11 +687,6 @@ class FirstLevelModel(BaseGLM):
             if isinstance(con, str):
                 con_vals[cidx] = expression_to_contrast_vector(
                     con, design_columns)
-
-        n_runs = len(self.labels_)
-        if len(con_vals) != n_runs:
-            warn('One contrast given, assuming it for all %d runs' % n_runs)
-            con_vals = con_vals * n_runs
 
         valid_types = ['z_score', 'stat', 'p_value', 'effect_size',
                        'effect_variance']
@@ -613,8 +721,9 @@ class FirstLevelModel(BaseGLM):
         ----------
         attribute : str
             an attribute of a RegressionResults instance.
-            possible values include: resid, norm_resid, predicted,
-            SSE, r_square, MSE.
+            possible values include: residuals, normalized_residuals,
+            predicted, SSE, r_square, MSE.
+
         result_as_time_series : bool
             whether the RegressionResult attribute has a value
             per timepoint of the input nifti image.
@@ -622,7 +731,8 @@ class FirstLevelModel(BaseGLM):
         Returns
         -------
         output : list
-            a list of Nifti1Image(s)
+            A list of Nifti1Image(s).
+
         """
         # check if valid attribute is being accessed.
         all_attributes = dict(vars(RegressionResults)).keys()
@@ -668,47 +778,7 @@ class FirstLevelModel(BaseGLM):
 
             output.append(self.masker_.inverse_transform(voxelwise_attribute))
 
-            return output
-
-    @auto_attr
-    def residuals(self):
-        """Transform voxelwise residuals to the same shape
-        as the input Nifti1Image(s)
-
-        Returns
-        -------
-        output : list
-            a list of Nifti1Image(s)
-        """
-        return self._get_voxelwise_model_attribute('resid',
-                                                   result_as_time_series=True)
-
-    @auto_attr
-    def predicted(self):
-        """Transform voxelwise predicted values to the same shape
-        as the input Nifti1Image(s)
-
-        Returns
-        -------
-        output : list
-            a list of Nifti1Image(s)
-        """
-        return self._get_voxelwise_model_attribute('predicted',
-                                                   result_as_time_series=True)
-
-    @auto_attr
-    def r_square(self):
-        """Transform voxelwise r-squared values to the same shape
-        as the input Nifti1Image(s)
-
-        Returns
-        -------
-        output : list
-            a list of Nifti1Image(s)
-        """
-        return self._get_voxelwise_model_attribute('r_square',
-                                                   result_as_time_series=False
-                                                   )
+        return output
 
 
 def first_level_from_bids(dataset_path, task_label, space_label=None,
@@ -731,27 +801,27 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 
     Parameters
     ----------
-    dataset_path: str
+    dataset_path : str
         Directory of the highest level folder of the BIDS dataset. Should
         contain subject folders and a derivatives folder.
 
-    task_label: str
+    task_label : str
         Task_label as specified in the file names like _task-<task_label>_.
 
-    space_label: str, optional
+    space_label : str, optional
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like _space-<space_label>_.
 
-    img_filters: list of tuples (str, str), optional (default: None)
+    img_filters : list of tuples (str, str), optional
         Filters are of the form (field, label). Only one filter per field
         allowed. A file that does not match a filter will be discarded.
         Possible filters are 'acq', 'ce', 'dir', 'rec', 'run', 'echo', 'res',
         'den', and 'desc'. Filter examples would be ('desc', 'preproc'),
         ('dir', 'pa') and ('run', '10').
 
-    derivatives_folder: str, optional
+    derivatives_folder : str, optional
         derivatives and app folder path containing preprocessed files.
-        Like "derivatives/FMRIPREP". default is simply "derivatives".
+        Like "derivatives/FMRIPREP". Default="derivatives".
 
     All other parameters correspond to a `FirstLevelModel` object, which
     contains their documentation. The subject label of the model will be
@@ -759,19 +829,20 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 
     Returns
     -------
-    models: list of `FirstLevelModel` objects
+    models : list of `FirstLevelModel` objects
         Each FirstLevelModel object corresponds to a subject. All runs from
         different sessions are considered together for the same subject to run
         a fixed effects analysis on them.
 
-    models_run_imgs: list of list of Niimg-like objects,
+    models_run_imgs : list of list of Niimg-like objects,
         Items for the FirstLevelModel fit function of their respective model.
 
-    models_events: list of list of pandas DataFrames,
+    models_events : list of list of pandas DataFrames,
         Items for the FirstLevelModel fit function of their respective model.
 
-    models_confounds: list of list of pandas DataFrames or None,
+    models_confounds : list of list of pandas DataFrames or None,
         Items for the FirstLevelModel fit function of their respective model.
+
     """
     # check arguments
     img_filters = img_filters if img_filters else []
@@ -823,7 +894,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         img_specs = get_bids_files(derivatives_path, modality_folder='func',
                                    file_tag='bold', file_type='json',
                                    filters=filters)
-        # If we dont find the parameter information in the derivatives folder
+        # If we don't find the parameter information in the derivatives folder
         # we try to search in the raw data folder
         if not img_specs:
             img_specs = get_bids_files(dataset_path, modality_folder='func',

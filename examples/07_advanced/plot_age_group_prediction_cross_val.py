@@ -11,6 +11,9 @@ discriminate children from adults. In general, the tangent space embedding
 **outperforms** the standard correlations: see `Dadi et al 2019
 <https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
 for a careful study.
+
+.. include:: ../../../examples/masker_note.rst
+
 """
 
 ###############################################################################
@@ -23,7 +26,7 @@ development_dataset = datasets.fetch_development_fmri(n_subjects=60)
 
 ###############################################################################
 # We use probabilistic regions of interest (ROIs) from the MSDL atlas.
-from nilearn.input_data import NiftiMapsMasker
+from nilearn.maskers import NiftiMapsMasker
 
 msdl_data = datasets.fetch_atlas_msdl()
 msdl_coords = msdl_data.region_coords
@@ -56,7 +59,7 @@ pipe = Pipeline(
      ('classifier', GridSearchCV(LinearSVC(), {'C': [.1, 1., 10.]}, cv=5))])
 
 param_grid = [
-    {'classifier': [DummyClassifier('most_frequent')]},
+    {'classifier': [DummyClassifier(strategy='most_frequent')]},
     {'connectivity__kind': kinds}
 ]
 

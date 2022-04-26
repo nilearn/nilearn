@@ -10,7 +10,7 @@ import nibabel
 from nilearn._utils.testing import write_tmp_imgs
 
 from nilearn.decomposition.canica import CanICA
-from nilearn.input_data import MultiNiftiMasker
+from nilearn.maskers import MultiNiftiMasker
 from nilearn.image import iter_img
 from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
 from nilearn.image import get_data
@@ -158,8 +158,13 @@ def test_percentile_range():
     canica = CanICA(n_components=edge_case, threshold=float(edge_case))
     with warnings.catch_warnings(record=True) as warning:
         canica.fit(data)
-        assert len(warning) == 1  # ensure single warning
-        assert "critical threshold" in str(warning[-1].message)
+        # Filter out deprecation warnings
+        not_deprecation_warning = [not issubclass(w.category,
+                                                  (DeprecationWarning, FutureWarning))
+                                        for w in warning]
+        assert sum(not_deprecation_warning) == 1  # ensure single warning
+        idx_critical_warning = not_deprecation_warning.index(True)
+        assert "critical threshold" in str(warning[idx_critical_warning].message)
 
 
 def test_masker_attributes_with_fit():
