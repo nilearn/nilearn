@@ -879,7 +879,7 @@ def permuted_ols(
                     'larger',
                 )
                 p_map = p_vals[np.reshape(idx, labeled_arr3d.shape)]
-                metric_map = cluster_dict[metric][
+                metric_map = cluster_dict[f'{metric}_regressor'][
                     np.reshape(idx, labeled_arr3d.shape)
                 ]
 
