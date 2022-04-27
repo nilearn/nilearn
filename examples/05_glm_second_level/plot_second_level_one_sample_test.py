@@ -198,11 +198,12 @@ for i_row in range(2):
         img_counter += 1
 
 fig.suptitle('Group left-right button press\n(negative log10 p-values)')
+plt.show()
 
+###############################################################################
 # The nonparametric test yields many more discoveries and is more powerful than
 # the usual parametric procedure.
 # Even within the nonparametric test, the different correction metrics produce
 # different results.
 # The voxel-level correction is more conservative than the cluster-size or
 # cluster-mass corrections, which are very similar to one another.
-plt.show()
