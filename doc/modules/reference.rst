@@ -339,6 +339,7 @@ General functions
    NiftiMasker
    MultiNiftiMasker
    NiftiLabelsMasker
+   MultiNiftiLabelsMasker
    NiftiMapsMasker
    NiftiSpheresMasker
 
