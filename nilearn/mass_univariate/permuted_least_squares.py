@@ -815,13 +815,15 @@ def permuted_ols(
 
     if threshold is not None:
         # Cluster-size and cluster-mass FWE
-        csfwe_h0 = np.hstack((csfwe_h0_parts))
-        cmfwe_h0 = np.hstack((cmfwe_h0_parts))
+        cluster_dict = {}  # a dictionary to collect mass/size measures
 
-        csfwe_pvals = np.zeros_like(vfwe_pvals)
-        cmfwe_pvals = np.zeros_like(vfwe_pvals)
-        size_arr = np.zeros_like(vfwe_pvals).astype(int)
-        mass_arr = np.zeros_like(vfwe_pvals)
+        cluster_dict['size_h0'] = np.hstack((csfwe_h0_parts))
+        cluster_dict['mass_h0'] = np.hstack((cmfwe_h0_parts))
+
+        cluster_dict['size'] = np.zeros_like(vfwe_pvals).astype(int)
+        cluster_dict['mass'] = np.zeros_like(vfwe_pvals)
+        cluster_dict['size_pvals'] = np.zeros_like(vfwe_pvals)
+        cluster_dict['mass_pvals'] = np.zeros_like(vfwe_pvals)
 
         scores_original_data_4d = masker.inverse_transform(
             scores_original_data.T
@@ -850,86 +852,60 @@ def permuted_ols(
                 labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
                 del temp_labeled_arr3d
 
-            cluster_labels, idx, cluster_sizes = np.unique(
+            cluster_labels, idx, cluster_dict['size_regressor'] = np.unique(
                 labeled_arr3d,
                 return_inverse=True,
                 return_counts=True,
             )
             assert cluster_labels[0] == 0  # the background
 
-            # Cluster mass-based inference
-            cluster_masses = np.zeros(cluster_labels.shape)
+            # Replace background's "cluster size" w zeros
+            cluster_dict['size_regressor'][0] = 0
+
+            # Calculate mass for each cluster
+            cluster_dict['mass_regressor'] = np.zeros(cluster_labels.shape)
             for j_val in cluster_labels[1:]:  # skip background
                 cluster_mass = np.sum(
                     np.fabs(scores_original_data_3d[labeled_arr3d == j_val])
                     - threshold_t
                 )
-                cluster_masses[j_val] = cluster_mass
+                cluster_dict['mass_regressor'][j_val] = cluster_mass
 
-            p_cmfwe_vals = _null_to_p(
-                cluster_masses,
-                cmfwe_h0[i_regressor, :],
-                'larger',
-            )
-            p_cmfwe_map = p_cmfwe_vals[np.reshape(idx, labeled_arr3d.shape)]
-            mass_map = cluster_masses[np.reshape(idx, labeled_arr3d.shape)]
+            # Calculate p-values from size/mass values and associated h0s
+            for metric in ['mass', 'size']:
+                p_vals = _null_to_p(
+                    cluster_dict[f'{metric}_regressor'],
+                    cluster_dict[f'{metric}_h0'][i_regressor, :],
+                    'larger',
+                )
+                p_map = p_vals[np.reshape(idx, labeled_arr3d.shape)]
+                metric_map = cluster_dict[metric][
+                    np.reshape(idx, labeled_arr3d.shape)
+                ]
 
-            # Convert 3D to image, then to 1D
-            # There is a problem if the masker performs preprocessing,
-            # so we use apply_mask here.
-            cmfwe_pvals[i_regressor, :] = np.squeeze(
-                apply_mask(
-                    nib.Nifti1Image(
-                        p_cmfwe_map,
-                        masker.mask_img_.affine,
-                        masker.mask_img_.header,
-                    ),
-                    masker.mask_img_,
+                # Convert 3D to image, then to 1D
+                # There is a problem if the masker performs preprocessing,
+                # so we use apply_mask here.
+                cluster_dict[f'{metric}_pvals'][i_regressor, :] = np.squeeze(
+                    apply_mask(
+                        nib.Nifti1Image(
+                            p_map,
+                            masker.mask_img_.affine,
+                            masker.mask_img_.header,
+                        ),
+                        masker.mask_img_,
+                    )
                 )
-            )
-            mass_arr[i_regressor, :] = np.squeeze(
-                apply_mask(
-                    nib.Nifti1Image(
-                        mass_map,
-                        masker.mask_img_.affine,
-                        masker.mask_img_.header,
-                    ),
-                    masker.mask_img_,
+                cluster_dict[metric][i_regressor, :] = np.squeeze(
+                    apply_mask(
+                        nib.Nifti1Image(
+                            metric_map,
+                            masker.mask_img_.affine,
+                            masker.mask_img_.header,
+                        ),
+                        masker.mask_img_,
+                    )
                 )
-            )
-
-            # Cluster size-based inference
-            cluster_sizes[0] = 0  # replace background's "cluster size" w zeros
-            p_csfwe_vals = _null_to_p(
-                cluster_sizes,
-                csfwe_h0[i_regressor, :],
-                'larger',
-            )
-            p_csfwe_map = p_csfwe_vals[np.reshape(idx, labeled_arr3d.shape)]
-            size_map = cluster_sizes[np.reshape(idx, labeled_arr3d.shape)]
-
-            # There is a problem if the masker performs preprocessing,
-            # so we use apply_mask here.
-            csfwe_pvals[i_regressor, :] = np.squeeze(
-                apply_mask(
-                    nib.Nifti1Image(
-                        p_csfwe_map,
-                        masker.mask_img_.affine,
-                        masker.mask_img_.header,
-                    ),
-                    masker.mask_img_,
-                )
-            )
-            size_arr[i_regressor, :] = np.squeeze(
-                apply_mask(
-                    nib.Nifti1Image(
-                        size_map,
-                        masker.mask_img_.affine,
-                        masker.mask_img_.header,
-                    ),
-                    masker.mask_img_,
-                )
-            )
 
     if output_type == 'legacy':
         outputs = (-np.log10(vfwe_pvals), scores_original_data.T, vfwe_h0)
@@ -941,11 +917,11 @@ def permuted_ols(
         }
 
         if threshold is not None:
-            outputs['size'] = size_arr
-            outputs['logp_max_size'] = -np.log10(csfwe_pvals)
-            outputs['h0_max_size'] = csfwe_h0
-            outputs['mass'] = mass_arr
-            outputs['logp_max_mass'] = -np.log10(cmfwe_pvals)
-            outputs['h0_max_mass'] = cmfwe_h0
+            outputs['size'] = cluster_dict['size']
+            outputs['logp_max_size'] = -np.log10(cluster_dict['size_pvals'])
+            outputs['h0_max_size'] = cluster_dict['size_h0']
+            outputs['mass'] = cluster_dict['mass']
+            outputs['logp_max_mass'] = -np.log10(cluster_dict['mass_pvals'])
+            outputs['h0_max_mass'] = cluster_dict['mass_h0']
 
     return outputs
