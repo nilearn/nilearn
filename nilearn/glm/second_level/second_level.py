@@ -744,7 +744,7 @@ def non_parametric_inference(
 
     Returns
     -------
-    neg_log10_vfwe_pvals_img : Nifti1Image
+    neg_log10_vfwe_pvals_img : :class:`~nibabel.nifti1.Nifti1Image`
         The image which contains negative logarithm of the
         voxel-level FWER-corrected p-values.
 

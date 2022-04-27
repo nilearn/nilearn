@@ -192,7 +192,7 @@ def _permuted_ols_on_chunk(
     confounding_vars : array-like, shape=(n_samples, n_covars), optional
         Clinical data (covariates).
 
-    masker : None or NiftiMasker or MultiNiftiMasker object, optional
+    masker : None or :class:`~nilearn.maskers.NiftiMasker` or :class:`nilearn.maskers.MultiNiftiMasker`, optional
         A mask to be used on the data.
         This is only used for cluster-level inference.
         If None, cluster-level inference will not be performed.
@@ -228,7 +228,7 @@ def _permuted_ols_on_chunk(
     Returns
     -------
     scores_as_ranks_part : array-like, shape=(n_regressors, n_descriptors)
-        The ranks of the original scores in h0_fmax_part.
+        The ranks of the original scores in ``h0_fmax_part``.
         When ``n_descriptors`` or ``n_perm`` are large, it can be quite long to
         find the rank of the original scores into the whole H0 distribution.
         Here, it is performed in parallel by the workers involved in the
@@ -444,7 +444,7 @@ def permuted_ols(
     verbose : :obj:`int`, optional
         verbosity level (0 means no message). Default=0.
 
-    masker : None or NiftiMasker or MultiNiftiMasker object, optional
+    masker : None or :class:`~nilearn.maskers.NiftiMasker` or :class: `~nilearn.maskers.MultiNiftiMasker`, optional
         A mask to be used on the data.
         This is required for cluster-level inference, so it must be provided
         if ``threshold`` is not None.

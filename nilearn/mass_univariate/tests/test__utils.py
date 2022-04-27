@@ -76,7 +76,7 @@ def test_null_to_p_array():
     assert np.abs(p.var() - 1 / 12) < 0.02
 
 
-def test__calculate_cluster_measures():
+def test_calculate_cluster_measures():
     """Test _calculate_cluster_measures."""
     threshold = 0.001
     bin_struct = ndimage.generate_binary_structure(3, 1)
