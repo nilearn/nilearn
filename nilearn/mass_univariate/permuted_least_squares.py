@@ -192,7 +192,8 @@ def _permuted_ols_on_chunk(
     confounding_vars : array-like, shape=(n_samples, n_covars), optional
         Clinical data (covariates).
 
-    masker : None or :class:`~nilearn.maskers.NiftiMasker` or :class:`nilearn.maskers.MultiNiftiMasker`, optional
+    masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
+            :class:`nilearn.maskers.MultiNiftiMasker`, optional
         A mask to be used on the data.
         This is only used for cluster-level inference.
         If None, cluster-level inference will not be performed.
@@ -444,7 +445,8 @@ def permuted_ols(
     verbose : :obj:`int`, optional
         verbosity level (0 means no message). Default=0.
 
-    masker : None or :class:`~nilearn.maskers.NiftiMasker` or :class: `~nilearn.maskers.MultiNiftiMasker`, optional
+    masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
+            :class:`~nilearn.maskers.MultiNiftiMasker`, optional
         A mask to be used on the data.
         This is required for cluster-level inference, so it must be provided
         if ``threshold`` is not None.
@@ -468,8 +470,20 @@ def permuted_ols(
         Determines how outputs should be returned.
         The two options are:
 
-        -   'legacy': return a pvals, score_orig_data, and h0_fmax
-        -   'dict': return a dictionary containing output arrays
+        -   'legacy': return a pvals, score_orig_data, and h0_fmax.
+            This option is the default, but it is deprecated until 0.13,
+            when the default will be changed to 'dict'.
+            It will be removed in 0.15.
+        -   'dict': return a dictionary containing output arrays.
+            This option will be made the default in 0.13.
+
+        .. deprecated:: 0.15
+
+            The default value for this parameter will change from 'legacy' to
+            'dict' in 0.13, and the parameter will be removed completely in
+            0.15.
+
+        .. versionadded:: 0.9.2
 
     Returns
     -------
@@ -479,7 +493,14 @@ def permuted_ols(
         variates. Family-wise corrected p-values.
 
         .. note::
+
             This is returned if ``output_type`` == 'legacy'.
+
+        .. deprecated:: 0.13
+
+            The 'legacy' option for ``output_type`` is deprecated.
+            The default value will change to 'dict' in 0.13,
+            and the ``output_type`` parameter will be removed in 0.15.
 
     score_orig_data : numpy.ndarray, shape=(n_regressors, n_descriptors)
         t-statistic associated with the significance test of the n_regressors
@@ -488,14 +509,28 @@ def permuted_ols(
         p-values.
 
         .. note::
+
             This is returned if ``output_type`` == 'legacy'.
+
+        .. deprecated:: 0.13
+
+            The 'legacy' option for ``output_type`` is deprecated.
+            The default value will change to 'dict' in 0.13,
+            and the ``output_type`` parameter will be removed in 0.15.
 
     h0_fmax : array-like, shape=(n_regressors, n_perm)
         Distribution of the (max) t-statistic under the null hypothesis
         (obtained from the permutations). Array is sorted.
 
         .. note::
+
             This is returned if ``output_type`` == 'legacy'.
+
+        .. deprecated:: 0.13
+
+            The 'legacy' option for ``output_type`` is deprecated.
+            The default value will change to 'dict' in 0.13,
+            and the ``output_type`` parameter will be removed in 0.15.
 
         .. versionchanged:: 0.9.2
 
@@ -505,7 +540,9 @@ def permuted_ols(
         Output arrays, organized in a dictionary.
 
         .. note::
+
             This is returned if ``output_type`` == 'dict'.
+            This will be the default output starting in version 0.13.
 
         .. versionadded:: 0.9.2
 
@@ -600,7 +637,7 @@ def permuted_ols(
                 'The "legacy" output structure for "permuted_ols" is '
                 'deprecated. '
                 'The default output structure will be changed to "dict" '
-                'in version 0.0.13.'
+                'in version 0.13.'
             ),
             stacklevel=3,
         )
