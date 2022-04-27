@@ -437,7 +437,7 @@ Extraction of signals from regions for multiple subjects:\  :class:`MultiNiftiMa
 The purpose of :class:`MultiNiftiMasker` and :class:`MultiNiftiLabelsMasker` is to extend the
 capabilities of :class:`NiftiMasker` and :class:`NiftiLabelsMasker` as to facilitate
 the computation of voxel signals in multi-subjects settings. While :class:`NiftiMasker`
-and :class:`NiftiLabelsMasker` work with 3D inputs (single brain volume) or 4D inputs (sequence of 
+and :class:`NiftiLabelsMasker` work with 3D inputs (single brain volume) or 4D inputs (sequence of
 brain volumes in time for one subject), :class:`MultiNiftiMasker` and :class:`MultiNiftiLabelsMasker`
 expect 5D inputs (list of sequences of brain volumes).
 
