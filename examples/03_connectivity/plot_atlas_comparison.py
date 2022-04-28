@@ -60,11 +60,10 @@ from nilearn import plotting
 
 # create masker to extract functional data within atlas parcels
 masker = MultiNiftiLabelsMasker(labels_img=yeo['thick_17'], standardize=True,
-                           memory='nilearn_cache')
+                                memory='nilearn_cache')
 
 # extract time series from all subjects and concatenate them
-time_series = masker.fit_transform(development_dataset.func,
-                                   confounds=development_dataset.confounds)
+time_series = masker.fit_transform(data.func, confounds=data.confounds)
 
 # calculate correlation matrices across subjects and display
 correlation_matrices = connectome_measure.fit_transform(time_series)
