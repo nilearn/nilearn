@@ -736,7 +736,7 @@ def non_parametric_inference(
         :footcite:t:`smith2009threshold`.
         Default=False.
 
-        .. versionadded:: 0.9.2
+        .. versionadded:: 0.9.2.dev
 
     Returns
     -------
@@ -754,7 +754,7 @@ def non_parametric_inference(
         .. note::
             This is returned if ``tfce`` is not None.
 
-        .. versionadded:: 0.9.2
+        .. versionadded:: 0.9.2.dev
 
         Here are the keys:
 

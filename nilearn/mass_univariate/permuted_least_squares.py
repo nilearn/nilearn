@@ -189,7 +189,7 @@ def _permuted_ols_on_chunk(
         Mask to be used on data.
         This is necessary for :term:`TFCE`-based inference.
 
-        .. versionadded:: 0.9.2
+        .. versionadded:: 0.9.2.dev
 
     n_perm : int, optional
         Total number of permutations to perform, only used for
@@ -218,13 +218,13 @@ def _permuted_ols_on_chunk(
         The TFCE calculation is implemented as described in [2]_.
         Default=False.
 
-        .. versionadded:: 0.9.2
+        .. versionadded:: 0.9.2.dev
 
     tfce_original_data : None or array-like, \
             shape=(n_descriptors, n_regressors), optional
         TFCE values obtained for the original (non-permuted) data.
 
-        .. versionadded:: 0.9.2
+        .. versionadded:: 0.9.2.dev
 
     random_state : int or None, optional
         Seed for random number generator, to have the same permutations
@@ -421,7 +421,7 @@ def permuted_ols(
             :obj:`~nilearn.maskers.MultiNiftiMasker`, optional
         Mask to be used on data. This is necessary for TFCE-based inference.
 
-        .. versionadded:: 0.9.2
+        .. versionadded:: 0.9.2.dev
 
     tfce : :obj:`bool`, optional
         Whether to calculate :term:`TFCE` as part of the permutation procedure
@@ -432,7 +432,7 @@ def permuted_ols(
         :footcite:t:`smith2009threshold`.
         Default=False.
 
-        .. versionadded:: 0.9.2
+        .. versionadded:: 0.9.2.dev
 
     output_type : {'legacy', 'dict'}, optional
         Determines how outputs should be returned.
@@ -471,14 +471,14 @@ def permuted_ols(
         .. note::
             This is returned if ``output_type`` == 'legacy'.
 
-        .. versionchanged:: 0.9.2
+        .. versionchanged:: 0.9.2.dev
 
             Return H0 for all regressors, instead of only the first one.
 
     outputs : :obj:`dict`
         Output arrays, organized in a dictionary.
 
-        .. versionadded:: 0.9.2
+        .. versionadded:: 0.9.2.dev
 
         Here are the keys:
 
