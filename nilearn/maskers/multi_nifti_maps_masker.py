@@ -208,12 +208,6 @@ class MultiNiftiMapsMasker(NiftiMapsMasker, CacheMixin):
         # affine of the maps and mask images should not impact the extraction
         # of the signal.
 
-        #if not hasattr(self, 'mask_img_'):
-        #    raise ValueError(
-        #        'It seems that {} has not been fitted. '
-        #        'You must call fit() before calling transform().'.format
-        #        (self.__class__.__name__))
-
         self._check_fitted()
 
         niimg_iter = _iter_check_niimg(imgs_list, ensure_ndim=None,
