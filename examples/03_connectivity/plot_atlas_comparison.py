@@ -125,16 +125,14 @@ difumo = datasets.fetch_atlas_difumo(
 ##########################################################################
 # Iterate over fetched atlases to extract coordinates - probabilistic
 # -------------------------------------------------------------------
-from nilearn.maskers import NiftiMapsMasker
+from nilearn.maskers import MultiNiftiMapsMasker
 
 # create masker to extract functional data within atlas parcels
-masker = NiftiMapsMasker(maps_img=difumo.maps, standardize=True,
-                         memory='nilearn_cache')
+masker = MultiNiftiMapsMasker(maps_img=difumo.maps, standardize=True,
+                              memory='nilearn_cache')
 
 # extract time series from all subjects and concatenate them
-time_series = []
-for func, confounds in zip(data.func, data.confounds):
-    time_series.append(masker.fit_transform(func, confounds=confounds))
+time_series = masker.fit_transform(data.func, confounds=data.confounds)
 
 # calculate correlation matrices across subjects and display
 correlation_matrices = connectome_measure.fit_transform(time_series)
