@@ -341,6 +341,7 @@ General functions
    NiftiLabelsMasker
    MultiNiftiLabelsMasker
    NiftiMapsMasker
+   MultiNiftiMapsMasker
    NiftiSpheresMasker
 
 .. _masking_ref:
