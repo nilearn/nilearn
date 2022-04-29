@@ -53,6 +53,11 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension
 
+    high_variance_confounds : boolean, optional
+        If True, high variance confounds are computed on provided image with
+        :func:`nilearn.image.high_variance_confounds` and default parameters
+        and regressed out. Default=False.
+
     detrend: boolean, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
@@ -103,6 +108,10 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, minimum, maximum, variance,
         standard_deviation
+
+    reports : boolean, optional
+         If set to True, data is saved in order to produce a report.
+         Default=True.
 
     See also
     --------
@@ -217,10 +226,8 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         func = self._cache(self.transform_single_imgs)
 
         region_signals = Parallel(n_jobs=n_jobs)(
-                                 delayed(func)
-                                 (imgs=imgs, confounds=cfs,
-                                  sample_mask=sample_mask)
-                                 for imgs, cfs in zip(niimg_iter, confounds))
+            delayed(func)(imgs=imgs, confounds=cfs, sample_mask=sample_mask)
+            for imgs, cfs in zip(niimg_iter, confounds))
         return region_signals
 
     def transform(self, imgs, confounds=None, sample_mask=None):
