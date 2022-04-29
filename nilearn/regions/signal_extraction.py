@@ -17,8 +17,9 @@ from ..image import new_img_like
 
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
+@_utils.fill_doc
 def img_to_signals_labels(imgs, labels_img, mask_img=None,
-                          background_label=0, order="F"):
+                          background_label=0, order="F", strategy='mean'):
     """Extract region signals from image.
 
     This function is applicable to regions defined by labels.
@@ -28,46 +29,50 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
 
     Parameters
     ----------
-    imgs: 4D Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
-        input images.
+    %(imgs)s
+        Input images.
 
-    labels_img: Niimg-like object
+    labels_img : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         regions definition as labels. By default, the label zero is used to
         denote an absence of region. Use background_label to change it.
 
-    mask_img: Niimg-like object
+    mask_img : Niimg-like object, optional
         See http://nilearn.github.io/manipulating_images/input_output.html
         Mask to apply to labels before extracting signals. Every point
         outside the mask is considered as background (i.e. no region).
 
-    background_label: number
-        number representing background in labels_img.
+    background_label : number, optional
+        Number representing background in labels_img. Default=0.
 
-    order: str
-        ordering of output array ("C" or "F"). Defaults to "F".
+    order : :obj:`str`, optional
+        Ordering of output array ("C" or "F"). Default="F".
+
+    strategy : :obj:`str`, optional
+        The name of a valid function to reduce the region with.
+        Must be one of: sum, mean, median, minimum, maximum, variance,
+        standard_deviation. Default='mean'.
 
     Returns
     -------
-    signals: numpy.ndarray
+    signals : :class:`numpy.ndarray`
         Signals extracted from each region. One output signal is the mean
         of all input signals in a given region. If some regions are entirely
         outside the mask, the corresponding signal is zero.
         Shape is: (scan number, number of regions)
 
-    labels: list or tuple
-        corresponding labels for each signal. signal[:, n] was extracted from
+    labels : :obj:`list` or :obj:`tuple`
+        Corresponding labels for each signal. signal[:, n] was extracted from
         the region with label labels[n].
 
     See also
     --------
     nilearn.regions.signals_to_img_labels
     nilearn.regions.img_to_signals_maps
-    nilearn.input_data.NiftiLabelsMasker : Signal extraction on labels images 
+    nilearn.maskers.NiftiLabelsMasker : Signal extraction on labels images
         e.g. clusters
-    """
 
+    """
     labels_img = _utils.check_niimg_3d(labels_img)
 
     # TODO: Make a special case for list of strings (load one image at a
@@ -75,6 +80,16 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     imgs = _utils.check_niimg_4d(imgs)
     target_affine = imgs.affine
     target_shape = imgs.shape[:3]
+
+    available_reduction_strategies = {'mean', 'median', 'sum',
+                                      'minimum', 'maximum',
+                                      'standard_deviation', 'variance'}
+    if strategy not in available_reduction_strategies:
+        raise ValueError(str.format(
+            "Invalid strategy '{}'. Valid strategies are {}.",
+            strategy,
+            available_reduction_strategies
+        ))
 
     # Check shapes and affines.
     if labels_img.shape != target_shape:
@@ -100,13 +115,16 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
         labels_data = labels_data.copy()
         labels_data[np.logical_not(mask_data)] = background_label
 
-    data = _safe_get_data(imgs)
+    data = _safe_get_data(imgs, ensure_finite=True)
+    target_datatype = np.float32 if data.dtype == np.float32 else np.float64
+    # Nilearn issue: 2135, PR: 2195 for why this is necessary.
     signals = np.ndarray((data.shape[-1], len(labels)), order=order,
-                         dtype=data.dtype)
+                         dtype=target_datatype)
+    reduction_function = getattr(ndimage.measurements, strategy)
     for n, img in enumerate(np.rollaxis(data, -1)):
-        signals[n] = np.asarray(ndimage.measurements.mean(img,
-                                                          labels=labels_data,
-                                                          index=labels))
+        signals[n] = np.asarray(reduction_function(img,
+                                                   labels=labels_data,
+                                                   index=labels))
     # Set to zero signals for missing labels. Workaround for Scipy behaviour
     missing_labels = set(labels) - set(np.unique(labels_data))
     labels_index = dict([(l, n) for n, l in enumerate(labels)])
@@ -119,33 +137,33 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
                           background_label=0, order="F"):
     """Create image from region signals defined as labels.
 
-    The same region signal is used for each voxel of the corresponding 3D
-    volume.
+    The same region signal is used for each :term:`voxel` of the
+    corresponding 3D volume.
 
     labels_img, mask_img must have the same shapes and affines.
 
     Parameters
     ----------
-    signals: numpy.ndarray
-        2D array with shape: (scan number, number of regions in labels_img)
+    signals : :class:`numpy.ndarray`
+        2D array with shape: (scan number, number of regions in labels_img).
 
-    labels_img: Niimg-like object
+    labels_img : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         Region definitions using labels.
 
-    mask_img: Niimg-like object, optional
+    mask_img : Niimg-like object, optional
         Boolean array giving voxels to process. integer arrays also accepted,
         In this array, zero means False, non-zero means True.
 
-    background_label: number
-        label to use for "no region".
+    background_label : number, optional
+        Label to use for "no region". Default=0.
 
-    order: str
-        ordering of output array ("C" or "F"). Defaults to "F".
+    order : :obj:`str`, optional
+        Ordering of output array ("C" or "F"). Default="F".
 
     Returns
     -------
-    img: nibabel.Nifti1Image
+    img : :class:`nibabel.nifti1.Nifti1Image`
         Reconstructed image. dtype is that of "signals", affine and shape are
         those of labels_img.
 
@@ -153,10 +171,10 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
     --------
     nilearn.regions.img_to_signals_labels
     nilearn.regions.signals_to_img_maps
-    nilearn.input_data.NiftiLabelsMasker : Signal extraction on labels
+    nilearn.maskers.NiftiLabelsMasker : Signal extraction on labels
         images e.g. clusters
-    """
 
+    """
     labels_img = _utils.check_niimg_3d(labels_img)
 
     signals = np.asarray(signals)
@@ -201,6 +219,7 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
     return new_img_like(labels_img, data, target_affine)
 
 
+@_utils.fill_doc
 def img_to_signals_maps(imgs, maps_img, mask_img=None):
     """Extract region signals from image.
 
@@ -208,31 +227,27 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
 
     Parameters
     ----------
-    imgs: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+    %(imgs)s
         Input images.
 
-    maps_img: Niimg-like object
+    maps_img : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         regions definition as maps (array of weights).
         shape: imgs.shape + (region number, )
 
-    mask_img: Niimg-like object
+    mask_img : Niimg-like object, optional
         See http://nilearn.github.io/manipulating_images/input_output.html
         mask to apply to regions before extracting signals. Every point
         outside the mask is considered as background (i.e. outside of any
         region).
 
-    order: str
-        ordering of output array ("C" or "F"). Defaults to "F".
-
     Returns
     -------
-    region_signals: numpy.ndarray
+    region_signals : :class:`numpy.ndarray`
         Signals extracted from each region.
         Shape is: (scans number, number of regions intersecting mask)
 
-    labels: list
+    labels : :obj:`list`
         maps_img[..., labels[n]] is the region that has been used to extract
         signal region_signals[:, n].
 
@@ -240,10 +255,10 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
     --------
     nilearn.regions.img_to_signals_labels
     nilearn.regions.signals_to_img_maps
-    nilearn.input_data.NiftiMapsMasker : Signal extraction on probabilistic 
+    nilearn.maskers.NiftiMapsMasker : Signal extraction on probabilistic
         maps e.g. ICA
-    """
 
+    """
     maps_img = _utils.check_niimg_4d(maps_img)
     imgs = _utils.check_niimg_4d(imgs)
     affine = imgs.affine
@@ -267,10 +282,10 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
                    _trim_maps(maps_data,
                               _safe_get_data(mask_img, ensure_finite=True),
                               keep_empty=True)
-        maps_mask = _utils.as_ndarray(maps_mask, dtype=np.bool)
+        maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
     else:
-        maps_mask = np.ones(maps_data.shape[:3], dtype=np.bool)
-        labels = np.arange(maps_data.shape[-1], dtype=np.int)
+        maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
+        labels = np.arange(maps_data.shape[-1], dtype=int)
 
     data = _safe_get_data(imgs, ensure_finite=True)
     region_signals = linalg.lstsq(maps_data[maps_mask, :],
@@ -286,32 +301,35 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
 
     Parameters
     ----------
-    region_signals: numpy.ndarray
-        signals to process, as a 2D array. A signal is a column. There must
-        be as many signals as maps.
-        In pseudo-code: region_signals.shape[1] == maps_img.shape[-1]
+    region_signals : :class:`numpy.ndarray`
+        signals to process, as a 2D array. A signal is a column.
+        There must be as many signals as maps:
 
-    maps_img: Niimg-like object
+            .. code-block:: python
+
+                region_signals.shape[1] == maps_img.shape[-1]
+
+    maps_img : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
         Region definitions using maps.
 
-    mask_img: Niimg-like object, optional
+    mask_img : Niimg-like object, optional
         See http://nilearn.github.io/manipulating_images/input_output.html
-        Boolean array giving voxels to process. integer arrays also accepted,
-        zero meaning False.
+        Boolean array giving :term:`voxels<voxel>` to process.
+        Integer arrays also accepted, zero meaning False.
 
     Returns
     -------
-    img: nibabel.Nifti1Image
+    img : :class:`nibabel.nifti1.Nifti1Image`
         Reconstructed image. affine and shape are those of maps_img.
 
     See also
     --------
     nilearn.regions.signals_to_img_labels
     nilearn.regions.img_to_signals_maps
-    nilearn.input_data.NiftiMapsMasker
-    """
+    nilearn.maskers.NiftiMapsMasker
 
+    """
     maps_img = _utils.check_niimg_4d(maps_img)
     maps_data = _safe_get_data(maps_img, ensure_finite=True)
     shape = maps_img.shape[:3]
@@ -327,9 +345,9 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
         maps_data, maps_mask, _ = _trim_maps(
             maps_data, _safe_get_data(mask_img, ensure_finite=True),
             keep_empty=True)
-        maps_mask = _utils.as_ndarray(maps_mask, dtype=np.bool)
+        maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
     else:
-        maps_mask = np.ones(maps_data.shape[:3], dtype=np.bool)
+        maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
 
     assert(maps_mask.shape == maps_data.shape[:3])
 
@@ -345,42 +363,44 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
 
     Parameters
     ----------
-    maps: numpy.ndarray
+    maps : :class:`numpy.ndarray`
         Set of maps, defining some regions.
 
-    mask: numpy.ndarray
+    mask : :class:`numpy.ndarray`
         Definition of a mask. The shape must match that of a single map.
 
-    keep_empty: bool
+    keep_empty : :obj:`bool`, optional
         If False, maps that lie completely outside the mask are dropped from
         the output. If True, they are kept, meaning that maps that are
         completely zero can occur in the output.
+        Default=False.
 
-    order: "F" or "C"
+    order : "F" or "C", optional
         Ordering of the output maps array (trimmed_maps).
+        Default="F".
 
     Returns
     -------
-    trimmed_maps: numpy.ndarray
+    trimmed_maps : :class:``numpy.ndarray`
         New set of maps, computed as intersection of each input map and mask.
         Empty maps are discarded if keep_empty is False, thus the number of
         output maps is not necessarily the same as the number of input maps.
         shape: mask.shape + (output maps number,). Data ordering depends
         on the "order" parameter.
 
-    maps_mask: numpy.ndarray
+    maps_mask : :class:`numpy.ndarray`
         Union of all output maps supports. One non-zero value in this
         array guarantees that there is at least one output map that is
         non-zero at this voxel.
         shape: mask.shape. Order is always C.
 
-    indices: numpy.ndarray
-        indices of regions that have an non-empty intersection with the
-        given mask. len(indices) == trimmed_maps.shape[-1]
-    """
+    indices : :class:`numpy.ndarray`
+        Indices of regions that have an non-empty intersection with the
+        given mask. len(indices) == trimmed_maps.shape[-1].
 
+    """
     maps = maps.copy()
-    sums = abs(maps[_utils.as_ndarray(mask, dtype=np.bool),
+    sums = abs(maps[_utils.as_ndarray(mask, dtype=bool),
                     :]).sum(axis=0)
 
     if keep_empty:
@@ -394,7 +414,7 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
 
     # iterate on maps
     p = 0
-    mask = _utils.as_ndarray(mask, dtype=np.bool, order="C")
+    mask = _utils.as_ndarray(mask, dtype=bool, order="C")
     for n, m in enumerate(np.rollaxis(maps, -1)):
         if not keep_empty and sums[n] == 0:
             continue
@@ -404,6 +424,6 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
 
     if keep_empty:
         return trimmed_maps, maps_mask, np.arange(trimmed_maps.shape[-1],
-                                                  dtype=np.int)
+                                                  dtype=int)
     else:
         return trimmed_maps, maps_mask, np.where(sums > 0)[0]

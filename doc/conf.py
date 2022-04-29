@@ -16,7 +16,7 @@ import sys
 import os
 import shutil
 import sphinx
-from distutils.version import LooseVersion
+from nilearn.version import _compare_version
 
 # jquery is included in plotting package data because it is needed for
 # interactive plots. It is also needed by the documentation, so we copy
@@ -37,6 +37,7 @@ shutil.copy(
 # absolute, like shown here.
 sys.path.insert(0, os.path.abspath('sphinxext'))
 import sphinx_gallery
+from github_link import make_linkcode_resolve
 
 # We also add the directory just above to enable local imports of nilearn
 sys.path.insert(0, os.path.abspath('..'))
@@ -45,20 +46,36 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.autosummary',
-              ('sphinx.ext.imgmath'  # only available for sphinx >= 1.4
-                  if sphinx.version_info[:2] >= (1, 4)
-                  else 'sphinx.ext.pngmath'),
-              'sphinx.ext.intersphinx',
-              'numpydoc.numpydoc',
+extensions = [
               'sphinx_gallery.gen_gallery',
+              'sphinx.ext.autodoc',
+              'sphinx.ext.autosummary',
+              'sphinx.ext.imgmath',
+              'sphinx.ext.intersphinx',
+              'sphinxcontrib.bibtex',
+              'numpydoc',
+              'sphinx.ext.linkcode',
+              'gh_substitutions',
+              'sphinx_copybutton',
+              'sphinxext.opengraph',
               ]
 
 autosummary_generate = True
 
-autodoc_default_flags = ['members', 'inherited-members']
+autodoc_default_options = {
+    'imported-members': True,
+    'inherited-members' : True,
+    'undoc-members': True,
+    'member-order': 'bysource',
+    # We cannot have __init__: it causes duplicated entries
+    #'special-members': '__init__',
+}
 
+# Get rid of spurious warnings due to some interaction between
+# autosummary and numpydoc. See
+# https://github.com/phn/pytpm/issues/3#issuecomment-12133978 for more
+# details
+numpydoc_show_class_members = False
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['templates']
 
@@ -72,14 +89,20 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8'
 
 # Generate the plots for the gallery
-plot_gallery = 'True'
+plot_gallery = True
 
 # The master toctree document.
 master_doc = 'index'
 
+# sphinxcontrib-bibtex
+bibtex_bibfiles = ['./references.bib', './soft_references.bib']
+bibtex_style = 'unsrt'
+bibtex_reference_style = 'author_year'
+bibtex_footbibliography_header = ''
+
 # General information about the project.
 project = u'Nilearn'
-copyright = u'The nilearn developers 2010-2015'
+copyright = u'The nilearn developers 2010-2022'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -208,12 +231,19 @@ html_show_sourcelink = False
 # base URL from which the finished HTML is served.
 #html_use_opensearch = ''
 
+# variables to pass to HTML templating engine
+build_dev_html = bool(int(os.environ.get('BUILD_DEV_HTML', False)))
+
+html_context = {'build_dev_html': build_dev_html}
+
 # If nonempty, this is the file name suffix for HTML files (e.g. ".xhtml").
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'PythonScientic'
 
+# Sphinx copybutton config
+copybutton_prompt_text = ">>> "
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -251,7 +281,7 @@ latex_elements = {
   'printindex': '',
 }
 
-if LooseVersion(sphinx.__version__) < LooseVersion('1.5'):
+if _compare_version(sphinx.__version__, '<', '1.5'):
     latex_preamble = r"""
     \usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
     \let\oldfootnote\footnote
@@ -266,7 +296,7 @@ else:
 
 
 # If false, no module index is generated.
-if LooseVersion(sphinx.__version__) < LooseVersion('1.5'):
+if _compare_version(sphinx.__version__, '<', '1.5'):
     latex_use_modindex = False
 
 latex_domain_indices = False
@@ -279,22 +309,19 @@ latex_show_urls = 'footnote'
 
 trim_doctests_flags = True
 
-_python_doc_base = 'http://docs.python.org/3.6'
-
-# Scraper, copied from https://github.com/mne-tools/mne-python/
-from nilearn.reporting import _ReportScraper
-report_scraper = _ReportScraper()
-scrapers = ('matplotlib', report_scraper)
+_python_doc_base = 'https://docs.python.org/3.8'
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': (_python_doc_base, None),
-    'numpy': ('http://docs.scipy.org/doc/numpy', None),
-    'scipy': ('http://docs.scipy.org/doc/scipy/reference', None),
-    'matplotlib': ('http://matplotlib.org/', None),
-    'sklearn': ('http://scikit-learn.org/stable/', None),
-    'nibabel': ('http://nipy.org/nibabel', None),
-    'pandas': ('http://pandas.pydata.org', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'scipy': ('http://scipy.github.io/devdocs/', None),
+    'matplotlib': ('https://matplotlib.org/stable/', None),
+    'sklearn': ('https://scikit-learn.org/stable/', None),
+    'nibabel': ('https://nipy.org/nibabel', None),
+    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
+    'nistats': ('https://nistats.github.io', None),
+    'joblib': ('https://joblib.readthedocs.io/en/latest/', None),
 }
 
 extlinks = {
@@ -307,14 +334,23 @@ sphinx_gallery_conf = {
     'backreferences_dir': os.path.join('modules', 'generated'),
     'reference_url': {'nilearn': None},
     'junit': '../test-results/sphinx-gallery/junit.xml',
-    'image_scrapers': scrapers,
+    'examples_dirs': '../examples',
+    'gallery_dirs': 'auto_examples',
+    # Ignore the function signature leftover by joblib
+    'ignore_pattern': 'func_code\.py',
+    'show_memory': not sys.platform.startswith('win'),
+    'remove_config_comments': True,
+    'binder': {
+        'org': 'nilearn',
+        'repo': 'nilearn.github.io',
+        'binderhub_url': 'https://mybinder.org',
+        'branch': 'main',
+        'dependencies': ['binder/requirements.txt'],
+        'notebooks_dir': 'examples'
     }
+}
 
-# Get rid of spurious warnings due to some interaction between
-# autosummary and numpydoc. See
-# https://github.com/phn/pytpm/issues/3#issuecomment-12133978 for more
-# details
-numpydoc_show_class_members = False
+
 
 def touch_example_backreferences(app, what, name, obj, options, lines):
     # generate empty examples files, so that we don't get
@@ -325,11 +361,21 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
         # touch file
         open(examples_path, 'w').close()
 
-# Add the 'copybutton' javascript, to hide/show the prompt in code
-# examples
 
 
 def setup(app):
-    app.add_javascript('copybutton.js')
     app.connect('autodoc-process-docstring', touch_example_backreferences)
-    report_scraper.app = app
+
+
+
+# The following is used by sphinx.ext.linkcode to provide links to github
+linkcode_resolve = make_linkcode_resolve('nilearn',
+                                         'https://github.com/nilearn/'
+                                         'nilearn/blob/{revision}/'
+                                         '{package}/{path}#L{lineno}')
+
+# -- sphinxext.opengraph configuration -------------------------------------
+ogp_site_url = "https://nilearn.github.io/"
+ogp_image = "https://nilearn.github.io/_static/nilearn-logo.png"
+ogp_use_first_image = True
+ogp_site_name = "Nilearn"

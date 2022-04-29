@@ -1,4 +1,3 @@
-from nose.tools import assert_equal, assert_true
 import numpy as np
 from nilearn.decoding.fista import mfista
 from nilearn.decoding.proximal_operators import _prox_l1
@@ -48,7 +47,7 @@ def test_input_args_and_kwargs():
     sig[60:75] = 1
     y = sig + noise_std * rng.randn(*sig.shape)
     X = np.eye(p)
-    mask = np.ones((p,)).astype(np.bool)
+    mask = np.ones((p,)).astype(bool)
     alpha = .01
     alpha_ = alpha * X.shape[0]
     l1_ratio = .2
@@ -67,8 +66,8 @@ def test_input_args_and_kwargs():
                     dgap_factor=dgap_factor,
                     callback=lambda _: cb_retval, verbose=verbose,
                     max_iter=100)
-                assert_equal(best_w.shape, mask.shape)
-                assert_true(isinstance(objective, list))
-                assert_true(isinstance(init, dict))
+                assert best_w.shape == mask.shape
+                assert isinstance(objective, list)
+                assert isinstance(init, dict)
                 for key in ["w", "t", "dgap_tol", "stepsize"]:
-                    assert_true(key in init)
+                    assert key in init

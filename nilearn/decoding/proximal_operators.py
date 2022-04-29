@@ -124,7 +124,7 @@ def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
         Callable that takes the local variables at each
         steps. Useful for tracking.
 
-    init : array of shape shape as im
+    init : array of shape as im
         Starting point for the optimization.
 
     check_gap_frequency : int, optional (default 4)
@@ -160,7 +160,7 @@ def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
     input_img_flat.shape = input_img.size
     input_img_norm = np.dot(input_img_flat, input_img_flat)
     if not input_img.dtype.kind == 'f':
-        input_img = input_img.astype(np.float)
+        input_img = input_img.astype(np.float64)
     shape = [len(input_img.shape) + 1] + list(input_img.shape)
     grad_im = np.zeros(shape)
     grad_aux = np.zeros(shape)

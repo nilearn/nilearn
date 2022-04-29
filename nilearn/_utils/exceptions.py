@@ -1,10 +1,3 @@
-try:
-    from numpy import VisibleDeprecationWarning
-except ImportError:
-    class VisibleDeprecationWarning(UserWarning):
-        pass
-
-
 AuthorizedException = (
         BufferError,
         ArithmeticError,
@@ -31,12 +24,12 @@ class DimensionError(TypeError):
 
     Parameters
     ----------
+    file_dimension : integer
+        Indicates the dimensonality of the bottom-level nifti file.
 
-    file_dimension: integer
-        Indicates the dimensonality of the bottom-level nifti file
+    required_dimension : integer
+        The dimension the nifti file should have.
 
-    required_dimension: integer
-        The dimension the nifti file should have
     """
     def __init__(self, file_dimension, required_dimension):
         self.file_dimension = file_dimension
@@ -48,9 +41,10 @@ class DimensionError(TypeError):
     def increment_stack_counter(self):
         """Increments the counter of recursive calls.
 
-        Called when the error is catched and re-raised to count the
+        Called when the error is caught and re-raised to count the
         number of recursive calls, ie the number of dimensions added by
         imbrication in lists.
+
         """
         self.stack_counter += 1
 
@@ -59,7 +53,7 @@ class DimensionError(TypeError):
         return ("Input data has incompatible dimensionality: "
                 "Expected dimension is {0}D and you provided a "
                 "{1}{2}D image{3}{4}. "
-                "See http://nilearn.github.io/manipulating_images/"
+                "See https://nilearn.github.io/stable/manipulating_images/"
                 "input_output.html."
                 .format(self.required_dimension + self.stack_counter,
                         "list of " * self.stack_counter,

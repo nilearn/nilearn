@@ -1,0 +1,5 @@
+format: zip
+https://osf.io/hrcku/download
+allen_rsn_2011/ALL_HC_unthresholded_tmaps.nii.gz
+allen_rsn_2011/RSN_HC_unthresholded_tmaps.nii.gz
+allen_rsn_2011/rest_hcp_agg__component_ica_.nii.gz

@@ -1,8 +1,8 @@
-import warnings
+import json
 
 import numpy as np
+import pytest
 
-from nilearn.plotting import cm
 from nilearn.plotting.js_plotting_utils import decode
 from nilearn.plotting import html_connectome
 
@@ -15,6 +15,21 @@ def test_prepare_line():
     pe, pn = html_connectome._prepare_line(e, n)
     assert (pn == [0, 1, 0, 0, 2, 0, 2, 3, 0, 8, 9, 0]).all()
     assert(pe == [0, 0, 0, 1, 1, 0, 2, 2, 0, 3, 3, 0]).all()
+
+
+@pytest.mark.parametrize('node_color,expected_marker_colors', [
+    ('cyan', ['#00ffff', '#00ffff', '#00ffff']),
+    ('auto', ['#440154', '#20908c', '#fde724']),
+    (['cyan', 'red', 'blue'], ['#00ffff', '#ff0000', '#0000ff'])
+])
+def test_prepare_colors_for_markers(node_color, expected_marker_colors):
+    number_of_nodes = 3
+    marker_colors = html_connectome._prepare_colors_for_markers(
+        node_color,
+        number_of_nodes,
+    )
+
+    assert marker_colors == expected_marker_colors
 
 
 def _make_connectome():
@@ -44,14 +59,13 @@ def test_get_connectome():
          40, 20, 0,
          40, 40, 0], dtype='<f4')
     assert (con_x == expected_x).all()
-    assert {'_con_x', '_con_y', '_con_z', '_con_w', 'colorscale'
-            }.issubset(connectome.keys())
-    assert (connectome['cmin'], connectome['cmax']) == (-2.5, 2.5)
+    assert {'_con_x', '_con_y', '_con_z', '_con_w'}.issubset(connectome.keys())
+    assert (connectome['line_cmin'], connectome['line_cmax']) == (-2.5, 2.5)
     adj[adj == 0] = np.nan
     connectome = html_connectome._get_connectome(adj, coord)
     con_x = decode(connectome['_con_x'], '<f4')
     assert (con_x == expected_x).all()
-    assert (connectome['cmin'], connectome['cmax']) == (-2.5, 2.5)
+    assert (connectome['line_cmin'], connectome['line_cmax']) == (-2.5, 2.5)
 
 
 def test_view_connectome():
@@ -60,101 +74,21 @@ def test_view_connectome():
     check_html(html, False, 'connectome-plot')
     html = html_connectome.view_connectome(adj, coord, '85.3%',
                                            title="SOME_TITLE")
-    check_html(html, False, 'connectome-plot')
+    check_html(html, False, 'connectome-plot', title="SOME_TITLE")
     assert "SOME_TITLE" in html.html
     html = html_connectome.view_connectome(adj, coord, '85.3%',
                                            linewidth=8.5, node_size=4.2)
-    check_html(html, False, 'connectome-plot')
+    check_html(html, False, 'connectome-plot', title="Connectome plot")
     html = html_connectome.view_connectome(
-        adj, coord, '85.3%', linewidth=8.5, marker_size=np.arange(len(coord)))
+        adj, coord, '85.3%', linewidth=8.5, node_size=np.arange(len(coord)))
     check_html(html, False, 'connectome-plot')
-
-
-def test_params_deprecation_view_connectome():
-    deprecated_params = {'coords': 'node_coords',
-                         'threshold': 'edge_threshold',
-                         'cmap': 'edge_cmap',
-                         'marker_size': 'node_size',
-                         }
-    deprecation_msg = (
-        'The parameter "{}" will be removed in 0.6.0 release of Nilearn. '
-        'Please use the parameter "{}" instead.'
-    )
-    warning_msgs = {old_: deprecation_msg.format(old_, new_)
-                    for old_, new_ in deprecated_params.items()
-                    }
-
-    adj, coord = _make_connectome()
-    with warnings.catch_warnings(record=True) as raised_warnings:
-        html_connectome.view_connectome(adjacency_matrix=adj,
-                                        coords=coord,
-                                        edge_threshold='85.3%',
-                                        edge_cmap=cm.cyan_orange,
-                                        linewidth=8.5, node_size=4.2,
-                                        )
-
-        html_connectome.view_connectome(adjacency_matrix=adj,
-                                        node_coords=coord,
-                                        threshold='85.3%',
-                                        edge_cmap=cm.cyan_orange,
-                                        linewidth=8.5,
-                                        node_size=4.2,
-                                        )
-
-        html_connectome.view_connectome(adjacency_matrix=adj,
-                                        node_coords=coord,
-                                        edge_threshold='85.3%',
-                                        cmap=cm.cyan_orange,
-                                        linewidth=8.5,
-                                        node_size=4.2,
-                                        )
-
-        html_connectome.view_connectome(adjacency_matrix=adj,
-                                        node_coords=coord,
-                                        edge_threshold='85.3%',
-                                        edge_cmap=cm.cyan_orange,
-                                        linewidth=8.5,
-                                        marker_size=4.2,
-                                        )
-
-        html_connectome.view_connectome(adjacency_matrix=adj,
-                                        node_coords=coord,
-                                        edge_threshold='85.3%',
-                                        edge_cmap=cm.cyan_orange,
-                                        linewidth=8.5,
-                                        node_size=4.2,
-                                        )
-
-        html_connectome.view_connectome(adj,
-                                        coord,
-                                        '85.3%',
-                                        cm.cyan_orange,
-                                        8.5,
-                                        4.2,
-                                        )
-    old_params = ['coords', 'threshold', 'cmap', 'marker_size']
-
-    raised_warning_messages = ''.join(
-        str(warning.message) for warning in raised_warnings)
-    print(raised_warning_messages)
-    for old_param_ in old_params:
-        assert warning_msgs[old_param_] in raised_warning_messages
-
-
-def test_get_markers():
-    coords = np.arange(12).reshape((4, 3))
-    colors = ['r', 'g', 'black', 'white']
-    markers = html_connectome._get_markers(coords, colors)
-    assert markers["marker_color"] == [
-        '#ff0000', '#007f00', '#000000', '#ffffff']
-    assert markers['markers_only']
-    con_x = decode(markers['_con_x'], '<f4')
-    assert np.allclose(con_x, coords[:, 0])
 
 
 def test_view_markers():
     coords = np.arange(12).reshape((4, 3))
     colors = ['r', 'g', 'black', 'white']
+    labels = ["red marker", "green marker",
+          "black marker", "white marker"]
     html = html_connectome.view_markers(coords, colors)
     check_html(html, False, 'connectome-plot')
     html = html_connectome.view_markers(coords)
@@ -167,39 +101,9 @@ def test_view_markers():
     html = html_connectome.view_markers(
         coords, marker_size=list(range(len(coords))))
     check_html(html, False, 'connectome-plot')
-
-
-def test_params_deprecation_view_markers():
-    """ Tests whether use of deprecated keyword parameters of view_markers
-    raise corrrect warnings.
-    """
-    deprecated_params = {'coords': 'marker_coords',
-                         'colors': 'marker_color',
-                         }
-    deprecation_msg = (
-        'The parameter "{}" will be removed in 0.6.0 release of Nilearn. '
-        'Please use the parameter "{}" instead.'
-    )
-    warning_msgs = {old_: deprecation_msg.format(old_, new_)
-                    for old_, new_ in deprecated_params.items()
-                    }
-    coords = np.arange(12).reshape((4, 3))
-    colors = ['r', 'g', 'black', 'white']
-    with warnings.catch_warnings(record=True) as raised_warnings:
-        html_connectome.view_markers(coords=coords,
-                                     marker_color=colors,
-                                     )
-        html_connectome.view_markers(marker_coords=coords,
-                                     colors=colors,
-                                     )
-        html_connectome.view_markers(marker_coords=coords,
-                                     marker_color=colors,
-                                     )
-        html_connectome.view_markers(coords,
-                                     colors,
-                                     )
-    old_params = ['coords', 'colors']
-    assert len(raised_warnings) == 2
-    for old_param_, raised_warning_ in zip(old_params, raised_warnings):
-        assert warning_msgs[old_param_] == str(raised_warning_.message)
-        assert raised_warning_.category is DeprecationWarning
+    html = html_connectome.view_markers(coords,
+                                    marker_size=5.0,
+                                    marker_color=colors,
+                                    marker_labels=labels)
+    labels_dict = {"marker_labels": labels}
+    assert json.dumps(labels_dict)[1:-1] in html.html

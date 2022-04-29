@@ -1,27 +1,23 @@
 """
 Plotting code for nilearn
 """
-# Authors: Chris Filo Gorgolewski, Gael Varoquaux
+# Original Authors: Chris Filo Gorgolewski, Gael Varoquaux
+import importlib
+import warnings
+
 
 ###############################################################################
 # Make sure that we don't get DISPLAY problems when running without X on
 # unices
 def _set_mpl_backend():
+    # We are doing local imports here to avoid polluting our namespace
     try:
-        # We are doing local imports here to avoid poluting our namespace
         import matplotlib
-        import os
-        import sys
-        # Set the backend to a non-interactive one for unices without X
-        if (os.name == 'posix' and 'DISPLAY' not in os.environ
-            and not (sys.platform == 'darwin'
-                     and matplotlib.get_backend() == 'MacOSX'
-                     )):
-            matplotlib.use('Agg')
     except ImportError:
-        from .._utils.testing import skip_if_running_nose
-        # No need to fail when running tests
-        skip_if_running_nose('matplotlib not installed')
+        if importlib.util.find_spec("pytest") is not None:
+            from .._utils.testing import skip_if_running_tests
+            # No need to fail when running tests
+            skip_if_running_tests('matplotlib not installed')
         raise
     else:
         from ..version import (_import_module_with_version_check,
@@ -30,28 +26,49 @@ def _set_mpl_backend():
         # that the version is greater that the minimum required one
         _import_module_with_version_check('matplotlib',
                                           OPTIONAL_MATPLOTLIB_MIN_VERSION)
+        current_backend = matplotlib.get_backend().lower()
+
+        try:
+            # Making sure the current backend is usable by matplotlib
+            matplotlib.use(current_backend)
+        except Exception:
+            # If not, switching to default agg backend
+            matplotlib.use("Agg")
+        new_backend = matplotlib.get_backend().lower()
+
+        if new_backend != current_backend:
+            # Matplotlib backend has been changed, let's warn the user
+            warnings.warn(f"Backend changed to {new_backend}...")
+
 
 _set_mpl_backend()
 
 ###############################################################################
 from . import cm
-from .img_plotting import plot_img, plot_anat, plot_epi, \
-    plot_roi, plot_stat_map, plot_glass_brain, plot_connectome, \
-    plot_connectome_strength, plot_prob_atlas, show
+from .img_plotting import (
+    plot_img, plot_anat, plot_epi, plot_roi, plot_stat_map,
+    plot_glass_brain, plot_connectome, plot_markers, plot_prob_atlas,
+    plot_carpet, plot_img_comparison, show)
 from .find_cuts import find_xyz_cut_coords, find_cut_slices, \
     find_parcellation_cut_coords, find_probabilistic_atlas_cut_coords
-from .matrix_plotting import plot_matrix
+from .matrix_plotting import (plot_matrix, plot_contrast_matrix,
+                              plot_design_matrix, plot_event)
 from .html_surface import view_surf, view_img_on_surf
 from .html_stat_map import view_img
 from .html_connectome import view_connectome, view_markers
-from .surf_plotting import plot_surf, plot_surf_stat_map, plot_surf_roi
+from .surf_plotting import (plot_surf, plot_surf_stat_map, plot_surf_roi,
+                            plot_img_on_surf, plot_surf_contours)
 
 __all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi',
            'plot_roi', 'plot_stat_map', 'plot_glass_brain',
-           'plot_connectome_strength', 'plot_connectome', 'plot_prob_atlas',
+           'plot_markers', 'plot_connectome', 'plot_prob_atlas',
            'find_xyz_cut_coords', 'find_cut_slices',
-           'show', 'plot_matrix', 'view_surf', 'view_img_on_surf',
+           'plot_img_comparison',
+           'show', 'plot_matrix',
+           'plot_design_matrix', 'plot_contrast_matrix', 'plot_event',
+           'view_surf', 'view_img_on_surf',
            'view_img', 'view_connectome', 'view_markers',
-           'find_parcellation_cut_coords', 'find_probabilistic_atlas_cut_coords',
-           'plot_surf', 'plot_surf_stat_map', 'plot_surf_roi'
-           ]
+           'find_parcellation_cut_coords',
+           'find_probabilistic_atlas_cut_coords',
+           'plot_surf', 'plot_surf_stat_map', 'plot_surf_roi',
+           'plot_img_on_surf', 'plot_carpet', 'plot_surf_contours']

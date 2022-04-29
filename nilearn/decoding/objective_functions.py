@@ -43,7 +43,7 @@ def _logistic_loss_lipschitz_constant(X):
     """Compute the Lipschitz constant (upper bound) for the gradient of the
     logistic sum:
 
-         w -> \sum_i log(1+exp(-y_i*(x_i*w + v)))
+         w -> \\sum_i log(1+exp(-y_i*(x_i*w + v)))
 
     """
     # N.B: we handle intercept!
@@ -200,7 +200,7 @@ def _gradient_id(img, l1_ratio=.5):
             "l1_ratio must be in the interval [0, 1]; got %s" % l1_ratio)
 
     shape = [img.ndim + 1] + list(img.shape)
-    gradient = np.zeros(shape, dtype=np.float)
+    gradient = np.zeros(shape, dtype=np.float64)
 
     # the gradient part: 'Clever' code to have a view of the gradient
     # with dimension i stop at -1

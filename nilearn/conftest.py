@@ -1,23 +1,44 @@
-from distutils.version import LooseVersion
 
 import numpy as np
 import pytest
 
 from _pytest.doctest import DoctestItem
 
+# we need to import these fixtures even if not used in this module
+from nilearn.datasets._testing import request_mocker  # noqa: F401
+from nilearn.datasets._testing import temp_nilearn_data_dir  # noqa: F401
+from nilearn.version import _compare_version
+
+
+collect_ignore = ["datasets/data/convert_templates.py"]
+
+
 try:
-    import matplotlib
+    import matplotlib  # noqa: F401
 except ImportError:
-    collect_ignore = ['plotting']
-else:
-    matplotlib  # Prevents flake8 erring due to unused entities.
+    collect_ignore.extend(['plotting', 'reporting'])
+    matplotlib = None
+
+
+def pytest_configure(config):
+    """Use Agg so that no figures pop up."""
+    if matplotlib is not None:
+        matplotlib.use('Agg', force=True)
+
+
+@pytest.fixture(autouse=True)
+def close_all():
+    """Close all matplotlib figures."""
+    yield
+    if matplotlib is not None:
+        import matplotlib.pyplot as plt
+        plt.close('all')  # takes < 1 us so just always do it
 
 
 def pytest_collection_modifyitems(items):
-
-    # numpy changed the str/repr formatting of numpy arrays in 1.14. We want to
-    # run doctests only for numpy >= 1.14.Adapted from scikit-learn
-    if LooseVersion(np.__version__) < LooseVersion('1.14'):
+    # numpy changed the str/repr formatting of numpy arrays in 1.14.
+    # We want to run doctests only for numpy >= 1.14.Adapted from scikit-learn
+    if _compare_version(np.__version__, '<', '1.14'):
         reason = 'doctests are only run for numpy >= 1.14'
         skip_doctests = True
     else:

@@ -33,6 +33,7 @@ test-code:
 
 test-doc:
 	pytest --doctest-glob='*.rst' `find doc/ -name '*.rst'`
+	pytest doc/_additional_doctests.txt
 
 
 test-coverage:

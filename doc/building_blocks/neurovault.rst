@@ -57,8 +57,8 @@ every key, value pair in ``collection_terms`` will be discarded. We use
 ``image_terms`` in the same way to filter images.
 
 For example, many images on Neurovault have a "modality" field in their
-metadata.  BOLD images should have it set to "fMRI-BOLD". We can ask for BOLD
-images only :
+metadata.  :term:`BOLD` images should have it set to "fMRI-BOLD".
+We can ask for :term:`BOLD` images only :
 
     >>> bold = fetch_neurovault(image_terms={'modality': 'fMRI-BOLD'}, # doctest: +SKIP
     ... max_images=7) # doctest: +SKIP
@@ -194,11 +194,11 @@ clear the ``vectorize_words`` parameter to save computation time):
 Examples using Neurovault
 -------------------------
 
-    - :ref:`sphx_glr_auto_examples_05_advanced_plot_ica_neurovault.py`
+    - :ref:`sphx_glr_auto_examples_07_advanced_plot_ica_neurovault.py`
           Download images from Neurovault and extract some networks
           using ICA.
 
-    - :ref:`sphx_glr_auto_examples_05_advanced_plot_neurovault_meta_analysis.py`
+    - :ref:`sphx_glr_auto_examples_07_advanced_plot_neurovault_meta_analysis.py`
         Meta-analysis of "Stop minus go" studies available on
         Neurovault.
 
@@ -216,5 +216,3 @@ References
    C. Van Essen, and Tor D. Wager. "Large-scale automated synthesis
    of human functional neuroimaging data." Nature methods 8, no. 8
    (2011): 665-670.
-
-

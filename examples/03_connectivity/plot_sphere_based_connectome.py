@@ -7,6 +7,8 @@ We show how to build spheres around user-defined coordinates, as well as
 centered on coordinates from the Power-264 atlas [1], and the Dosenbach-160
 atlas [2].
 
+.. include:: ../../../examples/masker_note.rst
+
 **References**
 
 [1] Power, Jonathan D., et al. "Functional network organization of the
@@ -32,7 +34,7 @@ computing a connectome from them.
 # connectivity dataset.
 
 from nilearn import datasets
-dataset = datasets.fetch_development_fmri(n_subjects=20)
+dataset = datasets.fetch_development_fmri(n_subjects=10)
 
 # print basic information on the dataset
 print('First subject functional nifti image (4D) is at: %s' %
@@ -56,15 +58,14 @@ labels = [
 #
 # We can compute the mean signal within **spheres** of a fixed radius
 # around a sequence of (x, y, z) coordinates with the object
-# :class:`nilearn.input_data.NiftiSpheresMasker`.
+# :class:`nilearn.maskers.NiftiSpheresMasker`.
 # The resulting signal is then prepared by the masker object: Detrended,
 # band-pass filtered and **standardized to 1 variance**.
 
-from nilearn import input_data
+from nilearn.maskers import NiftiSpheresMasker
 
-masker = input_data.NiftiSpheresMasker(
-    dmn_coords, radius=8,
-    detrend=True, standardize=True,
+masker = NiftiSpheresMasker(
+    dmn_coords, radius=8, detrend=True, standardize=True,
     low_pass=0.1, high_pass=0.01, t_r=2,
     memory='nilearn_cache', memory_level=1, verbose=2)
 
@@ -152,14 +153,14 @@ view
 ##########################################################################
 # Extract signals on spheres from an atlas
 # ----------------------------------------
-# 
+#
 # Next, instead of supplying our own coordinates, we will use coordinates
 # generated at the center of mass of regions from two different atlases.
 # This time, we'll use a different correlation measure.
-# 
+#
 # First we fetch the coordinates of the Power atlas
 
-power = datasets.fetch_coords_power_2011()
+power = datasets.fetch_coords_power_2011(legacy_format=False)
 print('Power atlas comes with {0}.'.format(power.keys()))
 
 
@@ -187,7 +188,7 @@ print('Stacked power coordinates in array of shape {0}.'.format(coords.shape))
 ###############################################################################
 # and define spheres masker, with small enough radius to avoid regions overlap.
 
-spheres_masker = input_data.NiftiSpheresMasker(
+spheres_masker = NiftiSpheresMasker(
     seeds=coords, smoothing_fwhm=6, radius=5.,
     detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2)
 
@@ -254,29 +255,52 @@ plotting.plot_connectome(matrix, coords, title='Power correlation graph',
 ###############################################################################
 # Sometimes, the information in the correlation matrix is overwhelming and
 # aggregating edge strength from the graph would help. Use the function
-# `nilearn.plotting.plot_connectome_strength` to visualize this information.
+# `nilearn.plotting.plot_markers` to visualize this information.
 
-plotting.plot_connectome_strength(
-    matrix, coords, title='Connectome strength for Power atlas'
+# calculate normalized, absolute strength for each node
+node_strength = np.sum(np.abs(matrix), axis=0)
+node_strength /= np.max(node_strength)
+
+plotting.plot_markers(
+    node_strength,
+    coords,
+    title='Node strength for absolute value of edges for Power atlas',
 )
+
 
 ###############################################################################
 # From the correlation matrix, we observe that there is a positive and negative
-# structure. We could make two different plots by plotting these strengths
-# separately.
+# structure. We could make two different plots, one for the positive and one for
+# the negative structure.
 
 from matplotlib.pyplot import cm
 
-# plot the positive part of of the matrix
-plotting.plot_connectome_strength(
-    np.clip(matrix, 0, matrix.max()), coords, cmap=cm.YlOrRd,
-    title='Strength of the positive edges of the Power correlation matrix'
+# clip connectivity matrix to preserve positive and negative edges
+positive_edges = np.clip(matrix, 0, matrix.max())
+negative_edges = np.clip(matrix, matrix.min(), 0)
+
+# calculate strength for positive edges
+node_strength_positive = np.sum(np.abs(positive_edges), axis=0)
+node_strength_positive /= np.max(node_strength_positive)
+
+# calculate strength for negative edges
+node_strength_negative = np.sum(np.abs(negative_edges), axis=0)
+node_strength_negative /= np.max(node_strength_negative)
+
+# plot nodes' strength for positive edges
+plotting.plot_markers(
+    node_strength_positive,
+    coords,
+    title='Node strength for the positive edges for Power atlas',
+    node_cmap=cm.YlOrRd
 )
 
-# plot the negative part of of the matrix
-plotting.plot_connectome_strength(
-    np.clip(matrix, matrix.min(), 0), coords, cmap=cm.PuBu,
-    title='Strength of the negative edges of the Power correlation matrix'
+# plot nodes' strength for negative edges
+plotting.plot_markers(
+    node_strength_negative,
+    coords,
+    title='Node strength for the negative edges for Power atlas',
+    node_cmap=cm.PuBu
 )
 
 ###############################################################################
@@ -284,7 +308,7 @@ plotting.plot_connectome_strength(
 # -------------------------------------------
 #
 # We repeat the same steps for Dosenbach's atlas.
-dosenbach = datasets.fetch_coords_dosenbach_2010()
+dosenbach = datasets.fetch_coords_dosenbach_2010(legacy_format=False)
 
 coords = np.vstack((
     dosenbach.rois['x'],
@@ -292,7 +316,7 @@ coords = np.vstack((
     dosenbach.rois['z'],
 )).T
 
-spheres_masker = input_data.NiftiSpheresMasker(
+spheres_masker = NiftiSpheresMasker(
     seeds=coords, smoothing_fwhm=6, radius=4.5,
     detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2)
 
@@ -308,18 +332,43 @@ plotting.plot_matrix(matrix, vmin=-1., vmax=1., colorbar=True,
 
 plotting.plot_connectome(matrix, coords, title='Dosenbach correlation graph',
                          edge_threshold="99.7%", node_size=20, colorbar=True)
-plotting.plot_connectome_strength(
-    matrix, coords, title='Connectome strength for Power atlas'
-)
-plotting.plot_connectome_strength(
-    np.clip(matrix, 0, matrix.max()), coords, cmap=cm.YlOrRd,
-    title='Strength of the positive edges of the Power correlation matrix'
-)
-plotting.plot_connectome_strength(
-    np.clip(matrix, matrix.min(), 0), coords, cmap=cm.PuBu,
-    title='Strength of the negative edges of the Power correlation matrix'
+
+
+# calculate average strength for each node
+node_strength = np.sum(np.abs(matrix), axis=0)
+node_strength /= np.max(node_strength)
+
+plotting.plot_markers(
+    node_strength,
+    coords,
+    title='Node strength for absolute value of edges for Dosenbach atlas',
 )
 
+# clip connectivity matrix to preserve positive and negative edges
+positive_edges = np.clip(matrix, 0, matrix.max())
+negative_edges = np.clip(matrix, matrix.min(), 0)
+
+# calculate strength for positive and edges
+node_strength_positive = np.sum(np.abs(positive_edges), axis=0)
+node_strength_positive /= np.max(node_strength_positive)
+node_strength_negative = np.sum(np.abs(negative_edges), axis=0)
+node_strength_negative /= np.max(node_strength_negative)
+
+# plot nodes' strength for positive edges
+plotting.plot_markers(
+    node_strength_positive,
+    coords,
+    title='Node strength for the positive edges for Dosenbach atlas',
+    node_cmap=cm.YlOrRd
+)
+
+# plot nodes' strength for negative edges
+plotting.plot_markers(
+    node_strength_negative,
+    coords,
+    title='Node strength for the negative edges for Dosenbach atlas',
+    node_cmap=cm.PuBu
+)
 
 ###############################################################################
 # We can easily identify the Dosenbach's networks from the matrix blocks.

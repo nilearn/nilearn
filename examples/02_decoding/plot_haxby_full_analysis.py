@@ -11,11 +11,14 @@ three different masks: the full ventral stream (mask_vt), the house
 selective areas (mask_house) and the face selective areas (mask_face),
 that have been defined via a standard GLM-based analysis.
 
+.. include:: ../../../examples/masker_note.rst
+
 """
 
 ##########################################################################
-# First we load and prepare the data
+# Load and prepare the data
 # -----------------------------------
+
 # Fetch data using nilearn dataset fetcher
 from nilearn import datasets
 # by default we fetch 2nd subject data for analysis
@@ -29,7 +32,7 @@ print('First subject functional nifti image (4D) is located at: %s' %
       func_filename)
 
 # Load nilearn NiftiMasker, the practical masking and unmasking tool
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 
 # load labels
 import pandas as pd
@@ -44,21 +47,25 @@ categories = stimuli[task_mask].unique()
 # extract tags indicating to which acquisition run a tag belongs
 session_labels = labels["chunks"][task_mask]
 
+# apply the task_mask to  fMRI data (func_filename)
+from nilearn.image import index_img
+task_data = index_img(func_filename, task_mask)
 
 ##########################################################################
-# Then we use scikit-learn for decoding on the different masks
-# -------------------------------------------------------------
-# The classifier: a support vector classifier
-from sklearn.svm import SVC
-classifier = SVC(C=1., kernel="linear")
-
-# A classifier to set the chance level
-from sklearn.dummy import DummyClassifier
-dummy_classifier = DummyClassifier()
+# Decoding on the different masks
+# --------------------------------
+#
+# The classifier used here is a support vector classifier (svc). We use
+# class:`nilearn.decoding.Decoder` and specify the classifier.
+import numpy as np
+from nilearn.decoding import Decoder
 
 # Make a data splitting object for cross validation
-from sklearn.model_selection import LeaveOneGroupOut, cross_val_score
+from sklearn.model_selection import LeaveOneGroupOut
 cv = LeaveOneGroupOut()
+
+##############################################################
+# We use :class:`nilearn.decoding.Decoder` to estimate a baseline.
 
 mask_names = ['mask_vt', 'mask_face', 'mask_house']
 
@@ -66,46 +73,37 @@ mask_scores = {}
 mask_chance_scores = {}
 
 for mask_name in mask_names:
-    print("Working on mask %s" % mask_name)
+    print("Working on %s" % mask_name)
     # For decoding, standardizing is often very important
     mask_filename = haxby_dataset[mask_name][0]
     masker = NiftiMasker(mask_img=mask_filename, standardize=True)
-    masked_timecourses = masker.fit_transform(
-        func_filename)[task_mask]
-
     mask_scores[mask_name] = {}
     mask_chance_scores[mask_name] = {}
 
     for category in categories:
         print("Processing %s %s" % (mask_name, category))
         classification_target = (stimuli[task_mask] == category)
-        mask_scores[mask_name][category] = cross_val_score(
-            classifier,
-            masked_timecourses,
-            classification_target,
-            cv=cv,
-            groups=session_labels,
-            scoring="roc_auc",
-        )
-
-        mask_chance_scores[mask_name][category] = cross_val_score(
-            dummy_classifier,
-            masked_timecourses,
-            classification_target,
-            cv=cv,
-            groups=session_labels,
-            scoring="roc_auc",
-        )
-
+        # Specify the classifier to the decoder object.
+        # With the decoder we can input the masker directly.
+        # We are using the svc_l1 here because it is intra subject.
+        decoder = Decoder(estimator='svc_l1', cv=cv,
+                          mask=masker, scoring='roc_auc')
+        decoder.fit(task_data, classification_target, groups=session_labels)
+        mask_scores[mask_name][category] = decoder.cv_scores_[1]
         print("Scores: %1.2f +- %1.2f" % (
-            mask_scores[mask_name][category].mean(),
-            mask_scores[mask_name][category].std()))
+              np.mean(mask_scores[mask_name][category]),
+              np.std(mask_scores[mask_name][category])))
+
+        dummy_classifier = Decoder(estimator='dummy_classifier', cv=cv,
+                                   mask=masker, scoring='roc_auc')
+        dummy_classifier.fit(task_data, classification_target,
+                             groups=session_labels)
+        mask_chance_scores[mask_name][category] = dummy_classifier.cv_scores_[1]
 
 
 ##########################################################################
 # We make a simple bar plot to summarize the results
 # ---------------------------------------------------
-import numpy as np
 import matplotlib.pyplot as plt
 from nilearn.plotting import show
 
@@ -115,19 +113,19 @@ tick_position = np.arange(len(categories))
 plt.xticks(tick_position, categories, rotation=45)
 
 for color, mask_name in zip('rgb', mask_names):
-    score_means = [mask_scores[mask_name][category].mean()
+    score_means = [np.mean(mask_scores[mask_name][category])
                    for category in categories]
     plt.bar(tick_position, score_means, label=mask_name,
             width=.25, color=color)
 
-    score_chance = [mask_chance_scores[mask_name][category].mean()
+    score_chance = [np.mean(mask_chance_scores[mask_name][category])
                     for category in categories]
     plt.bar(tick_position, score_chance,
             width=.25, edgecolor='k', facecolor='none')
 
     tick_position = tick_position + .2
 
-plt.ylabel('Classification accurancy (AUC score)')
+plt.ylabel('Classification accuracy (AUC score)')
 plt.xlabel('Visual stimuli category')
 plt.ylim(0.3, 1)
 plt.legend(loc='lower right')

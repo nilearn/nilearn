@@ -10,7 +10,7 @@ function decodeBase64(encoded, dtype) {
         "int32": Int32Array
     }[dtype];
 
-    let raw = atob(encoded)
+    let raw = atob(encoded);
     let buffer = new ArrayBuffer(raw.length);
     let asIntArray = new Uint8Array(buffer);
     for (let i = 0; i !== raw.length; i++) {
@@ -110,6 +110,7 @@ function getLayout(plotDivId, viewSelectId, blackBg) {
     let width = height * 3 / 2;
 
     let layout = {
+        showlegend: false,
         height: height, width: width,
         margin: {l:0, r:0, b:0, t:0, pad:0},
         hovermode: false,

@@ -21,9 +21,10 @@ connectome              --- Set of tools for computing functional connectivity m
                             and for sparse multi-subjects learning of Gaussian graphical models
 image                   --- Set of functions defining mathematical operations
                             working on Niimg-like objects
-input_data              --- includes scikit-learn tranformers and tools to
-                            preprocess neuro-imaging data
+maskers                 --- Includes scikit-learn transformers.
 masking                 --- Utilities to compute and operate on brain masks
+interfaces              --- Includes tools to preprocess neuro-imaging data
+                            from various common interfaces like fMRIPrep.
 mass_univariate         --- Defines a Massively Univariate Linear Model
                             estimated with OLS and permutation test
 plotting                --- Plotting code for nilearn
@@ -33,13 +34,14 @@ signal                  --- Set of preprocessing functions for time series
 """
 
 import gzip
-import sys
-import warnings
 import os
+import sys
+import pkg_resources
+import warnings
 
-from distutils.version import LooseVersion
-
-from .version import _check_module_dependencies, __version__
+from .version import (
+    _check_module_dependencies, __version__, _compare_version
+)
 
 # Workaround issue discovered in intel-openmp 2019.5:
 # https://github.com/ContinuumIO/anaconda-issues/issues/11294
@@ -47,49 +49,25 @@ from .version import _check_module_dependencies, __version__
 # see also https://github.com/scikit-learn/scikit-learn/pull/15020
 os.environ.setdefault("KMP_INIT_AT_FORK", "FALSE")
 
-def _py2_deprecation_warning():
-    py2_warning = ('Python2 support is deprecated and will be removed in '
-                   'the next release. Consider switching to Python 3.6 or 3.7.'
-                   )
-    warnings.filterwarnings('once', message=py2_warning)
-    warnings.warn(message=py2_warning,
-                  category=DeprecationWarning,
-                  stacklevel=3,
-                  )
 
-def _py34_deprecation_warning():
-    py34_warning = ('Python 3.4 support is deprecated and will be removed in '
-                   'the next release. Consider switching to Python 3.6 or 3.7.'
-                   )
-    warnings.filterwarnings('once', message=py34_warning)
-    warnings.warn(message=py34_warning,
-                  category=DeprecationWarning,
-                  stacklevel=3,
-                  )
+def _py36_deprecation_warning():
+    py36_warning = ("Python 3.6 support is deprecated and will be removed in "
+                    "release 0.10 of Nilearn. Consider switching to "
+                    "Python 3.8 or 3.9.")
+    warnings.filterwarnings('once', message=py36_warning)
+    warnings.warn(message=py36_warning,
+                  category=FutureWarning,
+                  stacklevel=3)
 
 
 def _python_deprecation_warnings():
-    if sys.version_info.major == 2:
-        _py2_deprecation_warning()
-    elif sys.version_info.major == 3 and sys.version_info.minor == 4:
-        _py34_deprecation_warning()
+    if sys.version_info.major == 3 and sys.version_info.minor == 6:
+        _py36_deprecation_warning()
 
 
 _check_module_dependencies()
 _python_deprecation_warnings()
 
-# Temporary work around to address formatting issues in doc tests
-# with NumPy 1.14. NumPy had made more consistent str/repr formatting
-# of numpy arrays. Hence we print the options to old versions.
-import numpy as np
-if LooseVersion(np.__version__) >= LooseVersion("1.14"):
-    # See issue #1600 in nilearn for reason to add try and except
-    try:
-        from ._utils.testing import is_nose_running
-        if is_nose_running():
-            np.set_printoptions(legacy='1.13')
-    except ImportError:
-        pass
 
 # Monkey-patch gzip to have faster reads on large gzip files
 if hasattr(gzip.GzipFile, 'max_read_chunk'):
@@ -110,6 +88,5 @@ CHECK_CACHE_VERSION = True
 
 # list all submodules available in nilearn and version
 __all__ = ['datasets', 'decoding', 'decomposition', 'connectome',
-           'image', 'input_data', 'masking', 'mass_univariate', 'plotting',
-           'region', 'signal', 'surface', 'parcellations', '__version__']
-
+           'image', 'maskers', 'masking', 'interfaces', 'mass_univariate',
+           'plotting', 'regions', 'signal', 'surface', '__version__']

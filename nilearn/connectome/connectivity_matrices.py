@@ -6,7 +6,6 @@ from scipy import linalg
 
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
-from sklearn.utils import deprecated
 from .. import signal
 from .._utils.extmath import is_spd
 
@@ -18,6 +17,7 @@ def _check_square(matrix):
     ----------
     matrix : numpy.ndarray
         Input array.
+
     """
     if matrix.ndim != 2 or (matrix.shape[0] != matrix.shape[-1]):
         raise ValueError('Expected a square matrix, got array of shape'
@@ -32,6 +32,7 @@ def _check_spd(matrix):
     ----------
     matrix : numpy.ndarray
         Input array.
+
     """
     if not is_spd(matrix, decimal=7):
         raise ValueError('Expected a symmetric positive definite matrix.')
@@ -57,6 +58,7 @@ def _form_symmetric(function, eigenvalues, eigenvectors):
     output : numpy.ndarray, shape (n_features, n_features)
         The symmetric matrix obtained after transforming the eigenvalues, while
         keeping the same eigenvectors.
+
     """
     return np.dot(eigenvectors * function(eigenvalues), eigenvectors.T)
 
@@ -83,6 +85,7 @@ def _map_eigenvalues(function, symmetric):
     -----
     If input matrix is not real symmetric, no error is reported but result will
     be wrong.
+
     """
     eigenvalues, eigenvectors = linalg.eigh(symmetric)
     return _form_symmetric(function, eigenvalues, eigenvectors)
@@ -103,11 +106,11 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
 
     In case of positive numbers, this mean is the usual geometric mean.
 
+    See Algorithm 3 of :footcite:`Fletcher2007`.
+
     References
     ----------
-    See Algorithm 3 of:
-        P. Thomas Fletcher, Sarang Joshi. Riemannian Geometry for the
-        Statistical Analysis of Diffusion Tensor Data. Signal Processing, 2007.
+    .. footbibliography::
 
     Parameters
     ----------
@@ -121,17 +124,18 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
         same shape as the elements of matrices.
 
     max_iter : int, optional
-        Maximal number of iterations.
+        Maximal number of iterations. Default=10.
 
     tol : positive float or None, optional
         The tolerance to declare convergence: if the gradient norm goes below
         this value, the gradient descent is stopped. If None, no  check is
-        performed.
+        performed. Default=1e-7.
 
     Returns
     -------
     gmean : numpy.ndarray, shape (n_features, n_features)
         Geometric mean of the matrices.
+
     """
     # Shape and symmetry positive definiteness checks
     n_features = matrices[0].shape[0]
@@ -194,37 +198,6 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
     return gmean
 
 
-@deprecated("Function 'sym_to_vec' has been renamed to "
-            "'sym_matrix_to_vec' and will be removed in future releases. ")
-def sym_to_vec(symmetric, discard_diagonal=False):
-    """Return the flattened lower triangular part of an array.
-    If diagonal is kept, diagonal elements are divided by sqrt(2) to conserve
-    the norm.
-
-    Acts on the last two dimensions of the array if not 2-dimensional.
-
-    .. versionadded:: 0.2
-
-    Parameters
-    ----------
-    symmetric : numpy.ndarray, shape (..., n_features, n_features)
-        Input array.
-
-    discard_diagonal : boolean, optional
-        If True, the values of the diagonal are not returned.
-        Default is False.
-
-    Returns
-    -------
-    output : numpy.ndarray
-        The output flattened lower triangular part of symmetric. Shape is
-        (..., n_features * (n_features + 1) / 2) if discard_diagonal is False
-        and (..., (n_features - 1) * n_features / 2) otherwise.
-    """
-    return sym_matrix_to_vec(symmetric=symmetric,
-                             discard_diagonal=discard_diagonal)
-
-
 def sym_matrix_to_vec(symmetric, discard_diagonal=False):
     """Return the flattened lower triangular part of an array.
 
@@ -243,7 +216,7 @@ def sym_matrix_to_vec(symmetric, discard_diagonal=False):
 
     discard_diagonal : boolean, optional
         If True, the values of the diagonal are not returned.
-        Default is False.
+        Default=False.
 
     Returns
     -------
@@ -252,16 +225,15 @@ def sym_matrix_to_vec(symmetric, discard_diagonal=False):
         (..., n_features * (n_features + 1) / 2) if discard_diagonal is False
         and (..., (n_features - 1) * n_features / 2) otherwise.
 
-
     """
     if discard_diagonal:
         # No scaling, we directly return the values
         tril_mask = np.tril(np.ones(symmetric.shape[-2:]), k=-1).astype(
-            np.bool)
+            bool)
         return symmetric[..., tril_mask]
     scaling = np.ones(symmetric.shape[-2:])
     np.fill_diagonal(scaling, sqrt(2.))
-    tril_mask = np.tril(np.ones(symmetric.shape[-2:])).astype(np.bool)
+    tril_mask = np.tril(np.ones(symmetric.shape[-2:])).astype(bool)
     return symmetric[..., tril_mask] / scaling[tril_mask]
 
 
@@ -278,7 +250,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
     ----------
     vec : numpy.ndarray or list of numpy arrays, shape \
         (..., n_columns * (n_columns + 1) /2) or
-        (..., (n_columns - 1) * n_columns / 2) if diagonal is given seperately.
+        (..., (n_columns - 1) * n_columns / 2) if diagonal is given separately.
         The input array.
 
     diagonal : numpy.ndarray, shape (..., n_columns), optional
@@ -300,6 +272,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
     See also
     --------
     nilearn.connectome.sym_matrix_to_vec
+
     """
     n = vec.shape[-1]
     # Compute the number of the symmetric matrix columns
@@ -326,7 +299,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
     # Fill lower triangular part
     skip_diagonal = (diagonal is not None)
     mask = np.tril(np.ones((n_columns, n_columns)), k=-skip_diagonal).astype(
-        np.bool)
+        bool)
     sym[..., mask] = vec
 
     # Fill upper triangular part
@@ -354,7 +327,8 @@ def cov_to_corr(covariance):
     Returns
     -------
     correlation : 2D numpy.ndarray
-        The ouput correlation matrix.
+        The output correlation matrix.
+
     """
     diagonal = np.atleast_2d(1. / np.sqrt(np.diag(covariance)))
     correlation = covariance * diagonal * diagonal.T
@@ -375,7 +349,8 @@ def prec_to_partial(precision):
     Returns
     -------
     partial_correlation : 2D numpy.ndarray
-        The 2D ouput partial correlation matrix.
+        The 2D output partial correlation matrix.
+
     """
     partial_correlation = -cov_to_corr(precision)
     np.fill_diagonal(partial_correlation, 1.)
@@ -395,17 +370,19 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         is used. This implies that correlations are slightly shrunk
         towards zero compared to a maximum-likelihood estimate
 
-    kind : {"correlation", "partial correlation", "tangent",\
-            "covariance", "precision"}, optional
-        The matrix kind.
+    kind : {"covariance", "correlation", "partial correlation",\
+            "tangent", "precision"}, optional
+        The matrix kind. For the use of "tangent" see :footcite:`Varoquaux2010b`.
+        Default='covariance'.
 
     vectorize : bool, optional
         If True, connectivity matrices are reshaped into 1D arrays and only
-        their flattened lower triangular parts are returned.
+        their flattened lower triangular parts are returned. Default=False.
 
     discard_diagonal : bool, optional
         If True, vectorized connectivity coefficients do not include the
         matrices diagonal elements. Used only when vectorize is set to True.
+        Default=False.
 
     Attributes
     ----------
@@ -424,9 +401,8 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     References
     ----------
-    For the use of "tangent", see the paper:
-    G. Varoquaux et al. "Detection of brain functional-connectivity difference
-    in post-stroke patients using group-level covariance modeling, MICCAI 2010.
+    .. footbibliography::
+
     """
 
     def __init__(self, cov_estimator=LedoitWolf(store_precision=False),
@@ -436,7 +412,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         self.vectorize = vectorize
         self.discard_diagonal = discard_diagonal
 
-    def _check_input(self, X):
+    def _check_input(self, X, confounds=None):
         if not hasattr(X, "__iter__"):
             raise ValueError("'subjects' input argument must be an iterable. "
                              "You provided {0}".format(X.__class__))
@@ -458,6 +434,12 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                              "features.\nYou provided: "
                              "{0}".format(str(features_dims)))
 
+        if confounds is not None:
+            if not hasattr(confounds, "__iter__"):
+                raise ValueError("'confounds' input argument must be an "
+                                 "iterable. You provided {0}"
+                                 .format(confounds.__class__))
+
     def fit(self, X, y=None):
         """Fit the covariance estimator to the given time series for each
         subject.
@@ -472,14 +454,17 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         -------
         self : ConnectivityMatrix instance
             The object itself. Useful for chaining operations.
+
         """
         self._fit_transform(X, do_fit=True)
         return self
 
-    def _fit_transform(self, X, do_transform=False, do_fit=False):
+    def _fit_transform(self, X, do_transform=False, do_fit=False,
+                       confounds=None):
         """ Internal function to avoid duplication of computation
+
         """
-        self._check_input(X)
+        self._check_input(X, confounds=confounds)
         if do_fit:
             self.cov_estimator_ = clone(self.cov_estimator)
 
@@ -525,13 +510,52 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                                     for cov in connectivities]
 
             connectivities = np.array(connectivities)
+
+            if confounds is not None and not self.vectorize:
+                error_message = ("'confounds' are provided but "
+                                 "vectorize=False. Confounds are only "
+                                 "cleaned on vectorized matrices as "
+                                 "second level connectome regression "
+                                 "but not on symmetric matrices.")
+                raise ValueError(error_message)
+
             if self.vectorize:
                 connectivities = sym_matrix_to_vec(
                     connectivities, discard_diagonal=self.discard_diagonal)
+                if confounds is not None:
+                    connectivities = signal.clean(connectivities,
+                                                  confounds=confounds)
 
         return connectivities
 
-    def fit_transform(self, X, y=None):
+    def fit_transform(self, X, y=None, confounds=None):
+        """Fit the covariance estimator to the given time series for each
+        subject. Then apply transform to covariance matrices for the chosen
+        kind.
+
+        Parameters
+        ----------
+        X : list of n_subjects numpy.ndarray with shapes \
+            (n_samples, n_features)
+            The input subjects time series. The number of samples may differ
+            from one subject to another.
+
+        confounds : np.ndarray with shape (n_samples) or \
+                    (n_samples, n_confounds), or pandas DataFrame, optional
+            Confounds to be cleaned on the vectorized matrices. Only takes
+            into effect when vetorize=True.
+            This parameter is passed to signal.clean. Please see the related
+            documentation for details.
+
+        Returns
+        -------
+        output : numpy.ndarray, shape (n_subjects, n_features, n_features) or \
+            (n_subjects, n_features * (n_features + 1) / 2) if vectorize \
+            is set to True.
+            The transformed individual connectivities, as matrices or vectors.
+            Vectors are cleaned when vectorize=True and confounds are provided.
+
+        """
         if self.kind == 'tangent':
             # Check that people are applying fit_transform to a group of
             # subject
@@ -542,10 +566,11 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                     "be applied to a group of subjects, as it returns "
                     "deviations to the mean. You provided %r" % X
                     )
-        return self._fit_transform(X, do_fit=True, do_transform=True)
+        return self._fit_transform(X, do_fit=True, do_transform=True,
+                                   confounds=confounds)
 
 
-    def transform(self, X):
+    def transform(self, X, confounds=None):
         """Apply transform to covariances matrices to get the connectivity
         matrices for the chosen kind.
 
@@ -556,15 +581,24 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             The input subjects time series. The number of samples may differ
             from one subject to another.
 
+        confounds : numpy.ndarray with shape (n_samples) or \
+                    (n_samples, n_confounds), optional
+            Confounds to be cleaned on the vectorized matrices. Only takes
+            into effect when vetorize=True.
+            This parameter is passed to signal.clean. Please see the related
+            documentation for details.
+
         Returns
         -------
         output : numpy.ndarray, shape (n_subjects, n_features, n_features) or \
             (n_subjects, n_features * (n_features + 1) / 2) if vectorize \
             is set to True.
             The transformed individual connectivities, as matrices or vectors.
+            Vectors are cleaned when vectorize=True and confounds are provided.
+
         """
         self._check_fitted()
-        return self._fit_transform(X, do_transform=True)
+        return self._fit_transform(X, do_transform=True, confounds=confounds)
 
     def _check_fitted(self):
         if not hasattr(self, "cov_estimator_"):
@@ -595,6 +629,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             'partial correlation', the correlation/partial correlation
             matrices are returned.
             If kind is 'tangent', the covariance matrices are reconstructed.
+
         """
         self._check_fitted()
 

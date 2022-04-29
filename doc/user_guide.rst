@@ -22,6 +22,7 @@ User guide: table of contents
    decoding/index.rst
    connectivity/index.rst
    plotting/index.rst
+   glm/index.rst
    manipulating_images/index.rst
    building_blocks/index.rst
    modules/reference.rst

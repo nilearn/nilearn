@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>surface plot</title>
+    <title>$INSERT_PAGE_TITLE_HERE</title>
     <meta charset="UTF-8" />
     $INSERT_JS_LIBRARIES_HERE
 
@@ -13,7 +13,7 @@
         function makePlot(surface, hemisphere, divId) {
 
             decodeHemisphere(surfaceMapInfo, surface, hemisphere);
-            info = surfaceMapInfo[surface + "_" + hemisphere];
+            var info = surfaceMapInfo[surface + "_" + hemisphere];
             info["type"] = "mesh3d";
             info["vertexcolor"] = surfaceMapInfo["vertexcolor_" + hemisphere];
 

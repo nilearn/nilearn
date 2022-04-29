@@ -1,9 +1,6 @@
 """
 Test the _utils.extmath module
 """
-
-import nose
-
 import numpy as np
 
 from sklearn.utils import check_random_state
@@ -15,7 +12,7 @@ def test_fast_abs_percentile():
     data = np.arange(100)
     rng.shuffle(data)
     for p in data:
-        nose.tools.assert_equal(fast_abs_percentile(data, p), p)
+        assert fast_abs_percentile(data, p) == p
 
 
 def test_is_spd_with_non_symmetrical_matrix():

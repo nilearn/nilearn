@@ -1,9 +1,6 @@
 """
 Test image pre-processing functions
 """
-from nose.tools import assert_true, assert_false, assert_equal, assert_raises
-from nose import SkipTest
-
 import platform
 import os
 import sys
@@ -12,8 +9,9 @@ import tempfile
 import nibabel
 from nibabel import Nifti1Image
 import numpy as np
+import pytest
+
 from numpy.testing import assert_array_equal, assert_allclose
-from nilearn._utils.testing import assert_raises_regex, assert_warns
 from nilearn._utils.exceptions import DimensionError
 
 from nilearn import signal
@@ -25,6 +23,7 @@ from nilearn.image import new_img_like
 from nilearn.image import threshold_img
 from nilearn.image import iter_img, index_img
 from nilearn.image import math_img
+from nilearn.image import binarize_img
 from nilearn.image import largest_connected_component_img
 from nilearn.image import get_data
 
@@ -72,12 +71,12 @@ def test_high_variance_confounds():
     confounds1 = image.high_variance_confounds(img, mask_img=mask_img,
                                                percentile=10.,
                                                n_confounds=n_confounds)
-    assert_true(confounds1.shape == (length, n_confounds))
+    assert confounds1.shape == (length, n_confounds)
 
     # No mask.
     confounds2 = image.high_variance_confounds(img, percentile=10.,
                                                n_confounds=n_confounds)
-    assert_true(confounds2.shape == (length, n_confounds))
+    assert confounds2.shape == (length, n_confounds)
 
 
 def test__fast_smooth_array():
@@ -116,7 +115,7 @@ def test__smooth_array():
     for affine in test_affines:
         filtered = image._smooth_array(data, affine,
                                          fwhm=fwhm, copy=True)
-        assert_false(np.may_share_memory(filtered, data))
+        assert not np.may_share_memory(filtered, data)
 
         # We are expecting a full-width at half maximum of
         # fwhm / voxel_size:
@@ -132,7 +131,7 @@ def test__smooth_array():
     data[10, 10, 10] = np.NaN
     filtered = image._smooth_array(data, affine, fwhm=fwhm,
                                    ensure_finite=True, copy=True)
-    assert_true(np.all(np.isfinite(filtered)))
+    assert np.all(np.isfinite(filtered))
 
     # Check copy=False.
     for affine in test_affines:
@@ -157,7 +156,8 @@ def test__smooth_array():
 
     # Check corner case when fwhm=0. See #1537
     # Test whether function _smooth_array raises a warning when fwhm=0.
-    assert_warns(UserWarning, image._smooth_array, data, affine, fwhm=0.)
+    with pytest.warns(UserWarning):
+        image._smooth_array(data, affine, fwhm=0.)
 
     # Test output equal when fwhm=None and fwhm=0
     out_fwhm_none = image._smooth_array(data, affine, fwhm=None)
@@ -182,19 +182,20 @@ def test_smooth_img():
                                     create_files=create_files) as imgs:
             # List of images as input
             out = image.smooth_img(imgs, fwhm)
-            assert_true(isinstance(out, list))
-            assert_true(len(out) == 2)
+            assert isinstance(out, list)
+            assert len(out) == 2
             for o, s, l in zip(out, shapes, lengths):
-                assert_true(o.shape == (s + (l,)))
+                assert o.shape == (s + (l,))
 
             # Single image as input
             out = image.smooth_img(imgs[0], fwhm)
-            assert_true(isinstance(out, nibabel.Nifti1Image))
-            assert_true(out.shape == (shapes[0] + (lengths[0],)))
+            assert isinstance(out, nibabel.Nifti1Image)
+            assert out.shape == (shapes[0] + (lengths[0],))
 
     # Check corner case situations when fwhm=0, See issue #1537
     # Test whether function smooth_img raises a warning when fwhm=0.
-    assert_warns(UserWarning, image.smooth_img, img1, fwhm=0.)
+    with pytest.warns(UserWarning):
+        image.smooth_img(img1, fwhm=0.)
 
     # Test output equal when fwhm=None and fwhm=0
     out_fwhm_none = image.smooth_img(img1, fwhm=None)
@@ -222,20 +223,20 @@ def test__crop_img_to():
     new_origin = np.array((4, 3, 2)) * np.array((2, 1, 3))
 
     # check that correct part was extracted:
-    assert_true((get_data(cropped_img) == 1).all())
-    assert_true(cropped_img.shape == (2, 4, 3))
+    assert (get_data(cropped_img) == 1).all()
+    assert cropped_img.shape == (2, 4, 3)
 
     # check that affine was adjusted correctly
-    assert_true((cropped_img.affine[:3, 3] == new_origin).all())
+    assert (cropped_img.affine[:3, 3] == new_origin).all()
 
     # check that data was really not copied
     data[2:4, 1:5, 3:6] = 2
-    assert_true((get_data(cropped_img) == 2).all())
+    assert (get_data(cropped_img) == 2).all()
 
     # check that copying works
     copied_cropped_img = image._crop_img_to(img, slices)
     data[2:4, 1:5, 3:6] = 1
-    assert_true((get_data(copied_cropped_img) == 2).all())
+    assert (get_data(copied_cropped_img) == 2).all()
 
 
 def test_crop_img():
@@ -251,8 +252,8 @@ def test_crop_img():
 
     # check that correct part was extracted:
     # This also corrects for padding
-    assert_true((get_data(cropped_img)[1:-1, 1:-1, 1:-1] == 1).all())
-    assert_true(cropped_img.shape == (2 + 2, 4 + 2, 3 + 2))
+    assert (get_data(cropped_img)[1:-1, 1:-1, 1:-1] == 1).all()
+    assert cropped_img.shape == (2 + 2, 4 + 2, 3 + 2)
 
 
 def test_crop_threshold_tolerance():
@@ -269,14 +270,14 @@ def test_crop_threshold_tolerance():
     img = nibabel.Nifti1Image(data, affine=affine)
 
     cropped_img = image.crop_img(img)
-    assert_true(cropped_img.shape == active_shape)
+    assert cropped_img.shape == active_shape
 
 
 def test_mean_img():
     rng = np.random.RandomState(42)
     data1 = np.zeros((5, 6, 7))
-    data2 = rng.rand(5, 6, 7)
-    data3 = rng.rand(5, 6, 7, 3)
+    data2 = rng.uniform(size=(5, 6, 7))
+    data3 = rng.uniform(size=(5, 6, 7, 3))
     affine = np.diag((4, 3, 2, 1))
     img1 = nibabel.Nifti1Image(data1, affine=affine)
     img2 = nibabel.Nifti1Image(data2, affine=affine)
@@ -319,7 +320,7 @@ def test_mean_img():
 def test_mean_img_resample():
     # Test resampling in mean_img with a permutation of the axes
     rng = np.random.RandomState(42)
-    data = rng.rand(5, 6, 7, 40)
+    data = rng.uniform(size=(5, 6, 7, 40))
     affine = np.diag((4, 3, 2, 1))
     img = nibabel.Nifti1Image(data, affine=affine)
     mean_img = nibabel.Nifti1Image(data.mean(axis=-1), affine=affine)
@@ -337,8 +338,10 @@ def test_mean_img_resample():
 
 
 def test_swap_img_hemispheres():
+    rng = np.random.RandomState(42)
+
     # make sure input image data is not overwritten inside function
-    data = np.random.randn(4, 5, 7)
+    data = rng.standard_normal(size=(4, 5, 7))
     data_img = nibabel.Nifti1Image(data, np.eye(4))
     image.swap_img_hemispheres(data_img)
     np.testing.assert_array_equal(get_data(data_img), data)
@@ -354,16 +357,16 @@ def test_swap_img_hemispheres():
 
 
 def test_concat_imgs():
-    assert_true(concat_imgs is niimg_conversions.concat_niimgs)
+    assert concat_imgs is niimg_conversions.concat_niimgs
 
 
 def test_index_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    testing.assert_raises_regex(TypeError,
-                                "Input data has incompatible dimensionality: "
-                                "Expected dimension is 4D and you provided "
-                                "a 3D image.",
-                                image.index_img, img_3d, 0)
+    expected_error_msg = ("Input data has incompatible dimensionality: "
+                          "Expected dimension is 4D and you provided "
+                          "a 3D image.")
+    with pytest.raises(TypeError, match=expected_error_msg):
+        image.index_img(img_3d, 0)
 
     affine = np.array([[1., 2., 3., 4.],
                        [5., 6., 7., 8.],
@@ -385,16 +388,17 @@ def test_index_img():
     for i in [fourth_dim_size, - fourth_dim_size - 1,
               [0, fourth_dim_size],
               np.repeat(True, fourth_dim_size + 1)]:
-        testing.assert_raises_regex(
-            IndexError,
-            'out of bounds|invalid index|out of range|boolean index',
-            image.index_img, img_4d, i)
+        with pytest.raises(
+                IndexError,
+                match='out of bounds|invalid index|out of range|'
+                      'boolean index'):
+            image.index_img(img_4d, i)
 
 
 def test_pd_index_img():
     # confirm indices from pandas dataframes are handled correctly
     if 'pandas' not in sys.modules:
-        raise SkipTest
+        raise pytest.skip(msg='Pandas not available')
 
     affine = np.array([[1., 2., 3., 4.],
                        [5., 6., 7., 8.],
@@ -404,9 +408,8 @@ def test_pd_index_img():
 
     fourth_dim_size = img_4d.shape[3]
 
-    rng = np.random.RandomState(0)
-
-    arr = rng.rand(fourth_dim_size) > 0.5
+    rng = np.random.RandomState(42)
+    arr = rng.uniform(size=fourth_dim_size) > 0.5
     df = pd.DataFrame({"arr": arr})
 
     np_index_img = image.index_img(img_4d, arr)
@@ -417,11 +420,11 @@ def test_pd_index_img():
 
 def test_iter_img():
     img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
-    testing.assert_raises_regex(TypeError,
-                                "Input data has incompatible dimensionality: "
-                                "Expected dimension is 4D and you provided "
-                                "a 3D image.",
-                                image.iter_img, img_3d)
+    expected_error_msg = ("Input data has incompatible dimensionality: "
+                          "Expected dimension is 4D and you provided "
+                          "a 3D image.")
+    with pytest.raises(TypeError, match=expected_error_msg):
+        image.iter_img(img_3d)
 
     affine = np.array([[1., 2., 3., 4.],
                        [5., 6., 7., 8.],
@@ -468,7 +471,7 @@ def test_new_img_like_mgz():
     """
 
     ref_img = nibabel.load(os.path.join(datadir, 'test.mgz'))
-    data = np.ones(get_data(ref_img).shape, dtype=np.bool)
+    data = np.ones(get_data(ref_img).shape, dtype=bool)
     affine = ref_img.affine
     new_img_like(ref_img, data, affine, copy_header=False)
 
@@ -488,26 +491,46 @@ def test_new_img_like():
     np.testing.assert_array_equal(get_data(img_nifti2), get_data(img2_nifti2))
 
 
+def test_new_img_like_non_iterable_header():
+    """
+    Tests that when an niimg's header is not iterable
+    & it is set to be copied, an error is not raised.
+    """
+    rng = np.random.RandomState(42)
+    fake_fmri_data = rng.uniform(size=(10, 10, 10, 10))
+    fake_affine = rng.uniform(size=(4, 4))
+    fake_spatial_image = nibabel.spatialimages.SpatialImage(fake_fmri_data,
+                                                            fake_affine)
+    assert new_img_like(fake_spatial_image,
+                        data=fake_fmri_data,
+                        copy_header=True)
+
+
 def test_validity_threshold_value_in_threshold_img():
+    """Check that invalid values to threshold_img's threshold parameter raise
+    Exceptions.
+    """
     shape = (6, 8, 10)
     maps, _ = data_gen.generate_maps(shape, n_regions=2)
 
     # testing to raise same error when threshold=None case
-    testing.assert_raises_regex(ValueError,
-                                "The input parameter 'threshold' is empty. ",
-                                threshold_img, maps, threshold=None)
+    with pytest.raises(
+        TypeError,
+        match="threshold should be either a number or a string",
+    ):
+        threshold_img(maps, threshold=None)
 
     invalid_threshold_values = ['90t%', 's%', 't', '0.1']
     name = 'threshold'
     for thr in invalid_threshold_values:
-        testing.assert_raises_regex(ValueError,
-                                    '{0}.+should be a number followed by '
-                                    'the percent sign'.format(name),
-                                    threshold_img, maps, threshold=thr)
+        with pytest.raises(ValueError,
+                           match='{0}.+should be a number followed by '
+                                 'the percent sign'.format(name)):
+            threshold_img(maps, threshold=thr)
 
 
 def test_threshold_img():
-    # to check whether passes with valid threshold inputs
+    """Smoke test for threshold_img with valid threshold inputs."""
     shape = (10, 20, 30)
     maps, _ = data_gen.generate_maps(shape, n_regions=4)
     affine = np.eye(4)
@@ -516,14 +539,81 @@ def test_threshold_img():
     for img in iter_img(maps):
         # when threshold is a float value
         thr_maps_img = threshold_img(img, threshold=0.8)
+
         # when we provide mask image
         thr_maps_percent = threshold_img(img, threshold=1, mask_img=mask_img)
+
         # when threshold is a percentile
         thr_maps_percent2 = threshold_img(img, threshold='2%')
 
-def test_threshold_img_copy():
 
-    img_zeros = Nifti1Image(np.zeros((10, 10, 10, 10)), np.eye(4))
+def test_threshold_img_with_cluster_threshold():
+    """Check that threshold_img behaves as expected with cluster_threshold
+    and/or two_sided.
+    """
+    # First we create a statistical image with specific characteristics
+    shape = (20, 20, 30)
+    affine = np.eye(4)
+    data = np.zeros(shape, dtype=int)
+    data[:2, :2, :2] = 4  # 8-voxel positive cluster
+    data[4:6, :2, :2] = -4  # 8-voxel negative cluster
+    data[8:11, 0, 0] = 5  # 3-voxel positive cluster
+    data[13:16, 0, 0] = -5  # 3-voxel positive cluster
+    data[:6, 4:10, :6] = 1  # 216-voxel positive cluster with low value
+    data[13:19, 4:10, :6] = -1  # 216-voxel negative cluster with low value
+
+    stat_img = nibabel.Nifti1Image(data, affine)
+
+    # The standard approach should retain any clusters with values > 2
+    thr_img = threshold_img(stat_img, threshold=2, two_sided=False, copy=True)
+    assert np.array_equal(np.unique(thr_img.get_fdata()), np.array([0, 4, 5]))
+
+    # With two-sided we get any clusters with |values| > 2
+    thr_img = threshold_img(stat_img, threshold=2, two_sided=True, copy=True)
+    assert np.array_equal(
+        np.unique(thr_img.get_fdata()),
+        np.array([-5, -4, 0, 4, 5]),
+    )
+
+    # With a cluster threshold of 5 we get clusters with |values| > 2 and
+    # cluster sizes > 5
+    thr_img = threshold_img(
+        stat_img,
+        threshold=2,
+        two_sided=True,
+        cluster_threshold=5,
+        copy=True,
+    )
+    assert np.array_equal(np.unique(thr_img.get_fdata()), np.array([-4, 0, 4]))
+    assert np.sum(thr_img.get_fdata() == 4) == 8
+    # With a cluster threshold of 5 we get clusters with |values| > 0.5 and
+    # cluster sizes > 5
+    thr_img = threshold_img(
+        stat_img,
+        threshold=0.5,
+        two_sided=True,
+        cluster_threshold=5,
+        copy=True,
+    )
+    assert np.array_equal(
+        np.unique(thr_img.get_fdata()),
+        np.array([-4, -1, 0, 1, 4]),
+    )
+
+    # Now we disable two_sided again to get clusters with values > 0.5 and
+    # cluster sizes > 5
+    thr_img = threshold_img(
+        stat_img,
+        threshold=0.5,
+        two_sided=False,
+        cluster_threshold=5,
+        copy=True,
+    )
+    assert np.array_equal(np.unique(thr_img.get_fdata()), np.array([0, 1, 4]))
+
+
+def test_threshold_img_copy():
+    """Test the behavior of threshold_img's copy parameter."""
     img_ones = Nifti1Image(np.ones((10, 10, 10, 10)), np.eye(4))
 
     # Check that copy does not mutate. It returns modified copy.
@@ -544,13 +634,14 @@ def test_threshold_img_copy():
 
 
 def test_isnan_threshold_img_data():
+    """Check that threshold_img converges properly when input image has nans.
+    """
     shape = (10, 10, 10)
     maps, _ = data_gen.generate_maps(shape, n_regions=2)
     data = get_data(maps)
     data[:, :, 0] = np.nan
 
     maps_img = nibabel.Nifti1Image(data, np.eye(4))
-    # test threshold_img to converge properly when input image has nans.
     threshold_img(maps_img, threshold=0.8)
 
 
@@ -562,19 +653,17 @@ def test_math_img_exceptions():
 
     formula = "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)"
     # Images with different shapes should raise a ValueError exception.
-    assert_raises_regex(ValueError,
-                        "Input images cannot be compared",
-                        math_img, formula, img1=img1, img2=img2)
+    with pytest.raises(ValueError, match="Input images cannot be compared"):
+        math_img(formula, img1=img1, img2=img2)
 
     # Images with different affines should raise a ValueError exception.
-    assert_raises_regex(ValueError,
-                        "Input images cannot be compared",
-                        math_img, formula, img1=img1, img2=img4)
+    with pytest.raises(ValueError, match="Input images cannot be compared"):
+        math_img(formula, img1=img1, img2=img4)
 
     bad_formula = "np.toto(img1, axis=-1) - np.mean(img3, axis=-1)"
-    assert_raises_regex(AttributeError,
-                        "Input formula couldn't be processed",
-                        math_img, bad_formula, img1=img1, img3=img3)
+    with pytest.raises(AttributeError,
+                       match="Input formula couldn't be processed"):
+        math_img(bad_formula, img1=img1, img3=img3)
 
 
 def test_math_img():
@@ -590,18 +679,33 @@ def test_math_img():
             assert_array_equal(get_data(result),
                                get_data(expected_result))
             assert_array_equal(result.affine, expected_result.affine)
-            assert_equal(result.shape, expected_result.shape)
+            assert result.shape == expected_result.shape
+
+
+def test_binarize_img():
+    img = Nifti1Image(np.random.rand(10, 10, 10, 10), np.eye(4))
+    # Test that all output values are 1.
+    img1 = binarize_img(img)
+    np.testing.assert_array_equal(np.unique(img1.dataobj),
+                                  np.array([1]))
+    # Test that it works with threshold
+    img2 = binarize_img(img, threshold=0.5)
+    np.testing.assert_array_equal(np.unique(img2.dataobj),
+                                  np.array([0, 1]))
+    # Test that manual binarization equals binarize_img results.
+    img3 = Nifti1Image(np.random.rand(10, 10, 10, 10), np.eye(4))
+    img3.dataobj[img.dataobj < 0.5] = 0
+    img3.dataobj[img.dataobj >= 0.5] = 1
+    np.testing.assert_array_equal(img2.dataobj, img3.dataobj)
 
 
 def test_clean_img():
-
-    rng = np.random.RandomState(0)
-
-    data = rng.randn(10, 10, 10, 100) + .5
+    rng = np.random.RandomState(42)
+    data = rng.standard_normal(size=(10, 10, 10, 100)) + .5
     data_flat = data.T.reshape(100, -1)
     data_img = nibabel.Nifti1Image(data, np.eye(4))
 
-    assert_raises(
+    pytest.raises(
         ValueError, image.clean_img, data_img, t_r=None, low_pass=0.1)
 
     data_img_ = image.clean_img(
@@ -617,7 +721,7 @@ def test_clean_img():
     data[:, 5, 5] = np.inf
     nan_img = nibabel.Nifti1Image(data, np.eye(4))
     clean_im = image.clean_img(nan_img, ensure_finite=True)
-    assert_true(np.any(np.isfinite(get_data(clean_im))), True)
+    assert np.any(np.isfinite(get_data(clean_im))), True
 
     # test_clean_img_passing_nifti2image
     data_img_nifti2 = nibabel.Nifti2Image(data, np.eye(4))
@@ -638,7 +742,7 @@ def test_clean_img():
 def test_largest_cc_img():
     """ Check the extraction of the largest connected component, for niftis
 
-    Similiar to smooth_img tests for largest connected_component_img, here also
+    Similar to smooth_img tests for largest connected_component_img, here also
     only the added features for largest_connected_component are tested.
     """
 
@@ -656,19 +760,19 @@ def test_largest_cc_img():
                                     create_files=create_files) as imgs:
             # List of images as input
             out = largest_connected_component_img(imgs)
-            assert_true(isinstance(out, list))
-            assert_true(len(out) == 2)
+            assert isinstance(out, list)
+            assert len(out) == 2
             for o, s in zip(out, shapes):
-                assert_true(o.shape == (s))
+                assert o.shape == (s)
 
             # Single image as input
             out = largest_connected_component_img(imgs[0])
-            assert_true(isinstance(out, Nifti1Image))
-            assert_true(out.shape == (shapes[0]))
+            assert isinstance(out, Nifti1Image)
+            assert out.shape == (shapes[0])
 
         # Test whether 4D Nifti throws the right error.
         img_4D = data_gen.generate_fake_fmri(shapes[0], length=17)
-        assert_raises(DimensionError, largest_connected_component_img, img_4D)
+        pytest.raises(DimensionError, largest_connected_component_img, img_4D)
 
     # tests adapted to non-native endian data dtype
     img1_change_dtype = nibabel.Nifti1Image(get_data(img1).astype('>f8'),
@@ -681,15 +785,15 @@ def test_largest_cc_img():
                                     create_files=create_files) as imgs:
             # List of images as input
             out = largest_connected_component_img(imgs)
-            assert_true(isinstance(out, list))
-            assert_true(len(out) == 2)
+            assert isinstance(out, list)
+            assert len(out) == 2
             for o, s in zip(out, shapes):
-                assert_true(o.shape == (s))
+                assert o.shape == (s)
 
             # Single image as input
             out = largest_connected_component_img(imgs[0])
-            assert_true(isinstance(out, Nifti1Image))
-            assert_true(out.shape == (shapes[0]))
+            assert isinstance(out, Nifti1Image)
+            assert out.shape == (shapes[0])
 
     # Test the output with native and without native
     out_native = largest_connected_component_img(img1)

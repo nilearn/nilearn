@@ -1,8 +1,8 @@
 .. for doc tests to run with recent NumPy 1.14, we need to set print options
    to older versions. See issue #1593 for more details
     >>> import numpy as np
-    >>> from distutils.version import LooseVersion
-    >>> if LooseVersion(np.__version__) >= LooseVersion('1.14'):
+    >>> from nilearn.version import _compare_version
+    >>> if _compare_version(np.__version__, '>=', '1.14'):
     ...     np.set_printoptions(legacy='1.13')
 
 =====================================
@@ -83,47 +83,6 @@ Why is machine learning relevant to NeuroImaging? A few examples!
     For example,
     :ref:`extracting_rsn` or :ref:`parcellating_brain` with clustering.
 
-Glossary: machine learning vocabulary
---------------------------------------
-
-:Supervised learning:
-
-    :ref:`Supervised learning <decoding>` is interested in predicting an
-    **output variable**, or **target**, `y`, from **data** `X`.
-    Typically, we start from labeled data (the **training set**). We need to
-    know the `y` for each instance of `X` in order to train the model. Once
-    learned, this model is then applied to new unlabeled data (the **test set**)
-    to predict the labels (although we actually know them). There are
-    essentially two possible goals:
-
-    * a **regression** problem: predicting a continuous variable, such
-      as participant age, from the data `X`
-
-    * a **classification** problem: predicting a binary variable that splits
-      the observations into two groups, such as patients versus controls
-
-    In neuroimaging research, supervised learning is typically used to
-    derive an underlying cognitive process (e.g., emotional versus non-emotional
-    theory of mind), a behavioral variable (e.g., reaction time or IQ), or
-    diagnosis status (e.g., schizophrenia versus healthy) from brain images.
-
-:Unsupervised learning:
-
-    `Unsupervised learning
-    <http://scikit-learn.org/stable/unsupervised_learning.html>`_ is
-    concerned with data `X` without any labels. It analyzes the structure
-    of a dataset to find coherent underlying structure,
-    for instance using **clustering**, or to extract latent
-    factors, for instance using **independent components analysis (ICA)**.
-
-    In neuroimaging research, it is typically used to create functional and
-    anatomical brain atlases by clustering based on connectivity or to
-    extract the main brain networks from resting-state correlations. An
-    important option of future research will be the identification of
-    potential neurobiological subgroups in psychiatric and neurobiological
-    disorders.
-
-|
 
 .. _installation:
 
@@ -260,9 +219,9 @@ To loop over each individual volume of a 4D image, use :func:`image.iter_img`::
    :class: green
 
    Want to sharpen your skills with nilearn?
-   Compute the mean EPI for first subject of the brain development
+   Compute the mean :term:`EPI` for first subject of the brain development
    dataset downloaded with :func:`nilearn.datasets.fetch_development_fmri` and
-   smooth it with an FWHM varying from 0mm to 20mm in increments of 5mm
+   smooth it with an :term:`FWHM` varying from 0mm to 20mm in increments of 5mm
 
    **Hints:**
 
@@ -275,7 +234,7 @@ To loop over each individual volume of a 4D image, use :func:`image.iter_img`::
       * To perform a for loop in Python, you can use the "range" function
 
       * The solution can be found :ref:`here
-        <sphx_glr_auto_examples_04_manipulating_images_plot_smooth_mean_image.py>`
+        <sphx_glr_auto_examples_06_manipulating_images_plot_smooth_mean_image.py>`
 
 |
 
@@ -403,6 +362,7 @@ estimator object, for instance an SVC (`support vector classifier
 <http://scikit-learn.org/stable/modules/svm.html>`_).
 It is first created with the relevant parameters::
 
+    >>> import sklearn; sklearn.set_config(print_changed_only=False)
     >>> from sklearn.svm import SVC
     >>> svc = SVC(kernel='linear', C=1.)
 
@@ -465,7 +425,7 @@ Finding help
 :Mailing lists and forums:
 
     * Don't hesitate to ask questions about nilearn on `neurostars
-      <https://neurostars.org/t/nilearn/>`_.
+      <https://neurostars.org/tag/nilearn>`_.
 
     * You can find help with neuroimaging in Python (file I/O,
       neuroimaging-specific questions) via the nipy user group:

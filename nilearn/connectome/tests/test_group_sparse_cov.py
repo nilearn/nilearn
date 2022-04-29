@@ -1,6 +1,6 @@
-from nose.tools import assert_equal, assert_true, assert_raises
-
 import numpy as np
+import pytest
+
 from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
 from nilearn.connectome.group_sparse_cov import (group_sparse_covariance,
                                                         group_sparse_scores)
@@ -44,17 +44,17 @@ def test_group_sparse_covariance():
         signals, alpha, max_iter=4, tol=None, verbose=0, probe_function=probe)
     objective = probe.objective
     # check number of iterations
-    assert_equal(len(objective), 4)
+    assert len(objective) == 4
 
     # np.testing.assert_array_less is a strict comparison.
     # Zeros can occur in np.diff(objective).
-    assert_true(np.all(np.diff(objective) <= 0))
-    assert_equal(omega.shape, (10, 10, 5))
+    assert np.all(np.diff(objective) <= 0)
+    assert omega.shape == (10, 10, 5)
 
     # Test input argument checking
-    assert_raises(ValueError, group_sparse_covariance, signals, "")
-    assert_raises(ValueError, group_sparse_covariance, 1, alpha)
-    assert_raises(ValueError, group_sparse_covariance,
+    pytest.raises(ValueError, group_sparse_covariance, signals, "")
+    pytest.raises(ValueError, group_sparse_covariance, 1, alpha)
+    pytest.raises(ValueError, group_sparse_covariance,
                   [np.ones((2, 2)), np.ones((2, 3))], alpha)
 
     # Check consistency between classes

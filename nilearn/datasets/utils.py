@@ -3,19 +3,31 @@ Downloading NeuroImaging datasets: utility functions
 """
 import os
 import numpy as np
-import base64
-import collections
+import collections.abc
 import contextlib
 import fnmatch
 import hashlib
+import pickle
 import shutil
 import time
 import sys
 import tarfile
+import urllib
 import warnings
 import zipfile
+import json
 
-from .._utils.compat import _basestring, cPickle, _urllib, md5_hash
+import requests
+
+from .._utils import fill_doc
+
+_REQUESTS_TIMEOUT = (15.1, 61)
+
+
+def md5_hash(string):
+    m = hashlib.md5()
+    m.update(string.encode('utf-8'))
+    return m.hexdigest()
 
 
 def _format_time(t):
@@ -68,21 +80,21 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
 
     Parameters
     ----------
-    bytes_so_far: int
-        Number of downloaded bytes
+    bytes_so_far : int
+        Number of downloaded bytes.
 
-    total_size: int
+    total_size : int
         Total size of the file (may be 0/None, depending on download method).
 
-    t0: int
+    t0 : int
         The time in seconds (as returned by time.time()) at which the
         download was resumed / started.
 
-    initial_size: int
+    initial_size : int
         If resuming, indicate the initial size of the file.
         If not resuming, set to zero.
-    """
 
+    """
     if not total_size:
         sys.stderr.write("\rDownloaded %d of ? bytes." % (bytes_so_far))
 
@@ -105,42 +117,42 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
                _format_time(time_remaining)))
 
 
+@fill_doc
 def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
                  initial_size=0, total_size=None, verbose=1):
     """Download a file chunk by chunk and show advancement
 
     Parameters
     ----------
-    response: _urllib.response.addinfourl
-        Response to the download request in order to get file size
+    response : urllib.response.addinfourl
+        Response to the download request in order to get file size.
 
-    local_file: file
-        Hard disk file where data should be written
+    local_file : file
+        Hard disk file where data should be written.
 
-    chunk_size: int, optional
-        Size of downloaded chunks. Default: 8192
+    chunk_size : int, optional
+        Size of downloaded chunks. Default=8192.
 
-    report_hook: bool
+    report_hook : bool, optional
         Whether or not to show downloading advancement. Default: None
 
-    initial_size: int, optional
-        If resuming, indicate the initial size of the file
+    initial_size : int, optional
+        If resuming, indicate the initial size of the file.
+        Default=0.
 
-    total_size: int, optional
+    total_size : int, optional
         Expected final size of download (None means it is unknown).
-
-    verbose: int, optional
-        verbosity level (0 means no message).
+    %(verbose)s
 
     Returns
     -------
-    data: string
+    data : string
         The downloaded file.
 
     """
     try:
         if total_size is None:
-            total_size = response.info().get('Content-Length').strip()
+            total_size = response.headers.get('Content-Length').strip()
         total_size = int(total_size) + initial_size
     except Exception as e:
         if verbose > 2:
@@ -151,8 +163,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     bytes_so_far = initial_size
 
     t0 = time_last_display = time.time()
-    while True:
-        chunk = response.read(chunk_size)
+    for chunk in response.iter_content(chunk_size):
         bytes_so_far += len(chunk)
         time_last_read = time.time()
         if (report_hook and
@@ -170,32 +181,33 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     return
 
 
+@fill_doc
 def get_data_dirs(data_dir=None):
-    """ Returns the directories in which nilearn looks for data.
+    """Returns the directories in which nilearn looks for data.
 
     This is typically useful for the end-user to check where the data is
     downloaded and stored.
 
     Parameters
     ----------
-    data_dir: string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
+    %(data_dir)s
 
     Returns
     -------
-    paths: list of strings
+    paths : list of strings
         Paths of the dataset directories.
 
     Notes
     -----
     This function retrieves the datasets directories using the following
     priority :
+
     1. defaults system paths
     2. the keyword argument data_dir
     3. the global environment variable NILEARN_SHARED_DATA
     4. the user environment variable NILEARN_DATA
     5. nilearn_data in the user home folder
+
     """
     # We build an array of successive paths by priority
     # The boolean indicates if it is a pre_dir: in that case, we won't add the
@@ -204,7 +216,7 @@ def get_data_dirs(data_dir=None):
 
     # Check data_dir which force storage in a specific location
     if data_dir is not None:
-        paths.extend(data_dir.split(os.pathsep))
+        paths.extend(str(data_dir).split(os.pathsep))
 
     # If data_dir has not been specified, then we crawl default locations
     if data_dir is None:
@@ -220,46 +232,46 @@ def get_data_dirs(data_dir=None):
     return paths
 
 
+@fill_doc
 def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
                      verbose=1):
-    """ Create if necessary and returns data directory of given dataset.
+    """Creates if necessary and returns data directory of given dataset.
 
     Parameters
     ----------
-    dataset_name: string
+    dataset_name : string
         The unique name of the dataset.
-
-    data_dir: string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location. Default: None
-
-    default_paths: list of string, optional
+    %(data_dir)s
+    default_paths : list of string, optional
         Default system paths in which the dataset may already have been
         installed by a third party software. They will be checked first.
-
-    verbose: int, optional
-        verbosity level (0 means no message).
+    %(verbose)s
 
     Returns
     -------
-    data_dir: string
+    data_dir : string
         Path of the given dataset directory.
 
     Notes
     -----
     This function retrieves the datasets directory (or data directory) using
     the following priority :
+
     1. defaults system paths
     2. the keyword argument data_dir
     3. the global environment variable NILEARN_SHARED_DATA
     4. the user environment variable NILEARN_DATA
     5. nilearn_data in the user home folder
+
     """
     paths = []
     # Search possible data-specific system paths
     if default_paths is not None:
         for default_path in default_paths:
-            paths.extend([(d, True) for d in default_path.split(os.pathsep)])
+            paths.extend([
+                (d, True)
+                for d in str(default_path).split(os.pathsep)]
+            )
 
     paths.extend([(d, False) for d in get_data_dirs(data_dir=data_dir)])
 
@@ -298,24 +310,24 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
                   'directories, but:' + ''.join(errors))
 
 
+@fill_doc
 def _uncompress_file(file_, delete_archive=True, verbose=1):
     """Uncompress files contained in a data_set.
 
     Parameters
     ----------
-    file: string
-        path of file to be uncompressed.
+    file_ : string
+        Path of file to be uncompressed.
 
-    delete_archive: bool, optional
-        Wheteher or not to delete archive once it is uncompressed.
-        Default: True
-
-    verbose: int, optional
-        verbosity level (0 means no message).
+    delete_archive : bool, optional
+        Whether or not to delete archive once it is uncompressed.
+        Default=True.
+    %(verbose)s
 
     Notes
     -----
     This handles zip, tar, gzip and bzip files only.
+
     """
     if verbose > 0:
         sys.stderr.write('Extracting data from %s...' % file_)
@@ -339,15 +351,13 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
             if ext == '.tgz':
                 filename = filename + '.tar'
             elif ext == '':
-                # For gzip file, we rely on the assumption that there is an extenstion
+                # We rely on the assumption that gzip files have an extension
                 shutil.move(file_, file_ + '.gz')
                 file_ = file_ + '.gz'
-            gz = gzip.open(file_)
-            out = open(filename, 'wb')
-            shutil.copyfileobj(gz, out, 8192)
-            gz.close()
-            out.close()
-            # If file is .tar.gz, this will be handle in the next case
+            with gzip.open(file_) as gz:
+                with open(filename, 'wb') as out:
+                    shutil.copyfileobj(gz, out, 8192)
+            # If file is .tar.gz, this will be handled in the next case
             if delete_archive:
                 os.remove(file_)
             file_ = filename
@@ -371,21 +381,21 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
 
 
 def _filter_column(array, col, criteria):
-    """ Return index array matching criteria
+    """Return index array matching criteria
 
     Parameters
     ----------
+    array : numpy array with columns
+        Array in which data will be filtered.
 
-    array: numpy array with columns
-        Array in which data will be filtered
+    col : string
+        Name of the column.
 
-    col: string
-        Name of the column
-
-    criteria: integer (or float), pair of integers, string or list of these
+    criteria : integer (or float), pair of integers, string or list of these
         if integer, select elements in column matching integer
         if a tuple, select elements between the limits given by the tuple
         if a string, select elements that match the string
+
     """
     # Raise an error if the column does not exist. This is the only way to
     # test it across all possible types (pandas, recarray...)
@@ -394,11 +404,11 @@ def _filter_column(array, col, criteria):
     except:
         raise KeyError('Filtering criterion %s does not exist' % col)
 
-    if (not isinstance(criteria, _basestring) and
+    if (not isinstance(criteria, str) and
         not isinstance(criteria, bytes) and
         not isinstance(criteria, tuple) and
-            isinstance(criteria, collections.Iterable)):
-        filter = np.zeros(array.shape[0], dtype=np.bool)
+            isinstance(criteria, collections.abc.Iterable)):
+        filter = np.zeros(array.shape[0], dtype=bool)
         for criterion in criteria:
             filter = np.logical_or(filter,
                                    _filter_column(array, col, criterion))
@@ -415,34 +425,34 @@ def _filter_column(array, col, criteria):
         return np.logical_and(filter, array[col] >= criteria[0])
 
     # Handle strings with different encodings
-    if isinstance(criteria, (_basestring, bytes)):
+    if isinstance(criteria, (str, bytes)):
         criteria = np.array(criteria).astype(array[col].dtype)
 
     return array[col] == criteria
 
 
 def _filter_columns(array, filters, combination='and'):
-    """ Return indices of recarray entries that match criteria.
+    """Return indices of recarray entries that match criteria.
 
     Parameters
     ----------
+    array : numpy array with columns
+        Array in which data will be filtered.
 
-    array: numpy array with columns
-        Array in which data will be filtered
+    filters : list of criteria
+        See _filter_column.
 
-    filters: list of criteria
-        See _filter_column
-
-    combination: string, optional
+    combination : string {'and', 'or'}, optional
         String describing the combination operator. Possible values are "and"
-        and "or".
+        and "or". Default='and'.
+
     """
     if combination == 'and':
         fcomb = np.logical_and
-        mask = np.ones(array.shape[0], dtype=np.bool)
+        mask = np.ones(array.shape[0], dtype=bool)
     elif combination == 'or':
         fcomb = np.logical_or
-        mask = np.zeros(array.shape[0], dtype=np.bool)
+        mask = np.zeros(array.shape[0], dtype=bool)
     else:
         raise ValueError('Combination mode not known: %s' % combination)
 
@@ -451,58 +461,78 @@ def _filter_columns(array, filters, combination='and'):
     return mask
 
 
+class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
+    def send(self, request, timeout=None, **kwargs):
+        try:
+            timeout, _ = timeout
+        except Exception:
+            pass
+        try:
+            data = urllib.request.urlopen(request.url, timeout=timeout)
+        except Exception as e:
+            raise requests.RequestException(e.reason)
+        data.release_conn = data.close
+        resp = requests.Response()
+        resp.url = data.geturl()
+        resp.status_code = data.getcode() or 200
+        resp.raw = data
+        resp.headers = dict(data.info().items())
+        return resp
+
+    def close(self):
+        pass
+
+
+@fill_doc
 def _fetch_file(url, data_dir, resume=True, overwrite=False,
-                md5sum=None, username=None, password=None, handlers=[],
-                verbose=1):
+                md5sum=None, username=None, password=None,
+                verbose=1, session=None):
     """Load requested file, downloading it if needed or requested.
 
     Parameters
     ----------
-    url: string
-        Contains the url of the file to be downloaded.
+    %(url)s
+    %(data_dir)s
+    %(resume)s
+    overwrite : bool, optional
+        If true and file already exists, delete it. Default=False.
 
-    data_dir: string
-        Path of the data directory. Used for data storage in the specified
-        location.
+    md5sum : string, optional
+        MD5 sum of the file. Checked if download of the file is required.
 
-    resume: bool, optional
-        If true, try to resume partially downloaded files
+    username : string, optional
+        Username used for basic HTTP authentication.
 
-    overwrite: bool, optional
-        If true and file already exists, delete it.
-
-    md5sum: string, optional
-        MD5 sum of the file. Checked if download of the file is required
-
-    username: string, optional
-        Username used for basic HTTP authentication
-
-    password: string, optional
-        Password used for basic HTTP authentication
-
-    handlers: list of BaseHandler, optional
-        urllib handlers passed to urllib.request.build_opener. Used by
-        advanced users to customize request handling.
-
-    verbose: int, optional
-        verbosity level (0 means no message).
+    password : string, optional
+        Password used for basic HTTP authentication.
+    %(verbose)s
+    session : requests.Session, optional
+        Session to use to send requests.
 
     Returns
     -------
-    files: string
+    files : string
         Absolute path of downloaded file.
 
     Notes
     -----
     If, for any reason, the download procedure fails, all downloaded files are
     removed.
+
     """
+    if session is None:
+        with requests.Session() as session:
+            session.mount("ftp:", _NaiveFTPAdapter())
+            return _fetch_file(
+                url, data_dir, resume=resume, overwrite=overwrite,
+                md5sum=md5sum, username=username, password=password,
+                verbose=verbose, session=session)
     # Determine data path
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
     # Determine filename using URL
-    parse = _urllib.parse.urlparse(url)
+    parse = urllib.parse.urlparse(url)
     file_name = os.path.basename(parse.path)
     if file_name == '':
         file_name = md5_hash(parse.path)
@@ -524,21 +554,14 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
 
     try:
         # Download data
-        url_opener = _urllib.request.build_opener(*handlers)
-        request = _urllib.request.Request(url)
-        request.add_header('Connection', 'Keep-Alive')
+        headers = {}
+        auth = None
         if username is not None and password is not None:
             if not url.startswith('https'):
                 raise ValueError(
                     'Authentication was requested on a non  secured URL (%s).'
                     'Request has been blocked for security reasons.' % url)
-            # Note: HTTPBasicAuthHandler is not fitted here because it relies
-            # on the fact that the server will return a 401 error with proper
-            # www-authentication header, which is not the case of most
-            # servers.
-            encoded_auth = base64.b64encode(
-                (username + ':' + password).encode())
-            request.add_header(b'Authorization', b'Basic ' + encoded_auth)
+            auth = (username, password)
         if verbose > 0:
             displayed_url = url.split('?')[0] if verbose == 1 else url
             print('Downloading data from %s ...' % displayed_url)
@@ -546,47 +569,50 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             # Download has been interrupted, we try to resume it.
             local_file_size = os.path.getsize(temp_full_name)
             # If the file exists, then only download the remainder
-            request.add_header("Range", "bytes=%s-" % (local_file_size))
+            headers["Range"] = "bytes={}-".format(local_file_size)
             try:
-                data = url_opener.open(request)
-                content_range = data.info().get('Content-Range')
-                if (content_range is None or not content_range.startswith(
-                        'bytes %s-' % local_file_size)):
-                    raise IOError('Server does not support resuming')
+                req = requests.Request(
+                    method="GET", url=url, headers=headers, auth=auth)
+                prepped = session.prepare_request(req)
+                with session.send(prepped, stream=True,
+                                  timeout=_REQUESTS_TIMEOUT) as resp:
+                    resp.raise_for_status()
+                    content_range = resp.headers.get('Content-Range')
+                    if (content_range is None or not content_range.startswith(
+                            'bytes {}-'.format(local_file_size))):
+                        raise IOError('Server does not support resuming')
+                    initial_size = local_file_size
+                    with open(local_file, "ab") as fh:
+                        _chunk_read_(
+                            resp, fh, report_hook=(verbose > 0),
+                            initial_size=initial_size, verbose=verbose)
             except Exception:
-                # A wide number of errors can be raised here. HTTPError,
-                # URLError... I prefer to catch them all and rerun without
-                # resuming.
                 if verbose > 0:
                     print('Resuming failed, try to download the whole file.')
                 return _fetch_file(
                     url, data_dir, resume=False, overwrite=overwrite,
                     md5sum=md5sum, username=username, password=password,
-                    handlers=handlers, verbose=verbose)
-            local_file = open(temp_full_name, "ab")
-            initial_size = local_file_size
+                    verbose=verbose, session=session)
         else:
-            data = url_opener.open(request)
-            local_file = open(temp_full_name, "wb")
-        _chunk_read_(data, local_file, report_hook=(verbose > 0),
-                     initial_size=initial_size, verbose=verbose)
-        # temp file must be closed prior to the move
-        if not local_file.closed:
-            local_file.close()
+            req = requests.Request(
+                method="GET", url=url, headers=headers, auth=auth)
+            prepped = session.prepare_request(req)
+            with session.send(
+                    prepped, stream=True, timeout=_REQUESTS_TIMEOUT) as resp:
+                resp.raise_for_status()
+                with open(temp_full_name, "wb") as fh:
+                    _chunk_read_(resp, fh, report_hook=(verbose > 0),
+                                 initial_size=initial_size, verbose=verbose)
         shutil.move(temp_full_name, full_name)
         dt = time.time() - t0
         if verbose > 0:
             # Complete the reporting hook
             sys.stderr.write(' ...done. ({0:.0f} seconds, {1:.0f} min)\n'
                              .format(dt, dt // 60))
-    except (_urllib.error.HTTPError, _urllib.error.URLError):
+    except (requests.RequestException):
         sys.stderr.write("Error while fetching file %s; dataset "
                          "fetching aborted." % (file_name))
         raise
-    finally:
-        if local_file is not None:
-            if not local_file.closed:
-                local_file.close()
     if md5sum is not None:
         if (_md5_sum_file(full_name) != md5sum):
             raise ValueError("File %s checksum verification has failed."
@@ -607,7 +633,10 @@ def _get_dataset_descr(ds_name):
         descr = ''
 
     if descr == '':
-        print("Warning: Could not find dataset description.")
+        warnings.warn("Could not find dataset description.")
+
+    if isinstance(descr, bytes):
+        descr = descr.decode('utf-8')
 
     return descr
 
@@ -641,11 +670,12 @@ def movetree(src, dst):
         raise Exception(errors)
 
 
-def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
+@fill_doc
+def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
     """Load requested dataset, downloading it if needed or requested.
 
     This function retrieves files from the hard drive or download them from
-    the given urls. Note to developpers: All the files will be first
+    the given urls. Note to developers: All the files will be first
     downloaded in a sandbox and, if everything goes well, they will be moved
     into the folder of the dataset. This prevents corrupting previously
     downloaded data. In case of a big dataset, do not hesitate to make several
@@ -653,11 +683,8 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
 
     Parameters
     ----------
-    data_dir: string
-        Path of the data directory. Used for data storage in a specified
-        location.
-
-    files: list of (string, string, dict)
+    %(data_dir)s
+    files : list of (string, string, dict)
         List of files and their corresponding url with dictionary that contains
         options regarding the files. Eg. (file_path, url, opt). If a file_path
         is not found in data_dir, as in data_dir/file_path the download will
@@ -667,22 +694,23 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
             * 'uncompress' to indicate that the file is an archive
             * 'md5sum' to check the md5 sum of the file
             * 'overwrite' if the file should be re-downloaded even if it exists
-
-    resume: bool, optional
-        If true, try resuming download if possible
-
-    mock: boolean, optional
-        If true, create empty files if the file cannot be downloaded. Test use
-        only.
-
-    verbose: int, optional
-        verbosity level (0 means no message).
+    %(resume)s
+    %(verbose)s
+    session : `requests.Session`, optional
+        Session to use to send requests.
 
     Returns
     -------
-    files: list of string
-        Absolute paths of downloaded files on disk
+    files : list of string
+        Absolute paths of downloaded files on disk.
+
     """
+    if session is None:
+        with requests.Session() as session:
+            session.mount("ftp:", _NaiveFTPAdapter())
+            return _fetch_files(
+                data_dir, files, resume=resume,
+                verbose=verbose, session=session)
     # There are two working directories here:
     # - data_dir is the destination directory of the dataset
     # - temp_dir is a temporary directory dedicated to this fetching call. All
@@ -690,7 +718,7 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
     #   file is found, or a file is missing, this working directory will be
     #   deleted.
     files = list(files)
-    files_pickle = cPickle.dumps([(file_, url) for file_, url, _ in files])
+    files_pickle = pickle.dumps([(file_, url) for file_, url, _ in files])
     files_md5 = hashlib.md5(files_pickle).hexdigest()
     temp_dir = os.path.join(data_dir, files_md5)
 
@@ -733,8 +761,7 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                                   verbose=verbose, md5sum=md5sum,
                                   username=opts.get('username', None),
                                   password=opts.get('password', None),
-                                  handlers=opts.get('handlers', []),
-                                  overwrite=overwrite)
+                                  session=session, overwrite=overwrite)
             if 'move' in opts:
                 # XXX: here, move is supposed to be a dir, it can be a name
                 move = os.path.join(temp_dir, opts['move'])
@@ -745,25 +772,17 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
                 dl_file = move
             if 'uncompress' in opts:
                 try:
-                    if not mock or os.path.getsize(dl_file) != 0:
-                        _uncompress_file(dl_file, verbose=verbose)
-                    else:
-                        os.remove(dl_file)
+                    _uncompress_file(dl_file, verbose=verbose)
                 except Exception as e:
                     abort = str(e)
 
         if (abort is None and not os.path.exists(target_file) and not
                 os.path.exists(temp_target_file)):
-            if not mock:
-                warnings.warn('An error occured while fetching %s' % file_)
-                abort = ("Dataset has been downloaded but requested file was "
-                         "not provided:\nURL: %s\n"
-                         "Target file: %s\nDownloaded: %s" %
-                         (url, target_file, dl_file))
-            else:
-                if not os.path.exists(os.path.dirname(temp_target_file)):
-                    os.makedirs(os.path.dirname(temp_target_file))
-                open(temp_target_file, 'w').close()
+            warnings.warn('An error occurred while fetching %s' % file_)
+            abort = ("Dataset has been downloaded but requested file was "
+                     "not provided:\nURL: %s\n"
+                     "Target file: %s\nDownloaded: %s" %
+                     (url, target_file, dl_file))
         if abort is not None:
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
@@ -779,18 +798,20 @@ def _fetch_files(data_dir, files, resume=True, mock=False, verbose=1):
 
 
 def _tree(path, pattern=None, dictionary=False):
-    """ Return a directory tree under the form of a dictionaries and list
+    """Return a directory tree under the form of a dictionaries and list
 
     Parameters:
     -----------
-    path: string
-        Path browsed
+    path : string
+        Path browsed.
 
-    pattern: string, optional
-        Pattern used to filter files (see fnmatch)
+    pattern : string, optional
+        Pattern used to filter files (see fnmatch).
 
-    dictionary: boolean, optional
-        If True, the function will return a dict instead of a list
+    dictionary : boolean, optional
+        If True, the function will return a dict instead of a list.
+        Default=False.
+
     """
     files = []
     dirs = [] if not dictionary else {}
@@ -812,3 +833,101 @@ def _tree(path, pattern=None, dictionary=False):
     if len(files) > 0:
         dirs['.'] = files
     return dirs
+
+
+@fill_doc
+def make_fresh_openneuro_dataset_urls_index(
+        data_dir=None,
+        dataset_version='ds000030_R1.0.4',
+        verbose=1,
+        ):
+    """ONLY intended for Nilearn developers, not general users.
+    Creates a fresh, updated OpenNeuro :term:`BIDS` dataset index from AWS,
+    ready for upload to osf.io .
+
+    Crawls the server where OpenNeuro dataset is stored
+    and makes a JSON file `nistats_fetcher_openneuro_dataset_urls.json'
+    containing a fresh list of dataset file URLs.
+
+    Notes
+    -----
+    Needs Python package `Boto3`.
+
+    Do NOT rename this file.
+
+    This file can now be uploaded to Quick-Files section
+    of the Nilearn account on osf.io .
+
+    Then this file can be downloaded by
+    :func:`datasets.fetch_openneuro_dataset_index`
+
+    Run this function and upload the new file if the URL index downloaded by
+    :func:`datasets.fetch_openneuro_dataset_index` becomes outdated.
+
+    This approach is faster than crawling the servers anew every time
+    the OpenNeuro dataset is downloaded,
+    and circumvents `boto3` as a dependency for everyday use.
+
+    Parameters
+    ----------
+    %(data_dir)s
+    dataset_version : string, optional
+        Dataset version name. Assumes it is of the form [name]_[version].
+        Default is `ds000030_R1.0.4`.
+    %(verbose)s
+
+    Returns
+    -------
+    urls_path : string
+        Path to downloaded dataset index.
+
+    urls : list of string
+        Sorted list of dataset directories.
+
+    """
+    import boto3
+    from botocore.handlers import disable_signing
+    if not data_dir:
+        data_dir = os.path.expanduser('~/Desktop')
+    data_prefix = '{}/{}/uncompressed'.format(
+        dataset_version.split('_')[0], dataset_version)
+
+    data_dir = _get_dataset_dir(data_prefix, data_dir=data_dir,
+                                verbose=verbose)
+
+    # First we download the url list from the uncompressed dataset version
+    urls_path = os.path.join(data_dir,
+                             'nistats_fetcher_openneuro_dataset_urls.json',
+                             )
+    urls = []
+    if os.path.exists(urls_path):
+        with open(urls_path, 'r') as json_file:
+            urls = json.load(json_file)
+        existing_index_msg = ("There is an existing url index at `{}`. "
+                              "Aborting download of fresh index."
+                              .format(urls_path)
+                              )
+        print(existing_index_msg)
+    else:
+        resource = boto3.resource('s3')
+        resource.meta.client.meta.events.register('choose-signer.s3.*',
+                                                  disable_signing)
+        bucket = resource.Bucket('openneuro')
+
+        for obj in bucket.objects.filter(Prefix=data_prefix):
+            # get url of files (keys of directories end with '/')
+            if obj.key[-1] != '/':
+                url = '{}/{}/{}'.format(bucket.meta.client.meta.endpoint_url,
+                                        bucket.name,
+                                        obj.key,
+                                        )
+                urls.append(url)
+        urls = sorted(urls)
+
+        with open(urls_path, 'w') as json_file:
+            json.dump(urls, json_file)
+        print("Saved updated url index to {}.\nUpload it with the same name "
+              "to the quick-files section of osf.io using the Nilearn account "
+              "to update the file without breaking the fetcher download link."
+              .format(urls_path))
+    return urls_path, urls
