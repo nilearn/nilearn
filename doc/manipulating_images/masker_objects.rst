@@ -431,15 +431,18 @@ possible option.
 
    * :ref:`sphx_glr_auto_examples_03_connectivity_plot_probabilistic_atlas_extraction.py`
 
-Extraction of signals from regions for multiple subjects:\  :class:`MultiNiftiMasker`, :class:`MultiNiftiLabelsMasker`
-======================================================================================================================
+Extraction of signals from regions for multiple subjects:\  :class:`MultiNiftiMasker`, :class:`MultiNiftiLabelsMasker`, :class:`MultiNiftiMapsMasker`
+=====================================================================================================================================================
 
-The purpose of :class:`MultiNiftiMasker` and :class:`MultiNiftiLabelsMasker` is to extend the
-capabilities of :class:`NiftiMasker` and :class:`NiftiLabelsMasker` as to facilitate
-the computation of voxel signals in multi-subjects settings. While :class:`NiftiMasker`
-and :class:`NiftiLabelsMasker` work with 3D inputs (single brain volume) or 4D inputs (sequence of
-brain volumes in time for one subject), :class:`MultiNiftiMasker` and :class:`MultiNiftiLabelsMasker`
-expect 5D inputs (list of sequences of brain volumes).
+The purpose of :class:`MultiNiftiMasker`, :class:`MultiNiftiLabelsMasker` and
+:class:`MultiNiftiMapsMasker` is to extend the capabilities of
+:class:`NiftiMasker`, :class:`NiftiLabelsMasker` and :class:`NiftiMapsMasker`
+as to facilitate the computation of voxel signals in multi-subjects settings.
+While :class:`NiftiMasker`, :class:`NiftiLabelsMasker` and
+:class:`NiftiMapsMasker` work with 3D inputs (single brain volume) or 4D inputs
+(sequence of brain volumes in time for one subject), :class:`MultiNiftiMasker`,
+:class:`MultiNiftiLabelsMasker` and :class:`MultiNiftiMapsMasker` expect 5D
+inputs (list of sequences of brain volumes).
 
 :class:`MultiNiftiMasker` Usage
 -------------------------------
@@ -455,9 +458,22 @@ masks.
 :class:`MultiNiftiLabelsMasker` Usage
 -------------------------------------
 
-:class:`MultiNiftiLabelsMasker` extracts signals from regions for each subject.
+:class:`MultiNiftiLabelsMasker` extracts signals from regions defined by labels
+for each subject.
 
-TODO: Add examples...
+.. topic:: **Examples**
+
+    * :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
+
+:class:`MultiNiftiMapsMasker` Usage
+-------------------------------------
+
+:class:`MultiNiftiMapsMasker` extracts signals regions defined by maps
+for each subject.
+
+.. topic:: **Examples**
+
+    * :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 
 Extraction of signals from seeds:\  :class:`NiftiSpheresMasker`
 ===============================================================

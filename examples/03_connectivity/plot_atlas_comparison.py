@@ -10,9 +10,9 @@ parcellation based on labels and
 parcellation based on probabilistic values.
 
 In the intermediary steps, we make use of
-:class:`nilearn.maskers.NiftiLabelsMasker` and
-:class:`nilearn.maskers.NiftiMapsMasker` to extract time series from nifti
-objects using different parcellation atlases.
+:class:`nilearn.maskers.MultiNiftiLabelsMasker` and
+:class:`nilearn.maskers.MultiNiftiMapsMasker` to extract time series from nifti
+objects from multiple subjects using different parcellation atlases.
 
 The time series of all subjects of the brain development dataset are concatenated and
 given directly to :class:`nilearn.connectome.ConnectivityMeasure` for
@@ -62,7 +62,7 @@ from nilearn import plotting
 masker = MultiNiftiLabelsMasker(labels_img=yeo['thick_17'], standardize=True,
                                 memory='nilearn_cache')
 
-# extract time series from all subjects and concatenate them
+# extract time series from all subjects
 time_series = masker.fit_transform(data.func, confounds=data.confounds)
 
 # calculate correlation matrices across subjects and display
@@ -131,7 +131,7 @@ from nilearn.maskers import MultiNiftiMapsMasker
 masker = MultiNiftiMapsMasker(maps_img=difumo.maps, standardize=True,
                               memory='nilearn_cache')
 
-# extract time series from all subjects and concatenate them
+# extract time series from all subjects
 time_series = masker.fit_transform(data.func, confounds=data.confounds)
 
 # calculate correlation matrices across subjects and display

@@ -14,7 +14,7 @@ from .nifti_maps_masker import NiftiMapsMasker
 class MultiNiftiMapsMasker(NiftiMapsMasker, CacheMixin):
     """Class for masking of Niimg-like objects.
 
-    MultiNiftiMapsMasker is useful when data from non-overlapping volumes
+    MultiNiftiMapsMasker is useful when data from overlapping volumes
     and from different subjects should be extracted (contrary to
     NiftiMapsMasker).
 
