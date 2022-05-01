@@ -701,3 +701,130 @@ def test_sided_test2(random_state=0):
                               neg_log_pvals_onesided2[0][::-1])
     assert_array_almost_equal(neg_log_pvals_onesided + neg_log_pvals_onesided2,
                               neg_log_pvals_twosided)
+
+
+def test_cluster_level_parameters_smoke(random_state=0):
+    """Test combinations of parameters related to cluster-level inference."""
+    import nibabel as nib
+    from nilearn.maskers import NiftiMasker
+
+    # create design
+    target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
+    target_var = np.hstack((  # corresponds to 3 x 3 x 3 x 10 niimg
+        target_var1,  # voxel 1 has positive effect
+        - target_var1,  # voxel 2 has negative effect
+        np.random.random((10, 25)),  # 25 remaining voxels
+    ))
+    tested_var = np.arange(0, 20, 2)
+
+    mask_img = nib.Nifti1Image(np.ones((3, 3, 3)), np.eye(4))
+    masker = NiftiMasker(mask_img)
+    masker.fit(mask_img)
+
+    # threshold is defined, indicating cluster-level inference should be done,
+    # but masker is not defined.
+    with pytest.raises(ValueError):
+        permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            two_sided_test=False,
+            n_perm=100,
+            random_state=random_state,
+            threshold=0.001,
+            masker=None,
+        )
+
+    # masker is defined, but threshold is not.
+    # no cluster-level inference is performed, but there's a warning.
+    with pytest.warns():
+        out = permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            two_sided_test=False,
+            n_perm=100,
+            random_state=random_state,
+            threshold=None,
+            masker=masker,
+            output_type="legacy",
+        )
+
+    assert isinstance(out, tuple)
+
+    # threshold is defined, but output_type is "legacy".
+    # raise a warning, and get a dictionary.
+    with pytest.warns():
+        out = permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            two_sided_test=False,
+            n_perm=0,
+            random_state=random_state,
+            threshold=0.001,
+            masker=masker,
+            output_type="legacy",
+        )
+
+    assert isinstance(out, dict)
+
+    # output_type is "legacy".
+    # raise a deprecation warning, but get the standard output.
+    with pytest.warns(DeprecationWarning):
+        out = permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            two_sided_test=False,
+            n_perm=100,
+            random_state=random_state,
+            threshold=None,
+            masker=None,
+            output_type="legacy",
+        )
+
+    assert isinstance(out, tuple)
+
+    # no permutations and output_type is "dict", so check for "t" map
+    out = permuted_ols(
+        tested_var,
+        target_var,
+        model_intercept=False,
+        two_sided_test=False,
+        n_perm=0,
+        random_state=random_state,
+        threshold=None,
+        masker=None,
+        output_type="dict",
+    )
+
+    assert isinstance(out, dict)
+    assert "t" in out.keys()
+
+    # permutations, threshold, and masker are defined,
+    # so check for cluster-level maps
+    n_perm = 10
+    out = permuted_ols(
+        tested_var,
+        target_var,
+        model_intercept=False,
+        two_sided_test=True,
+        n_perm=n_perm,
+        random_state=random_state,
+        threshold=0.001,
+        masker=masker,
+        output_type="dict",
+    )
+
+    assert isinstance(out, dict)
+    assert "t" in out.keys()
+    assert "logp_max_t" in out.keys()
+    assert "logp_max_size" in out.keys()
+    assert "logp_max_mass" in out.keys()
+    assert "h0_max_t" in out.keys()
+    assert "h0_max_size" in out.keys()
+    assert "h0_max_mass" in out.keys()
+    assert out["h0_max_t"].size == n_perm
+    assert out["h0_max_size"].size == n_perm
+    assert out["h0_max_mass"].size == n_perm
