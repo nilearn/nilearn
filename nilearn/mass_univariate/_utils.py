@@ -68,12 +68,14 @@ def _calculate_tfce(
         arr3d = arr4d[..., i_regressor]
         if two_sided_test:
             signs = [-1, 1]
+
+            # Get the maximum statistic in the map
+            max_score = np.max(np.abs(arr3d))
         else:
-            arr3d[arr3d < 0] = 0
             signs = [1]
 
-        # Get the maximum statistic in the map
-        max_score = np.max(np.abs(arr3d))
+            # Get the maximum statistic in the map
+            max_score = np.max(arr3d)
 
         if dh == 'auto':
             step = max_score / 100

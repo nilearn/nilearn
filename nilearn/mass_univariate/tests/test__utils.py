@@ -1,18 +1,17 @@
 """Tests for nilearn.mass_univariate._utils."""
 import math
 
-import nibabel as nib
 import numpy as np
 import pytest
 from scipy import ndimage
 
-from nilearn.maskers import NiftiMasker
 from nilearn.mass_univariate import _utils
 
 
 def test__calculate_tfce():
     """Test _calculate_tfce."""
     test_arr4d = np.zeros((10, 10, 10, 1))
+    bin_struct = ndimage.generate_binary_structure(3, 1)
 
     # 10-voxel positive cluster, high intensity
     test_arr4d[:2, :2, :2, 0] = 10
@@ -24,50 +23,44 @@ def test__calculate_tfce():
     test_arr4d[3, 5, 3, 0] = -11
     test_arr4d[5, 3, 3, 0] = -11
 
-    mask_img = nib.Nifti1Image(np.ones(test_arr4d.shape[:3], int), np.eye(4))
-    masker = NiftiMasker(mask_img)
-    masker.fit(mask_img)
-    data_img = nib.Nifti1Image(test_arr4d, mask_img.affine, mask_img.header)
-    test_arr2d = masker.transform(data_img).T
-
     # One-sided test where positive cluster has the highest TFCE
     true_max_tfce = 5050
-    test_tfce_arr2d = _utils._calculate_tfce(
-        test_arr2d,
-        masker=masker,
+    test_tfce_arr4d = _utils._calculate_tfce(
+        test_arr4d,
+        bin_struct=bin_struct,
         E=1,
         H=1,
         dh='auto',
-        two_sided=False,
+        two_sided_test=False,
     )
-    assert test_tfce_arr2d.shape == (1000, 1)
-    assert np.max(np.abs(test_tfce_arr2d)) == true_max_tfce
+    assert test_tfce_arr4d.shape == test_arr4d.shape
+    assert np.max(np.abs(test_tfce_arr4d)) == true_max_tfce
 
     # Two-sided test where negative cluster has the highest TFCE
     true_max_tfce = 5555
-    test_tfce_arr2d = _utils._calculate_tfce(
-        test_arr2d,
-        masker=masker,
+    test_tfce_arr4d = _utils._calculate_tfce(
+        test_arr4d,
+        bin_struct=bin_struct,
         E=1,
         H=1,
         dh='auto',
-        two_sided=True,
+        two_sided_test=True,
     )
-    assert test_tfce_arr2d.shape == (1000, 1)
-    assert np.max(np.abs(test_tfce_arr2d)) == true_max_tfce
+    assert test_tfce_arr4d.shape == test_arr4d.shape
+    assert np.max(np.abs(test_tfce_arr4d)) == true_max_tfce
 
     # One-sided test with preset dh
     true_max_tfce = 550
-    test_tfce_arr2d = _utils._calculate_tfce(
-        test_arr2d,
-        masker=masker,
+    test_tfce_arr4d = _utils._calculate_tfce(
+        test_arr4d,
+        bin_struct=bin_struct,
         E=1,
         H=1,
         dh=1,
-        two_sided=False,
+        two_sided_test=False,
     )
-    assert test_tfce_arr2d.shape == (1000, 1)
-    assert np.max(np.abs(test_tfce_arr2d)) == true_max_tfce
+    assert test_tfce_arr4d.shape == test_arr4d.shape
+    assert np.max(np.abs(test_tfce_arr4d)) == true_max_tfce
 
 
 def test_null_to_p_float():
