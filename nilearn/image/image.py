@@ -790,17 +790,14 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
         arr = arr.copy()
 
     # Define array for 6-connectivity, aka NN1 or "faces"
-    conn_mat = np.zeros((3, 3, 3), int)
-    conn_mat[:, 1, 1] = 1
-    conn_mat[1, :, 1] = 1
-    conn_mat[1, 1, :] = 1
+    bin_struct = ndimage.generate_binary_structure(3, 1)
 
     for sign in np.unique(np.sign(arr)):
         # Binarize using one-sided cluster-defining threshold
         binarized = ((arr * sign) > 0).astype(int)
 
         # Apply cluster threshold
-        label_map = ndimage.measurements.label(binarized, conn_mat)[0]
+        label_map = ndimage.measurements.label(binarized, bin_struct)[0]
         clust_ids = sorted(list(np.unique(label_map)[1:]))
         for c_val in clust_ids:
             if np.sum(label_map == c_val) < cluster_threshold:

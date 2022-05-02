@@ -1359,7 +1359,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
         i, region = r.split("=")
         region_mapping[int(i)] = region
 
-    anatomical = np.genfromtxt(anatomical_file, skip_header=1)
+    anatomical = np.genfromtxt(anatomical_file, skip_header=1, encoding=None)
     anatomical_names = np.array([region_mapping[a] for a in anatomical])
 
     rois = pd.concat([rois, pd.DataFrame(anatomical_names)], axis=1)
@@ -1910,7 +1910,8 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
     labels_file, atlas_file = _fetch_files(data_dir, files, resume=resume,
                                            verbose=verbose)
 
-    labels = np.genfromtxt(labels_file, usecols=1, dtype="S", delimiter="\t")
+    labels = np.genfromtxt(labels_file, usecols=1, dtype="S", delimiter="\t",
+                           encoding=None)
     fdescr = _get_dataset_descr(dataset_name)
 
     return Bunch(maps=atlas_file,

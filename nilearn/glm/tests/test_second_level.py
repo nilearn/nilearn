@@ -603,6 +603,36 @@ def test_non_parametric_inference_tfce():
         del FUNCFILES, out, X
 
 
+def test_non_parametric_inference_cluster_level():
+    """Test non-parametric inference with cluster-level inference."""
+    with InTemporaryDirectory():
+        shapes = ((7, 8, 9, 1),)
+        mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
+        FUNCFILE = FUNCFILE[0]
+        func_img = load(FUNCFILE)
+
+        Y = [func_img] * 4
+        X = pd.DataFrame([[1]] * 4, columns=['intercept'])
+
+        out = non_parametric_inference(
+            Y,
+            design_matrix=X,
+            mask=mask,
+            n_perm=10,
+            threshold=0.001,
+        )
+        assert isinstance(out, dict)
+        assert "t" in out.keys()
+        assert "logp_max_t" in out.keys()
+        assert "size" in out.keys()
+        assert "logp_max_size" in out.keys()
+        assert "mass" in out.keys()
+        assert "logp_max_mass" in out.keys()
+
+        assert get_data(out["logp_max_t"]).shape == shapes[0][:3]
+        del func_img, FUNCFILE, out, X, Y
+
+
 def test_second_level_contrast_computation():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
