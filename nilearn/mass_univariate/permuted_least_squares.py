@@ -343,11 +343,6 @@ def _permuted_ols_on_chunk(
             ),
         )
 
-        if two_sided_test:
-            perm_scores = np.fabs(perm_scores)
-
-        h0_vfwe_part[:, i_perm] = np.nanmax(perm_scores, axis=0)
-
         # find the rank of the original scores in h0_vfwe_part
         # (when n_descriptors or n_perm are large, it can be quite long to
         #  find the rank of the original scores into the whole H0 distribution.
@@ -883,9 +878,6 @@ def permuted_ols(
         targetvars_resid_covars.T,
         covars_orthonormalized,
     )
-    if two_sided_test:
-        sign_scores_original_data = np.sign(scores_original_data)
-        scores_original_data = np.fabs(scores_original_data)
 
     if tfce:
         tfce_original_data = _calculate_tfce(scores_original_data, masker)
@@ -918,11 +910,6 @@ def permuted_ols(
         )
         n_perm_chunks = np.ones(n_perm, dtype=int)
     else:  # 0 or negative number of permutations => original data scores only
-        if two_sided_test:
-            scores_original_data = (
-                scores_original_data * sign_scores_original_data
-            )
-
         if output_type == "legacy":
             return np.asarray([]), scores_original_data.T, np.asarray([])
         else:

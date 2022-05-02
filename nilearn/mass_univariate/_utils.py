@@ -9,7 +9,7 @@ def _calculate_tfce(
     E=0.5,
     H=2,
     dh='auto',
-    two_sided=True,
+    two_sided_test=True,
 ):
     """Calculate threshold-free cluster enhancement values for scores maps.
 
@@ -19,12 +19,11 @@ def _calculate_tfce(
 
     Parameters
     ----------
-    scores_array : :obj:`numpy.ndarray`, shape=(n_descriptors, n_regressors)
-        Scores (t-statistics) for a set of regressors.
-    masker : :obj:`~nilearn.maskers.NiftiMasker` or \
-            :obj:`~nilearn.maskers.MultiNiftiMasker`, optional
-        Mask to be used on data.
-        This is necessary for :term:`TFCE`-based inference.
+    arr4d : :obj:`numpy.ndarray` of shape (X, Y, Z, R)
+        Unthresholded 4D array of 3D t-statistic maps.
+        R = regressor.
+    bin_struct : :obj:`numpy.ndarray` of shape (3, 3, 3)
+        Connectivity matrix for defining clusters.
     E : :obj:`float`, optional
         Extent weight. Default is 0.5.
     H : :obj:`float`, optional
@@ -34,9 +33,10 @@ def _calculate_tfce(
         If set to 'auto', use 100 steps, as is done in fslmaths.
         A good alternative is 0.1 for z and t maps, as in [1]_.
         Default is 'auto'.
-    two_sided : :obj:`bool`, optional
-        Whether to perform two-sided thresholding or not.
-        Default is True.
+    two_sided_test : :obj:`bool`, optional
+        Whether to assess both positive and negative clusters (True) or just
+        positive ones (False).
+        Default is False.
 
     Returns
     -------
@@ -64,14 +64,13 @@ def _calculate_tfce(
     """
     tfce_4d = np.zeros_like(arr4d)
 
-    if two_sided:
-        signs = [-1, 1]
-    else:
-        arr4d[arr4d < 0] = 0
-        signs = [1]
-
     for i_regressor in range(arr4d.shape[3]):
         arr3d = arr4d[..., i_regressor]
+        if two_sided_test:
+            signs = [-1, 1]
+        else:
+            arr3d[arr3d < 0] = 0
+            signs = [1]
 
         # Get the maximum statistic in the map
         max_score = np.max(np.abs(arr3d))
