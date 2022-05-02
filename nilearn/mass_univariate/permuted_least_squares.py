@@ -190,7 +190,8 @@ def _permuted_ols_on_chunk(
     threshold : :obj:`float`
         Cluster-forming threshold in t-scale.
         This is only used for cluster-level inference.
-        If ``masker`` is set to None, it will be ignored.
+        If ``threshold`` is not None, but ``masker`` is, an exception will be
+        raised.
 
         .. versionadded:: 0.9.2.dev
 
@@ -202,7 +203,8 @@ def _permuted_ols_on_chunk(
         A mask to be used on the data.
         This is used for cluster-level inference and :term:`TFCE`-based
         inference, if either is enabled.
-        If None, cluster-level inference will not be performed.
+        If ``threshold`` is not None, but ``masker`` is, an exception will be
+        raised.
 
         .. versionadded:: 0.9.2.dev
 
@@ -230,7 +232,8 @@ def _permuted_ols_on_chunk(
         or not.
         Calculating TFCE values in each permutation can be time-consuming, so
         this option is disabled by default.
-        The TFCE calculation is implemented as described in [2]_.
+        The TFCE calculation is implemented as described in
+        :footcite:t:`smith2009threshold`.
         Default=False.
 
         .. versionadded:: 0.9.2.dev
@@ -250,14 +253,14 @@ def _permuted_ols_on_chunk(
 
     Returns
     -------
-    scores_as_ranks_part : array-like, shape=(n_regressors, n_descriptors)
-        The ranks of the original scores in ``h0_fmax_part``.
+    vfwe_scores_as_ranks_part : array-like, shape=(n_regressors, n_descriptors)
+        The ranks of the original scores in ``h0_vfwe_part``.
         When ``n_descriptors`` or ``n_perm`` are large, it can be quite long to
         find the rank of the original scores into the whole H0 distribution.
         Here, it is performed in parallel by the workers involved in the
         permutation computation.
 
-    h0_fmax_part : array-like, shape=(n_perm_chunk, n_regressors)
+    h0_vfwe_part : array-like, shape=(n_perm_chunk, n_regressors)
         Distribution of the (max) t-statistic under the null hypothesis
         (limited to this permutation chunk).
 
@@ -269,15 +272,24 @@ def _permuted_ols_on_chunk(
 
         .. versionadded:: 0.9.2.dev
 
+    tfce_scores_as_ranks_part : array-like, shape=(n_regressors, n_descriptors)
+        The ranks of the original TFCE values in ``h0_tfce_part``.
+        When ``n_descriptors`` or ``n_perm`` are large, it can be quite long to
+        find the rank of the original scores into the whole H0 distribution.
+        Here, it is performed in parallel by the workers involved in the
+        permutation computation.
+
+        .. versionadded:: 0.9.2.dev
+
+    h0_tfce_part : array-like, shape=(n_perm_chunk, n_regressors)
+        Distribution of the (max) TFCE value under the null hypothesis
+        (limited to this permutation chunk).
+
+        .. versionadded:: 0.9.2.dev
+
     References
     ----------
     .. footbibliography::
-
-    .. [2] Smith, S. M., & Nichols, T. E. (2009).
-       Threshold-free cluster enhancement: addressing problems of smoothing,
-       threshold dependence and localisation in cluster inference.
-       Neuroimage, 44(1), 83-98.
-
     """
     # initialize the seed of the random generator
     rng = check_random_state(random_state)
@@ -290,6 +302,8 @@ def _permuted_ols_on_chunk(
     h0_vfwe_part = np.empty((n_regressors, n_perm_chunk))
     vfwe_scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
 
+    # Preallocate null arrays for optional outputs
+    # Any unselected outputs will just return a None
     if tfce:
         h0_tfce_part = np.empty((n_perm_chunk, n_regressors))
         tfce_scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
@@ -334,6 +348,27 @@ def _permuted_ols_on_chunk(
 
         h0_vfwe_part[:, i_perm] = np.nanmax(perm_scores, axis=0)
 
+        # find the rank of the original scores in h0_vfwe_part
+        # (when n_descriptors or n_perm are large, it can be quite long to
+        #  find the rank of the original scores into the whole H0 distribution.
+        #  Here, it is performed in parallel by the workers involved in the
+        #  permutation computation)
+        # NOTE: This is not done for the cluster-level methods.
+        if two_sided_test:
+            # Get maximum absolute value for voxel-level FWE
+            h0_vfwe_part[:, i_perm] = np.nanmax(np.fabs(perm_scores), axis=0)
+            vfwe_scores_as_ranks_part += (
+                h0_vfwe_part[:, i_perm].reshape((-1, 1))
+                < np.fabs(scores_original_data).T
+            )
+        else:
+            # Get maximum value for voxel-level FWE
+            h0_vfwe_part[:, i_perm] = np.nanmax(perm_scores, axis=0)
+            vfwe_scores_as_ranks_part += (
+                h0_vfwe_part[:, i_perm].reshape((-1, 1))
+                < scores_original_data.T
+            )
+
         # Prepare data for cluster thresholding
         if tfce or (threshold is not None):
             arr4d = masker.inverse_transform(perm_scores.T).get_fdata()
@@ -362,27 +397,6 @@ def _permuted_ols_on_chunk(
                 threshold,
                 bin_struct,
                 two_sided_test=two_sided_test,
-            )
-
-        # find the rank of the original scores in h0_vfwe_part
-        # (when n_descriptors or n_perm are large, it can be quite long to
-        #  find the rank of the original scores into the whole H0 distribution.
-        #  Here, it is performed in parallel by the workers involved in the
-        #  permutation computation)
-        # NOTE: This is not done for the cluster-level methods.
-        if two_sided_test:
-            # Get maximum absolute value for voxel-level FWE
-            h0_vfwe_part[:, i_perm] = np.nanmax(np.fabs(perm_scores), axis=0)
-            vfwe_scores_as_ranks_part += (
-                h0_vfwe_part[:, i_perm].reshape((-1, 1))
-                < np.fabs(scores_original_data).T
-            )
-        else:
-            # Get maximum value for voxel-level FWE
-            h0_vfwe_part[:, i_perm] = np.nanmax(perm_scores, axis=0)
-            vfwe_scores_as_ranks_part += (
-                h0_vfwe_part[:, i_perm].reshape((-1, 1))
-                < scores_original_data.T
             )
 
         if verbose > 0:
