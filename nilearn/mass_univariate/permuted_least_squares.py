@@ -305,7 +305,7 @@ def _permuted_ols_on_chunk(
     # Preallocate null arrays for optional outputs
     # Any unselected outputs will just return a None
     if tfce:
-        h0_tfce_part = np.empty((n_perm_chunk, n_regressors))
+        h0_tfce_part = np.empty((n_regressors, n_perm_chunk))
         tfce_scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
     else:
         h0_tfce_part, tfce_scores_as_ranks_part = None, None
@@ -381,7 +381,7 @@ def _permuted_ols_on_chunk(
                         two_sided_test=two_sided_test,
                     )
                 ),
-                axis=0,
+                axis=(0, 1, 2),
             )
             tfce_scores_as_ranks_part += (
                 h0_tfce_part[:, i_perm].reshape((-1, 1))
@@ -904,6 +904,15 @@ def permuted_ols(
             bin_struct=bin_struct,
             two_sided_test=two_sided_test,
         )
+        tfce_original_data = apply_mask(
+            nib.Nifti1Image(
+                tfce_original_data,
+                masker.mask_img_.affine,
+                masker.mask_img_.header,
+            ),
+            masker.mask_img_,
+        ).T
+
     else:
         tfce_original_data = None
 
