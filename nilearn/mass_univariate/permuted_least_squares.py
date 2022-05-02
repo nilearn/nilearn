@@ -253,14 +253,14 @@ def _permuted_ols_on_chunk(
 
     Returns
     -------
-    vfwe_scores_as_ranks_part : array-like, shape=(n_regressors, n_descriptors)
-        The ranks of the original scores in ``h0_vfwe_part``.
+    scores_as_ranks_part : array-like, shape=(n_regressors, n_descriptors)
+        The ranks of the original scores in ``h0_fmax_part``.
         When ``n_descriptors`` or ``n_perm`` are large, it can be quite long to
         find the rank of the original scores into the whole H0 distribution.
         Here, it is performed in parallel by the workers involved in the
         permutation computation.
 
-    h0_vfwe_part : array-like, shape=(n_perm_chunk, n_regressors)
+    h0_fmax_part : array-like, shape=(n_perm_chunk, n_regressors)
         Distribution of the (max) t-statistic under the null hypothesis
         (limited to this permutation chunk).
 
@@ -290,6 +290,7 @@ def _permuted_ols_on_chunk(
     References
     ----------
     .. footbibliography::
+
     """
     # initialize the seed of the random generator
     rng = check_random_state(random_state)
@@ -299,8 +300,8 @@ def _permuted_ols_on_chunk(
 
     # run the permutations
     t0 = time.time()
-    h0_vfwe_part = np.empty((n_regressors, n_perm_chunk))
-    vfwe_scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
+    h0_fmax_part = np.empty((n_regressors, n_perm_chunk))
+    scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
 
     # Preallocate null arrays for optional outputs
     # Any unselected outputs will just return a None
@@ -337,13 +338,11 @@ def _permuted_ols_on_chunk(
         # OLS regression on randomized data
         perm_scores = np.asfortranarray(
             _t_score_with_covars_and_normalized_design(
-                tested_vars,
-                target_vars,
-                confounding_vars,
-            ),
+                tested_vars, target_vars, confounding_vars
+            )
         )
 
-        # find the rank of the original scores in h0_vfwe_part
+        # find the rank of the original scores in h0_fmax_part
         # (when n_descriptors or n_perm are large, it can be quite long to
         #  find the rank of the original scores into the whole H0 distribution.
         #  Here, it is performed in parallel by the workers involved in the
@@ -351,16 +350,16 @@ def _permuted_ols_on_chunk(
         # NOTE: This is not done for the cluster-level methods.
         if two_sided_test:
             # Get maximum absolute value for voxel-level FWE
-            h0_vfwe_part[:, i_perm] = np.nanmax(np.fabs(perm_scores), axis=0)
-            vfwe_scores_as_ranks_part += (
-                h0_vfwe_part[:, i_perm].reshape((-1, 1))
+            h0_fmax_part[:, i_perm] = np.nanmax(np.fabs(perm_scores), axis=0)
+            scores_as_ranks_part += (
+                h0_fmax_part[:, i_perm].reshape((-1, 1))
                 < np.fabs(scores_original_data).T
             )
         else:
             # Get maximum value for voxel-level FWE
-            h0_vfwe_part[:, i_perm] = np.nanmax(perm_scores, axis=0)
-            vfwe_scores_as_ranks_part += (
-                h0_vfwe_part[:, i_perm].reshape((-1, 1))
+            h0_fmax_part[:, i_perm] = np.nanmax(perm_scores, axis=0)
+            scores_as_ranks_part += (
+                h0_fmax_part[:, i_perm].reshape((-1, 1))
                 < scores_original_data.T
             )
 
@@ -419,8 +418,8 @@ def _permuted_ols_on_chunk(
                 )
 
     return (
-        vfwe_scores_as_ranks_part,
-        h0_vfwe_part,
+        scores_as_ranks_part,
+        h0_fmax_part,
         h0_csfwe_part,
         h0_cmfwe_part,
         tfce_scores_as_ranks_part,
@@ -736,6 +735,7 @@ def permuted_ols(
     References
     ----------
     .. footbibliography::
+
     """
     # initialize the seed of the random generator
     rng = check_random_state(random_state)
@@ -977,8 +977,8 @@ def permuted_ols(
     (
         vfwe_scores_as_ranks_parts,
         h0_vfwe_parts,
-        h0_csfwe_parts,
-        h0_cmfwe_parts,
+        csfwe_h0_parts,
+        cmfwe_h0_parts,
         tfce_scores_as_ranks_parts,
         h0_tfce_parts,
     ) = zip(*ret)
@@ -986,8 +986,8 @@ def permuted_ols(
     # Voxel-level FWE
     vfwe_h0 = np.hstack((h0_vfwe_parts))
     vfwe_scores_as_ranks = np.zeros((n_regressors, n_descriptors))
-    for vfwe_scores_as_ranks_part in vfwe_scores_as_ranks_parts:
-        vfwe_scores_as_ranks += vfwe_scores_as_ranks_part
+    for scores_as_ranks_part in vfwe_scores_as_ranks_parts:
+        vfwe_scores_as_ranks += scores_as_ranks_part
 
     vfwe_pvals = (n_perm + 1 - vfwe_scores_as_ranks) / float(1 + n_perm)
 
@@ -1005,8 +1005,8 @@ def permuted_ols(
         # Cluster-size and cluster-mass FWE
         cluster_dict = {}  # a dictionary to collect mass/size measures
 
-        cluster_dict['size_h0'] = np.hstack((h0_csfwe_parts))
-        cluster_dict['mass_h0'] = np.hstack((h0_cmfwe_parts))
+        cluster_dict['size_h0'] = np.hstack((csfwe_h0_parts))
+        cluster_dict['mass_h0'] = np.hstack((cmfwe_h0_parts))
 
         cluster_dict['size'] = np.zeros_like(vfwe_pvals).astype(int)
         cluster_dict['mass'] = np.zeros_like(vfwe_pvals)
