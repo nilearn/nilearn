@@ -682,20 +682,24 @@ def permuted_ols(
                                      distribution correspond to the size
                                      p-values.
 
-                                     Returned only if ``threshold`` is not None.
+                                     Returned only if ``threshold`` is not
+                                     None.
         logp_max_size (n_regressors, Negative log10 p-values associated with
-                      n_descriptors) the cluster-level significance test of the
-                                     n_regressors explanatory variates against
-                                     the n_descriptors target variates.
+                      n_descriptors) the cluster-level significance test of
+                                     the n_regressors explanatory variates
+                                     against the n_descriptors target
+                                     variates.
                                      Family-wise corrected, cluster-level
                                      p-values, based on ``h0_max_size``.
 
-                                     Returned only if ``threshold`` is not None.
-        h0_max_size   (n_regressors, Distribution of the max cluster size value
-                      n_perm)        under the null hypothesis (obtained from
-                                     the permutations). Array is sorted.
+                                     Returned only if ``threshold`` is not
+                                     None.
+        h0_max_size   (n_regressors, Distribution of the max cluster size
+                      n_perm)        value under the null hypothesis (obtained
+                                     from the permutations). Array is sorted.
 
-                                     Returned only if ``threshold`` is not None.
+                                     Returned only if ``threshold`` is not
+                                     None.
         mass          (n_regressors, Cluster mass values associated with the
                       n_descriptors) significance test of the n_regressors
                                      explanatory variates against the
@@ -704,20 +708,24 @@ def permuted_ols(
                                      distribution correspond to the mass
                                      p-values.
 
-                                     Returned only if ``threshold`` is not None.
+                                     Returned only if ``threshold`` is not
+                                     None.
         logp_max_mass (n_regressors, Negative log10 p-values associated with
-                      n_descriptors) the cluster-level significance test of the
-                                     n_regressors explanatory variates against
-                                     the n_descriptors target variates.
+                      n_descriptors) the cluster-level significance test of
+                                     the n_regressors explanatory variates
+                                     against the n_descriptors target
+                                     variates.
                                      Family-wise corrected, cluster-level
                                      p-values, based on ``h0_max_mass``.
 
-                                     Returned only if ``threshold`` is not None.
-        h0_max_mass   (n_regressors, Distribution of the max cluster mass value
-                      n_perm)        under the null hypothesis (obtained from
-                                     the permutations). Array is sorted.
+                                     Returned only if ``threshold`` is not
+                                     None.
+        h0_max_mass   (n_regressors, Distribution of the max cluster mass
+                      n_perm)        value under the null hypothesis (obtained
+                                     from the permutations). Array is sorted.
 
-                                     Returned only if ``threshold`` is not None.
+                                     Returned only if ``threshold`` is not
+                                     None.
         ============= ============== ==========================================
 
     References
