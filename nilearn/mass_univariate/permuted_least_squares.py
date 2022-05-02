@@ -370,17 +370,22 @@ def _permuted_ols_on_chunk(
             bin_struct = ndimage.generate_binary_structure(3, 1)
 
         if tfce:
+            # The TFCE map will contain positive and negative values if
+            # two_sided_test is True, or positive only if it's False.
+            # In either case, the maximum absolute value is the one we want.
             h0_tfce_part[:, i_perm] = np.nanmax(
-                _calculate_tfce(
-                    arr4d,
-                    bin_struct=bin_struct,
-                    two_sided=two_sided_test,
+                np.fabs(
+                    _calculate_tfce(
+                        arr4d,
+                        bin_struct=bin_struct,
+                        two_sided_test=two_sided_test,
+                    )
                 ),
                 axis=0,
             )
             tfce_scores_as_ranks_part += (
                 h0_tfce_part[:, i_perm].reshape((-1, 1))
-                < tfce_original_data.T
+                < np.fabs(tfce_original_data.T)
             )
 
         if threshold is not None:
@@ -887,8 +892,18 @@ def permuted_ols(
         covars_orthonormalized,
     )
 
+    # Define connectivity for TFCE and/or cluster measures
+    bin_struct = ndimage.generate_binary_structure(3, 1)
+
     if tfce:
-        tfce_original_data = _calculate_tfce(scores_original_data, masker)
+        scores_4d = masker.inverse_transform(
+            scores_original_data.T
+        ).get_fdata()
+        tfce_original_data = _calculate_tfce(
+            scores_4d,
+            bin_struct=bin_struct,
+            two_sided_test=two_sided_test,
+        )
     else:
         tfce_original_data = None
 
@@ -992,7 +1007,6 @@ def permuted_ols(
         scores_original_data_4d = masker.inverse_transform(
             scores_original_data.T
         ).get_fdata()
-        bin_struct = ndimage.generate_binary_structure(3, 1)
 
         for i_regressor in range(n_regressors):
             scores_original_data_3d = scores_original_data_4d[..., i_regressor]
