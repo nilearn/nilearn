@@ -14,9 +14,10 @@ In the intermediary steps, we make use of
 :class:`nilearn.maskers.MultiNiftiMapsMasker` to extract time series from nifti
 objects from multiple subjects using different parcellation atlases.
 
-The time series of all subjects of the brain development dataset are concatenated and
-given directly to :class:`nilearn.connectome.ConnectivityMeasure` for
-computing parcel-wise correlation matrices for each atlas across all subjects.
+The time series of all subjects of the brain development dataset are
+concatenated and given directly to
+:class:`nilearn.connectome.ConnectivityMeasure` for computing parcel-wise
+correlation matrices for each atlas across all subjects.
 
 Mean correlation matrix is displayed on glass brain on extracted coordinates.
 
