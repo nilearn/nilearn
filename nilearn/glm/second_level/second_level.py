@@ -752,8 +752,11 @@ def non_parametric_inference(
 
         .. warning::
 
-            Calculating TFCE values in each permutation can be time-consuming,
-            so this option is disabled by default.
+            Performing TFCE-based inference will increase the computation
+            time of the permutation procedure considerably.
+            The permutations may take multiple hours, depending on how many
+            permutations are requested and how many jobs are performed in
+            parallel.
 
         .. versionadded:: 0.9.2.dev
 
