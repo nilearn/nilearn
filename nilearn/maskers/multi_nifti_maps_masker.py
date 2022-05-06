@@ -6,11 +6,12 @@ import itertools
 
 from joblib import Memory, Parallel, delayed
 
-from .._utils import CacheMixin
+from .._utils import CacheMixin, fill_doc
 from .._utils.niimg_conversions import _iter_check_niimg
 from .nifti_maps_masker import NiftiMapsMasker
 
 
+@fill_doc
 class MultiNiftiMapsMasker(NiftiMapsMasker, CacheMixin):
     """Class for masking of Niimg-like objects.
 
