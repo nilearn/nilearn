@@ -117,8 +117,8 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
 
     See also
     --------
-    nilearn.input_data.NiftiMasker
-    nilearn.input_data.NiftiLabelsMasker
+    nilearn.maskers.NiftiMasker
+    nilearn.maskers.NiftiLabelsMasker
 
     """
 
