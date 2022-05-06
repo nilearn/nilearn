@@ -59,7 +59,8 @@ connectome_measure = ConnectivityMeasure(kind='correlation')
 # useful for plotting connectivity interactions on glass brain
 from nilearn import plotting
 
-# create masker to extract functional data within atlas parcels
+# create masker using MultiNiftiLabelsMasker to extract functional data within
+# atlas parcels from multiple subjects
 masker = MultiNiftiLabelsMasker(labels_img=yeo['thick_17'], standardize=True,
                                 memory='nilearn_cache')
 
@@ -128,7 +129,8 @@ difumo = datasets.fetch_atlas_difumo(
 # -------------------------------------------------------------------
 from nilearn.maskers import MultiNiftiMapsMasker
 
-# create masker to extract functional data within atlas parcels
+# create masker using MultiNiftiMapsMasker to extract functional data within
+# atlas parcels from multiple subjects
 masker = MultiNiftiMapsMasker(maps_img=difumo.maps, standardize=True,
                               memory='nilearn_cache')
 

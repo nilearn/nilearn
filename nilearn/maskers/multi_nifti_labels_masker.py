@@ -16,6 +16,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
     MultiNiftiLabelsMasker is useful when data from non-overlapping volumes
     and from different subjects should be extracted (contrary to
     NiftiLabelsMasker).
+
     Parameters
     ----------
     labels_img: Niimg-like object
