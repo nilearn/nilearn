@@ -214,8 +214,8 @@ def test_multi_nifti_labels_masker_resampling():
         fmri11_img_r = masker.inverse_transform(t)
         np.testing.assert_almost_equal(fmri11_img_r.affine,
                                        masker.labels_img_.affine)
-        assert (fmri11_img_r.shape ==
-                (masker.labels_img_.shape[:3] + (length,)))
+        assert (fmri11_img_r.shape == (
+                masker.labels_img_.shape[:3] + (length,)))
 
     # Test with clipped labels: mask does not contain all labels.
     # Shapes do matter in that case, because there is some resampling
@@ -264,8 +264,8 @@ def test_multi_nifti_labels_masker_resampling():
         fmri11_img_r = masker.inverse_transform(t)
         np.testing.assert_almost_equal(fmri11_img_r.affine,
                                        masker.labels_img_.affine)
-        assert (fmri11_img_r.shape ==
-                (masker.labels_img_.shape[:3] + (length,)))
+        assert (fmri11_img_r.shape == (
+                masker.labels_img_.shape[:3] + (length,)))
 
     # Test with data and atlas of different shape: the atlas should be
     # resampled to the data
