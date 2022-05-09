@@ -122,7 +122,7 @@ def test_multi_nifti_maps_masker():
     masker.fit_transform(fmri22_img)
     np.testing.assert_array_equal(masker._resampled_maps_img_.affine,
                                   affine2)
-    
+
 
 def test_multi_nifti_maps_masker_resampling():
     # Test resampling in MultiNiftiMapsMasker
@@ -141,6 +141,17 @@ def test_multi_nifti_maps_masker_resampling():
                                                 length=length)
 
     maps33_img, _ = data_gen.generate_maps(shape3, n_regions, affine=affine)
+
+    mask_img_4d = nibabel.Nifti1Image(np.ones((2, 2, 2, 2), dtype=np.int8),
+                                      affine=np.diag((4, 4, 4, 1)))
+
+    # verify that 4D mask arguments are refused
+    masker = MultiNiftiMapsMasker(maps33_img, mask_img=mask_img_4d)
+    with pytest.raises(DimensionError,
+                       match="Input data has incompatible dimensionality: "
+                             "Expected dimension is 3D and you provided "
+                             "a 4D image."):
+        masker.fit()
 
     # Multi-subject example
     fmri11_img = [fmri11_img, fmri11_img]
