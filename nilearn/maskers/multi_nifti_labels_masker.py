@@ -210,12 +210,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
 
-        if not hasattr(self, 'mask_img_'):
-            raise ValueError(
-                'It seems that {} has not been fitted. '
-                'You must call fit() before calling transform().'.format
-                (self.__class__.__name__))
-
+        self._check_fitted()
         niimg_iter = _iter_check_niimg(imgs_list, ensure_ndim=None,
                                        atleast_4d=False,
                                        memory=self.memory,
