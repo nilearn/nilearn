@@ -7,7 +7,7 @@ import numpy as np
 from scipy import stats
 from sklearn.utils import check_random_state
 
-from numpy.testing import (assert_almost_equal, assert_array_almost_equal,
+from numpy.testing import (assert_array_almost_equal,
                            assert_array_less, assert_equal)
 import pytest
 
