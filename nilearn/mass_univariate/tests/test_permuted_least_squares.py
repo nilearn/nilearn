@@ -458,53 +458,6 @@ def test_permuted_ols_nocovar_multivariate(random_state=0):
                               decimal=6)
 
 
-def test_permuted_ols_withcovar_multivariate(random_state=0):
-    """Test permuted_ols with multiple tested variates and covariates.
-
-    It is equivalent to fitting several models with only one tested variate.
-
-    """
-    rng = check_random_state(random_state)
-
-    # design parameters
-    n_samples = 50
-    n_descriptors = 10
-    n_regressors = 1
-    n_covars = 2
-
-    # create design
-    target_vars = rng.randn(n_samples, n_descriptors)
-    tested_var = rng.randn(n_samples, n_regressors)
-    confounding_vars = rng.randn(n_samples, n_covars)
-
-    # compute t-scores with linalg or statmodels
-    ref_scores = get_tvalue_with_alternative_library(tested_var, target_vars,
-                                                     confounding_vars)
-    assert ref_scores.shape == (n_regressors, n_descriptors)
-
-    # permuted OLS
-    _, own_scores, _ = permuted_ols(
-        tested_var, target_vars, confounding_vars, model_intercept=False,
-        n_perm=0, random_state=random_state)
-    assert own_scores.shape == (n_regressors, n_descriptors)
-    assert_almost_equal(ref_scores, own_scores, decimal=6)
-
-    ### Adds intercept
-    # permuted OLS
-    _, own_scores_intercept, _ = permuted_ols(
-        tested_var, target_vars, confounding_vars, model_intercept=True,
-        n_perm=0, random_state=random_state)
-    assert own_scores_intercept.shape == (n_regressors, n_descriptors)
-
-    # compute t-scores with linalg or statmodels
-    confounding_vars = np.hstack((confounding_vars, np.ones((n_samples, 1))))
-    ref_scores_intercept = get_tvalue_with_alternative_library(
-        tested_var, target_vars, confounding_vars)
-    assert ref_scores_intercept.shape == (n_regressors, n_descriptors)
-    assert_array_almost_equal(ref_scores_intercept,
-                              own_scores_intercept, decimal=6)
-
-
 ### Tests for sign swapping permutation scheme ##############################
 def test_permuted_ols_intercept_nocovar(random_state=0):
     rng = check_random_state(random_state)
