@@ -12,8 +12,10 @@ from numpy.testing import (assert_almost_equal, assert_array_almost_equal,
 import pytest
 
 from nilearn.mass_univariate import permuted_ols
-from nilearn.mass_univariate.permuted_least_squares import (
-    _t_score_with_covars_and_normalized_design, _orthonormalize_matrix)
+from nilearn.mass_univariate._utils import (
+    _t_score_with_covars_and_normalized_design,
+    _orthonormalize_matrix,
+)
 
 
 def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):
