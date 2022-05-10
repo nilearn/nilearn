@@ -604,40 +604,6 @@ def test_permuted_ols_intercept_nocovar_multivariate(random_state=0):
     assert_array_almost_equal(ref_scores, own_scores_intercept, decimal=6)
 
 
-def test_permuted_ols_intercept_withcovar_multivariate(random_state=0):
-    rng = check_random_state(random_state)
-
-    # design parameters
-    n_samples = 50
-    n_descriptors = 10
-    n_regressors = 1
-    n_covars = 2
-
-    # create design
-    target_vars = rng.randn(n_samples, n_descriptors)
-    tested_var = np.ones((n_samples, n_regressors))
-    confounding_vars = rng.randn(n_samples, n_covars)
-
-    # compute t-scores with linalg or statsmodels
-    ref_scores = get_tvalue_with_alternative_library(tested_var, target_vars,
-                                                     confounding_vars)
-    assert ref_scores.shape == (n_regressors, n_descriptors)
-
-    # permuted OLS
-    _, own_scores, _ = permuted_ols(
-        tested_var, target_vars, confounding_vars, n_perm=0,
-        random_state=random_state)
-    assert own_scores.shape == (n_regressors, n_descriptors)
-    assert_almost_equal(ref_scores, own_scores, decimal=6)
-
-    # same thing but with model_intercept=True to check it has no effect
-    _, own_scores_intercept, _ = permuted_ols(
-        tested_var, target_vars, confounding_vars, model_intercept=True,
-        n_perm=0, random_state=random_state)
-    assert own_scores_intercept.shape == (n_regressors, n_descriptors)
-    assert_array_almost_equal(own_scores, own_scores_intercept, decimal=6)
-
-
 ### Test one-sided versus two-sided ###########################################
 def test_sided_test(random_state=0):
     """Check that a positive effect is always better recovered with one-sided.
