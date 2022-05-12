@@ -595,23 +595,6 @@ def test_vol_to_surf(kind, n_scans, use_mask):
         surface.vol_to_surf(img, mesh, interpolation="bad")
 
 
-def test_vol_to_surf_file_freesurfer(tmp_path):
-    # Applies to freesurfer files (.orig, .pial, .white, .sphere, or .inflated)
-    template = datasets.load_mni152_template(resolution=2)
-    mesh = generate_surf()
-    for suff in ['.pial', '.inflated', '.white', '.orig', '.sphere']:
-        fd, filename_fs_mesh = tempfile.mkstemp(suffix=suff,
-                                                dir=str(tmp_path))
-        os.close(fd)
-        nb.freesurfer.write_geometry(filename_fs_mesh, mesh[0], mesh[1])
-        surf_file = filename_fs_mesh
-        mesh = surface.load_surf_mesh(surf_file)
-        mapped = surface.vol_to_surf(template, mesh)
-        normalized = (mapped - min(mapped)) / (max(mapped) - min(mapped))
-        assert np.var(normalized) < 0.02
-        os.remove(filename_fs_mesh)
-
-
 def test_masked_indices():
     mask = np.ones((4, 3, 8))
     mask[:, :, ::2] = 0
