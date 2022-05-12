@@ -165,7 +165,7 @@ def test_t_score_with_covars_and_normalized_design_nocovar(random_state=0):
     """Test t-scores computation without covariates."""
     rng = check_random_state(random_state)
 
-    ### Normalized data
+    # Normalized data
     n_samples = 50
 
     # generate data
@@ -185,7 +185,7 @@ def test_t_score_with_covars_and_normalized_design_withcovar(random_state=0):
     """Test t-scores computation with covariates."""
     rng = check_random_state(random_state)
 
-    ### Normalized data
+    # Normalized data
     n_samples = 50
 
     # generate data
