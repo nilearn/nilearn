@@ -1237,9 +1237,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
         Default=True.
 
     """
-    node_values = np.array(node_values)
-    if node_values.ndim > 1:
-        node_values = np.squeeze(node_values)
+    node_values = np.array(node_values).flatten()
     node_coords = np.array(node_coords)
 
     # Validate node_values
