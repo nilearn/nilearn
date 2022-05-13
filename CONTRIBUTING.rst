@@ -184,10 +184,13 @@ with the tools we use for development and deployment.
 |                    |               | - Variables, functions, arguments have clear names  |
 |                    |               | - Easy to read, PEP8_ compliant                     |
 |                    |               | - Public functions have docstring (numpydoc_ format)|
-|   `Coding Style`_  |    Any        | - Low redundancy                                    |
-|                    |               | - No new dependency                                 |
+|                    |               | - Low redundancy                                    |
+|   `Coding Style`_  |    Any        | - No new dependency                                 |
 |                    |               | - Backward compatibility                            |
 |                    |               | - All internal imports are absolute, not relative   |
+|                    |               | - Impacted docstrings have versionadded and/or      |
+|                    |               |   versionchanged directives as needed.              |
+|                    |               |   These should use the current dev version.         |
 +--------------------+---------------+-----------------------------------------------------+
 |                    |               | - Test type is adapted to function behavior         |
 |                    |               | - Tests pass continuous integration                 |
@@ -234,26 +237,44 @@ maintenance changes.
 Coding Style
 -------------
 
-Nilearn codebase follow PEP8_ styling.
-The main conventions we enforce are : line length < 80, spaces around operators,
-meaningful variable names, function names are underscore separated
-(e.g., ``a_nice_function``) and as short as possible,
-public functions exposed in their parent module's init file,
-private function names preceded with a "_" and very explicit,
-classes in CamelCase, 2 empty lines between functions or classes.
-Each function and class must come with a “docstring” at the top of the function
-code, using numpydoc_ formatting.
-They must summarize what the function does and document every parameter.
+The nilearn codebase follows PEP8_ styling.
+The main conventions we enforce are :
 
+- line length < 80
+- spaces around operators
+- meaningful variable names
+- function names are underscore separated (e.g., ``a_nice_function``) and as short as possible
+- public functions exposed in their parent module's init file
+- private function names preceded with a "_" and very explicit
+- classes in CamelCase
+- 2 empty lines between functions or classes
+
+Each function and class must come with a “docstring” at the top of the function code,
+using numpydoc_ formatting.
+The docstring must summarize what the function does and document every parameter.
+
+Additionally, we consider it best practice to write modular functions;
+i.e., functions should preferably be relatively short and do *one* thing.
+This is also useful for writing unit tests.
+
+Writing small functions is not always possible, and we do not recommend trying to reorganize larger,
+but well-tested, older functions in the codebase, unless there is a strong reason to do so (e.g., when adding a new feature).
 
 Tests
 ------
 
 When fixing a bug, the first step is to write a minimal test that fails because
 of it, and then write the bugfix to make this test pass.
-For new code you should have roughly one test_function per function covering
+For new code you should have roughly one test function per function covering
 every line and testing the logic of the function.
 They should run on small mocked data, cover a representative range of parameters.
+
+.. hint::
+
+      It is easier to write good unit tests for short, self-contained functions.
+      Try to keep this in mind when you write new functions.
+      For more information about this coding approach,
+      see `test-driven development <https://en.wikipedia.org/wiki/Test-driven_development>`_.
 
 Tests must be seeded to avoid random failures.
 For objects using random seeds (e.g. scikit-learn estimators), pass either
@@ -316,13 +337,13 @@ Here are the key steps you need to go through to copy the repo before contributi
 
 3. install the forked version of `nilearn`::
 
-      pip install . -e
+      pip install -e '.[dev]'
 
-4. install development dependencies::
+This installs your local version of Nilearn, along with all dependencies necessary for developers (hence the ``[dev]`` tag).
+For more information about the dependency installation options, see ``setup.cfg``.
+The installed version will also reflect any changes you make to your code.
 
-      pip install -r requirements-dev.txt
-
-5. check that all tests pass with (this can take a while)::
+4. check that all tests pass with (this can take a while)::
 
       pytest nilearn
 
@@ -365,7 +386,7 @@ If you wish to build documentation:
 1. First, ensure that you have installed sphinx and sphinx-gallery. When in your
    fork top folder, you can install the required packages using::
 
-      pip install -r requirements-build-docs.txt
+      pip install '.[doc]'
 
 2. Then go to ``nilearn/examples`` or ``nilearn/doc`` and make needed changes
    using `reStructuredText files <https://www.sphinx-doc.org/en/2.0/usage/restructuredtext/basics.html>`_

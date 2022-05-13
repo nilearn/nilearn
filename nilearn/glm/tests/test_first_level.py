@@ -826,7 +826,7 @@ def test_get_voxelwise_attributes_should_return_as_many_as_design_matrices(shape
     model.fit(fmri_data, design_matrices=design_matrices)
 
     # Check that length of outputs is the same as the number of design matrices
-    assert len(model._get_voxelwise_model_attribute("resid", True)) == \
+    assert len(model._get_voxelwise_model_attribute("residuals", True)) == \
            len(shapes)
 
 
@@ -889,3 +889,19 @@ def test_first_level_hrf_model(hrf_model, spaces):
 
     columns = model.design_matrices_[0].columns
     model.compute_contrast(f"{columns[0]}-{columns[1]}")
+
+
+def test_glm_sample_mask():
+    """Ensure the sample mask is performing correctly in GLM."""
+    shapes, rk = [(10, 10, 10, 25)], 3
+    mask, fmri_data, design_matrix =\
+        generate_fake_fmri_data_and_design(shapes, rk)
+    model = FirstLevelModel(t_r=2.0,
+                            mask_img=mask,
+                            minimize_memory=False)
+    sample_mask = np.arange(25)[3:]  # censor the first three volumes
+    model.fit(fmri_data,
+              design_matrices=design_matrix,
+              sample_masks=sample_mask)
+    assert model.design_matrices_[0].shape[0] == 22
+    assert model.predicted[0].shape[-1] == 22

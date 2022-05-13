@@ -123,22 +123,6 @@ class OLSModel(object):
         self.df_model = matrix_rank(self.design, eps)
         self.df_residuals = self.df_total - self.df_model
 
-    @auto_attr
-    @_deprecation_warning('df_resid',
-                          'df_residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def df_resid(self):
-        return self.df_residuals
-
-    @auto_attr
-    @_deprecation_warning('wdesign',
-                          'whitened_design',
-                          '0.7.0',
-                          '0.9.0')
-    def wdesign(self):
-        return self.whitened_design
-
     def logL(self, beta, Y, nuisance=None):
         r'''Returns the value of the loglikelihood function at beta.
 
@@ -332,11 +316,7 @@ class RegressionResults(LikelihoodModelResults):
     It may change in any future release of Nilearn.
 
     """
-    @rename_parameters(
-        {'wresid': 'whitened_residuals', 'wY': 'whitened_Y'},
-        lib_name='Nilearn',
-        end_version='0.9.0',
-    )
+
     def __init__(self, theta, Y, model, whitened_Y, whitened_residuals,
                  cov=None, dispersion=1., nuisance=None):
         """See LikelihoodModelResults constructor.
@@ -352,51 +332,11 @@ class RegressionResults(LikelihoodModelResults):
         self.whitened_design = model.whitened_design
 
     @auto_attr
-    @_deprecation_warning('wdesign',
-                          'whitened_design',
-                          '0.7.0',
-                          '0.9.0')
-    def wdesign(self):
-        return self.whitened_design
-
-    @auto_attr
-    @_deprecation_warning('wY',
-                          'whitened_Y',
-                          '0.7.0',
-                          '0.9.0')
-    def wY(self):
-        return self.whitened_Y
-
-    @auto_attr
-    @_deprecation_warning('wresid',
-                          'whitened_residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def wresid(self):
-        return self.whitened_residuals
-
-    @auto_attr
-    @_deprecation_warning('resid',
-                          'residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def resid(self):
-        return self.residuals
-
-    @auto_attr
     def residuals(self):
         """
         Residuals from the fit.
         """
         return self.Y - self.predicted
-
-    @auto_attr
-    @_deprecation_warning('norm_resid',
-                          'normalized_residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def norm_resid(self):
-        return self.normalized_residuals
 
     @auto_attr
     def normalized_residuals(self):
@@ -485,33 +425,11 @@ class SimpleRegressionResults(LikelihoodModelResults):
         """
         raise ValueError('can not use this method for simple results')
 
-    @_deprecation_warning('resid',
-                          'residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def resid(self, Y):
-        return self.residuals(Y)
-
     def residuals(self, Y):
         """
         Residuals from the fit.
         """
         return Y - self.predicted
-
-    @auto_attr
-    @_deprecation_warning('df_resid',
-                          'df_residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def df_resid(self):
-        return self.df_residuals
-
-    @_deprecation_warning('norm_resid',
-                          'normalized_residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def norm_resid(self, Y):
-        return self.normalized_residuals(Y)
 
     def normalized_residuals(self, Y):
         """Residuals, normalized to have unit length.

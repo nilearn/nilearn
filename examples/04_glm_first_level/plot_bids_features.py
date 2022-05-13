@@ -36,10 +36,13 @@ To run this example, you must launch IPython via ``ipython
 # This dataset contains the necessary information to run a statistical analysis
 # using Nilearn. The dataset also contains statistical results from a previous
 # FSL analysis that we can employ for comparison with the Nilearn estimation.
-from nilearn.datasets import (fetch_openneuro_dataset_index,
-                              fetch_openneuro_dataset, select_from_index)
+from nilearn.datasets import (
+    fetch_ds000030_urls,
+    fetch_openneuro_dataset,
+    select_from_index,
+)
 
-_, urls = fetch_openneuro_dataset_index()
+_, urls = fetch_ds000030_urls()
 
 exclusion_patterns = ['*group*', '*phenotype*', '*mriqc*',
                       '*parameter_plots*', '*physio_plots*',

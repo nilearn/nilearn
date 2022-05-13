@@ -26,6 +26,21 @@
 	ABSTRACT={As the size of functional and structural MRI datasets expands, it becomes increasingly important to establish a baseline from which diagnostic relevance may be determined, a processing strategy that efficiently prepares data for analysis, and a statistical approach that identifies important effects in a manner that is both robust and reproducible. In this paper, we introduce a multivariate analytic approach that optimizes sensitivity and reduces unnecessary testing. We demonstrate the utility of this mega-analytic approach by identifying the effects of age and gender on the resting-state networks (RSNs) of 603 healthy adolescents and adults (mean age: 23.4 years, range: 12–71 years). Data were collected on the same scanner, preprocessed using an automated analysis pipeline based in SPM, and studied using group independent component analysis. RSNs were identified and evaluated in terms of three primary outcome measures: time course spectral power, spatial map intensity, and functional network connectivity. Results revealed robust effects of age on all three outcome measures, largely indicating decreases in network coherence and connectivity with increasing age. Gender effects were of smaller magnitude but suggested stronger intra-network connectivity in females and more inter-network connectivity in males, particularly with regard to sensorimotor networks. These findings, along with the analysis approach and statistical framework described here, provide a useful baseline for future investigations of brain networks in health and disease.}
 }
 
+@article{Anderson2001,
+    author = {Anderson, Marti J. and Robinson, John},
+    title = {Permutation Tests for Linear Models},
+    journal = {Australian \& New Zealand Journal of Statistics},
+    volume = {43},
+    number = {1},
+    pages = {75-88},
+    keywords = {asymptotics, partial correlations, power, resampling.},
+    doi = {https://doi.org/10.1111/1467-842X.00156},
+    url = {https://onlinelibrary.wiley.com/doi/abs/10.1111/1467-842X.00156},
+    eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1111/1467-842X.00156},
+    abstract = {Several approximate permutation tests have been proposed for tests of partial regression coefficients in a linear model based on sample partial correlations. This paper begins with an explanation and notation for an exact test. It then compares the distributions of the test statistics under the various permutation methods proposed, and shows that the partial correlations under permutation are asymptotically jointly normal with means 0 and variances 1. The method of Freedman \& Lane (1983) is found to have asymptotic correlation 1 with the exact test, and the other methods are found to have smaller correlations with this test. Under local alternatives the critical values of all the approximate permutation tests converge to the same constant, so they all have the same asymptotic power. Simulations demonstrate these theoretical results.},
+    year = {2001}
+}
+
 
 @INPROCEEDINGS{Baldassarre2012,
   author={Baldassarre, Luca and Mourao-Miranda, Janaina and Pontil, Massimiliano},
@@ -244,6 +259,24 @@
 }
 
 
+@book{Fisher:1935,
+    added-at = {2009-10-28T04:42:52.000+0100},
+    address = {Edinburgh},
+    author = {Fisher, R.A.},
+    biburl = {https://www.bibsonomy.org/bibtex/2848c0d82200028f9225bc3a62b773289/jwbowers},
+    date-added = {2007-09-03 22:45:16 -0500},
+    date-modified = {2007-09-03 22:45:16 -0500},
+    interhash = {9342665c9b607c072447f16c0b9127df},
+    intrahash = {848c0d82200028f9225bc3a62b773289},
+    journal = {Oliver \& Boyd Edinburgh, Scotland},
+    keywords = {imported},
+    publisher = {Oliver and Boyd},
+    timestamp = {2009-10-28T04:43:07.000+0100},
+    title = {{The design of experiments. 1935}},
+    year = 1935
+}
+
+
 @article{Fletcher2007,
 	title = {Riemannian geometry for the statistical analysis of diffusion tensor data},
 	journal = {Signal Processing},
@@ -259,6 +292,23 @@
 	keywords = {Diffusion tensor MRI, Statistics, Riemannian manifolds},
 	abstract = {The tensors produced by diffusion tensor magnetic resonance imaging (DT-MRI) represent the covariance in a Brownian motion model of water diffusion. Under this physical interpretation, diffusion tensors are required to be symmetric, positive-definite. However, current approaches to statistical analysis of diffusion tensor data, which treat the tensors as linear entities, do not take this positive-definite constraint into account. This difficulty is due to the fact that the space of diffusion tensors does not form a vector space. In this paper we show that the space of diffusion tensors is a type of curved manifold known as a Riemannian symmetric space. We then develop methods for producing statistics, namely averages and modes of variation, in this space. We show that these statistics preserve natural geometric properties of the tensors, including the constraint that their eigenvalues be positive. The symmetric space formulation also leads to a natural definition for interpolation of diffusion tensors and a new measure of anisotropy. We expect that these methods will be useful in the registration of diffusion tensor images, the production of statistical atlases from diffusion tensor data, and the quantification of the anatomical variability caused by disease. The framework presented in this paper should also be useful in other applications where symmetric, positive-definite tensors arise, such as mechanics and computer vision.}
 }
+
+
+@article{Freedman1983,
+    author = {David Freedman and David Lane},
+    title = {A Nonstochastic Interpretation of Reported Significance Levels},
+    journal = {Journal of Business \& Economic Statistics},
+    volume = {1},
+    number = {4},
+    pages = {292-298},
+    year  = {1983},
+    publisher = {Taylor & Francis},
+    doi = {10.1080/07350015.1983.10509354},
+    URL = {https://www.tandfonline.com/doi/abs/10.1080/07350015.1983.10509354},
+    eprint = {https://www.tandfonline.com/doi/pdf/10.1080/07350015.1983.10509354},
+    abstract = {Tests of significance are often made in situations where the standard assumptions underlying the probability calculations do not hold. As a result, the reported significance levels become difficult to interpret. This article sketches an alternative interpretation of a reported significance level, valid in considerable generality. This level locates the given data set within the spectrum of other data sets derived from the given one by an appropriate class of transformations. If the null hypothesis being tested holds, the derived data sets should be equivalent to the original one. Thus, a small reported significance level indicates an unusual data set. This development parallels that of randomization tests, but there is a crucial technical difference: our approach involves permuting observed residuals; the classical randomization approach involves permuting unobservable, or perhaps nonexistent, stochastic disturbance terms.}
+}
+
 
 @article{friston1994statistical,
 	author = {Friston, K. J. and Holmes, A. P. and Worsley, K. J. and Poline, J.-P. and Frith, C. D. and Frackowiak, R. S. J.},
@@ -781,6 +831,23 @@ The dominant view that perceptual learning is accompanied by changes in early se
 	abstract = {Although cognitive processes such as reading and calculation are associated with reproducible cerebral networks, inter-individual variability is considerable. Understanding the origins of this variability will require the elaboration of large multimodal databases compiling behavioral, anatomical, genetic and functional neuroimaging data over hundreds of subjects. With this goal in mind, we designed a simple and fast acquisition procedure based on a 5-minute functional magnetic resonance imaging (fMRI) sequence that can be run as easily and as systematically as an anatomical scan, and is therefore used in every subject undergoing fMRI in our laboratory. This protocol captures the cerebral bases of auditory and visual perception, motor actions, reading, language comprehension and mental calculation at an individual level.}
 }
 
+
+@article{poldrack_phenome-wide_2016,
+	title = {A phenome-wide examination of neural and cognitive function},
+	volume = {3},
+	issn = {2052-4463},
+	url = {https://doi.org/10.1038/sdata.2016.110},
+	doi = {10.1038/sdata.2016.110},
+	abstract = {This data descriptor outlines a shared neuroimaging dataset from the UCLA Consortium for Neuropsychiatric Phenomics, which focused on understanding the dimensional structure of memory and cognitive control (response inhibition) functions in both healthy individuals (130 subjects) and individuals with neuropsychiatric disorders including schizophrenia (50 subjects), bipolar disorder (49 subjects), and attention deficit/hyperactivity disorder (43 subjects). The dataset includes an extensive set of task-based fMRI assessments, resting fMRI, structural MRI, and high angular resolution diffusion MRI. The dataset is shared through the OpenfMRI project, and is formatted according to the Brain Imaging Data Structure (BIDS) standard.},
+	number = {1},
+	journal = {Scientific Data},
+	author = {Poldrack, R.A. and Congdon, E. and Triplett, W. and Gorgolewski, K.J. and Karlsgodt, K.H. and Mumford, J.A. and Sabb, F.W. and Freimer, N.B. and London, E.D. and Cannon, T.D. and Bilder, R.M.},
+	month = dec,
+	year = {2016},
+	pages = {160110},
+}
+
+
 @article{POWER2017150,
 	title = {A simple but useful way to assess fMRI scan qualities},
 	journal = {NeuroImage},
@@ -1062,6 +1129,22 @@ The dominant view that perceptual learning is accompanied by changes in early se
 	journal = {arXiv:1008.5071 [q-bio, stat]},
 	primaryclass = {q-bio, stat}
 }
+
+
+@article{Winkler2014,
+    title = {Permutation inference for the general linear model},
+    journal = {NeuroImage},
+    volume = {92},
+    pages = {381-397},
+    year = {2014},
+    issn = {1053-8119},
+    doi = {https://doi.org/10.1016/j.neuroimage.2014.01.060},
+    url = {https://www.sciencedirect.com/science/article/pii/S1053811914000913},
+    author = {Anderson M. Winkler and Gerard R. Ridgway and Matthew A. Webster and Stephen M. Smith and Thomas E. Nichols},
+    keywords = {Permutation inference, Multiple regression, General linear model, Randomise},
+    abstract = {Permutation methods can provide exact control of false positives and allow the use of non-standard statistics, making only weak assumptions about the data. With the availability of fast and inexpensive computing, their main limitation would be some lack of flexibility to work with arbitrary experimental designs. In this paper we report on results on approximate permutation methods that are more flexible with respect to the experimental design and nuisance variables, and conduct detailed simulations to identify the best method for settings that are typical for imaging research scenarios. We present a generic framework for permutation inference for complex general linear models (glms) when the errors are exchangeable and/or have a symmetric distribution, and show that, even in the presence of nuisance effects, these permutation inferences are powerful while providing excellent control of false positives in a wide range of common and relevant imaging research scenarios. We also demonstrate how the inference on glm parameters, originally intended for independent data, can be used in certain special but useful cases in which independence is violated. Detailed examples of common neuroimaging applications are provided, as well as a complete algorithm – the “randomise” algorithm – for permutation inference with the glm.}
+}
+
 
 @article{yarkoni2011large,
 	title={Large-scale automated synthesis of human functional neuroimaging data},

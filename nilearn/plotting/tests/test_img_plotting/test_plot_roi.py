@@ -26,7 +26,10 @@ def demo_plot_roi(**kwargs):
 @pytest.mark.parametrize('black_bg', [True, False])
 @pytest.mark.parametrize('threshold', [.5, .2])
 @pytest.mark.parametrize('alpha', [.7, .1])
-def test_plot_roi_view_types(view_type, black_bg, threshold, alpha):
+@pytest.mark.parametrize('display_mode,cut_coords', [("ortho", None), ("z", 3),
+                                                     ("x", [2., 10])])
+def test_plot_roi_view_types(view_type, black_bg, threshold, alpha,
+                             display_mode, cut_coords):
     """Smoke-test for plot_roi.
 
     Tests different combinations of parameters `view_type`, `black_bg`,
@@ -35,8 +38,13 @@ def test_plot_roi_view_types(view_type, black_bg, threshold, alpha):
     kwargs = dict()
     if view_type == 'contours':
         kwargs["linewidth"] = 2.
-    demo_plot_roi(view_type=view_type, black_bg=black_bg, threshold=threshold,
-                  alpha=alpha, **kwargs)
+    demo_plot_roi(view_type=view_type,
+                  black_bg=black_bg,
+                  threshold=threshold,
+                  alpha=alpha,
+                  display_mode=display_mode,
+                  cut_coords=cut_coords,
+                  **kwargs)
     plt.close()
 
 
