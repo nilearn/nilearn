@@ -406,7 +406,7 @@ def test_load_surf_data_file_glob(tmp_path):
         data2D[:, f] *= f
         darray = gifti.GiftiDataArray(data=data2D[:, f])
         gii = gifti.GiftiImage(darrays=[darray])
-        gifti.write(gii, fnames[f])
+        nb.save(gii, fnames[f])
 
     assert_array_equal(load_surf_data(
         os.path.join(os.path.dirname(fnames[0]), "glob*.gii")),
@@ -423,7 +423,7 @@ def test_load_surf_data_file_glob(tmp_path):
     darray2 = gifti.GiftiDataArray(data=np.ones((20, )))
     darray3 = gifti.GiftiDataArray(data=np.ones((20, )))
     gii = gifti.GiftiImage(darrays=[darray1, darray2, darray3])
-    gifti.write(gii, fnames[-1])
+    nb.save(gii, fnames[-1])
 
     data2D = np.concatenate((data2D, np.ones((20, 3))), axis=1)
     assert_array_equal(load_surf_data(os.path.join(os.path.dirname(fnames[0]),
@@ -437,7 +437,7 @@ def test_load_surf_data_file_glob(tmp_path):
     fnames.append(filename)
     darray = gifti.GiftiDataArray(data=np.ones((15, 1)))
     gii = gifti.GiftiImage(darrays=[darray])
-    gifti.write(gii, fnames[-1])
+    nb.save(gii, fnames[-1])
 
     with pytest.raises(ValueError,
                        match='files must contain data with the same shape'
