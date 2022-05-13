@@ -1238,6 +1238,8 @@ def plot_markers(node_values, node_coords, node_size='auto',
 
     """
     node_values = np.array(node_values)
+    if node_values.ndim > 1:
+        node_values = np.squeeze(node_values)
     node_coords = np.array(node_coords)
 
     # Validate node_values
