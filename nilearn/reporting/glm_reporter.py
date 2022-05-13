@@ -498,7 +498,7 @@ def _model_attributes_to_dataframe(model):
     return model_attributes
 
 
-def _make_stat_maps(model, contrasts, output_type="z_score"):
+def _make_stat_maps(model, contrasts, output_type='z_score'):
     """Given a model and contrasts, return the corresponding z-maps
 
     Parameters
@@ -512,6 +512,12 @@ def _make_stat_maps(model, contrasts, output_type="z_score"):
         (nilearn.glm.first_level.FirstLevelModel.compute_contrast)
         & second_level_contrast for a SecondLevelModel
         (nilearn.glm.second_level.SecondLevelModel.compute_contrast)
+
+    output_type : :obj:`str`, optional
+        The type of statistical map to retain from the contrast.
+        Default is 'z_score'.
+
+        .. versionadded:: 0.9.2dev
 
     Returns
     -------

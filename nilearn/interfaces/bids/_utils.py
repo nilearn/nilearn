@@ -8,6 +8,8 @@ import nilearn
 def _clean_contrast_name(contrast_name):
     """Remove prohibited characters from name and convert to camelCase.
 
+    .. versionadded:: 0.9.2dev
+
     BIDS filenames, in which the contrast name will appear as a
     contrast-<name> key/value pair, must be alphanumeric strings.
 
@@ -50,7 +52,18 @@ def _clean_contrast_name(contrast_name):
 
 
 def _generate_model_metadata(out_file, model):
-    """Generate a sidecar JSON file containing model metadata."""
+    """Generate a sidecar JSON file containing model metadata.
+
+    .. versionadded:: 0.9.2dev
+
+    Parameters
+    ----------
+    out_file : :obj:`str`
+        Output JSON filename, to be created by the function.
+    model : :obj:`~nilearn.glm.first_level.FirstLevelModel` or
+            :obj:`~nilearn.glm.second_level.SecondLevelModel`
+        First- or second-level model from which to save outputs.
+    """
     # Define which FirstLevelModel attributes are BIDS compliant and which
     # should be bundled in a new "ModelParameters" field.
     DATA_ATTRIBUTES = [
@@ -108,7 +121,18 @@ def _generate_model_metadata(out_file, model):
 
 
 def _generate_dataset_description(out_file, model_level):
-    """Generate a BIDS dataset_description.json file with relevant metadata."""
+    """Generate a BIDS dataset_description.json file with relevant metadata.
+
+    .. versionadded:: 0.9.2dev
+
+    Parameters
+    ----------
+    out_file : :obj:`str`
+        Output JSON filename, to be created by the function.
+    model_level : {1, 2}
+        The level of the model. 1 means a first-level model.
+        2 means a second-level model.
+    """
     dataset_description = {
         'GeneratedBy': {
             'Name': 'nilearn',

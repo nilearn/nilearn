@@ -19,6 +19,8 @@ def save_glm_to_bids(
 ):
     """Save GLM results to BIDS-like files.
 
+    .. versionadded:: 0.9.2dev
+
     Parameters
     ----------
     model : :obj:`~nilearn.glm.first_level.FirstLevelModel` or
@@ -63,18 +65,20 @@ def save_glm_to_bids(
     Notes
     -----
     This function writes files for the following:
-    - Modeling software information (dataset_description.json)
-    - Model-level metadata (statmap.json)
-    - Model design matrix (design.tsv)
-    - Model design matrix figure (design.svg)
-    - Model error (stat-errorts_statmap.nii.gz)
-    - Model r-squared (stat-rSquare_statmap.nii.gz)
-    - Contrast parameter estimates (contrast-[name]_stat-effect_statmap.nii.gz)
-    - Variance of the contrast parameter estimates
-      (contrast-[name]_stat-variance_statmap.nii.gz)
-    - Contrast test statistics (contrast-[name]_stat-[F|t]_statmap.nii.gz)
-    - Contrast p- and z-values (contrast-[name]_stat-[p|z]_statmap.nii.gz)
-    - Contrast weights figure (contrast-[name]_design.svg)
+
+    -   Modeling software information (dataset_description.json)
+    -   Model-level metadata (statmap.json)
+    -   Model design matrix (design.tsv)
+    -   Model design matrix figure (design.svg)
+    -   Model error (stat-errorts_statmap.nii.gz)
+    -   Model r-squared (stat-rSquare_statmap.nii.gz)
+    -   Contrast parameter estimates
+        (contrast-[name]_stat-effect_statmap.nii.gz)
+    -   Variance of the contrast parameter estimates
+        (contrast-[name]_stat-variance_statmap.nii.gz)
+    -   Contrast test statistics (contrast-[name]_stat-[F|t]_statmap.nii.gz)
+    -   Contrast p- and z-values (contrast-[name]_stat-[p|z]_statmap.nii.gz)
+    -   Contrast weights figure (contrast-[name]_design.svg)
     """
     # Import here to avoid circular imports
     from nilearn import glm
