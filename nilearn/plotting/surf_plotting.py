@@ -2,6 +2,7 @@
 Functions for surface visualization.
 """
 import itertools
+import collections
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -446,7 +447,12 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
     limits = [coords.min(), coords.max()]
 
     # set view
-    elev, azim = _set_view_plot_surf_matplotlib(hemi, view)
+    if isinstance(view, str):
+        elev, azim = _set_view_plot_surf_matplotlib(hemi, view)
+    elif isinstance(view, collections.Sequence) and len(view) == 2:
+        elev, azim = view
+    else:
+        raise TypeError(f"view must be a string of a sequence of length 2. Got {view} instead")
 
     # if no cmap is given, set to matplotlib default
     if cmap is None:
