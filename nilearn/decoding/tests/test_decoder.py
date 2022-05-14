@@ -290,7 +290,8 @@ def test_decoder_dummy_classifier():
                     scoring=None)
     assert model.scoring is None
     model.fit(X, y)
-    assert model.scorer_ == get_scorer("accuracy")
+    assert model.scorer_._score_func == get_scorer("accuracy")._score_func
+    assert model.scorer_._sign == get_scorer("accuracy")._sign
     assert model.score(X, y) > 0.5
 
 
