@@ -37,7 +37,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         See http://nilearn.github.io/manipulating_images/input_output.html
         Mask to apply to regions before extracting signals.
 
-    smoothing_fwhm: float, optional
+    %(smoothing_fwhm)s
         If smoothing_fwhm is not None, it gives the full-width-at-half-maximum
         in millimeters of the spatial smoothing to apply to the signal.
 
