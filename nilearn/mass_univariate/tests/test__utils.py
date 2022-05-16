@@ -3,9 +3,14 @@ import math
 
 import numpy as np
 import pytest
+from numpy.testing import assert_array_almost_equal
 from scipy import ndimage
+from sklearn.utils import check_random_state
 
 from nilearn.mass_univariate import _utils
+from nilearn.mass_univariate.tests.utils import (
+    get_tvalue_with_alternative_library,
+)
 
 
 def test__calculate_tfce():
@@ -209,3 +214,50 @@ def test_calculate_cluster_measures():
     )
     assert test_size[0] == true_size
     assert test_mass[0] == true_mass
+
+
+def test_t_score_with_covars_and_normalized_design_nocovar(random_state=0):
+    """Test t-scores computation without covariates."""
+    rng = check_random_state(random_state)
+
+    # Normalized data
+    n_samples = 50
+
+    # generate data
+    var1 = np.ones((n_samples, 1)) / np.sqrt(n_samples)
+    var2 = rng.randn(n_samples, 1)
+    var2 = var2 / np.sqrt(np.sum(var2 ** 2, 0))  # normalize
+
+    # compute t-scores with nilearn routine
+    t_val_own = _utils._t_score_with_covars_and_normalized_design(var1, var2)
+
+    # compute t-scores with linalg or statsmodels
+    t_val_alt = get_tvalue_with_alternative_library(var1, var2)
+    assert_array_almost_equal(t_val_own, t_val_alt)
+
+
+def test_t_score_with_covars_and_normalized_design_withcovar(random_state=0):
+    """Test t-scores computation with covariates."""
+    rng = check_random_state(random_state)
+
+    # Normalized data
+    n_samples = 50
+
+    # generate data
+    var1 = np.ones((n_samples, 1)) / np.sqrt(n_samples)  # normalized
+    var2 = rng.randn(n_samples, 1)
+    var2 = var2 / np.sqrt(np.sum(var2 ** 2, 0))  # normalize
+    covars = np.eye(n_samples, 3)  # covars is orthogonal
+    covars[3] = -1  # covars is orthogonal to var1
+    covars = _utils._orthonormalize_matrix(covars)
+
+    # nilearn t-score
+    own_score = _utils._t_score_with_covars_and_normalized_design(
+        var1,
+        var2,
+        covars,
+    )
+
+    # compute t-scores with linalg or statmodels
+    ref_score = get_tvalue_with_alternative_library(var1, var2, covars)
+    assert_array_almost_equal(own_score, ref_score)
