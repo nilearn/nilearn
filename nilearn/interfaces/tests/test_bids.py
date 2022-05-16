@@ -2,13 +2,18 @@
 import os
 
 import numpy as np
+import pandas as pd
+import pytest
+from nibabel import load
 from nibabel.tmpdirs import InTemporaryDirectory
 
 from nilearn.maskers import NiftiMasker
 from nilearn.glm.first_level import FirstLevelModel
+from nilearn.glm.second_level import SecondLevelModel
 from nilearn._utils.data_gen import (
     create_fake_bids_dataset,
     generate_fake_fmri_data_and_design,
+    write_fake_fmri_data_and_design,
 )
 from nilearn.interfaces.bids import (
     get_bids_files,
@@ -88,6 +93,8 @@ def test_save_glm_to_bids(tmp_path_factory):
     This test reuses code from
     nilearn.glm.tests.test_first_level.test_high_level_glm_one_session.
     """
+    tmpdir = tmp_path_factory.mktemp('test_save_glm_results')
+
     EXPECTED_FILENAMES = [
         'dataset_description.json',
         'sub-01_ses-01_task-nback_contrast-effectsOfInterest_design.svg',
@@ -117,8 +124,6 @@ def test_save_glm_to_bids(tmp_path_factory):
         'sub-01_ses-01_task-nback_stat-rSquare_statmap.nii.gz',
         'sub-01_ses-01_task-nback_statmap.json',
     ]
-
-    tmpdir = tmp_path_factory.mktemp('test_save_glm_results')
 
     shapes, rk = [(7, 8, 9, 15)], 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -155,3 +160,169 @@ def test_save_glm_to_bids(tmp_path_factory):
     for fname in EXPECTED_FILENAMES:
         full_filename = os.path.join(tmpdir, fname)
         assert os.path.isfile(full_filename)
+
+
+def test_save_glm_to_bids_contrast_definitions(tmp_path_factory):
+    """Test that save_glm_to_bids operates on different contrast definitions as
+    expected.
+
+    This test reuses code from
+    nilearn.glm.tests.test_first_level.test_high_level_glm_one_session.
+    """
+    tmpdir = tmp_path_factory.mktemp(
+        'test_save_glm_to_bids_contrast_definitions'
+    )
+
+    EXPECTED_FILENAMES = [
+        'dataset_description.json',
+        (
+            'sub-01_ses-01_task-nback_contrast-aaaMinusBbb'
+            '_stat-effect_statmap.nii.gz'
+        ),
+        'sub-01_ses-01_task-nback_contrast-aaaMinusBbb_stat-p_statmap.nii.gz',
+        'sub-01_ses-01_task-nback_contrast-aaaMinusBbb_stat-t_statmap.nii.gz',
+        (
+            'sub-01_ses-01_task-nback_contrast-aaaMinusBbb'
+            '_stat-variance_statmap.nii.gz'
+        ),
+        'sub-01_ses-01_task-nback_contrast-aaaMinusBbb_stat-z_statmap.nii.gz',
+        'sub-01_ses-01_task-nback_run-1_contrast-aaaMinusBbb_design.svg',
+        'sub-01_ses-01_task-nback_run-1_design.svg',
+        'sub-01_ses-01_task-nback_run-1_design.tsv',
+        'sub-01_ses-01_task-nback_run-2_contrast-aaaMinusBbb_design.svg',
+        'sub-01_ses-01_task-nback_run-2_design.svg',
+        'sub-01_ses-01_task-nback_run-2_design.tsv',
+        'sub-01_ses-01_task-nback_stat-errorts_statmap.nii.gz',
+        'sub-01_ses-01_task-nback_stat-rSquare_statmap.nii.gz',
+        'sub-01_ses-01_task-nback_statmap.json',
+    ]
+
+    # Create two runs of data
+    shapes, rk = [(7, 8, 9, 15), (7, 8, 9, 15)], 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes,
+        rk,
+    )
+    # Rename two conditions in design matrices
+    mapper = {
+        design_matrices[0].columns[0]: 'AAA',
+        design_matrices[0].columns[1]: 'BBB',
+    }
+    design_matrices[0] = design_matrices[0].rename(columns=mapper)
+    mapper = {
+        design_matrices[1].columns[0]: 'AAA',
+        design_matrices[1].columns[1]: 'BBB',
+    }
+    design_matrices[1] = design_matrices[1].rename(columns=mapper)
+
+    masker = NiftiMasker(mask)
+    masker.fit()
+
+    # Call with verbose (improve coverage)
+    single_session_model = FirstLevelModel(
+        mask_img=None,
+        minimize_memory=False,
+    ).fit(
+        fmri_data,
+        design_matrices=design_matrices,
+    )
+
+    # Contrast names must be strings
+    contrasts = {5: np.eye(rk)}
+    contrast_types = {5: 'F'}
+
+    with pytest.raises(ValueError):
+        save_glm_to_bids(
+            model=single_session_model,
+            contrasts=contrasts,
+            contrast_types=contrast_types,
+            out_dir=tmpdir,
+            prefix='sub-01_ses-01_task-nback'
+        )
+
+    # Contrast definitions must be strings, numpy arrays, or lists
+    contrasts = {'effects of interest': 5}
+    contrast_types = {'effects of interest': 'F'}
+
+    with pytest.raises(ValueError):
+        save_glm_to_bids(
+            model=single_session_model,
+            contrasts=contrasts,
+            contrast_types=contrast_types,
+            out_dir=tmpdir,
+            prefix='sub-01_ses-01_task-nback'
+        )
+
+    # Test string-based contrasts and undefined contrast types
+    contrasts = ['AAA - BBB']
+
+    save_glm_to_bids(
+        model=single_session_model,
+        contrasts=contrasts,
+        contrast_types=None,
+        out_dir=tmpdir,
+        prefix='sub-01_ses-01_task-nback'
+    )
+
+    for fname in EXPECTED_FILENAMES:
+        full_filename = os.path.join(tmpdir, fname)
+        assert os.path.isfile(full_filename)
+
+
+def test_save_glm_to_bids_second_level(tmp_path_factory):
+    """Test save_glm_to_bids on a SecondLevelModel.
+
+    This test reuses code from
+    nilearn.glm.tests.test_second_level.test_high_level_glm_with_paths.
+    """
+    tmpdir = tmp_path_factory.mktemp('test_save_glm_to_bids_second_level')
+
+    EXPECTED_FILENAMES = [
+        'dataset_description.json',
+        'task-nback_contrast-effectsOfInterest_design.svg',
+        'task-nback_contrast-effectsOfInterest_stat-F_statmap.nii.gz',
+        'task-nback_contrast-effectsOfInterest_stat-effect_statmap.nii.gz',
+        'task-nback_contrast-effectsOfInterest_stat-p_statmap.nii.gz',
+        'task-nback_contrast-effectsOfInterest_stat-variance_statmap.nii.gz',
+        'task-nback_contrast-effectsOfInterest_stat-z_statmap.nii.gz',
+        'task-nback_design.svg',
+        'task-nback_design.tsv',
+        'task-nback_stat-errorts_statmap.nii.gz',
+        'task-nback_stat-rSquare_statmap.nii.gz',
+        'task-nback_statmap.json',
+    ]
+
+    with InTemporaryDirectory():
+        shapes = ((7, 8, 9, 1),)
+        mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
+        FUNCFILE = FUNCFILE[0]
+        func_img = load(FUNCFILE)
+
+        # Ordinary Least Squares case
+        model = SecondLevelModel(mask_img=mask, minimize_memory=False)
+
+        # fit model
+        Y = [func_img] * 4
+        X = pd.DataFrame([[1]] * 4, columns=['intercept'])
+        model = model.fit(Y, design_matrix=X)
+
+        contrasts = {
+            'effects of interest': np.eye(
+                len(model.design_matrix_.columns)
+            )[0],
+        }
+        contrast_types = {
+            'effects of interest': 'F',
+        }
+
+        save_glm_to_bids(
+            model=model,
+            contrasts=contrasts,
+            contrast_types=contrast_types,
+            out_dir=tmpdir,
+            prefix='task-nback'
+        )
+
+        for fname in EXPECTED_FILENAMES:
+            full_filename = os.path.join(tmpdir, fname)
+            assert os.path.isfile(full_filename)
