@@ -8,6 +8,7 @@
 NEW
 ---
 
+- :func:`~interfaces.bids.glm.save_glm_to_bids` has been added, which writes model outputs to disk according to BIDS convention.
 - :func:`~mass_univariate.permuted_ols` and :func:`~glm.second_level.non_parametric_inference` now support cluster-level Family-wise error correction (:gh:`3181` by `Taylor Salo`_).
 
 Fixes
