@@ -4,8 +4,8 @@ import math
 import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal
-from scipy import ndimage
 from sklearn.utils import check_random_state
+from scipy.ndimage import generate_binary_structure
 
 from nilearn.mass_univariate import _utils
 from nilearn.mass_univariate.tests.utils import (
@@ -85,7 +85,7 @@ def test_null_to_p_array():
 def test_calculate_cluster_measures():
     """Test _calculate_cluster_measures."""
     threshold = 0.001
-    bin_struct = ndimage.generate_binary_structure(3, 1)
+    bin_struct = generate_binary_structure(3, 1)
 
     test_arr4d = np.zeros((10, 10, 10, 1))
     test_arr4d[:2, :2, :2, 0] = 5  # 8-voxel cluster, high intensity
@@ -120,7 +120,7 @@ def test_calculate_cluster_measures():
     assert test_mass[0] == true_mass
 
     # Two-sided test with edge connectivity
-    bin_struct = ndimage.generate_binary_structure(3, 2)
+    bin_struct = generate_binary_structure(3, 2)
 
     true_size = 28  # should include edge-connected single voxel cluster
     true_mass = 79.992  # (8 vox * 5 intensity) - (8 vox * 0.001 thresh)
@@ -134,7 +134,7 @@ def test_calculate_cluster_measures():
     assert test_mass[0] == true_mass
 
     # Two-sided test with corner connectivity
-    bin_struct = ndimage.generate_binary_structure(3, 3)
+    bin_struct = generate_binary_structure(3, 3)
 
     true_size = 29  # should include corner-connected single voxel cluster
     true_mass = 79.992  # (8 vox * 5 intensity) - (8 vox * 0.001 thresh)

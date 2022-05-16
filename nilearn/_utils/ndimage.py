@@ -5,7 +5,7 @@ N-dimensional image manipulation
 # License: simplified BSD
 
 import numpy as np
-from scipy import ndimage
+from scipy.ndimage import label, maximum_filter
 ###############################################################################
 # Operating on connected components
 ###############################################################################
@@ -48,7 +48,7 @@ def largest_connected_component(volume):
 
     # We use asarray to be able to work with masked arrays.
     volume = np.asarray(volume)
-    labels, label_nb = ndimage.label(volume)
+    labels, label_nb = label(volume)
     if not label_nb:
         raise ValueError('No non-zero values: no connected components')
     if label_nb == 1:
@@ -131,7 +131,7 @@ def _peak_local_max(image, min_distance=10, threshold_abs=0, threshold_rel=0.1,
     image = image.copy()
 
     size = 2 * min_distance + 1
-    image_max = ndimage.maximum_filter(image, size=size, mode='constant')
+    image_max = maximum_filter(image, size=size, mode='constant')
 
     mask = (image == image_max)
     image *= mask
