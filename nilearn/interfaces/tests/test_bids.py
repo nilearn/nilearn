@@ -269,14 +269,12 @@ def test_save_glm_to_bids_contrast_definitions(tmp_path_factory):
         assert os.path.isfile(full_filename)
 
 
-def test_save_glm_to_bids_second_level(tmp_path_factory):
+def test_save_glm_to_bids_second_level():
     """Test save_glm_to_bids on a SecondLevelModel.
 
     This test reuses code from
     nilearn.glm.tests.test_second_level.test_high_level_glm_with_paths.
     """
-    tmpdir = tmp_path_factory.mktemp('test_save_glm_to_bids_second_level')
-
     EXPECTED_FILENAMES = [
         'dataset_description.json',
         'task-nback_contrast-effectsOfInterest_design.svg',
@@ -319,10 +317,9 @@ def test_save_glm_to_bids_second_level(tmp_path_factory):
             model=model,
             contrasts=contrasts,
             contrast_types=contrast_types,
-            out_dir=tmpdir,
+            out_dir='.',
             prefix='task-nback'
         )
 
         for fname in EXPECTED_FILENAMES:
-            full_filename = os.path.join(tmpdir, fname)
-            assert os.path.isfile(full_filename)
+            assert os.path.isfile(fname)
