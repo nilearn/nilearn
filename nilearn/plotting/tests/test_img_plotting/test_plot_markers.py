@@ -151,6 +151,7 @@ def test_plot_markers_threshold_errors(coords):
                        match="Provided 'node_threshold' value"):
         plot_markers([1, 2, 2, 4], coords, node_threshold=5, display_mode='x')
 
+
 def test_plot_markers_single_node_value():
     """Regression test for Issue #3253."""
     plot_markers([1], [[1, 1, 1]])
