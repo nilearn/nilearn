@@ -16,6 +16,7 @@ from sklearn.utils import check_random_state
 
 from nilearn.mass_univariate._utils import (
     _calculate_cluster_measures,
+    _calculate_tfce,
     _normalize_matrix_on_axis,
     _null_to_p,
     _orthonormalize_matrix,
