@@ -97,11 +97,11 @@ def test_downloader(tmp_path, request_mocker):
 
     # To test this feature, we do as follow:
     # - create the data dir with a file that has a specific content
-    # - try to download the dataset but make it fail on purpose (by requesting a
-    #   file that is not in the archive)
+    # - try to download the dataset but make it fail
+    #   on purpose (by requesting a file that is not in the archive)
     # - check that the previously created file is untouched :
-    #   - if sandboxing is faulty, the file would be replaced by the file of the
-    #     archive
+    #   - if sandboxing is faulty, the file would be replaced
+    #     by the file of the archive
     #   - if sandboxing works, the file must be untouched.
 
     local_archive = Path(
@@ -137,117 +137,133 @@ def test_downloader(tmp_path, request_mocker):
     # Now, we use the regular downloading feature. This will override the dummy
     # file created before.
 
-    atlas.fetch_atlas_craddock_2012(data_dir=str(tmp_path))
+    atlas.fetch_atlas_craddock_2012(data_dir=tmp_path)
     with dummy_file.open() as f:
         stuff = f.read()
     assert stuff == ''
 
 
-def test_fail_fetch_atlas_harvard_oxford(tmp_path, request_mocker):
+def test_fetch_atlas_source(tmp_path, request_mocker):
+
+    # specify non-existing atlas source
+    with pytest.raises(ValueError, match='Atlas source'):
+        atlas._get_atlas_data_and_labels('new_source', 'not_inside')
+
+
+def _write_sample_atlas_metadata(ho_dir, filename, is_symm):
+    with open(os.path.join(ho_dir, filename + '.xml'), 'w') as dm:
+        if(not is_symm):
+            dm.write("<?xml version='1.0' encoding='us-ascii'?>\n"
+                     "<data>\n"
+                     '<label index="0" x="48" y="94" z="35">R1</label>\n'
+                     '<label index="1" x="25" y="70" z="32">R2</label>\n'
+                     '<label index="2" x="33" y="73" z="63">R3</label>\n'
+                     "</data>")
+        else:
+            dm.write("<?xml version='1.0' encoding='us-ascii'?>\n"
+                     "<data>\n"
+                     '<label index="0" x="63" y="86" z="49">Left R1</label>\n'
+                     '<label index="1" x="21" y="86" z="33">Right R1</label>\n'
+                     '<label index="2" x="64" y="69" z="32">Left R2</label>\n'
+                     '<label index="3" x="26" y="70" z="32">Right R2</label>\n'
+                     '<label index="4" x="47" y="75" z="66">Left R3</label>\n'
+                     '<label index="5" x="43" y="80" z="61">Right R3</label>\n'
+                     "</data>")
+        dm.close()
+
+
+def _test_atlas_instance_should_match_data(atlas, is_symm):
+    assert Path(atlas.filename).exists() and Path(atlas.filename).is_absolute()
+    assert isinstance(atlas.maps, nibabel.Nifti1Image)
+    assert isinstance(atlas.labels, list)
+
+    expected_atlas_labels = (
+        ["Background", "Left R1", "Right R1", "Left R2",
+         "Right R2", "Left R3", "Right R3"]
+        if is_symm
+        else ["Background", "R1", "R2", "R3"]
+    )
+    assert atlas.labels == expected_atlas_labels
+
+
+@pytest.fixture
+def fsl_fetcher(name):
+    if name == "Juelich":
+        return atlas.fetch_atlas_juelich
+    return atlas.fetch_atlas_harvard_oxford
+
+
+@pytest.mark.parametrize('name,prob',
+                         [("HarvardOxford", "cortl-prob-1mm"),
+                          ("Juelich", "prob-1mm")])
+def test_fetch_atlas_fsl_errors(name, prob, fsl_fetcher,
+                                tmp_path, request_mocker):
     # specify non-existing atlas item
     with pytest.raises(ValueError, match='Invalid atlas name'):
-        atlas.fetch_atlas_harvard_oxford('not_inside')
+        fsl_fetcher('not_inside')
+    # Choose a probabilistic atlas with symmetric split
+    with pytest.raises(ValueError, match='Region splitting'):
+        fsl_fetcher(prob, data_dir=str(tmp_path), symmetric_split=True)
 
-    # specify existing atlas item
-    target_atlas = 'cort-maxprob-thr0-1mm'
-    target_atlas_fname = 'HarvardOxford-' + target_atlas + '.nii.gz'
-    ho_dir = str(tmp_path / 'fsl' / 'data' / 'atlases')
-    os.makedirs(ho_dir)
-    nifti_dir = os.path.join(ho_dir, 'HarvardOxford')
-    os.makedirs(nifti_dir)
 
-    target_atlas_nii = os.path.join(nifti_dir, target_atlas_fname)
-
+@pytest.fixture
+def atlas_data():
     # Create false atlas
     atlas_data = np.zeros((10, 10, 10), dtype=int)
-
     # Create an interhemispheric map
     atlas_data[:, :2, :] = 1
-
     # Create a left map
-    atlas_data[:5, 3:5, :] = 2
-
-    # Create a right map, with one voxel on the left side
     atlas_data[5:, 7:9, :] = 3
+    atlas_data[5:, 3, :] = 2
+    # Create a right map, with one voxel on the left side
+    atlas_data[:5:, 3:5, :] = 2
+    atlas_data[:5, 8, :] = 3
     atlas_data[4, 7, 0] = 3
+    return atlas_data
 
+
+@pytest.mark.parametrize('name,label_fname,fname,is_symm,split',
+                         [("HarvardOxford", "-Cortical",
+                           "cort-prob-1mm", False, False),
+                          ("HarvardOxford", "-Subcortical",
+                           "sub-maxprob-thr0-1mm", False, True),
+                          ("HarvardOxford", "-Cortical-Lateralized",
+                           "cortl-maxprob-thr0-1mm", True, True),
+                          ("Juelich", "", "prob-1mm", False, False),
+                          ("Juelich", "", "maxprob-thr0-1mm", False, False),
+                          ("Juelich", "", "maxprob-thr0-1mm", False, True)])
+def test_fetch_atlas_fsl(name, label_fname, fname, is_symm, split,
+                         atlas_data, fsl_fetcher, tmp_path, request_mocker):
+    # Create directory which will contain fake atlas data
+    atlas_dir = tmp_path / 'fsl' / 'data' / 'atlases'
+    nifti_dir = atlas_dir / name
+    nifti_dir.mkdir(parents=True)
+    # Write labels and sample atlas image in directory
+    _write_sample_atlas_metadata(
+        atlas_dir,
+        f"{name}{label_fname}",
+        is_symm=is_symm,
+    )
+    target_atlas_nii = nifti_dir / f'{name}-{fname}.nii.gz'
     nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
         target_atlas_nii)
-
-    dummy = open(os.path.join(ho_dir, 'HarvardOxford-Cortical.xml'), 'w')
-    dummy.write("<?xml version='1.0' encoding='us-ascii'?>\n"
-                "<data>\n"
-                '<label index="0" x="48" y="94" z="35">R1</label>\n'
-                '<label index="1" x="25" y="70" z="32">R2</label>\n'
-                '<label index="2" x="33" y="73" z="63">R3</label>\n'
-                "</data>")
-    dummy.close()
-
-    # when symmetric_split=False (by default), then atlas fetcher should
-    # have maps as string and n_labels=4 with background. Since, we relay on xml
-    # file to retrieve labels.
-    ho_wo_symm = atlas.fetch_atlas_harvard_oxford(target_atlas,
-                                                  data_dir=str(tmp_path))
-    assert isinstance(ho_wo_symm.maps, str)
-    assert isinstance(ho_wo_symm.labels, list)
-    assert ho_wo_symm.labels[0] == "Background"
-    assert ho_wo_symm.labels[1] == "R1"
-    assert ho_wo_symm.labels[2] == "R2"
-    assert ho_wo_symm.labels[3] == "R3"
-
-    # This section tests with lateralized version. In other words,
-    # symmetric_split=True
-
-    # Dummy xml file for lateralized control of cortical atlas images
-    # shipped with FSL 5.0. Atlases are already lateralized in this version
-    # for cortical type atlases denoted with maxprob but not full prob and but
-    # not also with subcortical.
-
-    # So, we test the fetcher with symmetric_split=True by creating a new
-    # dummy local file and fetch them and test the output variables
-    # accordingly.
-    dummy2 = open(os.path.join(ho_dir, 'HarvardOxford-Cortical-Lateralized.xml'), 'w')
-    dummy2.write("<?xml version='1.0' encoding='us-ascii'?>\n"
-                 "<data>\n"
-                 '<label index="0" x="63" y="86" z="49">Left R1</label>\n'
-                 '<label index="1" x="21" y="86" z="33">Right R1</label>\n'
-                 '<label index="2" x="64" y="69" z="32">Left R2</label>\n'
-                 '<label index="3" x="26" y="70" z="32">Right R2</label>\n'
-                 '<label index="4" x="47" y="75" z="66">Left R3</label>\n'
-                 '<label index="5" x="43" y="80" z="61">Right R3</label>\n'
-                 "</data>")
-    dummy2.close()
-
-    # Here, with symmetric_split=True, atlas maps are returned as nibabel Nifti
-    # image but not string. Now, with symmetric split number of labels should be
-    # more than without split and contain Left and Right tags in the labels.
-
-    # Create dummy image files too with cortl specified for symmetric split.
-    split_atlas_fname = 'HarvardOxford-' + 'cortl-maxprob-thr0-1mm' + '.nii.gz'
-    nifti_target_split = os.path.join(nifti_dir, split_atlas_fname)
-    nibabel.Nifti1Image(atlas_data, np.eye(4) * 3).to_filename(
-        nifti_target_split)
-    ho = atlas.fetch_atlas_harvard_oxford(target_atlas,
-                                          data_dir=str(tmp_path),
-                                          symmetric_split=True)
-
-    assert isinstance(ho.maps, nibabel.Nifti1Image)
-    assert isinstance(ho.labels, list)
-    assert len(ho.labels) == 7
-    assert ho.labels[0] == "Background"
-    assert ho.labels[1] == "Left R1"
-    assert ho.labels[2] == "Right R1"
-    assert ho.labels[3] == "Left R2"
-    assert ho.labels[4] == "Right R2"
-    assert ho.labels[5] == "Left R3"
-    assert ho.labels[6] == "Right R3"
+    # Check that the fetch lead to consistent results
+    atlas_instance = fsl_fetcher(
+        fname,
+        data_dir=tmp_path,
+        symmetric_split=split,
+    )
+    _test_atlas_instance_should_match_data(
+        atlas_instance,
+        is_symm=is_symm or split,
+    )
 
 
 def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
     local_archive = Path(
         __file__).parent / "data" / "craddock_2011_parcellations.tar.gz"
     request_mocker.url_mapping["*craddock*"] = local_archive
-    bunch = atlas.fetch_atlas_craddock_2012(data_dir=str(tmp_path),
+    bunch = atlas.fetch_atlas_craddock_2012(data_dir=tmp_path,
                                             verbose=0)
 
     keys = ("scorr_mean", "tcorr_mean",
@@ -267,7 +283,7 @@ def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
 
 
 def test_fetch_atlas_smith_2009(tmp_path, request_mocker):
-    bunch = atlas.fetch_atlas_smith_2009(data_dir=str(tmp_path), verbose=0)
+    bunch = atlas.fetch_atlas_smith_2009(data_dir=tmp_path, verbose=0)
 
     keys = ("rsn20", "rsn10", "rsn70",
             "bm20", "bm10", "bm70")
@@ -310,44 +326,51 @@ def test_fetch_coords_seitzman_2018(request_mocker):
 
 
 def _destrieux_data():
+    """Function mocking the download of the destrieux atlas."""
     data = {"destrieux2009.rst": "readme"}
+    atlas = np.random.randint(0, 10, (10, 10, 10))
+    atlas_img = nibabel.Nifti1Image(atlas, np.eye(4))
+    labels = "\n".join([f"{idx},label {idx}" for idx in range(10)])
+    labels = "index,name\n" + labels
     for lat in ["_lateralized", ""]:
         lat_data = {
-            "destrieux2009_rois_labels{}.csv".format(lat): "name,index",
-            "destrieux2009_rois{}.nii.gz".format(lat): "",
+            "destrieux2009_rois_labels{}.csv".format(lat): labels,
+            "destrieux2009_rois{}.nii.gz".format(lat): atlas_img,
         }
         data.update(lat_data)
     return dict_to_archive(data)
 
 
-def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker):
+@pytest.mark.parametrize("lateralized", [True, False])
+def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, lateralized):
+    """Tests for function `fetch_atlas_destrieux_2009`.
+    The atlas is fetched with different values for `lateralized`.
+    """
     request_mocker.url_mapping["*destrieux2009.tgz"] = _destrieux_data()
-    bunch = atlas.fetch_atlas_destrieux_2009(data_dir=str(tmp_path),
-                                             verbose=0)
-
-    assert request_mocker.url_count == 1
-    assert bunch['maps'] == str(tmp_path / 'destrieux_2009'
-                                / 'destrieux2009_rois_lateralized.nii.gz')
-
     bunch = atlas.fetch_atlas_destrieux_2009(
-        lateralized=False, data_dir=str(tmp_path), verbose=0)
-
+        lateralized=lateralized, data_dir=tmp_path, verbose=0
+    )
     assert request_mocker.url_count == 1
-    assert bunch['maps'] == str(tmp_path / 'destrieux_2009'
-                                / 'destrieux2009_rois.nii.gz')
+    name = '_lateralized' if lateralized else ""
+    assert bunch['maps'] == str(
+        tmp_path / 'destrieux_2009' / f'destrieux2009_rois{name}.nii.gz'
+    )
+    labels_img = set(np.unique(get_data(bunch.maps)))
+    labels = set([label.index for label in bunch.labels])
+    assert labels_img.issubset(labels)
 
 
 def test_fetch_atlas_msdl(tmp_path, request_mocker):
     labels = pd.DataFrame(
         {"x": [1.5, 1.2], "y": [1.5, 1.3],
-         "z": [1.5, 1.4], "name": ["Aud", "DMN"], "net_name": ["Aud", "DMN"]})
+         "z": [1.5, 1.4], "name": ["Aud", "DMN"], "net name": ["Aud", "DMN"]})
     root = Path("MSDL_rois")
     archive = {root / "msdl_rois_labels.csv": labels.to_csv(index=False),
                root / "msdl_rois.nii": "",
                root / "README.txt": ""}
     request_mocker.url_mapping["*MSDL_rois.zip"] = dict_to_archive(
         archive, "zip")
-    dataset = atlas.fetch_atlas_msdl(data_dir=str(tmp_path), verbose=0)
+    dataset = atlas.fetch_atlas_msdl(data_dir=tmp_path, verbose=0)
     assert isinstance(dataset.labels, list)
     assert isinstance(dataset.region_coords, list)
     assert isinstance(dataset.networks, list)
@@ -357,7 +380,7 @@ def test_fetch_atlas_msdl(tmp_path, request_mocker):
 
 
 def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
-    dataset = atlas.fetch_atlas_yeo_2011(data_dir=str(tmp_path), verbose=0)
+    dataset = atlas.fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0)
     assert isinstance(dataset.anat, str)
     assert isinstance(dataset.colors_17, str)
     assert isinstance(dataset.colors_7, str)
@@ -370,17 +393,17 @@ def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
 
 
 def test_fetch_atlas_difumo(tmp_path, request_mocker):
-    resolutions = [2, 3] # Valid resolution values
-    dimensions = [64, 128, 256, 512, 1024] # Valid dimension values
-    dimension_urls =  ['pqu9r','wjvd5','3vrct','9b76y','34792']
-    url_mapping = {k:v for k,v in zip(dimensions, dimension_urls)}
+    resolutions = [2, 3]  # Valid resolution values
+    dimensions = [64, 128, 256, 512, 1024]  # Valid dimension values
+    dimension_urls = ['pqu9r', 'wjvd5', '3vrct', '9b76y', '34792']
+    url_mapping = {k: v for k, v in zip(dimensions, dimension_urls)}
     url_count = 1
 
     for dim in dimensions:
         url_count += 1
         url = "*osf.io/{0}/*".format(url_mapping[dim])
         labels = pd.DataFrame(
-            {"Component":  [_ for _ in range(1,dim+1)],
+            {"Component": [_ for _ in range(1, dim + 1)],
              "Difumo_names": ["" for _ in range(dim)],
              "Yeo_networks7": ["" for _ in range(dim)],
              "Yeo_networks17": ["" for _ in range(dim)],
@@ -395,7 +418,7 @@ def test_fetch_atlas_difumo(tmp_path, request_mocker):
         request_mocker.url_mapping[url] = dict_to_archive(archive, "zip")
 
         for res in resolutions:
-            dataset = atlas.fetch_atlas_difumo(data_dir=str(tmp_path),
+            dataset = atlas.fetch_atlas_difumo(data_dir=tmp_path,
                                                dimension=dim,
                                                resolution_mm=res,
                                                verbose=0)
@@ -406,42 +429,65 @@ def test_fetch_atlas_difumo(tmp_path, request_mocker):
             assert dataset.description != ''
 
     with pytest.raises(ValueError):
-        atlas.fetch_atlas_difumo(data_dir=str(tmp_path), dimension=42, resolution_mm=3)
-        atlas.fetch_atlas_difumo(data_dir=str(tmp_path), dimension=128, resolution_mm=3.14)
+        atlas.fetch_atlas_difumo(data_dir=tmp_path,
+                                 dimension=42, resolution_mm=3)
+        atlas.fetch_atlas_difumo(data_dir=tmp_path,
+                                 dimension=128, resolution_mm=3.14)
 
 
-def test_fetch_atlas_aal(tmp_path, request_mocker):
-    metadata = (b"<?xml version='1.0' encoding='us-ascii'?>"
-                b"<metadata></metadata>")
-    archive_root = Path("aal", "atlas")
+@pytest.fixture
+def aal_archive_root(version):
+    if version == 'SPM12':
+        return Path("aal", "atlas")
+    else:
+        return Path(f"aal_for_{version}")
+
+
+@pytest.mark.parametrize("version,archive_format,url_key",
+                         [('SPM5', 'zip', 'uploads'),
+                          ('SPM8', 'zip', 'uploads'),
+                          ('SPM12', 'gztar', 'AAL_files')])
+def test_fetch_atlas_aal(version, archive_format, url_key, aal_archive_root,
+                         tmp_path, request_mocker):
+    metadata = "A\tB\tC\n"
+    if version == 'SPM12':
+        metadata = (b"<?xml version='1.0' encoding='us-ascii'?>"
+                    b"<metadata><label><index>1</index>"
+                    b"<name>A</name></label></metadata>")
+    label_file = "AAL.xml" if version == 'SPM12' else "ROI_MNI_V4.txt"
+    atlas_file = "AAL.nii" if version == 'SPM12' else "ROI_MNI_V4.nii"
     aal_data = dict_to_archive(
-        {archive_root / "AAL.xml": metadata, archive_root / "AAL.nii": ""})
-
-    request_mocker.url_mapping["*AAL_files*"] = aal_data
-    dataset = atlas.fetch_atlas_aal(data_dir=str(tmp_path), verbose=0)
+        {aal_archive_root / label_file: metadata,
+         aal_archive_root / atlas_file: ""},
+        archive_format=archive_format
+    )
+    request_mocker.url_mapping[f"*{url_key}*"] = aal_data
+    dataset = atlas.fetch_atlas_aal(
+        version=version, data_dir=tmp_path, verbose=0
+    )
     assert isinstance(dataset.maps, str)
     assert isinstance(dataset.labels, list)
     assert isinstance(dataset.indices, list)
     assert request_mocker.url_count == 1
-
-    with pytest.raises(ValueError,
-                       match='The version of AAL requested "FLS33"'
-                       ):
-        atlas.fetch_atlas_aal(version="FLS33",
-                              data_dir=str(tmp_path),
-                              verbose=0)
-
     assert dataset.description != ''
+
+
+def test_fetch_atlas_aal_version_error(tmp_path, request_mocker):
+    with pytest.raises(ValueError,
+                       match='The version of AAL requested "FLS33"'):
+        atlas.fetch_atlas_aal(
+            version="FLS33", data_dir=tmp_path, verbose=0
+        )
 
 
 def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
     # default version='sym',
-    data_sym = atlas.fetch_atlas_basc_multiscale_2015(data_dir=str(tmp_path),
+    data_sym = atlas.fetch_atlas_basc_multiscale_2015(data_dir=tmp_path,
                                                       verbose=0)
     # version='asym'
     data_asym = atlas.fetch_atlas_basc_multiscale_2015(version='asym',
                                                        verbose=0,
-                                                       data_dir=str(tmp_path))
+                                                       data_dir=tmp_path)
 
     keys = ['scale007', 'scale012', 'scale020', 'scale036', 'scale064',
             'scale122', 'scale197', 'scale325', 'scale444']
@@ -466,7 +512,7 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
             ValueError,
             match='The version of Brain parcellations requested "aym"'):
         atlas.fetch_atlas_basc_multiscale_2015(version="aym",
-                                               data_dir=str(tmp_path),
+                                               data_dir=tmp_path,
                                                verbose=0)
 
     assert request_mocker.url_count == 2
@@ -487,7 +533,7 @@ def test_fetch_coords_dosenbach_2010(request_mocker):
 
 
 def test_fetch_atlas_allen_2011(tmp_path, request_mocker):
-    bunch = atlas.fetch_atlas_allen_2011(data_dir=str(tmp_path), verbose=0)
+    bunch = atlas.fetch_atlas_allen_2011(data_dir=tmp_path, verbose=0)
     keys = ("maps",
             "rsn28",
             "comps")
@@ -512,10 +558,9 @@ def test_fetch_atlas_surf_destrieux(tmp_path, request_mocker, verbose=0):
         nibabel.freesurfer.write_annot(
                 os.path.join(data_dir,
                              '%s.aparc.a2009s.annot' % hemi),
-                np.arange(4), np.zeros((4, 5)), 5 * ['a'],
-                )
+                np.arange(4), np.zeros((4, 5)), 5 * ['a'],)
 
-    bunch = atlas.fetch_atlas_surf_destrieux(data_dir=str(tmp_path), verbose=0)
+    bunch = atlas.fetch_atlas_surf_destrieux(data_dir=tmp_path, verbose=0)
     # Our mock annots have 4 labels
     assert len(bunch.labels) == 4
     assert bunch.map_left.shape == (4, )
@@ -541,11 +586,11 @@ def test_fetch_atlas_talairach(tmp_path, request_mocker):
     request_mocker.url_mapping["*talairach.nii"] = _get_small_fake_talairach()
     level_values = np.ones((81, 3)) * [0, 1, 2]
     talairach = atlas.fetch_atlas_talairach('hemisphere',
-                                            data_dir=str(tmp_path))
+                                            data_dir=tmp_path)
     assert_array_equal(get_data(talairach.maps).ravel(),
                        level_values.T.ravel())
     assert_array_equal(talairach.labels, ['Background', 'b', 'a'])
-    talairach = atlas.fetch_atlas_talairach('ba', data_dir=str(tmp_path))
+    talairach = atlas.fetch_atlas_talairach('ba', data_dir=tmp_path)
     assert_array_equal(get_data(talairach.maps).ravel(),
                        level_values.ravel())
     pytest.raises(ValueError, atlas.fetch_atlas_talairach, 'bad_level')
@@ -614,15 +659,15 @@ def test_fetch_atlas_schaefer_2018(tmp_path, request_mocker):
         data = atlas.fetch_atlas_schaefer_2018(n_rois=n_rois,
                                                yeo_networks=yeo_networks,
                                                resolution_mm=resolution_mm,
-                                               data_dir=str(tmp_path),
+                                               data_dir=tmp_path,
                                                verbose=0)
         assert data.description != ''
         assert isinstance(data.maps, str)
         assert isinstance(data.labels, np.ndarray)
         assert len(data.labels) == n_rois
         assert data.labels[0].astype(str).startswith("{}Networks".
-                                              format(yeo_networks))
+                                                     format(yeo_networks))
         img = nibabel.load(data.maps)
         assert img.header.get_zooms()[0] == resolution_mm
         assert np.array_equal(np.unique(img.dataobj),
-                                   np.arange(n_rois+1))
+                              np.arange(n_rois + 1))

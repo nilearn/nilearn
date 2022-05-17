@@ -196,7 +196,7 @@ def random_spd(p, eig_min, cond, random_state=0):
 
     Returns
     -------
-    ouput : numpy.ndarray, shape (p, p)
+    output : numpy.ndarray, shape (p, p)
         A symmetric positive definite matrix with the given minimal eigenvalue
         and condition number.
     """
@@ -293,7 +293,7 @@ def test_geometric_mean_properties():
     assert grad_norm[-1] > tol
 
     # Evaluate convergence. A warning is printed if tolerance is not reached
-    for p in [.5, 1.]:  # proportion of badly conditionned matrices
+    for p in [.5, 1.]:  # proportion of badly conditioned matrices
         spds = []
         for k in range(int(p * n_matrices)):
             spds.append(random_spd(n_features, eig_min=1e-2, cond=1e6,
@@ -354,7 +354,7 @@ def test_sym_matrix_to_vec():
     syms = vec_to_sym_matrix(vecs)
     assert_array_almost_equal(sym_matrix_to_vec(syms), vecs)
 
-    # multiple matrices case when diagonal is given seperately
+    # multiple matrices case when diagonal is given separately
     diagonals = np.asarray([diagonal, 3. * diagonal, -diagonal])
     syms = vec_to_sym_matrix(vecs, diagonal=diagonals)
     assert_array_almost_equal(sym_matrix_to_vec(syms, discard_diagonal=True),
@@ -379,7 +379,7 @@ def test_vec_to_sym_matrix():
                     [1., 1., sqrt(2)]])
     assert_array_almost_equal(vec_to_sym_matrix(vec), sym)
 
-    # Check output value is correct with seperate diagonal
+    # Check output value is correct with separate diagonal
     vec = np.ones(3, )
     diagonal = np.ones(3)
     assert_array_almost_equal(vec_to_sym_matrix(vec, diagonal=diagonal), sym)
@@ -619,8 +619,8 @@ def test_confounds_connectome_measure():
     # Confounds as pandas DataFrame
     confounds_df = DataFrame(confounds[0:10])
     cleaned_vectors_df = correlation_measure.fit_transform(
-        signals, confounds=confounds_df)  
-    
+        signals, confounds=confounds_df)
+
     # Raising error for input confounds are not iterable
     conn_measure = ConnectivityMeasure(vectorize=True)
     pytest.raises(ValueError, conn_measure._check_input, signals, confounds=1.)
@@ -632,4 +632,3 @@ def test_confounds_connectome_measure():
     conn_measure = ConnectivityMeasure(vectorize=False)
     pytest.raises(ValueError, conn_measure.fit_transform,
                   signals, None, confounds[0:10])
-

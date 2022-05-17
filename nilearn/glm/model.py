@@ -3,8 +3,6 @@ This module implement classes to handle statistical tests on likelihood models
 
 Author: Bertrand Thirion, 2011--2015
 """
-import warnings
-
 import numpy as np
 
 from nibabel.onetime import auto_attr
@@ -82,14 +80,6 @@ class LikelihoodModelResults(object):
         self.df_model = model.df_model
         # put this as a parameter of LikelihoodModel
         self.df_residuals = self.df_total - self.df_model
-
-    @auto_attr
-    def df_resid(self):
-        warnings.warn("'df_resid' from LikelihoodModelResults "
-                      "has been deprecated and will be removed. "
-                      "Please use 'df_residuals'.",
-                      FutureWarning)
-        return self.df_residuals
 
     @auto_attr
     def logL(self):

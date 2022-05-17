@@ -36,10 +36,13 @@ To run this example, you must launch IPython via ``ipython
 # This dataset contains the necessary information to run a statistical analysis
 # using Nilearn. The dataset also contains statistical results from a previous
 # FSL analysis that we can employ for comparison with the Nilearn estimation.
-from nilearn.datasets import (fetch_openneuro_dataset_index,
-                              fetch_openneuro_dataset, select_from_index)
+from nilearn.datasets import (
+    fetch_ds000030_urls,
+    fetch_openneuro_dataset,
+    select_from_index,
+)
 
-_, urls = fetch_openneuro_dataset_index()
+_, urls = fetch_ds000030_urls()
 
 exclusion_patterns = ['*group*', '*phenotype*', '*mriqc*',
                       '*parameter_plots*', '*physio_plots*',
@@ -62,7 +65,7 @@ data_dir, _ = fetch_openneuro_dataset(urls=urls)
 # To get the first level models we have to specify the dataset directory,
 # the task_label and the space_label as specified in the file names.
 # We also have to provide the folder with the desired derivatives, that in this
-# case were produced by the fmriprep :term:`BIDS` app.
+# case were produced by the :term:`fMRIPrep` :term:`BIDS` app.
 from nilearn.glm.first_level import first_level_from_bids
 task_label = 'stopsignal'
 space_label = 'MNI152NLin2009cAsym'
@@ -79,7 +82,7 @@ model, imgs, events, confounds = (
 subject = 'sub-' + model.subject_label
 
 import os
-from nilearn._utils.glm import get_design_from_fslmat
+from nilearn.interfaces.fsl import get_design_from_fslmat
 fsl_design_matrix_path = os.path.join(
     data_dir, 'derivatives', 'task', subject, 'stopsignal.feat', 'design.mat')
 design_matrix = get_design_from_fslmat(

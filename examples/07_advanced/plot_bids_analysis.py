@@ -86,7 +86,7 @@ print(models_events[0][0]['trial_type'].value_counts())
 # :term:`contrast` that reveals the language network (language - string).
 # Notice that we can define a contrast using the names of the conditions
 # specified in the events dataframe.
-# Sum, substraction and scalar multiplication are allowed.
+# Sum, subtraction and scalar multiplication are allowed.
 
 ############################################################################
 # Set the threshold as the z-variate with an uncorrected p-value of 0.001.

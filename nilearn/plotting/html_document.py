@@ -1,4 +1,5 @@
 import os
+import sys
 import weakref
 import warnings
 import tempfile
@@ -20,7 +21,7 @@ def set_max_img_views_before_warning(new_value):
 
 def _remove_after_n_seconds(file_name, n_seconds):
     script = os.path.join(os.path.dirname(__file__), 'rm_file.py')
-    subprocess.Popen(['python', script, file_name, str(n_seconds)])
+    subprocess.Popen([sys.executable, script, file_name, str(n_seconds)])
 
 
 class HTMLDocument(object):
@@ -89,7 +90,7 @@ class HTMLDocument(object):
         """
         Used by the Jupyter notebook.
 
-        Users normally won't call this method explicitely.
+        Users normally won't call this method explicitly.
         """
         return self.get_iframe()
 

@@ -340,7 +340,7 @@ def test_check_niimg_wildcards():
     ni.EXPAND_PATH_WILDCARDS = True
 
 
-def test_iter_check_niimgs():
+def test_iter_check_niimgs(tmp_path):
     no_file_matching = "No files matching path: %s"
     affine = np.eye(4)
     img_4d = Nifti1Image(np.ones((10, 10, 10, 4)), affine)
@@ -355,9 +355,10 @@ def test_iter_check_niimgs():
         list(_iter_check_niimg(nofile_path))
 
     # Create a test file
-    filename = tempfile.mktemp(prefix="nilearn_test",
-                               suffix=".nii",
-                               dir=None)
+    fd, filename = tempfile.mkstemp(prefix="nilearn_test",
+                                    suffix=".nii",
+                                    dir=str(tmp_path))
+    os.close(fd)
     img_4d.to_filename(filename)
     niimgs = list(_iter_check_niimg([filename]))
     assert_array_equal(get_data(niimgs[0]),
@@ -389,7 +390,7 @@ def test_iter_check_niimgs_memory():
                              for i in range(10)])
 
 
-def test_repr_niimgs():
+def test_repr_niimgs(tmp_path):
     # Tests with file path
     assert _utils._repr_niimgs("test") == "test"
     assert _utils._repr_niimgs("test", shorten=False) == "test"
@@ -505,7 +506,9 @@ def test_repr_niimgs():
                 repr(shape), repr(affine))))
 
     # Add filename long enough to qualify for shortening
-    _, tmpimg1 = tempfile.mkstemp(suffix='_very_long.nii')
+    fd, tmpimg1 = tempfile.mkstemp(suffix='_very_long.nii',
+                                   dir=str(tmp_path))
+    os.close(fd)
     nibabel.save(img1, tmpimg1)
     assert (
         _utils._repr_niimgs(img1, shorten=False) ==

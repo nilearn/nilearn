@@ -1,0 +1,32 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.5.2
+=====
+
+**Released April 2019**
+
+NEW
+---
+
+.. warning::
+
+    This is the **last** release supporting Python2 and ``3.4``.
+    The lowest Python version supported is now Python ``3.5``.
+    We recommend switching to Python ``3.6``.
+
+Fixes
+-----
+
+- Plotting ``.mgz`` files in MNE broke in ``0.5.1`` and has been fixed.
+
+Contributors
+------------
+
+The following people contributed to this release:
+
+    * `Kshitij Chawla`_ (11)
+    * `Gael Varoquaux`_ (3)
+    * `Alexandre Gramfort`_ (2)

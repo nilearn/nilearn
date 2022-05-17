@@ -12,13 +12,12 @@ from scipy import ndimage
 
 from sklearn.utils import check_random_state
 import scipy.linalg
-import nibabel
 
 from nibabel import Nifti1Image
 
 from .. import masking
 from . import logger
-from nilearn import datasets, image, input_data
+from nilearn import datasets, image, maskers
 
 
 def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
@@ -27,7 +26,7 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
     target_affine = np.eye(3) * res
     mask_img = image.resample_img(
         mni, target_affine=target_affine, interpolation="nearest")
-    masker = input_data.NiftiMasker(mask_img).fit()
+    masker = maskers.NiftiMasker(mask_img).fit()
     n_voxels = image.get_data(mask_img).sum()
     data = rng.randn(n_scans, n_voxels)
     if mask_dilation is not None and mask_dilation > 0:
@@ -143,7 +142,7 @@ def generate_maps(shape, n_regions, overlap=0, border=1,
     mask[border:-border, border:-border, border:-border] = 1
     ts = generate_regions_ts(mask.sum(), n_regions, overlap=overlap,
                              rand_gen=rand_gen, window=window)
-    mask_img = nibabel.Nifti1Image(mask, affine)
+    mask_img = Nifti1Image(mask, affine)
     return masking.unmask(ts, mask_img), mask_img
 
 
@@ -191,7 +190,7 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
         row[row > 0] = n
     data = np.zeros(shape, dtype=dtype)
     data[np.ones(shape, dtype=bool)] = regions.sum(axis=0).T
-    return nibabel.Nifti1Image(data, affine)
+    return Nifti1Image(data, affine)
 
 
 def generate_labeled_regions_large(shape, n_regions, rand_gen=None,
@@ -206,7 +205,7 @@ def generate_labeled_regions_large(shape, n_regions, rand_gen=None,
     data = rand_gen.randint(n_regions + 1, size=shape)
     if len(np.unique(data)) != n_regions + 1:
         raise ValueError("Some labels are missing. Maybe shape is too small.")
-    return nibabel.Nifti1Image(data, affine)
+    return Nifti1Image(data, affine)
 
 
 def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
@@ -293,8 +292,8 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
          shift[2]:shift[2] + width[2]] = 1
 
     if n_blocks is None:
-        return (nibabel.Nifti1Image(fmri, affine),
-                nibabel.Nifti1Image(mask, affine))
+        return (Nifti1Image(fmri, affine),
+                Nifti1Image(mask, affine))
 
     block_size = 3 if block_size is None else block_size
     flat_fmri = fmri[mask.astype(bool)]
@@ -327,11 +326,11 @@ def generate_fake_fmri(shape=(10, 11, 12), length=17, kind="noise",
         target[t_start:t_start + block_size] = block + 1
         t_start += t_rest + block_size
     target = target if block_type == 'classification' \
-        else target.astype(np.float)
+        else target.astype(np.float64)
     fmri = np.zeros(fmri.shape)
     fmri[mask.astype(bool)] = flat_fmri
-    return (nibabel.Nifti1Image(fmri, affine),
-            nibabel.Nifti1Image(mask, affine), target)
+    return (Nifti1Image(fmri, affine),
+            Nifti1Image(mask, affine), target)
 
 
 def generate_fake_fmri_data_and_design(shapes, rk=3, affine=np.eye(4)):
@@ -552,7 +551,7 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
     with_derivatives : bool, optional
         In the case derivatives are included, they come with two spaces and
         descriptions. Spaces are 'MNI' and 'T1w'. Descriptions are 'preproc'
-        and 'fmriprep'. Only space 'T1w' include both descriptions.
+        and :term:`fMRIPrep`. Only space 'T1w' include both descriptions.
         Default=True.
 
     with_confounds : bool, optional
@@ -560,8 +559,9 @@ def create_fake_bids_dataset(base_dir='', n_sub=10, n_ses=2,
 
     confounds_tag : string (filename suffix), optional
         If generating confounds, what path should they have? Defaults to
-        `desc-confounds_timeseries` as in `fmriprep` >= 20.2 but can be other
-        values (e.g. "desc-confounds_regressors" as in `fmriprep` < 20.2)
+        `desc-confounds_timeseries` as in :term:`fMRIPrep` >= 20.2
+        but can be other values (e.g. "desc-confounds_regressors" as
+        in :term:`fMRIPrep` < 20.2).
         Default="desc-confounds_timeseries".
 
     no_session : bool, optional

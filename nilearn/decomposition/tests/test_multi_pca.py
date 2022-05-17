@@ -10,7 +10,7 @@ import nibabel
 from numpy.testing import assert_almost_equal
 
 from nilearn.decomposition.multi_pca import MultiPCA
-from nilearn.input_data import MultiNiftiMasker, NiftiMasker
+from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 from nilearn._utils.testing import write_tmp_imgs
 
 

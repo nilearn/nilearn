@@ -17,11 +17,16 @@ from scipy import ndimage
 from scipy.stats import scoreatpercentile
 
 from .. import signal
-from .._utils import (_repr_niimgs, as_ndarray, check_niimg, check_niimg_3d,
-                      check_niimg_4d)
+from .._utils import (_repr_niimgs,
+                      as_ndarray,
+                      check_niimg,
+                      check_niimg_3d,
+                      check_niimg_4d,
+                      fill_doc)
 from .._utils.niimg import _get_data, _safe_get_data
 from .._utils.niimg_conversions import _check_same_fov, _index_img
 from .._utils.param_validation import check_threshold
+from .._utils.helpers import rename_parameters
 
 
 def get_data(img):
@@ -161,6 +166,7 @@ def _fast_smooth_array(arr):
     return smoothed_arr
 
 
+@fill_doc
 def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     """Smooth images by applying a Gaussian filter.
 
@@ -176,20 +182,7 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         (4, 4) matrix, giving affine transformation for image. (3, 3) matrices
         are also accepted (only these coefficients are used).
         If `fwhm='fast'`, the affine is not used and can be None.
-
-    fwhm : scalar, :class:`numpy.ndarray`/:obj:`tuple`/:obj:`list`, 'fast' or None, optional
-        Smoothing strength, as a full-width at half maximum, in millimeters.
-        If a nonzero scalar is given, width is identical in all 3 directions.
-        A :class:`numpy.ndarray`, :obj:`tuple`, or :obj:`list` must have 3 elements,
-        giving the FWHM along each axis.
-        If any of the elements is zero or None, smoothing is not performed
-        along that axis.
-        If  `fwhm='fast'`, a fast smoothing will be performed with a filter
-        [0.2, 1, 0.2] in each direction and a normalisation
-        to preserve the local average value.
-        If fwhm is None, no filtering is performed (useful when just removal
-        of non-finite values is needed).
-
+    %(fwhm)s
     ensure_finite : :obj:`bool`, optional
         If True, replace every non-finite values (like NaNs) by zero before
         filtering. Default=True.
@@ -241,6 +234,7 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     return arr
 
 
+@fill_doc
 def smooth_img(imgs, fwhm):
     """Smooth images by applying a Gaussian filter.
 
@@ -253,21 +247,7 @@ def smooth_img(imgs, fwhm):
         Image(s) to smooth (see
         http://nilearn.github.io/manipulating_images/input_output.html
         for a detailed description of the valid input types).
-
-    fwhm : scalar, :class:`numpy.ndarray`, 'fast' or None
-        Smoothing strength, as a Full-Width at Half Maximum (FWHM), in
-        millimeters.
-        If a scalar is given, width is identical on all three
-        directions. A :class:`numpy.ndarray` must have 3 elements, giving the FWHM
-        along each axis.
-        If `fwhm='fast'`, a fast smoothing will be performed with
-        a filter [0.2, 1, 0.2] in each direction and a normalisation
-        to preserve the scale.
-        If `fwhm` is None, no filtering is performed (useful when just removal
-        of non-finite values is needed).
-
-        In corner case situations, `fwhm` is simply kept to None when `fwhm` is
-        specified as `fwhm=0`.
+    %(fwhm)s
 
     Returns
     -------
@@ -476,7 +456,7 @@ def _compute_mean(imgs, target_affine=None,
     mean_data = _safe_get_data(imgs)
     affine = imgs.affine
     # Free memory ASAP
-    imgs = None
+    del imgs
     if mean_data.ndim not in (3, 4):
         raise ValueError('Computation expects 3D or 4D '
                          'images, but %i dimensions were given (%s)'
@@ -649,24 +629,24 @@ def index_img(imgs, index):
      >>> joint_mni_image = concat_imgs([datasets.load_mni152_template(),
      ...                                datasets.load_mni152_template()])
      >>> print(joint_mni_image.shape)
-     (91, 109, 91, 2)
+     (99, 117, 95, 2)
 
     We can now select one slice from the last dimension of this 4D-image::
 
      >>> single_mni_image = index_img(joint_mni_image, 1)
      >>> print(single_mni_image.shape)
-     (91, 109, 91)
+     (99, 117, 95)
 
     We can also select multiple frames using the `slice` constructor::
 
      >>> five_mni_images = concat_imgs([datasets.load_mni152_template()] * 5)
      >>> print(five_mni_images.shape)
-     (91, 109, 91, 5)
+     (99, 117, 95, 5)
 
      >>> first_three_images = index_img(five_mni_images,
      ...                                slice(0, 3))
      >>> print(first_three_images.shape)
-     (91, 109, 91, 3)
+     (99, 117, 95, 3)
 
     """
     imgs = check_niimg_4d(imgs)
@@ -717,7 +697,8 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     Returns
     -------
     Niimg-like object
-        A loaded image with the same type (and header) as the reference image.
+        A loaded image with the same file type (and, optionally, header)
+        as the reference image.
 
     """
     # Hand-written loading code to avoid too much memory consumption
@@ -732,7 +713,6 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         is_str = isinstance(ref_niimg, str)
         has_get_data = hasattr(ref_niimg, 'get_data')
         has_get_fdata = hasattr(ref_niimg, 'get_fdata')
-        has_iter = hasattr(ref_niimg, '__iter__')
         has_affine = hasattr(ref_niimg, 'affine')
     if not ((has_get_data or has_get_fdata) and has_affine):
         if is_str:
@@ -776,18 +756,81 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     return klass(data, affine, header=header)
 
 
-def threshold_img(img, threshold, mask_img=None, copy=True):
+def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
+    """Apply cluster-extent thresholding to an array that has already been
+    voxel-wise thresholded.
+
+    Parameters
+    ----------
+    arr : :obj:`numpy.ndarray` of shape (X, Y, Z)
+        3D array that has been thresholded at the voxel level.
+    cluster_threshold : :obj:`float`
+        Cluster-size threshold, in voxels, to apply to ``arr``.
+    copy : :obj:`bool`, optional
+        Whether to copy the array before modifying it or not.
+        Default is True.
+
+    Returns
+    -------
+    arr : :obj:`numpy.ndarray` of shape (X, Y, Z)
+        Cluster-extent thresholded array.
+
+    Notes
+    -----
+    Clusters are defined in a bi-sided manner;
+    both negative and positive clusters are evaluated,
+    but this is done separately for each sign.
+
+    Clusters are defined using 6-connectivity, also known as NN1 (in AFNI) or
+    "faces" connectivity.
+    """
+    assert arr.ndim == 3
+
+    if copy:
+        arr = arr.copy()
+
+    # Define array for 6-connectivity, aka NN1 or "faces"
+    conn_mat = np.zeros((3, 3, 3), int)
+    conn_mat[:, 1, 1] = 1
+    conn_mat[1, :, 1] = 1
+    conn_mat[1, 1, :] = 1
+
+    for sign in np.unique(np.sign(arr)):
+        # Binarize using one-sided cluster-defining threshold
+        binarized = ((arr * sign) > 0).astype(int)
+
+        # Apply cluster threshold
+        label_map = ndimage.measurements.label(binarized, conn_mat)[0]
+        clust_ids = sorted(list(np.unique(label_map)[1:]))
+        for c_val in clust_ids:
+            if np.sum(label_map == c_val) < cluster_threshold:
+                arr[label_map == c_val] = 0
+
+    return arr
+
+
+def threshold_img(
+    img,
+    threshold,
+    cluster_threshold=0,
+    two_sided=True,
+    mask_img=None,
+    copy=True,
+):
     """Threshold the given input image, mostly statistical or atlas images.
 
     Thresholding can be done based on direct image intensities or selection
     threshold with given percentile.
+
+    .. versionchanged:: 0.9.0
+        New ``cluster_threshold`` and ``two_sided`` parameters added.
 
     .. versionadded:: 0.2
 
     Parameters
     ----------
     img : a 3D/4D Niimg-like object
-        Image contains of statistical or atlas maps which should be thresholded.
+        Image containing statistical or atlas maps which should be thresholded.
 
     threshold : :obj:`float` or :obj:`str`
         If float, we threshold the image based on image intensities meaning
@@ -798,6 +841,20 @@ def threshold_img(img, threshold, mask_img=None, copy=True):
         based on the score obtained using this percentile on the image data. The
         voxels which have intensities greater than this score will be kept.
         The given string should be within the range of "0%" to "100%".
+
+    cluster_threshold : :obj:`float`, optional
+        Cluster size threshold, in voxels. In the returned thresholded map,
+        sets of connected voxels (``clusters``) with size smaller
+        than this number will be removed. Default=0.
+
+        .. versionadded:: 0.9.0
+
+    two_sided : :obj:`bool`, optional
+        Whether the thresholding should yield both positive and negative
+        part of the maps.
+        Default=True.
+
+        .. versionadded:: 0.9.0
 
     mask_img : Niimg-like object, default None, optional
         Mask image applied to mask the input data.
@@ -814,7 +871,9 @@ def threshold_img(img, threshold, mask_img=None, copy=True):
 
     See also
     --------
-    nilearn.glm.threshold_stats_img
+    nilearn.glm.threshold_stats_img :
+        Threshold a statistical image using the alpha value, optionally with
+        false positive control.
 
     """
     from . import resampling
@@ -835,18 +894,40 @@ def threshold_img(img, threshold, mask_img=None, copy=True):
         # Set as 0 for the values which are outside of the mask
         img_data[mask_data == 0.] = 0.
 
-    if threshold is None:
-        raise ValueError("The input parameter 'threshold' is empty. "
-                         "Please give either a float value or a string as e.g. '90%'.")
+    cutoff_threshold = check_threshold(
+        threshold,
+        img_data,
+        percentile_func=scoreatpercentile,
+        name='threshold',
+    )
+
+    # Apply threshold
+    if two_sided:
+        img_data[np.abs(img_data) < cutoff_threshold] = 0.
     else:
-        cutoff_threshold = check_threshold(threshold, img_data,
-                                           percentile_func=scoreatpercentile,
-                                           name='threshold')
+        img_data[img_data < cutoff_threshold] = 0.
 
-    img_data[np.abs(img_data) < cutoff_threshold] = 0.
-    threshold_img = new_img_like(img, img_data, affine)
+    # Expand to 4D to support both 3D and 4D
+    expand_to_4d = img_data.ndim == 3
+    if expand_to_4d:
+        img_data = img_data[:, :, :, None]
 
-    return threshold_img
+    # Perform cluster thresholding, if requested
+    if cluster_threshold > 0:
+        for i_vol in range(img_data.shape[3]):
+            img_data[..., i_vol] = _apply_cluster_size_threshold(
+                img_data[..., i_vol],
+                cluster_threshold,
+            )
+
+    if expand_to_4d:
+        # Reduce back to 3D
+        img_data = img_data[:, :, :, 0]
+
+    # Reconstitute img object
+    thresholded_img = new_img_like(img, img_data, affine)
+
+    return thresholded_img
 
 
 def math_img(formula, **imgs):
@@ -932,7 +1013,61 @@ def math_img(formula, **imgs):
     return new_img_like(niimg, result, niimg.affine)
 
 
-def clean_img(imgs, sessions=None, detrend=True, standardize=True,
+def binarize_img(img, threshold=0, mask_img=None):
+    """Binarize an image such that its values are either 0 or 1.
+
+    .. versionadded:: 0.8.1
+
+    Parameters
+    ----------
+    img : a 3D/4D Niimg-like object
+        Image which should be binarized.
+
+    threshold : :obj:`float` or :obj:`str`
+        If float, we threshold the image based on image intensities meaning
+        voxels which have intensities greater than this value will be kept.
+        The given value should be within the range of minimum and
+        maximum intensity of the input image.
+        If string, it should finish with percent sign e.g. "80%" and we
+        threshold based on the score obtained using this percentile on
+        the image data. The voxels which have intensities greater than
+        this score will be kept. The given string should be
+        within the range of "0%" to "100%".
+
+    mask_img : Niimg-like object, default None, optional
+        Mask image applied to mask the input data.
+        If None, no masking will be applied.
+
+    Returns
+    -------
+    :class:`~nibabel.nifti1.Nifti1Image`
+        Binarized version of the given input image. Output dtype is int.
+
+    See Also
+    --------
+    nilearn.image.threshold_img : To simply threshold but not binarize images.
+
+    Examples
+    --------
+    Let's load an image using nilearn datasets module::
+
+     >>> from nilearn import datasets
+     >>> anatomical_image = datasets.load_mni152_template()
+
+    Now we binarize it, generating a pseudo brainmask::
+
+     >>> from nilearn.image import binarize_img
+     >>> img = binarize_img(anatomical_image)
+
+    """
+    return math_img(
+        "img.astype(bool).astype(int)",
+        img=threshold_img(img, threshold, mask_img=mask_img)
+    )
+
+
+@rename_parameters({'sessions': 'runs'}, '0.10.0')
+def clean_img(imgs, runs=None, detrend=True, standardize=True,
               confounds=None, low_pass=None, high_pass=None, t_r=None,
               ensure_finite=False, mask_img=None):
     """Improve SNR on masked fMRI signals.
@@ -964,9 +1099,16 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
         http://nilearn.github.io/manipulating_images/input_output.html
         for a detailed description of the valid input types).
 
-    sessions : :class:`numpy.ndarray`, optional
-        Add a session level to the cleaning process. Each session will be
+    runs : :class:`numpy.ndarray`, optional
+        Add a run level to the cleaning process. Each run will be
         cleaned independently. Must be a 1D array of n_samples elements.
+
+        .. warning::
+
+            'runs' replaces 'sessions' after release 0.10.0.
+            Using 'session' will result in an error after release 0.10.0.
+
+        Default=``None``.
 
     detrend : :obj:`bool`, optional
         If detrending should be applied on timeseries (before confound removal).
@@ -1013,21 +1155,14 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
     Notes
     -----
     Confounds removal is based on a projection on the orthogonal
-    of the signal space [1]_.
+    of the signal space [:footcite:`friston1994statistical`].
 
     Orthogonalization between temporal filters and confound removal is based on
-    suggestions in [2]_.
+    suggestions in [:footcite:`Lindquist407676`].
 
     References
     ----------
-    .. [1] Friston, K. J., A. P. Holmes, K. J. Worsley, J.-P. Poline,
-       C. D. Frith, et R. S. J. Frackowiak. "Statistical Parametric Maps
-       in Functional Imaging: A General Linear Approach". Human Brain
-       Mapping 2, no 4 (1994): 189-210. <http://dx.doi.org/10.1002/hbm.460020402>
-
-    .. [2] Lindquist, M., Geuter, S., Wager, T., & Caffo, B. (2018).
-       Modular preprocessing pipelines can reintroduce artifacts into fMRI data.
-       bioRxiv, 407676. <http://dx.doi.org/10.1101/407676>
+    .. footbibliography::
 
     See Also
     --------
@@ -1059,7 +1194,7 @@ def clean_img(imgs, sessions=None, detrend=True, standardize=True,
 
     # Clean signal
     data = signal.clean(
-        signals, sessions=sessions, detrend=detrend, standardize=standardize,
+        signals, runs=runs, detrend=detrend, standardize=standardize,
         confounds=confounds, low_pass=low_pass, high_pass=high_pass, t_r=t_r,
         ensure_finite=ensure_finite)
 

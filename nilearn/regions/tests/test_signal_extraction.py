@@ -8,7 +8,7 @@ import numpy as np
 import nibabel
 import pytest
 
-from nilearn.input_data import NiftiLabelsMasker
+from nilearn.maskers import NiftiLabelsMasker
 from nilearn.regions import signal_extraction
 from nilearn._utils.testing import write_tmp_imgs
 from nilearn._utils.data_gen import generate_timeseries, generate_regions_ts
@@ -74,7 +74,7 @@ def test_signals_extraction_with_labels():
     n_instants = 11
     n_regions = 8  # must be 8
 
-    eps = np.finfo(np.float).eps
+    eps = np.finfo(np.float64).eps
     # data
     affine = np.eye(4)
     signals = generate_timeseries(n_instants, n_regions)
@@ -87,7 +87,7 @@ def test_signals_extraction_with_labels():
     mask_4d_img = nibabel.Nifti1Image(np.ones(shape + (2, )), affine)
 
     # labels
-    labels_data = np.zeros(shape, dtype=np.int)
+    labels_data = np.zeros(shape, dtype=int)
     h0 = shape[0] // 2
     h1 = shape[1] // 2
     h2 = shape[2] // 2
@@ -435,4 +435,3 @@ def test_img_to_signals_labels_non_float_type(target_dtype):
     timeseries_float = masker.transform(fake_fmri_img_orig)
     assert np.sum(timeseries_int) != 0
     assert np.allclose(timeseries_int, timeseries_float)
-

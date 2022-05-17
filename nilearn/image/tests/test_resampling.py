@@ -488,7 +488,7 @@ def test_resampling_nan():
         # create deterministic data, padded with one
         # voxel thickness of zeros
         core_data = np.arange(np.prod(core_shape)
-                              ).reshape(core_shape).astype(np.float)
+                              ).reshape(core_shape).astype(np.float64)
         # Introduce a nan
         core_data[2, 2:4, 1] = np.nan
         full_data_shape = np.array(core_shape) + 2
@@ -790,8 +790,13 @@ def test_coord_transform_trivial():
     assert x.shape == x_.shape
 
 
+@pytest.mark.skipif(not testing.is_64bit(),
+                    reason='This test only runs on 64bits machines.')
 @pytest.mark.skipif(os.environ.get('APPVEYOR') == 'True',
                     reason='This test too slow (7-8 minutes) on AppVeyor')
+@pytest.mark.skipif((os.environ.get('TRAVIS') == 'true'
+                     and os.environ.get('TRAVIS_CPU_ARCH') == 'arm64'),
+                    reason='This test does not run on ARM arch.')
 def test_resample_img_segmentation_fault():
     # see https://github.com/nilearn/nilearn/issues/346
     shape_in = (64, 64, 64)

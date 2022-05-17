@@ -1,8 +1,5 @@
 #! /usr/bin/env python
 
-descr = """A set of python modules for neuroimaging..."""
-
-import sys
 import os
 
 from setuptools import setup, find_packages
@@ -24,25 +21,6 @@ def load_version():
     return globals_dict
 
 
-def is_installing():
-    # Allow command-lines such as "python setup.py build install"
-    install_commands = set(['install', 'develop'])
-    return install_commands.intersection(set(sys.argv))
-
-
-def list_required_packages():
-    required_packages = []
-    required_packages_orig = ['%s>=%s' % (mod, meta['min_version'])
-                              for mod, meta
-                              in _VERSION_GLOBALS['REQUIRED_MODULE_METADATA']
-                              ]
-    for package in required_packages_orig:
-        if package.startswith('sklearn'):
-            package = package.replace('sklearn', 'scikit-learn')
-        required_packages.append(package)
-    return required_packages
-
-
 # Make sources available using relative paths from this file's directory.
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -60,10 +38,6 @@ VERSION = _VERSION_GLOBALS['__version__']
 
 
 if __name__ == "__main__":
-    if is_installing():
-        module_check_fn = _VERSION_GLOBALS['_check_module_dependencies']
-        module_check_fn(is_nilearn_installing=True)
-
     setup(name=DISTNAME,
           maintainer=MAINTAINER,
           maintainer_email=MAINTAINER_EMAIL,
@@ -86,11 +60,11 @@ if __name__ == "__main__":
               'Operating System :: POSIX',
               'Operating System :: Unix',
               'Operating System :: MacOS',
-              'Programming Language :: Python :: 3.5',
               'Programming Language :: Python :: 3.6',
               'Programming Language :: Python :: 3.7',
               'Programming Language :: Python :: 3.8',
               'Programming Language :: Python :: 3.9',
+              'Programming Language :: Python :: 3.10',
           ],
           packages=find_packages(),
           package_data={
@@ -113,6 +87,4 @@ if __name__ == "__main__":
               'nilearn.glm.tests': ['*.nii.gz', '*.npz'],
               'nilearn.reporting.glm_reporter_templates': ['*.html'],
           },
-          install_requires=list_required_packages(),
-          python_requires='>=3.5',
           )

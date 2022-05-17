@@ -21,14 +21,17 @@ We demonstrate how to build such an **encoding model** in nilearn, predicting
 <http://www.cell.com/neuron/abstract/S0896-6273%2808%2900958-6>`_.
 
 Participants were shown images, which consisted of random 10x10 binary
-(either black or white) pixels, and the corresponding fMRI activity was
-recorded. We will try to predict the activity in each voxel
+(either black or white) pixels, and the corresponding :term:`fMRI` activity
+was recorded. We will try to predict the activity in each :term:`voxel`
 from the binary pixel-values of the presented images. Then we extract the
-receptive fields for a set of voxels to see which pixel location a voxel
-is most sensitive to.
+receptive fields for a set of voxels to see which pixel location a
+:term:`voxel` is most sensitive to.
 
 See also :doc:`plot_miyawaki_reconstruction` for a decoding
 approach for the same dataset.
+
+.. include:: ../../../examples/masker_note.rst
+
 """
 
 ##############################################################################
@@ -49,11 +52,11 @@ fmri_random_runs_filenames = dataset.func[12:]
 stimuli_random_runs_filenames = dataset.label[12:]
 
 ##############################################################################
-# We can use :func:`nilearn.input_data.MultiNiftiMasker` to load the fMRI
+# We can use :func:`nilearn.maskers.MultiNiftiMasker` to load the fMRI
 # data, clean and mask it.
 
 import numpy as np
-from nilearn.input_data import MultiNiftiMasker
+from nilearn.maskers import MultiNiftiMasker
 
 masker = MultiNiftiMasker(mask_img=dataset.mask, detrend=True,
                           standardize=True)
@@ -67,7 +70,7 @@ stimulus_shape = (10, 10)
 stimuli = []
 for stimulus_run in stimuli_random_runs_filenames:
     stimuli.append(np.reshape(np.loadtxt(stimulus_run,
-                              dtype=np.int, delimiter=','),
+                              dtype=int, delimiter=','),
                               (-1,) + stimulus_shape, order='F'))
 
 ##############################################################################
@@ -202,9 +205,13 @@ fig.set_size_inches(12, 12)
 # set of regression coefficients.
 
 from sklearn.linear_model import LassoLarsCV
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
 
 # automatically estimate the sparsity by cross-validation
-lasso = LassoLarsCV(max_iter=10)
+
+lasso = make_pipeline(StandardScaler(),
+                      LassoLarsCV(normalize=False, max_iter=10))
 
 # Mark the same pixel in each receptive field
 marked_pixel = (4, 2)
@@ -221,8 +228,9 @@ gs1 = gridspec.GridSpec(2, 3)
 # we fit the Lasso for each of the three voxels of the upper row
 for i, index in enumerate([1780, 1951, 2131]):
     ax = plt.subplot(gs1[0, i])
+    lasso.fit(stimuli, fmri_data[:, index])
     # we reshape the coefficients into the form of the original images
-    rf = lasso.fit(stimuli, fmri_data[:, index]).coef_.reshape((10, 10))
+    rf = lasso.named_steps['lassolarscv'].coef_.reshape((10, 10))
     # add a black background
     ax.imshow(np.zeros_like(rf), vmin=0., vmax=1., cmap='gray')
     ax_im = ax.imshow(np.ma.masked_less(rf, 0.1), interpolation="nearest",
@@ -238,8 +246,9 @@ for i, index in enumerate([1780, 1951, 2131]):
 
 gs1.update(left=0., right=1., wspace=0.1)
 ax = plt.subplot(gs1[1, 1])
+lasso.fit(stimuli, fmri_data[:, 1935])
 # we reshape the coefficients into the form of the original images
-rf = lasso.fit(stimuli, fmri_data[:, 1935]).coef_.reshape((10, 10))
+rf = lasso.named_steps['lassolarscv'].coef_.reshape((10, 10))
 ax.imshow(np.zeros_like(rf), vmin=0., vmax=1., cmap='gray')
 ax_im = ax.imshow(np.ma.masked_less(rf, 0.1), interpolation="nearest",
                   cmap='RdPu', vmin=0., vmax=0.75)
