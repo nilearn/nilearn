@@ -1,6 +1,7 @@
 """Utility functions for the permuted least squares method."""
 import numpy as np
-from scipy import ndimage, linalg
+from scipy import linalg
+from scipy.ndimage import label
 
 
 def _calculate_tfce(
@@ -226,12 +227,12 @@ def _calculate_cluster_measures(
         else:
             arr3d[arr3d <= threshold] = 0
 
-        labeled_arr3d, _ = ndimage.measurements.label(arr3d > 0, bin_struct)
+        labeled_arr3d, _ = label(arr3d > 0, bin_struct)
 
         if two_sided_test:
             # Label positive and negative clusters separately
             n_positive_clusters = np.max(labeled_arr3d)
-            temp_labeled_arr3d, _ = ndimage.measurements.label(
+            temp_labeled_arr3d, _ = label(
                 arr3d < 0,
                 bin_struct,
             )

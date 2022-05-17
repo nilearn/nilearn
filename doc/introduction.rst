@@ -315,8 +315,8 @@ Basic numerics
 
  ::
 
-    >>> from scipy import ndimage
-    >>> t_smooth = ndimage.gaussian_filter(t, sigma=2)
+    >>> from scipy.ndimage import gaussian_filter
+    >>> t_smooth = gaussian_filter(t, sigma=2)
 
  `More documentation ...
  <http://scipy-lectures.github.io/advanced/image_processing/index.html>`__

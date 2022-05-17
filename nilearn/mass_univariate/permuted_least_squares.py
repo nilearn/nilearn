@@ -11,9 +11,6 @@ import joblib
 import nibabel as nib
 import numpy as np
 from nilearn.masking import apply_mask
-from scipy import ndimage, stats
-from sklearn.utils import check_random_state
-
 from nilearn.mass_univariate._utils import (
     _calculate_cluster_measures,
     _calculate_tfce,
@@ -22,6 +19,9 @@ from nilearn.mass_univariate._utils import (
     _orthonormalize_matrix,
     _t_score_with_covars_and_normalized_design,
 )
+from scipy import stats
+from scipy.ndimage import generate_binary_structure, label
+from sklearn.utils import check_random_state
 
 
 def _permuted_ols_on_chunk(
@@ -238,7 +238,7 @@ def _permuted_ols_on_chunk(
         # Prepare data for cluster thresholding
         if tfce or (threshold is not None):
             arr4d = masker.inverse_transform(perm_scores.T).get_fdata()
-            bin_struct = ndimage.generate_binary_structure(3, 1)
+            bin_struct = generate_binary_structure(3, 1)
 
         if tfce:
             # The TFCE map will contain positive and negative values if
@@ -768,7 +768,7 @@ def permuted_ols(
     )
 
     # Define connectivity for TFCE and/or cluster measures
-    bin_struct = ndimage.generate_binary_structure(3, 1)
+    bin_struct = generate_binary_structure(3, 1)
 
     if tfce:
         scores_4d = masker.inverse_transform(
@@ -896,7 +896,7 @@ def permuted_ols(
             scores_original_data_3d = scores_original_data_4d[..., i_regressor]
 
             # Label the clusters for both cluster mass and size inference
-            labeled_arr3d, _ = ndimage.measurements.label(
+            labeled_arr3d, _ = label(
                 scores_original_data_3d > threshold_t,
                 bin_struct,
             )
@@ -904,7 +904,7 @@ def permuted_ols(
             if two_sided_test:
                 # Label positive and negative clusters separately
                 n_positive_clusters = np.max(labeled_arr3d)
-                temp_labeled_arr3d, _ = ndimage.measurements.label(
+                temp_labeled_arr3d, _ = label(
                     scores_original_data_3d < -threshold_t,
                     bin_struct,
                 )

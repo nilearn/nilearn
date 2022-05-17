@@ -7,7 +7,7 @@ import warnings
 import numbers
 
 import numpy as np
-from scipy import ndimage
+from scipy.ndimage import binary_dilation, binary_erosion
 from joblib import Parallel, delayed
 
 from sklearn.utils import deprecated
@@ -78,7 +78,7 @@ def _extrapolate_out_mask(data, mask, iterations=1):
     if iterations > 1:
         data, mask = _extrapolate_out_mask(data, mask,
                                            iterations=iterations - 1)
-    new_mask = ndimage.binary_dilation(mask)
+    new_mask = binary_dilation(mask)
     larger_mask = np.zeros(np.array(mask.shape) + 2, dtype=bool)
     larger_mask[1:-1, 1:-1, 1:-1] = mask
     # Use nans as missing value: ugly
@@ -182,7 +182,7 @@ def _post_process_mask(mask, affine, opening=2, connected=True,
     """
     if opening:
         opening = int(opening)
-        mask = ndimage.binary_erosion(mask, iterations=opening)
+        mask = binary_erosion(mask, iterations=opening)
     mask_any = mask.any()
     if not mask_any:
         warnings.warn("Computed an empty mask. %s" % warning_msg,
@@ -190,8 +190,8 @@ def _post_process_mask(mask, affine, opening=2, connected=True,
     if connected and mask_any:
         mask = largest_connected_component(mask)
     if opening:
-        mask = ndimage.binary_dilation(mask, iterations=2 * opening)
-        mask = ndimage.binary_erosion(mask, iterations=opening)
+        mask = binary_dilation(mask, iterations=2 * opening)
+        mask = binary_erosion(mask, iterations=opening)
     return mask, affine
 
 
