@@ -16,7 +16,7 @@ from nilearn.mass_univariate.tests.utils import (
 def test__calculate_tfce():
     """Test _calculate_tfce."""
     test_arr4d = np.zeros((10, 10, 10, 1))
-    bin_struct = ndimage.generate_binary_structure(3, 1)
+    bin_struct = generate_binary_structure(3, 1)
 
     # 10-voxel positive cluster, high intensity
     test_arr4d[:2, :2, :2, 0] = 10

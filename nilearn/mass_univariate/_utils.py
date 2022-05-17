@@ -91,7 +91,7 @@ def _calculate_tfce(
                 temp_arr3d[temp_arr3d < score_thresh] = 0
 
                 # Derive clusters
-                labeled_arr3d, n_clusters = ndimage.measurements.label(
+                labeled_arr3d, n_clusters = label(
                     temp_arr3d,
                     bin_struct,
                 )
