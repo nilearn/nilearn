@@ -3,7 +3,7 @@
 import numpy as np
 import nibabel
 import pytest
-from scipy import ndimage
+from scipy.ndimage import label
 
 from nilearn.regions import (connected_regions, RegionExtractor,
                              connected_label_regions)
@@ -258,7 +258,7 @@ def test_remove_small_regions():
                       [1., 0., 0.],
                       [0., 1., 1.]]])
     # To remove small regions, data should be labelled
-    label_map, n_labels = ndimage.label(data)
+    label_map, n_labels = label(data)
     sum_label_data = np.sum(label_map)
 
     affine = np.eye(4)
