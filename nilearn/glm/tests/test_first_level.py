@@ -472,8 +472,6 @@ def test_fmri_inputs():
         del fi, func_img, mask, d, des, FUNCFILE, _
 
 
-<<<<<<< HEAD
-=======
 def basic_paradigm(condition_names_have_spaces=False):
     if condition_names_have_spaces:
         conditions = ['c 0', 'c 0', 'c 0', 'c 1', 'c 1', 'c 1',
@@ -488,7 +486,6 @@ def basic_paradigm(condition_names_have_spaces=False):
     return events
 
 
->>>>>>> upstream/main
 def test_first_level_design_creation():
     # Test processing of FMRI inputs
     with InTemporaryDirectory():
