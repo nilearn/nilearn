@@ -12,6 +12,7 @@ import pandas as pd
 from numpy.testing import assert_array_equal
 from nilearn._utils.data_gen import basic_paradigm
 
+
 def duplicate_events_paradigm():
     conditions = ['c0', 'c0', 'c0', 'c0', 'c1', 'c1']
     onsets = [10, 30, 70, 70, 10, 30]
