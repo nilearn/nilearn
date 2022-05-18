@@ -4,7 +4,6 @@ import os
 import numpy as np
 import pandas as pd
 import pytest
-from nibabel import load
 from nibabel.tmpdirs import InTemporaryDirectory
 
 from nilearn.maskers import NiftiMasker
@@ -13,7 +12,6 @@ from nilearn.glm.second_level import SecondLevelModel
 from nilearn._utils.data_gen import (
     create_fake_bids_dataset,
     generate_fake_fmri_data_and_design,
-    write_fake_fmri_data_and_design,
 )
 from nilearn.interfaces.bids import (
     get_bids_files,
@@ -269,12 +267,14 @@ def test_save_glm_to_bids_contrast_definitions(tmp_path_factory):
         assert os.path.isfile(full_filename)
 
 
-def test_save_glm_to_bids_second_level():
+def test_save_glm_to_bids_second_level(tmp_path_factory):
     """Test save_glm_to_bids on a SecondLevelModel.
 
     This test reuses code from
     nilearn.glm.tests.test_second_level.test_high_level_glm_with_paths.
     """
+    tmpdir = tmp_path_factory.mktemp('test_save_glm_to_bids_second_level')
+
     EXPECTED_FILENAMES = [
         'dataset_description.json',
         'task-nback_contrast-effectsOfInterest_design.svg',
@@ -290,36 +290,36 @@ def test_save_glm_to_bids_second_level():
         'task-nback_statmap.json',
     ]
 
-    with InTemporaryDirectory():
-        shapes = ((7, 8, 9, 1),)
-        mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
-        FUNCFILE = FUNCFILE[0]
-        func_img = load(FUNCFILE)
+    shapes = ((7, 8, 9, 1),)
+    rk = 3
+    mask, func_img, design_matrices = generate_fake_fmri_data_and_design(
+        shapes,
+        rk,
+    )
 
-        # Ordinary Least Squares case
-        model = SecondLevelModel(mask_img=mask, minimize_memory=False)
+    # Ordinary Least Squares case
+    model = SecondLevelModel(mask_img=mask, minimize_memory=False)
 
-        # fit model
-        Y = [func_img] * 4
-        X = pd.DataFrame([[1]] * 4, columns=['intercept'])
-        model = model.fit(Y, design_matrix=X)
+    # fit model
+    Y = [func_img] * 4
+    X = pd.DataFrame([[1]] * 4, columns=['intercept'])
+    model = model.fit(Y, design_matrix=X)
 
-        contrasts = {
-            'effects of interest': np.eye(
-                len(model.design_matrix_.columns)
-            )[0],
-        }
-        contrast_types = {
-            'effects of interest': 'F',
-        }
+    contrasts = {
+        'effects of interest': np.eye(
+            len(model.design_matrix_.columns)
+        )[0],
+    }
+    contrast_types = {'effects of interest': 'F'}
 
-        save_glm_to_bids(
-            model=model,
-            contrasts=contrasts,
-            contrast_types=contrast_types,
-            out_dir='.',
-            prefix='task-nback'
-        )
+    save_glm_to_bids(
+        model=model,
+        contrasts=contrasts,
+        contrast_types=contrast_types,
+        out_dir='.',
+        prefix='task-nback'
+    )
 
-        for fname in EXPECTED_FILENAMES:
-            assert os.path.isfile(fname)
+    for fname in EXPECTED_FILENAMES:
+        full_filename = os.path.join(tmpdir, fname)
+        assert os.path.isfile(full_filename)
