@@ -1,7 +1,116 @@
-"""Utility functions for the permuted_least_squares module."""
+"""Utility functions for the permuted least squares method."""
 import numpy as np
 from scipy import linalg
 from scipy.ndimage import label
+
+
+def _calculate_tfce(
+    arr4d,
+    bin_struct,
+    E=0.5,
+    H=2,
+    dh='auto',
+    two_sided_test=True,
+):
+    """Calculate threshold-free cluster enhancement values for scores maps.
+
+    The :term:`TFCE` calculation is mostly implemented as described in [1]_,
+    with minor modifications to produce similar results to fslmaths, as well
+    as to support two-sided testing.
+
+    Parameters
+    ----------
+    arr4d : :obj:`numpy.ndarray` of shape (X, Y, Z, R)
+        Unthresholded 4D array of 3D t-statistic maps.
+        R = regressor.
+    bin_struct : :obj:`numpy.ndarray` of shape (3, 3, 3)
+        Connectivity matrix for defining clusters.
+    E : :obj:`float`, optional
+        Extent weight. Default is 0.5.
+    H : :obj:`float`, optional
+        Height weight. Default is 2.
+    dh : 'auto' or :obj:`float`, optional
+        Step size for TFCE calculation.
+        If set to 'auto', use 100 steps, as is done in fslmaths.
+        A good alternative is 0.1 for z and t maps, as in [1]_.
+        Default is 'auto'.
+    two_sided_test : :obj:`bool`, optional
+        Whether to assess both positive and negative clusters (True) or just
+        positive ones (False).
+        Default is False.
+
+    Returns
+    -------
+    tfce_arr : :obj:`numpy.ndarray`, shape=(n_descriptors, n_regressors)
+        :term:`TFCE` values.
+
+    Notes
+    -----
+    In [1]_, each threshold's partial TFCE score is multiplied by dh,
+    which makes directly comparing TFCE values across different thresholds
+    possible.
+    However, in fslmaths, this is not done.
+    In the interest of maximizing similarity between nilearn and established
+    tools, we chose to follow fslmaths' approach.
+
+    Additionally, we have modified the method to support two-sided testing.
+    In fslmaths, only positive clusters are considered.
+
+    References
+    ----------
+    .. [1] Smith, S. M., & Nichols, T. E. (2009).
+       Threshold-free cluster enhancement: addressing problems of smoothing,
+       threshold dependence and localisation in cluster inference.
+       Neuroimage, 44(1), 83-98.
+    """
+    tfce_4d = np.zeros_like(arr4d)
+
+    for i_regressor in range(arr4d.shape[3]):
+        arr3d = arr4d[..., i_regressor]
+        if two_sided_test:
+            signs = [-1, 1]
+
+            # Get the maximum statistic in the map
+            max_score = np.max(np.abs(arr3d))
+        else:
+            signs = [1]
+
+            # Get the maximum statistic in the map
+            max_score = np.max(arr3d)
+
+        if dh == 'auto':
+            step = max_score / 100
+        else:
+            step = dh
+
+        for score_thresh in np.arange(step, max_score + step, step):
+            for sign in signs:
+                temp_arr3d = arr3d * sign
+
+                # Threshold map at *h*
+                temp_arr3d[temp_arr3d < score_thresh] = 0
+
+                # Derive clusters
+                labeled_arr3d, n_clusters = label(
+                    temp_arr3d,
+                    bin_struct,
+                )
+
+                # Label each cluster with its extent
+                # Each voxel's cluster extent at threshold *h* is thus *e(h)*
+                cluster_map = np.zeros(temp_arr3d.shape, int)
+                for cluster_val in range(1, n_clusters + 1):
+                    bool_map = labeled_arr3d == cluster_val
+                    cluster_map[bool_map] = np.sum(bool_map)
+
+                # Calculate each voxel's tfce value based on its cluster extent
+                # and z-value
+                # NOTE: We do not multiply by dh, based on fslmaths'
+                # implementation. This differs from the original paper.
+                tfce_step_values = (cluster_map**E) * (score_thresh**H)
+                tfce_4d[..., i_regressor] += sign * tfce_step_values
+
+    return tfce_4d
 
 
 def _null_to_p(test_values, null_array, alternative='two-sided'):

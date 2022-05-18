@@ -470,6 +470,129 @@ def test_sided_test2(random_state=0):
                               neg_log_pvals_twosided)
 
 
+def test_tfce_smoke(random_state=0):
+    """Test combinations of parameters related to TFCE inference."""
+    import nibabel as nib
+    from nilearn.maskers import NiftiMasker
+
+    # create design
+    target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
+    target_var = np.hstack((  # corresponds to 3 x 3 x 3 x 10 niimg
+        target_var1,  # voxel 1 has positive effect
+        - target_var1,  # voxel 2 has negative effect
+        np.random.random((10, 25)),  # 25 remaining voxels
+    ))
+    tested_var = np.arange(0, 20, 2)
+
+    mask_img = nib.Nifti1Image(np.ones((3, 3, 3)), np.eye(4))
+    masker = NiftiMasker(mask_img)
+    masker.fit(mask_img)
+    n_descriptors = np.prod(mask_img.shape)
+    n_regressors = 1  # tested_var is 1D
+
+    # tfce is True, indicating TFCE inference should be done,
+    # but masker is not defined.
+    with pytest.raises(ValueError):
+        permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            two_sided_test=False,
+            n_perm=100,
+            random_state=random_state,
+            threshold=None,
+            masker=None,
+            tfce=True,
+        )
+
+    # tfce is True, but output_type is "legacy".
+    # raise a warning, and get a dictionary.
+    with pytest.warns(match="Overriding."):
+        out = permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            two_sided_test=False,
+            n_perm=0,
+            random_state=random_state,
+            threshold=None,
+            masker=masker,
+            tfce=True,
+            output_type="legacy",
+        )
+
+    assert isinstance(out, dict)
+
+    # output_type is "legacy".
+    # raise a deprecation warning, but get the standard output.
+    with pytest.warns(DeprecationWarning):
+        out = permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            two_sided_test=False,
+            n_perm=100,
+            random_state=random_state,
+            threshold=None,
+            masker=None,
+            tfce=False,
+            output_type="legacy",
+        )
+
+    assert isinstance(out, tuple)
+
+    # no permutations and output_type is "dict", so check for "t" and
+    # "tfce" maps
+    out = permuted_ols(
+        tested_var,
+        target_var,
+        model_intercept=False,
+        two_sided_test=False,
+        n_perm=0,
+        random_state=random_state,
+        threshold=None,
+        masker=masker,
+        tfce=True,
+        output_type="dict",
+    )
+
+    assert isinstance(out, dict)
+    assert "t" in out.keys()
+    assert "tfce" in out.keys()
+    assert out["t"].shape == (n_regressors, n_descriptors)
+    assert out["tfce"].shape == (n_regressors, n_descriptors)
+
+    # permutations, TFCE, and masker are defined,
+    # so check for TFCE maps
+    n_perm = 10
+    out = permuted_ols(
+        tested_var,
+        target_var,
+        model_intercept=False,
+        two_sided_test=False,
+        n_perm=n_perm,
+        random_state=random_state,
+        threshold=None,
+        masker=masker,
+        tfce=True,
+        output_type="dict",
+    )
+
+    assert isinstance(out, dict)
+    assert "t" in out.keys()
+    assert "tfce" in out.keys()
+    assert "logp_max_t" in out.keys()
+    assert "logp_max_tfce" in out.keys()
+    assert "h0_max_t" in out.keys()
+    assert "h0_max_tfce" in out.keys()
+    assert out["t"].shape == (n_regressors, n_descriptors)
+    assert out["tfce"].shape == (n_regressors, n_descriptors)
+    assert out["logp_max_t"].shape == (n_regressors, n_descriptors)
+    assert out["logp_max_tfce"].shape == (n_regressors, n_descriptors)
+    assert out["h0_max_t"].size == n_perm
+    assert out["h0_max_tfce"].size == n_perm
+
+
 def test_cluster_level_parameters_smoke(random_state=0):
     """Test combinations of parameters related to cluster-level inference."""
     import nibabel as nib
@@ -500,6 +623,7 @@ def test_cluster_level_parameters_smoke(random_state=0):
             random_state=random_state,
             threshold=0.001,
             masker=None,
+            tfce=False,
         )
 
     # masker is defined, but threshold is not.
@@ -514,6 +638,7 @@ def test_cluster_level_parameters_smoke(random_state=0):
             random_state=random_state,
             threshold=None,
             masker=masker,
+            tfce=False,
             output_type="legacy",
         )
 
@@ -531,6 +656,7 @@ def test_cluster_level_parameters_smoke(random_state=0):
             random_state=random_state,
             threshold=0.001,
             masker=masker,
+            tfce=False,
             output_type="legacy",
         )
 
@@ -548,6 +674,7 @@ def test_cluster_level_parameters_smoke(random_state=0):
             random_state=random_state,
             threshold=None,
             masker=None,
+            tfce=False,
             output_type="legacy",
         )
 
@@ -563,6 +690,7 @@ def test_cluster_level_parameters_smoke(random_state=0):
         random_state=random_state,
         threshold=None,
         masker=None,
+        tfce=False,
         output_type="dict",
     )
 
