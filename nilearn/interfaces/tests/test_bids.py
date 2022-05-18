@@ -296,6 +296,7 @@ def test_save_glm_to_bids_second_level(tmp_path_factory):
         shapes,
         rk,
     )
+    func_img = func_img[0]
 
     # Ordinary Least Squares case
     model = SecondLevelModel(mask_img=mask, minimize_memory=False)
@@ -316,7 +317,7 @@ def test_save_glm_to_bids_second_level(tmp_path_factory):
         model=model,
         contrasts=contrasts,
         contrast_types=contrast_types,
-        out_dir='.',
+        out_dir=tmpdir,
         prefix='task-nback'
     )
 
