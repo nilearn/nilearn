@@ -176,7 +176,7 @@ def test__squared_loss_derivative_lipschitz_constant():
 
 
 def test_logistic_derivative_lipschitz_constant():
-    # Tests Lipschitz-continuity of of the derivative of logistic loss
+    # Tests Lipschitz-continuity of the derivative of logistic loss
     rng = check_random_state(42)
     grad_weight = 2.08e-1
     lipschitz_constant = _logistic_derivative_lipschitz_constant(

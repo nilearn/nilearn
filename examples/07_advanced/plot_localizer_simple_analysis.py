@@ -11,13 +11,14 @@ The Localizer dataset contains many contrasts and subject-related
 variates.  The user can refer to the
 `plot_localizer_mass_univariate_methods.py` example to see how to use these.
 
+.. include:: ../../../examples/masker_note.rst
 
 """
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
 import numpy as np
 import matplotlib.pyplot as plt
 from nilearn import datasets
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from nilearn.image import get_data
 
 
@@ -25,7 +26,8 @@ from nilearn.image import get_data
 # Load Localizer contrast
 n_samples = 20
 localizer_dataset = datasets.fetch_localizer_calculation_task(
-    n_subjects=n_samples)
+    n_subjects=n_samples, legacy_format=False
+)
 tested_var = np.ones((n_samples, 1))
 
 

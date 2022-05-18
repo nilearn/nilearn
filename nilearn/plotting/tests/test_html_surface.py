@@ -35,7 +35,7 @@ def test_check_mesh():
     mesh = html_surface._check_mesh('fsaverage5')
     assert mesh is html_surface._check_mesh(mesh)
     with pytest.raises(ValueError):
-        html_surface._check_mesh('fsaverage3')
+        html_surface._check_mesh('fsaverage2')
     mesh.pop('pial_left')
     with pytest.raises(ValueError):
         html_surface._check_mesh(mesh)
@@ -158,4 +158,10 @@ def test_view_img_on_surf():
     check_html(html)
     np.clip(get_data(img), 0, None, out=get_data(img))
     html = html_surface.view_img_on_surf(img, symmetric_cmap=False)
+    check_html(html)
+    html = html_surface.view_img_on_surf(img, symmetric_cmap=False,
+                                         vol_to_surf_kwargs={
+                                             "n_samples": 1,
+                                             "radius": 0.,
+                                             "interpolation": "nearest"})
     check_html(html)

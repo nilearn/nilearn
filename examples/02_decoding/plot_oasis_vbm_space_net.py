@@ -16,7 +16,9 @@ See also the documentation: :ref:`space_net`.
 import numpy as np
 from nilearn import datasets
 n_subjects = 200  # increase this number if you have more RAM on your box
-dataset_files = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
+dataset_files = datasets.fetch_oasis_vbm(
+    n_subjects=n_subjects, legacy_format=False
+)
 age = dataset_files.ext_vars['age'].astype(float)
 age = np.array(age)
 gm_imgs = np.array(dataset_files.gray_matter_maps)
@@ -71,12 +73,12 @@ import matplotlib.pyplot as plt
 plt.figure()
 plt.suptitle("graph-net: Mean Absolute Error %.2f years" % mse)
 linewidth = 3
-ax1 = plt.subplot('211')
+ax1 = plt.subplot(211)
 ax1.plot(age_test, label="True age", linewidth=linewidth)
 ax1.plot(y_pred, '--', c="g", label="Predicted age", linewidth=linewidth)
 ax1.set_ylabel("age")
 plt.legend(loc="best")
-ax2 = plt.subplot("212")
+ax2 = plt.subplot(212)
 ax2.plot(age_test - y_pred, label="True age - predicted age",
          linewidth=linewidth)
 ax2.set_xlabel("subject")

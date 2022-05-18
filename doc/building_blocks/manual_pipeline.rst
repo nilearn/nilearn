@@ -60,7 +60,7 @@ presenting different category of pictures to the subject (face, cat, ...)
 and the goal of this experiment is to predict which category is presented
 to the subjects from the brain activation.
 
-These conditions are presented as string into a CSV file. The `pandas 
+These conditions are presented as string into a CSV file. The `pandas
 <http://pandas.pydata.org/>`__ function
 `read_csv` is very useful to load this kind of data.
 
@@ -77,7 +77,7 @@ For example, we will now consider only the conditions *cat* and *face* from our 
 This can be done as follows:
 
 .. literalinclude:: ../../examples/plot_decoding_tutorial.py
-    :start-after: # The input data will become much smaller (i.e. fmri signal is shorter):
+    :start-after: # The input data will become much smaller (i.e. :term:`fmri<fMRI>` signal is shorter):
     :end-before: ###########################################################################
 
 
@@ -112,7 +112,7 @@ samples and features.
 
 .. centered:: |niimgs|  |arrow|  |arrays|
 
-.. currentmodule:: nilearn.input_data
+.. currentmodule:: nilearn.maskers
 
 We use masking to convert 4D data (i.e. 3D volume over time) into 2D data
 (i.e. voxels over time). For this purpose, we use the
@@ -135,12 +135,14 @@ The :class:`NiftiMasker` can be seen as a *tube* that transforms data
 from 4D images to 2D arrays, but first it needs to 'fit' this data in
 order to learn simple parameters from it, such as its shape:
 
+.. include:: ../../examples/masker_note.rst
+
 .. code-block:: python
 
     # We first create a masker, giving it the options that we care
     # about. Here we use standardizing of the data, as it is often important
     # for decoding
-    from nilearn.input_data import NiftiMasker
+    from nilearn.maskers import NiftiMasker
     masker = NiftiMasker(mask_img=mask_filename, standardize=True)
 
     # We give the masker a filename and retrieve a 2D array ready
@@ -229,7 +231,7 @@ discriminating weight.
 Going further
 =============
 
-.. currentmodule:: nilearn.input_data
+.. currentmodule:: nilearn.maskers
 
 The :class:`NiftiMasker` is a very powerful object and we have only
 scratched the surface of its possibilities. It is described in more

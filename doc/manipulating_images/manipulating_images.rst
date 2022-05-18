@@ -36,9 +36,9 @@ loading the data into a data matrix, most are also integrated in the
 * Cleaning signals (e.g., linear detrending, standardization,
   confound removal, low/high pass filtering):
   :func:`nilearn.image.clean_img`
-  
+
   .. seealso::
-     
+
      To apply this cleaning on signal matrices rather than images:
      :func:`nilearn.signal.clean`
 
@@ -148,7 +148,7 @@ Computing and applying spatial masks
 Relevant functions:
 
 * compute a mask from EPI images: :func:`nilearn.masking.compute_epi_mask`
-* compute a grey-matter mask using the MNI template:
+* compute a whole-brain, grey-matter or white-matter mask using the MNI template:
   :func:`nilearn.masking.compute_brain_mask`.
 * compute a mask from images with a flat background:
   :func:`nilearn.masking.compute_background_mask`
@@ -171,7 +171,7 @@ can be computed from the data:
   case when working on statistic maps output after a brain extraction
 - :func:`nilearn.masking.compute_epi_mask` for EPI images
 - :func:`nilearn.masking.compute_brain_mask` to compute a
-  whole-brain mask using the MNI template.
+  whole-brain, grey-matter or white-matter mask using the MNI template.
 
 
 .. literalinclude:: ../../examples/01_plotting/plot_visualization.py
@@ -234,7 +234,7 @@ ROI mask:
    better representation of voxels of interest.
 
  * **Mask intersection and dilation**: Post-processing the results with
-   simple morphological operations, mask intersection and dilation. 
+   simple morphological operations, mask intersection and dilation.
 
    * we can use another mask, such as a grey-matter mask, to select
      only the voxels which are common in both masks.

@@ -19,6 +19,7 @@ General reference for regression models:
 __docformat__ = 'restructuredtext en'
 
 import warnings
+import functools
 
 import numpy as np
 
@@ -29,6 +30,27 @@ import scipy.linalg as spl
 from nilearn._utils.helpers import rename_parameters
 from nilearn.glm.model import LikelihoodModelResults
 from nilearn._utils.glm import positive_reciprocal
+
+
+def _deprecation_warning(old_param,
+                         new_param,
+                         start_version,
+                         end_version='future'):
+    def _warned_func(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            warnings.warn(category=FutureWarning,
+                          message=("'{}' has been deprecated in version {} "
+                                   "and will be removed in version {}. "
+                                   "Please use '{}' instead.".format(
+                                       old_param,
+                                       start_version,
+                                       end_version,
+                                       new_param
+                                   )))
+            return func(*args, **kwargs)
+        return wrapper
+    return _warned_func
 
 
 class OLSModel(object):
@@ -97,25 +119,9 @@ class OLSModel(object):
                                           np.transpose(self.calc_beta))
         self.df_total = self.whitened_design.shape[0]
 
-        eps = np.abs(self.design).sum() * np.finfo(np.float).eps
+        eps = np.abs(self.design).sum() * np.finfo(np.float64).eps
         self.df_model = matrix_rank(self.design, eps)
         self.df_residuals = self.df_total - self.df_model
-
-    @auto_attr
-    def df_resid(self):
-        warnings.warn("'df_resid' from OLSModel"
-                      "has been deprecated and will be removed. "
-                      "Please use 'df_residuals'.",
-                      FutureWarning)
-        return self.df_residuals
-
-    @auto_attr
-    def wdesign(self):
-        warnings.warn("'wdesign' from OLSModel"
-                      "has been deprecated and will be removed. "
-                      "Please use 'whitened_design'.",
-                      FutureWarning)
-        return self.whitened_design
 
     def logL(self, beta, Y, nuisance=None):
         r'''Returns the value of the loglikelihood function at beta.
@@ -310,10 +316,7 @@ class RegressionResults(LikelihoodModelResults):
     It may change in any future release of Nilearn.
 
     """
-    @rename_parameters(
-        {'wresid': 'whitened_residuals', 'wY': 'whitened_Y'},
-        lib_name='Nistats'
-    )
+
     def __init__(self, theta, Y, model, whitened_Y, whitened_residuals,
                  cov=None, dispersion=1., nuisance=None):
         """See LikelihoodModelResults constructor.
@@ -329,55 +332,11 @@ class RegressionResults(LikelihoodModelResults):
         self.whitened_design = model.whitened_design
 
     @auto_attr
-    def wdesign(self):
-        warnings.warn("'wdesign' from RegressionResults"
-                      "has been deprecated and will be removed. "
-                      "Please use 'whitened_design'.",
-                      FutureWarning)
-        return self.whitened_design
-
-    @auto_attr
-    def wY(self):
-        warnings.warn("'wY' from RegressionResults "
-                      "has been deprecated and will be removed. "
-                      "Please use 'whitened_Y' instead.",
-                      FutureWarning,
-                      )
-        return self.whitened_Y
-
-    @auto_attr
-    def wresid(self):
-        warnings.warn("'wresid' from RegressionResults "
-                      "has been deprecated and will be removed. "
-                      "Please use 'whitened_residuals' instead.",
-                      FutureWarning,
-                      )
-        return self.whitened_residuals
-
-    @auto_attr
-    def resid(self):
-        warnings.warn("'resid' from RegressionResults "
-                      "has been deprecated and will be removed. "
-                      "Please use 'residuals' instead.",
-                      FutureWarning,
-                      )
-        return self.residuals
-
-    @auto_attr
     def residuals(self):
         """
         Residuals from the fit.
         """
         return self.Y - self.predicted
-
-    @auto_attr
-    def norm_resid(self):
-        warnings.warn("'norm_resid' from RegressionResults "
-                      "has been deprecated and will be removed. "
-                      "Please use 'normalized_residuals' instead.",
-                      FutureWarning,
-                      )
-        return self.normalized_residuals
 
     @auto_attr
     def normalized_residuals(self):
@@ -434,7 +393,7 @@ class RegressionResults(LikelihoodModelResults):
 
 class SimpleRegressionResults(LikelihoodModelResults):
     """This class contains only information of the model fit necessary
-    for contast computation.
+    for contrast computation.
 
     Its intended to save memory when details of the model are unnecessary.
 
@@ -466,35 +425,11 @@ class SimpleRegressionResults(LikelihoodModelResults):
         """
         raise ValueError('can not use this method for simple results')
 
-    def resid(self, Y):
-        warnings.warn("'resid()' from SimpleRegressionResults"
-                      " has been deprecated and will be removed. "
-                      "Please use 'residuals()'.",
-                      FutureWarning,
-                      )
-        return self.residuals(Y)
-
     def residuals(self, Y):
         """
         Residuals from the fit.
         """
         return Y - self.predicted
-
-    @auto_attr
-    def df_resid(self):
-        warnings.warn("The attribute 'df_resid' from OLSModel"
-                      "has been deprecated and will be removed. "
-                      "Please use 'df_residuals'.",
-                      FutureWarning)
-        return self.df_residuals
-
-    def norm_resid(self, Y):
-        warnings.warn("'SimpleRegressionResults.norm_resid' method "
-                      "has been deprecated and will be removed. "
-                      "Please use 'normalized_residuals'.",
-                      FutureWarning,
-                      )
-        return self.normalized_residuals(Y)
 
     def normalized_residuals(self, Y):
         """Residuals, normalized to have unit length.
@@ -522,6 +457,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
                 * positive_reciprocal(np.sqrt(self.dispersion))
                 )
 
+    @auto_attr
     def predicted(self):
         """ Return linear predictor values from a design matrix.
         """

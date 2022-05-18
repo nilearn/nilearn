@@ -1,0 +1,115 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.3.0
+=====
+
+**Released April 2017**
+
+In addition, more details of this release are listed below.
+Please checkout in **0.3.0 beta** release section for minimum version
+support of dependencies, latest updates, highlights, changelog and enhancements.
+
+Changes
+-------
+
+- Function :func:`~plotting.find_cut_slices` now supports to accept :class:`~nibabel.nifti1.Nifti1Image` as an input for argument ``img``.
+
+- Helper functions ``_get_mask_volume`` and ``_adjust_screening_percentile`` are now moved to ``param_validation`` file in utilities module to be used in common with Decoder object.
+
+Fixes
+-----
+
+- Fix bug uncompressing tar files with datasets fetcher.
+
+- Fixed bunch of CircleCI documentation build failures.
+
+- Fixed deprecations ``set_axis_bgcolor`` related to matplotlib in plotting functions.
+
+- Fixed bug related to not accepting a list of arrays as an input to unmask, in :mod:`nilearn.masking` module.
+
+Enhancements
+------------
+
+- :term:`ANOVA` :term:`SVM` example on Haxby datasets ``plot_haxby_anova_svm`` in Decoding section now uses ``SelectPercentile`` to select :term:`voxels<voxel>` rather than ``SelectKBest``.
+
+- New function ``fast_svd`` implementation in base decomposition module to automatically switch between randomized and lapack SVD (heuristic of ``scikit-learn``).
+
+0.3.0 beta
+===========
+
+**Released February 2017**
+
+To install the beta version, use::
+
+  pip install --upgrade --pre nilearn
+
+Highlights
+----------
+
+- Simple surface plotting.
+
+- A function to break a parcellation into its connected components.
+
+- **Dropped support for scikit-learn older than 0.14.1** Minimum supported version is now ``0.14.1``.
+
+- **Dropped support for Python 2.6**
+
+- Minimum required version of ``NiBabel`` is now ``1.2.0``, to support loading annotated data with freesurfer.
+
+Changes
+-------
+
+- A helper function ``_safe_get_data`` as a nilearn utility now safely removes ``NaN`` values in the images with argument ``ensure_finite=True``.
+
+- Functions :func:`~connectome.cov_to_corr` and :func:`~connectome.prec_to_partial` can now be used.
+
+Fixes
+-----
+
+- Fix colormap issue with ``colorbar=True`` when using qualitative colormaps. Fixed in according with changes of ``matplotlib 2.0`` fixes.
+
+- Fix plotting functions to work with ``NaN`` values in the images.
+
+- Fix bug related get ``dtype`` of the images with ``nibabel get_data()``.
+
+- Fix bug in function :func:`~image.clean_img`.
+
+Enhancements
+------------
+
+- New function :func:`~regions.connected_label_regions` to extract the connected components represented as same label to regions apart with each region labelled as unique label.
+
+- New plotting modules for surface plotting visualization. ``Matplotlib`` with version higher ``1.3.1`` is required for plotting surface data using these functions.
+
+- Function :func:`~plotting.plot_surf` can be used for plotting surfaces mesh data with optional background.
+
+- Function :func:`~plotting.plot_surf_stat_map` can be used for plotting statistical maps on a brain surface with optional background.
+
+- Function :func:`~plotting.plot_surf_roi` can be used for plotting statistical maps rois onto brain surface.
+
+- Function ``nilearn.datasets.fetch_surf_fsaverage5`` can be used for surface data object to be as background map for the above plotting functions.
+
+- New function :func:`~datasets.fetch_atlas_surf_destrieux` can give you Destrieux et. al 2010 cortical atlas in ``fsaverage5`` surface space.
+
+- New function :func:`~datasets.fetch_surf_nki_enhanced` gives you resting state data preprocessed and projected to ``fsaverage5`` surface space.
+
+- Two good examples in plotting gallery shows how to fetch atlas and NKI data and used for plotting on brain surface.
+
+- New function :func:`~surface.load_surf_mesh` in ``surf_plotting`` module for loading surface mesh data into two arrays, containing ``(x, y, z)`` coordinates for mesh vertices and indices of mesh faces.
+
+- New function :func:`~surface.load_surf_data` in ``surf_plotting`` module for loading data of numpy array to represented on a surface mesh.
+
+- Add fetcher for Allen et al. 2011 RSN atlas in :func:`~datasets.fetch_atlas_allen_2011`.
+
+- Function ``nilearn.datasets.fetch_cobre`` is now updated to new light release of COBRE data (schizophrenia).
+
+- A new example to show how to extract regions on labels image in example section manipulating images.
+
+- ``coveralls`` is replaced with ``codecov``.
+
+- Upgraded to ``Sphinx`` version ``0.1.7``.
+
+- Extensive plotting example shows how to use contours and filled contours on glass brain.

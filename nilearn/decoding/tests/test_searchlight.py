@@ -109,4 +109,3 @@ def test_searchlight():
     # run searchlight on list of 3D images
     sl = searchlight.SearchLight(mask_img)
     sl.fit(imgs, y)
-

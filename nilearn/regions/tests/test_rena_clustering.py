@@ -7,7 +7,7 @@ except ImportError:
     from joblib import Memory
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.regions.rena_clustering import ReNA
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from nilearn.image import get_data
 
 
@@ -32,7 +32,7 @@ def test_rena_clustering():
     assert 10 == rena.n_clusters_
     assert X.shape == X_compress.shape
 
-    memory = Memory(cachedir=None)
+    memory = Memory(location=None)
     rena = ReNA(mask_img, n_clusters=-2, memory=memory)
     pytest.raises(ValueError, rena.fit, X)
 

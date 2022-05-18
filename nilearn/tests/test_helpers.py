@@ -39,21 +39,21 @@ def test_rename_parameters():
          ' instead.'
          ),
         ]
-    
+
     @helpers.rename_parameters(replacement_params, '0.6.1rc', 'other_lib', )
     def mock_function(replacement_param_0, replacement_param_1,
                       unchanged_param_0, unchanged_param_1):
         return (replacement_param_0, replacement_param_1, unchanged_param_0,
                 unchanged_param_1
                 )
-    
+
     with warnings.catch_warnings(record=True) as raised_warnings:
         actual_output = mock_function(deprecated_param_0='dp0',
                                       deprecated_param_1='dp1',
                                       unchanged_param_0='up0',
                                       unchanged_param_1='up1',
                                       )
-    
+
     assert actual_output == expected_output
 
     expected_warnings.sort()
@@ -80,7 +80,7 @@ def test_transfer_deprecated_param_vals():
             mock_input,
             )
     assert actual_ouput == expected_output
-    
+
 
 def test_future_warn_deprecated_params():
     """ Unit test to check that the correct warning is displayed.

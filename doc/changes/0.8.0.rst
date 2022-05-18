@@ -1,0 +1,112 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.8.0
+=====
+
+**Released June 2021**
+
+HIGHLIGHTS
+----------
+
+.. warning::
+
+ | **Python 3.5 is no longer supported. We recommend upgrading to Python 3.8.**
+ |
+ | **Support for Nibabel 2.x is deprecated and will be removed in the 0.9 release.**
+ | Users with a version of Nibabel < 3.0 will be warned at their first Nilearn import.
+ |
+ | **Minimum supported versions of packages have been bumped up:**
+ | - Numpy -- v1.16
+ | - SciPy -- v1.2
+ | - Scikit-learn -- v0.21
+ | - Nibabel -- v2.5
+ | - Pandas -- v0.24
+
+- Class :class:`~maskers.NiftiLabelsMasker` can now generate HTML reports in the same way as the :class:`~maskers.NiftiMasker` (:gh:`2707` by `Nicolas Gensollen`_).
+
+- Function :func:`~signal.clean` now accepts a new parameter ``sample_mask`` of shape ``(number of scans - number of volumes removed, )`` (:gh:`2858` by `Hao-Ting Wang`_).
+
+- All inherent classes of :class:`nilearn.maskers.BaseMasker` can use the parameter ``sample_mask`` for sub-sample masking (:gh:`2858` by `Hao-Ting Wang`_).
+
+- Function :func:`~datasets.fetch_surf_fsaverage` now accepts ``fsaverage3``, ``fsaverage4`` and ``fsaverage6`` as values for parameter ``mesh``, so that all resolutions of fsaverage from 3 to 7 are now available (:gh:`2815` by `Alexis Thual`_).
+
+- Function :func:`~datasets.fetch_surf_fsaverage` now provides attributes ``{area, curv, sphere, thick}_{left, right}`` for all fsaverage resolutions (:gh:`2815` by `Alexis Thual`_).
+
+- Function :func:`~glm.first_level.run_glm` now allows auto regressive noise models of order greater than one (:gh:`2532` by `Robert Luke`_).
+
+NEW
+---
+
+- Function :func:`~signal.clean` now accepts a new parameter ``sample_mask`` of shape ``(number of scans - number of volumes removed, )``. Masks the niimgs along time/fourth dimension to perform scrubbing (remove volumes with high motion) and/or non-steady-state volumes. Masking is applied before signal cleaning (:gh:`2858` by `Hao-Ting Wang`_).
+
+- All inherent classes of :class:`nilearn.maskers.BaseMasker` can use the parameter ``sample_mask`` for sub-sample masking (:gh:`2858` by `Hao-Ting Wang`_).
+
+- Class :class:`~maskers.NiftiLabelsMasker` can now generate HTML reports in the same way as :class:`~maskers.NiftiMasker`. The report shows the regions defined by the provided label image and provide summary statistics on each region (name, volume...). If a functional image was provided to fit, the middle image is plotted with the regions overlaid as contours. Finally, if a mask is provided, its contours are shown in green (:gh:`2707` by `Nicolas Gensollen`_).
+
+Fixes
+-----
+
+- Convert references in ``signal.py``, ``atlas.py``, ``func.py``, ``neurovault.py``, and ``struct.py`` to use footcite / footbibliography (:gh:`2806` by `Jeremy Lefort-Besnard`_).
+
+- Fix detrending and temporal filtering order for confounders in function :func:`~signal.clean`, so that these operations are applied in the same order as for the signals, i.e., first detrending and then temporal filtering (see :gh:`2730`) (:gh:`2732` by `Javier Rasero`_).
+
+- Fix number of attributes returned by the `nilearn.glm.first_level.FirstLevelModel._get_voxelwise_model_attribute` method in the :class:`~glm.first_level.FirstLevelModel`. It used to return only the first attribute, and now returns as many attributes as design matrices (:gh:`2792` by `Raphael Meudec`_).
+
+- Plotting functions that show a stack of slices from a 3D image (e.g. :func:`~plotting.plot_stat_map`) will now plot the slices in the user specified order, rather than automatically sorting into ascending order (see :gh:`1155`) (:gh:`2831` by `Evan Edmond`_).
+
+- Fix the axes zoom in function :func:`~plotting.plot_img_on_surf` so brain would not be cutoff, and edited function so less white space surrounds brain views and smaller colorbar using gridspec (:gh:`2798` by `Tom Vanasse`_).
+
+- Fix inconsistency in prediction values of :class:`sklearn.dummy.DummyClassifier` for :class:`~decoding.Decoder` (see :gh:`2767`) (:gh:`2826` by `Binh Nguyen`_).
+
+Enhancements
+------------
+
+- Function :func:`~plotting.view_markers` now accepts an optional argument ``marker_labels`` to provide labels to each marker (:gh:`2745` by `Greydon Gilmore`_).
+  
+- Function :func:`~plotting.plot_surf` now accepts new values for ``avg_method`` argument, such as ``min``, ``max``, or even a custom python function to compute the value displayed for each face of the plotted mesh (:gh:`2790` by `Alexis Thual`_).
+
+- Function :func:`~plotting.view_img_on_surf` can now optionally pass through parameters to function :func:`~surface.vol_to_surf` using the ``vol_to_surf_kwargs`` argument. One application is better HTML visualization of atlases (https://nilearn.github.io/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html) (:gh:`2805` by `Evan Edmond`_).
+
+- Function :func:`~plotting.view_connectome` now accepts an optional argument ``node_color`` to provide a single color for all nodes, or one color per node. It defaults to ``auto`` which colors markers according to the viridis colormap (:gh:`2810` by `Raphael Meudec`_).
+  
+- Function :func:`~signal.clean` has been refactored to clarify the data flow (:gh:`2821` by `Hao-Ting Wang`_).
+  
+- Parameter ``sessions`` has been replaced with ``runs`` in :func:`~signal.clean` to match BIDS semantics. ``sessions`` has been deprecated and will be removed in ``0.9.0`` (:gh:`2821` by `Hao-Ting Wang`_).
+  
+- Add argument ``filter`` in :func:`~signal.clean` and allow a selection of signal filtering strategies: ``butterwoth`` for butterworth filter, ``cosine`` for discrete cosine transformation, and ``False`` for no filtering (:gh:`2821` by `Hao-Ting Wang`_).
+
+- Change the default strategy for :class:`sklearn.dummy.DummyClassifier` from ``prior`` to ``stratified`` (:gh:`2826` by `Binh Nguyen`_).
+
+- Function :func:`~glm.first_level.run_glm` now allows auto regressive noise models of order greater than one (:gh:`2532` by `Robert Luke`_).
+
+- Moves parameter ``sample_mask`` from :class:`~maskers.NiftiMasker` to method ``transform`` in base class :class:`nilearn.maskers.BaseMasker` (:gh:`2858` by `Hao-Ting Wang`_).
+
+- Function :func:`~datasets.fetch_surf_fsaverage` now accepts ``fsaverage3``, ``fsaverage4`` and ``fsaverage6`` as values for parameter ``mesh``, so that all resolutions of fsaverage from 3 to 7 are now available (:gh:`2815` by `Alexis Thual`_).
+
+- Function :func:`~datasets.fetch_surf_fsaverage` now provides attributes ``{area, curv, sphere, thick}_{left, right}`` for all fsaverage resolutions (:gh:`2815` by `Alexis Thual`_).
+
+Changes
+-------
+
+- Python ``3.5`` is no longer supported. We recommend upgrading to Python ``3.7`` (:gh:`2869` by `Nicolas Gensollen`_).
+
+- Support for Nibabel ``2.x`` is now deprecated and will be removed in the ``0.9`` release. Users with a version of Nibabel ``< 3.0`` will be warned at their first Nilearn import (:gh:`2869` by `Nicolas Gensollen`_).
+
+- Minimum supported versions of packages have been bumped up:
+
+    * Numpy -- v1.16
+    * SciPy -- v1.2
+    * Scikit-learn -- v0.21
+    * Nibabel -- v2.5
+    * Pandas -- v0.24
+
+  (:gh:`2869` by `Nicolas Gensollen`_).
+
+- Function ``sym_to_vec`` from :mod:`nilearn.connectome` was deprecated since release ``0.4`` and has been removed (:gh:`2867` by `Nicolas Gensollen`_).
+
+- Function ``nilearn.datasets.fetch_nyu_rest`` was deprecated since release ``0.6.2`` and has been removed (:gh:`2868` by `Nicolas Gensollen`_).
+
+- Class :class:`~maskers.NiftiMasker` replaces attribute ``sessions`` with ``runs`` and deprecates attribute ``sessions`` in ``0.9.0``. Match the relevant change in function :func:`~signal.clean` (:gh:`2858` by `Hao-Ting Wang`_).

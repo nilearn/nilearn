@@ -2,17 +2,17 @@
 ==================================================================
 
 
-Full step-by-step example of fitting a GLM (first and second level
+Full step-by-step example of fitting a :term:`GLM` (first and second level
 analysis) in a 10-subjects dataset and visualizing the results.
 
 More specifically:
 
-1. Download an fMRI BIDS dataset with two language conditions to contrast.
+1. Download an :term:`fMRI` :term:`BIDS` dataset with two language conditions to contrast.
 2. Project the data to a standard mesh, fsaverage5, aka the Freesurfer template mesh downsampled to about 10k nodes per hemisphere.
 3. Run the first level model objects.
 4. Fit a second level model on the fitted first level models.
 
-Notice that in this case the preprocessed bold images were already normalized to the same MNI space.
+Notice that in this case the preprocessed :term:`bold<BOLD>` images were already normalized to the same :term:`MNI` space.
 
 To run this example, you must launch IPython via ``ipython
 --matplotlib`` in a terminal, or use the Jupyter notebook.
@@ -26,7 +26,7 @@ To run this example, you must launch IPython via ``ipython
 ##############################################################################
 # Fetch example BIDS dataset
 # --------------------------
-# We download a simplified BIDS dataset made available for illustrative
+# We download a simplified :term:`BIDS` dataset made available for illustrative
 # purposes. It contains only the necessary
 # information to run a statistical analysis using Nilearn. The raw data
 # subject folders only contain bold.json and events.tsv files, while the
@@ -43,9 +43,9 @@ print(data_dir)
 # Obtain automatically FirstLevelModel objects and fit arguments
 # --------------------------------------------------------------
 # From the dataset directory we automatically obtain the FirstLevelModel objects
-# with their subject_id filled from the BIDS dataset. Moreover, we obtain
+# with their subject_id filled from the :term:`BIDS` dataset. Moreover, we obtain
 # for each model a dictionary with run_imgs, events and confounder regressors
-# since in this case a confounds.tsv file is available in the BIDS dataset.
+# since in this case a confounds.tsv file is available in the :term:`BIDS` dataset.
 # To get the first level models we only have to specify the dataset directory
 # and the task_label as specified in the file names.
 from nilearn.glm.first_level import first_level_from_bids

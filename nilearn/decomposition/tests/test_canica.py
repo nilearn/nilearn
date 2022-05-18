@@ -10,7 +10,7 @@ import nibabel
 from nilearn._utils.testing import write_tmp_imgs
 
 from nilearn.decomposition.canica import CanICA
-from nilearn.input_data import MultiNiftiMasker
+from nilearn.maskers import MultiNiftiMasker
 from nilearn.image import iter_img
 from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
 from nilearn.image import get_data
@@ -160,7 +160,7 @@ def test_percentile_range():
         canica.fit(data)
         # Filter out deprecation warnings
         not_deprecation_warning = [not issubclass(w.category,
-                                                  DeprecationWarning)
+                                                  (DeprecationWarning, FutureWarning))
                                         for w in warning]
         assert sum(not_deprecation_warning) == 1  # ensure single warning
         idx_critical_warning = not_deprecation_warning.index(True)
