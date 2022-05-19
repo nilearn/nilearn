@@ -26,13 +26,11 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
     Parameters
     ----------
     n_scans : int, optional
-        #TODO review
         Number of scans.
         Default=1.
 
     res : int, optional
-        #TODO review
-        resolution.
+        Desired resolution, in mm, of output images.
         Default=30.
 
     random_state : int or numpy.random.RandomState instance, optional
@@ -40,18 +38,18 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
         Default=0.
 
     mask_dilation : int, optional
-        #TODO review
-        dialation of mast.
+        The number of times the binary dilation is repeated on the mask.
         Default=2.
 
     Returns
     -------
-    #TODO how to specify returns without variable name?
-    inverse_img : Transformed image in brain space.
+    inverse_img : nibabel.Nifti1Image
         #TODO review
+        4D, Image transformed back to brain space.
 
     mask_img : nibabel.Nifti1Image
-        #TODO what to put here?
+        #TODO review
+        3D, Mask resampled to mni space.
 
     """
     rand_gen = check_random_state(random_state)
@@ -88,9 +86,10 @@ def generate_timeseries(n_instants, n_features, random_state=0):
 
     Returns
     -------
-        #TODO How to specify returns
-    """
+    ndarray of shape (n_instants, n_features)
+            Generated time series.
 
+    """
     rand_gen = check_random_state(random_state)
     # TODO: add an "order" keyword
     return rand_gen.randn(n_instants, n_features)
@@ -126,7 +125,7 @@ def generate_regions_ts(n_features,
     Returns
     -------
     regions : numpy.ndarray
-        Regions, nepresented as signals.
+        Regions, represented as signals.
         shape (n_features, n_regions)
 
     """
@@ -227,12 +226,12 @@ def generate_labeled_regions(shape,
         Number of regions to generate. By default (if "labels" is None),
         add a background with value zero.
 
-    labels : iterable, optional
-        Labels to use for each zone. If provided, n_regions is unused.
-
     random_state : int or numpy.random.RandomState instance, optional
         Random number generator, or seed.
         Default=0.
+
+    labels : iterable, optional
+        Labels to use for each zone. If provided, n_regions is unused.
 
     affine : numpy.ndarray, optional
         Affine of returned image. Default=np.eye(4).
@@ -242,7 +241,7 @@ def generate_labeled_regions(shape,
 
     Returns
     -------
-    regions : nibabel.Nifti1Image
+    nibabel.Nifti1Image
         Data has shape "shape", containing region labels.
 
     """
@@ -291,8 +290,9 @@ def generate_labeled_regions_large(shape,
 
     Returns
     -------
-    regions : nibabel.Nifti1Image
+    nibabel.Nifti1Image
         Data has shape "shape", containing region labels.
+
     """
     rand_gen = check_random_state(random_state)
     data = rand_gen.randint(n_regions + 1, size=shape)
@@ -352,11 +352,11 @@ def generate_fake_fmri(shape=(10, 11, 12),
 
     Returns
     -------
-    fmri : nibabel.Nifti1Image
+    nibabel.Nifti1Image
         Fake fmri signal.
         shape: shape + (length,)
 
-    mask : nibabel.Nifti1Image
+    nibabel.Nifti1Image
         Mask giving non-zero voxels.
 
     target : numpy.ndarray
@@ -431,15 +431,15 @@ def generate_fake_fmri_data_and_design(shapes,
                                        affine=np.eye(4),
                                        random_state=0):
     """
-    #TODO help with description
+    Generate random fmri data and design matrices of given shapes.
 
     Parameters
     ----------
-    shape : tuple
-        Shape of returned array
+    shapes : list of 4D tuples
+        Shapes of the fmri data to be generated.
 
     rk : int, optional
-        #TODO what is rk.
+        Number of columns in the design matrix to be generated.
         Default=3.
 
     affine : numpy.ndarray, optional
@@ -453,13 +453,10 @@ def generate_fake_fmri_data_and_design(shapes,
     Returns
     -------
     mask : nibabel.Nifti1Image
-        #TODO what's this mask?
+        3D, Mask giving non-zero voxels.
 
     fmri_data : List
         list of nibabel.Nifti1Image
-
-    return (Nifti1Image(fmri, affine),
-            Nifti1Image(mask, affine), target)
 
     design_matrices : List
         list of pd.DataFrame
@@ -487,7 +484,7 @@ def write_fake_fmri_data_and_design(shapes,
                                     affine=np.eye(4),
                                     random_state=0):
     """
-    #TODO help with docstring
+    Generate random fmri data and design matrices and write them to disk.
 
     Parameters
     ----------
@@ -495,7 +492,7 @@ def write_fake_fmri_data_and_design(shapes,
         List of shapes in tuple format
 
     rk : int, optional
-        #TODO what is rk.
+        Number of columns in the design matrix to be generated.
         Default=3.
 
     affine : numpy.ndarray, optional
@@ -517,6 +514,10 @@ def write_fake_fmri_data_and_design(shapes,
     design_files : List
         list of str.
 
+    See Also
+    ------
+    nilearn._utils.data_gen.generate_fake_fmri_data_and_design
+
     """
     mask_file, fmri_files, design_files = 'mask.nii', [], []
     rand_gen = check_random_state(random_state)
@@ -535,11 +536,10 @@ def write_fake_fmri_data_and_design(shapes,
 
 def write_fake_bold_img(file_path,
                         shape,
-                        rk=3,
                         affine=np.eye(4),
                         random_state=0):
     """
-    #TODO help with docstring
+    Generate a random image of given shape and write it to disk.
 
     Parameters
     ----------
@@ -548,10 +548,6 @@ def write_fake_bold_img(file_path,
 
     shape : tuple
         Shape of output array.
-
-    rk : int, optional
-        #TODO what is rk.
-        Default=3.
 
     affine : numpy.ndarray, optional
         Affine of returned images.
@@ -635,13 +631,13 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
     n_features : int, optional
         Number of signals per subject to generate. Default=30.
 
-    density : float, optional
-        Density of edges in graph topology. Default=0.1.
-
     min_n_samples, max_n_samples : int, optional
         Each subject have a different number of samples, between these two
         numbers. All signals for a given subject have the same number of
         samples. Defaults are 30 and 50.
+
+    density : float, optional
+        Density of edges in graph topology. Default=0.1.
 
     random_state : int or numpy.random.RandomState instance, optional
         Random number generator, or seed. Default=0.
@@ -651,9 +647,9 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
 
     Returns
     -------
-    subjects : list of numpy.ndarray, shape for each (n_samples, n_features)
-        subjects[n] is the signals for subject n. They are provided as a numpy
-        len(subjects) = n_subjects. n_samples varies according to the subject.
+    signals : list of numpy.ndarray, shape for each (n_samples, n_features)
+        signals[n] is the signals for subject n. They are provided as a numpy
+        len(signals) = n_subjects. n_samples varies according to the subject.
 
     precisions : list of numpy.ndarray
         Precision matrices.
@@ -712,17 +708,15 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
 
 
 def basic_paradigm():
-    """
-    generate basic paradigm
+    """Generate basic paradigm
 
     Parameters
     ----------
-    None
 
     Returns
     -------
     events : pd.DataFrame.
-        #TODO description for event?
+        #TODO description for events
         basic paradigm
     """
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
@@ -732,13 +726,13 @@ def basic_paradigm():
 
 
 def basic_confounds(length, random_state=0):
-    """generate basic confounds
+    """Generate basic confounds
 
     Parameters
     ----------
     length : int
-        #TODO is the description for length correct
-        Length of basic confounds
+        #TODO review
+        Length of basic confounds.
 
     random_state : int or numpy.random.RandomState instance, optional
         Random number generator, or seed.
@@ -747,7 +741,7 @@ def basic_confounds(length, random_state=0):
     Returns
     -------
     confounds : pd.DataFrame.
-        basic confounds
+        Basic confounds.
 
     """
     rand_gen = check_random_state(random_state)
