@@ -638,6 +638,7 @@ def non_parametric_inference(
     n_jobs=1,
     verbose=0,
     threshold=None,
+    tfce=False,
 ):
     """Generate p-values corresponding to the contrasts provided
     based on permutation testing.
@@ -742,6 +743,23 @@ def non_parametric_inference(
 
         .. versionadded:: 0.9.2.dev
 
+    tfce : :obj:`bool`, optional
+        Whether to calculate :term:`TFCE` as part of the permutation procedure
+        or not.
+        The TFCE calculation is implemented as described in
+        :footcite:t:`smith2009threshold`.
+        Default=False.
+
+        .. warning::
+
+            Performing TFCE-based inference will increase the computation
+            time of the permutation procedure considerably.
+            The permutations may take multiple hours, depending on how many
+            permutations are requested and how many jobs are performed in
+            parallel.
+
+        .. versionadded:: 0.9.2.dev
+
     Returns
     -------
     neg_log10_vfwe_pvals_img : :class:`~nibabel.nifti1.Nifti1Image`
@@ -757,7 +775,7 @@ def non_parametric_inference(
         to the regressors.
 
         .. note::
-            This is returned if ``threshold`` is not None.
+            This is returned if ``tfce`` is False or ``threshold`` is not None.
 
         .. versionadded:: 0.9.2.dev
 
@@ -772,12 +790,22 @@ def non_parametric_inference(
         logp_max_t      Negative log10 family-wise error rate-corrected
                         p-values corrected based on the distribution of maximum
                         t-statistics from permutations.
+        size            Cluster size values associated with the significance
+                        test of the n_regressors explanatory variates against
+                        the n_descriptors target variates.
+
+                        Returned only if ``threshold`` is not None.
         logp_max_size   Negative log10 family-wise error rate-corrected
                         p-values corrected based on the distribution of maximum
                         cluster sizes from permutations.
                         This map is generated through cluster-level methods, so
                         the values in the map describe the significance of
                         clusters, rather than individual voxels.
+
+                        Returned only if ``threshold`` is not None.
+        mass            Cluster mass values associated with the significance
+                        test of the n_regressors explanatory variates against
+                        the n_descriptors target variates.
 
                         Returned only if ``threshold`` is not None.
         logp_max_mass   Negative log10 family-wise error rate-corrected
@@ -788,8 +816,26 @@ def non_parametric_inference(
                         clusters, rather than individual voxels.
 
                         Returned only if ``threshold`` is not None.
-        ============= =======================================================
+        tfce            TFCE values associated with the significance test of
+                        the n_regressors explanatory variates against the
+                        n_descriptors target variates.
 
+                        Returned only if ``tfce`` is True.
+        logp_max_tfce   Negative log10 family-wise error rate-corrected
+                        p-values corrected based on the distribution of maximum
+                        TFCE values from permutations.
+
+                        Returned only if ``tfce`` is True.
+        =============== =======================================================
+
+    See also
+    --------
+    :func:`~nilearn.mass_univariate.permuted_ols` : For more information on \
+        the permutation procedure.
+
+    References
+    ----------
+    .. footbibliography::
     """
     _check_second_level_input(second_level_input, design_matrix,
                               flm_object=False, df_object=True)
@@ -828,8 +874,7 @@ def non_parametric_inference(
 
     # Check and obtain the contrast
     contrast = _get_contrast(second_level_contrast, design_matrix)
-
-    # Get effect_maps
+    # Get first-level effect_maps
     effect_maps = _infer_effect_maps(second_level_input, first_level_contrast)
 
     # Check design matrix and effect maps agree on number of rows
@@ -854,17 +899,31 @@ def non_parametric_inference(
         verbose=max(0, verbose - 1),
         masker=masker,
         threshold=threshold,
+        tfce=tfce,
         output_type='dict',
     )
-    neg_log10_vfwe_pvals = outputs['logp_max_t']
-    neg_log10_vfwe_pvals_img = masker.inverse_transform(
-        np.ravel(neg_log10_vfwe_pvals),
-    )
+    neg_log10_vfwe_pvals_img = masker.inverse_transform(np.ravel(
+        outputs['logp_max_t']
+    ))
+
+    if (not tfce) and (threshold is None):
+        return neg_log10_vfwe_pvals_img
+
+    t_img = masker.inverse_transform(np.ravel(outputs['t']))
+
+    out = {
+        't': t_img,
+        'logp_max_t': neg_log10_vfwe_pvals_img,
+    }
+
+    if tfce:
+        neg_log10_tfce_pvals_img = masker.inverse_transform(
+            np.ravel(outputs['logp_max_tfce']),
+        )
+        out['tfce'] = masker.inverse_transform(np.ravel(outputs['tfce']))
+        out['logp_max_tfce'] = neg_log10_tfce_pvals_img
 
     if threshold is not None:
-        # Original t-statistics
-        t_img = masker.inverse_transform(np.ravel(outputs['t']))
-
         # Cluster size-based p-values
         neg_log10_csfwe_pvals_img = masker.inverse_transform(
             np.ravel(outputs['logp_max_size']),
@@ -875,12 +934,9 @@ def non_parametric_inference(
             np.ravel(outputs['logp_max_mass']),
         )
 
-        out = {
-            't': t_img,
-            'logp_max_t': neg_log10_vfwe_pvals_img,
-            'logp_max_size': neg_log10_csfwe_pvals_img,
-            'logp_max_mass': neg_log10_cmfwe_pvals_img,
-        }
-        return out
-    else:
-        return neg_log10_vfwe_pvals_img
+        out['size'] = masker.inverse_transform(np.ravel(outputs['size']))
+        out['logp_max_size'] = neg_log10_csfwe_pvals_img
+        out['mass'] = masker.inverse_transform(np.ravel(outputs['mass']))
+        out['logp_max_mass'] = neg_log10_cmfwe_pvals_img
+
+    return out

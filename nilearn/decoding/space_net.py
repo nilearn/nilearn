@@ -17,7 +17,12 @@ import time
 import sys
 from functools import partial
 import numpy as np
-from scipy import stats, ndimage
+from scipy import stats
+from scipy.ndimage import (
+    gaussian_filter,
+    binary_dilation,
+    binary_erosion,
+)
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils import check_array
 from sklearn.linear_model import LinearRegression
@@ -105,7 +110,7 @@ def _univariate_feature_screening(
     if smoothing_fwhm > 0.:
         sX = np.empty(X.shape)
         for sample in range(sX.shape[0]):
-            sX[sample] = ndimage.gaussian_filter(
+            sX[sample] = gaussian_filter(
                 _unmask_from_to_3d_array(X[sample].copy(),  # avoid modifying X
                                          mask), (smoothing_fwhm, smoothing_fwhm,
                                                  smoothing_fwhm))[mask]
@@ -121,7 +126,7 @@ def _univariate_feature_screening(
     # the mask on which a spatial prior actually makes sense
     mask_ = mask.copy()
     mask_[mask] = (support > 0)
-    mask_ = ndimage.binary_dilation(ndimage.binary_erosion(
+    mask_ = binary_dilation(binary_erosion(
         mask_)).astype(bool)
     mask_[np.logical_not(mask)] = 0
     support = mask_[mask]

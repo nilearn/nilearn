@@ -8,7 +8,7 @@ import string
 import numpy as np
 import pandas as pd
 import scipy.signal
-from scipy import ndimage
+from scipy.ndimage import binary_dilation
 
 from sklearn.utils import check_random_state
 import scipy.linalg
@@ -31,7 +31,7 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
     data = rng.randn(n_scans, n_voxels)
     if mask_dilation is not None and mask_dilation > 0:
         mask_img = image.new_img_like(
-            mask_img, ndimage.binary_dilation(
+            mask_img, binary_dilation(
                 image.get_data(mask_img), iterations=mask_dilation))
     return masker.inverse_transform(data), mask_img
 
