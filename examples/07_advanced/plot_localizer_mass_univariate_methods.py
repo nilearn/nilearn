@@ -24,7 +24,6 @@ import matplotlib.pyplot as plt
 from nilearn import datasets
 from nilearn.maskers import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
-from nilearn.image import get_data
 
 ##############################################################################
 # Load Localizer contrast
@@ -72,56 +71,72 @@ neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
 
 ##############################################################################
 # Perform massively univariate analysis with permuted OLS
-neg_log_pvals_permuted_ols, _, _ = permuted_ols(
-    tested_var, fmri_masked,
+#
+# This method will produce both voxel-level FWE-corrected -log10 p-values and
+# :term:`TFCE`-based FWE-corrected -log10 p-values.
+ols_outputs = permuted_ols(
+    tested_var,
+    fmri_masked,
     model_intercept=True,
-    n_perm=5000,  # 5,000 for the sake of time. Idealy, this should be 10,000
-    verbose=1, # display progress bar
-    n_jobs=1)  # can be changed to use more CPUs
+    masker=nifti_masker,
+    tfce=True,
+    n_perm=200,  # 200 for the sake of time. Ideally, this should be 10000.
+    verbose=1,  # display progress bar
+    n_jobs=1,  # can be changed to use more CPUs
+    output_type='dict',
+)
 neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(
-    np.ravel(neg_log_pvals_permuted_ols))
+    ols_outputs['logp_max_t'][0, :]  # select first regressor
+)
+neg_log_pvals_tfce_unmasked = nifti_masker.inverse_transform(
+    ols_outputs['logp_max_tfce'][0, :]  # select first regressor
+)
 
 
 ##############################################################################
 # Visualization
-from nilearn.plotting import plot_stat_map, show
+from nilearn import plotting
+from nilearn.image import get_data
 
 # Various plotting parameters
 z_slice = 12  # plotted slice
-
 threshold = - np.log10(0.1)  # 10% corrected
-vmax = min(np.amax(neg_log_pvals_permuted_ols),
-           np.amax(neg_log_pvals_anova))
 
-# Plot Anova p-values
-fig = plt.figure(figsize=(5, 7), facecolor='k')
+vmax = max(
+    np.amax(ols_outputs['logp_max_t']),
+    np.amax(neg_log_pvals_anova),
+    np.amax(ols_outputs['logp_max_tfce']),
+)
 
-display = plot_stat_map(neg_log_pvals_anova_unmasked,
-                        threshold=threshold,
-                        display_mode='z', cut_coords=[z_slice],
-                        figure=fig, vmax=vmax, black_bg=True)
+images_to_plot = {
+    "Parametric Test\n(Bonferroni FWE)": neg_log_pvals_anova_unmasked,
+    "Permutation Test\n(Max t-statistic FWE)": (
+        neg_log_pvals_permuted_ols_unmasked
+    ),
+    "Permutation Test\n(Max TFCE FWE)": neg_log_pvals_tfce_unmasked,
+}
 
-n_detections = (get_data(neg_log_pvals_anova_unmasked) > threshold).sum()
-title = ('Negative $\\log_{10}$ p-values'
-         '\n(Parametric + Bonferroni correction)'
-         '\n%d detections') % n_detections
+fig, axes = plt.subplots(figsize=(12, 3), ncols=3)
+for i_col, (title, img) in enumerate(images_to_plot.items()):
+    ax = axes[i_col]
+    n_detections = (get_data(img) > threshold).sum()
+    new_title = title + f"\n{n_detections} sig. voxels"
 
-display.title(title, y=1.2)
+    plotting.plot_glass_brain(
+        img,
+        colorbar=True,
+        vmax=vmax,
+        display_mode='z',
+        plot_abs=False,
+        cut_coords=[12],
+        threshold=threshold,
+        figure=fig,
+        axes=ax,
+    )
+    ax.set_title(new_title)
 
-# Plot permuted OLS p-values
-fig = plt.figure(figsize=(5, 7), facecolor='k')
-
-display = plot_stat_map(neg_log_pvals_permuted_ols_unmasked,
-                        threshold=threshold,
-                        display_mode='z', cut_coords=[z_slice],
-                        figure=fig, vmax=vmax, black_bg=True)
-
-n_detections = (get_data(neg_log_pvals_permuted_ols_unmasked)
-                > threshold).sum()
-title = ('Negative $\\log_{10}$ p-values'
-         '\n(Non-parametric + max-type correction)'
-         '\n%d detections') % n_detections
-
-display.title(title, y=1.2)
-
-show()
+fig.suptitle(
+    "Group left button press ($-\\log_{10}$ p-values)",
+    y=1.3,
+    fontsize=16,
+)

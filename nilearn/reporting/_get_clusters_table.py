@@ -10,8 +10,13 @@ from string import ascii_lowercase
 import numpy as np
 import pandas as pd
 import nibabel as nib
-from scipy import ndimage
-
+from scipy.ndimage import (
+    maximum_filter,
+    minimum_filter,
+    label,
+    center_of_mass,
+    generate_binary_structure,
+)
 from nilearn.image import threshold_img
 from nilearn.image.resampling import coord_transform
 from nilearn._utils import check_niimg_3d
@@ -71,15 +76,15 @@ def _identify_subpeaks(data):
     of mass for those voxels.
     """
     # Initial identification of subpeaks with minimal minimum distance
-    data_max = ndimage.filters.maximum_filter(data, 3)
+    data_max = maximum_filter(data, 3)
     maxima = data == data_max
-    data_min = ndimage.filters.minimum_filter(data, 3)
+    data_min = minimum_filter(data, 3)
     diff = (data_max - data_min) > 0
     maxima[diff == 0] = 0
 
-    labeled, n_subpeaks = ndimage.label(maxima)
+    labeled, n_subpeaks = label(maxima)
     labels_index = range(1, n_subpeaks + 1)
-    ijk = np.array(ndimage.center_of_mass(data, labeled, labels_index))
+    ijk = np.array(center_of_mass(data, labeled, labels_index))
     ijk = np.round(ijk).astype(int)
     vals = np.apply_along_axis(
         arr=ijk, axis=1, func1d=_get_val, input_arr=data
@@ -265,7 +270,8 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
                               copy_data=(cluster_threshold is not None))
 
     # Define array for 6-connectivity, aka NN1 or "faces"
-    conn_mat = ndimage.generate_binary_structure(rank=3, connectivity=1)
+    bin_struct = generate_binary_structure(rank=3, connectivity=1)
+
     voxel_size = np.prod(stat_img.header.get_zooms())
 
     signs = [1, -1] if two_sided else [1]
@@ -290,7 +296,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
             continue
 
         # Now re-label and create table
-        label_map = ndimage.measurements.label(binarized, conn_mat)[0]
+        label_map = label(binarized, bin_struct)[0]
         clust_ids = sorted(list(np.unique(label_map)[1:]))
         peak_vals = np.array(
             [np.max(temp_stat_map * (label_map == c)) for c in clust_ids])
