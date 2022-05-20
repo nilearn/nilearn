@@ -695,9 +695,9 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
     topology = np.dot(topology.T, topology)
     topology = topology > 0
     assert (np.all(topology == topology.T))
-    logger.log("Sparsity: {0:f}".format(1. * topology.sum() /
-                                        (topology.shape[0]**2)),
-               verbose=verbose)
+    logger.log(
+        "Sparsity: {0:f}".format(1. * topology.sum() / (topology.shape[0]**2)),
+        verbose=verbose)
 
     # Generate temporal signals
     signals = generate_signals_from_precisions(precisions,
@@ -767,7 +767,8 @@ def create_fake_bids_dataset(base_dir='',
     Parameters
     ----------
     base_dir : string (Absolute path), optional
-        Absolute directory path in which to create the fake :term:`BIDS` dataset dir.
+        Absolute directory path in which to create the fake :term:`BIDS`
+        dataset dir.
         Default: Current directory.
 
     n_sub : int, optional
@@ -882,18 +883,18 @@ def create_fake_bids_dataset(base_dir='',
                         file_id = '_'.join(fields)
                         if n_run > 1:
                             file_id += '_' + run
-                        preproc = (file_id +
-                                   '_space-MNI_desc-preproc_bold.nii.gz')
+                        preproc = (
+                            file_id + '_space-MNI_desc-preproc_bold.nii.gz')
                         preproc_path = os.path.join(func_path, preproc)
                         write_fake_bold_img(preproc_path, [vox, vox, vox, 100],
                                             random_state=rand_gen)
-                        preproc = (file_id +
-                                   '_space-T1w_desc-preproc_bold.nii.gz')
+                        preproc = (
+                            file_id + '_space-T1w_desc-preproc_bold.nii.gz')
                         preproc_path = os.path.join(func_path, preproc)
                         write_fake_bold_img(preproc_path, [vox, vox, vox, 100],
                                             random_state=rand_gen)
-                        preproc = (file_id +
-                                   '_space-T1w_desc-fmriprep_bold.nii.gz')
+                        preproc = (
+                            file_id + '_space-T1w_desc-fmriprep_bold.nii.gz')
                         preproc_path = os.path.join(func_path, preproc)
                         write_fake_bold_img(preproc_path, [vox, vox, vox, 100],
                                             random_state=rand_gen)
