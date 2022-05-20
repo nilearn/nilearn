@@ -198,8 +198,6 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
             (remove volumes with high motion) and/or non-steady-state volumes.
             This parameter is passed to signal.clean.
 
-                .. versionadded:: 0.8.0
-
         Returns
         -------
         region_signals: list of 2D numpy.ndarray
@@ -245,8 +243,6 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
             Masks the niimgs along time/fourth dimension to perform scrubbing
             (remove volumes with high motion) and/or non-steady-state volumes.
             This parameter is passed to signal.clean.
-
-                .. versionadded:: 0.8.0
 
         Returns
         -------
