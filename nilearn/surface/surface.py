@@ -815,6 +815,7 @@ def load_surf_mesh(surf_mesh):
                 surf_mesh.endswith('inflated')):
             coords, faces, header = fs.io.read_geometry(surf_mesh,
                                                         read_metadata=True)
+            # See https://github.com/nilearn/nilearn/pull/3235
             if 'cras' in header:
                 coords += header['cras']
             mesh = Mesh(coordinates=coords, faces=faces)
