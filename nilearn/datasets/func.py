@@ -1109,7 +1109,7 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
 
     Returns
     -------
-    data : :func:`~sklearn.utils.Bunch`
+    data : :class:`~sklearn.utils.Bunch`
         Dictionary-like object, the attributes of interest are:
 
         - 'zmaps': :obj:`list` of :obj:`str`
