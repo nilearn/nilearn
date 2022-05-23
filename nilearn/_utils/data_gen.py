@@ -501,8 +501,12 @@ def generate_group_sparse_gaussian_graphs(
     return signals, precisions, topology
 
 
-def basic_paradigm():
-    conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
+def basic_paradigm(condition_names_have_spaces=False):
+    if condition_names_have_spaces:
+        conditions = ['c 0', 'c 0', 'c 0', 'c 1', 'c 1', 'c 1',
+                      'c 2', 'c 2', 'c 2']
+    else:
+        conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     durations = 1 * np.ones(9)
     events = pd.DataFrame({'trial_type': conditions,
