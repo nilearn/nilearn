@@ -69,13 +69,13 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
     return inverse_img, mask_img
 
 
-def generate_timeseries(n_instants, n_features, random_state=0):
+def generate_timeseries(n_timepoints, n_features, random_state=0):
     """Generate some random timeseries.
 
     Parameters
     ----------
-    n_instants : int
-        Number of instants
+    n_timepoints : int
+        Number of timepoints
 
     n_features : int
         Number of features
@@ -86,13 +86,13 @@ def generate_timeseries(n_instants, n_features, random_state=0):
 
     Returns
     -------
-    ndarray of shape (n_instants, n_features)
+    ndarray of shape (n_timepoints, n_features)
             Generated time series.
 
     """
     rand_gen = check_random_state(random_state)
     # TODO: add an "order" keyword
-    return rand_gen.randn(n_instants, n_features)
+    return rand_gen.randn(n_timepoints, n_features)
 
 
 def generate_regions_ts(n_features,
@@ -278,8 +278,7 @@ def generate_labeled_regions_large(shape,
         Shape of returned array.
 
     n_regions : int
-        Number of regions to generate. By default (if "labels" is None),
-        add a background with value zero.
+        Number of regions to generate.
 
     random_state : int or numpy.random.RandomState instance, optional
         Random number generator, or seed.
@@ -508,11 +507,11 @@ def write_fake_fmri_data_and_design(shapes,
     mask_file : str
         path to mask file.
 
-    fmri_files : List
-        list of str.
+    fmri_files : List of str
+        list of paths to the generated fmri files
 
-    design_files : List
-        list of str.
+    design_files : List of str
+        list of paths to the generated design matrix files
 
     See Also
     ------
