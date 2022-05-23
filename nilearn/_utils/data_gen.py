@@ -133,7 +133,7 @@ def generate_regions_ts(n_features,
     if window is None:
         window = "boxcar"
 
-    assert (n_features > n_regions)
+    assert n_features > n_regions
 
     # Compute region boundaries indices.
     # Start at 1 to avoid getting an empty region
