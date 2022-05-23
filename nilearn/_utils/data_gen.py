@@ -133,7 +133,7 @@ def generate_regions_ts(n_features,
     if window is None:
         window = "boxcar"
 
-    assert (n_features > n_regions)
+    assert n_features > n_regions
 
     # Compute region boundaries indices.
     # Start at 1 to avoid getting an empty region
@@ -274,7 +274,7 @@ def generate_labeled_regions_large(shape,
 
     Parameters
     ----------
-    shape : tuple
+    shape : tuple of int
         Shape of returned array.
 
     n_regions : int
@@ -434,7 +434,7 @@ def generate_fake_fmri_data_and_design(shapes,
 
     Parameters
     ----------
-    shapes : list of 4D tuples
+    shapes : list of 4D tuples of int
         Shapes of the fmri data to be generated.
 
     rk : int, optional
@@ -487,7 +487,7 @@ def write_fake_fmri_data_and_design(shapes,
 
     Parameters
     ----------
-    shapes : List
+    shapes : List of Tuples of int
         List of shapes in tuple format
 
     rk : int, optional
@@ -545,7 +545,7 @@ def write_fake_bold_img(file_path,
     file_path : str
         output file path.
 
-    shape : tuple
+    shape : tuple of int
         Shape of output array.
 
     affine : numpy.ndarray, optional
