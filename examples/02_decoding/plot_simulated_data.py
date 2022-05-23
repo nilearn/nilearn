@@ -36,7 +36,8 @@ from time import time
 
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import linalg, ndimage
+from scipy import linalg
+from scipy.ndimage import gaussian_filter
 
 from sklearn import linear_model, svm
 from sklearn.utils import check_random_state
@@ -73,7 +74,7 @@ def create_simulation_data(snr=0, n_samples=2 * 100, size=12, random_state=1):
     XX = generator.randn(n_samples, size, size, size)
     noise = []
     for i in range(n_samples):
-        Xi = ndimage.filters.gaussian_filter(XX[i, :, :, :], smooth_X)
+        Xi = gaussian_filter(XX[i, :, :, :], smooth_X)
         Xi = Xi.ravel()
         noise.append(Xi)
     noise = np.array(noise)
