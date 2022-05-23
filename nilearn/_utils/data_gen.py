@@ -488,7 +488,7 @@ def write_fake_fmri_data_and_design(shapes,
 
     Parameters
     ----------
-    shapes : List
+    shapes : List of Tuples of int
         List of shapes in tuple format
 
     rk : int, optional
