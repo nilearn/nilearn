@@ -435,7 +435,7 @@ def generate_fake_fmri_data_and_design(shapes,
 
     Parameters
     ----------
-    shapes : list of 4D tuples
+    shapes : list of 4D tuples of int
         Shapes of the fmri data to be generated.
 
     rk : int, optional
