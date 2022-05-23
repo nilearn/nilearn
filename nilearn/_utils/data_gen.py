@@ -546,7 +546,7 @@ def write_fake_bold_img(file_path,
     file_path : str
         output file path.
 
-    shape : tuple
+    shape : tuple of int
         Shape of output array.
 
     affine : numpy.ndarray, optional
