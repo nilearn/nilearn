@@ -43,13 +43,11 @@ def generate_mni_space_img(n_scans=1, res=3, random_state=0, mask_dilation=2):
 
     Returns
     -------
-    inverse_img : nibabel.Nifti1Image
-        #TODO review
-        4D, Image transformed back to brain space.
+    inverse_img : Niimg-like object
+        Image transformed back to mni space.
 
-    mask_img : nibabel.Nifti1Image
-        #TODO review
-        3D, Mask resampled to mni space.
+    mask_img : Niimg-like object
+        Generated mask in mni space.
 
     """
     rand_gen = check_random_state(random_state)
@@ -191,10 +189,10 @@ def generate_maps(shape,
 
     Returns
     -------
-    maps : nibabel.Nifti1Image
+    maps : Niimg-like object
         4D array, containing maps.
 
-    mask_img : nibabel.Nifti1Image
+    mask_img : Niimg-like object
         3D, The mask outside of which maps are 0.
 
     """
@@ -241,7 +239,7 @@ def generate_labeled_regions(shape,
 
     Returns
     -------
-    nibabel.Nifti1Image
+    Niimg-like object
         Data has shape "shape", containing region labels.
 
     """
@@ -289,7 +287,7 @@ def generate_labeled_regions_large(shape,
 
     Returns
     -------
-    nibabel.Nifti1Image
+    Niimg-like object
         Data has shape "shape", containing region labels.
 
     """
@@ -351,11 +349,11 @@ def generate_fake_fmri(shape=(10, 11, 12),
 
     Returns
     -------
-    nibabel.Nifti1Image
+    Niimg-like object
         Fake fmri signal.
         shape: shape + (length,)
 
-    nibabel.Nifti1Image
+    Niimg-like object
         Mask giving non-zero voxels.
 
     target : numpy.ndarray
@@ -451,11 +449,11 @@ def generate_fake_fmri_data_and_design(shapes,
 
     Returns
     -------
-    mask : nibabel.Nifti1Image
+    mask : Niimg-like object
         3D, Mask giving non-zero voxels.
 
     fmri_data : List
-        list of nibabel.Nifti1Image
+        list of Niimg-like object
 
     design_matrices : List
         list of pd.DataFrame
@@ -715,8 +713,7 @@ def basic_paradigm():
     Returns
     -------
     events : pd.DataFrame.
-        #TODO description for events
-        basic paradigm
+        Basic experimental paradigm with events data.
     """
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
@@ -730,7 +727,6 @@ def basic_confounds(length, random_state=0):
     Parameters
     ----------
     length : int
-        #TODO review
         Length of basic confounds.
 
     random_state : int or numpy.random.RandomState instance, optional
