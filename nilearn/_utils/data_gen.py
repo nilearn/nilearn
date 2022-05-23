@@ -274,7 +274,7 @@ def generate_labeled_regions_large(shape,
 
     Parameters
     ----------
-    shape : tuple
+    shape : tuple of int
         Shape of returned array.
 
     n_regions : int
