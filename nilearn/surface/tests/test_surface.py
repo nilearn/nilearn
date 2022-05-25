@@ -764,3 +764,15 @@ def test_check_surface():
     with pytest.raises(ValueError,
                        match="Mismatch between number of nodes in mesh"):
         surface.check_surface(wrong_surface)
+
+
+def test_smooth_surface_data():
+    # Load fsaverage surface
+    fsaverage = datasets.fetch_surf_fsaverage('fsaverage')
+    sphere = surface.load_surf_mesh(fsaverage.sphere_left)
+    # Create surface data with activation at one mesh vertex
+    surf_data = np.zeros(sphere.coordinates.shape[0])
+    surf_data[0] = 1
+    surf_data_smooth = surface.smooth_surface_data(surface=sphere, surf_data=surf_data, smooth_steps=1)
+    assert np.sum(surf_data_smooth) == np.sum(surf_data)
+    
