@@ -1038,7 +1038,7 @@ def compute_vertex_neighborhoods(surface):
         
     return neighbors
         
-def smooth_surface_data(surface, surf_data, smooth_steps = 1, method = 'sparse'):
+def smooth_surface_data(surface, surf_data, smooth_steps = 1, method = 'sparse', weights = None):
     """Smooth values along the surface.
     
     Parameters
@@ -1051,10 +1051,21 @@ def smooth_surface_data(surface, surf_data, smooth_steps = 1, method = 'sparse')
     smooth_steps : How many times to repeat the smoothing operation. Defaults to 1 step
 
     method : Whether to use scipy sparse matrices (default)
+
+    weights : Whether to add weighting to the smoothing. Default is none
     
     Returns
     -------
-    neighbors : A list of all the vertices that are connected to each vertex
+    surf_data_smooth : Array of smoothed values at each vertex
+
+    Examples
+    -------
+    >>> from nilearn import datasets, surface, plotting
+    >>> fsaverage = datasets.fetch_surf_fsaverage('fsaverage')
+    >>> white_left = surface.load_surf_mesh(fsaverage.white_left)
+    >>> curv = surface.load_surf_data(fsaverage.curv_left)
+    >>> curv_smooth = surface.smooth_surface_data(surface = white_left, surf_data = curv, smooth_steps=50)
+    >>> plotting.plot_surf(white_left, surf_map = curv_smooth)
     
     """
     if method == 'sparse':
@@ -1071,8 +1082,12 @@ def smooth_surface_data(surface, surf_data, smooth_steps = 1, method = 'sparse')
         edges = np.unique(edges)
         (u,v) = (edges // n, edges % n)
 
-        # Calculate distances between pairs.
-        edge_lens = np.sqrt(np.sum((surface.coordinates[u,:] - surface.coordinates[v,:])**2, axis=1))
+        # Calculate distances between pairs. We use this as a weighting to make sure that
+        # smoothing takes into account the distance between each vertex neighbor
+        if weights == 'distance':
+            edge_lens = np.sqrt(np.sum((surface.coordinates[u,:] - surface.coordinates[v,:])**2, axis=1))
+        else:
+            edge_lens = np.ones_like(edges)
 
         # We can now make a sparse matrix.
         ee = np.concatenate([edge_lens, edge_lens])
@@ -1106,11 +1121,3 @@ def smooth_surface_data(surface, surf_data, smooth_steps = 1, method = 'sparse')
     
             
     return surf_data_smooth
-    # from nilearn import datasets
-    # from nilearn import surface
-    # from nilearn import plotting
-    # fsaverage = datasets.fetch_surf_fsaverage('fsaverage')
-    # white_left = surface.load_surf_mesh(fsaverage.white_left)
-    # curv = surface.load_surf_data(fsaverage.curv_left)
-    # curv_smooth = surface.smooth_surface_data(surface = white_left, surf_data = curv, smooth_steps=50)
-    # plotting.plot_surf(white_left, surf_map = curv_smooth)
