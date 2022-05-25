@@ -502,7 +502,9 @@ def generate_group_sparse_gaussian_graphs(
 
 
 def basic_paradigm(condition_names_have_spaces=False):
-    conditions = ['c 0', 'c 0', 'c 0', 'c 1', 'c 1', 'c 1', 'c 2', 'c 2', 'c 2']
+    conditions = ['c 0', 'c 0', 'c 0',
+                  'c 1', 'c 1', 'c 1',
+                  'c 2', 'c 2', 'c 2']
 
     if not condition_names_have_spaces:
         conditions = [c.replace(' ', '') for c in conditions]
