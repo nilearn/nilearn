@@ -705,16 +705,6 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
 
 
 def basic_paradigm():
-    """Generate basic paradigm
-
-    Parameters
-    ----------
-
-    Returns
-    -------
-    events : pd.DataFrame.
-        Basic experimental paradigm with events data.
-    """
     conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     events = pd.DataFrame({'trial_type': conditions, 'onset': onsets})
