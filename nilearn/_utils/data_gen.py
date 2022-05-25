@@ -25,19 +25,20 @@ def generate_mni_space_img(n_scans=1, res=3, random_state=0, mask_dilation=2):
 
     Parameters
     ----------
-    n_scans : int, optional
+    n_scans : :obj:`int`, optional
         Number of scans.
         Default=1.
 
-    res : int, optional
+    res : :obj:`int`, optional
         Desired resolution, in mm, of output images.
         Default=3.
 
-    random_state : int or numpy.random.RandomState instance, optional
+    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
+                   optional
         Random number generator, or seed.
         Default=0.
 
-    mask_dilation : int, optional
+    mask_dilation : :obj:`int`, optional
         The number of times the binary dilation is repeated on the mask.
         Default=2.
 
@@ -72,24 +73,24 @@ def generate_timeseries(n_timepoints, n_features, random_state=0):
 
     Parameters
     ----------
-    n_timepoints : int
+    n_timepoints : :obj:`int`
         Number of timepoints
 
-    n_features : int
+    n_features : :obj:`int`
         Number of features
 
-    random_state : int or numpy.random.RandomState instance, optional
+    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
+                   optional
         Random number generator, or seed.
         Default=0.
 
     Returns
     -------
-    ndarray of shape (n_timepoints, n_features)
-            Generated time series.
+    :obj:`numpy.ndarray` of shape (n_timepoints, n_features)
+        Generated time series.
 
     """
     rand_gen = check_random_state(random_state)
-    # TODO: add an "order" keyword
     return rand_gen.randn(n_timepoints, n_features)
 
 
@@ -102,27 +103,28 @@ def generate_regions_ts(n_features,
 
     Parameters
     ----------
-    n_features : int
+    n_features : :obj:`int`
         Number of features.
 
-    n_regions : int
+    n_regions : :obj:`int`
         Number of regions.
 
-    overlap : int, optional
+    overlap : :obj:`int`, optional
         Number of overlapping voxels between two regions (more or less).
         Default=0.
 
-    random_state : int or numpy.random.RandomState instance, optional
+    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
+                   optional
         Random number generator, or seed.
         Default=0.
 
-    window : str, optional
+    window : :obj:`str`, optional
         Name of a window in scipy.signal. e.g. "hamming".
         Default='boxcar'.
 
     Returns
     -------
-    regions : numpy.ndarray
+    regions : :obj:`numpy.ndarray`
         Regions, represented as signals.
         shape (n_features, n_regions)
 
@@ -165,35 +167,37 @@ def generate_maps(shape,
 
     Parameters
     ----------
-    n_regions : int
+    n_regions : :obj:`int`
         Number of regions to generate.
 
-    overlap : int, optional
+    overlap : :obj:`int`, optional
         Approximate number of voxels common to two neighboring regions.
         Default=0.
 
-    window : str, optional
+    window : :obj:`str`, optional
         Name of a window in scipy.signal. Used to get non-uniform regions.
         Default='boxcar'.
 
-    random_state : int or numpy.random.RandomState instance, optional
+    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
+                   optional
         Random number generator, or seed.
         Default=0.
 
-    affine : Numpy array, optional
-        Affine transformation to use. Default=np.eye(4).
+    affine : :obj:`numpy.ndarray`, optional
+        Affine transformation to use.
+        Default=np.eye(4).
 
-    border : int, optional
+    border : :obj:`int`, optional
         Number of background voxels on each side of the 3D volumes.
         Default=1.
 
     Returns
     -------
     maps : Niimg-like object
-        4D array, containing maps.
+        4D array containing maps.
 
     mask_img : Niimg-like object
-        3D, The mask outside of which maps are 0.
+        3D mask giving non-zero voxels.
 
     """
     mask = np.zeros(shape, dtype=np.int8)
@@ -217,25 +221,29 @@ def generate_labeled_regions(shape,
 
     Parameters
     ----------
-    shape : tuple
+    shape : :obj:`tuple`
         Shape of returned array.
 
-    n_regions : int
+    n_regions : :obj:`int`
         Number of regions to generate. By default (if "labels" is None),
         add a background with value zero.
+        Default=None.
 
-    random_state : int or numpy.random.RandomState instance, optional
+    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
+                   optional
         Random number generator, or seed.
         Default=0.
 
     labels : iterable, optional
         Labels to use for each zone. If provided, n_regions is unused.
 
-    affine : numpy.ndarray, optional
-        Affine of returned image. Default=np.eye(4).
+    affine : :obj:`numpy.ndarray`, optional
+        Affine of returned image.
+        Default=np.eye(4).
 
-    dtype : type, optional
-        Data type of image. Default=int.
+    dtype : :obj:`type`, optional
+        Data type of image.
+        Default=int.
 
     Returns
     -------
@@ -272,18 +280,20 @@ def generate_labeled_regions_large(shape,
 
     Parameters
     ----------
-    shape : tuple of int
+    shape : :obj:`tuple` of :obj:`int`
         Shape of returned array.
 
-    n_regions : int
+    n_regions : :obj:`int`
         Number of regions to generate.
 
-    random_state : int or numpy.random.RandomState instance, optional
+    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
+                   optional
         Random number generator, or seed.
         Default=0.
 
-    affine : numpy.ndarray, optional
-        Affine of returned image. Default=np.eye(4).
+    affine : :obj:`numpy.ndarray`, optional
+        Affine of returned image.
+        Default=np.eye(4).
 
     Returns
     -------
@@ -316,34 +326,39 @@ def generate_fake_fmri(shape=(10, 11, 12),
 
     Parameters
     ----------
-    shape : tuple, optional
-        Shape of 3D volume. Default=(10, 11, 12).
+    shape : :obj:`tuple`, optional
+        Shape of 3D volume.
+        Default=(10, 11, 12).
 
-    length : int, optional
-        Number of time instants. Default=17.
+    length : :obj:`int`, optional
+        Number of time instants.
+        Default=17.
 
-    kind : string, optional
+    kind : :obj:`str`, optional
         Kind of signal used as timeseries.
         "noise": uniformly sampled values in [0..255]
         "step": 0.5 for the first half then 1.
         Default='noise'.
 
-    affine : numpy.ndarray, optional
-        Affine of returned images. Default=np.eye(4).
+    affine : :obj:`numpy.ndarray`, optional
+        Affine of returned images.
+        Default=np.eye(4).
 
-    n_blocks : int or None, optional
+    n_blocks : :obj:`int` or None, optional
         Number of condition blocks.
+        Default=None.
 
-    block_size : int or None, optional
+    block_size : :obj:`int` or None, optional
         Number of timepoints in a block. Used only if n_blocks is not
         None. Defaults to 3 if n_blocks is not None.
 
-    block_type : str, optional
+    block_type : :obj:`str`, optional
         Defines if the returned target should be used for
         'classification' or 'regression'.
         Default='classification'.
 
-    random_state : int or numpy.random.RandomState instance, optional
+    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
+                   optional
         Random number generator, or seed.
         Default=0.
 
@@ -356,7 +371,7 @@ def generate_fake_fmri(shape=(10, 11, 12),
     Niimg-like object
         Mask giving non-zero voxels.
 
-    target : numpy.ndarray
+    target : :obj:`numpy.ndarray`
         Classification or regression target. Shape of number of
         time points (length). Returned only if n_blocks is not None.
 
@@ -427,36 +442,36 @@ def generate_fake_fmri_data_and_design(shapes,
                                        rk=3,
                                        affine=np.eye(4),
                                        random_state=0):
-    """
-    Generate random fmri data and design matrices of given shapes.
+    """Generate random fmri data and design matrices of given shapes.
 
     Parameters
     ----------
-    shapes : list of 4D tuples of int
+    shapes : :obj:`list` of 4D :obj:`tuple`s of :obj:`int`
         Shapes of the fmri data to be generated.
 
-    rk : int, optional
+    rk : :obj:`int`, optional
         Number of columns in the design matrix to be generated.
         Default=3.
 
-    affine : numpy.ndarray, optional
+    affine : :obj:`numpy.ndarray`, optional
         Affine of returned images.
         Default=np.eye(4).
 
-    random_state : int or numpy.random.RandomState instance, optional
+    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
+                   optional
         Random number generator, or seed.
         Default=0.
 
     Returns
     -------
     mask : Niimg-like object
-        3D, Mask giving non-zero voxels.
+        3D mask giving non-zero voxels.
 
-    fmri_data : List
-        list of Niimg-like object
+    fmri_data : :obj:`list`
+        A list of Niimg-like object
 
-    design_matrices : List
-        list of pd.DataFrame
+    design_matrices : :obj:`list`
+        A list of pd.DataFrame
 
     """
     fmri_data = []
@@ -480,36 +495,36 @@ def write_fake_fmri_data_and_design(shapes,
                                     rk=3,
                                     affine=np.eye(4),
                                     random_state=0):
-    """
-    Generate random fmri data and design matrices and write them to disk.
+    """Generate random fmri data and design matrices and write them to disk.
 
     Parameters
     ----------
-    shapes : List of Tuples of int
-        List of shapes in tuple format
+    shapes : :obj:`list` of :obj:`tuple`s of :obj:`int`
+        A list of shapes in tuple format.
 
-    rk : int, optional
+    rk : :obj:`int`, optional
         Number of columns in the design matrix to be generated.
         Default=3.
 
-    affine : numpy.ndarray, optional
+    affine : :obj:`numpy.ndarray`, optional
         Affine of returned images.
         Default=np.eye(4).
 
-    random_state : int or numpy.random.RandomState instance, optional
+    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
+                   optional
         Random number generator, or seed.
         Default=0.
 
     Returns
     -------
-    mask_file : str
-        path to mask file.
+    mask_file : :obj:`str`
+        Path to mask file.
 
-    fmri_files : List of str
-        list of paths to the generated fmri files
+    fmri_files : :obj:`list` of :obj:`str`
+        A list of paths to the generated fmri files.
 
-    design_files : List of str
-        list of paths to the generated design matrix files
+    design_files : :obj:`list` of :obj:`str`
+        A list of paths to the generated design matrix files.
 
     See Also
     ------
@@ -535,29 +550,29 @@ def write_fake_bold_img(file_path,
                         shape,
                         affine=np.eye(4),
                         random_state=0):
-    """
-    Generate a random image of given shape and write it to disk.
+    """Generate a random image of given shape and write it to disk.
 
     Parameters
     ----------
-    file_path : str
-        output file path.
+    file_path : :obj:`str`
+        Output file path.
 
-    shape : tuple of int
+    shape : :obj:`tuple` of :obj:`int`
         Shape of output array.
 
-    affine : numpy.ndarray, optional
+    affine : :obj:`numpy.ndarray`, optional
         Affine of returned images.
         Default=np.eye(4).
 
-    random_state : int or numpy.random.RandomState instance, optional
+    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
+                   optional
         Random number generator, or seed.
         Default=0.
 
     Returns
     -------
-    file_path : str
-        output file path.
+    file_path : :obj:`str`
+        Output file path.
 
     """
     rand_gen = check_random_state(random_state)
@@ -577,22 +592,23 @@ def generate_signals_from_precisions(precisions,
 
     Parameters
     ----------
-    precisions : list of numpy.ndarray
-        List of precision matrices. Every matrix must be square (with the same
-        size) and positive definite. The output of
+    precisions : :obj:`list` of :obj:`numpy.ndarray`
+        A list of precision matrices. Every matrix must be square (with the
+        same size) and positive definite. The output of
         generate_group_sparse_gaussian_graphs() can be used here.
 
-    min_samples, max_samples : int, optional
+    min_samples, max_samples : :obj:`int`, optional
         The number of samples drawn for each timeseries is taken at random
         between these two numbers. Defaults are 50 and 100.
 
-    random_state : int or numpy.random.RandomState instance, optional
+    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
+                   optional
         Random number generator, or seed.
         Default=0.
 
     Returns
     -------
-    signals : list of numpy.ndarray
+    signals : :obj:`list` of :obj:`numpy.ndarray`
         Output signals. signals[n] corresponds to precisions[n], and has shape
         (sample number, precisions[n].shape[0]).
 
@@ -622,36 +638,43 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
 
     Parameters
     ----------
-    n_subjects : int, optional
-        Number of subjects. Default=5.
+    n_subjects : :obj:`int`, optional
+        Number of subjects.
+        Default=5.
 
-    n_features : int, optional
-        Number of signals per subject to generate. Default=30.
+    n_features : :obj:`int`, optional
+        Number of signals per subject to generate.
+        Default=30.
 
-    min_n_samples, max_n_samples : int, optional
+    min_n_samples, max_n_samples : :obj:`int`, optional
         Each subject have a different number of samples, between these two
         numbers. All signals for a given subject have the same number of
         samples. Defaults are 30 and 50.
 
-    density : float, optional
-        Density of edges in graph topology. Default=0.1.
+    density : :obj:`float`, optional
+        Density of edges in graph topology.
+        Default=0.1.
 
-    random_state : int or numpy.random.RandomState instance, optional
-        Random number generator, or seed. Default=0.
+    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
+                   optional
+        Random number generator, or seed.
+        Default=0.
 
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=0.
+    verbose : :obj:`int`, optional
+        Verbosity level (0 means no message).
+        Default=0.
 
     Returns
     -------
-    signals : list of numpy.ndarray, shape for each (n_samples, n_features)
-        signals[n] is the signals for subject n. They are provided as a numpy
-        len(signals) = n_subjects. n_samples varies according to the subject.
+    signals : :obj:`list` of :obj:`numpy.ndarray`, shape for each \
+        (n_samples, n_features) signals[n] is the signals for subject n.
+        They are provided as a numpy len(signals) = n_subjects.
+        n_samples varies according to the subject.
 
-    precisions : list of numpy.ndarray
+    precisions : :obj:`list` of :obj:`numpy.ndarray`
         Precision matrices.
 
-    topology : numpy.ndarray
+    topology : :obj:`numpy.ndarray`
         Binary array giving the graph topology used for generating covariances
         and signals.
 
@@ -716,16 +739,17 @@ def basic_confounds(length, random_state=0):
 
     Parameters
     ----------
-    length : int
+    length : :obj:`int`
         Length of basic confounds.
 
-    random_state : int or numpy.random.RandomState instance, optional
+    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
+                   optional
         Random number generator, or seed.
         Default=0.
 
     Returns
     -------
-    confounds : pd.DataFrame.
+    confounds : :obj:`pandas.DataFrame`.
         Basic confounds.
 
     """
@@ -751,54 +775,56 @@ def create_fake_bids_dataset(base_dir='',
 
     Parameters
     ----------
-    base_dir : string (Absolute path), optional
+    base_dir : :obj:`str` (Absolute path), optional
         Absolute directory path in which to create the fake :term:`BIDS`
         dataset dir.
         Default: Current directory.
 
-    n_sub : int, optional
+    n_sub : :obj:`int`, optional
         Number of subject to be simulated in the dataset.
         Default=10.
 
-    n_ses : int, optional
+    n_ses : :obj:`int`, optional
         Number of sessions to be simulated in the dataset.
         Ignored if no_session=True.
         Default=2.
 
-    tasks : List of str, optional
-        List of tasks. Default=["localizer", "main"].
+    tasks : :obj:`list` of :obj:`str`, optional
+        List of tasks.
+        Default=["localizer", "main"].
 
-    n_runs : List of int, optional
+    n_runs : :obj:`list` of :obj:`int`, optional
         Default=[1, 3].
 
-    with_derivatives : bool, optional
+    with_derivatives : :obj:`bool`, optional
         In the case derivatives are included, they come with two spaces and
         descriptions. Spaces are 'MNI' and 'T1w'. Descriptions are 'preproc'
         and :term:`fMRIPrep`. Only space 'T1w' include both descriptions.
         Default=True.
 
-    with_confounds : bool, optional
+    with_confounds : :obj:`bool`, optional
         Default=True.
 
-    confounds_tag : string (filename suffix), optional
+    confounds_tag : :obj:`str` (filename suffix), optional
         If generating confounds, what path should they have? Defaults to
         `desc-confounds_timeseries` as in :term:`fMRIPrep` >= 20.2
         but can be other values (e.g. "desc-confounds_regressors" as
         in :term:`fMRIPrep` < 20.2).
         Default="desc-confounds_timeseries".
 
-    no_session : bool, optional
+    no_session : :obj:`bool`, optional
         Specifying no_sessions will only produce runs and files without the
         optional session field. In this case n_ses will be ignored.
         Default=False.
 
-    random_state : int or numpy.random.RandomState instance, optional
+    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
+                   optional
         Random number generator, or seed.
         Default=0.
 
     Returns
     -------
-    dataset directory name : string
+    dataset directory name : :obj:`str`
         'bids_dataset'.
 
     Notes
