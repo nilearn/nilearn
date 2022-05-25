@@ -502,6 +502,20 @@ def generate_group_sparse_gaussian_graphs(
 
 
 def basic_paradigm(condition_names_have_spaces=False):
+    """Generate basic paradigm
+
+    Parameters
+    ----------
+    condition_names_have_spaces : :obj:`bool`, optional
+        Check for spaces in condition names.
+        Default=False.
+
+    Returns
+    -------
+    events : pd.DataFrame
+        Basic experimental paradigm with events data.
+
+    """
     conditions = ['c 0', 'c 0', 'c 0',
                   'c 1', 'c 1', 'c 1',
                   'c 2', 'c 2', 'c 2']
