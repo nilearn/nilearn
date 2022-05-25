@@ -20,7 +20,7 @@ from . import logger
 from nilearn import datasets, image, maskers
 
 
-def generate_mni_space_img(n_scans=1, res=3, random_state=0, mask_dilation=2):
+def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
     """Generate mni space img.
 
     Parameters
@@ -31,7 +31,7 @@ def generate_mni_space_img(n_scans=1, res=3, random_state=0, mask_dilation=2):
 
     res : :obj:`int`, optional
         Desired resolution, in mm, of output images.
-        Default=3.
+        Default=30.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
                    optional
