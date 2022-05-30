@@ -6,7 +6,7 @@ import numbers
 import collections.abc
 import numpy as np
 
-from scipy import ndimage
+from scipy.ndimage import label
 from scipy.stats import scoreatpercentile
 
 from joblib import Memory
@@ -214,7 +214,7 @@ def connected_regions(maps_img, min_region_size=1350,
         if extract_type == 'local_regions':
             smooth_map = _smooth_array(map_3d, affine=affine, fwhm=smoothing_fwhm)
             seeds = _peak_local_max(smooth_map)
-            seeds_label, seeds_id = ndimage.label(seeds)
+            seeds_label, seeds_id = label(seeds)
             # Assign -1 to values which are 0. to indicate to ignore
             seeds_label[map_3d == 0.] = -1
             rw_maps = _random_walker(map_3d, seeds_label)
@@ -223,7 +223,7 @@ def connected_regions(maps_img, min_region_size=1350,
             label_maps = rw_maps
         else:
             # Connected component extraction
-            label_maps, n_labels = ndimage.label(map_3d)
+            label_maps, n_labels = label(map_3d)
 
         # Takes the size of each labelized region data
         labels_size = np.bincount(label_maps.ravel())
@@ -525,10 +525,11 @@ def connected_label_regions(labels_img, min_size=None, connect_diag=True,
         # Extract regions assigned to each label id
         if connect_diag:
             structure = np.ones((3, 3, 3), dtype=np.int)
-            regions, this_n_labels = ndimage.label(
-                this_label_mask.astype(np.int), structure=structure)
+            regions, this_n_labels = label(
+                this_label_mask.astype(np.int), structure=structure
+            )
         else:
-            regions, this_n_labels = ndimage.label(this_label_mask.astype(np.int))
+            regions, this_n_labels = label(this_label_mask.astype(np.int))
 
         if min_size is not None:
             index = np.arange(this_n_labels + 1)
