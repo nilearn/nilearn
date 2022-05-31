@@ -36,10 +36,13 @@ To run this example, you must launch IPython via ``ipython
 # This dataset contains the necessary information to run a statistical analysis
 # using Nilearn. The dataset also contains statistical results from a previous
 # FSL analysis that we can employ for comparison with the Nilearn estimation.
-from nilearn.datasets import (fetch_openneuro_dataset_index,
-                              fetch_openneuro_dataset, select_from_index)
+from nilearn.datasets import (
+    fetch_ds000030_urls,
+    fetch_openneuro_dataset,
+    select_from_index,
+)
 
-_, urls = fetch_openneuro_dataset_index()
+_, urls = fetch_ds000030_urls()
 
 exclusion_patterns = ['*group*', '*phenotype*', '*mriqc*',
                       '*parameter_plots*', '*physio_plots*',
@@ -77,6 +80,7 @@ models, models_run_imgs, models_events, models_confounds = \
 model, imgs, events, confounds = (
     models[0], models_run_imgs[0], models_events[0], models_confounds[0])
 subject = 'sub-' + model.subject_label
+model.minimize_memory = False  # override default
 
 import os
 from nilearn.interfaces.fsl import get_design_from_fslmat
@@ -164,3 +168,22 @@ report = make_glm_report(model=model,
 # report  # This report can be viewed in a notebook
 # report.save_as_html('report.html')
 # report.open_in_browser()
+
+#########################################################################
+# Saving model outputs to disk
+# ----------------------------
+from nilearn.interfaces.bids import save_glm_to_bids
+
+save_glm_to_bids(
+    model,
+    contrasts='StopSuccess - Go',
+    contrast_types={'StopSuccess - Go': 't'},
+    out_dir='derivatives/nilearn_glm/',
+    prefix=subject + '_task-stopsignal',
+)
+
+#########################################################################
+# View the generated files
+from glob import glob
+
+print('\n'.join(sorted(glob('derivatives/nilearn_glm/*'))))

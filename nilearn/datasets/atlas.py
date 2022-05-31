@@ -69,7 +69,7 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None,
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
         - 'maps': :obj:`str`, path to 4D nifti file containing regions
@@ -165,7 +165,7 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
             - 'scorr_mean': obj:`str`, path to nifti file containing the
@@ -242,7 +242,7 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
             - 'maps': :obj:`str`, path to nifti file containing the
@@ -356,7 +356,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
             - 'maps': :obj:`str`, path to nifti file containing the
@@ -490,7 +490,7 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
             - 'maps': :class:`~nibabel.nifti1.Nifti1Image`. It is a 4D image
@@ -719,7 +719,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
         - 'maps': :obj:`str`, path to nifti file containing the
@@ -780,7 +780,7 @@ def fetch_coords_power_2011(legacy_format=True):
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
             - 'rois': :class:`numpy.recarray`, rec array containing the
@@ -830,7 +830,7 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
             - 'rsn20': :obj:`str`, path to nifti file containing the
@@ -933,7 +933,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
             - 'thin_7': :obj:`str`, path to nifti file containing the
@@ -1056,7 +1056,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
             - 'maps': :obj:`str`, path to nifti file containing the
@@ -1179,7 +1179,7 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None, url=None,
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, Keys are:
 
         - "scale007", "scale012", "scale020", "scale036", "scale064",
@@ -1252,7 +1252,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         - 'rois': :class:`numpy.recarray`, rec array with the coordinates
@@ -1319,7 +1319,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         - 'rois': :class:`numpy.recarray`, rec array with the coordinates
@@ -1359,7 +1359,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
         i, region = r.split("=")
         region_mapping[int(i)] = region
 
-    anatomical = np.genfromtxt(anatomical_file, skip_header=1)
+    anatomical = np.genfromtxt(anatomical_file, skip_header=1, encoding=None)
     anatomical_names = np.array([region_mapping[a] for a in anatomical])
 
     rois = pd.concat([rois, pd.DataFrame(anatomical_names)], axis=1)
@@ -1399,7 +1399,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
         - 'maps': :obj:`str`, path to nifti file containing the
@@ -1498,7 +1498,7 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
             - 'labels': :obj:`list` of :obj:`str`, list containing the
@@ -1662,7 +1662,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
             - 'maps': 3D :class:`~nibabel.nifti1.Nifti1Image`, image has
@@ -1712,7 +1712,7 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
             - 'maps': :obj:`str`, path to nifti file containing the
@@ -1822,7 +1822,7 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
             - 'maps': :obj:`str`, path to nifti file containing the
@@ -1910,7 +1910,8 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
     labels_file, atlas_file = _fetch_files(data_dir, files, resume=resume,
                                            verbose=verbose)
 
-    labels = np.genfromtxt(labels_file, usecols=1, dtype="S", delimiter="\t")
+    labels = np.genfromtxt(labels_file, usecols=1, dtype="S", delimiter="\t",
+                           encoding=None)
     fdescr = _get_dataset_descr(dataset_name)
 
     return Bunch(maps=atlas_file,

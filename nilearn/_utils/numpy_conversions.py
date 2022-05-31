@@ -155,7 +155,7 @@ def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
 
     try:
         # First, we try genfromtxt which works in most cases.
-        array = np.genfromtxt(csv_path, loose=False, **kwargs)
+        array = np.genfromtxt(csv_path, loose=False, encoding=None, **kwargs)
     except ValueError:
         # There was an error during the conversion to numpy array, probably
         # because the delimiter is wrong.
@@ -167,6 +167,7 @@ def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
             raise TypeError(
                 'Could not read CSV file [%s]: %s' % (csv_path, e.args[0]))
 
-        array = np.genfromtxt(csv_path, delimiter=dialect.delimiter, **kwargs)
+        array = np.genfromtxt(csv_path, delimiter=dialect.delimiter,
+                              encoding=None, **kwargs)
 
     return array

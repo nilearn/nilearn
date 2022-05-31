@@ -3,8 +3,13 @@ Edge detection routines: this file provides a Canny filter
 """
 
 import numpy as np
-from scipy import ndimage, signal
-
+from scipy import signal
+from scipy.ndimage import (
+    sobel,
+    maximum_filter,
+    binary_dilation,
+    distance_transform_cdt,
+)
 from .._utils.extmath import fast_abs_percentile
 
 # Author: Gael Varoquaux
@@ -74,8 +79,8 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
     # Where the noise variance is 0, Wiener can create nans
     img[np.isnan(img)] = image[np.isnan(img)]
     img /= img.max()
-    grad_x = ndimage.sobel(img, mode='constant', axis=0)
-    grad_y = ndimage.sobel(img, mode='constant', axis=1)
+    grad_x = sobel(img, mode='constant', axis=0)
+    grad_y = sobel(img, mode='constant', axis=1)
     grad_mag = np.sqrt(grad_x ** 2 + grad_y ** 2)
     grad_angle = np.arctan2(grad_y, grad_x)
     # Scale the angles in the range [0, 2]
@@ -84,11 +89,13 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
     # greater than its neighbors normal to the edge direction.
     thinner = np.zeros(grad_mag.shape, dtype=bool)
     for angle in np.arange(0, 2, .25):
-        thinner = thinner | (
-                (grad_mag > .85 * ndimage.maximum_filter(
-                    grad_mag, footprint=_orientation_kernel(angle)))
-                & (((grad_angle - angle) % 2) < .75)
-                )
+        thinner = (
+            thinner | (
+                (grad_mag > .85 * maximum_filter(
+                    grad_mag, footprint=_orientation_kernel(angle)
+                )) & (((grad_angle - angle) % 2) < .75)
+            )
+        )
     # Remove the edges next to the side of the image: they are not reliable
     thinner[0]     = 0
     thinner[-1]    = 0
@@ -103,8 +110,9 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
                                               100 * high_threshold)
     low = thinned_grad > fast_abs_percentile(grad_values,
                                              100 * low_threshold)
-    edge_mask = ndimage.binary_dilation(
-        high, structure=np.ones((3, 3)), iterations=-1, mask=low)
+    edge_mask = binary_dilation(
+        high, structure=np.ones((3, 3)), iterations=-1, mask=low
+    )
     return grad_mag, edge_mask
 
 
@@ -126,7 +134,7 @@ def _edge_map(image):
     """
     edge_mask = _edge_detect(image)[-1]
     edge_mask = edge_mask.astype(float)
-    edge_mask = -np.sqrt(ndimage.distance_transform_cdt(edge_mask))
+    edge_mask = -np.sqrt(distance_transform_cdt(edge_mask))
     edge_mask[edge_mask != 0] -= -.05 + edge_mask.min()
     edge_mask = np.ma.masked_less(edge_mask, .01)
     return edge_mask

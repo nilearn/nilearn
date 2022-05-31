@@ -19,7 +19,7 @@ from nilearn.version import _compare_version
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
-from scipy import ndimage
+from scipy.ndimage import binary_fill_holes
 from scipy import stats
 from nibabel.spatialimages import SpatialImage
 
@@ -301,8 +301,7 @@ class _MNI152Template(SpatialImage):
             anat_img = reorder_img(anat_img)
             data = get_data(anat_img)
             data = data.astype(np.float64)
-            anat_mask = ndimage.morphology.binary_fill_holes(
-                data > np.finfo(float).eps)
+            anat_mask = binary_fill_holes(data > np.finfo(float).eps)
             data = np.ma.masked_array(data, np.logical_not(anat_mask))
             self._affine = anat_img.affine
             self.data = data
@@ -1237,7 +1236,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
         Default=True.
 
     """
-    node_values = np.squeeze(np.array(node_values))
+    node_values = np.array(node_values).flatten()
     node_coords = np.array(node_coords)
 
     # Validate node_values

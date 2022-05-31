@@ -43,7 +43,7 @@ DATASET_NAMES = set([
     "basc_multiscale_2015", "brainomics_localizer", "cobre", "craddock_2012",
     "destrieux_surface", "development_fmri", "difumo_atlases",
     "dosenbach_2010", "fsaverage3", "fsaverage4", "fsaverage5",
-    "fsaverage5_sphere", "fsaverage6", "fsaverage", "haxby2001",
+    "fsaverage6", "fsaverage", "haxby2001",
     "icbm152_2009", "Megatrawls", "miyawaki2008", "msdl_atlas",
     "neurovault", "nki_enhanced_surface", "nyu_rest", "oasis1",
     "pauli_2017", "power_2011", "schaefer_2018", "smith_2009",

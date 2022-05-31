@@ -121,6 +121,7 @@ Preprocessed datasets
    fetch_adhd
    fetch_bids_langloc_dataset
    fetch_development_fmri
+   fetch_ds000030_urls
    fetch_fiac_first_level
    fetch_haxby
    fetch_language_localizer_demo_dataset
@@ -279,6 +280,7 @@ General functions
 
    get_bids_files
    parse_bids_filename
+   save_glm_to_bids
 
 :mod:`nilearn.interfaces.fmriprep`
 ----------------------------------

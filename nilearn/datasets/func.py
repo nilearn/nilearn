@@ -248,7 +248,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
 
     # Load the csv file
     phenotypic = np.genfromtxt(phenotypic, names=True, delimiter=',',
-                               dtype=None)
+                               dtype=None, encoding=None)
 
     # Keep phenotypic information for selected subjects
     int_ids = np.asarray(ids, dtype=int)
@@ -1109,7 +1109,7 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
 
     Returns
     -------
-    data : :func:`~sklearn.utils.Bunch`
+    data : :class:`~sklearn.utils.Bunch`
         Dictionary-like object, the attributes of interest are:
 
         - 'zmaps': :obj:`list` of :obj:`str`
@@ -1355,7 +1355,8 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
                                names=['Subject', 'Age',
                                       'Dominant Hand', 'Sex'],
                                delimiter=',', dtype=['U9', '<f8',
-                                                     'U1', 'U1'])
+                                                     'U1', 'U1'],
+                               encoding=None)
 
     # Keep phenotypic information for selected subjects
     int_ids = np.asarray(ids)
@@ -1779,10 +1780,15 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
 
 
 @fill_doc
-def fetch_openneuro_dataset_index(data_dir=None,
-                                  dataset_version='ds000030_R1.0.4',
-                                  verbose=1):
+def fetch_openneuro_dataset_index(
+    data_dir=None,
+    dataset_version='ds000030_R1.0.4',
+    verbose=1,
+):
     """Download a file with OpenNeuro :term:`BIDS` dataset index.
+
+    .. deprecated:: 0.9.2
+        `fetch_openneuro_dataset_index` will be removed in 0.11.
 
     Downloading the index allows to explore the dataset directories
     to select specific files to download. The index is a sorted list of urls.
@@ -1790,38 +1796,98 @@ def fetch_openneuro_dataset_index(data_dir=None,
     Parameters
     ----------
     %(data_dir)s
-    dataset_version : string, optional
+    dataset_version : :obj:`str`, optional
         Dataset version name. Assumes it is of the form [name]_[version].
         Default='ds000030_R1.0.4'.
+
+        .. warning:: Any value other than the default will be ignored.
+
+    %(verbose)s'
+
+    Returns
+    -------
+    urls_path : :obj:`str`
+        Path to downloaded dataset index.
+    urls : :obj:`list` of :obj:`str`
+        Sorted list of dataset directories.
+    """
+    warnings.warn(
+        (
+            'The "fetch_openneuro_dataset_index" function was deprecated in '
+            'version 0.9.2, and will be removed in 0.11. '
+            'Please use "fetch_ds000030_urls" instead.'
+        ),
+        DeprecationWarning,
+    )
+
+    DATASET_VERSION = 'ds000030_R1.0.4'
+    if dataset_version != DATASET_VERSION:
+        warnings.warn(
+            (
+                'An improper dataset_version has been provided. '
+                '"ds000030_R1.0.4" will be downloaded.'
+            ),
+            UserWarning,
+        )
+
+    urls_path, urls = fetch_ds000030_urls(data_dir=data_dir, verbose=verbose)
+    return urls_path, urls
+
+
+@fill_doc
+def fetch_ds000030_urls(data_dir=None, verbose=1):
+    """Fetch URLs for files from the ds000030 :term:`BIDS` dataset.
+
+    .. versionadded:: 0.9.2
+
+    This dataset is version 1.0.4 of the "UCLA Consortium for
+    Neuropsychiatric Phenomics LA5c" dataset
+    :footcite:p:`poldrack_phenome-wide_2016`.
+
+    Downloading the index allows users to explore the dataset directories
+    to select specific files to download.
+    The index is a sorted list of urls.
+
+    Parameters
+    ----------
+    %(data_dir)s
     %(verbose)s
 
     Returns
     -------
-    urls_path : string
+    urls_path : :obj:`str`
         Path to downloaded dataset index.
 
-    urls : list of string
+    urls : :obj:`list` of :obj:`str`
         Sorted list of dataset directories.
 
+    References
+    ----------
+    .. footbibliography::
     """
-    data_prefix = '{}/{}/uncompressed'.format(dataset_version.split('_')[0],
-                                              dataset_version,
-                                              )
-    data_dir = _get_dataset_dir(data_prefix, data_dir=data_dir,
-                                verbose=verbose)
+    DATA_PREFIX = 'ds000030/ds000030_R1.0.4/uncompressed'
+    FILE_URL = 'https://osf.io/86xj7/download'
 
-    file_url = 'https://osf.io/86xj7/download'
+    data_dir = _get_dataset_dir(
+        DATA_PREFIX,
+        data_dir=data_dir,
+        verbose=verbose,
+    )
+
     final_download_path = os.path.join(data_dir, 'urls.json')
-    downloaded_file_path = _fetch_files(data_dir=data_dir,
-                                        files=[(final_download_path,
-                                                file_url,
-                                                {'move': final_download_path}
-                                                )],
-                                        resume=True
-                                        )
+    downloaded_file_path = _fetch_files(
+        data_dir=data_dir,
+        files=[(
+            final_download_path,
+            FILE_URL,
+            {'move': final_download_path},
+        )],
+        resume=True
+    )
     urls_path = downloaded_file_path[0]
     with open(urls_path, 'r') as json_file:
         urls = json.load(json_file)
+
     return urls_path, urls
 
 
@@ -1894,45 +1960,68 @@ def select_from_index(urls, inclusion_filters=None, exclusion_filters=None,
 
 
 def patch_openneuro_dataset(file_list):
-    """Add symlinks for files not named according to latest :term:`BIDS` conventions.
+    """Add symlinks for files not named according to :term:`BIDS` conventions.
+
+    .. warning::
+        This function uses a series of hardcoded patterns to generate the
+        corrected filenames.
+        These patterns are not comprehensive and this function is not
+        guaranteed to produce BIDS-compliant files.
+
+    Parameters
+    ----------
+    file_list : :obj:`list` of :obj:`str`
+        A list of filenames to update.
     """
-    rep = {'_T1w_brainmask': '_desc-brain_mask',
-           '_T1w_preproc': '_desc-preproc_T1w',
-           '_T1w_space-MNI152NLin2009cAsym_brainmask':
-               '_space-MNI152NLin2009cAsym_desc-brain_mask',
-           '_T1w_space-MNI152NLin2009cAsym_class-':
-               '_space-MNI152NLin2009cAsym_label-',
-           '_T1w_space-MNI152NLin2009cAsym_preproc':
-               '_space-MNI152NLin2009cAsym_desc-preproc_T1w',
-           '_bold_confounds': '_desc-confounds_regressors',
-           '_bold_space-MNI152NLin2009cAsym_brainmask':
-               '_space-MNI152NLin2009cAsym_desc-brain_mask',
-           '_bold_space-MNI152NLin2009cAsym_preproc':
-               '_space-MNI152NLin2009cAsym_desc-preproc_bold'
-           }
+    REPLACEMENTS = {
+        '_T1w_brainmask': '_desc-brain_mask',
+        '_T1w_preproc': '_desc-preproc_T1w',
+        '_T1w_space-MNI152NLin2009cAsym_brainmask':
+            '_space-MNI152NLin2009cAsym_desc-brain_mask',
+        '_T1w_space-MNI152NLin2009cAsym_class-':
+            '_space-MNI152NLin2009cAsym_label-',
+        '_T1w_space-MNI152NLin2009cAsym_preproc':
+            '_space-MNI152NLin2009cAsym_desc-preproc_T1w',
+        '_bold_confounds': '_desc-confounds_regressors',
+        '_bold_space-MNI152NLin2009cAsym_brainmask':
+            '_space-MNI152NLin2009cAsym_desc-brain_mask',
+        '_bold_space-MNI152NLin2009cAsym_preproc':
+            '_space-MNI152NLin2009cAsym_desc-preproc_bold'
+    }
+
     # Create a symlink if a file with the modified filename does not exist
-    for old in rep:
+    for old_pattern, new_pattern in REPLACEMENTS.items():
         for name in file_list:
-            if old in name:
-                if not os.path.exists(name.replace(old, rep[old])):
-                    os.symlink(name, name.replace(old, rep[old]))
+            if old_pattern in name:
+                new_name = name.replace(old_pattern, new_pattern)
+                if not os.path.exists(new_name):
+                    os.symlink(name, new_name)
 
 
 @fill_doc
 def fetch_openneuro_dataset(
-    urls=None, data_dir=None, dataset_version='ds000030_R1.0.4',
-    verbose=1):
+    urls=None,
+    data_dir=None,
+    dataset_version='ds000030_R1.0.4',
+    verbose=1,
+):
     """Download OpenNeuro :term:`BIDS` dataset.
+
+    This function specifically downloads files from a series of URLs.
+    Unless you use :func:`fetch_ds000030_urls` or the default parameters,
+    it is up to the user to ensure that the URLs are correct,
+    and that they are associated with an OpenNeuro dataset.
 
     Parameters
     ----------
     urls : list of string, optional
-        Openneuro url list of dataset files to download. If not specified
-        all files of the specified dataset will be downloaded.
+        List of URLs to dataset files to download.
+        If not specified, all files from the default dataset
+        (``ds000030_R1.0.4``) will be downloaded.
     %(data_dir)s
     dataset_version : string, optional
         Dataset version name. Assumes it is of the form [name]_[version].
-        Default is `ds000030_R1.0.4`.
+        Default is ``ds000030_R1.0.4``.
     %(verbose)s
 
     Returns
@@ -1943,21 +2032,74 @@ def fetch_openneuro_dataset(
     downloaded_files : list of string
         Absolute paths of downloaded files on disk.
 
-    """
-    data_prefix = '{}/{}/uncompressed'.format(
-        dataset_version.split('_')[0], dataset_version)
-    data_dir = _get_dataset_dir(data_prefix, data_dir=data_dir,
-                                verbose=verbose)
+    Notes
+    -----
+    The default dataset downloaded by this function is the
+    "UCLA Consortium for Neuropsychiatric Phenomics LA5c" dataset
+    :footcite:p:`poldrack_phenome-wide_2016`.
 
+    This copy includes filenames that are not compliant with the current
+    version of :term:`BIDS`, so this function also calls
+    :func:`patch_openneuro_dataset` to generate BIDS-compliant symlinks.
+
+    See Also
+    --------
+    :func:`fetch_ds000030_urls`
+    :func:`patch_openneuro_dataset`
+
+    References
+    ----------
+    .. footbibliography::
+    """
     # if urls are not specified we download the complete dataset index
     if urls is None:
-        _, urls = fetch_openneuro_dataset_index(
-            data_dir=data_dir, dataset_version=dataset_version,
-            verbose=verbose)
+        DATASET_VERSION = 'ds000030_R1.0.4'
+        if dataset_version != DATASET_VERSION:
+            warnings.warn(
+                'If `dataset_version` is not "ds000030_R1.0.4", '
+                '`urls` must be specified. Downloading "ds000030_R1.0.4".'
+            )
+
+        data_prefix = '{}/{}/uncompressed'.format(
+            DATASET_VERSION.split('_')[0],
+            DATASET_VERSION,
+        )
+        orig_data_dir = data_dir
+        data_dir = _get_dataset_dir(
+            data_prefix,
+            data_dir=data_dir,
+            verbose=verbose,
+        )
+
+        _, urls = fetch_ds000030_urls(
+            data_dir=orig_data_dir,
+            verbose=verbose,
+        )
+    else:
+        data_prefix = '{}/{}/uncompressed'.format(
+            dataset_version.split('_')[0],
+            dataset_version,
+        )
+        data_dir = _get_dataset_dir(
+            data_prefix,
+            data_dir=data_dir,
+            verbose=verbose,
+        )
 
     # The files_spec needed for _fetch_files
     files_spec = []
     files_dir = []
+
+    # Check that data prefix is found in each URL
+    bad_urls = [url for url in urls if data_prefix not in url]
+    if bad_urls:
+        raise ValueError(
+            f'data_prefix ({data_prefix}) is not found in at least one URL. '
+            'This indicates that the URLs do not correspond to the '
+            'dataset_version provided.\n'
+            f'Affected URLs: {bad_urls}'
+        )
+
     for url in urls:
         url_path = url.split(data_prefix + '/')[1]
         file_dir = os.path.join(data_dir, url_path)
@@ -1974,13 +2116,19 @@ def fetch_openneuro_dataset(
         while download_attempts > 0 and not success:
             try:
                 downloaded_files = _fetch_files(
-                    file_dir, [file_spec], resume=True, verbose=verbose)
+                    file_dir,
+                    [file_spec],
+                    resume=True,
+                    verbose=verbose,
+                )
                 downloaded += downloaded_files
                 success = True
             except Exception:
                 download_attempts -= 1
+
         if not success:
-            raise Exception('multiple failures downloading %s' % file_spec[1])
+            raise Exception(f'multiple failures downloading {file_spec[1]}')
+
     patch_openneuro_dataset(downloaded)
 
     return data_dir, sorted(downloaded)

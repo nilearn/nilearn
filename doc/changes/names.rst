@@ -30,6 +30,8 @@
 
 .. _Binh Nguyen: https://www.imo.universite-paris-saclay.fr/~tbnguyen/
 
+.. _Caglar Cakan: https://github.com/caglorithm
+
 .. _Céline Delettre: https://github.com/celinede
 
 .. _Chris Gorgolewski: https://github.com/chrisgorgo
@@ -193,5 +195,7 @@
 .. _Virgile Fritsch: https://github.com/VirgileFritsch
 
 .. _Yaroslav Halchenko: https://github.com/yarikoptic
+
+.. _Yasmin Mzayek: https://github.com/ymzayek
 
 .. _Zvi Baratz: https://github.com/ZviBaratz

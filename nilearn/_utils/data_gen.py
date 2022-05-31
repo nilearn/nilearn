@@ -8,7 +8,7 @@ import string
 import numpy as np
 import pandas as pd
 import scipy.signal
-from scipy import ndimage
+from scipy.ndimage import binary_dilation
 
 from sklearn.utils import check_random_state
 import scipy.linalg
@@ -31,7 +31,7 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
     data = rng.randn(n_scans, n_voxels)
     if mask_dilation is not None and mask_dilation > 0:
         mask_img = image.new_img_like(
-            mask_img, ndimage.binary_dilation(
+            mask_img, binary_dilation(
                 image.get_data(mask_img), iterations=mask_dilation))
     return masker.inverse_transform(data), mask_img
 
@@ -501,11 +501,32 @@ def generate_group_sparse_gaussian_graphs(
     return signals, precisions, topology
 
 
-def basic_paradigm():
-    conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
+def basic_paradigm(condition_names_have_spaces=False):
+    """Generate basic paradigm
+
+    Parameters
+    ----------
+    condition_names_have_spaces : :obj:`bool`, optional
+        Check for spaces in condition names.
+        Default=False.
+
+    Returns
+    -------
+    events : pd.DataFrame
+        Basic experimental paradigm with events data.
+
+    """
+    conditions = ['c 0', 'c 0', 'c 0',
+                  'c 1', 'c 1', 'c 1',
+                  'c 2', 'c 2', 'c 2']
+
+    if not condition_names_have_spaces:
+        conditions = [c.replace(' ', '') for c in conditions]
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
+    durations = 1 * np.ones(9)
     events = pd.DataFrame({'trial_type': conditions,
-                           'onset': onsets})
+                           'onset': onsets,
+                           'duration': durations})
     return events
 
 

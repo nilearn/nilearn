@@ -813,7 +813,11 @@ def load_surf_mesh(surf_mesh):
         if (surf_mesh.endswith('orig') or surf_mesh.endswith('pial') or
                 surf_mesh.endswith('white') or surf_mesh.endswith('sphere') or
                 surf_mesh.endswith('inflated')):
-            coords, faces = fs.io.read_geometry(surf_mesh)
+            coords, faces, header = fs.io.read_geometry(surf_mesh,
+                                                        read_metadata=True)
+            # See https://github.com/nilearn/nilearn/pull/3235
+            if 'cras' in header:
+                coords += header['cras']
             mesh = Mesh(coordinates=coords, faces=faces)
         elif surf_mesh.endswith('gii'):
             coords, faces = _gifti_img_to_mesh(nibabel.load(surf_mesh))
