@@ -4,7 +4,7 @@ time when using the 'ball' sampling in nilearn.surface.vol_to_surf.
 They can be re-created like this:
 
 import numpy as np
-from nilearn import surface
+from nilearn.surface import surface
 
 for n in [10, 20, 40, 80, 160]:
     ball_cloud = surface._uniform_ball_cloud(n_points=n)
