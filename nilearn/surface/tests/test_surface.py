@@ -767,12 +767,13 @@ def test_check_surface():
 
 
 def test_smooth_surface_data():
-    # Load fsaverage surface
-    fsaverage = datasets.fetch_surf_fsaverage('fsaverage')
-    sphere = surface.load_surf_mesh(fsaverage.sphere_left)
+    # Create simple surface
+    from nilearn.surface import Mesh
+    sphere = Mesh(np.array([[0,0,0],[1,0,0],[0,1,0]]), np.array([[0,1,2]]))
     # Create surface data with activation at one mesh vertex
-    surf_data = np.zeros(sphere.coordinates.shape[0])
+    surf_data = np.zeros(np.shape(sphere.coordinates)[0])
     surf_data[0] = 1
-    surf_data_smooth = surface.smooth_surface_data(surface=sphere, surf_data=surf_data, smooth_steps=1)
-    assert np.sum(surf_data_smooth) == np.sum(surf_data)
+    surf_data_smooth = surface.smooth_surface_data(surface=sphere, surf_data=surf_data, iterations=1, match='sum')
+    # checking that output was properly normalized
+    assert np.isclose(np.sum(surf_data_smooth), np.sum(surf_data))
     

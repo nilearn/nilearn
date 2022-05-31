@@ -1027,7 +1027,7 @@ def compute_adjacency_matrix(surface, values='ones', dtype=None):
         The surface whose adjacency matrix is to be computed.
 
     values : { 'len' | 'invlen' | 'ones'}, optional
-        If `distances` is `'ones'` (the default), then the returned matrix
+        If `values` is `'ones'` (the default), then the returned matrix
         contains uniform values in the cells representing edges. If the value is
         `'len'` then the cells contain the edge length of the represented
         edge. If the value is `'invlen'`, then the the inverse of the distances
@@ -1043,7 +1043,7 @@ def compute_adjacency_matrix(surface, values='ones', dtype=None):
 
     """
     from scipy.sparse import csr_matrix
-    surface = load_surface(surface)
+    surface = load_surf_mesh(surface)
     # This is a bit of a hack to quickly find a unique set of all edges.
     n = surface.coordinates.shape[0]
     edges = np.vstack([surface.faces[:,[0,1]],
@@ -1105,7 +1105,7 @@ def smooth_surface_data(surface, surf_data,
                         vertex_weights=None,
                         return_vertex_weights=False,
                         center_surround_knob=0,
-                        match=None):
+                        match='sum'):
     """Smooth values along the surface.
     
     Parameters
@@ -1152,13 +1152,13 @@ def smooth_surface_data(surface, surf_data,
 
     match : { None | 'sum' | 'mean' | 'var' | 'dist' }, optional
         What properties of the input data should be matched in the output data.
-        The default of `None` indicates that the smoothed output should be
+        `None` indicates that the smoothed output should be
         returned without transformation. If the value is `'sum'`, then the
         output is rescaled to have the same sum as `surf_data`. If the value is
         `'mean'`, then the output is shifted to match the mean of the input. If
         the value is `'var'` or `'std'`, then the variance of the output is
         matched. Finally, if the value iis `'dist'`, then the mean and the
-        variance are matched.
+        variance are matched. Default is `'sum'` 
     
     Returns
     -------
@@ -1176,7 +1176,7 @@ def smooth_surface_data(surface, surf_data,
 
     """
     from scipy.sparse import diags
-    surface = load_surface(surface)
+    surface = load_surf_mesh(surface)
     # First, calculate the center and surround weights for the
     # center-surround knob.
     t = center_surround_knob
@@ -1185,31 +1185,39 @@ def smooth_surface_data(surface, surf_data,
     if surround_weight == 0:
         # There's nothing to do in this case.
         return np.array(surf_data)
-    # Calculate the adjacency matrix.
-    matrix = compute_adjacency_matrix(surface, distances=distance_weights)
+    # Calculate the adjacency matrix either weighting by inverse distance or not weighting (ones)
+    if distance_weights:
+        matrix = compute_adjacency_matrix(surface, values='invlen')
+    else:
+        matrix = compute_adjacency_matrix(surface, values='ones')
+    
     # If there are vertex weights, get them ready.
     if vertex_weights:
         w = np.array(vertex_weights)
         w /= np.sum(w)
     else:
-        w = np.ones(len(matrix))
+        w = np.ones(matrix.shape[0])
     # We need to normalize the matrix columns, and we can do this now by
     # normalizing everything but the diagonal to the surround weight, then
     # adding the center weight along the diagonal.
     colsums = matrix.sum(axis=1)
     colsums = np.asarray(colsums).flatten()
     matrix = matrix.multiply(surround_weight / colsums[:,None])
+
     # Add in the diagonal.
     matrix.setdiag(center_weight)
     # Run the iteratioons of smooothing.
     n = len(surf_data)
-    data = np.hstack([np.reshape(surf_data, (n,-1)), w[:,None]])
+    # data = np.hstack([np.reshape(surf_data, (n,-1)), w[:,None]])
+    # for ii in range(iterations):
+    #     w = data[:,-1]
+    #     w /= np.sum(w)
+    #     data = matrix.dot(diags(w, format='csc')).dot(data)
+    data = surf_data
     for ii in range(iterations):
-        w = data[:,-1]
-        w /= np.sum(w)
-        data = matrix.dot(diags(w, format='csc')).dot(data)
+        data = matrix.dot(data)
     # Convert back into numpy array.
-    (data, w) = (data[:,:-1], data[:,-1])
+    #(data, w) = (data[:,:-1], data[:,-1])
     data = np.reshape(np.asarray(data), np.shape(surf_data))
     # Rescale it if needed.
     if match == 'sum':
