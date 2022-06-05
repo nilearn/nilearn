@@ -1078,7 +1078,7 @@ def _load_mixed_gambles(zmap_imgs):
     X = X[mask, :].T
     tmp = np.zeros(list(mask.shape) + [len(X)])
     tmp[mask, :] = X.T
-    mask_img = nibabel.Nifti1Image(mask.astype(int), affine)
+    mask_img = nibabel.Nifti1Image(mask.astype("uint8"), affine)
     X = nibabel.four_to_three(nibabel.Nifti1Image(tmp, affine))
     return X, y, mask_img
 

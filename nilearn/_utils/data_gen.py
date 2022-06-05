@@ -147,7 +147,7 @@ def generate_maps(shape, n_regions, overlap=0, border=1,
 
 
 def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
-                             affine=np.eye(4), dtype=int):
+                             affine=np.eye(4), dtype="int32"):
     """Generate a 3D volume with labeled regions.
 
     Parameters
@@ -169,7 +169,7 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
         Affine of returned image. Default=np.eye(4).
 
     dtype : type, optional
-        Data type of image. Default=int.
+        Data type of image. Default=np.int32.
 
     Returns
     -------
@@ -194,7 +194,7 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
 
 
 def generate_labeled_regions_large(shape, n_regions, rand_gen=None,
-                                   affine=np.eye(4)):
+                                   affine=np.eye(4), dtype="int32"):
     """Similar to generate_labeled_regions, but suitable for a large number of
     regions.
 
@@ -202,7 +202,7 @@ def generate_labeled_regions_large(shape, n_regions, rand_gen=None,
     """
     if rand_gen is None:
         rand_gen = np.random.RandomState(0)
-    data = rand_gen.randint(n_regions + 1, size=shape)
+    data = rand_gen.randint(n_regions + 1, size=shape, dtype=dtype)
     if len(np.unique(data)) != n_regions + 1:
         raise ValueError("Some labels are missing. Maybe shape is too small.")
     return Nifti1Image(data, affine)
