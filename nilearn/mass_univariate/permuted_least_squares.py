@@ -11,6 +11,7 @@ import joblib
 import nibabel as nib
 import numpy as np
 from nilearn.masking import apply_mask
+from nilearn import image
 from nilearn.mass_univariate._utils import (
     _calculate_cluster_measures,
     _calculate_tfce,
@@ -950,21 +951,13 @@ def permuted_ols(
                 # so we use apply_mask here.
                 cluster_dict[f'{metric}_pvals'][i_regressor, :] = np.squeeze(
                     apply_mask(
-                        nib.Nifti1Image(
-                            p_map,
-                            masker.mask_img_.affine,
-                            masker.mask_img_.header,
-                        ),
+                        image.new_img_like(masker.mask_img_, p_map),
                         masker.mask_img_,
                     )
                 )
                 cluster_dict[metric][i_regressor, :] = np.squeeze(
                     apply_mask(
-                        nib.Nifti1Image(
-                            metric_map.astype("float"),
-                            masker.mask_img_.affine,
-                            masker.mask_img_.header,
-                        ),
+                        image.new_img_like(masker.mask_img_, metric_map),
                         masker.mask_img_,
                     )
                 )
