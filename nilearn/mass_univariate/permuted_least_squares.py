@@ -961,7 +961,7 @@ def permuted_ols(
                 cluster_dict[metric][i_regressor, :] = np.squeeze(
                     apply_mask(
                         nib.Nifti1Image(
-                            metric_map,
+                            metric_map.astype("float"),
                             masker.mask_img_.affine,
                             masker.mask_img_.header,
                         ),
