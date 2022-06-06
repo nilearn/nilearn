@@ -196,7 +196,8 @@ with ``get_affine()`` and ``get_header()``.
              Several popular neuroimaging tools do not handle int64 Nifti
              images, so if you build Nifti images directly from Numpy arrays it
              is recommended to specify a smaller integer type, for example::
-              np.array([1, 2000, 7], dtype="int32")
+
+               np.array([1, 2000, 7], dtype="int32")
 
 
 
