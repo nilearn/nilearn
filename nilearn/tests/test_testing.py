@@ -80,4 +80,3 @@ def test_int64_niftis(tmp_path):
     for dtype in "int64", "uint64":
         with pytest.raises(AssertionError):
             nibabel.Nifti1Image(data.astype(dtype), affine)
-
