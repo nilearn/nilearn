@@ -216,7 +216,7 @@ def generate_labeled_regions(shape,
                              random_state=0,
                              labels=None,
                              affine=np.eye(4),
-                             dtype=int):
+                             dtype="int32"):
     """Generate a 3D volume with labeled regions.
 
     Parameters
