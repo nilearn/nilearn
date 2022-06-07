@@ -191,6 +191,15 @@ documentation.
 Note: For older versions of nibabel_, affine and header can be retrieved
 with ``get_affine()`` and ``get_header()``.
 
+.. warning:: if you create images directly with nibabel_, beware of int64
+             images. the default integer type used by Numpy is (signed) 64-bit.
+             Several popular neuroimaging tools do not handle int64 Nifti
+             images, so if you build Nifti images directly from Numpy arrays it
+             is recommended to specify a smaller integer type, for example::
+
+               np.array([1, 2000, 7], dtype="int32")
+
+
 
 .. topic:: **Dataset formatting: data shape**
 

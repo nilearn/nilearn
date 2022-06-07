@@ -23,21 +23,22 @@ def save_glm_to_bids(
 
     Parameters
     ----------
-    model : :obj:`~nilearn.glm.first_level.FirstLevelModel` or
-            :obj:`~nilearn.glm.second_level.SecondLevelModel`
+    model : :obj:`~nilearn.glm.first_level.FirstLevelModel` or \
+    :obj:`~nilearn.glm.second_level.SecondLevelModel`
         First- or second-level model from which to save outputs.
+
     contrasts : :obj:`str` or array of shape (n_col) or :obj:`list` \
-            of (:obj:`str` or array of shape (n_col)) or :obj:`dict`
+    of (:obj:`str` or array of shape (n_col)) or :obj:`dict`
         Contrast definitions. This may be one of the following:
 
-        -   A string
-        -   A list of strings
-        -   A dictionary of contrast name: contrast weight key-value pairs.
-            The contrast weights may be strings, lists, or arrays.
-            Arrays may be 1D or 2D, with 1D arrays typically being t-contrasts
-            and 2D arrays typically being F-contrasts.
+            - A string
+            - A list of strings
+            - A dictionary of contrast name: contrast weight key-value pairs.
+              The contrast weights may be strings, lists, or arrays.
+              Arrays may be 1D or 2D, with 1D arrays typically being
+              t-contrasts and 2D arrays typically being F-contrasts.
 
-    contrast_types : None or :obj:`dict` of :obj:`str`s, optional
+    contrast_types : None or :obj:`dict` of :obj:`str`, optional
         An optional dictionary mapping some or all of the contrast names to
         specific contrast types ('t' or 'F'). If None, all contrast types will
         be automatically inferred based on the contrast arrays
@@ -46,8 +47,10 @@ def save_glm_to_bids(
         dictionary, but only those contrasts for which contrast type must be
         explicitly set need to be included.
         Default is None.
+
     out_dir : :obj:`str`, optional
         Output directory for files. Default is current working directory.
+
     prefix : :obj:`str` or None, optional
         String to prepend to generated filenames.
         If a string is provided, '_' will be added to the end.
@@ -66,19 +69,22 @@ def save_glm_to_bids(
     -----
     This function writes files for the following:
 
-    -   Modeling software information (dataset_description.json)
-    -   Model-level metadata (statmap.json)
-    -   Model design matrix (design.tsv)
-    -   Model design matrix figure (design.svg)
-    -   Model error (stat-errorts_statmap.nii.gz)
-    -   Model r-squared (stat-rSquare_statmap.nii.gz)
-    -   Contrast parameter estimates
-        (contrast-[name]_stat-effect_statmap.nii.gz)
-    -   Variance of the contrast parameter estimates
-        (contrast-[name]_stat-variance_statmap.nii.gz)
-    -   Contrast test statistics (contrast-[name]_stat-[F|t]_statmap.nii.gz)
-    -   Contrast p- and z-values (contrast-[name]_stat-[p|z]_statmap.nii.gz)
-    -   Contrast weights figure (contrast-[name]_design.svg)
+        - Modeling software information (``dataset_description.json``)
+        - Model-level metadata (``statmap.json``)
+        - Model design matrix (``design.tsv``)
+        - Model design matrix figure (``design.svg``)
+        - Model error (``stat-errorts_statmap.nii.gz``)
+        - Model r-squared (``stat-rSquare_statmap.nii.gz``)
+        - Contrast parameter estimates
+          (``contrast-[name]_stat-effect_statmap.nii.gz``)
+        - Variance of the contrast parameter estimates
+          (``contrast-[name]_stat-variance_statmap.nii.gz``)
+        - Contrast test statistics
+          (``contrast-[name]_stat-[F|t]_statmap.nii.gz``)
+        - Contrast p- and z-values
+          (``contrast-[name]_stat-[p|z]_statmap.nii.gz``)
+        - Contrast weights figure (``contrast-[name]_design.svg``)
+
     """
     # Import here to avoid circular imports
     from nilearn import glm

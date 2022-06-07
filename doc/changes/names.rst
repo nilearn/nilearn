@@ -30,6 +30,8 @@
 
 .. _Binh Nguyen: https://www.imo.universite-paris-saclay.fr/~tbnguyen/
 
+.. _Caglar Cakan: https://github.com/caglorithm
+
 .. _Céline Delettre: https://github.com/celinede
 
 .. _Chris Gorgolewski: https://github.com/chrisgorgo

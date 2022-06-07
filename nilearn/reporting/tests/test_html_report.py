@@ -31,7 +31,7 @@ def data_img_3d():
 @pytest.fixture
 def mask():
     """Dummy mask for testing."""
-    data = np.zeros((10, 10, 10), dtype=int)
+    data = np.zeros((10, 10, 10), dtype="uint8")
     data[3:7, 3:7, 3:7] = 1
     return Nifti1Image(data, np.eye(4))
 
@@ -316,7 +316,7 @@ def test_nifti_labels_masker_report(data_img_3d, mask):
 
 def test_4d_reports(mask):
     # Dummy 4D data
-    data = np.zeros((10, 10, 10, 3), dtype=int)
+    data = np.zeros((10, 10, 10, 3), dtype="int32")
     data[..., 0] = 1
     data[..., 1] = 2
     data[..., 2] = 3

@@ -53,7 +53,7 @@ def test_detrend():
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
     img = Nifti1Image(data, np.eye(4))
-    mask = data.astype(np.int)
+    mask = data.astype("uint8")
     mask_img = Nifti1Image(mask, np.eye(4))
     masker = NiftiMasker(mask_img=mask_img, detrend=True)
     # Smoke test the fit
@@ -66,7 +66,7 @@ def test_resample():
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
     img = Nifti1Image(data, np.eye(4))
-    mask = data.astype(np.int)
+    mask = data.astype("uint8")
     mask_img = Nifti1Image(mask, np.eye(4))
     masker = NiftiMasker(mask_img=mask_img, target_affine=2 * np.eye(3))
     # Smoke test the fit
@@ -145,13 +145,13 @@ def test_mask_3d():
 
 def test_mask_4d():
     # Dummy mask
-    mask = np.zeros((10, 10, 10), dtype=int)
+    mask = np.zeros((10, 10, 10), dtype="int32")
     mask[3:7, 3:7, 3:7] = 1
     mask_bool = mask.astype(bool)
     mask_img = Nifti1Image(mask, np.eye(4))
 
     # Dummy data
-    data = np.zeros((10, 10, 10, 5), dtype=int)
+    data = np.zeros((10, 10, 10, 5), dtype="int32")
     data[..., 0] = 1
     data[..., 1] = 2
     data[..., 2] = 3

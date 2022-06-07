@@ -628,7 +628,7 @@ def test_cluster_level_parameters_smoke(random_state=0):
 
     # masker is defined, but threshold is not.
     # no cluster-level inference is performed, but there's a warning.
-    with pytest.warns():
+    with pytest.warns(Warning):
         out = permuted_ols(
             tested_var,
             target_var,
@@ -646,7 +646,7 @@ def test_cluster_level_parameters_smoke(random_state=0):
 
     # threshold is defined, but output_type is "legacy".
     # raise a warning, and get a dictionary.
-    with pytest.warns():
+    with pytest.warns(Warning):
         out = permuted_ols(
             tested_var,
             target_var,

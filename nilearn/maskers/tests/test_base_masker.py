@@ -21,7 +21,7 @@ def test_cropping_code_paths():
 
     img = nibabel.Nifti1Image(data, affine=affine)
 
-    mask = (data[..., 0] > 0).astype(int)
+    mask = (data[..., 0] > 0).astype("uint8")
     mask_img = nibabel.Nifti1Image(mask, affine=affine)
 
     # the mask in mask_img has the same shape and affine as the

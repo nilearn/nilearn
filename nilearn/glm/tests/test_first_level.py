@@ -14,7 +14,8 @@ from numpy.testing import (assert_almost_equal, assert_array_almost_equal,
 
 from nilearn._utils.data_gen import (create_fake_bids_dataset,
                                      generate_fake_fmri_data_and_design,
-                                     write_fake_fmri_data_and_design)
+                                     write_fake_fmri_data_and_design,
+                                     basic_paradigm)
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (FirstLevelModel, first_level_from_bids,
                                      mean_scaling, run_glm)
@@ -25,6 +26,7 @@ from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.maskers import NiftiMasker
+
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
@@ -468,20 +470,6 @@ def test_fmri_inputs():
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
         del fi, func_img, mask, d, des, FUNCFILE, _
-
-
-def basic_paradigm(condition_names_have_spaces=False):
-    if condition_names_have_spaces:
-        conditions = ['c 0', 'c 0', 'c 0', 'c 1', 'c 1', 'c 1',
-                      'c 2', 'c 2', 'c 2']
-    else:
-        conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
-    onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    durations = 1 * np.ones(9)
-    events = pd.DataFrame({'trial_type': conditions,
-                           'onset': onsets,
-                           'duration': durations})
-    return events
 
 
 def test_first_level_design_creation():
