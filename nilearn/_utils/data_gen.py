@@ -241,17 +241,9 @@ def generate_labeled_regions(shape,
         Affine of returned image.
         Default=np.eye(4).
 
-<<<<<<< HEAD
     dtype : :obj:`type`, optional
         Data type of image.
         Default=int.
-=======
-    affine : numpy.ndarray, optional
-        Affine of returned image. Default=np.eye(4).
-
-    dtype : type, optional
-        Data type of image. Default=np.int32.
->>>>>>> 7d04e2fa49030784c6ec5132f1f831de7c6540fd
 
     Returns
     -------
