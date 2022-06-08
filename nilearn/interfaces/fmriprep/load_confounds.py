@@ -294,24 +294,27 @@ def load_confounds(img_files,
     return confounds_out, sample_mask_out
 
 
-def _load_confounds_for_single_image_file(image_file, strategy, demean, **kwargs):
+def _load_confounds_for_single_image_file(image_file, strategy, demean,
+                                          **kwargs):
     """Load confounds for a single image file."""
-    # Check if ica_aroma is in strategy, this will change which image_file is required
+    # Check for ica_aroma in strategy, this will change the required image_file
     flag_full_aroma = ("ica_aroma" in strategy) and (
             kwargs.get("ica_aroma") == "full"
     )
 
-    confounds_file = _get_confounds_file(image_file, flag_full_aroma=flag_full_aroma)
+    confounds_file = _get_confounds_file(image_file,
+                                         flag_full_aroma=flag_full_aroma)
     confounds_json_file = _get_json(confounds_file)
 
     return _load_single_confounds_file(confounds_file=confounds_file,
-                                       confounds_json_file=confounds_json_file,
                                        strategy=strategy,
                                        demean=demean,
+                                       confounds_json_file=confounds_json_file,
                                        **kwargs)
 
 
-def _load_single_confounds_file(confounds_file, strategy, demean=True, confounds_json_file=None, **kwargs):
+def _load_single_confounds_file(confounds_file, strategy, demean=True,
+                                confounds_json_file=None, **kwargs):
     """Load and extract specified confounds from the confounds file."""
     flag_acompcor = ("compcor" in strategy) and (
             "anat" in kwargs.get("compcor")
@@ -323,19 +326,22 @@ def _load_single_confounds_file(confounds_file, strategy, demean=True, confounds
         confounds_json_file = _get_json(confounds_file)
 
     # Read the associated json file
-    meta_json = _load_confounds_json(confounds_json_file, flag_acompcor=flag_acompcor)
+    meta_json = _load_confounds_json(confounds_json_file,
+                                     flag_acompcor=flag_acompcor)
 
     missing = {"confounds": [], "keywords": []}
     # always check non steady state volumes are loaded
     confounds_select, missing = _load_noise_component(confounds_all,
                                                       "non_steady_state",
-                                                      missing, meta_json=meta_json,
+                                                      missing,
+                                                      meta_json=meta_json,
                                                       **kwargs)
     for component in strategy:
         loaded_confounds, missing = _load_noise_component(
             confounds_all, component, missing, meta_json=meta_json,
             **kwargs)
-        confounds_select = pd.concat([confounds_select, loaded_confounds], axis=1)
+        confounds_select = pd.concat([confounds_select, loaded_confounds],
+                                     axis=1)
 
     _check_error(missing)  # raise any missing
     return _prepare_output(confounds_select, demean)
