@@ -61,10 +61,10 @@ def _check_error(missing):
     """Consolidate a single error message across multiple missing confounds."""
     if missing["confounds"] or missing["keywords"]:
         error_msg = (
-                "The following keywords or parameters are missing: "
-                + f" {missing['confounds']}"
-                + f" {missing['keywords']}"
-                + ". You may want to try a different denoising strategy."
+            "The following keywords or parameters are missing: "
+            + f" {missing['confounds']}"
+            + f" {missing['keywords']}"
+            + ". You may want to try a different denoising strategy."
         )
         raise ValueError(error_msg)
 
@@ -299,7 +299,7 @@ def _load_confounds_for_single_image_file(image_file, strategy, demean,
     """Load confounds for a single image file."""
     # Check for ica_aroma in strategy, this will change the required image_file
     flag_full_aroma = ("ica_aroma" in strategy) and (
-            kwargs.get("ica_aroma") == "full"
+        kwargs.get("ica_aroma") == "full"
     )
 
     confounds_file = _get_confounds_file(image_file,
@@ -317,7 +317,7 @@ def _load_single_confounds_file(confounds_file, strategy, demean=True,
                                 confounds_json_file=None, **kwargs):
     """Load and extract specified confounds from the confounds file."""
     flag_acompcor = ("compcor" in strategy) and (
-            "anat" in kwargs.get("compcor")
+        "anat" in kwargs.get("compcor")
     )
     # Convert tsv file to pandas dataframe
     confounds_all = _load_confounds_file_as_dataframe(confounds_file)
