@@ -12,6 +12,8 @@ Fixes
 -----
 
 - Convert references in ``nilearn/mass_univariate/permuted_least_squares.py`` to use bibtex format (:gh:`3222` by `Yasmin Mzayek`_).
+- Update Craddock 2012 parcellation url in ``nilearn/datasets/atlas.py``
+
 
 Enhancements
 ------------
