@@ -469,7 +469,7 @@ def generate_fake_fmri_data_and_design(shapes,
         3D mask giving non-zero voxels.
 
     fmri_data : :obj:`list`
-        A list of Niimg-like object
+        A 4D volume represented by a list of 3D Niimg-like objects.
 
     design_matrices : :obj:`list`
         A list of pd.DataFrame
@@ -559,7 +559,7 @@ def write_fake_bold_img(file_path,
         Output file path.
 
     shape : :obj:`tuple` of :obj:`int`
-        Shape of output array.
+        Shape of output array. Should be at least 3D.
 
     affine : :obj:`numpy.ndarray`, optional
         Affine of returned images.
