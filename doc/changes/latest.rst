@@ -45,3 +45,6 @@ Changes
   them to int32 when possible (ie when it would not result in an overflow).
   Moreover, any atlas fetcher that returned int64 images now produces images
   containing smaller ints. (:gh:`3227` by `Jerome Dockes`_)
+- Refactors fmriprep confound loading such that that the parsing of the 
+  relavant image file and the loading of the confounds are done in 
+  separate steps.
