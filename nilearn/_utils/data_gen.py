@@ -371,7 +371,7 @@ def generate_fake_fmri(shape=(10, 11, 12),
     Niimg-like object
         Mask giving non-zero voxels.
 
-    target : :obj:`numpy.ndarray`
+    target : :obj:`numpy.ndarray` of shape (length,)
         Classification or regression target. Shape of number of
         time points (length). Returned only if n_blocks is not None.
 
