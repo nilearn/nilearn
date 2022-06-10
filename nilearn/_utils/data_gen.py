@@ -318,7 +318,7 @@ def generate_fake_fmri(shape=(10, 11, 12),
                        random_state=0):
     """Generate a signal which can be used for testing.
 
-    The return value is a 4D array, representing 3D volumes along time.
+    The return value is a 4D image, representing 3D volumes along time.
     Only the voxels in the center are non-zero, to mimic the presence of
     brain voxels in real signals. Setting n_blocks to an integer generates
     condition blocks, the remaining of the timeseries corresponding
