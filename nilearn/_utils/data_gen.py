@@ -194,7 +194,7 @@ def generate_maps(shape,
     Returns
     -------
     maps : Niimg-like object
-        4D array containing maps.
+        4D image object containing the maps.
 
     mask_img : Niimg-like object
         3D mask giving non-zero voxels.
@@ -372,8 +372,9 @@ def generate_fake_fmri(shape=(10, 11, 12),
         Mask giving non-zero voxels.
 
     target : :obj:`numpy.ndarray`
-        Classification or regression target. Shape of number of
-        time points (length). Returned only if n_blocks is not None.
+        Classification or regression target.
+        A 1D array with one element for each time point.
+        Returned only if ``n_blocks`` is not None.
 
     """
     full_shape = shape + (length, )
@@ -442,11 +443,11 @@ def generate_fake_fmri_data_and_design(shapes,
                                        rk=3,
                                        affine=np.eye(4),
                                        random_state=0):
-    """Generate random fmri data and design matrices of given shapes.
+    """Generate random fMRI time series and design matrices of given shapes.
 
     Parameters
     ----------
-    shapes : :obj:`list` of 4D :obj:`tuple`s of :obj:`int`
+    shapes : :obj:`list` of length-4 :obj:`tuple`s of :obj:`int`
         Shapes of the fmri data to be generated.
 
     rk : :obj:`int`, optional
@@ -454,7 +455,7 @@ def generate_fake_fmri_data_and_design(shapes,
         Default=3.
 
     affine : :obj:`numpy.ndarray`, optional
-        Affine of returned images.
+        Affine of returned images. Must be a 4x4 array.
         Default=np.eye(4).
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
@@ -757,7 +758,8 @@ def basic_paradigm(condition_names_have_spaces=False):
 
 
 def basic_confounds(length, random_state=0):
-    """Generate basic confounds
+    """Generate random motion parameters (3 translation directions, 3 rotation
+    directions).
 
     Parameters
     ----------
@@ -773,6 +775,8 @@ def basic_confounds(length, random_state=0):
     -------
     confounds : :obj:`pandas.DataFrame`.
         Basic confounds.
+        This DataFrame will have six columns: "RotX", "RotY", "RotZ", "X", "Y",
+        and "Z".
 
     """
     rand_gen = check_random_state(random_state)
@@ -793,6 +797,7 @@ def create_fake_bids_dataset(base_dir='',
                              no_session=False,
                              random_state=0):
     """Creates a fake :term:`bids<BIDS>` dataset directory with dummy files.
+
     Returns fake dataset directory name.
 
     Parameters
@@ -803,7 +808,7 @@ def create_fake_bids_dataset(base_dir='',
         Default: Current directory.
 
     n_sub : :obj:`int`, optional
-        Number of subject to be simulated in the dataset.
+        Number of subjects to be simulated in the dataset.
         Default=10.
 
     n_ses : :obj:`int`, optional
@@ -812,10 +817,14 @@ def create_fake_bids_dataset(base_dir='',
         Default=2.
 
     tasks : :obj:`list` of :obj:`str`, optional
-        List of tasks.
+        List of tasks to be simulated in the dataset.
         Default=["localizer", "main"].
 
     n_runs : :obj:`list` of :obj:`int`, optional
+        Number of runs to create, where each element indicates the
+        number of runs for the corresponding task.
+        The length of this list must match the number of items in ``tasks``.
+        Each run creates 100 volumes.
         Default=[1, 3].
 
     with_derivatives : :obj:`bool`, optional
@@ -825,6 +834,7 @@ def create_fake_bids_dataset(base_dir='',
         Default=True.
 
     with_confounds : :obj:`bool`, optional
+        Whether to generate associated confounds files or not.
         Default=True.
 
     confounds_tag : :obj:`str` (filename suffix), optional
