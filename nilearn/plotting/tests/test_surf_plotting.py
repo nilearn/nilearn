@@ -645,6 +645,11 @@ def test_plot_img_on_surf_hemispheres_and_orientations():
     plot_img_on_surf(nii,
                      hemispheres=['left', 'right'],
                      views=['dorsal', 'medial'])
+    # Check that manually set view angles work.
+    plot_img_on_surf(nii,
+                     hemispheres=['left', 'right'],
+                     views=[(210.0, 90.0), (15.0, -45.0)])
+
 
 
 def test_plot_img_on_surf_colorbar():

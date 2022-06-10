@@ -452,7 +452,8 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
     elif isinstance(view, collections.Sequence) and len(view) == 2:
         elev, azim = view
     else:
-        raise TypeError(f"view must be a string of a sequence of length 2. Got {view} instead")
+        raise TypeError(f"view must be a string of a sequence of "
+                        f"length 2. Got {view} instead")
 
     # if no cmap is given, set to matplotlib default
     if cmap is None:
