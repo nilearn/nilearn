@@ -176,6 +176,8 @@
 
 .. _Salma Bougacha: https://github.com/salma1601
 
+.. _Sami Jawhar: https://github.com/sjawhar
+
 .. _Simon Steinkamp: https://github.com/SRSteinkamp
 
 .. _Sourav Singh: https://github.com/souravsingh
