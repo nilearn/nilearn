@@ -440,7 +440,7 @@ def test_resampling_result_axis_permutation():
     core_data = np.arange(np.prod(core_shape)).reshape(core_shape)
     full_data_shape = np.array(core_shape) + 2
     full_data = np.zeros(full_data_shape)
-    full_data[[slice(1, 1 + s) for s in core_shape]] = core_data
+    full_data[tuple(slice(1, 1 + s) for s in core_shape)] = core_data
 
     source_img = Nifti1Image(full_data, np.eye(4))
 
@@ -493,7 +493,7 @@ def test_resampling_nan():
         core_data[2, 2:4, 1] = np.nan
         full_data_shape = np.array(core_shape) + 2
         full_data = np.zeros(full_data_shape)
-        full_data[[slice(1, 1 + s) for s in core_shape]] = core_data
+        full_data[tuple(slice(1, 1 + s) for s in core_shape)] = core_data
 
         source_img = Nifti1Image(full_data, np.eye(4))
 
