@@ -1061,19 +1061,43 @@ def _check_hemispheres(hemispheres):
     return hemispheres
 
 
+def _check_view_is_valid(view) -> bool:
+    """Checks whether a single view is one of two
+    valid input types.
+
+    view: string in {"anterior", "posterior", "medial", "lateral",
+        "dorsal", "ventral" or pair of floats (elev, azim).
+
+    returns: True if view is valid, False otherwise.
+    """
+    valid = False
+    if isinstance(view, str) and (view in VALID_VIEWS):
+        valid = True
+    elif isinstance(view, collections.Sequence) and len(view) == 2:
+        valid = True
+    return valid
+
+
 def _check_views(views) -> list:
     """Checks whether the views passed to in plot_img_on_surf are
     correct.
 
     views : list
-        Any combination of "anterior", "posterior", "medial", "lateral",
-        "dorsal", "ventral".
+        Any combination of string in {"anterior", "posterior", "medial", "lateral",
+        "dorsal", "ventral"} and / or pair of floats (elev, azim).
 
     """
-    invalid_view = any([view not in VALID_VIEWS for view in views])
+    invalid_view = any([not _check_view_is_valid(view) for view in views])
+
     if invalid_view:
-        supported = "Supported views:\n" + str(VALID_VIEWS)
-        raise ValueError("Invalid view definition!\n" + supported)
+
+        supported = "Supported string views:\n" + str(VALID_VIEWS)
+        if isinstance(views[0], str):
+            raise ValueError("Invalid view definition!\n" + supported)
+        else:
+            raise TypeError(f"Invalid view format: each view must"
+                            f" be a string or else a sequence of "
+                            f"length 2. Got {views} instead")
     return views
 
 
