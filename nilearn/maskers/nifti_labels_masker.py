@@ -243,7 +243,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             # previously fitted with no func image and is re-fitted
             if 'warning_message' in self._report_content:
                 self._report_content['warning_message'] = None
-            labels_image = image.load_img(labels_image, dtype=int)
+            labels_image = image.load_img(labels_image, dtype='int32')
             labels_image_data = image.get_data(labels_image)
             labels_image_affine = labels_image.affine
             # Number of regions excluding the background
