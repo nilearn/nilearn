@@ -447,7 +447,7 @@ def _pad_array(array, pad_sizes):
                                           upper_paddings,
                                           new_shape)]
 
-    padded[tuple(target_slices)] = array[source_slices].copy()
+    padded[tuple(target_slices)] = array[tuple(source_slices)].copy()
     return padded
 
 

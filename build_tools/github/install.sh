@@ -12,5 +12,5 @@ if [ ! -z "$MIN_REQUIREMENTS" ]; then
     fi
 else
     # Install the newest supported versions of required and testing-related dependencies
-    pip install --progress-bar off --upgrade -e .[plotting,plotly,test]
+    pip install --progress-bar off $PIP_FLAGS --upgrade -e .[plotting,plotly,test]
 fi

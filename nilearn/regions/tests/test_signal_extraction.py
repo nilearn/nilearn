@@ -338,8 +338,8 @@ def test_signal_extraction_with_maps_and_labels():
 
     # Check that NaNs in regions inside mask are replaced with zeros
     region1 = labels_data == 2
-    indices = [ind[:1] for ind in np.where(region1)]
-    get_data(fmri_img)[indices + [slice(None)]] = np.nan
+    indices = tuple(ind[:1] for ind in np.where(region1))
+    get_data(fmri_img)[indices] = np.nan
     labels_signals, labels_labels = signal_extraction.img_to_signals_labels(
         fmri_img, labels_img, mask_img=mask_img)
     assert np.all(labels_signals[:, labels_labels.index(2)] == 0.)
