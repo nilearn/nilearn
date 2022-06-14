@@ -496,7 +496,7 @@ def write_fake_fmri_data_and_design(shapes,
                                     rk=3,
                                     affine=np.eye(4),
                                     random_state=0):
-    """Generate random fmri data and design matrices and write them to disk.
+    """Generate random :term:`fMRI` data and design matrices and write them to disk.
 
     Parameters
     ----------
