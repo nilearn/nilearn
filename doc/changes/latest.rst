@@ -25,6 +25,7 @@ Enhancements
 ------------
 
 - Add `sample_masks` to :meth:`~glm.first_level.FirstLevelModel.fit` for censoring time points (:gh:`3193` by `Hao-Ting Wang`_).
+- Conform seeding and docstrings in :mod:`~_utils.data_gen` (:gh:`3262` by `Yasmin Mzayek`_).
 
 Changes
 -------
