@@ -30,6 +30,8 @@
 
 .. _Binh Nguyen: https://www.imo.universite-paris-saclay.fr/~tbnguyen/
 
+.. _Caglar Cakan: https://github.com/caglorithm
+
 .. _Céline Delettre: https://github.com/celinede
 
 .. _Chris Gorgolewski: https://github.com/chrisgorgo
@@ -173,6 +175,8 @@
 .. _Ryan Hammonds: https://github.com/ryanhammonds
 
 .. _Salma Bougacha: https://github.com/salma1601
+
+.. _Sami Jawhar: https://github.com/sjawhar
 
 .. _Simon Steinkamp: https://github.com/SRSteinkamp
 

@@ -280,6 +280,7 @@ General functions
 
    get_bids_files
    parse_bids_filename
+   save_glm_to_bids
 
 :mod:`nilearn.interfaces.fmriprep`
 ----------------------------------

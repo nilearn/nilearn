@@ -209,7 +209,7 @@ def test_fetch_atlas_fsl_errors(name, prob, fsl_fetcher,
 @pytest.fixture
 def atlas_data():
     # Create false atlas
-    atlas_data = np.zeros((10, 10, 10), dtype=int)
+    atlas_data = np.zeros((10, 10, 10), dtype="int32")
     # Create an interhemispheric map
     atlas_data[:, :2, :] = 1
     # Create a left map
@@ -328,7 +328,7 @@ def test_fetch_coords_seitzman_2018(request_mocker):
 def _destrieux_data():
     """Function mocking the download of the destrieux atlas."""
     data = {"destrieux2009.rst": "readme"}
-    atlas = np.random.randint(0, 10, (10, 10, 10))
+    atlas = np.random.randint(0, 10, (10, 10, 10), dtype="int32")
     atlas_img = nibabel.Nifti1Image(atlas, np.eye(4))
     labels = "\n".join([f"{idx},label {idx}" for idx in range(10)])
     labels = "index,name\n" + labels
@@ -577,7 +577,7 @@ def _get_small_fake_talairach():
             'afni', labels_txt.encode('utf-8'))
     ])
     img = nibabel.Nifti1Image(
-        np.arange(243).reshape((3, 9, 9)),
+        np.arange(243, dtype="int32").reshape((3, 9, 9)),
         np.eye(4), nibabel.Nifti1Header(extensions=extensions))
     return serialize_niimg(img, gzipped=False)
 

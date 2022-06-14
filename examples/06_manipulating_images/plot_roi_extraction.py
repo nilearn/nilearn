@@ -247,10 +247,10 @@ plot_roi(bin_p_values_and_vt_img, mean_img, cut_coords=cut_coords,
 # such operations can fill "holes" in masked voxel representations.
 
 # We use ndimage function from scipy Python library for mask dilation
-from scipy import ndimage
+from scipy.ndimage import binary_dilation
 
 # Input here is a binarized and intersected mask data from previous section
-dil_bin_p_values_and_vt = ndimage.binary_dilation(bin_p_values_and_vt)
+dil_bin_p_values_and_vt = binary_dilation(bin_p_values_and_vt)
 
 # Now, we visualize the same using `plot_roi` with data being converted to Nifti
 # image. In all new image like, reference image is the same but second argument
@@ -273,7 +273,8 @@ plot_roi(dil_bin_p_values_and_vt_img, mean_img,
 # :func:`scipy.ndimage.label` from the scipy Python library identifies
 # immediately neighboring voxels in our voxels mask. It assigns a separate
 # integer label to each one of them.
-labels, n_labels = ndimage.label(dil_bin_p_values_and_vt)
+from scipy.ndimage import label
+labels, n_labels = label(dil_bin_p_values_and_vt)
 # we take first roi data with labels assigned as integer 1
 first_roi_data = (labels == 5).astype(int)
 # Similarly, second roi data is assigned as integer 2

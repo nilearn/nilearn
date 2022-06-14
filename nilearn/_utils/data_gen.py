@@ -8,7 +8,7 @@ import string
 import numpy as np
 import pandas as pd
 import scipy.signal
-from scipy import ndimage
+from scipy.ndimage import binary_dilation
 
 from sklearn.utils import check_random_state
 import scipy.linalg
@@ -31,7 +31,7 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
     data = rng.randn(n_scans, n_voxels)
     if mask_dilation is not None and mask_dilation > 0:
         mask_img = image.new_img_like(
-            mask_img, ndimage.binary_dilation(
+            mask_img, binary_dilation(
                 image.get_data(mask_img), iterations=mask_dilation))
     return masker.inverse_transform(data), mask_img
 
@@ -147,7 +147,7 @@ def generate_maps(shape, n_regions, overlap=0, border=1,
 
 
 def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
-                             affine=np.eye(4), dtype=int):
+                             affine=np.eye(4), dtype="int32"):
     """Generate a 3D volume with labeled regions.
 
     Parameters
@@ -169,7 +169,7 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
         Affine of returned image. Default=np.eye(4).
 
     dtype : type, optional
-        Data type of image. Default=int.
+        Data type of image. Default=np.int32.
 
     Returns
     -------
@@ -194,7 +194,7 @@ def generate_labeled_regions(shape, n_regions, rand_gen=None, labels=None,
 
 
 def generate_labeled_regions_large(shape, n_regions, rand_gen=None,
-                                   affine=np.eye(4)):
+                                   affine=np.eye(4), dtype="int32"):
     """Similar to generate_labeled_regions, but suitable for a large number of
     regions.
 
@@ -202,7 +202,7 @@ def generate_labeled_regions_large(shape, n_regions, rand_gen=None,
     """
     if rand_gen is None:
         rand_gen = np.random.RandomState(0)
-    data = rand_gen.randint(n_regions + 1, size=shape)
+    data = rand_gen.randint(n_regions + 1, size=shape, dtype=dtype)
     if len(np.unique(data)) != n_regions + 1:
         raise ValueError("Some labels are missing. Maybe shape is too small.")
     return Nifti1Image(data, affine)
@@ -501,11 +501,32 @@ def generate_group_sparse_gaussian_graphs(
     return signals, precisions, topology
 
 
-def basic_paradigm():
-    conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
+def basic_paradigm(condition_names_have_spaces=False):
+    """Generate basic paradigm
+
+    Parameters
+    ----------
+    condition_names_have_spaces : :obj:`bool`, optional
+        Check for spaces in condition names.
+        Default=False.
+
+    Returns
+    -------
+    events : pd.DataFrame
+        Basic experimental paradigm with events data.
+
+    """
+    conditions = ['c 0', 'c 0', 'c 0',
+                  'c 1', 'c 1', 'c 1',
+                  'c 2', 'c 2', 'c 2']
+
+    if not condition_names_have_spaces:
+        conditions = [c.replace(' ', '') for c in conditions]
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
+    durations = 1 * np.ones(9)
     events = pd.DataFrame({'trial_type': conditions,
-                           'onset': onsets})
+                           'onset': onsets,
+                           'duration': durations})
     return events
 
 
