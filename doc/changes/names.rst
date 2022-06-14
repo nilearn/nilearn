@@ -1,3 +1,24 @@
+.. role:: raw-html(raw)
+   :format: html
+
+.. role:: raw-latex(raw)
+   :format: latex
+
+.. |GLM| replace:: :raw-html:`<span class="badge badge-info">GLM</span>` :raw-latex:`{\small\sc [GLM]}`
+
+.. |image| replace:: :raw-html:`<span class="badge badge-info">image</span>` :raw-latex:`{\small\sc [image]}`
+
+.. |datasets| replace:: :raw-html:`<span class="badge badge-info">datasets</span>` :raw-latex:`{\small\sc [datasets]}`
+
+.. |DOC| replace:: :raw-html:`<span class="badge badge-success">DOC</span>` :raw-latex:`{\small\sc [DOC]}`
+
+.. |Plotting| replace:: :raw-html:`<span class="badge badge-info">Plotting</span>` :raw-latex:`{\small\sc [Plotting]}`
+
+.. |Fix| replace:: :raw-html:`<span class="badge badge-danger">Fix</span>` :raw-latex:`{\small\sc [Fix]}`
+
+.. |NEW| replace:: :raw-html:`<span class="badge badge-primary">NEW</span>` :raw-latex:`{\small\sc [NEW]}`
+
+
 .. _Ahmad Chamma: https://github.com/achamma723
 
 .. _Aina Frau-Pascual: https://github.com/ainafp
