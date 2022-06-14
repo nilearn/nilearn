@@ -443,7 +443,7 @@ def generate_fake_fmri_data_and_design(shapes,
                                        rk=3,
                                        affine=np.eye(4),
                                        random_state=0):
-    """Generate random fMRI time series and design matrices of given shapes.
+    """Generate random :term:`fMRI` time series and design matrices of given shapes.
 
     Parameters
     ----------
