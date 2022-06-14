@@ -272,7 +272,8 @@ def generate_labeled_regions(shape,
 def generate_labeled_regions_large(shape,
                                    n_regions,
                                    random_state=0,
-                                   affine=np.eye(4)):
+                                   affine=np.eye(4),
+                                   dtype="int32"):
     """Similar to generate_labeled_regions, but suitable for a large number of
     regions.
 
@@ -295,6 +296,10 @@ def generate_labeled_regions_large(shape,
         Affine of returned image.
         Default=np.eye(4).
 
+    dtype : :obj:`type`, optional
+        Data type of image.
+        Default='int32'.
+
     Returns
     -------
     Niimg-like object
@@ -302,7 +307,7 @@ def generate_labeled_regions_large(shape,
 
     """
     rand_gen = check_random_state(random_state)
-    data = rand_gen.randint(n_regions + 1, size=shape)
+    data = rand_gen.randint(n_regions + 1, size=shape, dtype=dtype)
     if len(np.unique(data)) != n_regions + 1:
         raise ValueError("Some labels are missing. Maybe shape is too small.")
     return Nifti1Image(data, affine)
