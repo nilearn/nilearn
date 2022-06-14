@@ -39,7 +39,8 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
         Default=0.
 
     mask_dilation : :obj:`int`, optional
-        The number of times the binary :term:`dilation<Dilation>` is repeated on the mask.
+        The number of times the binary :term:`dilation<Dilation>` is repeated
+        on the mask.
         Default=2.
 
     Returns
@@ -448,7 +449,8 @@ def generate_fake_fmri_data_and_design(shapes,
                                        rk=3,
                                        affine=np.eye(4),
                                        random_state=0):
-    """Generate random :term:`fMRI` time series and design matrices of given shapes.
+    """Generate random :term:`fMRI` time series and design matrices of given
+    shapes.
 
     Parameters
     ----------
@@ -501,7 +503,8 @@ def write_fake_fmri_data_and_design(shapes,
                                     rk=3,
                                     affine=np.eye(4),
                                     random_state=0):
-    """Generate random :term:`fMRI` data and design matrices and write them to disk.
+    """Generate random :term:`fMRI` data and design matrices and write them to
+    disk.
 
     Parameters
     ----------
