@@ -243,7 +243,7 @@ def generate_labeled_regions(shape,
 
     dtype : :obj:`type`, optional
         Data type of image.
-        Default=int.
+        Default='int32'.
 
     Returns
     -------
