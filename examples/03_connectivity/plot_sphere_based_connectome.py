@@ -7,6 +7,8 @@ We show how to build spheres around user-defined coordinates, as well as
 centered on coordinates from the Power-264 atlas [1], and the Dosenbach-160
 atlas [2].
 
+.. include:: ../../../examples/masker_note.rst
+
 **References**
 
 [1] Power, Jonathan D., et al. "Functional network organization of the

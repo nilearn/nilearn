@@ -143,7 +143,7 @@ If you wish to add a missing term, please `create a new issue`_ or
         `Family-wise error rate`_ is the probability of making one or more
         false discoveries, or type I errors when performing multiple
         hypotheses tests.
-    
+
     FWHM
         `FWHM`_ stands for "full width at half maximum". In a distribution, it
         refers to the width of a filter, expressed as the diameter of the area
@@ -267,6 +267,15 @@ If you wish to add a missing term, please `create a new issue`_ or
         `Support vector machines`_ are a set of :term:`supervised learning` methods used
         for :term:`classification`, :term:`regression` and outliers detection.
 
+    TFCE
+        Threshold-free cluster enhancement is a voxel-level metric that combines signal
+        magnitude and cluster extent to enhance the importance of clusters that are large,
+        have high magnitude, or both.
+
+        For more information about TFCE, see
+        `Smith and Nichols (2009) <https://doi.org/10.1016/j.neuroimage.2008.03.061>`_ or
+        `Benedikt Ehinger's tutorial <https://benediktehinger.de/blog/science/threshold-free-cluster-enhancement-explained/>`_.
+
     TR
         Repetition time. This is the time in seconds between the beginning of an
         acquisition of one volume and the beginning of acquisition of the volume following it.
@@ -322,7 +331,7 @@ If you wish to add a missing term, please `create a new issue`_ or
     https://en.wikipedia.org/wiki/Contrast_(statistics)
 
 .. _`Decoding`:
-    https://nilearn.github.io/decoding/decoding_intro.html
+    https://nilearn.github.io/stable/decoding/decoding_intro.html
 
 .. _`Dictionary learning`:
     https://en.wikipedia.org/wiki/Sparse_dictionary_learning
@@ -349,10 +358,10 @@ If you wish to add a missing term, please `create a new issue`_ or
     https://www.sciencedirect.com/science/article/abs/pii/S1053811917308182
 
 .. _`functional connectome`:
-    https://nilearn.github.io/connectivity/functional_connectomes.html
+    https://nilearn.github.io/stable/connectivity/functional_connectomes.html
 
 .. _`FWHM`:
-    https://en.wikipedia.org/wiki/Full_width_at_half_maximum    
+    https://en.wikipedia.org/wiki/Full_width_at_half_maximum
 
 .. _`Independent component analysis`:
     https://en.wikipedia.org/wiki/Independent_component_analysis
@@ -382,7 +391,7 @@ If you wish to add a missing term, please `create a new issue`_ or
     https://en.wikipedia.org/wiki/Resting_state_fMRI
 
 .. _`Searchlight analysis`:
-    https://nilearn.github.io/decoding/searchlight.html
+    https://nilearn.github.io/stable/decoding/searchlight.html
 
 .. _`SNR`:
     https://en.wikipedia.org/wiki/Signal-to-noise_ratio
@@ -391,7 +400,7 @@ If you wish to add a missing term, please `create a new issue`_ or
     https://www.fil.ion.ucl.ac.uk/spm/software/
 
 .. _`SpaceNet`:
-    https://nilearn.github.io/decoding/space_net.html
+    https://nilearn.github.io/stable/decoding/space_net.html
 
 .. _`Statistical Parametric Mapping`:
     https://en.wikipedia.org/wiki/Statistical_parametric_mapping

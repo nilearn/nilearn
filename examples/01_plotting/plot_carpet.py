@@ -48,7 +48,6 @@ display.show()
 # ---------------------------
 # Create a gray matter/white matter/cerebrospinal fluid mask from
 # ICBM152 tissue probability maps.
-import nibabel as nib
 import numpy as np
 from nilearn import image
 
@@ -59,11 +58,8 @@ map_labels = {"Gray Matter": 1, "White Matter": 2, "Cerebrospinal Fluid": 3}
 atlas_data = atlas_img.get_fdata()
 discrete_version = np.argmax(atlas_data, axis=3) + 1
 discrete_version[np.max(atlas_data, axis=3) == 0] = 0
-discrete_atlas_img = nib.Nifti1Image(
-    discrete_version,
-    atlas_img.affine,
-    atlas_img.header,
-)
+discrete_atlas_img = image.new_img_like(atlas_img, discrete_version)
+
 
 ###############################################################################
 # Visualizing global patterns, separated by tissue type

@@ -16,6 +16,8 @@ from a permutation test combined with a max-type procedure [2].
 Bonferroni correction is a bit conservative, as revealed by the presence of
 a few false negative.
 
+.. include:: ../../../examples/masker_note.rst
+
 References
 ----------
 [1] Winkler, A. M. et al. (2014).

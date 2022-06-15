@@ -13,7 +13,11 @@ import warnings
 import nibabel
 import numpy as np
 from joblib import Parallel, delayed
-from scipy import ndimage
+from scipy.ndimage import (
+    label,
+    gaussian_filter1d,
+    generate_binary_structure,
+)
 from scipy.stats import scoreatpercentile
 
 from .. import signal
@@ -230,7 +234,7 @@ def _smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         sigma = fwhm / (fwhm_over_sigma_ratio * vox_size)
         for n, s in enumerate(sigma):
             if s > 0.0:
-                ndimage.gaussian_filter1d(arr, s, output=arr, axis=n)
+                gaussian_filter1d(arr, s, output=arr, axis=n)
     return arr
 
 
@@ -443,7 +447,7 @@ def _pad_array(array, pad_sizes):
                                           upper_paddings,
                                           new_shape)]
 
-    padded[tuple(target_slices)] = array[source_slices].copy()
+    padded[tuple(target_slices)] = array[tuple(source_slices)].copy()
     return padded
 
 
@@ -676,6 +680,33 @@ def iter_img(imgs):
     return check_niimg_4d(imgs, return_iterator=True)
 
 
+def _downcast_from_int64_if_possible(data):
+    """If `data` is 64-bit ints and can be converted to (signed) int 32,
+    return an int32 copy, otherwise return `data` itself."""
+    if data.dtype not in (np.int64, np.uint64):
+        return data
+    img_min, img_max = np.min(data), np.max(data)
+    type_info = np.iinfo(np.int32)
+    can_cast = type_info.min <= img_min and type_info.max >= img_max
+    if can_cast:
+        warnings.warn(
+            "Data array used to create a new image contains 64-bit ints. "
+            "This is likely due to creating the array with numpy and "
+            "passing `int` as the `dtype`. Many tools such as FSL and SPM "
+            "cannot deal with int64 in Nifti images, so for compatibility the "
+            "data has been converted to int32.",
+            stacklevel=3)
+        return data.astype("int32")
+    warnings.warn(
+        "Data array used to create a new image contains 64-bit ints, and "
+        "some values too large to store in 32-bit ints. The resulting image "
+        "thus contains 64-bit ints, which may cause some compatibility issues "
+        "with some other tools or an error when saving the image to a "
+        "Nifti file.",
+        stacklevel=3)
+    return data
+
+
 def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     """Create a new image of the same class as the reference image
 
@@ -728,6 +759,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         if isinstance(ref_niimg, nibabel.freesurfer.mghformat.MGHImage):
             default_dtype = np.uint8
         data = as_ndarray(data, dtype=default_dtype)
+    data = _downcast_from_int64_if_possible(data)
     header = None
     if copy_header:
         header = copy.deepcopy(ref_niimg.header)
@@ -790,17 +822,14 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
         arr = arr.copy()
 
     # Define array for 6-connectivity, aka NN1 or "faces"
-    conn_mat = np.zeros((3, 3, 3), int)
-    conn_mat[:, 1, 1] = 1
-    conn_mat[1, :, 1] = 1
-    conn_mat[1, 1, :] = 1
+    bin_struct = generate_binary_structure(3, 1)
 
-    for sign in np.sign(arr):
+    for sign in np.unique(np.sign(arr)):
         # Binarize using one-sided cluster-defining threshold
         binarized = ((arr * sign) > 0).astype(int)
 
         # Apply cluster threshold
-        label_map = ndimage.measurements.label(binarized, conn_mat)[0]
+        label_map = label(binarized, bin_struct)[0]
         clust_ids = sorted(list(np.unique(label_map)[1:]))
         for c_val in clust_ids:
             if np.sum(label_map == c_val) < cluster_threshold:

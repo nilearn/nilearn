@@ -209,7 +209,7 @@ def test_fetch_atlas_fsl_errors(name, prob, fsl_fetcher,
 @pytest.fixture
 def atlas_data():
     # Create false atlas
-    atlas_data = np.zeros((10, 10, 10), dtype=int)
+    atlas_data = np.zeros((10, 10, 10), dtype="int32")
     # Create an interhemispheric map
     atlas_data[:, :2, :] = 1
     # Create a left map
@@ -328,7 +328,7 @@ def test_fetch_coords_seitzman_2018(request_mocker):
 def _destrieux_data():
     """Function mocking the download of the destrieux atlas."""
     data = {"destrieux2009.rst": "readme"}
-    atlas = np.random.randint(0, 10, (10, 10, 10))
+    atlas = np.random.randint(0, 10, (10, 10, 10), dtype="int32")
     atlas_img = nibabel.Nifti1Image(atlas, np.eye(4))
     labels = "\n".join([f"{idx},label {idx}" for idx in range(10)])
     labels = "index,name\n" + labels
@@ -435,28 +435,49 @@ def test_fetch_atlas_difumo(tmp_path, request_mocker):
                                  dimension=128, resolution_mm=3.14)
 
 
-def test_fetch_atlas_aal(tmp_path, request_mocker):
-    metadata = (b"<?xml version='1.0' encoding='us-ascii'?>"
-                b"<metadata></metadata>")
-    archive_root = Path("aal", "atlas")
-    aal_data = dict_to_archive(
-        {archive_root / "AAL.xml": metadata, archive_root / "AAL.nii": ""})
+@pytest.fixture
+def aal_archive_root(version):
+    if version == 'SPM12':
+        return Path("aal", "atlas")
+    else:
+        return Path(f"aal_for_{version}")
 
-    request_mocker.url_mapping["*AAL_files*"] = aal_data
-    dataset = atlas.fetch_atlas_aal(data_dir=tmp_path, verbose=0)
+
+@pytest.mark.parametrize("version,archive_format,url_key",
+                         [('SPM5', 'zip', 'uploads'),
+                          ('SPM8', 'zip', 'uploads'),
+                          ('SPM12', 'gztar', 'AAL_files')])
+def test_fetch_atlas_aal(version, archive_format, url_key, aal_archive_root,
+                         tmp_path, request_mocker):
+    metadata = "A\tB\tC\n"
+    if version == 'SPM12':
+        metadata = (b"<?xml version='1.0' encoding='us-ascii'?>"
+                    b"<metadata><label><index>1</index>"
+                    b"<name>A</name></label></metadata>")
+    label_file = "AAL.xml" if version == 'SPM12' else "ROI_MNI_V4.txt"
+    atlas_file = "AAL.nii" if version == 'SPM12' else "ROI_MNI_V4.nii"
+    aal_data = dict_to_archive(
+        {aal_archive_root / label_file: metadata,
+         aal_archive_root / atlas_file: ""},
+        archive_format=archive_format
+    )
+    request_mocker.url_mapping[f"*{url_key}*"] = aal_data
+    dataset = atlas.fetch_atlas_aal(
+        version=version, data_dir=tmp_path, verbose=0
+    )
     assert isinstance(dataset.maps, str)
     assert isinstance(dataset.labels, list)
     assert isinstance(dataset.indices, list)
     assert request_mocker.url_count == 1
-
-    with pytest.raises(ValueError,
-                       match='The version of AAL requested "FLS33"'
-                       ):
-        atlas.fetch_atlas_aal(version="FLS33",
-                              data_dir=tmp_path,
-                              verbose=0)
-
     assert dataset.description != ''
+
+
+def test_fetch_atlas_aal_version_error(tmp_path, request_mocker):
+    with pytest.raises(ValueError,
+                       match='The version of AAL requested "FLS33"'):
+        atlas.fetch_atlas_aal(
+            version="FLS33", data_dir=tmp_path, verbose=0
+        )
 
 
 def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
@@ -556,7 +577,7 @@ def _get_small_fake_talairach():
             'afni', labels_txt.encode('utf-8'))
     ])
     img = nibabel.Nifti1Image(
-        np.arange(243).reshape((3, 9, 9)),
+        np.arange(243, dtype="int32").reshape((3, 9, 9)),
         np.eye(4), nibabel.Nifti1Header(extensions=extensions))
     return serialize_niimg(img, gzipped=False)
 

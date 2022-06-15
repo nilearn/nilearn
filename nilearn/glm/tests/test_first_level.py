@@ -3,6 +3,7 @@ Test the first level model.
 """
 import os
 import shutil
+import unittest.mock
 
 import numpy as np
 import pandas as pd
@@ -11,10 +12,12 @@ from nibabel import Nifti1Image, load
 from nibabel.tmpdirs import InTemporaryDirectory
 from numpy.testing import (assert_almost_equal, assert_array_almost_equal,
                            assert_array_equal, assert_array_less)
+from sklearn.cluster import KMeans
 
 from nilearn._utils.data_gen import (create_fake_bids_dataset,
                                      generate_fake_fmri_data_and_design,
-                                     write_fake_fmri_data_and_design)
+                                     write_fake_fmri_data_and_design,
+                                     basic_paradigm)
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (FirstLevelModel, first_level_from_bids,
                                      mean_scaling, run_glm)
@@ -25,6 +28,7 @@ from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.maskers import NiftiMasker
+
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
@@ -386,6 +390,25 @@ def test_glm_AR_estimates():
         _yule_walker(np.array(0.), 2)
 
 
+@pytest.mark.parametrize("random_state", [3, np.random.RandomState(42)])
+def test_glm_random_state(random_state):
+    rng = np.random.RandomState(42)
+    n, p, q = 33, 80, 10
+    X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(size=(p, n))
+
+    with unittest.mock.patch.object(
+        KMeans,
+        "__init__",
+        autospec=True,
+        side_effect=KMeans.__init__,
+    ) as spy_kmeans:
+        run_glm(Y, X, 'ar3', random_state=random_state)
+        spy_kmeans.assert_called_once_with(
+            unittest.mock.ANY,
+            n_clusters=unittest.mock.ANY,
+            random_state=random_state)
+
+
 def test_scaling():
     """Test the scaling function"""
     rng = np.random.RandomState(42)
@@ -468,20 +491,6 @@ def test_fmri_inputs():
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
         del fi, func_img, mask, d, des, FUNCFILE, _
-
-
-def basic_paradigm(condition_names_have_spaces=False):
-    if condition_names_have_spaces:
-        conditions = ['c 0', 'c 0', 'c 0', 'c 1', 'c 1', 'c 1',
-                      'c 2', 'c 2', 'c 2']
-    else:
-        conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
-    onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    durations = 1 * np.ones(9)
-    events = pd.DataFrame({'trial_type': conditions,
-                           'onset': onsets,
-                           'duration': durations})
-    return events
 
 
 def test_first_level_design_creation():
@@ -826,7 +835,7 @@ def test_get_voxelwise_attributes_should_return_as_many_as_design_matrices(shape
     model.fit(fmri_data, design_matrices=design_matrices)
 
     # Check that length of outputs is the same as the number of design matrices
-    assert len(model._get_voxelwise_model_attribute("resid", True)) == \
+    assert len(model._get_voxelwise_model_attribute("residuals", True)) == \
            len(shapes)
 
 
@@ -889,3 +898,19 @@ def test_first_level_hrf_model(hrf_model, spaces):
 
     columns = model.design_matrices_[0].columns
     model.compute_contrast(f"{columns[0]}-{columns[1]}")
+
+
+def test_glm_sample_mask():
+    """Ensure the sample mask is performing correctly in GLM."""
+    shapes, rk = [(10, 10, 10, 25)], 3
+    mask, fmri_data, design_matrix =\
+        generate_fake_fmri_data_and_design(shapes, rk)
+    model = FirstLevelModel(t_r=2.0,
+                            mask_img=mask,
+                            minimize_memory=False)
+    sample_mask = np.arange(25)[3:]  # censor the first three volumes
+    model.fit(fmri_data,
+              design_matrices=design_matrix,
+              sample_masks=sample_mask)
+    assert model.design_matrices_[0].shape[0] == 22
+    assert model.predicted[0].shape[-1] == 22

@@ -13,10 +13,12 @@ The key to extract signals is to use the
 :class:`nilearn.maskers.NiftiMapsMasker` that can transform nifti
 objects to time series using a probabilistic atlas.
 
-As the MSDL atlas comes with (x, y, z) MNI coordinates for the different
-regions, we can visualize the matrix as a graph of interaction in a
-brain. To avoid having too dense a graph, we represent only the 20% edges
-with the highest values.
+As the MSDL atlas comes with (x, y, z) :term:`MNI` coordinates for the
+different regions, we can visualize the matrix as a graph of
+interaction in a brain. To avoid having too dense a graph, we represent
+only the 20% edges with the highest values.
+
+.. include:: ../../../examples/masker_note.rst
 
 """
 ############################################################################

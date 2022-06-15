@@ -4,10 +4,12 @@ NeuroVault cross-study ICA maps.
 
 This example shows how to download statistical maps from
 NeuroVault, label them with NeuroSynth terms,
-and compute ICA components across all the maps.
+and compute :term:`ICA` components across all the maps.
 
 See :func:`nilearn.datasets.fetch_neurovault`
 documentation for more details.
+
+.. include:: ../../../examples/masker_note.rst
 
 """
 # Author: Ben Cipollini

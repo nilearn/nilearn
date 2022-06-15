@@ -330,3 +330,18 @@ def positive_reciprocal(X):
     """
     X = np.asarray(X)
     return np.where(X <= 0, 0, 1. / X)
+
+
+def _check_run_sample_masks(n_runs, sample_masks):
+    if not isinstance(sample_masks, (list, tuple, np.ndarray)):
+        raise TypeError(
+            f"sample_mask has an unhandled type: {sample_masks.__class__}"
+        )
+    if not isinstance(sample_masks, (list, tuple)):
+        sample_masks = (sample_masks, )
+    if len(sample_masks) != n_runs:
+        raise ValueError(
+            f"Number of sample_mask ({len(sample_masks)}) not matching "
+            f"number of runs ({n_runs})."
+        )
+    return sample_masks

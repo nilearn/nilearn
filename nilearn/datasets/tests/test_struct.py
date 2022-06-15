@@ -273,18 +273,3 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
     dataset = struct.fetch_surf_fsaverage(mesh, data_dir=str(tmp_path))
     assert mesh_attributes.issubset(set(dataset.keys()))
     assert dataset.description != ''
-
-
-def test_fetch_surf_fsaverage5_sphere(tmp_path, request_mocker):
-    request_mocker.url_mapping["*b79fy*"] = list_to_archive([
-        "sphere_right.gii", "sphere_left.gii"
-    ])
-    for mesh in ['fsaverage5_sphere']:
-
-        dataset = struct.fetch_surf_fsaverage(
-            mesh, data_dir=str(tmp_path))
-
-        keys = {'sphere_left', 'sphere_right'}
-
-        assert keys.issubset(set(dataset.keys()))
-        assert dataset.description != ''
