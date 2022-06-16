@@ -76,6 +76,7 @@ display = plot_carpet(
     t_r=t_r,
     mask_labels=map_labels,
     axes=ax,
+    cmap="gray",
 )
 
 fig.show()

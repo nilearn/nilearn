@@ -30,6 +30,7 @@ Enhancements
 Changes
 -------
 
+- Function :func:`~plotting.plot_carpet` argument ``cmap`` now respects behaviour specified by docs and changes the color of the carpet_plot. Changing the label colors is now delegated to a new variable ``cmap_labels`` (:gh:`3209` by `Daniel Gomez`_).
 - Function :func:`~datasets.fetch_surf_fsaverage` no longer supports the previously deprecated option ``fsaverage5_sphere`` (:gh:`3229` by `Taylor Salo`_).
 - Classes :class:`~glm.regression.RegressionResults`, :class:`~glm.regression.SimpleRegressionResults`,
   :class:`~glm.regression.OLSModel`, and :class:`~glm.model.LikelihoodModelResults` no longer support deprecated shortened attribute names,

@@ -1308,7 +1308,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
 def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
                 detrend=True, output_file=None,
                 figure=None, axes=None, vmin=None, vmax=None, title=None,
-                cmap=plt.cm.gist_ncar):
+                cmap="gray", cmap_labels=plt.cm.gist_ncar):
     """Plot an image representation of voxel intensities across time.
 
     This figure is also known as a "grayplot" or "Power plot".
@@ -1350,8 +1350,12 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
     %(title)s
     %(cmap)s
 
-        .. note::
-            This argument is used only if an atlas is used.
+        Default=`gray`.
+
+    cmap_labels : :class:`matplotlib.colors.Colormap`, or :obj:`str`,
+        optional If ``mask_img`` corresponds to an atlas, then cmap_labels
+        can be used to define the colormap for coloring the labels placed
+        on the side of the carpet plot.
 
         Default=`plt.cm.gist_ncar`.
 
@@ -1462,7 +1466,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
             atlas_values[:, np.newaxis],
             interpolation='none',
             aspect='auto',
-            cmap=cmap
+            cmap=cmap_labels
         )
         if mask_labels:
             # Add labels to middle of each associated band
@@ -1484,7 +1488,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
             data.T,
             interpolation='nearest',
             aspect='auto',
-            cmap='gray',
+            cmap=cmap,
             vmin=vmin or default_vmin,
             vmax=vmax or default_vmax,
         )
@@ -1494,7 +1498,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
             data.T,
             interpolation='nearest',
             aspect='auto',
-            cmap='gray',
+            cmap=cmap,
             vmin=vmin or default_vmin,
             vmax=vmax or default_vmax,
         )
