@@ -42,7 +42,9 @@ def _check_second_level_input(second_level_input, design_matrix,
             raise ValueError('A second level model requires a list with at'
                              ' least two first level models or niimgs')
         # Check FirstLevelModel objects case
-        if flm_object and isinstance(second_level_input[0], FirstLevelModel):
+        if not flm_object:
+            raise ValueError("Contradictory arguments: flm_object is set to False yet second_level_input is a list")
+        elif flm_object and isinstance(second_level_input[0], FirstLevelModel):
             models_input = enumerate(second_level_input)
             for model_idx, first_level in models_input:
                 if (first_level.labels_ is None
