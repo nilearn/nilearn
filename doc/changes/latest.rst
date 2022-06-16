@@ -47,4 +47,4 @@ Changes
   containing smaller ints. (:gh:`3227` by `Jerome Dockes`_)
 - Refactors fmriprep confound loading such that that the parsing of the 
   relavant image file and the loading of the confounds are done in 
-  separate steps.
+  separate steps (:gh:`3274` by `David G Ellis`_).
