@@ -8,7 +8,8 @@ import pytest
 from nibabel import Nifti1Image
 from nilearn.maskers import NiftiMasker
 from nilearn.interfaces.fmriprep import load_confounds
-from nilearn.interfaces.fmriprep.load_confounds import _check_strategy
+from nilearn.interfaces.fmriprep.load_confounds import _check_strategy, \
+    _load_single_confounds_file
 
 from nilearn._utils.fmriprep_confounds import _to_camel_case
 
@@ -240,6 +241,28 @@ def test_confounds2df(tmp_path):
     img_nii, _ = create_tmp_filepath(tmp_path, copy_confounds=True)
     confounds, _ = load_confounds(img_nii)
     assert "trans_x" in confounds.columns
+
+
+def test_load_single_confounds_file(tmp_path):
+    """Check that the load_confounds function returns the same confounds as
+    _load_single_confounds_file."""
+    nii_file, confounds_file = create_tmp_filepath(tmp_path,
+                                                   copy_confounds=True)
+
+    # get defaults from load_confounds
+    import inspect
+    _defaults = {key: value.default for key, value
+                 in inspect.signature(load_confounds).parameters.items()}
+    _defaults.pop("img_files")
+    _default_strategy = _defaults.pop("strategy")
+
+    _, confounds = _load_single_confounds_file(str(confounds_file),
+                                               strategy=_default_strategy,
+                                               **_defaults)
+    confounds_nii, _ = load_confounds(nii_file,
+                                      strategy=_default_strategy,
+                                      **_defaults)
+    pd.testing.assert_frame_equal(confounds, confounds_nii)
 
 
 @pytest.mark.parametrize("strategy,message",

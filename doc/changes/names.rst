@@ -48,6 +48,8 @@
 
 .. _Danilo Bzdok: https://github.com/banilo
 
+.. _David G Ellis: https://github.com/ellisdg
+
 .. _Demian Wassermann: https://github.com/demianw
 
 .. _Derek Pisner: https://github.com/dPys
