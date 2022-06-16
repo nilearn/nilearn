@@ -187,7 +187,7 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
 
     """
     if url is None:
-        url = "ftp://www.nitrc.org/home/groups/cluster_roi/htdocs" \
+        url = "http://cluster_roi.projects.nitrc.org" \
               "/Parcellations/craddock_2011_parcellations.tar.gz"
     opts = {'uncompress': True}
 

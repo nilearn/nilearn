@@ -192,6 +192,8 @@
 
 .. _Tom Vanasse: https://github.com/tvanasse
 
+.. _Vasco Diogo: https://github.com/vascosa
+
 .. _Vincent Michel: https://github.com/vmichel
 
 .. _Virgile Fritsch: https://github.com/VirgileFritsch
