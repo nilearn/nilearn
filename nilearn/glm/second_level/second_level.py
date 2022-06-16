@@ -43,7 +43,8 @@ def _check_second_level_input(second_level_input, design_matrix,
                              ' least two first level models or niimgs')
         # Check FirstLevelModel objects case
         if not flm_object:
-            raise ValueError("Contradictory arguments: flm_object is set to False yet second_level_input is a list")
+            raise ValueError(
+                "Contradictory arguments: flm_object is set to False yet second_level_input is a list")
         elif flm_object and isinstance(second_level_input[0], FirstLevelModel):
             models_input = enumerate(second_level_input)
             for model_idx, first_level in models_input:
@@ -326,6 +327,7 @@ class SecondLevelModel(BaseGLM):
     It may change in any future release of Nilearn.
 
     """
+
     def __init__(self, mask_img=None, target_affine=None, target_shape=None,
                  smoothing_fwhm=None,
                  memory=Memory(None), memory_level=1, verbose=0,
