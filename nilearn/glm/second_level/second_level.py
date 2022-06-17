@@ -42,32 +42,37 @@ def _check_second_level_input(second_level_input, design_matrix,
             raise ValueError('A second level model requires a list with at'
                              ' least two first level models or niimgs')
         # Check FirstLevelModel objects case
-        if not flm_object and isinstance(second_level_input[0], FirstLevelModel):
-            raise ValueError(
-                "Contradictory arguments: flm_object is set to False yet second_level_input is a list of FirstLevelModel objects")
-        elif flm_object and isinstance(second_level_input[0], FirstLevelModel):
-            models_input = enumerate(second_level_input)
-            for model_idx, first_level in models_input:
-                if (first_level.labels_ is None
-                        or first_level.results_ is None):
-                    raise ValueError(
-                        'Model %s at index %i has not been fit yet'
-                        '' % (first_level.subject_label, model_idx))
-                if not isinstance(first_level, FirstLevelModel):
-                    raise ValueError(' object at idx %d is %s instead of'
-                                     ' FirstLevelModel object' %
-                                     (model_idx, type(first_level)))
-                if confounds is not None:
-                    if first_level.subject_label is None:
+        # if not flm_object and isinstance(second_level_input[0], FirstLevelModel):
+         #   raise ValueError(
+          #      "Contradictory arguments: flm_object is set to False yet second_level_input is a list of FirstLevelModel objects")
+
+        if isinstance(second_level_input[0], FirstLevelModel):
+            if not flm_object:
+                raise ValueError(
+                    "Contradictory arguments: flm_object is set to False yet second_level_input is a list of FirstLevelModel objects")
+            else:
+                models_input = enumerate(second_level_input)
+                for model_idx, first_level in models_input:
+                    if (first_level.labels_ is None
+                            or first_level.results_ is None):
                         raise ValueError(
-                            'In case confounds are provided, first level '
-                            'objects need to provide the attribute '
-                            'subject_label to match rows appropriately.'
-                            'Model at idx %d does not provide it. '
-                            'To set it, you can do '
-                            'first_level.subject_label = "01"'
-                            '' % (model_idx))
-        # Check niimgs case
+                            'Model %s at index %i has not been fit yet'
+                            '' % (first_level.subject_label, model_idx))
+                    if not isinstance(first_level, FirstLevelModel):
+                        raise ValueError(' object at idx %d is %s instead of'
+                                         ' FirstLevelModel object' %
+                                         (model_idx, type(first_level)))
+                    if confounds is not None:
+                        if first_level.subject_label is None:
+                            raise ValueError(
+                                'In case confounds are provided, first level '
+                                'objects need to provide the attribute '
+                                'subject_label to match rows appropriately.'
+                                'Model at idx %d does not provide it. '
+                                'To set it, you can do '
+                                'first_level.subject_label = "01"'
+                                '' % (model_idx))
+            # Check niimgs case
         elif isinstance(second_level_input[0], (str, Nifti1Image)):
             if design_matrix is None:
                 raise ValueError('List of niimgs as second_level_input'
