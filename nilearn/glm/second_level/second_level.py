@@ -330,7 +330,6 @@ class SecondLevelModel(BaseGLM):
     It may change in any future release of Nilearn.
 
     """
-
     def __init__(self, mask_img=None, target_affine=None, target_shape=None,
                  smoothing_fwhm=None,
                  memory=Memory(None), memory_level=1, verbose=0,
