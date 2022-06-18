@@ -138,9 +138,9 @@ def test_check_second_level_input():
     with pytest.raises(ValueError,
                        match="second_level_input must be a list"):
         _check_second_level_input(1, None, flm_object=False)
-    with pytest.raises(ValueError, 
-                       match="Contradictory arguments: flm_object is set to "
-                             "False yet second_level_input is a list of "
+    with pytest.raises(ValueError,
+                       match="Contradictory arguments: flm_object is set to"
+                             "False yet second_level_input is a list of"
                              "FirstLevelModel objects"):
         _check_second_level_input([FirstLevelModel()] * 3, None,
                                   flm_object=False, df_object=False)

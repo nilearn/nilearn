@@ -43,12 +43,10 @@ def _check_second_level_input(second_level_input, design_matrix,
                              ' least two first level models or niimgs')
         # Check FirstLevelModel objects case
         if isinstance(second_level_input[0], FirstLevelModel):
-            if not flm_object: 
-                raise ValueError(
-                                "Contradictory arguments: flm_object is set to"
-                                "False yet second_level_input is a list of"
-                                "FirstLevelModel objects")
-            
+            if not flm_object:
+                raise ValueError("Contradictory arguments: flm_object is set"
+                                "to False yet second_level_input is a list"
+                                "of FirstLevelModel objects")
             models_input = enumerate(second_level_input)
             for model_idx, first_level in models_input:
                 if (first_level.labels_ is None
@@ -58,8 +56,8 @@ def _check_second_level_input(second_level_input, design_matrix,
                         '' % (first_level.subject_label, model_idx))
                 if not isinstance(first_level, FirstLevelModel):
                     raise ValueError(' object at idx %d is %s instead of'
-                                    ' FirstLevelModel object' %
-                                    (model_idx, type(first_level)))
+                                     ' FirstLevelModel object' %
+                                     (model_idx, type(first_level)))
                 if confounds is not None:
                     if first_level.subject_label is None:
                         raise ValueError(
