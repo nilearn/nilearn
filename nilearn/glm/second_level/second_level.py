@@ -44,8 +44,8 @@ def _check_second_level_input(second_level_input, design_matrix,
         # Check FirstLevelModel objects case
         if isinstance(second_level_input[0], FirstLevelModel):
             if not flm_object:
-                raise ValueError("Contradictory arguments: flm_object is set"
-                                "to False yet second_level_input is a list"
+                raise ValueError("Contradictory arguments: flm_object is set "
+                                "to False yet second_level_input is a list "
                                 "of FirstLevelModel objects")
             models_input = enumerate(second_level_input)
             for model_idx, first_level in models_input:
