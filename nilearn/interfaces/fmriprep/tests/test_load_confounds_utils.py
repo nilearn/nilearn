@@ -25,10 +25,11 @@ def test_sanitize_confounds(inputs, flag):
     assert singleflag is flag
 
 
-@pytest.mark.parametrize("flag,suffix",
-                         [(True, "_desc-confounds_regressors"),
-                          (False, "_desc-confounds_timeseries")])
-def test_get_file_name(tmp_path, flag, suffix):
-    img, _ = create_tmp_filepath(tmp_path, old_derivative_suffix=flag)
+@pytest.mark.parametrize("flag,keyword",
+                         [("1.2.x", "_desc-confounds_regressors"),
+                          ("1.4.x", "_desc-confounds_timeseries"),
+                          ("21.x.x", "test-v21")])
+def test_get_file_name(tmp_path, flag, keyword):
+    img, _ = create_tmp_filepath(tmp_path, fmriprep_version=flag)
     conf = _get_file_name(img)
-    assert suffix in conf
+    assert keyword in conf

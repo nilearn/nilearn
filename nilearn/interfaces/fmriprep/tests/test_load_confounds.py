@@ -323,6 +323,22 @@ def test_n_compcor(tmp_path, compcor, n_compcor, test_keyword, test_n):
     assert sum(True for col in conf.columns if test_keyword in col) == test_n
 
 
+@pytest.mark.parametrize("compcor,n_compcor,test_keyword,test_n",
+                         [("anat_combined", 2, "a_comp_cor_", 2),
+                          ("anat_combined", "all", "a_comp_cor_", 57),
+                          ("temporal", "all", "t_comp_cor_", 6)])
+def test_n_compcor_v21(tmp_path, compcor, n_compcor, test_keyword, test_n):
+    img_nii, _ = create_tmp_filepath(
+        tmp_path, copy_confounds=True, copy_json=True, fmriprep_version="21.x.x"
+    )
+    print(_)
+    conf, _ = load_confounds(
+        img_nii, strategy=("high_pass", "compcor", ), compcor=compcor,
+        n_compcor=n_compcor
+    )
+    assert sum(True for col in conf.columns if test_keyword in col) == test_n
+
+
 def test_not_found_exception(tmp_path):
     """Check various file or parameter missing scenario."""
     # Create invalid confound file in temporary dir
@@ -447,7 +463,7 @@ def test_load_non_nifti(tmp_path):
 def test_invalid_filetype(tmp_path):
     """Invalid file types/associated files for load method."""
     bad_nii, bad_conf = create_tmp_filepath(tmp_path, copy_confounds=True,
-                                            old_derivative_suffix=False)
+                                            fmriprep_version="1.4.x")
     conf, _ = load_confounds(bad_nii)
 
     # more than one legal filename for confounds

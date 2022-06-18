@@ -109,7 +109,8 @@ def test_strategy_scrubbing(tmp_path):
 def test_strategy_compcor(tmp_path):
     """Check user specified input for compcor strategy."""
     file_nii, _ = create_tmp_filepath(
-        tmp_path, image_type="regular", copy_confounds=True, copy_json=True
+        tmp_path, image_type="regular", copy_confounds=True, copy_json=True,
+        fmriprep_version="1.4.x"
     )
     confounds, _ = load_confounds_strategy(
         file_nii, denoise_strategy="compcor"
