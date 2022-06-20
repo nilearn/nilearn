@@ -27,6 +27,7 @@ Enhancements
 
 - Add `sample_masks` to :meth:`~glm.first_level.FirstLevelModel.fit` for censoring time points (:gh:`3193` by `Hao-Ting Wang`_).
 - Function :func:`~glm.first_level.run_glm` and class :class:`~glm.first_level.FirstLevelModel` now accept a ``random_state`` parameter, which allows users to seed the ``KMeans`` cluster model used to estimate AR coefficients. (:gh:`3185` by `Sami Jawhar`_).
+- Conform seeding and docstrings in module ``_utils.data_gen`` (:gh:`3262` by `Yasmin Mzayek`_).
 
 Changes
 -------
