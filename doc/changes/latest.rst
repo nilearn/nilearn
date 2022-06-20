@@ -14,7 +14,7 @@ NEW
 
 Fixes
 -----
-
+- Fix _NEUROVAULT_BASE_URL and _NEUROSYNTH_FETCH_WORDS_URL in ``nilearn/datasets/neurovault.py``(http --> https)
 - Convert references in ``nilearn/mass_univariate/permuted_least_squares.py`` to use bibtex format (:gh:`3222` by `Yasmin Mzayek`_).
 - :func:`~plotting.plot_roi` failed before when used with the "contours" view type and passing a list of cut coordinates in display mode "x", "y" or "z"; this has been corrected (:gh:`3241` by `Jerome Dockes`_).
 - :func:`~plotting.plot_markers` can now plot a single scatter point (:gh:`3255` by `Caglar Cakan`_).

@@ -122,6 +122,8 @@
 
 .. _Loic Tetrel: https://ltetrel.github.io/
 
+.. _Manon Pietrantoni: https://github.com/ManonP38
+
 .. _Matthias Ekman: https://github.com/mekman
 
 .. _Martin Perez-Guevara: https://github.com/MartinPerez

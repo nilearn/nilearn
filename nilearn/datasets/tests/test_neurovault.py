@@ -248,11 +248,11 @@ def test_append_filters_to_query():
         neurovault._NEUROVAULT_COLLECTIONS_URL,
         {'DOI': 17})
     assert (
-        query == 'http://neurovault.org/api/collections/?DOI=17')
+        query == 'https://neurovault.org/api/collections/?DOI=17')
     query = neurovault._append_filters_to_query(
         neurovault._NEUROVAULT_COLLECTIONS_URL,
         {'id': 40})
-    assert query == 'http://neurovault.org/api/collections/40'
+    assert query == 'https://neurovault.org/api/collections/40'
 
 
 def test_get_batch():
