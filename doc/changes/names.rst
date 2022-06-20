@@ -80,6 +80,8 @@
 
 .. _Hao-Ting Wang: https://wanghaoting.com/
 
+.. _Himanshu Aggarwal: https://github.com/man-shu
+
 .. _Ian Abenes: https://github.com/boredStats
 
 .. _Jake Vogel: https://github.com/illdopejake
@@ -125,6 +127,8 @@
 .. _Loic Tetrel: https://ltetrel.github.io/
 
 .. _Matthias Ekman: https://github.com/mekman
+
+.. _Matthieu Joulot: https://github.com/MatthieuJoulot
 
 .. _Martin Perez-Guevara: https://github.com/MartinPerez
 
