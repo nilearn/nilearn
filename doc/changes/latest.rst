@@ -14,7 +14,7 @@ NEW
 
 Fixes
 -----
-
+- Fix ``_NEUROVAULT_BASE_URL`` and ``_NEUROSYNTH_FETCH_WORDS_URL`` in ``nilearn/datasets/neurovault.py`` by using https instead of http (:gh:`3281` by `Manon Pietrantoni`_).
 - Convert references in ``nilearn/mass_univariate/permuted_least_squares.py`` to use bibtex format (:gh:`3222` by `Yasmin Mzayek`_).
 - Update Craddock 2012 parcellation url in ``nilearn/datasets/atlas.py`` (:gh:`3233` by `Vasco Diogo`_)
 - :func:`~plotting.plot_roi` failed before when used with the "contours" view type and passing a list of cut coordinates in display mode "x", "y" or "z"; this has been corrected (:gh:`3241` by `Jerome Dockes`_).
