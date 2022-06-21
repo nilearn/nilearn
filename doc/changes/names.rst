@@ -4,20 +4,15 @@
 .. role:: raw-latex(raw)
    :format: latex
 
-.. |GLM| replace:: :raw-html:`<span class="badge badge-info">GLM</span>` :raw-latex:`{\small\sc [GLM]}`
-
-.. |image| replace:: :raw-html:`<span class="badge badge-info">image</span>` :raw-latex:`{\small\sc [image]}`
-
-.. |datasets| replace:: :raw-html:`<span class="badge badge-info">datasets</span>` :raw-latex:`{\small\sc [datasets]}`
+.. |API| replace:: :raw-html:`<span class="badge badge-danger">API</span>` :raw-latex:`{\small\sc [API]}`
 
 .. |DOC| replace:: :raw-html:`<span class="badge badge-success">DOC</span>` :raw-latex:`{\small\sc [DOC]}`
 
-.. |Plotting| replace:: :raw-html:`<span class="badge badge-info">Plotting</span>` :raw-latex:`{\small\sc [Plotting]}`
+.. |INFRA| replace:: :raw-html:`<span class="badge badge-info">INFRA</span>` :raw-latex:`{\small\sc [INFRA]}`
 
-.. |Fix| replace:: :raw-html:`<span class="badge badge-danger">Fix</span>` :raw-latex:`{\small\sc [Fix]}`
+.. |REF| replace:: :raw-html:`<span class="badge badge-primary">REF</span>` :raw-latex:`{\small\sc [REF]}`
 
-.. |NEW| replace:: :raw-html:`<span class="badge badge-primary">NEW</span>` :raw-latex:`{\small\sc [NEW]}`
-
+.. |TEST| replace:: :raw-html:`<span class="badge badge-info">TEST</span>` :raw-latex:`{\small\sc [TEST]}`
 
 .. _Ahmad Chamma: https://github.com/achamma723
 
