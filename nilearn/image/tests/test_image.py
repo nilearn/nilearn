@@ -826,10 +826,19 @@ def test_new_img_like_mgh_image():
     new_img_like(niimg, data.astype(float), niimg.affine, copy_header=True)
 
 
-def test_new_img_like_boolean_data():
+def test_new_img_like_boolean_data_mgh():
+    """Check defaulting boolean input data to np.uint8 dtype is valid for
+    encoding with nibabel image class MGHImage.
+    """
+    data = np.random.randn(5, 5, 5).astype('uint8')
+    in_img = nibabel.freesurfer.MGHImage(dataobj=data, affine=np.eye(4))
+    new_img_like(in_img, data=in_img.get_fdata() > 0.5)
+
+
+def test_new_img_like_boolean_data_analyzeimage():
     """Check defaulting boolean input data to np.uint8 dtype is valid for
     encoding with nibabel image class AnalyzeImage.
     """
     data = np.random.default_rng().random((5, 5, 5))
-    in_img_analyze = nibabel.AnalyzeImage(dataobj=data, affine=np.eye(4))
-    new_img_like(in_img_analyze, data=in_img_analyze.get_fdata() > 0.5)
+    in_img = nibabel.AnalyzeImage(dataobj=data, affine=np.eye(4))
+    new_img_like(in_img, data=in_img.get_fdata() > 0.5)
