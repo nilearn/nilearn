@@ -45,7 +45,7 @@ def test_get_data():
     assert data is img._data_cache
     mask_img = new_img_like(img, data > 0)
     data = get_data(mask_img)
-    assert data.dtype == np.dtype('int8')
+    assert data.dtype == np.dtype('uint8')
     img_3d = index_img(img, 0)
     with tempfile.TemporaryDirectory() as tempdir:
         filename = os.path.join(tempdir, 'img_{}.nii.gz')
