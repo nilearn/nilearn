@@ -129,7 +129,7 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
 
         height_control : :obj:`str` or None, optional
             :term:`False positive control<FPR correction>` meaning of cluster
-            forming threshold: 'fpr' (default) or 'fdr' or 'bonferroni' or
+            forming threshold: 'fpr', 'fdr', 'bonferroni' or
             ``None``. Default='fpr'.
 
         min_distance : :obj:`float`, optional
@@ -155,12 +155,11 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
             ``plot_type`` is 'glass'.
 
         report_dims : Sequence[ :obj:`int`, :obj:`int` ], optional
-            Default is (1600, 800) pixels.
             Specifies width, height (in pixels) of report window
             within a notebook.
             Only applicable when inserting the report into a Jupyter notebook.
             Can be set after report creation using ``report.width``,
-            ``report.height``.
+            ``report.height``. Default=(1600, 800).
 
         Returns
         -------

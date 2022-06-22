@@ -435,7 +435,7 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
         confound. The subjects list determines the rows to extract from
         confounds thanks to its ``subject_label`` column. All subjects must
         have confounds specified. There should be only one row per subject.
-        Default=``None``.
+        Default=None.
 
     Returns
     -------

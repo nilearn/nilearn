@@ -72,7 +72,7 @@ smoothing_fwhm : :obj:`float`, optional.
 # Second_level_input
 docdict['second_level_input'] = """
 second_level_input : :obj:`list` of\
-:class:`~nilearn.glm.first_level.FirstLevelModel` objects\
+:class:`~nilearn.glm.first_level.FirstLevelModel` objects \
 or :class:`pandas.DataFrame` or :obj:`list` of Niimg-like objects.
 
     - Giving :class:`~nilearn.glm.first_level.FirstLevelModel` objects
@@ -90,7 +90,7 @@ or :class:`pandas.DataFrame` or :obj:`list` of Niimg-like objects.
       the ``subject_label`` column to avoid order inconsistencies when
       extracting the maps. So the rows of the automatically computed
       design matrix, if not provided, will correspond to the sorted
-      ``subject_label column``.
+      ``subject_label`` column.
     - If a :obj:`list` of Niimg-like objects then this is taken
       literally as Y for the model fit and ``design_matrix`` must be
       provided.

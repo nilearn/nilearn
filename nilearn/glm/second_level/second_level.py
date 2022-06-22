@@ -452,7 +452,7 @@ class SecondLevelModel(BaseGLM):
               a 't' contrast.
 
         second_level_stat_type : {'t', 'F'} or None, optional
-            Type of the second level contrast.
+            Type of the second level contrast. Default=None.
 
         output_type : {'z_score', 'stat', 'p_value', 'effect_size',\
         'effect_variance', 'all'}, optional

@@ -235,7 +235,7 @@ class HTMLReport(HTMLDocument):
     """A report written as HTML.
 
     Methods such as ``save_as_html``, or ``open_in_browser``
-    are inherited from ``HTMLDocument``.
+    are inherited from :class:`~nilearn.plotting.HTMLDocument`.
 
     """
     def __init__(self, head_tpl, body, head_values={}):
