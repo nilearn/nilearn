@@ -71,7 +71,7 @@ smoothing_fwhm : :obj:`float`, optional.
 
 # Second_level_input
 docdict['second_level_input'] = """
-second_level_input : :obj:`list` of\
+second_level_input : :obj:`list` of \
 :class:`~nilearn.glm.first_level.FirstLevelModel` objects \
 or :class:`pandas.DataFrame` or :obj:`list` of Niimg-like objects.
 

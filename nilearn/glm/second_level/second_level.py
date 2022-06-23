@@ -283,12 +283,12 @@ class SecondLevelModel(BaseGLM):
 
     Parameters
     ----------
-    mask_img : Niimg-like, :class:`~nilearn.input_data.NiftiMasker` or\
-    :class:`~nilearn.input_data.MultiNiftiMasker`, optional
+    mask_img : Niimg-like, :class:`~nilearn.maskers.NiftiMasker` or\
+    :class:`~nilearn.maskers.MultiNiftiMasker`, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
         it will be computed automatically by a
-        :class:`~nilearn.input_data.MultiNiftiMasker` with default
+        :class:`~nilearn.maskers.MultiNiftiMasker` with default
         parameters. Automatic mask computation assumes first level imgs have
         already been masked.
     %(target_affine)s
