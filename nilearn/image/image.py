@@ -755,8 +755,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     if affine is None:
         affine = ref_niimg.affine
     if data.dtype == bool:
-        default_dtype = np.uint8
-        data = as_ndarray(data, dtype=default_dtype)
+        data = as_ndarray(data, dtype=np.uint8)
     data = _downcast_from_int64_if_possible(data)
     header = None
     if copy_header:
