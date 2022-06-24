@@ -245,13 +245,25 @@ class HTMLReport(HTMLDocument):
         ----------
         head_tpl : Template
             This is meant for display as a full page, eg writing on disk.
+            This is the Template object used to generate the HTML head
+            section of the report. The template should be filled with:
+
+                - title: The title of the HTML page.
+                - body: The full body of the HTML page. Provided through
+                  the ``body``input.
 
         body : :obj:`str`
-            This parameter is used for embedding in an existing page.
+            This parameter is used for embedding in the provided
+            ``head_tpl ``template. It contains the full body of the
+            HTML page.
 
         head_values : :obj:`dict`, optional
             Additional substitutions in ``head_tpl``.
             Default={}.
+
+            .. note::
+                This can be used to provide additional values
+                with custom templates.
 
         """
         html = head_tpl.safe_substitute(body=body, **head_values)
