@@ -716,7 +716,11 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         Reference image. The new image will be of the same type.
 
     data : :class:`numpy.ndarray`
-        Data to be stored in the image.
+        Data to be stored in the image. If data dtype is a boolean, then data
+        is cast to 'uint8' by default.
+
+    .. versionchanged:: 0.9.2dev
+        Changed default dtype casting of booleans from 'int8' to 'uint8'.
 
     affine : 4x4 :class:`numpy.ndarray`, optional
         Transformation matrix.
