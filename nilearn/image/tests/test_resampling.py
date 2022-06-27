@@ -273,7 +273,7 @@ def test_resampling_error_checks():
     img_no_sform.set_sform(None)
     with pytest.warns(Warning, match="The provided image has no sform"):
         resample_img(img_no_sform,
-                                target_affine=affine)
+                     target_affine=affine)
 
     # Noop
     target_shape = shape[:3]
