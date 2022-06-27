@@ -261,6 +261,8 @@ def _check_wn(btype, freq, nyq):
         # results as pointed in the issue above. Hence, we forced the
         # critical frequencies to be slightly less than 1. but not 1.
         wn = 1 - 10 * np.finfo(1.).eps
+        if btype == 'low':
+            wn += 10e-16
         warnings.warn(
             'The frequency specified for the %s pass filter is '
             'too high to be handled by a digital filter (superior to '
