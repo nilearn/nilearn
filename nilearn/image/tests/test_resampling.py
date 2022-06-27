@@ -269,11 +269,10 @@ def test_resampling_error_checks():
         rot_img = resample_img(img_binary,
                                target_affine=rot,
                                interpolation='linear')
-    
     img_no_sform = Nifti1Image(data, affine)
     img_no_sform.set_sform(None)
     with pytest.warns(Warning, match="The provided image has no sform"):
-        no_sform = resample_img(img_no_sform,
+        resample_img(img_no_sform,
                                 target_affine=affine)
 
     # Noop
