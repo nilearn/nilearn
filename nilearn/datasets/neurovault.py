@@ -26,10 +26,10 @@ from .utils import _fetch_file, _get_dataset_dir, _get_dataset_descr
 from ..image import resample_img
 import uuid
 
-_NEUROVAULT_BASE_URL = 'http://neurovault.org/api/'
+_NEUROVAULT_BASE_URL = 'https://neurovault.org/api/'
 _NEUROVAULT_COLLECTIONS_URL = urljoin(_NEUROVAULT_BASE_URL, 'collections/')
 _NEUROVAULT_IMAGES_URL = urljoin(_NEUROVAULT_BASE_URL, 'images/')
-_NEUROSYNTH_FETCH_WORDS_URL = 'http://neurosynth.org/api/decode/'
+_NEUROSYNTH_FETCH_WORDS_URL = 'https://neurosynth.org/api/decode/'
 
 _COL_FILTERS_AVAILABLE_ON_SERVER = ('DOI', 'name', 'owner', 'id')
 _IM_FILTERS_AVAILABLE_ON_SERVER = tuple()
