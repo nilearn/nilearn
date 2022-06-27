@@ -233,13 +233,37 @@ def generate_report(estimator):
 
 class HTMLReport(HTMLDocument):
     """A report written as HTML.
-    Methods such as save_as_html(), open_in_browser()
-    are inherited from HTMLDocument
+
+    Methods such as ``save_as_html``, or ``open_in_browser``
+    are inherited from :class:`~nilearn.plotting.HTMLDocument`.
 
     """
     def __init__(self, head_tpl, body, head_values={}):
-        """The head_tpl is meant for display as a full page, eg writing on
-        disk. The body is used for embedding in an existing page.
+        """Constructor the ``HTMLReport`` class.
+
+        Parameters
+        ----------
+        head_tpl : Template
+            This is meant for display as a full page, eg writing on disk.
+            This is the Template object used to generate the HTML head
+            section of the report. The template should be filled with:
+
+                - title: The title of the HTML page.
+                - body: The full body of the HTML page. Provided through
+                  the ``body``input.
+
+        body : :obj:`str`
+            This parameter is used for embedding in the provided
+            ``head_tpl ``template. It contains the full body of the
+            HTML page.
+
+        head_values : :obj:`dict`, optional
+            Additional substitutions in ``head_tpl``.
+            Default={}.
+
+            .. note::
+                This can be used to provide additional values
+                with custom templates.
 
         """
         html = head_tpl.safe_substitute(body=body, **head_values)
@@ -248,8 +272,8 @@ class HTMLReport(HTMLDocument):
         self.body = body
 
     def _repr_html_(self):
-        """
-        Used by the Jupyter notebook.
+        """Method used by the Jupyter notebook.
+
         Users normally won't call this method explicitly.
         """
         return self.body
