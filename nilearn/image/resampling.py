@@ -216,7 +216,7 @@ def get_mask_bounds(img):
     mask = _utils.numpy_conversions._asarray(_get_data(img), dtype=bool)
     affine = img.affine
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
-    slices = find_objects(mask)
+    slices = find_objects(mask.astype(int))
     if len(slices) == 0:
         warnings.warn("empty mask", stacklevel=2)
     else:

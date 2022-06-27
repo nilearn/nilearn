@@ -111,7 +111,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
             x_map, y_map, z_map = cut_coords
             return np.asarray(coord_transform(x_map, y_map, z_map,
                                               img.affine)).tolist()
-        slice_x, slice_y, slice_z = find_objects(mask)[0]
+        slice_x, slice_y, slice_z = find_objects(mask.astype(int))[0]
         my_map = my_map[slice_x, slice_y, slice_z]
         mask = mask[slice_x, slice_y, slice_z]
         my_map *= mask
@@ -150,7 +150,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
                                           img.affine)).tolist()
 
     mask = largest_connected_component(mask)
-    slice_x, slice_y, slice_z = find_objects(mask)[0]
+    slice_x, slice_y, slice_z = find_objects(mask.astype(int))[0]
     my_map = my_map[slice_x, slice_y, slice_z]
     mask = mask[slice_x, slice_y, slice_z]
     my_map *= mask
