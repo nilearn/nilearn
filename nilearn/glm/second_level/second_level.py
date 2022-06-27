@@ -669,7 +669,7 @@ def non_parametric_inference(
             :obj:`~nilearn.maskers.MultiNiftiMasker` object, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given, it will be computed
-        automatically by a :class:`~nilearn.input_data.MultiNiftiMasker` with
+        automatically by a :class:`~nilearn.maskers.MultiNiftiMasker` with
         default parameters. Automatic mask computation assumes first level
         imgs have already been masked.
     %(smoothing_fwhm)s

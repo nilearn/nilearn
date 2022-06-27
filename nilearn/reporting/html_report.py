@@ -235,7 +235,7 @@ class HTMLReport(HTMLDocument):
     """A report written as HTML.
 
     Methods such as ``save_as_html``, or ``open_in_browser``
-    are inherited from :class:`~nilearn.plotting.HTMLDocument`.
+    are inherited from class ``nilearn.plotting.html_document.HTMLDocument``.
 
     """
     def __init__(self, head_tpl, body, head_values={}):
@@ -250,11 +250,11 @@ class HTMLReport(HTMLDocument):
 
                 - title: The title of the HTML page.
                 - body: The full body of the HTML page. Provided through
-                  the ``body``input.
+                  the ``body`` input.
 
         body : :obj:`str`
             This parameter is used for embedding in the provided
-            ``head_tpl ``template. It contains the full body of the
+            ``head_tpl`` template. It contains the full body of the
             HTML page.
 
         head_values : :obj:`dict`, optional
