@@ -73,6 +73,9 @@ def test_local_max():
 
 
 def test_cluster_nearest_neighbor():
+    """Check that _cluster_nearest_neighbor preserves within-cluster voxels,
+    projects voxels to the correct cluster, and handles singleton clusters.
+    """
     shape = (9, 10, 11)
     labeled = np.zeros(shape)
     # cluster 1 is half the volume, cluster 2 is a single voxel
