@@ -134,12 +134,12 @@ def _cluster_nearest_neighbor(ijk, labels_index, labeled):
         (n_pts, 3) nearest neighbor points.
     """
     labels = labeled[labeled > 0]
-    cluster_ijk = np.array(labeled.nonzero()).T
-    nbrs = []
-    for lab, point in zip(labels_index, ijk):
-        dist = np.linalg.norm(cluster_ijk[labels == lab] - point, axis=1)
-        nbrs.append(cluster_ijk[np.argmin(dist)])
-    nbrs = np.array(nbrs)
+    clusters_ijk = np.array(labeled.nonzero()).T
+    nbrs = np.zeros_like(ijk)
+    for ii, (lab, point) in enumerate(zip(labels_index, ijk)):
+        lab_ijk = clusters_ijk[labels == lab]
+        dist = np.linalg.norm(lab_ijk - point, axis=1)
+        nbrs[ii] = lab_ijk[np.argmin(dist)]
     return nbrs
 
 

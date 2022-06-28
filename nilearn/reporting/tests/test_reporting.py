@@ -8,7 +8,10 @@ from nilearn.plotting import _set_mpl_backend
 from nilearn.reporting import (get_clusters_table,
                                )
 from nilearn.image import get_data
-from nilearn.reporting._get_clusters_table import _local_max
+from nilearn.reporting._get_clusters_table import (
+    _local_max,
+    _cluster_nearest_neighbor,
+)
 
 # Avoid making pyflakes unhappy
 _set_mpl_backend
@@ -67,6 +70,23 @@ def test_local_max():
     ijk, vals = _local_max(data, affine, min_distance=9)
     assert np.array_equal(ijk, np.array([[4., 5., 5.]]))
     assert np.array_equal(vals, np.array([1]))
+
+
+def test_cluster_nearest_neighbor():
+    shape = (9, 10, 11)
+    labeled = np.zeros(shape)
+    # cluster 1 is half the volume, cluster 2 is a single voxel
+    labeled[:, 5:, :] = 1
+    labeled[4, 2, 6] = 2
+
+    labels_index = np.array([1, 1, 2])
+    ijk = np.array([
+        [4, 7, 5],  # inside cluster 1
+        [4, 2, 5],  # outside, close to 2
+        [4, 3, 6],  # outside, close to 2
+    ])
+    nbrs = _cluster_nearest_neighbor(ijk, labels_index, labeled)
+    assert np.array_equal(nbrs, np.array([[4, 7, 5], [4, 5, 5], [4, 2, 6]]))
 
 
 def test_get_clusters_table(tmp_path):
