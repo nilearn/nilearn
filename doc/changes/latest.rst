@@ -54,3 +54,4 @@ Changes
 - Refactors fmriprep confound loading such that that the parsing of the 
   relevant image file and the loading of the confounds are done in 
   separate steps (:gh:`3274` by `David G Ellis`_).
+- Private submodules, functions, and classes from the :mod:`~nilearn.decomposition` module now start with a "_" character to make it clear that they are not part of the public API (:gh:`3141` by `Nicolas Gensollen`_).
