@@ -65,8 +65,8 @@ def test_local_max():
     affine = np.eye(4)
 
     ijk, vals = _local_max(data, affine, min_distance=9)
-    assert np.array_equal(ijk, np.array([[5., 5., 5.]]))
-    assert np.all(np.isnan(vals))
+    assert np.array_equal(ijk, np.array([[4., 5., 5.]]))
+    assert np.array_equal(vals, np.array([1]))
 
 
 def test_get_clusters_table(tmp_path):
