@@ -123,14 +123,14 @@ def _cluster_nearest_neighbor(ijk, labels_index, labeled):
     ----------
     ijk : :obj:`numpy.ndarray`
         (n_pts, 3) array of query points.
-    labels_index : `numpy.ndarray`
+    labels_index : :obj:`numpy.ndarray`
         (n_pts,) array of corresponding cluster indices.
-    labeled : `numpy.ndarray`
+    labeled : :obj:`numpy.ndarray`
         3D array with voxels labeled according to cluster index.
 
     Returns
     -------
-    nbrs : `numpy.ndarray`
+    nbrs : :obj:`numpy.ndarray`
         (n_pts, 3) nearest neighbor points.
     """
     labels = labeled[labeled > 0]
