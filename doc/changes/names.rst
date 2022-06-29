@@ -42,6 +42,8 @@
 
 .. _Colin Reininger: https://github.com/reiningc
 
+.. _Connor Lane: https://github.com/clane9
+
 .. _Dan Gale: https://danjgale.github.io/
 
 .. _Daniel Gomez: https://github.com/dangom
