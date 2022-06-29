@@ -446,7 +446,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     affine = img.affine
 
     # If later on we want to impute sform using qform add this condition
-    # and img.get_qform(coded=True) == (None, 0):
+    # see : https://github.com/nilearn/nilearn/issues/3168#issuecomment-1159447771 # noqa:E501
     sform, sform_code = img.get_sform(coded=True)
     if not sform_code:
         warnings.warn("The provided image has no sform in its header. "
