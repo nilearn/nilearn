@@ -261,8 +261,6 @@ def _check_wn(btype, freq, nyq):
         # results as pointed in the issue above. Hence, we forced the
         # critical frequencies to be slightly less than 1. but not 1.
         wn = 1 - 10 * np.finfo(1.).eps
-        if btype == 'low':
-            wn += 10e-16
         warnings.warn(
             'The frequency specified for the %s pass filter is '
             'too high to be handled by a digital filter (superior to '
@@ -342,6 +340,20 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
 
     if len(critical_freq) == 2:
         btype = 'band'
+        # Inappropriate parameter input might lead to coercion of both
+        # elements of critical_freq to a value just below 1.
+        # Scipy fix now enforces that critical frequencies cannot be equal.
+        # See https://github.com/scipy/scipy/pull/15886. If this is the case,
+        # we return the signals unfiltered.
+        if critical_freq[0] == critical_freq[1]:
+            warnings.warn(
+                'Signals are returned unfiltered because band-pass critical '
+                'frequencies are equal. Please check that inputs for '
+                'sampling_rate, low_pass, and high_pass are valid.')
+            if copy:
+                return signals.copy()
+            else:
+                return signals
     else:
         critical_freq = critical_freq[0]
 
