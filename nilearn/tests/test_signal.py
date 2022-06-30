@@ -182,9 +182,10 @@ def test_butterworth():
     sampling = 1
     low_pass = 2
     high_pass = 1
-    nisignal.butterworth(data, sampling,
-                         low_pass=low_pass, high_pass=high_pass,
-                         copy=True)
+    out1 = nisignal.butterworth(data, sampling,
+                                low_pass=low_pass, high_pass=high_pass,
+                                copy=True)
+    assert (out1 == data).all()
 
 
 def test_standardize():
