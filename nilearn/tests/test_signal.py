@@ -178,6 +178,14 @@ def test_butterworth():
     np.testing.assert_almost_equal(out1, out2)
     np.testing.assert_(id(out1) != id(out2))
 
+    # Test check for equal values in critical frequencies
+    sampling = 1
+    low_pass = 2
+    high_pass = 1
+    nisignal.butterworth(data, sampling,
+                         low_pass=low_pass, high_pass=high_pass,
+                         copy=True)
+
 
 def test_standardize():
     rng = np.random.RandomState(42)
