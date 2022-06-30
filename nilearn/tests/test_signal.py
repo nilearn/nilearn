@@ -182,10 +182,15 @@ def test_butterworth():
     sampling = 1
     low_pass = 2
     high_pass = 1
-    out1 = nisignal.butterworth(data, sampling,
-                                low_pass=low_pass, high_pass=high_pass,
-                                copy=True)
-    assert (out1 == data).all()
+    with pytest.warns(UserWarning,
+                      match='Signals are returned unfiltered because '
+                      'band-pass critical frequencies are equal. '
+                      'Please check that inputs for sampling_rate, '
+                      'low_pass, and high_pass are valid.'):
+        out = nisignal.butterworth(data, sampling,
+                                   low_pass=low_pass, high_pass=high_pass,
+                                   copy=True)
+    assert (out == data).all()
 
 
 def test_standardize():
