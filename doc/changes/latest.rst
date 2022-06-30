@@ -24,6 +24,8 @@ Fixes
 - Function ``nilearn.glm.second_level.second_level._check_second_level_input`` now raises an error when ``flm_object`` argument is ``False`` and ``second_level_input`` is a list of :class:`~glm.first_level.FirstLevelModel` (:gh:`3283` by `Matthieu Joulot`_).
 - Function :func:`~image.resample_img` now warns the user if the provided image has an ``sform`` code equal to 0 or None  (:gh:`3284` by `Matthieu Joulot`_).
 - Fix usage of ``scipy.stats.gamma.pdf`` in ``_gamma_difference_hrf`` function under ``nilearn/glm/first_level/hemodynamic_models.py``, which resulted in slight distortion of HRF (:gh:`3297` by `Kun CHEN`_).
+- Fix bug introduced due to a fix in the pre-release version of scipy (``1.9.0rc1``) which now enforces that elements of a band-pass filter must meet condition ``Wn[0] < Wn[1]``.
+  Now if band-pass elements are equal :func:`nilearn.signals.butterworth` returns an unfiltered signal with a warning (:gh:`3293` by `Yasmin Mzayek`_).
 
 Enhancements
 ------------
