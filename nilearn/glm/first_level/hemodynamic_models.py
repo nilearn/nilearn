@@ -65,11 +65,23 @@ def _gamma_difference_hrf(tr, oversampling=50, time_length=32., onset=0.,
     time_stamps = np.linspace(0, time_length,
                               np.rint(float(time_length) / dt).astype(int))
     time_stamps -= onset
-    hrf = (
-        gamma.pdf(time_stamps, delay / dispersion, dt / dispersion)
-        - ratio * gamma.pdf(time_stamps,
-                            undershoot / u_dispersion, dt / u_dispersion)
+
+    # define peak and undershoot gamma functions
+    peak_gamma = gamma.pdf(
+        time_stamps,
+        delay / dispersion,
+        loc=dt,
+        scale=dispersion
     )
+    undershoot_gamma = gamma.pdf(
+        time_stamps,
+        undershoot / u_dispersion,
+        loc=dt,
+        scale=u_dispersion
+    )
+
+    # calculate the hrf
+    hrf = peak_gamma - ratio * undershoot_gamma
     hrf /= hrf.sum()
     return hrf
 
