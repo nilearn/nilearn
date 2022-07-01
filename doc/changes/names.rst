@@ -122,6 +122,8 @@
 
 .. _Kshitij Chawla: https://github.com/kchawla-pi
 
+.. _Kun CHEN: https://chenkun.me
+
 .. _Leonard Sasse: https://github.com/LeSasse
 
 .. _Loic Estève: https://github.com/lesteve
