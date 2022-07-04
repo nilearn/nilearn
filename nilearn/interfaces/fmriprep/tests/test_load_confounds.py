@@ -308,30 +308,20 @@ def test_motion(tmp_path, motion, param, expected_suffixes):
             assert f"{param}{suff}" not in conf.columns
 
 
-@pytest.mark.parametrize("compcor,n_compcor,test_keyword,test_n",
-                         [("anat_combined", 2, "a_comp_cor_", 2),
-                          ("anat_combined", "all", "a_comp_cor_", 57),
-                          ("temporal", "all", "t_comp_cor_", 6)])
-def test_n_compcor(tmp_path, compcor, n_compcor, test_keyword, test_n):
+@pytest.mark.parametrize("compcor,n_compcor,test_keyword,test_n,fmriprep_version",
+                         [("anat_combined", 2, "a_comp_cor_", 2, "1.4.x"),
+                          ("anat_separated", 2, "a_comp_cor_", 4, "1.4.x"),
+                          ("anat_combined", "all", "a_comp_cor_", 57, "1.4.x"),
+                          ("temporal", "all", "t_comp_cor_", 6, "1.4.x"),
+                          ("anat_combined", 2, "a_comp_cor_", 2, "21.x.x"),
+                          ("anat_separated", "all", "w_comp_cor_", 4, "21.x.x"),
+                          ("temporal_anat_separated", "all", "c_comp_cor_", 3, "21.x.x"),
+                          ("temporal", "all", "t_comp_cor_", 3, "21.x.x")])
+def test_n_compcor(tmp_path, compcor, n_compcor, test_keyword, test_n, fmriprep_version):
     img_nii, _ = create_tmp_filepath(
-        tmp_path, copy_confounds=True, copy_json=True
+        tmp_path, copy_confounds=True, copy_json=True,
+        fmriprep_version=fmriprep_version
     )
-    conf, _ = load_confounds(
-        img_nii, strategy=("high_pass", "compcor", ), compcor=compcor,
-        n_compcor=n_compcor
-    )
-    assert sum(True for col in conf.columns if test_keyword in col) == test_n
-
-
-@pytest.mark.parametrize("compcor,n_compcor,test_keyword,test_n",
-                         [("anat_combined", 2, "a_comp_cor_", 2),
-                          ("anat_combined", "all", "a_comp_cor_", 57),
-                          ("temporal", "all", "t_comp_cor_", 6)])
-def test_n_compcor_v21(tmp_path, compcor, n_compcor, test_keyword, test_n):
-    img_nii, _ = create_tmp_filepath(
-        tmp_path, copy_confounds=True, copy_json=True, fmriprep_version="21.x.x"
-    )
-    print(_)
     conf, _ = load_confounds(
         img_nii, strategy=("high_pass", "compcor", ), compcor=compcor,
         n_compcor=n_compcor

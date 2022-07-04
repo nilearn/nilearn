@@ -121,6 +121,20 @@ def test_strategy_compcor(tmp_path):
         "a_comp_cor_57" not in compcor_col_str_anat
     )  # this one comes from the white matter mask
 
+    file_nii, _ = create_tmp_filepath(
+        tmp_path, image_type="regular", copy_confounds=True, copy_json=True,
+        fmriprep_version="21.x.x"
+    )
+    confounds, _ = load_confounds_strategy(
+        file_nii, denoise_strategy="compcor"
+    )
+    compcor_col_str_anat = "".join(confounds.columns)
+    print(compcor_col_str_anat)
+    assert "t_comp_cor_" not in compcor_col_str_anat
+    assert (
+        "w_comp_cor_00" not in compcor_col_str_anat
+    )  # this one comes from the white matter mask
+
 
 def test_irrelevant_input(tmp_path):
     """Check invalid input raising correct warning or error message."""
