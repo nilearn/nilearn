@@ -23,7 +23,7 @@ Fixes
 - :func:`~surface.load_surf_mesh` loaded FreeSurfer specific surface files (e.g. `.pial`) with a shift in the coordinates. This is fixed by adding the c_ras coordinates to the mesh coordinates (:gh:`3235` by `Yasmin Mzayek`_).
 - Function ``nilearn.glm.second_level.second_level._check_second_level_input`` now raises an error when ``flm_object`` argument is ``False`` and ``second_level_input`` is a list of :class:`~glm.first_level.FirstLevelModel` (:gh:`3283` by `Matthieu Joulot`_).
 - Function :func:`~image.resample_img` now warns the user if the provided image has an ``sform`` code equal to 0 or None  (:gh:`3284` by `Matthieu Joulot`_).
-- Fix usage of ``scipy.stats.gamma.pdf`` in ``_gamma_difference_hrf`` function under ``nilearn/glm/first_level/homedynaic_models.py``, which resulted in slight distortion of HRF (:gh:`3297` by `Kun CHEN`_).
+- Fix usage of ``scipy.stats.gamma.pdf`` in ``_gamma_difference_hrf`` function under ``nilearn/glm/first_level/hemodynamic_models.py``, which resulted in slight distortion of HRF (:gh:`3297` by `Kun CHEN`_).
 
 Enhancements
 ------------
