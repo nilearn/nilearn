@@ -6,10 +6,12 @@ Conversion utilities.
 import warnings
 import os.path
 import glob
+from pathlib import Path
 
 import nilearn as ni
 import numpy as np
 import itertools
+import nibabel
 
 from joblib import Memory
 
@@ -246,6 +248,8 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
 
     """
     from ..image import new_img_like  # avoid circular imports
+
+    niimg = nibabel.filename_parser._stringify_path(niimg)
 
     if isinstance(niimg, str):
         if wildcards and ni.EXPAND_PATH_WILDCARDS:
