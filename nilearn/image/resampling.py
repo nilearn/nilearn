@@ -216,7 +216,7 @@ def get_mask_bounds(img):
     mask = _utils.numpy_conversions._asarray(_get_data(img), dtype=bool)
     affine = img.affine
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
-    slices = find_objects(mask)
+    slices = find_objects(mask.astype(int))
     if len(slices) == 0:
         warnings.warn("empty mask", stacklevel=2)
     else:
@@ -444,6 +444,14 @@ def resample_img(img, target_affine=None, target_shape=None,
     img = _utils.check_niimg(img)
     shape = img.shape
     affine = img.affine
+
+    # If later on we want to impute sform using qform add this condition
+    # see : https://github.com/nilearn/nilearn/issues/3168#issuecomment-1159447771 # noqa:E501
+    sform, sform_code = img.get_sform(coded=True)
+    if not sform_code:
+        warnings.warn("The provided image has no sform in its header. "
+                      "Please check the provided file. "
+                      "Results may not be as expected.")
 
     # noop cases
     if target_affine is None and target_shape is None:

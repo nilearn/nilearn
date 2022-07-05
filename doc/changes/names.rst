@@ -42,6 +42,8 @@
 
 .. _Colin Reininger: https://github.com/reiningc
 
+.. _Connor Lane: https://github.com/clane9
+
 .. _Dan Gale: https://danjgale.github.io/
 
 .. _Daniel Gomez: https://github.com/dangom
@@ -79,6 +81,8 @@
 .. _Guillaume Lemaitre: https://glemaitre.github.io/
 
 .. _Hao-Ting Wang: https://wanghaoting.com/
+
+.. _Himanshu Aggarwal: https://github.com/man-shu
 
 .. _Ian Abenes: https://github.com/boredStats
 
@@ -118,13 +122,19 @@
 
 .. _Kshitij Chawla: https://github.com/kchawla-pi
 
+.. _Kun CHEN: https://chenkun.me
+
 .. _Leonard Sasse: https://github.com/LeSasse
 
 .. _Loic Estève: https://github.com/lesteve
 
 .. _Loic Tetrel: https://ltetrel.github.io/
 
+.. _Manon Pietrantoni: https://github.com/ManonP38
+
 .. _Matthias Ekman: https://github.com/mekman
+
+.. _Matthieu Joulot: https://github.com/MatthieuJoulot
 
 .. _Martin Perez-Guevara: https://github.com/MartinPerez
 

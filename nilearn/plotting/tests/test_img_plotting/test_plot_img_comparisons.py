@@ -15,12 +15,12 @@ def test_plot_img_comparison():
     axes = axes.ravel()
     kwargs = {"shape": (3, 2, 4), "length": 5}
     query_images, mask_img = generate_fake_fmri(
-        rand_gen=np.random.RandomState(0), **kwargs
+        random_state=np.random.RandomState(0), **kwargs
     )
     # plot_img_comparison doesn't handle 4d images ATM
     query_images = list(iter_img(query_images))
     target_images, _ = generate_fake_fmri(
-        rand_gen=np.random.RandomState(1), **kwargs
+        random_state=np.random.RandomState(1), **kwargs
     )
     target_images = list(iter_img(target_images))
     target_images[0] = query_images[0]

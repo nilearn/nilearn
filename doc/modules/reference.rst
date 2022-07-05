@@ -682,6 +682,16 @@ General functions
    :no-members:
    :no-inherited-members:
 
+**Classes**:
+
+.. currentmodule:: nilearn.reporting
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   HTMLReport
+
 **Functions**:
 
 .. currentmodule:: nilearn.reporting

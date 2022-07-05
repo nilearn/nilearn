@@ -10,7 +10,7 @@ from joblib import Memory, delayed, Parallel
 
 from .rena_clustering import ReNA
 from .hierarchical_kmeans_clustering import HierarchicalKMeans
-from ..decomposition.multi_pca import MultiPCA
+from ..decomposition._multi_pca import _MultiPCA
 from nilearn.maskers import NiftiLabelsMasker
 from .._utils.niimg import _safe_get_data
 from .._utils.niimg_conversions import _iter_check_niimg
@@ -116,7 +116,7 @@ def _labels_masker_extraction(img, masker, confound):
 
 
 @fill_doc
-class Parcellations(MultiPCA):
+class Parcellations(_MultiPCA):
     """Learn :term:`parcellations<parcellation>`
     on :term:`fMRI` images.
 
@@ -271,19 +271,19 @@ class Parcellations(MultiPCA):
         self.scaling = scaling
         self.n_iter = n_iter
 
-        MultiPCA.__init__(self, n_components=200,
-                          random_state=random_state,
-                          mask=mask, memory=memory,
-                          smoothing_fwhm=smoothing_fwhm,
-                          standardize=standardize, detrend=detrend,
-                          low_pass=low_pass, high_pass=high_pass,
-                          t_r=t_r, target_affine=target_affine,
-                          target_shape=target_shape,
-                          mask_strategy=mask_strategy,
-                          mask_args=mask_args,
-                          memory_level=memory_level,
-                          n_jobs=n_jobs,
-                          verbose=verbose)
+        _MultiPCA.__init__(self, n_components=200,
+                           random_state=random_state,
+                           mask=mask, memory=memory,
+                           smoothing_fwhm=smoothing_fwhm,
+                           standardize=standardize, detrend=detrend,
+                           low_pass=low_pass, high_pass=high_pass,
+                           t_r=t_r, target_affine=target_affine,
+                           target_shape=target_shape,
+                           mask_strategy=mask_strategy,
+                           mask_args=mask_args,
+                           memory_level=memory_level,
+                           n_jobs=n_jobs,
+                           verbose=verbose)
 
     def _raw_fit(self, data):
         """Fits the parcellation method on this reduced data.
@@ -330,7 +330,7 @@ class Parcellations(MultiPCA):
         except Exception:
             pass
 
-        components = MultiPCA._raw_fit(self, data)
+        components = _MultiPCA._raw_fit(self, data)
 
         mask_img_ = self.masker_.mask_img_
         if self.verbose:

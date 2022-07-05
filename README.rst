@@ -61,10 +61,10 @@ a command prompt::
     pip install -U --user nilearn
 
 More detailed instructions are available at
-http://nilearn.github.io/introduction.html#installation.
+http://nilearn.github.io/stable/introduction.html#installation.
 
 Development
 ===========
 
 Detailed instructions on how to contribute are available at
-http://nilearn.github.io/development.html
+http://nilearn.github.io/stable/development.html
