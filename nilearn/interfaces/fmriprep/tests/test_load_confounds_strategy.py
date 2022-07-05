@@ -118,10 +118,10 @@ def test_strategy_compcor(tmp_path, fmriprep_version):
     )
     compcor_col_str_anat = "".join(confounds.columns)
     assert "t_comp_cor_" not in compcor_col_str_anat
-    expected = "a_comp_cor_57" if fmriprep_version == "1.4.x" else "w_comp_cor_00"
-    assert (
-        expected not in compcor_col_str_anat
-    )  # this one comes from the white matter mask
+    # this one comes from the white matter mask
+    expected = ("a_comp_cor_57" if fmriprep_version == "1.4.x"
+                else "w_comp_cor_00")
+    assert expected not in compcor_col_str_anat
 
 
 def test_irrelevant_input(tmp_path):
