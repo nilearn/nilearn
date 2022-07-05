@@ -106,33 +106,21 @@ def test_strategy_scrubbing(tmp_path):
         assert check in confounds.columns
 
 
-def test_strategy_compcor(tmp_path):
+@pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
+def test_strategy_compcor(tmp_path, fmriprep_version):
     """Check user specified input for compcor strategy."""
     file_nii, _ = create_tmp_filepath(
         tmp_path, image_type="regular", copy_confounds=True, copy_json=True,
-        fmriprep_version="1.4.x"
+        fmriprep_version=fmriprep_version
     )
     confounds, _ = load_confounds_strategy(
         file_nii, denoise_strategy="compcor"
     )
     compcor_col_str_anat = "".join(confounds.columns)
     assert "t_comp_cor_" not in compcor_col_str_anat
+    expected = "a_comp_cor_57" if fmriprep_version == "1.4.x" else "w_comp_cor_00"
     assert (
-        "a_comp_cor_57" not in compcor_col_str_anat
-    )  # this one comes from the white matter mask
-
-    file_nii, _ = create_tmp_filepath(
-        tmp_path, image_type="regular", copy_confounds=True, copy_json=True,
-        fmriprep_version="21.x.x"
-    )
-    confounds, _ = load_confounds_strategy(
-        file_nii, denoise_strategy="compcor"
-    )
-    compcor_col_str_anat = "".join(confounds.columns)
-    print(compcor_col_str_anat)
-    assert "t_comp_cor_" not in compcor_col_str_anat
-    assert (
-        "w_comp_cor_00" not in compcor_col_str_anat
+        expected not in compcor_col_str_anat
     )  # this one comes from the white matter mask
 
 

@@ -21,6 +21,9 @@ Fixes
 - :func:`~plotting.plot_markers` can now plot a single scatter point (:gh:`3255` by `Caglar Cakan`_).
 - Fix title display for :func:`~plotting.plot_surf_stat_map`. The ``title`` argument does not set the figure title anymore but the axis title. (:gh:`3220` by `Raphael Meudec`).
 - :func:`~surface.load_surf_mesh` loaded FreeSurfer specific surface files (e.g. `.pial`) with a shift in the coordinates. This is fixed by adding the c_ras coordinates to the mesh coordinates (:gh:`3235` by `Yasmin Mzayek`_).
+- Update the `CompCor`` strategy in :func:`~interfaces.fmriprep.load_confounds` 
+  and :func:`~interfaces.fmriprep.load_confounds_strategy` to support 
+  `fmriprep` 21.x series and above. (:gh:`3285` by `Hao-Ting Wang`_).
 
 Enhancements
 ------------
