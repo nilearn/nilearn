@@ -11,8 +11,7 @@ prewhitens the response by calling 'whiten'.
 
 General reference for regression models:
 
-'Introduction to Linear Regression Analysis', Douglas C. Montgomery,
-    Elizabeth A. Peck, G. Geoffrey Vining. Wiley, 2006.
+:footcite:`Montgomery`
 
 """
 
@@ -128,7 +127,7 @@ class OLSModel(object):
 
         Given the whitened design matrix, the loglikelihood is evaluated
         at the parameter vector, beta, for the dependent variable, Y
-        and the nuisance parameter, sigma [1]_.
+        and the nuisance parameter, sigma see :footcite:`Greene2003Econometric`.
 
         Parameters
         ----------
@@ -175,7 +174,7 @@ class OLSModel(object):
 
         References
         ----------
-        .. [1] W. Green.  "Econometric Analysis," 5th ed., Pearson, 2003.
+        .. footbibliography::
 
         '''
         # This is overwriting an abstract method of LikelihoodModel
@@ -342,7 +341,7 @@ class RegressionResults(LikelihoodModelResults):
     def normalized_residuals(self):
         """Residuals, normalized to have unit length.
 
-        See [1]_ and [2]_.
+        See :footcite:`Montgomery_68` and :footcite:`GVK393847152`.
 
         Notes
         -----
@@ -356,9 +355,7 @@ class RegressionResults(LikelihoodModelResults):
 
         References
         ----------
-        .. [1] Montgomery and Peck 3.2.1 p. 68
-
-        .. [2] Davidson and MacKinnon 15.2 p 662
+        .. footbibliography::
 
         """
         return self.residuals * positive_reciprocal(np.sqrt(self.dispersion))
@@ -434,7 +431,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
     def normalized_residuals(self, Y):
         """Residuals, normalized to have unit length.
 
-        See [1]_ and [2]_.
+        See :footcite:`Montgomery_68` and :footcite:`GVK393847152`.
 
         Notes
         -----
@@ -448,9 +445,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
 
         References
         ----------
-        .. [1] Montgomery and Peck 3.2.1 p. 68
-
-        .. [2] Davidson and MacKinnon 15.2 p 662
+        .. footbibliography::
 
         """
         return (self.residuals(Y)
