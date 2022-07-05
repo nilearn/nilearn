@@ -112,7 +112,7 @@ def cluster_level_inference(stat_img, mask_img=None,
     """ Report the proportion of active voxels for all clusters
     defined by the input threshold.
 
-    This implements the method described in :footcite:`cbccb6df304147b9b39ae52bb82da385`.
+    This implements the method described in :footcite:`InferenceRosenblatt`.
 
     Parameters
     ----------

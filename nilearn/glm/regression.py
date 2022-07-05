@@ -127,7 +127,7 @@ class OLSModel(object):
 
         Given the whitened design matrix, the loglikelihood is evaluated
         at the parameter vector, beta, for the dependent variable, Y
-        and the nuisance parameter, sigma see :footcite:`Greene2003Econometric`.
+        and the nuisance parameter,sigma see :footcite:`GreeneEconometric`.
 
         Parameters
         ----------
