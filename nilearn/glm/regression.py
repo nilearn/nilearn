@@ -11,7 +11,8 @@ prewhitens the response by calling 'whiten'.
 
 General reference for regression models:
 
-:footcite:`Montgomery`
+'Introduction to Linear Regression Analysis', Douglas C. Montgomery,
+    Elizabeth A. Peck, G. Geoffrey Vining. Wiley, 2006.
 
 """
 
@@ -127,7 +128,7 @@ class OLSModel(object):
 
         Given the whitened design matrix, the loglikelihood is evaluated
         at the parameter vector, beta, for the dependent variable, Y
-        and the nuisance parameter,sigma see :footcite:`GreeneEconometric`.
+        and the nuisance parameter, sigma :footcite:`GreeneEconometric`.
 
         Parameters
         ----------
@@ -341,7 +342,7 @@ class RegressionResults(LikelihoodModelResults):
     def normalized_residuals(self):
         """Residuals, normalized to have unit length.
 
-        See :footcite:`Montgomery_68` and :footcite:`GVK393847152`.
+        See :footcite:`Montgomery` and :footcite:`GVK393847152`.
 
         Notes
         -----
@@ -431,7 +432,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
     def normalized_residuals(self, Y):
         """Residuals, normalized to have unit length.
 
-        See :footcite:`Montgomery_68` and :footcite:`GVK393847152`.
+        See :footcite:`Montgomery` and :footcite:`GVK393847152`.
 
         Notes
         -----
