@@ -6,7 +6,6 @@ Conversion utilities.
 import warnings
 import os.path
 import glob
-from pathlib import Path
 
 import nilearn as ni
 import numpy as np

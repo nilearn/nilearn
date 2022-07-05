@@ -123,6 +123,8 @@ def load_niimg(niimg, dtype=None):
     """
     from ..image import new_img_like  # avoid circular imports
 
+    niimg = nibabel.filename_parser._stringify_path(niimg)
+
     if isinstance(niimg, str):
         # data is a filename, we load it
         niimg = nibabel.load(niimg)
