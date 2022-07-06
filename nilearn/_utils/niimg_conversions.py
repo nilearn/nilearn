@@ -192,9 +192,9 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     ----------
     niimg : Niimg-like object
         See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
-        If niimg is a string, consider it as a path to Nifti image and
-        call nibabel.load on it. The '~' symbol is expanded to the user home
-        folder.
+        If niimg is a string or path-like object, consider it as a path to
+        Nifti image and call nibabel.load on it. The '~' symbol is expanded to
+        the user home folder.
         If it is an object, check if the affine attribute present and that
         nilearn.image.get_data returns a result, raise TypeError otherwise.
 
