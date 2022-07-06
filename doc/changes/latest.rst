@@ -58,4 +58,4 @@ Changes
   relevant image file and the loading of the confounds are done in 
   separate steps (:gh:`3274` by `David G Ellis`_).
 - Private submodules, functions, and classes from the :mod:`~nilearn.decomposition` module now start with a "_" character to make it clear that they are not part of the public API (:gh:`3141` by `Nicolas Gensollen`_).
-- Convert references in ``nilearn/glm/regression.py`` and ``nilearn/glm/thresholding.py`` to use footcite/footbibliography
+- Convert references in ``nilearn/glm/regression.py`` and ``nilearn/glm/thresholding.py`` to use footcite/footbibliography (:gh:`3302` by `Ahmad Chamma`_).
