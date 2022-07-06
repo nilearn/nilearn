@@ -20,6 +20,7 @@ from .path_finding import _resolve_globbing
 
 from .exceptions import DimensionError
 from .niimg import _get_data
+from .helpers import _stringify_path
 
 
 def _check_fov(img, affine, shape):
@@ -248,7 +249,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     """
     from ..image import new_img_like  # avoid circular imports
 
-    niimg = nibabel.filename_parser._stringify_path(niimg)
+    niimg = _stringify_path(niimg)
 
     if isinstance(niimg, str):
         if wildcards and ni.EXPAND_PATH_WILDCARDS:

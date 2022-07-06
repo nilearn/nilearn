@@ -1,5 +1,6 @@
 import functools
 import warnings
+import os
 
 
 def rename_parameters(replacement_params,
@@ -145,3 +146,7 @@ def remove_parameters(removed_params,
             return func(*args, **kwargs)
         return wrapper
     return _remove_params
+
+
+def _stringify_path(path):
+    return path.__fspath__() if isinstance(path, os.PathLike) else path
