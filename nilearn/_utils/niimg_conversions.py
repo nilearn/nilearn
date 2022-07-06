@@ -10,7 +10,6 @@ import glob
 import nilearn as ni
 import numpy as np
 import itertools
-import nibabel
 
 from joblib import Memory
 
