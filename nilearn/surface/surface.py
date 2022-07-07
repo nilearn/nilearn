@@ -1015,6 +1015,7 @@ def check_surface(surface):
                                      surface.data)
     return Surface(mesh, data)
 
+
 def compute_adjacency_matrix(surface, values='ones', dtype=None):
     """Computes the adjacency matrix for a surface.
     The adjacency matrix is a matrix with one row and one column for each vertex
@@ -1080,6 +1081,7 @@ def compute_adjacency_matrix(surface, values='ones', dtype=None):
     vu = np.concatenate([v, u])
     return csr_matrix((ee, (uv, vu)), shape=(n,n))
 
+
 def compute_vertex_neighborhoods(surface):
     """For each vertex, compute the neighborhood.
     The neighborhood is  defined as all the vertices that are connected by a
@@ -1098,7 +1100,8 @@ def compute_vertex_neighborhoods(surface):
     from scipy.sparse import find
     matrix = compute_adjacency_matrix(surface)
     return [find(row)[1] for row in matrix]
-        
+
+       
 def smooth_surface_data(surface, surf_data,
                         iterations=1,
                         distance_weights=False,
@@ -1119,45 +1122,45 @@ def smooth_surface_data(surface, surf_data,
         of fMRI data, `n` could be the number of timepoints. Each column is
         smoothed independently.
 
-    iterations : positive int, optional
-        The number of times to repeat the smoothing operation. Defaults to 1
-        iteration.
+    iterations : :obj:`int`, optional
+        The number of times to repeat the smoothing operation (it must be a positive value). 
+        Defaults to 1
 
-    distance_weights : boolean, optional
+    distance_weights : :obj:`bool`, optional
         Whether to add distance-based weighting to the smoothing. With such
-        weights, the value calculated for each vertex each iteration is the
+        weights, the value calculated for each vertex at each iteration is the
         weighted sum of neighboring vertices where the weight on each neighbor
         is the inverses of the distances to it.
 
     vertex_weights : array-like or None, optional
-        A vector of weights, one per vertex. These weights are normalizd and
+        A vector of weights, one per vertex. These weights are normalized and
         applied to the smoothing after the application of center-surround
         weights.
 
-    return_vector_weights : boolean, optional
+    return_vector_weights : :obj:`bool`, optional
         If `True` then `(smoothed_data, smoothed_vertex_weights)` are returned.
         The default is `False`.
 
-    center_surround_knob : float, optional
+    center_surround_knob : :obj:`float`, optional
         The relative weighting of the center and the surround in each iteration
         of the smoothing. If the value of the knob is `k`, then the total weight
         of vertices that are neighbors of a given vertex (the vertex's surround)
         is `2**k` times the weight of the vertex itself (the center). A value of
         0 (the default) means that, in each smoothing iteration, each vertex is
-        updated wiith the average of its value and the average value of its
+        updated with the average of its value and the average value of its
         neighbors. A value of `-inf` results in no smoothing because the entire
         weight is on the center, so each vertex is updated with its own value. A
         value of `inf` results in each vertex being updated with the average of
         its neighbors without including its own value.
 
-    match : { None | 'sum' | 'mean' | 'var' | 'dist' }, optional
+    match : { 'sum' | 'mean' | 'var' | 'dist' | None }, optional
         What properties of the input data should be matched in the output data.
         `None` indicates that the smoothed output should be
         returned without transformation. If the value is `'sum'`, then the
         output is rescaled to have the same sum as `surf_data`. If the value is
         `'mean'`, then the output is shifted to match the mean of the input. If
         the value is `'var'` or `'std'`, then the variance of the output is
-        matched. Finally, if the value iis `'dist'`, then the mean and the
+        matched. Finally, if the value is `'dist'`, then the mean and the
         variance are matched. Default is `'sum'` 
     
     Returns
@@ -1179,17 +1182,14 @@ def smooth_surface_data(surface, surf_data,
     surface = load_surf_mesh(surface)
     # First, calculate the center and surround weights for the
     # center-surround knob.
-    t = center_surround_knob
-    center_weight = 1 / (1 + np.exp2(-t))
+    center_weight = 1 / (1 + np.exp2(-center_surround_knob))
     surround_weight = 1 - center_weight
     if surround_weight == 0:
         # There's nothing to do in this case.
         return np.array(surf_data)
     # Calculate the adjacency matrix either weighting by inverse distance or not weighting (ones)
-    if distance_weights:
-        matrix = compute_adjacency_matrix(surface, values='invlen')
-    else:
-        matrix = compute_adjacency_matrix(surface, values='ones')
+    values = 'invlen' if distance_weights else 'ones'
+    matrix = compute_adjacency_matrix(surface, values=values)
     
     # If there are vertex weights, get them ready.
     if vertex_weights:
@@ -1208,16 +1208,10 @@ def smooth_surface_data(surface, surf_data,
     matrix.setdiag(center_weight)
     # Run the iteratioons of smooothing.
     n = len(surf_data)
-    # data = np.hstack([np.reshape(surf_data, (n,-1)), w[:,None]])
-    # for ii in range(iterations):
-    #     w = data[:,-1]
-    #     w /= np.sum(w)
-    #     data = matrix.dot(diags(w, format='csc')).dot(data)
     data = surf_data
     for ii in range(iterations):
         data = matrix.dot(data)
     # Convert back into numpy array.
-    #(data, w) = (data[:,:-1], data[:,-1])
     data = np.reshape(np.asarray(data), np.shape(surf_data))
     # Rescale it if needed.
     if match == 'sum':
