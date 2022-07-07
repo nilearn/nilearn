@@ -149,4 +149,18 @@ def remove_parameters(removed_params,
 
 
 def _stringify_path(path):
+    """Converts path-like objects to string.
+
+    This is used to allow functions expecting string filesystem paths to accept
+    objects using `__fspath__` protocol.
+
+    Parameters
+    ----------
+    path : str or path-like object
+
+    Returns
+    -------
+    str
+
+    """
     return path.__fspath__() if isinstance(path, os.PathLike) else path
