@@ -1016,7 +1016,7 @@ def check_surface(surface):
     return Surface(mesh, data)
 
 
-def compute_adjacency_matrix(surface, values='ones', dtype=None):
+def _compute_adjacency_matrix(surface, values='ones', dtype=None):
     """Computes the adjacency matrix for a surface.
     The adjacency matrix is a matrix with one row and one column for each vertex
     such that the value of a cell `(u,v)` in the matrix is 1 if nodes `u` and
@@ -1082,7 +1082,7 @@ def compute_adjacency_matrix(surface, values='ones', dtype=None):
     return csr_matrix((ee, (uv, vu)), shape=(n,n))
 
 
-def compute_vertex_neighborhoods(surface):
+def _compute_vertex_neighborhoods(surface):
     """For each vertex, compute the neighborhood.
     The neighborhood is  defined as all the vertices that are connected by a
     face.
@@ -1098,7 +1098,7 @@ def compute_vertex_neighborhoods(surface):
         A list of all the vertices that are connected to each vertex
     """
     from scipy.sparse import find
-    matrix = compute_adjacency_matrix(surface)
+    matrix = _compute_adjacency_matrix(surface)
     return [find(row)[1] for row in matrix]
 
        
@@ -1189,7 +1189,7 @@ def smooth_surface_data(surface, surf_data,
         return np.array(surf_data)
     # Calculate the adjacency matrix either weighting by inverse distance or not weighting (ones)
     values = 'invlen' if distance_weights else 'ones'
-    matrix = compute_adjacency_matrix(surface, values=values)
+    matrix = _compute_adjacency_matrix(surface, values=values)
     
     # If there are vertex weights, get them ready.
     if vertex_weights:
