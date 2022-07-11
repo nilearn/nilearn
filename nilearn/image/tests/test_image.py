@@ -834,4 +834,5 @@ def test_new_img_like_boolean_data(image):
     """
     data = np.random.randn(5, 5, 5).astype('uint8')
     in_img = image(dataobj=data, affine=np.eye(4))
-    new_img_like(in_img, data=in_img.get_fdata() > 0.5)
+    out_img = new_img_like(in_img, data=in_img.get_fdata() > 0.5)
+    assert get_data(out_img).dtype == 'uint8'
