@@ -29,7 +29,7 @@ def test_temp_file_removing():
             assert "Saved HTML in temporary file" not in str(warning.message)
         html.open_in_browser(temp_file_lifetime=0.5)
         assert os.path.isfile(html._temp_file)
-        time.sleep(1.5)
+        os.waitpid(html._pid, 0)
         assert not os.path.isfile(html._temp_file)
         with pytest.warns(UserWarning, match="Saved HTML in temporary file"):
             html.open_in_browser(temp_file_lifetime=None)

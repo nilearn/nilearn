@@ -21,7 +21,9 @@ def set_max_img_views_before_warning(new_value):
 
 def _remove_after_n_seconds(file_name, n_seconds):
     script = os.path.join(os.path.dirname(__file__), 'rm_file.py')
-    subprocess.Popen([sys.executable, script, file_name, str(n_seconds)])
+    proc = subprocess.Popen([sys.executable, script, file_name,
+                             str(n_seconds)])
+    return proc
 
 
 class HTMLDocument(object):
@@ -44,6 +46,7 @@ class HTMLDocument(object):
         self.height = height
         self._temp_file = None
         self._check_n_open()
+        self._pid = None
 
     def _check_n_open(self):
         HTMLDocument._all_open_html_repr.add(self)
@@ -161,7 +164,8 @@ class HTMLDocument(object):
                      "for example by calling this.remove_temp_file").format(
                          file_name, file_size))
         else:
-            _remove_after_n_seconds(self._temp_file, temp_file_lifetime)
+            proc = _remove_after_n_seconds(self._temp_file, temp_file_lifetime)
+            self._pid = proc.pid
         webbrowser.open('file://{}'.format(file_name))
 
     def remove_temp_file(self):
