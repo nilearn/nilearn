@@ -112,12 +112,14 @@ def test_plot_connectome_colorbar(colorbar, adjacency, node_coords):
     plot_connectome(adjacency, node_coords, colorbar=colorbar)
     plt.close()
 
+
 @pytest.mark.parametrize("alpha", [0.0, 0.3, 0.7, 1.0])
 def test_plot_connectome_alpha(alpha, adjacency, node_coords):
     """Smoke test for plot_connectome with various alpha values.
     """
     plot_connectome(adjacency, node_coords, alpha=alpha)
     plt.close()
+
 
 def test_plot_connectome_to_file(adjacency, node_coords, base_params, tmpdir):
     """Smoke test for plot_connectome and saving to file."""
