@@ -480,7 +480,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         Default is None.
 
     confounds : :class:`numpy.ndarray`, :obj:`str`,\
-    :class:`pandas.DataFrame` or :obj:`list` of
+    :class:`pandas.DataFrame` or :obj:`list` or :class:`os.PathLike` of
         Confounds timeseries. Shape must be
         (instant number, confound number), or just (instant number,)
         The number of time instants in ``signals`` and ``confounds`` must be

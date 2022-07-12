@@ -314,7 +314,7 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     Parameters
     ----------
-    img : Niimg-like object
+    img : Niimg-like object, str, or os.PathLike
         See http://nilearn.github.io/manipulating_images/input_output.html
         Image(s) to resample.
 

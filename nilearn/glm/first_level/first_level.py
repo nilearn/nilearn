@@ -282,7 +282,7 @@ class FirstLevelModel(BaseGLM):
         This parameter is passed to nilearn.image.resample_img.
         Please see the related documentation for details.
     %(smoothing_fwhm)s
-    memory : string, optional
+    memory : string or os.PathLike, optional
         Path to the directory used to cache the masking process and the glm
         fit. By default, no caching is done.
         Creates instance of joblib.Memory.

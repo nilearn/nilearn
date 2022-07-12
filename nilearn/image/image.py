@@ -247,7 +247,8 @@ def smooth_img(imgs, fwhm):
 
     Parameters
     ----------
-    imgs : Niimg-like object or iterable of Niimg-like objects
+    imgs : Niimg-like object or iterable of Niimg-like objects, str, or
+        os.PathLike
         Image(s) to smooth (see
         http://nilearn.github.io/manipulating_images/input_output.html
         for a detailed description of the valid input types).
@@ -495,7 +496,8 @@ def mean_img(imgs, target_affine=None, target_shape=None,
 
     Parameters
     ----------
-    imgs : Niimg-like object or iterable of Niimg-like objects
+    imgs : Niimg-like object or iterable of Niimg-like objects, str, or
+        os.PathLike
         Images to be averaged over time (see
         http://nilearn.github.io/manipulating_images/input_output.html
         for a detailed description of the valid input types).
@@ -1285,7 +1287,8 @@ def largest_connected_component_img(imgs):
 
     Parameters
     ----------
-    imgs : Niimg-like object or iterable of Niimg-like objects (3D)
+    imgs : Niimg-like object or iterable of Niimg-like objects (3D), str, or
+        os.PathLike
         Image(s) to extract the largest connected component from.
         See http://nilearn.github.io/manipulating_images/input_output.html.
 

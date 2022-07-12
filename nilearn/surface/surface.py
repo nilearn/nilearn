@@ -478,7 +478,7 @@ def vol_to_surf(img, surf_mesh,
     img : Niimg-like object, 3d or 4d.
         See http://nilearn.github.io/manipulating_images/input_output.html
 
-    surf_mesh : str or numpy.ndarray or Mesh
+    surf_mesh : str or numpy.ndarray or Mesh or os.PathLike
         Either a file containing surface mesh geometry (valid formats
         are .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or two Numpy arrays organized in a list,
@@ -678,7 +678,7 @@ def load_surf_data(surf_data):
 
     Parameters
     ----------
-    surf_data : str or numpy.ndarray
+    surf_data : str or numpy.ndarray or os.PathLike
         Either a file containing surface data (valid format are .gii,
         .gii.gz, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
         .thickness, .curv, .sulc, .annot, .label), lists of 1D data files are
@@ -785,7 +785,7 @@ def load_surf_mesh(surf_mesh):
 
     Parameters
     ----------
-    surf_mesh : str or numpy.ndarray or Mesh
+    surf_mesh : str or numpy.ndarray or Mesh or os.PathLike
         Either a file containing surface mesh geometry (valid formats
         are .gii .gii.gz or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or two Numpy arrays organized in a list,

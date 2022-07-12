@@ -32,7 +32,7 @@ def _filter_and_extract(
 
     Parameters
     ----------
-    imgs : 3D/4D Niimg-like object
+    imgs : 3D/4D Niimg-like object or str or os.PathLike
         Images to be masked. Can be 3-dimensional or 4-dimensional.
 
     extraction_function : function
