@@ -17,6 +17,7 @@ from scipy.ndimage import find_objects, affine_transform
 from .image import crop_img
 from .. import _utils
 from .._utils.niimg import _get_data
+from .._utils.helpers import _stringify_path
 
 ###############################################################################
 # Affine utils
@@ -435,6 +436,7 @@ def resample_img(img, target_affine=None, target_shape=None,
                    "or 'nearest' but it was set to '{0}'").format(interpolation)
         raise ValueError(message)
 
+    img = _stringify_path(img)
     if isinstance(img, str):
         # Avoid a useless copy
         input_img_is_string = True

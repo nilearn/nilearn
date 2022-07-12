@@ -30,7 +30,7 @@ from .._utils import (_repr_niimgs,
 from .._utils.niimg import _get_data, _safe_get_data
 from .._utils.niimg_conversions import _check_same_fov, _index_img
 from .._utils.param_validation import check_threshold
-from .._utils.helpers import rename_parameters
+from .._utils.helpers import rename_parameters, _stringify_path
 
 
 def get_data(img):
@@ -263,6 +263,7 @@ def smooth_img(imgs, fwhm):
 
     # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
     # See http://bugs.python.org/issue7624
+    imgs = _stringify_path(imgs)
     if hasattr(imgs, "__iter__") \
        and not isinstance(imgs, str):
         single_img = False
@@ -526,6 +527,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
     nilearn.image.math_img : For more general operations on images.
 
     """
+    imgs = _stringify_path(imgs)
     is_str = isinstance(imgs, str)
     is_iterable = isinstance(imgs, collections.abc.Iterable)
     if is_str or not is_iterable:
@@ -1302,7 +1304,7 @@ def largest_connected_component_img(imgs):
 
     """
     from .._utils.ndimage import largest_connected_component
-
+    imgs = _stringify_path(imgs)
     if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
         single_img = False
     else:
