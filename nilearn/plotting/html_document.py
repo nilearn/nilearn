@@ -46,7 +46,7 @@ class HTMLDocument(object):
         self.height = height
         self._temp_file = None
         self._check_n_open()
-        self._proc = None
+        self._temp_file_removing_proc = None
 
     def _check_n_open(self):
         HTMLDocument._all_open_html_repr.add(self)
@@ -164,8 +164,8 @@ class HTMLDocument(object):
                      "for example by calling this.remove_temp_file").format(
                          file_name, file_size))
         else:
-            self._proc = _remove_after_n_seconds(self._temp_file,
-                                                 temp_file_lifetime)
+            self._temp_file_removing_proc = _remove_after_n_seconds(
+                self._temp_file, temp_file_lifetime)
         webbrowser.open('file://{}'.format(file_name))
 
     def remove_temp_file(self):
