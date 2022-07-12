@@ -17,6 +17,7 @@ from sklearn.utils import gen_even_slices, as_float_array
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
 from ._utils import fill_doc
 from nilearn._utils.glm import _check_run_sample_masks
+from ._utils.helpers import _stringify_path
 
 availiable_filters = ['butterworth',
                       'cosine'
@@ -557,6 +558,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     nilearn.image.clean_img
     """
     # Raise warning for some parameter combinations when confounds present
+    confounds = _stringify_path(confounds)
     if confounds is not None:
         _check_signal_parameters(detrend, standardize_confounds)
 
