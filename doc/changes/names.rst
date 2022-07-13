@@ -118,6 +118,8 @@
 
 .. _Kamalakar Reddy Daddy: https://github.com/KamalakerDadi
 
+.. _Koen Helwegen: https://github.com/koenhelwegen
+
 .. _Konstantin Shmelkov: https://github.com/kshmelkov
 
 .. _Kshitij Chawla: https://github.com/kchawla-pi

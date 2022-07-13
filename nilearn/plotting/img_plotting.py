@@ -1154,7 +1154,8 @@ def plot_connectome(adjacency_matrix, node_coords,
                                display_mode=display_mode,
                                figure=figure, axes=axes, title=title,
                                annotate=annotate,
-                               black_bg=black_bg)
+                               black_bg=black_bg,
+                               alpha=alpha)
 
     display.add_graph(adjacency_matrix, node_coords,
                       node_color=node_color, node_size=node_size,
