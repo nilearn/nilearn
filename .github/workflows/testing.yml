@@ -122,3 +122,44 @@ jobs:
       - uses: codecov/codecov-action@v1
         if: success()
         name: 'Upload coverage to CodeCov'
+
+  prerelease:
+    needs: check_skip
+    if: ${{ needs.check_skip.outputs.skip == 'false' }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+        fail-fast: false
+        matrix:
+            os: ["ubuntu-latest"]
+            python-version: ["3.10"]
+    env:
+        PIP_FLAGS: "--pre"
+    name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and pre-release dependencies
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+            python-version: ${{ matrix.python-version }}
+        name: 'Setup python'
+      - shell: bash {0}
+        name: 'Display Python version'
+        run: python -c "import sys; print(sys.version)"
+      - shell: bash {0}
+        run: ./build_tools/github/dependencies.sh
+        name: 'Install dependencies'
+      - shell: bash {0}
+        run: ./build_tools/github/install.sh
+        name: 'Install nilearn'
+      - shell: bash {0}
+        run: ./build_tools/github/test_docs.sh
+        name: 'Run doctests'
+      - shell: bash {0}
+        run: ./build_tools/github/test.sh
+        name: 'Run tests'
+      - uses: codecov/codecov-action@v1
+        if: success()
+        name: 'Upload coverage to CodeCov'
+

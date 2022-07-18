@@ -112,7 +112,7 @@ def cluster_level_inference(stat_img, mask_img=None,
     """ Report the proportion of active voxels for all clusters
     defined by the input threshold.
 
-    This implements the method described in [1]_.
+    This implements the method described in :footcite:`InferenceRosenblatt`.
 
     Parameters
     ----------
@@ -144,10 +144,7 @@ def cluster_level_inference(stat_img, mask_img=None,
 
     References
     ----------
-    .. [1] Rosenblatt JD, Finos L, Weeda WD, Solari A, Goeman JJ.
-        All-Resolutions Inference for brain imaging.
-        Neuroimage. 2018 Nov 1;181:786-796.
-        doi: 10.1016/j.neuroimage.2018.07.060
+    .. footbibliography::
 
     """
 

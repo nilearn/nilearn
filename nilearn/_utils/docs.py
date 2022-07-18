@@ -69,6 +69,47 @@ smoothing_fwhm : :obj:`float`, optional.
     the :term:`full-width at half maximum<FWHM>` in millimeters
     of the spatial smoothing to apply to the signal."""
 
+# Second_level_input
+docdict['second_level_input'] = """
+second_level_input : :obj:`list` of \
+:class:`~nilearn.glm.first_level.FirstLevelModel` objects \
+or :class:`pandas.DataFrame` or :obj:`list` of Niimg-like objects.
+
+    - Giving :class:`~nilearn.glm.first_level.FirstLevelModel` objects
+      will allow to easily compute the second level contrast of arbitrary first
+      level contrasts thanks to the ``first_level_contrast`` argument of
+      :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`.
+      Effect size images will be computed for each model to contrast at
+      the second level.
+    - If a :class:`~pandas.DataFrame`, then it has to contain
+      ``subject_label``, ``map_name`` and ``effects_map_path``. It can
+      contain multiple maps that would be selected during contrast estimation
+      with the argument ``first_level_contrast`` of
+      :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`.
+      The :class:`~pandas.DataFrame` will be sorted based on
+      the ``subject_label`` column to avoid order inconsistencies when
+      extracting the maps. So the rows of the automatically computed
+      design matrix, if not provided, will correspond to the sorted
+      ``subject_label`` column.
+    - If a :obj:`list` of Niimg-like objects then this is taken
+      literally as Y for the model fit and ``design_matrix`` must be
+      provided.
+
+"""
+
+# Second_level_contrast
+docdict['second_level_contrast'] = """
+second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\
+(n_col), optional
+    Where ``n_col`` is the number of columns of the design matrix.
+    The string can be a formula compatible with :meth:`pandas.DataFrame.eval`.
+    Basically one can use the name of the conditions as they appear in the
+    design matrix of the fitted model combined with operators +- and combined
+    with numbers with operators +-`*`/. The default (None) is accepted if the
+    design matrix has a single column, in which case the only possible
+    contrast array((1)) is applied; when the design matrix has multiple
+    columns, an error is raised."""
+
 # fwhm
 docdict['fwhm'] = """
 fwhm : scalar, :class:`numpy.ndarray`, or :obj:`tuple`, or :obj:`list`,\
@@ -595,13 +636,6 @@ docdict['fsaverage_options'] = """
         - 'fsaverage3': the low-resolution fsaverage3 mesh (642 nodes)
         - 'fsaverage4': the low-resolution fsaverage4 mesh (2562 nodes)
         - 'fsaverage5': the low-resolution fsaverage5 mesh (10242 nodes)
-        - 'fsaverage5_sphere': the low-resolution fsaverage5 spheres
-
-            .. deprecated:: 0.8.0
-                This option has been deprecated and will be removed in v0.9.0.
-                fsaverage5 sphere coordinates can now be accessed through
-                attributes sphere_{left, right} using mesh='fsaverage5'
-
         - 'fsaverage6': the medium-resolution fsaverage6 mesh (40962 nodes)
         - 'fsaverage7': same as 'fsaverage'
         - 'fsaverage': the high-resolution fsaverage mesh (163842 nodes)

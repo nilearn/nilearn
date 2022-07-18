@@ -21,20 +21,21 @@ def set_max_img_views_before_warning(new_value):
 
 def _remove_after_n_seconds(file_name, n_seconds):
     script = os.path.join(os.path.dirname(__file__), 'rm_file.py')
-    subprocess.Popen([sys.executable, script, file_name, str(n_seconds)])
+    proc = subprocess.Popen([sys.executable, script, file_name,
+                             str(n_seconds)])
+    return proc
 
 
 class HTMLDocument(object):
-    """
-    Embeds a plot in a web page.
+    """Embeds a plot in a web page.
 
     If you are running a Jupyter notebook, the plot will be displayed
     inline if this object is the output of a cell.
-    Otherwise, use open_in_browser() to open it in a web browser (or
-    save_as_html("filename.html") to save it as an html file).
+    Otherwise, use ``open_in_browser()`` to open it in a web browser (or
+    ``save_as_html("filename.html")`` to save it as an html file).
 
-    use str(document) or document.html to get the content of the web page,
-    and document.get_iframe() to have it wrapped in an iframe.
+    Use ``str(document)`` or ``document.html`` to get the content of the
+    web page, and ``document.get_iframe()`` to have it wrapped in an iframe.
 
     """
     _all_open_html_repr = weakref.WeakSet()
@@ -45,6 +46,7 @@ class HTMLDocument(object):
         self.height = height
         self._temp_file = None
         self._check_n_open()
+        self._temp_file_removing_proc = None
 
     def _check_n_open(self):
         HTMLDocument._all_open_html_repr.add(self)
@@ -61,16 +63,38 @@ class HTMLDocument(object):
                               MAX_IMG_VIEWS_BEFORE_WARNING))
 
     def resize(self, width, height):
-        """Resize the plot displayed in a Jupyter notebook."""
+        """Resize the plot displayed in a Jupyter notebook.
+
+        Parameters
+        ----------
+        width : :obj:`int`
+            New width of the plot.
+
+        height : :obj:`int`
+            New height of the plot.
+
+        """
         self.width, self.height = width, height
         return self
 
     def get_iframe(self, width=None, height=None):
-        """
-        Get the document wrapped in an inline frame.
+        """Get the document wrapped in an inline frame.
 
         For inserting in another HTML page of for display in a Jupyter
         notebook.
+
+        Parameters
+        ----------
+        width : :obj:`int` or ``None``, optional
+            Width of the inline frame. Default=None.
+
+        height : :obj:`int` or ``None``, optional
+            Height of the inline frame. Default=None.
+
+        Returns
+        -------
+        wrapped : :obj:`str`
+            Raw HTML code for the inline frame.
 
         """
         if width is None:
@@ -83,12 +107,11 @@ class HTMLDocument(object):
         return wrapped
 
     def get_standalone(self):
-        """ Get the plot in an HTML page."""
+        """Returns the plot in an HTML page."""
         return self.html
 
     def _repr_html_(self):
-        """
-        Used by the Jupyter notebook.
+        """Used by the Jupyter notebook.
 
         Users normally won't call this method explicitly.
         """
@@ -98,25 +121,30 @@ class HTMLDocument(object):
         return self.html
 
     def save_as_html(self, file_name):
-        """
-        Save the plot in an HTML file, that can later be opened in a browser.
+        """Save the plot in an HTML file, that can later be opened
+        in a browser.
+
+        Parameters
+        ----------
+        file_name : :obj:`str`
+            Path to the HTML file used for saving.
+
         """
         with open(file_name, 'wb') as f:
             f.write(self.get_standalone().encode('utf-8'))
 
     def open_in_browser(self, file_name=None, temp_file_lifetime=30):
-        """
-        Save the plot to a temporary HTML file and open it in a browser.
+        """Save the plot to a temporary HTML file and open it in a browser.
 
         Parameters
         ----------
+        file_name : :obj:`str` or ``None``, optional
+            HTML file to use as a temporary file. Default=None.
 
-        file_name : str, optional
-            .html file to use as temporary file
-
-        temp_file_lifetime : float, optional (default=30.)
+        temp_file_lifetime : :obj:`float`, optional
             Time, in seconds, after which the temporary file is removed.
             If None, it is never removed.
+            Default=30.
 
         """
         if file_name is None:
@@ -136,12 +164,14 @@ class HTMLDocument(object):
                      "for example by calling this.remove_temp_file").format(
                          file_name, file_size))
         else:
-            _remove_after_n_seconds(self._temp_file, temp_file_lifetime)
+            self._temp_file_removing_proc = _remove_after_n_seconds(
+                self._temp_file, temp_file_lifetime)
         webbrowser.open('file://{}'.format(file_name))
 
     def remove_temp_file(self):
-        """
-        Remove the temporary file created by `open_in_browser`, if necessary.
+        """Remove the temporary file created by
+        ``open_in_browser``, if necessary.
+
         """
         if self._temp_file is None:
             return

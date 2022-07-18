@@ -354,6 +354,13 @@ Basic numerics
   `More documentation ...
   <http://scipy-lectures.github.io/intro/numpy/index.html>`__
 
+  .. warning:: the default integer type used by Numpy is (signed) 64-bit. Several
+              popular neuroimaging tools do not handle int64 Nifti images, so if
+              you build Nifti images directly from Numpy arrays it is recommended
+              to specify a smaller integer type, for example::
+
+                np.array([1, 2000, 7], dtype="int32")
+
 :Plotting and figures:
 
  .. figure:: auto_examples/00_tutorials/images/sphx_glr_plot_python_101_001.png
@@ -375,8 +382,8 @@ Basic numerics
 
  ::
 
-    >>> from scipy import ndimage
-    >>> t_smooth = ndimage.gaussian_filter(t, sigma=2)
+    >>> from scipy.ndimage import gaussian_filter
+    >>> t_smooth = gaussian_filter(t, sigma=2)
 
  `More documentation ...
  <http://scipy-lectures.github.io/advanced/image_processing/index.html>`__

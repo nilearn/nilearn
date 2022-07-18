@@ -19,7 +19,7 @@ from nilearn.version import _compare_version
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
-from scipy import ndimage
+from scipy.ndimage import binary_fill_holes
 from scipy import stats
 from nibabel.spatialimages import SpatialImage
 
@@ -301,8 +301,7 @@ class _MNI152Template(SpatialImage):
             anat_img = reorder_img(anat_img)
             data = get_data(anat_img)
             data = data.astype(np.float64)
-            anat_mask = ndimage.morphology.binary_fill_holes(
-                data > np.finfo(float).eps)
+            anat_mask = binary_fill_holes(data > np.finfo(float).eps)
             data = np.ma.masked_array(data, np.logical_not(anat_mask))
             self._affine = anat_img.affine
             self.data = data
@@ -1155,7 +1154,8 @@ def plot_connectome(adjacency_matrix, node_coords,
                                display_mode=display_mode,
                                figure=figure, axes=axes, title=title,
                                annotate=annotate,
-                               black_bg=black_bg)
+                               black_bg=black_bg,
+                               alpha=alpha)
 
     display.add_graph(adjacency_matrix, node_coords,
                       node_color=node_color, node_size=node_size,
@@ -1237,7 +1237,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
         Default=True.
 
     """
-    node_values = np.squeeze(np.array(node_values))
+    node_values = np.array(node_values).flatten()
     node_coords = np.array(node_coords)
 
     # Validate node_values
@@ -1309,7 +1309,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
 def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
                 detrend=True, output_file=None,
                 figure=None, axes=None, vmin=None, vmax=None, title=None,
-                cmap=plt.cm.gist_ncar):
+                cmap="gray", cmap_labels=plt.cm.gist_ncar):
     """Plot an image representation of voxel intensities across time.
 
     This figure is also known as a "grayplot" or "Power plot".
@@ -1351,8 +1351,12 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
     %(title)s
     %(cmap)s
 
-        .. note::
-            This argument is used only if an atlas is used.
+        Default=`gray`.
+
+    cmap_labels : :class:`matplotlib.colors.Colormap`, or :obj:`str`,
+        optional If ``mask_img`` corresponds to an atlas, then cmap_labels
+        can be used to define the colormap for coloring the labels placed
+        on the side of the carpet plot.
 
         Default=`plt.cm.gist_ncar`.
 
@@ -1463,7 +1467,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
             atlas_values[:, np.newaxis],
             interpolation='none',
             aspect='auto',
-            cmap=cmap
+            cmap=cmap_labels
         )
         if mask_labels:
             # Add labels to middle of each associated band
@@ -1485,7 +1489,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
             data.T,
             interpolation='nearest',
             aspect='auto',
-            cmap='gray',
+            cmap=cmap,
             vmin=vmin or default_vmin,
             vmax=vmax or default_vmax,
         )
@@ -1495,7 +1499,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
             data.T,
             interpolation='nearest',
             aspect='auto',
-            cmap='gray',
+            cmap=cmap,
             vmin=vmin or default_vmin,
             vmax=vmax or default_vmax,
         )

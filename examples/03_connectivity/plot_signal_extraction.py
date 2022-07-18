@@ -22,6 +22,12 @@ NeuroImage 2013
 
 This is just a code example, see the :ref:`corresponding section in the
 documentation <parcellation_time_series>` for more.
+
+.. note::
+    This example needs SciPy >= 1.0.0 for the reordering of the matrix.
+
+.. include:: ../../../examples/masker_note.rst
+
 """
 
 ##############################################################################

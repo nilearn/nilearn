@@ -1311,7 +1311,8 @@ class BaseStackedSlicer(BaseSlicer):
         if img is None or img is False:
             bounds = ((-40, 40), (-30, 30), (-30, 75))
             lower, upper = bounds['xyz'.index(cls._direction)]
-            cut_coords = np.linspace(lower, upper, cut_coords).tolist()
+            if isinstance(cut_coords, numbers.Number):
+                cut_coords = np.linspace(lower, upper, cut_coords).tolist()
         else:
             if (not isinstance(cut_coords, collections.abc.Sequence) and
                     isinstance(cut_coords, numbers.Number)):

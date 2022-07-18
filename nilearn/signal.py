@@ -16,7 +16,7 @@ from sklearn.utils import gen_even_slices, as_float_array
 
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
 from ._utils import fill_doc
-
+from nilearn._utils.glm import _check_run_sample_masks
 
 availiable_filters = ['butterworth',
                       'cosine'
@@ -340,6 +340,20 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
 
     if len(critical_freq) == 2:
         btype = 'band'
+        # Inappropriate parameter input might lead to coercion of both
+        # elements of critical_freq to a value just below 1.
+        # Scipy fix now enforces that critical frequencies cannot be equal.
+        # See https://github.com/scipy/scipy/pull/15886. If this is the case,
+        # we return the signals unfiltered.
+        if critical_freq[0] == critical_freq[1]:
+            warnings.warn(
+                'Signals are returned unfiltered because band-pass critical '
+                'frequencies are equal. Please check that inputs for '
+                'sampling_rate, low_pass, and high_pass are valid.')
+            if copy:
+                return signals.copy()
+            else:
+                return signals
     else:
         critical_freq = critical_freq[0]
 
@@ -702,18 +716,7 @@ def _sanitize_sample_mask(n_time, n_runs, runs, sample_mask):
     """Check sample_mask is the right data type and matches the run index."""
     if sample_mask is None:
         return sample_mask
-    if not isinstance(sample_mask, (list, tuple, np.ndarray)):
-        raise TypeError(
-            "sample_mask has an unhandled type: %s" % sample_mask.__class__
-        )
-    if not isinstance(sample_mask, (list, tuple)):
-        sample_mask = (sample_mask, )
-
-    if len(sample_mask) != n_runs:
-        raise ValueError(
-            "Number of sample_mask ({}) not matching "
-            "number of runs ({}).".format(len(sample_mask), n_runs)
-        )
+    sample_mask = _check_run_sample_masks(n_runs, sample_mask)
 
     if runs is None:
         runs = np.zeros(n_time)

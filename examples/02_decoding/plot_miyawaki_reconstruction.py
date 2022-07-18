@@ -19,6 +19,9 @@ a multiscale prediction on the images seen by the subject.
 See also
 :ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_encoding.py` for a
 encoding approach for the same dataset.
+
+.. include:: ../../../examples/masker_note.rst
+
 """
 
 # Some basic imports

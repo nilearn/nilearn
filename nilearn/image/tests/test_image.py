@@ -506,6 +506,24 @@ def test_new_img_like_non_iterable_header():
                         copy_header=True)
 
 
+@pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
+def test_new_img_like_int64():
+    img = data_gen.generate_labeled_regions((3, 3, 3), 2)
+    data = image.get_data(img).astype("int32")
+    with pytest.warns(None) as record:
+        new_img = new_img_like(img, data)
+    assert not record
+    assert image.get_data(new_img).dtype == "int32"
+    data = data.astype("int64")
+    with pytest.warns(UserWarning, match=r".*array.*contains.*64.*"):
+        new_img = new_img_like(img, data)
+    assert image.get_data(new_img).dtype == "int32"
+    data[:] = 2**40
+    with pytest.warns(UserWarning, match=r".*64.*too large.*"):
+        new_img = new_img_like(img, data)
+    assert image.get_data(new_img).dtype == "int64"
+
+
 def test_validity_threshold_value_in_threshold_img():
     """Check that invalid values to threshold_img's threshold parameter raise
     Exceptions.
@@ -554,7 +572,7 @@ def test_threshold_img_with_cluster_threshold():
     # First we create a statistical image with specific characteristics
     shape = (20, 20, 30)
     affine = np.eye(4)
-    data = np.zeros(shape, dtype=int)
+    data = np.zeros(shape, dtype="int32")
     data[:2, :2, :2] = 4  # 8-voxel positive cluster
     data[4:6, :2, :2] = -4  # 8-voxel negative cluster
     data[8:11, 0, 0] = 5  # 3-voxel positive cluster
@@ -585,7 +603,7 @@ def test_threshold_img_with_cluster_threshold():
         copy=True,
     )
     assert np.array_equal(np.unique(thr_img.get_fdata()), np.array([-4, 0, 4]))
-
+    assert np.sum(thr_img.get_fdata() == 4) == 8
     # With a cluster threshold of 5 we get clusters with |values| > 0.5 and
     # cluster sizes > 5
     thr_img = threshold_img(

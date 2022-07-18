@@ -8,8 +8,11 @@ Tools to find activations and cut on maps
 import warnings
 import numbers
 import numpy as np
-from scipy import ndimage
-
+from scipy.ndimage import (
+    center_of_mass,
+    find_objects,
+    label,
+)
 # Local imports
 from ..image import new_img_like, reorder_img, iter_img
 from ..image.resampling import get_mask_bounds, coord_transform
@@ -104,11 +107,11 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
                 "Could not determine cut coords: "
                 "Provided mask is empty. "
                 "Returning center of mass instead.")
-            cut_coords = ndimage.center_of_mass(np.abs(my_map)) + offset
+            cut_coords = center_of_mass(np.abs(my_map)) + offset
             x_map, y_map, z_map = cut_coords
             return np.asarray(coord_transform(x_map, y_map, z_map,
                                               img.affine)).tolist()
-        slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]
+        slice_x, slice_y, slice_z = find_objects(mask.astype(int))[0]
         my_map = my_map[slice_x, slice_y, slice_z]
         mask = mask[slice_x, slice_y, slice_z]
         my_map *= mask
@@ -121,7 +124,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
             "Returning center of mass of unmasked data instead.")
         # Call center of mass on initial data since my_map is zero.
         # Therefore, do not add offset to cut_coords.
-        cut_coords = ndimage.center_of_mass(np.abs(data))
+        cut_coords = center_of_mass(np.abs(data))
         x_map, y_map, z_map = cut_coords
         return np.asarray(coord_transform(x_map, y_map, z_map,
                                           img.affine)).tolist()
@@ -141,13 +144,13 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
             "Could not determine cut coords: "
             "All voxels were masked by the thresholding. "
             "Returning the center of mass instead.")
-        cut_coords = ndimage.center_of_mass(np.abs(my_map)) + offset
+        cut_coords = center_of_mass(np.abs(my_map)) + offset
         x_map, y_map, z_map = cut_coords
         return np.asarray(coord_transform(x_map, y_map, z_map,
                                           img.affine)).tolist()
 
     mask = largest_connected_component(mask)
-    slice_x, slice_y, slice_z = ndimage.find_objects(mask)[0]
+    slice_x, slice_y, slice_z = find_objects(mask.astype(int))[0]
     my_map = my_map[slice_x, slice_y, slice_z]
     mask = mask[slice_x, slice_y, slice_z]
     my_map *= mask
@@ -159,7 +162,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     second_mask = (np.abs(my_map) > second_threshold)
     if second_mask.sum() > 50:
         my_map *= largest_connected_component(second_mask)
-    cut_coords = ndimage.center_of_mass(np.abs(my_map))
+    cut_coords = center_of_mass(np.abs(my_map))
     x_map, y_map, z_map = cut_coords + offset
 
     # Return as a list of scalars
@@ -452,13 +455,13 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
                 cur_img = right_hemi.astype(int)
 
         # Take the largest connected component
-        labels, label_nb = ndimage.label(cur_img)
+        labels, label_nb = label(cur_img)
         label_count = np.bincount(labels.ravel().astype(int))
         label_count[0] = 0
         component = labels == label_count.argmax()
 
         # Get parcellation center of mass
-        x, y, z = ndimage.center_of_mass(component)
+        x, y, z = center_of_mass(component)
 
         # Dump label region and coordinates into a dictionary
         label_list.append(cur_label)

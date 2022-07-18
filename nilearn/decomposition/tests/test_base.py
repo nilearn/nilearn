@@ -3,8 +3,7 @@ from scipy import linalg
 import nibabel
 from numpy.testing import assert_array_almost_equal
 from nilearn.maskers import MultiNiftiMasker
-from nilearn.decomposition.base import BaseDecomposition, mask_and_reduce
-from nilearn.decomposition.base import fast_svd
+from nilearn.decomposition._base import _mask_and_reduce, _fast_svd
 
 
 def test_fast_svd():
@@ -25,7 +24,7 @@ def test_fast_svd():
         # compute the singular values of X using the slow exact method
         U_, s_, V_ = linalg.svd(X, full_matrices=False)
 
-        Ur, Sr, Vr = fast_svd(X, k, random_state=0)
+        Ur, Sr, Vr = _fast_svd(X, k, random_state=0)
         assert Vr.shape == (k, n_features)
         assert Ur.shape == (n_samples, k)
 
@@ -52,27 +51,27 @@ def test_mask_reducer():
     masker = MultiNiftiMasker(mask_img=mask_img).fit()
 
     # Test fit on multiple image
-    data = mask_and_reduce(masker, imgs)
+    data = _mask_and_reduce(masker, imgs)
     assert data.shape == (8 * 5, 6 * 8 * 10)
 
-    data = mask_and_reduce(masker, imgs, n_components=3)
+    data = _mask_and_reduce(masker, imgs, n_components=3)
     assert data.shape == (8 * 3, 6 * 8 * 10)
 
-    data = mask_and_reduce(masker, imgs, reduction_ratio=0.4)
+    data = _mask_and_reduce(masker, imgs, reduction_ratio=0.4)
     assert data.shape == (8 * 2, 6 * 8 * 10)
 
     # Test on single image
-    data_single = mask_and_reduce(masker, imgs[0], n_components=3)
+    data_single = _mask_and_reduce(masker, imgs[0], n_components=3)
     assert data_single.shape == (3, 6 * 8 * 10)
 
     # Test n_jobs > 1
-    data = mask_and_reduce(masker, imgs[0], n_components=3,
+    data = _mask_and_reduce(masker, imgs[0], n_components=3,
                            n_jobs=2, random_state=0)
     assert data.shape == (3, 6 * 8 * 10)
     assert_array_almost_equal(data_single, data)
 
     # Test that reduced data is orthogonal
-    data = mask_and_reduce(masker, imgs[0], n_components=3,
+    data = _mask_and_reduce(masker, imgs[0], n_components=3,
                            random_state=0)
     assert data.shape == (3, 6 * 8 * 10)
     cov = data.dot(data.T)
@@ -82,8 +81,8 @@ def test_mask_reducer():
     assert_array_almost_equal(cov, cov_diag)
 
     # Test reproducibility
-    data1 = mask_and_reduce(masker, imgs[0], n_components=3,
+    data1 = _mask_and_reduce(masker, imgs[0], n_components=3,
                                   random_state=0)
-    data2 = mask_and_reduce(masker, [imgs[0]] * 2, n_components=3,
+    data2 = _mask_and_reduce(masker, [imgs[0]] * 2, n_components=3,
                                   random_state=0)
     assert_array_almost_equal(np.tile(data1, (2, 1)), data2)
