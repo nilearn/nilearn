@@ -71,6 +71,8 @@ different heuristics to find cutting coordinates.
    <br>
 
 
+.. rst-class:: plotting-table
+
 =================== =========================================================
 =================== =========================================================
 |plot_anat|          :func:`plot_anat`
@@ -200,6 +202,8 @@ Different display modes
      :scale: 50
 
 
+.. rst-class:: plotting-table
+
 ================= =========================================================
 ================= =========================================================
 |plot_ortho|       `display_mode='ortho', cut_coords=[36, -27, 60]`
@@ -319,6 +323,9 @@ plot, and has methods to add overlays, contours or edge maps::
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
+
+.. rst-class:: plotting-table
+
 ================= =========================================================
 ================= =========================================================
 |plot_edges|       `display.add_edges(img)`
@@ -412,6 +419,8 @@ on a brain surface.
 .. |plot_surf_stat_map| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_surf_stat_map_001.png
      :target: ../auto_examples/01_plotting/plot_surf_stat_map.html
      :scale: 50
+
+.. rst-class:: plotting-table
 
 =====================   ===================================================================
 =====================   ===================================================================
