@@ -91,7 +91,7 @@ source_suffix = ['.rst', '.md']
 #source_encoding = 'utf-8'
 
 # Generate the plots for the gallery
-plot_gallery = 'True'
+plot_gallery = True
 
 # The master toctree document.
 master_doc = 'index'
@@ -353,6 +353,7 @@ sphinx_gallery_conf = {
     'ignore_pattern': 'func_code\.py',
     'show_memory': not sys.platform.startswith('win'),
     'remove_config_comments': True,
+    'nested_sections': True,
     'binder': {
         'org': 'nilearn',
         'repo': 'nilearn.github.io',
