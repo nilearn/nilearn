@@ -82,43 +82,52 @@ Why is machine learning relevant to NeuroImaging? A few examples!
 
 .. _installation:
 
-Installing nilearn
-====================
+Installing ``nilearn``
+======================
 
 .. tab-set::
 
-  .. tab-item:: Pip install
+  .. tab-item:: Latest release
 
-      **1. Download and install 64-bit Anaconda**
+      **1. Setup a virtual environment**
 
-      We recommend that you install a complete
-      64-bit scientific Python distribution like
-      `Anaconda <https://www.anaconda.com/download/>`_ (or `PythonXY <http://python-xy.github.io/>`_).
+      We recommend that you install ``nilearn``
+      in a virtual Python environment, either managed
+      with the standard library ``venv``
+      or with ``conda`` (see `miniconda
+      <https://docs.conda.io/en/latest/miniconda.html>`_ for instance).
 
-      Nilearn requires a Python installation and the following
-      dependencies: ipython, scipy, scikit-learn, joblib, matplotlib,
-      nibabel and pandas.
+      Either way, create and activate a new python environment.
 
-      Once conda is installed, create and activte
-      a new python environment with:
+      With ``venv``:
 
       .. code-block::
 
-         conda create -n nilearn-test python=3.9
-         conda activate nilearn-test
+         python3 -m venv /<path_to_new_env>
+         source /<path_to_new_env>/bin/activate
+
+      Windows users should change the last line to ``\<path_to_new_env>\Scripts\activate.bat``
+      in order to activate their virtual environment.
+
+      With ``conda``:
+
+      .. code-block::
+
+         conda create -n nilearn python=3.9
+         conda activate nilearn
 
       **2. Install nilearn with pip**
 
       Execute the following command in the command prompt / terminal
-      in the proper conda environment:
+      in the proper python environment:
 
       .. code-block::
 
-         python -m pip install -U --user nilearn
+         python -m pip install -U nilearn
 
       **3. Check installation**
 
-      Try importing nilearn in a python / ipython session:
+      Try importing nilearn in a python / iPython session:
 
       .. code-block:: python
 
@@ -126,7 +135,7 @@ Installing nilearn
 
       If no error is raised, you have installed nilearn correctly.
 
-  .. tab-item:: Install from source
+  .. tab-item:: Development version
 
       In order to access the development version of nilearn,
       simply clone and go to the repo:
@@ -176,14 +185,14 @@ terminal:
 
 :Notebooks:
 
-    Start the Jupter notebook either with the application menu, or by
+    Start the Jupyter notebook either with the application menu, or by
     typing::
 
         jupyter notebook
 
 :Terminal:
 
-    Start ipython by typing::
+    Start iPython by typing::
 
         ipython --matplotlib
 
@@ -434,7 +443,7 @@ It is first created with the relevant parameters::
     >>> svc = SVC(kernel='linear', C=1.)
 
 These parameters are detailed in the documentation of
-the object: in IPython or Jupter you can do::
+the object: in IPython or Jupyter you can do::
 
     In [3]: SVC?
     ...
