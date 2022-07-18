@@ -186,7 +186,13 @@ html_css_files = [
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {'oldversion':False, 'collapsiblesidebar': False}
+html_theme_options = {
+    "announcement": "<em>Yihaa</em> announcement!",
+    "light_css_variables": {
+        "admonition-font-size": "100%",
+        "admonition-title-font-size": "100%"
+    }
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = ['themes']
