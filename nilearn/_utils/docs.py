@@ -269,7 +269,7 @@ mask_img : Niimg-like object
 
 # Memory
 docdict['memory'] = """
-memory : instance of :class:`joblib.Memory` or :obj:`str` or 
+memory : instance of :class:`joblib.Memory` or :obj:`str` or
     :class:`os.PathLike`
     Used to cache the masking process.
     By default, no caching is done. If a :obj:`str` is given, it is the
