@@ -7,14 +7,13 @@ Neuroimaging file input and output.
 import copy
 import gc
 import collections.abc
+import os
 from warnings import warn
 
 import numpy as np
 import nibabel
 
 from pathlib import Path
-
-from .helpers import _stringify_path
 
 
 def _get_data(img):
@@ -125,9 +124,7 @@ def load_niimg(niimg, dtype=None):
     """
     from ..image import new_img_like  # avoid circular imports
 
-    niimg = _stringify_path(niimg)
-
-    if isinstance(niimg, str):
+    if isinstance(niimg, (str, os.PathLike)):
         # data is a filename, we load it
         niimg = nibabel.load(niimg)
     elif not isinstance(niimg, nibabel.spatialimages.SpatialImage):
