@@ -27,6 +27,7 @@ Fixes
 
 - Fix bug introduced due to a fix in the pre-release version of scipy (``1.9.0rc1``) which now enforces that elements of a band-pass filter must meet condition ``Wn[0] < Wn[1]``.
   Now if band-pass elements are equal :func:`~nilearn.signal.butterworth` returns an unfiltered signal with a warning (:gh:`3293` by `Yasmin Mzayek`_).
+- The parameter ``alpha`` is now correctly passed to :func:`~plotting.plot_glass_brain` in :func:`~plotting.plot_connectome` (:gh:`3306` by `Koen Helwegen`_).
 - Update the ``CompCor`` strategy in :func:`~interfaces.fmriprep.load_confounds` 
   and :func:`~interfaces.fmriprep.load_confounds_strategy` to support 
   `fmriprep` 21.x series and above. (:gh:`3285` by `Hao-Ting Wang`_).
