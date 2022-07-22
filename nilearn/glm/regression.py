@@ -342,7 +342,7 @@ class RegressionResults(LikelihoodModelResults):
     def normalized_residuals(self):
         """Residuals, normalized to have unit length.
 
-        See :footcite:`Montgomery` and :footcite:`GVK393847152`.
+        See :footcite:`Montgomery` and :footcite:`Davidson`.
 
         Notes
         -----
@@ -432,7 +432,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
     def normalized_residuals(self, Y):
         """Residuals, normalized to have unit length.
 
-        See :footcite:`Montgomery` and :footcite:`GVK393847152`.
+        See :footcite:`Montgomery` and :footcite:`Davidson`.
 
         Notes
         -----
