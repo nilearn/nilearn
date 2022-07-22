@@ -1,6 +1,6 @@
 """
 Utilities to resample a Niimg-like object
-See http://nilearn.github.io/manipulating_images/input_output.html
+See https://nilearn.github.io/stable/manipulating_images/input_output.html
 """
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
 # License: simplified BSD
@@ -194,7 +194,7 @@ def get_mask_bounds(img):
         Parameters
         ----------
         img : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
             The image to inspect. Zero values are considered as
             background.
 
@@ -313,8 +313,8 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     Parameters
     ----------
-    img : Niimg-like object, str, or os.PathLike
-        See http://nilearn.github.io/manipulating_images/input_output.html
+    img : Niimg-like object
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
         Image(s) to resample.
 
     target_affine : numpy.ndarray, optional
@@ -638,11 +638,11 @@ def resample_to_img(source_img, target_img,
     Parameters
     ----------
     source_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
         Image(s) to resample.
 
     target_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
         Reference image taken for resampling.
 
     interpolation : str, optional
@@ -707,7 +707,7 @@ def reorder_img(img, resample=None):
     Parameters
     -----------
     img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
         Image to reorder.
 
     resample : None or string in {'continuous', 'linear', 'nearest'}, optional

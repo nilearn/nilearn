@@ -74,7 +74,7 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         Default 'svc'.
 
     X: list of Niimg-like objects
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
         Data on which model is to be fitted. If this is a list,
         the affine is considered the same for all.
 
@@ -361,7 +361,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         Parameters
         ----------
         X: list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
@@ -594,7 +594,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         ----------
         X: list of Niimg-like objects
             See
-            <http://nilearn.github.io/manipulating_images/input_output.html>
+            <https://nilearn.github.io/stable/manipulating_images/input_output.html> # noqa:E501
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.
 

@@ -91,7 +91,7 @@ the fMRI data. The :func:`nilearn.glm.first_level.FirstLevelModel.fit()` functio
 and design matrix as input and fits the GLM. Like other Nilearn functions,
 :func:`nilearn.glm.first_level.FirstLevelModel.fit()` accepts file names as input, but can also
 work with `NiftiImage objects <https://nipy.org/nibabel/nibabel_images.html>`_. More information about
-input formats is available `here <http://nilearn.github.io/manipulating_images/input_output.html#inputing-data-file-names-or-image-objects>`_ ::
+input formats is available `here <https://nilearn.github.io/stable/manipulating_images/input_output.html#inputing-data-file-names-or-image-objects>`_ ::
 
   from nilearn.glm.first_level import FirstLevelModel
   fmri_glm = FirstLevelModel()

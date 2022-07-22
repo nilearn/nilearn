@@ -33,12 +33,12 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
         Input images.
 
     labels_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
         regions definition as labels. By default, the label zero is used to
         denote an absence of region. Use background_label to change it.
 
     mask_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
         Mask to apply to labels before extracting signals. Every point
         outside the mask is considered as background (i.e. no region).
 
@@ -148,7 +148,7 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
         2D array with shape: (scan number, number of regions in labels_img).
 
     labels_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
         Region definitions using labels.
 
     mask_img : Niimg-like object, optional
@@ -231,12 +231,12 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
         Input images.
 
     maps_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
         regions definition as maps (array of weights).
         shape: imgs.shape + (region number, )
 
     mask_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
         mask to apply to regions before extracting signals. Every point
         outside the mask is considered as background (i.e. outside of any
         region).
@@ -310,11 +310,11 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
                 region_signals.shape[1] == maps_img.shape[-1]
 
     maps_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
         Region definitions using maps.
 
     mask_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
         Boolean array giving :term:`voxels<voxel>` to process.
         Integer arrays also accepted, zero meaning False.
 

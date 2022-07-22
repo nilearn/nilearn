@@ -59,7 +59,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
     Parameters
     ----------
     mask_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
         Mask of the data. If not given, a mask is computed in the fit step.
         Optional parameters can be set using mask_args and mask_strategy to
         fine tune the mask extraction.
@@ -221,7 +221,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         Parameters
         ----------
         imgs : :obj:`list` of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
 
@@ -312,7 +312,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         ----------
 
         imgs_list : :obj:`list` of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
             List of imgs file to prepare. One item per subject.
 
         confounds : :obj:`list` of confounds, optional
@@ -410,7 +410,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         Parameters
         ----------
         imgs : :obj:`list` of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
             Data to be preprocessed
 
         confounds : CSV file or 2D :obj:`numpy.ndarray` or \

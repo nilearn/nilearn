@@ -35,7 +35,7 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
         as target_affine.
 
     niimg : 3D/4D Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
         Images to process.
         If a 3D niimg is provided, a singleton dimension will be added to
         the output to represent the single scan in the niimg.
@@ -160,7 +160,7 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
         as the images (typically MNI or TAL).
 
     niimg : 3D/4D Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
         Images to process.
         If a 3D niimg is provided, a singleton dimension will be added to
         the output to represent the single scan in the niimg.
@@ -173,7 +173,7 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
         maps have a non-zero value for the same voxel).
 
     mask_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
         Mask to apply to regions before extracting signals.
 
     """
@@ -229,7 +229,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         Default is None (signal is extracted on a single voxel).
 
     mask_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
         Mask to apply to regions before extracting signals.
 
     allow_overlap : :obj:`bool`, optional
@@ -406,7 +406,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         Parameters
         ----------
         imgs : 3D/4D Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
             Images to process.
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
@@ -446,7 +446,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         Parameters
         ----------
         imgs : 3D/4D Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
             Images to process.
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
