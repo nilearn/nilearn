@@ -16,7 +16,6 @@ from .. import image
 from .. import masking
 from .._utils import CacheMixin, fill_doc
 from .._utils.class_inspect import get_params
-from .._utils.helpers import remove_parameters, rename_parameters
 from .._utils.niimg import img_data_dtype
 from .._utils.niimg_conversions import _check_same_fov
 from nilearn.image import get_data
@@ -222,11 +221,14 @@ class NiftiMasker(BaseMasker, CacheMixin):
 
     Attributes
     ----------
-    `mask_img_` : nibabel.Nifti1Image
+    mask_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The mask of the data, or the computed one.
 
-    `affine_` : 4x4 numpy array
+    affine_ : 4x4 :obj:`numpy.ndarray`
         Affine of the transformed image.
+
+    n_elements_ : :obj:`int`
+        The number of voxels in the mask.
 
     See also
     --------
@@ -405,17 +407,24 @@ class NiftiMasker(BaseMasker, CacheMixin):
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 0:
             print("[%s.fit] Resampling mask" % self.__class__.__name__)
+
         self.mask_img_ = self._cache(image.resample_img)(
             self.mask_img_,
             target_affine=self.target_affine,
             target_shape=self.target_shape,
             copy=False, interpolation='nearest')
+
         if self.target_affine is not None:  # resample image to target affine
             self.affine_ = self.target_affine
         else:  # resample image to mask affine
             self.affine_ = self.mask_img_.affine
+
         # Load data in memory
-        get_data(self.mask_img_)
+        data = get_data(self.mask_img_)
+
+        # Infer the number of elements (voxels) in the mask
+        self.n_elements_ = int(data.sum())
+
         if self.verbose > 10:
             print("[%s.fit] Finished fit" % self.__class__.__name__)
 
@@ -427,9 +436,11 @@ class NiftiMasker(BaseMasker, CacheMixin):
                         copy=False, interpolation='nearest')
                 else:  # imgs not provided to fit
                     resampl_imgs = None
+
                 self._reporting_data['transform'] = [
                     resampl_imgs, self.mask_img_
                 ]
+
         return self
 
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None,

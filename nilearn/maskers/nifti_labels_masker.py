@@ -141,8 +141,15 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         standard_deviation. Default='mean'.
 
     reports : boolean, optional
-         If set to True, data is saved in order to produce a report.
-         Default=True.
+        If set to True, data is saved in order to produce a report.
+        Default=True.
+
+    Attributes
+    ----------
+    n_elements_ : :obj:`int`
+        The number of discrete values in the mask.
+        This is equivalent to the number of unique values in the mask image,
+        ignoring the background value.
 
     See also
     --------
@@ -336,6 +343,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                                            shorten=(not self.verbose)),
                        verbose=self.verbose)
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
+
         else:
             self.mask_img_ = None
 
@@ -344,6 +352,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             if self.resampling_target == "data":
                 # resampling will be done at transform time
                 pass
+
             elif self.resampling_target is None:
                 if self.mask_img_.shape != self.labels_img_.shape[:3]:
                     raise ValueError(
@@ -351,6 +360,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                             "Regions and mask do not have the same shape",
                             mask_img=self.mask_img,
                             labels_img=self.labels_img))
+
                 if not np.allclose(self.mask_img_.affine,
                                    self.labels_img_.affine):
                     raise ValueError(_compose_err_msg(
@@ -365,6 +375,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                     target_shape=self.labels_img_.shape[:3],
                     interpolation="nearest",
                     copy=True)
+
             else:
                 raise ValueError(
                     "Invalid value for "
@@ -386,6 +397,13 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                 'img': imgs}
         else:
             self._reporting_data = None
+
+        # Infer the number of elements in the mask
+        # This is equal to the number of unique values in the label image,
+        # minus the background value.
+        self.n_elements_ = np.unique(
+            image.get_data(self._resampled_labels_img_)
+        ).size - 1
 
         return self
 

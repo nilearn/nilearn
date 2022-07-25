@@ -126,6 +126,15 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         If set to True, data is saved in order to produce a report.
         Default=True.
 
+    Attributes
+    ----------
+    mask_img_ : :obj:`nibabel.nifti1.Nifti1Image`
+        The mask of the data, or the computed one.
+
+    n_elements_ : :obj:`int`
+        The number of overlapping maps in the mask.
+        This is equivalent to the number of volumes in the mask image.
+
     Notes
     -----
     If resampling_target is set to "maps", every 3D image processed by
@@ -342,6 +351,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         self.maps_img_ = image.clean_img(self.maps_img_, detrend=False,
                                          standardize=False,
                                          ensure_finite=True)
+
         if self.mask_img is not None:
             logger.log("loading mask from %s" %
                        _utils._repr_niimgs(self.mask_img,
@@ -359,6 +369,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         elif self.resampling_target == "mask" and self.mask_img_ is not None:
             if self.verbose > 0:
                 print("Resampling maps")
+
             self.maps_img_ = image.resample_img(
                 self.maps_img_,
                 target_affine=self.mask_img_.affine,
@@ -369,6 +380,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         elif self.resampling_target == "maps" and self.mask_img_ is not None:
             if self.verbose > 0:
                 print("Resampling mask")
+
             self.mask_img_ = image.resample_img(
                 self.mask_img_,
                 target_affine=self.maps_img_.affine,
@@ -382,6 +394,9 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
                                     'img': imgs}
         else:
             self._reporting_data = None
+
+        # The number of elements is equal to the number of volumes
+        self.n_elements_ = self.mask_img_.shape[3]
 
         return self
 

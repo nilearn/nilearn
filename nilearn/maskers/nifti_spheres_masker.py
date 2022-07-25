@@ -278,6 +278,14 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         Indicate the level of verbosity. By default, nothing is printed.
         Default=0.
 
+    Attributes
+    ----------
+    n_elements_ : :obj:`int`
+        The number of seeds in the masker.
+
+    seeds_ : :obj:`list` of :obj:`list`
+        The coordinates of the seeds in the masker.
+
     See also
     --------
     nilearn.maskers.NiftiMasker
@@ -352,6 +360,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                                  "instead of 3." % (i, len(seed)))
 
             self.seeds_.append(seed)
+
+        self.n_elements_ = len(self.seeds_)
 
         return self
 

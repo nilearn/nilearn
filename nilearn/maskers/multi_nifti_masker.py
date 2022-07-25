@@ -152,11 +152,14 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
 
     Attributes
     ----------
-    `mask_img_` : nibabel.Nifti1Image object
+    mask_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The mask of the data.
 
-    `affine_` : 4x4 numpy.ndarray
+    affine_ : 4x4 :obj:`numpy.ndarray`
         Affine of the transformed image.
+
+    n_elements_ : :obj:`int`
+        The number of voxels in the mask.
 
     See Also
     --------
@@ -216,10 +219,12 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             print("[%s.fit] Loading data from %s" % (
                 self.__class__.__name__,
                 _utils._repr_niimgs(imgs, shorten=False)))
+
         # Compute the mask if not given by the user
         if self.mask_img is None:
             if self.verbose > 0:
                 print("[%s.fit] Computing mask" % self.__class__.__name__)
+
             if not isinstance(imgs, collections.abc.Iterable) \
                     or isinstance(imgs, str):
                 raise ValueError("[%s.fit] For multiple processing, you should"
@@ -246,23 +251,31 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                               ' requested (imgs != None) while a mask has'
                               ' been provided at masker creation. Given mask'
                               ' will be used.' % self.__class__.__name__)
+
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
         # If resampling is requested, resample the mask as well.
         # Resampling: allows the user to change the affine, the shape or both.
         if self.verbose > 0:
             print("[%s.transform] Resampling mask" % self.__class__.__name__)
+
         self.mask_img_ = self._cache(image.resample_img)(
             self.mask_img_,
             target_affine=self.target_affine,
             target_shape=self.target_shape,
             interpolation='nearest', copy=False)
+
         if self.target_affine is not None:
             self.affine_ = self.target_affine
         else:
             self.affine_ = self.mask_img_.affine
+
         # Load data in memory
-        get_data(self.mask_img_)
+        data = get_data(self.mask_img_)
+
+        # Infer the number of elements (voxels) in the mask
+        self.n_elements_ = int(data.sum())
+
         return self
 
     def transform_imgs(self, imgs_list, confounds=None, sample_mask=None,
