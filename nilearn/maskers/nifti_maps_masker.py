@@ -128,8 +128,8 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
 
     Attributes
     ----------
-    mask_img_ : :obj:`nibabel.nifti1.Nifti1Image`
-        The mask of the data, or the computed one.
+    maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
+        The maps mask of the data.
 
     n_elements_ : :obj:`int`
         The number of overlapping maps in the mask.
@@ -396,7 +396,7 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
             self._reporting_data = None
 
         # The number of elements is equal to the number of volumes
-        self.n_elements_ = self.mask_img_.shape[3]
+        self.n_elements_ = self.maps_img_.shape[3]
 
         return self
 
