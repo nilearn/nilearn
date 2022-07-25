@@ -27,7 +27,7 @@ Fixes
 - Fix bug introduced due to a fix in the pre-release version of scipy (``1.9.0rc1``) which now enforces that elements of a band-pass filter must meet condition ``Wn[0] < Wn[1]``.
   Now if band-pass elements are equal :func:`~nilearn.signal.butterworth` returns an unfiltered signal with a warning (:gh:`3293` by `Yasmin Mzayek`_).
 - The parameter ``alpha`` is now correctly passed to :func:`~plotting.plot_glass_brain` in :func:`~plotting.plot_connectome` (:gh:`3306` by `Koen Helwegen`_).
-- Fix plotting of background image in :func:`~nilearn.plotting.view_img` when the background is not the MNI template.
+- Fix plotting of background image in :func:`~nilearn.plotting.view_img` when the background is not the MNI template (:gh:`3312` by `Jerome Dockes`_).
 
 Enhancements
 ------------
