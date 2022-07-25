@@ -14,7 +14,7 @@ from matplotlib.image import imsave
 
 from nibabel.affines import apply_affine
 
-from ..image import resample_to_img, new_img_like, reorder_img
+from ..image import resample_to_img, new_img_like, reorder_img, get_data
 from .js_plotting_utils import get_html_template, colorscale
 from ..plotting import cm
 from ..plotting.find_cuts import find_xyz_cut_coords
@@ -25,7 +25,7 @@ from .._utils.niimg_conversions import check_niimg_3d
 from .._utils.param_validation import check_threshold
 from .._utils.extmath import fast_abs_percentile
 from .._utils.niimg import _safe_get_data
-from ..datasets import load_mni152_template
+from ..datasets import load_mni152_template, load_mni152_brain_mask
 from ..masking import compute_brain_mask
 
 
@@ -203,25 +203,30 @@ def _mask_stat_map(stat_map_img, threshold=None):
     return mask_img, stat_map_img, data, threshold
 
 
+def _load_masked_mni_template():
+    template = load_mni152_template()
+    template_data = get_data(template)
+    mask_data = np.logical_not(get_data(load_mni152_brain_mask()))
+    return new_img_like(template, np.ma.array(template_data, mask=mask_data))
+
+
 def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
     """Load and resample bg_img in an isotropic resolution,
     with a positive diagonal affine matrix.
     Returns: bg_img, bg_min, bg_max, black_bg
 
     """
-    if (bg_img is None or bg_img is False) and black_bg == 'auto':
-        black_bg = False
-
-    if bg_img is not None and bg_img is not False:
-        if isinstance(bg_img, str) and bg_img == "MNI152":
-            bg_img = load_mni152_template()
-        bg_img, black_bg, bg_min, bg_max = _load_anat(bg_img, dim=dim,
-                                                      black_bg=black_bg)
+    if (bg_img is None or bg_img is False):
+        if black_bg == 'auto':
+            black_bg = False
+        bg_img = new_img_like(
+            stat_map_img, np.ma.masked_all(stat_map_img.shape))
+        bg_min, bg_max = 0, 0
     else:
-        bg_img = new_img_like(stat_map_img, np.zeros(stat_map_img.shape),
-                              stat_map_img.affine)
-        bg_min = 0
-        bg_max = 0
+        if isinstance(bg_img, str) and bg_img == "MNI152":
+            bg_img = _load_masked_mni_template()
+        bg_img, black_bg, bg_min, bg_max = _load_anat(
+            bg_img, dim=dim, black_bg=black_bg)
     bg_img = reorder_img(bg_img, resample='nearest')
     return bg_img, bg_min, bg_max, black_bg
 
@@ -313,10 +318,7 @@ def _json_view_size(params):
 
 def _get_bg_mask_and_cmap(bg_img, black_bg):
     """Helper function of _json_view_data."""
-    bg_mask = _safe_get_data(compute_brain_mask(bg_img),
-                             ensure_finite=True)
-    bg_mask = np.logical_not(bg_mask).astype(float)
-    bg_mask[bg_mask == 1] = np.nan
+    bg_mask = np.ma.getmaskarray(get_data(bg_img))
     bg_cmap = copy.copy(matplotlib.cm.get_cmap('gray'))
     if black_bg:
         bg_cmap.set_bad('black')
@@ -444,6 +446,8 @@ def view_img(stat_map_img, bg_img='MNI152',
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
+        If the image data is a `np.ma.MaskedArray`, masked values will be
+        plotted as transparent.
         Default='MNI152'.
 
     cut_coords : None, or a tuple of floats
