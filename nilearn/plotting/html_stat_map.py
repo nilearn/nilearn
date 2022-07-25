@@ -25,8 +25,7 @@ from .._utils.niimg_conversions import check_niimg_3d
 from .._utils.param_validation import check_threshold
 from .._utils.extmath import fast_abs_percentile
 from .._utils.niimg import _safe_get_data
-from ..datasets import load_mni152_template, load_mni152_brain_mask
-from ..masking import compute_brain_mask
+from ..datasets import load_mni152_template
 
 
 def _data_to_sprite(data):
@@ -203,13 +202,6 @@ def _mask_stat_map(stat_map_img, threshold=None):
     return mask_img, stat_map_img, data, threshold
 
 
-def _load_masked_mni_template():
-    template = load_mni152_template()
-    template_data = get_data(template)
-    mask_data = np.logical_not(get_data(load_mni152_brain_mask()))
-    return new_img_like(template, np.ma.array(template_data, mask=mask_data))
-
-
 def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
     """Load and resample bg_img in an isotropic resolution,
     with a positive diagonal affine matrix.
@@ -224,7 +216,11 @@ def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
         bg_min, bg_max = 0, 0
     else:
         if isinstance(bg_img, str) and bg_img == "MNI152":
-            bg_img = _load_masked_mni_template()
+            bg_img = load_mni152_template()
+        masked_data = np.ma.masked_inside(
+            _safe_get_data(bg_img, ensure_finite=True),
+            -1e-6, 1e-6, copy=False)
+        bg_img = new_img_like(bg_img, masked_data)
         bg_img, black_bg, bg_min, bg_max = _load_anat(
             bg_img, dim=dim, black_bg=black_bg)
     bg_img = reorder_img(bg_img, resample='nearest')
@@ -446,8 +442,6 @@ def view_img(stat_map_img, bg_img='MNI152',
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
-        If the image data is a `np.ma.MaskedArray`, masked values will be
-        plotted as transparent.
         Default='MNI152'.
 
     cut_coords : None, or a tuple of floats
