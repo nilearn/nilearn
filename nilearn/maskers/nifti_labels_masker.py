@@ -196,7 +196,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         self._report_content = dict()
         self._report_content['description'] = (
             'This reports shows the regions '
-            'defined by the labels of the mask.')
+            'defined by the labels of the mask.'
+        )
         self._report_content['warning_message'] = None
 
         available_reduction_strategies = {'mean', 'median', 'sum',
@@ -250,6 +251,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             # previously fitted with no func image and is re-fitted
             if 'warning_message' in self._report_content:
                 self._report_content['warning_message'] = None
+
             labels_image = image.load_img(labels_image, dtype='int32')
             labels_image_data = image.get_data(labels_image)
             labels_image_affine = labels_image.affine
@@ -264,19 +266,23 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                                   "labels ({0}) and the number of regions "
                                   "in provided label image ({1})").format(
                                       len(self.labels), number_of_regions + 1))
+
             self._report_content['number_of_regions'] = number_of_regions
 
             label_values = np.unique(labels_image_data)
             label_values = label_values[label_values != self.background_label]
             columns = ['label value', 'region name', 'size (in mm^3)',
                        'relative size (in %)']
+
             if self.labels is None:
                 columns.remove('region name')
+
             regions_summary = {c: [] for c in columns}
             for label in label_values:
                 regions_summary['label value'].append(label)
                 if self.labels is not None:
                     regions_summary['region name'].append(self.labels[label])
+
                 size = len(labels_image_data[labels_image_data == label])
                 voxel_volume = np.abs(np.linalg.det(
                     labels_image_affine[:3, :3]))
@@ -286,6 +292,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                     size / len(
                         labels_image_data[labels_image_data != 0]
                     ) * 100, 2))
+
             self._report_content['summary'] = regions_summary
 
             img = self._reporting_data['img']
@@ -359,7 +366,9 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
                         _compose_err_msg(
                             "Regions and mask do not have the same shape",
                             mask_img=self.mask_img,
-                            labels_img=self.labels_img))
+                            labels_img=self.labels_img,
+                        )
+                    )
 
                 if not np.allclose(self.mask_img_.affine,
                                    self.labels_img_.affine):
@@ -385,8 +394,7 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
             # Just check that the mask is valid
             masking._load_mask_img(self.mask_img_)
 
-        if not hasattr(self,
-                       '_resampled_labels_img_'):
+        if not hasattr(self, '_resampled_labels_img_'):
             # obviates need to run .transform() before .inverse_transform()
             self._resampled_labels_img_ = self.labels_img_
 
