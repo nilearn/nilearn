@@ -230,6 +230,8 @@ class NiftiMasker(BaseMasker, CacheMixin):
     n_elements_ : :obj:`int`
         The number of voxels in the mask.
 
+        .. versionadded:: 0.9.2.dev
+
     See also
     --------
     nilearn.masking.compute_background_mask

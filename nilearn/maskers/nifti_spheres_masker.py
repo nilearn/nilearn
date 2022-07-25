@@ -283,6 +283,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     n_elements_ : :obj:`int`
         The number of seeds in the masker.
 
+        .. versionadded:: 0.9.2.dev
+
     seeds_ : :obj:`list` of :obj:`list`
         The coordinates of the seeds in the masker.
 

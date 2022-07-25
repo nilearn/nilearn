@@ -135,6 +135,8 @@ class NiftiMapsMasker(BaseMasker, CacheMixin):
         The number of overlapping maps in the mask.
         This is equivalent to the number of volumes in the mask image.
 
+        .. versionadded:: 0.9.2.dev
+
     Notes
     -----
     If resampling_target is set to "maps", every 3D image processed by

@@ -161,6 +161,8 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
     n_elements_ : :obj:`int`
         The number of voxels in the mask.
 
+        .. versionadded:: 0.9.2.dev
+
     See Also
     --------
     nilearn.image.resample_img: image resampling

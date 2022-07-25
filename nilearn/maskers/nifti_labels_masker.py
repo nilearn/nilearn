@@ -157,6 +157,8 @@ class NiftiLabelsMasker(BaseMasker, CacheMixin):
         This is equivalent to the number of unique values in the mask image,
         ignoring the background value.
 
+        .. versionadded:: 0.9.2.dev
+
     See also
     --------
     nilearn.maskers.NiftiMasker
