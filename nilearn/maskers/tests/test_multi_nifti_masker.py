@@ -183,11 +183,18 @@ def test_mask_strategy_errors():
     with pytest.raises(ValueError,
                        match="Unknown value of mask_strategy 'foo'"):
         mask.fit(imgs)
-    # Warning with deprecated 'template' strategy
+    # Warning with deprecated 'template' strategy,
+    # plus an exception because there's no resulting mask
     mask = MultiNiftiMasker(mask_strategy='template')
-    with pytest.warns(UserWarning,
-                      match="Masking strategy 'template' is deprecated."):
-        mask.fit(imgs)
+    with pytest.warns(
+        UserWarning,
+        match="Masking strategy 'template' is deprecated."
+    ):
+        with pytest.raises(
+            ValueError,
+            match='The mask is invalid as it is empty'
+        ):
+            mask.fit(imgs)
 
 
 @pytest.mark.parametrize('strategy',

@@ -293,13 +293,20 @@ def test_mask_strategy_errors():
             ValueError,
             match="Unknown value of mask_strategy 'oops'"):
         mask.fit()
-    # Warning with deprecated 'template' strategy
+    # Warning with deprecated 'template' strategy,
+    # plus an exception because there's no resulting mask
     img = np.random.RandomState(42).uniform(size=(9, 9, 5))
     img = Nifti1Image(img, np.eye(4))
     mask = NiftiMasker(mask_strategy='template')
-    with pytest.warns(UserWarning,
-                      match="Masking strategy 'template' is deprecated."):
-        mask.fit(img)
+    with pytest.warns(
+        UserWarning,
+        match="Masking strategy 'template' is deprecated."
+    ):
+        with pytest.raises(
+            ValueError,
+            match='The mask is invalid as it is empty'
+        ):
+            mask.fit(img)
 
 
 def test_compute_epi_mask():
@@ -367,11 +374,11 @@ def expected_mask(mask_args):
 def test_compute_brain_mask(strategy, mask_args, expected_mask):
     # Check masker for template masking strategy
     img = _get_random_img((9, 9, 5))
-    masker = NiftiMasker(mask_strategy=strategy,
-                         mask_args=mask_args)
+
+    masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)
     masker.fit(img)
-    np.testing.assert_array_equal(get_data(masker.mask_img_),
-                                  expected_mask)
+
+    np.testing.assert_array_equal(get_data(masker.mask_img_), expected_mask)
 
 
 def test_filter_and_mask_error():
