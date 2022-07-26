@@ -272,8 +272,8 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         else:
             self.affine_ = self.mask_img_.affine
 
-        # Load data in memory
-        data = get_data(self.mask_img_)
+        # Load data in memory, while also checking that mask is binary/valid
+        data, _ = masking._load_mask_img(self.mask_img_)
 
         # Infer the number of elements (voxels) in the mask
         self.n_elements_ = int(data.sum())
