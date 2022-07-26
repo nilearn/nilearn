@@ -131,7 +131,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         resampled first. After this, the images are resampled to the
         resampled mask.
 
-    runs : numpy array, optional
+    runs : :obj:`numpy.ndarray`, optional
         Add a run level to the preprocessing. Each run will be
         detrended independently. Must be a 1D array of n_samples elements.
     %(smoothing_fwhm)s
@@ -146,38 +146,38 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         False : Do not standardize the data.
         Default=False.
 
-    standardize_confounds : boolean, optional
+    standardize_confounds : :obj:`bool`, optional
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
         Default=True.
 
-    high_variance_confounds : boolean, optional
+    high_variance_confounds : :obj:`bool`, optional
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out. Default=False.
 
-    detrend : boolean, optional
+    detrend : :obj:`bool`, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details: :func:`nilearn.signal.clean`.
         Default=False.
 
-    low_pass : None or float, optional
+    low_pass : None or :obj:`float`, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details: :func:`nilearn.signal.clean`.
 
-    high_pass : None or float, optional
+    high_pass : None or :obj:`float`, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details: :func:`nilearn.signal.clean`.
 
-    t_r : float, optional
+    t_r : :obj:`float`, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details: :func:`nilearn.signal.clean`.
 
-    target_affine : 3x3 or 4x4 matrix, optional
+    target_affine : 3x3 or 4x4 :obj:`numpy.ndarray`, optional
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
 
-    target_shape : 3-tuple of integers, optional
+    target_shape : 3-:obj:`tuple` of :obj:`int`, optional
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
     %(mask_strategy)s
@@ -190,7 +190,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
 
         Default is 'background'.
 
-    mask_args : dict, optional
+    mask_args : :obj:`dict`, optional
         If mask is None, these are additional parameters passed to
         masking.compute_background_mask or masking.compute_epi_mask
         to fine-tune mask computation. Please see the related documentation
@@ -201,20 +201,20 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    memory : instance of joblib.Memory or string, optional
+    memory : instance of :obj:`joblib.Memory` or :obj:`str`, optional
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level : integer, optional
+    memory_level : :obj:`int`, optional
         Rough estimator of the amount of memory used by caching. Higher value
         means more memory for caching. Default=1.
 
-    verbose : integer, optional
+    verbose : :obj:`int`, optional
         Indicate the level of verbosity. By default, nothing is printed.
         Default=0.
 
-    reports : boolean, optional
+    reports : :obj:`bool`, optional
         If set to True, data is saved in order to produce a report.
         Default=True.
 
@@ -241,14 +241,28 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
     nilearn.signal.clean
 
     """
-    def __init__(self, mask_img=None, runs=None, smoothing_fwhm=None,
-                 standardize=False, standardize_confounds=True, detrend=False,
-                 high_variance_confounds=False, low_pass=None, high_pass=None,
-                 t_r=None, target_affine=None, target_shape=None,
-                 mask_strategy='background', mask_args=None,
-                 dtype=None, memory_level=1, memory=Memory(location=None),
-                 verbose=0, reports=True,
-                 ):
+    def __init__(
+        self,
+        mask_img=None,
+        runs=None,
+        smoothing_fwhm=None,
+        standardize=False,
+        standardize_confounds=True,
+        detrend=False,
+        high_variance_confounds=False,
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        target_affine=None,
+        target_shape=None,
+        mask_strategy='background',
+        mask_args=None,
+        dtype=None,
+        memory_level=1,
+        memory=Memory(location=None),
+        verbose=0,
+        reports=True,
+    ):
         # Mask is provided or computed
         self.mask_img = mask_img
         self.runs = runs
@@ -275,10 +289,13 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             'This report shows the input Nifti image overlaid '
             'with the outlines of the mask (in green). We '
             'recommend to inspect the report for the overlap '
-            'between the mask and its input image. ')
+            'between the mask and its input image. '
+        )
         self._report_content['warning_message'] = None
-        self._overlay_text = ('\n To see the input Nifti image before '
-                              'resampling, hover over the displayed image.')
+        self._overlay_text = (
+            '\n To see the input Nifti image before resampling, '
+            'hover over the displayed image.'
+        )
         self._shelving = False
 
     def generate_report(self):
@@ -286,7 +303,8 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         return generate_report(self)
 
     def _reporting(self):
-        """
+        """Load displays needed for report.
+
         Returns
         -------
         displays : list
@@ -296,14 +314,17 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         try:
             from nilearn import plotting
             import matplotlib.pyplot as plt
+
         except ImportError:
             with warnings.catch_warnings():
-                mpl_unavail_msg = ('Matplotlib is not imported! '
-                                   'No reports will be generated.')
+                mpl_unavail_msg = (
+                    'Matplotlib is not imported! '
+                    'No reports will be generated.'
+                )
                 warnings.filterwarnings('always', message=mpl_unavail_msg)
                 warnings.warn(
                     category=ImportWarning,
-                    message=mpl_unavail_msg
+                    message=mpl_unavail_msg,
                 )
                 return [None]
 
@@ -320,22 +341,31 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             if len(dim) == 4:
                 # compute middle image from 4D series for plotting
                 img = image.index_img(img, dim[-1] // 2)
+
         else:  # images were not provided to fit
-            msg = ("No image provided to fit in NiftiMasker. "
-                   "Setting image to mask for reporting.")
+            msg = (
+                'No image provided to fit in NiftiMasker. '
+                'Setting image to mask for reporting.'
+            )
             warnings.warn(msg)
             self._report_content['warning_message'] = msg
             img = mask
 
         # create display of retained input mask, image
         # for visual comparison
-        init_display = plotting.plot_img(img,
-                                         black_bg=False,
-                                         cmap='CMRmap_r')
+        init_display = plotting.plot_img(
+            img,
+            black_bg=False,
+            cmap='CMRmap_r',
+        )
         plt.close()
         if mask is not None:
-            init_display.add_contours(mask, levels=[.5], colors='g',
-                                      linewidths=2.5)
+            init_display.add_contours(
+                mask,
+                levels=[.5],
+                colors='g',
+                linewidths=2.5,
+            )
 
         if 'transform' not in self._reporting_data:
             return [init_display]
@@ -353,20 +383,28 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             else:  # images were not provided to fit
                 resampl_img = resampl_mask
 
-            final_display = plotting.plot_img(resampl_img,
-                                              black_bg=False,
-                                              cmap='CMRmap_r')
+            final_display = plotting.plot_img(
+                resampl_img,
+                black_bg=False,
+                cmap='CMRmap_r',
+            )
             plt.close()
-            final_display.add_contours(resampl_mask, levels=[.5],
-                                       colors='g', linewidths=2.5)
+            final_display.add_contours(
+                resampl_mask,
+                levels=[.5],
+                colors='g',
+                linewidths=2.5,
+            )
 
         return [init_display, final_display]
 
     def _check_fitted(self):
         if not hasattr(self, 'mask_img_'):
-            raise ValueError('It seems that %s has not been fitted. '
-                             'You must call fit() before calling transform().'
-                             % self.__class__.__name__)
+            raise ValueError(
+                f'It seems that {self.__class__.__name__} has not been '
+                'fitted. '
+                'You must call fit() before calling transform().'
+            )
 
     def fit(self, imgs=None, y=None):
         """Compute the mask corresponding to the data
@@ -378,24 +416,27 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
 
-        """
-        # y=None is for scikit-learn compatibility (unused here).
+        y : None
+            This parameter is unused. It is solely included for scikit-learn
+            compatibility.
 
+        """
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
-            print("[%s.fit] Loading data from %s" % (
-                self.__class__.__name__,
-                _utils._repr_niimgs(imgs, shorten=False)))
+            print(
+                f'[{self.__class__.__name__}.fit] '
+                f'Loading data from {_utils._repr_niimgs(imgs, shorten=False)}'
+            )
 
         # Compute the mask if not given by the user
         if self.mask_img is None:
-            mask_args = (self.mask_args if self.mask_args is not None
-                         else {})
+            mask_args = (self.mask_args if self.mask_args is not None else {})
             compute_mask = _get_mask_strategy(self.mask_strategy)
             if self.verbose > 0:
-                print("[%s.fit] Computing the mask" % self.__class__.__name__)
+                print(f'[{self.__class__.__name__}.fit] Computing the mask')
             self.mask_img_ = self._cache(compute_mask, ignore=['verbose'])(
-                imgs, verbose=max(0, self.verbose - 1), **mask_args)
+                imgs, verbose=max(0, self.verbose - 1), **mask_args
+            )
         else:
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
@@ -407,13 +448,15 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         # If resampling is requested, resample also the mask
         # Resampling: allows the user to change the affine, the shape or both
         if self.verbose > 0:
-            print("[%s.fit] Resampling mask" % self.__class__.__name__)
+            print(f'[{self.__class__.__name__}.fit] Resampling mask')
 
         self.mask_img_ = self._cache(image.resample_img)(
             self.mask_img_,
             target_affine=self.target_affine,
             target_shape=self.target_shape,
-            copy=False, interpolation='nearest')
+            copy=False,
+            interpolation='nearest',
+        )
 
         if self.target_affine is not None:  # resample image to target affine
             self.affine_ = self.target_affine
@@ -427,14 +470,17 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         self.n_elements_ = int(data.sum())
 
         if self.verbose > 10:
-            print("[%s.fit] Finished fit" % self.__class__.__name__)
+            print(f'[{self.__class__.__name__}.fit] Finished fit')
 
         if (self.target_shape is not None) or (self.target_affine is not None):
             if self.reports:
                 if imgs is not None:
                     resampl_imgs = self._cache(image.resample_img)(
-                        imgs, target_affine=self.affine_,
-                        copy=False, interpolation='nearest')
+                        imgs,
+                        target_affine=self.affine_,
+                        copy=False,
+                        interpolation='nearest',
+                    )
                 else:  # imgs not provided to fit
                     resampl_imgs = None
 
@@ -444,8 +490,13 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
 
         return self
 
-    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None,
-                              copy=True):
+    def transform_single_imgs(
+        self,
+        imgs,
+        confounds=None,
+        sample_mask=None,
+        copy=True,
+    ):
         """Apply mask, spatial and temporal preprocessing
 
         Parameters
@@ -455,7 +506,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             Images to process. It must boil down to a 4D image with scans
             number as last dimension.
 
-        confounds : CSV file or array-like or pandas DataFrame, optional
+        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, optional
             This parameter is passed to signal.clean. Please see the related
             documentation for details: :func:`nilearn.signal.clean`.
             shape: (number of scans, number of confounds)
@@ -466,12 +517,12 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             (remove volumes with high motion) and/or non-steady-state volumes.
             This parameter is passed to signal.clean.
 
-        copy : Boolean, optional
+        copy : :obj:`bool`, optional
             Indicates whether a copy is returned or not. Default=True.
 
         Returns
         -------
-        region_signals : 2D numpy.ndarray
+        region_signals : 2D :obj:`numpy.ndarray`
             Signal for each voxel inside the mask.
             shape: (number of scans, number of voxels)
 
@@ -492,18 +543,26 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             ],
         )
 
-        data = self._cache(_filter_and_mask,
-                           ignore=['verbose', 'memory', 'memory_level',
-                                   'copy'],
-                           shelve=self._shelving)(
-            imgs, self.mask_img_, params,
+        data = self._cache(
+            _filter_and_mask,
+            ignore=[
+                'verbose',
+                'memory',
+                'memory_level',
+                'copy',
+            ],
+            shelve=self._shelving,
+        )(
+            imgs,
+            self.mask_img_,
+            params,
             memory_level=self.memory_level,
             memory=self.memory,
             verbose=self.verbose,
             confounds=confounds,
             sample_mask=sample_mask,
             copy=copy,
-            dtype=self.dtype
+            dtype=self.dtype,
         )
 
         return data
