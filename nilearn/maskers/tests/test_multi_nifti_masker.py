@@ -190,11 +190,7 @@ def test_mask_strategy_errors():
         UserWarning,
         match="Masking strategy 'template' is deprecated."
     ):
-        with pytest.raises(
-            ValueError,
-            match='The mask is invalid as it is empty'
-        ):
-            mask.fit(imgs)
+        mask.fit(imgs)
 
 
 @pytest.mark.parametrize('strategy',

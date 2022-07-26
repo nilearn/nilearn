@@ -302,11 +302,7 @@ def test_mask_strategy_errors():
         UserWarning,
         match="Masking strategy 'template' is deprecated."
     ):
-        with pytest.raises(
-            ValueError,
-            match='The mask is invalid as it is empty'
-        ):
-            mask.fit(img)
+        mask.fit(img)
 
 
 def test_compute_epi_mask():
