@@ -1,8 +1,8 @@
-"""Test the nifti_region module
+"""Test nilearn.maskers.nifti_maps_masker.
 
-Functions in this file only test features added by the NiftiLabelsMasker class,
-non_overlappingt the underlying functions (clean(), img_to_signals_labels(),
-etc.).
+Functions in this file only test features added by the NiftiMapsMasker class,
+rather than the underlying functions (clean(), img_to_signals_labels(), etc.).
+
 See test_masking.py and test_signal.py for details.
 """
 
