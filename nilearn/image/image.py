@@ -716,7 +716,11 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         Reference image. The new image will be of the same type.
 
     data : :class:`numpy.ndarray`
-        Data to be stored in the image.
+        Data to be stored in the image. If data dtype is a boolean, then data
+        is cast to 'uint8' by default.
+
+    .. versionchanged:: 0.9.2dev
+        Changed default dtype casting of booleans from 'int8' to 'uint8'.
 
     affine : 4x4 :class:`numpy.ndarray`, optional
         Transformation matrix.
@@ -755,10 +759,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     if affine is None:
         affine = ref_niimg.affine
     if data.dtype == bool:
-        default_dtype = np.int8
-        if isinstance(ref_niimg, nibabel.freesurfer.mghformat.MGHImage):
-            default_dtype = np.uint8
-        data = as_ndarray(data, dtype=default_dtype)
+        data = as_ndarray(data, dtype=np.uint8)
     data = _downcast_from_int64_if_possible(data)
     header = None
     if copy_header:
