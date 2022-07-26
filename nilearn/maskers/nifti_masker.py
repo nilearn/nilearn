@@ -10,15 +10,8 @@ from functools import partial
 
 from joblib import Memory
 
-from .base_masker import BaseMasker, _filter_and_extract
-from .. import _utils
-from .. import image
-from .. import masking
-from .._utils import CacheMixin, fill_doc
-from .._utils.class_inspect import get_params
-from .._utils.niimg import img_data_dtype
-from .._utils.niimg_conversions import _check_same_fov
-from nilearn.image import get_data
+from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
+from nilearn import _utils, image, masking
 
 
 class _ExtractionFunctor(object):
@@ -28,8 +21,14 @@ class _ExtractionFunctor(object):
         self.mask_img_ = mask_img_
 
     def __call__(self, imgs):
-        return(masking.apply_mask(imgs, self.mask_img_,
-                                  dtype=img_data_dtype(imgs)), imgs.affine)
+        return(
+            masking.apply_mask(
+                imgs,
+                self.mask_img_,
+                dtype=_utils.niimg.img_data_dtype(imgs),
+            ),
+            imgs.affine,
+        )
 
 
 def _get_mask_strategy(strategy):
@@ -85,7 +84,7 @@ def _filter_and_mask(
     # Check whether resampling is truly necessary. If so, crop mask
     # as small as possible in order to speed up the process
 
-    if not _check_same_fov(imgs, mask_img_):
+    if not _utils.niimg_conversions._check_same_fov(imgs, mask_img_):
         parameters = copy_object(parameters)
         # now we can crop
         mask_img_ = image.crop_img(mask_img_, copy=False)
@@ -111,8 +110,8 @@ def _filter_and_mask(
     return data
 
 
-@fill_doc
-class NiftiMasker(BaseMasker, CacheMixin):
+@_utils.fill_doc
+class NiftiMasker(BaseMasker, _utils.CacheMixin):
     """Applying a mask to extract time-series from Niimg-like objects.
 
     NiftiMasker is useful when preprocessing (detrending, standardization,
@@ -481,9 +480,17 @@ class NiftiMasker(BaseMasker, CacheMixin):
         # Ignore the mask-computing params: they are not useful and will
         # just invalid the cache for no good reason
         # target_shape and target_affine are conveyed implicitly in mask_img
-        params = get_params(self.__class__, self,
-                            ignore=['mask_img', 'mask_args', 'mask_strategy',
-                                    '_sample_mask', 'sample_mask'])
+        params = _utils.class_inspect.get_params(
+            self.__class__,
+            self,
+            ignore=[
+                'mask_img',
+                'mask_args',
+                'mask_strategy',
+                '_sample_mask',
+                'sample_mask',
+            ],
+        )
 
         data = self._cache(_filter_and_mask,
                            ignore=['verbose', 'memory', 'memory_level',

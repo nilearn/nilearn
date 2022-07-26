@@ -11,14 +11,8 @@ from functools import partial
 
 from joblib import Memory, Parallel, delayed
 
-from .. import _utils
-from .. import image
-from .. import masking
-from .._utils import CacheMixin, fill_doc
-from .._utils.class_inspect import get_params
-from .._utils.niimg_conversions import _iter_check_niimg
-from .nifti_masker import NiftiMasker, _filter_and_mask
-from nilearn.image import get_data
+from nilearn import _utils, image, masking
+from nilearn.maskers.nifti_masker import NiftiMasker, _filter_and_mask
 
 
 def _get_mask_strategy(strategy):
@@ -51,8 +45,8 @@ def _get_mask_strategy(strategy):
                          "'wm-template'." % strategy)
 
 
-@fill_doc
-class MultiNiftiMasker(NiftiMasker, CacheMixin):
+@_utils.fill_doc
+class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
     """Class for masking of Niimg-like objects.
 
     MultiNiftiMasker is useful when dealing with image sets from multiple
@@ -326,12 +320,15 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             # Force resampling on first image
             target_fov = 'first'
 
-        niimg_iter = _iter_check_niimg(imgs_list, ensure_ndim=None,
-                                       atleast_4d=False,
-                                       target_fov=target_fov,
-                                       memory=self.memory,
-                                       memory_level=self.memory_level,
-                                       verbose=self.verbose)
+        niimg_iter = _utils.niimg_conversions._iter_check_niimg(
+            imgs_list,
+            ensure_ndim=None,
+            atleast_4d=False,
+            target_fov=target_fov,
+            memory=self.memory,
+            memory_level=self.memory_level,
+            verbose=self.verbose,
+        )
 
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs_list))
@@ -339,9 +336,16 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         # Ignore the mask-computing params: they are not useful and will
         # just invalidate the cache for no good reason
         # target_shape and target_affine are conveyed implicitly in mask_img
-        params = get_params(self.__class__, self,
-                            ignore=['mask_img', 'mask_args', 'mask_strategy',
-                                    'copy'])
+        params = _utils.class_inspect.get_params(
+            self.__class__,
+            self,
+            ignore=[
+                'mask_img',
+                'mask_args',
+                'mask_strategy',
+                'copy',
+            ],
+        )
 
         func = self._cache(_filter_and_mask,
                            ignore=['verbose', 'memory', 'memory_level',
