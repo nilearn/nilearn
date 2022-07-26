@@ -62,3 +62,4 @@ Changes
   separate steps (:gh:`3274` by `David G Ellis`_).
 - Private submodules, functions, and classes from the :mod:`~nilearn.decomposition` module now start with a "_" character to make it clear that they are not part of the public API (:gh:`3141` by `Nicolas Gensollen`_).
 - Convert references in ``nilearn/glm/regression.py`` and ``nilearn/glm/thresholding.py`` to use footcite/footbibliography (:gh:`3302` by `Ahmad Chamma`_).
+- Boolean input data in :func:`~image.new_img_like` now defaults to `np.uint8` instead of `np.int8` (:gh:`3286` by `Yasmin Mzayek`_).
