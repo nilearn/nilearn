@@ -1083,8 +1083,8 @@ def _check_views(views) -> list:
     correct.
 
     views : list
-        Any combination of string in {"anterior", "posterior", "medial", "lateral",
-        "dorsal", "ventral"} and / or pair of floats (elev, azim).
+        Any combination of string in {"anterior", "posterior", "medial", 
+        "lateral", "dorsal", "ventral"} and / or pair of floats (elev, azim).
 
     """
     invalid_view = any([not _check_view_is_valid(view) for view in views])
