@@ -154,7 +154,7 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
 
     Parameters
     ----------
-    seeds : list of triplets of coordinates in native space
+    seeds : :obj:`list` of triplets of coordinates in native space
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
 
