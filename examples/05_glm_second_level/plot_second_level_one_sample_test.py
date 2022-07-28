@@ -62,8 +62,11 @@ plt.show()
 ###############################################################################
 # Estimate second level model
 # ---------------------------
-# We define the input maps and the design matrix for the second level model
-# and fit it.
+# We wish to perform a one-sample test.
+# In order to do so, we need to create a design matrix that determines how
+# the analysis will be performed.
+# For a one-sample test, all we need to include in the design matrix is a
+# single column of ones, corresponding to the model intercept.
 import pandas as pd
 
 second_level_input = data['cmaps']
@@ -73,7 +76,7 @@ design_matrix = pd.DataFrame(
 )
 
 ###############################################################################
-# Model specification and fit.
+# Next, we specify the model and fit it.
 from nilearn.glm.second_level import SecondLevelModel
 
 second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
@@ -85,7 +88,10 @@ second_level_model = second_level_model.fit(
 ###############################################################################
 # To estimate the :term:`contrast` is very simple. We can just provide the
 # column name of the design matrix.
-z_map = second_level_model.compute_contrast(output_type='z_score')
+z_map = second_level_model.compute_contrast(
+    second_level_contrast='intercept',
+    output_type='z_score',
+)
 
 ###############################################################################
 # We threshold the second level contrast at uncorrected p < 0.001 and plot it.
