@@ -635,16 +635,16 @@ def non_parametric_inference(
         If list of Niimg-like objects then this is taken literally as Y
         for the model fit and design_matrix must be provided.
 
-    confounds : :obj:`pandas.DataFrame`, optional
+    confounds : :obj:`pandas.DataFrame` or None, optional
         Must contain a subject_label column. All other columns are
         considered as confounds and included in the model. If
         ``design_matrix`` is provided then this argument is ignored.
         The resulting second level design matrix uses the same column
-        names as in the given :class:`~pandas.DataFrame` for confounds.
+        names as in the given :obj:`~pandas.DataFrame` for confounds.
         At least two columns are expected, ``subject_label`` and at
         least one confound.
 
-    design_matrix : :class:`pandas.DataFrame`, optional
+    design_matrix : :obj:`pandas.DataFrame` or None, optional
         Design matrix to fit the :term:`GLM`. The number of rows
         in the design matrix must agree with the number of maps derived
         from ``second_level_input``.
