@@ -129,6 +129,10 @@ neg_log_pval = math_img(
 ###############################################################################
 # Now, we compute the (corrected) p-values with a permutation test.
 #
+# We will use :func:`~nilearn.glm.second_level.non_parametric_inference` for
+# this step, although :func:`~nilearn.mass_univariate.permuted_ols` could be
+# used as well (pending additional steps to mask and reformat the inputs).
+#
 # .. important::
 #   In this example, ``threshold`` is set to 0.001, which enables
 #   cluster-level inference.

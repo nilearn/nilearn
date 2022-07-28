@@ -59,8 +59,8 @@ Refer to the example :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_thres
 to applying FPR, FDR and FWER corrections.
 These corrections are applied using the :func:`nilearn.glm.threshold_stats_img` function.
 
-You can additionally employ a non-parametric correction procedure using
-:func:`~nilearn.glm.second_level.non_parametric_inference`.
+You can additionally employ a non-parametric correction procedure using either
+:func:`nilearn.glm.second_level.non_parametric_inference` or :func:`nilearn.mass_univariate.permuted_ols`.
 Refer to the example :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_one_sample_test.py`
 for a practical use of this function.
 
