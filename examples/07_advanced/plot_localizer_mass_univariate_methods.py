@@ -60,6 +60,7 @@ fmri_masked = nifti_masker.fit_transform(contrast_map_filenames)
 ##############################################################################
 # Anova (parametric F-scores)
 from sklearn.feature_selection import f_regression
+
 _, pvals_anova = f_regression(fmri_masked, tested_var, center=True)
 pvals_anova *= fmri_masked.shape[1]
 pvals_anova[np.isnan(pvals_anova)] = 1
@@ -74,8 +75,14 @@ neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
 #
 # This method will produce both voxel-level FWE-corrected -log10 p-values and
 # :term:`TFCE`-based FWE-corrected -log10 p-values.
+#
+# .. note::
+#   :func:`~nilearn.mass_univariate.permuted_ols` can support a wide range
+#   of analysis designs, depending on the ``tested_var``.
+#   For example, if you wished to perform a one-sample test, you could
+#   simply provide an array of ones (e.g., ``np.ones(n_samples)``).
 ols_outputs = permuted_ols(
-    tested_var,
+    tested_var,  # this is equivalent to the design matrix, in array form
     fmri_masked,
     model_intercept=True,
     masker=nifti_masker,
