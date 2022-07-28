@@ -41,7 +41,7 @@ a command prompt::
     pip install -U --user nilearn
 
 More detailed instructions are available at
-https://nilearn.github.io/introduction.html#installation.
+https://nilearn.github.io/stable/introduction.html#installation.
 
 Office Hours
 ============
