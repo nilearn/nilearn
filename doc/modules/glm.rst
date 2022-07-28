@@ -1,5 +1,7 @@
+.. _stats_ref:
+
 :mod:`nilearn.glm`: Generalized Linear Models
-================================================
+=============================================
 
 .. automodule:: nilearn.glm
    :no-members:
@@ -41,7 +43,7 @@
 
 
 :mod:`nilearn.glm.first_level`
---------------------------------------
+------------------------------
 
 .. automodule:: nilearn.glm.first_level
    :no-members:
@@ -79,7 +81,7 @@
     spm_time_derivative
 
 :mod:`nilearn.glm.second_level`
----------------------------------------
+-------------------------------
 
 .. automodule:: nilearn.glm.second_level
    :no-members:

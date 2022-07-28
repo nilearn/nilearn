@@ -1,3 +1,5 @@
+.. _connectome_ref:
+
 :mod:`nilearn.connectome`: Functional Connectivity
 ==================================================
 

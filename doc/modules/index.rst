@@ -17,7 +17,7 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    glm.rst
    image.rst
    interfaces.rst
-   input_data.rst
+   maskers.rst
    masking.rst
    mass_univariate.rst
    plotting.rst

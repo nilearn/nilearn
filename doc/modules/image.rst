@@ -1,3 +1,5 @@
+.. _image_ref:
+
 :mod:`nilearn.image`: Image Processing and Resampling Utilities
 ===============================================================
 

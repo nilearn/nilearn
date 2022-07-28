@@ -1,9 +1,21 @@
+.. _reporting_ref:
+
 :mod:`nilearn.reporting`: Reporting Functions
 =============================================
 
 .. automodule:: nilearn.reporting
    :no-members:
    :no-inherited-members:
+
+**Classes**:
+
+.. currentmodule:: nilearn.reporting
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   HTMLReport
 
 **Functions**:
 

@@ -1,3 +1,5 @@
+.. _signal_ref:
+
 :mod:`nilearn.signal`: Preprocessing Time Series
 ================================================
 

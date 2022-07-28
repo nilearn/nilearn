@@ -1,3 +1,5 @@
+.. _masking_ref:
+
 :mod:`nilearn.masking`: Data Masking Utilities
 ==============================================
 

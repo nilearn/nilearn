@@ -1,5 +1,5 @@
 :mod:`nilearn.surface`: Manipulating Surface Data
-===================================================
+=================================================
 
 .. automodule:: nilearn.surface
    :no-members:

@@ -1,3 +1,5 @@
+.. _decoding_ref:
+
 :mod:`nilearn.decoding`: Decoding
 =================================
 

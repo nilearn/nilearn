@@ -1,3 +1,5 @@
+.. _decomposition_ref:
+
 :mod:`nilearn.decomposition`: Multivariate Decompositions
 =========================================================
 

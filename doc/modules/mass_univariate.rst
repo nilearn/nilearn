@@ -1,5 +1,5 @@
 :mod:`nilearn.mass_univariate`: Mass-Univariate Analysis
-=========================================================
+========================================================
 
 .. automodule:: nilearn.mass_univariate
    :no-members:

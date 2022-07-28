@@ -27,6 +27,11 @@ div.sphx-glr-download-link-note {
   visibility: hidden;
 }
 
+/* Output images should take all width available */
+ul.sphx-glr-horizontal li img {
+  max-width: 100%;
+}
+
 /* Scripts outputs */
 .sphx-glr-script-out {
   /* Use Furo color variables to handle light/dark modes */

@@ -1,5 +1,7 @@
+.. _plotting_ref:
+
 :mod:`nilearn.plotting`: Plotting Brain Data
-================================================
+============================================
 
 .. automodule:: nilearn.plotting
    :no-members:

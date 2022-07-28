@@ -1,7 +1,9 @@
-:mod:`nilearn.input_data`: Loading and Processing Files Easily
-==============================================================
+.. _maskers_ref:
 
-.. automodule:: nilearn.input_data
+:mod:`nilearn.maskers`: Extracting Signals from Brain Images
+============================================================
+
+.. automodule:: nilearn.maskers
    :no-members:
    :no-inherited-members:
 
@@ -9,12 +11,13 @@
 
 **Classes**:
 
-.. currentmodule:: nilearn.input_data
+.. currentmodule:: nilearn.maskers
 
 .. autosummary::
    :toctree: generated/
    :template: class.rst
 
+   BaseMasker
    NiftiMasker
    MultiNiftiMasker
    NiftiLabelsMasker

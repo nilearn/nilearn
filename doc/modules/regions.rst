@@ -31,3 +31,4 @@
    RegionExtractor
    Parcellations
    ReNA
+   HierarchicalKMeans
