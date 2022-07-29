@@ -407,7 +407,7 @@ plt.show()
 # For this we rely on the so-called `high_variance_confounds`_
 # routine of Nilearn.
 #
-# .. _high_variance_confounds: https://nilearn.github.io/modules/generated/nilearn.image.high_variance_confounds.html
+# .. _high_variance_confounds: https://nilearn.github.io/stable/modules/generated/nilearn.image.high_variance_confounds.html # noqa: E501
 
 
 from nilearn.image import high_variance_confounds

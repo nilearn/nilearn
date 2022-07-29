@@ -1011,7 +1011,7 @@ def plot_glass_brain(stat_map_img,
         absolute value will be used (rendering positive and negative
         values in the same manner). If set to false the sign of the
         maximum intensity will be represented with different colors.
-        See http://nilearn.github.io/auto_examples/01_plotting/plot_demo_glass_brain_extensive.html
+        See https://nilearn.github.io/stable/auto_examples/01_plotting/plot_demo_glass_brain_extensive.html # noqa: E501
         for examples. Default=True.
     %(symmetric_cbar)s
         Default='auto'.
