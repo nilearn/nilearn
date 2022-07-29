@@ -22,8 +22,7 @@
   HAL_VERSION = {v1},
 }
 
-
-@ARTICLE{Allen2011baseline,
+@article{Allen2011baseline,
 	AUTHOR={Allen, Elena and Erhardt, Erik and Damaraju, Eswar and Gruner, William and Segall, Judith and Silva, Rogers and Havlicek, Martin and Rachakonda, Srinivas and Fries, Jill and Kalyanam, Ravi and Michael, Andrew and Caprihan, Arvind and Turner, Jessica and Eichele, Tom and Adelsheim, Steven and Bryan, Angela and Bustillo, Juan and Clark, Vincent and Feldstein Ewing, Sarah and Filbey, Francesca and Ford, Corey and Hutchison, Kent and Jung, Rex and Kiehl, Kent and Kodituwakku, Piyadasa and Komesu, Yuko and Mayer, Andrew and Pearlson, Godfrey and Phillips, John and Sadek, Joseph and Stevens, Michael and Teuscher, Ursina and Thoma, Robert and Calhoun, Vince},
 	TITLE={A Baseline for the Multivariate Comparison of Resting-State Networks},
 	JOURNAL={Frontiers in Systems Neuroscience},
@@ -51,8 +50,7 @@
     year = {2001}
 }
 
-
-@INPROCEEDINGS{Baldassarre2012,
+@inproceedings{Baldassarre2012,
   author={Baldassarre, Luca and Mourao-Miranda, Janaina and Pontil, Massimiliano},
   booktitle={2012 Second International Workshop on Pattern Recognition in NeuroImaging},
   title={Structured Sparsity Models for Brain Decoding from fMRI Data},
@@ -63,7 +61,6 @@
   doi={10.1109/PRNI.2012.31},
   url = {http://www0.cs.ucl.ac.uk/staff/M.Pontil/reading/neurosparse_prni.pdf},
 }
-
 
 @article{BEHZADI200790,
 	title = {A component based noise correction method (CompCor) for BOLD and perfusion based fMRI},
@@ -79,7 +76,7 @@
 	abstract = {A component based method (CompCor) for the reduction of noise in both blood oxygenation level-dependent (BOLD) and perfusion-based functional magnetic resonance imaging (fMRI) data is presented. In the proposed method, significant principal components are derived from noise regions-of-interest (ROI) in which the time series data are unlikely to be modulated by neural activity. These components are then included as nuisance parameters within general linear models for BOLD and perfusion-based fMRI time series data. Two approaches for the determination of the noise ROI are considered. The first method uses high-resolution anatomical data to define a region of interest composed primarily of white matter and cerebrospinal fluid, while the second method defines a region based upon the temporal standard deviation of the time series data. With the application of CompCor, the temporal standard deviation of resting-state perfusion and BOLD data in gray matter regions was significantly reduced as compared to either no correction or the application of a previously described retrospective image based correction scheme (RETROICOR). For both functional perfusion and BOLD data, the application of CompCor significantly increased the number of activated voxels as compared to no correction. In addition, for functional BOLD data, there were significantly more activated voxels detected with CompCor as compared to RETROICOR. In comparison to RETROICOR, CompCor has the advantage of not requiring external monitoring of physiological fluctuations.}
 	}
 
-@INPROCEEDINGS{Bellec2013Mining,
+@inproceedings{Bellec2013Mining,
 	author={Bellec, Pierre},
 	booktitle={2013 International Workshop on Pattern Recognition in Neuroimaging},
 	title={Mining the Hierarchy of Resting-State Brain Networks: Selection of Representative Clusters in a Multiscale Structure},
@@ -109,7 +106,6 @@
 	abstract = {A variety of methods have been developed to identify brain networks with spontaneous, coherent activity in resting-state functional magnetic resonance imaging (fMRI). We propose here a generic statistical framework to quantify the stability of such resting-state networks (RSNs), which was implemented with k-means clustering. The core of the method consists in bootstrapping the available datasets to replicate the clustering process a large number of times and quantify the stable features across all replications. This bootstrap analysis of stable clusters (BASC) has several benefits: (1) it can be implemented in a multi-level fashion to investigate stable RSNs at the level of individual subjects and at the level of a group; (2) it provides a principled measure of RSN stability; and (3) the maximization of the stability measure can be used as a natural criterion to select the number of RSNs. A simulation study validated the good performance of the multi-level BASC on purely synthetic data. Stable networks were also derived from a real resting-state study for 43 subjects. At the group level, seven RSNs were identified which exhibited a good agreement with the previous findings from the literature. The comparison between the individual and group-level stability maps demonstrated the capacity of BASC to establish successful correspondences between these two levels of analysis and at the same time retain some interesting subject-specific characteristics, e.g. the specific involvement of subcortical regions in the visual and fronto-parietal networks for some subjects.}
 }
 
-
 @article{Ciric2017,
 	title = {Benchmarking of participant-level confound regression strategies for the control of motion artifact in studies of functional connectivity},
 	volume = {154},
@@ -135,7 +131,6 @@
   publisher={Elsevier}
 }
 
-
 @article {Clarke4766,
 	author = {Clarke, Alex and Tyler, Lorraine K.},
 	title = {Object-Specific Semantic Coding in Human Perirhinal Cortex},
@@ -152,8 +147,7 @@
 	journal = {Journal of Neuroscience}
 }
 
-
-@InProceedings{Collins1999algorithm,
+@inproceedings{Collins1999algorithm,
 	author="Collins, D. Louis
 	and Zijdenbos, Alex P.
 	and Baar{\'e}, Wim F. C.
@@ -171,7 +165,6 @@
 	isbn="978-3-540-48714-2"
 }
 
-
 @article{craddock2012whole,
 	author = {Craddock, R. Cameron and James, G.Andrew and Holtzheimer III, Paul E. and Hu, Xiaoping P. and Mayberg, Helen S.},
 	title = {A whole brain fMRI atlas generated via spatially constrained spectral clustering},
@@ -186,7 +179,6 @@
 	abstract = {Abstract Connectivity analyses and computational modeling of human brain function from fMRI data frequently require the specification of regions of interests (ROIs). Several analyses have relied on atlases derived from anatomical or cyto-architectonic boundaries to specify these ROIs, yet the suitability of atlases for resting state functional connectivity (FC) studies has yet to be established. This article introduces a data-driven method for generating an ROI atlas by parcellating whole brain resting-state fMRI data into spatially coherent regions of homogeneous FC. Several clustering statistics are used to compare methodological trade-offs as well as determine an adequate number of clusters. Additionally, we evaluate the suitability of the parcellation atlas against four ROI atlases (Talairach and Tournoux, Harvard-Oxford, Eickoff-Zilles, and Automatic Anatomical Labeling) and a random parcellation approach. The evaluated anatomical atlases exhibit poor ROI homogeneity and do not accurately reproduce FC patterns present at the voxel scale. In general, the proposed functional and random parcellations perform equivalently for most of the metrics evaluated. ROI size and hence the number of ROIs in a parcellation had the greatest impact on their suitability for FC analysis. With 200 or fewer ROIs, the resulting parcellations consist of ROIs with anatomic homology, and thus offer increased interpretability. Parcellation results containing higher numbers of ROIs (600 or 1,000) most accurately represent FC patterns present at the voxel scale and are preferable when interpretability can be sacrificed for accuracy. The resulting atlases and clustering software have been made publicly available at: http://www.nitrc.org/projects/cluster\_roi/. Hum Brain Mapp, 2012. © 2011 Wiley Periodicals, Inc},
 	year = {2012}
 }
-
 
 @article{DADI2020117126,
 	title = {Fine-grain atlases of functional modes for fMRI analysis},
@@ -255,7 +247,6 @@
   HAL_VERSION = {v1},
 }
 
-
 @inproceedings{dohmatob:hal-00991743,
   TITLE = {{Benchmarking solvers for TV-l1 least-squares and logistic regression in brain imaging}},
   AUTHOR = {Dohmatob, Elvis and Gramfort, Alexandre and Thirion, Bertrand and Varoquaux, Ga{\"e}l},
@@ -270,7 +261,6 @@
   HAL_ID = {hal-00991743},
   HAL_VERSION = {v1},
 }
-
 
 @article {Dosenbach20101358,
 	author = {Dosenbach, Nico U. F. and Nardos, Binyam and Cohen, Alexander L. and Fair, Damien A. and Power, Jonathan D. and Church, Jessica A. and Nelson, Steven M. and Wig, Gagan S. and Vogel, Alecia C. and Lessov-Schlaggar, Christina N. and Barnes, Kelly Anne and Dubis, Joseph W. and Feczko, Eric and Coalson, Rebecca S. and Pruett, John R. and Barch, Deanna M. and Petersen, Steven E. and Schlaggar, Bradley L.},
@@ -301,7 +291,6 @@
 	journal = {arXiv:1206.3249 [cs, stat]},
 	primaryclass = {cs, stat}
 }
-
 
 @article{ETZEL2013261,
     title = {Searchlight analysis: Promise, pitfalls, and potential},
@@ -348,7 +337,6 @@
 	year = {1999}
 }
 
-
 @article{Fischl2004Automatically,
 	author = {Fischl, Bruce and van der Kouwe, André and Destrieux, Christophe and Halgren, Eric and Ségonne, Florent and Salat, David H. and Busa, Evelina and Seidman, Larry J. and Goldstein, Jill and Kennedy, David and Caviness, Verne and Makris, Nikos and Rosen, Bruce and Dale, Anders M.},
 	title = "{Automatically Parcellating the Human Cerebral Cortex}",
@@ -381,7 +369,6 @@
     title = {{The design of experiments. 1935}},
     year = 1935
 }
-
 
 @article{Fletcher2007,
 	title = {Riemannian geometry for the statistical analysis of diffusion tensor data},
@@ -455,7 +442,6 @@
     abstract = {Tests of significance are often made in situations where the standard assumptions underlying the probability calculations do not hold. As a result, the reported significance levels become difficult to interpret. This article sketches an alternative interpretation of a reported significance level, valid in considerable generality. This level locates the given data set within the spectrum of other data sets derived from the given one by an appropriate class of transformations. If the null hypothesis being tested holds, the derived data sets should be equivalent to the original one. Thus, a small reported significance level indicates an unusual data set. This development parallels that of randomization tests, but there is a crucial technical difference: our approach involves permuting observed residuals; the classical randomization approach involves permuting unobservable, or perhaps nonexistent, stochastic disturbance terms.}
 }
 
-
 @article{Friston1994,
 	author = {Friston, K. J. and Holmes, A. P. and Worsley, K. J. and Poline, J.-P. and Frith, C. D. and Frackowiak, R. S. J.},
 	title = {Statistical parametric maps in functional imaging: A general linear approach},
@@ -471,7 +457,7 @@
 	year = {1994}
 }
 
-@ARTICLE{Gorgolewski2015neurovault,
+@article{Gorgolewski2015neurovault,
 	AUTHOR={Gorgolewski, Krzysztof J. and Varoquaux, Gael and Rivera, Gabriel and Schwarz, Yannick and Ghosh, Satrajit S. and Maumet, Camille and Sochat, Vanessa V. and Nichols, Thomas E. and Poldrack, Russell A. and Poline, Jean-Baptiste and Yarkoni, Tal and Margulies, Daniel S.},
 	TITLE={NeuroVault.org: a web-based repository for collecting and sharing unthresholded statistical maps of the human brain},
 	JOURNAL={Frontiers in Neuroinformatics},
@@ -483,7 +469,6 @@
 	ISSN={1662-5196},
 	ABSTRACT={Here we present NeuroVault—a web based repository that allows researchers to store, share, visualize, and decode statistical maps of the human brain. NeuroVault is easy to use and employs modern web technologies to provide informative visualization of data without the need to install additional software. In addition, it leverages the power of the Neurosynth database to provide cognitive decoding of deposited maps. The data are exposed through a public REST API enabling other services and tools to take advantage of it. NeuroVault is a new resource for researchers interested in conducting meta- and coactivation analyses.}
 }
-
 
 @inproceedings{gramfort:hal-00839984,
   title = {{Identifying predictive regions from fMRI with TV-L1 prior}},
@@ -523,7 +508,6 @@ url = {https://www.sciencedirect.com/science/article/pii/S1053811912012487},
 author = {Logan Grosenick and Brad Klingenberg and Kiefer Katovich and Brian Knutson and Jonathan E. Taylor},
 abstract = {Multivariate machine learning methods are increasingly used to analyze neuroimaging data, often replacing more traditional “mass univariate” techniques that fit data one voxel at a time. In the functional magnetic resonance imaging (fMRI) literature, this has led to broad application of “off-the-shelf” classification and regression methods. These generic approaches allow investigators to use ready-made algorithms to accurately decode perceptual, cognitive, or behavioral states from distributed patterns of neural activity. However, when applied to correlated whole-brain fMRI data these methods suffer from coefficient instability, are sensitive to outliers, and yield dense solutions that are hard to interpret without arbitrary thresholding. Here, we develop variants of the Graph-constrained Elastic-Net (GraphNet), a fast, whole-brain regression and classification method developed for spatially and temporally correlated data that automatically yields interpretable coefficient maps (Grosenick et al., 2009b). GraphNet methods yield sparse but structured solutions by combining structured graph constraints (based on knowledge about coefficient smoothness or connectivity) with a global sparsity-inducing prior that automatically selects important variables. Because GraphNet methods can efficiently fit regression or classification models to whole-brain, multiple time-point data sets and enhance classification accuracy relative to volume-of-interest (VOI) approaches, they eliminate the need for inherently biased VOI analyses and allow whole-brain fitting without the multiple comparison problems that plague mass univariate and roaming VOI (“searchlight”) methods. As fMRI data are unlikely to be normally distributed, we (1) extend GraphNet to include robust loss functions that confer insensitivity to outliers, (2) equip them with “adaptive” penalties that asymptotically guarantee correct variable selection, and (3) develop a novel sparse structured Support Vector GraphNet classifier (SVGN). When applied to previously published data (Knutson et al., 2007), these efficient whole-brain methods significantly improved classification accuracy over previously reported VOI-based analyses on the same data (Grosenick et al., 2008, Knutson et al., 2007) while discovering task-related regions not documented in the original VOI approach. Critically, GraphNet estimates fit to the Knutson et al. (2007) data generalize well to out-of-sample data collected more than three years later on the same task but with different subjects and stimuli (Karmarkar et al., submitted for publication). By enabling robust and efficient selection of important voxels from whole-brain data taken over multiple time points (>100,000 “features”), these methods enable data-driven selection of brain areas that accurately predict single-trial behavior within and across individuals.}
 }
-
 
 @article {Haxby2425,
 	author = {Haxby, James V. and Gobbini, M. Ida and Furey, Maura L. and Ishai, Alumit and Schouten, Jennifer L. and Pietrini, Pietro},
@@ -604,7 +588,6 @@ abstract = {Multivariate machine learning methods are increasingly used to analy
 	abstract = {Multivariate pattern analysis (MVPA) has recently received increasing attention in functional neuroimaging due to its ability to decode mental states from fMRI signals. However, questions remain regarding both the empirical and conceptual relationships between results from MVPA and standard univariate analyses. In the current study, whole-brain univariate and searchlight MVPAs of parametric manipulations of monetary gain and loss in a decision making task (Tom et al., 2007) were compared to identify the differences in the results across these methods and the implications for understanding the underlying mental processes. The MVPA and univariate results did identify some overlapping regions in whole brain analyses. However, an analysis of consistency revealed that in many regions the effect size estimates obtained from MVPA and univariate analysis were uncorrelated. Moreover, comparison of sensitivity showed a general trend towards greater sensitivity to task manipulations by MVPA compared to univariate analysis. These results demonstrate that MVPA methods may provide a different view of the functional organization of mental processing compared to univariate analysis, wherein MVPA is more sensitive to distributed coding of information whereas univariate analysis is more sensitive to global engagement in ongoing tasks. The results also highlight the need for better ways to integrate these methods.}
 }
 
-
 @article{KAHNT2011549,
     title = {Perceptual Learning and Decision-Making in Human Medial Frontal Cortex},
     journal = {Neuron},
@@ -620,7 +603,6 @@ abstract = {Multivariate machine learning methods are increasingly used to analy
 The dominant view that perceptual learning is accompanied by changes in early sensory representations has recently been challenged. Here we tested the idea that perceptual learning can be accounted for by reinforcement learning involving changes in higher decision-making areas. We trained subjects on an orientation discrimination task involving feedback over 4 days, acquiring fMRI data on the first and last day. Behavioral improvements were well explained by a reinforcement learning model in which learning leads to enhanced readout of sensory information, thereby establishing noise-robust representations of decision variables. We find stimulus orientation encoded in early visual and higher cortical regions such as lateral parietal cortex and anterior cingulate cortex (ACC). However, only activity patterns in the ACC tracked changes in decision variables during learning. These results provide strong evidence for perceptual learning-related changes in higher order areas and suggest that perceptual and reward learning are based on a common neurobiological mechanism.}
 }
 
-
 @article{Kriegeskorte3863,
 	author = {Kriegeskorte, Nikolaus and Goebel, Rainer and Bandettini, Peter},
 	title = {Information-based functional brain mapping},
@@ -635,7 +617,6 @@ The dominant view that perceptual learning is accompanied by changes in early se
 	URL = {https://www.pnas.org/content/103/10/3863},
 	journal = {Proceedings of the National Academy of Sciences}
 }
-
 
 @article{Laird2011behavioral,
 	author = {Laird, Angela R. and Fox, P. Mickle and Eickhoff, Simon B. and Turner, Jessica A. and Ray, Kimberly L. and McKay, D. Reese and Glahn, David C. and Beckmann, Christian F. and Smith, Stephen M. and Fox, Peter T.},
@@ -711,7 +692,6 @@ The dominant view that perceptual learning is accompanied by changes in early se
     eprint = {https://direct.mit.edu/jocn/article-pdf/19/9/1498/1756878/jocn.2007.19.9.1498.pdf},
 }
 
-
 @article{michel:inria-00563468,
   TITLE = {{Total variation regularization for fMRI-based prediction of behaviour.}},
   AUTHOR = {Michel, Vincent and Gramfort, Alexandre and Varoquaux, Ga{\"e}l and Eger, Evelyn and Thirion, Bertrand},
@@ -728,7 +708,6 @@ The dominant view that perceptual learning is accompanied by changes in early se
   HAL_ID = {inria-00563468},
   HAL_VERSION = {v1},
 }
-
 
 @article{MIYAWAKI2008915,
 	title = {Visual Image Reconstruction from Human Brain Activity using a Combination of Multiscale Local Image Decoders},
@@ -766,7 +745,7 @@ The dominant view that perceptual learning is accompanied by changes in early se
   publisher={Elsevier}
 }
 
-@Article{Naselaris2011,
+@article{Naselaris2011,
     author={Naselaris, Thomas and Kay, Kendrick N. and Nishimoto, Shinji and Gallant, Jack L.},
     title={Encoding and decoding in fMRI},
     journal={NeuroImage},
@@ -786,7 +765,7 @@ The dominant view that perceptual learning is accompanied by changes in early se
     language={eng}
 }
 
-@ARTICLE{Nielsen2013Multisite,
+@article{Nielsen2013Multisite,
 	AUTHOR={Nielsen, Jared and Zielinski, Brandon and Fletcher, P and Alexander, Andrew and Lange, Nicholas and Bigler, Erin and Lainhart, Janet and Anderson, Jeffrey},
 	TITLE={Multisite functional connectivity MRI classification of autism: ABIDE results},
 	JOURNAL={Frontiers in Human Neuroscience},
@@ -799,8 +778,7 @@ The dominant view that perceptual learning is accompanied by changes in early se
 	ABSTRACT={Background: Systematic differences in functional connectivity MRI metrics have been consistently observed in autism, with predominantly decreased cortico-cortical connectivity. Previous attempts at single subject classification in high-functioning autism using whole brain point-to-point functional connectivity have yielded about 80% accurate classification of autism vs. control subjects across a wide age range. We attempted to replicate the method and results using the Autism Brain Imaging Data Exchange (ABIDE) including resting state fMRI data obtained from 964 subjects and 16 separate international sites.Methods: For each of 964 subjects, we obtained pairwise functional connectivity measurements from a lattice of 7266 regions of interest covering the gray matter (26.4 million “connections”) after preprocessing that included motion and slice timing correction, coregistration to an anatomic image, normalization to standard space, and voxelwise removal by regression of motion parameters, soft tissue, CSF, and white matter signals. Connections were grouped into multiple bins, and a leave-one-out classifier was evaluated on connections comprising each set of bins. Age, age-squared, gender, handedness, and site were included as covariates for the classifier.Results: Classification accuracy significantly outperformed chance but was much lower for multisite prediction than for previous single site results. As high as 60% accuracy was obtained for whole brain classification, with the best accuracy from connections involving regions of the default mode network, parahippocampaland fusiform gyri, insula, Wernicke Area, and intraparietal sulcus. The classifier score was related to symptom severity, social function, daily living skills, and verbal IQ. Classification accuracy was significantly higher for sites with longer BOLD imaging times.Conclusions: Multisite functional connectivity classification of autism outperformed chance using a simple leave-one-out classifier, but exhibited poorer accuracy than for single site results. Attempts to use multisite classifiers will likely require improved classification algorithms, longer BOLD imaging times, and standardized acquisition parameters for possible future clinical utility.}
 }
 
-
-@ARTICLE{Nooner2012NKI,
+@article{Nooner2012NKI,
 	AUTHOR={Nooner, Kate and Colcombe, Stanley and Tobe, Russell and Mennes, Maarten and Benedict, Melissa and Moreno, Alexis and Panek, Laura and Brown, Shaquanna and Zavitz, Stephen and Li, Qingyang and Sikka, Sharad and Gutman, David and Bangaru, Saroja and Schlachter, Rochelle Tziona and Kamiel, Stephanie and Anwar, Ayesha and Hinz, Caitlin and Kaplan, Michelle and Rachlin, Anna and Adelsberg, Samantha and Cheung, Brian and Khanuja, Ranjit and Yan, Chaogan and Craddock, Cameron and Calhoun, Vincent and Courtney, William and King, Margaret and Wood, Dylan and Cox, Christine and Kelly, Clare and DiMartino, Adriana and Petkova, Eva and Reiss, Philip and Duan, Nancy and Thompsen, Dawn and Biswal, Bharat and Coffey, Barbara and Hoptman, Matthew and Javitt, Daniel and Pomara, Nunzio and Sidtis, John and Koplewicz, Harold and Castellanos, Francisco and Leventhal, Bennett and Milham, Michael},
 	TITLE={The NKI-Rockland Sample: A Model for Accelerating the Pace of Discovery Science in Psychiatry},
 	JOURNAL={Frontiers in Neuroscience},
@@ -841,7 +819,7 @@ The dominant view that perceptual learning is accompanied by changes in early se
 	pages = {415--436},
 }
 
-@Article{Pauli2018probabilistic,
+@article{Pauli2018probabilistic,
 	author={Pauli, Wolfgang M.
 	and Nili, Amanda N.
 	and Tyszka, J. Michael},
@@ -859,7 +837,7 @@ The dominant view that perceptual learning is accompanied by changes in early se
 	url={https://doi.org/10.1038/sdata.2018.63}
 }
 
-@Article{Pinel2007fast,
+@article{Pinel2007fast,
 	title={Fast reproducible identification and large-scale databasing of individual functional cognitive networks},
 	journal={BMC Neuroscience},
 	volume={8},
@@ -874,7 +852,6 @@ The dominant view that perceptual learning is accompanied by changes in early se
 	and Dehaene, Stanislas},
 	abstract = {Although cognitive processes such as reading and calculation are associated with reproducible cerebral networks, inter-individual variability is considerable. Understanding the origins of this variability will require the elaboration of large multimodal databases compiling behavioral, anatomical, genetic and functional neuroimaging data over hundreds of subjects. With this goal in mind, we designed a simple and fast acquisition procedure based on a 5-minute functional magnetic resonance imaging (fMRI) sequence that can be run as easily and as systematically as an anatomical scan, and is therefore used in every subject undergoing fMRI in our laboratory. This protocol captures the cerebral bases of auditory and visual perception, motor actions, reading, language comprehension and mental calculation at an individual level.}
 }
-
 
 @article{poldrack_phenome-wide_2016,
 	title = {A phenome-wide examination of neural and cognitive function},
@@ -891,7 +868,6 @@ The dominant view that perceptual learning is accompanied by changes in early se
 	pages = {160110},
 }
 
-
 @article{POWER2017150,
 	title = {A simple but useful way to assess fMRI scan qualities},
 	journal = {NeuroImage},
@@ -906,7 +882,7 @@ The dominant view that perceptual learning is accompanied by changes in early se
 	abstract = {This short “how to” article describes a plot I find useful for assessing fMRI data quality. I discuss the reasoning behind the plot and how it is constructed. I create the plot in scans from several publicly available datasets to illustrate different kinds of fMRI signal variance, ranging from thermal noise to motion artifacts to respiratory-related signals. I also show how the plot can be used to understand the variance removed during denoising. Code to make the plot is provided with the article, and supplemental movies show plots for hundreds of additional subjects.}
 }
 
-@Article{Power2011Functional,
+@article{Power2011Functional,
 	author={Power, Jonathan D.
 	and Cohen, Alexander L.
 	and Nelson, Steven M.
@@ -933,7 +909,6 @@ The dominant view that perceptual learning is accompanied by changes in early se
 	url={https://doi.org/10.1016/j.neuron.2011.09.006}
 }
 
-
 @article{Power2012,
 	title = {Spurious but systematic correlations in functional connectivity {MRI} networks arise from subject motion},
 	volume = {59},
@@ -950,7 +925,6 @@ The dominant view that perceptual learning is accompanied by changes in early se
 	keywords = {{FMRI}, Resting state, Artifact, Motion, Noise, Movement, {FcMRI}, Network},
 }
 
-
 @article{Power2014,
 	title = {Methods to detect, characterize, and remove motion artifact in resting state {fMRI}},
 	volume = {84},
@@ -966,7 +940,6 @@ The dominant view that perceptual learning is accompanied by changes in early se
 	keywords = {Functional connectivity, \#nosource, Resting state, Artifact, Motion, Movement, {MRI}},
 }
 
-
 @article{Pruim2015,
 	title = {{ICA}-{AROMA}: A robust {ICA}-based strategy for removing motion artifacts from {fMRI} data},
 	volume = {112},
@@ -981,7 +954,6 @@ The dominant view that perceptual learning is accompanied by changes in early se
 	pmid = {25770991},
 	keywords = {Algorithms, Artifact, Artifacts, Artificial Intelligence, Cerebrospinal Fluid, Connectivity, Functional {MRI}, Humans, Image Processing, Computer-Assisted, Independent component analysis, Magnetic Resonance Imaging, Motion, Principal Component Analysis, Reproducibility of Results, Rest, Resting state},
 }
-
 
 @article{reilly2009cerebellum,
     author = {O'Reilly, Jill X. and Beckmann, Christian F. and Tomassini, Valentina and Ramnani, Narender and Johansen-Berg, Heidi},
@@ -1022,17 +994,17 @@ The dominant view that perceptual learning is accompanied by changes in early se
 }
 
 @article{Rosenblatt,
-title = "All-Resolutions Inference for brain imaging",
-author = "Rosenblatt, {Jonathan D.} and Livio Finos and Weeda, {Wouter D.} and Aldo Solari and Goeman, {Jelle J.}",
-year = "2018",
-month = nov,
-doi = "10.1016/j.neuroimage.2018.07.060",
-language = "English",
-volume = "181",
-pages = "786--796",
-journal = "NeuroImage",
-issn = "1053-8119",
-publisher = "Academic Press Inc.",
+    title = "All-Resolutions Inference for brain imaging",
+    author = "Rosenblatt, {Jonathan D.} and Livio Finos and Weeda, {Wouter D.} and Aldo Solari and Goeman, {Jelle J.}",
+    year = "2018",
+    month = nov,
+    doi = "10.1016/j.neuroimage.2018.07.060",
+    language = "English",
+    volume = "181",
+    pages = "786--796",
+    journal = "NeuroImage",
+    issn = "1053-8119",
+    publisher = "Academic Press Inc.",
 }
 
 @article{Schaefer2017parcellation,
@@ -1191,7 +1163,7 @@ publisher = "Academic Press Inc.",
 	abstract = {Functional connectomes capture brain interactions via synchronized fluctuations in the functional magnetic resonance imaging signal. If measured during rest, they map the intrinsic functional architecture of the brain. With task-driven experiments they represent integration mechanisms between specialized brain areas. Analyzing their variability across subjects and conditions can reveal markers of brain pathologies and mechanisms underlying cognition. Methods of estimating functional connectomes from the imaging signal have undergone rapid developments and the literature is full of diverse strategies for comparing them. This review aims to clarify links across functional-connectivity methods as well as to expose different steps to perform a group study of functional connectomes.}
 }
 
-@InProceedings{Varoquaux2011multisubject,
+@inproceedings{Varoquaux2011multisubject,
 	author="Varoquaux, Gael
 	and Gramfort, Alexandre
 	and Pedregosa, Fabian
@@ -1221,7 +1193,6 @@ publisher = "Academic Press Inc.",
 	primaryclass = {q-bio, stat}
 }
 
-
 @article{Winkler2014,
     title = {Permutation inference for the general linear model},
     journal = {NeuroImage},
@@ -1235,7 +1206,6 @@ publisher = "Academic Press Inc.",
     keywords = {Permutation inference, Multiple regression, General linear model, Randomise},
     abstract = {Permutation methods can provide exact control of false positives and allow the use of non-standard statistics, making only weak assumptions about the data. With the availability of fast and inexpensive computing, their main limitation would be some lack of flexibility to work with arbitrary experimental designs. In this paper we report on results on approximate permutation methods that are more flexible with respect to the experimental design and nuisance variables, and conduct detailed simulations to identify the best method for settings that are typical for imaging research scenarios. We present a generic framework for permutation inference for complex general linear models (glms) when the errors are exchangeable and/or have a symmetric distribution, and show that, even in the presence of nuisance effects, these permutation inferences are powerful while providing excellent control of false positives in a wide range of common and relevant imaging research scenarios. We also demonstrate how the inference on glm parameters, originally intended for independent data, can be used in certain special but useful cases in which independence is violated. Detailed examples of common neuroimaging applications are provided, as well as a complete algorithm – the “randomise” algorithm – for permutation inference with the glm.}
 }
-
 
 @article{yarkoni2011large,
 	title={Large-scale automated synthesis of human functional neuroimaging data},
