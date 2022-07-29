@@ -25,6 +25,7 @@ from nilearn import datasets
 from nilearn.image import load_img
 from nilearn.image import resampling
 from nilearn._utils.path_finding import _resolve_globbing
+from nilearn._utils.helpers import stringify_path
 from nilearn import _utils
 from nilearn.image import get_data
 
@@ -799,7 +800,8 @@ def load_surf_mesh(surf_mesh):
     """
 
     # if input is a filename, try to load it
-    if isinstance(surf_mesh, (str, os.PathLike)):
+    surf_mesh = stringify_path(surf_mesh)
+    if isinstance(surf_mesh, str):
         # resolve globbing
         file_list = _resolve_globbing(surf_mesh)
         if len(file_list) == 1:

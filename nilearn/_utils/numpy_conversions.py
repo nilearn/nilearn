@@ -7,7 +7,7 @@ Validation and conversion utilities for numpy.
 import csv
 import numpy as np
 
-from .helpers import _stringify_path
+from .helpers import stringify_path
 
 
 def _asarray(arr, dtype=None, order=None):
@@ -135,7 +135,7 @@ def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
 
     Parameters
     ----------
-    csv_path: string or path-like object
+    csv_path: string or pathlib.Path
         Path of the CSV file to load.
 
     delimiters: string
@@ -151,7 +151,7 @@ def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
     array: numpy.ndarray
         An array containing the data loaded from the CSV file.
     """
-    csv_path = _stringify_path(csv_path)
+    csv_path = stringify_path(csv_path)
     if not isinstance(csv_path, str):
         raise TypeError('CSV must be a file path. Got a CSV of type: %s' %
                         type(csv_path))

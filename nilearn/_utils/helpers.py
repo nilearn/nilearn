@@ -148,7 +148,7 @@ def remove_parameters(removed_params,
     return _remove_params
 
 
-def _stringify_path(path):
+def stringify_path(path):
     """Converts path-like objects to string.
 
     This is used to allow functions expecting string filesystem paths to accept

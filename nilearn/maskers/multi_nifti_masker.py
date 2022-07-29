@@ -17,7 +17,7 @@ from .. import masking
 from .._utils import CacheMixin, fill_doc
 from .._utils.class_inspect import get_params
 from .._utils.niimg_conversions import _iter_check_niimg
-from .._utils.helpers import _stringify_path
+from .._utils.helpers import stringify_path
 from .nifti_masker import NiftiMasker, _filter_and_mask
 from nilearn.image import get_data
 
@@ -221,7 +221,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         if self.mask_img is None:
             if self.verbose > 0:
                 print("[%s.fit] Computing mask" % self.__class__.__name__)
-            imgs = _stringify_path(imgs)
+            imgs = stringify_path(imgs)
             if not isinstance(imgs, collections.abc.Iterable) \
                     or isinstance(imgs, str):
                 raise ValueError("[%s.fit] For multiple processing, you should"
