@@ -264,6 +264,16 @@ This is also useful for writing unit tests.
 Writing small functions is not always possible, and we do not recommend trying to reorganize larger,
 but well-tested, older functions in the codebase, unless there is a strong reason to do so (e.g., when adding a new feature).
 
+.. admonition:: Recommendation
+
+    To lint your code and verify PEP8 compliance, you can run
+    `flake8 <https://flake8.pycqa.org/en/latest/>`_ locally on the
+    changes you have made in your branch compared to the main branch or a
+    a previous commit.
+    To do this before committing changes, get the diff between the working
+    directory and the last commit and pipe it to flake8 by running
+    `git diff HEAD | flake8 --diff`
+
 Tests
 ------
 
@@ -363,21 +373,25 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
 
       git checkout -b your_branch
 
-3. implement and commit your changes on this branch (don't forget to write tests!)
+3. implement changes and (optional but highly recommended) lint::
 
-4. run the tests locally (to go faster, only run tests which are relevant to what
+      git diff HEAD | flake8 --diff
+
+4. commit your changes on this branch (don't forget to write tests!)
+
+5. run the tests locally (to go faster, only run tests which are relevant to what
    you work on with, for example)::
 
       pytest -v nilearn/plotting/tests/test_surf_plotting.py
 
-5. push your changes to your online fork::
+6. push your changes to your online fork::
 
       git push
 
-6. in github, open a pull request from your online fork to the main repo
+7. in github, open a pull request from your online fork to the main repo
    (most likely from `your_fork:your_branch` to `nilearn:main`).
 
-7. check that all continuous integration tests pass
+8. check that all continuous integration tests pass
 
 For more details about the Fork Clone Push workflows, read `here <https://guides.github.com/activities/forking/>`_.
 
