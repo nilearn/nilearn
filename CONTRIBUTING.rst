@@ -271,9 +271,11 @@ but well-tested, older functions in the codebase, unless there is a strong reaso
     changes you have made in your branch compared to the main branch or a
     previous commit.
     To do this before committing changes, get the diff between the working
-    directory and the last commit and pipe it to flake8 by running::
+    directory and the last commit and pipe it to flake8 by running:
 
-    git diff HEAD | flake8 --diff
+    .. code-block:: bash
+
+        git diff HEAD | flake8 --diff
 
 Tests
 ------
