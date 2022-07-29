@@ -7,7 +7,6 @@ Neuroimaging file input and output.
 import copy
 import gc
 import collections.abc
-import os
 from warnings import warn
 
 import numpy as np

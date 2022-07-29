@@ -4,7 +4,6 @@ See http://nilearn.github.io/manipulating_images/input_output.html
 """
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
 # License: simplified BSD
-import os
 import warnings
 from nilearn.version import _compare_version
 import numbers
