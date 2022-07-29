@@ -269,10 +269,11 @@ but well-tested, older functions in the codebase, unless there is a strong reaso
     To lint your code and verify PEP8 compliance, you can run
     `flake8 <https://flake8.pycqa.org/en/latest/>`_ locally on the
     changes you have made in your branch compared to the main branch or a
-    a previous commit.
+    previous commit.
     To do this before committing changes, get the diff between the working
-    directory and the last commit and pipe it to flake8 by running
-    `git diff HEAD | flake8 --diff`
+    directory and the last commit and pipe it to flake8 by running::
+
+    git diff HEAD | flake8 --diff
 
 Tests
 ------
