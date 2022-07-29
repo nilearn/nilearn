@@ -16,7 +16,6 @@ human brain." Neuron 72.4 (2011): 665-678.
 
 [2] Dosenbach N.U., Nardos B., et al. "Prediction of individual brain maturity
 using fMRI.", 2010, Science 329, 1358-1361.
->>>>>>> 31737ae62fafe9c9d4f12ac0ff5f92a43dcb93aa
 
 We estimate connectomes using two different methods: **sparse inverse
 covariance** and **partial_correlation**, to recover the functional brain
