@@ -187,6 +187,14 @@ def test_load_bg_img():
     _check_affine(bg_img.affine)
 
 
+def test_get_bg_mask_and_cmap():
+    # non-regression test for issue #3120 (bg image was masked with mni
+    # template mask)
+    img, _ = _simulate_img()
+    mask, cmap = html_stat_map._get_bg_mask_and_cmap(img, False)
+    assert (mask == np.zeros(img.shape, dtype=bool)).all()
+
+
 def test_resample_stat_map():
 
     # Start with simple simulated data
