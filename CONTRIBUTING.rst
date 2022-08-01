@@ -264,19 +264,6 @@ This is also useful for writing unit tests.
 Writing small functions is not always possible, and we do not recommend trying to reorganize larger,
 but well-tested, older functions in the codebase, unless there is a strong reason to do so (e.g., when adding a new feature).
 
-.. admonition:: Recommendation
-
-    To lint your code and verify PEP8 compliance, you can run
-    `flake8 <https://flake8.pycqa.org/en/latest/>`_ locally on the
-    changes you have made in your branch compared to the main branch or a
-    previous commit.
-    To do this before committing changes, get the diff between the working
-    directory and the last commit and pipe it to flake8 by running:
-
-    .. code-block:: bash
-
-        git diff HEAD | flake8 --diff
-
 Tests
 ------
 
@@ -378,7 +365,19 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
 
 3. implement changes and (optional but highly recommended) lint::
 
-      git diff HEAD | flake8 --diff
+.. admonition:: Recommendation
+
+    To lint your code and verify PEP8 compliance, you can run
+    `flake8 <https://flake8.pycqa.org/en/latest/>`_ locally on the
+    changes you have made in your branch compared to the main branch.
+    To do this, find the latest common ancestor (commit) of your branch with
+    main and then get the diff between your working directory and this commit
+    and pipe it to flake8 by running:
+
+    .. code-block:: bash
+
+        COMMIT=$(git merge-base main @)
+        git diff $COMMIT | flake8 --diff
 
 4. commit your changes on this branch (don't forget to write tests!)
 
