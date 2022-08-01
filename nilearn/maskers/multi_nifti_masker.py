@@ -243,7 +243,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
             if self.verbose > 0:
                 print('[{self.__class__.__name__}.fit] Computing mask')
 
-            imgs = stringify_path(imgs)
+            imgs = _utils.helpers.stringify_path(imgs)
             if not isinstance(imgs, collections.abc.Iterable) \
                     or isinstance(imgs, str):
                 raise ValueError(
