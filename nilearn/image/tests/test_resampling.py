@@ -4,6 +4,7 @@ Test the resampling code.
 import os
 import copy
 import math
+from pathlib import Path
 
 from numpy.testing import (assert_almost_equal,
                            assert_array_equal,
@@ -841,3 +842,16 @@ def test_resampling_with_int64_types_no_crash(dtype):
     data = np.zeros((2, 2, 2))
     img = Nifti1Image(data.astype(dtype), affine)
     resample_img(img, target_affine=2. * affine)
+
+
+def test_resample_input():
+    rng = np.random.RandomState(42)
+    shape = (3, 2, 5, 2)
+    data = rng.randint(0, 10, shape, dtype="int32")
+    affine = np.eye(4)
+    affine[:3, -1] = 0.5 * np.array(shape[:3])
+    img = Nifti1Image(data, affine)
+
+    with testing.write_tmp_imgs(img, create_files=True) as filename:
+        filename = Path(filename)
+        resample_img(filename, target_affine=affine, interpolation='nearest')
