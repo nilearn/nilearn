@@ -407,7 +407,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             )
 
     def fit(self, imgs=None, y=None):
-        """Compute the mask corresponding to the data
+        """Compute the mask corresponding to the data.
 
         Parameters
         ----------
@@ -497,7 +497,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         sample_mask=None,
         copy=True,
     ):
-        """Apply mask, spatial and temporal preprocessing
+        """Apply mask, spatial and temporal preprocessing.
 
         Parameters
         ----------

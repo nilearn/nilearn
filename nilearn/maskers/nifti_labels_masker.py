@@ -479,7 +479,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         Returns
         -------
-        region_signals : 2D numpy.ndarray
+        region_signals : 2D :obj:`numpy.ndarray` 
             Signal for each label.
             shape: (number of scans, number of labels)
 

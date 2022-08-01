@@ -408,7 +408,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
 
         Parameters
         ----------
-        imgs : list of Niimg-like objects
+        imgs : :obj:`list` of Niimg-like objects
             See http://nilearn.github.io/manipulating_images/input_output.html
             Data to be preprocessed
 
