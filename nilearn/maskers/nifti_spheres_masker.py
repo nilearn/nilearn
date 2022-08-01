@@ -36,8 +36,9 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
 
     niimg : 3D/4D Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
-        Images to process. It must boil down to a 4D image with scans
-        number as last dimension.
+        Images to process.
+        If a 3D niimg is provided, a singleton dimension will be added to
+        the output to represent the single scan in the niimg.
 
     radius : float
         Indicates, in millimeters, the radius for the sphere around the seed.
@@ -160,8 +161,9 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
 
     niimg : 3D/4D Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
-        Images to process. It must boil down to a 4D image with scans
-        number as last dimension.
+        Images to process.
+        If a 3D niimg is provided, a singleton dimension will be added to
+        the output to represent the single scan in the niimg.
 
     radius: float
         Indicates, in millimeters, the radius for the sphere around the seed.
@@ -405,8 +407,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         ----------
         imgs : 3D/4D Niimg-like object
             See http://nilearn.github.io/manipulating_images/input_output.html
-            Images to process. It must boil down to a 4D image with scans
-            number as last dimension.
+            Images to process.
+            If a 3D niimg is provided, a singleton dimension will be added to
+            the output to represent the single scan in the niimg.
 
         confounds : CSV file or array-like or :obj:`pandas.DataFrame`, optional
             This parameter is passed to signal.clean. Please see the related
