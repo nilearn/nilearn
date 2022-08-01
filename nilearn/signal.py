@@ -17,6 +17,7 @@ from sklearn.utils import gen_even_slices, as_float_array
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
 from ._utils import fill_doc
 from nilearn._utils.glm import _check_run_sample_masks
+from ._utils.helpers import stringify_path
 
 availiable_filters = ['butterworth',
                       'cosine'
@@ -493,7 +494,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         Default is None.
 
     confounds : :class:`numpy.ndarray`, :obj:`str`,\
-    :class:`pandas.DataFrame` or :obj:`list` of
+    :class:`pandas.DataFrame` or :obj:`list` or :class:`os.PathLike` of
         Confounds timeseries. Shape must be
         (instant number, confound number), or just (instant number,)
         The number of time instants in ``signals`` and ``confounds`` must be
@@ -571,6 +572,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     nilearn.image.clean_img
     """
     # Raise warning for some parameter combinations when confounds present
+    confounds = stringify_path(confounds)
     if confounds is not None:
         _check_signal_parameters(detrend, standardize_confounds)
 

@@ -20,6 +20,7 @@ from sklearn.base import clone
 
 from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.helpers import stringify_path
 from nilearn.maskers import NiftiMasker
 from nilearn.glm.contrasts import (compute_contrast,
                                    expression_to_contrast_vector)
@@ -328,6 +329,7 @@ class SecondLevelModel(BaseGLM):
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
+        memory = stringify_path(memory)
         if isinstance(memory, str):
             self.memory = Memory(memory)
         else:

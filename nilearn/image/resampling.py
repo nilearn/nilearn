@@ -4,7 +4,6 @@ See http://nilearn.github.io/manipulating_images/input_output.html
 """
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
 # License: simplified BSD
-
 import warnings
 from nilearn.version import _compare_version
 import numbers
@@ -17,6 +16,7 @@ from scipy.ndimage import find_objects, affine_transform
 from .image import crop_img
 from .. import _utils
 from .._utils.niimg import _get_data
+from .._utils.helpers import stringify_path
 
 ###############################################################################
 # Affine utils
@@ -313,7 +313,7 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     Parameters
     ----------
-    img : Niimg-like object
+    img : Niimg-like object, str, or os.PathLike
         See http://nilearn.github.io/manipulating_images/input_output.html
         Image(s) to resample.
 
@@ -435,6 +435,7 @@ def resample_img(img, target_affine=None, target_shape=None,
                    "or 'nearest' but it was set to '{0}'").format(interpolation)
         raise ValueError(message)
 
+    img = stringify_path(img)
     if isinstance(img, str):
         # Avoid a useless copy
         input_img_is_string = True

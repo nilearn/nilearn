@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from pathlib import Path
 
 import joblib
 import nibabel as nb
@@ -8,7 +9,7 @@ from nibabel import Nifti1Image
 from nibabel.tmpdirs import InTemporaryDirectory
 
 from nilearn.image import new_img_like
-from nilearn._utils import niimg
+from nilearn._utils import niimg, testing, load_niimg
 from nilearn.image import get_data
 
 
@@ -77,3 +78,11 @@ def test_img_data_dtype():
     # Verify that the distinction is worth making
     assert any(dtype_matches)
     assert not all(dtype_matches)
+
+
+def test_load_niimg():
+    img = Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
+
+    with testing.write_tmp_imgs(img, create_files=True) as filename:
+        filename = Path(filename)
+        load_niimg(filename)
