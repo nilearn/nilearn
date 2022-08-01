@@ -18,6 +18,7 @@ from .. import signal
 from .. import _utils
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.class_inspect import enclosing_scope_name
+from .._utils.helpers import stringify_path
 from nilearn.image import high_variance_confounds
 
 
@@ -31,7 +32,7 @@ def _filter_and_extract(
 
     Parameters
     ----------
-    imgs : 3D/4D Niimg-like object
+    imgs : 3D/4D Niimg-like object or str or os.PathLike
         Images to be masked. Can be 3-dimensional or 4-dimensional.
 
     extraction_function : function
@@ -57,6 +58,7 @@ def _filter_and_extract(
 
     # If we have a string (filename), we won't need to copy, as
     # there will be no side effect
+    imgs = stringify_path(imgs)
     if isinstance(imgs, str):
         copy = False
 

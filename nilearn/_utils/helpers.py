@@ -1,5 +1,6 @@
 import functools
 import warnings
+import os
 
 
 def rename_parameters(replacement_params,
@@ -145,3 +146,21 @@ def remove_parameters(removed_params,
             return func(*args, **kwargs)
         return wrapper
     return _remove_params
+
+
+def stringify_path(path):
+    """Converts path-like objects to string.
+
+    This is used to allow functions expecting string filesystem paths to accept
+    objects using `__fspath__` protocol.
+
+    Parameters
+    ----------
+    path : str or path-like object
+
+    Returns
+    -------
+    str
+
+    """
+    return path.__fspath__() if isinstance(path, os.PathLike) else path
