@@ -21,7 +21,7 @@ class _ExtractionFunctor(object):
         self.mask_img_ = mask_img_
 
     def __call__(self, imgs):
-        return(
+        return (
             masking.apply_mask(
                 imgs,
                 self.mask_img_,
