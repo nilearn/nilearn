@@ -464,8 +464,9 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         ----------
         imgs : 3D/4D Niimg-like object
             See http://nilearn.github.io/manipulating_images/input_output.html
-            Images to process. It must boil down to a 4D image with scans
-            number as last dimension.
+            Images to process.
+            If a 3D niimg is provided, a singleton dimension will be added to
+            the output to represent the single scan in the niimg.
 
         confounds : CSV file or array-like, optional
             This parameter is passed to signal.clean. Please see the related
