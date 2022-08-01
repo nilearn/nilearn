@@ -106,7 +106,7 @@ def _permuted_ols_on_chunk(
         Calculating TFCE values in each permutation can be time-consuming, so
         this option is disabled by default.
         The TFCE calculation is implemented as described in
-        :footcite:t:`smith2009threshold`.
+        :footcite:t:`Smith2009a`.
         Default=False.
 
         .. versionadded:: 0.9.2.dev
@@ -419,7 +419,7 @@ def permuted_ols(
         Whether to calculate :term:`TFCE` as part of the permutation procedure
         or not.
         The TFCE calculation is implemented as described in
-        :footcite:t:`smith2009threshold`.
+        :footcite:t:`Smith2009a`.
         Default=False.
 
         .. warning::

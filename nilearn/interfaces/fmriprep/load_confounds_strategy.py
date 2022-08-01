@@ -94,7 +94,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
           based on the characteristics of the dataset, or remove high motion
           subjects from the dataset.
         - 'compcor': Load confounds using the CompCor strategy from
-          :footcite:`BEHZADI200790`. CompCor estimates noise through principal
+          :footcite:`Behzadi2007`. CompCor estimates noise through principal
           component analysis on regions that are unlikely to contain signal.
           Thus it might not be a suitable approach for researchers who want
           explicit description of the source of noise. Empirically, Compcor

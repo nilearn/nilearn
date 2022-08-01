@@ -717,7 +717,7 @@ def non_parametric_inference(
         Whether to calculate :term:`TFCE` as part of the permutation procedure
         or not.
         The TFCE calculation is implemented as described in
-        :footcite:t:`smith2009threshold`.
+        :footcite:t:`Smith2009a`.
         Default=False.
 
         .. warning::

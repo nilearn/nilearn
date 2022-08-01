@@ -412,7 +412,7 @@ def high_variance_confounds(series, n_confounds=5, percentile=2.,
     Notes
     -----
     This method is related to what has been published in the literature
-    as 'CompCor' :footcite:`BEHZADI200790`.
+    as 'CompCor' :footcite:`Behzadi2007`.
 
     The implemented algorithm does the following:
 
@@ -478,7 +478,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
 
     Filtering is only meaningful on evenly-sampled signals.
 
-    According to :footcite:`Lindquist407676`, removal of confounds will be done
+    According to :footcite:`Lindquist2018`, removal of confounds will be done
     orthogonally to temporal filters (low- and/or high-pass filters), if both
     are specified.
 
@@ -561,7 +561,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     of the signal space. See :footcite:`Friston1994`.
 
     Orthogonalization between temporal filters and confound removal is based on
-    suggestions in :footcite:`Lindquist407676`.
+    suggestions in :footcite:`Lindquist2018`.
 
     References
     ----------

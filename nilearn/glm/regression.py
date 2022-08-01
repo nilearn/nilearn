@@ -128,7 +128,7 @@ class OLSModel(object):
 
         Given the whitened design matrix, the loglikelihood is evaluated
         at the parameter vector, beta, for the dependent variable, Y
-        and the nuisance parameter, sigma :footcite:`GreeneEconometric`.
+        and the nuisance parameter, sigma :footcite:`Greene2003`.
 
         Parameters
         ----------
@@ -342,7 +342,7 @@ class RegressionResults(LikelihoodModelResults):
     def normalized_residuals(self):
         """Residuals, normalized to have unit length.
 
-        See :footcite:`Montgomery` and :footcite:`Davidson`.
+        See :footcite:`Montgomery2006` and :footcite:`Davidson2004`.
 
         Notes
         -----
@@ -432,7 +432,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
     def normalized_residuals(self, Y):
         """Residuals, normalized to have unit length.
 
-        See :footcite:`Montgomery` and :footcite:`Davidson`.
+        See :footcite:`Montgomery2006` and :footcite:`Davidson2004`.
 
         Notes
         -----
