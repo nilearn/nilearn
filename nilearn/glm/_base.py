@@ -108,7 +108,7 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
 
         bg_img : Niimg-like object, optional
             Default is the MNI152 template (Default='MNI152TEMPLATE')
-            See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa: E501
+            See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa: E501
             The background image for mask and stat maps to be plotted on upon.
             To turn off background image, just pass "bg_img=None".
 

@@ -199,12 +199,12 @@ class SearchLight(BaseEstimator):
     Parameters
     -----------
     mask_img : Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa: E501
-        boolean image giving location of voxels containing usable signals.
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa: E501
+        Boolean image giving location of voxels containing usable signals.
 
     process_mask_img : Niimg-like object, optional
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa: E501
-        boolean image giving voxels on which searchlight should be
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa: E501
+        Boolean image giving voxels on which searchlight should be
         computed.
 
     radius : float, optional
@@ -263,7 +263,7 @@ class SearchLight(BaseEstimator):
         Parameters
         ----------
         imgs : Niimg-like object
-            See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa: E501
+            See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa: E501
             4D image.
 
         y : 1D array-like

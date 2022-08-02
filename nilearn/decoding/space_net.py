@@ -739,7 +739,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         Parameters
         ----------
         X : list of Niimg-like objects
-            See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa: E501
+            See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa: E501
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
@@ -932,7 +932,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         Parameters
         ----------
         X : list of Niimg-like objects
-            See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa: E501
+            See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa: E501
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.
 
@@ -1155,7 +1155,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         Parameters
         ----------
         X : list of Niimg-like objects
-            See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa: E501
+            See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa: E501
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
