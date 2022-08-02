@@ -1189,10 +1189,10 @@ def clean_img(imgs, runs=None, detrend=True, standardize=True,
     Notes
     -----
     Confounds removal is based on a projection on the orthogonal
-    of the signal space [:footcite:`friston1994statistical`].
+    of the signal space [:footcite:`Friston1994`].
 
     Orthogonalization between temporal filters and confound removal is based on
-    suggestions in [:footcite:`Lindquist407676`].
+    suggestions in [:footcite:`Lindquist2018`].
 
     References
     ----------

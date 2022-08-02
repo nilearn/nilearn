@@ -116,7 +116,7 @@ def load_confounds(img_files,
           Associated parameter: `wm_csf`
         - "global_signal" confounds derived from the global signal.
           Associated parameter: `global_signal`
-        - "compcor" confounds derived from CompCor :footcite:`BEHZADI200790`.
+        - "compcor" confounds derived from CompCor :footcite:`Behzadi2007`.
           When using this noise component, "high_pass" must also be applied.
           Associated parameter: `compcor`, `n_compcor`
         - "ica_aroma" confounds derived from ICA-AROMA :footcite:`Pruim2015`.
@@ -195,7 +195,7 @@ def load_confounds(img_files,
             Require fmriprep >= v:1.4.0.
 
         Type of confounds extracted from a component based noise correction
-        method :footcite:`BEHZADI200790`.
+        method :footcite:`Behzadi2007`.
 
         - "anat_combined" noise components calculated using a white matter and
           CSF combined anatomical mask
