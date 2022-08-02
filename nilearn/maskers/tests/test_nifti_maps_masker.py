@@ -5,23 +5,36 @@ rather than the underlying functions (clean(), img_to_signals_labels(), etc.).
 
 See test_masking.py and test_signal.py for details.
 """
-
-import numpy as np
+import warnings
 
 import nibabel
+import numpy as np
 import pytest
-
-from nilearn.maskers import NiftiMapsMasker
-from nilearn._utils import testing, as_ndarray, data_gen
+from nilearn._utils import as_ndarray, data_gen, testing
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import get_data
+from nilearn.maskers import NiftiMapsMasker
 
 
-def generate_random_img(shape, length=1, affine=np.eye(4),
-                        rand_gen=np.random.RandomState(0)):
-    data = rand_gen.standard_normal(size=(shape + (length,)))
-    return nibabel.Nifti1Image(data, affine), nibabel.Nifti1Image(
-        as_ndarray(data[..., 0] > 0.2, dtype=np.int8), affine)
+def generate_random_img(
+    shape,
+    length=1,
+    affine=np.eye(4),
+    rand_gen=np.random.RandomState(0),
+):
+    """Create a random 3D or 4D image with a given shape and affine."""
+    if length > 0:
+        shape = shape + (length,)
+
+    data = rand_gen.standard_normal(size=shape)
+
+    return (
+        nibabel.Nifti1Image(data, affine),
+        nibabel.Nifti1Image(
+            as_ndarray(data[..., 0] > 0.2, dtype=np.int8),
+            affine,
+        ),
+    )
 
 
 def test_nifti_maps_masker():
@@ -135,6 +148,76 @@ def test_nifti_maps_masker():
     masker.fit_transform(fmri22_img)
     np.testing.assert_array_equal(masker._resampled_maps_img_.affine,
                                   affine2)
+
+
+def test_nifti_maps_masker_io_shapes():
+    """Ensure that NiftiMapsMasker handles 1D/2D/3D/4D data appropriately.
+
+    transform(4D image) --> 2D output, no warning
+    transform(3D image) --> 2D output, DeprecationWarning
+    inverse_transform(2D array) --> 4D image, no warning
+    inverse_transform(1D array) --> 3D image, no warning
+    inverse_transform(2D array with wrong shape) --> ValueError
+    """
+    n_regions, n_volumes = 9, 5
+    shape_3d = (10, 11, 12)
+    shape_4d = (10, 11, 12, n_volumes)
+    data_1d = np.random.random(n_regions)
+    data_2d = np.random.random((n_volumes, n_regions))
+    affine = np.eye(4)
+
+    img_4d, mask_img = generate_random_img(
+        shape_3d,
+        affine=affine,
+        length=n_volumes,
+    )
+    img_3d, _ = generate_random_img(shape_3d, affine=affine, length=0)
+    maps_img, _ = data_gen.generate_maps(
+        shape_3d,
+        affine=affine,
+        n_regions=n_regions,
+    )
+
+    masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
+    masker.fit()
+
+    # DeprecationWarning *should* be raised for 3D inputs
+    with pytest.warns(DeprecationWarning, match='Starting in version 0.12'):
+        test_data = masker.transform(img_3d)
+        assert test_data.shape == (1, n_regions)
+
+    # DeprecationWarning should *not* be raised for 4D inputs
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            'error',
+            message='Starting in version 0.12',
+            category=DeprecationWarning,
+        )
+        test_data = masker.transform(img_4d)
+        assert test_data.shape == (n_volumes, n_regions)
+
+    # DeprecationWarning should *not* be raised for 1D inputs
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            'error',
+            message='Starting in version 0.12',
+            category=DeprecationWarning,
+        )
+        test_img = masker.inverse_transform(data_1d)
+        assert test_img.shape == shape_3d
+
+    # DeprecationWarning should *not* be raised for 2D inputs
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            'error',
+            message='Starting in version 0.12',
+            category=DeprecationWarning,
+        )
+        test_img = masker.inverse_transform(data_2d)
+        assert test_img.shape == shape_4d
+
+    with pytest.raises(ValueError):
+        masker.inverse_transform(data_2d.T)
 
 
 def test_nifti_maps_masker_with_nans_and_infs():

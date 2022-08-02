@@ -10,29 +10,50 @@ test_signal.py for this.
 import os
 import shutil
 from tempfile import mkdtemp
+import warnings
 
 import nibabel
 import numpy as np
 import pytest
-
-from nibabel import Nifti1Image
-from numpy.testing import assert_array_equal
-
-from nilearn._utils import testing
-from nilearn._utils import data_gen
-from nilearn._utils.class_inspect import get_params
-from nilearn._utils.exceptions import DimensionError
-from nilearn.image import index_img
+from nilearn._utils import (
+    as_ndarray,
+    class_inspect,
+    data_gen,
+    exceptions,
+    testing,
+)
+from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import _filter_and_mask
-from nilearn.image import get_data
+from numpy.testing import assert_array_equal
+
+
+def generate_random_img(
+    shape,
+    length=1,
+    affine=np.eye(4),
+    rand_gen=np.random.RandomState(0),
+):
+    """Create a random 3D or 4D image with a given shape and affine."""
+    if length > 0:
+        shape = shape + (length,)
+
+    data = rand_gen.standard_normal(size=shape)
+
+    return (
+        nibabel.Nifti1Image(data, affine),
+        nibabel.Nifti1Image(
+            as_ndarray(data[..., 0] > 0.2, dtype=np.int8),
+            affine,
+        ),
+    )
 
 
 def test_auto_mask():
     # This mostly a smoke test
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
-    img = Nifti1Image(data, np.eye(4))
+    img = nibabel.Nifti1Image(data, np.eye(4))
     masker = NiftiMasker()
     # Smoke test the fit
     masker.fit(img)
@@ -52,9 +73,9 @@ def test_detrend():
     # Check that detrending doesn't do something stupid with 3D images
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
-    img = Nifti1Image(data, np.eye(4))
+    img = nibabel.Nifti1Image(data, np.eye(4))
     mask = data.astype("uint8")
-    mask_img = Nifti1Image(mask, np.eye(4))
+    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
     masker = NiftiMasker(mask_img=mask_img, detrend=True)
     # Smoke test the fit
     X = masker.fit_transform(img)
@@ -65,9 +86,9 @@ def test_resample():
     # Check that target_affine triggers the right resampling
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
-    img = Nifti1Image(data, np.eye(4))
+    img = nibabel.Nifti1Image(data, np.eye(4))
     mask = data.astype("uint8")
-    mask_img = Nifti1Image(mask, np.eye(4))
+    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
     masker = NiftiMasker(mask_img=mask_img, target_affine=2 * np.eye(3))
     # Smoke test the fit
     X = masker.fit_transform(img)
@@ -78,7 +99,7 @@ def test_with_files():
     # Standard masking
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
-    data_img = Nifti1Image(data, np.eye(4))
+    data_img = nibabel.Nifti1Image(data, np.eye(4))
 
     with testing.write_tmp_imgs(data_img) as filename:
         masker = NiftiMasker()
@@ -95,7 +116,7 @@ def test_nan():
     data[:, -1] = np.nan
     data[:, :, -1] = np.nan
     data[3:-3, 3:-3, 3:-3] = 10
-    img = Nifti1Image(data, np.eye(4))
+    img = nibabel.Nifti1Image(data, np.eye(4))
     masker = NiftiMasker(mask_args=dict(opening=0))
     masker.fit(img)
     mask = get_data(masker.mask_img_)
@@ -135,7 +156,7 @@ def test_mask_3d():
     # Dummy mask
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
-    data_img = Nifti1Image(data, np.eye(4))
+    data_img = nibabel.Nifti1Image(data, np.eye(4))
 
     with testing.write_tmp_imgs(data_img, create_files=True)\
             as filename:
@@ -148,14 +169,14 @@ def test_mask_4d():
     mask = np.zeros((10, 10, 10), dtype="int32")
     mask[3:7, 3:7, 3:7] = 1
     mask_bool = mask.astype(bool)
-    mask_img = Nifti1Image(mask, np.eye(4))
+    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
     # Dummy data
     data = np.zeros((10, 10, 10, 5), dtype="int32")
     data[..., 0] = 1
     data[..., 1] = 2
     data[..., 2] = 3
-    data_img_4d = Nifti1Image(data, np.eye(4))
+    data_img_4d = nibabel.Nifti1Image(data, np.eye(4))
     data_imgs = [index_img(data_img_4d, 0), index_img(data_img_4d, 1),
                  index_img(data_img_4d, 2)]
 
@@ -189,7 +210,7 @@ def test_mask_4d():
 def test_4d_single_scan():
     mask = np.zeros((10, 10, 10))
     mask[3:7, 3:7, 3:7] = 1
-    mask_img = Nifti1Image(mask, np.eye(4))
+    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
     # Test that, in list of 4d images with last dimension=1, they are
     # considered as 3d
@@ -221,7 +242,7 @@ def test_4d_single_scan():
 def test_5d():
     mask = np.zeros((10, 10, 10))
     mask[3:7, 3:7, 3:7] = 1
-    mask_img = Nifti1Image(mask, np.eye(4))
+    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
     # Test that, in list of 4d images with last dimension=1, they are
     # considered as 3d
@@ -233,7 +254,7 @@ def test_5d():
     masker = NiftiMasker(mask_img=mask_img)
     masker.fit()
     with pytest.raises(
-            DimensionError,
+            exceptions.DimensionError,
             match="Input data has incompatible dimensionality: "
                   "Expected dimension is 4D and you provided "
                   "a list of 4D images \\(5D\\)."):
@@ -251,16 +272,16 @@ def test_sessions():
     data[..., -1] = 0
     data[..., 0] = 0
     data[20, 20, 20] = 1
-    data_img = Nifti1Image(data, np.eye(4))
+    data_img = nibabel.Nifti1Image(data, np.eye(4))
     masker = NiftiMasker(runs=np.ones(3, dtype=np.int))
     pytest.raises(ValueError, masker.fit_transform, data_img)
 
 
 def test_joblib_cache():
-    from joblib import hash, Memory
+    from joblib import Memory, hash
     mask = np.zeros((40, 40, 40))
     mask[20, 20, 20] = 1
-    mask_img = Nifti1Image(mask, np.eye(4))
+    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
     with testing.write_tmp_imgs(mask_img, create_files=True) as filename:
         masker = NiftiMasker(mask_img=filename)
@@ -296,7 +317,7 @@ def test_mask_strategy_errors():
     # Warning with deprecated 'template' strategy,
     # plus an exception because there's no resulting mask
     img = np.random.RandomState(42).uniform(size=(9, 9, 5))
-    img = Nifti1Image(img, np.eye(4))
+    img = nibabel.Nifti1Image(img, np.eye(4))
     mask = NiftiMasker(mask_strategy='template')
     with pytest.warns(
         UserWarning,
@@ -311,7 +332,7 @@ def test_compute_epi_mask():
     mean_image = np.ones((9, 9, 3))
     mean_image[3:-2, 3:-2, :] = 10
     mean_image[5, 5, :] = 11
-    mean_image = Nifti1Image(mean_image.astype(float), np.eye(4))
+    mean_image = nibabel.Nifti1Image(mean_image.astype(float), np.eye(4))
 
     masker = NiftiMasker(mask_strategy='epi',
                          mask_args=dict(opening=False))
@@ -330,7 +351,7 @@ def test_compute_epi_mask():
     # Check that padding with zeros does not change the extracted mask
     mean_image2 = np.zeros((30, 30, 3))
     mean_image2[3:12, 3:12, :] = get_data(mean_image)
-    mean_image2 = Nifti1Image(mean_image2, np.eye(4))
+    mean_image2 = nibabel.Nifti1Image(mean_image2, np.eye(4))
 
     masker3 = NiftiMasker(mask_strategy='epi',
                           mask_args=dict(opening=False, exclude_zeros=True))
@@ -345,11 +366,6 @@ def test_compute_epi_mask():
     mask4 = masker4.mask_img_
 
     assert not np.allclose(get_data(mask1), get_data(mask4)[3:12, 3:12])
-
-
-def _get_random_img(shape):
-    img = np.random.RandomState(42).uniform(size=shape)
-    return Nifti1Image(img, np.eye(4))
 
 
 @pytest.fixture
@@ -369,7 +385,7 @@ def expected_mask(mask_args):
                          [dict(), dict(threshold=0.)])
 def test_compute_brain_mask(strategy, mask_args, expected_mask):
     # Check masker for template masking strategy
-    img = _get_random_img((9, 9, 5))
+    img = generate_random_img((9, 9, 5), length=0)
 
     masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)
     masker.fit(img)
@@ -386,10 +402,10 @@ def test_filter_and_mask_error():
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
     masker = NiftiMasker()
-    params = get_params(NiftiMasker, masker)
+    params = class_inspect.get_params(NiftiMasker, masker)
 
     with pytest.raises(
-            DimensionError,
+            exceptions.DimensionError,
             match="Input data has incompatible dimensionality: "
                   "Expected dimension is 3D and you provided "
                   "a 4D image."):
@@ -404,7 +420,7 @@ def test_filter_and_mask():
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
     masker = NiftiMasker()
-    params = get_params(NiftiMasker, masker)
+    params = class_inspect.get_params(NiftiMasker, masker)
 
     # Test return_affine = False
     data = _filter_and_mask(data_img, mask_img, params)
@@ -420,8 +436,8 @@ def test_dtype():
     affine_32 = np.eye(4, dtype=np.float32)
     affine_64 = np.eye(4, dtype=np.float64)
 
-    img_32 = Nifti1Image(data_32, affine_32)
-    img_64 = Nifti1Image(data_64, affine_64)
+    img_32 = nibabel.Nifti1Image(data_32, affine_32)
+    img_64 = nibabel.Nifti1Image(data_64, affine_64)
 
     masker_1 = NiftiMasker(dtype='auto')
     assert(masker_1.fit_transform(img_32).dtype == np.float32)
@@ -440,9 +456,12 @@ def test_standardization():
     signals = rng.standard_normal(size=(np.prod(data_shape), n_samples))
     means = rng.standard_normal(size=(np.prod(data_shape), 1)) * 50 + 1000
     signals += means
-    img = Nifti1Image(signals.reshape(data_shape + (n_samples,)), np.eye(4))
+    img = nibabel.Nifti1Image(
+        signals.reshape(data_shape + (n_samples,)),
+        np.eye(4),
+    )
 
-    mask = Nifti1Image(np.ones(data_shape), np.eye(4))
+    mask = nibabel.Nifti1Image(np.ones(data_shape), np.eye(4))
 
     # z-score
     masker = NiftiMasker(mask, standardize='zscore')
@@ -459,3 +478,69 @@ def test_standardization():
     np.testing.assert_almost_equal(trans_signals,
                                    (signals / signals.mean(1)[:, np.newaxis] *
                                     100 - 100).T)
+
+
+def test_nifti_masker_io_shapes():
+    """Ensure that NiftiMasker handles 1D/2D/3D/4D data appropriately.
+
+    transform(4D image) --> 2D output, no warning
+    transform(3D image) --> 2D output, DeprecationWarning
+    inverse_transform(2D array) --> 4D image, no warning
+    inverse_transform(1D array) --> 3D image, no warning
+    inverse_transform(2D array with wrong shape) --> ValueError
+    """
+    n_volumes = 5
+    shape_3d = (10, 11, 12)
+    shape_4d = (10, 11, 12, n_volumes)
+    affine = np.eye(4)
+
+    img_4d, mask_img = generate_random_img(
+        shape_3d,
+        affine=affine,
+        length=n_volumes,
+    )
+    img_3d, _ = generate_random_img(shape_3d, affine=affine, length=0)
+    n_regions = np.sum(mask_img.get_fdata().astype(bool))
+    data_1d = np.random.random(n_regions)
+    data_2d = np.random.random((n_volumes, n_regions))
+
+    masker = NiftiMasker(mask_img)
+    masker.fit()
+
+    # DeprecationWarning *should* be raised for 3D inputs
+    with pytest.warns(DeprecationWarning, match='Starting in version 0.12'):
+        test_data = masker.transform(img_3d)
+        assert test_data.shape == (1, n_regions)
+
+    # DeprecationWarning should *not* be raised for 4D inputs
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            'error',
+            message='Starting in version 0.12',
+            category=DeprecationWarning,
+        )
+        test_data = masker.transform(img_4d)
+        assert test_data.shape == (n_volumes, n_regions)
+
+    # DeprecationWarning should *not* be raised for 1D inputs
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            'error',
+            message='Starting in version 0.12',
+            category=DeprecationWarning,
+        )
+        test_img = masker.inverse_transform(data_1d)
+        assert test_img.shape == shape_3d
+
+    # DeprecationWarning should *not* be raised for 2D inputs
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            'error',
+            message='Starting in version 0.12',
+            category=DeprecationWarning,
+        )
+        test_img = masker.inverse_transform(data_2d)
+        assert test_img.shape == shape_4d
+
+    with pytest.raises(TypeError):
+        masker.inverse_transform(data_2d.T)

@@ -1,11 +1,34 @@
+"""Test nilearn.maskers.nifti_spheres_masker."""
+import warnings
+
 import nibabel
 import numpy as np
 import pytest
-
-from numpy.testing import assert_array_equal, assert_array_almost_equal
-
-from nilearn.maskers import NiftiSpheresMasker
+from nilearn._utils import as_ndarray
 from nilearn.image import get_data, new_img_like
+from nilearn.maskers import NiftiSpheresMasker
+from numpy.testing import assert_array_almost_equal, assert_array_equal
+
+
+def generate_random_img(
+    shape,
+    length=1,
+    affine=np.eye(4),
+    rand_gen=np.random.RandomState(0),
+):
+    """Create a random 3D or 4D image with a given shape and affine."""
+    if length > 0:
+        shape = shape + (length,)
+
+    data = rand_gen.standard_normal(size=shape)
+
+    return (
+        nibabel.Nifti1Image(data, affine),
+        nibabel.Nifti1Image(
+            as_ndarray(data[..., 0] > 0.2, dtype=np.int8),
+            affine,
+        ),
+    )
 
 
 def test_seed_extraction():
@@ -306,3 +329,72 @@ def test_small_radius_inverse():
                                 mask_img=nibabel.Nifti1Image(mask, affine))
     masker.fit(nibabel.Nifti1Image(data, affine))
     masker.inverse_transform(spheres_data)
+
+
+def test_nifti_spheres_masker_io_shapes():
+    """Ensure that NiftiSpheresMasker handles 1D/2D/3D/4D data appropriately.
+
+    transform(4D image) --> 2D output, no warning
+    transform(3D image) --> 2D output, DeprecationWarning
+    inverse_transform(2D array) --> 4D image, no warning
+    inverse_transform(1D array) --> 3D image, no warning
+    inverse_transform(2D array with wrong shape) --> ValueError
+    """
+    n_regions, n_volumes = 2, 5
+    shape_3d = (10, 11, 12)
+    shape_4d = (10, 11, 12, n_volumes)
+    data_1d = np.random.random(n_regions)
+    data_2d = np.random.random((n_volumes, n_regions))
+    affine = np.eye(4)
+
+    img_4d, mask_img = generate_random_img(
+        shape_3d,
+        affine=affine,
+        length=n_volumes,
+    )
+    img_3d, _ = generate_random_img(shape_3d, affine=affine, length=0)
+
+    masker = NiftiSpheresMasker(
+        [(1, 1, 1), (4, 4, 4)],  # number of tuples equal to n_regions
+        radius=1,
+        mask_img=mask_img,
+    )
+    masker.fit()
+
+    # DeprecationWarning *should* be raised for 3D inputs
+    with pytest.warns(DeprecationWarning, match='Starting in version 0.12'):
+        test_data = masker.transform(img_3d)
+        assert test_data.shape == (1, n_regions)
+
+    # DeprecationWarning should *not* be raised for 4D inputs
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            'error',
+            message='Starting in version 0.12',
+            category=DeprecationWarning,
+        )
+        test_data = masker.transform(img_4d)
+        assert test_data.shape == (n_volumes, n_regions)
+
+    # DeprecationWarning should *not* be raised for 1D inputs
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            'error',
+            message='Starting in version 0.12',
+            category=DeprecationWarning,
+        )
+        test_img = masker.inverse_transform(data_1d)
+        assert test_img.shape == shape_3d
+
+    # DeprecationWarning should *not* be raised for 2D inputs
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            'error',
+            message='Starting in version 0.12',
+            category=DeprecationWarning,
+        )
+        test_img = masker.inverse_transform(data_2d)
+        assert test_img.shape == shape_4d
+
+    with pytest.raises(ValueError):
+        masker.inverse_transform(data_2d.T)
