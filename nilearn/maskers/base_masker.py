@@ -66,6 +66,19 @@ def _filter_and_extract(
         print("[%s] Loading data from %s" % (
             class_name,
             _utils._repr_niimgs(imgs, shorten=False)))
+
+    imgs = _utils.check_niimg(imgs)
+
+    # Raise warning if a 3D niimg is provided.
+    if imgs.ndim == 3:
+        warnings.warn(
+            'Starting in version 0.12, 3D images will be transformed to '
+            '1D arrays. '
+            'Until then, 3D images will be coerced to 2D arrays, with a '
+            'singleton first dimension representing time.',
+            DeprecationWarning,
+        )
+
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4,
                               dtype=dtype)
 

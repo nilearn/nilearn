@@ -79,6 +79,18 @@ def _filter_and_mask(
         friendly 2D array with shape n_sample x n_features.
 
     """
+    imgs = _utils.check_niimg(imgs)
+
+    # Raise warning if a 3D niimg is provided.
+    if imgs.ndim == 3:
+        warnings.warn(
+            'Starting in version 0.12, 3D images will be transformed to '
+            '1D arrays. '
+            'Until then, 3D images will be coerced to 2D arrays, with a '
+            'singleton first dimension representing time.',
+            DeprecationWarning,
+        )
+
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
 
     # Check whether resampling is truly necessary. If so, crop mask
