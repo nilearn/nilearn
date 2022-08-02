@@ -363,7 +363,7 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
 
       git checkout -b your_branch
 
-3. implement changes and (optional but highly recommended) lint::
+3. implement changes and (optional but highly recommended) lint:
 
 .. admonition:: Recommendation
 
