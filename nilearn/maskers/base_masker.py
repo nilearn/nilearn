@@ -278,9 +278,13 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         Parameters
         ----------
-        X : 2D :obj:`numpy.ndarray`
+        X : 1D/2D :obj:`numpy.ndarray`
             Signal for each element in the mask.
-            shape: (number of scans, number of elements)
+            If a 1D array is provided, then the shape should be
+            (number of elements,), and a 3D img will be returned.
+            If a 2D array is provided, then the shape should be
+            (number of scans, number of elements), and a 4D img will be
+            returned.
             See http://nilearn.github.io/manipulating_images/input_output.html
 
         Returns
@@ -289,6 +293,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         """
         self._check_fitted()
+
         img = self._cache(masking.unmask)(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
         # internal structures of the header: remove the memmaped array

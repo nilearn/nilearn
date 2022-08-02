@@ -504,9 +504,13 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
         Parameters
         ----------
-        region_signals : 2D :obj:`numpy.ndarray`
+        region_signals : 1D/2D :obj:`numpy.ndarray`
             Signal for each region.
-            shape: (number of scans, number of spheres)
+            If a 1D array is provided, then the shape should be
+            (number of elements,), and a 3D img will be returned.
+            If a 2D array is provided, then the shape should be
+            (number of scans, number of elements), and a 4D img will be
+            returned.
 
         Returns
         -------
@@ -526,6 +530,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
                 'Please provide mask_img at initialization to '
                 'provide a reference for the inverse_transform.'
             )
+
         _, adjacency = _apply_mask_and_get_affinity(
             self.seeds_, None, self.radius, self.allow_overlap, mask_img=mask
         )
