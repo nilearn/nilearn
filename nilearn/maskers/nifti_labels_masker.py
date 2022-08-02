@@ -532,8 +532,10 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         if not hasattr(self, '_resampled_labels_img_'):
             self._resampled_labels_img_ = self.labels_img_
+
         if not hasattr(self, '_resampled_mask_img'):
             self._resampled_mask_img = self.mask_img_
+
         if self.resampling_target == "data":
             imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
             if not _utils.niimg_conversions._check_same_fov(
@@ -571,6 +573,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                                   "Label image only contains "
                                   f"{len(labels_after_resampling)} labels "
                                   "(including background).")
+
             if (self.mask_img is not None) and (
                 not _utils.niimg_conversions._check_same_fov(
                     imgs_,
@@ -584,6 +587,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                         self.mask_img_, interpolation="nearest",
                         target_shape=imgs_.shape[:3],
                         target_affine=imgs_.affine)
+
             # Remove imgs_ from memory before loading the same image
             # in filter_and_extract.
             del imgs_
@@ -633,11 +637,19 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         Any mask given at initialization is taken into account.
 
+        .. versionchanged:: 0.9.2dev
+
+            This method now supports 1D arrays, which will produce 3D images.
+
         Parameters
         ----------
-        signals : 2D :obj:`numpy.ndarray`
+        signals : 1D/2D :obj:`numpy.ndarray`
             Signal for each region.
-            shape: (number of scans, number of regions)
+            If a 1D array is provided, then the shape should be
+            (number of elements,), and a 3D img will be returned.
+            If a 2D array is provided, then the shape should be
+            (number of scans, number of elements), and a 4D img will be
+            returned.
 
         Returns
         -------
