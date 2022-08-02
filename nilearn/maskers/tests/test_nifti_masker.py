@@ -193,7 +193,6 @@ def test_4d_single_scan():
 
     # Test that, in list of 4d images with last dimension=1, they are
     # considered as 3d
-
     rng = np.random.RandomState(42)
     data_5d = [rng.random_sample((10, 10, 10, 1)) for i in range(5)]
     data_4d = [d[..., 0] for d in data_5d]
@@ -201,7 +200,18 @@ def test_4d_single_scan():
     data_4d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_4d]
 
     masker = NiftiMasker(mask_img=mask_img)
+
+    # Check attributes defined at fit
+    assert not hasattr(masker, "mask_img_")
+    assert not hasattr(masker, "n_elements_")
+
     masker.fit()
+
+    # Check attributes defined at fit
+    assert hasattr(masker, "mask_img_")
+    assert hasattr(masker, "n_elements_")
+    assert masker.n_elements_ == np.sum(mask)
+
     data_trans_5d = masker.transform(data_5d)
     data_trans_4d = masker.transform(data_4d)
 
@@ -283,12 +293,15 @@ def test_mask_strategy_errors():
             ValueError,
             match="Unknown value of mask_strategy 'oops'"):
         mask.fit()
-    # Warning with deprecated 'template' strategy
+    # Warning with deprecated 'template' strategy,
+    # plus an exception because there's no resulting mask
     img = np.random.RandomState(42).uniform(size=(9, 9, 5))
     img = Nifti1Image(img, np.eye(4))
     mask = NiftiMasker(mask_strategy='template')
-    with pytest.warns(UserWarning,
-                      match="Masking strategy 'template' is deprecated."):
+    with pytest.warns(
+        UserWarning,
+        match="Masking strategy 'template' is deprecated."
+    ):
         mask.fit(img)
 
 
@@ -331,8 +344,7 @@ def test_compute_epi_mask():
     masker4.fit(mean_image2)
     mask4 = masker4.mask_img_
 
-    assert not np.allclose(get_data(mask1),
-                             get_data(mask4)[3:12, 3:12])
+    assert not np.allclose(get_data(mask1), get_data(mask4)[3:12, 3:12])
 
 
 def _get_random_img(shape):
@@ -358,11 +370,11 @@ def expected_mask(mask_args):
 def test_compute_brain_mask(strategy, mask_args, expected_mask):
     # Check masker for template masking strategy
     img = _get_random_img((9, 9, 5))
-    masker = NiftiMasker(mask_strategy=strategy,
-                         mask_args=mask_args)
+
+    masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)
     masker.fit(img)
-    np.testing.assert_array_equal(get_data(masker.mask_img_),
-                                  expected_mask)
+
+    np.testing.assert_array_equal(get_data(masker.mask_img_), expected_mask)
 
 
 def test_filter_and_mask_error():

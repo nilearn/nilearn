@@ -57,17 +57,21 @@ def _load_mask_img(mask_img, allow_empty=False):
         # We accept a single value if it is not 0 (full true mask).
         if values[0] == 0 and not allow_empty:
             raise ValueError(
-                'The mask is invalid as it is empty: it masks all data.')
+                'The mask is invalid as it is empty: it masks all data.'
+            )
     elif len(values) == 2:
         # If there are 2 different values, one of them must be 0 (background)
         if 0 not in values:
-            raise ValueError('Background of the mask must be represented with'
-                             '0. Given mask contains: %s.' % values)
+            raise ValueError(
+                'Background of the mask must be represented with 0. '
+                f'Given mask contains: {values}.'
+            )
     elif len(values) != 2:
         # If there are more than 2 values, the mask is invalid
-        raise ValueError('Given mask is not made of 2 values: %s'
-                         '. Cannot interpret as true or false'
-                         % values)
+        raise ValueError(
+            f'Given mask is not made of 2 values: {values}. '
+            'Cannot interpret as true or false.'
+        )
 
     mask = _utils.as_ndarray(mask, dtype=bool)
     return mask, mask_img.affine

@@ -37,6 +37,7 @@ Enhancements
 - Conform seeding and docstrings in module ``_utils.data_gen`` (:gh:`3262` by `Yasmin Mzayek`_).
 - Docstrings of module :mod:`~nilearn.glm.second_level` were improved (:gh:`3030` by `Nicolas Gensollen`_).
 - In :func:`~reporting.get_clusters_table`, when the center of mass of a binary cluster falls outside the cluster, report the nearest within-cluster voxel instead (:gh:`3292` by `Connor Lane`_).
+- Add ``n_elements_`` attribute to masker classes (:gh:`3311` by `Taylor Salo`_).
 - Functions expecting string filesystem paths now also accept path-like objects (:gh:`3300` by `Yasmin Mzayek`_).
 - Contributing guidelines now include a recommendation to run flake8 locally on the branch diff with main (:gh:`3317` by `Yasmin Mzayek`_).
 
@@ -60,8 +61,8 @@ Changes
   them to int32 when possible (ie when it would not result in an overflow).
   Moreover, any atlas fetcher that returned int64 images now produces images
   containing smaller ints. (:gh:`3227` by `Jerome Dockes`_)
-- Refactors fmriprep confound loading such that that the parsing of the 
-  relevant image file and the loading of the confounds are done in 
+- Refactors fmriprep confound loading such that that the parsing of the
+  relevant image file and the loading of the confounds are done in
   separate steps (:gh:`3274` by `David G Ellis`_).
 - Private submodules, functions, and classes from the :mod:`~nilearn.decomposition` module now start with a "_" character to make it clear that they are not part of the public API (:gh:`3141` by `Nicolas Gensollen`_).
 - Convert references in ``nilearn/glm/regression.py`` and ``nilearn/glm/thresholding.py`` to use footcite/footbibliography (:gh:`3302` by `Ahmad Chamma`_).
