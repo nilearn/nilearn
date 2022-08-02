@@ -194,7 +194,7 @@ def get_mask_bounds(img):
         Parameters
         ----------
         img : Niimg-like object
-            See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
+            See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa: E501
             The image to inspect. Zero values are considered as
             background.
 
@@ -314,7 +314,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     Parameters
     ----------
     img : Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa: E501
         Image(s) to resample.
 
     target_affine : numpy.ndarray, optional
@@ -447,7 +447,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     affine = img.affine
 
     # If later on we want to impute sform using qform add this condition
-    # see : https://github.com/nilearn/nilearn/issues/3168#issuecomment-1159447771 # noqa:E501
+    # see : https://github.com/nilearn/nilearn/issues/3168#issuecomment-1159447771 # noqa: E501
     sform, sform_code = img.get_sform(coded=True)
     if not sform_code:
         warnings.warn("The provided image has no sform in its header. "
@@ -638,11 +638,11 @@ def resample_to_img(source_img, target_img,
     Parameters
     ----------
     source_img : Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa: E501
         Image(s) to resample.
 
     target_img : Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa: E501
         Reference image taken for resampling.
 
     interpolation : str, optional
@@ -707,7 +707,7 @@ def reorder_img(img, resample=None):
     Parameters
     -----------
     img : Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa: E501
         Image to reorder.
 
     resample : None or string in {'continuous', 'linear', 'nearest'}, optional

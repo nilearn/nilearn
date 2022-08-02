@@ -107,7 +107,7 @@ def make_glm_report(model,
         using contrast names.
 
     bg_img : Niimg-like object, optional
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa: E501
         The background image for mask and stat maps to be plotted on upon.
         To turn off background image, just pass "bg_img=None".
         Default='MNI152TEMPLATE'.
@@ -627,12 +627,12 @@ def _mask_to_svg(mask_img, bg_img):
     Parameters
     ----------
     mask_img : Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa: E501
         The mask image; it could be binary mask or an atlas or ROIs
         with integer values.
 
     bg_img : Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa: E501
         The background image that the mask will be plotted on top of.
         To turn off background image, just pass "bg_img=None".
 
@@ -708,7 +708,7 @@ def _make_stat_maps_contrast_clusters(stat_img, contrasts_plots, threshold,
 
     bg_img : Niimg-like object
         Only used when plot_type is 'slice'.
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa: E501
         The background image for stat maps to be plotted on upon.
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
@@ -878,7 +878,7 @@ def _stat_map_to_svg(stat_img,
 
     bg_img : Niimg-like object
         Only used when plot_type is 'slice'.
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa: E501
         The background image for stat maps to be plotted on upon.
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".

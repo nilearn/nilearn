@@ -39,7 +39,7 @@ def get_data(img):
     Parameters
     ----------
     img : Niimg-like object or iterable of Niimg-like objects
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa:E501
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa: E501
 
     Returns
     -------
@@ -62,12 +62,12 @@ def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
         ----------
         imgs : Niimg-like object
             4D image.
-            See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa:E501
+            See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa: E501
 
         mask_img : Niimg-like object
             If not provided, all voxels are used.
             If provided, confounds are extracted from voxels inside the mask.
-            See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa:E501
+            See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa: E501
 
         n_confounds : :obj:`int`, optional
             Number of confounds to return. Default=5.
@@ -613,7 +613,7 @@ def index_img(imgs, index):
     Parameters
     ----------
     imgs : 4D Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa:E501
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa: E501
 
     index : Any type compatible with numpy array indexing
         Used for indexing the 4D data array in the fourth dimension.
@@ -670,7 +670,7 @@ def iter_img(imgs):
     Parameters
     ----------
     imgs : 4D Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa:E501
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa: E501
 
     Returns
     -------
@@ -1179,7 +1179,7 @@ def clean_img(imgs, runs=None, detrend=True, standardize=True,
         If provided, signal is only cleaned from voxels inside the mask. If
         mask is provided, it should have same shape and affine as imgs.
         If not provided, all voxels are used.
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa:E501
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa: E501
 
     Returns
     -------
@@ -1254,7 +1254,7 @@ def load_img(img, wildcards=True, dtype=None):
         on it. The '~' symbol is expanded to the user home folder.
         If it is an object, check if affine attribute is present, raise
         `TypeError` otherwise.
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa:E501
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa: E501
 
     wildcards : :obj:`bool`, optional
         Use `img` as a regular expression to get a list of matching input
@@ -1291,7 +1291,7 @@ def largest_connected_component_img(imgs):
     imgs : Niimg-like object or iterable of Niimg-like objects (3D), str, or
         os.PathLike
         Image(s) to extract the largest connected component from.
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa:E501
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html. # noqa: E501
 
     Returns
     -------

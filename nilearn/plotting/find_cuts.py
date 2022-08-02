@@ -233,7 +233,7 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
     Parameters
     ----------
     img : 3D Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa:E501
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html # noqa: E501
         the brain map.
 
     direction : string, optional
