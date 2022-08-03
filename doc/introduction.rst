@@ -49,7 +49,7 @@ Why is machine learning relevant to NeuroImaging? A few examples!
 
     * **Information mapping**: using the prediction accuracy of a classifier
       to characterize relationships between brain images and stimuli. (e.g.
-      :ref:`searchlight <searchlight>`) `[Kriegeskorte 2005]
+      :ref:`searchlight <searchlight>`) `[Kriegeskorte 2006]
       <http://www.pnas.org/content/103/10/3863.short>`_
 
     * **Transfer learning**: measuring how much an estimator trained on one

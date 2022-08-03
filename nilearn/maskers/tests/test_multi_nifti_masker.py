@@ -97,9 +97,19 @@ def test_3d_images():
     epi_img2 = Nifti1Image(np.ones((2, 2, 2)),
                            affine=np.diag((2, 2, 2, 1)))
     masker = MultiNiftiMasker(mask_img=mask_img)
+
+    # Check attributes defined at fit
+    assert not hasattr(masker, "mask_img_")
+    assert not hasattr(masker, "n_elements_")
+
     epis = masker.fit_transform([epi_img1, epi_img2])
+
     # This is mostly a smoke test
     assert len(epis) == 2
+
+    # Check attributes defined at fit
+    assert hasattr(masker, "mask_img_")
+    assert hasattr(masker, "n_elements_")
 
     # verify that 4D mask arguments are refused
     mask_img_4d = Nifti1Image(np.ones((2, 2, 2, 2), dtype=np.int8),
@@ -173,10 +183,13 @@ def test_mask_strategy_errors():
     with pytest.raises(ValueError,
                        match="Unknown value of mask_strategy 'foo'"):
         mask.fit(imgs)
-    # Warning with deprecated 'template' strategy
+    # Warning with deprecated 'template' strategy,
+    # plus an exception because there's no resulting mask
     mask = MultiNiftiMasker(mask_strategy='template')
-    with pytest.warns(UserWarning,
-                      match="Masking strategy 'template' is deprecated."):
+    with pytest.warns(
+        UserWarning,
+        match="Masking strategy 'template' is deprecated."
+    ):
         mask.fit(imgs)
 
 

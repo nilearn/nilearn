@@ -1,8 +1,9 @@
-"""Test the nifti_region module
+"""Test nilearn.maskers.nifti_maps_masker.
 
-Functions in this file only test features added by the NiftiLabelsMasker class,
-non_overlappingt the underlying functions (clean(), img_to_signals_labels(), etc.). See
-test_masking.py and test_signal.py for details.
+Functions in this file only test features added by the NiftiMapsMasker class,
+rather than the underlying functions (clean(), img_to_signals_labels(), etc.).
+
+See test_masking.py and test_signal.py for details.
 """
 
 import numpy as np
@@ -41,8 +42,9 @@ def test_nifti_maps_masker():
     fmri21_img, mask21_img = generate_random_img(shape2, affine=affine1,
                                                  length=length)
 
-    labels11_img, labels_mask_img = \
-        data_gen.generate_maps(shape1, n_regions, affine=affine1)
+    labels11_img, labels_mask_img = data_gen.generate_maps(
+        shape1, n_regions, affine=affine1
+    )
 
     # No exception raised here
     for create_files in (True, False):
@@ -84,9 +86,22 @@ def test_nifti_maps_masker():
     pytest.raises(ValueError, masker11.fit)
 
     # Transform, with smoothing (smoke test)
-    masker11 = NiftiMapsMasker(labels11_img, smoothing_fwhm=3,
-                               resampling_target=None)
-    signals11 = masker11.fit().transform(fmri11_img)
+    masker11 = NiftiMapsMasker(
+        labels11_img, smoothing_fwhm=3, resampling_target=None
+    )
+    # Check attributes defined at fit
+    assert not hasattr(masker11, "maps_img_")
+    assert not hasattr(masker11, "n_elements_")
+
+    masker11.fit()
+
+    # Check attributes defined at fit
+    assert hasattr(masker11, "maps_img_")
+    assert hasattr(masker11, "n_elements_")
+    assert masker11.n_elements_ == n_regions
+
+    signals11 = masker11.transform(fmri11_img)
+
     assert signals11.shape == (length, n_regions)
 
     masker11 = NiftiMapsMasker(labels11_img, smoothing_fwhm=3,
@@ -337,8 +352,7 @@ def test_nifti_maps_masker_2():
     fmri11_img_r = masker.inverse_transform(transformed)
     np.testing.assert_almost_equal(fmri11_img_r.affine,
                                    masker.maps_img_.affine)
-    assert (fmri11_img_r.shape ==
-                 (masker.maps_img_.shape[:3] + (length,)))
+    assert (fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,)))
 
 
 def test_nifti_maps_masker_overlap():
@@ -407,10 +421,12 @@ def test_standardization():
 
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)
     np.testing.assert_almost_equal(
-            trans_signals,
+        trans_signals,
+        (
             unstandarized_label_signals /
-            unstandarized_label_signals.mean(0) * 100 - 100,
-            )
+            unstandarized_label_signals.mean(0) * 100 - 100
+        ),
+    )
 
 
 def test_3d_images():
@@ -420,12 +436,12 @@ def test_3d_images():
     shape3 = (16, 17, 18)
 
     maps33_img, _ = data_gen.generate_maps(shape3, n_regions)
-    mask_img = nibabel.Nifti1Image(np.ones(shape3, dtype=np.int8),
-                           affine=affine)
-    epi_img1 = nibabel.Nifti1Image(np.ones(shape3),
-                           affine=affine)
-    epi_img2 = nibabel.Nifti1Image(np.ones(shape3),
-                           affine=affine)
+    mask_img = nibabel.Nifti1Image(
+        np.ones(shape3, dtype=np.int8),
+        affine=affine,
+    )
+    epi_img1 = nibabel.Nifti1Image(np.ones(shape3), affine=affine)
+    epi_img2 = nibabel.Nifti1Image(np.ones(shape3), affine=affine)
     masker = NiftiMapsMasker(maps33_img, mask_img=mask_img)
 
     epis = masker.fit_transform(epi_img1)

@@ -2314,8 +2314,8 @@ def fetch_neurovault(
     skimmed through the whole database or until an (optional) maximum
     number of images to fetch has been reached.
 
-    For more information, see :footcite:`Gorgolewski2015neurovault`,
-    and :footcite:`yarkoni2011large`.
+    For more information, see :footcite:`Gorgolewski2015`,
+    and :footcite:`Yarkoni2011`.
 
     Parameters
     ----------
@@ -2519,8 +2519,8 @@ def fetch_neurovault_ids(
     This is the fast way to get the data from the server if we already
     know which images or collections we want.
 
-    For more information, see :footcite:`Gorgolewski2015neurovault`,
-    and :footcite:`yarkoni2011large`.
+    For more information, see :footcite:`Gorgolewski2015`,
+    and :footcite:`Yarkoni2011`.
 
     Parameters
     ----------

@@ -19,6 +19,7 @@ from .path_finding import _resolve_globbing
 
 from .exceptions import DimensionError
 from .niimg import _get_data
+from .helpers import stringify_path
 
 
 def _check_fov(img, affine, shape):
@@ -191,9 +192,9 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     ----------
     niimg : Niimg-like object
         See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
-        If niimg is a string, consider it as a path to Nifti image and
-        call nibabel.load on it. The '~' symbol is expanded to the user home
-        folder.
+        If niimg is a string or pathlib.Path, consider it as a path to
+        Nifti image and call nibabel.load on it. The '~' symbol is expanded to
+        the user home folder.
         If it is an object, check if the affine attribute present and that
         nilearn.image.get_data returns a result, raise TypeError otherwise.
 
@@ -246,6 +247,8 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
 
     """
     from ..image import new_img_like  # avoid circular imports
+
+    niimg = stringify_path(niimg)
 
     if isinstance(niimg, str):
         if wildcards and ni.EXPAND_PATH_WILDCARDS:

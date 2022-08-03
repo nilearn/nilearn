@@ -229,6 +229,14 @@ def test_check_niimg():
         get_data(img_4d).dtype.kind == get_data(img_4d_check).dtype.kind)
 
 
+def test_check_niimg_pathlike():
+    img = Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
+
+    with testing.write_tmp_imgs(img, create_files=True) as filename:
+        filename = Path(filename)
+        _utils.check_niimg_3d(filename)
+
+
 def test_check_niimg_wildcards():
     tmp_dir = tempfile.tempdir + os.sep
     nofile_path = "/tmp/nofile"

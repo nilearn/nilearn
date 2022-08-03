@@ -23,8 +23,21 @@ def test_sphere_extraction():
     data = np.random.RandomState(42).random_sample((3, 3, 3, 5))
     img = nibabel.Nifti1Image(data, np.eye(4))
     masker = NiftiSpheresMasker([(1, 1, 1)], radius=1)
+
+    # Check attributes defined at fit
+    assert not hasattr(masker, "seeds_")
+    assert not hasattr(masker, "n_elements_")
+
+    masker.fit()
+
+    # Check attributes defined at fit
+    assert hasattr(masker, "seeds_")
+    assert hasattr(masker, "n_elements_")
+    assert masker.n_elements_ == 1
+
     # Test the fit
     masker.fit()
+
     # Test the transform
     s = masker.transform(img)
     mask = np.zeros((3, 3, 3), dtype=bool)
@@ -32,6 +45,7 @@ def test_sphere_extraction():
     mask[1, :, 1] = True
     mask[1, 1, :] = True
     assert_array_equal(s[:, 0], np.mean(data[mask], axis=0))
+
     # Now with a mask
     mask_img = np.zeros((3, 3, 3))
     mask_img[1, :, :] = 1

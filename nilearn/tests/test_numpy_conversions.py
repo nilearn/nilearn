@@ -236,7 +236,7 @@ def test_as_ndarray():
 def test_csv_to_array(tmp_path):
     # Create a phony CSV file
     fd, filename = tempfile.mkstemp(suffix='.csv',
-                                    dir=str(tmp_path))
+                                    dir=tmp_path)
     os.close(fd)
     try:
         with open(filename, mode='wt') as fp:

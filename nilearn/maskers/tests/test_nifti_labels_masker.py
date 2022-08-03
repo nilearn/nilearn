@@ -12,7 +12,7 @@ import pytest
 from nilearn.maskers import NiftiMasker, NiftiLabelsMasker
 from nilearn._utils import testing, as_ndarray, data_gen
 from nilearn._utils.exceptions import DimensionError
-from nilearn.image import get_data, new_img_like
+from nilearn.image import get_data
 
 
 def generate_random_img(shape, length=1, affine=np.eye(4),
@@ -65,7 +65,20 @@ def test_nifti_labels_masker():
 
     # No exception should be raised either
     masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
+
+    # Check attributes defined at fit
+    assert not hasattr(masker11, "mask_img_")
+    assert not hasattr(masker11, "labels_img_")
+    assert not hasattr(masker11, "n_elements_")
+
     masker11.fit()
+
+    # Check attributes defined at fit
+    assert hasattr(masker11, "mask_img_")
+    assert hasattr(masker11, "labels_img_")
+    assert hasattr(masker11, "n_elements_")
+    assert masker11.n_elements_ == n_regions
+
     masker11.inverse_transform(signals11)
 
     masker11 = NiftiLabelsMasker(labels11_img, mask_img=mask11_img,
@@ -287,8 +300,7 @@ def test_nifti_labels_masker_resampling():
     fmri11_img_r = masker.inverse_transform(transformed)
     np.testing.assert_almost_equal(fmri11_img_r.affine,
                                    masker.labels_img_.affine)
-    assert (fmri11_img_r.shape ==
-                 (masker.labels_img_.shape[:3] + (length,)))
+    assert (fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,)))
 
     # Test with clipped labels: mask does not contain all labels.
     # Shapes do matter in that case, because there is some resampling
@@ -333,8 +345,7 @@ def test_nifti_labels_masker_resampling():
     fmri11_img_r = masker.inverse_transform(transformed)
     np.testing.assert_almost_equal(fmri11_img_r.affine,
                                    masker.labels_img_.affine)
-    assert (fmri11_img_r.shape ==
-                 (masker.labels_img_.shape[:3] + (length,)))
+    assert (fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,)))
 
     # Test with data and atlas of different shape: the atlas should be
     # resampled to the data
@@ -399,8 +410,9 @@ def test_standardization():
     means = rng.standard_normal(size=(np.prod(data_shape), 1)) * 50 + 1000
     signals += means
     img = nibabel.Nifti1Image(
-            signals.reshape(data_shape + (n_samples,)), np.eye(4)
-            )
+        signals.reshape(data_shape + (n_samples,)),
+        np.eye(4),
+    )
 
     labels = data_gen.generate_labeled_regions((9, 9, 5), 10)
 
@@ -450,12 +462,12 @@ def test_3d_images():
     shape3 = (2, 2, 2)
 
     labels33_img = data_gen.generate_labeled_regions(shape3, n_regions)
-    mask_img = nibabel.Nifti1Image(np.ones(shape3, dtype=np.int8),
-                           affine=affine)
-    epi_img1 = nibabel.Nifti1Image(np.ones(shape3),
-                           affine=affine)
-    epi_img2 = nibabel.Nifti1Image(np.ones(shape3),
-                           affine=affine)
+    mask_img = nibabel.Nifti1Image(
+        np.ones(shape3, dtype=np.int8),
+        affine=affine,
+    )
+    epi_img1 = nibabel.Nifti1Image(np.ones(shape3), affine=affine)
+    epi_img2 = nibabel.Nifti1Image(np.ones(shape3), affine=affine)
     masker = NiftiLabelsMasker(labels33_img, mask_img=mask_img)
 
     epis = masker.fit_transform(epi_img1)

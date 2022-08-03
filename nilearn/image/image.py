@@ -30,7 +30,7 @@ from .._utils import (_repr_niimgs,
 from .._utils.niimg import _get_data, _safe_get_data
 from .._utils.niimg_conversions import _check_same_fov, _index_img
 from .._utils.param_validation import check_threshold
-from .._utils.helpers import rename_parameters
+from .._utils.helpers import rename_parameters, stringify_path
 
 
 def get_data(img):
@@ -247,7 +247,8 @@ def smooth_img(imgs, fwhm):
 
     Parameters
     ----------
-    imgs : Niimg-like object or iterable of Niimg-like objects
+    imgs : Niimg-like object or iterable of Niimg-like objects, str, or
+        os.PathLike
         Image(s) to smooth (see
         http://nilearn.github.io/manipulating_images/input_output.html
         for a detailed description of the valid input types).
@@ -263,6 +264,7 @@ def smooth_img(imgs, fwhm):
 
     # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
     # See http://bugs.python.org/issue7624
+    imgs = stringify_path(imgs)
     if hasattr(imgs, "__iter__") \
        and not isinstance(imgs, str):
         single_img = False
@@ -494,7 +496,8 @@ def mean_img(imgs, target_affine=None, target_shape=None,
 
     Parameters
     ----------
-    imgs : Niimg-like object or iterable of Niimg-like objects
+    imgs : Niimg-like object or iterable of Niimg-like objects, str, or
+        os.PathLike
         Images to be averaged over time (see
         http://nilearn.github.io/manipulating_images/input_output.html
         for a detailed description of the valid input types).
@@ -526,6 +529,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
     nilearn.image.math_img : For more general operations on images.
 
     """
+    imgs = stringify_path(imgs)
     is_str = isinstance(imgs, str)
     is_iterable = isinstance(imgs, collections.abc.Iterable)
     if is_str or not is_iterable:
@@ -1185,10 +1189,10 @@ def clean_img(imgs, runs=None, detrend=True, standardize=True,
     Notes
     -----
     Confounds removal is based on a projection on the orthogonal
-    of the signal space [:footcite:`friston1994statistical`].
+    of the signal space [:footcite:`Friston1994`].
 
     Orthogonalization between temporal filters and confound removal is based on
-    suggestions in [:footcite:`Lindquist407676`].
+    suggestions in [:footcite:`Lindquist2018`].
 
     References
     ----------
@@ -1284,7 +1288,8 @@ def largest_connected_component_img(imgs):
 
     Parameters
     ----------
-    imgs : Niimg-like object or iterable of Niimg-like objects (3D)
+    imgs : Niimg-like object or iterable of Niimg-like objects (3D), str, or
+        os.PathLike
         Image(s) to extract the largest connected component from.
         See http://nilearn.github.io/manipulating_images/input_output.html.
 
@@ -1303,7 +1308,7 @@ def largest_connected_component_img(imgs):
 
     """
     from .._utils.ndimage import largest_connected_component
-
+    imgs = stringify_path(imgs)
     if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
         single_img = False
     else:

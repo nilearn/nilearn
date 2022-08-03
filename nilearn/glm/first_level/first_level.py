@@ -27,6 +27,7 @@ from nilearn._utils import fill_doc
 from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
                                 _check_run_tables, _check_run_sample_masks)
 from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.helpers import stringify_path
 from nilearn.glm.contrasts import (_compute_fixed_effect_contrast,
                                    expression_to_contrast_vector)
 from nilearn.glm.first_level.design_matrix import \
@@ -281,7 +282,7 @@ class FirstLevelModel(BaseGLM):
         This parameter is passed to nilearn.image.resample_img.
         Please see the related documentation for details.
     %(smoothing_fwhm)s
-    memory : string, optional
+    memory : string or os.PathLike, optional
         Path to the directory used to cache the masking process and the glm
         fit. By default, no caching is done.
         Creates instance of joblib.Memory.
@@ -375,6 +376,7 @@ class FirstLevelModel(BaseGLM):
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
+        memory = stringify_path(memory)
         if isinstance(memory, str):
             self.memory = Memory(memory)
         else:

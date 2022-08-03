@@ -111,7 +111,7 @@ def serialize_niimg(img, gzipped=True):
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
         file_path = tmp_dir / "img.nii{}".format(".gz" if gzipped else "")
-        img.to_filename(str(file_path))
+        img.to_filename(file_path)
         with file_path.open("rb") as f:
             return f.read()
 

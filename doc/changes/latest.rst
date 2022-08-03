@@ -11,6 +11,7 @@ NEW
 - :func:`~interfaces.bids.save_glm_to_bids` has been added, which writes model outputs to disk according to BIDS convention (:gh:`2715` by `Taylor Salo`_).
 - :func:`~mass_univariate.permuted_ols` and :func:`~glm.second_level.non_parametric_inference` now support :term:`TFCE` statistic (:gh:`3196` by `Taylor Salo`_).
 - :func:`~mass_univariate.permuted_ols` and :func:`~glm.second_level.non_parametric_inference` now support cluster-level Family-wise error correction (:gh:`3181` by `Taylor Salo`_).
+- Updated docs with a new theme using `furo <https://github.com/pradyunsg/furo>`_ (:gh:`3125` by `Alexis Thual`_).
 
 Fixes
 -----
@@ -27,6 +28,7 @@ Fixes
 - Fix bug introduced due to a fix in the pre-release version of scipy (``1.9.0rc1``) which now enforces that elements of a band-pass filter must meet condition ``Wn[0] < Wn[1]``.
   Now if band-pass elements are equal :func:`~nilearn.signal.butterworth` returns an unfiltered signal with a warning (:gh:`3293` by `Yasmin Mzayek`_).
 - The parameter ``alpha`` is now correctly passed to :func:`~plotting.plot_glass_brain` in :func:`~plotting.plot_connectome` (:gh:`3306` by `Koen Helwegen`_).
+- Fix plotting of background image in :func:`~nilearn.plotting.view_img` when the background is not the MNI template (:gh:`3312` by `Jerome Dockes`_).
 
 Enhancements
 ------------
@@ -36,7 +38,9 @@ Enhancements
 - Conform seeding and docstrings in module ``_utils.data_gen`` (:gh:`3262` by `Yasmin Mzayek`_).
 - Docstrings of module :mod:`~nilearn.glm.second_level` were improved (:gh:`3030` by `Nicolas Gensollen`_).
 - In :func:`~reporting.get_clusters_table`, when the center of mass of a binary cluster falls outside the cluster, report the nearest within-cluster voxel instead (:gh:`3292` by `Connor Lane`_).
-- The docs now use `fugo <https://github.com/pradyunsg/furo>`_ (:gh:`3125` by `Alexis Thual`_).
+- Add ``n_elements_`` attribute to masker classes (:gh:`3311` by `Taylor Salo`_).
+- Functions expecting string filesystem paths now also accept path-like objects (:gh:`3300` by `Yasmin Mzayek`_).
+- Contributing guidelines now include a recommendation to run flake8 locally on the branch diff with main (:gh:`3317` by `Yasmin Mzayek`_).
 
 Changes
 -------
@@ -58,8 +62,8 @@ Changes
   them to int32 when possible (ie when it would not result in an overflow).
   Moreover, any atlas fetcher that returned int64 images now produces images
   containing smaller ints. (:gh:`3227` by `Jerome Dockes`_)
-- Refactors fmriprep confound loading such that that the parsing of the 
-  relevant image file and the loading of the confounds are done in 
+- Refactors fmriprep confound loading such that that the parsing of the
+  relevant image file and the loading of the confounds are done in
   separate steps (:gh:`3274` by `David G Ellis`_).
 - Private submodules, functions, and classes from the :mod:`~nilearn.decomposition` module now start with a "_" character to make it clear that they are not part of the public API (:gh:`3141` by `Nicolas Gensollen`_).
 - Convert references in ``nilearn/glm/regression.py`` and ``nilearn/glm/thresholding.py`` to use footcite/footbibliography (:gh:`3302` by `Ahmad Chamma`_).

@@ -18,6 +18,7 @@ from .. import signal
 from .. import _utils
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.class_inspect import enclosing_scope_name
+from .._utils.helpers import stringify_path
 from nilearn.image import high_variance_confounds
 
 
@@ -31,7 +32,7 @@ def _filter_and_extract(
 
     Parameters
     ----------
-    imgs : 3D/4D Niimg-like object
+    imgs : 3D/4D Niimg-like object or str or os.PathLike
         Images to be masked. Can be 3-dimensional or 4-dimensional.
 
     extraction_function : function
@@ -57,6 +58,7 @@ def _filter_and_extract(
 
     # If we have a string (filename), we won't need to copy, as
     # there will be no side effect
+    imgs = stringify_path(imgs)
     if isinstance(imgs, str):
         copy = False
 
@@ -133,8 +135,9 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         ----------
         imgs : 3D/4D Niimg-like object
             See http://nilearn.github.io/manipulating_images/input_output.html
-            Images to process. It must boil down to a 4D image with scans
-            number as last dimension.
+            Images to process.
+            If a 3D niimg is provided, a singleton dimension will be added to
+            the output to represent the single scan in the niimg.
 
         confounds : CSV file or array-like, optional
             This parameter is passed to signal.clean. Please see the related
@@ -168,8 +171,9 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         ----------
         imgs : 3D/4D Niimg-like object
             See http://nilearn.github.io/manipulating_images/input_output.html
-            Images to process. It must boil down to a 4D image with scans
-            number as last dimension.
+            Images to process.
+            If a 3D niimg is provided, a singleton dimension will be added to
+            the output to represent the single scan in the niimg.
 
         confounds : CSV file or array-like, optional
             This parameter is passed to signal.clean. Please see the related
@@ -274,7 +278,9 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         Parameters
         ----------
-        X : Niimg-like object
+        X : 2D :obj:`numpy.ndarray`
+            Signal for each element in the mask.
+            shape: (number of scans, number of elements)
             See http://nilearn.github.io/manipulating_images/input_output.html
 
         Returns
