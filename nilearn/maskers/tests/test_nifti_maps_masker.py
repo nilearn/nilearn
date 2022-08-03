@@ -18,7 +18,7 @@ from nilearn.maskers import NiftiMapsMasker
 
 
 def test_nifti_maps_masker():
-    # Check working of shape/affine checks
+    """Check working of shape/affine checks."""
     n_regions = 9
     length = 3
 
@@ -320,7 +320,7 @@ def test_nifti_maps_masker_with_nans_and_infs_in_data():
 
 
 def test_nifti_maps_masker_2():
-    # Test resampling in NiftiMapsMasker
+    """Test resampling in NiftiMapsMasker."""
     n_regions = 9
     length = 3
     affine = np.eye(4)
@@ -446,7 +446,7 @@ def test_nifti_maps_masker_2():
 
 
 def test_nifti_maps_masker_overlap():
-    # Test resampling in NiftiMapsMasker
+    """Test resampling in NiftiMapsMasker."""
     length = 10
     affine = np.eye(4)
     shape = (5, 5, 5, length)

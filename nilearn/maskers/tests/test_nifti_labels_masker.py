@@ -17,7 +17,7 @@ from nilearn.maskers import NiftiLabelsMasker, NiftiMasker
 
 
 def test_nifti_labels_masker():
-    # Check working of shape/affine checks
+    """Check working of shape/affine checks."""
     length = 3
     shape1 = (13, 11, 12, length)
     affine1 = np.eye(4)
@@ -40,11 +40,16 @@ def test_nifti_labels_masker():
         affine=affine1,
     )
 
-    labels11_img = data_gen.generate_labeled_regions(shape1[:3], affine=affine1,
-                                                     n_regions=n_regions)
+    labels11_img = data_gen.generate_labeled_regions(
+        shape1[:3],
+        affine=affine1,
+        n_regions=n_regions,
+    )
 
-    mask_img_4d = nibabel.Nifti1Image(np.ones((2, 2, 2, 2), dtype=np.int8),
-                                      affine=np.diag((4, 4, 4, 1)))
+    mask_img_4d = nibabel.Nifti1Image(
+        np.ones((2, 2, 2, 2), dtype=np.int8),
+        affine=np.diag((4, 4, 4, 1)),
+    )
 
     # verify that 4D mask arguments are refused
     masker = NiftiLabelsMasker(labels11_img, mask_img=mask_img_4d)
@@ -333,10 +338,10 @@ def test_nifti_labels_masker_reduction_strategies():
 
 
 def test_nifti_labels_masker_resampling():
+    """Test resampling in NiftiLabelsMasker."""
     n_regions = 9
     length = 3
 
-    # Test resampling in NiftiLabelsMasker
     shape1 = (10, 11, 12, length)
     affine = np.eye(4)
 
@@ -532,6 +537,7 @@ def test_standardization():
 
 
 def test_nifti_labels_masker_with_mask():
+    """Test NiftiLabelsMasker with a separte mask_img parameter."""
     shape = (13, 11, 12, 3)
     affine = np.eye(4)
     fmri_img, mask_img = data_gen.generate_random_img(shape, affine=affine)
@@ -541,12 +547,16 @@ def test_nifti_labels_masker_with_mask():
         n_regions=7,
     )
     masker = NiftiLabelsMasker(
-        labels_img, resampling_target=None, mask_img=mask_img)
+        labels_img, resampling_target=None, mask_img=mask_img
+    )
     signals = masker.fit().transform(fmri_img)
     bg_masker = NiftiMasker(mask_img).fit()
-    masked_labels = bg_masker.inverse_transform(bg_masker.transform(labels_img))
+    masked_labels = bg_masker.inverse_transform(
+        bg_masker.transform(labels_img),
+    )
     masked_masker = NiftiLabelsMasker(
-        masked_labels, resampling_target=None, mask_img=mask_img)
+        masked_labels, resampling_target=None, mask_img=mask_img
+    )
     masked_signals = masked_masker.fit().transform(fmri_img)
     assert np.allclose(signals, masked_signals)
 

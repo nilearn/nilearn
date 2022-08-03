@@ -12,6 +12,7 @@ from nilearn.maskers import NiftiSpheresMasker
 
 
 def test_seed_extraction():
+    """Test seed extraction."""
     data = np.random.RandomState(42).random_sample((3, 3, 3, 5))
     img = nibabel.Nifti1Image(data, np.eye(4))
     masker = NiftiSpheresMasker([(1, 1, 1)])
@@ -23,6 +24,7 @@ def test_seed_extraction():
 
 
 def test_sphere_extraction():
+    """Test sphere extraction."""
     data = np.random.RandomState(42).random_sample((3, 3, 3, 5))
     img = nibabel.Nifti1Image(data, np.eye(4))
     masker = NiftiSpheresMasker([(1, 1, 1)], radius=1)

@@ -24,7 +24,7 @@ from nilearn.maskers.nifti_masker import _filter_and_mask
 
 
 def test_auto_mask():
-    # This mostly a smoke test
+    """Perform a smoke test on the auto-mask option."""
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
     img = nibabel.Nifti1Image(data, np.eye(4))
@@ -44,7 +44,7 @@ def test_auto_mask():
 
 
 def test_detrend():
-    # Check that detrending doesn't do something stupid with 3D images
+    """Check that detrending doesn't do something stupid with 3D images."""
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
     img = nibabel.Nifti1Image(data, np.eye(4))
@@ -57,7 +57,7 @@ def test_detrend():
 
 
 def test_resample():
-    # Check that target_affine triggers the right resampling
+    """Check that target_affine triggers the right resampling."""
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
     img = nibabel.Nifti1Image(data, np.eye(4))
@@ -70,7 +70,7 @@ def test_resample():
 
 
 def test_with_files():
-    # Standard masking
+    """Test standard masking with filenames."""
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
     data_img = nibabel.Nifti1Image(data, np.eye(4))
@@ -82,6 +82,7 @@ def test_with_files():
 
 
 def test_nan():
+    """Check that the masker handles NaNs appropriately."""
     data = np.ones((9, 9, 9))
     data[0] = np.nan
     data[:, 0] = np.nan
@@ -105,7 +106,6 @@ def test_nan():
 
 def test_matrix_orientation():
     """Test if processing is performed along the correct axis."""
-
     # the "step" kind generate heavyside-like signals for each voxel.
     # all signals being identical, standardizing along the wrong axis
     # would leave a null signal. Along the correct axis, the step remains.
@@ -127,6 +127,7 @@ def test_matrix_orientation():
 
 
 def test_mask_3d():
+    """Test that the masker raises an error when no data img is provided."""
     # Dummy mask
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
@@ -139,6 +140,7 @@ def test_mask_3d():
 
 
 def test_mask_4d():
+    """Test performance with 4D data."""
     # Dummy mask
     mask = np.zeros((10, 10, 10), dtype="int32")
     mask[3:7, 3:7, 3:7] = 1
@@ -182,12 +184,11 @@ def test_mask_4d():
 
 
 def test_4d_single_scan():
+    """Test that list of 4D images with last dim=1 is treated as 3D."""
     mask = np.zeros((10, 10, 10))
     mask[3:7, 3:7, 3:7] = 1
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
-    # Test that, in list of 4d images with last dimension=1, they are
-    # considered as 3d
     rng = np.random.RandomState(42)
     data_5d = [rng.random_sample((10, 10, 10, 1)) for i in range(5)]
     data_4d = [d[..., 0] for d in data_5d]
@@ -214,12 +215,10 @@ def test_4d_single_scan():
 
 
 def test_5d():
+    """Test that list of 4D images with last dim=1 are treated as 3d."""
     mask = np.zeros((10, 10, 10))
     mask[3:7, 3:7, 3:7] = 1
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
-
-    # Test that, in list of 4d images with last dimension=1, they are
-    # considered as 3d
 
     rng = np.random.RandomState(42)
     data_5d = [rng.random_sample((10, 10, 10, 3)) for i in range(5)]
@@ -236,7 +235,7 @@ def test_5d():
 
 
 def test_sessions():
-    # Test the sessions vector
+    """Test the sessions vector."""
     data = np.ones((40, 40, 40, 4))
     # Create a border, so that the masking work well
     data[0] = 0
@@ -252,6 +251,7 @@ def test_sessions():
 
 
 def test_joblib_cache():
+    """Test using joblib cache."""
     from joblib import Memory, hash
     mask = np.zeros((40, 40, 40))
     mask[20, 20, 20] = 1
@@ -282,6 +282,7 @@ def test_joblib_cache():
 
 
 def test_mask_strategy_errors():
+    """Check that mask_strategy errors are raised."""
     # Error with unknown mask_strategy
     mask = NiftiMasker(mask_strategy='oops')
     with pytest.raises(
@@ -301,6 +302,7 @@ def test_mask_strategy_errors():
 
 
 def test_compute_epi_mask():
+    """Test that the masker class is passing parameters appropriately."""
     # Taken from test_masking.py, but used to test that the masker class
     #   is passing parameters appropriately.
     mean_image = np.ones((9, 9, 3))
@@ -344,6 +346,7 @@ def test_compute_epi_mask():
 
 @pytest.fixture
 def expected_mask(mask_args):
+    """Create an expected mask."""
     mask = np.zeros((9, 9, 5))
     if mask_args == dict():
         return mask
@@ -358,7 +361,7 @@ def expected_mask(mask_args):
 @pytest.mark.parametrize('mask_args',
                          [dict(), dict(threshold=0.)])
 def test_compute_brain_mask(strategy, mask_args, expected_mask):
-    # Check masker for template masking strategy
+    """Check masker for template masking strategy."""
     img, _ = data_gen.generate_random_img((9, 9, 5))
 
     masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)
@@ -449,9 +452,10 @@ def test_standardization():
     trans_signals = masker.fit_transform(img)
 
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)
-    np.testing.assert_almost_equal(trans_signals,
-                                   (signals / signals.mean(1)[:, np.newaxis] *
-                                    100 - 100).T)
+    np.testing.assert_almost_equal(
+        trans_signals,
+        (signals / signals.mean(1)[:, np.newaxis] * 100 - 100).T,
+    )
 
 
 def test_nifti_masker_io_shapes():
