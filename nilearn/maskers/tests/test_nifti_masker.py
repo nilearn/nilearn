@@ -9,22 +9,18 @@ test_signal.py for this.
 # License: simplified BSD
 import os
 import shutil
-from tempfile import mkdtemp
 import warnings
+from tempfile import mkdtemp
 
 import nibabel
 import numpy as np
 import pytest
-from nilearn._utils import (
-    class_inspect,
-    data_gen,
-    exceptions,
-    testing,
-)
+from numpy.testing import assert_array_equal
+
+from nilearn._utils import class_inspect, data_gen, exceptions, testing
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import _filter_and_mask
-from numpy.testing import assert_array_equal
 
 
 def test_auto_mask():
