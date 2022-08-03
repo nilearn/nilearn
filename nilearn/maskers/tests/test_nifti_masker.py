@@ -185,12 +185,14 @@ def test_mask_4d():
 
 def test_4d_single_scan():
     """Test that list of 4D images with last dim=1 is treated as 3D."""
-    mask = np.zeros((10, 10, 10))
+    shape_3d = (10, 10, 10)
+    shape_4d = shape_3d + (1,)
+    mask = np.zeros(shape_3d)
     mask[3:7, 3:7, 3:7] = 1
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
     rng = np.random.RandomState(42)
-    data_5d = [rng.random_sample((10, 10, 10, 1)) for i in range(5)]
+    data_5d = [rng.random_sample(shape_4d) for i in range(5)]
     data_4d = [d[..., 0] for d in data_5d]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
     data_4d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_4d]
@@ -216,21 +218,25 @@ def test_4d_single_scan():
 
 def test_5d():
     """Test that list of 4D images with last dim=1 are treated as 3d."""
-    mask = np.zeros((10, 10, 10))
+    shape_3d = (10, 10, 10)
+    shape_4d = shape_3d + (3,)
+    mask = np.zeros(shape_3d)
     mask[3:7, 3:7, 3:7] = 1
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
     rng = np.random.RandomState(42)
-    data_5d = [rng.random_sample((10, 10, 10, 3)) for i in range(5)]
+    data_5d = [rng.random_sample(shape_4d) for i in range(5)]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
 
     masker = NiftiMasker(mask_img=mask_img)
     masker.fit()
+
     with pytest.raises(
             exceptions.DimensionError,
             match="Input data has incompatible dimensionality: "
                   "Expected dimension is 4D and you provided "
-                  "a list of 4D images \\(5D\\)."):
+                  "a list of 4D images \\(5D\\)."
+    ):
         masker.transform(data_5d)
 
 

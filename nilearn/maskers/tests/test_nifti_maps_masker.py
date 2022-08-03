@@ -42,7 +42,7 @@ def test_nifti_maps_masker():
     )
 
     labels11_img, labels_mask_img = data_gen.generate_maps(
-        shape1, n_regions, affine=affine1
+        shape1[:3], n_regions, affine=affine1
     )
 
     # No exception raised here
@@ -446,18 +446,21 @@ def test_nifti_maps_masker_2():
 
 def test_nifti_maps_masker_overlap():
     """Test resampling in NiftiMapsMasker."""
-    length = 10
     affine = np.eye(4)
-    shape = (5, 5, 5, length)
+    shape_maps = (5, 5, 5, 2)
+    shape_data = (5, 5, 5, 10)
 
-    fmri_img, _ = data_gen.generate_random_img(shape, affine=affine)
-    non_overlapping_maps = np.zeros(shape + (2,))
+    fmri_img, _ = data_gen.generate_random_img(shape_data, affine=affine)
+
+    non_overlapping_maps = np.zeros(shape_maps)
     non_overlapping_maps[:2, :, :, 0] = 1.
     non_overlapping_maps[2:, :, :, 1] = 1.
-    non_overlapping_maps_img = nibabel.Nifti1Image(non_overlapping_maps,
-                                                   affine)
+    non_overlapping_maps_img = nibabel.Nifti1Image(
+        non_overlapping_maps,
+        affine,
+    )
 
-    overlapping_maps = np.zeros(shape + (2,))
+    overlapping_maps = np.zeros(shape_maps)
     overlapping_maps[:3, :, :, 0] = 1.
     overlapping_maps[2:, :, :, 1] = 1.
     overlapping_maps_img = nibabel.Nifti1Image(overlapping_maps, affine)
@@ -474,11 +477,16 @@ def test_nifti_maps_masker_overlap():
     )
     overlapping_masker.fit_transform(fmri_img)
 
-    non_overlapping_masker = NiftiMapsMasker(non_overlapping_maps_img,
-                                             allow_overlap=False)
+    non_overlapping_masker = NiftiMapsMasker(
+        non_overlapping_maps_img,
+        allow_overlap=False,
+    )
     non_overlapping_masker.fit_transform(fmri_img)
-    non_overlapping_masker = NiftiMapsMasker(overlapping_maps_img,
-                                             allow_overlap=False)
+
+    non_overlapping_masker = NiftiMapsMasker(
+        overlapping_maps_img,
+        allow_overlap=False,
+    )
     with pytest.raises(ValueError, match='Overlap detected'):
         non_overlapping_masker.fit_transform(fmri_img)
 
