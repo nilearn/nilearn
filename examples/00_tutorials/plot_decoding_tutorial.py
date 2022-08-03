@@ -15,11 +15,6 @@ analysis using Nilearn meta-estimator: :class:`nilearn.decoding.Decoder`
 
 It is not a minimalistic example, as it strives to be didactic. It is not
 meant to be copied to analyze new data: many of the steps are unnecessary.
-
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
 """
 
 ###########################################################################

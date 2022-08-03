@@ -4,10 +4,6 @@
 Input and output: neuroimaging data representation
 =====================================================
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
 |
 
 .. currentmodule:: nilearn.image

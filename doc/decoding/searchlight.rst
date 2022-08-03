@@ -9,10 +9,6 @@ This page overviews searchlight analyses and how they are approached
 in nilearn with the :class:`SearchLight` estimator.
 
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
 Principle of the Searchlight
 ============================
 

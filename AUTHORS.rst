@@ -2,8 +2,9 @@
 
 .. include:: changes/names.rst
 
-People
-------
+====
+Team
+====
 
 This work is made available by a community of people, which
 originated from

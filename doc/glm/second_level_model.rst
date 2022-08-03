@@ -11,10 +11,6 @@ Second level models
    be grouped and statistical tests  performed to make broader inferences on fMRI activity. Some common
    second level models are one-sample (unpaired or paired) and two-sample t-tests.
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
 
 Fitting a second level model
 ============================

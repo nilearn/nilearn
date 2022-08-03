@@ -13,11 +13,6 @@ First level models
   a set of predictors defined within the design matrix.
 
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
-
 HRF models
 ==========
 
@@ -150,8 +145,8 @@ FistLevelModel is initialized with the `minimize_memory` flag set to `False`. ::
 Here, masker is an object of :class:`nilearn.maskers.NiftiSpheresMasker`. In the figure below,
 predicted (red) and observed (not red) timecourses of 6 voxels are shown.
 
-  .. image:: ../auto_examples/04_glm_first_level/images/sphx_glr_plot_predictions_residuals_002.png
-     :target: ../auto_examples/04_glm_first_level/plot_predictions_residuals.html
+.. image:: ../auto_examples/04_glm_first_level/images/sphx_glr_plot_predictions_residuals_002.png
+   :target: ../auto_examples/04_glm_first_level/plot_predictions_residuals.html
 
 In addition to the predicted timecourses, this flag also yields the residuals of the GLM. The residuals are
 useful to calculate the F and R-squared statistic. For more information refer to

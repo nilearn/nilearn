@@ -1,11 +1,10 @@
 .. _nistats_migration:
 
-===================================================
-A Quick Guide to Migrating Nistats Code to Nilearn
-===================================================
+======================
+Migrating from Nistats
+======================
 
 A quick guide to changing your Nistats imports to work in Nilearn
-
 
 Datasets
 ========

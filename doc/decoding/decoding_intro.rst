@@ -23,12 +23,7 @@ to capture diffusion mapping.
 .. note::
   This documentation only aims at explaining the necessary concepts and common
   pitfalls of decoding analysis. For an introduction on the code to use please
-  refer to : :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
-
-
-.. contents:: **Contents**
-    :local:
-    :depth: 1
+  refer to : :ref:`sphx_glr_auto_examples_00_tutorials_plot_decoding_tutorial.py`
 
 
 Loading and preparing the data
@@ -104,7 +99,7 @@ Loading the data into nilearn
 
    The documentation here just gives the big idea. A full code example,
    with explanation, can be found on
-   :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
+   :ref:`sphx_glr_auto_examples_00_tutorials_plot_decoding_tutorial.py`
 
 * **Starting an environment**: Launch IPython via "ipython --matplotlib"
   in a terminal, or use the Jupyter notebook.
@@ -268,7 +263,7 @@ groups=`session_labels` will use one session as test set.
 
 .. note::
   Full code example can be found at :
-  :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
+  :ref:`sphx_glr_auto_examples_00_tutorials_plot_decoding_tutorial.py`
 
 
 Choice of the prediction accuracy measure
@@ -343,7 +338,7 @@ coefficients of best models for each class in `decoder.coef_img_`.
 
 .. note::
   Full code for the above can be found on
-  :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
+  :ref:`sphx_glr_auto_examples_00_tutorials_plot_decoding_tutorial.py`
 
 
 .. seealso::
