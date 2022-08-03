@@ -155,11 +155,10 @@ def test_nifti_maps_masker_io_shapes():
     affine = np.eye(4)
 
     img_4d, mask_img = data_gen.generate_random_img(
-        shape_3d,
+        shape_4d,
         affine=affine,
-        length=n_volumes,
     )
-    img_3d, _ = data_gen.generate_random_img(shape_3d, affine=affine, length=0)
+    img_3d, _ = data_gen.generate_random_img(shape_3d, affine=affine)
     maps_img, _ = data_gen.generate_maps(
         shape_3d,
         affine=affine,
