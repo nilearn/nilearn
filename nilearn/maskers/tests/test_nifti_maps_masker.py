@@ -10,50 +10,35 @@ import warnings
 import nibabel
 import numpy as np
 import pytest
-from nilearn._utils import as_ndarray, data_gen, testing
+from nilearn._utils import data_gen, testing
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMapsMasker
 
 
-def generate_random_img(
-    shape,
-    length=1,
-    affine=np.eye(4),
-    rand_gen=np.random.RandomState(0),
-):
-    """Create a random 3D or 4D image with a given shape and affine."""
-    if length > 0:
-        shape = shape + (length,)
-
-    data = rand_gen.standard_normal(size=shape)
-
-    return (
-        nibabel.Nifti1Image(data, affine),
-        nibabel.Nifti1Image(
-            as_ndarray(data[..., 0] > 0.2, dtype=np.int8),
-            affine,
-        ),
-    )
-
-
 def test_nifti_maps_masker():
     # Check working of shape/affine checks
-    shape1 = (13, 11, 12)
-    affine1 = np.eye(4)
-
-    shape2 = (12, 10, 14)
-    affine2 = np.diag((1, 2, 3, 1))
-
     n_regions = 9
     length = 3
 
-    fmri11_img, mask11_img = generate_random_img(shape1, affine=affine1,
-                                                 length=length)
-    fmri12_img, mask12_img = generate_random_img(shape1, affine=affine2,
-                                                 length=length)
-    fmri21_img, mask21_img = generate_random_img(shape2, affine=affine1,
-                                                 length=length)
+    shape1 = (13, 11, 12, length)
+    affine1 = np.eye(4)
+
+    shape2 = (12, 10, 14, length)
+    affine2 = np.diag((1, 2, 3, 1))
+
+    fmri11_img, mask11_img = data_gen.generate_random_img(
+        shape1,
+        affine=affine1,
+    )
+    fmri12_img, mask12_img = data_gen.generate_random_img(
+        shape1,
+        affine=affine2,
+    )
+    fmri21_img, mask21_img = data_gen.generate_random_img(
+        shape2,
+        affine=affine1,
+    )
 
     labels11_img, labels_mask_img = data_gen.generate_maps(
         shape1, n_regions, affine=affine1
@@ -137,12 +122,14 @@ def test_nifti_maps_masker():
 
     # Test with data and atlas of different shape: the atlas should be
     # resampled to the data
-    shape22 = (5, 5, 6)
+    shape22 = (5, 5, 6, length)
     affine2 = 2 * np.eye(4)
     affine2[-1, -1] = 1
 
-    fmri22_img, _ = generate_random_img(shape22, affine=affine2,
-                                        length=length)
+    fmri22_img, _ = data_gen.generate_random_img(
+        shape22,
+        affine=affine2,
+    )
     masker = NiftiMapsMasker(labels11_img, mask_img=mask21_img)
 
     masker.fit_transform(fmri22_img)
@@ -166,12 +153,12 @@ def test_nifti_maps_masker_io_shapes():
     data_2d = np.random.random((n_volumes, n_regions))
     affine = np.eye(4)
 
-    img_4d, mask_img = generate_random_img(
+    img_4d, mask_img = data_gen.generate_random_img(
         shape_3d,
         affine=affine,
         length=n_volumes,
     )
-    img_3d, _ = generate_random_img(shape_3d, affine=affine, length=0)
+    img_3d, _ = data_gen.generate_random_img(shape_3d, affine=affine, length=0)
     maps_img, _ = data_gen.generate_maps(
         shape_3d,
         affine=affine,
@@ -228,10 +215,15 @@ def test_nifti_maps_masker_with_nans_and_infs():
     """
     length = 3
     n_regions = 8
-    fmri_img, mask_img = generate_random_img((13, 11, 12),
-                                             affine=np.eye(4), length=length)
-    maps_img, maps_mask_img = data_gen.generate_maps((13, 11, 12), n_regions,
-                                                     affine=np.eye(4))
+    fmri_img, mask_img = data_gen.generate_random_img(
+        (13, 11, 12, length),
+        affine=np.eye(4),
+    )
+    maps_img, maps_mask_img = data_gen.generate_maps(
+        (13, 11, 12),
+        n_regions,
+        affine=np.eye(4),
+    )
 
     # Add NaNs and infs to atlas
     maps_data = get_data(maps_img).astype(np.float32)
@@ -267,8 +259,10 @@ def test_nifti_maps_masker_with_nans_and_infs_in_mask():
     """
     length = 3
     n_regions = 8
-    fmri_img, mask_img = generate_random_img((13, 11, 12),
-                                             affine=np.eye(4), length=length)
+    fmri_img, mask_img = data_gen.generate_random_img(
+        (13, 11, 12, length),
+        affine=np.eye(4),
+    )
     maps_img, maps_mask_img = data_gen.generate_maps((13, 11, 12), n_regions,
                                                      affine=np.eye(4))
 
@@ -297,10 +291,15 @@ def test_nifti_maps_masker_with_nans_and_infs_in_data():
     """
     length = 3
     n_regions = 8
-    fmri_img, mask_img = generate_random_img((13, 11, 12),
-                                             affine=np.eye(4), length=length)
-    maps_img, maps_mask_img = data_gen.generate_maps((13, 11, 12), n_regions,
-                                                     affine=np.eye(4))
+    fmri_img, mask_img = data_gen.generate_random_img(
+        (13, 11, 12, length),
+        affine=np.eye(4),
+    )
+    maps_img, maps_mask_img = data_gen.generate_maps(
+        (13, 11, 12),
+        n_regions,
+        affine=np.eye(4),
+    )
 
     # Add NaNs and infs to data
     fmri_data = get_data(fmri_img)
@@ -321,25 +320,33 @@ def test_nifti_maps_masker_with_nans_and_infs_in_data():
 
 def test_nifti_maps_masker_2():
     # Test resampling in NiftiMapsMasker
-    affine = np.eye(4)
-
-    shape1 = (10, 11, 12)  # fmri
-    shape2 = (13, 14, 15)  # mask
-    shape3 = (16, 17, 18)  # maps
-
     n_regions = 9
     length = 3
+    affine = np.eye(4)
 
-    fmri11_img, _ = generate_random_img(shape1, affine=affine,
-                                        length=length)
-    _, mask22_img = generate_random_img(shape2, affine=affine,
-                                        length=length)
+    shape1 = (10, 11, 12, length)  # fmri
+    shape2 = (13, 14, 15, length)  # mask
+    shape3 = (16, 17, 18)  # maps
 
-    maps33_img, _ = \
-        data_gen.generate_maps(shape3, n_regions, affine=affine)
+    fmri11_img, _ = data_gen.generate_random_img(
+        shape1,
+        affine=affine,
+    )
+    _, mask22_img = data_gen.generate_random_img(
+        shape2,
+        affine=affine,
+    )
 
-    mask_img_4d = nibabel.Nifti1Image(np.ones((2, 2, 2, 2), dtype=np.int8),
-                                      affine=np.diag((4, 4, 4, 1)))
+    maps33_img, _ = data_gen.generate_maps(
+        shape3,
+        n_regions,
+        affine=affine,
+    )
+
+    mask_img_4d = nibabel.Nifti1Image(
+        np.ones((2, 2, 2, 2), dtype=np.int8),
+        affine=np.diag((4, 4, 4, 1)),
+    )
 
     # verify that 4D mask arguments are refused
     masker = NiftiMapsMasker(maps33_img, mask_img=mask_img_4d)
@@ -400,7 +407,7 @@ def test_nifti_maps_masker_2():
     # Test with clipped maps: mask does not contain all maps.
     # Shapes do matter in that case
     affine1 = np.eye(4)
-    shape1 = (10, 11, 12)
+    shape1 = (10, 11, 12, length)
     shape2 = (8, 9, 10)  # mask
     affine2 = np.diag((2, 2, 2, 1))  # just for mask
     shape3 = (16, 18, 20)  # maps
@@ -408,12 +415,11 @@ def test_nifti_maps_masker_2():
     n_regions = 9
     length = 21
 
-    fmri11_img, _ = generate_random_img(shape1, affine=affine1, length=length)
+    fmri11_img, _ = data_gen.generate_random_img(shape1, affine=affine1)
     _, mask22_img = data_gen.generate_fake_fmri(shape2, length=1,
                                                 affine=affine2)
     # Target: maps
-    maps33_img, _ = \
-        data_gen.generate_maps(shape3, n_regions, affine=affine1)
+    maps33_img, _ = data_gen.generate_maps(shape3, n_regions, affine=affine1)
 
     masker = NiftiMapsMasker(maps33_img, mask_img=mask22_img,
                              resampling_target="maps")
@@ -440,12 +446,11 @@ def test_nifti_maps_masker_2():
 
 def test_nifti_maps_masker_overlap():
     # Test resampling in NiftiMapsMasker
-    affine = np.eye(4)
-    shape = (5, 5, 5)
     length = 10
+    affine = np.eye(4)
+    shape = (5, 5, 5, length)
 
-    fmri_img, _ = generate_random_img(shape, affine=affine,
-                                      length=length)
+    fmri_img, _ = data_gen.generate_random_img(shape, affine=affine)
     non_overlapping_maps = np.zeros(shape + (2,))
     non_overlapping_maps[:2, :, :, 0] = 1.
     non_overlapping_maps[2:, :, :, 1] = 1.

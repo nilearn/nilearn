@@ -16,7 +16,6 @@ import nibabel
 import numpy as np
 import pytest
 from nilearn._utils import (
-    as_ndarray,
     class_inspect,
     data_gen,
     exceptions,
@@ -26,27 +25,6 @@ from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import _filter_and_mask
 from numpy.testing import assert_array_equal
-
-
-def generate_random_img(
-    shape,
-    length=1,
-    affine=np.eye(4),
-    rand_gen=np.random.RandomState(0),
-):
-    """Create a random 3D or 4D image with a given shape and affine."""
-    if length > 0:
-        shape = shape + (length,)
-
-    data = rand_gen.standard_normal(size=shape)
-
-    return (
-        nibabel.Nifti1Image(data, affine),
-        nibabel.Nifti1Image(
-            as_ndarray(data[..., 0] > 0.2, dtype=np.int8),
-            affine,
-        ),
-    )
 
 
 def test_auto_mask():
@@ -385,7 +363,7 @@ def expected_mask(mask_args):
                          [dict(), dict(threshold=0.)])
 def test_compute_brain_mask(strategy, mask_args, expected_mask):
     # Check masker for template masking strategy
-    img = generate_random_img((9, 9, 5), length=0)
+    img, _ = data_gen.generate_random_img((9, 9, 5))
 
     masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)
     masker.fit(img)
@@ -494,12 +472,11 @@ def test_nifti_masker_io_shapes():
     shape_4d = (10, 11, 12, n_volumes)
     affine = np.eye(4)
 
-    img_4d, mask_img = generate_random_img(
-        shape_3d,
+    img_4d, mask_img = data_gen.generate_random_img(
+        shape_4d,
         affine=affine,
-        length=n_volumes,
     )
-    img_3d, _ = generate_random_img(shape_3d, affine=affine, length=0)
+    img_3d, _ = data_gen.generate_random_img(shape_3d, affine=affine)
     n_regions = np.sum(mask_img.get_fdata().astype(bool))
     data_1d = np.random.random(n_regions)
     data_2d = np.random.random((n_volumes, n_regions))
