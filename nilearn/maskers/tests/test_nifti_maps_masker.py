@@ -407,14 +407,14 @@ def test_nifti_maps_masker_2():
 
     # Test with clipped maps: mask does not contain all maps.
     # Shapes do matter in that case
+    n_regions = 9
+    length = 21
+
     affine1 = np.eye(4)
     shape1 = (10, 11, 12, length)
     shape2 = (8, 9, 10)  # mask
     affine2 = np.diag((2, 2, 2, 1))  # just for mask
     shape3 = (16, 18, 20)  # maps
-
-    n_regions = 9
-    length = 21
 
     fmri11_img, _ = data_gen.generate_random_img(shape1, affine=affine1)
     _, mask22_img = data_gen.generate_fake_fmri(shape2, length=1,
@@ -463,11 +463,16 @@ def test_nifti_maps_masker_overlap():
     overlapping_maps[2:, :, :, 1] = 1.
     overlapping_maps_img = nibabel.Nifti1Image(overlapping_maps, affine)
 
-    overlapping_masker = NiftiMapsMasker(non_overlapping_maps_img,
-                                         allow_overlap=True)
+    overlapping_masker = NiftiMapsMasker(
+        non_overlapping_maps_img,
+        allow_overlap=True,
+    )
     overlapping_masker.fit_transform(fmri_img)
-    overlapping_masker = NiftiMapsMasker(overlapping_maps_img,
-                                         allow_overlap=True)
+
+    overlapping_masker = NiftiMapsMasker(
+        overlapping_maps_img,
+        allow_overlap=True,
+    )
     overlapping_masker.fit_transform(fmri_img)
 
     non_overlapping_masker = NiftiMapsMasker(non_overlapping_maps_img,
