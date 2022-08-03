@@ -426,7 +426,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
 
         Returns
         -------
-        data : :obj:`list` of :obj:`numpy.ndarrays`
+        data : :obj:`list` of :obj:`numpy.ndarray`
             preprocessed images
 
         """
