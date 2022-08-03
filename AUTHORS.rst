@@ -1,5 +1,7 @@
 .. -*- mode: rst -*-
 
+.. include:: changes/names.rst
+
 ====
 Team
 ====

@@ -18,15 +18,6 @@ import shutil
 import sphinx
 from nilearn.version import _compare_version
 
-# jquery is included in plotting package data because it is needed for
-# interactive plots. It is also needed by the documentation, so we copy
-# it to the themes/nilearn/static folder.
-# shutil.copy(
-#     os.path.join(os.path.dirname(os.path.dirname(__file__)),
-#                  'nilearn', 'plotting', 'data', 'js', 'jquery.min.js'),
-#     os.path.join(os.path.dirname(__file__), 'themes', 'nilearn', 'static',
-#                  'jquery.js'))
-
 
 # ----------------------------------------------------------------------------
 
