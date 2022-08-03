@@ -966,7 +966,7 @@ def generate_random_img(
     Parameters
     ----------
     shape : length-3 or length-4 tuple
-        The shape fo the image being generated.
+        The shape of the image being generated.
         The number of elements determines the dimensionality of the image.
     affine : 4x4 numpy.ndarray
         The affine of the image
