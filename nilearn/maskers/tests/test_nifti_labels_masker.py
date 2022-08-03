@@ -537,7 +537,7 @@ def test_standardization():
 
 
 def test_nifti_labels_masker_with_mask():
-    """Test NiftiLabelsMasker with a separte mask_img parameter."""
+    """Test NiftiLabelsMasker with a separate mask_img parameter."""
     shape = (13, 11, 12, 3)
     affine = np.eye(4)
     fmri_img, mask_img = data_gen.generate_random_img(shape, affine=affine)
