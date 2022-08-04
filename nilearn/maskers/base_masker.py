@@ -67,10 +67,13 @@ def _filter_and_extract(
             class_name,
             _utils._repr_niimgs(imgs, shorten=False)))
 
-    imgs = _utils.check_niimg(imgs)
+    # Convert input to niimg to check shape.
+    # This must be repeated after the shape check because check_niimg will
+    # coerce 5D data to 4D, which we don't want.
+    temp_imgs = _utils.check_niimg(imgs)
 
     # Raise warning if a 3D niimg is provided.
-    if imgs.ndim == 3:
+    if temp_imgs.ndim == 3:
         warnings.warn(
             'Starting in version 0.12, 3D images will be transformed to '
             '1D arrays. '
