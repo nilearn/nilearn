@@ -40,6 +40,7 @@ Enhancements
 - Add ``n_elements_`` attribute to masker classes (:gh:`3311` by `Taylor Salo`_).
 - Functions expecting string filesystem paths now also accept path-like objects (:gh:`3300` by `Yasmin Mzayek`_).
 - Contributing guidelines now include a recommendation to run flake8 locally on the branch diff with main (:gh:`3317` by `Yasmin Mzayek`_).
+- :class:`~maskers.NiftiLabelsMasker` now accepts 1-dimensional arrays in its :meth:`~maskers.NiftiLabelsMasker.inverse_transform` method (:gh:`3322` by `Taylor Salo`_).
 
 Changes
 -------
@@ -67,3 +68,4 @@ Changes
 - Private submodules, functions, and classes from the :mod:`~nilearn.decomposition` module now start with a "_" character to make it clear that they are not part of the public API (:gh:`3141` by `Nicolas Gensollen`_).
 - Convert references in ``nilearn/glm/regression.py`` and ``nilearn/glm/thresholding.py`` to use footcite/footbibliography (:gh:`3302` by `Ahmad Chamma`_).
 - Boolean input data in :func:`~image.new_img_like` now defaults to `np.uint8` instead of `np.int8` (:gh:`3286` by `Yasmin Mzayek`_).
+- The current behavior of maskers' ``transform`` on 3D niimg inputs, in which a 2D array is returned, is deprecated, and 1D arrays will be returned starting in version ``0.12`` (:gh:`3322` by `Taylor Salo`_).
