@@ -17,7 +17,8 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
 
-from nilearn._utils import class_inspect, data_gen, exceptions, testing
+from nilearn._utils import data_gen, exceptions, testing
+from nilearn._utils.class_inspect import get_params
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import _filter_and_mask
@@ -385,7 +386,7 @@ def test_filter_and_mask_error():
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
     masker = NiftiMasker()
-    params = class_inspect.get_params(NiftiMasker, masker)
+    params = get_params(NiftiMasker, masker)
 
     with pytest.raises(
             exceptions.DimensionError,
@@ -403,7 +404,7 @@ def test_filter_and_mask():
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
     masker = NiftiMasker()
-    params = class_inspect.get_params(NiftiMasker, masker)
+    params = get_params(NiftiMasker, masker)
 
     # Test return_affine = False
     data = _filter_and_mask(data_img, mask_img, params)
