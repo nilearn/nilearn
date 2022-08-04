@@ -475,7 +475,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         DeprecationWarning
             If a 3D niimg input is provided, the current behavior
             (adding a singleton dimension to produce a 2D array) is deprecated.
-            Starting in version 0.12, a 1D array will be returned for 3D inputs.
+            Starting in version 0.12, a 1D array will be returned for 3D
+            inputs.
 
         """
         self._check_fitted()
