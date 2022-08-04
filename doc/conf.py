@@ -16,7 +16,6 @@ import sys
 import os
 import shutil
 import sphinx
-import re
 from nilearn.version import _compare_version
 
 
@@ -52,6 +51,7 @@ extensions = [
     'sphinxext.opengraph',
     'myst_parser',
     'sphinx_design',
+    'remove_noqa',
 ]
 
 autosummary_generate = True
@@ -374,17 +374,8 @@ def touch_example_backreferences(app, what, name, obj, options, lines):
         open(examples_path, 'w').close()
 
 
-def trim_noqa(app, what, name, obj, options, lines):
-    noqa_regex = re.compile('^(.*)\s#\snoqa:.*$')
-    for i, line in enumerate(lines):
-        if noqa_regex.match(line):
-            lines[i] = noqa_regex.sub(r'\1', line)
-
-
 def setup(app):
     app.connect('autodoc-process-docstring', touch_example_backreferences)
-    app.connect('autodoc-process-docstring', trim_noqa)
-
 
 
 # The following is used by sphinx.ext.linkcode to provide links to github
