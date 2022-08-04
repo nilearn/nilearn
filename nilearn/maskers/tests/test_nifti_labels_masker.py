@@ -154,7 +154,7 @@ def test_nifti_labels_masker_io_shapes():
     masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
     masker.fit()
 
-    # DeprecationWarning *shouldt* be raised for 3D inputs
+    # DeprecationWarning *should* be raised for 3D inputs
     with pytest.warns(DeprecationWarning, match='Starting in version 0.12'):
         test_data = masker.transform(img_3d)
         assert test_data.shape == (1, n_regions)

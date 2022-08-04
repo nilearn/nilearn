@@ -542,6 +542,13 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             Signal for each voxel inside the mask.
             shape: (number of scans, number of voxels)
 
+        Warns
+        -----
+        DeprecationWarning
+            If a 3D niimg input is provided, the current behavior
+            (adding a singleton dimension to produce a 2D array) is deprecated.
+            Starting in version 0.12, a 1D array will be returned for 3D inputs.
+
         """
 
         # Ignore the mask-computing params: they are not useful and will

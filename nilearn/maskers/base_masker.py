@@ -174,6 +174,13 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             Signal for each element.
             shape: (number of scans, number of elements)
 
+        Warns
+        -----
+        DeprecationWarning
+            If a 3D niimg input is provided, the current behavior
+            (adding a singleton dimension to produce a 2D array) is deprecated.
+            Starting in version 0.12, a 1D array will be returned for 3D inputs.
+
         """
         raise NotImplementedError()
 
@@ -206,6 +213,13 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         region_signals : 2D numpy.ndarray
             Signal for each element.
             shape: (number of scans, number of elements)
+
+        Warns
+        -----
+        DeprecationWarning
+            If a 3D niimg input is provided, the current behavior
+            (adding a singleton dimension to produce a 2D array) is deprecated.
+            Starting in version 0.12, a 1D array will be returned for 3D inputs.
 
         """
         self._check_fitted()

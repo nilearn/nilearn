@@ -526,6 +526,13 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             Signal for each label.
             shape: (number of scans, number of labels)
 
+        Warns
+        -----
+        DeprecationWarning
+            If a 3D niimg input is provided, the current behavior
+            (adding a singleton dimension to produce a 2D array) is deprecated.
+            Starting in version 0.12, a 1D array will be returned for 3D inputs.
+
         """
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
