@@ -691,7 +691,8 @@ def load_surf_data(surf_data):
 
     """
     # if the input is a filename, load it
-    if isinstance(surf_data, (str, os.PathLike)):
+    surf_data = stringify_path(surf_data)
+    if isinstance(surf_data, str):
 
         # resolve globbing
         file_list = _resolve_globbing(surf_data)
