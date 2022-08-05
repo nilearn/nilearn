@@ -18,7 +18,7 @@ from .. import signal
 from .. import _utils
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.class_inspect import enclosing_scope_name
-from .._utils.helpers import stringify_path
+from .._utils import stringify_path
 from nilearn.image import high_variance_confounds
 
 

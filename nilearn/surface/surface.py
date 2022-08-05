@@ -25,7 +25,7 @@ from nilearn import datasets
 from nilearn.image import load_img
 from nilearn.image import resampling
 from nilearn._utils.path_finding import _resolve_globbing
-from nilearn._utils.helpers import stringify_path
+from nilearn._utils import stringify_path
 from nilearn import _utils
 from nilearn.image import get_data
 

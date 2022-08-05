@@ -17,7 +17,7 @@ from sklearn.utils import gen_even_slices, as_float_array
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
 from ._utils import fill_doc
 from nilearn._utils.glm import _check_run_sample_masks
-from ._utils.helpers import stringify_path
+from ._utils import stringify_path
 
 availiable_filters = ['butterworth',
                       'cosine'

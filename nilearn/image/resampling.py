@@ -16,7 +16,7 @@ from scipy.ndimage import find_objects, affine_transform
 from .image import crop_img
 from .. import _utils
 from .._utils.niimg import _get_data
-from .._utils.helpers import stringify_path
+from .._utils import stringify_path
 
 ###############################################################################
 # Affine utils
