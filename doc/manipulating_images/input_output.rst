@@ -222,7 +222,7 @@ objects":
 
 **Niimg:** A Niimg-like object can be one of the following:
 
-  * A string with a file path to a Nifti or Analyse image
+  * A string or pathlib.Path object with a file path to a Nifti or Analyse image
   * An ``SpatialImage`` from nibabel, ie an object exposing ``get_fdata()``
     method and ``affine`` attribute, typically a ``Nifti1Image`` from nibabel_.
 
