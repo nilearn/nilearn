@@ -27,8 +27,8 @@ In LSS, each trial of each condition of interest has its own :term:`GLM`,
 in which the targeted trial receives its own column within the design matrix,
 but everything else remains the same as the standard model.
 Trials are then looped across, and many GLMs are fitted,
-with the parameter estimate map extracted from each GLM to build the LSS beta
-series.
+with the :term:`Parameter Estimate` map extracted from each GLM to build the
+LSS beta series.
 
 .. topic:: Choosing the right model for your analysis
 
@@ -139,7 +139,7 @@ fig.show()
 ##############################################################################
 # Aggregate beta maps from the LSA model based on condition
 # `````````````````````````````````````````````````````````
-# Collect the parameter estimate maps
+# Collect the :term:`Parameter Estimate` maps
 lsa_beta_maps = {cond: [] for cond in events_df['trial_type'].unique()}
 trialwise_conditions = lsa_events_df['trial_type'].unique()
 for condition in trialwise_conditions:

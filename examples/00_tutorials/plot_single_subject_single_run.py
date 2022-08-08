@@ -169,9 +169,9 @@ from nilearn.plotting import plot_contrast_matrix
 plot_contrast_matrix(active_minus_rest, design_matrix=design_matrix)
 
 ###############################################################################
-# Below, we compute the estimated effect. It is in :term:`BOLD` signal unit,
-# but has no statistical guarantees, because it does not take into
-# account the associated variance.
+# Below, we compute the :term:`'estimated effect'<Parameter Estimate>`.
+# It is in :term:`BOLD` signal unit, but has no statistical guarantees,
+# because it does not take into account the associated variance.
 
 eff_map = fmri_glm.compute_contrast(active_minus_rest,
                                     output_type='effect_size')

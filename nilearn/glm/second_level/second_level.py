@@ -456,8 +456,9 @@ class SecondLevelModel(BaseGLM):
         second_level_stat_type : {'t', 'F'} or None, optional
             Type of the second level contrast. Default=None.
 
-        output_type : {'z_score', 'stat', 'p_value', 'effect_size',\
-        'effect_variance', 'all'}, optional
+        output_type : {'z_score', 'stat', 'p_value', \
+                :term:`'effect_size'<Parameter Estimate>`, 'effect_variance', \
+                'all'}, optional
             Type of the output map. Default='z-score'.
 
         Returns
