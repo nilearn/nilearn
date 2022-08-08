@@ -16,16 +16,7 @@ import sys
 import os
 import shutil
 import sphinx
-from distutils.version import LooseVersion
-
-# jquery is included in plotting package data because it is needed for
-# interactive plots. It is also needed by the documentation, so we copy
-# it to the themes/nilearn/static folder.
-shutil.copy(
-    os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                 'nilearn', 'plotting', 'data', 'js', 'jquery.min.js'),
-    os.path.join(os.path.dirname(__file__), 'themes', 'nilearn', 'static',
-                 'jquery.js'))
+from nilearn.version import _compare_version
 
 
 # ----------------------------------------------------------------------------
@@ -47,22 +38,26 @@ sys.path.insert(0, os.path.abspath('..'))
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
-              'sphinx_gallery.gen_gallery',
-              'sphinx.ext.autodoc',
-              'sphinx.ext.autosummary',
-              'sphinx.ext.imgmath',
-              'sphinx.ext.intersphinx',
-              'sphinxcontrib.bibtex',
-              'numpydoc',
-              'sphinx.ext.linkcode',
-              'sphinx_copybutton'
-              ]
+    'sphinx_gallery.gen_gallery',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.imgmath',
+    'sphinx.ext.intersphinx',
+    'sphinxcontrib.bibtex',
+    'numpydoc',
+    'sphinx.ext.linkcode',
+    'gh_substitutions',
+    'sphinx_copybutton',
+    'sphinxext.opengraph',
+    'myst_parser',
+    'sphinx_design',
+]
 
 autosummary_generate = True
 
 autodoc_default_options = {
     'imported-members': True,
-    'inherited-members' : True,
+    'inherited-members': True,
     'undoc-members': True,
     'member-order': 'bysource',
     # We cannot have __init__: it causes duplicated entries
@@ -81,13 +76,13 @@ templates_path = ['templates']
 autosummary_generate = True
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
 
 # The encoding of source files.
 #source_encoding = 'utf-8'
 
 # Generate the plots for the gallery
-plot_gallery = 'True'
+plot_gallery = True
 
 # The master toctree document.
 master_doc = 'index'
@@ -100,7 +95,7 @@ bibtex_footbibliography_header = ''
 
 # General information about the project.
 project = u'Nilearn'
-copyright = u'The nilearn developers 2010-2021'
+copyright = u'The nilearn developers 2010-2022'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -149,7 +144,10 @@ add_function_parentheses = False
 #show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+# pygments_style = 'friendly'
+# pygments_style = 'manni'
+pygments_style = 'sas'
+pygments_dark_style = 'stata-dark'
 
 
 # A list of ignored prefixes for module index sorting.
@@ -160,32 +158,45 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
-html_theme = 'nilearn'
+html_theme = 'furo'
+
+# Add custom css instructions from themes/custom.css
+html_css_files = [
+    'custom.css',
+    (
+        'https://cdnjs.cloudflare.com/ajax/libs/'
+        'font-awesome/5.15.4/css/all.min.css'
+    ),
+]
 
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
 # given in html_static_path.
-html_style = 'nature.css'
+# html_style = 'nature.css'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {'oldversion':False, 'collapsiblesidebar': False}
+html_theme_options = {
+    "light_css_variables": {
+        "admonition-font-size": "100%",
+        "admonition-title-font-size": "100%"
+    }
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = ['themes']
-
+# html_theme_path = ['themes']
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = "Machine learning for NeuroImaging"
+html_title = 'Nilearn'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 html_short_title = 'Nilearn'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = 'logos/nilearn-logo.png'
+html_logo = 'logos/nilearn-transparent.png'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -195,7 +206,7 @@ html_favicon = 'logos/favicon.ico'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['images']
+html_static_path = ['images', 'themes']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -229,6 +240,11 @@ html_show_sourcelink = False
 # base URL from which the finished HTML is served.
 #html_use_opensearch = ''
 
+# variables to pass to HTML templating engine
+build_dev_html = bool(int(os.environ.get('BUILD_DEV_HTML', False)))
+
+html_context = {'build_dev_html': build_dev_html}
+
 # If nonempty, this is the file name suffix for HTML files (e.g. ".xhtml").
 #html_file_suffix = ''
 
@@ -257,7 +273,7 @@ latex_documents = [
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-latex_logo = "logos/nilearn-logo.png"
+latex_logo = "logos/nilearn-transparent.png"
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
@@ -274,7 +290,7 @@ latex_elements = {
   'printindex': '',
 }
 
-if LooseVersion(sphinx.__version__) < LooseVersion('1.5'):
+if _compare_version(sphinx.__version__, '<', '1.5'):
     latex_preamble = r"""
     \usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
     \let\oldfootnote\footnote
@@ -289,7 +305,7 @@ else:
 
 
 # If false, no module index is generated.
-if LooseVersion(sphinx.__version__) < LooseVersion('1.5'):
+if _compare_version(sphinx.__version__, '<', '1.5'):
     latex_use_modindex = False
 
 latex_domain_indices = False
@@ -309,7 +325,7 @@ intersphinx_mapping = {
     'python': (_python_doc_base, None),
     'numpy': ('https://numpy.org/doc/stable/', None),
     'scipy': ('http://scipy.github.io/devdocs/', None),
-    'matplotlib': ('https://matplotlib.org/', None),
+    'matplotlib': ('https://matplotlib.org/stable/', None),
     'sklearn': ('https://scikit-learn.org/stable/', None),
     'nibabel': ('https://nipy.org/nibabel', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
@@ -327,19 +343,22 @@ sphinx_gallery_conf = {
     'backreferences_dir': os.path.join('modules', 'generated'),
     'reference_url': {'nilearn': None},
     'junit': '../test-results/sphinx-gallery/junit.xml',
-    'examples_dirs': '../examples',
+    'examples_dirs': '../examples/',
     'gallery_dirs': 'auto_examples',
     # Ignore the function signature leftover by joblib
     'ignore_pattern': 'func_code\.py',
+    'show_memory': not sys.platform.startswith('win'),
+    'remove_config_comments': True,
+    'nested_sections': True,
     'binder': {
         'org': 'nilearn',
         'repo': 'nilearn.github.io',
         'binderhub_url': 'https://mybinder.org',
         'branch': 'main',
-        'dependencies': ['../requirements-build-docs.txt',
-                         'binder/requirements.txt'],
+        'dependencies': ['binder/requirements.txt'],
         'notebooks_dir': 'examples'
-    }
+    },
+    'default_thumb_file': 'logos/nilearn-desaturate-100.png',
 }
 
 
@@ -366,3 +385,8 @@ linkcode_resolve = make_linkcode_resolve('nilearn',
                                          'nilearn/blob/{revision}/'
                                          '{package}/{path}#L{lineno}')
 
+# -- sphinxext.opengraph configuration -------------------------------------
+ogp_site_url = "https://nilearn.github.io/"
+ogp_image = "https://nilearn.github.io/_static/nilearn-logo.png"
+ogp_use_first_image = True
+ogp_site_name = "Nilearn"

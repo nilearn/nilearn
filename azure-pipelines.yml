@@ -11,11 +11,11 @@ jobs:
 
 - job: 'run_tests_on_windows'
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-latest'
   strategy:
     matrix:
-      Python36:
-        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
       Python38:
         python.version: '3.8'
     maxParallel: 4
@@ -26,14 +26,15 @@ jobs:
       versionSpec: '$(python.version)'
       architecture: 'x64'
 
+  # Install the standard and testing-related dependencies
+  # See setup.cfg for dependency group options
   - script: |
       python -m pip install --upgrade pip
-      pip install --prefer-binary -r requirements-dev.txt
-      pip install pytest-azurepipelines codecov
+      pip install pytest-azurepipelines
+      pip install --prefer-binary .[plotting,plotly,test]
     displayName: 'Install dependencies'
 
   - script: |
-      pip install .
       python -m pytest --pyargs nilearn --cov-report=xml --cov=nilearn --cov-append --junitxml=test-results.xml
     displayName: 'test'
 
@@ -128,7 +129,7 @@ jobs:
 
 - job: 'test_installing_on_windows'
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-latest'
   strategy:
     matrix:
       Python37:
@@ -164,7 +165,7 @@ jobs:
     displayName: 'Test that required package are installed'
 
 
-- job: 'test_expeceted_to_fail_installation_on_linux'
+- job: 'test_expected_to_fail_installation_on_linux'
   pool:
     vmImage: 'ubuntu-18.04'
   strategy:

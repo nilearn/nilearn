@@ -36,12 +36,15 @@ from time import time
 
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import linalg, ndimage
+from scipy import linalg
+from scipy.ndimage import gaussian_filter
 
 from sklearn import linear_model, svm
 from sklearn.utils import check_random_state
 from sklearn.model_selection import KFold
 from sklearn.feature_selection import f_regression
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
 
 import nibabel
 
@@ -71,7 +74,7 @@ def create_simulation_data(snr=0, n_samples=2 * 100, size=12, random_state=1):
     XX = generator.randn(n_samples, size, size, size)
     noise = []
     for i in range(n_samples):
-        Xi = ndimage.filters.gaussian_filter(XX[i, :, :, :], smooth_X)
+        Xi = gaussian_filter(XX[i, :, :, :], smooth_X)
         Xi = Xi.ravel()
         noise.append(Xi)
     noise = np.array(noise)
@@ -122,12 +125,12 @@ X_train, X_test, y_train, y_test, snr, coefs, size = \
 # computation is performed. It is a subset of the brain mask, just to reduce
 # computation time.
 mask = np.ones((size, size, size), dtype=bool)
-mask_img = nibabel.Nifti1Image(mask.astype(int), np.eye(4))
+mask_img = nibabel.Nifti1Image(mask.astype("uint8"), np.eye(4))
 process_mask = np.zeros((size, size, size), dtype=bool)
 process_mask[:, :, 0] = True
 process_mask[:, :, 6] = True
 process_mask[:, :, 11] = True
-process_mask_img = nibabel.Nifti1Image(process_mask.astype(int), np.eye(4))
+process_mask_img = nibabel.Nifti1Image(process_mask.astype("uint8"), np.eye(4))
 
 coefs = np.reshape(coefs, [size, size, size])
 plot_slices(coefs, title="Ground truth")
@@ -154,8 +157,12 @@ plot_slices(coefs, title="Ground truth")
 # that stands for `cross-validation`: in the list of possible `alpha`
 # values that they are given, they choose the best by cross-validation.
 
+bayesian_ridge = make_pipeline(
+    StandardScaler(), linear_model.BayesianRidge()
+)
+
 estimators = [
-    ('bayesian_ridge', linear_model.BayesianRidge(normalize=True)),
+    ('bayesian_ridge', bayesian_ridge),
     ('enet_cv', linear_model.ElasticNetCV(alphas=[5, 1, 0.5, 0.1],
                                           l1_ratio=0.05)),
     ('ridge_cv', linear_model.RidgeCV(alphas=[100, 10, 1, 0.1], cv=5)),
@@ -191,12 +198,14 @@ for name, estimator in estimators:
     elapsed_time = time() - t1
 
     if name != 'searchlight':
-        coefs = estimator.coef_
+        if name == 'bayesian_ridge':
+            coefs = estimator.named_steps['bayesianridge'].coef_
+        else:
+            coefs = estimator.coef_
         coefs = np.reshape(coefs, [size, size, size])
         score = estimator.score(X_test, y_test)
         title = '%s: prediction score %.3f, training time: %.2fs' % (
-            estimator.__class__.__name__, score,
-            elapsed_time)
+            name, score, elapsed_time)
 
     else:  # Searchlight
         coefs = estimator.scores_

@@ -110,27 +110,37 @@ def _make_oasis_data(dartel=True):
     return dict_to_archive(data)
 
 
-def test_fetch_oasis_vbm(tmp_path, request_mocker):
+@pytest.mark.parametrize('legacy_format', [True, False])
+def test_fetch_oasis_vbm(tmp_path, request_mocker, legacy_format):
     request_mocker.url_mapping["*archive_dartel.tgz*"] = _make_oasis_data()
     request_mocker.url_mapping["*archive.tgz*"] = _make_oasis_data(False)
 
     dataset = struct.fetch_oasis_vbm(
-        data_dir=str(tmp_path), verbose=0)
+        data_dir=str(tmp_path), verbose=0, legacy_format=legacy_format
+    )
     assert len(dataset.gray_matter_maps) == 403
     assert len(dataset.white_matter_maps) == 403
     assert isinstance(dataset.gray_matter_maps[0], str)
     assert isinstance(dataset.white_matter_maps[0], str)
-    assert isinstance(dataset.ext_vars, np.recarray)
+    if legacy_format:
+        assert isinstance(dataset.ext_vars, np.recarray)
+    else:
+        assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.data_usage_agreement, str)
     assert request_mocker.url_count == 1
 
-    dataset = struct.fetch_oasis_vbm(data_dir=str(tmp_path),
-                                     dartel_version=False, verbose=0)
+    dataset = struct.fetch_oasis_vbm(
+        data_dir=str(tmp_path), dartel_version=False, verbose=0,
+        legacy_format=legacy_format
+    )
     assert len(dataset.gray_matter_maps) == 415
     assert len(dataset.white_matter_maps) == 415
     assert isinstance(dataset.gray_matter_maps[0], str)
     assert isinstance(dataset.white_matter_maps[0], str)
-    assert isinstance(dataset.ext_vars, np.recarray)
+    if legacy_format:
+        assert isinstance(dataset.ext_vars, np.recarray)
+    else:
+        assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.data_usage_agreement, str)
     assert request_mocker.url_count == 2
     assert dataset.description != ''
@@ -263,18 +273,3 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
     dataset = struct.fetch_surf_fsaverage(mesh, data_dir=str(tmp_path))
     assert mesh_attributes.issubset(set(dataset.keys()))
     assert dataset.description != ''
-
-
-def test_fetch_surf_fsaverage5_sphere(tmp_path, request_mocker):
-    request_mocker.url_mapping["*b79fy*"] = list_to_archive([
-        "sphere_right.gii", "sphere_left.gii"
-    ])
-    for mesh in ['fsaverage5_sphere']:
-
-        dataset = struct.fetch_surf_fsaverage(
-            mesh, data_dir=str(tmp_path))
-
-        keys = {'sphere_left', 'sphere_right'}
-
-        assert keys.issubset(set(dataset.keys()))
-        assert dataset.description != ''

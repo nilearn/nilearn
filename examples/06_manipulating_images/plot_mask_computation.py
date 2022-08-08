@@ -15,9 +15,11 @@ In addition, we show here how to tweak the different parameters of the
 underlying routine that extract masks from EPI
 :func:`nilearn.masking.compute_epi_mask`.
 
+.. include:: ../../../examples/masker_note.rst
+
 """
 
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 import nilearn.image as image
 from nilearn.plotting import plot_roi, plot_epi, show
 
@@ -120,10 +122,12 @@ report
 # Computing the mask from the MNI template
 ###############################################################################
 #
-# A mask can also be computed from the MNI gray matter template. In this
-# case, it is resampled to the target image
+# A mask can also be computed from the MNI template. In this case, it is
+# resampled to the target image. Three options are available:
+# 'whole-brain-template', 'gm-template', and 'wm-template' depending on whether
+# the whole-brain, gray matter, or white matter template should be used.
 
-masker = NiftiMasker(mask_strategy='template')
+masker = NiftiMasker(mask_strategy='whole-brain-template')
 masker.fit(epi_img)
 report = masker.generate_report()
 report

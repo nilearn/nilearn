@@ -14,7 +14,7 @@ from matplotlib.image import imsave
 
 from nibabel.affines import apply_affine
 
-from ..image import resample_to_img, new_img_like, reorder_img
+from ..image import resample_to_img, new_img_like, reorder_img, get_data
 from .js_plotting_utils import get_html_template, colorscale
 from ..plotting import cm
 from ..plotting.find_cuts import find_xyz_cut_coords
@@ -26,7 +26,6 @@ from .._utils.param_validation import check_threshold
 from .._utils.extmath import fast_abs_percentile
 from .._utils.niimg import _safe_get_data
 from ..datasets import load_mni152_template
-from ..masking import compute_brain_mask
 
 
 def _data_to_sprite(data):
@@ -209,19 +208,23 @@ def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
     Returns: bg_img, bg_min, bg_max, black_bg
 
     """
-    if (bg_img is None or bg_img is False) and black_bg == 'auto':
-        black_bg = False
-
-    if bg_img is not None and bg_img is not False:
+    if (bg_img is None or bg_img is False):
+        if black_bg == 'auto':
+            black_bg = False
+        bg_img = new_img_like(
+            stat_map_img, np.ma.masked_all(stat_map_img.shape))
+        bg_min, bg_max = 0, 0
+    else:
         if isinstance(bg_img, str) and bg_img == "MNI152":
             bg_img = load_mni152_template()
-        bg_img, black_bg, bg_min, bg_max = _load_anat(bg_img, dim=dim,
-                                                      black_bg=black_bg)
-    else:
-        bg_img = new_img_like(stat_map_img, np.zeros(stat_map_img.shape),
-                              stat_map_img.affine)
-        bg_min = 0
-        bg_max = 0
+        else:
+            bg_img = check_niimg_3d(bg_img)
+        masked_data = np.ma.masked_inside(
+            _safe_get_data(bg_img, ensure_finite=True),
+            -1e-6, 1e-6, copy=False)
+        bg_img = new_img_like(bg_img, masked_data)
+        bg_img, black_bg, bg_min, bg_max = _load_anat(
+            bg_img, dim=dim, black_bg=black_bg)
     bg_img = reorder_img(bg_img, resample='nearest')
     return bg_img, bg_min, bg_max, black_bg
 
@@ -313,10 +316,7 @@ def _json_view_size(params):
 
 def _get_bg_mask_and_cmap(bg_img, black_bg):
     """Helper function of _json_view_data."""
-    bg_mask = _safe_get_data(compute_brain_mask(bg_img),
-                             ensure_finite=True)
-    bg_mask = np.logical_not(bg_mask).astype(float)
-    bg_mask[bg_mask == 1] = np.nan
+    bg_mask = np.ma.getmaskarray(get_data(bg_img))
     bg_cmap = copy.copy(matplotlib.cm.get_cmap('gray'))
     if black_bg:
         bg_cmap.set_bad('black')
@@ -449,7 +449,7 @@ def view_img(stat_map_img, bg_img='MNI152',
     cut_coords : None, or a tuple of floats
         The MNI coordinates of the point where the cut is performed
         as a 3-tuple: (x, y, z). If None is given, the cuts are calculated
-        automaticaly.
+        automatically.
 
     colorbar : boolean, optional
         If True, display a colorbar on top of the plots. Default=True.

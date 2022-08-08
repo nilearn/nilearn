@@ -11,8 +11,8 @@ import numpy as np
 from scipy.ndimage import label
 from scipy.stats import norm
 
-from nilearn.input_data import NiftiMasker
-from nilearn.image import get_data, math_img
+from nilearn.maskers import NiftiMasker
+from nilearn.image import get_data, math_img, threshold_img
 
 
 def _compute_hommel_value(z_vals, alpha, verbose=False):
@@ -27,9 +27,11 @@ def _compute_hommel_value(z_vals, alpha, verbose=False):
         return p_vals[0] > alpha
     if p_vals[0] > alpha:
         return n_samples
-    slopes = (alpha - p_vals[: - 1]) / np.arange(n_samples, 1, -1)
+    if p_vals[-1] < alpha:
+        return 0
+    slopes = (alpha - p_vals[: - 1]) / np.arange(n_samples - 1, 0, -1)
     slope = np.max(slopes)
-    hommel_value = np.trunc(n_samples + (alpha - slope * n_samples) / slope)
+    hommel_value = np.trunc(alpha / slope)
     if verbose:
         try:
             from matplotlib import pyplot as plt
@@ -38,11 +40,11 @@ def _compute_hommel_value(z_vals, alpha, verbose=False):
                           'Please install it using `pip install matplotlib`.')
         else:
             plt.figure()
-            plt.plot(p_vals, 'o')
+            plt.plot(np.arange(1, 1 + n_samples), p_vals, 'o')
             plt.plot([n_samples - hommel_value, n_samples], [0, alpha])
             plt.plot([0, n_samples], [0, 0], 'k')
             plt.show(block=False)
-    return np.minimum(hommel_value, n_samples)
+    return int(np.minimum(hommel_value, n_samples))
 
 
 def _true_positive_fraction(z_vals, hommel_value, alpha):
@@ -98,8 +100,7 @@ def fdr_threshold(z_vals, alpha):
     z_vals_ = - np.sort(- z_vals)
     p_vals = norm.sf(z_vals_)
     n_samples = len(p_vals)
-    pos = p_vals < alpha * np.linspace(
-        .5 / n_samples, 1 - .5 / n_samples, n_samples)
+    pos = p_vals < alpha * np.linspace(1 / n_samples, 1, n_samples)
     if pos.any():
         return (z_vals_[pos][-1] - 1.e-12)
 
@@ -111,7 +112,7 @@ def cluster_level_inference(stat_img, mask_img=None,
     """ Report the proportion of active voxels for all clusters
     defined by the input threshold.
 
-    This implements the method described in [1]_.
+    This implements the method described in :footcite:`Rosenblatt2018`.
 
     Parameters
     ----------
@@ -143,9 +144,7 @@ def cluster_level_inference(stat_img, mask_img=None,
 
     References
     ----------
-    .. [1] Rosenblatt JD, Finos L, Weeda WD, Solari A, Goeman JJ. All-Resolutions
-       Inference for brain imaging. Neuroimage. 2018 Nov 1;181:786-796. doi:
-       10.1016/j.neuroimage.2018.07.060
+    .. footbibliography::
 
     """
 
@@ -170,6 +169,7 @@ def cluster_level_inference(stat_img, mask_img=None,
     for threshold_ in sorted(threshold):
         label_map, n_labels = label(stat_map > threshold_)
         labels = label_map[get_data(masker.mask_img_) > 0]
+
         for label_ in range(1, n_labels + 1):
             # get the z-vals in the cluster
             cluster_vals = stats[labels == label_]
@@ -241,7 +241,9 @@ def threshold_stats_img(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
 
     See also
     --------
-    nilearn.image.threshold_img
+    nilearn.image.threshold_img :
+        Apply an explicit voxel-level (and optionally cluster-level) threshold
+        without correction.
 
     """
     height_control_methods = ['fpr', 'fdr', 'bonferroni',
@@ -276,27 +278,22 @@ def threshold_stats_img(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
 
     # Thresholding
     if two_sided:
-        # replace stats by their absolute value after storing the sign
-        sign = np.sign(stats)
+        # replace stats by their absolute value
         stats = np.abs(stats)
 
     if height_control == 'fdr':
         threshold = fdr_threshold(stats, alpha_)
     elif height_control == 'bonferroni':
         threshold = norm.isf(alpha_ / n_voxels)
-    stats *= (stats > threshold)
-    if two_sided:
-        stats *= sign
 
-    # embed it back to 3D grid
-    stat_map = get_data(masker.inverse_transform(stats))
+    # Apply cluster-extent thresholding with new cluster-defining threshold
+    stat_img = threshold_img(
+        img=stat_img,
+        threshold=threshold,
+        cluster_threshold=cluster_threshold,
+        two_sided=two_sided,
+        mask_img=mask_img,
+        copy=True,
+    )
 
-    # Extract connected components above threshold
-    label_map, n_labels = label(np.abs(stat_map) > threshold)
-    labels = label_map[get_data(masker.mask_img_) > 0]
-
-    for label_ in range(1, n_labels + 1):
-        if np.sum(labels == label_) < cluster_threshold:
-            stats[labels == label_] = 0
-
-    return masker.inverse_transform(stats), threshold
+    return stat_img, threshold

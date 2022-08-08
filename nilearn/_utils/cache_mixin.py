@@ -8,16 +8,16 @@ import json
 import warnings
 import os
 import shutil
-from distutils.version import LooseVersion
+from nilearn.version import _compare_version
 
 import nibabel
-import sklearn
 
 from joblib import Memory
 
 MEMORY_CLASSES = (Memory, )
 
 import nilearn
+from .helpers import stringify_path
 
 
 __CACHE_CHECKED = dict()
@@ -28,7 +28,7 @@ def _check_memory(memory, verbose=0):
 
     Parameters
     ----------
-    memory : None or instance of joblib.Memory or str
+    memory : None or instance of joblib.Memory or str or pathlib.Path
         Used to cache the masking process.
         If a str is given, it is the path to the caching directory.
 
@@ -42,6 +42,7 @@ def _check_memory(memory, verbose=0):
     """
     if memory is None:
         memory = Memory(location=None, verbose=verbose)
+    memory = stringify_path(memory)
     if isinstance(memory, str):
         cache_dir = memory
         if nilearn.EXPAND_PATH_WILDCARDS:
@@ -109,11 +110,13 @@ def _safe_cache(memory, func, **kwargs):
 
     modules = (nibabel, )
     # Keep only the major + minor version numbers
-    my_versions = dict((m.__name__, LooseVersion(m.__version__).version[:2])
-                       for m in modules)
+    my_versions = dict((m.__name__, m.__version__) for m in modules)
     commons = set(versions.keys()).intersection(set(my_versions.keys()))
-    collisions = [m for m in commons if versions[m] != my_versions[m]]
-
+    collisions = [
+        m for m in commons if not _compare_version(
+            versions[m], '==', my_versions[m]
+        )
+    ]
     # Flush cache if version collision
     if len(collisions) > 0:
         if nilearn.CHECK_CACHE_VERSION:
@@ -178,7 +181,7 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
     func : function
         The function which output is to be cached.
 
-    memory : instance of joblib.Memory or string
+    memory : instance of joblib.Memory or string or pathlib.Path
         Used to cache the function call.
 
     func_memory_level : int, optional
@@ -220,6 +223,7 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
 
     if memory is not None and (func_memory_level is None or
                                memory_level >= func_memory_level):
+        memory = stringify_path(memory)
         if isinstance(memory, str):
             memory = Memory(location=memory, verbose=verbose)
         if not isinstance(memory, MEMORY_CLASSES):

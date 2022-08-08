@@ -8,7 +8,7 @@ import numpy as np
 import nibabel
 import pytest
 
-from nilearn.input_data import NiftiLabelsMasker
+from nilearn.maskers import NiftiLabelsMasker
 from nilearn.regions import signal_extraction
 from nilearn._utils.testing import write_tmp_imgs
 from nilearn._utils.data_gen import generate_timeseries, generate_regions_ts
@@ -87,7 +87,7 @@ def test_signals_extraction_with_labels():
     mask_4d_img = nibabel.Nifti1Image(np.ones(shape + (2, )), affine)
 
     # labels
-    labels_data = np.zeros(shape, dtype=int)
+    labels_data = np.zeros(shape, dtype="int32")
     h0 = shape[0] // 2
     h1 = shape[1] // 2
     h2 = shape[2] // 2
@@ -338,8 +338,8 @@ def test_signal_extraction_with_maps_and_labels():
 
     # Check that NaNs in regions inside mask are replaced with zeros
     region1 = labels_data == 2
-    indices = [ind[:1] for ind in np.where(region1)]
-    get_data(fmri_img)[indices + [slice(None)]] = np.nan
+    indices = tuple(ind[:1] for ind in np.where(region1))
+    get_data(fmri_img)[indices] = np.nan
     labels_signals, labels_labels = signal_extraction.img_to_signals_labels(
         fmri_img, labels_img, mask_img=mask_img)
     assert np.all(labels_signals[:, labels_labels.index(2)] == 0.)
@@ -435,4 +435,3 @@ def test_img_to_signals_labels_non_float_type(target_dtype):
     timeseries_float = masker.transform(fake_fmri_img_orig)
     assert np.sum(timeseries_int) != 0
     assert np.allclose(timeseries_int, timeseries_float)
-

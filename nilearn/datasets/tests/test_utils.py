@@ -16,7 +16,7 @@ from unittest.mock import MagicMock
 from tempfile import mkdtemp, mkstemp
 
 try:
-    import boto3  # noqa:F401
+    import boto3  # noqa: F401
 
 except ImportError:
     BOTO_INSTALLED = False
@@ -28,16 +28,49 @@ import pytest
 import requests
 
 from nilearn import datasets
-from nilearn.datasets.utils import (_get_dataset_dir,
-                                    make_fresh_openneuro_dataset_urls_index)
+from nilearn.datasets.utils import (
+    _get_dataset_dir, _get_dataset_descr,
+    make_fresh_openneuro_dataset_urls_index
+)
 from nilearn.datasets import utils
 
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
 
+DATASET_NAMES = set([
+    "aal_SPM12", "ABIDE_pcp", "adhd", "allen_rsn_2011",
+    "basc_multiscale_2015", "brainomics_localizer", "cobre", "craddock_2012",
+    "destrieux_surface", "development_fmri", "difumo_atlases",
+    "dosenbach_2010", "fsaverage3", "fsaverage4", "fsaverage5",
+    "fsaverage6", "fsaverage", "haxby2001",
+    "icbm152_2009", "Megatrawls", "miyawaki2008", "msdl_atlas",
+    "neurovault", "nki_enhanced_surface", "nyu_rest", "oasis1",
+    "pauli_2017", "power_2011", "schaefer_2018", "smith_2009",
+    "talairach_atlas", "yeo_2011"
+])
 
-def test_get_dataset_dir(tmp_path):
+
+def test_get_dataset_descr_warning():
+    """Tests that function ``_get_dataset_descr()`` gives a warning
+    when no description is available.
+    """
+    with pytest.warns(UserWarning,
+                      match="Could not find dataset description."):
+        descr = _get_dataset_descr("")
+    assert descr == ""
+
+
+@pytest.mark.parametrize("name", DATASET_NAMES)
+def test_get_dataset_descr(name):
+    """Test function ``_get_dataset_descr()``."""
+    descr = _get_dataset_descr(name)
+    assert isinstance(descr, str)
+    assert len(descr) > 0
+
+
+@pytest.mark.parametrize("should_cast_path_to_string", [False, True])
+def test_get_dataset_dir(should_cast_path_to_string, tmp_path):
     # testing folder creation under different environments, enforcing
     # a custom clean install
     os.environ.pop('NILEARN_DATA', None)
@@ -63,11 +96,13 @@ def test_get_dataset_dir(tmp_path):
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
-    expected_base_dir = str(tmp_path / 'env_data')
-    expected_dataset_dir = os.path.join(expected_base_dir, 'test')
+    expected_base_dir = tmp_path / 'env_data'
+    expected_dataset_dir = expected_base_dir / 'test'
+    if should_cast_path_to_string:
+        expected_dataset_dir = str(expected_dataset_dir)
     data_dir = datasets.utils._get_dataset_dir(
         'test', default_paths=[expected_dataset_dir], verbose=0)
-    assert data_dir == os.path.join(expected_base_dir, 'test')
+    assert data_dir == str(expected_dataset_dir)
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
@@ -281,7 +316,12 @@ def test_uncompress():
             shutil.rmtree(dtemp)
 
 
-def test_fetch_file_overwrite(tmp_path, request_mocker):
+@pytest.mark.parametrize("should_cast_path_to_string", [False, True])
+def test_fetch_file_overwrite(should_cast_path_to_string,
+                              tmp_path, request_mocker):
+    if should_cast_path_to_string:
+        tmp_path = str(tmp_path)
+
     # overwrite non-exiting file.
     fil = datasets.utils._fetch_file(url='http://foo/', data_dir=str(tmp_path),
                                      verbose=0, overwrite=True)
@@ -313,7 +353,12 @@ def test_fetch_file_overwrite(tmp_path, request_mocker):
         assert fp.read() == ''
 
 
-def test_fetch_files_use_session(tmp_path, request_mocker):
+@pytest.mark.parametrize("should_cast_path_to_string", [False, True])
+def test_fetch_files_use_session(should_cast_path_to_string,
+                                 tmp_path, request_mocker):
+    if should_cast_path_to_string:
+        tmp_path = str(tmp_path)
+
     # regression test for https://github.com/nilearn/nilearn/issues/2863
     session = MagicMock()
     datasets.utils._fetch_files(
@@ -327,7 +372,12 @@ def test_fetch_files_use_session(tmp_path, request_mocker):
     assert session.send.call_count == 2
 
 
-def test_fetch_files_overwrite(tmp_path, request_mocker):
+@pytest.mark.parametrize("should_cast_path_to_string", [False, True])
+def test_fetch_files_overwrite(should_cast_path_to_string,
+                               tmp_path, request_mocker):
+    if should_cast_path_to_string:
+        tmp_path = str(tmp_path)
+
     # overwrite non-exiting file.
     files = ('1.txt', 'http://foo/1.txt')
     fil = datasets.utils._fetch_files(data_dir=str(tmp_path), verbose=0,

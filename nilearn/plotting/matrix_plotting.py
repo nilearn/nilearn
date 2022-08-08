@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from matplotlib.tight_layout import get_renderer
 from matplotlib.colorbar import make_axes
 from .._utils import fill_doc
 with warnings.catch_warnings():
@@ -15,11 +14,14 @@ with warnings.catch_warnings():
     from nilearn.glm.first_level import check_design_matrix
 
 
-def fit_axes(ax):
-    """ Redimension the given axes to have labels fitting.
+def _fit_axes(ax):
+    """Helper function for plot_matrix.
+
+    This function redimensions the given axes to have
+    labels fitting.
     """
     fig = ax.get_figure()
-    renderer = get_renderer(fig)
+    renderer = fig.canvas.get_renderer()
     ylabel_width = ax.yaxis.get_tightbbox(renderer).transformed(
         ax.figure.transFigure.inverted()).width
     if ax.get_position().xmin < 1.1 * ylabel_width:
@@ -37,6 +39,152 @@ def fit_axes(ax):
         ax.set_position(new_position)
 
 
+def _sanitize_inputs_plot_matrix(mat_shape, tri, labels, reorder, figure, axes):  # noqa
+    """Helper function for plot_matrix.
+
+    This function makes sure the inputs to plot_matrix are valid.
+    """
+    _sanitize_tri(tri)
+    labels = _sanitize_labels(mat_shape, labels)
+    reorder = _sanitize_reorder(reorder)
+    fig, axes, own_fig = _sanitize_figure_and_axes(figure, axes)
+    return labels, reorder, fig, axes, own_fig
+
+
+def _sanitize_figure_and_axes(figure, axes):
+    """Helper function for plot_matrix."""
+    if axes is not None and figure is not None:
+        raise ValueError(
+            "Parameters figure and axes cannot be specified "
+            "together. You gave 'figure=%s, axes=%s'" % (figure, axes)
+        )
+    if figure is not None:
+        if isinstance(figure, plt.Figure):
+            fig = figure
+        else:
+            fig = plt.figure(figsize=figure)
+        axes = plt.gca()
+        own_fig = True
+    else:
+        if axes is None:
+            fig, axes = plt.subplots(1, 1, figsize=(7, 5))
+            own_fig = True
+        else:
+            fig = axes.figure
+            own_fig = False
+    return fig, axes, own_fig
+
+
+def _sanitize_labels(mat_shape, labels):
+    """Helper function for plot_matrix."""
+    # we need a list so an empty one will be cast to False
+    if isinstance(labels, np.ndarray):
+        labels = labels.tolist()
+    if labels and len(labels) != mat_shape[0]:
+        raise ValueError("Length of labels unequal to length of matrix.")
+    return labels
+
+
+def _sanitize_tri(tri):
+    """Helper function for plot_matrix."""
+    VALID_TRI_VALUES = set(["full", "lower", "diag"])
+    if tri not in VALID_TRI_VALUES:
+        raise ValueError("Parameter tri needs to be "
+                         "one of {}.".format(VALID_TRI_VALUES))
+
+
+def _sanitize_reorder(reorder):
+    """Helper function for plot_matrix."""
+    VALID_REORDER_ARGS = set([True, False, 'single', 'complete', 'average'])
+    if reorder not in VALID_REORDER_ARGS:
+        raise ValueError("Parameter reorder needs to be "
+                         "one of {}.".format(VALID_REORDER_ARGS))
+    reorder = 'average' if reorder is True else reorder
+    return reorder
+
+
+def _reorder_matrix(mat, labels, reorder):
+    """Helper function for plot_matrix.
+
+    This function reorders the provided matrix.
+    """
+    if not labels:
+        raise ValueError("Labels are needed to show the reordering.")
+    try:
+        from scipy.cluster.hierarchy import (linkage,
+                                             optimal_leaf_ordering,
+                                             leaves_list)
+    except ImportError:
+        raise ImportError("A scipy version of at least 1.0 is needed for "
+                          "ordering the matrix with optimal_leaf_ordering.")
+    linkage_matrix = linkage(mat, method=reorder)
+    ordered_linkage = optimal_leaf_ordering(linkage_matrix, mat)
+    index = leaves_list(ordered_linkage)
+    # make sure labels is an ndarray and copy it
+    labels = np.array(labels).copy()
+    mat = mat.copy()
+    # and reorder labels and matrix
+    labels = labels[index].tolist()
+    mat = mat[index, :][:, index]
+    return mat, labels
+
+
+def _mask_matrix(mat, tri):
+    """Helper function for plot_matrix.
+
+    This function masks the matrix depending on the provided
+    value of ``tri``.
+    """
+    if tri == 'lower':
+        mask = np.tri(mat.shape[0], k=-1, dtype=bool) ^ True
+    else:
+        mask = np.tri(mat.shape[0], dtype=bool) ^ True
+    return np.ma.masked_array(mat, mask)
+
+
+def _configure_axis(axes, labels, label_size,
+                    x_label_rotation, y_label_rotation):
+    """Helper function for plot_matrix."""
+    if not labels:
+        axes.xaxis.set_major_formatter(plt.NullFormatter())
+        axes.yaxis.set_major_formatter(plt.NullFormatter())
+    else:
+        axes.set_xticks(np.arange(len(labels)))
+        axes.set_xticklabels(labels, size=label_size)
+        for label in axes.get_xticklabels():
+            label.set_ha('right')
+            label.set_rotation(x_label_rotation)
+        axes.set_yticks(np.arange(len(labels)))
+        axes.set_yticklabels(labels, size=label_size)
+        for label in axes.get_yticklabels():
+            label.set_ha('right')
+            label.set_va('top')
+            label.set_rotation(y_label_rotation)
+
+
+def _configure_grid(axes, grid, tri, size):
+    """Helper function for plot_matrix."""
+    # Different grids for different layouts
+    if tri == 'lower':
+        for i in range(size):
+            # Correct for weird mis-sizing
+            i = 1.001 * i
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5], color='grey')
+            axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5], color='grey')
+    elif tri == 'diag':
+        for i in range(size):
+            # Correct for weird mis-sizing
+            i = 1.001 * i
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5], color='grey')
+            axes.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color='grey')
+    else:
+        for i in range(size):
+            # Correct for weird mis-sizing
+            i = 1.001 * i
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, -0.5], color='grey')
+            axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color='grey')
+
+
 @fill_doc
 def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
                 colorbar=True, cmap=plt.cm.RdBu_r, tri='full',
@@ -45,34 +193,46 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
 
     Parameters
     ----------
-    mat : 2-D numpy array
+    mat : 2-D :class:`numpy.ndarray`
         Matrix to be plotted.
     %(title)s
-    labels : list, ndarray of strings, empty list, False, or None, optional
+    labels : :obj:`list`, or :class:`numpy.ndarray` of :obj:`str`,\
+    or False, or None, optional
         The label of each row and column. Needs to be the same
         length as rows/columns of mat. If False, None, or an
         empty list, no labels are plotted.
 
-    figure : figure instance, figsize tuple, or None, optional
+    figure : :class:`matplotlib.figure.Figure`, figsize :obj:`tuple`,\
+    or None, optional
         Sets the figure used. This argument can be either an existing
         figure, or a pair (width, height) that gives the size of a
         newly-created figure.
-        Specifying both axes and figure is not allowed.
 
-    axes : None or Axes, optional
+        .. note::
+
+            Specifying both axes and figure is not allowed.
+
+    axes : None or :class:`matplotlib.axes.Axes`, optional
         Axes instance to be plotted on. Creates a new one if None.
-        Specifying both axes and figure is not allowed.
+
+        .. note::
+
+            Specifying both axes and figure is not allowed.
+
     %(colorbar)s
         Default=True.
     %(cmap)s
         Default=`plt.cm.RdBu_r`.
     tri : {'full', 'lower', 'diag'}, optional
         Which triangular part of the matrix to plot:
-        'lower' is the lower part, 'diag' is the lower including
-        diagonal, and 'full' is the full matrix.
+
+            - 'lower': Plot the lower part
+            - 'diag': Plot the lower part with the diagonal
+            - 'full': Plot the full matrix
+
         Default='full'.
 
-    auto_fit : boolean, optional
+    auto_fit : :obj:`bool`, optional
         If auto_fit is True, the axes are dimensioned to give room
         for the labels. This assumes that the labels are resting
         against the bottom and left edges of the figure.
@@ -82,7 +242,7 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
         If not False, a grid is plotted to separate rows and columns
         using the given color. Default=False.
 
-    reorder : boolean or {'single', 'complete', 'average'}, optional
+    reorder : :obj:`bool` or {'single', 'complete', 'average'}, optional
         If not False, reorders the matrix into blocks of clusters.
         Accepted linkage options for the clustering are 'single',
         'complete', and 'average'. True defaults to average linkage.
@@ -98,127 +258,39 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
 
     Returns
     -------
-    display : instance of matplotlib
+    display : :class:`matplotlib.axes.Axes`
         Axes image.
 
     """
-    # we need a list so an empty one will be cast to False
-    if isinstance(labels, np.ndarray):
-        labels = labels.tolist()
-    if labels and len(labels) != mat.shape[0]:
-        raise ValueError("Length of labels unequal to length of matrix.")
-
+    labels, reorder, fig, axes, own_fig = _sanitize_inputs_plot_matrix(
+        mat.shape, tri, labels, reorder, figure, axes
+    )
     if reorder:
-        if not labels:
-            raise ValueError("Labels are needed to show the reordering.")
-        try:
-            from scipy.cluster.hierarchy import (linkage, optimal_leaf_ordering,
-                                                 leaves_list)
-        except ImportError:
-            raise ImportError("A scipy version of at least 1.0 is needed "
-                              "for ordering the matrix with "
-                              "optimal_leaf_ordering.")
-        valid_reorder_args = [True, 'single', 'complete', 'average']
-        if reorder not in valid_reorder_args:
-            raise ValueError("Parameter reorder needs to be "
-                             "one of {}.".format(valid_reorder_args))
-        if reorder is True:
-            reorder = 'average'
-        linkage_matrix = linkage(mat, method=reorder)
-        ordered_linkage = optimal_leaf_ordering(linkage_matrix, mat)
-        index = leaves_list(ordered_linkage)
-        # make sure labels is an ndarray and copy it
-        labels = np.array(labels).copy()
-        mat = mat.copy()
-        # and reorder labels and matrix
-        labels = labels[index].tolist()
-        mat = mat[index, :][:, index]
-
-    if tri == 'lower':
-        mask = np.tri(mat.shape[0], k=-1, dtype=bool) ^ True
-        mat = np.ma.masked_array(mat, mask)
-    elif tri == 'diag':
-        mask = np.tri(mat.shape[0], dtype=bool) ^ True
-        mat = np.ma.masked_array(mat, mask)
-    if axes is not None and figure is not None:
-        raise ValueError("Parameters figure and axes cannot be specified "
-            "together. You gave 'figure=%s, axes=%s'"
-            % (figure, axes))
-    if figure is not None:
-        if isinstance(figure, plt.Figure):
-            fig = figure
-        else:
-            fig = plt.figure(figsize=figure)
-        axes = plt.gca()
-        own_fig = True
-    else:
-        if axes is None:
-            fig, axes = plt.subplots(1, 1, figsize=(7, 5))
-            own_fig = True
-        else:
-            fig = axes.figure
-            own_fig = False
+        mat, labels = _reorder_matrix(mat, labels, reorder)
+    if tri != "full":
+        mat = _mask_matrix(mat, tri)
     display = axes.imshow(mat, aspect='equal', interpolation='nearest',
                         cmap=cmap, **kwargs)
     axes.set_autoscale_on(False)
     ymin, ymax = axes.get_ylim()
-    if not labels:
-        axes.xaxis.set_major_formatter(plt.NullFormatter())
-        axes.yaxis.set_major_formatter(plt.NullFormatter())
-    else:
-        axes.set_xticks(np.arange(len(labels)))
-        axes.set_xticklabels(labels, size='x-small')
-        for label in axes.get_xticklabels():
-            label.set_ha('right')
-            label.set_rotation(50)
-        axes.set_yticks(np.arange(len(labels)))
-        axes.set_yticklabels(labels, size='x-small')
-        for label in axes.get_yticklabels():
-            label.set_ha('right')
-            label.set_va('top')
-            label.set_rotation(10)
-
+    _configure_axis(axes, labels, label_size="x-small",
+                    x_label_rotation=50, y_label_rotation=10)
     if grid is not False:
-        size = len(mat)
-        # Different grids for different layouts
-        if tri == 'lower':
-            for i in range(size):
-                # Correct for weird mis-sizing
-                i = 1.001 * i
-                axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5],
-                          color='grey')
-                axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5],
-                          color='grey')
-        elif tri == 'diag':
-            for i in range(size):
-                # Correct for weird mis-sizing
-                i = 1.001 * i
-                axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5],
-                          color='grey')
-                axes.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color='grey')
-        else:
-            for i in range(size):
-                # Correct for weird mis-sizing
-                i = 1.001 * i
-                axes.plot([i + 0.5, i + 0.5], [size - 0.5, -0.5], color='grey')
-                axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color='grey')
-
+        _configure_grid(axes, grid, tri, len(mat))
     axes.set_ylim(ymin, ymax)
-
     if auto_fit:
         if labels:
-            fit_axes(axes)
+            _fit_axes(axes)
         elif own_fig:
             plt.tight_layout(pad=.1,
                              rect=((0, 0, .95, 1) if colorbar
                                    else (0, 0, 1, 1)))
-
     if colorbar:
         cax, kw = make_axes(axes, location='right', fraction=0.05, shrink=0.8,
                             pad=.0)
         fig.colorbar(mappable=display, cax=cax)
         # make some room
-        fig.subplots_adjust(right=0.8)
+        fig.subplots_adjust(right=0.78)
         # change current axis back to matrix
         plt.sca(axes)
 
@@ -231,7 +303,6 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
                   verticalalignment='top',
                   transform=axes.transAxes,
                   size=size)
-
     return display
 
 
@@ -242,29 +313,30 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
 
     Parameters
     ----------
-    contrast_def : str or array of shape (n_col) or list of (string or
-                   array of shape (n_col))
+    contrast_def : :obj:`str` or :class:`numpy.ndarray` of shape (n_col),\
+    or :obj:`list` of :obj:`str`, or :class:`numpy.ndarray` of shape (n_col)
 
         where ``n_col`` is the number of columns of the design matrix, (one
         array per run). If only one array is provided when there are several
         runs, it will be assumed that the same contrast is desired for all
         runs. The string can be a formula compatible with
-        `pandas.DataFrame.eval`. Basically one can use the name of the
+        :meth:`pandas.DataFrame.eval`. Basically one can use the name of the
         conditions as they appear in the design matrix of the fitted model
         combined with operators +- and combined with numbers with operators
         +-`*`/.
 
-    design_matrix : pandas DataFrame
+    design_matrix : :class:`pandas.DataFrame`
         Design matrix to use.
     %(colorbar)s
         Default=False.
-    ax : matplotlib Axes object, optional
+    ax : :class:`matplotlib.axes.Axes`, optional
         Axis on which to plot the figure. If None, a new figure will be created.
     %(output_file)s
 
     Returns
     -------
-    Plot Axes object
+    ax : :class:`matplotlib.axes.Axes`
+        Figure object.
 
     """
     design_column_names = design_matrix.columns.tolist()
@@ -306,25 +378,25 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
 
 @fill_doc
 def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
-    """Plot a design matrix provided as a DataFrame
+    """Plot a design matrix provided as a :class:`pandas.DataFrame`.
 
     Parameters
     ----------
-    design matrix : pandas DataFrame,
+    design matrix : :class:`pandas.DataFrame`
         Describes a design matrix.
 
-    rescale : bool, optional
+    rescale : :obj:`bool`, optional
         Rescale columns magnitude for visualization or not.
         Default=True.
 
-    ax : axis handle, optional
-        Handle to axis onto which we will draw design matrix.
+    ax : :class:`matplotlib.axes.Axes`, optional
+        Handle to axes onto which we will draw the design matrix.
     %(output_file)s
 
     Returns
     -------
-    ax: axis handle
-        The axis used for plotting.
+    ax : :class:`matplotlib.axes.Axes`
+        The axes used for plotting.
 
     """
     # normalize the values per column for better visualization
@@ -366,19 +438,25 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 
     Parameters
     ----------
-    model_event : pandas DataFrame or list of pandas DataFrame
-        The `pandas.DataFrame` must have three columns
+    model_event : :class:`pandas.DataFrame` or :obj:`list`\
+    of :class:`pandas.DataFrame`
+        The :class:`pandas.DataFrame` must have three columns:
         ``event_type`` with event name, ``onset`` and ``duration``.
-        The `pandas.DataFrame` can also be obtained from
-        :func:`nilearn.glm.first_level.first_level_from_bids`.
+
+        .. note::
+
+            The :class:`pandas.DataFrame` can also be obtained
+            from :func:`nilearn.glm.first_level.first_level_from_bids`.
+
     %(cmap)s
     %(output_file)s
     **fig_kwargs : extra keyword arguments, optional
-        Extra arguments passed to matplotlib.pyplot.subplots.
+        Extra arguments passed to :func:`matplotlib.pyplot.subplots`.
 
     Returns
     -------
-    Plot Figure object
+    figure : :class:`matplotlib.figure.Figure`
+        Plot Figure object.
 
     """
     if isinstance(model_event, pd.DataFrame):
@@ -392,8 +470,6 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         cmap = plt.cm.tab20
     elif isinstance(cmap, str):
         cmap = plt.get_cmap(cmap)
-    else:
-        cmap = cmap
 
     event_labels = pd.concat(event['trial_type'] for event in model_event)
     event_labels = np.unique(event_labels)

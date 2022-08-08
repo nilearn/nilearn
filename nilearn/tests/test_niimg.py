@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from pathlib import Path
 
 import joblib
 import nibabel as nb
@@ -8,7 +9,7 @@ from nibabel import Nifti1Image
 from nibabel.tmpdirs import InTemporaryDirectory
 
 from nilearn.image import new_img_like
-from nilearn._utils import niimg
+from nilearn._utils import niimg, testing, load_niimg
 from nilearn.image import get_data
 
 
@@ -37,6 +38,7 @@ def test_new_img_like_side_effect():
     assert hash1 == hash2
 
 
+@pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
 def test_get_target_dtype():
     img = Nifti1Image(np.ones((2, 2, 2), dtype=np.float64), affine=np.eye(4))
     assert get_data(img).dtype.kind == 'f'
@@ -51,11 +53,12 @@ def test_get_target_dtype():
     assert dtype_kind_int == np.int32
 
 
+@pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
 def test_img_data_dtype():
     # Ignoring complex, binary, 128+ bit, RGBA
     nifti1_dtypes = (
         np.uint8, np.uint16, np.uint32, np.uint64,
-        np.int8, np.int16, np.int32, np.int64,
+        np.int8, np.int16, np.int32,
         np.float32, np.float64)
     dtype_matches = []
     with InTemporaryDirectory():
@@ -75,3 +78,11 @@ def test_img_data_dtype():
     # Verify that the distinction is worth making
     assert any(dtype_matches)
     assert not all(dtype_matches)
+
+
+def test_load_niimg():
+    img = Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
+
+    with testing.write_tmp_imgs(img, create_files=True) as filename:
+        filename = Path(filename)
+        load_niimg(filename)

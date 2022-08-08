@@ -9,8 +9,8 @@ import pytest
 import nibabel
 from numpy.testing import assert_almost_equal
 
-from nilearn.decomposition.multi_pca import MultiPCA
-from nilearn.input_data import MultiNiftiMasker, NiftiMasker
+from nilearn.decomposition._multi_pca import _MultiPCA
+from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 from nilearn._utils.testing import write_tmp_imgs
 
 
@@ -22,7 +22,7 @@ def _tmp_dir():
 
 
 def test_multi_pca():
-    # Smoke test the MultiPCA
+    # Smoke test the _MultiPCA
     # XXX: this is mostly a smoke test
     shape = (6, 8, 10, 5)
     affine = np.eye(4)
@@ -37,8 +37,8 @@ def test_multi_pca():
         data.append(nibabel.Nifti1Image(this_data, affine))
 
     mask_img = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
-    multi_pca = MultiPCA(mask=mask_img, n_components=3,
-                         random_state=0)
+    multi_pca = _MultiPCA(mask=mask_img, n_components=3,
+                          random_state=0)
     # fit to the data and test for masker attributes
     multi_pca.fit(data)
     assert multi_pca.mask_img_ == mask_img
@@ -60,18 +60,18 @@ def test_multi_pca():
     multi_pca.fit(data[0])
 
     # Check that asking for too little components raises a ValueError
-    multi_pca = MultiPCA()
+    multi_pca = _MultiPCA()
     pytest.raises(ValueError, multi_pca.fit, data[:2])
 
     # Test fit on data with the use of a masker
     masker = MultiNiftiMasker()
-    multi_pca = MultiPCA(mask=masker, n_components=3)
+    multi_pca = _MultiPCA(mask=masker, n_components=3)
     multi_pca.fit(data)
     assert multi_pca.mask_img_ == multi_pca.masker_.mask_img_
 
     # Smoke test the use of a masker and without CCA
-    multi_pca = MultiPCA(mask=MultiNiftiMasker(mask_args=dict(opening=0)),
-                         do_cca=False, n_components=3)
+    multi_pca = _MultiPCA(mask=MultiNiftiMasker(mask_args=dict(opening=0)),
+                          do_cca=False, n_components=3)
     multi_pca.fit(data[:2])
 
     # Smoke test the transform and inverse_transform
@@ -80,7 +80,7 @@ def test_multi_pca():
     # Smoke test to fit with no img
     pytest.raises(TypeError, multi_pca.fit)
 
-    multi_pca = MultiPCA(mask=mask_img, n_components=3)
+    multi_pca = _MultiPCA(mask=mask_img, n_components=3)
     with pytest.raises(ValueError,
                        match="Object has no components_ attribute. This is "
                              "probably because fit has not been called"):
@@ -91,10 +91,10 @@ def test_multi_pca():
                              'an empty list was given.'):
         multi_pca.fit([])
     # Test passing masker arguments to estimator
-    multi_pca = MultiPCA(target_affine=affine,
-                         target_shape=shape[:3],
-                         n_components=3,
-                         mask_strategy='background')
+    multi_pca = _MultiPCA(target_affine=affine,
+                          target_shape=shape[:3],
+                          n_components=3,
+                          mask_strategy='background')
     multi_pca.fit(data)
 
 
@@ -112,16 +112,16 @@ def test_multi_pca_score():
     mask_img = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
 
     # Assert that score is between zero and one
-    multi_pca = MultiPCA(mask=mask_img, random_state=0, memory_level=0,
-                         n_components=3)
+    multi_pca = _MultiPCA(mask=mask_img, random_state=0, memory_level=0,
+                          n_components=3)
     multi_pca.fit(imgs)
     s = multi_pca.score(imgs)
     assert np.all(s <= 1)
     assert np.all(0 <= s)
 
     # Assert that score does not fail with single subject data
-    multi_pca = MultiPCA(mask=mask_img, random_state=0, memory_level=0,
-                         n_components=3)
+    multi_pca = _MultiPCA(mask=mask_img, random_state=0, memory_level=0,
+                          n_components=3)
     multi_pca.fit(imgs[0])
     s = multi_pca.score(imgs[0])
     assert isinstance(s, float)
@@ -129,15 +129,15 @@ def test_multi_pca_score():
 
     # Assert that score is one for n_components == n_sample
     # in single subject configuration
-    multi_pca = MultiPCA(mask=mask_img, random_state=0, memory_level=0,
-                         n_components=5)
+    multi_pca = _MultiPCA(mask=mask_img, random_state=0, memory_level=0,
+                          n_components=5)
     multi_pca.fit(imgs[0])
     s = multi_pca.score(imgs[0])
     assert_almost_equal(s, 1., 1)
 
     # Per component score
-    multi_pca = MultiPCA(mask=mask_img, random_state=0, memory_level=0,
-                         n_components=5)
+    multi_pca = _MultiPCA(mask=mask_img, random_state=0, memory_level=0,
+                          n_components=5)
     multi_pca.fit(imgs[0])
     masker = NiftiMasker(mask_img).fit()
     s = multi_pca._raw_score(masker.transform(imgs[0]), per_component=True)
@@ -161,8 +161,8 @@ def test_components_img():
 
     mask_img = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
     n_components = 3
-    multi_pca = MultiPCA(mask=mask_img, n_components=n_components,
-                         random_state=0)
+    multi_pca = _MultiPCA(mask=mask_img, n_components=n_components,
+                          random_state=0)
     # fit to the data and test for components images
     multi_pca.fit(data)
     components_img = multi_pca.components_img_
@@ -177,7 +177,7 @@ def test_with_globbing_patterns_with_single_image():
     data_4d = np.zeros((40, 40, 40, 3))
     data_4d[20, 20, 20] = 1
     img_4d = nibabel.Nifti1Image(data_4d, affine=np.eye(4))
-    multi_pca = MultiPCA(n_components=3)
+    multi_pca = _MultiPCA(n_components=3)
 
     with write_tmp_imgs(img_4d, create_files=True, use_wildcards=True) as img:
         input_image = _tmp_dir() + img
@@ -195,7 +195,7 @@ def test_with_globbing_patterns_with_multiple_images():
     data_4d = np.zeros((40, 40, 40, 3))
     data_4d[20, 20, 20] = 1
     img_4d = nibabel.Nifti1Image(data_4d, affine=np.eye(4))
-    multi_pca = MultiPCA(n_components=3)
+    multi_pca = _MultiPCA(n_components=3)
 
     with write_tmp_imgs(img_4d, img_4d, create_files=True,
                         use_wildcards=True) as imgs:

@@ -6,14 +6,15 @@ import numbers
 import collections.abc
 import numpy as np
 
-from scipy import ndimage
+from scipy.ndimage import label
 from scipy.stats import scoreatpercentile
 
 from joblib import Memory
 
 from .. import masking
-from ..input_data import NiftiMapsMasker
-from .._utils import check_niimg, check_niimg_3d, check_niimg_4d
+from nilearn.maskers import NiftiMapsMasker
+from .._utils import (check_niimg, check_niimg_3d,
+                      check_niimg_4d, fill_doc)
 from ..image import new_img_like, resample_img
 from ..image.image import _smooth_array, threshold_img
 from .._utils.niimg_conversions import concat_niimgs, _check_same_fov
@@ -126,13 +127,15 @@ def _remove_small_regions(input_data, index, affine, min_size):
     return input_data
 
 
+@fill_doc
 def connected_regions(maps_img, min_region_size=1350,
                       extract_type='local_regions', smoothing_fwhm=6,
                       mask_img=None):
     """Extraction of brain connected regions into separate regions.
 
-    Note: the region size should be defined in mm^3. See the documentation for
-    more details.
+    .. note::
+        The region size should be defined in mm^3.
+        See the documentation for more details.
 
     .. versionadded:: 0.2
 
@@ -142,23 +145,19 @@ def connected_regions(maps_img, min_region_size=1350,
         An image of brain activation or atlas maps to be extracted into set of
         separate brain regions.
 
-    min_region_size : int, optional
+    min_region_size : :obj:`float`, optional
         Minimum volume in mm3 for a region to be kept. For example, if the voxel
         size is 3x3x3 mm then the volume of the voxel is 27mm^3.
         Default=1350mm^3, which means we take minimum size of 1350 / 27 = 50 voxels.
+    %(extract_type)s
+    %(smoothing_fwhm)s
+        Use this parameter to smooth an image to extract most sparser regions.
 
-    extract_type : str {'local_regions', 'connected_components'}, optional
-        If 'connected_components', each component/region in the image is extracted
-        automatically by labelling each region based upon the presence of unique
-        features in their respective regions.
-        If 'local_regions', each component/region is extracted based on their
-        maximum peak value to define a seed marker and then using random walker
-        segementation algorithm on these markers for region separation.
-        Default='local_regions'.
+        .. note::
 
-    smoothing_fwhm : scalar, optional
-        To smooth an image to extract most sparser regions. This parameter
-        is passed `_smooth_array` and exists only for extract_type 'local_regions'.
+            This parameter is passed to `nilearn.image.image._smooth_array`.
+            It will be used only if ``extract_type='local_regions'``.
+
         Default=6.
 
     mask_img : Niimg-like object, optional
@@ -167,11 +166,11 @@ def connected_regions(maps_img, min_region_size=1350,
 
     Returns
     -------
-    regions_extracted_img : Nifti1Image
+    regions_extracted_img : :class:`nibabel.nifti1.Nifti1Image`
         Gives the image in 4D of extracted brain regions. Each 3D image consists
         of only one separated region.
 
-    index_of_each_map : numpy array
+    index_of_each_map : :class:`numpy.ndarray`
         An array of list of indices where each index denotes the identity
         of each extracted region to their family of brain maps.
 
@@ -215,7 +214,7 @@ def connected_regions(maps_img, min_region_size=1350,
         if extract_type == 'local_regions':
             smooth_map = _smooth_array(map_3d, affine=affine, fwhm=smoothing_fwhm)
             seeds = _peak_local_max(smooth_map)
-            seeds_label, seeds_id = ndimage.label(seeds)
+            seeds_label, seeds_id = label(seeds)
             # Assign -1 to values which are 0. to indicate to ignore
             seeds_label[map_3d == 0.] = -1
             rw_maps = _random_walker(map_3d, seeds_label)
@@ -224,7 +223,7 @@ def connected_regions(maps_img, min_region_size=1350,
             label_maps = rw_maps
         else:
             # Connected component extraction
-            label_maps, n_labels = ndimage.label(map_3d)
+            label_maps, n_labels = label(map_3d)
 
         # Takes the size of each labelized region data
         labels_size = np.bincount(label_maps.ravel())
@@ -244,6 +243,7 @@ def connected_regions(maps_img, min_region_size=1350,
     return regions_extracted_img, index_of_each_map
 
 
+@fill_doc
 class RegionExtractor(NiftiMapsMasker):
     """Class for brain region extraction.
 
@@ -253,7 +253,7 @@ class RegionExtractor(NiftiMapsMasker):
     Particularly, to show that each decomposed brain maps can be
     used to focus on a target specific Regions of Interest analysis.
 
-    See [1]_.
+    See :footcite:`Abraham2014`.
 
     .. versionadded:: 0.2
 
@@ -267,7 +267,7 @@ class RegionExtractor(NiftiMapsMasker):
         Mask to be applied to input data, passed to NiftiMapsMasker.
         If None, no masking is applied.
 
-    min_region_size : float, optional
+    min_region_size : :obj:`float`, optional
         Minimum volume in mm3 for a region to be kept. For example, if
         the voxel size is 3x3x3 mm then the volume of the voxel is 27mm^3.
         Default=1350mm^3, which means we take minimum size of 1350 / 27 = 50 voxels.
@@ -277,7 +277,8 @@ class RegionExtractor(NiftiMapsMasker):
         `thresholding_strategy` based upon the choice of selection.
         Default=1.0.
 
-    thresholding_strategy : str {'ratio_n_voxels', 'img_value', 'percentile'}, optional
+    thresholding_strategy : :obj:`str` {'ratio_n_voxels', 'img_value',\
+ 'percentile'}, optional
         If default 'ratio_n_voxels', we apply thresholding that will keep
         the more intense nonzero brain voxels (denoted as n_voxels)
         across all maps (n_voxels being the number of voxels in the brain
@@ -292,78 +293,67 @@ class RegionExtractor(NiftiMapsMasker):
         parameter indicates that we keep only those voxels which have
         intensities more than this value.
         Default='ratio_n_voxels'.
+    %(extractor)s
+    %(smoothing_fwhm)s
+        Use this parameter to smooth an image to extract most sparser regions.
 
-    extractor : str {'local_regions', 'connected_components'}, optional
-        If 'connected_components', each component/region in the image is
-        extracted automatically by labelling each region based upon the
-        presence of unique features in their respective regions. If
-        'local_regions', each component/region is extracted based on
-        their maximum peak value to define a seed marker and then using
-        random walker segementation algorithm on these markers for region
-        separation. Default='local_regions'.
+        .. note::
 
-    smoothing_fwhm : scalar, optional
-        To smooth an image to extract most sparser regions. This parameter
-        is passed to `connected_regions` and exists only for extractor
-        'local_regions'. Please set this parameter according to maps
-        resolution, otherwise extraction will fail.
+            This parameter is passed to
+            :func:`nilearn.regions.connected_regions`.
+            It will be used only if ``extractor='local_regions'``.
+
+        .. note::
+
+            Please set this parameter according to maps resolution,
+            otherwise extraction will fail.
+
         Default=6mm.
+    %(standardize_false)s
 
-    standardize : bool, optional
-        If True, the time series signals are centered and normalized by
-        putting their mean to 0 and variance to 1. Recommended to
-        set as True if signals are not already standardized.
-        passed to class NiftiMapsMasker. Default=False.
+        .. note::
+            Recommended to set to True if signals are not already standardized.
+            Passed to :class:`~nilearn.maskers.NiftiMapsMasker`.
 
-    detrend : bool, optional
-        This parameter is passed to nilearn.signal.clean basically
-        indicates whether to detrend timeseries signals or not.
-        passed to class NiftiMapsMasker. Default=False.
+    %(detrend)s
 
-    low_pass : float, optional
-        This value will be applied on the signals by passing to signal.clean
-        Please see the related documentation signal.clean for more details.
-        passed to class NiftiMapsMasker.
+        .. note::
+            Passed to :func:`nilearn.signal.clean`.
 
-    high_pass : float, optional
-        This value will be applied on the signals by passing to signal.clean
-        Please see the related documentation signal.clean for more details.
-        passed to NiftiMapsMasker.
+        Default=False.
 
-    t_r : float, optional
-        Repetition time in sec. This value is given to signal.clean
-        Please see the related documentation for details.
-        passed to NiftiMapsMasker.
+    %(low_pass)s
 
-    memory : instance of joblib.Memory or string, optional
-        Used to cache the masking process. If a string is given, the path
-        is set with this string as a folder name in the directory.
-        passed to NiftiMapsMasker.
+        .. note::
+            Passed to :func:`nilearn.signal.clean`.
 
-    memory_level : int, optional
-        Aggressiveness of memory catching. The higher the number, the higher
-        the number of functions that will be cached. Zero mean no caching.
-        passed to NiftiMapsMasker. Default=0.
+    %(high_pass)s
 
-    verbose : int, optional
-        Indicates the level of verbosity by printing the message. Zero
-        indicates nothing is printed. Default=0.
+        .. note::
+            Passed to :func:`nilearn.signal.clean`.
+
+    %(t_r)s
+
+        .. note::
+            Passed to :func:`nilearn.signal.clean`.
+
+    %(memory)s
+    %(memory_level)s
+    %(verbose0)s
 
     Attributes
     ----------
-    `index_` : numpy array
+    `index_` : :class:`numpy.ndarray`
         Array of list of indices where each index value is assigned to
         each separate region of its corresponding family of brain maps.
 
-    `regions_img_` : Nifti1Image
+    `regions_img_` : :class:`nibabel.nifti1.Nifti1Image`
         List of separated regions with each region lying on an
         original volume concatenated into a 4D image.
 
     References
     ----------
-    .. [1] Abraham et al. "Region segmentation for sparse decompositions:
-       better brain parcellations from rest fMRI", Sparsity Techniques in
-       Medical Imaging, Sep 2014, Boston, United States. pp.8
+    .. footbibliography::
 
     See Also
     --------
@@ -433,7 +423,7 @@ def connected_label_regions(labels_img, min_size=None, connect_diag=True,
     """Extract connected regions from a brain atlas image defined by labels
     (integers).
 
-    For each label in an parcellations, separates out connected
+    For each label in a :term:`parcellation`, separates out connected
     components and assigns to each separated region a unique label.
 
     Parameters
@@ -442,17 +432,17 @@ def connected_label_regions(labels_img, min_size=None, connect_diag=True,
         A 3D image which contains regions denoted as labels. Each region
         is assigned with integers.
 
-    min_size : float, optional
+    min_size : :obj:`float`, optional
         Minimum region size (in mm^3) in volume required to keep after extraction.
         Removes small or spurious regions.
 
-    connect_diag : bool, optional
+    connect_diag : :obj:`bool`, optional
         If 'connect_diag' is True, two voxels are considered in the same region
         if they are connected along the diagonal (26-connectivity). If it is
         False, two voxels are considered connected only if they are within the
         same x, y, or z direction. Default=True.
 
-    labels : 1D numpy array or list of str, optional
+    labels : 1D :class:`numpy.ndarray` or :obj:`list` of :obj:`str`, optional
         Each string in a list or array denote the name of the brain atlas
         regions given in labels_img input. If provided, same names will be
         re-assigned corresponding to each connected component based extraction
@@ -467,10 +457,10 @@ def connected_label_regions(labels_img, min_size=None, connect_diag=True,
 
     Returns
     -------
-    new_labels_img : Nifti-like image
+    new_labels_img : :class:`nibabel.nifti1.Nifti1Image`
         A new image comprising of regions extracted on an input labels_img.
 
-    new_labels : list, optional
+    new_labels : :obj:`list`, optional
         If labels are provided, new labels assigned to region extracted will
         be returned. Otherwise, only new labels image will be returned.
 
@@ -535,10 +525,11 @@ def connected_label_regions(labels_img, min_size=None, connect_diag=True,
         # Extract regions assigned to each label id
         if connect_diag:
             structure = np.ones((3, 3, 3), dtype=np.int)
-            regions, this_n_labels = ndimage.label(
-                this_label_mask.astype(np.int), structure=structure)
+            regions, this_n_labels = label(
+                this_label_mask.astype(np.int), structure=structure
+            )
         else:
-            regions, this_n_labels = ndimage.label(this_label_mask.astype(np.int))
+            regions, this_n_labels = label(this_label_mask.astype(np.int))
 
         if min_size is not None:
             index = np.arange(this_n_labels + 1)

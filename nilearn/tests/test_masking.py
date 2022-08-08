@@ -3,7 +3,7 @@ Test the mask-extracting utilities.
 """
 # Authors: Ana Luisa Pinho, Jerome Dockes, NicolasGensollen
 # License: simplified BSD
-import distutils.version
+from nilearn.version import _compare_version
 import warnings
 import numpy as np
 import pytest
@@ -26,11 +26,10 @@ from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
 from nilearn._utils.testing import write_tmp_imgs
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils import data_gen
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 
 np_version = (np.version.full_version if hasattr(np.version, 'full_version')
               else np.version.short_version)
-np_version = distutils.version.LooseVersion(np_version).version
 
 _TEST_DIM_ERROR_MSG = ("Input data has incompatible dimensionality: "
                        "Expected dimension is 3D and you provided "
@@ -222,17 +221,6 @@ def test_compute_brain_mask():
         compute_brain_mask(img, verbose=1, mask_type='foo')
 
 
-def test_deprecation_warning_compute_gray_matter_mask():
-    img = Nifti1Image(np.ones((9, 9, 9)), np.eye(4))
-    if distutils.version.LooseVersion(sklearn.__version__) < '0.22':
-        with pytest.deprecated_call():
-            masking.compute_gray_matter_mask(img)
-    else:
-        with pytest.warns(FutureWarning,
-                          match="renamed to 'compute_brain_mask'"):
-            masking.compute_gray_matter_mask(img)
-
-
 def test_apply_mask():
     """ Test smoothing of timeseries extraction
     """
@@ -277,7 +265,8 @@ def test_apply_mask():
         masking.apply_mask(data_img, mask_img_4d)
 
     # Check that 3D data is accepted
-    data_3d = Nifti1Image(np.arange(27).reshape((3, 3, 3)), np.eye(4))
+    data_3d = Nifti1Image(np.arange(27, dtype="int32").reshape((3, 3, 3)),
+                          np.eye(4))
     mask_data_3d = np.zeros((3, 3, 3))
     mask_data_3d[1, 1, 0] = True
     mask_data_3d[0, 1, 0] = True
@@ -309,7 +298,7 @@ def test_unmask():
     rng = np.random.RandomState(42)
     data4D = rng.uniform(size=shape)
     data3D = data4D[..., 0]
-    mask = rng.randint(2, size=shape[:3])
+    mask = rng.randint(2, size=shape[:3], dtype="int32")
     mask_img = Nifti1Image(mask, np.eye(4))
     mask = mask.astype(bool)
 
@@ -375,7 +364,7 @@ def test_intersect_masks_filename():
     # Create dummy masks
     mask_a = np.zeros((4, 4, 1), dtype=bool)
     mask_a[2:4, 2:4] = 1
-    mask_a_img = Nifti1Image(mask_a.astype(int), np.eye(4))
+    mask_a_img = Nifti1Image(mask_a.astype("int32"), np.eye(4))
 
     # +---+---+---+---+
     # |   |   |   |   |
@@ -389,7 +378,7 @@ def test_intersect_masks_filename():
 
     mask_b = np.zeros((4, 4, 1), dtype=bool)
     mask_b[1:3, 1:3] = 1
-    mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4))
+    mask_b_img = Nifti1Image(mask_b.astype("int32"), np.eye(4))
 
     # +---+---+---+---+
     # |   |   |   |   |
@@ -416,7 +405,7 @@ def test_intersect_masks():
     # Create dummy masks
     mask_a = np.zeros((4, 4, 1), dtype=bool)
     mask_a[2:4, 2:4] = 1
-    mask_a_img = Nifti1Image(mask_a.astype(int), np.eye(4))
+    mask_a_img = Nifti1Image(mask_a.astype("int32"), np.eye(4))
 
     # +---+---+---+---+
     # |   |   |   |   |
@@ -430,7 +419,7 @@ def test_intersect_masks():
 
     mask_b = np.zeros((4, 4, 1), dtype=bool)
     mask_b[1:3, 1:3] = 1
-    mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4))
+    mask_b_img = Nifti1Image(mask_b.astype("int32"), np.eye(4))
 
     # +---+---+---+---+
     # |   |   |   |   |
@@ -445,7 +434,7 @@ def test_intersect_masks():
     mask_c = np.zeros((4, 4, 1), dtype=bool)
     mask_c[:, 2] = 1
     mask_c[0, 0] = 1
-    mask_c_img = Nifti1Image(mask_c.astype(int), np.eye(4))
+    mask_c_img = Nifti1Image(mask_c.astype("int32"), np.eye(4))
 
     # +---+---+---+---+
     # | X |   | X |   |
@@ -501,11 +490,11 @@ def test_compute_multi_epi_mask():
     # Same masks as test_intersect_masks
     mask_a = np.zeros((4, 4, 1), dtype=bool)
     mask_a[2:4, 2:4] = 1
-    mask_a_img = Nifti1Image(mask_a.astype(int), np.eye(4))
+    mask_a_img = Nifti1Image(mask_a.astype("uint8"), np.eye(4))
 
     mask_b = np.zeros((8, 8, 1), dtype=bool)
     mask_b[2:6, 2:6] = 1
-    mask_b_img = Nifti1Image(mask_b.astype(int), np.eye(4) / 2.)
+    mask_b_img = Nifti1Image(mask_b.astype("uint8"), np.eye(4) / 2.)
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", MaskWarning)
@@ -541,7 +530,7 @@ def test_compute_multi_brain_mask():
 def test_deprecation_warning_compute_multi_gray_matter_mask():
     imgs = [Nifti1Image(np.ones((9, 9, 9)), np.eye(4)),
             Nifti1Image(np.ones((9, 9, 9)), np.eye(4))]
-    if distutils.version.LooseVersion(sklearn.__version__) < '0.22':
+    if _compare_version(sklearn.__version__, '<', '0.22'):
         with pytest.deprecated_call():
             masking.compute_multi_gray_matter_mask(imgs)
     else:

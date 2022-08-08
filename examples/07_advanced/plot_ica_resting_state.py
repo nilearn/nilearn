@@ -11,12 +11,14 @@ This example is a toy. To apply ICA to fmri timeseries data, it is advised
 to look at the example
 :ref:`sphx_glr_auto_examples_03_connectivity_plot_compare_decomposition.py`.
 
-The example here applies the scikit-learn ICA to movie watching timeseries data.
-Note that following the code in the example, any unsupervised
+The example here applies the scikit-learn :term:`ICA` to movie watching
+timeseries data. Note that following the code in the example, any unsupervised
 decomposition model, or other latent-factor models, can be applied to
 the data, as the scikit-learn API enables to exchange them as almost
 black box (though the relevant parameter for brain maps might no longer
 be given by a call to fit_transform).
+
+.. include:: ../../../examples/masker_note.rst
 
 """
 
@@ -34,7 +36,7 @@ print('First subject functional nifti image (4D) is at: %s' %
 
 #####################################################################
 # Preprocess
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 
 # This is fmri timeseries data: the background has not been removed yet,
 # thus we need to use mask_strategy='epi' to compute the mask from the

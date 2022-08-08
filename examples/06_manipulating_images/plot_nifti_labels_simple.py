@@ -3,9 +3,13 @@ Extracting signals from brain regions using the NiftiLabelsMasker
 =================================================================
 
 This simple example shows how to extract signals from functional
-fmri data and brain regions defined through an atlas.
-More precisely, this example shows how to use the NiftiLabelsMasker
-object to perform this operation in just a few lines of code.
+:term:`fMRI` data and brain regions defined through an atlas.
+More precisely, this example shows how to use the
+:class:`~nilearn.maskers.NiftiLabelsMasker` object to perform this
+operation in just a few lines of code.
+
+.. include:: ../../../examples/masker_note.rst
+
 """
 
 ###########################################################################
@@ -34,7 +38,7 @@ print('The atlas contains {} non-overlapping regions'.format(
 ###########################################################################
 # Instantiate the mask and visualize atlas
 #
-from nilearn.input_data import NiftiLabelsMasker
+from nilearn.maskers import NiftiLabelsMasker
 
 # Instantiate the masker with label image and label values
 masker = NiftiLabelsMasker(atlas.maps,
@@ -48,7 +52,7 @@ masker.fit()
 # At this point, no functional image has been provided to the masker.
 # We can still generate a report which can be displayed in a Jupyter
 # Notebook, opened in a browser using the .open_in_browser() method,
-# or saved to a file using the .save_as_html(output_filepath) mathod.
+# or saved to a file using the .save_as_html(output_filepath) method.
 report = masker.generate_report()
 report
 

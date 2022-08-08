@@ -7,7 +7,7 @@ because downloading data takes a lot of time.
 
 Therefore in the tests, we fake the downloads: the function from the requests
 library that would normally download a file is replaced ("patched") by a
-"mock", a function that mimicks its interface but doesn't download anything and
+"mock", a function that mimics its interface but doesn't download anything and
 returns fake data instead.
 
 As we only patch functions from urllib and requests, nilearn code is unaware of

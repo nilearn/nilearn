@@ -14,7 +14,7 @@ from matplotlib import cm as mpl_cm
 
 # included here for backward compatibility
 from nilearn.plotting.html_document import (
-    HTMLDocument, set_max_img_views_before_warning,)  # noqa
+    HTMLDocument, set_max_img_views_before_warning,)  # noqa: F401
 from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
 from .. import surface
@@ -35,7 +35,7 @@ def add_js_lib(html, embed_js=True):
     if not embed_js:
         js_lib = """
         <script
-        src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js">
+        src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
         </script>
         <script src="https://cdn.plot.ly/plotly-gl3d-latest.min.js"></script>
         <script>

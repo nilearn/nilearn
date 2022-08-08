@@ -18,7 +18,7 @@ possible clipping).
 
 This example shows a 2D image in voxel space, and the position of the data in
 millimeter space, as encoded by the affine matrix. The image is the resampled
-in 3 ways and displayed in in millimeter space.
+in 3 ways and displayed in millimeter space.
 
 1) 4x4 affine matrix and target shape given
 2) 3x3 transformation matrix (only new voxel axes, no offset)
@@ -77,7 +77,8 @@ source_affine[:2, :2] = rotation_matrix * 2.0  # 2.0mm voxel size
 
 # We need to turn this data into a nibabel image
 import nibabel
-img = nibabel.Nifti1Image(image[:, :, np.newaxis], affine=source_affine)
+img = nibabel.Nifti1Image(image[:, :, np.newaxis].astype("int32"),
+                          affine=source_affine)
 
 #############################################################################
 # Now resample the image

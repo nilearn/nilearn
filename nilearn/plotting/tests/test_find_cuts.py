@@ -52,7 +52,7 @@ def test_find_cut_coords():
     data = np.zeros((20, 20, 20))
     data[4:6, 4:6, 4:6] = 1000
     img = nibabel.Nifti1Image(data, 2 * np.eye(4))
-    mask_data = np.ones((20, 20, 20), dtype=int)
+    mask_data = np.ones((20, 20, 20), dtype="uint8")
     mask_img = nibabel.Nifti1Image(mask_data, 2 * np.eye(4))
     cut_coords = find_xyz_cut_coords(img, mask_img=mask_img)
     np.testing.assert_array_equal(cut_coords,
@@ -72,7 +72,7 @@ def test_find_cut_coords():
 
     # Check that a warning is given when all values are masked
     # due to thresholding and that the center of mass is returned
-    mask_data = np.ones((20, 20, 20), dtype=int)
+    mask_data = np.ones((20, 20, 20), dtype="uint8")
     mask_img = nibabel.Nifti1Image(mask_data, np.eye(4))
     with pytest.warns(UserWarning,
                       match=("Could not determine cut coords: "
@@ -233,9 +233,15 @@ def test_find_parcellation_cut_coords():
     x_map_b, y_map_b, z_map_b = (30, 30, 30)
     x_map_c, y_map_c, z_map_c = (50, 50, 50)
     # Defining 3 parcellations
-    data[x_map_a - 10:x_map_a + 10, y_map_a - 10:y_map_a + 10, z_map_a - 10: z_map_a + 10] = 1
-    data[x_map_b - 10:x_map_b + 10, y_map_b - 10:y_map_b + 10, z_map_b - 10: z_map_b + 10] = 2
-    data[x_map_c - 10:x_map_c + 10, y_map_c - 10:y_map_c + 10, z_map_c - 10: z_map_c + 10] = 3
+    data[x_map_a - 10:x_map_a + 10,
+         y_map_a - 10:y_map_a + 10,
+         z_map_a - 10: z_map_a + 10] = 2301
+    data[x_map_b - 10:x_map_b + 10,
+         y_map_b - 10:y_map_b + 10,
+         z_map_b - 10: z_map_b + 10] = 4001
+    data[x_map_c - 10:x_map_c + 10,
+         y_map_c - 10:y_map_c + 10,
+         z_map_c - 10: z_map_c + 10] = 6201
 
     # Number of labels
     labels = np.unique(data)

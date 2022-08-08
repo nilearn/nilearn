@@ -11,7 +11,7 @@ import numpy as np
 import scipy.stats as sps
 import pandas as pd
 
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from nilearn._utils.glm import z_score
 
 DEF_TINY = 1e-50
@@ -86,7 +86,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     if contrast_type not in acceptable_contrast_types:
         raise ValueError(
             '"{0}" is not a known contrast type. Allowed types are {1}'.
-                format(contrast_type, acceptable_contrast_types))
+            format(contrast_type, acceptable_contrast_types))
 
     if contrast_type == 't':
         effect_ = np.zeros((1, labels.size))
@@ -148,7 +148,7 @@ class Contrast(object):
 
     The current implementation is meant to be simple,
     and could be enhanced in the future on the computational side
-    (high-dimensional F constrasts may lead to memory breakage).
+    (high-dimensional F contrasts may lead to memory breakage).
 
     """
     def __init__(self, effect, variance, dim=None, dof=DEF_DOFMAX,
@@ -240,8 +240,8 @@ class Contrast(object):
 
         # Case: one-dimensional contrast ==> t or t**2
         if self.contrast_type == 'F':
-            stat = np.sum((self.effect - baseline) ** 2, 0) / self.dim / \
-                   np.maximum(self.variance, self.tiny)
+            stat = np.sum((self.effect - baseline) ** 2, 0) / \
+                self.dim / np.maximum(self.variance, self.tiny)
         elif self.contrast_type == 't':
             # avoids division by zero
             stat = (self.effect - baseline) / np.sqrt(
@@ -343,7 +343,7 @@ class Contrast(object):
         This should be used only on indepndent contrasts"""
         if self.contrast_type != other.contrast_type:
             raise ValueError(
-                'The two contrasts do not have consistant type dimensions')
+                'The two contrasts do not have consistent type dimensions')
         if self.dim != other.dim:
             raise ValueError(
                 'The two contrasts do not have compatible dimensions')

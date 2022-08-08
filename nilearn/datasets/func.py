@@ -17,8 +17,11 @@ from io import BytesIO
 import nibabel
 import pandas as pd
 from scipy.io import loadmat
-from scipy.io.matlab.miobase import MatReadError
-from sklearn.utils import Bunch, deprecated
+try:
+    from scipy.io.matlab import MatReadError
+except ImportError:  # SciPy < 1.8
+    from scipy.io.matlab.miobase import MatReadError
+from sklearn.utils import Bunch
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr,
                     _read_md5_sum_file, _tree, _filter_columns, _fetch_file, _uncompress_file)
@@ -27,12 +30,19 @@ from .._utils.numpy_conversions import csv_to_array
 from nilearn.image import get_data
 
 
+_LEGACY_FORMAT_MSG = (
+    "`legacy_format` will default to `False` in release 0.11. "
+    "Dataset fetchers will then return pandas dataframes by default "
+    "instead of recarrays."
+)
+
+
 @fill_doc
 def fetch_haxby(data_dir=None, subjects=(2,),
                 fetch_stimuli=False, url=None, resume=True, verbose=1):
     """Download and loads complete haxby dataset.
 
-    See :footcite:`Haxby2425`.
+    See :footcite:`Haxby2001`.
 
     Parameters
     ----------
@@ -238,7 +248,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
 
     # Load the csv file
     phenotypic = np.genfromtxt(phenotypic, names=True, delimiter=',',
-                               dtype=None)
+                               dtype=None, encoding=None)
 
     # Keep phenotypic information for selected subjects
     int_ids = np.asarray(ids, dtype=int)
@@ -269,7 +279,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
 def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     """Download and loads Miyawaki et al. 2008 dataset (153MB).
 
-    See :footcite:`MIYAWAKI2008915`.
+    See :footcite:`Miyawaki2008`.
 
     Parameters
     ----------
@@ -409,7 +419,8 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
 @fill_doc
 def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
                               get_masks=False, get_anats=False,
-                              data_dir=None, url=None, resume=True, verbose=1):
+                              data_dir=None, url=None, resume=True, verbose=1,
+                              legacy_format=True):
     """Download and load Brainomics/Localizer dataset (94 subjects).
 
     "The Functional Localizer is a simple and fast acquisition
@@ -419,15 +430,15 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     cerebral bases of auditory and visual perception, motor actions,
     reading, language comprehension and mental calculation at an
     individual level. Individual functional maps are reliable and
-    quite precise. The procedure is decribed in more detail on the
+    quite precise. The procedure is described in more detail on the
     Functional Localizer page."
     (see https://osf.io/vhtf6/)
 
-    You may cite :footcite:`PAPADOPOULOSORFANOS2017309`
+    You may cite :footcite:`Papadopoulos-Orfanos2017`
     when using this dataset.
 
     Scientific results obtained using this dataset are described
-    in :footcite:`Pinel2007fast`.
+    in :footcite:`Pinel2007`.
 
     Parameters
     ----------
@@ -522,6 +533,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     %(url)s
     %(resume)s
     %(verbose)s
+    %(legacy_format)s
 
     Returns
     -------
@@ -649,11 +661,8 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     root_url = "https://osf.io/download/{0}/"
     if isinstance(n_subjects, numbers.Number):
         subject_mask = np.arange(1, n_subjects + 1)
-        subject_id_max = "S%02d" % n_subjects
     else:
         subject_mask = np.array(n_subjects)
-        subject_id_max = "S%02d" % np.max(n_subjects)
-        n_subjects = len(n_subjects)
     subject_ids = ["S%02d" % s for s in subject_mask]
     data_types = ["cmaps"]
     if get_tmaps:
@@ -663,7 +672,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     def _is_valid_path(path, index, verbose):
         if path not in index:
             if verbose > 0:
-                print("Skiping path '{0}'...".format(path))
+                print("Skipping path '{0}'...".format(path))
             return False
         return True
 
@@ -740,26 +749,26 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     # Load covariates file
     from numpy.lib.recfunctions import join_by
     participants_file = os.path.join(data_dir, participants_file)
-    csv_data = np.recfromcsv(participants_file, delimiter='\t')
+    csv_data = pd.read_csv(participants_file, delimiter='\t')
     behavioural_file = os.path.join(data_dir, behavioural_file)
-    csv_data2 = np.recfromcsv(behavioural_file, delimiter='\t')
-    csv_data = join_by(
-        "participant_id", csv_data, csv_data2, usemask=False, asrecarray=True)
+    csv_data2 = pd.read_csv(behavioural_file, delimiter='\t')
+    csv_data = csv_data.merge(csv_data2)
     subject_names = csv_data["participant_id"].tolist()
     subjects_indices = []
     for name in subject_ids:
-        name = name.encode("utf8")
         if name not in subject_names:
             continue
         subjects_indices.append(subject_names.index(name))
-    csv_data = csv_data[subjects_indices]
-
+    csv_data = csv_data.iloc[subjects_indices]
+    if legacy_format:
+        warnings.warn(_LEGACY_FORMAT_MSG)
+        csv_data = csv_data.to_records(index=False)
     return Bunch(ext_vars=csv_data, description=fdescr, **files)
 
 
 @fill_doc
 def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
-                                     verbose=1):
+                                     verbose=1, legacy_format=True):
     """Fetch calculation task contrast maps from the localizer.
 
     Parameters
@@ -770,6 +779,7 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
     %(data_dir)s
     %(url)s
     %(verbose)s
+    %(legacy_format)s
 
     Returns
     -------
@@ -793,13 +803,14 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
                                      n_subjects=n_subjects,
                                      get_tmaps=False, get_masks=False,
                                      get_anats=False, data_dir=data_dir,
-                                     url=url, resume=True, verbose=verbose)
+                                     url=url, resume=True, verbose=verbose,
+                                     legacy_format=legacy_format)
     return data
 
 
 @fill_doc
 def fetch_localizer_button_task(data_dir=None, url=None,
-                                verbose=1):
+                                verbose=1, legacy_format=True):
     """Fetch left vs right button press contrast maps from the localizer.
 
     Parameters
@@ -807,6 +818,7 @@ def fetch_localizer_button_task(data_dir=None, url=None,
     %(data_dir)s
     %(url)s
     %(verbose)s
+    %(legacy_format)s
 
     Returns
     -------
@@ -833,7 +845,8 @@ def fetch_localizer_button_task(data_dir=None, url=None,
                                      n_subjects=[2],
                                      get_tmaps=True, get_masks=False,
                                      get_anats=True, data_dir=data_dir,
-                                     url=url, resume=True, verbose=verbose)
+                                     url=url, resume=True, verbose=verbose,
+                                     legacy_format=legacy_format)
     # Additional keys for backward compatibility
     data['tmap'] = data['tmaps'][0]
     data['anat'] = data['anats'][0]
@@ -844,13 +857,14 @@ def fetch_localizer_button_task(data_dir=None, url=None,
 def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
                     band_pass_filtering=False, global_signal_regression=False,
                     derivatives=['func_preproc'],
-                    quality_checked=True, url=None, verbose=1, **kwargs):
+                    quality_checked=True, url=None, verbose=1,
+                    legacy_format=True, **kwargs):
     """Fetch ABIDE dataset.
 
     Fetch the Autism Brain Imaging Data Exchange (ABIDE) dataset wrt criteria
     that can be passed as parameter. Note that this is the preprocessed
     version of ABIDE provided by the preprocess connectome projects (PCP).
-    See :footcite:`Nielsen2013Multisite`.
+    See :footcite:`Nielsen2013`.
 
     Parameters
     ----------
@@ -886,6 +900,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
         passed quality assessment for all raters. Default=True.
     %(url)s
     %(verbose)s
+    %(legacy_format)s
     kwargs : parameter list, optional
         Any extra keyword argument will be used to filter downloaded subjects
         according to the CSV phenotypic file. Some examples of filters are
@@ -956,11 +971,11 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
                'ABIDE_Initiative')
 
     if quality_checked:
-        kwargs['qc_rater_1'] = b'OK'
-        kwargs['qc_anat_rater_2'] = [b'OK', b'maybe']
-        kwargs['qc_func_rater_2'] = [b'OK', b'maybe']
-        kwargs['qc_anat_rater_3'] = b'OK'
-        kwargs['qc_func_rater_3'] = b'OK'
+        kwargs['qc_rater_1'] = 'OK'
+        kwargs['qc_anat_rater_2'] = ['OK', 'maybe']
+        kwargs['qc_func_rater_2'] = ['OK', 'maybe']
+        kwargs['qc_anat_rater_3'] = 'OK'
+        kwargs['qc_func_rater_3'] = 'OK'
 
     # Fetch the phenotypic file and load it
     csv = 'Phenotypic_V1_0b_preprocessed1.csv'
@@ -982,10 +997,10 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     # bytes (encode()) needed for python 2/3 compat with numpy
     pheno = '\n'.join(pheno).encode()
     pheno = BytesIO(pheno)
-    pheno = np.recfromcsv(pheno, comments='$', case_sensitive=True)
+    pheno = pd.read_csv(pheno, comment='$')
 
     # First, filter subjects with no filename
-    pheno = pheno[pheno['FILE_ID'] != b'no_filename']
+    pheno = pheno[pheno['FILE_ID'] != 'no_filename']
     # Apply user defined filters
     user_filter = _filter_columns(pheno, kwargs)
     pheno = pheno[user_filter]
@@ -996,10 +1011,14 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
 
     # Get the files
     results = {}
-    file_ids = [file_id.decode() for file_id in pheno['FILE_ID']]
+    file_ids = pheno['FILE_ID'].tolist()
     if n_subjects is not None:
         file_ids = file_ids[:n_subjects]
         pheno = pheno[:n_subjects]
+
+    if legacy_format:
+        warnings.warn(_LEGACY_FORMAT_MSG)
+        pheno = pheno.to_records(index=False)
 
     results['description'] = _get_dataset_descr(dataset_name)
     results['phenotypic'] = pheno
@@ -1059,7 +1078,7 @@ def _load_mixed_gambles(zmap_imgs):
     X = X[mask, :].T
     tmp = np.zeros(list(mask.shape) + [len(X)])
     tmp[mask, :] = X.T
-    mask_img = nibabel.Nifti1Image(mask.astype(int), affine)
+    mask_img = nibabel.Nifti1Image(mask.astype("uint8"), affine)
     X = nibabel.four_to_three(nibabel.Nifti1Image(tmp, affine))
     return X, y, mask_img
 
@@ -1069,36 +1088,42 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
                         return_raw_data=False, verbose=1):
     """Fetch Jimura "mixed gambles" dataset.
 
-    See :footcite:`JIMURA2012544`.
+    See :footcite:`Jimura2012`.
 
     Parameters
     ----------
-    n_subjects : int, optional
-        The number of subjects to load. If None is given, all the
+    n_subjects : :obj:`int`, optional
+        The number of subjects to load. If ``None`` is given, all the
         subjects are used. Default=1.
     %(data_dir)s
     %(url)s
     %(resume)s
     %(verbose)s
-    return_raw_data : bool, optional
-        If false, then the data will transformed into and (X, y) pair, suitable
-        for machine learning routines. X is a list of n_subjects * 48
-        Nifti1Image objects (where 48 is the number of trials),
-        and y is an array of shape (n_subjects * 48,).
+    return_raw_data : :obj:`bool`, optional
+        If ``False``, then the data will transformed into an ``(X, y)``
+        pair, suitable for machine learning routines. ``X`` is a list
+        of ``n_subjects * 48`` :class:`~nibabel.nifti1.Nifti1Image`
+        objects (where 48 is the number of trials), and ``y`` is an
+        array of shape ``(n_subjects * 48,)``.
         Default=False.
 
     Returns
     -------
-    data : Bunch
-        Dictionary-like object, the interest attributes are :
-        'zmaps': string list
-            Paths to realigned gain betamaps (one nifti per subject).
-        'gain': ..
-            If make_Xy is true, this is a list of n_subjects * 48
-            Nifti1Image objects, else it is None.
-        'y': array of shape (n_subjects * 48,) or None
-            If make_Xy is true, then this is an array of shape
-            (n_subjects * 48,), else it is None.
+    data : :class:`~sklearn.utils.Bunch`
+        Dictionary-like object, the attributes of interest are:
+
+        - 'zmaps': :obj:`list` of :obj:`str`
+          Paths to realigned gain betamaps (one nifti per subject).
+        - 'gain': :obj:`list` of :class:`~nibabel.nifti1.Nifti1Image` \
+        or ``None``
+          If ``make_Xy`` is ``True``, this is a list of
+          ``n_subjects * 48`` :class:`~nibabel.nifti1.Nifti1Image`
+          objects, else it is ``None``.
+        - 'y': :class:`~numpy.ndarray` of shape ``(n_subjects * 48,)`` \
+        or ``None``
+          If ``make_Xy`` is ``True``, then this is a
+          :class:`~numpy.ndarray` of shape ``(n_subjects * 48,)``,
+          else it is ``None``.
 
     References
     ----------
@@ -1138,9 +1163,9 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
     The network matrices are estimated from functional connectivity
     datasets of 461 subjects. Full technical details in references.
 
-    More information available in :footcite:`smithhcp2015`,
-    :footcite:`smith2015positive`, :footcite:`Filippini7209`,
-    :footcite:`smith2014methods`, and :footcite:`reilly2009cerebellum`.
+    More information available in :footcite:`Smith2015b`,
+    :footcite:`Smith2015a`, :footcite:`Filippini2009`,
+    :footcite:`Smith2014`, and :footcite:`Reilly2009`.
 
     Parameters
     ----------
@@ -1236,183 +1261,12 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
 
 
 @fill_doc
-@deprecated("'fetch_cobre' has been deprecated and will be removed "
-            "in release 0.9 . "
-            "Please consider using a different datasets or downloading it "
-            "with a different tool than nilearn.")
-def fetch_cobre(n_subjects=10, data_dir=None, url=None, verbose=1):
-    """Fetch COBRE datasets preprocessed using NIAK 0.17 under CentOS
-    version 6.3 with Octave version 4.0.2 and the Minc toolkit version 0.3.18.
-
-    Downloads and returns COBRE preprocessed resting state fMRI datasets,
-    covariates and phenotypic information such as demographic, clinical
-    variables, measure of frame displacement FD (an average FD for all the time
-    frames left after censoring).
-
-    Each subject `fmri_XXXXXXX.nii.gz` is a 3D+t nifti volume (150 volumes).
-    WARNING: no confounds were actually regressed from the data, so it can be
-    done interactively by the user who will be able to explore different
-    analytical paths easily.
-
-    For each subject, there is `fmri_XXXXXXX.tsv` files which contains the
-    covariates such as motion parameters, mean CSF signal that should to be
-    regressed out of the functional data.
-
-    `keys_confounds.json`: a json file, that describes each variable mentioned
-    in the files `fmri_XXXXXXX.tsv.gz`. It also contains a list of time frames
-    that have been removed from the time series by censoring for high motion.
-
-    `phenotypic_data.tsv` contains the data of clinical variables that
-    explained in `keys_phenotypic_data.json`
-
-    .. versionadded:: 0.3
-
-    Warnings
-    --------
-    'fetch_cobre' has been deprecated and will be removed in release 0.9.
-
-    Parameters
-    ----------
-    n_subjects : int, optional
-        The number of subjects to load from maximum of 146 subjects.
-        By default, 10 subjects will be loaded. If n_subjects=None,
-        all subjects will be loaded. Default=10.
-    %(data_dir)s
-    %(url)s
-    %(verbose)s
-
-    Returns
-    -------
-    data : Bunch
-        Dictionary-like object, the attributes are:
-
-        - 'func': string list
-            Paths to Nifti images.
-        - 'confounds': string list
-            Paths to .tsv files of each subject, confounds.
-        - 'phenotypic': numpy.recarray
-            Contains data of clinical variables, sex, age, FD.
-        - 'description': data description of the release and references.
-        - 'desc_con': str
-            description of the confounds variables
-        - 'desc_phenotypic': str
-            description of the phenotypic variables.
-
-    Notes
-    -----
-    See `more information about datasets structure
-    <https://figshare.com/articles/COBRE_preprocessed_with_NIAK_0_17_-_lightweight_release/4197885>`_
-
-    """
-    if url is None:
-        # Here we use the file that provides URL for all others
-        url = 'https://api.figshare.com/v2/articles/4197885'
-    dataset_name = 'cobre'
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
-    fdescr = _get_dataset_descr(dataset_name)
-
-    # First, fetch the file that references all individual URLs
-    files = _fetch_files(data_dir, [("4197885", url, {})],
-                         verbose=verbose)[0]
-
-    files = json.load(open(files, 'r'))
-    files = files['files']
-    # Index files by name
-    files_ = {}
-    for f in files:
-        files_[f['name']] = f
-    files = files_
-
-    # Fetch the phenotypic file and load it
-    csv_name_gz = 'phenotypic_data.tsv.gz'
-    csv_name = os.path.splitext(csv_name_gz)[0]
-    csv_file_phen = _fetch_files(
-        data_dir, [(csv_name, files[csv_name_gz]['download_url'],
-                    {'md5': files[csv_name_gz].get('md5', None),
-                     'move': csv_name_gz,
-                     'uncompress': True})],
-        verbose=verbose)[0]
-
-    # Load file in filename to numpy arrays
-    names = ['ID', 'Current Age', 'Gender', 'Handedness', 'Subject Type',
-             'Diagnosis', 'Frames OK', 'FD', 'FD Scrubbed']
-
-    csv_array_phen = np.recfromcsv(csv_file_phen, names=names,
-                                   skip_header=True, delimiter='\t')
-
-    # Check number of subjects
-    max_subjects = len(csv_array_phen)
-    if n_subjects is None:
-        n_subjects = max_subjects
-
-    if n_subjects > max_subjects:
-        warnings.warn('Warning: there are only %d subjects' % max_subjects)
-        n_subjects = max_subjects
-
-    sz_count = list(csv_array_phen['subject_type']).count(b'Patient')
-    ct_count = list(csv_array_phen['subject_type']).count(b'Control')
-
-    n_sz = np.round(float(n_subjects) / max_subjects * sz_count).astype(int)
-    n_ct = np.round(float(n_subjects) / max_subjects * ct_count).astype(int)
-
-    # First, restrict the csv files to the adequate number of subjects
-    sz_ids = csv_array_phen[csv_array_phen['subject_type'] ==
-                            b'Patient']['id'][:n_sz]
-    ct_ids = csv_array_phen[csv_array_phen['subject_type'] ==
-                            b'Control']['id'][:n_ct]
-    ids = np.hstack([sz_ids, ct_ids])
-    csv_array_phen = csv_array_phen[np.in1d(csv_array_phen['id'], ids)]
-
-    # Call fetch_files once per subject.
-
-    func = []
-    con = []
-    for i in ids:
-        f = 'fmri_00' + str(i) + '.nii.gz'
-        c_gz = 'fmri_00' + str(i) + '.tsv.gz'
-        c = os.path.splitext(c_gz)[0]
-
-        f, c = _fetch_files(
-            data_dir,
-            [(f, files[f]['download_url'], {'md5': files[f].get('md5', None),
-                                            'move': f}),
-             (c, files[c_gz]['download_url'],
-              {'md5': files[c_gz].get('md5', None),
-               'move': c_gz, 'uncompress': True})
-             ],
-            verbose=verbose)
-        func.append(f)
-        con.append(c)
-
-    # Fetch the the complementary files
-    keys_con = "keys_confounds.json"
-    keys_phen = "keys_phenotypic_data.json"
-
-    csv_keys_con, csv_keys_phen = _fetch_files(
-        data_dir,
-        [(keys_con, files[keys_con]['download_url'],
-          {'md5': files[keys_con].get('md5', None), 'move': keys_con}),
-         (keys_phen, files[keys_phen]['download_url'],
-         {'md5': files[keys_phen].get('md5', None), 'move': keys_phen})
-         ],
-        verbose=verbose)
-
-    files_keys_con = open(csv_keys_con, 'r').read()
-    files_keys_phen = open(csv_keys_phen, 'r').read()
-
-    return Bunch(func=func, confounds=con, phenotypic=csv_array_phen,
-                 description=fdescr, desc_con=files_keys_con,
-                 desc_phenotypic=files_keys_phen)
-
-
-@fill_doc
 def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
                             url=None, resume=True, verbose=1):
     """Download and load the NKI enhanced resting-state dataset,
     preprocessed and projected to the fsaverage5 space surface.
 
-    See :footcite:`Nooner2012NKI`.
+    See :footcite:`Nooner2012`.
 
     Direct download link :footcite:`NKIdataset`.
 
@@ -1501,7 +1355,8 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
                                names=['Subject', 'Age',
                                       'Dominant Hand', 'Sex'],
                                delimiter=',', dtype=['U9', '<f8',
-                                                     'U1', 'U1'])
+                                                     'U1', 'U1'],
+                               encoding=None)
 
     # Keep phenotypic information for selected subjects
     int_ids = np.asarray(ids)
@@ -1664,7 +1519,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     The data is downsampled to 4mm resolution for convenience with a repetition time (TR)
     of 2 secs. The origin of the data is coming from OpenNeuro. See Notes below.
 
-    Please cite :footcite:`richardson2018development`
+    Please cite :footcite:`Richardson2018`
     if you are using this dataset.
 
     .. versionadded:: 0.5.2
@@ -1681,7 +1536,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
         6 anatomical compcor parameters. This selection only serves the
         purpose of having realistic examples. Depending on your research
         question, other confounds might be more appropriate.
-        If False, returns all fmriprep confounds.
+        If False, returns all :term:`fMRIPrep` confounds.
         Default=True.
     %(data_dir)s
     %(resume)s
@@ -1838,7 +1693,7 @@ def _reduce_confounds(regressors, keep_confounds):
         out_file = in_file.replace('desc-confounds',
                                    'desc-reducedConfounds')
         if not os.path.isfile(out_file):
-            confounds = np.recfromcsv(in_file, delimiter='\t')
+            confounds = pd.read_csv(in_file, delimiter='\t').to_records()
             selected_confounds = confounds[keep_confounds]
             header = '\t'.join(selected_confounds.dtype.names)
             np.savetxt(out_file, np.array(selected_confounds.tolist()),
@@ -1925,10 +1780,15 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
 
 
 @fill_doc
-def fetch_openneuro_dataset_index(data_dir=None,
-                                  dataset_version='ds000030_R1.0.4',
-                                  verbose=1):
+def fetch_openneuro_dataset_index(
+    data_dir=None,
+    dataset_version='ds000030_R1.0.4',
+    verbose=1,
+):
     """Download a file with OpenNeuro :term:`BIDS` dataset index.
+
+    .. deprecated:: 0.9.2
+        `fetch_openneuro_dataset_index` will be removed in 0.11.
 
     Downloading the index allows to explore the dataset directories
     to select specific files to download. The index is a sorted list of urls.
@@ -1936,38 +1796,98 @@ def fetch_openneuro_dataset_index(data_dir=None,
     Parameters
     ----------
     %(data_dir)s
-    dataset_version : string, optional
+    dataset_version : :obj:`str`, optional
         Dataset version name. Assumes it is of the form [name]_[version].
         Default='ds000030_R1.0.4'.
+
+        .. warning:: Any value other than the default will be ignored.
+
+    %(verbose)s'
+
+    Returns
+    -------
+    urls_path : :obj:`str`
+        Path to downloaded dataset index.
+    urls : :obj:`list` of :obj:`str`
+        Sorted list of dataset directories.
+    """
+    warnings.warn(
+        (
+            'The "fetch_openneuro_dataset_index" function was deprecated in '
+            'version 0.9.2, and will be removed in 0.11. '
+            'Please use "fetch_ds000030_urls" instead.'
+        ),
+        DeprecationWarning,
+    )
+
+    DATASET_VERSION = 'ds000030_R1.0.4'
+    if dataset_version != DATASET_VERSION:
+        warnings.warn(
+            (
+                'An improper dataset_version has been provided. '
+                '"ds000030_R1.0.4" will be downloaded.'
+            ),
+            UserWarning,
+        )
+
+    urls_path, urls = fetch_ds000030_urls(data_dir=data_dir, verbose=verbose)
+    return urls_path, urls
+
+
+@fill_doc
+def fetch_ds000030_urls(data_dir=None, verbose=1):
+    """Fetch URLs for files from the ds000030 :term:`BIDS` dataset.
+
+    .. versionadded:: 0.9.2
+
+    This dataset is version 1.0.4 of the "UCLA Consortium for
+    Neuropsychiatric Phenomics LA5c" dataset
+    :footcite:p:`Poldrack2016`.
+
+    Downloading the index allows users to explore the dataset directories
+    to select specific files to download.
+    The index is a sorted list of urls.
+
+    Parameters
+    ----------
+    %(data_dir)s
     %(verbose)s
 
     Returns
     -------
-    urls_path : string
+    urls_path : :obj:`str`
         Path to downloaded dataset index.
 
-    urls : list of string
+    urls : :obj:`list` of :obj:`str`
         Sorted list of dataset directories.
 
+    References
+    ----------
+    .. footbibliography::
     """
-    data_prefix = '{}/{}/uncompressed'.format(dataset_version.split('_')[0],
-                                              dataset_version,
-                                              )
-    data_dir = _get_dataset_dir(data_prefix, data_dir=data_dir,
-                                verbose=verbose)
+    DATA_PREFIX = 'ds000030/ds000030_R1.0.4/uncompressed'
+    FILE_URL = 'https://osf.io/86xj7/download'
 
-    file_url = 'https://osf.io/86xj7/download'
+    data_dir = _get_dataset_dir(
+        DATA_PREFIX,
+        data_dir=data_dir,
+        verbose=verbose,
+    )
+
     final_download_path = os.path.join(data_dir, 'urls.json')
-    downloaded_file_path = _fetch_files(data_dir=data_dir,
-                                        files=[(final_download_path,
-                                                file_url,
-                                                {'move': final_download_path}
-                                                )],
-                                        resume=True
-                                        )
+    downloaded_file_path = _fetch_files(
+        data_dir=data_dir,
+        files=[(
+            final_download_path,
+            FILE_URL,
+            {'move': final_download_path},
+        )],
+        resume=True
+    )
     urls_path = downloaded_file_path[0]
     with open(urls_path, 'r') as json_file:
         urls = json.load(json_file)
+
     return urls_path, urls
 
 
@@ -2040,46 +1960,68 @@ def select_from_index(urls, inclusion_filters=None, exclusion_filters=None,
 
 
 def patch_openneuro_dataset(file_list):
-    """Add symlinks for files not named according to latest :term:`BIDS` conventions.
+    """Add symlinks for files not named according to :term:`BIDS` conventions.
+
+    .. warning::
+        This function uses a series of hardcoded patterns to generate the
+        corrected filenames.
+        These patterns are not comprehensive and this function is not
+        guaranteed to produce BIDS-compliant files.
+
+    Parameters
+    ----------
+    file_list : :obj:`list` of :obj:`str`
+        A list of filenames to update.
     """
-    rep = {'_T1w_brainmask': '_desc-brain_mask',
-           '_T1w_preproc': '_desc-preproc_T1w',
-           '_T1w_space-MNI152NLin2009cAsym_brainmask':
-               '_space-MNI152NLin2009cAsym_desc-brain_mask',
-           '_T1w_space-MNI152NLin2009cAsym_class-':
-               '_space-MNI152NLin2009cAsym_label-',
-           '_T1w_space-MNI152NLin2009cAsym_preproc':
-               '_space-MNI152NLin2009cAsym_desc-preproc_T1w',
-           '_bold_confounds': '_desc-confounds_regressors',
-           '_bold_space-MNI152NLin2009cAsym_brainmask':
-               '_space-MNI152NLin2009cAsym_desc-brain_mask',
-           '_bold_space-MNI152NLin2009cAsym_preproc':
-               '_space-MNI152NLin2009cAsym_desc-preproc_bold'
-           }
+    REPLACEMENTS = {
+        '_T1w_brainmask': '_desc-brain_mask',
+        '_T1w_preproc': '_desc-preproc_T1w',
+        '_T1w_space-MNI152NLin2009cAsym_brainmask':
+            '_space-MNI152NLin2009cAsym_desc-brain_mask',
+        '_T1w_space-MNI152NLin2009cAsym_class-':
+            '_space-MNI152NLin2009cAsym_label-',
+        '_T1w_space-MNI152NLin2009cAsym_preproc':
+            '_space-MNI152NLin2009cAsym_desc-preproc_T1w',
+        '_bold_confounds': '_desc-confounds_regressors',
+        '_bold_space-MNI152NLin2009cAsym_brainmask':
+            '_space-MNI152NLin2009cAsym_desc-brain_mask',
+        '_bold_space-MNI152NLin2009cAsym_preproc':
+            '_space-MNI152NLin2009cAsym_desc-preproc_bold'
+    }
+
     # Create a symlink if a file with the modified filename does not exist
-    for old in rep:
+    for old_pattern, new_pattern in REPLACEMENTS.items():
         for name in file_list:
-            if old in name:
-                if not os.path.exists(name.replace(old, rep[old])):
-                    os.symlink(name, name.replace(old, rep[old]))
-                name = name.replace(old, rep[old])
+            if old_pattern in name:
+                new_name = name.replace(old_pattern, new_pattern)
+                if not os.path.exists(new_name):
+                    os.symlink(name, new_name)
 
 
 @fill_doc
 def fetch_openneuro_dataset(
-    urls=None, data_dir=None, dataset_version='ds000030_R1.0.4',
-    verbose=1):
+    urls=None,
+    data_dir=None,
+    dataset_version='ds000030_R1.0.4',
+    verbose=1,
+):
     """Download OpenNeuro :term:`BIDS` dataset.
+
+    This function specifically downloads files from a series of URLs.
+    Unless you use :func:`fetch_ds000030_urls` or the default parameters,
+    it is up to the user to ensure that the URLs are correct,
+    and that they are associated with an OpenNeuro dataset.
 
     Parameters
     ----------
     urls : list of string, optional
-        Openneuro url list of dataset files to download. If not specified
-        all files of the specified dataset will be downloaded.
+        List of URLs to dataset files to download.
+        If not specified, all files from the default dataset
+        (``ds000030_R1.0.4``) will be downloaded.
     %(data_dir)s
     dataset_version : string, optional
         Dataset version name. Assumes it is of the form [name]_[version].
-        Default is `ds000030_R1.0.4`.
+        Default is ``ds000030_R1.0.4``.
     %(verbose)s
 
     Returns
@@ -2090,21 +2032,74 @@ def fetch_openneuro_dataset(
     downloaded_files : list of string
         Absolute paths of downloaded files on disk.
 
-    """
-    data_prefix = '{}/{}/uncompressed'.format(
-        dataset_version.split('_')[0], dataset_version)
-    data_dir = _get_dataset_dir(data_prefix, data_dir=data_dir,
-                                verbose=verbose)
+    Notes
+    -----
+    The default dataset downloaded by this function is the
+    "UCLA Consortium for Neuropsychiatric Phenomics LA5c" dataset
+    :footcite:p:`Poldrack2016`.
 
+    This copy includes filenames that are not compliant with the current
+    version of :term:`BIDS`, so this function also calls
+    :func:`patch_openneuro_dataset` to generate BIDS-compliant symlinks.
+
+    See Also
+    --------
+    :func:`fetch_ds000030_urls`
+    :func:`patch_openneuro_dataset`
+
+    References
+    ----------
+    .. footbibliography::
+    """
     # if urls are not specified we download the complete dataset index
     if urls is None:
-        _, urls = fetch_openneuro_dataset_index(
-            data_dir=data_dir, dataset_version=dataset_version,
-            verbose=verbose)
+        DATASET_VERSION = 'ds000030_R1.0.4'
+        if dataset_version != DATASET_VERSION:
+            warnings.warn(
+                'If `dataset_version` is not "ds000030_R1.0.4", '
+                '`urls` must be specified. Downloading "ds000030_R1.0.4".'
+            )
+
+        data_prefix = '{}/{}/uncompressed'.format(
+            DATASET_VERSION.split('_')[0],
+            DATASET_VERSION,
+        )
+        orig_data_dir = data_dir
+        data_dir = _get_dataset_dir(
+            data_prefix,
+            data_dir=data_dir,
+            verbose=verbose,
+        )
+
+        _, urls = fetch_ds000030_urls(
+            data_dir=orig_data_dir,
+            verbose=verbose,
+        )
+    else:
+        data_prefix = '{}/{}/uncompressed'.format(
+            dataset_version.split('_')[0],
+            dataset_version,
+        )
+        data_dir = _get_dataset_dir(
+            data_prefix,
+            data_dir=data_dir,
+            verbose=verbose,
+        )
 
     # The files_spec needed for _fetch_files
     files_spec = []
     files_dir = []
+
+    # Check that data prefix is found in each URL
+    bad_urls = [url for url in urls if data_prefix not in url]
+    if bad_urls:
+        raise ValueError(
+            f'data_prefix ({data_prefix}) is not found in at least one URL. '
+            'This indicates that the URLs do not correspond to the '
+            'dataset_version provided.\n'
+            f'Affected URLs: {bad_urls}'
+        )
+
     for url in urls:
         url_path = url.split(data_prefix + '/')[1]
         file_dir = os.path.join(data_dir, url_path)
@@ -2121,13 +2116,19 @@ def fetch_openneuro_dataset(
         while download_attempts > 0 and not success:
             try:
                 downloaded_files = _fetch_files(
-                    file_dir, [file_spec], resume=True, verbose=verbose)
+                    file_dir,
+                    [file_spec],
+                    resume=True,
+                    verbose=verbose,
+                )
                 downloaded += downloaded_files
                 success = True
             except Exception:
                 download_attempts -= 1
+
         if not success:
-            raise Exception('multiple failures downloading %s' % file_spec[1])
+            raise Exception(f'multiple failures downloading {file_spec[1]}')
+
     patch_openneuro_dataset(downloaded)
 
     return data_dir, sorted(downloaded)
@@ -2176,7 +2177,7 @@ def _download_spm_auditory_data(data_dir, subject_dir, subject_id):
     _fetch_file(url, subject_dir)
     try:
         _uncompress_file(archive_path)
-    except:  # noqa:E722
+    except Exception:
         print('Archive corrupted, trying to download it again.')
         return fetch_spm_auditory(data_dir=data_dir, data_name='',
                                   subject_id=subject_id)
@@ -2184,7 +2185,7 @@ def _download_spm_auditory_data(data_dir, subject_dir, subject_id):
 
 def _prepare_downloaded_spm_auditory_data(subject_dir):
     """ Uncompresses downloaded spm_auditory dataset and organizes
-    the data into apprpriate directories.
+    the data into appropriate directories.
 
     Parameters
     ----------
@@ -2427,7 +2428,7 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
         _fetch_file(url, subject_dir)
         try:
             _uncompress_file(archive_path)
-        except:  # noqa:E722
+        except Exception:
             print('Archive corrupted, trying to download it again.')
             return fetch_spm_multimodal_fmri(data_dir=data_dir,
                                              data_name='',
@@ -2562,7 +2563,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     _fetch_file(url, data_dir)
     try:
         _uncompress_file(archive_path)
-    except:  # noqa:E722
+    except Exception:
         print('Archive corrupted, trying to download it again.')
         return fetch_fiac_first_level(data_dir=data_dir)
 

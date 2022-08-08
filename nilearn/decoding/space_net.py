@@ -12,12 +12,17 @@ TV-L1, Graph-Net, etc.)
 # License: simplified BSD
 
 import warnings
-import numbers
+import collections
 import time
 import sys
 from functools import partial
 import numpy as np
-from scipy import stats, ndimage
+from scipy import stats
+from scipy.ndimage import (
+    gaussian_filter,
+    binary_dilation,
+    binary_erosion,
+)
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils import check_array
 from sklearn.linear_model import LinearRegression
@@ -26,7 +31,7 @@ from sklearn.feature_selection import (SelectPercentile, f_regression,
 from joblib import Memory, Parallel, delayed
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.metrics import accuracy_score
-from ..input_data.masker_validation import check_embedded_nifti_masker
+from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
 from .._utils.param_validation import _adjust_screening_percentile
 from .._utils import fill_doc
 from sklearn.utils import check_X_y
@@ -105,7 +110,7 @@ def _univariate_feature_screening(
     if smoothing_fwhm > 0.:
         sX = np.empty(X.shape)
         for sample in range(sX.shape[0]):
-            sX[sample] = ndimage.gaussian_filter(
+            sX[sample] = gaussian_filter(
                 _unmask_from_to_3d_array(X[sample].copy(),  # avoid modifying X
                                          mask), (smoothing_fwhm, smoothing_fwhm,
                                                  smoothing_fwhm))[mask]
@@ -121,7 +126,7 @@ def _univariate_feature_screening(
     # the mask on which a spatial prior actually makes sense
     mask_ = mask.copy()
     mask_[mask] = (support > 0)
-    mask_ = ndimage.binary_dilation(ndimage.binary_erosion(
+    mask_ = binary_dilation(binary_erosion(
         mask_)).astype(bool)
     mask_[np.logical_not(mask)] = 0
     support = mask_[mask]
@@ -313,9 +318,10 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
     test : array or list of integers
         List of indices for the test samples.
 
-    l1_ratio : float in the interval [0, 1]; optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1];
+    optional (default .5)
         Constant that mixes L1 and TV (resp. Graph-Net) penalization.
-        l1_ratio == 0: just smooth. l1_ratio == 1: just lasso.
+        l1_ratios == 0: just smooth. l1_ratios == 1: just lasso.
 
     eps : float, optional (default 1e-3)
         Length of the path. For example, ``eps=1e-3`` means that
@@ -382,7 +388,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
         copy=False)
 
     # misc
-    if isinstance(l1_ratios, numbers.Number):
+    if not isinstance(l1_ratios, collections.abc.Iterable):
         l1_ratios = [l1_ratios]
     l1_ratios = sorted(l1_ratios)[::-1]  # from large to small l1_ratios
     best_score = -np.inf
@@ -469,8 +475,7 @@ def path_scores(solver, X, y, mask, alphas, l1_ratios, train, test,
         best_w = w_
 
     if len(best_w) == n_features:
-        if Xmean is None:
-            Xmean = np.zeros(n_features)
+        # TODO: do something with Xmean
         best_w = np.append(best_w, 0.)
 
     all_test_scores = np.array(all_test_scores)
@@ -502,7 +507,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
     l1_ratios : float or list of floats in the interval [0, 1];
     optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
-        l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
+        l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
@@ -682,7 +687,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         """Makes sure parameters are sane"""
         if self.l1_ratios is not None:
             l1_ratios = self.l1_ratios
-            if isinstance(l1_ratios, numbers.Number):
+            if not isinstance(l1_ratios, collections.abc.Iterable):
                 l1_ratios = [l1_ratios]
             for l1_ratio in l1_ratios:
                 if not 0 <= l1_ratio <= 1.:
@@ -757,14 +762,14 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
             tic = time.time()
 
         # nifti masking
-        self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
+        self.masker_ = _check_embedded_nifti_masker(self, multi_subject=False)
         X = self.masker_.fit_transform(X)
 
         X, y = check_X_y(X, y, ['csr', 'csc', 'coo'], dtype=float,
                          multi_output=True, y_numeric=not self.is_classif)
 
         if not self.is_classif and np.all(np.diff(y) == 0.):
-            raise ValueError("The given input y must have atleast 2 targets"
+            raise ValueError("The given input y must have at least 2 targets"
                              " to do regression analysis. You provided only"
                              " one target {0}".format(np.unique(y)))
 
@@ -777,11 +782,12 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         n_samples, _ = X.shape
         y = np.array(y).copy()
         l1_ratios = self.l1_ratios
-        if isinstance(l1_ratios, numbers.Number):
+        if not isinstance(l1_ratios, collections.abc.Iterable):
             l1_ratios = [l1_ratios]
         alphas = self.alphas
-        if isinstance(alphas, numbers.Number):
-            alphas = [alphas]
+        if alphas is not None:
+            if not isinstance(alphas, collections.abc.Iterable):
+                alphas = [alphas]
         if self.loss is not None:
             loss = self.loss
         elif self.is_classif:
@@ -972,9 +978,10 @@ class SpaceNetClassifier(BaseSpaceNet):
     loss : string, optional (default "logistic")
         Loss to be used in the classifier. Must be one of "mse", or "logistic".
 
-    l1_ratios : float or list of floats in the interval [0, 1]; optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1];
+    optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
-        l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
+        l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
@@ -1003,7 +1010,7 @@ class SpaceNetClassifier(BaseSpaceNet):
     %(t_r)s
     screening_percentile : float in the interval [0, 100]; Optional (default 20)
         Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is is expressed
+        100 means 'keep all features'. This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime by premultiplying it with the ratio of the volume of the
         mask of the data and volume of a standard brain.  If '100' is given,
@@ -1178,9 +1185,10 @@ class SpaceNetRegressor(BaseSpaceNet):
     penalty : string, optional (default 'graph-net')
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    l1_ratios : float or list of floats in the interval [0, 1]; optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1];
+    optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
-        l1_ratio == 1 corresponds to pure LASSO. The larger the value of this
+        l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
@@ -1209,7 +1217,7 @@ class SpaceNetRegressor(BaseSpaceNet):
     %(t_r)s
     screening_percentile : float in the interval [0, 100]; Optional (default 20)
         Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is is expressed
+        100 means 'keep all features'. This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime to correspond to the volume of the user-supplied mask
         (which is typically smaller).

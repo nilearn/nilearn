@@ -11,6 +11,9 @@ discriminate children from adults. In general, the tangent space embedding
 **outperforms** the standard correlations: see `Dadi et al 2019
 <https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
 for a careful study.
+
+.. include:: ../../../examples/masker_note.rst
+
 """
 
 ###############################################################################
@@ -33,16 +36,16 @@ print('MSDL has {0} ROIs, part of the following networks :\n{1}.'.format(
 # Region signals extraction
 # -------------------------
 # To extract regions time series, we instantiate a
-# :class:`nilearn.input_data.NiftiMapsMasker` object and pass the atlas the
+# :class:`nilearn.maskers.NiftiMapsMasker` object and pass the atlas the
 # file name to it, as well as filtering band-width and detrending option.
-from nilearn import input_data
+from nilearn.maskers import NiftiMapsMasker
 
-masker = input_data.NiftiMapsMasker(
+masker = NiftiMapsMasker(
     msdl_data.maps, resampling_target="data", t_r=2, detrend=True,
     low_pass=.1, high_pass=.01, memory='nilearn_cache', memory_level=1).fit()
 
 ###############################################################################
-# Then we compute region signals and extract useful phenotypic informations.
+# Then we compute region signals and extract useful phenotypic information.
 children = []
 pooled_subjects = []
 groups = []  # child or adult

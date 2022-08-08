@@ -11,6 +11,8 @@ three different masks: the full ventral stream (mask_vt), the house
 selective areas (mask_house) and the face selective areas (mask_face),
 that have been defined via a standard GLM-based analysis.
 
+.. include:: ../../../examples/masker_note.rst
+
 """
 
 ##########################################################################
@@ -30,7 +32,7 @@ print('First subject functional nifti image (4D) is located at: %s' %
       func_filename)
 
 # Load nilearn NiftiMasker, the practical masking and unmasking tool
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 
 # load labels
 import pandas as pd
@@ -123,7 +125,7 @@ for color, mask_name in zip('rgb', mask_names):
 
     tick_position = tick_position + .2
 
-plt.ylabel('Classification accurancy (AUC score)')
+plt.ylabel('Classification accuracy (AUC score)')
 plt.xlabel('Visual stimuli category')
 plt.ylim(0.3, 1)
 plt.legend(loc='lower right')

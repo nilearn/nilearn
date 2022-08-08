@@ -1,6 +1,6 @@
 """
 Make sure all models are using thesame low-level API (
-for computing image gradient, loss functins, etc.).
+for computing image gradient, loss functions, etc.).
 
 """
 

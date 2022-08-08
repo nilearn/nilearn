@@ -3,7 +3,7 @@ Single-subject data (two sessions) in native space
 ==================================================
 
 The example shows the analysis of an SPM dataset studying face perception.  The
-anaylsis is performed in native space. Realignment parameters are provided with
+analysis is performed in native space. Realignment parameters are provided with
 the input images, but those have not been resampled to a common space.
 
 The experimental paradigm is simple, with two conditions; viewing a face image
@@ -32,7 +32,7 @@ subject_data = fetch_spm_multimodal_fmri()
 #########################################################################
 # Specfiy timing and design matrix parameters.
 tr = 2.  # repetition time, in seconds
-slice_time_ref = 0.  # we will sample the design matrix at the beggining of each acquisition
+slice_time_ref = 0.  # Sample at the beginning of each acquisition.
 drift_model = 'Cosine'  # We use a discrete cosine transform to model signal drifts.
 high_pass = .01  # The cutoff for the drift model is 0.01 Hz.
 hrf_model = 'spm + derivative'  # The hemodynamic response function is the SPM canonical one.
@@ -41,9 +41,14 @@ hrf_model = 'spm + derivative'  # The hemodynamic response function is the SPM c
 # Resample the images.
 #
 # This is achieved by the concat_imgs function of Nilearn.
+import warnings
 from nilearn.image import concat_imgs, resample_img, mean_img
-fmri_img = [concat_imgs(subject_data.func1, auto_resample=True),
-            concat_imgs(subject_data.func2, auto_resample=True)]
+
+# Avoid getting too many warnings due to resampling
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    fmri_img = [concat_imgs(subject_data.func1, auto_resample=True),
+                concat_imgs(subject_data.func2, auto_resample=True)]
 affine, shape = fmri_img[0].affine, fmri_img[0].shape
 print('Resampling the second image (this takes time)...')
 fmri_img[1] = resample_img(fmri_img[1], affine, shape[:3])
@@ -101,7 +106,7 @@ contrasts = {
     }
 
 #########################################################################
-# Fit the GLM for the 2 sessions by speficying a FirstLevelModel and then
+# Fit the GLM for the 2 sessions by specifying a FirstLevelModel and then
 # fitting it.
 from nilearn.glm.first_level import FirstLevelModel
 print('Fitting a GLM')
@@ -121,7 +126,7 @@ for contrast_id, contrast_val in contrasts.items():
     z_map = fmri_glm.compute_contrast(
         contrast_val, output_type='z_score')
     # plot the contrasts as soon as they're generated
-    # the display is overlayed on the mean fMRI image
+    # the display is overlaid on the mean fMRI image
     # a threshold of 3.0 is used, more sophisticated choices are possible
     plotting.plot_stat_map(
         z_map, bg_img=mean_image, threshold=3.0, display_mode='z',

@@ -216,5 +216,3 @@ References
    C. Van Essen, and Tor D. Wager. "Large-scale automated synthesis
    of human functional neuroimaging data." Nature methods 8, no. 8
    (2011): 665-670.
-
-

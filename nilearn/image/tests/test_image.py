@@ -7,7 +7,8 @@ import sys
 import tempfile
 
 import nibabel
-from nibabel import Nifti1Image
+from nibabel import Nifti1Image, AnalyzeImage
+from nibabel.freesurfer import MGHImage
 import numpy as np
 import pytest
 
@@ -45,7 +46,7 @@ def test_get_data():
     assert data is img._data_cache
     mask_img = new_img_like(img, data > 0)
     data = get_data(mask_img)
-    assert data.dtype == np.dtype('int8')
+    assert data.dtype == np.dtype('uint8')
     img_3d = index_img(img, 0)
     with tempfile.TemporaryDirectory() as tempdir:
         filename = os.path.join(tempdir, 'img_{}.nii.gz')
@@ -506,13 +507,36 @@ def test_new_img_like_non_iterable_header():
                         copy_header=True)
 
 
+@pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
+def test_new_img_like_int64():
+    img = data_gen.generate_labeled_regions((3, 3, 3), 2)
+    data = image.get_data(img).astype("int32")
+    with pytest.warns(None) as record:
+        new_img = new_img_like(img, data)
+    assert not record
+    assert image.get_data(new_img).dtype == "int32"
+    data = data.astype("int64")
+    with pytest.warns(UserWarning, match=r".*array.*contains.*64.*"):
+        new_img = new_img_like(img, data)
+    assert image.get_data(new_img).dtype == "int32"
+    data[:] = 2**40
+    with pytest.warns(UserWarning, match=r".*64.*too large.*"):
+        new_img = new_img_like(img, data)
+    assert image.get_data(new_img).dtype == "int64"
+
+
 def test_validity_threshold_value_in_threshold_img():
+    """Check that invalid values to threshold_img's threshold parameter raise
+    Exceptions.
+    """
     shape = (6, 8, 10)
     maps, _ = data_gen.generate_maps(shape, n_regions=2)
 
     # testing to raise same error when threshold=None case
-    with pytest.raises(ValueError,
-                       match="The input parameter 'threshold' is empty. "):
+    with pytest.raises(
+        TypeError,
+        match="threshold should be either a number or a string",
+    ):
         threshold_img(maps, threshold=None)
 
     invalid_threshold_values = ['90t%', 's%', 't', '0.1']
@@ -525,7 +549,7 @@ def test_validity_threshold_value_in_threshold_img():
 
 
 def test_threshold_img():
-    # to check whether passes with valid threshold inputs
+    """Smoke test for threshold_img with valid threshold inputs."""
     shape = (10, 20, 30)
     maps, _ = data_gen.generate_maps(shape, n_regions=4)
     affine = np.eye(4)
@@ -534,14 +558,81 @@ def test_threshold_img():
     for img in iter_img(maps):
         # when threshold is a float value
         thr_maps_img = threshold_img(img, threshold=0.8)
+
         # when we provide mask image
         thr_maps_percent = threshold_img(img, threshold=1, mask_img=mask_img)
+
         # when threshold is a percentile
         thr_maps_percent2 = threshold_img(img, threshold='2%')
 
-def test_threshold_img_copy():
 
-    img_zeros = Nifti1Image(np.zeros((10, 10, 10, 10)), np.eye(4))
+def test_threshold_img_with_cluster_threshold():
+    """Check that threshold_img behaves as expected with cluster_threshold
+    and/or two_sided.
+    """
+    # First we create a statistical image with specific characteristics
+    shape = (20, 20, 30)
+    affine = np.eye(4)
+    data = np.zeros(shape, dtype="int32")
+    data[:2, :2, :2] = 4  # 8-voxel positive cluster
+    data[4:6, :2, :2] = -4  # 8-voxel negative cluster
+    data[8:11, 0, 0] = 5  # 3-voxel positive cluster
+    data[13:16, 0, 0] = -5  # 3-voxel positive cluster
+    data[:6, 4:10, :6] = 1  # 216-voxel positive cluster with low value
+    data[13:19, 4:10, :6] = -1  # 216-voxel negative cluster with low value
+
+    stat_img = nibabel.Nifti1Image(data, affine)
+
+    # The standard approach should retain any clusters with values > 2
+    thr_img = threshold_img(stat_img, threshold=2, two_sided=False, copy=True)
+    assert np.array_equal(np.unique(thr_img.get_fdata()), np.array([0, 4, 5]))
+
+    # With two-sided we get any clusters with |values| > 2
+    thr_img = threshold_img(stat_img, threshold=2, two_sided=True, copy=True)
+    assert np.array_equal(
+        np.unique(thr_img.get_fdata()),
+        np.array([-5, -4, 0, 4, 5]),
+    )
+
+    # With a cluster threshold of 5 we get clusters with |values| > 2 and
+    # cluster sizes > 5
+    thr_img = threshold_img(
+        stat_img,
+        threshold=2,
+        two_sided=True,
+        cluster_threshold=5,
+        copy=True,
+    )
+    assert np.array_equal(np.unique(thr_img.get_fdata()), np.array([-4, 0, 4]))
+    assert np.sum(thr_img.get_fdata() == 4) == 8
+    # With a cluster threshold of 5 we get clusters with |values| > 0.5 and
+    # cluster sizes > 5
+    thr_img = threshold_img(
+        stat_img,
+        threshold=0.5,
+        two_sided=True,
+        cluster_threshold=5,
+        copy=True,
+    )
+    assert np.array_equal(
+        np.unique(thr_img.get_fdata()),
+        np.array([-4, -1, 0, 1, 4]),
+    )
+
+    # Now we disable two_sided again to get clusters with values > 0.5 and
+    # cluster sizes > 5
+    thr_img = threshold_img(
+        stat_img,
+        threshold=0.5,
+        two_sided=False,
+        cluster_threshold=5,
+        copy=True,
+    )
+    assert np.array_equal(np.unique(thr_img.get_fdata()), np.array([0, 1, 4]))
+
+
+def test_threshold_img_copy():
+    """Test the behavior of threshold_img's copy parameter."""
     img_ones = Nifti1Image(np.ones((10, 10, 10, 10)), np.eye(4))
 
     # Check that copy does not mutate. It returns modified copy.
@@ -562,13 +653,14 @@ def test_threshold_img_copy():
 
 
 def test_isnan_threshold_img_data():
+    """Check that threshold_img converges properly when input image has nans.
+    """
     shape = (10, 10, 10)
     maps, _ = data_gen.generate_maps(shape, n_regions=2)
     data = get_data(maps)
     data[:, :, 0] = np.nan
 
     maps_img = nibabel.Nifti1Image(data, np.eye(4))
-    # test threshold_img to converge properly when input image has nans.
     threshold_img(maps_img, threshold=0.8)
 
 
@@ -669,7 +761,7 @@ def test_clean_img():
 def test_largest_cc_img():
     """ Check the extraction of the largest connected component, for niftis
 
-    Similiar to smooth_img tests for largest connected_component_img, here also
+    Similar to smooth_img tests for largest connected_component_img, here also
     only the added features for largest_connected_component are tested.
     """
 
@@ -733,3 +825,14 @@ def test_new_img_like_mgh_image():
     data = np.zeros((5, 5, 5), dtype=np.uint8)
     niimg = nibabel.freesurfer.MGHImage(dataobj=data, affine=np.eye(4))
     new_img_like(niimg, data.astype(float), niimg.affine, copy_header=True)
+
+
+@pytest.mark.parametrize("image", [MGHImage, AnalyzeImage])
+def test_new_img_like_boolean_data(image):
+    """Check defaulting boolean input data to np.uint8 dtype is valid for
+    encoding with nibabel image classes MGHImage and AnalyzeImage.
+    """
+    data = np.random.randn(5, 5, 5).astype('uint8')
+    in_img = image(dataobj=data, affine=np.eye(4))
+    out_img = new_img_like(in_img, data=in_img.get_fdata() > 0.5)
+    assert get_data(out_img).dtype == 'uint8'

@@ -1,17 +1,13 @@
 .. for doc tests to run with recent NumPy 1.14, we need to set print options
    to older versions. See issue #1593 for more details
     >>> import numpy as np
-    >>> from distutils.version import LooseVersion
-    >>> if LooseVersion(np.__version__) >= LooseVersion('1.14'):
+    >>> from nilearn.version import _compare_version
+    >>> if _compare_version(np.__version__, '>=', '1.14'):
     ...     np.set_printoptions(legacy='1.13')
 
-=====================================
-Introduction: nilearn in a nutshell
-=====================================
-
-.. contents:: **Contents**
-    :local:
-    :depth: 1
+============
+Introduction
+============
 
 
 What is nilearn: MVPA, decoding, predictive models, functional connectivity
@@ -53,7 +49,7 @@ Why is machine learning relevant to NeuroImaging? A few examples!
 
     * **Information mapping**: using the prediction accuracy of a classifier
       to characterize relationships between brain images and stimuli. (e.g.
-      :ref:`searchlight <searchlight>`) `[Kriegeskorte 2005]
+      :ref:`searchlight <searchlight>`) `[Kriegeskorte 2006]
       <http://www.pnas.org/content/103/10/3863.short>`_
 
     * **Transfer learning**: measuring how much an estimator trained on one
@@ -86,11 +82,84 @@ Why is machine learning relevant to NeuroImaging? A few examples!
 
 .. _installation:
 
-Installing nilearn
-====================
+Installing ``nilearn``
+======================
 
-.. raw:: html
-   :file: install_doc_component.html
+.. tab-set::
+
+  .. tab-item:: Latest release
+
+      **1. Setup a virtual environment**
+
+      We recommend that you install ``nilearn``
+      in a virtual Python environment, either managed
+      with the standard library ``venv``
+      or with ``conda`` (see `miniconda
+      <https://docs.conda.io/en/latest/miniconda.html>`_ for instance).
+
+      Either way, create and activate a new python environment.
+
+      With ``venv``:
+
+      .. code-block::
+
+         python3 -m venv /<path_to_new_env>
+         source /<path_to_new_env>/bin/activate
+
+      Windows users should change the last line to ``\<path_to_new_env>\Scripts\activate.bat``
+      in order to activate their virtual environment.
+
+      With ``conda``:
+
+      .. code-block::
+
+         conda create -n nilearn python=3.9
+         conda activate nilearn
+
+      **2. Install nilearn with pip**
+
+      Execute the following command in the command prompt / terminal
+      in the proper python environment:
+
+      .. code-block::
+
+         python -m pip install -U nilearn
+
+      **3. Check installation**
+
+      Try importing nilearn in a python / iPython session:
+
+      .. code-block:: python
+
+         import nilearn
+
+      If no error is raised, you have installed nilearn correctly.
+
+  .. tab-item:: Development version
+
+      In order to access the development version of nilearn,
+      simply clone and go to the repo:
+
+      .. code-block::
+
+         git clone https://github.com/nilearn/nilearn.git
+         cd nilearn
+
+      Install the package in the proper conda environment with
+
+      .. code-block::
+
+         python -m pip install -r requirements-dev.txt
+         python -m pip install -e .
+
+      To check your install, try importing nilearn in a python session:
+
+      .. code-block:: python
+
+        import nilearn
+
+      If no error is raised, you have installed nilearn correctly.
+
 
 .. _quick_start:
 
@@ -116,14 +185,14 @@ terminal:
 
 :Notebooks:
 
-    Start the Jupter notebook either with the application menu, or by
+    Start the Jupyter notebook either with the application menu, or by
     typing::
 
         jupyter notebook
 
 :Terminal:
 
-    Start ipython by typing::
+    Start iPython by typing::
 
         ipython --matplotlib
 
@@ -219,9 +288,9 @@ To loop over each individual volume of a 4D image, use :func:`image.iter_img`::
    :class: green
 
    Want to sharpen your skills with nilearn?
-   Compute the mean EPI for first subject of the brain development
+   Compute the mean :term:`EPI` for first subject of the brain development
    dataset downloaded with :func:`nilearn.datasets.fetch_development_fmri` and
-   smooth it with an FWHM varying from 0mm to 20mm in increments of 5mm
+   smooth it with an :term:`FWHM` varying from 0mm to 20mm in increments of 5mm
 
    **Hints:**
 
@@ -244,9 +313,9 @@ To loop over each individual volume of a 4D image, use :func:`image.iter_img`::
    The two following tutorials may be useful to get familiar with data
    representation in nilearn:
 
-   * :ref:`sphx_glr_auto_examples_plot_nilearn_101.py`
+   * :ref:`sphx_glr_auto_examples_00_tutorials_plot_nilearn_101.py`
 
-   * :ref:`sphx_glr_auto_examples_plot_3d_and_4d_niimg.py`
+   * :ref:`sphx_glr_auto_examples_00_tutorials_plot_3d_and_4d_niimg.py`
 
    More tutorials can be found :ref:`here <tutorial_examples>`
 
@@ -294,10 +363,17 @@ Basic numerics
   `More documentation ...
   <http://scipy-lectures.github.io/intro/numpy/index.html>`__
 
+  .. warning:: the default integer type used by Numpy is (signed) 64-bit. Several
+              popular neuroimaging tools do not handle int64 Nifti images, so if
+              you build Nifti images directly from Numpy arrays it is recommended
+              to specify a smaller integer type, for example::
+
+                np.array([1, 2000, 7], dtype="int32")
+
 :Plotting and figures:
 
- .. figure:: auto_examples/images/sphx_glr_plot_python_101_001.png
-   :target: auto_examples/plot_python_101.html
+ .. figure:: auto_examples/00_tutorials/images/sphx_glr_plot_python_101_001.png
+   :target: auto_examples/00_tutorials/plot_python_101.html
    :align: right
    :scale: 30
 
@@ -315,8 +391,8 @@ Basic numerics
 
  ::
 
-    >>> from scipy import ndimage
-    >>> t_smooth = ndimage.gaussian_filter(t, sigma=2)
+    >>> from scipy.ndimage import gaussian_filter
+    >>> t_smooth = gaussian_filter(t, sigma=2)
 
  `More documentation ...
  <http://scipy-lectures.github.io/advanced/image_processing/index.html>`__
@@ -367,7 +443,7 @@ It is first created with the relevant parameters::
     >>> svc = SVC(kernel='linear', C=1.)
 
 These parameters are detailed in the documentation of
-the object: in IPython or Jupter you can do::
+the object: in IPython or Jupyter you can do::
 
     In [3]: SVC?
     ...

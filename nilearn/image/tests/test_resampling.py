@@ -4,6 +4,7 @@ Test the resampling code.
 import os
 import copy
 import math
+from pathlib import Path
 
 from numpy.testing import (assert_almost_equal,
                            assert_array_equal,
@@ -46,7 +47,7 @@ def test_identity_resample():
     """
     rng = np.random.RandomState(42)
     shape = (3, 2, 5, 2)
-    data = rng.randint(0, 10, shape)
+    data = rng.randint(0, 10, shape, dtype="int32")
     affine = np.eye(4)
     affine[:3, -1] = 0.5 * np.array(shape[:3])
     rot_img = resample_img(Nifti1Image(data, affine),
@@ -163,8 +164,8 @@ def test_resampling_with_affine():
     """
     rng = np.random.RandomState(42)
 
-    data_4d = rng.randint(4, size=(1, 4, 4, 3))
-    data_3d = rng.randint(4, size=(1, 4, 4))
+    data_4d = rng.randint(4, size=(1, 4, 4, 3), dtype="int32")
+    data_3d = rng.randint(4, size=(1, 4, 4), dtype="int32")
 
     for data in [data_3d, data_4d]:
         for angle in (0, np.pi, np.pi / 2., np.pi / 4., np.pi / 3.):
@@ -191,8 +192,8 @@ def test_resampling_with_affine():
 def test_resampling_continuous_with_affine():
     rng = np.random.RandomState(42)
 
-    data_3d = rng.randint(1, 4, size=(1, 10, 10))
-    data_4d = rng.randint(1, 4, size=(1, 10, 10, 3))
+    data_3d = rng.randint(1, 4, size=(1, 10, 10), dtype="int32")
+    data_4d = rng.randint(1, 4, size=(1, 10, 10, 3), dtype="int32")
 
     for data in [data_3d, data_4d]:
         for angle in (0, np.pi / 2., np.pi, 3 * np.pi / 2.):
@@ -223,7 +224,7 @@ def test_resampling_error_checks():
     shape = (3, 2, 5, 2)
     target_shape = (5, 3, 2)
     affine = np.eye(4)
-    data = rng.randint(0, 10, shape)
+    data = rng.randint(0, 10, shape, dtype="int32")
     img = Nifti1Image(data, affine)
 
     # Correct parameters: no exception
@@ -252,7 +253,7 @@ def test_resampling_error_checks():
 
     # Resampling a binary image with continuous or
     # linear interpolation should raise a warning.
-    data_binary = rng.randint(4, size=(1, 4, 4))
+    data_binary = rng.randint(4, size=(1, 4, 4), dtype="int32")
     data_binary[data_binary>0] = 1
     assert sorted(list(np.unique(data_binary))) == [0,1]
 
@@ -269,7 +270,11 @@ def test_resampling_error_checks():
         rot_img = resample_img(img_binary,
                                target_affine=rot,
                                interpolation='linear')
-
+    img_no_sform = Nifti1Image(data, affine)
+    img_no_sform.set_sform(None)
+    with pytest.warns(Warning, match="The provided image has no sform"):
+        resample_img(img_no_sform,
+                     target_affine=affine)
 
     # Noop
     target_shape = shape[:3]
@@ -440,7 +445,7 @@ def test_resampling_result_axis_permutation():
     core_data = np.arange(np.prod(core_shape)).reshape(core_shape)
     full_data_shape = np.array(core_shape) + 2
     full_data = np.zeros(full_data_shape)
-    full_data[[slice(1, 1 + s) for s in core_shape]] = core_data
+    full_data[tuple(slice(1, 1 + s) for s in core_shape)] = core_data
 
     source_img = Nifti1Image(full_data, np.eye(4))
 
@@ -493,7 +498,7 @@ def test_resampling_nan():
         core_data[2, 2:4, 1] = np.nan
         full_data_shape = np.array(core_shape) + 2
         full_data = np.zeros(full_data_shape)
-        full_data[[slice(1, 1 + s) for s in core_shape]] = core_data
+        full_data[tuple(slice(1, 1 + s) for s in core_shape)] = core_data
 
         source_img = Nifti1Image(full_data, np.eye(4))
 
@@ -790,6 +795,8 @@ def test_coord_transform_trivial():
     assert x.shape == x_.shape
 
 
+@pytest.mark.skipif(not testing.is_64bit(),
+                    reason='This test only runs on 64bits machines.')
 @pytest.mark.skipif(os.environ.get('APPVEYOR') == 'True',
                     reason='This test too slow (7-8 minutes) on AppVeyor')
 @pytest.mark.skipif((os.environ.get('TRAVIS') == 'true'
@@ -817,12 +824,34 @@ def test_resample_img_segmentation_fault():
                      interpolation='nearest')
 
 
-def test_resampling_with_int_types_no_crash():
+@pytest.mark.parametrize("dtype",
+                         [np.int8, np.int16, np.int32,
+                          np.uint8, np.uint16, np.uint32,
+                          np.float32, np.float64, np.float, '>i4', '<i4'])
+def test_resampling_with_int_types_no_crash(dtype):
     affine = np.eye(4)
     data = np.zeros((2, 2, 2))
+    img = Nifti1Image(data.astype(dtype), affine)
+    resample_img(img, target_affine=2. * affine)
 
-    for dtype in [np.int, np.int8, np.int16, np.int32, np.int64,
-                  np.uint, np.uint8, np.uint16, np.uint32, np.uint64,
-                  np.float32, np.float64, np.float, '>i8', '<i8']:
-        img = Nifti1Image(data.astype(dtype), affine)
-        resample_img(img, target_affine=2. * affine)
+
+@pytest.mark.parametrize("dtype", ["int64", "uint64", "<i8", ">i8", int])
+@pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
+def test_resampling_with_int64_types_no_crash(dtype):
+    affine = np.eye(4)
+    data = np.zeros((2, 2, 2))
+    img = Nifti1Image(data.astype(dtype), affine)
+    resample_img(img, target_affine=2. * affine)
+
+
+def test_resample_input():
+    rng = np.random.RandomState(42)
+    shape = (3, 2, 5, 2)
+    data = rng.randint(0, 10, shape, dtype="int32")
+    affine = np.eye(4)
+    affine[:3, -1] = 0.5 * np.array(shape[:3])
+    img = Nifti1Image(data, affine)
+
+    with testing.write_tmp_imgs(img, create_files=True) as filename:
+        filename = Path(filename)
+        resample_img(filename, target_affine=affine, interpolation='nearest')

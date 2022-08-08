@@ -6,7 +6,7 @@ Test the signals module
 
 import os.path
 import warnings
-from distutils.version import LooseVersion
+from nilearn.version import _compare_version
 
 import numpy as np
 import pytest
@@ -133,9 +133,10 @@ def test_butterworth():
      causing it to fail tests.
      This hack prevents that and will be removed in future.
     '''
-    buggy_scipy = (LooseVersion(scipy.__version__) < LooseVersion('1.2')
-                   and LooseVersion(scipy.__version__) > LooseVersion('1.0')
-                   )
+    buggy_scipy = (
+        _compare_version(scipy.__version__, '<', '1.2')
+        and _compare_version(scipy.__version__, '>', '1.0')
+    )
     if buggy_scipy:
         warnings.simplefilter('ignore')
     ''' END HACK '''
@@ -176,6 +177,20 @@ def test_butterworth():
                                 copy=True)
     np.testing.assert_almost_equal(out1, out2)
     np.testing.assert_(id(out1) != id(out2))
+
+    # Test check for equal values in critical frequencies
+    sampling = 1
+    low_pass = 2
+    high_pass = 1
+    with pytest.warns(UserWarning,
+                      match='Signals are returned unfiltered because '
+                      'band-pass critical frequencies are equal. '
+                      'Please check that inputs for sampling_rate, '
+                      'low_pass, and high_pass are valid.'):
+        out = nisignal.butterworth(data, sampling,
+                                   low_pass=low_pass, high_pass=high_pass,
+                                   copy=True)
+    assert (out == data).all()
 
 
 def test_standardize():
@@ -505,13 +520,17 @@ def test_clean_confounds():
 
     # Test without standardizing that constant parts of confounds are
     # accounted for
-    np.testing.assert_almost_equal(nisignal.clean(np.ones((20, 2)),
-                                                  standardize=False,
-                                                  confounds=np.ones(20),
-                                                  standardize_confounds=False,
-                                                  detrend=False,
-                                                  ).mean(),
-                                   np.zeros((20, 2)))
+    # passing standardize_confounds=False, detrend=False should raise warning
+    warning_message = r"must perform detrend and/or standardize confounds"
+    with pytest.warns(UserWarning, match=warning_message):
+        np.testing.assert_almost_equal(
+            nisignal.clean(np.ones((20, 2)),
+                           standardize=False,
+                           confounds=np.ones(20),
+                           standardize_confounds=False,
+                           detrend=False,
+                           ).mean(),
+            np.zeros((20, 2)))
 
     # Test to check that confounders effects are effectively removed from
     # the signals when having a detrending and filtering operation together.

@@ -17,7 +17,7 @@
         function makePlot(surface, hemisphere, divId) {
 
             decodeHemisphere(connectomeInfo, surface, hemisphere);
-            info = connectomeInfo[surface + "_" + hemisphere];
+            var info = connectomeInfo[surface + "_" + hemisphere];
             info["type"] = "mesh3d";
             info["color"] = "#aaaaaa";
             info["opacity"] = getOpacity();

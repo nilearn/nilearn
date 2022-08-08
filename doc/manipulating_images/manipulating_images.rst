@@ -8,10 +8,6 @@ This chapter discusses how nilearn can be used to do simple operations on
 brain images.
 
 
-.. contents:: **Chapter contents**
-    :local:
-    :depth: 1
-
 .. _preprocessing_functions:
 
 Functions for data preparation and image transformation
@@ -36,9 +32,9 @@ loading the data into a data matrix, most are also integrated in the
 * Cleaning signals (e.g., linear detrending, standardization,
   confound removal, low/high pass filtering):
   :func:`nilearn.image.clean_img`
-  
+
   .. seealso::
-     
+
      To apply this cleaning on signal matrices rather than images:
      :func:`nilearn.signal.clean`
 
@@ -136,7 +132,7 @@ Accessing individual volumes in 4D images
 
 .. topic:: **Examples**
 
-   * :ref:`sphx_glr_auto_examples_plot_3d_and_4d_niimg.py`
+   * :ref:`sphx_glr_auto_examples_00_tutorials_plot_3d_and_4d_niimg.py`
 
    * :ref:`sphx_glr_auto_examples_01_plotting_plot_overlay.py`
 
@@ -234,7 +230,7 @@ ROI mask:
    better representation of voxels of interest.
 
  * **Mask intersection and dilation**: Post-processing the results with
-   simple morphological operations, mask intersection and dilation. 
+   simple morphological operations, mask intersection and dilation.
 
    * we can use another mask, such as a grey-matter mask, to select
      only the voxels which are common in both masks.

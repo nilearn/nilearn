@@ -3,7 +3,7 @@ ADHD 200
 
 Notes
 -----
-Part of the the 1000 Functional Connectome Project. Phenotypic
+Part of the 1000 Functional Connectome Project. Phenotypic
 information includes: diagnostic status, dimensional ADHD symptom measures,
 age, sex, intelligence quotient (IQ) and lifetime medication status.
 Preliminary quality control assessments (usable vs. questionable) based upon

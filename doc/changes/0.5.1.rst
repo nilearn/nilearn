@@ -1,0 +1,89 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.5.1
+=====
+
+**Released April 2019**
+
+NEW
+---
+
+- **Support for Python2 & Python3.4 will be removed in the next release.**
+  We recommend Python 3.6 and up.
+  Users with a Python2 or Python3.4 environment will be warned at their first Nilearn import.
+
+- Calculate image data ``dtype`` from header information.
+
+- New display mode ``tiled`` which allows 2x2 plot arrangement when plotting three cuts (see :ref:`plotting`).
+
+- Class :class:`~maskers.NiftiLabelsMasker` now consumes less memory when extracting the signal from a 3D/4D image. This is especially noteworthy when extracting signals from large 4D images.
+
+- New function :func:`~datasets.fetch_atlas_schaefer_2018`.
+
+- New function :func:`~datasets.fetch_coords_seitzman_2018`.
+
+Changes
+-------
+
+- Lighting used for interactive surface plots changed; plots may look a bit different.
+
+- Function :func:`~plotting.view_connectome` default colormap is ``bwr``, consistent with function :func:`~plotting.plot_connectome`.
+
+- Function :func:`~plotting.view_connectome` parameter names are consistent with function :func:`~plotting.plot_connectome`:
+
+  - ``coords`` is now ``node_coord``.
+  - ``marker_size`` is now ``node_size``.
+  - ``cmap`` is now ``edge_cmap``.
+  - ``threshold`` is now ``edge_threshold``.
+
+- Functions :func:`~plotting.view_markers` and :func:`~plotting.view_connectome` can accept different marker sizes for each node / marker.
+
+- Function :func:`plotting.view_markers` default marker color is now ``red``, consistent with ``add_markers()``.
+
+- Function :func:`plotting.view_markers` parameter names are consistent with ``add_markers()``:
+
+  - ``coords`` is now ``marker_coords``.
+  - ``colors`` is now ``marker_color``.
+
+- Function :func:`~plotting.view_img_on_surf` now accepts a ``symmetric_cmap`` argument to control whether the colormap is centered around 0 and a ``vmin`` argument.
+
+- Users can now control the size and fontsize of colorbars in interactive surface and connectome plots, or disable the colorbar.
+
+Fixes
+-----
+
+- Example ``plot_seed_to_voxel_correlation`` now really saves z-transformed maps.
+
+- Function :func:`~regions.connected_regions` and class :class:`~regions.RegionExtractor` now correctly use the provided ``mask_img``.
+
+- Function ``load_niimg`` no longer drops header if ``dtype`` is changed.
+
+- Class :class:`~maskers.NiftiSpheresMasker` no longer silently ignores :term:`voxels<voxel>` if no ``mask_img`` is specified.
+
+- Interactive brainsprites generated from ``view_img`` are correctly rendered in Jupyter Book.
+
+Known Issues
+------------
+
+- On Python2, functions :func:`~plotting.view_connectome` and function :func:`~plotting.view_markers` do not show parameters names in function signature when using ``help()`` and similar features. Please refer to their docstrings for this information.
+
+- Plotting ``.mgz`` files in MNE is broken.
+
+Contributors
+------------
+
+The following people contributed to this release:
+
+    * `Bertrand Thirion`_ (2)
+    * `Kshitij Chawla`_ (90)
+    * `Franz Liem`_ (22)
+    * `Jerome Dockes`_ (16)
+    * `Gael Varoquaux`_ (11)
+    * `Salma Bougacha`_ (8)
+    * himanshupathak21061998 (7)
+    * `Elizabeth DuPre`_ (2)
+    * `Eric Larson`_ (1)
+    * `Pierre Bellec`_ (1)

@@ -154,13 +154,15 @@ def test_mask_stat_map():
     img, data = _simulate_img()
 
     # Try not to threshold anything
-    mask_img, img, data_t, thre = html_stat_map._mask_stat_map(img,
-                                                               threshold=None)
+    mask_img, img, data_t, thresh = html_stat_map._mask_stat_map(
+        img, threshold=None
+    )
     assert np.max(get_data(mask_img)) == 0
 
     # Now threshold at zero
-    mask_img, img, data_t, thre = html_stat_map._mask_stat_map(img,
-                                                               threshold=0)
+    mask_img, img, data_t, thresh = html_stat_map._mask_stat_map(
+        img, threshold=0
+    )
     assert np.min((data == 0) == get_data(mask_img))
 
 
@@ -183,6 +185,14 @@ def test_load_bg_img():
 
     # Check positive isotropic, near-diagonal affine
     _check_affine(bg_img.affine)
+
+
+def test_get_bg_mask_and_cmap():
+    # non-regression test for issue #3120 (bg image was masked with mni
+    # template mask)
+    img, _ = _simulate_img()
+    mask, cmap = html_stat_map._get_bg_mask_and_cmap(img, False)
+    assert (mask == np.zeros(img.shape, dtype=bool)).all()
 
 
 def test_resample_stat_map():

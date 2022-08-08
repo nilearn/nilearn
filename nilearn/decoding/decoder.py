@@ -21,7 +21,7 @@ from joblib import Parallel, delayed
 from nilearn._utils import CacheMixin, fill_doc
 from nilearn._utils.cache_mixin import _check_memory
 from nilearn._utils.param_validation import check_feature_screening
-from nilearn.input_data.masker_validation import check_embedded_nifti_masker
+from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
 from nilearn.regions.rena_clustering import ReNA
 from sklearn import clone
 from sklearn.dummy import DummyClassifier, DummyRegressor
@@ -275,7 +275,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         The percentage of brain volume that will be kept with respect to a full
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
-        perfomed. A float according to a percentile of the highest
+        performed. A float according to a percentile of the highest
         scores. Default: 20.
 
     scoring: str, callable or None, optional. Default None
@@ -298,16 +298,18 @@ class _BaseDecoder(LinearRegression, CacheMixin):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    mask_strategy: {'background' or 'epi'}, optional. Default: 'background'
-        The strategy used to compute the mask: use 'background' if your
-        images present a clear homogeneous background, and 'epi' if they
-        are raw EPI images. Depending on this value, the mask will be
-        computed from masking.compute_background_mask or
-        masking.compute_epi_mask.
+    %(mask_strategy)s
 
         .. note::
             This parameter will be ignored if a mask image is provided.
 
+        .. note::
+            Depending on this value, the mask will be computed from
+            :func:`nilearn.masking.compute_background_mask`,
+            :func:`nilearn.masking.compute_epi_mask`, or
+            :func:`nilearn.masking.compute_brain_mask`.
+
+        Default is 'background'.
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
@@ -605,7 +607,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         if X.shape[1] != n_features:
             raise ValueError(
                 "X has {} features per sample; expecting {}".format(
-                    (X.shape[1], n_features)))
+                    X.shape[1], n_features))
 
         scores = safe_sparse_dot(X, self.coef_.T,
                                  dense_output=True) + self.intercept_
@@ -652,7 +654,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
     def _apply_mask(self, X):
         # Nifti masking
-        self.masker_ = check_embedded_nifti_masker(self, multi_subject=False)
+        self.masker_ = _check_embedded_nifti_masker(self, multi_subject=False)
         X = self.masker_.fit_transform(X)
         self.mask_img_ = self.masker_.mask_img_
 
@@ -837,16 +839,18 @@ class Decoder(_BaseDecoder):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    mask_strategy: {'background' or 'epi'}, optional. Default: 'background'
-        The strategy used to compute the mask: use 'background' if your
-        images present a clear homogeneous background, and 'epi' if they
-        are raw EPI images. Depending on this value, the mask will be
-        computed from masking.compute_background_mask or
-        masking.compute_epi_mask.
+    %(mask_strategy)s
 
         .. note::
             This parameter will be ignored if a mask image is provided.
 
+        .. note::
+            Depending on this value, the mask will be computed from
+            :func:`nilearn.masking.compute_background_mask`,
+            :func:`nilearn.masking.compute_epi_mask`, or
+            :func:`nilearn.masking.compute_brain_mask`.
+
+        Default is 'background'.
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
@@ -943,16 +947,18 @@ class DecoderRegressor(_BaseDecoder):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    mask_strategy: {'background' or 'epi'}, optional. Default: 'background'
-        The strategy used to compute the mask: use 'background' if your
-        images present a clear homogeneous background, and 'epi' if they
-        are raw EPI images. Depending on this value, the mask will be
-        computed from masking.compute_background_mask or
-        masking.compute_epi_mask.
+    %(mask_strategy)s
 
         .. note::
             This parameter will be ignored if a mask image is provided.
 
+        .. note::
+            Depending on this value, the mask will be computed from
+            :func:`nilearn.masking.compute_background_mask`,
+            :func:`nilearn.masking.compute_epi_mask`, or
+            :func:`nilearn.masking.compute_brain_mask`.
+
+        Default is 'background'.
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
@@ -992,7 +998,7 @@ class FREMRegressor(_BaseDecoder):
     FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
     training set, thus returning a very robust decoder at a lower computational
-    cost than other spatially regularized methods :footcite:`HOYOSIDROBO2018160`.
+    cost than other spatially regularized methods :footcite:`Hoyos-Idrobo2018`.
 
     Parameters
     -----------
@@ -1056,16 +1062,18 @@ class FREMRegressor(_BaseDecoder):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    mask_strategy : {'background' or 'epi'}, optional. Default: 'background'
-        The strategy used to compute the mask: use 'background' if your
-        images present a clear homogeneous background, and 'epi' if they
-        are raw EPI images. Depending on this value, the mask will be
-        computed from masking.compute_background_mask or
-        masking.compute_epi_mask.
+    %(mask_strategy)s
 
         .. note::
             This parameter will be ignored if a mask image is provided.
 
+        .. note::
+            Depending on this value, the mask will be computed from
+            :func:`nilearn.masking.compute_background_mask`,
+            :func:`nilearn.masking.compute_epi_mask`, or
+            :func:`nilearn.masking.compute_brain_mask`.
+
+        Default is 'background'.
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
@@ -1113,7 +1121,7 @@ class FREMClassifier(_BaseDecoder):
     FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
     training set, thus returning a very robust decoder at a lower computational
-    cost than other spatially regularized methods :footcite:`HOYOSIDROBO2018160`.
+    cost than other spatially regularized methods :footcite:`Hoyos-Idrobo2018`.
 
     Parameters
     -----------
@@ -1177,16 +1185,18 @@ class FREMClassifier(_BaseDecoder):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    mask_strategy : {'background' or 'epi'}, optional. Default: 'background'
-        The strategy used to compute the mask: use 'background' if your
-        images present a clear homogeneous background, and 'epi' if they
-        are raw EPI images. Depending on this value, the mask will be
-        computed from masking.compute_background_mask or
-        masking.compute_epi_mask.
+    %(mask_strategy)s
 
         .. note::
             This parameter will be ignored if a mask image is provided.
 
+        .. note::
+            Depending on this value, the mask will be computed from
+            :func:`nilearn.masking.compute_background_mask`,
+            :func:`nilearn.masking.compute_epi_mask`, or
+            :func:`nilearn.masking.compute_brain_mask`.
+
+        Default is 'background'.
     %(memory)s
     %(memory_level)s
     %(n_jobs)s

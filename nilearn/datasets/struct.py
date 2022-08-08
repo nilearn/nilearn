@@ -10,7 +10,8 @@ import functools
 from pathlib import Path
 
 import numpy as np
-from scipy import ndimage
+import pandas as pd
+from scipy.ndimage import binary_closing
 from sklearn.utils import Bunch
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr)
@@ -30,6 +31,11 @@ WM_MNI152_FILE_PATH = os.path.join(
     "mni_icbm152_wm_tal_nlin_sym_09a_converted.nii.gz")
 FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
 
+_LEGACY_FORMAT_MSG = (
+    "`legacy_format` will default to `False` in release 0.11. "
+    "Dataset fetchers will then return pandas dataframes by default "
+    "instead of recarrays."
+)
 
 # workaround for
 # https://github.com/nilearn/nilearn/pull/2738#issuecomment-869018842
@@ -40,8 +46,10 @@ _MNI_RES_WARNING_ALREADY_SHOWN = False
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ICBM152 template (dated 2009).
 
-    For more information, see :footcite:`FONOV2011313`,
-    :footcite:`Fonov2009`, and :footcite:`Collins1999algorithm`.
+    %(templateflow)s
+
+    For more information, see :footcite:`Fonov2011`,
+    :footcite:`Fonov2009`, and :footcite:`Collins1999`.
 
     Parameters
     ----------
@@ -107,6 +115,13 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     The original download URL is
     http://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip
 
+    TemplateFlow repository for ICBM152 2009
+
+    Symmetric: https://github.com/templateflow/tpl-MNI152NLin2009cSym
+
+    Asymmetric: https://github.com/templateflow/tpl-MNI152NLin2009cSAsym
+
+
     """
     if url is None:
         # The URL can be retrieved from the nilearn account on OSF (Open
@@ -152,7 +167,7 @@ def load_mni152_template(resolution=None):
     the MNI ICBM152 T1 template and re-samples it using a different resolution,
     if specified.
 
-    For more information, see :footcite:`FONOV2011313`,
+    For more information, see :footcite:`Fonov2011`,
     and :footcite:`Fonov2009`.
 
     Parameters
@@ -170,6 +185,9 @@ def load_mni152_template(resolution=None):
 
     See Also
     --------
+    nilearn.datasets.fetch_icbm152_2009: for details regarding the difference
+        between NiLearn and :term:`fMRIPrep` ICBM152 template.
+
     nilearn.datasets.load_mni152_gm_template : for details about version of the
         MNI152 grey-matter template.
 
@@ -186,7 +204,8 @@ def load_mni152_template(resolution=None):
     if resolution is None:
         if not _MNI_RES_WARNING_ALREADY_SHOWN:
             warnings.warn("Default resolution of the MNI template will change "
-                          "from 2mm to 1mm in version 0.10.0", FutureWarning)
+                          "from 2mm to 1mm in version 0.10.0", FutureWarning,
+                          stacklevel=2)
             _MNI_RES_WARNING_ALREADY_SHOWN = True
         resolution = 2
 
@@ -421,7 +440,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     gm_target_mask = (gm_target_data > threshold).astype("int8")
 
-    gm_target_mask = ndimage.binary_closing(gm_target_mask, iterations=n_iter)
+    gm_target_mask = binary_closing(gm_target_mask, iterations=n_iter)
     gm_mask_img = new_img_like(gm_target_img, gm_target_mask)
 
     return gm_mask_img
@@ -479,7 +498,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     wm_target_mask = (wm_target_data > threshold).astype("int8")
 
-    wm_target_mask = ndimage.binary_closing(wm_target_mask, iterations=n_iter)
+    wm_target_mask = binary_closing(wm_target_mask, iterations=n_iter)
     wm_mask_img = new_img_like(wm_target_img, wm_target_mask)
 
     return wm_mask_img
@@ -489,6 +508,8 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
                                 n_iter=2, verbose=1):
     """Downloads ICBM152 template first, then loads the 'gm' mask.
+
+     %(templateflow)s
 
     .. versionadded:: 0.2.5
 
@@ -542,7 +563,7 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
     # getting one fifth of the values
     gm_mask = (gm_data > threshold).astype("int8")
 
-    gm_mask = ndimage.binary_closing(gm_mask, iterations=n_iter)
+    gm_mask = binary_closing(gm_mask, iterations=n_iter)
     gm_mask_img = new_img_like(gm_img, gm_mask)
 
     return gm_mask_img
@@ -550,11 +571,11 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
 
 @fill_doc
 def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
-                    url=None, resume=True, verbose=1):
+                    url=None, resume=True, verbose=1, legacy_format=True):
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
     For more information, see :footcite:`OASISbrain`,
-    and :footcite:`Marcus2007OASIS`.
+    and :footcite:`Marcus2007`.
 
     Parameters
     ----------
@@ -569,6 +590,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
     %(url)s
     %(resume)s
     %(verbose)s
+    %(legacy_format)s
 
     Returns
     -------
@@ -734,17 +756,23 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
     data_usage_agreement = files[-1]
 
     # Keep CSV information only for selected subjects
-    csv_data = np.recfromcsv(ext_vars_file)
+    csv_data = pd.read_csv(ext_vars_file)
     # Comparisons to recfromcsv data must be bytes.
     actual_subjects_ids = [("OAS1" +
                             str.split(os.path.basename(x),
-                                      "OAS1")[1][:9]).encode()
+                                      "OAS1")[1][:9])
                            for x in gm_maps]
     subject_mask = np.asarray([subject_id in actual_subjects_ids
-                               for subject_id in csv_data['id']])
+                               for subject_id in csv_data['ID']])
     csv_data = csv_data[subject_mask]
-
+    csv_data = csv_data.rename(
+        columns={c: c.lower().replace("/", "") for c in csv_data.columns}
+    )
     fdescr = _get_dataset_descr(dataset_name)
+
+    if legacy_format:
+        warnings.warn(_LEGACY_FORMAT_MSG)
+        csv_data = csv_data.to_records(index=False)
 
     return Bunch(
         gray_matter_maps=gm_maps,
@@ -759,7 +787,7 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     """Download a Freesurfer fsaverage surface.
     File names are subject to change and only attribute names
     are guaranteed to be stable across nilearn versions.
-    See :footcite:`Fischl1999neurons`.
+    See :footcite:`Fischl1999`.
 
     Parameters
     ----------
@@ -797,7 +825,7 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
 
     """
     available_meshes = [
-        "fsaverage3", "fsaverage4", "fsaverage5", "fsaverage5_sphere",
+        "fsaverage3", "fsaverage4", "fsaverage5",
         "fsaverage6", "fsaverage7", "fsaverage",
     ]
 
@@ -816,14 +844,6 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
 
         return _fetch_surf_fsaverage(mesh, data_dir=data_dir)
     elif mesh == "fsaverage5":
-        return _fetch_surf_fsaverage5()
-    elif mesh == "fsaverage5_sphere":
-        warnings.warn(
-            "mesh='fsaverage5_sphere' has been deprecated "
-            "and will be removed in v0.9.0.\n"
-            "fsaverage5 sphere coordinates can now be accessed through "
-            "attributes sphere_{left, right} using mesh='fsaverage5'"
-        )
         return _fetch_surf_fsaverage5()
     else:
         raise ValueError(

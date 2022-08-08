@@ -26,10 +26,10 @@ from .utils import _fetch_file, _get_dataset_dir, _get_dataset_descr
 from ..image import resample_img
 import uuid
 
-_NEUROVAULT_BASE_URL = 'http://neurovault.org/api/'
+_NEUROVAULT_BASE_URL = 'https://neurovault.org/api/'
 _NEUROVAULT_COLLECTIONS_URL = urljoin(_NEUROVAULT_BASE_URL, 'collections/')
 _NEUROVAULT_IMAGES_URL = urljoin(_NEUROVAULT_BASE_URL, 'images/')
-_NEUROSYNTH_FETCH_WORDS_URL = 'http://neurosynth.org/api/decode/'
+_NEUROSYNTH_FETCH_WORDS_URL = 'https://neurosynth.org/api/decode/'
 
 _COL_FILTERS_AVAILABLE_ON_SERVER = ('DOI', 'name', 'owner', 'id')
 _IM_FILTERS_AVAILABLE_ON_SERVER = tuple()
@@ -2238,7 +2238,7 @@ def _result_list_to_bunch(result_list, download_params):
         images_meta, collections_meta = zip(*result_list)
         images_meta = list(images_meta)
         collections_meta = list(collections_meta)
-    
+
     if download_params['resample']:
         images = [im_meta.get('resampled_absolute_path') for im_meta in images_meta]
     else:
@@ -2314,8 +2314,8 @@ def fetch_neurovault(
     skimmed through the whole database or until an (optional) maximum
     number of images to fetch has been reached.
 
-    For more information, see :footcite:`Gorgolewski2015neurovault`,
-    and :footcite:`yarkoni2011large`.
+    For more information, see :footcite:`Gorgolewski2015`,
+    and :footcite:`Yarkoni2011`.
 
     Parameters
     ----------
@@ -2519,8 +2519,8 @@ def fetch_neurovault_ids(
     This is the fast way to get the data from the server if we already
     know which images or collections we want.
 
-    For more information, see :footcite:`Gorgolewski2015neurovault`,
-    and :footcite:`yarkoni2011large`.
+    For more information, see :footcite:`Gorgolewski2015`,
+    and :footcite:`Yarkoni2011`.
 
     Parameters
     ----------

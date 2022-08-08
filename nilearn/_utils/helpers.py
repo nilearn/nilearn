@@ -1,12 +1,13 @@
 import functools
 import warnings
+import os
 
 
 def rename_parameters(replacement_params,
                       end_version='future',
                       lib_name='Nilearn',
                       ):
-    """Decorator to deprecate & replace specificied parameters
+    """Decorator to deprecate & replace specified parameters
     in the decorated functions and methods without changing
     function definition or signature.
 
@@ -145,3 +146,21 @@ def remove_parameters(removed_params,
             return func(*args, **kwargs)
         return wrapper
     return _remove_params
+
+
+def stringify_path(path):
+    """Converts path-like objects to string.
+
+    This is used to allow functions expecting string filesystem paths to accept
+    objects using `__fspath__` protocol.
+
+    Parameters
+    ----------
+    path : str or path-like object
+
+    Returns
+    -------
+    str
+
+    """
+    return path.__fspath__() if isinstance(path, os.PathLike) else path

@@ -17,7 +17,7 @@ def test_searchlight():
     frames = 30
     data = rand.rand(5, 5, 5, frames)
     mask = np.ones((5, 5, 5), dtype=bool)
-    mask_img = nibabel.Nifti1Image(mask.astype(int), np.eye(4))
+    mask_img = nibabel.Nifti1Image(mask.astype("uint8"), np.eye(4))
     # Create a condition array, with balanced classes
     cond = np.arange(frames, dtype=int) >= (frames // 2)
 
@@ -43,7 +43,7 @@ def test_searchlight():
     # The voxel selected in process_mask_img is too far from the signal
     process_mask = np.zeros((5, 5, 5), dtype=bool)
     process_mask[0, 0, 0] = True
-    process_mask_img = nibabel.Nifti1Image(process_mask.astype(int),
+    process_mask_img = nibabel.Nifti1Image(process_mask.astype("uint8"),
                                            np.eye(4))
     sl = searchlight.SearchLight(mask_img, process_mask_img=process_mask_img,
                                  radius=0.5, n_jobs=n_jobs,
@@ -109,4 +109,3 @@ def test_searchlight():
     # run searchlight on list of 3D images
     sl = searchlight.SearchLight(mask_img)
     sl.fit(imgs, y)
-

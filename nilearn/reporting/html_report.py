@@ -1,7 +1,5 @@
-import io
 import os
 import copy
-import base64
 import warnings
 from pathlib import Path
 from string import Template
@@ -12,6 +10,7 @@ from nilearn.reporting.utils import figure_to_svg_base64
 
 ESTIMATOR_TEMPLATES = {
     'NiftiLabelsMasker': 'report_body_template_niftilabelsmasker.html',
+    'NiftiMapsMasker': 'report_body_template_niftimapsmasker.html',
     'default': 'report_body_template.html'}
 
 
@@ -52,6 +51,9 @@ def _embed_img(display):
     """
     if display is None:  # no image to display
         return None
+    # If already embedded, simply return as is
+    if isinstance(display, str):
+        return display
     return figure_to_svg_base64(display.frame_axes.figure)
 
 
@@ -158,6 +160,9 @@ def _define_overlay(estimator):
     elif len(displays) == 2:
         overlay, image = displays[0], displays[1]
 
+    else:
+        overlay, image = None, displays
+
     return overlay, image
 
 
@@ -209,12 +214,16 @@ def generate_report(estimator):
     else:  # We can create a report
         html_template = _get_estimator_template(estimator)
         overlay, image = _define_overlay(estimator)
+        if isinstance(image, list):
+            embeded_images = [_embed_img(i) for i in image]
+        else:
+            embeded_images = _embed_img(image)
         parameters = _str_params(estimator.get_params())
         docstring = estimator.__doc__
         snippet = docstring.partition('Parameters\n    ----------\n')[0]
         report = _update_template(title=estimator.__class__.__name__,
                                   docstring=snippet,
-                                  content=_embed_img(image),
+                                  content=embeded_images,
                                   overlay=_embed_img(overlay),
                                   parameters=parameters,
                                   data=data,
@@ -224,13 +233,37 @@ def generate_report(estimator):
 
 class HTMLReport(HTMLDocument):
     """A report written as HTML.
-    Methods such as save_as_html(), open_in_browser()
-    are inherited from HTMLDocument
+
+    Methods such as ``save_as_html``, or ``open_in_browser``
+    are inherited from class ``nilearn.plotting.html_document.HTMLDocument``.
 
     """
     def __init__(self, head_tpl, body, head_values={}):
-        """The head_tpl is meant for display as a full page, eg writing on
-        disk. The body is used for embedding in an existing page.
+        """Constructor the ``HTMLReport`` class.
+
+        Parameters
+        ----------
+        head_tpl : Template
+            This is meant for display as a full page, eg writing on disk.
+            This is the Template object used to generate the HTML head
+            section of the report. The template should be filled with:
+
+                - title: The title of the HTML page.
+                - body: The full body of the HTML page. Provided through
+                  the ``body`` input.
+
+        body : :obj:`str`
+            This parameter is used for embedding in the provided
+            ``head_tpl`` template. It contains the full body of the
+            HTML page.
+
+        head_values : :obj:`dict`, optional
+            Additional substitutions in ``head_tpl``.
+            Default={}.
+
+            .. note::
+                This can be used to provide additional values
+                with custom templates.
 
         """
         html = head_tpl.safe_substitute(body=body, **head_values)
@@ -239,8 +272,8 @@ class HTMLReport(HTMLDocument):
         self.body = body
 
     def _repr_html_(self):
-        """
-        Used by the Jupyter notebook.
+        """Method used by the Jupyter notebook.
+
         Users normally won't call this method explicitly.
         """
         return self.body

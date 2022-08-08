@@ -12,15 +12,17 @@ import pytest
 
 from nibabel.tmpdirs import InTemporaryDirectory
 from numpy.testing import (
-    assert_almost_equal, assert_array_equal, assert_array_almost_equal,
-    assert_equal)
+    assert_almost_equal, assert_array_equal, assert_array_almost_equal)
 
-from nilearn.glm.first_level.design_matrix import (_convolve_regressors,
-                                                   _cosine_drift,
-                                                   check_design_matrix,
-                                                   make_first_level_design_matrix,
-                                                   make_second_level_design_matrix,
-                                                   )
+from nilearn.glm.first_level.design_matrix import (
+    _convolve_regressors,
+    _cosine_drift,
+    check_design_matrix,
+    make_first_level_design_matrix,
+    make_second_level_design_matrix
+)
+
+from nilearn._utils.data_gen import basic_paradigm
 
 # load the spm file to test cosine basis
 my_path = osp.dirname(osp.abspath(__file__))
@@ -29,10 +31,9 @@ DESIGN_MATRIX = np.load(full_path_design_matrix_file)
 
 
 def design_matrix_light(
-    frame_times, events=None, hrf_model='glover',
-    drift_model='cosine', high_pass=.01, drift_order=1, fir_delays=None,
-    add_regs=None, add_reg_names=None, min_onset=-24, path=None
-    ):
+        frame_times, events=None, hrf_model='glover',
+        drift_model='cosine', high_pass=.01, drift_order=1, fir_delays=None,
+        add_regs=None, add_reg_names=None, min_onset=-24, path=None):
     """ Same as make_first_level_design_matrix,
     but only returns the computed matrix and associated name.
     """
@@ -43,16 +44,6 @@ def design_matrix_light(
                                           add_regs, add_reg_names, min_onset)
     _, matrix, names = check_design_matrix(dmtx)
     return matrix, names
-
-
-def basic_paradigm():
-    conditions = ['c0', 'c0', 'c0', 'c1', 'c1', 'c1', 'c2', 'c2', 'c2']
-    onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    durations = 1 * np.ones(9)
-    events = pd.DataFrame({'trial_type': conditions,
-                           'onset': onsets,
-                           'duration': durations})
-    return events
 
 
 def modulated_block_paradigm():
@@ -143,7 +134,7 @@ def test_design_matrix0c():
         frame_times, drift_model='polynomial',
         drift_order=3, add_regs=axdf))
     assert_almost_equal(X1[:, 0], ax[:, 0])
-    assert_array_equal(names[:4],  np.arange(4))
+    assert_array_equal(names[:4], np.arange(4))
 
 
 def test_design_matrix0d():
@@ -185,7 +176,7 @@ def test_convolve_regressors():
 
 
 def test_design_matrix1():
-    # basic test based on basic_paradigm and glover hrf
+    # basic test based on basic_paradigm() and glover hrf
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     events = basic_paradigm()
@@ -257,7 +248,12 @@ def test_design_matrix6():
 
 
 def test_design_matrix7():
-    # idem test_design_matrix1, but odd experimental paradigm
+    """
+    idem test_design_matrix1, but odd experimental paradigm;
+    code should raise an exception as condition names are not valid
+    pandas.DataFrame column names (and hence the computed design matrix
+    won't be able to call pd.eval when computing contrasts for instance).
+    """
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     conditions = [0, 0, 0, 1, 1, 1, 3, 3, 3]
@@ -268,9 +264,13 @@ def test_design_matrix7():
                            'onset': onsets,
                            'duration': durations})
     hrf_model = 'glover'
-    X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
-                                   drift_model='polynomial', drift_order=3)
-    assert len(names) == 7
+
+    with pytest.raises(
+        ValueError,
+        match="At least one regressor name can't be used"
+    ):
+        design_matrix_light(frame_times, events, hrf_model=hrf_model,
+                            drift_model='polynomial', drift_order=3)
 
 
 def test_design_matrix8():

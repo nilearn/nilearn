@@ -2,8 +2,8 @@
 Producing single subject maps of seed-to-voxel correlation
 ==========================================================
 
-This example shows how to produce seed-to-voxel correlation maps for a single
-subject based on movie-watching fMRI scans.
+This example shows how to produce seed-to-:term:`voxel` correlation maps
+for a single subject based on movie-watching :term:`fMRI` scans.
 These maps depict the temporal correlation of a **seed region** with the
 **rest of the brain**.
 
@@ -13,15 +13,17 @@ numpy array, corresponding to the data inside the mask.
 
 See also :ref:`for a similar example using cortical surface input data
 <sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py>`.
+
+Author: Franz Liem
+
+.. include:: ../../../examples/masker_note.rst
+
 """
-
-# author: Franz Liem
-
 
 ##########################################################################
 # Getting the data
 # ----------------
-
+#
 # We will work with the first subject of the brain development fmri data set.
 # dataset.func is a list of filenames. We select the 1st (0-based)
 # subject by indexing with [0]).
@@ -50,18 +52,17 @@ print(confound_filename)
 pcc_coords = [(0, -52, 18)]
 
 ##########################################################################
-# We use :class:`nilearn.input_data.NiftiSpheresMasker` to extract the
+# We use :class:`nilearn.maskers.NiftiSpheresMasker` to extract the
 # **time series from the functional imaging within the sphere**. The
 # sphere is centered at pcc_coords and will have the radius we pass the
 # NiftiSpheresMasker function (here 8 mm).
 #
 # The extraction will also detrend, standardize, and bandpass filter the data.
 # This will create a NiftiSpheresMasker object.
-from nilearn import input_data
+from nilearn.maskers import NiftiSpheresMasker
 
-seed_masker = input_data.NiftiSpheresMasker(
-    pcc_coords, radius=8,
-    detrend=True, standardize=True,
+seed_masker = NiftiSpheresMasker(
+    pcc_coords, radius=8, detrend=True, standardize=True,
     low_pass=0.1, high_pass=0.01, t_r=2,
     memory='nilearn_cache', memory_level=1, verbose=0)
 
@@ -74,11 +75,12 @@ seed_time_series = seed_masker.fit_transform(func_filename,
 
 ##########################################################################
 # Next, we can proceed similarly for the **brain-wide voxel-wise time
-# series**, using :class:`nilearn.input_data.NiftiMasker` with the same input
+# series**, using :class:`nilearn.maskers.NiftiMasker` with the same input
 # arguments as in the seed_masker in addition to smoothing with a 6 mm kernel
-brain_masker = input_data.NiftiMasker(
-    smoothing_fwhm=6,
-    detrend=True, standardize=True,
+from nilearn.maskers import NiftiMasker
+
+brain_masker = NiftiMasker(
+    smoothing_fwhm=6, detrend=True, standardize=True,
     low_pass=0.1, high_pass=0.01, t_r=2,
     memory='nilearn_cache', memory_level=1, verbose=0)
 
@@ -178,7 +180,8 @@ print("Seed-to-voxel correlation Fisher-z transformed: min = %.3f; max = %.3f"
          )
       )
 
-# Finally, we can tranform the correlation array back to a Nifti image
+##########################################################################
+# Eventually, we can transform the correlation array back to a Nifti image
 # object, that we can save.
 seed_to_voxel_correlations_fisher_z_img = brain_masker.inverse_transform(
     seed_to_voxel_correlations_fisher_z.T)

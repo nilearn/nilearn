@@ -1,5 +1,3 @@
-.. include:: ../tune_toc.rst
-
 .. _building_blocks:
 
 ================================================
@@ -16,4 +14,3 @@ terms of data processing.
 
    manual_pipeline.rst
    neurovault.rst
-

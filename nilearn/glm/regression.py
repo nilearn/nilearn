@@ -123,28 +123,12 @@ class OLSModel(object):
         self.df_model = matrix_rank(self.design, eps)
         self.df_residuals = self.df_total - self.df_model
 
-    @auto_attr
-    @_deprecation_warning('df_resid',
-                          'df_residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def df_resid(self):
-        return self.df_residuals
-
-    @auto_attr
-    @_deprecation_warning('wdesign',
-                          'whitened_design',
-                          '0.7.0',
-                          '0.9.0')
-    def wdesign(self):
-        return self.whitened_design
-
     def logL(self, beta, Y, nuisance=None):
         r'''Returns the value of the loglikelihood function at beta.
 
         Given the whitened design matrix, the loglikelihood is evaluated
         at the parameter vector, beta, for the dependent variable, Y
-        and the nuisance parameter, sigma [1]_.
+        and the nuisance parameter, sigma :footcite:`Greene2003`.
 
         Parameters
         ----------
@@ -191,7 +175,7 @@ class OLSModel(object):
 
         References
         ----------
-        .. [1] W. Green.  "Econometric Analysis," 5th ed., Pearson, 2003.
+        .. footbibliography::
 
         '''
         # This is overwriting an abstract method of LikelihoodModel
@@ -332,11 +316,7 @@ class RegressionResults(LikelihoodModelResults):
     It may change in any future release of Nilearn.
 
     """
-    @rename_parameters(
-        {'wresid': 'whitened_residuals', 'wY': 'whitened_Y'},
-        lib_name='Nilearn',
-        end_version='0.9.0',
-    )
+
     def __init__(self, theta, Y, model, whitened_Y, whitened_residuals,
                  cov=None, dispersion=1., nuisance=None):
         """See LikelihoodModelResults constructor.
@@ -352,38 +332,6 @@ class RegressionResults(LikelihoodModelResults):
         self.whitened_design = model.whitened_design
 
     @auto_attr
-    @_deprecation_warning('wdesign',
-                          'whitened_design',
-                          '0.7.0',
-                          '0.9.0')
-    def wdesign(self):
-        return self.whitened_design
-
-    @auto_attr
-    @_deprecation_warning('wY',
-                          'whitened_Y',
-                          '0.7.0',
-                          '0.9.0')
-    def wY(self):
-        return self.whitened_Y
-
-    @auto_attr
-    @_deprecation_warning('wresid',
-                          'whitened_residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def wresid(self):
-        return self.whitened_residuals
-
-    @auto_attr
-    @_deprecation_warning('resid',
-                          'residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def resid(self):
-        return self.residuals
-
-    @auto_attr
     def residuals(self):
         """
         Residuals from the fit.
@@ -391,18 +339,10 @@ class RegressionResults(LikelihoodModelResults):
         return self.Y - self.predicted
 
     @auto_attr
-    @_deprecation_warning('norm_resid',
-                          'normalized_residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def norm_resid(self):
-        return self.normalized_residuals
-
-    @auto_attr
     def normalized_residuals(self):
         """Residuals, normalized to have unit length.
 
-        See [1]_ and [2]_.
+        See :footcite:`Montgomery2006` and :footcite:`Davidson2004`.
 
         Notes
         -----
@@ -416,9 +356,7 @@ class RegressionResults(LikelihoodModelResults):
 
         References
         ----------
-        .. [1] Montgomery and Peck 3.2.1 p. 68
-
-        .. [2] Davidson and MacKinnon 15.2 p 662
+        .. footbibliography::
 
         """
         return self.residuals * positive_reciprocal(np.sqrt(self.dispersion))
@@ -453,7 +391,7 @@ class RegressionResults(LikelihoodModelResults):
 
 class SimpleRegressionResults(LikelihoodModelResults):
     """This class contains only information of the model fit necessary
-    for contast computation.
+    for contrast computation.
 
     Its intended to save memory when details of the model are unnecessary.
 
@@ -485,38 +423,16 @@ class SimpleRegressionResults(LikelihoodModelResults):
         """
         raise ValueError('can not use this method for simple results')
 
-    @_deprecation_warning('resid',
-                          'residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def resid(self, Y):
-        return self.residuals(Y)
-
     def residuals(self, Y):
         """
         Residuals from the fit.
         """
         return Y - self.predicted
 
-    @auto_attr
-    @_deprecation_warning('df_resid',
-                          'df_residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def df_resid(self):
-        return self.df_residuals
-
-    @_deprecation_warning('norm_resid',
-                          'normalized_residuals',
-                          '0.7.0',
-                          '0.9.0')
-    def norm_resid(self, Y):
-        return self.normalized_residuals(Y)
-
     def normalized_residuals(self, Y):
         """Residuals, normalized to have unit length.
 
-        See [1]_ and [2]_.
+        See :footcite:`Montgomery2006` and :footcite:`Davidson2004`.
 
         Notes
         -----
@@ -530,9 +446,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
 
         References
         ----------
-        .. [1] Montgomery and Peck 3.2.1 p. 68
-
-        .. [2] Davidson and MacKinnon 15.2 p 662
+        .. footbibliography::
 
         """
         return (self.residuals(Y)

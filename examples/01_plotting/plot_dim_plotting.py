@@ -1,5 +1,5 @@
 """
-Controling the contrast of the background when plotting
+Controlling the contrast of the background when plotting
 =========================================================
 
 The `dim` argument controls the contrast of the background.
@@ -19,11 +19,12 @@ display ROIs on top of a background image.
 
 from nilearn import datasets
 
-localizer_dataset = datasets.fetch_localizer_button_task()
+localizer_dataset = datasets.fetch_localizer_button_task(legacy_format=False)
 # Contrast map of motor task
 localizer_tmap_filename = localizer_dataset.tmap
 # Subject specific anatomical image
 localizer_anat_filename = localizer_dataset.anat
+
 ###########################################################################
 # Plotting with enhancement of background image with dim=-.5
 # --------------------------------------------------------------------------
@@ -45,7 +46,7 @@ plotting.plot_stat_map(localizer_tmap_filename,
                        dim=0)
 
 ########################################################################
-# Plotting with decrease of constrast in background image with dim=.5
+# Plotting with decrease of contrast in background image with dim=.5
 # -------------------------------------------------------------------
 plotting.plot_stat_map(localizer_tmap_filename,
                        bg_img=localizer_anat_filename,
@@ -54,7 +55,7 @@ plotting.plot_stat_map(localizer_tmap_filename,
                        dim=.5)
 
 ########################################################################
-# Plotting with more decrease in constrast with dim=1
+# Plotting with more decrease in contrast with dim=1
 # ---------------------------------------------------
 plotting.plot_stat_map(localizer_tmap_filename,
                        bg_img=localizer_anat_filename,

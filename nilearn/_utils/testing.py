@@ -8,7 +8,7 @@ import sys
 import tempfile
 import warnings
 import gc
-import distutils
+from nilearn.version import _compare_version
 from pathlib import Path
 
 import pytest
@@ -48,10 +48,15 @@ except ImportError:
     memory_usage = memory_used = None
 
 
+def is_64bit() -> bool:
+    """Returns True if python is run on 64bits."""
+    return sys.maxsize > 2**32
+
+
 def check_deprecation(func, match=None):
     @functools.wraps(func)
     def wrapped(*args, **kwargs):
-        if distutils.version.LooseVersion(sklearn.__version__) < '0.22':
+        if _compare_version(sklearn.__version__, '<', '0.22'):
             with pytest.deprecated_call():
                 result = func(*args, **kwargs)
         else:
@@ -106,7 +111,7 @@ def serialize_niimg(img, gzipped=True):
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
         file_path = tmp_dir / "img.nii{}".format(".gz" if gzipped else "")
-        img.to_filename(str(file_path))
+        img.to_filename(file_path)
         with file_path.open("rb") as f:
             return f.read()
 

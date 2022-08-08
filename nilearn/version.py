@@ -21,10 +21,12 @@ nilearn version, required package versions, and utilities for checking
 # Dev branch marker is: 'X.Y.dev' or 'X.Y.devN' where N is an integer.
 # 'X.Y.dev0' is the canonical version of 'X.Y.dev'
 #
-__version__ = '0.8.1.dev'
+__version__ = '0.9.2.dev'
 
 _NILEARN_INSTALL_MSG = 'See %s for installation information.' % (
     'http://nilearn.github.io/introduction.html#installation')
+
+import operator
 
 # This is a tuple to preserve order, so that dependencies are checked
 #   in some meaningful order (more => less 'core').
@@ -65,10 +67,7 @@ def _import_module_with_version_check(
         module_name,
         minimum_version,
         install_info=None):
-    """Check that module is installed with a recent enough version
-    """
-    from distutils.version import LooseVersion
-
+    """Check that module is installed with a recent enough version."""
     try:
         module = __import__(module_name)
     except ImportError as exc:
@@ -85,8 +84,9 @@ def _import_module_with_version_check(
     # Avoid choking on modules with no __version__ attribute
     module_version = getattr(module, '__version__', '0.0.0')
 
-    version_too_old = (not LooseVersion(module_version) >=
-                       LooseVersion(minimum_version))
+    version_too_old = (
+        not _compare_version(module_version, '>=', minimum_version)
+    )
 
     if version_too_old:
         message = (
@@ -100,6 +100,62 @@ def _import_module_with_version_check(
         raise ImportError(message)
 
     return module
+
+
+VERSION_OPERATORS = {
+    "==": operator.eq,
+    "!=": operator.ne,
+    ">": operator.gt,
+    ">=": operator.ge,
+    "<": operator.lt,
+    "<=": operator.le,
+}
+
+
+def _compare_version(version_a, operator, version_b):
+    """Compare two version strings via a user-specified operator.
+
+    ``distutils`` has been deprecated since Python 3.10 and is scheduled
+    for removal from the standard library with the release of Python 3.12.
+    For version comparisons, we use setuptools's `parse_version` if available.
+
+    Note: This function is inspired from MNE-Python.
+    See https://github.com/mne-tools/mne-python/blob/main/mne/fixes.py
+
+    Parameters
+    ----------
+    version_a : :obj:`str`
+        First version string.
+
+    operator : {'==', '!=','>', '<', '>=', '<='}
+        Operator to compare ``version_a`` and ``version_b`` in the form of
+        ``version_a operator version_b``.
+
+    version_b : :obj:`str`
+        Second version string.
+
+    Returns
+    -------
+    result : :obj:`bool`
+        The result of the version comparison.
+
+    """
+    # TODO:
+    # The setuptools doc encourages the use of importlib.metadata instead
+    # of pkg_resources. However, importlib.metadata is only part of the stdlib
+    # for Python >= 3.8. When Nilearn will only support Python >= 3.8,
+    # please consider changing the following line to:
+    # from importlib.metadata import version as parse
+    try:
+        from pkg_resources import parse_version as parse  # noqa:F401
+    except ImportError:
+        from distutils.version import LooseVersion as parse  # noqa:F401
+    if operator not in VERSION_OPERATORS:
+        raise ValueError(
+            "'_compare_version' received an unexpected "
+            "operator {0}.".format(operator)
+        )
+    return VERSION_OPERATORS[operator](parse(version_a), parse(version_b))
 
 
 def _check_module_dependencies(is_nilearn_installing=False):

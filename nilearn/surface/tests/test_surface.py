@@ -5,7 +5,6 @@ import tempfile
 import warnings
 
 from collections import namedtuple
-from distutils.version import LooseVersion
 
 import nibabel as nb
 import numpy as np
@@ -79,15 +78,9 @@ def test_load_surf_data_file_nii_gii(tmp_path):
     fd_gii, filename_gii = tempfile.mkstemp(suffix='.gii',
                                             dir=str(tmp_path))
     os.close(fd_gii)
-    if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
-        darray = gifti.GiftiDataArray(data=np.zeros((20, )))
-    else:
-        # Avoid a bug in nibabel 1.2.0 where GiftiDataArray were not
-        # initialized properly:
-        darray = gifti.GiftiDataArray.from_array(np.zeros((20, )),
-                                                 intent='t test')
+    darray = gifti.GiftiDataArray(data=np.zeros((20, )))
     gii = gifti.GiftiImage(darrays=[darray])
-    gifti.write(gii, filename_gii)
+    nb.save(gii, filename_gii)
     assert_array_equal(load_surf_data(filename_gii), np.zeros((20, )))
     os.remove(filename_gii)
 
@@ -96,7 +89,7 @@ def test_load_surf_data_file_nii_gii(tmp_path):
                                                     dir=str(tmp_path))
     os.close(fd_empty)
     gii_empty = gifti.GiftiImage()
-    gifti.write(gii_empty, filename_gii_empty)
+    nb.save(gii_empty, filename_gii_empty)
     with pytest.raises(ValueError,
                        match='must contain at least one data array'
                        ):
@@ -142,35 +135,34 @@ def test_load_surf_data_file_freesurfer(tmp_path):
     # We test load_surf_data by creating fake data with function
     # 'write_morph_data' that works only if nibabel
     # version is recent with nibabel >= 2.1.0
-    if LooseVersion(nb.__version__) >= LooseVersion('2.1.0'):
-        data = np.zeros((20, ))
-        fs_area, filename_area = tempfile.mkstemp(suffix='.area',
-                                                  dir=str(tmp_path))
-        os.close(fs_area)
-        nb.freesurfer.io.write_morph_data(filename_area, data)
-        assert_array_equal(load_surf_data(filename_area), np.zeros((20, )))
-        os.remove(filename_area)
+    data = np.zeros((20, ))
+    fs_area, filename_area = tempfile.mkstemp(suffix='.area',
+                                              dir=str(tmp_path))
+    os.close(fs_area)
+    nb.freesurfer.io.write_morph_data(filename_area, data)
+    assert_array_equal(load_surf_data(filename_area), np.zeros((20, )))
+    os.remove(filename_area)
 
-        fs_curv, filename_curv = tempfile.mkstemp(suffix='.curv',
-                                                  dir=str(tmp_path))
-        os.close(fs_curv)
-        nb.freesurfer.io.write_morph_data(filename_curv, data)
-        assert_array_equal(load_surf_data(filename_curv), np.zeros((20, )))
-        os.remove(filename_curv)
+    fs_curv, filename_curv = tempfile.mkstemp(suffix='.curv',
+                                              dir=str(tmp_path))
+    os.close(fs_curv)
+    nb.freesurfer.io.write_morph_data(filename_curv, data)
+    assert_array_equal(load_surf_data(filename_curv), np.zeros((20, )))
+    os.remove(filename_curv)
 
-        fd_sulc, filename_sulc = tempfile.mkstemp(suffix='.sulc',
-                                                  dir=str(tmp_path))
-        os.close(fd_sulc)
-        nb.freesurfer.io.write_morph_data(filename_sulc, data)
-        assert_array_equal(load_surf_data(filename_sulc), np.zeros((20, )))
-        os.remove(filename_sulc)
+    fd_sulc, filename_sulc = tempfile.mkstemp(suffix='.sulc',
+                                              dir=str(tmp_path))
+    os.close(fd_sulc)
+    nb.freesurfer.io.write_morph_data(filename_sulc, data)
+    assert_array_equal(load_surf_data(filename_sulc), np.zeros((20, )))
+    os.remove(filename_sulc)
 
-        fd_thick, filename_thick = tempfile.mkstemp(suffix='.thickness',
-                                                    dir=str(tmp_path))
-        os.close(fd_thick)
-        nb.freesurfer.io.write_morph_data(filename_thick, data)
-        assert_array_equal(load_surf_data(filename_thick), np.zeros((20, )))
-        os.remove(filename_thick)
+    fd_thick, filename_thick = tempfile.mkstemp(suffix='.thickness',
+                                                dir=str(tmp_path))
+    os.close(fd_thick)
+    nb.freesurfer.io.write_morph_data(filename_thick, data)
+    assert_array_equal(load_surf_data(filename_thick), np.zeros((20, )))
+    os.remove(filename_thick)
 
     # test loading of data from real label and annot files
     label_start = np.array([5900, 5899, 5901, 5902, 2638])
@@ -307,14 +299,6 @@ def test_load_surf_mesh_file_gii_gz():
 
 def test_load_surf_mesh_file_gii(tmp_path):
     # Test the loader `load_surf_mesh`
-
-    # If nibabel is of older version we skip tests as nibabel does not
-    # support intent argument and intent codes are not handled properly with
-    # older versions
-
-    if not LooseVersion(nb.__version__) >= LooseVersion('2.1.0'):
-        raise pytest.skip('Nibabel version too old to handle intent codes')
-
     mesh = generate_surf()
 
     # test if correct gii is loaded into correct list
@@ -329,7 +313,7 @@ def test_load_surf_mesh_file_gii(tmp_path):
                                           'NIFTI_INTENT_TRIANGLE'])
 
     gii = gifti.GiftiImage(darrays=[coord_array, face_array])
-    gifti.write(gii, filename_gii_mesh)
+    nb.save(gii, filename_gii_mesh)
     assert_array_equal(load_surf_mesh(filename_gii_mesh)[0], mesh[0])
     assert_array_equal(load_surf_mesh(filename_gii_mesh)[1], mesh[1])
     os.remove(filename_gii_mesh)
@@ -338,7 +322,7 @@ def test_load_surf_mesh_file_gii(tmp_path):
     fd_no, filename_gii_mesh_no_point = tempfile.mkstemp(suffix='.gii',
                                                          dir=str(tmp_path))
     os.close(fd_no)
-    gifti.write(gifti.GiftiImage(darrays=[face_array, face_array]),
+    nb.save(gifti.GiftiImage(darrays=[face_array, face_array]),
                 filename_gii_mesh_no_point)
     with pytest.raises(ValueError, match='NIFTI_INTENT_POINTSET'):
         load_surf_mesh(filename_gii_mesh_no_point)
@@ -347,7 +331,7 @@ def test_load_surf_mesh_file_gii(tmp_path):
     fd_face, filename_gii_mesh_no_face = tempfile.mkstemp(suffix='.gii',
                                                           dir=str(tmp_path))
     os.close(fd_face)
-    gifti.write(gifti.GiftiImage(darrays=[coord_array, coord_array]),
+    nb.save(gifti.GiftiImage(darrays=[coord_array, coord_array]),
                 filename_gii_mesh_no_face)
     with pytest.raises(ValueError, match='NIFTI_INTENT_TRIANGLE'):
         load_surf_mesh(filename_gii_mesh_no_face)
@@ -420,15 +404,9 @@ def test_load_surf_data_file_glob(tmp_path):
         os.close(fd)
         fnames.append(filename)
         data2D[:, f] *= f
-        if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
-            darray = gifti.GiftiDataArray(data=data2D[:, f])
-        else:
-            # Avoid a bug in nibabel 1.2.0 where GiftiDataArray were not
-            # initialized properly:
-            darray = gifti.GiftiDataArray.from_array(data2D[:, f],
-                                                     intent='t test')
+        darray = gifti.GiftiDataArray(data=data2D[:, f])
         gii = gifti.GiftiImage(darrays=[darray])
-        gifti.write(gii, fnames[f])
+        nb.save(gii, fnames[f])
 
     assert_array_equal(load_surf_data(
         os.path.join(os.path.dirname(fnames[0]), "glob*.gii")),
@@ -441,21 +419,11 @@ def test_load_surf_data_file_glob(tmp_path):
                                     dir=str(tmp_path))
     os.close(fd)
     fnames.append(filename)
-    if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
-        darray1 = gifti.GiftiDataArray(data=np.ones((20, )))
-        darray2 = gifti.GiftiDataArray(data=np.ones((20, )))
-        darray3 = gifti.GiftiDataArray(data=np.ones((20, )))
-    else:
-        # Avoid a bug in nibabel 1.2.0 where GiftiDataArray were not
-        # initialized properly:
-        darray1 = gifti.GiftiDataArray.from_array(np.ones((20, )),
-                                                  intent='t test')
-        darray2 = gifti.GiftiDataArray.from_array(np.ones((20, )),
-                                                  intent='t test')
-        darray3 = gifti.GiftiDataArray.from_array(np.ones((20, )),
-                                                  intent='t test')
+    darray1 = gifti.GiftiDataArray(data=np.ones((20, )))
+    darray2 = gifti.GiftiDataArray(data=np.ones((20, )))
+    darray3 = gifti.GiftiDataArray(data=np.ones((20, )))
     gii = gifti.GiftiImage(darrays=[darray1, darray2, darray3])
-    gifti.write(gii, fnames[-1])
+    nb.save(gii, fnames[-1])
 
     data2D = np.concatenate((data2D, np.ones((20, 3))), axis=1)
     assert_array_equal(load_surf_data(os.path.join(os.path.dirname(fnames[0]),
@@ -467,15 +435,9 @@ def test_load_surf_data_file_glob(tmp_path):
                                     dir=str(tmp_path))
     os.close(fd)
     fnames.append(filename)
-    if LooseVersion(nb.__version__) > LooseVersion('2.0.2'):
-        darray = gifti.GiftiDataArray(data=np.ones((15, 1)))
-    else:
-        # Avoid a bug in nibabel 1.2.0 where GiftiDataArray were not
-        # initialized properly:
-        darray = gifti.GiftiDataArray.from_array(np.ones((15, 1)),
-                                                 intent='t test')
+    darray = gifti.GiftiDataArray(data=np.ones((15, 1)))
     gii = gifti.GiftiImage(darrays=[darray])
-    gifti.write(gii, fnames[-1])
+    nb.save(gii, fnames[-1])
 
     with pytest.raises(ValueError,
                        match='files must contain data with the same shape'

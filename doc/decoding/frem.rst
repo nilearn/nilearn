@@ -4,7 +4,7 @@
 FREM: fast ensembling of regularized models for robust decoding
 ================================================================
 
-:term:`FREM` uses an implicit spatial regularization through fast clustering and aggregates a high number of estimators trained on various splits of the training set, thus returning a very robust decoder at a lower computational cost than other spatially regularized methods. Its performance compared to usual classifiers was studied on several datasets in [:footcite:t:`HOYOSIDROBO2018160`].
+:term:`FREM` uses an implicit spatial regularization through fast clustering and aggregates a high number of estimators trained on various splits of the training set, thus returning a very robust decoder at a lower computational cost than other spatially regularized methods. Its performance compared to usual classifiers was studied on several datasets in [:footcite:t:`Hoyos-Idrobo2018`].
 
 FREM pipeline
 =============
@@ -24,7 +24,7 @@ different split of the training data. For each split:
 
 Then this ensemble model is used for prediction, usually yielding better and more stable predictions than a unique model at no extra-cost. Also, the resulting coefficient maps obtained tend to be more structured.
 
-There are two object to apply :term:`FREM` in Nilearn: 
+There are two object to apply :term:`FREM` in Nilearn:
 
   * :class:`nilearn.decoding.FREMClassifier` to predict categories
 
