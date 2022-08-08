@@ -618,7 +618,7 @@ def vol_to_surf(img, surf_mesh,
     Examples
     --------
     When both the pial and white matter surface are available, the recommended
-    approach is to provide the `inner_mesh` to rely in the 'depth' sampling
+    approach is to provide the `inner_mesh` to rely on the 'depth' sampling
     strategy::
 
      >>> from nilearn import datasets, surface
