@@ -296,7 +296,7 @@ def _crop_img_to(img, slices, copy=True):
     img : Niimg-like object
         Image to be cropped. If slices has less entries than `img` has dimensions,
         the slices will be applied to the first `len(slices)` dimensions (See
-        https://nilearn.github.io/stable/manipulating_images/input_output.html)
+        https://nilearn.github.io/stable/manipulating_images/input_output.html).
 
     slices : list of slices
         Defines the range of the crop.
