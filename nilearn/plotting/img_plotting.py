@@ -423,7 +423,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
     Parameters
     ----------
     anat_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The anatomical image to be used as a background. If None is
         given, nilearn tries to find a T1 template.
         Default=MNI152TEMPLATE.
@@ -538,7 +538,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
         An object with background image on which contours are shown.
 
     roi_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The ROI/mask image, it could be binary mask or an atlas or ROIs
         with integer values.
 
@@ -590,7 +590,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     Parameters
     ----------
     roi_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The ROI/mask image, it could be binary mask or an atlas or ROIs
         with integer values.
     %(bg_img)s
@@ -872,7 +872,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     Parameters
     ----------
     stat_map_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The statistical map image
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
@@ -975,7 +975,7 @@ def plot_glass_brain(stat_map_img,
     Parameters
     ----------
     stat_map_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The statistical map image. It needs to be in MNI space
         in order to align with the brain schematics.
     %(output_file)s
@@ -1325,7 +1325,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
         value and a colorbar will be added to the left side of the figure
         with atlas labels.
         If not specified, a new mask will be derived from data.
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See :ref:`extracting_data`.
 
     mask_labels : :obj:`dict`, optional
         If ``mask_img`` corresponds to an atlas, then this dictionary maps

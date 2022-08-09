@@ -134,7 +134,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         imgs : 3D/4D Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             Images to process.
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
@@ -170,7 +170,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         imgs : 3D/4D Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             Images to process.
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
@@ -224,7 +224,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         X : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
 
         y : numpy array of shape [n_samples], optional
             Target values.
@@ -281,7 +281,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         X : 2D :obj:`numpy.ndarray`
             Signal for each element in the mask.
             shape: (number of scans, number of elements)
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
 
         Returns
         -------

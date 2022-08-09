@@ -124,7 +124,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     Parameters
     ----------
     mask_imgs : :obj:`list` of Niimg-like objects
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
+        See :ref:`extracting_data`.
         3D individual masks with same shape and affine.
 
     threshold : :obj:`float`, optional
@@ -220,7 +220,7 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
     Parameters
     ----------
     epi_img : Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
+        See :ref:`extracting_data`.
         :term:`EPI` image, used to compute the mask.
         3D and 4D images are accepted.
 
@@ -316,7 +316,7 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.85,
     Parameters
     ----------
     epi_imgs : :obj:`list` of Niimg-like objects
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
+        See :ref:`extracting_data`.
         A list of arrays, each item being a subject or a session.
         3D and 4D images are accepted.
 
@@ -390,7 +390,7 @@ def compute_background_mask(data_imgs, border_size=2,
     Parameters
     ----------
     data_imgs : Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
+        See :ref:`extracting_data`.
         Images used to compute the mask. 3D and 4D images are accepted.
 
         .. note::
@@ -463,7 +463,7 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
     Parameters
     ----------
     data_imgs : :obj:`list` of Niimg-like objects
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
+        See :ref:`extracting_data`.
         A list of arrays, each item being a subject or a session.
         3D and 4D images are accepted.
 
@@ -526,7 +526,7 @@ def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
     Parameters
     ----------
     target_img : Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
+        See :ref:`extracting_data`.
         Images used to compute the mask. 3D and 4D images are accepted.
         Only the shape and affine of ``target_img`` will be used here.
 
@@ -593,7 +593,7 @@ def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
     Parameters
     ----------
     target_imgs : :obj:`list` of Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
+        See :ref:`extracting_data`.
         Images used to compute the mask. 3D and 4D images are accepted.
 
         .. note::
@@ -650,7 +650,7 @@ def compute_multi_brain_mask(target_imgs, threshold=.5, connected=True,
     Parameters
     ----------
     target_imgs : :obj:`list` of Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
+        See :ref:`extracting_data`.
         Images used to compute the mask. 3D and 4D images are accepted.
 
         .. note::
@@ -718,11 +718,11 @@ def apply_mask(imgs, mask_img, dtype='f',
     Parameters
     -----------
     imgs : :obj:`list` of 4D Niimg-like objects
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
+        See :ref:`extracting_data`.
         Images to be masked. list of lists of 3D images are also accepted.
 
     mask_img : Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
+        See :ref:`extracting_data`.
         3D mask array: True where a :term:`voxel` should be used.
 
     dtype: numpy dtype or 'f'
@@ -877,7 +877,7 @@ def unmask(X, mask_img, order="F"):
         If X is one-dimensional, it is assumed that samples# == 1.
 
     mask_img : Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
+        See :ref:`extracting_data`.
         Must be 3-dimensional.
 
     Returns

@@ -39,7 +39,7 @@ def get_data(img):
     Parameters
     ----------
     img : Niimg-like object or iterable of Niimg-like objects
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See :ref:`extracting_data`.
 
     Returns
     -------
@@ -62,12 +62,12 @@ def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
         ----------
         imgs : Niimg-like object
             4D image.
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+            See :ref:`extracting_data`.
 
         mask_img : Niimg-like object
             If not provided, all voxels are used.
             If provided, confounds are extracted from voxels inside the mask.
-            See http://nilearn.github.io/manipulating_images/input_output.html.
+            See :ref:`extracting_data`.
 
         n_confounds : :obj:`int`, optional
             Number of confounds to return. Default=5.
@@ -248,8 +248,7 @@ def smooth_img(imgs, fwhm):
     Parameters
     ----------
     imgs : Niimg-like object or iterable of Niimg-like objects
-        Image(s) to smooth (see
-        http://nilearn.github.io/manipulating_images/input_output.html
+        Image(s) to smooth (see :ref:`extracting_data`
         for a detailed description of the valid input types).
     %(fwhm)s
 
@@ -295,7 +294,7 @@ def _crop_img_to(img, slices, copy=True):
     img : Niimg-like object
         Image to be cropped. If slices has less entries than `img` has dimensions,
         the slices will be applied to the first `len(slices)` dimensions (See
-        http://nilearn.github.io/manipulating_images/input_output.html).
+        :ref:`extracting_data`).
 
     slices : list of slices
         Defines the range of the crop.
@@ -347,9 +346,8 @@ def crop_img(img, rtol=1e-8, copy=True, pad=True, return_offset=False):
     Parameters
     ----------
     img : Niimg-like object
-        Image to be cropped (see
-        http://nilearn.github.io/manipulating_images/input_output.html
-        for a detailed description of the valid input types).
+        Image to be cropped (see :ref:`extracting_data` for a detailed
+        description of the valid input types).
 
     rtol : :obj:`float`, optional
         relative tolerance (with respect to maximal absolute value of the
@@ -496,8 +494,7 @@ def mean_img(imgs, target_affine=None, target_shape=None,
     Parameters
     ----------
     imgs : Niimg-like object or iterable of Niimg-like objects
-        Images to be averaged over time (see
-        http://nilearn.github.io/manipulating_images/input_output.html
+        Images to be averaged over time (see :ref:`extracting_data`
         for a detailed description of the valid input types).
 
     target_affine : :class:`numpy.ndarray`, optional
@@ -568,9 +565,8 @@ def swap_img_hemispheres(img):
     Parameters
     ----------
     img : Niimg-like object
-        Images to swap (see
-        http://nilearn.github.io/manipulating_images/input_output.html
-        for a detailed description of the valid input types).
+        Images to swap (see :ref:`extracting_data` for a detailed description
+        of the valid input types).
 
     Returns
     -------
@@ -611,7 +607,7 @@ def index_img(imgs, index):
     Parameters
     ----------
     imgs : 4D Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See :ref:`extracting_data`.
 
     index : Any type compatible with numpy array indexing
         Used for indexing the 4D data array in the fourth dimension.
@@ -668,7 +664,7 @@ def iter_img(imgs):
     Parameters
     ----------
     imgs : 4D Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See :ref:`extracting_data`.
 
     Returns
     -------
@@ -1128,8 +1124,8 @@ def clean_img(imgs, runs=None, detrend=True, standardize=True,
     ----------
     imgs : Niimg-like object
         4D image. The signals in the last dimension are filtered (see
-        http://nilearn.github.io/manipulating_images/input_output.html
-        for a detailed description of the valid input types).
+        :ref:`extracting_data` for a detailed description of the valid input
+        types).
 
     runs : :class:`numpy.ndarray`, optional
         Add a run level to the cleaning process. Each run will be
@@ -1177,7 +1173,7 @@ def clean_img(imgs, runs=None, detrend=True, standardize=True,
         If provided, signal is only cleaned from voxels inside the mask. If
         mask is provided, it should have same shape and affine as imgs.
         If not provided, all voxels are used.
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See :ref:`extracting_data`.
 
     Returns
     -------
@@ -1252,7 +1248,7 @@ def load_img(img, wildcards=True, dtype=None):
         on it. The '~' symbol is expanded to the user home folder.
         If it is an object, check if affine attribute is present, raise
         `TypeError` otherwise.
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See :ref:`extracting_data`.
 
     wildcards : :obj:`bool`, optional
         Use `img` as a regular expression to get a list of matching input
@@ -1288,7 +1284,7 @@ def largest_connected_component_img(imgs):
     ----------
     imgs : Niimg-like object or iterable of Niimg-like objects (3D)
         Image(s) to extract the largest connected component from.
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See :ref:`extracting_data`.
 
     Returns
     -------
