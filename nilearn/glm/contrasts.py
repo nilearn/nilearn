@@ -66,7 +66,8 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     Returns
     -------
     con : Contrast instance,
-        Yields the statistics of the contrast (effects, variance, p-values)
+        Yields the statistics of the contrast
+        (:term:`effects<Parameter Estimate>`, variance, p-values).
 
     Notes
     -----

@@ -668,7 +668,8 @@ class FirstLevelModel(BaseGLM):
 
         output_type : str, optional
             Type of the output map. Can be 'z_score', 'stat', 'p_value',
-            'effect_size', 'effect_variance' or 'all'.
+            :term:`'effect_size'<Parameter Estimate>`, 'effect_variance' or
+            'all'.
             Default='z_score'.
 
         Returns
