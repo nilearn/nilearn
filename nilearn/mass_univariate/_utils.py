@@ -65,51 +65,67 @@ def _calculate_tfce(
     """
     tfce_4d = np.zeros_like(arr4d)
 
+    # For each passed t map
     for i_regressor in range(arr4d.shape[3]):
         arr3d = arr4d[..., i_regressor]
+
+        # Get signs / threshs
         if two_sided_test:
             signs = [-1, 1]
-
-            # Get the maximum statistic in the map
             max_score = np.max(np.abs(arr3d))
         else:
             signs = [1]
-
-            # Get the maximum statistic in the map
             max_score = np.max(arr3d)
-
+        
         if dh == 'auto':
             step = max_score / 100
         else:
             step = dh
+        
+        # Set based on determined step size
+        score_threshs = np.arange(step, max_score + step, step)
 
-        for score_thresh in np.arange(step, max_score + step, step):
-            for sign in signs:
-                temp_arr3d = arr3d * sign
+        # If we apply the sign first...
+        for sign in signs:
 
-                # Threshold map at *h*
+            # Then init a temp array, we can re-use the
+            # same array and save a little bit of time
+            temp_arr3d = arr3d.copy() * sign
+
+            # Prep step
+            for score_thresh in score_threshs:
+
+                # Assumes each score thresh is incrementally larger
                 temp_arr3d[temp_arr3d < score_thresh] = 0
 
-                # Derive clusters
-                labeled_arr3d, n_clusters = label(
-                    temp_arr3d,
-                    bin_struct,
-                )
+                # Label into clusters
+                labeled_arr3d, _ = label(temp_arr3d, bin_struct)
+                
+                # Get flattened version of the array
+                labeled_arr3d_flat = labeled_arr3d.flatten()
 
-                # Label each cluster with its extent
-                # Each voxel's cluster extent at threshold *h* is thus *e(h)*
-                cluster_map = np.zeros(temp_arr3d.shape, int)
-                for cluster_val in range(1, n_clusters + 1):
-                    bool_map = labeled_arr3d == cluster_val
-                    cluster_map[bool_map] = np.sum(bool_map)
+                # And keep track of non-zero inds
+                non_zero_inds = np.where(labeled_arr3d_flat != 0)[0]
 
-                # Calculate each voxel's tfce value based on its cluster extent
-                # and z-value
+                # Get unique values / counts to compute frequencies
+                idx = labeled_arr3d_flat[non_zero_inds]
+                freqs_idx = np.bincount(idx)
+
+                # Easier / faster to compute if we apply the E / H / sign computations
+                # here on each unique value
+                # Where are calculating each voxel's tfce value based on its cluster
+                # extent and z-value
                 # NOTE: We do not multiply by dh, based on fslmaths'
                 # implementation. This differs from the original paper.
-                tfce_step_values = (cluster_map**E) * (score_thresh**H)
-                tfce_4d[..., i_regressor] += sign * tfce_step_values
+                adj_freqs_idx = sign * (freqs_idx ** E) * (score_thresh ** H)
 
+                # Gen and fill flat tfce_step_values w/ adjusted freqs directly
+                tfce_step_values = np.zeros(labeled_arr3d_flat.shape)
+                tfce_step_values[non_zero_inds] = adj_freqs_idx[idx]
+
+                # Add the values to the tfce array in the correct spots
+                tfce_4d[..., i_regressor] += tfce_step_values.reshape(temp_arr3d.shape)
+                
     return tfce_4d
 
 
