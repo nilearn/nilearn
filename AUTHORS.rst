@@ -12,7 +12,7 @@ the :parietal:`INRIA Parietal Project Team <>` and :sklearn:`scikit-learn <>`
 but grew much further.
 
 An up-to-date list of contributors can be seen in on
-:nilearn:`GitHub <graphs/contributors>`.
+:nilearn-gh:`GitHub <graphs/contributors>`.
 
 Additional credit goes to `Michael Hanke`_ and `Yaroslav Halchenko`_ for data and packaging.
 

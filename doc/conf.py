@@ -335,9 +335,9 @@ intersphinx_mapping = {
 }
 
 extlinks = {
-    'sklearn': ('https://scikit-learn.org/stable/', ''),
-    'parietal': ('https://team.inria.fr/parietal/', ''),
-    'nilearn': ('https://github.com/nilearn/nilearn/', ''),
+    'sklearn': ('https://scikit-learn.org/stable/', None),
+    'parietal': ('https://team.inria.fr/parietal/', None),
+    'nilearn-gh': ('https://github.com/nilearn/nilearn/', None),
 }
 
 if 'dev' in release:
