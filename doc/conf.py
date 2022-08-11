@@ -338,6 +338,11 @@ extlinks = {
     'compound': (_python_doc_base + '/reference/compound_stmts.html#%s', ''),
 }
 
+if 'dev' in release:
+    binder_path = 'dev'
+else:
+    binder_path = 'stable'
+
 sphinx_gallery_conf = {
     'doc_module': 'nilearn',
     'backreferences_dir': os.path.join('modules', 'generated'),
@@ -356,7 +361,8 @@ sphinx_gallery_conf = {
         'binderhub_url': 'https://mybinder.org',
         'branch': 'main',
         'dependencies': ['binder/requirements.txt'],
-        'notebooks_dir': 'examples'
+        'notebooks_dir': f'{binder_path}/examples',
+        "use_jupyter_lab": True,
     },
     'default_thumb_file': 'logos/nilearn-desaturate-100.png',
 }
