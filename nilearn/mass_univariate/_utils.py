@@ -76,12 +76,12 @@ def _calculate_tfce(
         else:
             signs = [1]
             max_score = np.max(arr3d)
-        
+
         if dh == 'auto':
             step = max_score / 100
         else:
             step = dh
-        
+
         # Set based on determined step size
         score_threshs = np.arange(step, max_score + step, step)
 
@@ -100,7 +100,7 @@ def _calculate_tfce(
 
                 # Label into clusters
                 labeled_arr3d, _ = label(temp_arr3d, bin_struct)
-                
+
                 # Get flattened version of the array
                 labeled_arr3d_flat = labeled_arr3d.flatten()
 
@@ -111,10 +111,11 @@ def _calculate_tfce(
                 idx = labeled_arr3d_flat[non_zero_inds]
                 freqs_idx = np.bincount(idx)
 
-                # Easier / faster to compute if we apply the E / H / sign computations
+                # Easier / slightly faster to compute if we apply
+                # the E / H / sign computations
                 # here on each unique value
-                # Where are calculating each voxel's tfce value based on its cluster
-                # extent and z-value
+                # Where are calculating each voxel's tfce value based
+                # on its cluster extent and z-value
                 # NOTE: We do not multiply by dh, based on fslmaths'
                 # implementation. This differs from the original paper.
                 adj_freqs_idx = sign * (freqs_idx ** E) * (score_thresh ** H)
@@ -124,8 +125,9 @@ def _calculate_tfce(
                 tfce_step_values[non_zero_inds] = adj_freqs_idx[idx]
 
                 # Add the values to the tfce array in the correct spots
-                tfce_4d[..., i_regressor] += tfce_step_values.reshape(temp_arr3d.shape)
-                
+                tfce_4d[..., i_regressor] +=\
+                    tfce_step_values.reshape(temp_arr3d.shape)
+
     return tfce_4d
 
 
