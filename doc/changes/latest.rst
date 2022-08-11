@@ -41,6 +41,8 @@ Enhancements
 - Add ``n_elements_`` attribute to masker classes (:gh:`3311` by `Taylor Salo`_).
 - Functions expecting string filesystem paths now also accept path-like objects (:gh:`3300` by `Yasmin Mzayek`_).
 - Contributing guidelines now include a recommendation to run flake8 locally on the branch diff with main (:gh:`3317` by `Yasmin Mzayek`_).
+- Improvements to :func:`~mass_univariate.permuted_ols` and :func:`~glm.second_level.non_parametric_inference` with :term:`TFCE` statistic runtime (:gh:`3333` by `Sage Hahn_`).
+
 
 Changes
 -------
