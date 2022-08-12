@@ -88,11 +88,11 @@ def _calculate_tfce(
         # If we apply the sign first...
         for sign in signs:
 
-            # Init a temp array, which can re-use
-            # by incrementally setting more background
-            # voxel's to background, given that each score
-            # thresh applied is incrementally larger than the one before.
-            temp_arr3d = arr3d.copy() * sign
+            # Init a temp copy of arr3d with the current sign applied,
+            # which can then be re-used by incrementally setting more
+            # voxel's to background, by taking advantage that each score_thresh
+            # is incrementally larger
+            temp_arr3d = arr3d * sign
 
             # Prep step
             for score_thresh in score_threshs:
