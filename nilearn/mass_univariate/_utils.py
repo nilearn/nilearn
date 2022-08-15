@@ -126,8 +126,8 @@ def _calculate_tfce(
                 cluster_tfces = sign * (cluster_counts ** E) * (score_thresh ** H)
 
                 # Before we can add these values to tfce_4d, we need to
-                # map from each voxel's cluster label to that cluster's tfce value,
-                # but also keep account for adding back in any zero / background labels.
+                # map cluster-wise tfce values back to a voxel-wise array,
+                # including any zero / background voxels.
                 tfce_step_values = np.zeros(labeled_arr3d_flat.shape)
                 tfce_step_values[non_zero_inds] = cluster_tfces[labeled_non_zero]
 
