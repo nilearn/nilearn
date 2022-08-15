@@ -103,7 +103,7 @@ def _calculate_tfce(
                 # which allows us to use bincount to count frequencies directly.
                 labeled_arr3d, _ = label(temp_arr3d, bin_struct)
 
-                # Next, we want to replace each label the it's cluster
+                # Next, we want to replace each label with its cluster
                 # extent, that is, the size of the cluster it is part of
                 # To do this, we will first compute a flattened version of
                 # only the non-zero cluster labels.
