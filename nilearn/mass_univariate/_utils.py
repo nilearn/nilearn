@@ -112,7 +112,7 @@ def _calculate_tfce(
                 labeled_non_zero = labeled_arr3d_flat[non_zero_inds]
 
                 # Count the size of each unique cluster, via its label.
-	            # The reason why we pass only the non-zero labels to bincount
+	        # The reason why we pass only the non-zero labels to bincount
                 # is because it includes a bin for zeros, and in our labels
                 # zero represents the background,
                 # which we want to have a TFCE value of 0.
