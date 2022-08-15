@@ -105,7 +105,7 @@ def _calculate_tfce(
 
                 # Next, we want to replace each label the it's cluster
                 # extent, that is, the size of the cluster it is part of
-                # To do this, we will first compute a flattened version of the
+                # To do this, we will first compute a flattened version of
                 # only the non-zero cluster labels.
                 labeled_arr3d_flat = labeled_arr3d.flatten()
                 non_zero_inds = np.where(labeled_arr3d_flat != 0)[0]
