@@ -99,8 +99,10 @@ def _calculate_tfce(
                 temp_arr3d[temp_arr3d < score_thresh] = 0
 
                 # Label into clusters - importantly (for the next step)
-                # this returns clusters labelled ordinally from 1 to n_clusters+1,
-                # which allows us to use bincount to count frequencies directly.
+                # this returns clusters labelled ordinally
+                # from 1 to n_clusters+1,
+                # which allows us to use bincount to count
+                # frequencies directly.
                 labeled_arr3d, _ = label(temp_arr3d, bin_struct)
 
                 # Next, we want to replace each label with its cluster
@@ -112,7 +114,7 @@ def _calculate_tfce(
                 labeled_non_zero = labeled_arr3d_flat[non_zero_inds]
 
                 # Count the size of each unique cluster, via its label.
-	        # The reason why we pass only the non-zero labels to bincount
+                # The reason why we pass only the non-zero labels to bincount
                 # is because it includes a bin for zeros, and in our labels
                 # zero represents the background,
                 # which we want to have a TFCE value of 0.
@@ -120,16 +122,19 @@ def _calculate_tfce(
 
                 # Next, we convert each unique cluster count to its TFCE value.
                 # Where each cluster's tfce value is based
-                # on both its cluster extent and z-value (via the current score_thresh)
+                # on both its cluster extent and z-value
+                # (via the current score_thresh)
                 # NOTE: We do not multiply by dh, based on fslmaths'
                 # implementation. This differs from the original paper.
-                cluster_tfces = sign * (cluster_counts ** E) * (score_thresh ** H)
+                cluster_tfces = sign * (cluster_counts ** E) *\
+                    (score_thresh ** H)
 
                 # Before we can add these values to tfce_4d, we need to
                 # map cluster-wise tfce values back to a voxel-wise array,
                 # including any zero / background voxels.
                 tfce_step_values = np.zeros(labeled_arr3d_flat.shape)
-                tfce_step_values[non_zero_inds] = cluster_tfces[labeled_non_zero]
+                tfce_step_values[non_zero_inds] =\
+                    cluster_tfces[labeled_non_zero]
 
                 # Now, we just need to reshape these values back to 3D
                 # and they can be incremented to tfce_4d.
