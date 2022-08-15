@@ -119,7 +119,7 @@ def _calculate_tfce(
                 cluster_counts = np.bincount(labeled_non_zero)
 
                 # Next, we convert each unique cluster count to its TFCE value.
-                # Where each voxel's tfce value is based
+                # Where each cluster's tfce value is based
                 # on both its cluster extent and z-value (via the current score_thresh)
                 # NOTE: We do not multiply by dh, based on fslmaths'
                 # implementation. This differs from the original paper.
