@@ -80,6 +80,8 @@
 
 .. _Guillaume Lemaitre: https://glemaitre.github.io/
 
+.. _Sage Hahn: www.sagehahn.com/
+
 .. _Hao-Ting Wang: https://wanghaoting.com/
 
 .. _Himanshu Aggarwal: https://github.com/man-shu
