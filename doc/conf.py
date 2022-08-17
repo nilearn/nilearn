@@ -338,6 +338,8 @@ extlinks = {
     'sklearn': ('https://scikit-learn.org/stable/', None),
     'parietal': ('https://team.inria.fr/parietal/', None),
     'nilearn-gh': ('https://github.com/nilearn/nilearn/', None),
+    'neurostars': ('https://neurostars.org/tag/nilearn/', None),
+    'nibabel': ('https://nipy.org/nibabel/', None),
 }
 
 if 'dev' in release:
