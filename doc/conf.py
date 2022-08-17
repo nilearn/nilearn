@@ -360,8 +360,8 @@ sphinx_gallery_conf = {
         'repo': 'nilearn',
         'binderhub_url': 'https://mybinder.org',
         'branch': binder_branch,
-        "dependencies": "./binder/requirements.txt",
-        "use_jupyter_lab": True,
+        'dependencies': './binder/requirements.txt',
+        'use_jupyter_lab': True,
     },
     'default_thumb_file': 'logos/nilearn-desaturate-100.png',
 }
