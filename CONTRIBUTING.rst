@@ -6,12 +6,12 @@ How to get help?
 
 If you have issues when using Nilearn, or if you have questions on how to use it, please don't hesitate to reach out!
 
-There are currently three ways to interact with the Nilearn team: through the `neurostars`_ forum, our `github`_ issues, and through our weekly `office hours <https://github.com/nilearn/nilearn/issues/2882>`_, usually **every Friday from 4pm to 5pm UTC**.
+There are currently three ways to interact with the Nilearn team: through the :neurostars:`neurostars <>` forum, our :nilearn-gh:`github <>` issues, and through our weekly :nilearn-gh:`office hours <issues/2882>`, usually **every Friday from 4pm to 5pm UTC**.
 
-If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn, we would appreciate it if you either ask it during office hours or create a topic on `neurostars <https://neurostars.org/tag/nilearn>`_ with the "nilearn" tag.
+If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn, we would appreciate it if you either ask it during office hours or create a topic on :neurostars:`neurostars <>` with the "nilearn" tag.
 Asking questions or reporting issues is always valuable because it will help other users having the same problem. So, please don't hold onto a burning question!
 
-We ask that you *don't* open an issue on `GitHub`_ for usage questions. We use our `GitHub`_ issue board for bug reports, feature requests, and documentation changes only.
+We ask that you *don't* open an issue on :nilearn-gh:`GitHub <>` for usage questions. We use our :nilearn-gh:`GitHub <>` issue board for bug reports, feature requests, and documentation changes only.
 
 How to help the project?
 ========================
@@ -23,32 +23,35 @@ Report bugs or discuss enhancement ideas
 
 We welcome open discussion around improvements---both to the documentation as well as to the code base---through our GitHub issue board!
 
-    * If you think you have discovered a bug, please start by searching through the existing `issues`_ to make sure it has not already been reported. If the bug has not been reported yet,  create an `new issue`_ including a `minimal runnable example <https://stackoverflow.com/help/minimal-reproducible-example>`_ to showcase it (using Nilearn data) as well as your OS and Nilearn version.
+    * If you think you have discovered a bug, please start by searching through the existing :nilearn-gh:`issues <issues>` to make sure it has not already been reported. If the bug has not been reported yet,  create an :nilearn-gh:`new issue <issues/new/choose>` including a `minimal runnable example <https://stackoverflow.com/help/minimal-reproducible-example>`_ to showcase it (using Nilearn data) as well as your OS and Nilearn version.
 
-    * If you have an idea for a new feature, check if it is in the :ref:`nilearn_scope` and feel free to open a `new issue`_ to discuss it.
+    * If you have an idea for a new feature, check if it is in the :ref:`nilearn_scope` and feel free to open a :nilearn-gh:`new issue <issues/new/choose>` to discuss it.
 
-    * If you think the documentation can be improved, please open a `new issue`_ to discuss what you would like to change! This helps to confirm that your proposed improvements don't overlap with any ongoing work.
+    * If you think the documentation can be improved, please open a :nilearn-gh:`new issue <issues/new/choose>` to discuss what you would like to change! This helps to confirm that your proposed improvements don't overlap with any ongoing work.
 
 Answer questions
 ----------------
 
-Another way to help the project is to answer questions on `neurostars`_, or comment on github `issues`_.
-Some `issues`_ are used to gather user opinions on various questions, and any input from the community is valuable to us.
+Another way to help the project is to answer questions on :neurostars:`neurostars <>`, or comment on github :nilearn-gh:`issues <issues>`.
+Some :nilearn-gh:`issues <issues>` are used to gather user opinions on various questions, and any input from the community is valuable to us.
 
 Review Pull Requests
 --------------------
 
 Any addition to the Nilearn's code base has to be reviewed and approved by several people including at least two :ref:`core_devs`.
-This can put a heavy burden on :ref:`core_devs` when a lot of `pull requests`_ are opened at the same time.
-We welcome help in reviewing `pull requests`_ from any community member.
+This can put a heavy burden on :ref:`core_devs` when a lot of
+:nilearn-gh:`pull requests <pulls>` are opened at the same time.
+We welcome help in reviewing :nilearn-gh:`pull requests <pulls>` from any
+community member.
 We do not expect community members to be experts in all changes included in
-`pull requests`_, and we encourage you to concentrate on those code changes that you feel comfortable with.
+:nilearn-gh:`pull requests <pulls>`, and we encourage you to concentrate on those code changes that you feel comfortable with.
 As always, more eyes on a code change means that the code is more likely to work in a wide variety of contexts!
 
 Join the triage team
 --------------------
 
-The :ref:`triage` is composed of community members who have permission on `github`_ to label and close `issues`_.
+The :ref:`triage` is composed of community members who have permission on
+:nilearn-gh:`github <>` to label and close :nilearn-gh:`issues <issues>`.
 Their work is crucial to improve the communication in the project and limit the crowding of the issue tracker.
 The :ref:`issue_labels` and :ref:`closing_policy` of the project is defined in more details in the :ref:`maintenance_process` page.
 
@@ -60,8 +63,8 @@ Contribute code
 
 If you want to contribute code:
 
-    * For new features, please be sure to create a `new issue`_ first, to discuss whether it can be included and its specifications.
-    * To help with known `issues`_, please check `good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_ to get started, `known bugs <https://github.com/nilearn/nilearn/labels/Bug>`_, or `proposed enhancements <https://github.com/nilearn/nilearn/labels/Enhancement>`_.
+    * For new features, please be sure to create a :nilearn-gh:`new issue <issues/new/choose>` first, to discuss whether it can be included and its specifications.
+    * To help with known :nilearn-gh:`issues <issues>`, please check :nilearn-gh:`good first issues <labels/Good%20first%20issue>` to get started, :nilearn-gh:`known bugs <labels/Bug>`, or :nilearn-gh:`proposed enhancements <labels/Enhancement>`.
 
 Please see the :ref:`contributing_code` section for more detailed information, including
 instructions for  `Setting up your environment`_ and a description of the `Contribution Guidelines`_.
@@ -123,7 +126,8 @@ Who makes decisions
 
 We strongly aim to be a community oriented project where decisions are
 made based on consensus according to the criteria described above.
-Discussions are public, held on `issues`_ and `pull requests`_ in Github.
+Discussions are public, held on :nilearn-gh:`issues <issues>` and
+:nilearn-gh:`pull requests <pulls>` in Github.
 All modifications of the codebase are ultimately checked during a reviewing
 process, where maintainers or contributors make sure they respect the
 :ref:`contribution_guidelines`.
@@ -137,21 +141,23 @@ listed :ref:`here <core_devs>`.
 How to contribute to nilearn
 =============================
 
-This project, hosted on https://github.com/nilearn/nilearn, is a community
+This project, hosted on :nilearn-gh:`\ `, is a community
 effort, and everyone is welcome to contribute.
 We value very much your feedback and opinion on features that should be
 improved or added.
-All discussions are public and held on relevant `issues`_ or `pull requests`_.
+All discussions are public and held on relevant :nilearn-gh:`issues <issues>` or
+:nilearn-gh:`pull requests <pulls>`.
 To discuss your matter, please comment on a relevant
-`issue <https://github.com/nilearn/nilearn/issues>`_ or open a new one.
+:nilearn-gh:`issue <issues>` or open a new one.
 
 The best way to contribute and to help the project is to start working on known
-`issues`_ such as `good first issues <https://github.com/nilearn/nilearn/labels/Good%20first%20issue>`_,
-`known bugs <https://github.com/nilearn/nilearn/labels/Bug>`_ or
-`proposed enhancements <https://github.com/nilearn/nilearn/labels/Enhancement>`_.
+:nilearn-gh:`issues <issues>` such as
+:nilearn-gh:`good first issues <labels/Good%20first%20issue>`,
+:nilearn-gh:`known bugs <labels/Bug>` or
+:nilearn-gh:`proposed enhancements <labels/Enhancement>`.
 If an issue does not already exist for a potential contribution, we ask that
-you first open a `new issue`_ before sending a :ref:`pull request` to discuss
-scope and potential design choices in advance.
+you first open a :nilearn-gh:`new issue <issues/new/choose>` before sending a
+:ref:`pull request` to discuss scope and potential design choices in advance.
 
 .. _contribution_guidelines:
 
@@ -160,8 +166,7 @@ Contribution Guidelines
 
 When modifying the codebase, we ask every contributor to respect common
 guidelines.
-Those are inspired from `scikit-learn
-<https://scikit-learn.org/stable/developers/contributing.html#contributing-code>`_
+Those are inspired from :sklearn:`scikit-learn <developers/contributing.html#contributing-code>`
 and ensure Nilearn remains simple to understand, efficient and maintainable.
 For example, code needs to be tested and those tests need to run quickly in order
 not to burden the development process.
@@ -326,7 +331,7 @@ Installing
 
 Here are the key steps you need to go through to copy the repo before contributing:
 
-1. fork the repo from github (fork button in the top right corner of our `main github page <https://github.com/nilearn/nilearn>`_) and clone your fork locally::
+1. fork the repo from github (fork button in the top right corner of our :nilearn_gh:`main github page`) and clone your fork locally::
 
       git clone git@github.com:<your_username>/nilearn.git
 
@@ -454,11 +459,10 @@ atlases):
   label, in the same (numerical) order as the atlas labels
 - ``maps`` (list or string): the path to the nifti image, or a list of paths
 
-In addition, the atlas will need to be called by a fetcher. For example, see `here <https://github.com/nilearn/nilearn/blob/main/nilearn/datasets/atlas.py>`__.
+In addition, the atlas will need to be called by a fetcher. For example, see :nilearn-gh:`here <blob/main/nilearn/datasets/atlas.py>`.
 
 Finally, as with other features, please provide a test for your atlas.
-Examples can be found `here
-<https://github.com/nilearn/nilearn/blob/main/nilearn/datasets/tests/test_atlas.py>`__
+Examples can be found :nilearn-gh:`here <blob/main/nilearn/datasets/tests/test_atlas.py>`.
 
 
 How to contribute a dataset fetcher
@@ -480,8 +484,8 @@ datasets or the APIs that provide them sometimes change, in which case the
 downloader needs to be adapted.
 
 As for any contributed feature, before starting working on a new downloader,
-we recommend opening a `new issue`_ to discuss whether it is necessary or if
-existing downloaders could be used instead.
+we recommend opening a :nilearn-gh:`new issue <issues/new/choose>` to discuss
+whether it is necessary or if existing downloaders could be used instead.
 
 
 To add a new fetcher, ``nilearn.datasets.utils`` provides some helper functions,
@@ -509,21 +513,3 @@ Maintenance
 
 More information about the project organization, conventions, and maintenance
 process can be found there : :ref:`maintenance_process`.
-
-.. _`discord`:
-    https://discord.gg/bMBhb7w
-
-.. _`github`:
-    https://github.com/nilearn/nilearn
-
-.. _`issues`:
-    https://github.com/nilearn/nilearn/issues
-
-.. _`neurostars`:
-    https://neurostars.org/tag/nilearn
-
-.. _`new issue`:
-    https://github.com/nilearn/nilearn/issues/new/choose
-
-.. _`pull requests`:
-    https://github.com/nilearn/nilearn/pulls
