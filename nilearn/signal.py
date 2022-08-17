@@ -17,7 +17,7 @@ from sklearn.utils import gen_even_slices, as_float_array
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
 from ._utils import fill_doc
 from nilearn._utils.glm import _check_run_sample_masks
-from ._utils.helpers import stringify_path
+from ._utils import stringify_path
 
 availiable_filters = ['butterworth',
                       'cosine'
@@ -493,10 +493,9 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         cleaned independently. Must be a 1D array of n_samples elements.
         Default is None.
 
-    confounds : :class:`numpy.ndarray`, :obj:`str`,\
-    :class:`pandas.DataFrame` or :obj:`list` or :class:`os.PathLike` of
-        Confounds timeseries. Shape must be
-        (instant number, confound number), or just (instant number,)
+    confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`,
+        :class:`pandas.DataFrame` or :obj:`list` of confounds timeseries. Shape
+         must be (instant number, confound number), or just (instant number,)
         The number of time instants in ``signals`` and ``confounds`` must be
         identical (i.e. ``signals.shape[0] == confounds.shape[0]``).
         If a string is provided, it is assumed to be the name of a csv file

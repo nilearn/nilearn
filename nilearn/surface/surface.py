@@ -25,7 +25,7 @@ from nilearn import datasets
 from nilearn.image import load_img
 from nilearn.image import resampling
 from nilearn._utils.path_finding import _resolve_globbing
-from nilearn._utils.helpers import stringify_path
+from nilearn._utils import stringify_path
 from nilearn import _utils
 from nilearn.image import get_data
 
@@ -478,7 +478,7 @@ def vol_to_surf(img, surf_mesh,
     img : Niimg-like object, 3d or 4d.
         See http://nilearn.github.io/manipulating_images/input_output.html
 
-    surf_mesh : str or numpy.ndarray or Mesh or os.PathLike
+    surf_mesh : str, pathlib.Path, numpy.ndarray, or Mesh
         Either a file containing surface mesh geometry (valid formats
         are .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or two Numpy arrays organized in a list,
@@ -690,7 +690,7 @@ def load_surf_data(surf_data):
 
     Parameters
     ----------
-    surf_data : str or numpy.ndarray or os.PathLike
+    surf_data : str, pathlib.Path, or numpy.ndarray
         Either a file containing surface data (valid format are .gii,
         .gii.gz, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
         .thickness, .curv, .sulc, .annot, .label), lists of 1D data files are
@@ -703,7 +703,8 @@ def load_surf_data(surf_data):
 
     """
     # if the input is a filename, load it
-    if isinstance(surf_data, (str, os.PathLike)):
+    surf_data = stringify_path(surf_data)
+    if isinstance(surf_data, str):
 
         # resolve globbing
         file_list = _resolve_globbing(surf_data)
@@ -796,7 +797,7 @@ def load_surf_mesh(surf_mesh):
 
     Parameters
     ----------
-    surf_mesh : str or numpy.ndarray or Mesh or os.PathLike
+    surf_mesh : str, pathlib.Path, or numpy.ndarray or Mesh
         Either a file containing surface mesh geometry (valid formats
         are .gii .gii.gz or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or two Numpy arrays organized in a list,
