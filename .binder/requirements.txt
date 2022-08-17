@@ -1,1 +1,2 @@
 .[plotting,plotly]
+sphinx-gallery
