@@ -142,10 +142,17 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
 
     labels_img, mask_img must have the same shapes and affines.
 
+    .. versionchanged:: 0.9.2dev
+        Support 1D signals.
+
     Parameters
     ----------
     signals : :class:`numpy.ndarray`
-        2D array with shape: (scan number, number of regions in labels_img).
+        1D or 2D array.
+        If this is a 1D array, it must have as many elements as there are
+        regions in the labels_img.
+        If it is 2D, it should have the shape
+        (number of scans, number of regions in labels_img).
 
     labels_img : Niimg-like object
         See http://nilearn.github.io/manipulating_images/input_output.html
