@@ -222,7 +222,7 @@ It is typically used interactively in IPython or in an automated way by Python
 code.
 Most importantly, nilearn functions that process neuroimaging data accept
 either a filename (i.e., a string variable) or a
-:nibabel:`NiftiImage object <nibabel_images.html>`. We call the latter
+:nipy:`NiftiImage object <nibabel/nibabel_images.html>`. We call the latter
 "niimg-like".
 
 Suppose for instance that you have a Tmap image saved in the Nifti file
@@ -265,8 +265,8 @@ the :mod:`nilearn.image` module for image manipulation, e.g.
     >>> smoothed_img = image.smooth_img("/home/user/t_map000.nii", fwhm=5)   # doctest: +SKIP
 
 The returned value `smoothed_img` is a
-:nibabel:`NiftiImage object <nibabel_images.html>`. It can either be passed
-to other nilearn functions operating on niimgs (neuroimaging images) or
+:nipy:`NiftiImage object <nibabel/nibabel_images.html>`. It can either be
+passed to other nilearn functions operating on niimgs (neuroimaging images) or
 saved to disk with::
 
     >>> smoothed_img.to_filename("/home/user/t_map000_smoothed.nii")   # doctest: +SKIP

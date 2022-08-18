@@ -339,7 +339,7 @@ extlinks = {
     'parietal': ('https://team.inria.fr/parietal/', None),
     'nilearn-gh': ('https://github.com/nilearn/nilearn/', None),
     'neurostars': ('https://neurostars.org/tag/nilearn/', None),
-    'nibabel': ('https://nipy.org/nibabel/', None),
+    'nipy': ('https://nipy.org/', None),
 }
 
 if 'dev' in release:
