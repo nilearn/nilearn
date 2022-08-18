@@ -368,7 +368,7 @@ display_mode : {'ortho', 'tiled', 'mosaic','x',\
 'y', 'z', 'yx', 'xz', 'yz'}, optional
     Choose the direction of the cuts:
 
-        - 'x': sagital
+        - 'x': sagittal
         - 'y': coronal
         - 'z': axial
         - 'ortho': three cuts are performed in orthogonal
