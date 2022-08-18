@@ -111,7 +111,8 @@ stat_maps_paired = second_level_model_paired.compute_contrast(
 ##########################################################################
 # Plot the results
 # ---------------------------
-# The two effect_size images are essentially identical
+# The two :term:`'effect_size'<Parameter Estimate>` images are essentially
+# identical.
 (stat_maps_unpaired['effect_size'].get_fdata()
     - stat_maps_paired['effect_size'].get_fdata()).max()
 

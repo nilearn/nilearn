@@ -1,6 +1,6 @@
 """
-Regions extraction using :term:`Dictionary learning` and functional connectomes
-===============================================================================
+Regions extraction using dictionary learning and functional connectomes
+=======================================================================
 
 This example shows how to use :class:`nilearn.regions.RegionExtractor`
 to extract spatially constrained brain regions from whole brain maps decomposed

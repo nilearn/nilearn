@@ -20,7 +20,7 @@ from sklearn.base import clone
 
 from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.helpers import stringify_path
+from nilearn._utils import stringify_path
 from nilearn.maskers import NiftiMasker
 from nilearn.glm.contrasts import (compute_contrast,
                                    expression_to_contrast_vector)
@@ -456,8 +456,9 @@ class SecondLevelModel(BaseGLM):
         second_level_stat_type : {'t', 'F'} or None, optional
             Type of the second level contrast. Default=None.
 
-        output_type : {'z_score', 'stat', 'p_value', 'effect_size',\
-        'effect_variance', 'all'}, optional
+        output_type : {'z_score', 'stat', 'p_value', \
+                :term:`'effect_size'<Parameter Estimate>`, 'effect_variance', \
+                'all'}, optional
             Type of the output map. Default='z-score'.
 
         Returns

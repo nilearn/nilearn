@@ -16,21 +16,25 @@ from nilearn.image import get_data
 currdir = os.path.dirname(os.path.abspath(__file__))
 
 
+@pytest.fixture
+def img1():
+    data = np.ones((2, 2, 2, 2))
+    return Nifti1Image(data, affine=np.eye(4))
+
+
 def test_copy_img():
     with pytest.raises(ValueError, match="Input value is not an image"):
         niimg.copy_img(3)
 
 
-def test_copy_img_side_effect():
-    img1 = Nifti1Image(np.ones((2, 2, 2, 2)), affine=np.eye(4))
+def test_copy_img_side_effect(img1):
     hash1 = joblib.hash(img1)
     niimg.copy_img(img1)
     hash2 = joblib.hash(img1)
     assert hash1 == hash2
 
 
-def test_new_img_like_side_effect():
-    img1 = Nifti1Image(np.ones((2, 2, 2, 2)), affine=np.eye(4))
+def test_new_img_like_side_effect(img1):
     hash1 = joblib.hash(img1)
     new_img_like(img1, np.ones((2, 2, 2, 2)), img1.affine.copy(),
                  copy_header=True)
@@ -80,9 +84,7 @@ def test_img_data_dtype():
     assert not all(dtype_matches)
 
 
-def test_load_niimg():
-    img = Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
-
-    with testing.write_tmp_imgs(img, create_files=True) as filename:
+def test_load_niimg(img1):
+    with testing.write_tmp_imgs(img1, create_files=True) as filename:
         filename = Path(filename)
         load_niimg(filename)

@@ -11,6 +11,7 @@ NEW
 - :func:`~interfaces.bids.save_glm_to_bids` has been added, which writes model outputs to disk according to BIDS convention (:gh:`2715` by `Taylor Salo`_).
 - :func:`~mass_univariate.permuted_ols` and :func:`~glm.second_level.non_parametric_inference` now support :term:`TFCE` statistic (:gh:`3196` by `Taylor Salo`_).
 - :func:`~mass_univariate.permuted_ols` and :func:`~glm.second_level.non_parametric_inference` now support cluster-level Family-wise error correction (:gh:`3181` by `Taylor Salo`_).
+- Updated docs with a new theme using `furo <https://github.com/pradyunsg/furo>`_ (:gh:`3125` by `Alexis Thual`_).
 
 Fixes
 -----
@@ -28,6 +29,7 @@ Fixes
   Now if band-pass elements are equal :func:`~nilearn.signal.butterworth` returns an unfiltered signal with a warning (:gh:`3293` by `Yasmin Mzayek`_).
 - The parameter ``alpha`` is now correctly passed to :func:`~plotting.plot_glass_brain` in :func:`~plotting.plot_connectome` (:gh:`3306` by `Koen Helwegen`_).
 - Fix plotting of background image in :func:`~nilearn.plotting.view_img` when the background is not the MNI template (:gh:`3312` by `Jerome Dockes`_).
+- Fix the typographic error on the page :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_adhd_dmn.py` (:gh:`3337` by `Sachin Patalasingh`_).
 
 Enhancements
 ------------
@@ -40,6 +42,7 @@ Enhancements
 - Add ``n_elements_`` attribute to masker classes (:gh:`3311` by `Taylor Salo`_).
 - Functions expecting string filesystem paths now also accept path-like objects (:gh:`3300` by `Yasmin Mzayek`_).
 - Contributing guidelines now include a recommendation to run flake8 locally on the branch diff with main (:gh:`3317` by `Yasmin Mzayek`_).
+- Improvements to :func:`~mass_univariate.permuted_ols` and :func:`~glm.second_level.non_parametric_inference` with :term:`TFCE` statistic runtime (:gh:`3333` by `Sage Hahn`_).
 - :class:`~maskers.NiftiLabelsMasker` now accepts 1-dimensional arrays in its :meth:`~maskers.NiftiLabelsMasker.inverse_transform` method (:gh:`3322` by `Taylor Salo`_).
 
 Changes

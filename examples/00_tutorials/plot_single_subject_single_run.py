@@ -4,10 +4,6 @@
 In this tutorial, we use a General Linear Model (:term:`GLM`) to compare the
 :term:`fMRI` signal during periods of auditory stimulation versus periods of rest.
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
 The analyse described here is performed in the native space, directly on the
 original :term:`EPI` scans without any spatial or temporal preprocessing.
 (More sensitive results would likely be obtained on the corrected,
@@ -31,11 +27,6 @@ The whole brain :term:`BOLD`/:term:`EPI` images were acquired on a 2T Siemens
 MAGNETOM Vision system. Each scan consisted of 64 contiguous slices (64x64x64
 3mm x 3mm x 3mm :term:`voxels<voxel>`). Acquisition of one scan took 6.05s, with the
 scan to scan repeat time (:term:`TR`) set arbitrarily to 7s.
-
-
-To run this example, you must launch IPython via ``ipython
---matplotlib`` in a terminal, or use ``jupyter-notebook``.
-
 """
 
 ###############################################################################
@@ -178,9 +169,9 @@ from nilearn.plotting import plot_contrast_matrix
 plot_contrast_matrix(active_minus_rest, design_matrix=design_matrix)
 
 ###############################################################################
-# Below, we compute the estimated effect. It is in :term:`BOLD` signal unit,
-# but has no statistical guarantees, because it does not take into
-# account the associated variance.
+# Below, we compute the :term:`'estimated effect'<Parameter Estimate>`.
+# It is in :term:`BOLD` signal unit, but has no statistical guarantees,
+# because it does not take into account the associated variance.
 
 eff_map = fmri_glm.compute_contrast(active_minus_rest,
                                     output_type='effect_size')

@@ -75,7 +75,7 @@ def save_glm_to_bids(
         - Model design matrix figure (``design.svg``)
         - Model error (``stat-errorts_statmap.nii.gz``)
         - Model r-squared (``stat-rSquare_statmap.nii.gz``)
-        - Contrast parameter estimates
+        - Contrast :term:`'parameter estimates'<Parameter Estimate>`
           (``contrast-[name]_stat-effect_statmap.nii.gz``)
         - Variance of the contrast parameter estimates
           (``contrast-[name]_stat-variance_statmap.nii.gz``)

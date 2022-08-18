@@ -21,6 +21,9 @@ If you wish to add a missing term, please `create a new issue`_ or
     AUC
         `Area under the curve`_.
 
+    Beta
+        See :term:`Parameter estimate`.
+
     BIDS
         `Brain Imaging Data Structure`_ is a simple and easy to adopt way
         of organizing neuroimaging and behavioral data.
@@ -185,6 +188,15 @@ If you wish to add a missing term, please `create a new issue`_ or
         operations of `mathematical morphology`_. It is defined as the
         :term:`dilation<Dilation>` of the :term:`erosion<Erosion>` of a set by a
         structuring element.
+
+    Parameter estimate
+        In the context of a :term:`GLM`, each :term:`contrast` comparing rows in the
+        design matrix results in a parameter estimate (PE) that signifies how
+        well the underlying model fits the data at each :term:`voxel`. For statistical
+        inferences the parameter estimate, sometimes also referred to as
+        :term:`beta`, is commonly converted to either a t-, or z-statistic. In
+        nilearn the parameter estimate (or beta) is referred to as
+        ``effect_size``.
 
     parcellation
         Act of dividing the brain into smaller regions, i.e. parcels. Parcellations
