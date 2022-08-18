@@ -140,7 +140,7 @@ If you wish to add a missing term, please
         patterns in two or more regions.
 
     functional connectome
-        A :ref:`functional connectome <functional_connectomes>`_ is a set of
+        A :ref:`functional connectome <functional_connectomes>` is a set of
         connections representing brain interactions between regions.
 
     FWER correction
