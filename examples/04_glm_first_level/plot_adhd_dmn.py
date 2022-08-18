@@ -1,4 +1,4 @@
-"""Default Mode Network extraction of AHDH dataset
+"""Default Mode Network extraction of ADHD dataset
 ===============================================
 
 This example shows a full step-by-step workflow of fitting a GLM to data

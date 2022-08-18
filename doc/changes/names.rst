@@ -190,6 +190,8 @@
 
 .. _Ryan Hammonds: https://github.com/ryanhammonds
 
+.. _Sachin Patalasingh: https://github.com/sachin-bsai
+
 .. _Salma Bougacha: https://github.com/salma1601
 
 .. _Sami Jawhar: https://github.com/sjawhar
