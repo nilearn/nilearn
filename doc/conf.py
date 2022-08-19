@@ -335,11 +335,11 @@ intersphinx_mapping = {
 }
 
 extlinks = {
-    'sklearn': ('https://scikit-learn.org/stable/', None),
-    'parietal': ('https://team.inria.fr/parietal/', None),
-    'nilearn-gh': ('https://github.com/nilearn/nilearn/', None),
-    'neurostars': ('https://neurostars.org/tag/nilearn/', None),
-    'nipy': ('https://nipy.org/', None),
+    'sklearn': ('https://scikit-learn.org/stable/%s', None),
+    'parietal': ('https://team.inria.fr/parietal/%s', None),
+    'nilearn-gh': ('https://github.com/nilearn/nilearn/%s', None),
+    'neurostars': ('https://neurostars.org/tag/nilearn/%s', None),
+    'nipy': ('https://nipy.org/%s', None),
 }
 
 if 'dev' in release:
