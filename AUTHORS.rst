@@ -8,7 +8,7 @@ Team
 
 This work is made available by a community of people, which
 originated from
-the :parietal:`INRIA Parietal Project Team <>` and :sklearn:`scikit-learn <>`
+the :inria:`INRIA MIND Project Team <mind>` and :sklearn:`scikit-learn <>`
 but grew much further.
 
 An up-to-date list of contributors can be seen in on
@@ -74,7 +74,7 @@ Funding
 
 `Alexandre Abraham`_, `Gael Varoquaux`_, `Kamalakar Reddy Daddy`_, `Loic Estève`_,
 `Mehdi Rahim`_, `Philippe Gervais`_ were paid by the
-:parietal:`NiConnect <research/spatial_patterns/niconnect/>`.
+:inria:`NiConnect <parietal/research/spatial_patterns/niconnect/>`.
 project, funded by the French `Investissement d'Avenir
 <http://www.gouvernement.fr/investissements-d-avenir-cgi>`_.
 
@@ -107,7 +107,7 @@ A huge amount of work goes into :sklearn:`scikit-learn <>`,
 upon which nilearn relies heavily.
 Researchers who invest their time in developing and maintaining the package
 deserve recognition with citations.
-In addition, the :parietal:`INRIA Parietal Project Team <>` needs citations
+In addition, the :inria:`INRIA MIND Project Team <mind>` needs citations
 to the paper in order to justify paying a software engineer on the project.
 To guarantee the future of the toolkit, if you use it, please cite it.
 
