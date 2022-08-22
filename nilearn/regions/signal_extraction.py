@@ -120,7 +120,7 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     # Nilearn issue: 2135, PR: 2195 for why this is necessary.
     signals = np.ndarray((data.shape[-1], len(labels)), order=order,
                          dtype=target_datatype)
-    reduction_function = getattr(ndimage.measurements, strategy)
+    reduction_function = getattr(ndimage, strategy)
     for n, img in enumerate(np.rollaxis(data, -1)):
         signals[n] = np.asarray(reduction_function(img,
                                                    labels=labels_data,
