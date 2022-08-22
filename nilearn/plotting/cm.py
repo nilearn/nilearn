@@ -7,6 +7,7 @@ import numpy as _np
 
 from matplotlib import cm as _cm
 from matplotlib import colors as _colors
+from matplotlib import colormaps as _colormaps
 from matplotlib import rcParams as _rcParams
 
 ################################################################################
@@ -313,3 +314,9 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
     return _colors.LinearSegmentedColormap(
         '%s_inside_%s' % (inner_cmap.name, outer_cmap.name),
         cdict, _rcParams['image.lut'])
+
+
+def _get_cmap(cmap):
+    if not isinstance(cmap, colors.Colormap):
+        cmap = _colormaps[cmap]
+    return cmap

@@ -12,7 +12,7 @@ from matplotlib.colorbar import ColorbarBase
 from matplotlib.transforms import Bbox
 
 from nilearn.version import _compare_version
-from nilearn._utils import check_niimg_3d
+from nilearn._utils import check_niimg_3d, _get_cmap
 from nilearn.plotting.find_cuts import find_xyz_cut_coords, find_cut_slices
 from nilearn.plotting.displays import CutAxes
 from nilearn.plotting.edge_detect import _edge_map
@@ -465,7 +465,7 @@ class BaseSlicer(object):
         else:
             self._colorbar_ax.set_axis_bgcolor('w')
 
-        our_cmap = mpl_cm.get_cmap(cmap)
+        our_cmap = _get_cmap(cmap)
         # edge case where the data has a single value
         # yields a cryptic matplotlib error message
         # when trying to plot the color bar

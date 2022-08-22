@@ -44,7 +44,7 @@ m_cmaps.sort()
 
 for index, cmap in enumerate(m_cmaps):
     plt.subplot(1, len(m_cmaps) + 1, index + 1)
-    plt.imshow(a, cmap=plt.get_cmap(cmap), aspect='auto')
+    plt.imshow(a, cmap=plt.colormaps[cmap], aspect='auto')
     plt.axis('off')
     plt.title(cmap, fontsize=10, va='bottom', rotation=90)
 
