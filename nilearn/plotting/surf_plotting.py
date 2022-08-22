@@ -8,7 +8,7 @@ import numpy as np
 
 from matplotlib import gridspec
 from matplotlib.colorbar import make_axes
-from matplotlib.cm import ScalarMappable, get_cmap
+from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize, LinearSegmentedColormap
 from mpl_toolkits.mplot3d import Axes3D  # noqa
 from nilearn import image
@@ -354,7 +354,7 @@ def _get_cmap_matplotlib(cmap, vmin, vmax, threshold=None):
 
     This function returns the colormap.
     """
-    our_cmap = get_cmap(cmap)
+    our_cmap = plt.get_cmap(cmap)
     norm = Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
     if threshold is not None:
@@ -450,10 +450,10 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
 
     # if no cmap is given, set to matplotlib default
     if cmap is None:
-        cmap = plt.cm.get_cmap(plt.rcParamsDefault['image.cmap'])
+        cmap = plt.get_cmap(plt.rcParamsDefault['image.cmap'])
     # if cmap is given as string, translate to matplotlib cmap
     elif isinstance(cmap, str):
-        cmap = plt.cm.get_cmap(cmap)
+        cmap = plt.get_cmap(cmap)
 
     figsize = _default_figsize
     # Leave space for colorbar
@@ -836,7 +836,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
     if colors is None:
         n_levels = len(levels)
         vmax = n_levels
-        cmap = get_cmap(cmap)
+        cmap = plt.get_cmap(cmap)
         norm = Normalize(vmin=0, vmax=vmax)
         colors = [cmap(norm(color_i)) for color_i in range(vmax)]
     else:
@@ -1246,7 +1246,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     if colorbar:
         sm = _colorbar_from_array(image.get_data(stat_map),
                                   vmax, threshold, kwargs,
-                                  cmap=get_cmap(cmap))
+                                  cmap=plt.get_cmap(cmap))
 
         cbar_grid = gridspec.GridSpecFromSubplotSpec(3, 3, grid[-1, :])
         cbar_ax = fig.add_subplot(cbar_grid[1])
