@@ -46,7 +46,14 @@ https://nilearn.github.io/stable/introduction.html#installation.
 Office Hours
 ============
 
-The nilearn office hours will not be held over the summer and will restart in September. See section `How to get help <https://nilearn.github.io/stable/development.html#how-to-get-help>`_ for ways you can still engage with the core-developer team.
+The Nilearn team organizes regular online office hours to answer questions,
+discuss feature requests, or have any Nilearn-related discussions. Nilearn
+office hours occur *every Friday from 4pm to 5pm UTC*, and we make sure that at
+least one member of the core-developer team is available. These events are held
+on our on `Discord server <https://discord.gg/bMBhb7w>`_ and are fully open,
+anyone is welcome to join!
+For more information and ways to engage with the Nilearn team see
+:ref:`How to get help <contributing>`.
 
 Dependencies
 ============
