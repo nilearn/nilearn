@@ -148,7 +148,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         This is equivalent to the number of unique values in the mask image,
         ignoring the background value.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
     See also
     --------

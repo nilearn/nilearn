@@ -229,7 +229,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
     n_elements_ : :obj:`int`
         The number of voxels in the mask.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
     See also
     --------

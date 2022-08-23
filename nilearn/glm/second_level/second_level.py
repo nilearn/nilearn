@@ -712,7 +712,7 @@ def non_parametric_inference(
             Performing cluster-level inference will increase the computation
             time of the permutation procedure.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
     tfce : :obj:`bool`, optional
         Whether to calculate :term:`TFCE` as part of the permutation procedure
@@ -729,7 +729,7 @@ def non_parametric_inference(
             permutations are requested and how many jobs are performed in
             parallel.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
     Returns
     -------
@@ -748,7 +748,7 @@ def non_parametric_inference(
         .. note::
             This is returned if ``tfce`` is False or ``threshold`` is not None.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
         Here are the keys:
 
