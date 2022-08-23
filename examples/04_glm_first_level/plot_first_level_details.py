@@ -404,10 +404,8 @@ plt.show()
 # is to estimate confounding effects from the data themselves, using
 # the CompCor approach, and take those into account in the model.
 #
-# For this we rely on the so-called `high_variance_confounds`_
-# routine of Nilearn.
-#
-# .. _high_variance_confounds: https://nilearn.github.io/modules/generated/nilearn.image.high_variance_confounds.html
+# For this we rely on the so-called
+# :func:`~nilearn.image.high_variance_confounds` routine of Nilearn.
 
 
 from nilearn.image import high_variance_confounds

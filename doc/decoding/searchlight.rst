@@ -58,9 +58,9 @@ Classifier
 
 The classifier used by default by :class:`SearchLight` is LinearSVC with C=1 but
 this can be customized easily by passing an estimator parameter to the
-Searchlight. See scikit-learn documentation for `other classifiers
-<http://scikit-learn.org/stable/supervised_learning.html>`_. You can
-also pass scikit-learn `Pipelines <https://scikit-learn.org/stable/modules/compose.html>`_
+Searchlight. See scikit-learn documentation for :sklearn:`other classifiers
+<supervised_learning.html>`. You can
+also pass scikit-learn :sklearn:`Pipelines <modules/compose.html>`
 to the :class:`SearchLight` in order to combine estimators and preprocessing steps
 (e.g., feature scaling) for your searchlight.
 
@@ -68,8 +68,8 @@ Score function
 --------------
 
 Metrics can be specified by the "scoring" argument to the :class:`SearchLight`, as
-detailed in the `scikit-learn documentation
-<http://scikit-learn.org/dev/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules>`_
+detailed in the :sklearn:`scikit-learn documentation
+<modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules>`
 
 Cross validation
 ----------------
@@ -81,8 +81,8 @@ cross-validation is used.
 
 Cross-validation can be defined using the "cv" argument. As it
 is computationally costly, *K*-Fold cross validation with *K* = 3 is set as the
-default. A `scikit-learn cross-validation generator
-<https://scikit-learn.org/stable/modules/classes.html#splitter-classes>`_ can also
+default. A :sklearn:`scikit-learn cross-validation generator
+<modules/classes.html#splitter-classes>` can also
 be passed to set a specific type of cross-validation.
 
 Leave-one-run-out cross-validation (LOROCV) is a common approach for searchlights.
@@ -90,8 +90,8 @@ This approach is a specific use-case of grouped cross-validation, where the
 cross-validation folds are determined by the acquisition runs. The held-out fold
 in a given iteration of cross-validation consist of data from a separate run,
 which keeps training and validation sets properly independent. For this reason,
-LOROCV is often recommended. This can be performed by using `LeaveOneGroupOut
-<https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeaveOneGroupOut.html>`_,
+LOROCV is often recommended. This can be performed by using :sklearn:`LeaveOneGroupOut
+<modules/generated/sklearn.model_selection.LeaveOneGroupOut.html>`,
 and then setting the group/run labels when fitting the estimator.
 
 Sphere radius
