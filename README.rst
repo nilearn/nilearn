@@ -23,12 +23,12 @@ nilearn
 
 Nilearn enables approachable and versatile analyses of brain volumes. It provides statistical and machine-learning tools, with instructive documentation & friendly community.
 
-It supports general linear model (GLM) based analysis and leverages the :sklearn:`scikit-learn <>` Python toolbox for multivariate statistics with applications such as predictive modelling, classification, decoding, or connectivity analysis.
+It supports general linear model (GLM) based analysis and leverages the `scikit-learn <https://scikit-learn.org>`_ Python toolbox for multivariate statistics with applications such as predictive modelling, classification, decoding, or connectivity analysis.
 
 Important links
 ===============
 
-- Official source code repo: :nilearn-gh:`\ `
+- Official source code repo: https://github.com/nilearn/nilearn/
 - HTML documentation (stable release): https://nilearn.github.io/
 
 Install
@@ -40,7 +40,8 @@ a command prompt::
 
     pip install -U --user nilearn
 
-More detailed instructions are available at :ref:`installation`.
+More detailed instructions are available at
+https://nilearn.github.io/stable/introduction.html#installation.
 
 Office Hours
 ============
@@ -52,12 +53,12 @@ least one member of the core-developer team is available. These events are held
 on our on `Discord server <https://discord.gg/bMBhb7w>`_ and are fully open,
 anyone is welcome to join!
 For more information and ways to engage with the Nilearn team see
-:ref:`How to get help <contributing>`.
+`How to get help <https://nilearn.github.io/stable/development.html#how-to-get-help>`_.
 
 Dependencies
 ============
 
-The required dependencies to use the software are listed in the file :nilearn-gh:`nilearn/setup.cfg <blob/main/setup.cfg>`.
+The required dependencies to use the software are listed in the file `nilearn/setup.cfg <https://github.com/nilearn/nilearn/blob/main/setup.cfg>`_.
 
 If you are using nilearn plotting functionalities or running the examples, matplotlib >= 3.0 is required.
 
@@ -70,4 +71,4 @@ Development
 ===========
 
 Detailed instructions on how to contribute are available at
-:ref:`contributing <contributing>`.
+http://nilearn.github.io/stable/development.html
