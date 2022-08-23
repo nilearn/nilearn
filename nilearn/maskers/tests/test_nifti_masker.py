@@ -218,7 +218,7 @@ def test_4d_single_scan():
 
 
 def test_5d():
-    """Test that list of 4D images with last dim=1 are treated as 3d."""
+    """Test that list of 4D images with last dim=3 raises a DimensionError."""
     shape_3d = (10, 10, 10)
     shape_4d = shape_3d + (3,)
     mask = np.zeros(shape_3d)
