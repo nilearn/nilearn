@@ -145,7 +145,7 @@ def _make_edges_and_weights(X, mask_img):
     return edges, weights
 
 
-def weighted_connectivity_graph(X, mask_img):
+def _weighted_connectivity_graph(X, mask_img):
     """Creating symmetric weighted graph: data and topology are encoded by a
     connectivity matrix.
 
@@ -283,7 +283,7 @@ def _reduce_data_and_connectivity(X, labels, n_components, connectivity,
     return reduced_connectivity, reduced_X
 
 
-def nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
+def _nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
     """Cluster using nearest neighbor agglomeration: merge clusters according
     to their nearest neighbors, then the data and the connectivity are reduced.
 
@@ -387,7 +387,7 @@ def recursive_neighbor_agglomeration(X, mask_img, n_clusters,
     .. footbibliography::
 
     """
-    connectivity = weighted_connectivity_graph(X, mask_img)
+    connectivity = _weighted_connectivity_graph(X, mask_img)
 
     # Initialization
     labels = np.arange(connectivity.shape[0])
@@ -395,7 +395,7 @@ def recursive_neighbor_agglomeration(X, mask_img, n_clusters,
 
     for i in range(n_iter):
 
-        connectivity, X, reduced_labels = nearest_neighbor_grouping(
+        connectivity, X, reduced_labels = _nearest_neighbor_grouping(
             X, connectivity, n_clusters, threshold)
 
         labels = reduced_labels[labels]
