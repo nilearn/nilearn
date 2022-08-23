@@ -142,10 +142,17 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
 
     labels_img, mask_img must have the same shapes and affines.
 
+    .. versionchanged:: 0.9.2dev
+        Support 1D signals.
+
     Parameters
     ----------
     signals : :class:`numpy.ndarray`
-        2D array with shape: (scan number, number of regions in labels_img).
+        1D or 2D array.
+        If this is a 1D array, it must have as many elements as there are
+        regions in the labels_img.
+        If it is 2D, it should have the shape
+        (number of scans, number of regions in labels_img).
 
     labels_img : Niimg-like object
         See :ref:`extracting_data`.
@@ -202,10 +209,12 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
 
     # nditer is not available in numpy 1.3: using multiple loops.
     # Using these loops still gives a much faster code (6x) than this one:
-    ## for n, label in enumerate(labels):
-    ##     data[labels_data == label, :] = signals[:, n]
-    data = np.zeros(target_shape + (signals.shape[0],),
-                    dtype=signals.dtype, order=order)
+    # for n, label in enumerate(labels):
+    #     data[labels_data == label, :] = signals[:, n]
+    if signals.ndim == 2:
+        target_shape = target_shape + (signals.shape[0],)
+
+    data = np.zeros(target_shape, dtype=signals.dtype, order=order)
     labels_dict = dict([(label, n) for n, label in enumerate(labels)])
     # optimized for "data" in F order.
     for k in range(labels_data.shape[2]):
@@ -214,7 +223,10 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
                 label = labels_data[i, j, k]
                 num = labels_dict.get(label, None)
                 if num is not None:
-                    data[i, j, k, :] = signals[:, num]
+                    if signals.ndim == 2:
+                        data[i, j, k, :] = signals[:, num]
+                    else:
+                        data[i, j, k] = signals[num]
 
     return new_img_like(labels_img, data, target_affine)
 
@@ -278,10 +290,11 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
             raise ValueError("mask_img and imgs shapes must be identical.")
         if abs(mask_img.affine - affine).max() > 1e-9:
             raise ValueError("mask_img and imgs affines must be identical")
-        maps_data, maps_mask, labels = \
-                   _trim_maps(maps_data,
-                              _safe_get_data(mask_img, ensure_finite=True),
-                              keep_empty=True)
+        maps_data, maps_mask, labels = _trim_maps(
+            maps_data,
+            _safe_get_data(mask_img, ensure_finite=True),
+            keep_empty=True,
+        )
         maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
     else:
         maps_mask = np.ones(maps_data.shape[:3], dtype=bool)

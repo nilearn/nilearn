@@ -66,6 +66,22 @@ def _filter_and_extract(
         print("[%s] Loading data from %s" % (
             class_name,
             _utils._repr_niimgs(imgs, shorten=False)))
+
+    # Convert input to niimg to check shape.
+    # This must be repeated after the shape check because check_niimg will
+    # coerce 5D data to 4D, which we don't want.
+    temp_imgs = _utils.check_niimg(imgs)
+
+    # Raise warning if a 3D niimg is provided.
+    if temp_imgs.ndim == 3:
+        warnings.warn(
+            'Starting in version 0.12, 3D images will be transformed to '
+            '1D arrays. '
+            'Until then, 3D images will be coerced to 2D arrays, with a '
+            'singleton first dimension representing time.',
+            DeprecationWarning,
+        )
+
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4,
                               dtype=dtype)
 
@@ -161,6 +177,14 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             Signal for each element.
             shape: (number of scans, number of elements)
 
+        Warns
+        -----
+        DeprecationWarning
+            If a 3D niimg input is provided, the current behavior
+            (adding a singleton dimension to produce a 2D array) is deprecated.
+            Starting in version 0.12, a 1D array will be returned for 3D
+            inputs.
+
         """
         raise NotImplementedError()
 
@@ -193,6 +217,14 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         region_signals : 2D numpy.ndarray
             Signal for each element.
             shape: (number of scans, number of elements)
+
+        Warns
+        -----
+        DeprecationWarning
+            If a 3D niimg input is provided, the current behavior
+            (adding a singleton dimension to produce a 2D array) is deprecated.
+            Starting in version 0.12, a 1D array will be returned for 3D
+            inputs.
 
         """
         self._check_fitted()
@@ -278,9 +310,13 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         Parameters
         ----------
-        X : 2D :obj:`numpy.ndarray`
+        X : 1D/2D :obj:`numpy.ndarray`
             Signal for each element in the mask.
-            shape: (number of scans, number of elements)
+            If a 1D array is provided, then the shape should be
+            (number of elements,), and a 3D img will be returned.
+            If a 2D array is provided, then the shape should be
+            (number of scans, number of elements), and a 4D img will be
+            returned.
             See :ref:`extracting_data`.
 
         Returns
@@ -289,6 +325,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         """
         self._check_fitted()
+
         img = self._cache(masking.unmask)(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
         # internal structures of the header: remove the memmaped array

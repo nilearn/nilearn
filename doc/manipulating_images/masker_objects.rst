@@ -23,6 +23,12 @@ network nodes). Think of masker objects as swiss-army knives for shaping
 the raw neuroimaging data in 3D space into the units of observation
 relevant for the research questions at hand.
 
+.. tip::
+    Masker objects can transform both 3D and 4D image objects.
+    Transforming a 4D image produces a 2D (samples x features) matrix.
+    Currently, transforming a 3D image also produces a 2D (1 x features) matrix,
+    but starting in version 0.12, it will produce a 1D (features) array.
+
 
 .. |niimgs| image:: ../images/niimgs.jpg
     :scale: 50%
@@ -35,8 +41,6 @@ relevant for the research questions at hand.
    <span style="padding: .5em; font-size: 400%">&rarr;</span>
 
 .. centered:: |niimgs|  |arrow|  |arrays|
-
-
 
 "masker" objects (found in module :mod:`nilearn.maskers`)
 simplify these "data folding" steps that often precede the
@@ -326,13 +330,18 @@ images after unmasking (masked-reduced data transformed back into
 the original whole-brain space). This step is present in many
 :ref:`examples <examples-index>` provided in nilearn. Below you will find
 an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
-<sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py>`):
+<sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py>`:
 
 .. literalinclude:: ../../examples/02_decoding/plot_haxby_anova_svm.py
     :start-after: # Look at the SVC's discriminating weights
     :end-before: # Or we can plot the weights
 
 |
+
+.. tip::
+    Masker objects can inverse-transform both 1D and 2D arrays.
+    Inverse-transforming a 2D array produces a 4D (X x Y x Z x samples) image,
+    while inverse-transforming a 1D array produces a 3D (X x Y x Z) image.
 
 .. topic:: **Examples to better understand the NiftiMasker**
 

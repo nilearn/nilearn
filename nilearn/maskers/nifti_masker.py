@@ -79,6 +79,21 @@ def _filter_and_mask(
         friendly 2D array with shape n_sample x n_features.
 
     """
+    # Convert input to niimg to check shape.
+    # This must be repeated after the shape check because check_niimg will
+    # coerce 5D data to 4D, which we don't want.
+    temp_imgs = _utils.check_niimg(imgs)
+
+    # Raise warning if a 3D niimg is provided.
+    if temp_imgs.ndim == 3:
+        warnings.warn(
+            'Starting in version 0.12, 3D images will be transformed to '
+            '1D arrays. '
+            'Until then, 3D images will be coerced to 2D arrays, with a '
+            'singleton first dimension representing time.',
+            DeprecationWarning,
+        )
+
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
 
     # Check whether resampling is truly necessary. If so, crop mask
@@ -526,6 +541,14 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         region_signals : 2D :obj:`numpy.ndarray`
             Signal for each voxel inside the mask.
             shape: (number of scans, number of voxels)
+
+        Warns
+        -----
+        DeprecationWarning
+            If a 3D niimg input is provided, the current behavior
+            (adding a singleton dimension to produce a 2D array) is deprecated.
+            Starting in version 0.12, a 1D array will be returned for 3D
+            inputs.
 
         """
 

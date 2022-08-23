@@ -339,6 +339,14 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
             List of signal for each element per subject.
             shape: list of (number of scans, number of elements)
 
+        Warns
+        -----
+        DeprecationWarning
+            If a 3D niimg input is provided, the current behavior
+            (adding a singleton dimension to produce a 2D array) is deprecated.
+            Starting in version 0.12, a 1D array will be returned for 3D
+            inputs.
+
         """
 
         if not hasattr(self, 'mask_img_'):
@@ -428,6 +436,14 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         -------
         data : :obj:`list` of :obj:`numpy.ndarray`
             preprocessed images
+
+        Warns
+        -----
+        DeprecationWarning
+            If 3D niimg inputs are provided, the current behavior
+            (adding a singleton dimension to produce 2D arrays) is deprecated.
+            Starting in version 0.12, 1D arrays will be returned for 3D
+            inputs.
 
         """
         self._check_fitted()
