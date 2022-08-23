@@ -8,11 +8,11 @@ Team
 
 This work is made available by a community of people, which
 originated from
-the `INRIA Parietal Project Team <https://team.inria.fr/parietal/>`_
-and the `scikit-learn <http://scikit-learn.org/>`_ but grew much further.
+the :inria:`INRIA MIND Project Team <mind>` and :sklearn:`scikit-learn <>`
+but grew much further.
 
-An up-to-date list of contributors can be seen in on `GitHub
-<https://github.com/nilearn/nilearn/graphs/contributors>`_
+An up-to-date list of contributors can be seen in on
+:nilearn-gh:`GitHub <graphs/contributors>`.
 
 Additional credit goes to `Michael Hanke`_ and `Yaroslav Halchenko`_ for data and packaging.
 
@@ -73,8 +73,8 @@ Funding
 .......
 
 `Alexandre Abraham`_, `Gael Varoquaux`_, `Kamalakar Reddy Daddy`_, `Loic Estève`_,
-`Mehdi Rahim`_, `Philippe Gervais`_ were paid by the `NiConnect
-<https://team.inria.fr/parietal/research/spatial_patterns/niconnect/>`_
+`Mehdi Rahim`_, `Philippe Gervais`_ were paid by the
+:inria:`NiConnect <parietal/research/spatial_patterns/niconnect/>`.
 project, funded by the French `Investissement d'Avenir
 <http://www.gouvernement.fr/investissements-d-avenir-cgi>`_.
 
@@ -103,16 +103,16 @@ We suggest that you read and cite the paper. Thank you.
 Citing scikit-learn
 -------------------
 
-A huge amount of work goes into `scikit-learn <http://scikit-learn.org/>`_,
+A huge amount of work goes into :sklearn:`scikit-learn <>`,
 upon which nilearn relies heavily.
 Researchers who invest their time in developing and maintaining the package
 deserve recognition with citations.
-In addition, the `Parietal team <https://team.inria.fr/parietal/>`_ needs citations
+In addition, the :inria:`INRIA MIND Project Team <mind>` needs citations
 to the paper in order to justify paying a software engineer on the project.
 To guarantee the future of the toolkit, if you use it, please cite it.
 
-See the scikit-learn documentation on `how to cite
-<http://scikit-learn.org/stable/about.html#citing-scikit-learn>`_.
+See the scikit-learn documentation on
+:sklearn:`how to cite <about.html#citing-scikit-learn>`.
 
 
 .. |digicosme logo| image:: logos/digi-saclay-logo-small.png

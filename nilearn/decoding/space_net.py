@@ -739,7 +739,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         Parameters
         ----------
         X : list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
@@ -932,7 +932,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         Parameters
         ----------
         X : list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.
 
@@ -1155,7 +1155,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         Parameters
         ----------
         X : list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 

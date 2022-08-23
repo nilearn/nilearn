@@ -53,7 +53,7 @@ least one member of the core-developer team is available. These events are held
 on our on `Discord server <https://discord.gg/bMBhb7w>`_ and are fully open,
 anyone is welcome to join!
 For more information and ways to engage with the Nilearn team see
-:ref:`How to get help <contributing>`.
+`How to get help <https://nilearn.github.io/stable/development.html#how-to-get-help>`_.
 
 Dependencies
 ============

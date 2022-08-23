@@ -221,8 +221,8 @@ But you will soon realize that you don't really need one.
 It is typically used interactively in IPython or in an automated way by Python
 code.
 Most importantly, nilearn functions that process neuroimaging data accept
-either a filename (i.e., a string variable) or a `NiftiImage object
-<http://nipy.org/nibabel/nibabel_images.html>`_. We call the latter
+either a filename (i.e., a string variable) or a
+:nipy:`NiftiImage object <nibabel/nibabel_images.html>`. We call the latter
 "niimg-like".
 
 Suppose for instance that you have a Tmap image saved in the Nifti file
@@ -264,9 +264,9 @@ the :mod:`nilearn.image` module for image manipulation, e.g.
     >>> from nilearn import image
     >>> smoothed_img = image.smooth_img("/home/user/t_map000.nii", fwhm=5)   # doctest: +SKIP
 
-The returned value `smoothed_img` is a `NiftiImage object
-<http://nipy.org/nibabel/nibabel_images.html>`_. It can either be passed
-to other nilearn functions operating on niimgs (neuroimaging images) or
+The returned value `smoothed_img` is a
+:nipy:`NiftiImage object <nibabel/nibabel_images.html>`. It can either be
+passed to other nilearn functions operating on niimgs (neuroimaging images) or
 saved to disk with::
 
     >>> smoothed_img.to_filename("/home/user/t_map000_smoothed.nii")   # doctest: +SKIP
@@ -426,16 +426,16 @@ Scikit-learn: machine learning in Python
 
 .. topic:: **What is scikit-learn?**
 
-    `Scikit-learn <http://scikit-learn.org>`_ is a Python library for machine
+    :sklearn:`Scikit-learn <>` is a Python library for machine
     learning. Its strong points are:
 
     - Easy to use and well documented
     - Computationally efficient
     - Provides a wide variety of standard machine learning methods for non-experts
 
-The core concept in `scikit-learn <http://scikit-learn.org>`_ is the
-estimator object, for instance an SVC (`support vector classifier
-<http://scikit-learn.org/stable/modules/svm.html>`_).
+The core concept in :sklearn:`scikit-learn <>` is the
+estimator object, for instance an SVC
+(:sklearn:`support vector classifier <modules/svm.html>`).
 It is first created with the relevant parameters::
 
     >>> import sklearn; sklearn.set_config(print_changed_only=False)
@@ -479,8 +479,8 @@ and try predicting the labels on the left-out data::
     >>> labels[-10:]    # The actual labels
     array([5, 4, 8, 8, 4, 9, 0, 8, 9, 8])
 
-To find out more, try the `scikit-learn tutorials
-<http://scikit-learn.org/stable/tutorial/index.html>`_.
+To find out more, try the
+:sklearn:`scikit-learn tutorials <tutorial/index.html>`.
 
 Finding help
 -------------
@@ -493,15 +493,14 @@ Finding help
 
     * The documentation of scikit-learn explains each method with tips on
       practical use and examples:
-      `http://scikit-learn.org/ <http://scikit-learn.org/>`_.
+      :sklearn:`\ `.
       While not specific to neuroimaging, it is often a recommended read.
       Be careful to consult the documentation of the scikit-learn version
       that you are using.
 
 :Mailing lists and forums:
 
-    * Don't hesitate to ask questions about nilearn on `neurostars
-      <https://neurostars.org/tag/nilearn>`_.
+    * Don't hesitate to ask questions about nilearn on :neurostars:`neurostars <>`.
 
     * You can find help with neuroimaging in Python (file I/O,
       neuroimaging-specific questions) via the nipy user group:

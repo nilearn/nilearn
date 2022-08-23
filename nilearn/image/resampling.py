@@ -194,7 +194,7 @@ def get_mask_bounds(img):
         Parameters
         ----------
         img : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             The image to inspect. Zero values are considered as
             background.
 
@@ -314,7 +314,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     Parameters
     ----------
     img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Image(s) to resample.
 
     target_affine : numpy.ndarray, optional
@@ -638,11 +638,11 @@ def resample_to_img(source_img, target_img,
     Parameters
     ----------
     source_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Image(s) to resample.
 
     target_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Reference image taken for resampling.
 
     interpolation : str, optional
@@ -707,7 +707,7 @@ def reorder_img(img, resample=None):
     Parameters
     -----------
     img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Image to reorder.
 
     resample : None or string in {'continuous', 'linear', 'nearest'}, optional

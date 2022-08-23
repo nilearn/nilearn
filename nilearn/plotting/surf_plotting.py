@@ -1137,7 +1137,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     Parameters
     ----------
     stat_map : str or 3D Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
 
     surf_mesh : str, dict, or None, optional
         If str, either one of the two:

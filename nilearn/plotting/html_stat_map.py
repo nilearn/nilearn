@@ -438,7 +438,7 @@ def view_img(stat_map_img, bg_img='MNI152',
     Parameters
     ----------
     stat_map_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The statistical map image. Can be either a 3D volume or a 4D volume
         with exactly one time point.
     %(bg_img)s
