@@ -331,7 +331,7 @@ Installing
 
 Here are the key steps you need to go through to copy the repo before contributing:
 
-1. fork the repo from github (fork button in the top right corner of our :nilearn-gh:`main github page`) and clone your fork locally::
+1. fork the repo from github (fork button in the top right corner of our :nilearn-gh:`main github page <>`) and clone your fork locally::
 
       git clone git@github.com:<your_username>/nilearn.git
 
