@@ -73,5 +73,3 @@ Changes
 - Boolean input data in :func:`~image.new_img_like` now defaults to `np.uint8` instead of `np.int8` (:gh:`3286` by `Yasmin Mzayek`_).
 - The current behavior of maskers' ``transform`` on 3D niimg inputs, in which a 2D array is returned, is deprecated, and 1D arrays will be returned starting in version ``0.12`` (:gh:`3322` by `Taylor Salo`_).
 - Private functions ``nilearn.regions.rena_clustering.weighted_connectivity_graph`` and ``nilearn.regions.rena_clustering.nearest_neighbor_grouping`` have been renamed with a leading "_", while function :func:`~regions.rena_clustering.recursive_neighbor_agglomeration` has been added to the public API (:gh:`3347` by `Ahmad Chamma`_).
-- :func:`~regions.rena_clustering.nearest_neighbor_grouping` is changed to a private function :func:`~regions.rena_clustering._nearest_neighbor_grouping`
-- Export :func:`~regions.rena_clustering.recursive_neighbor_agglomeration` to ``nilearn/regions/__init__.py``
