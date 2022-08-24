@@ -2,8 +2,18 @@
 
 .. include:: names.rst
 
-0.9.2.dev
+0.9.2
 =========
+
+**Released August 2022**
+
+HIGHLIGHTS
+----------
+
+- Updated docs with a new theme using `furo <https://github.com/pradyunsg/furo>`_ (:gh:`3125` by `Alexis Thual`_).
+- :func:`~mass_univariate.permuted_ols` and :func:`~glm.second_level.non_parametric_inference` now support :term:`TFCE` statistic (:gh:`3196` by `Taylor Salo`_).
+- :func:`~mass_univariate.permuted_ols` and :func:`~glm.second_level.non_parametric_inference` now support cluster-level Family-wise error correction (:gh:`3181` by `Taylor Salo`_).
+- :func:`~interfaces.bids.save_glm_to_bids` has been added, which writes model outputs to disk according to BIDS convention (:gh:`2715` by `Taylor Salo`_).
 
 NEW
 ---
