@@ -257,4 +257,4 @@ plotting.show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::

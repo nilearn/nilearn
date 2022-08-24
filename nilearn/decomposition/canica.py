@@ -148,7 +148,7 @@ class CanICA(_MultiPCA):
         of `mask` and other NiftiMasker related parameters as initialization.
 
     `mask_img_` : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 

@@ -16,12 +16,6 @@ import sys
 #
 docdict = dict()
 
-NILEARN_LINKS = {"landing_page": "http://nilearn.github.io"}
-NILEARN_LINKS["input_output"] = (
-    "{}/manipulating_images/input_output.html".format(
-        NILEARN_LINKS["landing_page"])
-)
-
 # Verbose
 verbose = """
 verbose : :obj:`int`, optional
@@ -269,7 +263,8 @@ mask_img : Niimg-like object
 
 # Memory
 docdict['memory'] = """
-memory : instance of :class:`joblib.Memory` or :obj:`str`
+memory : instance of :class:`joblib.Memory`, :obj:`str`, or \
+:class:`pathlib.Path`
     Used to cache the masking process.
     By default, no caching is done. If a :obj:`str` is given, it is the
     path to the caching directory."""
@@ -305,14 +300,14 @@ docdict['n_jobs_all'] = n_jobs.format("-1")
 # img
 docdict['img'] = """
 img : Niimg-like object
-    See `input-output <%(input_output)s>`_.
-""" % NILEARN_LINKS
+    See :ref:`extracting_data`.
+"""
 
 # imgs
 docdict['imgs'] = """
 imgs : :obj:`list` of Niimg-like objects
-    See `input-output <%(input_output)s>`_.
-""" % NILEARN_LINKS
+    See :ref:`extracting_data`.
+"""
 
 # cut_coords
 docdict['cut_coords'] = """
@@ -367,7 +362,7 @@ display_mode : {'ortho', 'tiled', 'mosaic','x',\
 'y', 'z', 'yx', 'xz', 'yz'}, optional
     Choose the direction of the cuts:
 
-        - 'x': sagital
+        - 'x': sagittal
         - 'y': coronal
         - 'z': axial
         - 'ortho': three cuts are performed in orthogonal
@@ -456,9 +451,9 @@ cbar_tick_format : :obj:`str`, optional
 # bg_img
 docdict['bg_img'] = """
 bg_img : Niimg-like object, optional
-    See `input_output <%(input_output)s>`_.
+    See :ref:`extracting_data`.
     The background image to plot on top of.
-""" % NILEARN_LINKS
+"""
 
 # vmin
 docdict['vmin'] = """

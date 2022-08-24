@@ -66,7 +66,7 @@ def test_plot_markers_node_sizes_lyrz_display(node_size, coords):
 
 @pytest.mark.parametrize("cmap,vmin,vmax",
                          [('RdBu', 0, None),
-                          (matplotlib.cm.get_cmap('jet'), None, 5),
+                          (plt.get_cmap('jet'), None, 5),
                           (plt.cm.viridis_r, 2, 3)])
 def test_plot_markers_cmap(cmap, vmin, vmax, coords):
     """Smoke test for plot_markers with different cmaps."""

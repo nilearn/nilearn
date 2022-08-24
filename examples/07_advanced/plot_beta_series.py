@@ -14,21 +14,21 @@ Generally, these models are most useful for event-related task designs,
 while other modeling approaches, such as psychophysiological interactions
 (PPIs), tend to perform better in block designs, depending on the type of
 analysis.
-See :footcite:t:`cisler2014comparison` for more information about this,
+See :footcite:t:`Cisler2014` for more information about this,
 in the context of functional connectivity analyses.
 
 Two of the most well-known beta series modeling methods are
-Least Squares- All (LSA) :footcite:p:`rissman2004measuring` and
+Least Squares- All (LSA) :footcite:p:`Rissman2004` and
 Least Squares- Separate (LSS)
-:footcite:p:`mumford2012deconvolving,turner2012spatiotemporal`.
+:footcite:p:`Mumford2012,Turner2012`.
 In LSA, a single :term:`GLM` is run, in which each trial of each condition of
 interest is separated out into its own condition within the design matrix.
 In LSS, each trial of each condition of interest has its own :term:`GLM`,
 in which the targeted trial receives its own column within the design matrix,
 but everything else remains the same as the standard model.
 Trials are then looped across, and many GLMs are fitted,
-with the parameter estimate map extracted from each GLM to build the LSS beta
-series.
+with the :term:`Parameter Estimate` map extracted from each GLM to build the
+LSS beta series.
 
 .. topic:: Choosing the right model for your analysis
 
@@ -39,17 +39,17 @@ series.
     to the original publications and any potential updates to the literature,
     when possible.
 
-    First, as mentioned above, according to :footcite:t:`cisler2014comparison`,
+    First, as mentioned above, according to :footcite:t:`Cisler2014`,
     beta series models are most appropriate for event-related task designs.
     For block designs, a PPI model is better suited- at least for
     functional connectivity analyses.
 
-    According to :footcite:t:`abdulrahman2016effect`,
+    According to :footcite:t:`Abdulrahman2016`,
     the decision between LSA and LSS should be based on three factors:
     inter-trial variability, scan noise, and stimulus onset timing.
-    While :footcite:t:`mumford2012deconvolving` proposes LSS as a tool
+    While :footcite:t:`Mumford2012` proposes LSS as a tool
     primarily for fast event-related designs (i.e., ones with short inter-trial
-    intervals), :footcite:t:`abdulrahman2016effect` finds, in simulations,
+    intervals), :footcite:t:`Abdulrahman2016` finds, in simulations,
     that LSA performs better than LSS when trial variability is greater
     than scan noise, even in fast designs.
 
@@ -139,7 +139,7 @@ fig.show()
 ##############################################################################
 # Aggregate beta maps from the LSA model based on condition
 # `````````````````````````````````````````````````````````
-# Collect the parameter estimate maps
+# Collect the :term:`Parameter Estimate` maps
 lsa_beta_maps = {cond: [] for cond in events_df['trial_type'].unique()}
 trialwise_conditions = lsa_events_df['trial_type'].unique()
 for condition in trialwise_conditions:

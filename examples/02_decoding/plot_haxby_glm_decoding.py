@@ -10,13 +10,6 @@ More specifically:
 1. Download the Haxby dataset.
 2. Extract the information to generate a glm representing the blocks of stimuli.
 3. Analyze the decoding performance using a classifier.
-
-To run this example, you must launch IPython via ``ipython
---matplotlib`` in a terminal, or use the Jupyter notebook.
-
-.. contents:: **Contents**
-    :local:
-    :depth: 1
 """
 
 ##############################################################################

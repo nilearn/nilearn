@@ -361,7 +361,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         Parameters
         ----------
         X: list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
@@ -593,8 +593,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         Parameters
         ----------
         X: list of Niimg-like objects
-            See
-            <http://nilearn.github.io/manipulating_images/input_output.html>
+            See :ref:`extracting_data`.
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.
 
@@ -998,7 +997,7 @@ class FREMRegressor(_BaseDecoder):
     FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
     training set, thus returning a very robust decoder at a lower computational
-    cost than other spatially regularized methods :footcite:`HOYOSIDROBO2018160`.
+    cost than other spatially regularized methods :footcite:`Hoyos-Idrobo2018`.
 
     Parameters
     -----------
@@ -1121,7 +1120,7 @@ class FREMClassifier(_BaseDecoder):
     FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
     training set, thus returning a very robust decoder at a lower computational
-    cost than other spatially regularized methods :footcite:`HOYOSIDROBO2018160`.
+    cost than other spatially regularized methods :footcite:`Hoyos-Idrobo2018`.
 
     Parameters
     -----------

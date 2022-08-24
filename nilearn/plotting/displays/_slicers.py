@@ -5,7 +5,6 @@ from nilearn._utils.docs import fill_doc
 import numpy as np
 
 import matplotlib
-from matplotlib import cm as mpl_cm
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.colorbar import ColorbarBase
@@ -465,7 +464,7 @@ class BaseSlicer(object):
         else:
             self._colorbar_ax.set_axis_bgcolor('w')
 
-        our_cmap = mpl_cm.get_cmap(cmap)
+        our_cmap = plt.get_cmap(cmap)
         # edge case where the data has a single value
         # yields a cryptic matplotlib error message
         # when trying to plot the color bar

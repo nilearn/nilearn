@@ -80,6 +80,8 @@
 
 .. _Guillaume Lemaitre: https://glemaitre.github.io/
 
+.. _Sage Hahn: www.sagehahn.com/
+
 .. _Hao-Ting Wang: https://wanghaoting.com/
 
 .. _Himanshu Aggarwal: https://github.com/man-shu
@@ -187,6 +189,8 @@
 .. _Ronald Phlypo: https://github.com/rphlypo
 
 .. _Ryan Hammonds: https://github.com/ryanhammonds
+
+.. _Sachin Patalasingh: https://github.com/sachin-bsai
 
 .. _Salma Bougacha: https://github.com/salma1601
 

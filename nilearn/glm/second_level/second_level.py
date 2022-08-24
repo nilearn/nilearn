@@ -20,6 +20,7 @@ from sklearn.base import clone
 
 from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils import stringify_path
 from nilearn.maskers import NiftiMasker
 from nilearn.glm.contrasts import (compute_contrast,
                                    expression_to_contrast_vector)
@@ -328,6 +329,7 @@ class SecondLevelModel(BaseGLM):
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
+        memory = stringify_path(memory)
         if isinstance(memory, str):
             self.memory = Memory(memory)
         else:
@@ -454,8 +456,9 @@ class SecondLevelModel(BaseGLM):
         second_level_stat_type : {'t', 'F'} or None, optional
             Type of the second level contrast. Default=None.
 
-        output_type : {'z_score', 'stat', 'p_value', 'effect_size',\
-        'effect_variance', 'all'}, optional
+        output_type : {'z_score', 'stat', 'p_value', \
+                :term:`'effect_size'<Parameter Estimate>`, 'effect_variance', \
+                'all'}, optional
             Type of the output map. Default='z-score'.
 
         Returns
@@ -709,13 +712,13 @@ def non_parametric_inference(
             Performing cluster-level inference will increase the computation
             time of the permutation procedure.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
     tfce : :obj:`bool`, optional
         Whether to calculate :term:`TFCE` as part of the permutation procedure
         or not.
         The TFCE calculation is implemented as described in
-        :footcite:t:`smith2009threshold`.
+        :footcite:t:`Smith2009a`.
         Default=False.
 
         .. warning::
@@ -726,7 +729,7 @@ def non_parametric_inference(
             permutations are requested and how many jobs are performed in
             parallel.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
     Returns
     -------
@@ -745,7 +748,7 @@ def non_parametric_inference(
         .. note::
             This is returned if ``tfce`` is False or ``threshold`` is not None.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
         Here are the keys:
 
