@@ -134,6 +134,16 @@ neg_log_pval = math_img(
 # used as well (pending additional steps to mask and reformat the inputs).
 #
 # .. important::
+#   One key difference between
+#   :obj:`~nilearn.glm.second_level.SecondLevelModel` and
+#   :func:`~nilearn.glm.second_level.non_parametric_inference`/
+#   :func:`~nilearn.mass_univariate.permuted_ols`
+#   is that the one-sample test in non_parametric_inference/permuted_ols
+#   assumes that the distribution is symmetric about 0,
+#   which is is weaker than the SecondLevelModel's assumption that
+#   the null distribution is Gaussian and centered about 0.
+#
+# .. important::
 #   In this example, ``threshold`` is set to 0.001, which enables
 #   cluster-level inference.
 #   Performing cluster-level inference will increase the computation time of
