@@ -129,7 +129,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         The number of overlapping maps in the mask.
         This is equivalent to the number of volumes in the mask image.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
     Notes
     -----

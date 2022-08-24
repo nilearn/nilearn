@@ -66,7 +66,7 @@ def _permuted_ols_on_chunk(
         If ``threshold`` is not None, but ``masker`` is, an exception will be
         raised.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
     confounding_vars : array-like, shape=(n_samples, n_covars), optional
         Clinical data (covariates).
@@ -79,7 +79,7 @@ def _permuted_ols_on_chunk(
         If ``threshold`` is not None, but ``masker`` is, an exception will be
         raised.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
     n_perm : int, optional
         Total number of permutations to perform, only used for
@@ -109,13 +109,13 @@ def _permuted_ols_on_chunk(
         :footcite:t:`Smith2009a`.
         Default=False.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
     tfce_original_data : None or array-like, \
             shape=(n_descriptors, n_regressors), optional
         TFCE values obtained for the original (non-permuted) data.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
     random_state : int or None, optional
         Seed for random number generator, to have the same permutations
@@ -143,7 +143,7 @@ def _permuted_ols_on_chunk(
         Only calculated if ``masker`` is not None.
         Otherwise, these will both be None.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
     tfce_scores_as_ranks_part : array-like, shape=(n_regressors, n_descriptors)
         The ranks of the original TFCE values in ``h0_tfce_part``.
@@ -152,13 +152,13 @@ def _permuted_ols_on_chunk(
         Here, it is performed in parallel by the workers involved in the
         permutation computation.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
     h0_tfce_part : array-like, shape=(n_perm_chunk, n_regressors)
         Distribution of the (max) TFCE value under the null hypothesis
         (limited to this permutation chunk).
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
     References
     ----------
@@ -400,7 +400,7 @@ def permuted_ols(
         This is required for cluster-level inference, so it must be provided
         if ``threshold`` is not None.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
     threshold : None or :obj:`float`, optional
         Cluster-forming threshold in p-scale.
@@ -413,7 +413,7 @@ def permuted_ols(
             Performing cluster-level inference will increase the computation
             time of the permutation procedure.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
     tfce : :obj:`bool`, optional
         Whether to calculate :term:`TFCE` as part of the permutation procedure
@@ -430,7 +430,7 @@ def permuted_ols(
             permutations are requested and how many jobs are performed in
             parallel.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
     output_type : {'legacy', 'dict'}, optional
         Determines how outputs should be returned.
@@ -451,7 +451,7 @@ def permuted_ols(
             'dict' in 0.13, and the parameter will be removed completely in
             0.15.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
     Returns
     -------
@@ -500,7 +500,7 @@ def permuted_ols(
             The default value will change to 'dict' in 0.13,
             and the ``output_type`` parameter will be removed in 0.15.
 
-        .. versionchanged:: 0.9.2.dev
+        .. versionchanged:: 0.9.2
 
             Return H0 for all regressors, instead of only the first one.
 
@@ -512,7 +512,7 @@ def permuted_ols(
             This is returned if ``output_type`` == 'dict'.
             This will be the default output starting in version 0.13.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
         Here are the keys:
 
