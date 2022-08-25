@@ -51,6 +51,7 @@ extensions = [
     'sphinxext.opengraph',
     'myst_parser',
     'sphinx_design',
+    'sphinx.ext.extlinks',
 ]
 
 autosummary_generate = True
@@ -324,7 +325,7 @@ _python_doc_base = 'https://docs.python.org/3.8'
 intersphinx_mapping = {
     'python': (_python_doc_base, None),
     'numpy': ('https://numpy.org/doc/stable/', None),
-    'scipy': ('http://scipy.github.io/devdocs/', None),
+    'scipy': ('https://scipy.github.io/devdocs/', None),
     'matplotlib': ('https://matplotlib.org/stable/', None),
     'sklearn': ('https://scikit-learn.org/stable/', None),
     'nibabel': ('https://nipy.org/nibabel', None),
@@ -334,8 +335,11 @@ intersphinx_mapping = {
 }
 
 extlinks = {
-    'simple': (_python_doc_base + '/reference/simple_stmts.html#%s', ''),
-    'compound': (_python_doc_base + '/reference/compound_stmts.html#%s', ''),
+    'sklearn': ('https://scikit-learn.org/stable/%s', None),
+    'inria': ('https://team.inria.fr/%s', None),
+    'nilearn-gh': ('https://github.com/nilearn/nilearn/%s', None),
+    'neurostars': ('https://neurostars.org/tag/nilearn/%s', None),
+    'nipy': ('https://nipy.org/%s', None),
 }
 
 if 'dev' in release:

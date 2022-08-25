@@ -2,48 +2,17 @@
 
 .. include:: names.rst
 
-0.9.2.dev
+0.9.3.dev
 =========
 
 NEW
 ---
 
-- :func:`~interfaces.bids.save_glm_to_bids` has been added, which writes model outputs to disk according to BIDS convention (:gh:`2715` by `Taylor Salo`_).
-- :func:`~mass_univariate.permuted_ols` and :func:`~glm.second_level.non_parametric_inference` now support :term:`TFCE` statistic (:gh:`3196` by `Taylor Salo`_).
-- :func:`~mass_univariate.permuted_ols` and :func:`~glm.second_level.non_parametric_inference` now support cluster-level Family-wise error correction (:gh:`3181` by `Taylor Salo`_).
-- Updated docs with a new theme using `furo <https://github.com/pradyunsg/furo>`_ (:gh:`3125` by `Alexis Thual`_).
-
 Fixes
 -----
-- Fix ``_NEUROVAULT_BASE_URL`` and ``_NEUROSYNTH_FETCH_WORDS_URL`` in ``nilearn/datasets/neurovault.py`` by using https instead of http (:gh:`3281` by `Manon Pietrantoni`_).
-- Convert references in ``nilearn/mass_univariate/permuted_least_squares.py`` to use bibtex format (:gh:`3222` by `Yasmin Mzayek`_).
-- Update Craddock 2012 parcellation url in ``nilearn/datasets/atlas.py`` (:gh:`3233` by `Vasco Diogo`_)
-- :func:`~plotting.plot_roi` failed before when used with the "contours" view type and passing a list of cut coordinates in display mode "x", "y" or "z"; this has been corrected (:gh:`3241` by `Jerome Dockes`_).
-- :func:`~plotting.plot_markers` can now plot a single scatter point (:gh:`3255` by `Caglar Cakan`_).
-- Fix title display for :func:`~plotting.plot_surf_stat_map`. The ``title`` argument does not set the figure title anymore but the axis title. (:gh:`3220` by `Raphael Meudec`).
-- :func:`~surface.load_surf_mesh` loaded FreeSurfer specific surface files (e.g. `.pial`) with a shift in the coordinates. This is fixed by adding the c_ras coordinates to the mesh coordinates (:gh:`3235` by `Yasmin Mzayek`_).
-- Function ``nilearn.glm.second_level.second_level._check_second_level_input`` now raises an error when ``flm_object`` argument is ``False`` and ``second_level_input`` is a list of :class:`~glm.first_level.FirstLevelModel` (:gh:`3283` by `Matthieu Joulot`_).
-- Function :func:`~image.resample_img` now warns the user if the provided image has an ``sform`` code equal to 0 or None  (:gh:`3284` by `Matthieu Joulot`_).
-- Fix usage of ``scipy.stats.gamma.pdf`` in ``_gamma_difference_hrf`` function under ``nilearn/glm/first_level/hemodynamic_models.py``, which resulted in slight distortion of HRF (:gh:`3297` by `Kun CHEN`_).
-- Fix bug introduced due to a fix in the pre-release version of scipy (``1.9.0rc1``) which now enforces that elements of a band-pass filter must meet condition ``Wn[0] < Wn[1]``.
-  Now if band-pass elements are equal :func:`~nilearn.signal.butterworth` returns an unfiltered signal with a warning (:gh:`3293` by `Yasmin Mzayek`_).
-- The parameter ``alpha`` is now correctly passed to :func:`~plotting.plot_glass_brain` in :func:`~plotting.plot_connectome` (:gh:`3306` by `Koen Helwegen`_).
-- Fix plotting of background image in :func:`~nilearn.plotting.view_img` when the background is not the MNI template (:gh:`3312` by `Jerome Dockes`_).
-- Fix the typographic error on the page :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_adhd_dmn.py` (:gh:`3337` by `Sachin Patalasingh`_).
 
 Enhancements
 ------------
-
-- Add `sample_masks` to :meth:`~glm.first_level.FirstLevelModel.fit` for censoring time points (:gh:`3193` by `Hao-Ting Wang`_).
-- Function :func:`~glm.first_level.run_glm` and class :class:`~glm.first_level.FirstLevelModel` now accept a ``random_state`` parameter, which allows users to seed the ``KMeans`` cluster model used to estimate AR coefficients. (:gh:`3185` by `Sami Jawhar`_).
-- Conform seeding and docstrings in module ``_utils.data_gen`` (:gh:`3262` by `Yasmin Mzayek`_).
-- Docstrings of module :mod:`~nilearn.glm.second_level` were improved (:gh:`3030` by `Nicolas Gensollen`_).
-- In :func:`~reporting.get_clusters_table`, when the center of mass of a binary cluster falls outside the cluster, report the nearest within-cluster voxel instead (:gh:`3292` by `Connor Lane`_).
-- Add ``n_elements_`` attribute to masker classes (:gh:`3311` by `Taylor Salo`_).
-- Functions expecting string filesystem paths now also accept path-like objects (:gh:`3300` by `Yasmin Mzayek`_).
-- Contributing guidelines now include a recommendation to run flake8 locally on the branch diff with main (:gh:`3317` by `Yasmin Mzayek`_).
-- Improvements to :func:`~mass_univariate.permuted_ols` and :func:`~glm.second_level.non_parametric_inference` with :term:`TFCE` statistic runtime (:gh:`3333` by `Sage Hahn`_).
-- :class:`~maskers.NiftiLabelsMasker` now accepts 1-dimensional arrays in its :meth:`~maskers.NiftiLabelsMasker.inverse_transform` method (:gh:`3322` by `Taylor Salo`_).
 
 Changes
 -------

@@ -16,12 +16,6 @@ import sys
 #
 docdict = dict()
 
-NILEARN_LINKS = {"landing_page": "http://nilearn.github.io"}
-NILEARN_LINKS["input_output"] = (
-    "{}/manipulating_images/input_output.html".format(
-        NILEARN_LINKS["landing_page"])
-)
-
 # Verbose
 verbose = """
 verbose : :obj:`int`, optional
@@ -306,14 +300,14 @@ docdict['n_jobs_all'] = n_jobs.format("-1")
 # img
 docdict['img'] = """
 img : Niimg-like object
-    See `input-output <%(input_output)s>`_.
-""" % NILEARN_LINKS
+    See :ref:`extracting_data`.
+"""
 
 # imgs
 docdict['imgs'] = """
 imgs : :obj:`list` of Niimg-like objects
-    See `input-output <%(input_output)s>`_.
-""" % NILEARN_LINKS
+    See :ref:`extracting_data`.
+"""
 
 # cut_coords
 docdict['cut_coords'] = """
@@ -457,9 +451,9 @@ cbar_tick_format : :obj:`str`, optional
 # bg_img
 docdict['bg_img'] = """
 bg_img : Niimg-like object, optional
-    See `input_output <%(input_output)s>`_.
+    See :ref:`extracting_data`.
     The background image to plot on top of.
-""" % NILEARN_LINKS
+"""
 
 # vmin
 docdict['vmin'] = """

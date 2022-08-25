@@ -6,8 +6,9 @@ Glossary
 The Glossary provides short definitions of neuro-imaging concepts as well
 as Nilearn specific vocabulary.
 
-If you wish to add a missing term, please `create a new issue`_ or
-`open a Pull Request`_.
+If you wish to add a missing term, please
+:nilearn-gh:`create an issue <issues/new/choose>` or
+:nilearn-gh:`open a Pull Request <compare>`.
 
 .. glossary::
     :sorted:
@@ -19,7 +20,7 @@ If you wish to add a missing term, please `create a new issue`_ or
         among means.
 
     AUC
-        `Area under the curve`_.
+        :sklearn:`Area under the curve <modules/model_evaluation.html#roc-metrics>`.
 
     Beta
         See :term:`Parameter estimate`.
@@ -47,8 +48,8 @@ If you wish to add a missing term, please `create a new issue`_ or
         of different treatments.
 
     Decoding
-        `Decoding`_ consists in predicting, from brain images, the conditions
-        associated to trial.
+        :ref:`Decoding <decoding_intro>` consists in predicting, from brain
+        images, the conditions associated to trial.
 
     Deterministic atlas
         A deterministic atlas is a hard parcellation of the brain into
@@ -139,8 +140,8 @@ If you wish to add a missing term, please `create a new issue`_ or
         patterns in two or more regions.
 
     functional connectome
-        A `functional connectome`_ is a set of connections representing brain
-        interactions between regions.
+        A :ref:`functional connectome <functional_connectomes>` is a set of
+        connections representing brain interactions between regions.
 
     FWER correction
         `Family-wise error rate`_ is the probability of making one or more
@@ -232,7 +233,7 @@ If you wish to add a missing term, please `create a new issue`_ or
         (TPR) against the false positive rate (FPR) at various threshold settings.
 
     Searchlight
-        `Searchlight analysis`_ consists of scanning the brain with a searchlight.
+        :ref:`Searchlight analysis <searchlight>` consists of scanning the brain with a searchlight.
         That is, a ball of given radius is scanned across the brain volume and the
         prediction accuracy of a classifier trained on the corresponding voxels is measured.
 
@@ -241,8 +242,8 @@ If you wish to add a missing term, please `create a new issue`_ or
         of a given signal to the level of the background noise.
 
     SpaceNet
-        `SpaceNet`_ is a decoder implementing spatial penalties which improve brain
-        decoding power as well as decoder maps.
+        :ref:`SpaceNet <space_net>` is a decoder implementing spatial penalties
+        which improve brain decoding power as well as decoder maps.
 
     SPM
         `Statistical Parametric Mapping`_ is a statistical technique for examining
@@ -276,8 +277,9 @@ If you wish to add a missing term, please `create a new issue`_ or
         (e.g., schizophrenia versus healthy) from brain images.
 
     SVM
-        `Support vector machines`_ are a set of :term:`supervised learning` methods used
-        for :term:`classification`, :term:`regression` and outliers detection.
+        :sklearn:`Support vector machines <modules/svm.html>` are a set of
+        :term:`supervised learning` methods used for :term:`classification`,
+        :term:`regression` and outliers detection.
 
     TFCE
         Threshold-free cluster enhancement is a voxel-level metric that combines signal
@@ -318,17 +320,8 @@ If you wish to add a missing term, please `create a new issue`_ or
 
 .. LINKS
 
-.. _`create a new issue`:
-    https://github.com/nilearn/nilearn/issues/new/choose
-
-.. _`open a Pull Request`:
-    https://github.com/nilearn/nilearn/compare
-
 .. _`Analysis of variance`:
     https://en.wikipedia.org/wiki/Analysis_of_variance
-
-.. _`Area under the curve`:
-    https://scikit-learn.org/stable/modules/model_evaluation.html#roc-metrics
 
 .. _`Brain Imaging Data Structure`:
     https://bids.neuroimaging.io/
@@ -341,9 +334,6 @@ If you wish to add a missing term, please `create a new issue`_ or
 
 .. _`contrast`:
     https://en.wikipedia.org/wiki/Contrast_(statistics)
-
-.. _`Decoding`:
-    https://nilearn.github.io/stable/decoding/decoding_intro.html
 
 .. _`Dictionary learning`:
     https://en.wikipedia.org/wiki/Sparse_dictionary_learning
@@ -368,9 +358,6 @@ If you wish to add a missing term, please `create a new issue`_ or
 
 .. _`FREM`:
     https://www.sciencedirect.com/science/article/abs/pii/S1053811917308182
-
-.. _`functional connectome`:
-    https://nilearn.github.io/stable/connectivity/functional_connectomes.html
 
 .. _`FWHM`:
     https://en.wikipedia.org/wiki/Full_width_at_half_maximum
@@ -402,17 +389,11 @@ If you wish to add a missing term, please `create a new issue`_ or
 .. _`Resting state`:
     https://en.wikipedia.org/wiki/Resting_state_fMRI
 
-.. _`Searchlight analysis`:
-    https://nilearn.github.io/stable/decoding/searchlight.html
-
 .. _`SNR`:
     https://en.wikipedia.org/wiki/Signal-to-noise_ratio
 
 .. _`software`:
     https://www.fil.ion.ucl.ac.uk/spm/software/
-
-.. _`SpaceNet`:
-    https://nilearn.github.io/stable/decoding/space_net.html
 
 .. _`Statistical Parametric Mapping`:
     https://en.wikipedia.org/wiki/Statistical_parametric_mapping
@@ -422,9 +403,6 @@ If you wish to add a missing term, please `create a new issue`_ or
 
 .. _`Unsupervised learning`:
     https://en.wikipedia.org/wiki/Unsupervised_learning
-
-.. _`Support vector machines`:
-    https://scikit-learn.org/stable/modules/svm.html
 
 .. _`Voxel-Based Morphometry`:
     https://en.wikipedia.org/wiki/Voxel-based_morphometry

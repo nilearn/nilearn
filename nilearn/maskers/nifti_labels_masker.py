@@ -43,7 +43,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
     Parameters
     ----------
     labels_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Region definitions, as one image of labels.
 
     labels : :obj:`list` of :obj:`str`, optional
@@ -59,7 +59,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         Default=0.
 
     mask_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
     %(smoothing_fwhm)s
     standardize : {False, True, 'zscore', 'psc'}, optional
@@ -148,7 +148,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         This is equivalent to the number of unique values in the mask image,
         ignoring the background value.
 
-        .. versionadded:: 0.9.2.dev
+        .. versionadded:: 0.9.2
 
     See also
     --------
@@ -460,7 +460,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         Parameters
         ----------
         imgs : 3D/4D Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             Images to process.
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
@@ -502,7 +502,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         Parameters
         ----------
         imgs : 3D/4D Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             Images to process.
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.

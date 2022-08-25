@@ -12,7 +12,7 @@ This section describes how the project is organized.
 Issues
 ------
 
-Nilearn uses `issues <https://github.com/nilearn/nilearn/issues>`_ for
+Nilearn uses :nilearn-gh:`issues <issues>` for
 tracking bugs, requesting potential features, and holding project discussions.
 
 .. _issue_labels:
@@ -20,12 +20,11 @@ tracking bugs, requesting potential features, and holding project discussions.
 Labels
 ......
 
-`Labels <https://github.com/nilearn/nilearn/labels>`_ are useful to
-quickly sort `issues <https://github.com/nilearn/nilearn/issues>`_
+:nilearn-gh:`Labels <labels>` are useful to
+quickly sort :nilearn-gh:`issues <issues>`
 and easily find what you are looking for in the issue tracker.
 
-When `creating an issue
-<https://github.com/nilearn/nilearn/issues/new/choose>`_, the user
+When :nilearn-gh:`creating an issue <issues/new/choose>`, the user
 is responsible for a very basic labeling categorizing the issue:
 
 	- |Bug| for bug reports.
@@ -72,7 +71,7 @@ Other labels can be used to describe further the topic of the issue:
 	- |Maintenance| This issue is related to maintenance work.
 	- |Plotting| The issue is related to plotting functionalities.
 	- |Testing| The issue is related to testing.
-	- |Usage| This issue is a usage question and should have been posted on `neurostars <https://neurostars.org/>`_.
+	- |Usage| This issue is a usage question and should have been posted on :neurostars:`neurostars <>`.
 
 Finally, we use the following labels to indicate how the work on the issue
 is going:
@@ -118,7 +117,7 @@ Usually we expect the issue's author to close the issue, but there are several
 possible reasons for a community member to close an issue:
 
 	- The issue has been solved: kindly asked the author whether the issue can be closed. In the absence of reply, close the issue after two weeks.
-	- The issue is a usage question: label the issue with |Usage| and kindly redirect the author to `neurostars <https://neurostars.org/>`_. Close the issue afterwards.
+	- The issue is a usage question: label the issue with |Usage| and kindly redirect the author to :neurostars:`neurostars <>`. Close the issue afterwards.
 	- The issue has no recent activity (no messages in the last three months): ping the author to see if the issue is still relevant. In the absence of reply, label the issue with |stalled| and close it after 2 weeks.
 
 .. _pull request:
@@ -128,8 +127,8 @@ Pull Requests
 
 We welcome pull requests from all community members, if they follow the
 :ref:`contribution_guidelines` inspired from scikit learn conventions. (More
-details on their process are available `here
-<https://scikit-learn.org/stable/developers/contributing.html#contributing-code>`_)
+details on their process are available
+:sklearn:`here <developers/contributing.html#contributing-code>`).
 
 
 How to make a release?
@@ -313,7 +312,7 @@ We are now ready to upload to `Pypi`. Note that you will need to have an `accoun
 
 Once the upload is completed, make sure everything looks good on `Pypi <https://pypi.org/project/nilearn/>`_. Otherwise you will probably have to fix the issue and start over a new release with the patch number incremented.
 
-At this point, we need to upload the binaries to GitHub and link them to the tag. To do so, go to the `Nilearn GitHub page <https://github.com/nilearn/nilearn/tags>`_ under the "Releases" tab, and edit the `x.y.z` tag by providing a description, and upload the distributions we just created (you can just drag and drop the files).
+At this point, we need to upload the binaries to GitHub and link them to the tag. To do so, go to the :nilearn-gh:`Nilearn GitHub page <tags>` under the "Releases" tab, and edit the `x.y.z` tag by providing a description, and upload the distributions we just created (you can just drag and drop the files).
 
 
 Build and deploy the documentation

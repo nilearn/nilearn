@@ -107,7 +107,7 @@ def make_glm_report(model,
         using contrast names.
 
     bg_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The background image for mask and stat maps to be plotted on upon.
         To turn off background image, just pass "bg_img=None".
         Default='MNI152TEMPLATE'.
