@@ -19,6 +19,7 @@
    signals_to_img_labels
    img_to_signals_maps
    signals_to_img_maps
+   recursive_neighbor_agglomeration
 
 **Classes**:
 
