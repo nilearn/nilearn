@@ -1147,7 +1147,7 @@ def plot_connectome(adjacency_matrix, node_coords,
     nilearn.plotting.find_parcellation_cut_coords : Extraction of node
         coords on brain parcellations.
     nilearn.plotting.find_probabilistic_atlas_cut_coords : Extraction of
-        node coords on brain probabilisitic atlases.
+        node coords on brain probabilistic atlases.
 
     """
     display = plot_glass_brain(None,
