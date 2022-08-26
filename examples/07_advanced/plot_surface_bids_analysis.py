@@ -105,7 +105,7 @@ for (fmri_img, confound, events) in zip(
     z_score = contrast.z_score()
     z_scores_right.append(z_score)
 
-    # Do the left hemipshere exactly in the same way.
+    # Do the left hemisphere exactly the same way.
     texture = surface.vol_to_surf(fmri_img, fsaverage.pial_left)
     labels, estimates = run_glm(texture.T, design_matrix.values)
     contrast = compute_contrast(labels, estimates, contrast_values,
@@ -134,7 +134,7 @@ z_val_left = norm.isf(pval_left)
 z_val_right = norm.isf(pval_right)
 
 ############################################################################
-# Plot the resulting maps, at first on the left hemipshere.
+# Plot the resulting maps, at first on the left hemisphere.
 from nilearn import plotting
 plotting.plot_surf_stat_map(
     fsaverage.infl_left, z_val_left, hemi='left',

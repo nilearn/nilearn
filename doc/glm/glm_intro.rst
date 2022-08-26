@@ -51,7 +51,7 @@ Correlations are computed separately at each voxel and a correlation map can be 
 
 .. note::
 
-    In this approach, hypothesis tests are conducted in parallel at many voxels, increasing the liklelihood of False Positives. This is known as the Problem of `Multiple Comparisons`_. Some common strategies for dealing with this are discussed later in this page. This issue can be addressed in nilearn using permutations tests.
+    In this approach, hypothesis tests are conducted in parallel at many voxels, increasing the likelihood of False Positives. This is known as the Problem of `Multiple Comparisons`_. Some common strategies for dealing with this are discussed later in this page. This issue can be addressed in nilearn using permutations tests.
 
 
 .. figure:: ../images/example-spmZ_map.png
