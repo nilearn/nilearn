@@ -802,6 +802,7 @@ class FirstLevelModel(BaseGLM):
 
 
 def first_level_from_bids(dataset_path, task_label, space_label=None,
+                          sub_labels=None,
                           img_filters=None, t_r=None, slice_time_ref=0.,
                           hrf_model='glover', drift_model='cosine',
                           high_pass=.01, drift_order=1, fir_delays=[0],
@@ -831,6 +832,10 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     space_label : str, optional
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like _space-<space_label>_.
+    
+    sub_labels : list of str, optional
+        Specifies the subset of subject labels to model.
+        If 'None', will model all subjects in the dataset.
 
     img_filters : list of tuples (str, str), optional
         Filters are of the form (field, label). Only one filter per field
@@ -878,6 +883,9 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     if space_label is not None and not isinstance(space_label, str):
         raise TypeError('space_label must be a string, instead %s was given' %
                         type(space_label))
+    if not isinstance(sub_labels, list):
+        raise TypeError('sub_labels must be a list, instead %s was given' %
+                        type(sub_labels))
     if not isinstance(img_filters, list):
         raise TypeError('img_filters must be a list, instead %s was given' %
                         type(img_filters))
@@ -944,9 +952,12 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                      img_specs[0])
 
     # Infer subjects in dataset
-    sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*/'))
-    sub_labels = [os.path.basename(s[:-1]).split('-')[1] for s in sub_folders]
-    sub_labels = sorted(list(set(sub_labels)))
+    if sub_labels:
+        sub_folders = [os.path.join(derivatives_path, 'sub-%s/'%s) for s in sub_labels]
+    else:
+        sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*/'))
+        sub_labels = [os.path.basename(s[:-1]).split('-')[1] for s in sub_folders]
+        sub_labels = sorted(list(set(sub_labels)))
 
     # Build fit_kwargs dictionaries to pass to their respective models fit
     # Events and confounds files must match number of imgs (runs)
