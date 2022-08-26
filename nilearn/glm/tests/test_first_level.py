@@ -650,9 +650,15 @@ def test_first_level_from_bids():
                                   space_label=42)
 
         with pytest.raises(TypeError,
+                           match="sub_labels must be a list"):
+            first_level_from_bids(bids_path, 'main',
+                                  sub_labels="foo")
+
+        with pytest.raises(TypeError,
                            match="img_filters must be a list"):
             first_level_from_bids(bids_path, 'main',
                                   img_filters="foo")
+
 
         with pytest.raises(TypeError,
                            match="filters in img"):
