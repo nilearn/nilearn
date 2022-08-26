@@ -134,7 +134,7 @@
 
 .. _Loic Tetrel: https://ltetrel.github.io/
 
-.._Luz Paz: https://github.com/luzpaz
+.. _Luz Paz: https://github.com/luzpaz
 
 .. _Manon Pietrantoni: https://github.com/ManonP38
 
