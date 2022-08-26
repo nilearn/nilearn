@@ -52,7 +52,7 @@ important to address with statistical analysis of fMRI data. Nilearn provides pa
 to address this issue.
 
 Refer to the example :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_thresholding.py` for a guide
-to applying FPR, FDR and FWER corrections.
+to applying :term:`FPR<FPR correction>`, :term:`FDR<FDR correction>`, and :term:`FWER<FWER correction>` corrections.
 These corrections are applied using the :func:`nilearn.glm.threshold_stats_img` function.
 
 You can additionally employ a non-parametric correction procedure using either
