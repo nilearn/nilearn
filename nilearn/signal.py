@@ -16,7 +16,8 @@ from sklearn.utils import gen_even_slices, as_float_array
 
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
 from ._utils import fill_doc
-
+from nilearn._utils.glm import _check_run_sample_masks
+from ._utils import stringify_path
 
 availiable_filters = ['butterworth',
                       'cosine'
@@ -340,6 +341,20 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
 
     if len(critical_freq) == 2:
         btype = 'band'
+        # Inappropriate parameter input might lead to coercion of both
+        # elements of critical_freq to a value just below 1.
+        # Scipy fix now enforces that critical frequencies cannot be equal.
+        # See https://github.com/scipy/scipy/pull/15886. If this is the case,
+        # we return the signals unfiltered.
+        if critical_freq[0] == critical_freq[1]:
+            warnings.warn(
+                'Signals are returned unfiltered because band-pass critical '
+                'frequencies are equal. Please check that inputs for '
+                'sampling_rate, low_pass, and high_pass are valid.')
+            if copy:
+                return signals.copy()
+            else:
+                return signals
     else:
         critical_freq = critical_freq[0]
 
@@ -397,7 +412,7 @@ def high_variance_confounds(series, n_confounds=5, percentile=2.,
     Notes
     -----
     This method is related to what has been published in the literature
-    as 'CompCor' :footcite:`BEHZADI200790`.
+    as 'CompCor' :footcite:`Behzadi2007`.
 
     The implemented algorithm does the following:
 
@@ -463,7 +478,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
 
     Filtering is only meaningful on evenly-sampled signals.
 
-    According to :footcite:`Lindquist407676`, removal of confounds will be done
+    According to :footcite:`Lindquist2018`, removal of confounds will be done
     orthogonally to temporal filters (low- and/or high-pass filters), if both
     are specified.
 
@@ -478,10 +493,10 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         cleaned independently. Must be a 1D array of n_samples elements.
         Default is None.
 
-    confounds : :class:`numpy.ndarray`, :obj:`str`,\
-    :class:`pandas.DataFrame` or :obj:`list` of
-        Confounds timeseries. Shape must be
-        (instant number, confound number), or just (instant number,)
+    confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`,\
+    :class:`pandas.DataFrame` or :obj:`list` of confounds timeseries.
+        Shape must be (instant number, confound number), or just
+        (instant number,).
         The number of time instants in ``signals`` and ``confounds`` must be
         identical (i.e. ``signals.shape[0] == confounds.shape[0]``).
         If a string is provided, it is assumed to be the name of a csv file
@@ -546,7 +561,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     of the signal space. See :footcite:`Friston1994`.
 
     Orthogonalization between temporal filters and confound removal is based on
-    suggestions in :footcite:`Lindquist407676`.
+    suggestions in :footcite:`Lindquist2018`.
 
     References
     ----------
@@ -557,6 +572,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     nilearn.image.clean_img
     """
     # Raise warning for some parameter combinations when confounds present
+    confounds = stringify_path(confounds)
     if confounds is not None:
         _check_signal_parameters(detrend, standardize_confounds)
 
@@ -702,18 +718,7 @@ def _sanitize_sample_mask(n_time, n_runs, runs, sample_mask):
     """Check sample_mask is the right data type and matches the run index."""
     if sample_mask is None:
         return sample_mask
-    if not isinstance(sample_mask, (list, tuple, np.ndarray)):
-        raise TypeError(
-            "sample_mask has an unhandled type: %s" % sample_mask.__class__
-        )
-    if not isinstance(sample_mask, (list, tuple)):
-        sample_mask = (sample_mask, )
-
-    if len(sample_mask) != n_runs:
-        raise ValueError(
-            "Number of sample_mask ({}) not matching "
-            "number of runs ({}).".format(len(sample_mask), n_runs)
-        )
+    sample_mask = _check_run_sample_masks(n_runs, sample_mask)
 
     if runs is None:
         runs = np.zeros(n_time)

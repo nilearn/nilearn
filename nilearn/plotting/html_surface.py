@@ -3,7 +3,7 @@ import collections.abc
 
 import numpy as np
 import matplotlib as mpl
-from matplotlib import cm as mpl_cm
+import matplotlib.pyplot as plt
 
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils import fill_doc
@@ -156,7 +156,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     Parameters
     ----------
     stat_map_img : Niimg-like object, 3D
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
 
     surf_mesh : str or dict, optional.
         If a string, it should be one of the following values:
@@ -219,7 +219,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         :func:`nilearn.surface.vol_to_surf` when extracting a surface from
         the input image. See the function documentation for details.This
         parameter is especially useful when plotting an atlas. See
-        https://nilearn.github.io/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html
+        https://nilearn.github.io/stable/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html
 
     Returns
     -------

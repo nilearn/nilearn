@@ -4,18 +4,19 @@ See http://nilearn.github.io/manipulating_images/input_output.html
 """
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
 # License: simplified BSD
-
 import warnings
 from nilearn.version import _compare_version
 import numbers
 
 import numpy as np
 import scipy
-from scipy import ndimage, linalg
+from scipy import linalg
+from scipy.ndimage import find_objects, affine_transform
 
 from .image import crop_img
 from .. import _utils
 from .._utils.niimg import _get_data
+from .._utils import stringify_path
 
 ###############################################################################
 # Affine utils
@@ -193,7 +194,7 @@ def get_mask_bounds(img):
         Parameters
         ----------
         img : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             The image to inspect. Zero values are considered as
             background.
 
@@ -215,7 +216,7 @@ def get_mask_bounds(img):
     mask = _utils.numpy_conversions._asarray(_get_data(img), dtype=bool)
     affine = img.affine
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
-    slices = ndimage.find_objects(mask)
+    slices = find_objects(mask.astype(int))
     if len(slices) == 0:
         warnings.warn("empty mask", stacklevel=2)
     else:
@@ -280,12 +281,14 @@ def _resample_one_img(data, A, b, target_shape,
         if _compare_version(scipy.__version__, '>=', '0.18'):
             warnings.simplefilter("ignore", UserWarning)
         # The resampling itself
-        ndimage.affine_transform(data, A,
-                                 offset=b,
-                                 output_shape=target_shape,
-                                 output=out,
-                                 cval=fill_value,
-                                 order=interpolation_order)
+        affine_transform(
+            data, A,
+            offset=b,
+            output_shape=target_shape,
+            output=out,
+            cval=fill_value,
+            order=interpolation_order,
+        )
 
     if has_not_finite:
         # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
@@ -293,10 +296,12 @@ def _resample_one_img(data, A, b, target_shape,
             if _compare_version(scipy.__version__, '>=', '0.18'):
                 warnings.simplefilter("ignore", UserWarning)
             # We need to resample the mask of not_finite values
-            not_finite = ndimage.affine_transform(not_finite, A,
-                                                offset=b,
-                                                output_shape=target_shape,
-                                                order=0)
+            not_finite = affine_transform(
+                not_finite, A,
+                offset=b,
+                output_shape=target_shape,
+                order=0,
+            )
         out[not_finite] = np.nan
     return out
 
@@ -309,7 +314,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     Parameters
     ----------
     img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Image(s) to resample.
 
     target_affine : numpy.ndarray, optional
@@ -430,6 +435,7 @@ def resample_img(img, target_affine=None, target_shape=None,
                    "or 'nearest' but it was set to '{0}'").format(interpolation)
         raise ValueError(message)
 
+    img = stringify_path(img)
     if isinstance(img, str):
         # Avoid a useless copy
         input_img_is_string = True
@@ -439,6 +445,14 @@ def resample_img(img, target_affine=None, target_shape=None,
     img = _utils.check_niimg(img)
     shape = img.shape
     affine = img.affine
+
+    # If later on we want to impute sform using qform add this condition
+    # see : https://github.com/nilearn/nilearn/issues/3168#issuecomment-1159447771 # noqa:E501
+    sform, sform_code = img.get_sform(coded=True)
+    if not sform_code:
+        warnings.warn("The provided image has no sform in its header. "
+                      "Please check the provided file. "
+                      "Results may not be as expected.")
 
     # noop cases
     if target_affine is None and target_shape is None:
@@ -624,11 +638,11 @@ def resample_to_img(source_img, target_img,
     Parameters
     ----------
     source_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Image(s) to resample.
 
     target_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Reference image taken for resampling.
 
     interpolation : str, optional
@@ -693,7 +707,7 @@ def reorder_img(img, resample=None):
     Parameters
     -----------
     img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Image to reorder.
 
     resample : None or string in {'continuous', 'linear', 'nearest'}, optional

@@ -259,9 +259,8 @@ def test_plot_surf(engine, tmp_path):
     display = plot_surf(mesh, bg_map=bg, title='Test title',
                         engine=engine)
     if engine == 'matplotlib':
-        assert display._suptitle._text == 'Test title'
-        assert display._suptitle._x == .5
-        assert display._suptitle._y == .95
+        assert len(display.axes) == 1
+        assert display.axes[0].title._text == 'Test title'
 
 
 def test_plot_surf_avg_method():
@@ -289,7 +288,7 @@ def test_plot_surf_avg_method():
         vmax = np.max(agg_faces)
         agg_faces -= vmin
         agg_faces /= (vmax - vmin)
-        cmap = plt.cm.get_cmap(plt.rcParamsDefault['image.cmap'])
+        cmap = plt.get_cmap(plt.rcParamsDefault['image.cmap'])
         assert_array_equal(
             cmap(agg_faces),
             display._axstack.as_list()[0].collections[0]._facecolors
@@ -438,9 +437,7 @@ def test_plot_surf_stat_map(engine):
     # Plot with title
     display = plot_surf_stat_map(mesh, stat_map=data, bg_map=bg,
                                  title="Stat map title")
-    assert display._suptitle._text == "Stat map title"
-    assert display._suptitle._x == .5
-    assert display._suptitle._y == .95
+    assert display.axes[0].title._text == "Stat map title"
 
     # Apply threshold
     plot_surf_stat_map(mesh, stat_map=data, bg_map=bg,
@@ -785,16 +782,16 @@ def test_plot_surf_contours():
                                  labels=['1', '2'], colors=['r', 'g'],
                                  legend=True, title='title',
                                  figure=fig)
-    assert display._suptitle._text == 'title'
-    assert display._suptitle._x == .3
-    assert display._suptitle._y == .95
+    # Non-regression assertion: we switched from _suptitle to axis title
+    assert display._suptitle is None
+    assert display.axes[0].get_title() == "title"
     fig = plot_surf(mesh, title='title 2')
     display = plot_surf_contours(mesh, parcellation, levels=[1, 2],
                                  labels=['1', '2'], colors=['r', 'g'],
                                  legend=True, figure=fig)
-    assert display._suptitle._text == 'title 2'
-    assert display._suptitle._x == .3
-    assert display._suptitle._y == .95
+    # Non-regression assertion: we switched from _suptitle to axis title
+    assert display._suptitle is None
+    assert display.axes[0].get_title() == "title 2"
     with tempfile.NamedTemporaryFile() as tmp_file:
         plot_surf_contours(mesh, parcellation, output_file=tmp_file.name)
     plt.close()

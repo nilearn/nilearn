@@ -21,14 +21,17 @@ We demonstrate how to build such an **encoding model** in nilearn, predicting
 <http://www.cell.com/neuron/abstract/S0896-6273%2808%2900958-6>`_.
 
 Participants were shown images, which consisted of random 10x10 binary
-(either black or white) pixels, and the corresponding fMRI activity was
-recorded. We will try to predict the activity in each voxel
+(either black or white) pixels, and the corresponding :term:`fMRI` activity
+was recorded. We will try to predict the activity in each :term:`voxel`
 from the binary pixel-values of the presented images. Then we extract the
-receptive fields for a set of voxels to see which pixel location a voxel
-is most sensitive to.
+receptive fields for a set of voxels to see which pixel location a
+:term:`voxel` is most sensitive to.
 
 See also :doc:`plot_miyawaki_reconstruction` for a decoding
 approach for the same dataset.
+
+.. include:: ../../../examples/masker_note.rst
+
 """
 
 ##############################################################################

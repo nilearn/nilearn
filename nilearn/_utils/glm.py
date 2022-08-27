@@ -12,6 +12,8 @@ import pandas as pd
 import scipy.linalg as spl
 from scipy.stats import norm
 
+from .helpers import stringify_path
+
 
 def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
     """Check length match of two given lists to raise error if necessary"""
@@ -53,6 +55,7 @@ def _check_and_load_tables(tables_, var_name):
     """Check tables can be loaded in DataFrame to raise error if necessary"""
     tables = []
     for table_idx, table in enumerate(tables_):
+        table = stringify_path(table)
         if isinstance(table, str):
             loaded = _read_events_table(table)
             tables.append(loaded)
@@ -330,3 +333,18 @@ def positive_reciprocal(X):
     """
     X = np.asarray(X)
     return np.where(X <= 0, 0, 1. / X)
+
+
+def _check_run_sample_masks(n_runs, sample_masks):
+    if not isinstance(sample_masks, (list, tuple, np.ndarray)):
+        raise TypeError(
+            f"sample_mask has an unhandled type: {sample_masks.__class__}"
+        )
+    if not isinstance(sample_masks, (list, tuple)):
+        sample_masks = (sample_masks, )
+    if len(sample_masks) != n_runs:
+        raise ValueError(
+            f"Number of sample_mask ({len(sample_masks)}) not matching "
+            f"number of runs ({n_runs})."
+        )
+    return sample_masks

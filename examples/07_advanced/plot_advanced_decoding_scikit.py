@@ -16,9 +16,7 @@ face and cat images.
       and Objects in Ventral Temporal Cortex", Science vol 293 (2001), p
       2425.-2430.
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
+.. include:: ../../../examples/masker_note.rst
 
 """
 

@@ -64,7 +64,7 @@ These conditions are presented as string into a CSV file. The `pandas
 <http://pandas.pydata.org/>`__ function
 `read_csv` is very useful to load this kind of data.
 
-.. literalinclude:: ../../examples/plot_decoding_tutorial.py
+.. literalinclude:: ../../examples/00_tutorials/plot_decoding_tutorial.py
     :start-after: # We use pandas to load them in an array.
     :end-before: ###########################################################################
 
@@ -76,7 +76,7 @@ These conditions are presented as string into a CSV file. The `pandas
 For example, we will now consider only the conditions *cat* and *face* from our dataset.
 This can be done as follows:
 
-.. literalinclude:: ../../examples/plot_decoding_tutorial.py
+.. literalinclude:: ../../examples/00_tutorials/plot_decoding_tutorial.py
     :start-after: # The input data will become much smaller (i.e. :term:`fmri<fMRI>` signal is shorter):
     :end-before: ###########################################################################
 
@@ -121,8 +121,8 @@ We use masking to convert 4D data (i.e. 3D volume over time) into 2D data
 Applying a mask
 ................
 
-.. figure:: ../auto_examples/images/sphx_glr_plot_decoding_tutorial_001.png
-    :target: ../auto_examples/plot_decoding_tutorial.html
+.. figure:: ../auto_examples/00_tutorials/images/sphx_glr_plot_decoding_tutorial_001.png
+    :target: ../auto_examples/00_tutorials/plot_decoding_tutorial.html
     :align: right
     :scale: 30%
 
@@ -134,6 +134,8 @@ provided with the Haxby dataset.
 The :class:`NiftiMasker` can be seen as a *tube* that transforms data
 from 4D images to 2D arrays, but first it needs to 'fit' this data in
 order to learn simple parameters from it, such as its shape:
+
+.. include:: ../../examples/masker_note.rst
 
 .. code-block:: python
 

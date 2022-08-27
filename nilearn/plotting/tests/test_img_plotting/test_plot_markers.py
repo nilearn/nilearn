@@ -66,7 +66,7 @@ def test_plot_markers_node_sizes_lyrz_display(node_size, coords):
 
 @pytest.mark.parametrize("cmap,vmin,vmax",
                          [('RdBu', 0, None),
-                          (matplotlib.cm.get_cmap('jet'), None, 5),
+                          (plt.get_cmap('jet'), None, 5),
                           (plt.cm.viridis_r, 2, 3)])
 def test_plot_markers_cmap(cmap, vmin, vmax, coords):
     """Smoke test for plot_markers with different cmaps."""
@@ -150,3 +150,9 @@ def test_plot_markers_threshold_errors(coords):
     with pytest.raises(ValueError,
                        match="Provided 'node_threshold' value"):
         plot_markers([1, 2, 2, 4], coords, node_threshold=5, display_mode='x')
+
+
+def test_plot_markers_single_node_value():
+    """Regression test for Issue #3253."""
+    plot_markers([1], [[1, 1, 1]])
+    plt.close()

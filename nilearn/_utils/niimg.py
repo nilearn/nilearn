@@ -14,6 +14,8 @@ import nibabel
 
 from pathlib import Path
 
+from .helpers import stringify_path
+
 
 def _get_data(img):
     # copy-pasted from https://github.com/nipy/nibabel/blob/de44a105c1267b07ef9e28f6c35b31f851d5a005/nibabel/dataobj_images.py#L204
@@ -108,7 +110,7 @@ def load_niimg(niimg, dtype=None):
     -----------
 
     niimg: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
         Image to load.
 
     dtype: {dtype, "auto"}
@@ -123,6 +125,7 @@ def load_niimg(niimg, dtype=None):
     """
     from ..image import new_img_like  # avoid circular imports
 
+    niimg = stringify_path(niimg)
     if isinstance(niimg, str):
         # data is a filename, we load it
         niimg = nibabel.load(niimg)
@@ -152,7 +155,7 @@ def _is_binary_niimg(niimg):
     Parameters
     ----------
     niimg: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
         Image to test.
 
     Returns

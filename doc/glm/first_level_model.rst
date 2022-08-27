@@ -13,11 +13,6 @@ First level models
   a set of predictors defined within the design matrix.
 
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
-
 HRF models
 ==========
 
@@ -46,7 +41,8 @@ using a :term:`BIDS`-compatible dataset or one of the nilearn dataset fetcher fu
 Refer to the examples below for usage under the different scenarios:
   * User-defined: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_design_matrix.py`
   * Using an OpenNEURO dataset: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_bids_features.py`
-  * Uing nilearn fetcher functions: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_spm_multimodal_faces.py`
+  * Using nilearn fetcher functions: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_spm_multimodal_faces.py`
+  * Advanced beta series models: :ref:`sphx_glr_auto_examples_07_advanced_plot_beta_series.py`
 
 To ascertain that the sequence of events provided to the first level model is accurate, Nilearn provides an
 event visualization function called :func:`nilearn.plotting.plot_event()`. Sample usage for this is available
@@ -94,8 +90,8 @@ The :class:`nilearn.glm.first_level.FirstLevelModel` class provides the tools to
 the fMRI data. The :func:`nilearn.glm.first_level.FirstLevelModel.fit()` function takes the fMRI data
 and design matrix as input and fits the GLM. Like other Nilearn functions,
 :func:`nilearn.glm.first_level.FirstLevelModel.fit()` accepts file names as input, but can also
-work with `NiftiImage objects <https://nipy.org/nibabel/nibabel_images.html>`_. More information about
-input formats is available `here <http://nilearn.github.io/manipulating_images/input_output.html#inputing-data-file-names-or-image-objects>`_ ::
+work with :nipy:`NiftiImage objects <nibabel/nibabel_images.html>`. More information about
+input formats is available :ref:`here <loading_data>` ::
 
   from nilearn.glm.first_level import FirstLevelModel
   fmri_glm = FirstLevelModel()
@@ -149,8 +145,8 @@ FistLevelModel is initialized with the `minimize_memory` flag set to `False`. ::
 Here, masker is an object of :class:`nilearn.maskers.NiftiSpheresMasker`. In the figure below,
 predicted (red) and observed (not red) timecourses of 6 voxels are shown.
 
-  .. image:: ../auto_examples/04_glm_first_level/images/sphx_glr_plot_predictions_residuals_002.png
-     :target: ../auto_examples/04_glm_first_level/plot_predictions_residuals.html
+.. image:: ../auto_examples/04_glm_first_level/images/sphx_glr_plot_predictions_residuals_002.png
+   :target: ../auto_examples/04_glm_first_level/plot_predictions_residuals.html
 
 In addition to the predicted timecourses, this flag also yields the residuals of the GLM. The residuals are
 useful to calculate the F and R-squared statistic. For more information refer to

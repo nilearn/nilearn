@@ -25,8 +25,9 @@ from sklearn.cluster import KMeans
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
 from nilearn._utils import fill_doc
 from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
-                                _check_run_tables)
+                                _check_run_tables, _check_run_sample_masks)
 from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils import stringify_path
 from nilearn.glm.contrasts import (_compute_fixed_effect_contrast,
                                    expression_to_contrast_vector)
 from nilearn.glm.first_level.design_matrix import \
@@ -101,7 +102,8 @@ def _yule_walker(x, order):
     return rho
 
 
-def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
+def run_glm(Y, X, noise_model='ar1', bins=100,
+            n_jobs=1, verbose=0, random_state=None):
     """ GLM fit for an fMRI data matrix
 
     Parameters
@@ -132,6 +134,12 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
 
     verbose : int, optional
         The verbosity level. Default=0.
+
+    random_state : int or numpy.random.RandomState, optional
+        Random state seed to sklearn.cluster.KMeans for autoregressive models
+        of order at least 2 ('ar(N)' with n >= 2). Default=None.
+
+        .. versionadded:: 0.9.1
 
     Returns
     -------
@@ -183,7 +191,8 @@ def run_glm(Y, X, noise_model='ar1', bins=100, n_jobs=1, verbose=0):
             labels = np.array([str(val) for val in ar_coef_])
         else:  # AR(N>1) case
             n_clusters = np.min([bins, Y.shape[1]])
-            kmeans = KMeans(n_clusters=n_clusters).fit(ar_coef_)
+            kmeans = KMeans(n_clusters=n_clusters,
+                            random_state=random_state).fit(ar_coef_)
             ar_coef_ = kmeans.cluster_centers_[kmeans.labels_]
 
             # Create a set of rounded values for the labels with _ between
@@ -273,7 +282,7 @@ class FirstLevelModel(BaseGLM):
         This parameter is passed to nilearn.image.resample_img.
         Please see the related documentation for details.
     %(smoothing_fwhm)s
-    memory : string, optional
+    memory : string or pathlib.Path, optional
         Path to the directory used to cache the masking process and the glm
         fit. By default, no caching is done.
         Creates instance of joblib.Memory.
@@ -322,6 +331,12 @@ class FirstLevelModel(BaseGLM):
         This id will be used to identify a `FirstLevelModel` when passed to
         a `SecondLevelModel` object.
 
+    random_state : int or numpy.random.RandomState, optional
+        Random state seed to sklearn.cluster.KMeans for autoregressive models
+        of order at least 2 ('ar(N)' with n >= 2). Default=None.
+
+        .. versionadded:: 0.9.1
+
     Attributes
     ----------
     labels_ : array of shape (n_voxels,),
@@ -339,13 +354,14 @@ class FirstLevelModel(BaseGLM):
     It may change in any future release of Nilearn.
 
     """
+
     def __init__(self, t_r=None, slice_time_ref=0., hrf_model='glover',
                  drift_model='cosine', high_pass=.01, drift_order=1,
                  fir_delays=[0], min_onset=-24, mask_img=None,
                  target_affine=None, target_shape=None, smoothing_fwhm=None,
                  memory=Memory(None), memory_level=1, standardize=False,
                  signal_scaling=0, noise_model='ar1', verbose=0, n_jobs=1,
-                 minimize_memory=True, subject_label=None):
+                 minimize_memory=True, subject_label=None, random_state=None):
         # design matrix parameters
         self.t_r = t_r
         self.slice_time_ref = slice_time_ref
@@ -360,6 +376,7 @@ class FirstLevelModel(BaseGLM):
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
+        memory = stringify_path(memory)
         if isinstance(memory, str):
             self.memory = Memory(memory)
         else:
@@ -383,6 +400,7 @@ class FirstLevelModel(BaseGLM):
         self.labels_ = None
         self.results_ = None
         self.subject_label = subject_label
+        self.random_state = random_state
 
     @property
     def scaling_axis(self):
@@ -392,7 +410,7 @@ class FirstLevelModel(BaseGLM):
         ))
         return self.signal_scaling
 
-    def fit(self, run_imgs, events=None, confounds=None,
+    def fit(self, run_imgs, events=None, confounds=None, sample_masks=None,
             design_matrices=None, bins=100):
         """Fit the GLM
 
@@ -420,6 +438,15 @@ class FirstLevelModel(BaseGLM):
             The number of rows must match the number of volumes in the
             respective run_img. Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
+
+        sample_masks : array_like, or list of array_like, optional
+            shape of array: (number of scans - number of volumes removed, )
+            Indices of retained volumes. Masks the niimgs along time/fourth
+            dimension to perform scrubbing (remove volumes with high motion)
+            and/or remove non-steady-state volumes.
+            Default=None.
+
+            .. versionadded:: 0.9.2
 
         design_matrices : pandas DataFrame or \
                           list of pandas DataFrames, optional
@@ -468,6 +495,9 @@ class FirstLevelModel(BaseGLM):
             events = _check_run_tables(run_imgs, events, 'events')
         if confounds is not None:
             confounds = _check_run_tables(run_imgs, confounds, 'confounds')
+
+        if sample_masks is not None:
+            sample_masks = _check_run_sample_masks(len(run_imgs), sample_masks)
 
         # Learn the mask
         if self.mask_img is False:
@@ -558,6 +588,13 @@ class FirstLevelModel(BaseGLM):
                                                         )
             else:
                 design = design_matrices[run_idx]
+
+            if sample_masks is not None:
+                sample_mask = sample_masks[run_idx]
+                design = design.iloc[sample_mask, :]
+            else:
+                sample_mask = None
+
             self.design_matrices_.append(design)
 
             # Mask and prepare data for GLM
@@ -565,7 +602,7 @@ class FirstLevelModel(BaseGLM):
                 t_masking = time.time()
                 sys.stderr.write('Starting masker computation \r')
 
-            Y = self.masker_.transform(run_img)
+            Y = self.masker_.transform(run_img, sample_mask=sample_mask)
             del run_img  # Delete unmasked image to save memory
 
             if self.verbose > 1:
@@ -586,7 +623,8 @@ class FirstLevelModel(BaseGLM):
                 sys.stderr.write('Performing GLM computation\r')
             labels, results = mem_glm(Y, design.values,
                                       noise_model=self.noise_model,
-                                      bins=bins, n_jobs=self.n_jobs)
+                                      bins=bins, n_jobs=self.n_jobs,
+                                      random_state=self.random_state)
             if self.verbose > 1:
                 t_glm = time.time() - t_glm
                 sys.stderr.write('GLM took %d seconds         \n' % t_glm)
@@ -630,7 +668,8 @@ class FirstLevelModel(BaseGLM):
 
         output_type : str, optional
             Type of the output map. Can be 'z_score', 'stat', 'p_value',
-            'effect_size', 'effect_variance' or 'all'.
+            :term:`'effect_size'<Parameter Estimate>`, 'effect_variance' or
+            'all'.
             Default='z_score'.
 
         Returns
@@ -702,8 +741,8 @@ class FirstLevelModel(BaseGLM):
         ----------
         attribute : str
             an attribute of a RegressionResults instance.
-            possible values include: resid, norm_resid, predicted,
-            SSE, r_square, MSE.
+            possible values include: residuals, normalized_residuals,
+            predicted, SSE, r_square, MSE.
 
         result_as_time_series : bool
             whether the RegressionResult attribute has a value

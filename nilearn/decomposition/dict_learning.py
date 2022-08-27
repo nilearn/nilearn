@@ -14,7 +14,7 @@ from sklearn.decomposition import dict_learning_online
 from joblib import Memory
 from sklearn.linear_model import Ridge
 
-from .base import BaseDecomposition
+from ._base import _BaseDecomposition
 from .canica import CanICA
 from nilearn._utils import fill_doc
 
@@ -34,7 +34,7 @@ def _compute_loadings(components, data):
 
 
 @fill_doc
-class DictLearning(BaseDecomposition):
+class DictLearning(_BaseDecomposition):
     """Perform a map learning algorithm based on spatial component sparsity,
     over a :term:`CanICA` initialization [1]_.
     This yields more stable maps than :term:`CanICA`.
@@ -168,7 +168,7 @@ class DictLearning(BaseDecomposition):
         of `mask` and other NiftiMasker related parameters as initialization.
 
     `mask_img_` : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 
@@ -189,17 +189,17 @@ class DictLearning(BaseDecomposition):
                  target_shape=None, mask_strategy='epi', mask_args=None,
                  n_jobs=1, verbose=0, memory=Memory(location=None),
                  memory_level=0):
-        BaseDecomposition.__init__(self, n_components=n_components,
-                                   random_state=random_state, mask=mask,
-                                   smoothing_fwhm=smoothing_fwhm,
-                                   standardize=standardize, detrend=detrend,
-                                   low_pass=low_pass, high_pass=high_pass,
-                                   t_r=t_r, target_affine=target_affine,
-                                   target_shape=target_shape,
-                                   mask_strategy=mask_strategy,
-                                   mask_args=mask_args, memory=memory,
-                                   memory_level=memory_level, n_jobs=n_jobs,
-                                   verbose=verbose)
+        _BaseDecomposition.__init__(self, n_components=n_components,
+                                    random_state=random_state, mask=mask,
+                                    smoothing_fwhm=smoothing_fwhm,
+                                    standardize=standardize, detrend=detrend,
+                                    low_pass=low_pass, high_pass=high_pass,
+                                    t_r=t_r, target_affine=target_affine,
+                                    target_shape=target_shape,
+                                    mask_strategy=mask_strategy,
+                                    mask_args=mask_args, memory=memory,
+                                    memory_level=memory_level, n_jobs=n_jobs,
+                                    verbose=verbose)
         self.n_epochs = n_epochs
         self.batch_size = batch_size
         self.method = method

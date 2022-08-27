@@ -30,6 +30,8 @@
 
 .. _Binh Nguyen: https://www.imo.universite-paris-saclay.fr/~tbnguyen/
 
+.. _Caglar Cakan: https://github.com/caglorithm
+
 .. _Céline Delettre: https://github.com/celinede
 
 .. _Chris Gorgolewski: https://github.com/chrisgorgo
@@ -40,11 +42,15 @@
 
 .. _Colin Reininger: https://github.com/reiningc
 
+.. _Connor Lane: https://github.com/clane9
+
 .. _Dan Gale: https://danjgale.github.io/
 
 .. _Daniel Gomez: https://github.com/dangom
 
 .. _Danilo Bzdok: https://github.com/banilo
+
+.. _David G Ellis: https://github.com/ellisdg
 
 .. _Demian Wassermann: https://github.com/demianw
 
@@ -74,7 +80,11 @@
 
 .. _Guillaume Lemaitre: https://glemaitre.github.io/
 
+.. _Sage Hahn: www.sagehahn.com/
+
 .. _Hao-Ting Wang: https://wanghaoting.com/
+
+.. _Himanshu Aggarwal: https://github.com/man-shu
 
 .. _Ian Abenes: https://github.com/boredStats
 
@@ -110,9 +120,13 @@
 
 .. _Kamalakar Reddy Daddy: https://github.com/KamalakerDadi
 
+.. _Koen Helwegen: https://github.com/koenhelwegen
+
 .. _Konstantin Shmelkov: https://github.com/kshmelkov
 
 .. _Kshitij Chawla: https://github.com/kchawla-pi
+
+.. _Kun CHEN: https://chenkun.me
 
 .. _Leonard Sasse: https://github.com/LeSasse
 
@@ -120,7 +134,13 @@
 
 .. _Loic Tetrel: https://ltetrel.github.io/
 
+.. _Luz Paz: https://github.com/luzpaz
+
+.. _Manon Pietrantoni: https://github.com/ManonP38
+
 .. _Matthias Ekman: https://github.com/mekman
+
+.. _Matthieu Joulot: https://github.com/MatthieuJoulot
 
 .. _Martin Perez-Guevara: https://github.com/MartinPerez
 
@@ -172,7 +192,11 @@
 
 .. _Ryan Hammonds: https://github.com/ryanhammonds
 
+.. _Sachin Patalasingh: https://github.com/sachin-bsai
+
 .. _Salma Bougacha: https://github.com/salma1601
+
+.. _Sami Jawhar: https://github.com/sjawhar
 
 .. _Simon Steinkamp: https://github.com/SRSteinkamp
 
@@ -188,10 +212,14 @@
 
 .. _Tom Vanasse: https://github.com/tvanasse
 
+.. _Vasco Diogo: https://github.com/vascosa
+
 .. _Vincent Michel: https://github.com/vmichel
 
 .. _Virgile Fritsch: https://github.com/VirgileFritsch
 
 .. _Yaroslav Halchenko: https://github.com/yarikoptic
+
+.. _Yasmin Mzayek: https://github.com/ymzayek
 
 .. _Zvi Baratz: https://github.com/ZviBaratz

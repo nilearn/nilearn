@@ -117,10 +117,20 @@ def _get_file_name(nii_file):
         return confounds_raw[0]
 
 
-def _get_json(confounds_raw_path, flag_acompcor):
-    """Load json data companion to the confounds tsv file."""
+def _get_confounds_file(image_file, flag_full_aroma):
+    _check_images(image_file, flag_full_aroma)
+    confounds_raw_path = _get_file_name(image_file)
+    return confounds_raw_path
+
+
+def _get_json(confounds_raw_path):
+    """return json data companion file to the confounds tsv file."""
     # Load JSON file
-    confounds_json = confounds_raw_path.replace("tsv", "json")
+    return confounds_raw_path.replace("tsv", "json")
+
+
+def _load_confounds_json(confounds_json, flag_acompcor):
+    """Load json data companion to the confounds tsv file."""
     try:
         with open(confounds_json, "rb") as f:
             confounds_json = json.load(f)
@@ -137,7 +147,7 @@ def _get_json(confounds_raw_path, flag_acompcor):
     return confounds_json
 
 
-def _get_file_raw(confounds_raw_path):
+def _load_confounds_file_as_dataframe(confounds_raw_path):
     """Load raw confounds as a pandas DataFrame."""
     confounds_raw = pd.read_csv(
         confounds_raw_path, delimiter="\t", encoding="utf-8"
@@ -195,15 +205,6 @@ def _check_images(image_file, flag_full_aroma):
         valid_img, error_message = _ext_validator([image_file], ext)
     if not valid_img:
         raise ValueError(error_message)
-
-
-def _confounds_to_df(image_file, flag_acompcor, flag_full_aroma):
-    """Load raw confounds and associated metadata."""
-    _check_images(image_file, flag_full_aroma)
-    confounds_raw_path = _get_file_name(image_file)
-    confounds_json = _get_json(confounds_raw_path, flag_acompcor)
-    confounds_raw = _get_file_raw(confounds_raw_path)
-    return confounds_raw, confounds_json
 
 
 def _prepare_output(confounds, demean):

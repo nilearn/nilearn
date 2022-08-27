@@ -282,23 +282,39 @@ def test_fetch_localizer_button_task(tmp_path, request_mocker,
     assert dataset.description != ''
 
 
-def test_fetch_abide_pcp(tmp_path, request_mocker):
-    ids = list(range(800))
-    filenames = ['no_filename'] * 800
-    filenames[::2] = ['filename'] * 400
-    pheno = pd.DataFrame({"subject_id": ids, "FILE_ID": filenames},
-                         columns=["subject_id", "FILE_ID"])
+@pytest.mark.parametrize("quality_checked", [False, True])
+def test_fetch_abide_pcp(tmp_path, request_mocker, quality_checked):
+    n_subjects = 800
+    ids = list(range(n_subjects))
+    filenames = ['no_filename'] * n_subjects
+    filenames[::2] = ['filename'] * int(n_subjects / 2)
+    qc_rater_1 = ['OK'] * n_subjects
+    qc_rater_1[::4] = ['fail'] * int(n_subjects / 4)
+    pheno = pd.DataFrame(
+        {"subject_id": ids,
+         "FILE_ID": filenames,
+         "qc_rater_1": qc_rater_1,
+         "qc_anat_rater_2": qc_rater_1,
+         "qc_func_rater_2": qc_rater_1,
+         "qc_anat_rater_3": qc_rater_1,
+         "qc_func_rater_3": qc_rater_1},
+        columns=[
+            "subject_id", "FILE_ID", "qc_rater_1",
+            "qc_anat_rater_2", "qc_func_rater_2",
+            "qc_anat_rater_3", "qc_func_rater_3"]
+    )
     request_mocker.url_mapping["*rocessed1.csv"] = pheno.to_csv(index=False)
 
     # All subjects
     dataset = func.fetch_abide_pcp(data_dir=tmp_path,
-                                   quality_checked=False, verbose=0)
-    assert len(dataset.func_preproc) == 400
+                                   quality_checked=quality_checked, verbose=0)
+    div = 4 if quality_checked else 2
+    assert len(dataset.func_preproc) == n_subjects / div
     assert dataset.description != ''
 
     # Smoke test using only a string, rather than a list of strings
     dataset = func.fetch_abide_pcp(data_dir=tmp_path,
-                                   quality_checked=False, verbose=0,
+                                   quality_checked=quality_checked, verbose=0,
                                    derivatives='func_preproc')
 
 
@@ -672,7 +688,7 @@ def test_select_from_index(request_mocker):
     assert data_prefix + '/sub-xxx/ses-02_task-rest.txt' in new_urls
 
 
-def test_fetch_openneuro_dataset_index(request_mocker):
+def test_fetch_ds000030_urls(request_mocker):
     with TemporaryDirectory() as tmpdir:
         dataset_version = 'ds000030_R1.0.4'
         subdir_names = ['ds000030', 'ds000030_R1.0.4', 'uncompressed']
@@ -686,11 +702,40 @@ def test_fetch_openneuro_dataset_index(request_mocker):
         mock_json_content = ['junk1', 'junk2']
         with open(filepath, 'w') as f:
             json.dump(mock_json_content, f)
-        urls_path, urls = func.fetch_openneuro_dataset_index(
+
+        # fetch_ds000030_urls should retrieve the appropriate URLs
+        urls_path, urls = func.fetch_ds000030_urls(
             data_dir=tmpdir,
-            dataset_version=dataset_version,
             verbose=1,
         )
+        urls_path = urls_path.replace('/', os.sep)
+        assert urls_path == filepath
+        assert urls == mock_json_content
+
+        # fetch_openneuro_dataset_index should do the same, but with a warning
+        with pytest.warns(DeprecationWarning):
+            urls_path, urls = func.fetch_openneuro_dataset_index(
+                data_dir=tmpdir,
+                dataset_version=dataset_version,
+                verbose=1,
+            )
+
+        urls_path = urls_path.replace('/', os.sep)
+        assert urls_path == filepath
+        assert urls == mock_json_content
+
+        # fetch_openneuro_dataset_index should even grab ds000030 when you
+        # provide a different dataset name
+        with pytest.warns(
+            UserWarning,
+            match='"ds000030_R1.0.4" will be downloaded',
+        ):
+            urls_path, urls = func.fetch_openneuro_dataset_index(
+                data_dir=tmpdir,
+                dataset_version='ds500_v2',
+                verbose=1,
+            )
+
         urls_path = urls_path.replace('/', os.sep)
         assert urls_path == filepath
         assert urls == mock_json_content
@@ -699,22 +744,28 @@ def test_fetch_openneuro_dataset_index(request_mocker):
 def test_fetch_openneuro_dataset(request_mocker, tmp_path):
     dataset_version = 'ds000030_R1.0.4'
     data_prefix = '{}/{}/uncompressed'.format(
-        dataset_version.split('_')[0], dataset_version)
-    data_dir = _get_dataset_dir(data_prefix, data_dir=tmp_path,
-                                verbose=1)
+        dataset_version.split('_')[0],
+        dataset_version,
+    )
+    data_dir = _get_dataset_dir(
+        data_prefix,
+        data_dir=tmp_path,
+        verbose=1,
+    )
     url_file = os.path.join(data_dir, 'urls.json')
+
     # Prepare url files for subject and filter tests
     urls = [
-        "https://example.com/{}/stuff.html" + data_prefix + '',
-        "https://example.com/{}/sub-xxx.html",
-        "https://example.com/{}/sub-yyy.html",
-        "https://example.com/{}/sub-xxx/ses-01_task-rest.txt",
-        "https://example.com/{}/sub-xxx/ses-01_task-other.txt",
-        "https://example.com/{}/sub-xxx/ses-02_task-rest.txt",
-        "https://example.com/{}/sub-xxx/ses-02_task-other.txt",
-        "https://example.com/{}/sub-yyy/ses-01.txt",
-        "https://example.com/{}/sub-yyy/ses-02.txt"]
-    urls = [url.format(data_prefix) for url in urls]
+        f'https://example.com/{data_prefix}/stuff.html',
+        f'https://example.com/{data_prefix}/sub-xxx.html',
+        f'https://example.com/{data_prefix}/sub-yyy.html',
+        f'https://example.com/{data_prefix}/sub-xxx/ses-01_task-rest.txt',
+        f'https://example.com/{data_prefix}/sub-xxx/ses-01_task-other.txt',
+        f'https://example.com/{data_prefix}/sub-xxx/ses-02_task-rest.txt',
+        f'https://example.com/{data_prefix}/sub-xxx/ses-02_task-other.txt',
+        f'https://example.com/{data_prefix}/sub-yyy/ses-01.txt',
+        f'https://example.com/{data_prefix}/sub-yyy/ses-02.txt',
+    ]
     json.dump(urls, open(url_file, 'w'))
 
     # Only 1 subject and not subject specific files get downloaded
@@ -723,6 +774,27 @@ def test_fetch_openneuro_dataset(request_mocker, tmp_path):
     assert isinstance(datadir, str)
     assert isinstance(dl_files, list)
     assert len(dl_files) == 9
+
+    # URLs do not contain the data_prefix, which should raise a ValueError
+    urls = [
+        'https://example.com/stuff.html',
+        'https://example.com/sub-yyy/ses-01.txt',
+    ]
+    with pytest.raises(ValueError, match='This indicates that the URLs'):
+        func.fetch_openneuro_dataset(urls, tmp_path, dataset_version)
+
+    # Try downloading a different dataset without providing URLs
+    # This should raise a warning and download ds000030.
+    with pytest.warns(
+        UserWarning,
+        match='Downloading "ds000030_R1.0.4".',
+    ):
+        urls_path, urls = func.fetch_openneuro_dataset(
+            urls=None,
+            data_dir=tmp_path,
+            dataset_version='ds500_v2',
+            verbose=1,
+        )
 
 
 def test_fetch_localizer(request_mocker, tmp_path):

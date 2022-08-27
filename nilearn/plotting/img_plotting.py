@@ -19,7 +19,7 @@ from nilearn.version import _compare_version
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
-from scipy import ndimage
+from scipy.ndimage import binary_fill_holes
 from scipy import stats
 from nibabel.spatialimages import SpatialImage
 
@@ -190,8 +190,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         black_bg=black_bg,
         colorbar=colorbar,
         brain_color=brain_color,
-        )
-
+    )
     if bg_img is not None:
         bg_img = _utils.check_niimg_3d(bg_img)
         display.add_overlay(bg_img,
@@ -202,6 +201,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         display.add_overlay(new_img_like(img, data, affine),
                             threshold=threshold, interpolation=interpolation,
                             colorbar=colorbar, vmin=vmin, vmax=vmax,
+                            cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
                             cbar_tick_format=cbar_tick_format,
                             **kwargs)
 
@@ -211,59 +211,11 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         display.draw_cross()
     if title is not None and not title == '':
         display.title(title)
-    if hasattr(display, '_cbar'):
-        cbar = display._cbar
-        _crop_colorbar(cbar, cbar_vmin, cbar_vmax)
     if output_file is not None:
         display.savefig(output_file)
         display.close()
         display = None
     return display
-
-
-def _crop_colorbar(cbar, cbar_vmin, cbar_vmax):
-    """Crop a colorbar to show from cbar_vmin to cbar_vmax.
-    Used when symmetric_cbar=False is used.
-
-    """
-    if (cbar_vmin is None) and (cbar_vmax is None):
-        return
-    cbar_tick_locs = cbar.locator.locs
-    if cbar_vmax is None:
-        cbar_vmax = cbar_tick_locs.max()
-    if cbar_vmin is None:
-        cbar_vmin = cbar_tick_locs.min()
-    new_tick_locs = np.linspace(cbar_vmin, cbar_vmax,
-                                len(cbar_tick_locs))
-
-    # matplotlib >= 3.2.0 no longer normalizes axes between 0 and 1
-    # See https://matplotlib.org/3.2.1/api/prev_api_changes/api_changes_3.2.0.html
-    # _outline was removed in
-    # https://github.com/matplotlib/matplotlib/commit/03a542e875eba091a027046d5ec652daa8be6863
-    # so we use the code from there
-    if _compare_version(matplotlib.__version__, '>=', "3.2.0"):
-        cbar.ax.set_ylim(cbar_vmin, cbar_vmax)
-        X = cbar._mesh()[0]
-        X = np.array([X[0], X[-1]])
-        Y = np.array([[cbar_vmin, cbar_vmin], [cbar_vmax, cbar_vmax]])
-        N = X.shape[0]
-        ii = [0, 1, N - 2, N - 1, 2 * N - 1, 2 * N - 2, N + 1, N, 0]
-        x = X.T.reshape(-1)[ii]
-        y = Y.T.reshape(-1)[ii]
-        xy = (np.column_stack([y, x])
-              if cbar.orientation == 'horizontal' else
-              np.column_stack([x, y]))
-        cbar.outline.set_xy(xy)
-    else:
-        cbar.ax.set_ylim(cbar.norm(cbar_vmin), cbar.norm(cbar_vmax))
-        outline = cbar.outline.get_xy()
-        outline[:2, 1] += cbar.norm(cbar_vmin)
-        outline[2:6, 1] -= (1. - cbar.norm(cbar_vmax))
-        outline[6:, 1] += cbar.norm(cbar_vmin)
-        cbar.outline.set_xy(outline)
-
-    cbar.set_ticks(new_tick_locs)
-    cbar.update_ticks()
 
 
 @fill_doc
@@ -349,8 +301,7 @@ class _MNI152Template(SpatialImage):
             anat_img = reorder_img(anat_img)
             data = get_data(anat_img)
             data = data.astype(np.float64)
-            anat_mask = ndimage.morphology.binary_fill_holes(
-                data > np.finfo(float).eps)
+            anat_mask = binary_fill_holes(data > np.finfo(float).eps)
             data = np.ma.masked_array(data, np.logical_not(anat_mask))
             self._affine = anat_img.affine
             self.data = data
@@ -472,7 +423,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
     Parameters
     ----------
     anat_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The anatomical image to be used as a background. If None is
         given, nilearn tries to find a T1 template.
         Default=MNI152TEMPLATE.
@@ -587,7 +538,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
         An object with background image on which contours are shown.
 
     roi_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The ROI/mask image, it could be binary mask or an atlas or ROIs
         with integer values.
 
@@ -611,7 +562,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
     roi_img = _utils.check_niimg_3d(roi_img)
     roi_data = get_data(roi_img)
     labels = np.unique(roi_data)
-    cmap = plt.cm.get_cmap(cmap)
+    cmap = plt.get_cmap(cmap)
     color_list = cmap(np.linspace(0, 1, len(labels)))
     for idx, label in enumerate(labels):
         if label == 0:
@@ -639,7 +590,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     Parameters
     ----------
     roi_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The ROI/mask image, it could be binary mask or an atlas or ROIs
         with integer values.
     %(bg_img)s
@@ -826,7 +777,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
             (str(view_type), str(valid_view_types))
         )
 
-    cmap = plt.cm.get_cmap(cmap)
+    cmap = plt.get_cmap(cmap)
     color_list = cmap(np.linspace(0, 1, n_maps))
 
     if view_type == 'auto':
@@ -921,7 +872,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     Parameters
     ----------
     stat_map_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The statistical map image
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
@@ -1024,7 +975,7 @@ def plot_glass_brain(stat_map_img,
     Parameters
     ----------
     stat_map_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The statistical map image. It needs to be in MNI space
         in order to align with the brain schematics.
     %(output_file)s
@@ -1196,14 +1147,15 @@ def plot_connectome(adjacency_matrix, node_coords,
     nilearn.plotting.find_parcellation_cut_coords : Extraction of node
         coords on brain parcellations.
     nilearn.plotting.find_probabilistic_atlas_cut_coords : Extraction of
-        node coords on brain probabilisitic atlases.
+        node coords on brain probabilistic atlases.
 
     """
     display = plot_glass_brain(None,
                                display_mode=display_mode,
                                figure=figure, axes=axes, title=title,
                                annotate=annotate,
-                               black_bg=black_bg)
+                               black_bg=black_bg,
+                               alpha=alpha)
 
     display.add_graph(adjacency_matrix, node_coords,
                       node_color=node_color, node_size=node_size,
@@ -1285,7 +1237,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
         Default=True.
 
     """
-    node_values = np.squeeze(np.array(node_values))
+    node_values = np.array(node_values).flatten()
     node_coords = np.array(node_coords)
 
     # Validate node_values
@@ -1357,7 +1309,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
 def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
                 detrend=True, output_file=None,
                 figure=None, axes=None, vmin=None, vmax=None, title=None,
-                cmap=plt.cm.gist_ncar):
+                cmap="gray", cmap_labels=plt.cm.gist_ncar):
     """Plot an image representation of voxel intensities across time.
 
     This figure is also known as a "grayplot" or "Power plot".
@@ -1373,7 +1325,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
         value and a colorbar will be added to the left side of the figure
         with atlas labels.
         If not specified, a new mask will be derived from data.
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See :ref:`extracting_data`.
 
     mask_labels : :obj:`dict`, optional
         If ``mask_img`` corresponds to an atlas, then this dictionary maps
@@ -1385,7 +1337,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
             If ``t_r`` is not provided, it will be inferred from ``img``'s
             header (``img.header.get_zooms()[-1]``).
 
-        .. versionadded:: 0.9.1.dev
+        .. versionadded:: 0.9.1
             Prior to this, ``t_r`` would be inferred from ``img`` without
             user input.
 
@@ -1399,8 +1351,12 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
     %(title)s
     %(cmap)s
 
-        .. note::
-            This argument is used only if an atlas is used.
+        Default=`gray`.
+
+    cmap_labels : :class:`matplotlib.colors.Colormap`, or :obj:`str`,
+        optional If ``mask_img`` corresponds to an atlas, then cmap_labels
+        can be used to define the colormap for coloring the labels placed
+        on the side of the carpet plot.
 
         Default=`plt.cm.gist_ncar`.
 
@@ -1411,7 +1367,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
 
     Notes
     -----
-    This figure was originally developed in :footcite:`POWER2017150`.
+    This figure was originally developed in :footcite:`Power2017`.
 
     In cases of long acquisitions (>800 volumes), the data will be downsampled
     to have fewer than 800 volumes before being plotted.
@@ -1511,7 +1467,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
             atlas_values[:, np.newaxis],
             interpolation='none',
             aspect='auto',
-            cmap=cmap
+            cmap=cmap_labels
         )
         if mask_labels:
             # Add labels to middle of each associated band
@@ -1533,7 +1489,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
             data.T,
             interpolation='nearest',
             aspect='auto',
-            cmap='gray',
+            cmap=cmap,
             vmin=vmin or default_vmin,
             vmax=vmax or default_vmax,
         )
@@ -1543,7 +1499,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
             data.T,
             interpolation='nearest',
             aspect='auto',
-            cmap='gray',
+            cmap=cmap,
             vmin=vmin or default_vmin,
             vmax=vmax or default_vmax,
         )

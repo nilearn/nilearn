@@ -80,7 +80,7 @@ def test_load_surf_data_file_nii_gii(tmp_path):
     os.close(fd_gii)
     darray = gifti.GiftiDataArray(data=np.zeros((20, )))
     gii = gifti.GiftiImage(darrays=[darray])
-    gifti.write(gii, filename_gii)
+    nb.save(gii, filename_gii)
     assert_array_equal(load_surf_data(filename_gii), np.zeros((20, )))
     os.remove(filename_gii)
 
@@ -89,7 +89,7 @@ def test_load_surf_data_file_nii_gii(tmp_path):
                                                     dir=str(tmp_path))
     os.close(fd_empty)
     gii_empty = gifti.GiftiImage()
-    gifti.write(gii_empty, filename_gii_empty)
+    nb.save(gii_empty, filename_gii_empty)
     with pytest.raises(ValueError,
                        match='must contain at least one data array'
                        ):
@@ -313,7 +313,7 @@ def test_load_surf_mesh_file_gii(tmp_path):
                                           'NIFTI_INTENT_TRIANGLE'])
 
     gii = gifti.GiftiImage(darrays=[coord_array, face_array])
-    gifti.write(gii, filename_gii_mesh)
+    nb.save(gii, filename_gii_mesh)
     assert_array_equal(load_surf_mesh(filename_gii_mesh)[0], mesh[0])
     assert_array_equal(load_surf_mesh(filename_gii_mesh)[1], mesh[1])
     os.remove(filename_gii_mesh)
@@ -322,7 +322,7 @@ def test_load_surf_mesh_file_gii(tmp_path):
     fd_no, filename_gii_mesh_no_point = tempfile.mkstemp(suffix='.gii',
                                                          dir=str(tmp_path))
     os.close(fd_no)
-    gifti.write(gifti.GiftiImage(darrays=[face_array, face_array]),
+    nb.save(gifti.GiftiImage(darrays=[face_array, face_array]),
                 filename_gii_mesh_no_point)
     with pytest.raises(ValueError, match='NIFTI_INTENT_POINTSET'):
         load_surf_mesh(filename_gii_mesh_no_point)
@@ -331,7 +331,7 @@ def test_load_surf_mesh_file_gii(tmp_path):
     fd_face, filename_gii_mesh_no_face = tempfile.mkstemp(suffix='.gii',
                                                           dir=str(tmp_path))
     os.close(fd_face)
-    gifti.write(gifti.GiftiImage(darrays=[coord_array, coord_array]),
+    nb.save(gifti.GiftiImage(darrays=[coord_array, coord_array]),
                 filename_gii_mesh_no_face)
     with pytest.raises(ValueError, match='NIFTI_INTENT_TRIANGLE'):
         load_surf_mesh(filename_gii_mesh_no_face)
@@ -406,7 +406,7 @@ def test_load_surf_data_file_glob(tmp_path):
         data2D[:, f] *= f
         darray = gifti.GiftiDataArray(data=data2D[:, f])
         gii = gifti.GiftiImage(darrays=[darray])
-        gifti.write(gii, fnames[f])
+        nb.save(gii, fnames[f])
 
     assert_array_equal(load_surf_data(
         os.path.join(os.path.dirname(fnames[0]), "glob*.gii")),
@@ -423,7 +423,7 @@ def test_load_surf_data_file_glob(tmp_path):
     darray2 = gifti.GiftiDataArray(data=np.ones((20, )))
     darray3 = gifti.GiftiDataArray(data=np.ones((20, )))
     gii = gifti.GiftiImage(darrays=[darray1, darray2, darray3])
-    gifti.write(gii, fnames[-1])
+    nb.save(gii, fnames[-1])
 
     data2D = np.concatenate((data2D, np.ones((20, 3))), axis=1)
     assert_array_equal(load_surf_data(os.path.join(os.path.dirname(fnames[0]),
@@ -437,7 +437,7 @@ def test_load_surf_data_file_glob(tmp_path):
     fnames.append(filename)
     darray = gifti.GiftiDataArray(data=np.ones((15, 1)))
     gii = gifti.GiftiImage(darrays=[darray])
-    gifti.write(gii, fnames[-1])
+    nb.save(gii, fnames[-1])
 
     with pytest.raises(ValueError,
                        match='files must contain data with the same shape'

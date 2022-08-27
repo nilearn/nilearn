@@ -1,4 +1,4 @@
-"""Default Mode Network extraction of AHDH dataset
+"""Default Mode Network extraction of ADHD dataset
 ===============================================
 
 This example shows a full step-by-step workflow of fitting a GLM to data
@@ -10,6 +10,8 @@ More specifically:
 2. A design matrix with the Posterior Cingulate Cortex seed is defined.
 3. A GLM is applied to the dataset (effect/covariance, then contrast estimation).
 4. The Default Mode Network is displayed.
+
+.. include:: ../../../examples/masker_note.rst
 
 """
 import numpy as np

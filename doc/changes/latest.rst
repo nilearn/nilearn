@@ -1,25 +1,20 @@
-
 .. currentmodule:: nilearn
 
 .. include:: names.rst
 
-0.9.1.dev
+0.9.3.dev
 =========
 
 NEW
 ---
 
-
 Fixes
 -----
-
 
 Enhancements
 ------------
 
-- Function :func:`~plotting.plot_carpet` now accepts a ``t_r`` parameter, which allows users to provide the TR of the image when the image's header may not be accurate. (:gh:`3165` by `Taylor Salo`_).
-- Terms :term:`Probabilistic atlas` and :term:`Deterministic atlas` were added to the glossary and references were added to atlas fetchers (:gh:`3152` by `Nicolas Gensollen`_).
-
 Changes
 -------
 
+- Private functions ``nilearn.regions.rena_clustering.weighted_connectivity_graph`` and ``nilearn.regions.rena_clustering.nearest_neighbor_grouping`` have been renamed with a leading "_", while function :func:`~regions.recursive_neighbor_agglomeration` has been added to the public API (:gh:`3347` by `Ahmad Chamma`_).

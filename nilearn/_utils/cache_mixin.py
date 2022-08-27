@@ -17,6 +17,7 @@ from joblib import Memory
 MEMORY_CLASSES = (Memory, )
 
 import nilearn
+from .helpers import stringify_path
 
 
 __CACHE_CHECKED = dict()
@@ -27,7 +28,7 @@ def _check_memory(memory, verbose=0):
 
     Parameters
     ----------
-    memory : None or instance of joblib.Memory or str
+    memory : None,instance of joblib.Memory, str or pathlib.Path
         Used to cache the masking process.
         If a str is given, it is the path to the caching directory.
 
@@ -41,6 +42,7 @@ def _check_memory(memory, verbose=0):
     """
     if memory is None:
         memory = Memory(location=None, verbose=verbose)
+    memory = stringify_path(memory)
     if isinstance(memory, str):
         cache_dir = memory
         if nilearn.EXPAND_PATH_WILDCARDS:
@@ -179,7 +181,7 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
     func : function
         The function which output is to be cached.
 
-    memory : instance of joblib.Memory or string
+    memory : instance of joblib.Memory, string or pathlib.Path
         Used to cache the function call.
 
     func_memory_level : int, optional
@@ -221,6 +223,7 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
 
     if memory is not None and (func_memory_level is None or
                                memory_level >= func_memory_level):
+        memory = stringify_path(memory)
         if isinstance(memory, str):
             memory = Memory(location=memory, verbose=verbose)
         if not isinstance(memory, MEMORY_CLASSES):

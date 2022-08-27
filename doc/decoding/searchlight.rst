@@ -9,22 +9,18 @@ This page overviews searchlight analyses and how they are approached
 in nilearn with the :class:`SearchLight` estimator.
 
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
 Principle of the Searchlight
 ============================
 
-:class:`SearchLight` analysis was introduced in [:footcite:t:`Kriegeskorte3863`], and consists of scanning the brain with a *searchlight*.
+:class:`SearchLight` analysis was introduced in [:footcite:t:`Kriegeskorte2006`], and consists of scanning the brain with a *searchlight*.
 Briefly, a ball of given radius is scanned across the brain volume and the prediction accuracy of a classifier trained on the corresponding :term:`voxels<voxel>` is measured.
 
-Searchlights are also not limited to :term:`classification`; :term:`regression` (e.g., [:footcite:t:`KAHNT2011549`]) and representational similarity analysis (e.g., [:footcite:t:`Clarke4766`]) are other uses of searchlights.
+Searchlights are also not limited to :term:`classification`; :term:`regression` (e.g., [:footcite:t:`Kahnt2011`]) and representational similarity analysis (e.g., [:footcite:t:`Clarke2014`]) are other uses of searchlights.
 Currently, only :term:`classification` and :term:`regression` are supported in nilearn.
 
 .. topic:: **Further Reading**
 
-    For a critical review on searchlights, see [:footcite:t:`ETZEL2013261`].
+    For a critical review on searchlights, see [:footcite:t:`Etzel2013`].
 
 
 Preparing the data
@@ -62,9 +58,9 @@ Classifier
 
 The classifier used by default by :class:`SearchLight` is LinearSVC with C=1 but
 this can be customized easily by passing an estimator parameter to the
-Searchlight. See scikit-learn documentation for `other classifiers
-<http://scikit-learn.org/stable/supervised_learning.html>`_. You can
-also pass scikit-learn `Pipelines <https://scikit-learn.org/stable/modules/compose.html>`_
+Searchlight. See scikit-learn documentation for :sklearn:`other classifiers
+<supervised_learning.html>`. You can
+also pass scikit-learn :sklearn:`Pipelines <modules/compose.html>`
 to the :class:`SearchLight` in order to combine estimators and preprocessing steps
 (e.g., feature scaling) for your searchlight.
 
@@ -72,8 +68,8 @@ Score function
 --------------
 
 Metrics can be specified by the "scoring" argument to the :class:`SearchLight`, as
-detailed in the `scikit-learn documentation
-<http://scikit-learn.org/dev/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules>`_
+detailed in the :sklearn:`scikit-learn documentation
+<modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules>`
 
 Cross validation
 ----------------
@@ -85,8 +81,8 @@ cross-validation is used.
 
 Cross-validation can be defined using the "cv" argument. As it
 is computationally costly, *K*-Fold cross validation with *K* = 3 is set as the
-default. A `scikit-learn cross-validation generator
-<https://scikit-learn.org/stable/modules/classes.html#splitter-classes>`_ can also
+default. A :sklearn:`scikit-learn cross-validation generator
+<modules/classes.html#splitter-classes>` can also
 be passed to set a specific type of cross-validation.
 
 Leave-one-run-out cross-validation (LOROCV) is a common approach for searchlights.
@@ -94,8 +90,8 @@ This approach is a specific use-case of grouped cross-validation, where the
 cross-validation folds are determined by the acquisition runs. The held-out fold
 in a given iteration of cross-validation consist of data from a separate run,
 which keeps training and validation sets properly independent. For this reason,
-LOROCV is often recommended. This can be performed by using `LeaveOneGroupOut
-<https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeaveOneGroupOut.html>`_,
+LOROCV is often recommended. This can be performed by using :sklearn:`LeaveOneGroupOut
+<modules/generated/sklearn.model_selection.LeaveOneGroupOut.html>`,
 and then setting the group/run labels when fitting the estimator.
 
 Sphere radius
@@ -111,7 +107,7 @@ for :term:`classification` (i.e. more :term:`voxels<voxel>` are included with la
     of :term:`voxels<voxel>` included in the sphere will therefore depend on the
     :term:`voxel` size.
 
-    For reference, [:footcite:t:`Kriegeskorte3863`] use a 4mm radius because it yielded
+    For reference, [:footcite:t:`Kriegeskorte2006`] use a 4mm radius because it yielded
     the best detection performance in their simulation of 2mm isovoxel data.
 
 Visualization

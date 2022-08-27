@@ -11,7 +11,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from scipy import ndimage
+from scipy.ndimage import binary_closing
 from sklearn.utils import Bunch
 
 from .utils import (_get_dataset_dir, _fetch_files, _get_dataset_descr)
@@ -48,8 +48,8 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     %(templateflow)s
 
-    For more information, see :footcite:`FONOV2011313`,
-    :footcite:`Fonov2009`, and :footcite:`Collins1999algorithm`.
+    For more information, see :footcite:`Fonov2011`,
+    :footcite:`Fonov2009`, and :footcite:`Collins1999`.
 
     Parameters
     ----------
@@ -167,7 +167,7 @@ def load_mni152_template(resolution=None):
     the MNI ICBM152 T1 template and re-samples it using a different resolution,
     if specified.
 
-    For more information, see :footcite:`FONOV2011313`,
+    For more information, see :footcite:`Fonov2011`,
     and :footcite:`Fonov2009`.
 
     Parameters
@@ -440,7 +440,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     gm_target_mask = (gm_target_data > threshold).astype("int8")
 
-    gm_target_mask = ndimage.binary_closing(gm_target_mask, iterations=n_iter)
+    gm_target_mask = binary_closing(gm_target_mask, iterations=n_iter)
     gm_mask_img = new_img_like(gm_target_img, gm_target_mask)
 
     return gm_mask_img
@@ -498,7 +498,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     wm_target_mask = (wm_target_data > threshold).astype("int8")
 
-    wm_target_mask = ndimage.binary_closing(wm_target_mask, iterations=n_iter)
+    wm_target_mask = binary_closing(wm_target_mask, iterations=n_iter)
     wm_mask_img = new_img_like(wm_target_img, wm_target_mask)
 
     return wm_mask_img
@@ -563,7 +563,7 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
     # getting one fifth of the values
     gm_mask = (gm_data > threshold).astype("int8")
 
-    gm_mask = ndimage.binary_closing(gm_mask, iterations=n_iter)
+    gm_mask = binary_closing(gm_mask, iterations=n_iter)
     gm_mask_img = new_img_like(gm_img, gm_mask)
 
     return gm_mask_img
@@ -575,7 +575,7 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
     For more information, see :footcite:`OASISbrain`,
-    and :footcite:`Marcus2007OASIS`.
+    and :footcite:`Marcus2007`.
 
     Parameters
     ----------
@@ -787,7 +787,7 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     """Download a Freesurfer fsaverage surface.
     File names are subject to change and only attribute names
     are guaranteed to be stable across nilearn versions.
-    See :footcite:`Fischl1999neurons`.
+    See :footcite:`Fischl1999`.
 
     Parameters
     ----------
@@ -825,7 +825,7 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
 
     """
     available_meshes = [
-        "fsaverage3", "fsaverage4", "fsaverage5", "fsaverage5_sphere",
+        "fsaverage3", "fsaverage4", "fsaverage5",
         "fsaverage6", "fsaverage7", "fsaverage",
     ]
 
@@ -844,14 +844,6 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
 
         return _fetch_surf_fsaverage(mesh, data_dir=data_dir)
     elif mesh == "fsaverage5":
-        return _fetch_surf_fsaverage5()
-    elif mesh == "fsaverage5_sphere":
-        warnings.warn(
-            "mesh='fsaverage5_sphere' has been deprecated "
-            "and will be removed in v0.9.0.\n"
-            "fsaverage5 sphere coordinates can now be accessed through "
-            "attributes sphere_{left, right} using mesh='fsaverage5'"
-        )
         return _fetch_surf_fsaverage5()
     else:
         raise ValueError(

@@ -2,6 +2,7 @@
 Downloading NeuroImaging datasets: atlas datasets
 """
 import os
+from pathlib import Path
 import warnings
 import xml.etree.ElementTree
 from tempfile import mkdtemp
@@ -38,7 +39,7 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None,
     functional signals with different dimensionalities (64, 128, 256, 512, and 1024).
     These modes are optimized to represent well raw :term:`BOLD` timeseries,
     over a with range of experimental conditions.
-    See :footcite:`DADI2020117126`.
+    See :footcite:`Dadi2020`.
 
     .. versionadded:: 0.7.1
 
@@ -69,7 +70,7 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None,
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
         - 'maps': :obj:`str`, path to 4D nifti file containing regions
@@ -153,7 +154,7 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
 
     See :footcite:`CreativeCommons` for the licence.
 
-    See :footcite:`craddock2012whole` and :footcite:`nitrcClusterROI`
+    See :footcite:`Craddock2012` and :footcite:`nitrcClusterROI`
     for more information on this parcellation.
 
     Parameters
@@ -165,7 +166,7 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
             - 'scorr_mean': obj:`str`, path to nifti file containing the
@@ -186,7 +187,7 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True, verbose=1):
 
     """
     if url is None:
-        url = "ftp://www.nitrc.org/home/groups/cluster_roi/htdocs" \
+        url = "http://cluster_roi.projects.nitrc.org" \
               "/Parcellations/craddock_2011_parcellations.tar.gz"
     opts = {'uncompress': True}
 
@@ -220,8 +221,8 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     """Download and load the Destrieux cortical
     :term:`deterministic atlas<Deterministic atlas>` (dated 2009).
 
-    See :footcite:`Fischl2004Automatically`,
-    and :footcite:`Destrieux2009sulcal`.
+    See :footcite:`Fischl2004`,
+    and :footcite:`Destrieux2009`.
 
     .. note::
 
@@ -242,7 +243,7 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
             - 'maps': :obj:`str`, path to nifti file containing the
@@ -356,7 +357,7 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
             - 'maps': :obj:`str`, path to nifti file containing the
@@ -405,7 +406,12 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
     if is_probabilistic and symmetric_split:
         raise ValueError("Region splitting not supported for probabilistic "
                          "atlases")
-    atlas_img, names, is_lateralized = _get_atlas_data_and_labels(
+    (
+        atlas_img,
+        atlas_filename,
+        names,
+        is_lateralized
+    ) = _get_atlas_data_and_labels(
         "HarvardOxford",
         atlas_name,
         symmetric_split=symmetric_split,
@@ -414,14 +420,18 @@ def fetch_atlas_harvard_oxford(atlas_name, data_dir=None,
         verbose=verbose)
     atlas_niimg = check_niimg(atlas_img)
     if not symmetric_split or is_lateralized:
-        return Bunch(filename=atlas_img, maps=atlas_niimg, labels=names)
+        return Bunch(filename=atlas_filename, maps=atlas_niimg, labels=names)
     new_atlas_data, new_names = _compute_symmetric_split("HarvardOxford",
                                                          atlas_niimg,
                                                          names)
     new_atlas_niimg = new_img_like(atlas_niimg,
                                    new_atlas_data,
                                    atlas_niimg.affine)
-    return Bunch(filename=atlas_img, maps=new_atlas_niimg, labels=new_names)
+    return Bunch(
+        filename=atlas_filename,
+        maps=new_atlas_niimg,
+        labels=new_names,
+    )
 
 
 @fill_doc
@@ -481,7 +491,7 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
             - 'maps': :class:`~nibabel.nifti1.Nifti1Image`. It is a 4D image
@@ -521,7 +531,7 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
     if is_probabilistic and symmetric_split:
         raise ValueError("Region splitting not supported for probabilistic "
                          "atlases")
-    atlas_img, names, _ = _get_atlas_data_and_labels("Juelich",
+    atlas_img, atlas_filename, names, _ = _get_atlas_data_and_labels("Juelich",
                                                      atlas_name,
                                                      data_dir=data_dir,
                                                      resume=resume,
@@ -542,7 +552,7 @@ def fetch_atlas_juelich(atlas_name, data_dir=None,
     new_atlas_niimg = new_img_like(atlas_niimg,
                                    new_atlas_data,
                                    atlas_niimg.affine)
-    return Bunch(filename=atlas_img, maps=new_atlas_niimg,
+    return Bunch(filename=atlas_filename, maps=new_atlas_niimg,
                  labels=list(new_names))
 
 
@@ -584,13 +594,13 @@ def _get_atlas_data_and_labels(atlas_source, atlas_name, symmetric_split=False,
     atlas_file = os.path.join(root, atlas_source,
                               '{}-{}.nii.gz'.format(atlas_source,
                                                     atlas_name))
-    atlas_img, label_file = _fetch_files(
+    atlas_file, label_file = _fetch_files(
         data_dir,
         [(atlas_file, url, opts),
          (label_file, url, opts)],
         resume=resume, verbose=verbose)
     # Reorder image to have positive affine diagonal
-    atlas_img = reorder_img(atlas_img)
+    atlas_img = reorder_img(atlas_file)
     names = {}
     from xml.etree import ElementTree
     names[0] = 'Background'
@@ -605,7 +615,7 @@ def _get_atlas_data_and_labels(atlas_source, atlas_name, symmetric_split=False,
     # The label indices should range from 0 to nlabel + 1
     assert list(names.keys()) == list(range(n + 2))
     names = [item[1] for item in sorted(names.items())]
-    return atlas_img, names, is_lateralized
+    return atlas_img, atlas_file, names, is_lateralized
 
 
 def _merge_probabilistic_maps_juelich(atlas_data, names):
@@ -698,8 +708,8 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the MSDL brain :term:`Probabilistic atlas`.
 
     It can be downloaded at :footcite:`atlas_msdl`, and cited
-    using :footcite:`Varoquaux2011multisubject`.
-    See also :footcite:`VAROQUAUX2013405` for more information.
+    using :footcite:`Varoquaux2011`.
+    See also :footcite:`Varoquaux2013` for more information.
 
     Parameters
     ----------
@@ -710,7 +720,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
         - 'maps': :obj:`str`, path to nifti file containing the
@@ -763,7 +773,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 def fetch_coords_power_2011(legacy_format=True):
     """Download and load the Power et al. brain atlas composed of 264 ROIs.
 
-    See :footcite:`Power2011Functional`.
+    See :footcite:`Power2011`.
 
     Parameters
     ----------
@@ -771,7 +781,7 @@ def fetch_coords_power_2011(legacy_format=True):
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
             - 'rois': :class:`numpy.recarray`, rec array containing the
@@ -806,7 +816,7 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
     """Download and load the Smith :term:`ICA` and BrainMap
     :term:`Probabilistic atlas` (2009).
 
-    See :footcite:`Smith200913040` and :footcite:`Laird2011behavioral`.
+    See :footcite:`Smith2009b` and :footcite:`Laird2011`.
 
     Parameters
     ----------
@@ -821,7 +831,7 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
             - 'rsn20': :obj:`str`, path to nifti file containing the
@@ -829,14 +839,14 @@ def fetch_atlas_smith_2009(data_dir=None, mirror='origin', url=None,
               The shape of the image is ``(91, 109, 91, 20)``.
             - 'rsn10': :obj:`str`, path to nifti file containing the
               10 well-matched maps from the 20 maps obtained as for 'rsn20',
-              as shown in :footcite:`Smith200913040`. The shape of the
+              as shown in :footcite:`Smith2009b`. The shape of the
               image is ``(91, 109, 91, 10)``.
             - 'bm20': :obj:`str`, path to nifti file containing the
               20-dimensional :term:`ICA`, BrainMap components.
               The shape of the image is ``(91, 109, 91, 20)``.
             - 'bm10': :obj:`str`, path to nifti file containing the
               10 well-matched maps from the 20 maps obtained as for 'bm20',
-              as shown in :footcite:`Smith200913040`. The shape of the
+              as shown in :footcite:`Smith2009b`. The shape of the
               image is ``(91, 109, 91, 10)``.
             - 'rsn70': :obj:`str`, path to nifti file containing the
               70-dimensional :term:`ICA`, resting-:term:`fMRI` components.
@@ -913,7 +923,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     For more information on this dataset's structure,
     see :footcite:`CorticalParcellation_Yeo2011`,
-    and :footcite:`Yeo2011organization`.
+    and :footcite:`Yeo2011`.
 
     Parameters
     ----------
@@ -924,7 +934,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
             - 'thin_7': :obj:`str`, path to nifti file containing the
@@ -1008,7 +1018,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
 
     For more information on this dataset's structure,
     see :footcite:`AAL_atlas`,
-    and :footcite:`TZOURIOMAZOYER2002273`.
+    and :footcite:`Tzourio-Mazoyer2002`.
 
     .. warning::
 
@@ -1047,7 +1057,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
             - 'maps': :obj:`str`, path to nifti file containing the
@@ -1084,32 +1094,43 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
                          'Please choose one among %s.' %
                          (version, str(versions)))
 
-    if url is None:
-        baseurl = "http://www.gin.cnrs.fr/AAL_files/aal_for_%s.tar.gz"
-        url = baseurl % version
+    dataset_name = "aal_" + version
     opts = {'uncompress': True}
 
-    dataset_name = "aal_" + version
-    # keys and basenames would need to be handled for each spm_version
-    # for now spm_version 12 is hardcoded.
-    basenames = ("AAL.nii", "AAL.xml")
-    filenames = [(os.path.join('aal', 'atlas', f), url, opts)
-                 for f in basenames]
+    if url is None:
+        if version == 'SPM12':
+            url = "http://www.gin.cnrs.fr/AAL_files/aal_for_SPM12.tar.gz"
+            basenames = ("AAL.nii", "AAL.xml")
+            filenames = [(os.path.join('aal', 'atlas', f), url, opts)
+                         for f in basenames]
+        else:
+            url = f"http://www.gin.cnrs.fr/wp-content/uploads/aal_for_{version}.zip"  # noqa
+            basenames = ("ROI_MNI_V4.nii", "ROI_MNI_V4.txt")
+            filenames = [(os.path.join(f'aal_for_{version}', f), url, opts)
+                         for f in basenames]
 
-    data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
-                                verbose=verbose)
-    atlas_img, labels_file = _fetch_files(data_dir, filenames, resume=resume,
-                                          verbose=verbose)
-
-    fdescr = _get_dataset_descr(dataset_name)
-    # We return the labels contained in the xml file as a dictionary
-    xml_tree = xml.etree.ElementTree.parse(labels_file)
-    root = xml_tree.getroot()
+    data_dir = _get_dataset_dir(
+        dataset_name, data_dir=data_dir, verbose=verbose
+    )
+    atlas_img, labels_file = _fetch_files(
+        data_dir, filenames, resume=resume, verbose=verbose
+    )
+    fdescr = _get_dataset_descr("aal_SPM12")
     labels = []
     indices = []
-    for label in root.iter('label'):
-        indices.append(label.find('index').text)
-        labels.append(label.find('name').text)
+    if version == 'SPM12':
+        xml_tree = xml.etree.ElementTree.parse(labels_file)
+        root = xml_tree.getroot()
+        for label in root.iter('label'):
+            indices.append(label.find('index').text)
+            labels.append(label.find('name').text)
+    else:
+        with open(labels_file, "r") as fp:
+            for line in fp.readlines():
+                _, label, index = line.strip().split('\t')
+                indices.append(index)
+                labels.append(label)
+        fdescr = fdescr.replace("SPM 12", version)
 
     params = {'description': fdescr, 'maps': atlas_img,
               'labels': labels, 'indices': indices}
@@ -1130,9 +1151,9 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None, url=None,
     Multiple scales (number of networks) are available, among
     7, 12, 20, 36, 64, 122, 197, 325, 444. The brain parcellations
     have been generated using a method called bootstrap analysis of
-    stable clusters called as BASC :footcite:`BELLEC20101126`,
+    stable clusters called as BASC :footcite:`Bellec2010`,
     and the scales have been selected using a data-driven method
-    called MSTEPS :footcite:`Bellec2013Mining`.
+    called MSTEPS :footcite:`Bellec2013`.
 
     Note that two versions of the template are available, 'sym' or 'asym'.
     The 'asym' type contains brain images that have been registered in the
@@ -1159,7 +1180,7 @@ def fetch_atlas_basc_multiscale_2015(version='sym', data_dir=None, url=None,
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, Keys are:
 
         - "scale007", "scale012", "scale020", "scale036", "scale064",
@@ -1220,7 +1241,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
     much of the cerebral cortex and cerebellum and are assigned to 6
     networks.
 
-    See :footcite:`Dosenbach20101358`.
+    See :footcite:`Dosenbach2010`.
 
     Parameters
     ----------
@@ -1232,7 +1253,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         - 'rois': :class:`numpy.recarray`, rec array with the coordinates
@@ -1286,7 +1307,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
     Visual) and have a regional label (cortexL, cortexR, cerebellum, thalamus,
     hippocampus, basalGanglia, amygdala, cortexMid).
 
-    See :footcite:`SEITZMAN2020116290`.
+    See :footcite:`Seitzman2020`.
 
     .. versionadded:: 0.5.1
 
@@ -1299,7 +1320,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
         - 'rois': :class:`numpy.recarray`, rec array with the coordinates
@@ -1339,7 +1360,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=True):
         i, region = r.split("=")
         region_mapping[int(i)] = region
 
-    anatomical = np.genfromtxt(anatomical_file, skip_header=1)
+    anatomical = np.genfromtxt(anatomical_file, skip_header=1, encoding=None)
     anatomical_names = np.array([region_mapping[a] for a in anatomical])
 
     rois = pd.concat([rois, pd.DataFrame(anatomical_names)], axis=1)
@@ -1366,7 +1387,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     """Download and return file names for the Allen and MIALAB :term:`ICA`
     :term:`Probabilistic atlas` (dated 2011).
 
-    See :footcite:`Allen2011baseline`.
+    See :footcite:`Allen2011`.
 
     The provided images are in MNI152 space.
 
@@ -1379,14 +1400,14 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
         - 'maps': :obj:`str`, path to nifti file containing the
           T-maps of all 75 unthresholded components. The image has
           shape ``(53, 63, 46, 75)``.
         - 'rsn28': :obj:`str`, path to nifti file containing the
-          T-maps of 28 RSNs included in :footcite:`Allen2011baseline`.
+          T-maps of 28 RSNs included in :footcite:`Allen2011`.
           The image has shape ``(53, 63, 46, 28)``.
         - 'networks': :obj:`list` of :obj:`list` of :obj:`str`, list
           containing the names for the 28 RSNs.
@@ -1462,7 +1483,7 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
     """Download and load Destrieux et al, 2010 cortical
     :term:`Deterministic atlas`.
 
-    See :footcite:`DESTRIEUX20101`.
+    See :footcite:`Destrieux2010`.
 
     This atlas returns 76 labels per hemisphere based on sulco-gryal patterns
     as distributed with Freesurfer in fsaverage5 surface space.
@@ -1478,7 +1499,7 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
             - 'labels': :obj:`list` of :obj:`str`, list containing the
@@ -1531,7 +1552,7 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
                  map_right=annot_right[0], description=fdescr)
 
 
-def _separate_talairach_levels(atlas_img, labels, verbose=1):
+def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
     """Separate the multiple annotation levels in talairach raw atlas.
 
     The Talairach atlas has five levels of annotation: hemisphere, lobe, gyrus,
@@ -1539,87 +1560,57 @@ def _separate_talairach_levels(atlas_img, labels, verbose=1):
     in the atlas corresponds to a 5-tuple containing, for each of these levels,
     a value or the string '*' (meaning undefined, background).
 
-    This function disentangles the levels, and stores each on an octet in an
-    int64 image (the level with most labels, ba, has 72 labels).
-    This way, any subset of these levels can be accessed by applying a bitwise
-    mask.
-
-    In the created image, the least significant octet contains the hemisphere,
-    the next one the lobe, then gyrus, tissue, and ba. Background is 0.
-    The labels contain
-    [('level name', ['labels', 'for', 'this', 'level' ...]), ...],
-    where the levels are in the order mentioned above.
+    This function disentangles the levels, and stores each in a separate image.
 
     The label '*' is replaced by 'Background' for clarity.
 
     """
-    labels = np.asarray(labels)
     if verbose:
         print(
             'Separating talairach atlas levels: {}'.format(_TALAIRACH_LEVELS))
-    levels = []
-    new_img = np.zeros(atlas_img.shape, dtype=np.int64)
-    for pos, level in enumerate(_TALAIRACH_LEVELS):
+    for level_name, old_level_labels in zip(_TALAIRACH_LEVELS,
+                                            np.asarray(labels).T):
         if verbose:
-            print(level)
-        level_img = np.zeros(atlas_img.shape, dtype=np.int64)
+            print(level_name)
+        # level with most regions, ba, has 72 regions
+        level_data = np.zeros(atlas_img.shape, dtype="uint8")
         level_labels = {'*': 0}
-        for region_nb, region in enumerate(labels[:, pos]):
-            level_labels.setdefault(region, len(level_labels))
-            level_img[get_data(atlas_img) == region_nb] = level_labels[
-                region]
-        # shift this level to its own octet and add it to the new image
-        level_img <<= 8 * pos
-        new_img |= level_img
+        for region_nb, region_name in enumerate(old_level_labels):
+            level_labels.setdefault(region_name, len(level_labels))
+            level_data[
+                get_data(atlas_img) == region_nb] = level_labels[region_name]
+        new_img_like(atlas_img, level_data).to_filename(
+            str(output_dir.joinpath(f"{level_name}.nii.gz")))
         # order the labels so that image values are indices in the list of
         # labels for each level
-        level_labels = list(list(
-            zip(*sorted(level_labels.items(), key=lambda t: t[1])))[0])
+        # (TODO can be removed when dropping python 3.6 support)
+        sorted_level_labels = [
+            k for (k, v) in sorted(level_labels.items(), key=lambda t: t[1])
+        ]
         # rename '*' -> 'Background'
-        level_labels[0] = 'Background'
-        levels.append((level, level_labels))
-    new_img = new_img_like(atlas_img, data=new_img)
-    return new_img, levels
+        sorted_level_labels[0] = 'Background'
+        output_dir.joinpath(f"{level_name}-labels.json").write_text(
+            json.dumps(sorted_level_labels), "utf-8")
 
 
-def _get_talairach_all_levels(data_dir=None, verbose=1):
-    """Get the path to Talairach atlas and labels
-
-    The atlas is downloaded and the files are created if necessary.
-
-    The image contains all five levels of the atlas, each encoded on 8 bits
-    (least significant octet contains the hemisphere, the next one the lobe,
-    then gyrus, tissue, and ba).
-
-    The labels json file contains
-    [['level name', ['labels', 'for', 'this', 'level' ...]], ...],
-    where the levels are in the order mentioned above.
-
-    """
-    data_dir = _get_dataset_dir(
-        'talairach_atlas', data_dir=data_dir, verbose=verbose)
-    img_file = os.path.join(data_dir, 'talairach.nii')
-    labels_file = os.path.join(data_dir, 'talairach_labels.json')
-    if os.path.isfile(img_file) and os.path.isfile(labels_file):
-        return img_file, labels_file
+def _download_talairach(talairach_dir, verbose):
+    """Download the Talairach atlas and separate the different levels."""
     atlas_url = 'http://www.talairach.org/talairach.nii'
     temp_dir = mkdtemp()
     try:
-        temp_file = _fetch_files(
-            temp_dir, [('talairach.nii', atlas_url, {})], verbose=verbose)[0]
+        temp_file = _fetch_files(temp_dir, [('talairach.nii', atlas_url, {})],
+                                 verbose=verbose)[0]
         atlas_img = nb.load(temp_file, mmap=False)
         atlas_img = check_niimg(atlas_img)
     finally:
         shutil.rmtree(temp_dir)
-    labels = atlas_img.header.extensions[0].get_content()
-    labels = labels.strip().decode('utf-8').split('\n')
-    labels = [l.split('.') for l in labels]
-    new_img, level_labels = _separate_talairach_levels(
-        atlas_img, labels, verbose=verbose)
-    new_img.to_filename(img_file)
-    with open(labels_file, 'w') as fp:
-        json.dump(level_labels, fp)
-    return img_file, labels_file
+    labels_text = atlas_img.header.extensions[0].get_content()
+    multi_labels = labels_text.strip().decode('utf-8').split('\n')
+    labels = [lab.split('.') for lab in multi_labels]
+    _separate_talairach_levels(atlas_img,
+                               labels,
+                               talairach_dir,
+                               verbose=verbose)
 
 
 @fill_doc
@@ -1627,8 +1618,8 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     """Download the Talairach :term:`Deterministic atlas`.
 
     For more information, see :footcite:`talairach_atlas`,
-    :footcite:`Lancaster2000Talairach`,
-    and :footcite:`Lancaster1997labeling`.
+    :footcite:`Lancaster2000`,
+    and :footcite:`Lancaster1997`.
 
     .. versionadded:: 0.4.0
 
@@ -1642,7 +1633,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
             - 'maps': 3D :class:`~nibabel.nifti1.Nifti1Image`, image has
@@ -1660,17 +1651,18 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
     """
     if level_name not in _TALAIRACH_LEVELS:
-        raise ValueError('"level_name" should be one of {}'.format(
-            _TALAIRACH_LEVELS))
-    position = _TALAIRACH_LEVELS.index(level_name)
-    atlas_file, labels_file = _get_talairach_all_levels(data_dir, verbose)
-    atlas_img = check_niimg(atlas_file)
-    with open(labels_file) as fp:
-        labels = json.load(fp)[position][1]
-    level_data = (get_data(atlas_img) >> 8 * position) & 255
-    atlas_img = new_img_like(atlas_img, data=level_data)
-    description = _get_dataset_descr(
-        'talairach_atlas').format(level_name)
+        raise ValueError(
+            '"level_name" should be one of {}'.format(_TALAIRACH_LEVELS))
+    talairach_dir = Path(
+        _get_dataset_dir('talairach_atlas', data_dir=data_dir,
+                         verbose=verbose))
+    img_file = talairach_dir.joinpath(f"{level_name}.nii.gz")
+    labels_file = talairach_dir.joinpath(f"{level_name}-labels.json")
+    if not img_file.is_file() or not labels_file.is_file():
+        _download_talairach(talairach_dir, verbose=verbose)
+    atlas_img = check_niimg(str(img_file))
+    labels = json.loads(labels_file.read_text("utf-8"))
+    description = _get_dataset_descr('talairach_atlas').format(level_name)
     return Bunch(maps=atlas_img, labels=labels, description=description)
 
 
@@ -1679,7 +1671,7 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
     """Download the Pauli et al. (2017) atlas.
 
     This atlas has 12 subcortical nodes in total. See
-    :footcite:`pauli_atlas` and :footcite:`Pauli2018probabilistic`.
+    :footcite:`pauli_atlas` and :footcite:`Pauli2018`.
 
     Parameters
     ----------
@@ -1692,7 +1684,7 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
             - 'maps': :obj:`str`, path to nifti file containing the
@@ -1778,8 +1770,8 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
     images are in MNI152 space.
 
     For more information on this dataset, see :footcite:`schaefer_atlas`,
-    :footcite:`Schaefer2017parcellation`,
-    and :footcite:`Yeo2011organization`.
+    :footcite:`Schaefer2017`,
+    and :footcite:`Yeo2011`.
 
     Parameters
     ----------
@@ -1802,7 +1794,7 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
 
     Returns
     -------
-    data : :func:`sklearn.utils.Bunch`
+    data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
             - 'maps': :obj:`str`, path to nifti file containing the
@@ -1890,7 +1882,8 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
     labels_file, atlas_file = _fetch_files(data_dir, files, resume=resume,
                                            verbose=verbose)
 
-    labels = np.genfromtxt(labels_file, usecols=1, dtype="S", delimiter="\t")
+    labels = np.genfromtxt(labels_file, usecols=1, dtype="S", delimiter="\t",
+                           encoding=None)
     fdescr = _get_dataset_descr(dataset_name)
 
     return Bunch(maps=atlas_file,

@@ -7,7 +7,8 @@ import sys
 import tempfile
 
 import nibabel
-from nibabel import Nifti1Image
+from nibabel import Nifti1Image, AnalyzeImage
+from nibabel.freesurfer import MGHImage
 import numpy as np
 import pytest
 
@@ -45,7 +46,7 @@ def test_get_data():
     assert data is img._data_cache
     mask_img = new_img_like(img, data > 0)
     data = get_data(mask_img)
-    assert data.dtype == np.dtype('int8')
+    assert data.dtype == np.dtype('uint8')
     img_3d = index_img(img, 0)
     with tempfile.TemporaryDirectory() as tempdir:
         filename = os.path.join(tempdir, 'img_{}.nii.gz')
@@ -506,6 +507,24 @@ def test_new_img_like_non_iterable_header():
                         copy_header=True)
 
 
+@pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
+def test_new_img_like_int64():
+    img = data_gen.generate_labeled_regions((3, 3, 3), 2)
+    data = image.get_data(img).astype("int32")
+    with pytest.warns(None) as record:
+        new_img = new_img_like(img, data)
+    assert not record
+    assert image.get_data(new_img).dtype == "int32"
+    data = data.astype("int64")
+    with pytest.warns(UserWarning, match=r".*array.*contains.*64.*"):
+        new_img = new_img_like(img, data)
+    assert image.get_data(new_img).dtype == "int32"
+    data[:] = 2**40
+    with pytest.warns(UserWarning, match=r".*64.*too large.*"):
+        new_img = new_img_like(img, data)
+    assert image.get_data(new_img).dtype == "int64"
+
+
 def test_validity_threshold_value_in_threshold_img():
     """Check that invalid values to threshold_img's threshold parameter raise
     Exceptions.
@@ -554,7 +573,7 @@ def test_threshold_img_with_cluster_threshold():
     # First we create a statistical image with specific characteristics
     shape = (20, 20, 30)
     affine = np.eye(4)
-    data = np.zeros(shape, dtype=int)
+    data = np.zeros(shape, dtype="int32")
     data[:2, :2, :2] = 4  # 8-voxel positive cluster
     data[4:6, :2, :2] = -4  # 8-voxel negative cluster
     data[8:11, 0, 0] = 5  # 3-voxel positive cluster
@@ -585,7 +604,7 @@ def test_threshold_img_with_cluster_threshold():
         copy=True,
     )
     assert np.array_equal(np.unique(thr_img.get_fdata()), np.array([-4, 0, 4]))
-
+    assert np.sum(thr_img.get_fdata() == 4) == 8
     # With a cluster threshold of 5 we get clusters with |values| > 0.5 and
     # cluster sizes > 5
     thr_img = threshold_img(
@@ -806,3 +825,14 @@ def test_new_img_like_mgh_image():
     data = np.zeros((5, 5, 5), dtype=np.uint8)
     niimg = nibabel.freesurfer.MGHImage(dataobj=data, affine=np.eye(4))
     new_img_like(niimg, data.astype(float), niimg.affine, copy_header=True)
+
+
+@pytest.mark.parametrize("image", [MGHImage, AnalyzeImage])
+def test_new_img_like_boolean_data(image):
+    """Check defaulting boolean input data to np.uint8 dtype is valid for
+    encoding with nibabel image classes MGHImage and AnalyzeImage.
+    """
+    data = np.random.randn(5, 5, 5).astype('uint8')
+    in_img = image(dataobj=data, affine=np.eye(4))
+    out_img = new_img_like(in_img, data=in_img.get_fdata() > 0.5)
+    assert get_data(out_img).dtype == 'uint8'

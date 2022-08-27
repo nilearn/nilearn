@@ -3,7 +3,7 @@
 import numpy as np
 import nibabel
 import pytest
-from scipy import ndimage
+from scipy.ndimage import label
 
 from nilearn.regions import (connected_regions, RegionExtractor,
                              connected_label_regions)
@@ -123,7 +123,7 @@ def test_connected_regions():
     assert not np.all(get_data(extraction_without_mask_img)[mask == 0] == 0.)
 
     # mask_img with different shape
-    mask = np.zeros(shape=(10, 11, 12), dtype=np.int)
+    mask = np.zeros(shape=(10, 11, 12), dtype="uint8")
     mask[1:-1, 1:-1, 1:-1] = 1
     affine = np.array([[2., 0., 0., 0.],
                        [0., 2., 0., 0.],
@@ -258,7 +258,7 @@ def test_remove_small_regions():
                       [1., 0., 0.],
                       [0., 1., 1.]]])
     # To remove small regions, data should be labelled
-    label_map, n_labels = ndimage.label(data)
+    label_map, n_labels = label(data)
     sum_label_data = np.sum(label_map)
 
     affine = np.eye(4)

@@ -7,7 +7,7 @@ import warnings
 import numbers
 
 import numpy as np
-from scipy import ndimage
+from scipy.ndimage import binary_dilation, binary_erosion
 from joblib import Parallel, delayed
 
 from sklearn.utils import deprecated
@@ -34,7 +34,7 @@ def _load_mask_img(mask_img, allow_empty=False):
     Parameters
     ----------
     mask_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
         The mask to check.
 
     allow_empty : :obj:`bool`, optional
@@ -57,17 +57,21 @@ def _load_mask_img(mask_img, allow_empty=False):
         # We accept a single value if it is not 0 (full true mask).
         if values[0] == 0 and not allow_empty:
             raise ValueError(
-                'The mask is invalid as it is empty: it masks all data.')
+                'The mask is invalid as it is empty: it masks all data.'
+            )
     elif len(values) == 2:
         # If there are 2 different values, one of them must be 0 (background)
         if 0 not in values:
-            raise ValueError('Background of the mask must be represented with'
-                             '0. Given mask contains: %s.' % values)
+            raise ValueError(
+                'Background of the mask must be represented with 0. '
+                f'Given mask contains: {values}.'
+            )
     elif len(values) != 2:
         # If there are more than 2 values, the mask is invalid
-        raise ValueError('Given mask is not made of 2 values: %s'
-                         '. Cannot interpret as true or false'
-                         % values)
+        raise ValueError(
+            f'Given mask is not made of 2 values: {values}. '
+            'Cannot interpret as true or false.'
+        )
 
     mask = _utils.as_ndarray(mask, dtype=bool)
     return mask, mask_img.affine
@@ -78,7 +82,7 @@ def _extrapolate_out_mask(data, mask, iterations=1):
     if iterations > 1:
         data, mask = _extrapolate_out_mask(data, mask,
                                            iterations=iterations - 1)
-    new_mask = ndimage.binary_dilation(mask)
+    new_mask = binary_dilation(mask)
     larger_mask = np.zeros(np.array(mask.shape) + 2, dtype=bool)
     larger_mask[1:-1, 1:-1, 1:-1] = mask
     # Use nans as missing value: ugly
@@ -120,7 +124,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     Parameters
     ----------
     mask_imgs : :obj:`list` of Niimg-like objects
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         3D individual masks with same shape and affine.
 
     threshold : :obj:`float`, optional
@@ -182,7 +186,7 @@ def _post_process_mask(mask, affine, opening=2, connected=True,
     """
     if opening:
         opening = int(opening)
-        mask = ndimage.binary_erosion(mask, iterations=opening)
+        mask = binary_erosion(mask, iterations=opening)
     mask_any = mask.any()
     if not mask_any:
         warnings.warn("Computed an empty mask. %s" % warning_msg,
@@ -190,8 +194,8 @@ def _post_process_mask(mask, affine, opening=2, connected=True,
     if connected and mask_any:
         mask = largest_connected_component(mask)
     if opening:
-        mask = ndimage.binary_dilation(mask, iterations=2 * opening)
-        mask = ndimage.binary_erosion(mask, iterations=opening)
+        mask = binary_dilation(mask, iterations=2 * opening)
+        mask = binary_erosion(mask, iterations=opening)
     return mask, affine
 
 
@@ -216,7 +220,7 @@ def compute_epi_mask(epi_img, lower_cutoff=0.2, upper_cutoff=0.85,
     Parameters
     ----------
     epi_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         :term:`EPI` image, used to compute the mask.
         3D and 4D images are accepted.
 
@@ -312,7 +316,7 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.85,
     Parameters
     ----------
     epi_imgs : :obj:`list` of Niimg-like objects
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         A list of arrays, each item being a subject or a session.
         3D and 4D images are accepted.
 
@@ -386,7 +390,7 @@ def compute_background_mask(data_imgs, border_size=2,
     Parameters
     ----------
     data_imgs : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Images used to compute the mask. 3D and 4D images are accepted.
 
         .. note::
@@ -459,7 +463,7 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
     Parameters
     ----------
     data_imgs : :obj:`list` of Niimg-like objects
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         A list of arrays, each item being a subject or a session.
         3D and 4D images are accepted.
 
@@ -522,7 +526,7 @@ def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
     Parameters
     ----------
     target_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Images used to compute the mask. 3D and 4D images are accepted.
         Only the shape and affine of ``target_img`` will be used here.
 
@@ -589,7 +593,7 @@ def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
     Parameters
     ----------
     target_imgs : :obj:`list` of Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Images used to compute the mask. 3D and 4D images are accepted.
 
         .. note::
@@ -646,7 +650,7 @@ def compute_multi_brain_mask(target_imgs, threshold=.5, connected=True,
     Parameters
     ----------
     target_imgs : :obj:`list` of Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Images used to compute the mask. 3D and 4D images are accepted.
 
         .. note::
@@ -714,11 +718,11 @@ def apply_mask(imgs, mask_img, dtype='f',
     Parameters
     -----------
     imgs : :obj:`list` of 4D Niimg-like objects
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Images to be masked. list of lists of 3D images are also accepted.
 
     mask_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         3D mask array: True where a :term:`voxel` should be used.
 
     dtype: numpy dtype or 'f'
@@ -813,7 +817,7 @@ def _unmask_3d(X, mask, order="C"):
         Masked data. shape: (features,)
 
     mask : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
         Mask. mask.ndim must be equal to 3, and dtype *must* be bool.
     """
     if mask.dtype != bool:
@@ -873,7 +877,7 @@ def unmask(X, mask_img, order="F"):
         If X is one-dimensional, it is assumed that samples# == 1.
 
     mask_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Must be 3-dimensional.
 
     Returns
