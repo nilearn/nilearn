@@ -996,7 +996,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None, scale_bg_map=True,
         Default='auto'.
     %(bg_on_data)s
         Default=False.
-    %(scale_bg_map)
+    %(scale_bg_map)s
         Default=True.
     %(darkness)s
         Default=1.
@@ -1050,8 +1050,8 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None, scale_bg_map=True,
         loaded_stat_map, vmax, symmetric_cbar, kwargs)
 
     display = plot_surf(
-        surf_mesh, surf_map=loaded_stat_map, bg_map=bg_map, scale_bg_map=scale_bg_map,
-        hemi=hemi,
+        surf_mesh, surf_map=loaded_stat_map,
+        bg_map=bg_map, scale_bg_map=scale_bg_map, hemi=hemi,
         view=view, engine=engine, avg_method='mean', threshold=threshold,
         cmap=cmap, symmetric_cmap=True, colorbar=colorbar,
         cbar_tick_format=cbar_tick_format, alpha=alpha,

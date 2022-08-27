@@ -551,7 +551,7 @@ docdict['bg_on_data'] = """
 bg_on_data : :obj:`bool`, optional
     If ``True`` and a ``bg_map`` is specified,
     the ``surf_data`` data is multiplied by the background
-    image, so that e.g. sulcal depth is jointly with ``surf_data``.
+    image, so that e.g. sulcal depth is jointly visible with ``surf_data``.
     Otherwise, the background image will only be visible where there
     is no surface data (either because ``surf_data`` contains ``nan``s
     or because is was thresholded).
