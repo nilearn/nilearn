@@ -266,39 +266,16 @@ def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
     bunch = atlas.fetch_atlas_craddock_2012(data_dir=tmp_path,
                                             verbose=0)
 
-    keys = ("scorr_mean", "tcorr_mean",
-            "scorr_2level", "tcorr_2level",
-            "random")
-    filenames = [
-        "scorr05_mean_all.nii.gz",
-        "tcorr05_mean_all.nii.gz",
-        "scorr05_2level_all.nii.gz",
-        "tcorr05_2level_all.nii.gz",
-        "random_all.nii.gz",
-    ]
     assert request_mocker.url_count == 1
-    for key, fn in zip(keys, filenames):
-        assert bunch[key] == str(tmp_path / 'craddock_2012' / fn)
+    assert bunch['maps'][0] == str(tmp_path / 'craddock_2012'
+                                   / 'scorr05_mean_all.nii.gz')
     assert bunch.description != ''
 
 
 def test_fetch_atlas_smith_2009(tmp_path, request_mocker):
     bunch = atlas.fetch_atlas_smith_2009(data_dir=tmp_path, verbose=0)
-
-    keys = ("rsn20", "rsn10", "rsn70",
-            "bm20", "bm10", "bm70")
-    filenames = [
-        "rsn20.nii.gz",
-        "PNAS_Smith09_rsn10.nii.gz",
-        "rsn70.nii.gz",
-        "bm20.nii.gz",
-        "PNAS_Smith09_bm10.nii.gz",
-        "bm70.nii.gz",
-    ]
-
-    assert request_mocker.url_count == 6
-    for key, fn in zip(keys, filenames):
-        assert bunch[key] == str(tmp_path / 'smith_2009' / fn)
+    assert bunch['maps'][0] == str(tmp_path / 'smith_2009' / 'rsn20.nii.gz')
+    assert len(bunch.keys()) == 2
     assert bunch.description != ''
 
 
@@ -412,7 +389,8 @@ def test_fetch_atlas_difumo(tmp_path, request_mocker):
              "CSF": ["" for _ in range(dim)]}
         )
         root = Path("{0}".format(dim))
-        archive = {root / "labels_{0}_dictionary.csv".format(dim): labels.to_csv(index=False),
+        archive = {root / "labels_{0}_dictionary.csv".format(dim):
+                          labels.to_csv(index=False),
                    root / "2mm" / "maps.nii.gz": "",
                    root / "3mm" / "maps.nii.gz": ""}
         request_mocker.url_mapping[url] = dict_to_archive(archive, "zip")
@@ -489,25 +467,19 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
                                                        verbose=0,
                                                        data_dir=tmp_path)
 
-    keys = ['scale007', 'scale012', 'scale020', 'scale036', 'scale064',
-            'scale122', 'scale197', 'scale325', 'scale444']
-
     dataset_name = 'basc_multiscale_2015'
     name_sym = 'template_cambridge_basc_multiscale_nii_sym'
-    basenames_sym = ['template_cambridge_basc_multiscale_sym_' +
-                     key + '.nii.gz' for key in keys]
-    for key, basename_sym in zip(keys, basenames_sym):
-        assert data_sym[key] == str(tmp_path / dataset_name / name_sym
-                                    / basename_sym)
+    basename_sym = 'template_cambridge_basc_multiscale_sym_scale007.nii.gz'
+
+    assert data_sym['maps'][0] == str(tmp_path / dataset_name / name_sym
+                                      / basename_sym)
 
     name_asym = 'template_cambridge_basc_multiscale_nii_asym'
-    basenames_asym = ['template_cambridge_basc_multiscale_asym_' +
-                      key + '.nii.gz' for key in keys]
-    for key, basename_asym in zip(keys, basenames_asym):
-        assert data_asym[key] == str(tmp_path / dataset_name / name_asym
-                                     / basename_asym)
+    basename_asym = 'template_cambridge_basc_multiscale_asym_scale007.nii.gz'
+    assert data_asym['maps'][0] == str(tmp_path / dataset_name / name_asym
+                                       / basename_asym)
 
-    assert len(data_sym) == 10
+    assert len(data_sym) == 2
     with pytest.raises(
             ValueError,
             match='The version of Brain parcellations requested "aym"'):
@@ -556,9 +528,9 @@ def test_fetch_atlas_surf_destrieux(tmp_path, request_mocker, verbose=0):
     # Create mock annots
     for hemi in ('left', 'right'):
         nibabel.freesurfer.write_annot(
-                os.path.join(data_dir,
-                             '%s.aparc.a2009s.annot' % hemi),
-                np.arange(4), np.zeros((4, 5)), 5 * ['a'],)
+            os.path.join(data_dir,
+                         '%s.aparc.a2009s.annot' % hemi),
+            np.arange(4), np.zeros((4, 5)), 5 * ['a'],)
 
     bunch = atlas.fetch_atlas_surf_destrieux(data_dir=tmp_path, verbose=0)
     # Our mock annots have 4 labels
