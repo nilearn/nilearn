@@ -194,8 +194,8 @@ def fetch_atlas_craddock_2012(homogeneity='spatial', grp_mean=True,
         if grp_mean:
             filename = [(homogeneity[0] + "corr05_mean_all.nii.gz", url, opts)]
         else:
-            filename = [(homogeneity[0] +
-                        "corr05_2level_all.nii.gz", url, opts)]
+            filename = [(homogeneity[0]
+                        + "corr05_2level_all.nii.gz", url, opts)]
     else:
         filename = [("random_all.nii.gz", url, opts)]
 
@@ -1716,8 +1716,8 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
         url_maps = 'https://osf.io/5mqfx/download'
         filename = 'pauli_2017_det.nii.gz'
     else:
-        raise NotImplementedError(f'{version} is no valid version for ' +
-                                  'the Pauli atlas')
+        raise NotImplementedError(f'{version} is no valid version for '
+                                  + 'the Pauli atlas')
 
     url_labels = 'https://osf.io/6qrcb/download'
     dataset_name = 'pauli_2017'
