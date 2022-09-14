@@ -11,6 +11,8 @@ NEW
 Fixes
 -----
 
+- Change calculation of TR in :func:`~.glm.first_level.compute_regressor` to be more precise (:gh:`3362` by `Anne-Sophie Kieslinger`_)
+
 Enhancements
 ------------
 
