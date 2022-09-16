@@ -4,13 +4,15 @@ from numpy.testing import assert_almost_equal
 from sklearn.datasets import make_regression
 from sklearn.linear_model import LinearRegression
 
+
 from nilearn.glm.contrasts import (
     Contrast,
     _compute_fixed_effect_contrast,
     _compute_fixed_effects_params,
     compute_contrast,
     expression_to_contrast_vector,
-)
+    compute_fixed_effects)
+
 from nilearn.glm.first_level import run_glm
 
 
@@ -175,6 +177,23 @@ def test_low_level_fixed_effects():
         precision_weighted=True)
     assert_almost_equal(Xw, 1.2 * X1)
     assert_almost_equal(Vw, .8 * V1)
+
+    # F test
+    XX1 = np.vstack((X1, X1))
+    XX2 = np.vstack((X2, X2))
+    
+    Xw, Vw, tw, zw = _compute_fixed_effects_params(
+        [XX1, XX2], [V1, V2], dofs=[200, 200],
+        precision_weighted=False)
+    assert_almost_equal(Xw, 1.5 * XX1)
+    assert_almost_equal(Vw, 1.25 * V1)
+
+    # check with 2D image
+    Xw, Vw, tw, zw = _compute_fixed_effects_params(
+    [X1[:, np.newaxis], X2[:, np.newaxis]], [V1, V2], dofs=[200, 200],
+        precision_weighted=False)
+    assert_almost_equal(Xw, 1.5 * X1[:, np.newaxis])
+    assert_almost_equal(Vw, 1.25 * V1)
 
 
 def test_one_minus_pvalue():

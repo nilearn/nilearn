@@ -136,6 +136,13 @@ def test_explicit_fixed_effects(tmp_path):
     with pytest.raises(ValueError):
         compute_fixed_effects(contrasts * 2, variance, mask)
 
+    # ensure that not providing thre right number of dofs 
+    # raises an error
+    with pytest.raises(ValueError):
+        compute_fixed_effects(contrasts, variance, mask, dofs=[100])
+
+        del mask, multi_session_model
+
 
 def test_explicit_fixed_effects_without_mask(tmp_path):
     """Test the fixed effects performed manually/explicitly with no mask."""
