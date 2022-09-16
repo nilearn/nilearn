@@ -181,7 +181,7 @@ def test_low_level_fixed_effects():
     # F test
     XX1 = np.vstack((X1, X1))
     XX2 = np.vstack((X2, X2))
-    
+
     Xw, Vw, tw, zw = _compute_fixed_effects_params(
         [XX1, XX2], [V1, V2], dofs=[200, 200],
         precision_weighted=False)
@@ -190,7 +190,7 @@ def test_low_level_fixed_effects():
 
     # check with 2D image
     Xw, Vw, tw, zw = _compute_fixed_effects_params(
-    [X1[:, np.newaxis], X2[:, np.newaxis]], [V1, V2], dofs=[200, 200],
+        [X1[:, np.newaxis], X2[:, np.newaxis]], [V1, V2], dofs=[200, 200],
         precision_weighted=False)
     assert_almost_equal(Xw, 1.5 * X1[:, np.newaxis])
     assert_almost_equal(Vw, 1.25 * V1)
