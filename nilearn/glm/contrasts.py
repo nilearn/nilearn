@@ -398,7 +398,7 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
     fixed_fx_variance_img : Nifti1Image
         The fixed effects variance computed within the mask.
 
-    fixed_fx_t_img : Nifti1Image
+    fixed_fx_stat_img : Nifti1Image
         The fixed effects stat computed within the mask.
 
     fixed_fx_z_score_img : Nifti1Image
