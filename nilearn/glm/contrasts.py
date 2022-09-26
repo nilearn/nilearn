@@ -428,7 +428,7 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
             raise ValueError(
                 'The number of dofs (%d) '
                 'differs from the number of contrast images (%d). '
-                % (len(contrast_imgs), n_runs)
+                % (len(dofs), n_runs)
             )
     else:
         dofs = [100] * n_runs
