@@ -200,8 +200,8 @@ html_theme_options = {
 if "dev" in release:
     html_theme_options["announcement"] = (
         f'<p>This is the development documentation of nilearn ({release}) '
-        '<a class="sd-sphinx-override sd-badge sd-text-wrap'
-        'sd-btn-outline-dark reference external"'
+        '<a class="sd-sphinx-override sd-badge sd-text-wrap '
+        'sd-btn-outline-dark reference external" '
         'href="https://nilearn.github.io">'
         f'<span>Switch to stable version ({version})</span></a></p>'
     )
