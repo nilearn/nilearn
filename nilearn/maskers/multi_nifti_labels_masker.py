@@ -20,28 +20,27 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
 
     Parameters
     ----------
-    labels_img: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+    labels_img : Niimg-like object
+        See :ref:`extracting_data`.
         Region definitions, as one image of labels.
 
-    labels : list of str, optional
+    labels : :obj:`list` of :obj:`str`, optional
         Full labels corresponding to the labels image. This is used
         to improve reporting quality if provided.
         Warning: The labels must be consistent with the label
         values provided through `labels_img`.
 
-    background_label: number, optional
+    background_label : :obj:`int` or :obj:`float`, optional
         Label used in labels_img to represent background.
+        Warning: This value must be consistent with label values and
+        image provided.
+        Default=0.
 
-    mask_img: Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
+    mask_img : Niimg-like object, optional
+        See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
-
     %(smoothing_fwhm)s
-        If smoothing_fwhm is not None, it gives the full-width-at-half-maximum
-        in millimeters of the spatial smoothing to apply to the signal.
-
-    standardize: {'zscore', 'psc', True, False}, default is 'zscore'
+    standardize : {'zscore', 'psc', True, False}, default is 'zscore'
         Strategy to standardize the signal.
         'zscore': the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
@@ -50,68 +49,71 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         True : the signal is z-scored. Timeseries are shifted
         to zero mean and scaled to unit variance.
         False : Do not standardize the data.
+        Default=False.
 
-    standardize_confounds: boolean, optional,  default is True
+    standardize_confounds : :obj:`bool`, optional
         If standardize_confounds is True, the confounds are z-scored:
-        their mean is put to 0 and their variance to 1 in the time dimension
+        their mean is put to 0 and their variance to 1 in the time dimension.
+        Default=True.
 
-    high_variance_confounds : boolean, optional
+    high_variance_confounds : :obj:`bool`, optional
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out. Default=False.
 
-    detrend: boolean, optional
+    detrend : :obj:`bool`, optional
+        This parameter is passed to signal.clean. Please see the related
+        documentation for details. Default=False.
+
+    low_pass : None or :obj:`float`, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    low_pass: None or float, optional
+    high_pass : None or :obj:`float`, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass: None or float, optional
+    t_r : :obj:`float`, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    t_r: float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    dtype: {dtype, "auto"}
+    dtype : {dtype, "auto"}
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    resampling_target: {"data", "labels", None}, optional.
+    resampling_target : {"data", "labels", None}, optional.
         Gives which image gives the final shape/size. For example, if
         `resampling_target` is "data", the atlas is resampled to the
         shape of the data if needed. If it is "labels" then mask_img
         and images provided to fit() are resampled to the shape and
         affine of maps_img. "None" means no resampling: if shapes and
-        affines do not match, a ValueError is raised. Defaults to "data".
+        affines do not match, a ValueError is raised. Default="data".
 
-    memory: joblib.Memory or str, optional
+    memory : :obj:`joblib.Memory` or :obj:`str`, optional
         Used to cache the region extraction process.
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level: int, optional
+    memory_level : :obj:`int`, optional
         Aggressiveness of memory caching. The higher the number, the higher
         the number of functions that will be cached. Zero means no caching.
+        Default=1.
 
-    n_jobs: integer, optional
+    n_jobs : :obj:`int`, optional
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
-    verbose: integer, optional
-        Indicate the level of verbosity. By default, nothing is printed
+    verbose : :obj:`int`, optional
+        Indicate the level of verbosity. By default, nothing is printed.
+        Default=0.
 
-    strategy: {'sum', 'mean', 'median', 'minimum', 'maximum', 'variance',
-        'standard_deviation'}, default is 'mean'
+    strategy : :obj:`str`, optional
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation
+        standard_deviation. Default='mean'.
 
-    reports : boolean, optional
+    reports : :obj:`bool`, optional
          If set to True, data is saved in order to produce a report.
          Default=True.
 
@@ -184,7 +186,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         Parameters
         ----------
         imgs_list: list of 4D Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             Images to process. Each element of the list is a 4D image.
 
         confounds: CSV file or array-like, optional
@@ -200,7 +202,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
 
         Returns
         -------
-        region_signals: list of 2D numpy.ndarray
+        region_signals: list of 2D :obj:`numpy.ndarray`
             List of signals for each label per subject.
             shape: list of (number of scans, number of labels)
 
@@ -230,13 +232,14 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
 
         Parameters
         ----------
-        imgs: list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
-            Data to be preprocessed
+        imgs: list of 4D Niimg-like objects
+            See :ref:`extracting_data`.
+            Images to process. Each element of the list is a 4D image.
 
-        confounds: CSV file path or 2D matrix
-            This parameter is passed to signal.clean. Please see the
-            corresponding documentation for details.
+        confounds: CSV file or array-like, optional
+            This parameter is passed to signal.clean. Please see the related
+            documentation for details.
+            shape: list of (number of scans, number of confounds)
 
         sample_mask : Any type compatible with numpy-array indexing, optional
             shape: (number of scans - number of volumes removed, )
@@ -246,8 +249,9 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
 
         Returns
         -------
-        data: {list of numpy arrays}
-            preprocessed images
+        region_signals : list of 2D :obj:`numpy.ndarray`
+            List of signals for each label per subject.
+            shape: list of (number of scans, number of labels)
 
         """
 

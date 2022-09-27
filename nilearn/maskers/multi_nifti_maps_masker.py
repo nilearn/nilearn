@@ -25,15 +25,15 @@ class MultiNiftiMapsMasker(NiftiMapsMasker, CacheMixin):
     Parameters
     ----------
     maps_img : 4D niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Set of continuous maps. One representative time course per map is
         extracted using least square regression.
 
     mask_img : 3D niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 
-    allow_overlap : boolean, optional
+    allow_overlap : :obj:`bool`, optional
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel). Default=True.
     %(smoothing_fwhm)s
@@ -48,29 +48,29 @@ class MultiNiftiMapsMasker(NiftiMapsMasker, CacheMixin):
         False : Do not standardize the data.
         Default=False.
 
-    standardize_confounds : boolean, optional
+    standardize_confounds : :obj:`bool`, optional
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
         Default=True.
 
-    high_variance_confounds : boolean, optional
+    high_variance_confounds : :obj:`bool`, optional
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out. Default=False.
 
-    detrend : boolean, optional
+    detrend : :obj:`bool`, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details. Default=False.
 
-    low_pass : None or float, optional
+    low_pass : None or :obj:`float`, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    high_pass : None or float, optional
+    high_pass : None or :obj:`float`, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    t_r : float, optional
+    t_r : :obj:`float`, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
@@ -86,25 +86,25 @@ class MultiNiftiMapsMasker(NiftiMapsMasker, CacheMixin):
         no resampling: if shapes and affines do not match, a ValueError is
         raised. Default="data".
 
-    memory : joblib.Memory or str, optional
+    memory : :obj:`joblib.Memory` or :obj:`str`, optional
         Used to cache the region extraction process.
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level : int, optional
+    memory_level : :obj:`int`, optional
         Aggressiveness of memory caching. The higher the number, the higher
         the number of functions that will be cached. Zero means no caching.
         Default=0.
 
-    n_jobs: integer, optional
+    n_jobs: :obj:`int`, optional
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
-    verbose : integer, optional
+    verbose : :obj:`int`, optional
         Indicate the level of verbosity. By default, nothing is printed.
         Default=0.
 
-    reports : boolean, optional
+    reports : :obj:`bool`, optional
         If set to True, data is saved in order to produce a report.
         Default=True.
 
@@ -181,11 +181,11 @@ class MultiNiftiMapsMasker(NiftiMapsMasker, CacheMixin):
 
         Parameters
         ----------
-        imgs_list: list of 4D Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
+        imgs_list : list of 4D Niimg-like objects
+            See :ref:`extracting_data`.
             Images to process. Each element of the list is a 4D image.
 
-        confounds: CSV file or array-like, optional
+        confounds : CSV file or array-like, optional
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: list of (number of scans, number of confounds)
@@ -198,7 +198,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker, CacheMixin):
 
         Returns
         -------
-        region_signals: list of 2D numpy.ndarray
+        region_signals : list of 2D :obj:`numpy.ndarray`
             List of signals for each map per subject.
             shape: list of (number of scans, number of maps)
 
@@ -230,13 +230,14 @@ class MultiNiftiMapsMasker(NiftiMapsMasker, CacheMixin):
 
         Parameters
         ----------
-        imgs: list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
-            Data to be preprocessed
+        imgs : list of 4D Niimg-like objects
+            See :ref:`extracting_data`.
+            Images to process. Each element of the list is a 4D image.
 
-        confounds: CSV file path or 2D matrix
-            This parameter is passed to signal.clean. Please see the
-            corresponding documentation for details.
+        confounds : CSV file or array-like, optional
+            This parameter is passed to signal.clean. Please see the related
+            documentation for details.
+            shape: list of (number of scans, number of confounds)
 
         sample_mask : Any type compatible with numpy-array indexing, optional
             shape: (number of scans - number of volumes removed, )
@@ -246,8 +247,9 @@ class MultiNiftiMapsMasker(NiftiMapsMasker, CacheMixin):
 
         Returns
         -------
-        data: {list of numpy arrays}
-            preprocessed images
+        region_signals : list of 2D :obj:`numpy.ndarray`
+            List of signals for each map per subject.
+            shape: list of (number of scans, number of maps)
 
         """
 
