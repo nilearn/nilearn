@@ -14,6 +14,7 @@
 
 import sys
 import os
+import re
 import shutil
 import sphinx
 from nilearn.version import _compare_version
@@ -101,10 +102,14 @@ copyright = u'The nilearn developers 2010-2022'
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
-#
-# The short X.Y version.
-version = ''
-# The full version, including alpha/beta/rc tags.
+
+# Latest release version
+version = re.match(
+    r'v?([0-9]+.[0-9]+.[0-9]+).*',
+    os.popen('git describe --tags').read().strip()
+).groups()[0]
+
+# The full current version, including alpha/beta/rc tags.
 import nilearn
 release = nilearn.__version__
 
@@ -179,11 +184,25 @@ html_css_files = [
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
+    "dark_css_variables": {
+        "color-announcement-background": "#935610",
+        "color-announcement-text": "#FFFFFF",
+    },
     "light_css_variables": {
         "admonition-font-size": "100%",
-        "admonition-title-font-size": "100%"
-    }
+        "admonition-title-font-size": "100%",
+        "color-announcement-background": "#FBB360",
+        "color-announcement-text": "#111418",
+    },
 }
+
+# Add banner in case version is not stable
+if "dev" in release:
+    html_theme_options["announcement"] = f"""
+<p>This is the development documentation of nilearn ({release}) 
+<a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external"
+href="https://nilearn.github.io"><span>Switch to stable version ({version})</span></a></p>
+"""
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = ['themes']

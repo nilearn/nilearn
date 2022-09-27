@@ -86,3 +86,12 @@ table.plotting-table col {
 table.plotting-table img {
   object-fit: contain;
 }
+
+/* Furo changes */
+.announcement {
+  height: auto;
+}
+
+.announcement-content {
+  white-space: normal;
+}
