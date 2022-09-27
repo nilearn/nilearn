@@ -198,11 +198,13 @@ html_theme_options = {
 
 # Add banner in case version is not stable
 if "dev" in release:
-    html_theme_options["announcement"] = f"""
-<p>This is the development documentation of nilearn ({release}) 
-<a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external"
-href="https://nilearn.github.io"><span>Switch to stable version ({version})</span></a></p>
-"""
+    html_theme_options["announcement"] = (
+        f'<p>This is the development documentation of nilearn ({release}) '
+        '<a class="sd-sphinx-override sd-badge sd-text-wrap'
+        'sd-btn-outline-dark reference external"'
+        'href="https://nilearn.github.io">'
+        f'<span>Switch to stable version ({version})</span></a></p>'
+    )
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = ['themes']
