@@ -41,7 +41,7 @@ def _get_vertexcolor(surf_map, cmap, norm,
 
     if darkness is not None:
         bg_data *= darkness
-    bg_color = mpl.get_cmap('Greys')(bg_data)
+    bg_color = plt.get_cmap('Greys')(bg_data)
 
     # select vertices which are filtered out by the threshold
     under_threshold = np.abs(surf_map) < (
