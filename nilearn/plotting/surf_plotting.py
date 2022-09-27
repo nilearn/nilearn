@@ -903,14 +903,14 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
 
 
 @fill_doc
-def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None, scale_bg_map=True,
+def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        hemi='left', view='lateral', engine='matplotlib',
                        threshold=None, alpha='auto', vmax=None,
                        cmap='cold_hot', colorbar=True,
                        symmetric_cbar="auto", cbar_tick_format="auto",
-                       bg_on_data=False, darkness=1, title=None,
-                       title_font_size=18, output_file=None, axes=None,
-                       figure=None, **kwargs):
+                       bg_on_data=False, scale_bg_map=True, darkness=1,
+                       title=None, title_font_size=18, output_file=None,
+                       axes=None, figure=None, **kwargs):
     """Plotting a stats map on a surface mesh with optional background
 
     .. versionadded:: 0.3
@@ -1051,11 +1051,12 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None, scale_bg_map=True,
 
     display = plot_surf(
         surf_mesh, surf_map=loaded_stat_map,
-        bg_map=bg_map, scale_bg_map=scale_bg_map, hemi=hemi,
+        bg_map=bg_map, hemi=hemi,
         view=view, engine=engine, avg_method='mean', threshold=threshold,
         cmap=cmap, symmetric_cmap=True, colorbar=colorbar,
         cbar_tick_format=cbar_tick_format, alpha=alpha,
-        bg_on_data=bg_on_data, darkness=darkness, vmax=vmax, vmin=vmin,
+        bg_on_data=bg_on_data, scale_bg_map=scale_bg_map,
+        darkness=darkness, vmax=vmax, vmin=vmin,
         title=title, title_font_size=title_font_size, output_file=output_file,
         axes=axes, figure=figure, cbar_vmin=cbar_vmin,
         cbar_vmax=cbar_vmax, **kwargs
@@ -1292,8 +1293,9 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                   hemi='left', view='lateral', engine='matplotlib',
                   threshold=1e-14, alpha='auto', vmin=None, vmax=None,
                   cmap='gist_ncar', cbar_tick_format="auto",
-                  bg_on_data=False, darkness=1, title=None,
-                  title_font_size=18, output_file=None, axes=None,
+                  bg_on_data=False, scale_bg_map=True,
+                  darkness=1, title=None, title_font_size=18,
+                  output_file=None, axes=None,
                   figure=None, **kwargs):
     """ Plotting ROI on a surface mesh with optional background
 
@@ -1317,11 +1319,11 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         a Numpy array with a value for each vertex of the surf_mesh.
         The value at each vertex one inside the ROI and zero inside ROI, or an
         integer giving the label number for atlases.
-    %(hemi)s
     bg_map : Surface data object (to be defined), optional
         Background image to be plotted on the mesh underneath the
         stat_map in greyscale, most likely a sulcal depth map for
         realistic shading.
+    %(hemi)s
     %(view)s
     engine : {'matplotlib', 'plotly'}, optional
 
@@ -1370,6 +1372,8 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     %(bg_on_data)s
         Default=False.
+    %(scale_bg_map)s
+        Default=True.
     %(darkness)s
         Default=1.
 
@@ -1442,6 +1446,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                         cmap=cmap, symmetric_cmap=False,
                         cbar_tick_format=cbar_tick_format,
                         alpha=alpha, bg_on_data=bg_on_data,
+                        scale_bg_map=scale_bg_map,
                         darkness=darkness, vmin=vmin, vmax=vmax,
                         title=title, title_font_size=title_font_size,
                         output_file=output_file, axes=axes,
