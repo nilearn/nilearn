@@ -646,6 +646,9 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         Default=False.
     %(scale_bg_map)s
         Default=True.
+        
+        .. versionadded:: 0.9.3.dev
+        
     %(darkness)s
         Default=1.
 
