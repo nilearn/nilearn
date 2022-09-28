@@ -1001,6 +1001,9 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         Default=False.
     %(scale_bg_map)s
         Default=True.
+        
+        .. versionadded:: 0.9.3.dev
+        
     %(darkness)s
         Default=1.
 
