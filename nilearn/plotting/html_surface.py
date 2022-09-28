@@ -57,10 +57,10 @@ def _get_vertexcolor(surf_map, cmap, norm,
     return to_color_strings(vertexcolor)
 
 
-def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
-                  black_bg=False, bg_map=None, symmetric_cmap=True,
-                  bg_on_data=False, scale_bg_map=True, darkness=1,
-                  vmax=None, vmin=None):
+def _one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
+                   black_bg=False, bg_map=None, symmetric_cmap=True,
+                   bg_on_data=False, scale_bg_map=True, darkness=1,
+                   vmax=None, vmin=None):
     """Prepare info for plotting one surface map on a single mesh.
 
     This computes the dictionary that gets inserted in the web page,
@@ -100,10 +100,10 @@ def _check_mesh(mesh):
     return mesh
 
 
-def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
-                    cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
-                    bg_on_data=False, scale_bg_map=True, darkness=1,
-                    vmax=None, vmin=None, vol_to_surf_kwargs={}):
+def _full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
+                     cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
+                     bg_on_data=False, scale_bg_map=True, darkness=1,
+                     vmax=None, vmin=None, vol_to_surf_kwargs={}):
     """Project 3D map on cortex; prepare info to plot both hemispheres.
 
     This computes the dictionary that gets inserted in the web page,
@@ -245,7 +245,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
 
     """
     stat_map_img = check_niimg_3d(stat_map_img)
-    info = full_brain_info(
+    info = _full_brain_info(
         volume_img=stat_map_img, mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, vmax=vmax, vmin=vmin,
         symmetric_cmap=symmetric_cmap, vol_to_surf_kwargs=vol_to_surf_kwargs)
@@ -354,7 +354,7 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
             surf_mesh, surf_map)
     if bg_map is not None:
         _, bg_map = surface.check_mesh_and_data(surf_mesh, bg_map)
-    info = one_mesh_info(
+    info = _one_mesh_info(
         surf_map=surf_map, surf_mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, bg_map=bg_map,
         symmetric_cmap=symmetric_cmap, vmax=vmax, vmin=vmin)

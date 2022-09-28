@@ -50,7 +50,7 @@ def test_one_mesh_info():
     mesh = fsaverage["pial_left"]
     surf_map = surface.load_surf_data(fsaverage["sulc_left"])
     mesh = surface.load_surf_mesh(mesh)
-    info = html_surface.one_mesh_info(
+    info = html_surface._one_mesh_info(
         surf_map, mesh, '90%', black_bg=True,
         bg_map=surf_map)
     assert {'_x', '_y', '_z', '_i', '_j', '_k'}.issubset(
@@ -70,7 +70,7 @@ def test_one_mesh_info():
 def test_full_brain_info():
     surfaces = datasets.fetch_surf_fsaverage()
     img = _get_img()
-    info = html_surface.full_brain_info(img, surfaces)
+    info = html_surface._full_brain_info(img, surfaces)
     check_colors(info['colorscale'])
     assert {'pial_left', 'pial_right',
             'inflated_left', 'inflated_right',
@@ -94,14 +94,14 @@ def test_fill_html_template():
     mesh = surface.load_surf_mesh(fsaverage['pial_right'])
     surf_map = mesh[0][:, 0]
     img = _get_img()
-    info = html_surface.one_mesh_info(
+    info = html_surface._one_mesh_info(
         surf_map, fsaverage['pial_right'], '90%', black_bg=True,
         bg_map=fsaverage['sulc_right'])
     info["title"] = None
     html = html_surface._fill_html_template(info, embed_js=False)
     check_html(html)
     assert "jquery.min.js" in html.html
-    info = html_surface.full_brain_info(img)
+    info = html_surface._full_brain_info(img)
     info["title"] = None
     html = html_surface._fill_html_template(info)
     check_html(html)
