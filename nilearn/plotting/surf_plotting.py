@@ -1377,6 +1377,9 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         Default=False.
     %(scale_bg_map)s
         Default=True.
+        
+        .. versionadded:: 0.9.3
+        
     %(darkness)s
         Default=1.
 
