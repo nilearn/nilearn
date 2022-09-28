@@ -29,6 +29,19 @@ def test_get_vertexcolor():
     vertexcolors = html_surface._get_vertexcolor(
         surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'])
     assert len(vertexcolors) == len(mesh[0])
+    # Surface map whose value in each vertex is
+    # 0.75 if this vertex's curv >= 0
+    # 0.25 if this vertex's curv < 0
+    bg_map = np.sign(surface.load_surf_data(fsaverage['curv_left']))
+    bg_map = (bg_map + 1) / 8 + 0.25
+    vertexcolors = html_surface._get_vertexcolor(
+        surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'],
+        bg_map, scale_bg_map=False)
+    assert len(vertexcolors) == len(mesh[0])
+    vertexcolors = html_surface._get_vertexcolor(
+        surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'],
+        bg_map, scale_bg_map=True)
+    assert len(vertexcolors) == len(mesh[0])
 
 
 def test_check_mesh():
