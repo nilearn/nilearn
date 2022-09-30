@@ -69,12 +69,16 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         is continuous.
 
     resampling_target : {"data", "labels", None}, optional.
-        Gives which image gives the final shape/size. For example, if
-        `resampling_target` is "data", the atlas is resampled to the
-        shape of the data if needed. If it is "labels" then mask_img
-        and images provided to fit() are resampled to the shape and
-        affine of maps_img. "None" means no resampling: if shapes and
-        affines do not match, a ValueError is raised. Default="data".
+        Gives which image gives the final shape/size:
+
+            - "data" means the atlas is resampled to the
+            shape of the data if needed
+            - "labels" means en mask_img and images provided to fit() are
+            resampled to the shape and affine of maps_img
+            - None means no resampling: if shapes and affines do not match, a
+            ValueError is raised
+
+        Default="data".
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
