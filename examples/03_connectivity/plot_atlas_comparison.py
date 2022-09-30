@@ -60,9 +60,10 @@ connectome_measure = ConnectivityMeasure(kind='correlation')
 from nilearn import plotting
 
 # create masker using MultiNiftiLabelsMasker to extract functional data within
-# atlas parcels from multiple subjects
+# atlas parcels from multiple subjects using parallelization to speed up the
+# computation
 masker = MultiNiftiLabelsMasker(labels_img=yeo['thick_17'], standardize=True,
-                                memory='nilearn_cache')
+                                memory='nilearn_cache', n_jobs=2)
 
 # extract time series from all subjects
 time_series = masker.fit_transform(data.func, confounds=data.confounds)
@@ -130,9 +131,10 @@ difumo = datasets.fetch_atlas_difumo(
 from nilearn.maskers import MultiNiftiMapsMasker
 
 # create masker using MultiNiftiMapsMasker to extract functional data within
-# atlas parcels from multiple subjects
+# atlas parcels from multiple subjects using parallelization to speed up the
+# # computation
 masker = MultiNiftiMapsMasker(maps_img=difumo.maps, standardize=True,
-                              memory='nilearn_cache')
+                              memory='nilearn_cache', n_jobs=2)
 
 # extract time series from all subjects
 time_series = masker.fit_transform(data.func, confounds=data.confounds)
