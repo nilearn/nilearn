@@ -104,7 +104,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
                  standardize_confounds=True, high_variance_confounds=False,
                  detrend=False, low_pass=None, high_pass=None, t_r=None,
                  dtype=None, resampling_target="data",
-                 memory=Memory(cachedir=None, verbose=0), memory_level=1,
+                 memory=Memory(location=None, verbose=0), memory_level=1,
                  n_jobs=1, verbose=0, strategy="mean", reports=True):
         self.labels_img = labels_img
         self.labels = labels
