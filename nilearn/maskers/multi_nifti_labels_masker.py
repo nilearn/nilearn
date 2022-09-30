@@ -54,7 +54,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
             - False : Do not standardize the data.
 
         Default=False.
-    %(standardize_confounds)
+    %(standardize_confounds)s
     high_variance_confounds : :obj:`bool`, optional
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
