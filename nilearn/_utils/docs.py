@@ -284,7 +284,7 @@ random_state : :obj:`int` or RandomState, optional
 memory_level = """
 memory_level : :obj:`int`, optional.
     Rough estimator of the amount of memory used by caching. Higher value
-    means more memory for caching.
+    means more memory for caching. Zero means no caching.
     Default={}."""
 docdict['memory_level'] = memory_level.format(0)
 docdict['memory_level1'] = memory_level.format(1)

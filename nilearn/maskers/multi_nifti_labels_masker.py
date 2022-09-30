@@ -16,7 +16,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
     """Class for masking of Niimg-like objects.
     MultiNiftiLabelsMasker is useful when data from non-overlapping volumes
     and from different subjects should be extracted (contrary to
-    NiftiLabelsMasker).
+    :class:`nilearn.maskers.NiftiLabelsMasker`).
 
     Parameters
     ----------
@@ -27,8 +27,10 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
     labels : :obj:`list` of :obj:`str`, optional
         Full labels corresponding to the labels image. This is used
         to improve reporting quality if provided.
-        Warning: The labels must be consistent with the label
-        values provided through `labels_img`.
+
+        .. warning::
+            The labels must be consistent with the label
+            values provided through `labels_img`.
 
     background_label : :obj:`int` or :obj:`float`, optional
         Label used in labels_img to represent background.
@@ -40,43 +42,27 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
     %(smoothing_fwhm)s
-    standardize : {'zscore', 'psc', True, False}, default is 'zscore'
+    standardize : {'zscore', 'psc', True, False}, optional
         Strategy to standardize the signal.
-        'zscore': the signal is z-scored. Timeseries are shifted
-        to zero mean and scaled to unit variance.
-        'psc':  Timeseries are shifted to zero mean value and scaled
-        to percent signal change (as compared to original mean signal).
-        True : the signal is z-scored. Timeseries are shifted
-        to zero mean and scaled to unit variance.
-        False : Do not standardize the data.
+
+            - 'zscore': the signal is z-scored. Timeseries are shifted
+            to zero mean and scaled to unit variance.
+            - 'psc':  Timeseries are shifted to zero mean value and scaled
+            to percent signal change (as compared to original mean signal).
+            - True : the signal is z-scored. Timeseries are shifted
+            to zero mean and scaled to unit variance.
+            - False : Do not standardize the data.
+
         Default=False.
-
-    standardize_confounds : :obj:`bool`, optional
-        If standardize_confounds is True, the confounds are z-scored:
-        their mean is put to 0 and their variance to 1 in the time dimension.
-        Default=True.
-
+    %(standardize_confounds)
     high_variance_confounds : :obj:`bool`, optional
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out. Default=False.
-
-    detrend : :obj:`bool`, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details. Default=False.
-
-    low_pass : None or :obj:`float`, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    high_pass : None or :obj:`float`, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    t_r : :obj:`float`, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
+    %(detrend)s
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
     dtype : {dtype, "auto"}
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
@@ -89,25 +75,10 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         and images provided to fit() are resampled to the shape and
         affine of maps_img. "None" means no resampling: if shapes and
         affines do not match, a ValueError is raised. Default="data".
-
-    memory : :obj:`joblib.Memory` or :obj:`str`, optional
-        Used to cache the region extraction process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
-
-    memory_level : :obj:`int`, optional
-        Aggressiveness of memory caching. The higher the number, the higher
-        the number of functions that will be cached. Zero means no caching.
-        Default=1.
-
-    n_jobs : :obj:`int`, optional
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs', -2 'all CPUs but one', and so on.
-
-    verbose : :obj:`int`, optional
-        Indicate the level of verbosity. By default, nothing is printed.
-        Default=0.
-
+    %(memory)s
+    %(memory_level)s
+    %(n_jobs)s
+    %(verbose0)s
     strategy : :obj:`str`, optional
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, minimum, maximum, variance,
