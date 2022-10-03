@@ -4,7 +4,7 @@ Transformer for computing ROI signals of multiple 4D images
 
 import itertools
 
-from joblib import Memory, Parallel, delayed
+from joblib import Parallel, delayed
 
 from .._utils import CacheMixin, fill_doc
 from .._utils.niimg_conversions import _iter_check_niimg
@@ -100,57 +100,9 @@ class MultiNiftiMapsMasker(NiftiMapsMasker, CacheMixin):
     """
     # memory and memory_level are used by CacheMixin.
 
-    def __init__(self, maps_img, mask_img=None,
-                 allow_overlap=True, smoothing_fwhm=None, standardize=False,
-                 standardize_confounds=True, high_variance_confounds=False,
-                 detrend=False, low_pass=None, high_pass=None, t_r=None,
-                 dtype=None, resampling_target="data",
-                 memory=Memory(location=None, verbose=0), memory_level=0,
-                 n_jobs=1, verbose=0, reports=True):
-        self.maps_img = maps_img
-        self.mask_img = mask_img
-
-        # Maps Masker parameter
-        self.allow_overlap = allow_overlap
-
-        # Parameters for image.smooth
-        self.smoothing_fwhm = smoothing_fwhm
-
-        # Parameters for clean()
-        self.standardize = standardize
-        self.standardize_confounds = standardize_confounds
-        self.high_variance_confounds = high_variance_confounds
-        self.detrend = detrend
-        self.low_pass = low_pass
-        self.high_pass = high_pass
-        self.t_r = t_r
-        self.dtype = dtype
-
-        # Parameters for resampling
-        self.resampling_target = resampling_target
-
-        # Parameters for joblib
-        self.memory = memory
-        self.memory_level = memory_level
+    def __init__(self, *args, n_jobs=1, **kwargs):
+        super().__init__(*args, **kwargs)
         self.n_jobs = n_jobs
-        self.verbose = verbose
-
-        self.reports = reports
-        self.report_id = -1
-        self._report_content = dict()
-        self._report_content['description'] = (
-            'This reports shows the spatial maps provided to the mask.')
-        self._report_content['warning_message'] = None
-
-        if resampling_target not in ("mask", "maps", "data", None):
-            raise ValueError("invalid value for 'resampling_target'"
-                             " parameter: " + str(resampling_target))
-
-        if self.mask_img is None and resampling_target == "mask":
-            raise ValueError(
-                "resampling_target has been set to 'mask' but no mask "
-                "has been provided.\nSet resampling_target to something else"
-                " or provide a mask.")
 
     def _transform_imgs(self, imgs_list, confounds=None, n_jobs=1,
                         sample_mask=None):

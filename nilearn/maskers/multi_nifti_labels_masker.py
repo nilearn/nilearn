@@ -4,7 +4,7 @@ Transformer for computing ROI signals of multiple 4D images
 
 import itertools
 
-from joblib import Memory, Parallel, delayed
+from joblib import Parallel, delayed
 
 from .._utils import CacheMixin, fill_doc
 from .._utils.niimg_conversions import _iter_check_niimg
@@ -99,60 +99,9 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
 
     """
 
-    def __init__(self, labels_img, labels=None, background_label=0,
-                 mask_img=None, smoothing_fwhm=None, standardize=False,
-                 standardize_confounds=True, high_variance_confounds=False,
-                 detrend=False, low_pass=None, high_pass=None, t_r=None,
-                 dtype=None, resampling_target="data",
-                 memory=Memory(location=None, verbose=0), memory_level=1,
-                 n_jobs=1, verbose=0, strategy="mean", reports=True):
-        self.labels_img = labels_img
-        self.labels = labels
-        self.background_label = background_label
-        self.mask_img = mask_img
-
-        # Parameters for _smooth_array
-        self.smoothing_fwhm = smoothing_fwhm
-
-        # Parameters for clean()
-        self.standardize = standardize
-        self.standardize_confounds = standardize_confounds
-        self.high_variance_confounds = high_variance_confounds
-        self.detrend = detrend
-        self.low_pass = low_pass
-        self.high_pass = high_pass
-        self.t_r = t_r
-        self.dtype = dtype
-
-        # Parameters for resampling
-        self.resampling_target = resampling_target
-
-        # Parameters for joblib
-        self.memory = memory
-        self.memory_level = memory_level
+    def __init__(self, *args, n_jobs=1, **kwargs):
+        super().__init__(*args, **kwargs)
         self.n_jobs = n_jobs
-        self.verbose = verbose
-        self.reports = reports
-        self._report_content = dict()
-        self._report_content['description'] = (
-            'This reports shows the regions '
-            'defined by the labels of the mask.')
-        self._report_content['warning_message'] = None
-
-        available_reduction_strategies = {'mean', 'median', 'sum',
-                                          'minimum', 'maximum',
-                                          'standard_deviation', 'variance'}
-
-        if strategy not in available_reduction_strategies:
-            raise ValueError(
-                "Invalid strategy '{}'. Valid strategies are {}.".format
-                (strategy, available_reduction_strategies))
-
-        self.strategy = strategy
-
-        if resampling_target not in ("labels", "data", None):
-            raise ValueError("invalid value for 'resampling_target' "
-                             "parameter: {}".format(resampling_target))
 
     def _transform_imgs(self, imgs_list, confounds=None, n_jobs=1,
                         sample_mask=None):
