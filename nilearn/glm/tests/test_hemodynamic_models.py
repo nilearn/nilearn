@@ -316,6 +316,13 @@ def test_make_regressor_3():
     assert_array_equal(reg, reg_)
 
 
+def test_regressor_names():
+    """ test that function allows invalid column identifier
+    """
+    reg_names = _regressor_names(['1_cond'], 'glover')
+    assert reg_names[0] == '1_cond'
+
+
 def test_design_warnings():
     """
     test that warnings are correctly raised upon weird design specification
