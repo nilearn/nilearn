@@ -112,11 +112,14 @@ def _safe_cache(memory, func, **kwargs):
     # Keep only the major + minor version numbers
     my_versions = dict((m.__name__, m.__version__) for m in modules)
     commons = set(versions.keys()).intersection(set(my_versions.keys()))
-    collisions = [
-        m for m in commons if not _compare_version(
-            versions[m], '==', my_versions[m]
-        )
-    ]
+    try:
+        collisions = [
+            m for m in commons if not _compare_version(
+                versions[m], '==', my_versions[m]
+            )
+        ]
+    except TypeError:
+        collisions = ['']
     # Flush cache if version collision
     if len(collisions) > 0:
         if nilearn.CHECK_CACHE_VERSION:

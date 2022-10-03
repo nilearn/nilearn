@@ -89,6 +89,14 @@ def test__safe_cache_flush():
         assert os.path.exists(version_file)
         assert not os.path.exists(nibabel_dir)
 
+        # Test handling of TypeError if version name is not str
+        cache_mixin.__CACHE_CHECKED = {}
+        with open(version_file, 'w') as f:
+            json.dump({"nibabel": [0.0]}, f)
+        cache_mixin._safe_cache(mem, f)
+        assert os.path.exists(version_file)
+        assert not os.path.exists(nibabel_dir)
+
 
 def test_cache_memory_level():
     with tempfile.TemporaryDirectory() as temp_dir:
