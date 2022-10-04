@@ -85,12 +85,6 @@ def _safe_cache(memory, func, **kwargs):
     number of nibabel has changed.
 
     """
-    ''' Workaround for
-     https://github.com/scikit-learn-contrib/imbalanced-learn/issues/482
-    joblib throws a spurious warning with newer scikit-learn.
-    This code uses the recommended method first and the deprecated one
-    if that fails, ensuring th warning is not generated in any case.
-    '''
     try:
         location = os.path.join(memory.location, 'joblib')
     except AttributeError:
@@ -108,9 +102,8 @@ def _safe_cache(memory, func, **kwargs):
         with open(version_file, 'r') as _version_file:
             versions = json.load(_version_file)
 
-    modules = (nibabel, )
     # Keep only the major + minor version numbers
-    my_versions = dict((m.__name__, m.__version__) for m in modules)
+    my_versions = {nibabel.__name__: nibabel.__version__}
     commons = set(versions.keys()).intersection(set(my_versions.keys()))
     try:
         collisions = [
