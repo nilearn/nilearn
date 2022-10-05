@@ -103,7 +103,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         super().__init__(*args, **kwargs)
         self.n_jobs = n_jobs
 
-    def _transform_imgs(self, imgs_list, confounds=None, n_jobs=1,
+    def transform_imgs(self, imgs_list, confounds=None, n_jobs=1,
                         sample_mask=None):
         """Extract signals from a list of 4D niimgs.
 
@@ -183,5 +183,5 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         if (not hasattr(imgs, '__iter__')
                 or isinstance(imgs, str)):
             return self.transform_single_imgs(imgs)
-        return self._transform_imgs(imgs, confounds, n_jobs=self.n_jobs,
+        return self.transform_imgs(imgs, confounds, n_jobs=self.n_jobs,
                                     sample_mask=sample_mask)
