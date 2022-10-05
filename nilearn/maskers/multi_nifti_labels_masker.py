@@ -104,25 +104,15 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         self.n_jobs = n_jobs
 
     def transform_imgs(self, imgs_list, confounds=None, n_jobs=1,
-                        sample_mask=None):
+                       sample_mask=None):
         """Extract signals from a list of 4D niimgs.
 
         Parameters
         ----------
-        imgs_list: list of 4D Niimg-like objects
-            See :ref:`extracting_data`.
+        %(imgs)s
             Images to process. Each element of the list is a 4D image.
-
-        confounds: CSV file or array-like, optional
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details.
-            shape: list of (number of scans, number of confounds)
-
-        sample_mask : Any type compatible with numpy-array indexing, optional
-            shape: (number of scans - number of volumes removed, )
-            Masks the niimgs along time/fourth dimension to perform scrubbing
-            (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to signal.clean.
+        %(confounds)s
+        %(sample_mask)s
 
         Returns
         -------
@@ -152,24 +142,14 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
         return region_signals
 
     def transform(self, imgs, confounds=None, sample_mask=None):
-        """ Apply mask, spatial and temporal preprocessing
+        """Apply mask, spatial and temporal preprocessing
 
         Parameters
         ----------
-        imgs: list of 4D Niimg-like objects
-            See :ref:`extracting_data`.
+        %(imgs)s
             Images to process. Each element of the list is a 4D image.
-
-        confounds: CSV file or array-like, optional
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details.
-            shape: list of (number of scans, number of confounds)
-
-        sample_mask : Any type compatible with numpy-array indexing, optional
-            shape: (number of scans - number of volumes removed, )
-            Masks the niimgs along time/fourth dimension to perform scrubbing
-            (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to signal.clean.
+        %(confounds)s
+        %(sample_mask)s
 
         Returns
         -------
@@ -184,4 +164,4 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker, CacheMixin):
                 or isinstance(imgs, str)):
             return self.transform_single_imgs(imgs)
         return self.transform_imgs(imgs, confounds, n_jobs=self.n_jobs,
-                                    sample_mask=sample_mask)
+                                   sample_mask=sample_mask)

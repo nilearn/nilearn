@@ -309,6 +309,23 @@ imgs : :obj:`list` of Niimg-like objects
     See :ref:`extracting_data`.
 """
 
+# confounds
+docdict['confounds'] = """
+confounds : CSV file or array-like, optional
+    This parameter is passed to :func:`nilearn.signal.clean`.
+    Please see the related documentation for details.
+    shape: list of (number of scans, number of confounds)
+"""
+
+# sample_mask
+docdict['sample_mask'] = """
+sample_mask : Any type compatible with numpy-array indexing, optional
+    shape: (number of scans - number of volumes removed, )
+    Masks the niimgs along time/fourth dimension to perform scrubbing
+    (remove volumes with high motion) and/or non-steady-state volumes.
+    This parameter is passed to :func:`nilearn.signal.clean`.
+"""
+
 # cut_coords
 docdict['cut_coords'] = """
 cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
