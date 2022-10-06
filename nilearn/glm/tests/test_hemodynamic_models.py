@@ -316,7 +316,7 @@ def test_make_regressor_3():
     assert_array_equal(reg, reg_)
 
 
-def test_regressor_names():
+def test__regressor_names():
     """ test that function allows invalid column identifier
     """
     reg_names = _regressor_names(['1_cond'], 'glover')
