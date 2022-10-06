@@ -149,7 +149,7 @@ Installing ``nilearn``
 
       .. code-block::
 
-         python -m pip install -e .[dev]
+         python -m pip install -e '.[dev]'
 
       To check your install, try importing nilearn in a python session:
 
