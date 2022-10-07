@@ -42,7 +42,7 @@ def expression_to_contrast_vector(expression, design_columns):
     df = pd.DataFrame(np.eye(len(design_columns)), columns=design_columns)
     try:
         contrast_vector = df.eval(expression, engine="python").values
-    except AttributeError:
+    except Exception:
         raise ValueError(
             'The expression (%s) is not valid. This could be due to '
             'defining the contrasts using design matrix columns that are '
