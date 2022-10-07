@@ -217,10 +217,6 @@ def test_names():
         [f"{name}_{custom_rf.__name__}"]
     assert _regressor_names(name, [custom_rf]) == \
         [f"{name}_{custom_rf.__name__}"]
-    assert _regressor_names(name, lambda tr, ov: np.ones(int(tr * ov))) == \
-        [f"{name}_lambda"]
-    assert _regressor_names(name, [lambda tr, ov: np.ones(int(tr * ov))]) == \
-        [f"{name}_lambda"]
 
     with pytest.raises(ValueError,
                        match="Computed regressor names are not unique"):
