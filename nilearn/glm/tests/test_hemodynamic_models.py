@@ -319,7 +319,7 @@ def test_make_regressor_3():
 def test__regressor_names():
     """ test that function allows invalid column identifier
     """
-    reg_names = _regressor_names(['1_cond'], 'glover')
+    reg_names = _regressor_names('1_cond', 'glover')
     assert reg_names[0] == '1_cond'
 
 
