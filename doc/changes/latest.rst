@@ -11,6 +11,8 @@ NEW
 Fixes
 -----
 
+- Regressor names can now be invalid identifiers but will raise an error with :meth:`~glm.first_level.FirstLevelModel.compute_contrast` if combined to make an invalid expression (:gh:`3374` by `Yasmin Mzayek`_).
+
 Enhancements
 ------------
 
