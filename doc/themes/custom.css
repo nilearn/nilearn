@@ -74,6 +74,12 @@ button.copybtn {
   border-left: 4px solid var(--color-background-border);
 }
 
+
+/* Inline code */
+code.literal {
+  font-size: var(--font-size--normal);
+}
+
 table.plotting-table {
   table-layout: fixed;
   width: 100%;
