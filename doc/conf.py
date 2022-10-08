@@ -193,6 +193,8 @@ html_theme_options = {
         "admonition-title-font-size": "100%",
         "color-announcement-background": "#FBB360",
         "color-announcement-text": "#111418",
+        "color-admonition-title--note": "#448aff",
+        "color-admonition-title-background--note": "#448aff10",
     },
 }
 
