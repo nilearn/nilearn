@@ -71,9 +71,15 @@ button.copybtn {
 .highlight {
   border-radius: 0px;
   background-color: var(--color-background-secondary);
+}
+
+.highlight-default .highlight {
   border-left: 4px solid var(--color-background-border);
 }
 
+.highlight-primary .highlight {
+  border-left: 4px solid var(--sd-color-primary);
+}
 
 /* Inline code */
 code.literal {
