@@ -34,14 +34,68 @@ Important links
 Install
 =======
 
-First make sure you have installed all the dependencies listed below.
-Then you can install nilearn by running the following command in
-a command prompt::
+Latest release
+--------------
 
-    pip install -U --user nilearn
+**1. Setup a virtual environment**
 
-More detailed instructions are available at
-https://nilearn.github.io/stable/introduction.html#installation.
+We recommend that you install ``nilearn`` in a virtual Python environment,
+either managed with the standard library ``venv`` or with ``conda``
+(see `miniconda <https://docs.conda.io/en/latest/miniconda.html>`_ for instance).
+Either way, create and activate a new python environment.
+
+With ``venv``:
+
+.. code-block:: bash
+
+    python3 -m venv /<path_to_new_env>
+    source /<path_to_new_env>/bin/activate
+
+Windows users should change the last line to ``\<path_to_new_env>\Scripts\activate.bat`` in order to activate their virtual environment.
+
+With ``conda``:
+
+.. code-block:: bash
+
+    conda create -n nilearn python=3.9
+    conda activate nilearn
+
+**2. Install nilearn with pip**
+
+Execute the following command in the command prompt / terminal
+in the proper python environment:
+
+.. code-block:: bash
+
+    python -m pip install -U nilearn
+
+Development version
+-------------------
+
+In order to access the development version of nilearn, simply clone and go to the repo:
+
+.. code-block:: bash
+
+    git clone https://github.com/nilearn/nilearn.git
+    cd nilearn
+
+Install the package in the proper conda environment with
+
+.. code-block:: bash
+
+    python -m pip install -e '.[dev]'
+
+
+Check installation
+------------------
+
+Try importing nilearn in a python / iPython session:
+
+.. code-block:: python
+
+    import nilearn
+
+If no error is raised, you have installed nilearn correctly.
 
 Office Hours
 ============
