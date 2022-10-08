@@ -13,7 +13,7 @@ Introduction
 What is ``nilearn``?
 ====================
 
-``nilearn`` is a package that makes is easy to use advanced machine learning technics so as to analyze data acquired with MRI machines.
+``nilearn`` is a package that makes is easy to use advanced machine learning techniques so as to analyze data acquired with MRI machines.
 In particular, underlying machine learning problems include
 :ref:`decoding brain data <decoding>`,
 computing :ref:`brain parcellations <parcellating_brain>`,
@@ -46,7 +46,7 @@ as well as to an `introduction to using Python for science <http://scipy-lecture
 
 Moreover, we recommend using ``nilearn`` with `Jupyter <http://jupyter.org>`_ notebooks or
 `IPython <http://ipython.org>`_ sessions. They provide an interactive 
-environment that greatly facilitates debugging and vizualisation.
+environment that greatly facilitates debugging and visualisation.
 
 First steps with nilearn
 ------------------------
@@ -279,7 +279,7 @@ that could be of interest to new-comers:
 
 
 Besides, you can find help on :neurostars:`neurostars <>` for questions
-releated to ``nilearn`` and to computational neuroscience in general.
+related to ``nilearn`` and to computational neuroscience in general.
 Finally, the ``nilearn`` team organizes weekly :ref:`office hours <quickstart>`.
 We can also be reached on :ref:`github <https://github.com/nilearn/nilearn/issues>`
 in case you find a bug.
