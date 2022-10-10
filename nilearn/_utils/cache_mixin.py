@@ -80,6 +80,13 @@ def _check_memory(memory, verbose=0):
     return memory
 
 
+def _nibabel_versions_equal(versions, my_versions):
+    try:
+        return _compare_version(versions, '==', my_versions)
+    except TypeError:
+        return False
+
+
 def _safe_cache(memory, func, **kwargs):
     """A wrapper for mem.cache that flushes the cache if the version
     number of nibabel has changed.
@@ -104,17 +111,10 @@ def _safe_cache(memory, func, **kwargs):
 
     # Keep only the major + minor version numbers
     my_versions = {nibabel.__name__: nibabel.__version__}
-    commons = set(versions.keys()).intersection(set(my_versions.keys()))
-    try:
-        collisions = [
-            m for m in commons if not _compare_version(
-                versions[m], '==', my_versions[m]
-            )
-        ]
-    except TypeError:
-        collisions = ['nibabel']
-    # Flush cache if version collision
-    if len(collisions) > 0:
+    if 'nibabel' in versions and not _nibabel_versions_equal(
+            versions['nibabel'], my_versions['nibabel']
+    ):
+        # Flush cache if version collision
         if nilearn.CHECK_CACHE_VERSION:
             warnings.warn("Incompatible cache in %s: "
                           "different version of nibabel. Deleting "
@@ -142,6 +142,7 @@ def _safe_cache(memory, func, **kwargs):
             warnings.warn("Incompatible cache in %s: "
                           "old version of nibabel." % location)
             return memory.cache(func, **kwargs)
+
     # Write json files if configuration is different
     if versions != my_versions:
         with open(version_file, 'w') as _version_file:
