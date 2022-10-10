@@ -26,7 +26,7 @@ doing multi-voxel pattern analysis (MVPA) or :ref:`predictive modelling <decodin
 
 For machine learning experts, the value of ``nilearn`` can be seen as
 domain-specific **feature engineering** construction, that is, shaping
-neuroimaging data into a feature matrix well suited to statistical learning.
+neuroimaging data into a feature matrix well suited for statistical learning.
 
 .. note::
 
