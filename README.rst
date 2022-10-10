@@ -72,19 +72,8 @@ in the proper python environment:
 Development version
 -------------------
 
-In order to access the development version of nilearn, simply clone and go to the repo:
-
-.. code-block:: bash
-
-    git clone https://github.com/nilearn/nilearn.git
-    cd nilearn
-
-Install the package in the proper conda environment with
-
-.. code-block:: bash
-
-    python -m pip install -e '.[dev]'
-
+Please find all development setup instructions in the
+`contribution guide <https://nilearn.github.io/stable/development.html#setting-up-your-environment>`_.
 
 Check installation
 ------------------
