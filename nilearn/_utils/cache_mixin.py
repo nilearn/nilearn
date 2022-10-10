@@ -141,7 +141,7 @@ def _safe_cache(memory, func, **kwargs):
         else:
             warnings.warn("Incompatible cache in %s: "
                           "old version of nibabel." % location)
-
+            return memory.cache(func, **kwargs)
     # Write json files if configuration is different
     if versions != my_versions:
         with open(version_file, 'w') as _version_file:
