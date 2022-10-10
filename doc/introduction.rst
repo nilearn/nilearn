@@ -86,8 +86,8 @@ Let's have a look at this image:
 Learning with the API references
 --------------------------------
 
-In the last command, you just made use of 2 ``nilearn`` modules: the :mod:`nilearn.datasets`
-and the :mod:`nilearn.plotting` modules.
+In the last command, you just made use of 2 ``nilearn`` modules: :mod:`nilearn.datasets`
+and :mod:`nilearn.plotting`.
 All modules are described in the :ref:`API references <modules>`.
 
 Oftentimes, if you are already familiar with the problems and vocabulary of MRI analysis,
