@@ -112,7 +112,7 @@ def _safe_cache(memory, func, **kwargs):
             )
         ]
     except TypeError:
-        collisions = ['']
+        collisions = ['nibabel']
     # Flush cache if version collision
     if len(collisions) > 0:
         if nilearn.CHECK_CACHE_VERSION:
