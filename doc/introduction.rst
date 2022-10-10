@@ -13,7 +13,7 @@ Introduction
 What is ``nilearn``?
 ====================
 
-``nilearn`` is a package that makes is easy to use advanced machine learning techniques so as to analyze data acquired with MRI machines.
+``nilearn`` is a package that makes it easy to use advanced machine learning techniques to analyze data acquired with MRI machines.
 In particular, underlying machine learning problems include
 :ref:`decoding brain data <decoding>`,
 computing :ref:`brain parcellations <parcellating_brain>`,
