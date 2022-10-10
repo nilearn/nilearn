@@ -291,7 +291,7 @@ Machine learning applications to Neuroimaging
 ``nilearn`` brings easy-to-use machine learning tools that can be leveraged to solve more complex applications.
 The interested reader can dive into the following articles for more content.
 
-We give a non-exhaustive list of important such applications.
+We give a non-exhaustive list of such important applications.
     
 **Diagnosis and prognosis**
 
