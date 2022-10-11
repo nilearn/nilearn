@@ -4,10 +4,9 @@
 User guide
 ==========
 
-.. sidebar:: **Download for offline viewing**
-
-  Download the `user guide and examples
-  <https://github.com/nilearn/nilearn.github.io/archive/master.zip>`_.
+.. note::
+  You can download the `user guide and examples <https://github.com/nilearn/nilearn.github.io/archive/master.zip>`_
+  for offline viewing.
 
 This user guide is especially directed towards grad students
 with a background in computer science, machine learning,
