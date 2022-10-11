@@ -1,0 +1,33 @@
+# Workflow to build the documentation
+name: Documentation builder
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  doc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout nilearn
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+
+      - name: Build documentation
+        run: bash build_tools/github/build_doc.sh
+        env:
+          CONDA_ENV_NAME: testenv
+
+      - name: Upload documentation
+        uses: actions/upload-artifact@v3
+        with:
+          name: doc
+          path: doc/_build/html
