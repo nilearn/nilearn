@@ -4,27 +4,79 @@ name: Documentation builder
 on:
   push:
     branches:
-      - main
+      - "main"
   pull_request:
     branches:
-      - main
+      - '*'
 
 jobs:
   doc:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout nilearn
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - name: Complete checkout
+        run: |
+            if ! git remote -v | grep upstream; then
+              git remote add upstream git@github.com:nilearn/nilearn.git
+            fi
+            git fetch upstream
 
-      - name: Build documentation
-        run: bash build_tools/github/build_doc.sh
-        env:
-          CONDA_ENV_NAME: testenv
+      - name: Merge with upstream
+        run: |
+            echo $(git log -1 --pretty=%B) | tee gitlog.txt
+            echo "gitlog.txt = $(cat gitlog.txt)"
+            echo ${CI_PULL_REQUEST//*pull\//} | tee merge.txt
+            if [[ $(cat merge.txt) != "" ]]; then
+                echo "Merging $(cat merge.txt)";
+                git pull --ff-only upstream "refs/pull/$(cat merge.txt)/merge";
+            fi
+
+      - name: Determine force download
+        run: |
+            commit_msg=$(git log -2 --format=oneline);
+            echo $commit_msg;
+            if [[ $commit_msg == *"[force download]"* ]]; then
+              echo "All datasets will be downloaded as requested.";
+              touch restore.txt;
+            else
+              echo "Data cache will be used if available.";
+              echo "true" | tee restore.txt;
+            fi
+          
+      - name: Setup conda
+        run: |
+            wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh;
+            chmod +x ~/miniconda.sh && ~/miniconda.sh -b;
+            echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV;
+
+      - name: Install apt packages
+        run: |
+            ./build_tools/circle/dependencies_apt.sh
+
+      - name: Install packages in conda env
+        run: |
+            ./build_tools/circle/dependencies.sh
+
+      - name: Find build type
+        run: |
+            ./build_tools/circle/build_type.sh
+
+      - name: Verify build type
+        run: |
+            echo "PATTERN = $(cat pattern.txt)"
+            echo "BUILD = $(cat build.txt)"
+
+      - name: build doc
+        run: |
+            source activate testenv;
+            echo "Conda active env = $CONDA_DEFAULT_ENV";
+            cd doc;
+            set -o pipefail;
+            PATTERN=$(cat ../pattern.txt) make $(cat ../build.txt) 2>&1 | tee log.txt;
 
       - name: Upload documentation
         uses: actions/upload-artifact@v3
