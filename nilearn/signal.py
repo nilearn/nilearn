@@ -577,7 +577,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         _check_signal_parameters(detrend, standardize_confounds)
 
     # Read confounds and signals
-    signals, runs, confounds = _sanitize_inputs(
+    signals, runs, confounds, sample_mask = _sanitize_inputs(
         signals, runs, confounds, sample_mask, ensure_finite
     )
     use_filter = _check_filter_parameters(filter, low_pass, high_pass, t_r)
@@ -597,8 +597,14 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
                                 detrend=detrend)
     if use_filter:
         # check if filter parameters are satisfied and filter according to the strategy
-        signals, confounds = _filter_signal(signals, confounds, filter,
+        signals, confounds = _filter_signal(signals, confounds, filter, 
                                             low_pass, high_pass, t_r)
+
+    # apply sample_mask to remove censored volumes
+    if sample_mask is not None:
+        signals = signals[sample_mask, :]
+        if confounds is not None:
+            confounds = confounds[sample_mask, :]    
 
     # Remove confounds
     if confounds is not None:
@@ -630,7 +636,8 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     return signals
 
 
-def _filter_signal(signals, confounds, filter, low_pass, high_pass, t_r):
+def _filter_signal(signals, confounds, filter, low_pass, 
+                   high_pass, t_r):
     '''Filter signal based on provided strategy.'''
     if filter == 'butterworth':
         signals = butterworth(signals, sampling_rate=1. / t_r,
@@ -641,14 +648,38 @@ def _filter_signal(signals, confounds, filter, low_pass, high_pass, t_r):
             confounds = butterworth(confounds, sampling_rate=1. / t_r,
                                     low_pass=low_pass, high_pass=high_pass)
     elif filter == 'cosine':
-        from .glm.first_level.design_matrix import _cosine_drift
+        from nilearn.glm.first_level.design_matrix import _cosine_drift
         frame_times = np.arange(signals.shape[0]) * t_r
-        cosine_drift = _cosine_drift(high_pass, frame_times)
-        if confounds is None:
-            confounds = cosine_drift.copy()
-        else:
-            confounds = np.hstack((confounds, cosine_drift))
+        # remove constant, as the signal is mean centred
+        cosine_drift = _cosine_drift(high_pass, frame_times)[:, :-1]
+        confounds = _check_cosine_by_user(confounds, cosine_drift)
     return signals, confounds
+
+
+def _check_cosine_by_user(confounds, cosine_drift):
+    """Check if cosine term exists, based on correlation > 0.9. """
+    # stack consine drift terms if there's no cosine drift terms in data
+    n_cosines = cosine_drift.shape[1]
+    cosine_exists = False
+    if confounds is None:
+        return cosine_drift.copy()
+
+    # check if consie drift term is supplied by user  
+    # given the threshold and timeseries length, there can be no consine drift
+    # terms
+    if n_cosines > 0:
+        corr_cosine = np.corrcoef(cosine_drift.T, confounds.T)
+        np.fill_diagonal(corr_cosine, 0)
+        cosine_exists = sum(corr_cosine[:n_cosines, :].flatten() > 0.9) > 0
+
+    if cosine_exists:
+        warnings.warn(
+            "Consine filter exists in user supplied confounds."
+            "Use user supplied cosine regressors."
+        )
+    else:
+        confounds = np.hstack((confounds, cosine_drift))
+    return confounds
 
 
 def _process_runs(signals, runs, detrend, standardize, confounds,
@@ -680,15 +711,7 @@ def _sanitize_inputs(signals, runs, confounds, sample_mask, ensure_finite):
     confounds = _sanitize_confounds(n_time, n_runs, confounds)
     sample_mask = _sanitize_sample_mask(n_time, n_runs, runs, sample_mask)
     signals = _sanitize_signals(signals, ensure_finite)
-
-    if sample_mask is None:
-        return signals, runs, confounds
-
-    if confounds is not None:
-        confounds = confounds[sample_mask, :]
-    if runs is not None:
-        runs = runs[sample_mask]
-    return signals[sample_mask, :], runs, confounds
+    return signals, runs, confounds, sample_mask
 
 
 def _sanitize_confounds(n_time, n_runs, confounds):
