@@ -19,6 +19,7 @@ jobs:
       - name: Restore source cache
         uses: actions/cache@v3
         with:
+          path: .git
           key: source-cache-v3
       - name: Checkout nilearn
         uses: actions/checkout@v3
