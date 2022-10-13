@@ -66,15 +66,15 @@ jobs:
 
       - name: Install apt packages
         run: |
-          ./build_tools/circle/dependencies_apt.sh
+          ./build_tools/github/build_dependencies_apt.sh
 
       - name: Install packages in conda env
         run: |
-          ./build_tools/circle/dependencies.sh
+          ./build_tools/github/build_dependencies.sh
 
       - name: Find build type
         run: |
-          ./build_tools/circle/build_type.sh
+          ./build_tools/github/build_type.sh
 
       - name: Verify build type
         run: |

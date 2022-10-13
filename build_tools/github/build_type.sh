@@ -1,11 +1,11 @@
 #!/bin/bash -ef
 
-if [ "$CIRCLE_BRANCH" == "main" ] || [[ $(cat gitlog.txt) == *"[circle full]"* ]]; then
+if [ "$GITHUB_REF_NAME" == "main" ] || [[ $(cat gitlog.txt) == *"[circle full]"* ]]; then
     echo "Doing a full build";
     echo html-strict > build.txt;
 else
     echo "Doing a partial build";
-    FILENAMES=$(git diff --name-only $(git merge-base $CIRCLE_BRANCH upstream/main) $CIRCLE_BRANCH);
+    FILENAMES=$(git diff --name-only $(git merge-base $GITHUB_REF_NAME upstream/main) $GITHUB_REF_NAME);
     echo FILENAMES="$FILENAMES";
     for FILENAME in $FILENAMES; do
         if [[ `expr match $FILENAME "\(examples\)/.*plot_.*\.py"` ]]; then
