@@ -40,7 +40,7 @@ jobs:
         run: |
           echo $(git log -1 --pretty=%B) | tee gitlog.txt
           echo "gitlog.txt = $(cat gitlog.txt)"
-          echo ${CI_PULL_REQUEST//*pull\//} | tee merge.txt
+          echo ${GITHUB_REF//*pull\//} | tee merge.txt
           if [[ $(cat merge.txt) != "" ]]; then
               echo "Merging $(cat merge.txt)";
               git pull --ff-only upstream "refs/pull/$(cat merge.txt)/merge";
