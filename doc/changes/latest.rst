@@ -8,6 +8,8 @@
 NEW
 ---
 
+- New classes :class:`~maskers.MultiNiftiLabelsMasker` and :class:`~maskers.MultiNiftiMapsMasker` create maskers to extract signals from a list of subjects with 4D images using parallelization (:gh:`3237` by `Yasmin Mzayek`_).
+
 Fixes
 -----
 
