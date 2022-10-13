@@ -11,31 +11,30 @@ on:
 
 jobs:
   doc:
+    # This prevents this workflow from running on a fork.
+    # To test this workflow on a fork, uncomment the following line.
+    if: github.repository == 'nilearn/nilearn'
     runs-on: ubuntu-latest
     steps:
       - name: Restore source cache
         uses: actions/cache@v3
         with:
           key: source-cache-v3
-
       - name: Checkout nilearn
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-
       - name: Complete checkout
         run: |
           if ! git remote -v | grep upstream; then
             git remote add upstream git@github.com:nilearn/nilearn.git
           fi
           git fetch upstream
-
       - name: Save source cache
         uses: actions/cache@v3
         with:
           path: .git
           key: source-cache-v3
-
       - name: Merge with upstream
         run: |
           echo $(git log -1 --pretty=%B) | tee gitlog.txt
@@ -43,9 +42,8 @@ jobs:
           echo ${GITHUB_REF//*pull\//} | tee merge.txt
           if [[ $(cat merge.txt) != "" ]]; then
               echo "Merging $(cat merge.txt)";
-              git pull --ff-only upstream "refs/pull/$(cat merge.txt)/merge";
+              git pull --ff-only upstream "refs/pull/$(cat merge.txt)";
           fi
-
       - name: Determine force download
         run: |
           commit_msg=$(git log -2 --format=oneline);
@@ -57,30 +55,24 @@ jobs:
             echo "Data cache will be used if available.";
             echo "true" | tee restore.txt;
           fi
-          
       - name: Setup conda
         run: |
           wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh;
           chmod +x ~/miniconda.sh && ~/miniconda.sh -b;
           echo 'export PATH="$HOME/miniconda3/bin:$PATH"'  >> $BASH_ENV;
-
       - name: Install apt packages
         run: |
           ./build_tools/github/build_dependencies_apt.sh
-
       - name: Install packages in conda env
         run: |
           ./build_tools/github/build_dependencies.sh
-
       - name: Find build type
         run: |
           ./build_tools/github/build_type.sh
-
       - name: Verify build type
         run: |
           echo "PATTERN = $(cat pattern.txt)"
           echo "BUILD = $(cat build.txt)"
-
       - name: build doc
         run: |
           source activate testenv;
@@ -88,7 +80,6 @@ jobs:
           cd doc;
           set -o pipefail;
           PATTERN=$(cat ../pattern.txt) make $(cat ../build.txt) 2>&1 | tee log.txt;
-
       - name: Upload documentation
         uses: actions/upload-artifact@v3
         with:
