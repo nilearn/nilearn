@@ -881,8 +881,9 @@ def test_first_level_hrf_model(hrf_model, spaces):
     Ensure that FirstLevelModel runs without raising errors
     for different values of hrf_model. In particular, one checks that it runs
     without raising errors when given a custom response function.
-    Also ensure that it computes contrasts without raising errors,
-    even when event (ie condition) names have spaces.
+    When :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`
+    is used errors should be raised when event (ie condition) names are not
+    valid identifiers.
     """
     shapes, rk = [(10, 10, 10, 25)], 3
     mask, fmri_data, _ =\
@@ -897,7 +898,15 @@ def test_first_level_hrf_model(hrf_model, spaces):
     model.fit(fmri_data, events)
 
     columns = model.design_matrices_[0].columns
-    model.compute_contrast(f"{columns[0]}-{columns[1]}")
+    exp = f"{columns[0]}-{columns[1]}"
+    try:
+        model.compute_contrast(exp)
+    except Exception:
+        with pytest.raises(
+                ValueError,
+                match='invalid python identifiers'
+        ):
+            model.compute_contrast(exp)
 
 
 def test_glm_sample_mask():

@@ -217,10 +217,6 @@ def test_names():
         [f"{name}_{custom_rf.__name__}"]
     assert _regressor_names(name, [custom_rf]) == \
         [f"{name}_{custom_rf.__name__}"]
-    assert _regressor_names(name, lambda tr, ov: np.ones(int(tr * ov))) == \
-        [f"{name}_lambda"]
-    assert _regressor_names(name, [lambda tr, ov: np.ones(int(tr * ov))]) == \
-        [f"{name}_lambda"]
 
     with pytest.raises(ValueError,
                        match="Computed regressor names are not unique"):
@@ -314,6 +310,13 @@ def test_make_regressor_3():
                                          fir_delays=np.arange(4),
                                          oversampling=50.)
     assert_array_equal(reg, reg_)
+
+
+def test__regressor_names():
+    """ test that function allows invalid column identifier
+    """
+    reg_names = _regressor_names('1_cond', 'glover')
+    assert reg_names[0] == '1_cond'
 
 
 def test_design_warnings():
