@@ -650,7 +650,7 @@ def _filter_signal(signals, confounds, filter, low_pass,
     elif filter == 'cosine':
         from nilearn.glm.first_level.design_matrix import _cosine_drift
         frame_times = np.arange(signals.shape[0]) * t_r
-        # remove constant, as the signal is mean centred
+        # remove constant, as the signal is mean centered
         cosine_drift = _cosine_drift(high_pass, frame_times)[:, :-1]
         confounds = _check_cosine_by_user(confounds, cosine_drift)
     return signals, confounds
@@ -658,15 +658,15 @@ def _filter_signal(signals, confounds, filter, low_pass,
 
 def _check_cosine_by_user(confounds, cosine_drift):
     """Check if cosine term exists, based on correlation > 0.9. """
-    # stack consine drift terms if there's no cosine drift terms in data
+    # stack consine drift terms if there's no cosine drift term in data
     n_cosines = cosine_drift.shape[1]
     cosine_exists = False
     if confounds is None:
         return cosine_drift.copy()
 
-    # check if consie drift term is supplied by user  
-    # given the threshold and timeseries length, there can be no consine drift
-    # terms
+    # check if cosine drift term is supplied by user  
+    # given the threshold and timeseries length, there can be no cosine drift
+    # term
     if n_cosines > 0:
         corr_cosine = np.corrcoef(cosine_drift.T, confounds.T)
         np.fill_diagonal(corr_cosine, 0)
@@ -674,7 +674,7 @@ def _check_cosine_by_user(confounds, cosine_drift):
 
     if cosine_exists:
         warnings.warn(
-            "Consine filter exists in user supplied confounds."
+            "Cosine filter exists in user supplied confounds."
             "Use user supplied cosine regressors."
         )
     else:
