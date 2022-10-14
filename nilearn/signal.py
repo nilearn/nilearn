@@ -585,7 +585,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
 
     if filter_type == 'cosine':
         # create cosine regressors
-        signals, confounds = _filter_signal(signals, confounds, filter,
+        signals, confounds = _filter_signal(signals, confounds, filter_type,
                                             low_pass, high_pass, t_r)
 
     # censor volume if it's not butterworth
@@ -610,7 +610,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
                                      detrend=detrend)
 
     if filter_type == 'butterworth':
-        signals, confounds = _filter_signal(signals, confounds, filter,
+        signals, confounds = _filter_signal(signals, confounds, filter_type,
                                             low_pass, high_pass, t_r)
 
         # apply sample_mask to remove censored volumes

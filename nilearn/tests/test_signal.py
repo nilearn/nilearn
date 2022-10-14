@@ -562,22 +562,31 @@ def test_clean_frequencies_using_power_spectrum_density():
     _, _, confounds = generate_signals(
         n_features=10, n_confounds=10, length=100)
 
-    # Apply low- and high-pass filter (separately)
+    # Apply low- and high-pass filter with butterworth (separately)
     t_r = 1.0
     low_pass = 0.1
     high_pass = 0.4
-    res_low = clean(sx, detrend=False, standardize=False, low_pass=low_pass,
-                    high_pass=None, t_r=t_r)
-    res_high = clean(sx, detrend=False, standardize=False, low_pass=None,
-                     high_pass=high_pass, t_r=t_r)
+    res_low = clean(sx, detrend=False, standardize=False,
+                    filter='butterworth', low_pass=low_pass, high_pass=None,
+                    t_r=t_r)
+    res_high = clean(sx, detrend=False, standardize=False,
+                     filter='butterworth', low_pass=None, high_pass=high_pass,
+                     t_r=t_r)
+
+    # cosine high pass filter
+    res_cos = clean(sx, detrend=False, standardize=False,
+                    filter='cosine', low_pass=None, high_pass=high_pass,
+                    t_r=t_r)
 
     # Compute power spectrum density for both test
     f, Pxx_den_low = scipy.signal.welch(np.mean(res_low.T, axis=0), fs=t_r)
     f, Pxx_den_high = scipy.signal.welch(np.mean(res_high.T, axis=0), fs=t_r)
+    f, Pxx_den_cos = scipy.signal.welch(np.mean(res_cos.T, axis=0), fs=t_r)
 
     # Verify that the filtered frequencies are removed
     assert np.sum(Pxx_den_low[f >= low_pass * 2.]) <= 1e-4
     assert np.sum(Pxx_den_high[f <= high_pass / 2.]) <= 1e-4
+    assert np.sum(Pxx_den_cos[f <= high_pass / 2.]) <= 1e-4
 
 
 def test_clean_finite_no_inplace_mod():
@@ -764,6 +773,7 @@ def test_cosine_filter():
             t_r)
     np.testing.assert_array_equal(signals_unchanged, signals)
     np.testing.assert_array_equal(cosine_confounds, confounds)
+
 
 def test_sample_mask():
     """Test sample_mask related feature."""
