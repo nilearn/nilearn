@@ -606,7 +606,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         mean_signals = signals.mean(axis=0)
         signals = _standardize(signals, standardize=False, detrend=detrend)
         if confounds is not None:
-            confounds = _standardize(confounds, standardize=False, 
+            confounds = _standardize(confounds, standardize=False,
                                      detrend=detrend)
 
     if filter_type == 'butterworth':
@@ -680,7 +680,7 @@ def _check_cosine_by_user(confounds, cosine_drift):
             "or the high pass filter is not suitable for the data."
         )
         return confounds
-    
+
     if confounds is None:
         return cosine_drift.copy()
 
@@ -697,7 +697,7 @@ def _check_cosine_by_user(confounds, cosine_drift):
             "Use user supplied cosine regressors."
         )
         return confounds
-        
+
     return np.hstack((confounds, cosine_drift))
 
 
