@@ -233,7 +233,6 @@ def load_confounds(img_files,
     confounds : pandas.DataFrame, or list of
         A reduced version of :term:`fMRIPrep` confounds based on selected
         strategy and flags.
-        An intercept is automatically added to the list of confounds.
         The columns contains the labels of the regressors.
 
     sample_mask : None, numpy.ndarray, or list of
