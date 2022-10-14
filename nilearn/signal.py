@@ -580,7 +580,20 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     signals, runs, confounds, sample_mask = _sanitize_inputs(
         signals, runs, confounds, sample_mask, ensure_finite
     )
-    use_filter = _check_filter_parameters(filter, low_pass, high_pass, t_r)
+    # check if filter parameters are satisfied and return correct filter
+    filter_type = _check_filter_parameters(filter, low_pass, high_pass, t_r)
+
+    if filter_type == 'cosine':
+        # create cosine regressors
+        signals, confounds = _filter_signal(signals, confounds, filter,
+                                            low_pass, high_pass, t_r)
+
+    # censor volume if it's not butterworth
+    if sample_mask is not None and filter_type != 'butterworth':
+        signals = signals[sample_mask, :]
+        if confounds is not None:
+            confounds = confounds[sample_mask, :]
+
     # Restrict the signal to the orthogonal of the confounds
     if runs is not None:
         signals = _process_runs(signals, runs, detrend, standardize,
@@ -593,18 +606,18 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         mean_signals = signals.mean(axis=0)
         signals = _standardize(signals, standardize=False, detrend=detrend)
         if confounds is not None:
-            confounds = _standardize(confounds, standardize=False,
-                                detrend=detrend)
-    if use_filter:
-        # check if filter parameters are satisfied and filter according to the strategy
+            confounds = _standardize(confounds, standardize=False, 
+                                     detrend=detrend)
+
+    if filter_type == 'butterworth':
         signals, confounds = _filter_signal(signals, confounds, filter,
                                             low_pass, high_pass, t_r)
 
-    # apply sample_mask to remove censored volumes
-    if sample_mask is not None:
-        signals = signals[sample_mask, :]
-        if confounds is not None:
-            confounds = confounds[sample_mask, :]
+        # apply sample_mask to remove censored volumes
+        if sample_mask is not None:
+            signals = signals[sample_mask, :]
+            if confounds is not None:
+                confounds = confounds[sample_mask, :]
 
     # Remove confounds
     if confounds is not None:
@@ -660,26 +673,32 @@ def _check_cosine_by_user(confounds, cosine_drift):
     """Check if cosine term exists, based on correlation > 0.9. """
     # stack consine drift terms if there's no cosine drift term in data
     n_cosines = cosine_drift.shape[1]
-    cosine_exists = False
+
+    if n_cosines == 0:
+        warnings.warn(
+            "Cosine filter was not create. The time series might be too short "
+            "or the high pass filter is not suitable for the data."
+        )
+        return confounds
+    
     if confounds is None:
         return cosine_drift.copy()
 
     # check if cosine drift term is supplied by user
     # given the threshold and timeseries length, there can be no cosine drift
     # term
-    if n_cosines > 0:
-        corr_cosine = np.corrcoef(cosine_drift.T, confounds.T)
-        np.fill_diagonal(corr_cosine, 0)
-        cosine_exists = sum(corr_cosine[:n_cosines, :].flatten() > 0.9) > 0
+    corr_cosine = np.corrcoef(cosine_drift.T, confounds.T)
+    np.fill_diagonal(corr_cosine, 0)
+    cosine_exists = sum(corr_cosine[:n_cosines, :].flatten() > 0.9) > 0
 
     if cosine_exists:
         warnings.warn(
             "Cosine filter exists in user supplied confounds."
             "Use user supplied cosine regressors."
         )
-    else:
-        confounds = np.hstack((confounds, cosine_drift))
-    return confounds
+        return confounds
+        
+    return np.hstack((confounds, cosine_drift))
 
 
 def _process_runs(signals, runs, detrend, standardize, confounds,
@@ -864,7 +883,7 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
                     "high_pass='{0}', low_pass='{1}'"
                     .format(high_pass, low_pass)
                 )
-        return True
+        return filter
     else:
         raise ValueError("Filter method {} not implemented.".format(filter))
 

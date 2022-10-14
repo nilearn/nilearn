@@ -756,6 +756,14 @@ def test_cosine_filter():
     np.testing.assert_array_equal(signals_unchanged, signals)
     np.testing.assert_array_equal(cosine_confounds, confounds_with_drift)
 
+    # raise warning if cosine drift term is not created
+    high_pass_fail = 0.002
+    with pytest.warns(UserWarning, match='Cosine filter was not create'):
+        signals_unchanged, cosine_confounds = nisignal._filter_signal(
+            signals, confounds, filter, low_pass, high_pass_fail, 
+            t_r)
+    np.testing.assert_array_equal(signals_unchanged, signals)
+    np.testing.assert_array_equal(cosine_confounds, confounds)
 
 def test_sample_mask():
     """Test sample_mask related feature."""
