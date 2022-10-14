@@ -597,14 +597,14 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
                                 detrend=detrend)
     if use_filter:
         # check if filter parameters are satisfied and filter according to the strategy
-        signals, confounds = _filter_signal(signals, confounds, filter, 
+        signals, confounds = _filter_signal(signals, confounds, filter,
                                             low_pass, high_pass, t_r)
 
     # apply sample_mask to remove censored volumes
     if sample_mask is not None:
         signals = signals[sample_mask, :]
         if confounds is not None:
-            confounds = confounds[sample_mask, :]    
+            confounds = confounds[sample_mask, :]
 
     # Remove confounds
     if confounds is not None:
@@ -636,7 +636,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     return signals
 
 
-def _filter_signal(signals, confounds, filter, low_pass, 
+def _filter_signal(signals, confounds, filter, low_pass,
                    high_pass, t_r):
     '''Filter signal based on provided strategy.'''
     if filter == 'butterworth':
@@ -664,7 +664,7 @@ def _check_cosine_by_user(confounds, cosine_drift):
     if confounds is None:
         return cosine_drift.copy()
 
-    # check if cosine drift term is supplied by user  
+    # check if cosine drift term is supplied by user
     # given the threshold and timeseries length, there can be no cosine drift
     # term
     if n_cosines > 0:

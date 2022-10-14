@@ -729,7 +729,7 @@ def test_cosine_filter():
     from nilearn.glm.first_level.design_matrix import _cosine_drift
     # fmriprep high pass cutoff is 128s, it's around 0.008 hz
     t_r, high_pass, low_pass, filter = 2.5, 0.008, None, 'cosine'
-    signals, _, confounds = generate_signals(n_features=41, n_confounds=5, 
+    signals, _, confounds = generate_signals(n_features=41, n_confounds=5,
                                              length=45)
 
     # Not passing confounds it will return drift terms only
