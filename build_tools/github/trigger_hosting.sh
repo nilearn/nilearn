@@ -17,7 +17,7 @@ then
           # The pull request is on the main (default) branch of the fork. The above API
           # call is unable to get the PR number associated with the commit:
           # https://docs.github.com/en/rest/commits/commits#list-pull-requests-associated-with-a-commit
-          # We fallback to the search API here. The search API is not used everytime
+          # We fallback to the search API here. The search API is not used every time
           # because it has a lower rate limit.
           PULL_REQUEST_NUMBER=$(curl \
                -H "Accept: application/vnd.github+json" \
