@@ -1,5 +1,5 @@
 # Documentation is now built using Github Actions.
-# CircleCI is only used to download the artifacts and deploy them.
+# CircleCI is used to download the artifacts so it can host and deploy them.
 
 version: 2.1
 
@@ -25,7 +25,7 @@ jobs:
           path: doc/_build/test-results
           destination: test-results
       - store_artifacts:
-          path: doc/_build/html/
+          path: doc/_build/html
           destination: dev
       - store_artifacts:
           path: doc/log.txt
