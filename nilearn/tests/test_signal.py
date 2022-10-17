@@ -759,7 +759,7 @@ def test_cosine_filter():
     np.testing.assert_almost_equal(drift_terms_only, cosine_drift)
 
     # drift terms in confounds will create warning and no change to confounds
-    with pytest.warns(UserWarning, match='user supplied cosine regressors'):
+    with pytest.warns(UserWarning, match='user supplied confounds'):
         signals_unchanged, cosine_confounds = nisignal._filter_signal(
             signals, confounds_with_drift, filter, low_pass, high_pass, t_r)
     np.testing.assert_array_equal(signals_unchanged, signals)
