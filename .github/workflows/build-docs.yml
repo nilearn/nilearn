@@ -1,3 +1,6 @@
+# Workflow to build the documentation
+name: Documentation builder
+
 on:
   push:
     branches:
