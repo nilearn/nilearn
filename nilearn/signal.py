@@ -584,15 +584,16 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     filter_type = _check_filter_parameters(filter, low_pass, high_pass, t_r)
 
     if filter_type == 'cosine':
-        # create cosine regressors
-        signals, confounds = _filter_signal(signals, confounds, filter_type,
-                                            low_pass, high_pass, t_r)
+        confounds = _create_cosine_drift_terms(signals, confounds, high_pass,
+                                               t_r)
 
     # censor volume if it's not butterworth
     if sample_mask is not None and filter_type != 'butterworth':
         signals = signals[sample_mask, :]
         if confounds is not None:
             confounds = confounds[sample_mask, :]
+    # else:
+         # interpolate the scrubbed vols if butterworth filter is used
 
     # Restrict the signal to the orthogonal of the confounds
     if runs is not None:
@@ -610,10 +611,14 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
                                      detrend=detrend)
 
     if filter_type == 'butterworth':
-        signals, confounds = _filter_signal(signals, confounds, filter_type,
-                                            low_pass, high_pass, t_r)
-
-        # apply sample_mask to remove censored volumes
+        signals = butterworth(signals, sampling_rate=1. / t_r,
+                              low_pass=low_pass, high_pass=high_pass)
+        if confounds is not None:
+            # Apply low- and high-pass filters to keep filters orthogonal
+            # (according to Lindquist et al. (2018))
+            confounds = butterworth(confounds, sampling_rate=1. / t_r,
+                                    low_pass=low_pass, high_pass=high_pass)
+        # apply sample_mask to remove censored volumes after signal filtering
         if sample_mask is not None:
             signals = signals[sample_mask, :]
             if confounds is not None:
@@ -649,24 +654,14 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     return signals
 
 
-def _filter_signal(signals, confounds, filter, low_pass,
-                   high_pass, t_r):
-    '''Filter signal based on provided strategy.'''
-    if filter == 'butterworth':
-        signals = butterworth(signals, sampling_rate=1. / t_r,
-                              low_pass=low_pass, high_pass=high_pass)
-        if confounds is not None:
-            # Apply low- and high-pass filters to keep filters orthogonal
-            # (according to Lindquist et al. (2018))
-            confounds = butterworth(confounds, sampling_rate=1. / t_r,
-                                    low_pass=low_pass, high_pass=high_pass)
-    elif filter == 'cosine':
-        from nilearn.glm.first_level.design_matrix import _cosine_drift
-        frame_times = np.arange(signals.shape[0]) * t_r
-        # remove constant, as the signal is mean centered
-        cosine_drift = _cosine_drift(high_pass, frame_times)[:, :-1]
-        confounds = _check_cosine_by_user(confounds, cosine_drift)
-    return signals, confounds
+def _create_cosine_drift_terms(signals, confounds, high_pass, t_r):
+    """Create cosine drift terms, append to confounds regressors."""
+    from nilearn.glm.first_level.design_matrix import _cosine_drift
+    frame_times = np.arange(signals.shape[0]) * t_r
+    # remove constant, as the signal is mean centered
+    cosine_drift = _cosine_drift(high_pass, frame_times)[:, :-1]
+    confounds = _check_cosine_by_user(confounds, cosine_drift)
+    return confounds
 
 
 def _check_cosine_by_user(confounds, cosine_drift):

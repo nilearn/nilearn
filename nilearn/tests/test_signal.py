@@ -733,11 +733,11 @@ def test_clean_zscore():
     np.testing.assert_almost_equal(cleaned_signals.std(0), 1)
 
 
-def test_cosine_filter():
+def test_create_cosine_drift_terms():
     '''Testing cosine filter interface and output.'''
     from nilearn.glm.first_level.design_matrix import _cosine_drift
     # fmriprep high pass cutoff is 128s, it's around 0.008 hz
-    t_r, high_pass, low_pass, filter = 2.5, 0.008, None, 'cosine'
+    t_r, high_pass = 2.5, 0.008
     signals, _, confounds = generate_signals(n_features=41, n_confounds=5,
                                              length=45)
 
@@ -746,32 +746,27 @@ def test_cosine_filter():
     cosine_drift = _cosine_drift(high_pass, frame_times)[:, :-1]
     confounds_with_drift = np.hstack((confounds, cosine_drift))
 
-    signals_unchanged, cosine_confounds = nisignal._filter_signal(
-        signals, confounds, filter, low_pass, high_pass, t_r)
-    np.testing.assert_array_equal(signals_unchanged, signals)
+    cosine_confounds = nisignal._create_cosine_drift_terms(
+        signals, confounds, high_pass, t_r)
     np.testing.assert_almost_equal(cosine_confounds,
                                    np.hstack((confounds, cosine_drift)))
 
     # Not passing confounds it will return drift terms only
-    signals_unchanged, drift_terms_only = nisignal._filter_signal(
-        signals, None, filter, low_pass, high_pass, t_r)
-    np.testing.assert_array_equal(signals_unchanged, signals)
+    drift_terms_only = nisignal._create_cosine_drift_terms(
+        signals, None, high_pass, t_r)
     np.testing.assert_almost_equal(drift_terms_only, cosine_drift)
 
     # drift terms in confounds will create warning and no change to confounds
     with pytest.warns(UserWarning, match='user supplied confounds'):
-        signals_unchanged, cosine_confounds = nisignal._filter_signal(
-            signals, confounds_with_drift, filter, low_pass, high_pass, t_r)
-    np.testing.assert_array_equal(signals_unchanged, signals)
+        cosine_confounds = nisignal._create_cosine_drift_terms(
+            signals, confounds_with_drift, high_pass, t_r)
     np.testing.assert_array_equal(cosine_confounds, confounds_with_drift)
 
     # raise warning if cosine drift term is not created
     high_pass_fail = 0.002
     with pytest.warns(UserWarning, match='Cosine filter was not create'):
-        signals_unchanged, cosine_confounds = nisignal._filter_signal(
-            signals, confounds, filter, low_pass, high_pass_fail,
-            t_r)
-    np.testing.assert_array_equal(signals_unchanged, signals)
+        cosine_confounds = nisignal._create_cosine_drift_terms(
+            signals, confounds, high_pass_fail, t_r)
     np.testing.assert_array_equal(cosine_confounds, confounds)
 
 
