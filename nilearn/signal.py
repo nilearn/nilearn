@@ -676,8 +676,8 @@ def _check_cosine_by_user(confounds, cosine_drift):
 
     if n_cosines == 0:
         warnings.warn(
-            "Cosine filter was not created. The time series might be too short "
-            "or the high pass filter is not suitable for the data."
+            "Cosine filter was not created. The time series might be too "
+            "short or the high pass filter is not suitable for the data."
         )
         return confounds
 
