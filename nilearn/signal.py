@@ -593,7 +593,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         if confounds is not None:
             confounds = confounds[sample_mask, :]
     # else:
-         # interpolate the scrubbed vols if butterworth filter is used
+        # interpolate the scrubbed vols if butterworth filter is used
 
     # Restrict the signal to the orthogonal of the confounds
     if runs is not None:
