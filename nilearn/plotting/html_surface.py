@@ -44,23 +44,27 @@ def _get_vertexcolor(surf_map, cmap, norm,
     bg_color = plt.get_cmap('Greys')(bg_data)
 
     # select vertices which are filtered out by the threshold
-    under_threshold = np.abs(surf_map) < (
-        absolute_threshold if absolute_threshold is not None else 0
-    )
+    if absolute_threshold is None:
+        under_threshold = np.zeros_like(surf_map, dtype=bool)
+    else:
+        under_threshold = np.abs(surf_map) < absolute_threshold
+
     # replace their color with the background color
     vertexcolor[under_threshold] = bg_color[under_threshold]
     # and merge background color with surface map color if need be
     if bg_on_data:
-        vertexcolor[~under_threshold] = vertexcolor[~under_threshold] * \
-            bg_color[~under_threshold]
+        over_threshold = ~under_threshold
+        vertexcolor[over_threshold] = (
+            vertexcolor[over_threshold] * bg_color[over_threshold]
+        )
 
     return to_color_strings(vertexcolor)
 
 
-def _one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
-                   black_bg=False, bg_map=None, symmetric_cmap=True,
-                   bg_on_data=False, scale_bg_map=True, darkness=1,
-                   vmax=None, vmin=None):
+def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
+                  black_bg=False, bg_map=None, symmetric_cmap=True,
+                  bg_on_data=False, scale_bg_map=True, darkness=1,
+                  vmax=None, vmin=None):
     """Prepare info for plotting one surface map on a single mesh.
 
     This computes the dictionary that gets inserted in the web page,
@@ -100,10 +104,10 @@ def _check_mesh(mesh):
     return mesh
 
 
-def _full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
-                     cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
-                     bg_on_data=False, scale_bg_map=True, darkness=1,
-                     vmax=None, vmin=None, vol_to_surf_kwargs={}):
+def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
+                    cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
+                    bg_map=None, bg_on_data=False, scale_bg_map=True,
+                    darkness=1, vmax=None, vmin=None, vol_to_surf_kwargs={}):
     """Project 3D map on cortex; prepare info to plot both hemispheres.
 
     This computes the dictionary that gets inserted in the web page,
@@ -124,7 +128,6 @@ def _full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
         symmetric_cmap=symmetric_cmap, vmax=vmax, vmin=vmin)
 
     for hemi, surf_map in surface_maps.items():
-        bg_map = surface.load_surf_data(mesh['sulc_{}'.format(hemi)])
         info['pial_{}'.format(hemi)] = mesh_to_plotly(
             mesh['pial_{}'.format(hemi)])
         info['inflated_{}'.format(hemi)] = mesh_to_plotly(
@@ -132,7 +135,7 @@ def _full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
 
         info['vertexcolor_{}'.format(hemi)] = _get_vertexcolor(
             surf_map, colors['cmap'], colors['norm'],
-            colors['abs_threshold'], bg_map,
+            colors['abs_threshold'], bg_map=bg_map,
             bg_on_data=bg_on_data, scale_bg_map=scale_bg_map,
             darkness=darkness,
         )
@@ -156,7 +159,7 @@ def _fill_html_template(info, embed_js=True):
 def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
                      threshold=None, cmap=cm.cold_hot,
                      black_bg=False, vmax=None, vmin=None, symmetric_cmap=True,
-                     bg_on_data=False, scale_bg_map=True, darkness=1,
+                     bg_map=None, bg_on_data=False, scale_bg_map=True, darkness=1,
                      colorbar=True, colorbar_height=.5, colorbar_fontsize=25,
                      title=None, title_fontsize=25, vol_to_surf_kwargs={}):
     """Insert a surface plot of a statistical map into an HTML page.
@@ -190,6 +193,21 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     black_bg : bool, optional
         If True, image is plotted on a black background. Otherwise on a
         white background. Default=False.
+
+    bg_map : Surface data, optional
+        Background image to be plotted on the mesh underneath the
+        surf_data in greyscale, most likely a sulcal depth map for
+        realistic shading.
+
+    %(bg_on_data)s
+        Default=False.
+    %(scale_bg_map)s
+        Default=True.
+
+        .. versionadded:: 0.9.3.dev
+
+    %(darkness)s
+        Default=1.
 
     vmax : float or None, optional
         upper bound for the colorbar. if None, use the absolute max of the
@@ -245,9 +263,10 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
 
     """
     stat_map_img = check_niimg_3d(stat_map_img)
-    info = _full_brain_info(
+    info = full_brain_info(
         volume_img=stat_map_img, mesh=surf_mesh, threshold=threshold,
-        cmap=cmap, black_bg=black_bg, vmax=vmax, vmin=vmin,
+        cmap=cmap, black_bg=black_bg, vmax=vmax, vmin=vmin, bg_map=bg_map,
+        bg_on_data=bg_on_data, scale_bg_map=scale_bg_map, darkness=darkness,
         symmetric_cmap=symmetric_cmap, vol_to_surf_kwargs=vol_to_surf_kwargs)
     info['colorbar'] = colorbar
     info['cbar_height'] = colorbar_height
@@ -284,6 +303,16 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         Background image to be plotted on the mesh underneath the
         surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
+
+    %(bg_on_data)s
+        Default=False.
+    %(scale_bg_map)s
+        Default=True.
+
+        .. versionadded:: 0.9.3.dev
+
+    %(darkness)s
+        Default=1.
 
     threshold : str, number or None, optional
         If None, no thresholding.
@@ -354,9 +383,10 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
             surf_mesh, surf_map)
     if bg_map is not None:
         _, bg_map = surface.check_mesh_and_data(surf_mesh, bg_map)
-    info = _one_mesh_info(
+    info = one_mesh_info(
         surf_map=surf_map, surf_mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, bg_map=bg_map,
+        bg_on_data=bg_on_data, scale_bg_map=scale_bg_map, darkness=darkness,
         symmetric_cmap=symmetric_cmap, vmax=vmax, vmin=vmin)
     info['colorbar'] = colorbar
     info['cbar_height'] = colorbar_height

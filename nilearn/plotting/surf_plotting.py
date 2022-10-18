@@ -232,7 +232,6 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
             colors["abs_threshold"]
         )
 
-    # add colorbar
     mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k, vertexcolor=vertexcolor)
     fig_data = [mesh_3d]
     if colorbar:
@@ -399,10 +398,9 @@ def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
                              'of vertices as the mesh.')
 
     bg_faces = np.mean(bg_data[faces], axis=1)
-    if scale_bg_map:
-        if bg_faces.min() != bg_faces.max():
-            bg_faces = bg_faces - bg_faces.min()
-            bg_faces = bg_faces / bg_faces.max()
+    if scale_bg_map and bg_faces.min() != bg_faces.max():
+        bg_faces = bg_faces - bg_faces.min()
+        bg_faces = bg_faces / bg_faces.max()
 
     # control background darkness
     bg_faces *= darkness
@@ -1381,7 +1379,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
     %(scale_bg_map)s
         Default=True.
 
-        .. versionadded:: 0.9.3
+        .. versionadded:: 0.9.3.dev
 
     %(darkness)s
         Default=1.
