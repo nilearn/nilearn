@@ -587,13 +587,13 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         confounds = _create_cosine_drift_terms(signals, confounds, high_pass,
                                                t_r)
 
-    # censor volume if it's not butterworth
-    if sample_mask is not None and filter_type != 'butterworth':
+    # interpolate censored volumes
+    if filter_type == 'butterworth':
+        signals, confounds = _interpolate(signals, confounds, sample_mask)
+    elif sample_mask is not None:  # Or censor them
         signals = signals[sample_mask, :]
         if confounds is not None:
             confounds = confounds[sample_mask, :]
-    # else:
-        # interpolate the scrubbed vols if butterworth filter is used
 
     # Restrict the signal to the orthogonal of the confounds
     if runs is not None:
@@ -652,6 +652,24 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
                                detrend=False)
 
     return signals
+
+
+def _interpolate(signals, confounds, sample_mask):
+    """Interpolate the censored volumes before butterworth filtering."""
+    if sample_mask is None:
+        return signals, confounds
+
+    from scipy.interpolate import CubicSpline
+    frame_times = np.arange(signals.shape[0])
+    cubic_spline_fitter = CubicSpline(frame_times[sample_mask],
+                                      signals[sample_mask, :])
+    signals = cubic_spline_fitter(frame_times)
+
+    if confounds is not None:
+        cubic_spline_fitter = CubicSpline(frame_times[sample_mask],
+                                          confounds[sample_mask, :])
+        confounds = cubic_spline_fitter(frame_times)
+    return signals, confounds
 
 
 def _create_cosine_drift_terms(signals, confounds, high_pass, t_r):
