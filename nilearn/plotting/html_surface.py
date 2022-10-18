@@ -159,7 +159,8 @@ def _fill_html_template(info, embed_js=True):
 def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
                      threshold=None, cmap=cm.cold_hot,
                      black_bg=False, vmax=None, vmin=None, symmetric_cmap=True,
-                     bg_map=None, bg_on_data=False, scale_bg_map=True, darkness=1,
+                     bg_map=None, bg_on_data=False,
+                     scale_bg_map=True, darkness=1,
                      colorbar=True, colorbar_height=.5, colorbar_fontsize=25,
                      title=None, title_fontsize=25, vol_to_surf_kwargs={}):
     """Insert a surface plot of a statistical map into an HTML page.
