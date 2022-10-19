@@ -523,7 +523,7 @@ class GlassBrainAxes(BaseAxes):
         norm = Normalize(vmin=vmin, vmax=vmax)
         # normalization useful for colorbar
         self.norm = norm
-        abs_norm = Normalize(vmin=0, vmax=vmax)
+        abs_norm = Normalize(vmin=0, vmax=max(abs(vmax), abs(vmin)))
         value_to_color = plt.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
 
         # Allow lines only in their respective hemisphere when appropriate
