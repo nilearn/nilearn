@@ -605,7 +605,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     # Detrend
     # Detrend and filtering should apply to confounds, if confound presents
     # keep filters orthogonal (according to Lindquist et al. (2018))
-   # Restrict the signal to the orthogonal of the confounds
+    # Restrict the signal to the orthogonal of the confounds
     if detrend:
         mean_signals = signals.mean(axis=0)
         signals = _standardize(signals, standardize=False, detrend=detrend)
@@ -736,13 +736,14 @@ def _process_runs(signals, runs, detrend, standardize, confounds, sample_mask,
         if sample_mask is not None:
             run_sample_mask = sample_mask[i]
         run_signals = \
-            clean(signals[runs == run,],
+            clean(signals[runs == run],
                   detrend=detrend, standardize=standardize,
                   confounds=run_confounds, sample_mask=run_sample_mask,
                   filter=filter, low_pass=low_pass,
                   high_pass=high_pass, t_r=t_r)
         cleaned_signals.append(run_signals)
     return np.vstack(cleaned_signals)
+
 
 def _sanitize_inputs(signals, runs, confounds, sample_mask, ensure_finite):
     """Clean up signals and confounds before processing."""
