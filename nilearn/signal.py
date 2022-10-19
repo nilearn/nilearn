@@ -12,6 +12,7 @@ import warnings
 import numpy as np
 import pandas as pd
 from scipy import linalg, signal as sp_signal
+from scipy.interpolate import CubicSpline
 from sklearn.utils import gen_even_slices, as_float_array
 
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
@@ -464,11 +465,11 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
           ensure_finite=False):
     """Improve :term:`SNR` on masked :term:`fMRI` signals.
 
-    This function can do several things on the input signals, in
-    the following order:
+    This function can do several things on the input signals. With the default
+    options, the procedures are performed in the following order:
 
     - detrend
-    - low- and high-pass filter
+    - low- and high-pass butterworth filter
     - remove confounds
     - standardize
 
@@ -476,7 +477,26 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
 
     High-pass filtering should be kept small, to keep some sensitivity.
 
-    Filtering is only meaningful on evenly-sampled signals.
+    Butterworth filtering is only meaningful on evenly-sampled signals.
+
+    When performing scrubbing (censoring high-motion volumes) with butterworth
+    filtering, the signal is proccessed in the following order:
+
+    - interpolate high motion volumes with cubic spline interpolation.
+    - detrend
+    - low- and high-pass butterworth filter
+    - censor high motion volumes
+    - remove confounds
+    - standardize
+
+    When performing scrubbing with cosine drift term filtering, the signal is
+    proccessed in the following order:
+
+    - generate cosine drift term
+    - censor high motion volumes
+    - detrend
+    - remove confounds
+    - standardize
 
     According to :footcite:`Lindquist2018`, removal of confounds will be done
     orthogonally to temporal filters (low- and/or high-pass filters), if both
@@ -584,23 +604,23 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         signals, runs, confounds, sample_mask, ensure_finite
     )
 
+    # Process each run independently
     if runs is not None:
         return _process_runs(signals, runs, detrend, standardize,
                              confounds, sample_mask,
                              filter_type, low_pass, high_pass, t_r)
 
     # For the following steps, sample_mask should be either None or index-like
-    # interpolate censored volumes if using butterworth filter
-    if filter_type == 'butterworth':
-        signals, confounds = _interpolate(signals, confounds, sample_mask)
-    elif sample_mask is not None:  # Or censor them
-        signals = signals[sample_mask, :]
-        if confounds is not None:
-            confounds = confounds[sample_mask, :]
 
+    # Generate cosine drift terms using the full length of the signals
     if filter_type == 'cosine':
         confounds = _create_cosine_drift_terms(signals, confounds, high_pass,
                                                t_r)
+
+    # Interpolation / censoring
+    signals, confounds = _handle_scrubbed_volumes(signals, confounds,
+                                                  sample_mask, filter_type,
+                                                  t_r)
 
     # Detrend
     # Detrend and filtering should apply to confounds, if confound presents
@@ -613,6 +633,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
             confounds = _standardize(confounds, standardize=False,
                                      detrend=detrend)
 
+    # Butterworth filtering
     if filter_type == 'butterworth':
         signals = butterworth(signals, sampling_rate=1. / t_r,
                               low_pass=low_pass, high_pass=high_pass)
@@ -657,22 +678,31 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     return signals
 
 
-def _interpolate(signals, confounds, sample_mask):
-    """Cubic spline interpolation for censored volumes."""
+def _handle_scrubbed_volumes(signals, confounds, sample_mask, filter_type, t_r):
+    """Interpolate or censor scrubbed volumes."""
     if sample_mask is None:
         return signals, confounds
 
-    from scipy.interpolate import CubicSpline
-    frame_times = np.arange(signals.shape[0])
-    cubic_spline_fitter = CubicSpline(frame_times[sample_mask],
-                                      signals[sample_mask, :])
-    signals = cubic_spline_fitter(frame_times)
-
-    if confounds is not None:
-        cubic_spline_fitter = CubicSpline(frame_times[sample_mask],
-                                          confounds[sample_mask, :])
-        confounds = cubic_spline_fitter(frame_times)
+    if filter_type == 'butterworth':
+        signals = _interpolate_volumes(signals, sample_mask, t_r)
+        if confounds is not None:
+            confounds = _interpolate_volumes(confounds, sample_mask, t_r)
+    else:  # Or censor when no filtering, or cosine filter
+        signals = signals[sample_mask, :]
+        if confounds is not None:
+            confounds = confounds[sample_mask, :]
     return signals, confounds
+
+
+def _interpolate_volumes(x, sample_mask, t_r):
+    """Interpolate censored volumes in signals/confounds."""
+    frame_times = np.arange(x.shape[0]) * t_r
+    remained_vol = frame_times[sample_mask]
+    remained_x = x[sample_mask, :]
+    cubic_spline_fitter = CubicSpline(remained_vol, remained_x)
+    x_interpolated = cubic_spline_fitter(frame_times)
+    x[~sample_mask, :] = x_interpolated[~sample_mask, :]
+    return x
 
 
 def _create_cosine_drift_terms(signals, confounds, high_pass, t_r):

@@ -829,3 +829,29 @@ def test_sample_mask():
     sample_mask[-1] = 999
     with pytest.raises(IndexError, match=r'invalid index \[\d*\]'):
         clean(signals, sample_mask=sample_mask)
+
+
+def test_handle_scrubbed_volumes():
+    """Check interpolation/censoring of signals based on filter type. """
+    signals, _, confounds = generate_signals(n_features=11,
+                                             n_confounds=5, length=40)
+
+    sample_mask = np.arange(signals.shape[0])
+    scrub_index = np.array([2, 3, 6, 7, 8, 30, 31, 32])
+    sample_mask = np.delete(sample_mask, scrub_index)
+
+    interpolated_signals, interpolated_confounds = \
+        nisignal._handle_scrubbed_volumes(signals, confounds, sample_mask,
+                                          'butterworth', 2.5)
+    np.testing.assert_equal(interpolated_signals[sample_mask, :],
+                            signals[sample_mask, :])
+    np.testing.assert_equal(interpolated_confounds[sample_mask, :],
+                            confounds[sample_mask, :])
+
+    scrubbed_signals, scrubbed_confounds = \
+        nisignal._handle_scrubbed_volumes(signals, confounds, sample_mask,
+                                          'cosine', 2.5)
+    np.testing.assert_equal(scrubbed_signals,
+                            signals[sample_mask, :])
+    np.testing.assert_equal(scrubbed_confounds,
+                            confounds[sample_mask, :])
