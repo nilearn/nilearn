@@ -553,7 +553,8 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     Returns
     -------
     cleaned_signals : :class:`numpy.ndarray`
-        Input signals, cleaned. Same shape as `signals`.
+        Input signals, cleaned. Same shape as `signals` unless `sample_mask`
+        applied.
 
     Notes
     -----
@@ -575,19 +576,21 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     confounds = stringify_path(confounds)
     if confounds is not None:
         _check_signal_parameters(detrend, standardize_confounds)
+    # check if filter parameters are satisfied and return correct filter
+    filter_type = _check_filter_parameters(filter, low_pass, high_pass, t_r)
 
     # Read confounds and signals
     signals, runs, confounds, sample_mask = _sanitize_inputs(
         signals, runs, confounds, sample_mask, ensure_finite
     )
-    # check if filter parameters are satisfied and return correct filter
-    filter_type = _check_filter_parameters(filter, low_pass, high_pass, t_r)
 
-    if filter_type == 'cosine':
-        confounds = _create_cosine_drift_terms(signals, confounds, high_pass,
-                                               t_r)
+    if runs is not None:
+        return _process_runs(signals, runs, detrend, standardize,
+                             confounds, sample_mask,
+                             filter_type, low_pass, high_pass, t_r)
 
-    # interpolate censored volumes
+    # For the following steps, sample_mask should be either None or index-like
+    # interpolate censored volumes if using butterworth filter
     if filter_type == 'butterworth':
         signals, confounds = _interpolate(signals, confounds, sample_mask)
     elif sample_mask is not None:  # Or censor them
@@ -595,14 +598,14 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         if confounds is not None:
             confounds = confounds[sample_mask, :]
 
-    # Restrict the signal to the orthogonal of the confounds
-    if runs is not None:
-        signals = _process_runs(signals, runs, detrend, standardize,
-                                   confounds, low_pass, high_pass, t_r)
+    if filter_type == 'cosine':
+        confounds = _create_cosine_drift_terms(signals, confounds, high_pass,
+                                               t_r)
 
     # Detrend
     # Detrend and filtering should apply to confounds, if confound presents
     # keep filters orthogonal (according to Lindquist et al. (2018))
+   # Restrict the signal to the orthogonal of the confounds
     if detrend:
         mean_signals = signals.mean(axis=0)
         signals = _standardize(signals, standardize=False, detrend=detrend)
@@ -655,7 +658,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
 
 
 def _interpolate(signals, confounds, sample_mask):
-    """Interpolate the censored volumes before butterworth filtering."""
+    """Cubic spline interpolation for censored volumes."""
     if sample_mask is None:
         return signals, confounds
 
@@ -714,8 +717,8 @@ def _check_cosine_by_user(confounds, cosine_drift):
     return np.hstack((confounds, cosine_drift))
 
 
-def _process_runs(signals, runs, detrend, standardize, confounds,
-                  low_pass, high_pass, t_r):
+def _process_runs(signals, runs, detrend, standardize, confounds, sample_mask,
+                  filter, low_pass, high_pass, t_r):
     """Process each run independently."""
     if len(runs) != len(signals):
         raise ValueError(
@@ -724,17 +727,22 @@ def _process_runs(signals, runs, detrend, standardize, confounds,
                 'does not match the length of the signals (%i)'
             ) % (len(runs), len(signals))
         )
-    for run in np.unique(runs):
+    cleaned_signals = []
+    for i, run in enumerate(np.unique(runs)):
         run_confounds = None
+        run_sample_mask = None
         if confounds is not None:
             run_confounds = confounds[runs == run]
-        signals[runs == run, :] = \
-            clean(signals[runs == run],
+        if sample_mask is not None:
+            run_sample_mask = sample_mask[i]
+        run_signals = \
+            clean(signals[runs == run,],
                   detrend=detrend, standardize=standardize,
-                  confounds=run_confounds, low_pass=low_pass,
+                  confounds=run_confounds, sample_mask=run_sample_mask,
+                  filter=filter, low_pass=low_pass,
                   high_pass=high_pass, t_r=t_r)
-    return signals
-
+        cleaned_signals.append(run_signals)
+    return np.vstack(cleaned_signals)
 
 def _sanitize_inputs(signals, runs, confounds, sample_mask, ensure_finite):
     """Clean up signals and confounds before processing."""
@@ -773,21 +781,17 @@ def _sanitize_sample_mask(n_time, n_runs, runs, sample_mask):
     """Check sample_mask is the right data type and matches the run index."""
     if sample_mask is None:
         return sample_mask
+
     sample_mask = _check_run_sample_masks(n_runs, sample_mask)
 
     if runs is None:
         runs = np.zeros(n_time)
 
-    # handle multiple runs
-    masks = []
-    starting_index = 0
+    # check sample mask of each run
     for i, current_mask in enumerate(sample_mask):
         _check_sample_mask_index(i, n_runs, runs, current_mask)
-        current_mask += starting_index
-        masks.append(current_mask)
-        starting_index = sum(i == runs)
-    sample_mask = np.hstack(masks)
-    return sample_mask
+
+    return sample_mask[0] if sum(runs) == 0 else sample_mask
 
 
 def _check_sample_mask_index(i, n_runs, runs, current_mask):

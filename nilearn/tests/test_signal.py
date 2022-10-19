@@ -410,6 +410,13 @@ def test_clean_runs():
     # clean should not modify inputs
     assert np.array_equal(x_orig, x)
 
+    # check the runs are individually cleaned
+    x_run1 = nisignal.clean(x[0:n_samples // 2, :],
+        confounds=confounds[0:n_samples // 2, :],
+        standardize=False, detrend=True,
+        low_pass=None, high_pass=None)
+    assert np.array_equal(x_run1, x_detrended[0:n_samples // 2, :])
+
 
 def test_clean_confounds():
     signals, noises, confounds = generate_signals(n_features=41,
