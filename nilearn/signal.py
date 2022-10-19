@@ -480,7 +480,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     Butterworth filtering is only meaningful on evenly-sampled signals.
 
     When performing scrubbing (censoring high-motion volumes) with butterworth
-    filtering, the signal is proccessed in the following order:
+    filtering, the signal is processed in the following order:
 
     - interpolate high motion volumes with cubic spline interpolation.
     - detrend
@@ -490,7 +490,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     - standardize
 
     When performing scrubbing with cosine drift term filtering, the signal is
-    proccessed in the following order:
+    processed in the following order:
 
     - generate cosine drift term
     - censor high motion volumes
