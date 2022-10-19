@@ -678,7 +678,8 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     return signals
 
 
-def _handle_scrubbed_volumes(signals, confounds, sample_mask, filter_type, t_r):
+def _handle_scrubbed_volumes(signals, confounds, sample_mask, filter_type,
+                             t_r):
     """Interpolate or censor scrubbed volumes."""
     if sample_mask is None:
         return signals, confounds
