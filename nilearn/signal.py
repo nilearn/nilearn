@@ -644,9 +644,8 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
                                     low_pass=low_pass, high_pass=high_pass)
         # apply sample_mask to remove censored volumes after signal filtering
         if sample_mask is not None:
-            signals = signals[sample_mask, :]
-            if confounds is not None:
-                confounds = confounds[sample_mask, :]
+            signals, confounds = _censor_signals(signals, confounds, sample_mask)
+
 
     # Remove confounds
     if confounds is not None:
@@ -689,21 +688,26 @@ def _handle_scrubbed_volumes(signals, confounds, sample_mask, filter_type,
         if confounds is not None:
             confounds = _interpolate_volumes(confounds, sample_mask, t_r)
     else:  # Or censor when no filtering, or cosine filter
-        signals = signals[sample_mask, :]
-        if confounds is not None:
-            confounds = confounds[sample_mask, :]
+        signals, confounds = _censor_signals(signals, confounds, sample_mask)
     return signals, confounds
 
 
-def _interpolate_volumes(x, sample_mask, t_r):
+def _censor_signals(signals, confounds, sample_mask):
+    signals = signals[sample_mask, :]
+    if confounds is not None:
+        confounds = confounds[sample_mask, :]
+    return signals,confounds
+
+
+def _interpolate_volumes(volumes, sample_mask, t_r):
     """Interpolate censored volumes in signals/confounds."""
-    frame_times = np.arange(x.shape[0]) * t_r
+    frame_times = np.arange(volumes.shape[0]) * t_r
     remained_vol = frame_times[sample_mask]
-    remained_x = x[sample_mask, :]
+    remained_x = volumes[sample_mask, :]
     cubic_spline_fitter = CubicSpline(remained_vol, remained_x)
-    x_interpolated = cubic_spline_fitter(frame_times)
-    x[~sample_mask, :] = x_interpolated[~sample_mask, :]
-    return x
+    volumes_interpolated = cubic_spline_fitter(frame_times)
+    volumes[~sample_mask, :] = volumes_interpolated[~sample_mask, :]
+    return volumes
 
 
 def _create_cosine_drift_terms(signals, confounds, high_pass, t_r):
