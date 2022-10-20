@@ -644,8 +644,8 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
                                     low_pass=low_pass, high_pass=high_pass)
         # apply sample_mask to remove censored volumes after signal filtering
         if sample_mask is not None:
-            signals, confounds = _censor_signals(signals, confounds, sample_mask)
-
+            signals, confounds = _censor_signals(signals, confounds,
+                                                 sample_mask)
 
     # Remove confounds
     if confounds is not None:
@@ -693,10 +693,11 @@ def _handle_scrubbed_volumes(signals, confounds, sample_mask, filter_type,
 
 
 def _censor_signals(signals, confounds, sample_mask):
+    """Apply sample masks to data."""
     signals = signals[sample_mask, :]
     if confounds is not None:
         confounds = confounds[sample_mask, :]
-    return signals,confounds
+    return signals, confounds
 
 
 def _interpolate_volumes(volumes, sample_mask, t_r):
