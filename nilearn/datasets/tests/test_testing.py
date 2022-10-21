@@ -54,7 +54,29 @@ def test_loading_from_archive_contents(tmp_path):
                 sorted(map(Path, tarf.getnames()))
                 == [Path(".")] + expected_contents
             )
-            tarf.extractall(str(tar_extract_dir))
+            
+            import os
+            
+            def is_within_directory(directory, target):
+                
+                abs_directory = os.path.abspath(directory)
+                abs_target = os.path.abspath(target)
+            
+                prefix = os.path.commonprefix([abs_directory, abs_target])
+                
+                return prefix == abs_directory
+            
+            def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+            
+                for member in tar.getmembers():
+                    member_path = os.path.join(path, member.name)
+                    if not is_within_directory(path, member_path):
+                        raise Exception("Attempted Path Traversal in Tar File")
+            
+                tar.extractall(path, members, numeric_owner=numeric_owner) 
+                
+            
+            safe_extract(tarf, str(tar_extract_dir))
         labels_file = tar_extract_dir / "data" / "labels.csv"
         assert labels_file.read_bytes() == b""
 
@@ -176,7 +198,26 @@ def test_dict_to_archive(tmp_path):
     with archive_path.open("wb") as f:
         f.write(targz)
     with tarfile.open(str(archive_path)) as tarf:
-        tarf.extractall(str(extract_dir))
+        def is_within_directory(directory, target):
+            
+            abs_directory = os.path.abspath(directory)
+            abs_target = os.path.abspath(target)
+        
+            prefix = os.path.commonprefix([abs_directory, abs_target])
+            
+            return prefix == abs_directory
+        
+        def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+        
+            for member in tar.getmembers():
+                member_path = os.path.join(path, member.name)
+                if not is_within_directory(path, member_path):
+                    raise Exception("Attempted Path Traversal in Tar File")
+        
+            tar.extractall(path, members, numeric_owner=numeric_owner) 
+            
+        
+        safe_extract(tarf, str(extract_dir))
     img = image.load_img(str(extract_dir / "data" / "img.nii.gz"))
     assert img.shape == (10, 11, 12, 17)
     with (extract_dir / "a" / "b" / "c").open("rb") as f:
