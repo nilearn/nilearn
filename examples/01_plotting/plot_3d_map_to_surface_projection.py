@@ -38,7 +38,7 @@ import numpy as np
 from nilearn import surface
 
 curv_right = surface.load_surf_data(fsaverage.curv_right)
-curv_right_sign = (np.sign(curv_right) + 1) / 8 + 0.25
+curv_right_sign = (np.sign(curv_right) + 1) / 4 + 0.25
 
 ##############################################################################
 # Sample the 3D data around each node of the mesh
