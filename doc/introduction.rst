@@ -44,10 +44,6 @@ Using ``nilearn`` for the first time
 you should probably have a look at a `general introduction about Python <http://www.learnpython.org/>`_
 as well as to an `introduction to using Python for science <http://scipy-lectures.github.io/>`_ before diving into ``nilearn``.
 
-Moreover, we recommend using ``nilearn`` with `Jupyter <http://jupyter.org>`_ notebooks or
-`IPython <http://ipython.org>`_ sessions. They provide an interactive 
-environment that greatly facilitates debugging and visualisation.
-
 First steps with nilearn
 ------------------------
 
@@ -271,11 +267,16 @@ Finding help
 On top of this guide, there is a lot of content available outside of ``nilearn``
 that could be of interest to new-comers:
 
-1. A quick and gentle introduction to scientific computing with Python with the `scipy lecture notes <http://scipy-lectures.github.io/>`_.
+1. `An introduction to fMRI <https://www.cs.mtsu.edu/~xyang/fMRIHandBook.pdf>`_ by Russel Poldrack, Jeanette Mumford and Thomas Nichols.
 
-2. (For French readers) `An introduction to cognitive neuroscience <https://psy3018.github.io/intro.html>`_ by Pierre Bellec.
+2. (For French readers) `An introduction to cognitive neuroscience <https://psy3018.github.io/intro.html>`_ given at the University of Montréal.
 
 3. The documentation of ``scikit-learn`` explains each method with tips on practical use and examples: :sklearn:`\ `.  While not specific to neuroimaging, it is often a recommended read.
+
+4. (For Python beginners) A quick and gentle introduction to scientific computing with Python with the `scipy lecture notes <http://scipy-lectures.github.io/>`_.
+Moreover, you can use ``nilearn`` with `Jupyter <http://jupyter.org>`_ notebooks or
+`IPython <http://ipython.org>`_ sessions. They provide an interactive 
+environment that greatly facilitates debugging and visualisation.
 
 
 Besides, you can find help on :neurostars:`neurostars <>` for questions
