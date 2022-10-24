@@ -74,8 +74,8 @@ project, funded by the French `Investissement d'Avenir
 
 `Kshitij Chawla`_ was paid by `INRIA <https://www.inria.fr/en>`_.
 
-`Nicolas Gensollen`_ is paid by the `Human Brain Project <https://www.humanbrainproject.eu/en/>`_
-|HBP logo|.
+`Yasmin Mzayek`_ is paid by the `Human Brain Project <https://www.humanbrainproject.eu/en/>`_
+|HBP logo|. Previously `Nicolas Gensollen`_ was funded by HBP.
 
 NiLearn is also supported by `DigiCosme <https://digicosme.lri.fr>`_
 |digicosme logo| and `DataIA <https://dataia.eu/en>`_ |dataia_logo|.
