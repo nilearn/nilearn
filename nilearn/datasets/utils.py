@@ -310,6 +310,24 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
                   'directories, but:' + ''.join(errors))
 
 
+def _is_within_directory(directory, target):
+    abs_directory = os.path.abspath(directory)
+    abs_target = os.path.abspath(target)
+
+    prefix = os.path.commonprefix([abs_directory, abs_target])
+
+    return prefix == abs_directory
+
+
+def _safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+    for member in tar.getmembers():
+        member_path = os.path.join(path, member.name)
+        if not _is_within_directory(path, member_path):
+            raise Exception("Attempted Path Traversal in Tar File")
+
+    tar.extractall(path, members, numeric_owner=numeric_owner)
+
+
 @fill_doc
 def _uncompress_file(file_, delete_archive=True, verbose=1):
     """Uncompress files contained in a data_set.
@@ -364,7 +382,7 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
             processed = True
         if os.path.isfile(file_) and tarfile.is_tarfile(file_):
             with contextlib.closing(tarfile.open(file_, "r")) as tar:
-                tar.extractall(path=data_dir)
+                _safe_extract(tar, path=data_dir)
             if delete_archive:
                 os.remove(file_)
             processed = True
