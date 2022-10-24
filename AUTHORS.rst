@@ -23,31 +23,25 @@ Core developers
 
 The nilearn core developers are:
 
-* `Alexandre Gramfort`_
 * `Alexis Thual`_
 * `Bertrand Thirion`_
-* `Binh Nguyen`_
 * `Elizabeth DuPre`_
-* `Gael Varoquaux`_
 * `Hao-Ting Wang`_
 * `Jerome Dockes`_
-* `Julia Huntenburg`_
 * `Nicolas Gensollen`_
 * `Taylor Salo`_
-* `Thomas Bazeille`_
-
-.. _triage:
-
-Triage team
-...........
-
-The triage team is responsible for helping to review and prioritize issues related to Nilearn development, as described in the :ref:`maintenance_process`. We are actively looking for more contributors to join the team. You can indicate your interest by contacting one of the Nilearn :ref:`core_devs`.
+* `Yasmin Mzayek`_
 
 Other contributors
 ..................
 
 Some other past or present contributors are:
 
+* `Alexandre Gramfort`_
+* `Binh Nguyen`_
+* `Gael Varoquaux`_
+* `Julia Huntenburg`_
+* `Thomas Bazeille`_
 * `Alexandre Abadie`_
 * `Alexandre Abraham`_
 * `Andrés Hoyos Idrobo`_

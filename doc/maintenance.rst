@@ -32,7 +32,7 @@ is responsible for a very basic labeling categorizing the issue:
 	- |Enhancement| for feature requests.
 
 First of all, the user might have mislabeled the issue, in which case a member
-of the :ref:`core_devs` team or :ref:`triage` needs to correct the labels.
+of the :ref:`core_devs` team needs to correct the labels.
 
 In addition to these basic labels, we have many more labels which describes
 in more detail a given issue. First, we try to describe the **estimated amount
