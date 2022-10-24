@@ -6,13 +6,13 @@ import itertools
 
 from joblib import Parallel, delayed
 
-from .._utils import CacheMixin, fill_doc
+from .._utils import fill_doc
 from .._utils.niimg_conversions import _iter_check_niimg
 from .nifti_maps_masker import NiftiMapsMasker
 
 
 @fill_doc
-class MultiNiftiMapsMasker(NiftiMapsMasker, CacheMixin):
+class MultiNiftiMapsMasker(NiftiMapsMasker):
     """Class for masking of Niimg-like objects.
 
     MultiNiftiMapsMasker is useful when data from overlapping volumes
