@@ -4,7 +4,7 @@ Transformer for computing ROI signals of multiple 4D images
 
 import itertools
 
-from joblib import Parallel, delayed
+from joblib import Memory, Parallel, delayed
 
 from .._utils import fill_doc
 from .._utils.niimg_conversions import _iter_check_niimg
@@ -99,9 +99,51 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
     """
 
-    def __init__(self, *args, n_jobs=1, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        labels_img,
+        labels=None,
+        background_label=0,
+        mask_img=None,
+        smoothing_fwhm=None,
+        standardize=False,
+        standardize_confounds=True,
+        high_variance_confounds=False,
+        detrend=False,
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        dtype=None,
+        resampling_target='data',
+        memory=Memory(location=None, verbose=0),
+        memory_level=1,
+        verbose=0,
+        strategy='mean',
+        reports=True,
+        n_jobs=1
+    ):
         self.n_jobs = n_jobs
+        super().__init__(
+            labels_img,
+            labels=labels,
+            background_label=background_label,
+            mask_img=mask_img,
+            smoothing_fwhm=smoothing_fwhm,
+            standardize=standardize,
+            standardize_confounds=standardize_confounds,
+            high_variance_confounds=high_variance_confounds,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            detrend=detrend,
+            t_r=t_r,
+            dtype=dtype,
+            resampling_target=resampling_target,
+            memory=memory,
+            memory_level=memory_level,
+            verbose=verbose,
+            strategy=strategy,
+            reports=reports,
+        )
 
     def transform_imgs(self, imgs_list, confounds=None, n_jobs=1,
                        sample_mask=None):
