@@ -168,6 +168,8 @@
 
 .. _Óscar Nájera: https://github.com/Titan-C
 
+.. _Paul Bogdan: https://github.com/paulcbogdan
+
 .. _Paula Sanz-Leon: https://github.com/pausz
 
 .. _Peer Herholz: https://peerherholz.github.io/
