@@ -1,6 +1,11 @@
 .. _contributing:
 
 
+Code of Conduct
+===============
+
+By participating in Nilearn, you agree to abide by the :nipy:`NIPY Code of Conduct <conduct.html>`
+
 How to get help?
 ================
 
