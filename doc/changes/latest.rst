@@ -11,8 +11,13 @@ NEW
 Fixes
 -----
 
+- Change the order of applying ``sample_masks`` in :func:`~.signal.clean` based on different filtering options (:gh:`3385` by `Hao-Ting Wang`). 
+- When using cosine filter and ``sample_masks`` is used, :func:`~.signal.clean` generates the cosine descrete regressors using the full time seiries (:gh:`3385` by `Hao-Ting Wang`). 
+
 Enhancements
 ------------
+
+- :func:`nilearn.signal.clean` imputes scrubbed volumes (defined through ``sample_masks``) with cubic spline function before applying butterworth filter (:gh:`3385` by `Hao-Ting Wang`). 
 
 Changes
 -------
