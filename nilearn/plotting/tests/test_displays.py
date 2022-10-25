@@ -66,8 +66,8 @@ def test_glass_brain_axes():
     """Tests for class ``GlassBrainAxes``."""
     from nilearn.plotting.displays import GlassBrainAxes
     ax = plt.subplot(111)
-    axes = GlassBrainAxes(ax, 'l', 2)
-    axes._add_markers(np.array([[0, 0, 0]]), 'r', [10])
+    axes = GlassBrainAxes(ax, 'r', 2)
+    axes._add_markers(np.array([[0, 0, 0]]), 'g', [10])
     line_coords = [np.array([[0, 0, 0],
                              [1, 1, 1]])]
     line_values = np.array([1, 0, 6])
@@ -79,7 +79,7 @@ def test_glass_brain_axes():
                        match="If vmin is set to a non-negative number "):
         axes._add_lines(line_coords, line_values, None, vmin=10, vmax=None)
     axes._add_lines(line_coords, line_values, None, vmin=-10, vmax=None)
-
+    axes._add_lines(line_coords, line_values, None, vmin=-10, vmax=-5)
 
 def test_get_index_from_direction_exception():
     """Tests that a ValueError is raised when an invalid direction
