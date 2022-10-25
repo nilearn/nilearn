@@ -310,6 +310,9 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
                   'directories, but:' + ''.join(errors))
 
 
+# The functions _is_within_directory and _safe_extract were implemented in
+# https://github.com/nilearn/nilearn/pull/3391 to address a directory
+# traversal vulnerability https://github.com/advisories/GHSA-gw9q-c7gh-j9vm
 def _is_within_directory(directory, target):
     abs_directory = os.path.abspath(directory)
     abs_target = os.path.abspath(target)
