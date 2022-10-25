@@ -149,8 +149,7 @@ Installing ``nilearn``
 
       .. code-block::
 
-         python -m pip install -r requirements-dev.txt
-         python -m pip install -e .
+         python -m pip install -e '.[dev]'
 
       To check your install, try importing nilearn in a python session:
 

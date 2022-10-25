@@ -14,7 +14,7 @@ jobs:
     outputs:
       skip: ${{ steps.result_step.outputs.ci-skip }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - id: result_step
@@ -34,10 +34,10 @@ jobs:
     env:
         MIN_REQUIREMENTS: true
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
-          python-version: 3.6
+          python-version: "3.6"
         name: 'Setup python'
       - shell: bash -l {0}
         name: 'Display Python version'
@@ -51,7 +51,7 @@ jobs:
       - shell: bash -l {0}
         run: ./build_tools/github/test.sh
         name: 'Run tests'
-      - uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@v3
         if: success()
         name: 'Upload coverage to CodeCov'
 
@@ -67,10 +67,10 @@ jobs:
         MIN_REQUIREMENTS: true
         MATPLOTLIB: true
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
-          python-version: 3.6
+          python-version: "3.6"
         name: 'Setup python'
       - shell: bash -l {0}
         name: 'Display Python version'
@@ -99,8 +99,8 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
             python-version: ${{ matrix.python-version }}
         name: 'Setup python'
@@ -119,7 +119,7 @@ jobs:
       - shell: bash {0}
         run: ./build_tools/github/test.sh
         name: 'Run tests'
-      - uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@v3
         if: success()
         name: 'Upload coverage to CodeCov'
 
@@ -139,8 +139,8 @@ jobs:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
             python-version: ${{ matrix.python-version }}
         name: 'Setup python'
@@ -159,7 +159,7 @@ jobs:
       - shell: bash {0}
         run: ./build_tools/github/test.sh
         name: 'Run tests'
-      - uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@v3
         if: success()
         name: 'Upload coverage to CodeCov'
 
