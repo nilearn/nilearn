@@ -481,7 +481,7 @@ def find_probabilistic_atlas_cut_coords(maps_img):
 
     Parameters
     ----------
-    label_img : 4D Nifti1Image
+    maps_img : 4D Nifti1Image
         A probabilistic brain atlas with probabilistic masks in the fourth
         dimension.
 
