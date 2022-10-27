@@ -955,7 +955,20 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 
     # Infer subjects in dataset
     if sub_labels:
-        sub_folders = [os.path.join(derivatives_path, f"sub-{s}") for s in sub_labels]
+        sub_folders_in = [os.path.join(derivatives_path, f"sub-{s}") for s in sub_labels]
+        
+        sub_labels_exist = []
+        sub_labels_missing = []
+        sub_folders = []
+        for i, sub_folder in enumerate(sub_folders_in):
+            if os.path.exists(sub_folder):
+                sub_labels_exist.append(sub_labels[i])
+                sub_folders.append(sub_folder)
+            else:
+                sub_labels_missing.append(sub_labels[i])
+        if sub_labels_missing:
+            warn('The following subject labels are not present in the dataset'
+                 ' and cannot be processed: %s' %sub_labels_missing)
     else:
         sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*/'))
         sub_labels = [os.path.basename(s[:-1]).split('-')[1] for s in sub_folders]
@@ -967,7 +980,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     models_run_imgs = []
     models_events = []
     models_confounds = []
-    for sub_label in sub_labels:
+    for sub_label in sub_labels_exist:
         # Create model
         model = FirstLevelModel(
             t_r=t_r, slice_time_ref=slice_time_ref, hrf_model=hrf_model,
