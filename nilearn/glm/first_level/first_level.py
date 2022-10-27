@@ -953,7 +953,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 
     # Infer subjects in dataset
     if sub_labels:
-        sub_folders = [os.path.join(derivatives_path, 'sub-%s/'%s) for s in sub_labels]
+        sub_folders = [os.path.join(derivatives_path, f"sub-{s}") for s in sub_labels]
     else:
         sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*/'))
         sub_labels = [os.path.basename(s[:-1]).split('-')[1] for s in sub_folders]
