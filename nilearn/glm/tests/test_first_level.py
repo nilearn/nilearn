@@ -659,7 +659,6 @@ def test_first_level_from_bids():
             first_level_from_bids(bids_path, 'main',
                                   img_filters="foo")
 
-
         with pytest.raises(TypeError,
                            match="filters in img"):
             first_level_from_bids(bids_path, 'main',
