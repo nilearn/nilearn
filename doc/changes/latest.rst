@@ -14,7 +14,7 @@ Fixes
 Enhancements
 ------------
 
-- ``nilearn.glm.first_level.first_level.first_level_from_bids`` now takes an optional `subject_labels` argument and warns users of given subject labels that are not present in the dataset.
+- :func:`~glm.first_level.first_level_from_bids` now takes an optional ``sub_labels`` argument and warns users of given subject labels that are not present in the dataset (:gh:`3351` by `Kevin Sitek`_).
 
 Changes
 -------
