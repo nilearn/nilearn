@@ -672,7 +672,7 @@ def test_first_level_from_bids():
 
         # test output is as expected
         models, m_imgs, m_events, m_confounds = first_level_from_bids(
-            bids_path, 'main', 'MNI', [('desc', 'preproc')])
+            bids_path, 'main', 'MNI', img_filters=[('desc', 'preproc')])
         assert len(models) == len(m_imgs)
         assert len(models) == len(m_events)
         assert len(models) == len(m_confounds)
