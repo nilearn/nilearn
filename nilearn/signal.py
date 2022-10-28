@@ -493,7 +493,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     According to :footcite:`Lindquist2018`, removal of confounds will be done
     orthogonally to temporal filters (low- and/or high-pass filters), if both
     are specified. The censored volumes should be removed in both signals and
-    confounds before the nuissance regression.
+    confounds before the nuisance regression.
 
     When performing scrubbing with cosine drift term filtering, the signal is
     processed in the following order, based on the first recommendation in
