@@ -725,6 +725,12 @@ def test_first_level_from_bids():
             first_level_from_bids(
                 bids_path, 'main', 'T1w')  # desc not specified
 
+def test_first_level_from_bids_with_subject_labels():
+    with InTemporaryDirectory():
+        bids_path = create_fake_bids_dataset(n_sub=10, n_ses=2,
+                                             tasks=['localizer', 'main'],
+                                             n_runs=[1, 3])
+        first_level_from_bids(bids_path, 'main', sub_labels=["foo", "bar"])
 
 def test_first_level_with_scaling():
     shapes, rk = [(3, 1, 1, 2)], 1
