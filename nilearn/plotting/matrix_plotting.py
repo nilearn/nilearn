@@ -290,6 +290,7 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
         cax = divider.append_axes("right", size="5%", pad=.0)
 
         plt.colorbar(display, cax=cax)
+        fig.tight_layout()
 
     if title is not None:
         # Adjust the size
