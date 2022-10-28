@@ -873,6 +873,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     """
     # check arguments
     img_filters = img_filters if img_filters else []
+    sub_labels = sub_labels if sub_labels else []
     if not isinstance(dataset_path, str):
         raise TypeError(
             'dataset_path must be a string, instead %s was given' %
