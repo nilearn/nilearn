@@ -19,6 +19,9 @@ jobs:
     # To test this workflow on a fork, uncomment the following line.
     if: github.repository == 'nilearn/nilearn'
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
     steps:
       - name: Restore source cache
         uses: actions/cache@v3
