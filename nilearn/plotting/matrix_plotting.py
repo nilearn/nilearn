@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from matplotlib.colorbar import make_axes
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from .._utils import fill_doc
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", FutureWarning)
@@ -286,13 +286,10 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
                              rect=((0, 0, .95, 1) if colorbar
                                    else (0, 0, 1, 1)))
     if colorbar:
-        cax, kw = make_axes(axes, location='right', fraction=0.05, shrink=0.8,
-                            pad=.0)
-        fig.colorbar(mappable=display, cax=cax)
-        # make some room
-        fig.subplots_adjust(right=0.78)
-        # change current axis back to matrix
-        plt.sca(axes)
+        divider = make_axes_locatable(axes)
+        cax = divider.append_axes("right", size="5%", pad=.0)
+
+        plt.colorbar(display, cax=cax)
 
     if title is not None:
         # Adjust the size
