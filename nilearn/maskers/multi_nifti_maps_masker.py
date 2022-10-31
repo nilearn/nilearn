@@ -4,15 +4,15 @@ Transformer for computing ROI signals of multiple 4D images
 
 import itertools
 
-from joblib import Parallel, delayed
+from joblib import Memory, Parallel, delayed
 
-from .._utils import CacheMixin, fill_doc
+from .._utils import fill_doc
 from .._utils.niimg_conversions import _iter_check_niimg
 from .nifti_maps_masker import NiftiMapsMasker
 
 
 @fill_doc
-class MultiNiftiMapsMasker(NiftiMapsMasker, CacheMixin):
+class MultiNiftiMapsMasker(NiftiMapsMasker):
     """Class for masking of Niimg-like objects.
 
     MultiNiftiMapsMasker is useful when data from overlapping volumes
@@ -100,9 +100,47 @@ class MultiNiftiMapsMasker(NiftiMapsMasker, CacheMixin):
     """
     # memory and memory_level are used by CacheMixin.
 
-    def __init__(self, *args, n_jobs=1, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        maps_img,
+        mask_img=None,
+        allow_overlap=True,
+        smoothing_fwhm=None,
+        standardize=False,
+        standardize_confounds=True,
+        high_variance_confounds=False,
+        detrend=False,
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        dtype=None,
+        resampling_target="data",
+        memory=Memory(location=None, verbose=0),
+        memory_level=0,
+        verbose=0,
+        reports=True,
+        n_jobs=1
+    ):
         self.n_jobs = n_jobs
+        super().__init__(
+            maps_img,
+            mask_img=mask_img,
+            allow_overlap=allow_overlap,
+            smoothing_fwhm=smoothing_fwhm,
+            standardize=standardize,
+            standardize_confounds=standardize_confounds,
+            high_variance_confounds=high_variance_confounds,
+            detrend=detrend,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            t_r=t_r,
+            dtype=dtype,
+            resampling_target=resampling_target,
+            memory=memory,
+            memory_level=memory_level,
+            verbose=verbose,
+            reports=reports,
+        )
 
     def transform_imgs(self, imgs_list, confounds=None, n_jobs=1,
                        sample_mask=None):
