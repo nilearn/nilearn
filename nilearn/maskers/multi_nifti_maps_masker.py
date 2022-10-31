@@ -42,11 +42,11 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         Strategy to standardize the signal.
 
             - 'zscore': the signal is z-scored. Timeseries are shifted
-            to zero mean and scaled to unit variance.
+              to zero mean and scaled to unit variance.
             - 'psc':  Timeseries are shifted to zero mean value and scaled
-            to percent signal change (as compared to original mean signal).
+              to percent signal change (as compared to original mean signal).
             - True : the signal is z-scored. Timeseries are shifted
-            to zero mean and scaled to unit variance.
+              to zero mean and scaled to unit variance.
             - False : Do not standardize the data.
 
         Default=False.
@@ -69,13 +69,13 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         Gives which image gives the final shape/size:
 
             - "data" means the atlas is resampled to the shape of the data if
-            needed
+              needed
             - "mask" means the maps_img and images provided to fit() are
-            resampled to the shape and affine of mask_img
+              resampled to the shape and affine of mask_img
             - "maps" means the mask_img and images provided to fit() are
-            resampled to the shape and affine of maps_img
+              resampled to the shape and affine of maps_img
             - None means no resampling: if shapes and affines do not match,
-            a ValueError is raised.
+              a ValueError is raised.
 
         Default="data".
 
