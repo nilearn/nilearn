@@ -316,6 +316,21 @@ def test_uncompress():
             shutil.rmtree(dtemp)
 
 
+def test__safe_extract():
+    # Test vulnerability patch by mimicking path traversal
+    dtemp = mkdtemp()
+    ztemp = os.path.join(dtemp, 'test.tar')
+    fd, temp = mkstemp(dir=dtemp)
+    os.close(fd)
+    with contextlib.closing(tarfile.open(ztemp, 'w')) as tar:
+        tar.add(temp, arcname=f'..{temp}')
+    with pytest.raises(
+            Exception, match="Attempted Path Traversal in Tar File"
+    ):
+        datasets.utils._uncompress_file(ztemp, verbose=0)
+    shutil.rmtree(dtemp)
+
+
 @pytest.mark.parametrize("should_cast_path_to_string", [False, True])
 def test_fetch_file_overwrite(should_cast_path_to_string,
                               tmp_path, request_mocker):
