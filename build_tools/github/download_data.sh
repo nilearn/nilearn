@@ -32,7 +32,7 @@ datasets.fetch_atlas_yeo_2011()
 datasets.fetch_development_fmri(n_subjects=10)
 datasets.fetch_fiac_first_level()
 datasets.fetch_localizer_first_level()
-datasets.fetch_spm_multimodal_fmri()
+#datasets.fetch_spm_multimodal_fmri()
 datasets.fetch_localizer_contrasts(
     contrasts=["left vs right button press"],
     n_subjects=16,
