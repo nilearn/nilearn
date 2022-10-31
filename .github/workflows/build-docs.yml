@@ -92,15 +92,15 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-           /home/runner/nilearn_data/basc_multiscale_2015  # <  1 MB
-           /home/runner/nilearn_data/destrieux_surface     # <  1 MB
-           /home/runner/nilearn_data/difumo_atlases        # ~  4 MB
-           /home/runner/nilearn_data/fsaverage             # ~ 28 MB
-           /home/runner/nilearn_data/Megatrawls            # ~  9 MB
-           /home/runner/nilearn_data/msdl_atlas            # ~ 21 MB
-           /home/runner/nilearn_data/neurovault            # ~ 13 MB
-           /home/runner/nilearn_data/pauli_2017            # ~  1 MB
-           /home/runner/nilearn_data/yeo_2011              # ~  3 MB
+           $NILEARN_DATA/basc_multiscale_2015  # <  1 MB
+           $NILEARN_DATA/destrieux_surface     # <  1 MB
+           $NILEARN_DATA/difumo_atlases        # ~  4 MB
+           $NILEARN_DATA/fsaverage             # ~ 28 MB
+           $NILEARN_DATA/Megatrawls            # ~  9 MB
+           $NILEARN_DATA/msdl_atlas            # ~ 21 MB
+           $NILEARN_DATA/neurovault            # ~ 13 MB
+           $NILEARN_DATA/pauli_2017            # ~  1 MB
+           $NILEARN_DATA/yeo_2011              # ~  3 MB
           key: v1-small-cache-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
@@ -112,103 +112,103 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
-           /home/runner/nilearn_data/allen_rsn_2011        # ~ 32 MB
+           $NILEARN_DATA/allen_rsn_2011        # ~ 32 MB
           key: v1-allen_rsn_2011-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
-           /home/runner/nilearn_data/brainomics_localizer  # ~ 66 MB
+           $NILEARN_DATA/brainomics_localizer  # ~ 66 MB
           key: v1-brainomics_localizer-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
-           /home/runner/nilearn_data/development_fmri      # ~373 MB
+           $NILEARN_DATA/development_fmri      # ~373 MB
           key: v1-development_fmri-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
-           /home/runner/nilearn_data/ds000030              # ~832 MB
+           $NILEARN_DATA/ds000030              # ~832 MB
           key: v1-ds000030-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
-           /home/runner/nilearn_data/fiac_nilearn.glm      # ~ 82 MB
+           $NILEARN_DATA/fiac_nilearn.glm      # ~ 82 MB
           key: v1-fiac_nilearn.glm-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
-           /home/runner/nilearn_data/fMRI-language-localizer-demo-dataset # ~ 750 MB
+           $NILEARN_DATA/fMRI-language-localizer-demo-dataset # ~ 750 MB
           key: v1-fMRI-language-localizer-demo-dataset-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
-           /home/runner/nilearn_data/fsl                   # ~ 30 MB
+           $NILEARN_DATA/fsl                   # ~ 30 MB
           key: v1-fsl-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
-           /home/runner/nilearn_data/haxby2001             # ~302 MB
+           $NILEARN_DATA/haxby2001             # ~302 MB
           key: v1-haxby2001-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
-           /home/runner/nilearn_data/icbm152_2009          # ~ 63 MB
+           $NILEARN_DATA/icbm152_2009          # ~ 63 MB
           key: v1-icbm152_2009-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
-           /home/runner/nilearn_data/jimura_poldrack_2012_zmaps # ~ 105 MB
+           $NILEARN_DATA/jimura_poldrack_2012_zmaps # ~ 105 MB
           key: v1-jimura_poldrack_2012_zmaps-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
-           /home/runner/nilearn_data/localizer_first_level # ~ 35 MB
+           $NILEARN_DATA/localizer_first_level # ~ 35 MB
           key: v1-localizer_first_level-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
-           /home/runner/nilearn_data/miyawaki2008          # ~181 MB
+           $NILEARN_DATA/miyawaki2008          # ~181 MB
           key: v1-miyawaki2008-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
-           /home/runner/nilearn_data/nki_enhanced_surface  # ~ 85 MB
+           $NILEARN_DATA/nki_enhanced_surface  # ~ 85 MB
           key: v1-nki_enhanced_surface-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
-           /home/runner/nilearn_data/oasis1                # ~913 MB
+           $NILEARN_DATA/oasis1                # ~913 MB
           key: v1-oasis1-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
-           /home/runner/nilearn_data/smith_2009            # ~171 MB
+           $NILEARN_DATA/smith_2009            # ~171 MB
           key: v1-smith_2009-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
-           /home/runner/nilearn_data/spm_auditory          # ~230 MB
+           $NILEARN_DATA/spm_auditory          # ~230 MB
           key: v1-spm_auditory-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
-           /home/runner/nilearn_data/spm_multimodal_fmri   # ~227 MB
+           $NILEARN_DATA/spm_multimodal_fmri   # ~227 MB
           key: v1-spm_multimodal_fmri-${{ hashFiles('**/week_num**') }}
 
       # Download data and cache if it is not restored in previous steps, then
