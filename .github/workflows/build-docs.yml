@@ -19,11 +19,15 @@ jobs:
     # To test this workflow on a fork, uncomment the following line.
     if: github.repository == 'nilearn/nilearn'
     runs-on: ubuntu-latest
+    env:
+      BROWSER: "/usr/bin/firefox"
+      DISPLAY: ':99.0'
+      NILEARN_DATA: "/home/runner/work/nilearn/nilearn/nilearn_data"
     defaults:
       run:
         shell: bash -el {0}
     steps:
-      - name: Restore source cache
+      - name: Source caching
         uses: actions/cache@v3
         with:
           path: .git
@@ -41,11 +45,6 @@ jobs:
             git remote add upstream https://github.com/nilearn/nilearn.git
           fi
           git fetch upstream
-      - name: Save source cache
-        uses: actions/cache@v3
-        with:
-          path: .git
-          key: source-cache-${{ runner.os }}-${{ github.run_id }}
       - name: Determine force download
         run: |
           commit_msg=$(git log -2 --format=oneline);
@@ -64,128 +63,6 @@ jobs:
           else
               echo "missing" > week_num;
           fi
-      - name: Restore data cache
-        uses: actions/cache@v3
-        with:
-          path: |
-           /home/runner/nilearn_data/basc_multiscale_2015  # <  1 MB
-           /home/runner/nilearn_data/destrieux_surface     # <  1 MB
-           /home/runner/nilearn_data/difumo_atlases        # ~  4 MB
-           /home/runner/nilearn_data/fsaverage             # ~ 28 MB
-           /home/runner/nilearn_data/Megatrawls            # ~  9 MB
-           /home/runner/nilearn_data/msdl_atlas            # ~ 21 MB
-           /home/runner/nilearn_data/neurovault            # ~ 13 MB
-           /home/runner/nilearn_data/pauli_2017            # ~  1 MB
-           /home/runner/nilearn_data/yeo_2011              # ~  3 MB
-          key: v1-small-cache-${{ hashFiles('**/week_num**') }}
-      - name: Restore data cache
-        uses: actions/cache@v3
-        with:
-          path: |
-           /home/runner/nilearn_data/adhd                  # ~ 45 MB
-          key: v1-adhd-${{ hashFiles('**/week_num**') }}
-      - name: Restore data cache
-        uses: actions/cache@v3
-        with:
-          path: |
-           /home/runner/nilearn_data/allen_rsn_2011        # ~ 32 MB
-          key: v1-allen_rsn_2011-${{ hashFiles('**/week_num**') }}
-      - name: Restore data cache
-        uses: actions/cache@v3
-        with:
-          path: |
-           /home/runner/nilearn_data/brainomics_localizer  # ~ 66 MB
-          key: v1-brainomics_localizer-${{ hashFiles('**/week_num**') }}
-      - name: Restore data cache
-        uses: actions/cache@v3
-        with:
-          path: |
-           /home/runner/nilearn_data/development_fmri      # ~373 MB
-          key: v1-development_fmri-${{ hashFiles('**/week_num**') }}
-      - name: Restore data cache
-        uses: actions/cache@v3
-        with:
-          path: |
-           /home/runner/nilearn_data/ds000030              # ~832 MB
-          key: v1-ds000030-${{ hashFiles('**/week_num**') }}
-      - name: Restore data cache
-        uses: actions/cache@v3
-        with:
-          path: |
-           /home/runner/nilearn_data/fiac_nilearn.glm      # ~ 82 MB
-          key: v1-fiac_nilearn.glm-${{ hashFiles('**/week_num**') }}
-      - name: Restore data cache
-        uses: actions/cache@v3
-        with:
-          path: |
-           /home/runner/nilearn_data/fMRI-language-localizer-demo-dataset # ~ 750 MB
-          key: v1-fMRI-language-localizer-demo-dataset-${{ hashFiles('**/week_num**') }}
-      - name: Restore data cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            /home/runner/nilearn_data/fsl                  # ~ 30 MB
-          key: v1-fsl-${{ hashFiles('**/week_num**') }}
-      - name: Restore data cache
-        uses: actions/cache@v3
-        with:
-          path: |
-           /home/runner/nilearn_data/haxby2001             # ~302 MB
-          key: v1-haxby2001-${{ hashFiles('**/week_num**') }}
-      - name: Restore data cache
-        uses: actions/cache@v3
-        with:
-          path: |
-           /home/runner/nilearn_data/icbm152_2009          # ~ 63 MB
-          key: v1-icbm152_2009-${{ hashFiles('**/week_num**') }}
-      - name: Restore data cache
-        uses: actions/cache@v3
-        with:
-          path: |
-           /home/runner/nilearn_data/jimura_poldrack_2012_zmaps # ~ 105 MB
-          key: v1-jimura_poldrack_2012_zmaps-${{ hashFiles('**/week_num**') }}
-      - name: Restore data cache
-        uses: actions/cache@v3
-        with:
-          path: |
-           /home/runner/nilearn_data/localizer_first_level # ~ 35 MB
-          key: v1-localizer_first_level-${{ hashFiles('**/week_num**') }}
-      - name: Restore data cache
-        uses: actions/cache@v3
-        with:
-          path: |
-           /home/runner/nilearn_data/miyawaki2008          # ~181 MB
-          key: v1-miyawaki2008-${{ hashFiles('**/week_num**') }}
-      - name: Restore data cache
-        uses: actions/cache@v3
-        with:
-          path: |
-           /home/runner/nilearn_data/nki_enhanced_surface  # ~ 85 MB
-          key: v1-nki_enhanced_surface-${{ hashFiles('**/week_num**') }}
-      - name: Restore data cache
-        uses: actions/cache@v3
-        with:
-          path: |
-           /home/runner/nilearn_data/oasis1                # ~913 MB
-          key: v1-oasis1-${{ hashFiles('**/week_num**') }}
-      - name: Restore data cache
-        uses: actions/cache@v3
-        with:
-          path: |
-           /home/runner/nilearn_data/smith_2009            # ~171 MB
-          key: v1-smith_2009-${{ hashFiles('**/week_num**') }}
-      - name: Restore data cache
-        uses: actions/cache@v3
-        with:
-          path: |
-           /home/runner/nilearn_data/spm_auditory          # ~230 MB
-          key: v1-spm_auditory-${{ hashFiles('**/week_num**') }}
-      - name: Restore data cache
-        uses: actions/cache@v3
-        with:
-          path: |
-           /home/runner/nilearn_data/spm_multimodal_fmri   # ~227 MB
-          key: v1-spm_multimodal_fmri-${{ hashFiles('**/week_num**') }}
 
       # Set up environment
       - name: Merge with upstream
@@ -211,17 +88,7 @@ jobs:
         run: |
           ./build_tools/github/build_docs_dependencies.sh
 
-      # Download data and cache if it is not restored in previous steps, then
-      # run doc build
-      - name: Fetch and download nilearn data
-        run: |
-          source activate testenv
-          echo "Conda active env = $CONDA_DEFAULT_ENV";
-          ./build_tools/github/download_data.sh
-      - name: Generate cache keys
-        run: |
-          date +%U > week_num;
-      - name: Save data cache
+      - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
@@ -235,114 +102,127 @@ jobs:
            /home/runner/nilearn_data/pauli_2017            # ~  1 MB
            /home/runner/nilearn_data/yeo_2011              # ~  3 MB
           key: v1-small-cache-${{ hashFiles('**/week_num**') }}
-      - name: Save data cache
+      - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
-           /home/runner/nilearn_data/adhd                  # ~ 45 MB
+           $NILEARN_DATA/adhd                 # ~ 45 MB
           key: v1-adhd-${{ hashFiles('**/week_num**') }}
-      - name: Save data cache
+      - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
            /home/runner/nilearn_data/allen_rsn_2011        # ~ 32 MB
           key: v1-allen_rsn_2011-${{ hashFiles('**/week_num**') }}
-      - name: Save data cache
+      - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
            /home/runner/nilearn_data/brainomics_localizer  # ~ 66 MB
           key: v1-brainomics_localizer-${{ hashFiles('**/week_num**') }}
-      - name: Save data cache
+      - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
            /home/runner/nilearn_data/development_fmri      # ~373 MB
           key: v1-development_fmri-${{ hashFiles('**/week_num**') }}
-      - name: Save data cache
+      - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
            /home/runner/nilearn_data/ds000030              # ~832 MB
           key: v1-ds000030-${{ hashFiles('**/week_num**') }}
-      - name: Save data cache
+      - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
            /home/runner/nilearn_data/fiac_nilearn.glm      # ~ 82 MB
           key: v1-fiac_nilearn.glm-${{ hashFiles('**/week_num**') }}
-      - name: Save data cache
+      - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
            /home/runner/nilearn_data/fMRI-language-localizer-demo-dataset # ~ 750 MB
           key: v1-fMRI-language-localizer-demo-dataset-${{ hashFiles('**/week_num**') }}
-      - name: Save data cache
+      - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
            /home/runner/nilearn_data/fsl                   # ~ 30 MB
           key: v1-fsl-${{ hashFiles('**/week_num**') }}
-      - name: Save data cache
+      - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
            /home/runner/nilearn_data/haxby2001             # ~302 MB
           key: v1-haxby2001-${{ hashFiles('**/week_num**') }}
-      - name: Save data cache
+      - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
            /home/runner/nilearn_data/icbm152_2009          # ~ 63 MB
           key: v1-icbm152_2009-${{ hashFiles('**/week_num**') }}
-      - name: Save data cache
+      - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
            /home/runner/nilearn_data/jimura_poldrack_2012_zmaps # ~ 105 MB
           key: v1-jimura_poldrack_2012_zmaps-${{ hashFiles('**/week_num**') }}
-      - name: Save data cache
+      - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
            /home/runner/nilearn_data/localizer_first_level # ~ 35 MB
           key: v1-localizer_first_level-${{ hashFiles('**/week_num**') }}
-      - name: Save data cache
+      - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
            /home/runner/nilearn_data/miyawaki2008          # ~181 MB
           key: v1-miyawaki2008-${{ hashFiles('**/week_num**') }}
-      - name: Save data cache
+      - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
            /home/runner/nilearn_data/nki_enhanced_surface  # ~ 85 MB
           key: v1-nki_enhanced_surface-${{ hashFiles('**/week_num**') }}
-      - name: Save data cache
+      - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
            /home/runner/nilearn_data/oasis1                # ~913 MB
           key: v1-oasis1-${{ hashFiles('**/week_num**') }}
-      - name: Save data cache
+      - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
            /home/runner/nilearn_data/smith_2009            # ~171 MB
           key: v1-smith_2009-${{ hashFiles('**/week_num**') }}
-      - name: Save data cache
+      - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
            /home/runner/nilearn_data/spm_auditory          # ~230 MB
           key: v1-spm_auditory-${{ hashFiles('**/week_num**') }}
-      - name: Save data cache
+      - name: Data caching
         uses: actions/cache@v3
         with:
           path: |
            /home/runner/nilearn_data/spm_multimodal_fmri   # ~227 MB
           key: v1-spm_multimodal_fmri-${{ hashFiles('**/week_num**') }}
+
+      # Download data and cache if it is not restored in previous steps, then
+      # run doc build
+      - name: Fetch and download nilearn data
+        id: download_data
+        run: |
+          source activate testenv
+          echo "Conda active env = $CONDA_DEFAULT_ENV";
+          ./build_tools/github/download_data.sh
+#      - name: Setup tmate session
+#        uses: mxschmitt/action-tmate@v3
+#        with:
+#          limit-access-to-actor: true
       - name: Find build type
         run: |
           ./build_tools/github/build_type.sh
@@ -350,6 +230,9 @@ jobs:
         run: |
           echo "PATTERN = $(cat pattern.txt)"
           echo "BUILD = $(cat build.txt)"
+      - name: Set up display server for virtual browser
+        run: |
+          Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
       - name: Build docs
         run: |
           source activate testenv
