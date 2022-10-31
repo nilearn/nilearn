@@ -80,6 +80,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             ValueError is raised
 
         Default="data".
+
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
