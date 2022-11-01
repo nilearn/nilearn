@@ -36,11 +36,11 @@ def test_get_vertexcolor():
     bg_map = (bg_map + 1) / 8 + 0.25
     vertexcolors = html_surface._get_vertexcolor(
         surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'],
-        bg_map, scale_bg_map=False)
+        bg_map, bg_map_rescale=False)
     assert len(vertexcolors) == len(mesh[0])
     vertexcolors = html_surface._get_vertexcolor(
         surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'],
-        bg_map, scale_bg_map=True)
+        bg_map, bg_map_rescale=True)
     assert len(vertexcolors) == len(mesh[0])
 
 

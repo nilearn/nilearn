@@ -172,7 +172,7 @@ def _get_cbar_plotly(colorscale, vmin, vmax, cbar_tick_format,
 def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                       hemi='left', view='lateral', cmap=None,
                       symmetric_cmap=True, colorbar=False,
-                      threshold=None, bg_on_data=False, scale_bg_map=True,
+                      threshold=None, bg_on_data=False, bg_map_rescale=True,
                       darkness=1, vmin=None, vmax=None,
                       cbar_vmin=None, cbar_vmax=None,
                       cbar_tick_format=".1f", title=None,
@@ -221,7 +221,7 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
         )
         vertexcolor = _get_vertexcolor(
             surf_map, colors["cmap"], colors["norm"], colors["abs_threshold"],
-            bg_data, bg_on_data, scale_bg_map, darkness
+            bg_data, bg_on_data, bg_map_rescale, darkness
         )
     else:
         if bg_data is None:
@@ -380,7 +380,7 @@ def _get_cmap_matplotlib(cmap, vmin, vmax, threshold=None):
 
 
 def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
-                                   darkness, alpha, scale_bg_map):
+                                   darkness, alpha, bg_map_rescale):
     """Helper function for plot_surf with matplotlib engine.
 
     This function computes the facecolors.
@@ -398,7 +398,7 @@ def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
                              'of vertices as the mesh.')
 
     bg_faces = np.mean(bg_data[faces], axis=1)
-    if scale_bg_map and bg_faces.min() != bg_faces.max():
+    if bg_map_rescale and bg_faces.min() != bg_faces.max():
         bg_faces = bg_faces - bg_faces.min()
         bg_faces = bg_faces / bg_faces.max()
 
@@ -448,7 +448,7 @@ def _get_bounds(data, vmin=None, vmax=None):
 def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
                           hemi='left', view='lateral', cmap=None,
                           colorbar=False, avg_method='mean', threshold=None,
-                          alpha='auto', bg_on_data=False, scale_bg_map=True,
+                          alpha='auto', bg_on_data=False, bg_map_rescale=True,
                           darkness=1, vmin=None, vmax=None, cbar_vmin=None,
                           cbar_vmax=None, cbar_tick_format='%.2g',
                           title=None, title_font_size=18, output_file=None,
@@ -498,7 +498,7 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
     axes.dist = 8
 
     face_colors = _compute_facecolors_matplotlib(
-        bg_map, faces, coords.shape[0], darkness, alpha, scale_bg_map
+        bg_map, faces, coords.shape[0], darkness, alpha, bg_map_rescale
     )
     if surf_map is not None:
         surf_map_faces = _compute_surf_map_faces_matplotlib(
@@ -550,7 +550,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               hemi='left', view='lateral', engine='matplotlib',
               cmap=None, symmetric_cmap=False, colorbar=False,
               avg_method='mean', threshold=None, alpha='auto',
-              bg_on_data=False, scale_bg_map=True, darkness=1,
+              bg_on_data=False, bg_map_rescale=True, darkness=1,
               vmin=None, vmax=None,
               cbar_vmin=None, cbar_vmax=None, cbar_tick_format="auto",
               title=None, title_font_size=18, output_file=None, axes=None,
@@ -642,7 +642,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
     %(bg_on_data)s
         Default=False.
-    %(scale_bg_map)s
+    %(bg_map_rescale)s
         Default=True.
 
         .. versionadded:: 0.9.3.dev
@@ -725,7 +725,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             coords, faces, surf_map=surf_map, bg_map=bg_map, hemi=hemi,
             view=view, cmap=cmap, colorbar=colorbar, avg_method=avg_method,
             threshold=threshold, alpha=alpha,
-            bg_on_data=bg_on_data, scale_bg_map=scale_bg_map,
+            bg_on_data=bg_on_data, bg_map_rescale=bg_map_rescale,
             darkness=darkness, vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin,
             cbar_vmax=cbar_vmax, cbar_tick_format=cbar_tick_format,
             title=title, title_font_size=title_font_size,
@@ -737,7 +737,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             coords, faces, surf_map=surf_map, bg_map=bg_map, view=view,
             hemi=hemi, cmap=cmap, symmetric_cmap=symmetric_cmap,
             colorbar=colorbar, threshold=threshold,
-            bg_on_data=bg_on_data, scale_bg_map=scale_bg_map,
+            bg_on_data=bg_on_data, bg_map_rescale=bg_map_rescale,
             darkness=darkness,
             vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
             cbar_tick_format=cbar_tick_format, title=title,
@@ -909,7 +909,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        threshold=None, alpha='auto', vmax=None,
                        cmap='cold_hot', colorbar=True,
                        symmetric_cbar="auto", cbar_tick_format="auto",
-                       bg_on_data=False, scale_bg_map=True, darkness=1,
+                       bg_on_data=False, bg_map_rescale=True, darkness=1,
                        title=None, title_font_size=18, output_file=None,
                        axes=None, figure=None, **kwargs):
     """Plotting a stats map on a surface mesh with optional background
@@ -997,7 +997,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         Default='auto'.
     %(bg_on_data)s
         Default=False.
-    %(scale_bg_map)s
+    %(bg_map_rescale)s
         Default=True.
 
         .. versionadded:: 0.9.3.dev
@@ -1059,7 +1059,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         view=view, engine=engine, avg_method='mean', threshold=threshold,
         cmap=cmap, symmetric_cmap=True, colorbar=colorbar,
         cbar_tick_format=cbar_tick_format, alpha=alpha,
-        bg_on_data=bg_on_data, scale_bg_map=scale_bg_map,
+        bg_on_data=bg_on_data, bg_map_rescale=bg_map_rescale,
         darkness=darkness, vmax=vmax, vmin=vmin,
         title=title, title_font_size=title_font_size, output_file=output_file,
         axes=axes, figure=figure, cbar_vmin=cbar_vmin,
@@ -1297,7 +1297,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                   hemi='left', view='lateral', engine='matplotlib',
                   threshold=1e-14, alpha='auto', vmin=None, vmax=None,
                   cmap='gist_ncar', cbar_tick_format="auto",
-                  bg_on_data=False, scale_bg_map=True,
+                  bg_on_data=False, bg_map_rescale=True,
                   darkness=1, title=None, title_font_size=18,
                   output_file=None, axes=None,
                   figure=None, **kwargs):
@@ -1376,7 +1376,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     %(bg_on_data)s
         Default=False.
-    %(scale_bg_map)s
+    %(bg_map_rescale)s
         Default=True.
 
         .. versionadded:: 0.9.3.dev
@@ -1453,7 +1453,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                         cmap=cmap, symmetric_cmap=False,
                         cbar_tick_format=cbar_tick_format,
                         alpha=alpha, bg_on_data=bg_on_data,
-                        scale_bg_map=scale_bg_map,
+                        bg_map_rescale=bg_map_rescale,
                         darkness=darkness, vmin=vmin, vmax=vmax,
                         title=title, title_font_size=title_font_size,
                         output_file=output_file, axes=axes,

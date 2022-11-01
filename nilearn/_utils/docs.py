@@ -562,9 +562,9 @@ bg_on_data : :obj:`bool`, optional
 
 """
 
-# scale_bg_map
-docdict['scale_bg_map'] = """
-scale_bg_map : :obj:`bool`, optional
+# bg_map_rescale
+docdict['bg_map_rescale'] = """
+bg_map_rescale : :obj:`bool`, optional
     If ``True`` and a ``bg_map`` is specified,
     the ``bg_map`` will be linearly normalized to the [0, 1] interval.
     Otherwise, ``bg_map`` won't be changed.

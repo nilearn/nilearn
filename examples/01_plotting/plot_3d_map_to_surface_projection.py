@@ -54,7 +54,7 @@ texture = surface.vol_to_surf(stat_img, fsaverage.pial_right)
 # :func:`~nilearn.plotting.plot_surf_stat_map` which uses ``matplotlib``
 # as the default plotting engine:.
 # Since we are using a background map whose values range between 0.25
-# and 0.75 (and we want to keep it this way), we set `scale_bg_map=False`.
+# and 0.75 (and we want to keep it this way), we set `bg_map_rescale=False`.
 
 from nilearn import plotting
 
@@ -62,7 +62,7 @@ fig = plotting.plot_surf_stat_map(
     fsaverage.infl_right, texture, hemi='right',
     title='Surface right hemisphere', colorbar=True,
     threshold=1., bg_map=curv_right_sign,
-    scale_bg_map=False, bg_on_data=True,
+    bg_map_rescale=False, bg_on_data=True,
 )
 fig.show()
 
@@ -88,7 +88,7 @@ fig = plotting.plot_surf_stat_map(
     fsaverage.infl_right, texture, hemi='right',
     title='Surface right hemisphere', colorbar=True,
     threshold=1., bg_map=curv_right_sign,
-    scale_bg_map=False, bg_on_data=True,
+    bg_map_rescale=False, bg_on_data=True,
     engine=engine  # Specify the plotting engine here
 )
 fig.show()  # Display the figure as with matplotlib figures
