@@ -149,6 +149,9 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
         symmetric_cmap=symmetric_cmap, vmax=vmax, vmin=vmin)
 
     for hemi, surf_map in surface_maps.items():
+        if isinstance(bg_map, str) and bg_map == "auto":
+            curv_map = surface.load_surf_data(mesh['curv_{}'.format(hemi)])
+            bg_map = np.sign(curv_map)
         info['pial_{}'.format(hemi)] = mesh_to_plotly(
             mesh['pial_{}'.format(hemi)])
         info['inflated_{}'.format(hemi)] = mesh_to_plotly(
@@ -180,8 +183,8 @@ def _fill_html_template(info, embed_js=True):
 def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
                      threshold=None, cmap=cm.cold_hot,
                      black_bg=False, vmax=None, vmin=None, symmetric_cmap=True,
-                     bg_map=None, bg_on_data=False,
-                     bg_map_rescale=True, darkness=1,
+                     bg_map='auto', bg_on_data=False,
+                     bg_map_rescale=True, darkness=.5,
                      colorbar=True, colorbar_height=.5, colorbar_fontsize=25,
                      title=None, title_fontsize=25, vol_to_surf_kwargs={}):
     """Insert a surface plot of a statistical map into an HTML page.
@@ -216,10 +219,12 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         If True, image is plotted on a black background. Otherwise on a
         white background. Default=False.
 
-    bg_map : Surface data, optional
+    bg_map : Surface data or 'auto', optional
         Background image to be plotted on the mesh underneath the
         surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
+        If 'auto', the sulcal depth map given in `sulf_mesh`
+        will be used as background image.
 
     %(bg_on_data)s
         Default=False.
