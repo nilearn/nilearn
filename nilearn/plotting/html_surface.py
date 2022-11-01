@@ -43,7 +43,7 @@ def _mix_colormaps(fg, bg):
 def _get_vertexcolor(surf_map, cmap, norm,
                      absolute_threshold=None, bg_map=None,
                      bg_on_data=None, bg_map_rescale=None, darkness=None):
-    vertexcolor = cmap(norm(surf_map).data)
+    surf_color = cmap(norm(surf_map).data)
 
     if bg_map is None:
         bg_map = np.ones(len(surf_map)) * .5
@@ -70,15 +70,16 @@ def _get_vertexcolor(surf_map, cmap, norm,
         under_threshold = np.abs(surf_map) < absolute_threshold
 
     # set transparency of voxels under threshold to 0
-    vertexcolor[under_threshold, 3] = 0
-    # and merge background color with surface map color if need be
+    surf_color[under_threshold, 3] = 0
+    # and, if need be, set transparency of other voxels to 0.7
+    # so that background map becomes visible
     if bg_on_data:
-        # set surf map transparency in order to see background map
         over_threshold = ~under_threshold
-        vertexcolor[over_threshold, 3] = 0.7
-        vertexcolor = _mix_colormaps(vertexcolor, bg_color)
+        surf_color[over_threshold, 3] = 0.7
 
-    return to_color_strings(vertexcolor)
+    vertex_color = _mix_colormaps(surf_color, bg_color)
+
+    return to_color_strings(vertex_color)
 
 
 def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
