@@ -83,7 +83,7 @@ def _get_vertexcolor(surf_map, cmap, norm,
 
 def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
                   black_bg=False, bg_map=None, symmetric_cmap=True,
-                  bg_on_data=False, bg_map_rescale=True, darkness=1,
+                  bg_on_data=False, bg_map_rescale=True, darkness=.5,
                   vmax=None, vmin=None):
     """Prepare info for plotting one surface map on a single mesh.
 
@@ -128,7 +128,7 @@ def _check_mesh(mesh):
 def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
                     cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
                     bg_map=None, bg_on_data=False, bg_map_rescale=True,
-                    darkness=1, vmax=None, vmin=None, vol_to_surf_kwargs={}):
+                    darkness=.5, vmax=None, vmin=None, vol_to_surf_kwargs={}):
     """Project 3D map on cortex; prepare info to plot both hemispheres.
 
     This computes the dictionary that gets inserted in the web page,
@@ -306,7 +306,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
 
 def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
               cmap=cm.cold_hot, black_bg=False, vmax=None, vmin=None,
-              bg_on_data=False, bg_map_rescale=True, darkness=1,
+              bg_on_data=False, bg_map_rescale=True, darkness=.5,
               symmetric_cmap=True, colorbar=True, colorbar_height=.5,
               colorbar_fontsize=25, title=None, title_fontsize=25):
     """Insert a surface plot of a surface map into an HTML page.
