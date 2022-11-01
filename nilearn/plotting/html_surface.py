@@ -20,6 +20,26 @@ class SurfaceView(HTMLDocument):
     pass
 
 
+def _mix_colormaps(fg, bg):
+    mix = np.empty_like(fg)
+
+    mix[:, 3] = 1 - (1 - fg[:, 3]) * (1 - bg[:, 3])
+    mix[:, 0] = (
+        fg[:, 0] * fg[:, 3] / mix[:, 3]
+        + bg[:, 0] * bg[:, 3] * (1 - fg[:, 3]) / mix[:, 3]
+    )
+    mix[:, 1] = (
+        fg[:, 1] * fg[:, 3] / mix[:, 3]
+        + bg[:, 1] * bg[:, 3] * (1 - fg[:, 3]) / mix[:, 3]
+    )
+    mix[:, 2] = (
+        fg[:, 2] * fg[:, 3] / mix[:, 3]
+        + bg[:, 2] * bg[:, 3] * (1 - fg[:, 3]) / mix[:, 3]
+    )
+
+    return mix
+
+
 def _get_vertexcolor(surf_map, cmap, norm,
                      absolute_threshold=None, bg_map=None,
                      bg_on_data=None, bg_map_rescale=None, darkness=None):
@@ -49,14 +69,14 @@ def _get_vertexcolor(surf_map, cmap, norm,
     else:
         under_threshold = np.abs(surf_map) < absolute_threshold
 
-    # replace their color with the background color
-    vertexcolor[under_threshold] = bg_color[under_threshold]
+    # set transparency of voxels under threshold to 0
+    vertexcolor[under_threshold, 3] = 0
     # and merge background color with surface map color if need be
     if bg_on_data:
+        # set surf map transparency in order to see background map
         over_threshold = ~under_threshold
-        vertexcolor[over_threshold] = (
-            vertexcolor[over_threshold] * bg_color[over_threshold]
-        )
+        vertexcolor[over_threshold, 3] = 0.7
+        vertexcolor = _mix_colormaps(vertexcolor, bg_color)
 
     return to_color_strings(vertexcolor)
 
