@@ -320,9 +320,11 @@ def test__safe_extract():
     # Test vulnerability patch by mimicking path traversal
     dtemp = mkdtemp()
     ztemp = os.path.join(dtemp, 'test.tar')
+    fd, temp = mkstemp(dir=dtemp)
+    os.close(fd)
     with contextlib.closing(tarfile.open(ztemp, 'w')) as tar:
         arcname = os.path.normpath('../test.tar')
-        tar.add("test.tar", arcname=arcname)
+        tar.add(temp, arcname=arcname)
     with pytest.raises(
             Exception, match="Attempted Path Traversal in Tar File"
     ):
