@@ -46,14 +46,15 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         Strategy to standardize the signal.
 
             - 'zscore': the signal is z-scored. Timeseries are shifted
-            to zero mean and scaled to unit variance.
+              to zero mean and scaled to unit variance.
             - 'psc':  Timeseries are shifted to zero mean value and scaled
-            to percent signal change (as compared to original mean signal).
+              to percent signal change (as compared to original mean signal).
             - True : the signal is z-scored. Timeseries are shifted
-            to zero mean and scaled to unit variance.
+              to zero mean and scaled to unit variance.
             - False : Do not standardize the data.
 
         Default=False.
+
     %(standardize_confounds)s
     high_variance_confounds : :obj:`bool`, optional
         If True, high variance confounds are computed on provided image with
@@ -72,13 +73,14 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         Gives which image gives the final shape/size:
 
             - "data" means the atlas is resampled to the
-            shape of the data if needed
+              shape of the data if needed
             - "labels" means en mask_img and images provided to fit() are
-            resampled to the shape and affine of maps_img
+              resampled to the shape and affine of maps_img
             - None means no resampling: if shapes and affines do not match, a
-            ValueError is raised
+              ValueError is raised
 
         Default="data".
+
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
