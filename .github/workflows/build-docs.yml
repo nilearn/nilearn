@@ -90,15 +90,7 @@ jobs:
 
       - name: Data caching
         uses: actions/cache@v3
-        # <  1 MB
-        # <  1 MB
-        # ~  4 MB
-        # ~ 28 MB
-        # ~  9 MB
-        # ~ 21 MB
-        # ~ 13 MB
-        # ~  1 MB
-        # ~  3 MB
+        # ~47 MB
         with:
           path: |
            nilearn_data/basc_multiscale_2015
@@ -113,21 +105,21 @@ jobs:
           key: v1-small-cache-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
-        # ~ 45 MB
+        # ~45 MB
         with:
           path: |
            nilearn_data/adhd
           key: v1-adhd-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
-        # ~ 32 MB
+        # ~32 MB
         with:
           path: |
            nilearn_data/allen_rsn_2011
           key: v1-allen_rsn_2011-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
-        # ~ 66 MB
+        # ~66 MB
         with:
           path: |
            nilearn_data/brainomics_localizer
@@ -148,21 +140,21 @@ jobs:
           key: v1-ds000030-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
-        # ~ 82 MB
+        # ~82 MB
         with:
           path: |
            nilearn_data/fiac_nilearn.glm
           key: v1-fiac_nilearn.glm-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
-        # ~ 750 MB
+        # ~750 MB
         with:
           path: |
            nilearn_data/fMRI-language-localizer-demo-dataset
           key: v1-fMRI-language-localizer-demo-dataset-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
-        # ~ 30 MB
+        # ~30 MB
         with:
           path: |
            nilearn_data/fsl
@@ -176,21 +168,21 @@ jobs:
           key: v1-haxby2001-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
-        # ~ 63 MB
+        # ~63 MB
         with:
           path: |
            nilearn_data/icbm152_2009
           key: v1-icbm152_2009-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
-        # ~ 105 MB
+        # ~105 MB
         with:
           path: |
            nilearn_data/jimura_poldrack_2012_zmaps
           key: v1-jimura_poldrack_2012_zmaps-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
-        # ~ 35 MB
+        # ~35 MB
         with:
           path: |
            nilearn_data/localizer_first_level
@@ -204,7 +196,7 @@ jobs:
           key: v1-miyawaki2008-${{ hashFiles('**/week_num**') }}
       - name: Data caching
         uses: actions/cache@v3
-        # ~ 85 MB
+        # ~85 MB
         with:
           path: |
            nilearn_data/nki_enhanced_surface
@@ -246,11 +238,6 @@ jobs:
           source activate testenv
           echo "Conda active env = $CONDA_DEFAULT_ENV";
           ./build_tools/github/download_data.sh
-#      # TODO: Remove step before merge
-#      - name: Setup tmate session
-#        uses: mxschmitt/action-tmate@v3
-#        with:
-#          limit-access-to-actor: true
       - name: Find build type
         run: |
           ./build_tools/github/build_type.sh

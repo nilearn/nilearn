@@ -9,8 +9,10 @@ from nilearn import datasets
 datasets.fetch_neurovault_motor_task()
 datasets.fetch_atlas_smith_2009()
 datasets.fetch_haxby()
+datasets.fetch_haxby(subjects=[], fetch_stimuli=True)
 datasets.fetch_spm_auditory()
 datasets.fetch_surf_fsaverage()
+datasets.fetch_surf_fsaverage('fsaverage')
 datasets.fetch_atlas_surf_destrieux()
 datasets.fetch_atlas_destrieux_2009()
 datasets.fetch_atlas_harvard_oxford('cort-prob-2mm')
@@ -29,13 +31,20 @@ datasets.fetch_mixed_gambles()
 datasets.fetch_miyawaki2008()
 datasets.fetch_oasis_vbm()
 datasets.fetch_atlas_yeo_2011()
-datasets.fetch_development_fmri(n_subjects=10)
+datasets.fetch_development_fmri(n_subjects=60)
 datasets.fetch_fiac_first_level()
 datasets.fetch_localizer_first_level()
-# TODO: Uncomment before merge
-#datasets.fetch_spm_multimodal_fmri()
+datasets.fetch_spm_multimodal_fmri()
 datasets.fetch_localizer_contrasts(
-    contrasts=["left vs right button press"],
+    ['left button press (auditory cue)'],
+    n_subjects=94
+)
+datasets.fetch_localizer_contrasts(
+    contrasts=[
+        "left vs right button press",
+        "vertical checkerboard",
+        "horizontal checkerboard"
+    ],
     n_subjects=16,
     get_tmaps=True
 )
