@@ -162,8 +162,7 @@ pdf: latex
 check:
 	rm -rf _build/doctrees
 	rm -rf $(BUILDDIR)/html/_images
-	# TODO: Delete --keep-going flag for merge
-	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -T -n -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W -T -n -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 
 install:
 	rm -rf _build/doctrees _build/nilearn.github.io
