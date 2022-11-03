@@ -19,16 +19,9 @@ jobs:
     steps:
       - checkout
       - run: bash build_tools/circle/download_documentation.sh
-      - store_test_results:
-          path: doc/_build/test-results
-      - store_artifacts:
-          path: doc/_build/test-results
-          destination: test-results
       - store_artifacts:
           path: doc/_build/html/
           destination: dev
-      - store_artifacts:
-          path: doc/log.txt
       # Persists the generated documentation, so that it
       # can be attached and deployed in the "deploy" job
       - persist_to_workspace:

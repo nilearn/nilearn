@@ -256,11 +256,11 @@ jobs:
           cd doc;
           set -o pipefail;
           PATTERN=$(cat ../pattern.txt) make $(cat ../build.txt) 2>&1 | tee log.txt;
-      # TODO: Remove step before merge
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        with:
-          limit-access-to-actor: true
+#      # TODO: Remove step before merge
+#      - name: Setup tmate session
+#        uses: mxschmitt/action-tmate@v3
+#        with:
+#          limit-access-to-actor: true
       - name: Upload documentation
         uses: actions/upload-artifact@v3
         with:
