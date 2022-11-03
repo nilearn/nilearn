@@ -21,6 +21,16 @@ class SurfaceView(HTMLDocument):
 
 
 def _mix_colormaps(fg, bg):
+    """Mixes foreground and background arrays of RGBA colors.
+
+    Args:
+        fg (numpy.ndarray): Array of shape (n, 4), foreground colors
+        bg (numpy.ndarray): Array of shape (n, 4), background colors
+
+    Returns:
+        numpy.ndarray: Array of shape (n, 4), mixed colors
+    """
+    # Adapted from https://stackoverflow.com/questions/726549/algorithm-for-additive-color-mixing-for-rgb-values/727339#727339 # noqa: E501
     mix = np.empty_like(fg)
 
     mix[:, 3] = 1 - (1 - fg[:, 3]) * (1 - bg[:, 3])
@@ -43,8 +53,6 @@ def _mix_colormaps(fg, bg):
 def _get_vertexcolor(surf_map, cmap, norm,
                      absolute_threshold=None, bg_map=None,
                      bg_on_data=None, bg_map_rescale=None, darkness=None):
-    surf_color = cmap(norm(surf_map).data)
-
     if bg_map is None:
         bg_map = np.ones(len(surf_map)) * .5
         bg_vmin, bg_vmax = 0, 1
@@ -61,7 +69,7 @@ def _get_vertexcolor(surf_map, cmap, norm,
 
     if darkness is not None:
         bg_data *= darkness
-    bg_color = plt.get_cmap('Greys')(bg_data)
+    bg_colors = plt.get_cmap('Greys')(bg_data)
 
     # select vertices which are filtered out by the threshold
     if absolute_threshold is None:
@@ -69,17 +77,17 @@ def _get_vertexcolor(surf_map, cmap, norm,
     else:
         under_threshold = np.abs(surf_map) < absolute_threshold
 
+    surf_colors = cmap(norm(surf_map).data)
     # set transparency of voxels under threshold to 0
-    surf_color[under_threshold, 3] = 0
-    # and, if need be, set transparency of other voxels to 0.7
-    # so that background map becomes visible
+    surf_colors[under_threshold, 3] = 0
     if bg_on_data:
-        over_threshold = ~under_threshold
-        surf_color[over_threshold, 3] = 0.7
+        # if need be, set transparency of voxels above threshold to 0.7
+        # so that background map becomes visible
+        surf_colors[~under_threshold, 3] = 0.7
 
-    vertex_color = _mix_colormaps(surf_color, bg_color)
+    vertex_colors = _mix_colormaps(surf_colors, bg_colors)
 
-    return to_color_strings(vertex_color)
+    return to_color_strings(vertex_colors)
 
 
 def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,

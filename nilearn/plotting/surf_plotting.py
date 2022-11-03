@@ -20,7 +20,7 @@ from nilearn.surface import (load_surf_data,
 from nilearn.surface.surface import _check_mesh
 from nilearn._utils import check_niimg_3d, fill_doc
 from nilearn.plotting.js_plotting_utils import colorscale
-from nilearn.plotting.html_surface import _get_vertexcolor
+from nilearn.plotting.html_surface import _get_vertexcolor, _mix_colormaps
 
 from matplotlib.colors import to_rgba
 from matplotlib.patches import Patch
@@ -497,24 +497,30 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
     # reduce viewing distance to remove space around mesh
     axes.dist = 8
 
-    face_colors = _compute_facecolors_matplotlib(
+    bg_face_colors = _compute_facecolors_matplotlib(
         bg_map, faces, coords.shape[0], darkness, alpha, bg_map_rescale
     )
     if surf_map is not None:
         surf_map_faces = _compute_surf_map_faces_matplotlib(
             surf_map, faces, avg_method, coords.shape[0],
-            face_colors.shape[0]
+            bg_face_colors.shape[0]
         )
         surf_map_faces, kept_indices, vmin, vmax = _threshold_and_rescale(
             surf_map_faces, threshold, vmin, vmax
         )
-        # multiply data with background if need be ;
-        # this is helpful to show sulci / gyri on surface map for instance.
+
+        surf_map_face_colors = cmap(surf_map_faces)
+        # set transparency of voxels under threshold to 0
+        surf_map_face_colors[~kept_indices, 3] = 0
         if bg_on_data:
-            face_colors[kept_indices] = cmap(surf_map_faces[kept_indices])\
-                * face_colors[kept_indices]
-        else:
-            face_colors[kept_indices] = cmap(surf_map_faces[kept_indices])
+            # if need be, set transparency of voxels above threshold to 0.7
+            # so that background map becomes visible
+            surf_map_face_colors[kept_indices, 3] = 0.7
+
+        face_colors = _mix_colormaps(
+            surf_map_face_colors,
+            bg_face_colors
+        )
 
         if colorbar:
             cbar_vmin = cbar_vmin if cbar_vmin is not None else vmin
