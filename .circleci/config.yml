@@ -1,5 +1,5 @@
 # Documentation is now built using Github Actions.
-# CircleCI is used to download the artifacts so it can host and deploy them.
+# CircleCI is only used to download the artifacts and deploy them.
 
 version: 2.1
 
@@ -15,7 +15,7 @@ jobs:
     machine:
       image: ubuntu-2004:202111-01
     environment:
-      - GITHUB_ARTIFACT_URL: << pipeline.parameters.GITHUB_RUN_URL >>/doc.zip
+        GITHUB_ARTIFACT_URL: << pipeline.parameters.GITHUB_RUN_URL >>/doc.zip
     steps:
       - checkout
       - run: bash build_tools/circle/download_documentation.sh
@@ -25,7 +25,7 @@ jobs:
           path: doc/_build/test-results
           destination: test-results
       - store_artifacts:
-          path: doc/_build/html
+          path: doc/_build/html/
           destination: dev
       - store_artifacts:
           path: doc/log.txt
@@ -33,7 +33,8 @@ jobs:
       # can be attached and deployed in the "deploy" job
       - persist_to_workspace:
           root: doc/_build
-          path: html
+          paths:
+              - html
 
   deploy:
     docker:
