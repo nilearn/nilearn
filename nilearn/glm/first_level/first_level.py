@@ -832,7 +832,6 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     space_label : str, optional
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like _space-<space_label>_.
-    
     sub_labels : list of str, optional
         Specifies the subset of subject labels to model.
         If 'None', will model all subjects in the dataset.
