@@ -95,6 +95,7 @@ jobs:
           path: |
            nilearn_data/basc_multiscale_2015
            nilearn_data/destrieux_surface
+           nilearn_data/destrieux_2009
            nilearn_data/difumo_atlases
            nilearn_data/fsaverage
            nilearn_data/Megatrawls
