@@ -972,8 +972,10 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                  ' and cannot be processed: %s' %sub_labels_missing)
     else:
         sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*/'))
-        sub_labels = [os.path.basename(s[:-1]).split('-')[1] for s in sub_folders]
-        sub_labels = sorted(list(set(sub_labels)))
+        sub_labels_exist = [
+            os.path.basename(s[:-1]).split('-')[1] for s in sub_folders
+        ]
+        sub_labels_exist = sorted(list(set(sub_labels_exist)))
 
     # Build fit_kwargs dictionaries to pass to their respective models fit
     # Events and confounds files must match number of imgs (runs)
