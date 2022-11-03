@@ -724,6 +724,7 @@ def test_first_level_from_bids():
             first_level_from_bids(
                 bids_path, 'main', 'T1w')  # desc not specified
 
+
 def test_first_level_from_bids_with_subject_labels():
     with InTemporaryDirectory():
         bids_path = create_fake_bids_dataset(n_sub=10, n_ses=2,
