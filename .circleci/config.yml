@@ -11,7 +11,7 @@ parameters:
     default: "none"
 
 jobs:
-  build_docs:
+  host_docs:
     machine:
       image: ubuntu-2004:202111-01
     environment:
@@ -32,8 +32,8 @@ jobs:
       # Persists the generated documentation, so that it
       # can be attached and deployed in the "deploy" job
       - persist_to_workspace:
-          root: doc/_build/html
-          paths: .
+          root: doc/_build
+          path: html
 
   deploy:
     docker:
@@ -79,16 +79,16 @@ jobs:
 workflows:
   version: 2
 
-  build_and_deploy_doc:
+  host_and_deploy_doc:
     when:
       not:
         equal: [ "none", << pipeline.parameters.GITHUB_RUN_URL >> ]
     # The jobs should run only when triggered by the workflow
     jobs:
-      - build_docs
+      - host_docs
       - deploy:
           requires:
-              - build_docs
+              - host_docs
           filters:
             branches:
               only:
