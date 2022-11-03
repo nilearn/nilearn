@@ -835,7 +835,6 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     sub_labels : list of str, optional
         Specifies the subset of subject labels to model.
         If 'None', will model all subjects in the dataset.
-        
         .. versionadded:: 0.9.3.dev
 
     img_filters : list of tuples (str, str), optional
