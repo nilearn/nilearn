@@ -732,6 +732,7 @@ def test_first_level_from_bids_with_subject_labels():
                                              n_runs=[1, 3])
         first_level_from_bids(bids_path, 'main', sub_labels=["foo", "bar"])
 
+
 def test_first_level_with_scaling():
     shapes, rk = [(3, 1, 1, 2)], 1
     fmri_data = list()
