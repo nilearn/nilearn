@@ -4,7 +4,7 @@
 version: 2.1
 
 # Parameters required to trigger the execution
-# of the "build_docs" job
+# of the "host_docs" job
 parameters:
   GITHUB_RUN_URL:
     type: string
