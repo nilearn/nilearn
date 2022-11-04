@@ -959,17 +959,14 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         ]
         
         sub_labels_exist = []
-        sub_labels_missing = []
         sub_folders = []
         for i, sub_folder in enumerate(sub_folders_in):
             if os.path.exists(sub_folder):
                 sub_labels_exist.append(sub_labels[i])
                 sub_folders.append(sub_folder)
             else:
-                sub_labels_missing.append(sub_labels[i])
-        if sub_labels_missing:
-            warn('The following subject labels are not present in the dataset'
-                 ' and cannot be processed: %s' %sub_labels_missing)
+                warn(f'Subject label {sub_labels[i]} is not present in the dataset'
+                     ' and cannot be processed')
     else:
         sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*/'))
         sub_labels_exist = [
