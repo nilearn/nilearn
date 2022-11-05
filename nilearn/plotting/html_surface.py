@@ -31,6 +31,12 @@ def _mix_colormaps(fg, bg):
         numpy.ndarray: Array of shape (n, 4), mixed colors
     """
     # Adapted from https://stackoverflow.com/questions/726549/algorithm-for-additive-color-mixing-for-rgb-values/727339#727339 # noqa: E501
+    if fg.shape != bg.shape:
+        raise Exception(
+            "Trying to mix colormaps with different shapes: "
+            f"{fg.shape}, {bg.shape}"
+        )
+
     mix = np.empty_like(fg)
 
     mix[:, 3] = 1 - (1 - fg[:, 3]) * (1 - bg[:, 3])
