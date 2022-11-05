@@ -33,7 +33,8 @@ def test_get_vertexcolor():
     # 0.75 if this vertex's curv >= 0
     # 0.25 if this vertex's curv < 0
     bg_map = np.sign(surface.load_surf_data(fsaverage['curv_left']))
-    bg_map = (bg_map + 1) / 8 + 0.25
+    bg_map = (bg_map + 1) / 4 + 0.25
+``` (?)
     vertexcolors = html_surface._get_vertexcolor(
         surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'],
         bg_map, bg_map_rescale=False)
