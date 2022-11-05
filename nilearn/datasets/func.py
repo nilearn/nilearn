@@ -2557,7 +2557,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
 
     # No. Download the data
     print('Data absent, downloading...')
-    url = 'http://nipy.sourceforge.net/data-packages/nipy-data-0.2.tar.gz'
+    url = 'https://nipy.org/data-packages/nipy-data-0.2.tar.gz'
 
     archive_path = os.path.join(data_dir, os.path.basename(url))
     _fetch_file(url, data_dir)

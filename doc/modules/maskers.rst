@@ -21,5 +21,7 @@
    NiftiMasker
    MultiNiftiMasker
    NiftiLabelsMasker
+   MultiNiftiLabelsMasker
    NiftiMapsMasker
+   MultiNiftiMapsMasker
    NiftiSpheresMasker

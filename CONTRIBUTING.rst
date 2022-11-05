@@ -1,6 +1,11 @@
 .. _contributing:
 
 
+Code of Conduct
+===============
+
+By participating in Nilearn, you agree to abide by the :nipy:`NIPY Code of Conduct <conduct.html>`
+
 How to get help?
 ================
 
@@ -46,17 +51,6 @@ community member.
 We do not expect community members to be experts in all changes included in
 :nilearn-gh:`pull requests <pulls>`, and we encourage you to concentrate on those code changes that you feel comfortable with.
 As always, more eyes on a code change means that the code is more likely to work in a wide variety of contexts!
-
-Join the triage team
---------------------
-
-The :ref:`triage` is composed of community members who have permission on
-:nilearn-gh:`github <>` to label and close :nilearn-gh:`issues <issues>`.
-Their work is crucial to improve the communication in the project and limit the crowding of the issue tracker.
-The :ref:`issue_labels` and :ref:`closing_policy` of the project is defined in more details in the :ref:`maintenance_process` page.
-
-Any community member may become a member of the Nilearn :ref:`triage`.
-If you are interested in joining the :ref:`triage`, please read the :ref:`maintenance_process` page and contact one of the :ref:`core_devs` to express your interest!
 
 Contribute code
 ---------------

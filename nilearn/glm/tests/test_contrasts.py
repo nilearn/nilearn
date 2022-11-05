@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from numpy.testing import assert_almost_equal
 from sklearn.datasets import make_regression
@@ -25,6 +26,13 @@ def test_expression_to_contrast_vector():
     cols = ["column_1"]
     contrast = expression_to_contrast_vector("column_1", cols)
     assert np.allclose(contrast, [1.])
+    cols = ['0', '1']
+    exp = '0-1'
+    with pytest.raises(
+            ValueError,
+            match='invalid python identifiers'
+    ):
+        expression_to_contrast_vector(exp, cols)
 
 
 def test_Tcontrast():
