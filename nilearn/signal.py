@@ -483,7 +483,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     filtering, the signal is processed in the following order, based on the
     second recommendation in :footcite:`Lindquist2018`:
 
-    - interpolate high motion volumes with cubic spline interpolation.
+    - interpolate high motion volumes with cubic spline interpolation
     - detrend
     - low- and high-pass butterworth filter
     - censor high motion volumes
@@ -577,7 +577,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     -------
     cleaned_signals : :class:`numpy.ndarray`
         Input signals, cleaned. Same shape as `signals` unless `sample_mask`
-        applied.
+        is applied.
 
     Notes
     -----
