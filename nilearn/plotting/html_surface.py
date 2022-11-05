@@ -234,6 +234,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         realistic shading.
         If 'auto', the sulcal depth map given in `sulf_mesh`
         will be used as background image.
+        Default="auto".
 
     %(bg_on_data)s
         Default=False.
