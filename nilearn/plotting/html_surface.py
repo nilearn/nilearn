@@ -238,6 +238,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
 
     %(bg_on_data)s
         Default=False.
+
     %(bg_map_rescale)s
         Default=True.
 
@@ -341,9 +342,11 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         Background image to be plotted on the mesh underneath the
         surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
+        Default=None.
 
     %(bg_on_data)s
         Default=False.
+
     %(bg_map_rescale)s
         Default=True.
 
