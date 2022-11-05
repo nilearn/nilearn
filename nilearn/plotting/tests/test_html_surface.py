@@ -34,7 +34,6 @@ def test_get_vertexcolor():
     # 0.25 if this vertex's curv < 0
     bg_map = np.sign(surface.load_surf_data(fsaverage['curv_left']))
     bg_map = (bg_map + 1) / 4 + 0.25
-``` (?)
     vertexcolors = html_surface._get_vertexcolor(
         surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'],
         bg_map, bg_map_rescale=False)
@@ -179,3 +178,48 @@ def test_view_img_on_surf():
                                              "radius": 0.,
                                              "interpolation": "nearest"})
     check_html(html)
+
+
+def test_mix_colormaps():
+    n = 100
+
+    # Mixin map's shape should be equal to that of
+    # the foreground and background maps
+    foreground_map = np.random.rand(n, 4)
+    background_map = np.random.rand(n, 4)
+    mix_map = html_surface._mix_colormaps(foreground_map, background_map)
+    assert mix_map.shape == (n, 4)
+    # Transparency of mixin map should be higher
+    # than that of both the background and the foreground maps
+    assert np.all(mix_map[:, 3] >= foreground_map[:, 3])
+    assert np.all(mix_map[:, 3] >= background_map[:, 3])
+
+    # If foreground and background maps' shapes are different,
+    # an Exception should be raised
+    background_map = np.random.rand(n - 1, 4)
+    with pytest.raises(Exception):
+        html_surface._mix_colormaps(foreground_map, background_map)
+
+    # If foreground map is transparent,
+    # mixin should be equal to background map
+    foreground_map = np.random.rand(n, 4)
+    background_map = np.random.rand(n, 4)
+    foreground_map[:, 3] = 0
+    mix_map = html_surface._mix_colormaps(foreground_map, background_map)
+    assert np.allclose(mix_map, background_map)
+
+    # If background map is transparent,
+    # mixin should be equal to foreground map
+    foreground_map = np.random.rand(n, 4)
+    background_map = np.random.rand(n, 4)
+    background_map[:, 3] = 0
+    mix_map = html_surface._mix_colormaps(foreground_map, background_map)
+    assert np.allclose(mix_map, foreground_map)
+
+    # If foreground and background maps are equal,
+    # RBG values of the mixin map should be equal
+    # to that of the foreground and background maps
+    foreground_map = np.random.rand(n, 4)
+    background_map = foreground_map
+    mix_map = html_surface._mix_colormaps(foreground_map, background_map)
+    assert np.allclose(mix_map[:, :3], foreground_map[:, :3])
