@@ -564,7 +564,7 @@ class GlassBrainAxes(BaseAxes):
                 # matplotlib versions older than 3.1
                 # This can be removed once support for
                 # matplotlib pre 3.1 has been dropped.
-                if dx == 0 and dy == 0:
+                if dx == dy == 0:
                     arrow = FancyArrow(xdata[0], ydata[0],
                                        dx, dy)
                 else:

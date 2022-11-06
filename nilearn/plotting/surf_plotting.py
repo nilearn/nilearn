@@ -848,7 +848,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
 
     if labels is None:
         labels = [None] * len(levels)
-    if not (len(labels) == len(levels) and len(colors) == len(labels)):
+    if not (len(levels) == len(labels) == len(colors)):
         raise ValueError('Levels, labels, and colors '
                          'argument need to be either the same length or None.')
 
