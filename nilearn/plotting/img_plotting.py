@@ -159,7 +159,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         warnings.warn(nan_msg)
 
     if (isinstance(cut_coords, numbers.Number) and
-            (display_mode == 'ortho' or display_mode == 'tiled')):
+            display_mode in ('ortho', 'tiled')):
         raise ValueError(
             "The input given for display_mode='{0}' needs to be "
             "a list of 3d world coordinates in (x, y, z). "

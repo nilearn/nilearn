@@ -694,7 +694,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
                     raise ValueError(
                         "l1_ratio must be in the interval [0, 1]; got %g" % (
                             l1_ratio))
-                elif l1_ratio == 0. or l1_ratio == 1.:
+                elif l1_ratio in (0., 1.):
                     warnings.warn(
                         ("Specified l1_ratio = %g. It's advised to only "
                          "specify values of l1_ratio strictly between 0 "

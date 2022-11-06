@@ -881,7 +881,7 @@ def create_fake_bids_dataset(base_dir='',
     for subject in ['sub-%02d' % label for label in range(1, n_sub + 1)]:
         for session in created_sessions:
             subses_dir = os.path.join(bids_path, subject, session)
-            if session == 'ses-01' or session == '':
+            if session in ('ses-01', ''):
                 anat_path = os.path.join(subses_dir, 'anat')
                 os.makedirs(anat_path)
                 anat_file = os.path.join(anat_path, subject + '_T1w.nii.gz')
