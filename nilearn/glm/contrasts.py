@@ -149,7 +149,7 @@ def _compute_fixed_effect_contrast(labels, results, con_vals,
     return contrast * (1. / n_contrasts)
 
 
-class Contrast(object):
+class Contrast:
     """ The contrast class handles the estimation of statistical contrasts
     on a given model: student (t) or Fisher (F).
     The important feature is that it supports addition,

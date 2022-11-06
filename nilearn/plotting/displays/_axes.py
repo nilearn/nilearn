@@ -15,7 +15,7 @@ from nilearn.plotting.glass_brain import plot_brain_schematics
 
 
 @fill_doc
-class BaseAxes(object):
+class BaseAxes:
     """An MPL axis-like object that displays a 2D view of 3D volumes.
 
     Parameters
