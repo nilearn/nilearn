@@ -27,4 +27,3 @@ def _gh_role(name, rawtext, text, lineno, inliner, options={}, content=[]):
 
 def setup(app):
     app.add_role('gh', _gh_role)
-    return
