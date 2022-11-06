@@ -377,7 +377,7 @@ sphinx_gallery_conf = {
     'examples_dirs': '../examples/',
     'gallery_dirs': 'auto_examples',
     # Ignore the function signature leftover by joblib
-    'ignore_pattern': 'func_code\.py',
+    'ignore_pattern': r'func_code\.py',
     'show_memory': not sys.platform.startswith('win'),
     'remove_config_comments': True,
     'nested_sections': True,
