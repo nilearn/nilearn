@@ -1776,7 +1776,7 @@ def _scroll_collection(collection, download_params):
     _print_if(
         'On neurovault.org: '
         '{0} image{1} matched query in collection {2}'.format(
-            (n_im_in_collection if n_im_in_collection else 'no'),
+            (n_im_in_collection or 'no'),
             ('s' if n_im_in_collection > 1 else ''), collection['id']),
         _INFO, download_params['verbose'])
 

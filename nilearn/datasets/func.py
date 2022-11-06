@@ -1929,8 +1929,8 @@ def select_from_index(urls, inclusion_filters=None, exclusion_filters=None,
         Sorted list of filtered dataset directories.
 
     """
-    inclusion_filters = inclusion_filters if inclusion_filters else []
-    exclusion_filters = exclusion_filters if exclusion_filters else []
+    inclusion_filters = inclusion_filters or []
+    exclusion_filters = exclusion_filters or []
     # We apply filters to the urls
     for exclusion in exclusion_filters:
         urls = [url for url in urls if not fnmatch.fnmatch(url, exclusion)]
