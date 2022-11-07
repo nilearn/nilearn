@@ -34,8 +34,7 @@ datasets.fetch_atlas_yeo_2011()
 datasets.fetch_development_fmri(n_subjects=60)
 datasets.fetch_fiac_first_level()
 datasets.fetch_localizer_first_level()
-# TODO: see timeout error that happens sometimes
-#datasets.fetch_spm_multimodal_fmri()
+datasets.fetch_spm_multimodal_fmri()
 datasets.fetch_localizer_contrasts(
     ['left button press (auditory cue)'],
     n_subjects=94
