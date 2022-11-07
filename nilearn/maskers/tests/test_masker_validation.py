@@ -37,7 +37,8 @@ class OwningClass(BaseEstimator):
         self.verbose = verbose
         self.dummy = dummy
 
-class DummyEstimator(object):
+
+class DummyEstimator:
 
     def __init__(self, **kwargs):
         for k, v in kwargs.items():

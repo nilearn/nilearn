@@ -203,7 +203,7 @@ def _space_net_alpha_grid(X, y, eps=1e-3, n_alphas=10, l1_ratio=1.,
                        num=n_alphas)[::-1]
 
 
-class _EarlyStoppingCallback(object):
+class _EarlyStoppingCallback:
     """Out-of-bag early stopping
 
         A callable that returns True when the test error starts

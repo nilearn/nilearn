@@ -66,7 +66,7 @@ def _requests_session():
 
 # Helpers for filtering images and collections.
 
-class _SpecialValue(object):
+class _SpecialValue:
     """Base class for special values used to filter terms.
 
     Derived classes should override ``__eq__`` in order to create
@@ -677,7 +677,7 @@ def _empty_filter(arg):
     return True
 
 
-class ResultFilter(object):
+class ResultFilter:
     """Easily create callable (local) filters for ``fetch_neurovault``.
 
     Constructed from a mapping of key-value pairs (optional) and a
@@ -839,7 +839,7 @@ class ResultFilter(object):
 # Utilities for composing queries and interacting with
 # neurovault and neurosynth
 
-class _TemporaryDirectory(object):
+class _TemporaryDirectory:
     """Context manager that provides a temporary directory
 
     A temporary directory is created on __enter__

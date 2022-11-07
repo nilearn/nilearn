@@ -21,7 +21,7 @@ from nilearn._utils.niimg import _is_binary_niimg, _safe_get_data
 from nilearn.plotting.displays._axes import _coords_3d_to_2d
 
 
-class BaseSlicer(object):
+class BaseSlicer:
     """BaseSlicer implementation which main purpose is to auto adjust
     the axes size to the data with different layout of cuts. It create
     3 linked axes for plotting orthogonal cuts.
