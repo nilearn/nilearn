@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Functionality to create an HTML report using a fitted GLM & contrasts.
 
