@@ -23,12 +23,17 @@ class SurfaceView(HTMLDocument):
 def _mix_colormaps(fg, bg):
     """Mixes foreground and background arrays of RGBA colors.
 
-    Args:
-        fg (numpy.ndarray): Array of shape (n, 4), foreground colors
-        bg (numpy.ndarray): Array of shape (n, 4), background colors
+    Parameters
+    ----------
+    fg : numpy.ndarray
+        Array of shape (n, 4), foreground colors
+    bg : numpy.ndarray
+        Array of shape (n, 4), background colors
 
-    Returns:
-        numpy.ndarray: Array of shape (n, 4), mixed colors
+    Returns
+    -------
+    mix : numpy.ndarray
+        Array of shape (n, 4), mixed colors
     """
     # Adapted from https://stackoverflow.com/questions/726549/algorithm-for-additive-color-mixing-for-rgb-values/727339#727339 # noqa: E501
     if fg.shape != bg.shape:
