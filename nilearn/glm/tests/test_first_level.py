@@ -730,8 +730,8 @@ def test_first_level_from_bids_with_subject_labels():
         bids_path = create_fake_bids_dataset(n_sub=10, n_ses=2,
                                              tasks=['localizer', 'main'],
                                              n_runs=[1, 3])
-        warning_message = f'Subject label foo is not present in'
-                          ' the dataset and cannot be processed'
+        warning_message = ('Subject label foo is not present in'
+                           ' the dataset and cannot be processed')
         # check that the incorrect label `foo` raises a warning
         with pytest.warns(UserWarning, match=warning_message):
             first_level_from_bids(bids_path, 'main', sub_labels=["foo", "01"])
