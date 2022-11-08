@@ -650,7 +650,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                                                diagonal=diagonal)
 
         if self.kind == 'tangent':
-            mean_sqrt = _map_eigenvalues(lambda x: np.sqrt(x), self.mean_)
+            mean_sqrt = _map_eigenvalues(np.sqrt, self.mean_)
             connectivities = [mean_sqrt.dot(
                 _map_eigenvalues(np.exp, displacement)).dot(mean_sqrt)
                 for displacement in connectivities]

@@ -96,8 +96,7 @@ def fetch_haxby(data_dir=None, subjects=(2,),
     if isinstance(subjects, numbers.Number) and subjects > 6:
         subjects = 6
 
-    if subjects is not None and (isinstance(subjects, list) or
-                                 isinstance(subjects, tuple)):
+    if subjects is not None and isinstance(subjects, (list, tuple)):
         for sub_id in subjects:
             if sub_id not in [1, 2, 3, 4, 5, 6]:
                 raise ValueError("You provided invalid subject id {0} in a "
@@ -1929,8 +1928,8 @@ def select_from_index(urls, inclusion_filters=None, exclusion_filters=None,
         Sorted list of filtered dataset directories.
 
     """
-    inclusion_filters = inclusion_filters if inclusion_filters else []
-    exclusion_filters = exclusion_filters if exclusion_filters else []
+    inclusion_filters = inclusion_filters or []
+    exclusion_filters = exclusion_filters or []
     # We apply filters to the urls
     for exclusion in exclusion_filters:
         urls = [url for url in urls if not fnmatch.fnmatch(url, exclusion)]

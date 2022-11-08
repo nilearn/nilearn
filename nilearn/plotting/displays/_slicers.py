@@ -1400,7 +1400,7 @@ class BaseStackedSlicer(BaseSlicer):
             Extra keyword arguments are passed to function
             :func:`matplotlib.pyplot.axhline`.
         """
-        return
+        pass
 
 
 class XSlicer(BaseStackedSlicer):
@@ -1846,7 +1846,7 @@ class MosaicSlicer(BaseSlicer):
             Extra keyword arguments are passed to function
             :func:`matplotlib.pyplot.axhline`.
         """
-        return
+        pass
 
 
 SLICERS = dict(ortho=OrthoSlicer,

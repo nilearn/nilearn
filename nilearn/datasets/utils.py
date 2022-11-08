@@ -178,8 +178,6 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
         else:
             break
 
-    return
-
 
 @fill_doc
 def get_data_dirs(data_dir=None):
