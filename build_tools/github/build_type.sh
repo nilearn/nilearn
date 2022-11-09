@@ -1,4 +1,4 @@
-#!/bin/bash -ef
+#!/bin/bash -exf
 
 if [ "$GITHUB_REF_NAME" == "main" ] || [[ $(cat gitlog.txt) == *"[circle full]"* ]]; then
     echo "Doing a full build";
