@@ -160,6 +160,8 @@
 
 .. _Myeong Seop Song: https://github.com/NeuroVR-Song
 
+.. _Natasha Clarke: https://github.com/clarkenj
+
 .. _Neelay Shah: https://github.com/NeelayS
 
 .. _Nicolas Gensollen: https://nicolasgensollen.github.io/
