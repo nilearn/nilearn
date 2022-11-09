@@ -45,6 +45,33 @@ jobs:
             git remote add upstream https://github.com/nilearn/nilearn.git
           fi
           git fetch upstream
+      - name: Merge with upstream
+        run: |
+          echo $(git log -1 --pretty=%B) | tee gitlog.txt
+          echo "gitlog.txt = $(cat gitlog.txt)"
+          echo ${GITHUB_REF//*pull\//} | tee merge.txt
+          if [[ $(cat merge.txt) != "" ]]; then
+              echo "Merging $(cat merge.txt)";
+              git pull --ff-only upstream "refs/pull/$(cat merge.txt)";
+          fi
+
+      # Set up environment
+      - name: Install apt packages
+        run: |
+          ./build_tools/github/build_docs_apt_dependencies.sh
+      - name: Setup conda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: true
+          activate-environment: ''
+          miniconda-version: 'latest'
+          channels: conda-forge
+      - name: Install packages in conda env
+        run: |
+          ./build_tools/github/build_docs_dependencies.sh
+
+      # Restore data from cache or set up caching if data not found or
+      # [force download] is defined in commit message
       - name: Determine force download
         run: |
           commit_msg=$(git log -2 --format=oneline);
@@ -63,31 +90,6 @@ jobs:
           else
               echo "missing" > week_num;
           fi
-
-      # Set up environment
-      - name: Merge with upstream
-        run: |
-          echo $(git log -1 --pretty=%B) | tee gitlog.txt
-          echo "gitlog.txt = $(cat gitlog.txt)"
-          echo ${GITHUB_REF//*pull\//} | tee merge.txt
-          if [[ $(cat merge.txt) != "" ]]; then
-              echo "Merging $(cat merge.txt)";
-              git pull --ff-only upstream "refs/pull/$(cat merge.txt)";
-          fi
-      - name: Install apt packages
-        run: |
-          ./build_tools/github/build_docs_apt_dependencies.sh
-      - name: Setup conda
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-activate-base: true
-          activate-environment: ''
-          miniconda-version: 'latest'
-          channels: conda-forge
-      - name: Install packages in conda env
-        run: |
-          ./build_tools/github/build_docs_dependencies.sh
-
       - name: Data caching
         uses: actions/cache@v3
         # ~47 MB
@@ -231,13 +233,13 @@ jobs:
            nilearn_data/spm_multimodal_fmri
           key: v1-spm_multimodal_fmri-${{ hashFiles('**/week_num**') }}
 
-      # Download data and cache if it is not restored in previous steps, then
+      # Download data if not restored in previous steps, then
       # run doc build
-      # TODO: Remove step before merge
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        with:
-          limit-access-to-actor: true
+#      # TODO: Remove step before merge
+#      - name: Setup tmate session
+#        uses: mxschmitt/action-tmate@v3
+#        with:
+#          limit-access-to-actor: true
       - name: Fetch and download nilearn data
         id: download_data
         run: |
