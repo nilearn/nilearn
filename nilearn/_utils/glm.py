@@ -336,6 +336,7 @@ def positive_reciprocal(X):
 
 
 def _check_run_sample_masks(n_runs, sample_masks):
+    """Number of sample_mask matches number of runs."""
     if not isinstance(sample_masks, (list, tuple, np.ndarray)):
         raise TypeError(
             f"sample_mask has an unhandled type: {sample_masks.__class__}"

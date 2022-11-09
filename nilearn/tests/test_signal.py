@@ -410,6 +410,13 @@ def test_clean_runs():
     # clean should not modify inputs
     assert np.array_equal(x_orig, x)
 
+    # check the runs are individually cleaned
+    x_run1 = nisignal.clean(x[0:n_samples // 2, :],
+                            confounds=confounds[0:n_samples // 2, :],
+                            standardize=False, detrend=True,
+                            low_pass=None, high_pass=None)
+    assert np.array_equal(x_run1, x_detrended[0:n_samples // 2, :])
+
 
 def test_clean_confounds():
     signals, noises, confounds = generate_signals(n_features=41,
@@ -562,22 +569,31 @@ def test_clean_frequencies_using_power_spectrum_density():
     _, _, confounds = generate_signals(
         n_features=10, n_confounds=10, length=100)
 
-    # Apply low- and high-pass filter (separately)
+    # Apply low- and high-pass filter with butterworth (separately)
     t_r = 1.0
     low_pass = 0.1
     high_pass = 0.4
-    res_low = clean(sx, detrend=False, standardize=False, low_pass=low_pass,
-                    high_pass=None, t_r=t_r)
-    res_high = clean(sx, detrend=False, standardize=False, low_pass=None,
-                     high_pass=high_pass, t_r=t_r)
+    res_low = clean(sx, detrend=False, standardize=False,
+                    filter='butterworth', low_pass=low_pass, high_pass=None,
+                    t_r=t_r)
+    res_high = clean(sx, detrend=False, standardize=False,
+                     filter='butterworth', low_pass=None, high_pass=high_pass,
+                     t_r=t_r)
+
+    # cosine high pass filter
+    res_cos = clean(sx, detrend=False, standardize=False,
+                    filter='cosine', low_pass=None, high_pass=high_pass,
+                    t_r=t_r)
 
     # Compute power spectrum density for both test
     f, Pxx_den_low = scipy.signal.welch(np.mean(res_low.T, axis=0), fs=t_r)
     f, Pxx_den_high = scipy.signal.welch(np.mean(res_high.T, axis=0), fs=t_r)
+    f, Pxx_den_cos = scipy.signal.welch(np.mean(res_cos.T, axis=0), fs=t_r)
 
     # Verify that the filtered frequencies are removed
     assert np.sum(Pxx_den_low[f >= low_pass * 2.]) <= 1e-4
     assert np.sum(Pxx_den_high[f <= high_pass / 2.]) <= 1e-4
+    assert np.sum(Pxx_den_cos[f <= high_pass / 2.]) <= 1e-4
 
 
 def test_clean_finite_no_inplace_mod():
@@ -724,29 +740,41 @@ def test_clean_zscore():
     np.testing.assert_almost_equal(cleaned_signals.std(0), 1)
 
 
-def test_cosine_filter():
+def test_create_cosine_drift_terms():
     '''Testing cosine filter interface and output.'''
     from nilearn.glm.first_level.design_matrix import _cosine_drift
-
-    t_r, high_pass, low_pass, filter = 2.5, 0.002, None, 'cosine'
-    signals, _, confounds = generate_signals(n_features=41,
-                                              n_confounds=5, length=45)
+    # fmriprep high pass cutoff is 128s, it's around 0.008 hz
+    t_r, high_pass = 2.5, 0.008
+    signals, _, confounds = generate_signals(n_features=41, n_confounds=5,
+                                             length=45)
 
     # Not passing confounds it will return drift terms only
     frame_times = np.arange(signals.shape[0]) * t_r
-    cosine_drift = _cosine_drift(high_pass, frame_times)
+    cosine_drift = _cosine_drift(high_pass, frame_times)[:, :-1]
+    confounds_with_drift = np.hstack((confounds, cosine_drift))
 
-    signals_unchanged, cosine_confounds = nisignal._filter_signal(
-        signals, confounds, filter, low_pass, high_pass, t_r)
-    np.testing.assert_array_equal(signals_unchanged, signals)
+    cosine_confounds = nisignal._create_cosine_drift_terms(
+        signals, confounds, high_pass, t_r)
     np.testing.assert_almost_equal(cosine_confounds,
                                    np.hstack((confounds, cosine_drift)))
 
     # Not passing confounds it will return drift terms only
-    signals_unchanged, drift_terms_only = nisignal._filter_signal(
-        signals, None, filter, low_pass, high_pass, t_r)
-    np.testing.assert_array_equal(signals_unchanged, signals)
+    drift_terms_only = nisignal._create_cosine_drift_terms(
+        signals, None, high_pass, t_r)
     np.testing.assert_almost_equal(drift_terms_only, cosine_drift)
+
+    # drift terms in confounds will create warning and no change to confounds
+    with pytest.warns(UserWarning, match='user supplied confounds'):
+        cosine_confounds = nisignal._create_cosine_drift_terms(
+            signals, confounds_with_drift, high_pass, t_r)
+    np.testing.assert_array_equal(cosine_confounds, confounds_with_drift)
+
+    # raise warning if cosine drift term is not created
+    high_pass_fail = 0.002
+    with pytest.warns(UserWarning, match='Cosine filter was not create'):
+        cosine_confounds = nisignal._create_cosine_drift_terms(
+            signals, confounds, high_pass_fail, t_r)
+    np.testing.assert_array_equal(cosine_confounds, confounds)
 
 
 def test_sample_mask():
@@ -801,3 +829,29 @@ def test_sample_mask():
     sample_mask[-1] = 999
     with pytest.raises(IndexError, match=r'invalid index \[\d*\]'):
         clean(signals, sample_mask=sample_mask)
+
+
+def test_handle_scrubbed_volumes():
+    """Check interpolation/censoring of signals based on filter type. """
+    signals, _, confounds = generate_signals(n_features=11,
+                                             n_confounds=5, length=40)
+
+    sample_mask = np.arange(signals.shape[0])
+    scrub_index = np.array([2, 3, 6, 7, 8, 30, 31, 32])
+    sample_mask = np.delete(sample_mask, scrub_index)
+
+    interpolated_signals, interpolated_confounds = \
+        nisignal._handle_scrubbed_volumes(signals, confounds, sample_mask,
+                                          'butterworth', 2.5)
+    np.testing.assert_equal(interpolated_signals[sample_mask, :],
+                            signals[sample_mask, :])
+    np.testing.assert_equal(interpolated_confounds[sample_mask, :],
+                            confounds[sample_mask, :])
+
+    scrubbed_signals, scrubbed_confounds = \
+        nisignal._handle_scrubbed_volumes(signals, confounds, sample_mask,
+                                          'cosine', 2.5)
+    np.testing.assert_equal(scrubbed_signals,
+                            signals[sample_mask, :])
+    np.testing.assert_equal(scrubbed_confounds,
+                            confounds[sample_mask, :])
