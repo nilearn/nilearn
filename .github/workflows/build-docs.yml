@@ -268,3 +268,25 @@ jobs:
         with:
           name: doc
           path: doc/_build/html
+
+  # Job to trigger the CircleCI job that will host the documentation
+  trigger-hosting:
+    runs-on: ubuntu-latest
+    # Run the job only if the "Documentation builder" workflow succeeded
+    needs: build_docs
+    # Prevents this workflow from running on a fork.
+    # To test this workflow on a fork remove the `github.repository == nilearn/nilearn` condition
+    if: github.repository == 'nilearn/nilearn'
+    steps:
+      - name: Checkout nilearn
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Trigger hosting jobs
+        run: bash build_tools/github/trigger_hosting.sh
+        env:
+          CIRCLE_CI_TOKEN: ${{ secrets.CIRCLE_CI_TOKEN }}
+          RUN_ID: ${{ github.run_id }}
+          COMMIT_SHA:  ${{ github.event.pull_request.head.sha }}
+          REPO_NAME:  ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
