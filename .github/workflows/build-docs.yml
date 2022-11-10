@@ -25,7 +25,7 @@ jobs:
       NILEARN_DATA: "/home/runner/work/nilearn/nilearn/nilearn_data"
     defaults:
       run:
-        shell: bash -el {0}
+        shell: bash -elx {0}
     steps:
       - name: Source caching
         uses: actions/cache@v3
