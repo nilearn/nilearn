@@ -249,6 +249,8 @@ jobs:
           echo "Conda active env = $CONDA_DEFAULT_ENV";
           ./build_tools/github/download_data.sh
       - name: Find build type
+        env:
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           ./build_tools/github/build_type.sh
       - name: Verify build type
@@ -282,13 +284,12 @@ jobs:
     steps:
       - name: Checkout nilearn
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
+
       - name: Trigger hosting jobs
         run: bash build_tools/github/trigger_hosting.sh
         env:
-          CIRCLE_CI_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CIRCLE_CI_TOKEN: ${{ secrets.CIRCLE_CI_TOKEN }}
           RUN_ID: ${{ github.run_id }}
-          COMMIT_SHA:  ${{ github.event.pull_request.head.sha }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
           REPO_NAME:  ${{ github.repository }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
