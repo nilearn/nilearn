@@ -285,7 +285,7 @@ jobs:
       - name: Trigger hosting jobs
         run: bash build_tools/github/trigger_hosting.sh
         env:
-          CIRCLE_CI_TOKEN: ${{ secrets.CIRCLE_CI_TOKEN }}
+          CIRCLE_CI_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RUN_ID: ${{ github.run_id }}
           COMMIT_SHA:  ${{ github.event.pull_request.head.sha }}
           REPO_NAME:  ${{ github.repository }}
