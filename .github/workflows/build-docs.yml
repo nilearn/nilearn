@@ -25,7 +25,7 @@ jobs:
       NILEARN_DATA: "/home/runner/work/nilearn/nilearn/nilearn_data"
     defaults:
       run:
-        shell: bash -elx {0}
+        shell: bash -el {0}
     steps:
       - name: Source caching
         uses: actions/cache@v3
@@ -41,12 +41,14 @@ jobs:
           fetch-depth: 0
       - name: Complete checkout
         run: |
+          set -x
           if ! git remote -v | grep upstream; then
             git remote add upstream https://github.com/nilearn/nilearn.git
           fi
           git fetch upstream
       - name: Merge with upstream
         run: |
+          set -x
           echo $(git log -1 --pretty=%B) | tee gitlog.txt
           echo "gitlog.txt = $(cat gitlog.txt)"
           echo ${GITHUB_REF//*pull\//} | tee merge.txt

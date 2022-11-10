@@ -1,10 +1,11 @@
 #!/bin/bash -exf
 
+ GITHUB_HEAD_SHA=$(git log --no-merges -1 --pretty=format:%H)
 if [ "$GITHUB_REF_NAME" == "main" ] || [[ $(cat gitlog.txt) == *"[circle full]"* ]]; then
     echo "Doing a full build";
     echo html-strict > build.txt;
 else
-    FILENAMES=$(git diff --name-only $(git merge-base $GITHUB_SHA upstream/main) $GITHUB_SHA);
+    FILENAMES=$(git diff --name-only $(git merge-base $GITHUB_HEAD_SHA upstream/main) $GITHUB_HEAD_SHA);
     echo FILENAMES="$FILENAMES";
     for FILENAME in $FILENAMES; do
         if [[ `expr match $FILENAME "\(examples\)/.*plot_.*\.py"` ]]; then
