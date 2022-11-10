@@ -249,10 +249,10 @@ jobs:
           echo "Conda active env = $CONDA_DEFAULT_ENV";
           ./build_tools/github/download_data.sh
       - name: Find build type
-        env:
-          COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           ./build_tools/github/build_type.sh
+        env:
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
       - name: Verify build type
         run: |
           echo "PATTERN = $(cat pattern.txt)"
