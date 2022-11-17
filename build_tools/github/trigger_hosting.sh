@@ -5,7 +5,7 @@ set -x
 
 GITHUB_RUN_URL=https://nightly.link/$GITHUB_REPOSITORY/actions/runs/$RUN_ID
 
-if [ "$GITHUB_EVENT_NAME" == pull_request ]
+if [ "$EVENT" == pull_request ]
 then
      PULL_REQUEST_NUMBER=$(curl \
           -H "Accept: application/vnd.github.v3+json" \
@@ -28,7 +28,7 @@ then
 
      BRANCH=pull/$PULL_REQUEST_NUMBER/head
 else
-     BRANCH=$GITHUB_REF
+     BRANCH=$HEAD_BRANCH
 fi
 
 curl --request POST \
