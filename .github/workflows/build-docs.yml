@@ -1,4 +1,7 @@
-# Workflow to build the documentation
+# Workflow to build the documentation. On pull requests, partial builds are run
+# except if "[circle full]" is defined in commit message. Full builds are
+# always run on "main". This is done every time there is a push on "main"
+# and every night.
 name: Documentation builder
 
 on:
@@ -19,6 +22,7 @@ jobs:
     # To test this workflow on a fork, uncomment the following line.
     if: github.repository == 'nilearn/nilearn'
     runs-on: ubuntu-latest
+    timeout-minutes: 360
     env:
       BROWSER: "/usr/bin/firefox"
       DISPLAY: ':99.0'
@@ -37,6 +41,7 @@ jobs:
       - name: Checkout nilearn
         uses: actions/checkout@v3
         with:
+          # If pull request, checkout HEAD commit with all commit history
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
       - name: Complete checkout
@@ -52,7 +57,7 @@ jobs:
           echo $(git log -1 --pretty=%B) | tee gitlog.txt
           echo "gitlog.txt = $(cat gitlog.txt)"
           echo ${GITHUB_REF//*pull\//} | tee merge.txt
-          if [[ $(cat merge.txt) != "" ]]; then
+          if [ "$GITHUB_REF_NAME" != "main" ] && [[ $(cat merge.txt) != "" ]]; then
               echo "Merging $(cat merge.txt)";
               git pull --ff-only upstream "refs/pull/$(cat merge.txt)";
           fi
@@ -94,7 +99,7 @@ jobs:
           fi
       - name: Data caching
         uses: actions/cache@v3
-        # ~47 MB
+        # ~48 MB
         with:
           path: |
            nilearn_data/basc_multiscale_2015
@@ -237,11 +242,6 @@ jobs:
 
       # Download data if not restored in previous steps, then
       # run doc build
-#      # TODO: Remove step before merge
-#      - name: Setup tmate session
-#        uses: mxschmitt/action-tmate@v3
-#        with:
-#          limit-access-to-actor: true
       - name: Fetch and download nilearn data
         id: download_data
         run: |
@@ -272,24 +272,8 @@ jobs:
         with:
           name: doc
           path: doc/_build/html
-
-  # Job to trigger the CircleCI job that will host the documentation
-  trigger-hosting:
-    runs-on: ubuntu-latest
-    # Run the job only if the "Documentation builder" workflow succeeded
-    needs: build_docs
-    # Prevents this workflow from running on a fork.
-    # To test this workflow on a fork remove the `github.repository == nilearn/nilearn` condition
-    if: github.repository == 'nilearn/nilearn'
-    steps:
-      - name: Checkout nilearn
-        uses: actions/checkout@v3
-
-      - name: Trigger hosting jobs
-        run: bash build_tools/github/trigger_hosting.sh
-        env:
-          CIRCLE_CI_TOKEN: ${{ secrets.CIRCLE_CI_TOKEN }}
-          RUN_ID: ${{ github.run_id }}
-          COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
-          REPO_NAME:  ${{ github.repository }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Note about build
+        run: |
+          if [[ "$(cat build.txt)" != "html-strict" ]]; then
+              echo "Partial build : Data is still cached";
+          fi
