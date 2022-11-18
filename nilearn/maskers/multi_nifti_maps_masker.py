@@ -84,8 +84,18 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
     reports : :obj:`bool`, optional
         If set to True, data is saved in order to produce a report.
         Default=True.
-
     %(masker_kwargs)s
+
+    Attributes
+    ----------
+    maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
+        The maps mask of the data.
+
+    n_elements_ : :obj:`int`
+        The number of overlapping maps in the mask.
+        This is equivalent to the number of volumes in the mask image.
+
+        .. versionadded:: 0.9.2
 
     Notes
     -----
