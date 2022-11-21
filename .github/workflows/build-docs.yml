@@ -85,7 +85,7 @@ jobs:
           echo $commit_msg;
           if [[ $commit_msg == *"[force download]"* ]]; then
             echo "All datasets will be downloaded as requested.";
-            touch restore.txt;
+            echo "false" | tee restore.txt;
           else
             echo "Data cache will be used if available.";
             echo "true" | tee restore.txt;
