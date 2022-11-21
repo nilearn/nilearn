@@ -112,133 +112,133 @@ jobs:
            nilearn_data/neurovault
            nilearn_data/pauli_2017
            nilearn_data/yeo_2011
-          key: v1-small-cache-${{ hashFiles('**/week_num**') }}
+          key: v1-small-cache-${{ hashFiles('week_num') }}
       - name: Data caching
         uses: actions/cache@v3
         # ~45 MB
         with:
           path: |
            nilearn_data/adhd
-          key: v1-adhd-${{ hashFiles('**/week_num**') }}
+          key: v1-adhd-${{ hashFiles('week_num') }}
       - name: Data caching
         uses: actions/cache@v3
         # ~32 MB
         with:
           path: |
            nilearn_data/allen_rsn_2011
-          key: v1-allen_rsn_2011-${{ hashFiles('**/week_num**') }}
+          key: v1-allen_rsn_2011-${{ hashFiles('week_num') }}
       - name: Data caching
         uses: actions/cache@v3
         # ~66 MB
         with:
           path: |
            nilearn_data/brainomics_localizer
-          key: v1-brainomics_localizer-${{ hashFiles('**/week_num**') }}
+          key: v1-brainomics_localizer-${{ hashFiles('week_num') }}
       - name: Data caching
         uses: actions/cache@v3
         # ~373 MB
         with:
           path: |
            nilearn_data/development_fmri
-          key: v1-development_fmri-${{ hashFiles('**/week_num**') }}
+          key: v1-development_fmri-${{ hashFiles('week_num') }}
       - name: Data caching
         uses: actions/cache@v3
         # ~832 MB
         with:
           path: |
            nilearn_data/ds000030
-          key: v1-ds000030-${{ hashFiles('**/week_num**') }}
+          key: v1-ds000030-${{ hashFiles('week_num') }}
       - name: Data caching
         uses: actions/cache@v3
         # ~82 MB
         with:
           path: |
            nilearn_data/fiac_nilearn.glm
-          key: v1-fiac_nilearn.glm-${{ hashFiles('**/week_num**') }}
+          key: v1-fiac_nilearn.glm-${{ hashFiles('week_num') }}
       - name: Data caching
         uses: actions/cache@v3
         # ~750 MB
         with:
           path: |
            nilearn_data/fMRI-language-localizer-demo-dataset
-          key: v1-fMRI-language-localizer-demo-dataset-${{ hashFiles('**/week_num**') }}
+          key: v1-fMRI-language-localizer-demo-dataset-${{ hashFiles('week_num') }}
       - name: Data caching
         uses: actions/cache@v3
         # ~30 MB
         with:
           path: |
            nilearn_data/fsl
-          key: v1-fsl-${{ hashFiles('**/week_num**') }}
+          key: v1-fsl-${{ hashFiles('week_num') }}
       - name: Data caching
         uses: actions/cache@v3
         # ~302 MB
         with:
           path: |
            nilearn_data/haxby2001
-          key: v1-haxby2001-${{ hashFiles('**/week_num**') }}
+          key: v1-haxby2001-${{ hashFiles('week_num') }}
       - name: Data caching
         uses: actions/cache@v3
         # ~63 MB
         with:
           path: |
            nilearn_data/icbm152_2009
-          key: v1-icbm152_2009-${{ hashFiles('**/week_num**') }}
+          key: v1-icbm152_2009-${{ hashFiles('week_num') }}
       - name: Data caching
         uses: actions/cache@v3
         # ~105 MB
         with:
           path: |
            nilearn_data/jimura_poldrack_2012_zmaps
-          key: v1-jimura_poldrack_2012_zmaps-${{ hashFiles('**/week_num**') }}
+          key: v1-jimura_poldrack_2012_zmaps-${{ hashFiles('week_num') }}
       - name: Data caching
         uses: actions/cache@v3
         # ~35 MB
         with:
           path: |
            nilearn_data/localizer_first_level
-          key: v1-localizer_first_level-${{ hashFiles('**/week_num**') }}
+          key: v1-localizer_first_level-${{ hashFiles('week_num') }}
       - name: Data caching
         uses: actions/cache@v3
         # ~181 MB
         with:
           path: |
            nilearn_data/miyawaki2008
-          key: v1-miyawaki2008-${{ hashFiles('**/week_num**') }}
+          key: v1-miyawaki2008-${{ hashFiles('week_num') }}
       - name: Data caching
         uses: actions/cache@v3
         # ~85 MB
         with:
           path: |
            nilearn_data/nki_enhanced_surface
-          key: v1-nki_enhanced_surface-${{ hashFiles('**/week_num**') }}
+          key: v1-nki_enhanced_surface-${{ hashFiles('week_num') }}
       - name: Data caching
         uses: actions/cache@v3
         # ~913 MB
         with:
           path: |
            nilearn_data/oasis1
-          key: v1-oasis1-${{ hashFiles('**/week_num**') }}
+          key: v1-oasis1-${{ hashFiles('week_num') }}
       - name: Data caching
         uses: actions/cache@v3
         # ~171 MB
         with:
           path: |
            nilearn_data/smith_2009
-          key: v1-smith_2009-${{ hashFiles('**/week_num**') }}
+          key: v1-smith_2009-${{ hashFiles('week_num') }}
       - name: Data caching
         uses: actions/cache@v3
         # ~230 MB
         with:
           path: |
            nilearn_data/spm_auditory
-          key: v1-spm_auditory-${{ hashFiles('**/week_num**') }}
+          key: v1-spm_auditory-${{ hashFiles('week_num') }}
       - name: Data caching
         uses: actions/cache@v3
         # ~227 MB
         with:
           path: |
            nilearn_data/spm_multimodal_fmri
-          key: v1-spm_multimodal_fmri-${{ hashFiles('**/week_num**') }}
+          key: v1-spm_multimodal_fmri-${{ hashFiles('week_num') }}
 
       # Download data if not restored in previous steps, then
       # run doc build
