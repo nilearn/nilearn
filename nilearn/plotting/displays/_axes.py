@@ -15,7 +15,7 @@ from nilearn.plotting.glass_brain import plot_brain_schematics
 
 
 @fill_doc
-class BaseAxes(object):
+class BaseAxes:
     """An MPL axis-like object that displays a 2D view of 3D volumes.
 
     Parameters
@@ -523,7 +523,7 @@ class GlassBrainAxes(BaseAxes):
         norm = Normalize(vmin=vmin, vmax=vmax)
         # normalization useful for colorbar
         self.norm = norm
-        abs_norm = Normalize(vmin=0, vmax=vmax)
+        abs_norm = Normalize(vmin=0, vmax=max(abs(vmax), abs(vmin)))
         value_to_color = plt.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
 
         # Allow lines only in their respective hemisphere when appropriate
@@ -564,7 +564,7 @@ class GlassBrainAxes(BaseAxes):
                 # matplotlib versions older than 3.1
                 # This can be removed once support for
                 # matplotlib pre 3.1 has been dropped.
-                if dx == 0 and dy == 0:
+                if dx == dy == 0:
                     arrow = FancyArrow(xdata[0], ydata[0],
                                        dx, dy)
                 else:

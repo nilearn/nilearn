@@ -11,7 +11,7 @@ from nilearn import _utils, image, masking
 from nilearn.maskers.base_masker import _filter_and_extract, BaseMasker
 
 
-class _ExtractionFunctor(object):
+class _ExtractionFunctor:
 
     func_name = 'nifti_labels_masker_extractor'
 

@@ -40,7 +40,15 @@ def expression_to_contrast_vector(expression, design_columns):
         contrast_vector[list(design_columns).index(expression)] = 1.
         return contrast_vector
     df = pd.DataFrame(np.eye(len(design_columns)), columns=design_columns)
-    contrast_vector = df.eval(expression, engine="python").values
+    try:
+        contrast_vector = df.eval(expression, engine="python").values
+    except Exception:
+        raise ValueError(
+            'The expression (%s) is not valid. This could be due to '
+            'defining the contrasts using design matrix columns that are '
+            'invalid python identifiers. '
+            % expression
+        )
     return contrast_vector
 
 
@@ -141,7 +149,7 @@ def _compute_fixed_effect_contrast(labels, results, con_vals,
     return contrast * (1. / n_contrasts)
 
 
-class Contrast(object):
+class Contrast:
     """ The contrast class handles the estimation of statistical contrasts
     on a given model: student (t) or Fisher (F).
     The important feature is that it supports addition,

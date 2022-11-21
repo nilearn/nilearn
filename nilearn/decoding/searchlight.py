@@ -88,7 +88,7 @@ def search_light(X, y, estimator, A, groups=None, scoring=None,
 
 
 @fill_doc
-class GroupIterator(object):
+class GroupIterator:
     """Group iterator
 
     Provides group of features for search_light loop

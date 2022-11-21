@@ -341,11 +341,11 @@ def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format):
     n_ticks = 5
     # ...unless we are dealing with integers with a small range
     # in this case, we reduce the number of ticks
-    if cbar_tick_format == "%i" and vmax - vmin < n_ticks:
+    if cbar_tick_format == "%i" and vmax - vmin < n_ticks - 1:
         ticks = np.arange(vmin, vmax + 1)
-        n_ticks = len(ticks)
     else:
-        ticks = np.linspace(vmin, vmax, n_ticks)
+        # remove duplicate ticks when vmin == vmax, or almost
+        ticks = np.unique(np.linspace(vmin, vmax, n_ticks))
     return ticks
 
 
@@ -848,7 +848,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
 
     if labels is None:
         labels = [None] * len(levels)
-    if not (len(labels) == len(levels) and len(colors) == len(labels)):
+    if not (len(levels) == len(labels) == len(colors)):
         raise ValueError('Levels, labels, and colors '
                          'argument need to be either the same length or None.')
 

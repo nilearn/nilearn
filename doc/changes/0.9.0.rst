@@ -103,7 +103,7 @@ Enhancements
 
 - Function :func:`~signal.clean` raises a warning when the user sets parameters ``detrend`` and ``standardize_confound`` to ``False``. The user is suggested to set one of those options to ``True``, or standardize/demean the confounds before using the function (:gh:`3003` by `Hao-Ting Wang`_).
 
-- The :doc:`contributing documentation</development>` and :doc:`maintenance</maintenance>` pages were improved, especially towards ways of contributing to the project which do not require to write code. The roles of the :ref:`triage` were defined more clearly with sections on issue :ref:`issue_labels` and issue :ref:`closing_policy` (:gh:`3010` by `Nicolas Gensollen`_).
+- The :doc:`contributing documentation</development>` and :doc:`maintenance</maintenance>` pages were improved, especially towards ways of contributing to the project which do not require to write code. The roles of the ``triage`` were defined more clearly with sections on issue :ref:`issue_labels` and issue :ref:`closing_policy` (:gh:`3010` by `Nicolas Gensollen`_).
 
 - It is now possible to provide custom :term:`HRF` models to :class:`~glm.first_level.FirstLevelModel`. The custom model should be defined as a function, or a list of functions, implementing the same API as Nilearn's usual models (see :func:`~glm.first_level.spm_hrf` for example). The example :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_hrf.py` was also modified to demo how to define custom :term:`HRF` models (:gh:`2942` by `Nicolas Gensollen`_).
 

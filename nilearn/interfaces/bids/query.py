@@ -79,7 +79,7 @@ def get_bids_files(
         List of file paths found.
 
     """
-    filters = filters if filters else []
+    filters = filters or []
     if sub_folder:
         files = os.path.join(main_path, 'sub-*', 'ses-*')
         if glob.glob(files):

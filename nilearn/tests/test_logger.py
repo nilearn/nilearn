@@ -36,7 +36,7 @@ def other_run():
     log("function other_run()", stack_level=100)
 
 
-class Run3(object):
+class Run3:
 
     def run3(self):
         log("method Test3")

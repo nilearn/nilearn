@@ -160,6 +160,8 @@
 
 .. _Myeong Seop Song: https://github.com/NeuroVR-Song
 
+.. _Natasha Clarke: https://github.com/clarkenj
+
 .. _Neelay Shah: https://github.com/NeelayS
 
 .. _Nicolas Gensollen: https://nicolasgensollen.github.io/
@@ -167,6 +169,8 @@
 .. _Oscar Esteban: https://github.com/oesteban
 
 .. _Óscar Nájera: https://github.com/Titan-C
+
+.. _Paul Bogdan: https://github.com/paulcbogdan
 
 .. _Paula Sanz-Leon: https://github.com/pausz
 

@@ -37,7 +37,7 @@ def design_matrix_light(
     """ Same as make_first_level_design_matrix,
     but only returns the computed matrix and associated name.
     """
-    fir_delays = fir_delays if fir_delays else [0]
+    fir_delays = fir_delays or [0]
     dmtx = make_first_level_design_matrix(frame_times, events, hrf_model,
                                           drift_model, high_pass, drift_order,
                                           fir_delays,
@@ -245,32 +245,6 @@ def test_design_matrix6():
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3)
     assert len(names) == 10
-
-
-def test_design_matrix7():
-    """
-    idem test_design_matrix1, but odd experimental paradigm;
-    code should raise an exception as condition names are not valid
-    pandas.DataFrame column names (and hence the computed design matrix
-    won't be able to call pd.eval when computing contrasts for instance).
-    """
-    tr = 1.0
-    frame_times = np.linspace(0, 127 * tr, 128)
-    conditions = [0, 0, 0, 1, 1, 1, 3, 3, 3]
-    durations = 1 * np.ones(9)
-    # no condition 'c2'
-    onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    events = pd.DataFrame({'trial_type': conditions,
-                           'onset': onsets,
-                           'duration': durations})
-    hrf_model = 'glover'
-
-    with pytest.raises(
-        ValueError,
-        match="At least one regressor name can't be used"
-    ):
-        design_matrix_light(frame_times, events, hrf_model=hrf_model,
-                            drift_model='polynomial', drift_order=3)
 
 
 def test_design_matrix8():

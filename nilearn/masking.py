@@ -337,6 +337,8 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.85,
         Default=0.85.
     %(connected)s
         Default=True.
+    %(opening)s
+        Default=2.
     exclude_zeros : :obj:`bool`, optional
         Consider zeros as missing values for the computation of the
         threshold. This option is useful if the images have been

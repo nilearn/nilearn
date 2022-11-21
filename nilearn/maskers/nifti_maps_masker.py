@@ -10,7 +10,7 @@ from nilearn import _utils, image
 from nilearn.maskers.base_masker import _filter_and_extract, BaseMasker
 
 
-class _ExtractionFunctor(object):
+class _ExtractionFunctor:
 
     func_name = 'nifti_maps_masker_extractor'
 

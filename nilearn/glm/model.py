@@ -15,7 +15,7 @@ from nilearn._utils.glm import positive_reciprocal
 inv_t_cdf = t_distribution.ppf
 
 
-class LikelihoodModelResults(object):
+class LikelihoodModelResults:
     """ Class to contain results from likelihood models.
 
     This is the class in which things like AIC, BIC, llf
@@ -343,7 +343,7 @@ class LikelihoodModelResults(object):
         return np.asarray(list(zip(lower, upper)))
 
 
-class TContrastResults(object):
+class TContrastResults:
     """Results from a t contrast of coefficients in a parametric model.
 
     The class does nothing.
@@ -367,7 +367,7 @@ class TContrastResults(object):
                 (self.effect, self.sd, self.t, self.df_den))
 
 
-class FContrastResults(object):
+class FContrastResults:
     """Results from an F contrast of coefficients in a parametric model.
 
     The class does nothing.
