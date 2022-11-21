@@ -8,10 +8,10 @@ Occasionally, some changes necessitate rebuilding the documentation from scratch
 
 Note that **Actions will always run full builds on main.**
 
-You can request a full build from a Pull Request at any time by including the tag "[circle full]" in your commit message. Note that this will trigger a full build of the documentation which usually takes around 90 minutes.
+You can request a full build from a Pull Request at any time by including the tag "[full doc]" in your commit message. Note that this will trigger a full build of the documentation which usually takes around 90 minutes.
 
 ```bash
-$ git commit -m "[circle full] request full build"
+$ git commit -m "[full doc] request full build"
 ```
 
 ## Documentation artifacts hosting and deployment on CircleCI
@@ -27,7 +27,7 @@ Note that you can request to download all datasets and ignore the cache at any t
 To run a full build and download all datasets, you would then combine both tags:
 
 ```bash
-$ git commit -m "[circle full][force download] request full build"
+$ git commit -m "[full doc][force download] request full build"
 ```
 
 ## Skip CI

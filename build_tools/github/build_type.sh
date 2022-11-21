@@ -1,6 +1,6 @@
 #!/bin/bash -exf
 
-if [ "$GITHUB_REF_NAME" == "main" ] || [[ $(cat gitlog.txt) == *"[circle full]"* ]]; then
+if [ "$GITHUB_REF_NAME" == "main" ] || [[ $(cat gitlog.txt) == *"[full doc]"* ]]; then
     echo "Doing a full build";
     echo html-strict > build.txt;
 else

@@ -1,5 +1,5 @@
 # Workflow to build the documentation. On pull requests, partial builds are run
-# except if "[circle full]" is defined in commit message. Full builds are
+# except if "[full doc]" is defined in commit message. Full builds are
 # always run on "main". This is done every time there is a push on "main"
 # and every night.
 name: Documentation builder
