@@ -78,7 +78,7 @@ jobs:
 
       # Restore data from cache, or set up caching if data not found or
       # [force download] is defined in commit message
-      - name: Determine force download
+      - name: Determine restore data
         run: |
           commit_msg=$(git log -2 --format=oneline);
           echo $commit_msg;
