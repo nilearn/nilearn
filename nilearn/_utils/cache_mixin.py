@@ -4,13 +4,8 @@ Mixin for cache with joblib
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import json
 import warnings
 import os
-import shutil
-from nilearn.version import _compare_version
-
-import nibabel
 
 from joblib import Memory
 
@@ -18,9 +13,6 @@ MEMORY_CLASSES = (Memory, )
 
 import nilearn
 from .helpers import stringify_path
-
-
-__CACHE_CHECKED = dict()
 
 
 def _check_memory(memory, verbose=0):
@@ -78,79 +70,6 @@ def _check_memory(memory, verbose=0):
 
         memory = Memory(location=cache_dir, verbose=verbose)
     return memory
-
-
-def _nibabel_versions_equal(versions, my_versions):
-    try:
-        return _compare_version(versions, '==', my_versions)
-    except TypeError:
-        return False
-
-
-def _safe_cache(memory, func, **kwargs):
-    """A wrapper for mem.cache that flushes the cache if the version
-    number of nibabel has changed.
-
-    """
-    try:
-        location = os.path.join(memory.location, 'joblib')
-    except AttributeError:
-        location = memory.location
-    except TypeError:
-        location = None
-
-    if location is None or location in __CACHE_CHECKED:
-        return memory.cache(func, **kwargs)
-
-    version_file = os.path.join(location, 'module_versions.json')
-
-    versions = dict()
-    if os.path.exists(version_file):
-        with open(version_file, 'r') as _version_file:
-            versions = json.load(_version_file)
-
-    # Keep only the major + minor version numbers
-    my_versions = {nibabel.__name__: nibabel.__version__}
-    if 'nibabel' in versions and not _nibabel_versions_equal(
-            versions['nibabel'], my_versions['nibabel']
-    ):
-        # Flush cache if version collision
-        if nilearn.CHECK_CACHE_VERSION:
-            warnings.warn("Incompatible cache in %s: "
-                          "different version of nibabel. Deleting "
-                          "the cache. Put nilearn.CHECK_CACHE_VERSION "
-                          "to false to avoid this behavior."
-                          % location)
-            try:
-                tmp_dir = (os.path.split(location)[:-1]
-                           + ('old_%i' % os.getpid(), ))
-                tmp_dir = os.path.join(*tmp_dir)
-                # We use rename + unlink to be more robust to race
-                # conditions
-                os.rename(location, tmp_dir)
-                shutil.rmtree(tmp_dir)
-            except OSError:
-                # Another process could have removed this dir
-                pass
-
-            try:
-                os.makedirs(location)
-            except OSError:
-                # File exists?
-                pass
-        else:
-            warnings.warn("Incompatible cache in %s: "
-                          "old version of nibabel." % location)
-            return memory.cache(func, **kwargs)
-
-    # Write json files if configuration is different
-    if versions != my_versions:
-        with open(version_file, 'w') as _version_file:
-            json.dump(my_versions, _version_file)
-
-    __CACHE_CHECKED[location] = True
-
-    return memory.cache(func, **kwargs)
 
 
 class _ShelvedFunc:
@@ -237,7 +156,7 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
                           stacklevel=2)
     else:
         memory = Memory(location=None, verbose=verbose)
-    cached_func = _safe_cache(memory, func, **kwargs)
+    cached_func = memory.cache(func, **kwargs)
     if shelve:
         cached_func = _ShelvedFunc(cached_func)
     return cached_func
