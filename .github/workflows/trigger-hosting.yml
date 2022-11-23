@@ -9,7 +9,7 @@ on:
 
 jobs:
   push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     # Run the job only if the "Documentation builder" workflow succeeded
     # Prevents this workflow from running on a fork.
     # To test this workflow on a fork remove the `github.repository == nilearn/nilearn` condition
