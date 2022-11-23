@@ -16,7 +16,6 @@ on:
 
 jobs:
   # Steps to build the documentation.
-  # First checks and restores data from cache if it exists.
   build_docs:
     # This prevents this workflow from running on a fork.
     # To test this workflow on a fork, uncomment the following line.
@@ -84,7 +83,7 @@ jobs:
           commit_msg=$(git log -2 --format=oneline);
           echo $commit_msg;
           if [[ $commit_msg == *"[force download]"* ]]; then
-            echo "All datasets will be downloaded as requested.";
+            echo "All datasets will be downloaded as requested (only for full builds).";
             echo "false" | tee restore.txt;
           else
             echo "Data cache will be used if available.";
