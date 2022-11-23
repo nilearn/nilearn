@@ -15,7 +15,7 @@ on:
     - cron: "0 6 * * *"
 
 jobs:
-  # Steps to download data and build docs.
+  # Steps to build the documentation.
   # First checks and restores data from cache if it exists.
   build_docs:
     # This prevents this workflow from running on a fork.
@@ -77,7 +77,7 @@ jobs:
         run: |
           ./build_tools/github/build_docs_dependencies.sh
 
-      # Restore data from cache or set up caching if data not found or
+      # Restore data from cache, or set up caching if data not found or
       # [force download] is defined in commit message
       - name: Determine force download
         run: |
@@ -259,14 +259,9 @@ jobs:
            nilearn_data/spm_multimodal_fmri
           key: v1-spm_multimodal_fmri-${{ hashFiles('week_num') }}
 
-      # Download data if not restored in previous steps, then
-      # run doc build
-      - name: Fetch and download nilearn data
-        id: download_data
-        run: |
-          source activate testenv
-          echo "Conda active env = $CONDA_DEFAULT_ENV";
-          ./build_tools/github/download_data.sh
+      # Run the doc build. If no data is restored in previous steps, the data
+      # will be downloaded during the build (this only applies for full builds;
+      # no data is downloaded for partial builds).
       - name: Find build type
         run: |
           ./build_tools/github/build_type.sh
@@ -294,6 +289,5 @@ jobs:
       - name: Note about build
         run: |
           if [[ "$(cat build.txt)" != "html-strict" ]]; then
-              echo "Partial build : Data is downloaded and cached only for first build of the week";
-              echo "Data is never cached if [force download] commit tag is used";
+              echo "Partial build : No data is cached";
           fi
