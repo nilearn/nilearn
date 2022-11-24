@@ -270,6 +270,8 @@ jobs:
         run: |
           echo "PATTERN = $(cat pattern.txt)"
           echo "BUILD = $(cat build.txt)"
+      # Set up and launch a virtual browser needed for one example to run
+      # without stalling the job. The example launches an html in the browser.
       - name: Set up display server for virtual browser
         run: |
           Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
@@ -288,5 +290,7 @@ jobs:
       - name: Note about build
         run: |
           if [[ "$(cat build.txt)" != "html-strict" ]]; then
-              echo "Partial build : No data is cached";
+              echo "Partial build : No data is downloaded or cached";
+          else
+              echo "Full build : Data is downloaded and cached if not restored from previous cache";
           fi
