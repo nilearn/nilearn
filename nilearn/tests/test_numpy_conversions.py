@@ -217,14 +217,14 @@ def test_as_ndarray():
 
     # different dtype
     arr1 = [0, 1, 2, 3]
-    arr2 = as_ndarray(arr1, dtype=np.float)
-    assert(arr2.dtype == np.float)
+    arr2 = as_ndarray(arr1, dtype=float)
+    assert(arr2.dtype == float)
     assert(not are_arrays_identical(arr1, arr2))
 
     # order specified
     arr1 = [[0, 1, 2, 3], [0, 1, 2, 3]]
     arr2 = as_ndarray(arr1, dtype=float, order="F")
-    assert(arr2.dtype == np.float)
+    assert(arr2.dtype == float)
     assert(arr2.flags["F_CONTIGUOUS"] and not arr2.flags["C_CONTIGUOUS"])
     assert(not are_arrays_identical(arr1[0], arr2[0]))
 
