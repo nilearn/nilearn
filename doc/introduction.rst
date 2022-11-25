@@ -122,7 +122,7 @@ For new-comers, we recommend going through the following examples in the suggest
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="A simple example showing how to load an existing Nifti file and use basic nilearn functionalities">
+    <div class="sphx-glr-thumbcontainer" tooltip="A simple example showing how to load an existing Nifti file and use basic nilearn functiona...">
 
 .. only:: html
 
@@ -301,14 +301,16 @@ from brain imaging with :ref:`supervised
 learning <decoding>` e.g. `[Mourao-Miranda 2012]
 <http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0029482>`_
 
-**Measuring generalization scores**
+**Information mapping**
 
-*Information mapping*: using the prediction accuracy of a classifier
+Using the prediction accuracy of a classifier
 to characterize relationships between brain images and stimuli. (e.g.
 :ref:`searchlight <searchlight>`) `[Kriegeskorte 2006]
 <http://www.pnas.org/content/103/10/3863.short>`_
 
-*Transfer learning*: measuring how much an estimator trained on one
+**Transfer learning**
+
+Measuring how much an estimator trained on one
 specific psychological process/task can predict the neural activity
 underlying another specific psychological process/task
 (e.g. discriminating left from
