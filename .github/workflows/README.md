@@ -1,6 +1,7 @@
 # Full and Partial doc builds now use GitHub Actions
 
-The purpose of this file is to provide some basic explanations on how users can configure documentation generation through commit messages.
+The purpose of this file is to provide some basic explanations of the workflow to build the documentation and how users can configure documentation generation through commit messages.
+This workflow configuration is based on what is done in [scikit-learn](https://github.com/scikit-learn/scikit-learn).
 
 On Pull Requests, Actions run "partial builds" by default which render all the rst files, but only build examples modified in the Pull Request. This saves a lot of time and resources when working on Pull Requests.
 
