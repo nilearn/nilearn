@@ -77,5 +77,5 @@ echo '--------------------------------------------------------------------------
 # The --diff argument has been removed from flake8:
 # https://github.com/PyCQA/flake8/issues/1760
 # Now flake8 will be run on entire files but only files that have been changed.
-git diff $COMMIT --name-only -z --diff-filter=d -- '*.py' | xargs -0 flake8
+git diff $COMMIT --name-only -z --diff-filter=d -- '*.py' | xargs -0 -r flake8
 echo -e "No problem detected by flake8\n"

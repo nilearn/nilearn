@@ -372,7 +372,7 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
     .. code-block:: bash
 
         COMMIT=$(git merge-base main @)
-        git diff $COMMIT --name-only -z --diff-filter=d -- '*.py' | xargs -0 flake8
+        git diff $COMMIT --name-only -z --diff-filter=d -- '*.py' | xargs -0 -r flake8
 
 4. commit your changes on this branch (don't forget to write tests!)
 
