@@ -425,7 +425,7 @@ If you wish to build documentation:
 
 6. Request the CI builds the full documentation from your branch::
 
-      git commit --allow-empty -m "[circle full] request full build"
+      git commit --allow-empty -m "[full doc] request full build"
 
 .. tip::
     When generating documentation locally, you can build only specific files
