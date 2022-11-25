@@ -171,8 +171,8 @@ def test_as_ndarray():
 
     # different dtype
     arr1 = np.memmap(filename, dtype='float32', mode='readwrite', shape=(5,))
-    arr2 = as_ndarray(arr1, dtype=np.int)
-    assert(arr2.dtype == np.int)
+    arr2 = as_ndarray(arr1, dtype=int)
+    assert(arr2.dtype == int)
     assert(not are_arrays_identical(arr1, arr2))
 
     # same dtype, explicitly provided: must copy
