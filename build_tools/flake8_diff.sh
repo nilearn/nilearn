@@ -74,7 +74,8 @@ echo -e '\nRunning flake8 on the diff in the range'\
      "($(git rev-list $COMMIT.. | wc -l) commit(s)):"
 echo '--------------------------------------------------------------------------------'
 
-# Conservative approach: diff without context so that code that was
-# not changed does not create failures
-git diff --unified=0 $COMMIT | flake8 --diff --show-source
+# The --diff argument has been removed from flake8:
+# https://github.com/PyCQA/flake8/issues/1760
+# Now flake8 will be run on entire files but only files that have been changed.
+git diff $COMMIT --name-only -z --diff-filter=d -- '*.py' | xargs -0 flake8
 echo -e "No problem detected by flake8\n"

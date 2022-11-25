@@ -363,16 +363,16 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
 .. admonition:: Recommendation
 
     To lint your code and verify PEP8 compliance, you can run
-    `flake8 <https://flake8.pycqa.org/en/latest/>`_ locally on the
-    changes you have made in your branch compared to the main branch.
+    `flake8 <https://flake8.pycqa.org/en/latest/>`_ locally on changed files
+    based on changes you have made in your branch compared to the main branch.
     To do this, find the latest common ancestor (commit) of your branch with
-    main and then get the diff between your working directory and this commit
-    and pipe it to flake8 by running:
+    main and then get the files with a diff between your working directory and
+    this commit and pipe it to flake8 by running:
 
     .. code-block:: bash
 
         COMMIT=$(git merge-base main @)
-        git diff $COMMIT | flake8 --diff
+        git diff $COMMIT --name-only -z --diff-filter=d -- '*.py' | xargs -0 flake8
 
 4. commit your changes on this branch (don't forget to write tests!)
 
