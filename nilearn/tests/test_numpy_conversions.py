@@ -81,36 +81,36 @@ def test_as_ndarray():
     # input dtype, input order, should copy, output dtype, output order, copied
     test_cases = [
         # no-op
-        (np.float, "C", False, None, None, False),
-        (np.float, "F", False, None, None, False),
+        (float, "C", False, None, None, False),
+        (float, "F", False, None, None, False),
 
         # simple copy
-        (np.float, "C", True, None, None, True),
-        (np.float, "F", True, None, None, True),
+        (float, "C", True, None, None, True),
+        (float, "F", True, None, None, True),
 
         # dtype provided, identical
-        (np.float, "C", False, np.float, None, False),
-        (np.float, "F", False, np.float, None, False),
+        (float, "C", False, float, None, False),
+        (float, "F", False, float, None, False),
 
         # dtype changed
-        (np.float, "C", False, np.float32, None, True),
-        (np.float, "F", False, np.float32, None, True),
+        (float, "C", False, np.float32, None, True),
+        (float, "F", False, np.float32, None, True),
 
         # dtype and order provided, but identical
-        (np.float, "C", False, np.float, "C", False),
-        (np.float, "F", False, np.float, "F", False),
+        (float, "C", False, float, "C", False),
+        (float, "F", False, float, "F", False),
 
         # order provided, unchanged
-        (np.float, "C", False, None, "C", False),
-        (np.float, "F", False, None, "F", False),
-        (np.float, "C", True, None, "C", True),
-        (np.float, "F", True, None, "F", True),
+        (float, "C", False, None, "C", False),
+        (float, "F", False, None, "F", False),
+        (float, "C", True, None, "C", True),
+        (float, "F", True, None, "F", True),
 
         # order provided, changed
-        (np.float, "C", False, None, "F", True),
-        (np.float, "F", False, None, "C", True),
-        (np.float, "C", True, None, "F", True),
-        (np.float, "F", True, None, "C", True),
+        (float, "C", False, None, "F", True),
+        (float, "F", False, None, "C", True),
+        (float, "C", True, None, "F", True),
+        (float, "F", True, None, "C", True),
 
         # Special case for int8 <-> bool conversion.
         (np.int8, "C", False, np.bool, None, False),
@@ -223,7 +223,7 @@ def test_as_ndarray():
 
     # order specified
     arr1 = [[0, 1, 2, 3], [0, 1, 2, 3]]
-    arr2 = as_ndarray(arr1, dtype=np.float, order="F")
+    arr2 = as_ndarray(arr1, dtype=float, order="F")
     assert(arr2.dtype == np.float)
     assert(arr2.flags["F_CONTIGUOUS"] and not arr2.flags["C_CONTIGUOUS"])
     assert(not are_arrays_identical(arr1[0], arr2[0]))

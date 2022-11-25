@@ -827,7 +827,7 @@ def test_resample_img_segmentation_fault():
 @pytest.mark.parametrize("dtype",
                          [np.int8, np.int16, np.int32,
                           np.uint8, np.uint16, np.uint32,
-                          np.float32, np.float64, np.float, '>i4', '<i4'])
+                          np.float32, np.float64, float, '>i4', '<i4'])
 def test_resampling_with_int_types_no_crash(dtype):
     affine = np.eye(4)
     data = np.zeros((2, 2, 2))
