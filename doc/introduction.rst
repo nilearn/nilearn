@@ -122,7 +122,7 @@ For new-comers, we recommend going through the following examples in the suggest
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="A simple example showing how to load an existing Nifti file and use basic nilearn functionaliti...">
+    <div class="sphx-glr-thumbcontainer" tooltip="A simple example showing how to load an existing Nifti file and use basic nilearn functionalities">
 
 .. only:: html
 
