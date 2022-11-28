@@ -298,6 +298,12 @@ At this point, we need to upload the binaries to GitHub and link them to the tag
 Build and deploy the documentation
 ----------------------------------
 
+Before building the documentation, make sure that the following LaTeX
+dependencies are installed on your system:
+    * dvipng
+    * texlive-latex-base
+    * texlive-latex-extra
+
 We now need to update the documentation:
 
 .. code-block:: bash
