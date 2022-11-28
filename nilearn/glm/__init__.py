@@ -1,7 +1,6 @@
 """
 Analysing fMRI data using GLMs.
 """
-from warnings import warn
 from nilearn.glm.contrasts import (
     compute_contrast,
     compute_fixed_effects,
