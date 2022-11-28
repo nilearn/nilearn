@@ -1261,12 +1261,19 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         height_ratios=height_ratios, hspace=0.0, wspace=0.0)
     axes = []
     for i, (mode, hemi) in enumerate(itertools.product(modes, hemis)):
-        bg_map = surf_mesh['sulc_%s' % hemi]
+        # Add sulc background map if mesh is not inflated
+        # or curv sign backgorund map otherwise
+        sulc_map = surf_mesh['sulc_%s' % hemi]
+        curv_map = load_surf_data(surf_mesh[f"curv_{hemi}"])
+        curv_sign_map = (np.sign(curv_map) + 1) / 4 + 0.25
+        bg_map = curv_sign_map if inflate else sulc_map
+        bg_map_rescale = False if inflate else True
         ax = fig.add_subplot(grid[i + len(hemis)], projection="3d")
         axes.append(ax)
         plot_surf_stat_map(surf[hemi], texture[hemi],
                            view=mode, hemi=hemi,
                            bg_map=bg_map,
+                           bg_map_rescale=bg_map_rescale,
                            axes=ax,
                            colorbar=False,  # Colorbar created externally.
                            vmax=vmax,
