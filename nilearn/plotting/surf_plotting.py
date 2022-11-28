@@ -1262,7 +1262,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     axes = []
     for i, (mode, hemi) in enumerate(itertools.product(modes, hemis)):
         # Add sulc background map if mesh is not inflated
-        # or curv sign backgorund map otherwise
+        # or curv sign background map otherwise
         sulc_map = surf_mesh['sulc_%s' % hemi]
         curv_map = load_surf_data(surf_mesh[f"curv_{hemi}"])
         curv_sign_map = (np.sign(curv_map) + 1) / 4 + 0.25
