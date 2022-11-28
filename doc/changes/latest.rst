@@ -24,6 +24,7 @@ Enhancements
 ------------
 
 - :func:`~signal.clean` imputes scrubbed volumes (defined through ``sample_masks``) with cubic spline function before applying butterworth filter (:gh:`3385` by `Hao-Ting Wang`_). 
+- Surface plotting methods now accept the ``bg_map_rescale`` parameter, which, among other things, allows to use curvature sign as a background map (:gh:`3173` by `Alexis Thual`_).
 
 Changes
 -------
