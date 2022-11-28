@@ -184,7 +184,7 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
         yield X[:, row]
 
 
-class _ExtractionFunctor(object):
+class _ExtractionFunctor:
 
     func_name = 'nifti_spheres_masker_extractor'
 

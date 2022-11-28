@@ -33,7 +33,7 @@ currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
 
 
-class MeshLikeObject(object):
+class MeshLikeObject:
     """Class with attributes coordinates and
     faces to be used for testing purposes.
     """
@@ -47,7 +47,8 @@ class MeshLikeObject(object):
     def faces(self):
         return self._faces
 
-class SurfaceLikeObject(object):
+
+class SurfaceLikeObject:
     """Class with attributes mesh and
     data to be used for testing purposes.
     """

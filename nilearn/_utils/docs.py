@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Functions related to the documentation.
 
 docdict contains the standard documentation entries

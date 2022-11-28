@@ -1,4 +1,3 @@
-# *- encoding: utf-8 -*-
 """
 nilearn version, required package versions, and utilities for checking
 """

@@ -117,7 +117,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
         my_map *= mask
         offset += [slice_x.start, slice_y.start, slice_z.start]
     # Testing min and max is faster than np.all(my_map == 0)
-    if (my_map.max() == 0) and (my_map.min() == 0):
+    if my_map.max() == my_map.min() == 0:
         warnings.warn(
             "Could not determine cut coords: "
             "All values were masked. "

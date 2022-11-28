@@ -824,18 +824,15 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     .. footbibliography::
 
     """
-    available_meshes = [
+    available_meshes = (
         "fsaverage3", "fsaverage4", "fsaverage5",
         "fsaverage6", "fsaverage7", "fsaverage",
-    ]
+    )
 
     # Call a dataset loader depending on the value of mesh
-    if (
-        mesh == "fsaverage3"
-        or mesh == "fsaverage4"
-        or mesh == "fsaverage6"
-        or mesh == "fsaverage7"
-        or mesh == "fsaverage"
+    if mesh in (
+        "fsaverage3", "fsaverage4",
+        "fsaverage6", "fsaverage7", "fsaverage",
     ):
         # rename mesh to "fsaverage" to download it once
         # regardless of whether mesh equals "fsaverage" or "fsaverage7"

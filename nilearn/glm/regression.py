@@ -53,7 +53,7 @@ def _deprecation_warning(old_param,
     return _warned_func
 
 
-class OLSModel(object):
+class OLSModel:
     """ A simple ordinary least squares model.
 
     Parameters

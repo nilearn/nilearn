@@ -37,7 +37,7 @@ def design_matrix_light(
     """ Same as make_first_level_design_matrix,
     but only returns the computed matrix and associated name.
     """
-    fir_delays = fir_delays if fir_delays else [0]
+    fir_delays = fir_delays or [0]
     dmtx = make_first_level_design_matrix(frame_times, events, hrf_model,
                                           drift_model, high_pass, drift_order,
                                           fir_delays,

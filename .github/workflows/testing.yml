@@ -26,7 +26,7 @@ jobs:
   min_requirements:
     needs: check_skip
     if: ${{ needs.check_skip.outputs.skip == 'false' }}
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-20.04"
     name: Python 3.6, minimal requirements without Matplotlib
     defaults:
       run:
@@ -58,7 +58,7 @@ jobs:
   min_requirements_matplotlib:
     needs: check_skip
     if: ${{ needs.check_skip.outputs.skip == 'false' }}
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-20.04"
     name: Python 3.6, minimal requirements with Matplotlib
     defaults:
       run:

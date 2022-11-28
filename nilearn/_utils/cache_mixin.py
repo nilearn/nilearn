@@ -156,7 +156,7 @@ def _safe_cache(memory, func, **kwargs):
     return memory.cache(func, **kwargs)
 
 
-class _ShelvedFunc(object):
+class _ShelvedFunc:
     """Work around for Python 2, for which pickle fails on instance method"""
     def __init__(self, func):
         self.func = func
@@ -246,7 +246,7 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
     return cached_func
 
 
-class CacheMixin(object):
+class CacheMixin:
     """Mixin to add caching to a class.
 
     This class is a thin layer on top of joblib.Memory, that mainly adds a
