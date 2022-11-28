@@ -193,25 +193,6 @@ def test_mask_strategy_errors():
         mask.fit(imgs)
 
 
-@pytest.mark.parametrize('strategy',
-                         [f'{p}-template' for p in
-                          ['whole-brain', 'gm', 'wm']])
-def test_compute_multi_gray_matter_mask(strategy):
-    imgs = _get_random_imgs((9, 9, 5), 2)
-    masker = MultiNiftiMasker(mask_strategy=strategy,
-                              mask_args={'opening': 1})
-    masker.fit(imgs)
-    # Check that the order of the images does not change the output
-    masker2 = MultiNiftiMasker(mask_strategy=strategy,
-                               mask_args={'opening': 1})
-    masker2.fit(imgs[::-1])
-    mask_ref = np.zeros((9, 9, 5), dtype='int8')
-    np.testing.assert_array_equal(get_data(masker.mask_img_),
-                                  mask_ref)
-    np.testing.assert_array_equal(get_data(masker2.mask_img_),
-                                  mask_ref)
-
-
 def test_dtype():
     data = np.zeros((9, 9, 9), dtype=np.float64)
     data[2:-2, 2:-2, 2:-2] = 10
