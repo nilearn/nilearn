@@ -282,7 +282,7 @@ environment that greatly facilitates debugging and visualisation.
 Besides, you can find help on :neurostars:`neurostars <>` for questions
 related to ``nilearn`` and to computational neuroscience in general.
 Finally, the ``nilearn`` team organizes weekly :ref:`office hours <quickstart>`.
-We can also be reached on :ref:`github <https://github.com/nilearn/nilearn/issues>`
+We can also be reached on :nilearn-gh:`github <issues>`
 in case you find a bug.
 
 
