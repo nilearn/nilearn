@@ -52,7 +52,7 @@ os.environ.setdefault("KMP_INIT_AT_FORK", "FALSE")
 
 def _py36_deprecation_warning():
     py36_warning = ("Python 3.6 support is deprecated and will be removed in "
-                    "release 0.10 of Nilearn. Consider switching to "
+                    "release 0.11 of Nilearn. Consider switching to "
                     "Python 3.8 or 3.9.")
     warnings.filterwarnings('once', message=py36_warning)
     warnings.warn(message=py36_warning,
