@@ -579,66 +579,6 @@ def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
     return new_img_like(target_img, mask, affine)
 
 
-@deprecated("Function 'compute_multi_gray_matter_mask' has been renamed to "
-            "'compute_multi_brain_mask' and 'compute_multi_gray_matter_mask' "
-            "will be removed in release 0.10.0")
-@_utils.fill_doc
-def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
-                                   connected=True, opening=2,
-                                   memory=None, verbose=0, n_jobs=1, **kwargs):
-    """Compute a mask corresponding to the gray matter part of the brain for
-    a list of images.
-
-    The gray matter part is calculated through the resampling of MNI152
-    template gray matter mask onto the target image
-
-    Parameters
-    ----------
-    target_imgs : :obj:`list` of Niimg-like object
-        See :ref:`extracting_data`.
-        Images used to compute the mask. 3D and 4D images are accepted.
-
-        .. note::
-            The images in this list must be of same shape and affine.
-            The mask is calculated with the first element of the list
-            for only the shape/affine of the image is used for this
-            masking strategy.
-
-    threshold : :obj:`float`, optional
-        The value under which the :term:`MNI` template is cut off.
-        Default=0.5.
-    %(connected)s
-        Default=True.
-    %(opening)s
-        Default=2.
-    %(memory)s
-    %(verbose0)s
-    %(n_jobs)s
-
-        .. note::
-            Argument not used but kept to fit the API.
-
-    **kwargs : optional arguments
-        arguments such as 'target_affine' are used in the call of other
-        masking strategies, which then would raise an error for this function
-        which does not need such arguments.
-
-    Returns
-    -------
-    mask : :class:`nibabel.nifti1.Nifti1Image`
-        The brain mask (3D image).
-
-    See also
-    --------
-    nilearn.masking.compute_brain_mask
-    """
-    return compute_multi_brain_mask(target_imgs=target_imgs,
-                                    threshold=threshold, connected=connected,
-                                    opening=opening, memory=memory,
-                                    verbose=verbose, n_jobs=n_jobs,
-                                    mask_type='whole-brain', **kwargs)
-
-
 @_utils.fill_doc
 def compute_multi_brain_mask(target_imgs, threshold=.5, connected=True,
                              opening=2, memory=None, verbose=0, n_jobs=1,
