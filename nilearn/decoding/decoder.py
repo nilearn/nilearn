@@ -54,7 +54,7 @@ SUPPORTED_ESTIMATORS = dict(
     ridge_classifier=RidgeClassifierCV(),
     ridge_regressor=RidgeCV(),
     ridge=RidgeCV(),
-    svr=SVR(kernel='linear', max_iter=1000),
+    svr=SVR(kernel='linear', max_iter=10000),
     dummy_classifier=DummyClassifier(strategy='stratified',
                                      random_state=0),
     dummy_regressor=DummyRegressor(strategy='mean'),
