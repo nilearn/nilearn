@@ -33,3 +33,4 @@ Changes
 - Numpy deprecated type aliases are replaced by equivalent builtin types (:gh:`3422` by `Yasmin Mzayek`_).
 - Function ``nilearn.masking.compute_multi_gray_matter_mask`` has been removed
   since it has been deprecated and replaced by :func:`~masking.compute_multi_brain_mask` (:gh:`3427` by `Yasmin Mzayek`_).
+- :mod:`~nilearn.glm` will no longer warn that the module is experimental (:gh:`3424` by `Yasmin Mzayek`_).
