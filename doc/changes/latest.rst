@@ -19,7 +19,7 @@ Fixes
 - Change the order of applying ``sample_masks`` in :func:`~signal.clean` based on different filtering options (:gh:`3385` by `Hao-Ting Wang`_).
 - When using cosine filter and ``sample_masks`` is used, :func:`~signal.clean` generates the cosine discrete regressors using the full time series (:gh:`3385` by `Hao-Ting Wang`_).
 - Description of the ``opening`` parameter added to ``compute_multi_epi_mask`` docs (:gh:`3412` by `Natasha Clarke`_).
-- Fix display of colorbar in matrix plots which was overlapping in plt.subplots (:gh:`3403` by `Raphael Meudec`_).
+- Fix display of colorbar in matrix plots. Colorbar was overlapping in :func:`~matplotlib.pyplot.subplots` due to a hardcoded adjustment value in the subplot (:gh:`3403` by `Raphael Meudec`_).
 
 Enhancements
 ------------
