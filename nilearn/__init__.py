@@ -61,7 +61,7 @@ def _py37_deprecation_warning():
 
 
 def _python_deprecation_warnings():
-    if sys.version_info.major == 3 and sys.version_info.minor == 6:
+    if sys.version_info.major == 3 and sys.version_info.minor == 7:
         _py37_deprecation_warning()
 
 
