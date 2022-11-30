@@ -125,21 +125,6 @@ def test_butterworth():
     # single timeseries
     data = rng.standard_normal(size=n_samples)
     data_original = data.copy()
-    '''
-    May be only on py3.5:
-    Bug in scipy 1.1.0 generates an unavoidable FutureWarning.
-    (More info: https://github.com/scipy/scipy/issues/9086)
-    The number of warnings generated is overwhelming TravisCI's log limit,
-     causing it to fail tests.
-     This hack prevents that and will be removed in future.
-    '''
-    buggy_scipy = (
-        _compare_version(scipy.__version__, '<', '1.2')
-        and _compare_version(scipy.__version__, '>', '1.0')
-    )
-    if buggy_scipy:
-        warnings.simplefilter('ignore')
-    ''' END HACK '''
     out_single = nisignal.butterworth(data, sampling,
                                       low_pass=low_pass, high_pass=high_pass,
                                       copy=True)
