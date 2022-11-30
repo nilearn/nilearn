@@ -240,7 +240,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         Background image to be plotted on the mesh underneath the
         surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
-        If 'auto', the sulcal depth map given in `sulf_mesh`
+        If 'auto', the sulcal depth map given in `surf_mesh`
         will be used as background image.
         Default="auto".
 
