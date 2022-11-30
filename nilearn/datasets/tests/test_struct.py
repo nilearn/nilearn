@@ -148,8 +148,8 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker, legacy_format):
 
 def test_load_mni152_template():
     # All subjects
-    template_nii_1mm = struct.load_mni152_template(resolution=1)
-    template_nii_2mm = struct.load_mni152_template()
+    template_nii_1mm = struct.load_mni152_template()
+    template_nii_2mm = struct.load_mni152_template(resolution=2)
     assert template_nii_1mm.shape == (197, 233, 189)
     assert template_nii_2mm.shape == (99, 117, 95)
     assert template_nii_1mm.header.get_zooms() == (1.0, 1.0, 1.0)
@@ -158,8 +158,8 @@ def test_load_mni152_template():
 
 def test_load_mni152_gm_template():
     # All subjects
-    gm_template_nii_1mm = struct.load_mni152_gm_template(resolution=1)
-    gm_template_nii_2mm = struct.load_mni152_gm_template()
+    gm_template_nii_1mm = struct.load_mni152_gm_template()
+    gm_template_nii_2mm = struct.load_mni152_gm_template(resolution=2)
     assert gm_template_nii_1mm.shape == (197, 233, 189)
     assert gm_template_nii_2mm.shape == (99, 117, 95)
     assert gm_template_nii_1mm.header.get_zooms() == (1.0, 1.0, 1.0)
@@ -168,8 +168,8 @@ def test_load_mni152_gm_template():
 
 def test_load_mni152_wm_template():
     # All subjects
-    wm_template_nii_1mm = struct.load_mni152_wm_template(resolution=1)
-    wm_template_nii_2mm = struct.load_mni152_wm_template()
+    wm_template_nii_1mm = struct.load_mni152_wm_template()
+    wm_template_nii_2mm = struct.load_mni152_wm_template(resolution=2)
     assert wm_template_nii_1mm.shape == (197, 233, 189)
     assert wm_template_nii_2mm.shape == (99, 117, 95)
     assert wm_template_nii_1mm.header.get_zooms() == (1.0, 1.0, 1.0)
@@ -177,8 +177,8 @@ def test_load_mni152_wm_template():
 
 
 def test_load_mni152_brain_mask():
-    brain_mask_1mm = struct.load_mni152_brain_mask(resolution=1)
-    brain_mask_2mm = struct.load_mni152_brain_mask()
+    brain_mask_1mm = struct.load_mni152_brain_mask()
+    brain_mask_2mm = struct.load_mni152_brain_mask(resolution=2)
     assert isinstance(brain_mask_1mm, nibabel.Nifti1Image)
     assert isinstance(brain_mask_2mm, nibabel.Nifti1Image)
     # standard MNI template shape
@@ -187,8 +187,8 @@ def test_load_mni152_brain_mask():
 
 
 def test_load_mni152_gm_mask():
-    gm_mask_1mm = struct.load_mni152_gm_mask(resolution=1)
-    gm_mask_2mm = struct.load_mni152_gm_mask()
+    gm_mask_1mm = struct.load_mni152_gm_mask()
+    gm_mask_2mm = struct.load_mni152_gm_mask(resolution=2)
     assert isinstance(gm_mask_1mm, nibabel.Nifti1Image)
     assert isinstance(gm_mask_2mm, nibabel.Nifti1Image)
     # standard MNI template shape
@@ -197,8 +197,8 @@ def test_load_mni152_gm_mask():
 
 
 def test_load_mni152_wm_mask():
-    wm_mask_1mm = struct.load_mni152_wm_mask(resolution=1)
-    wm_mask_2mm = struct.load_mni152_wm_mask()
+    wm_mask_1mm = struct.load_mni152_wm_mask()
+    wm_mask_2mm = struct.load_mni152_wm_mask(resolution=2)
     assert isinstance(wm_mask_1mm, nibabel.Nifti1Image)
     assert isinstance(wm_mask_2mm, nibabel.Nifti1Image)
     # standard MNI template shape
