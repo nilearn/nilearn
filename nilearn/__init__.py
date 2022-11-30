@@ -53,7 +53,7 @@ os.environ.setdefault("KMP_INIT_AT_FORK", "FALSE")
 def _py37_deprecation_warning():
     py37_warning = ("Python 3.7 support is deprecated and will be removed in "
                     "release 0.12 of Nilearn. Consider switching to "
-                    "Python 3.8 or 3.9.")
+                    "Python 3.9 or 3.10.")
     warnings.filterwarnings('once', message=py37_warning)
     warnings.warn(message=py37_warning,
                   category=FutureWarning,
