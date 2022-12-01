@@ -903,15 +903,13 @@ def permuted_ols(
             )
 
             if two_sided_test:
-                # Label positive and negative clusters separately
-                n_positive_clusters = np.max(labeled_arr3d)
+                # Add negative cluster labels
                 temp_labeled_arr3d, _ = label(
                     scores_original_data_3d < -threshold_t,
                     bin_struct,
                 )
-                temp_labeled_arr3d[
-                    temp_labeled_arr3d > threshold_t
-                ] += n_positive_clusters
+                n_negative_clusters = np.max(temp_labeled_arr3d) 
+                labeled_arr3d[labeled_arr3d > 0] += n_negative_clusters
                 labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
                 del temp_labeled_arr3d
 
