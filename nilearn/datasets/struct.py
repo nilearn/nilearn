@@ -196,8 +196,7 @@ def load_mni152_template(resolution=None):
 
     """
 
-    if resolution is None:
-        resolution = 1
+    resolution = resolution or 1
 
     brain_template = check_niimg(MNI152_FILE_PATH)
 
@@ -246,8 +245,7 @@ def load_mni152_gm_template(resolution=None):
 
     """
 
-    if resolution is None:
-        resolution = 1
+    resolution = resolution or 1
 
     gm_template = check_niimg(GM_MNI152_FILE_PATH)
 
@@ -296,8 +294,7 @@ def load_mni152_wm_template(resolution=None):
 
     """
 
-    if resolution is None:
-        resolution = 1
+    resolution = resolution or 1
 
     wm_template = check_niimg(WM_MNI152_FILE_PATH)
 
@@ -352,8 +349,7 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
 
     """
 
-    if resolution is None:
-        resolution = 1
+    resolution = resolution or 1
 
     # Load MNI template
     target_img = load_mni152_template(resolution=resolution)
@@ -400,8 +396,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     """
 
-    if resolution is None:
-        resolution = 1
+    resolution = resolution or 1
 
     # Load MNI template
     gm_target = load_mni152_gm_template(resolution=resolution)
@@ -453,8 +448,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     """
 
-    if resolution is None:
-        resolution = 1
+    resolution = resolution or 1
 
     # Load MNI template
     wm_target = load_mni152_wm_template(resolution=resolution)
