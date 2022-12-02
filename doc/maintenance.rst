@@ -325,7 +325,7 @@ from source, for example:
     make
     make install
 
-See available linux distributions of texlive-latex-base and texlive-latex-base:
+See available linux distributions of texlive-latex-base and texlive-latex-extra:
 
 - https://pkgs.org/search/?q=texlive-latex-base
 - https://pkgs.org/search/?q=texlive-latex-extra
