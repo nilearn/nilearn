@@ -595,19 +595,26 @@ def test_tfce_smoke(random_state=0):
 
 def test_cluster_level_parameters_smoke(random_state=0):
     """Test combinations of parameters related to cluster-level inference."""
+    import random
     import nibabel as nib
     from nilearn.maskers import NiftiMasker
 
+    random.seed(random_state)
+
     # create design
     target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
-    target_var = np.hstack((  # corresponds to 3 x 3 x 3 x 10 niimg
-        target_var1,  # voxel 1 has positive effect
-        - target_var1,  # voxel 2 has negative effect
-        np.random.random((10, 25)),  # 25 remaining voxels
+    voxel_vars = np.hstack(( 
+        -target_var1, # negative effect
+        target_var1, # positive effect
+        np.random.random((10, 1)), # random voxel
     ))
+
+    columns = np.arange(0, voxel_vars.shape[1])
+    chosen_columns = random.choices(columns, k=125, weights=[1, 1, 5]) # create 125 voxels
+    target_var = voxel_vars[:, chosen_columns]  # corresponds to 5 x 5 x 5 x 10 niimg
     tested_var = np.arange(0, 20, 2)
 
-    mask_img = nib.Nifti1Image(np.ones((3, 3, 3)), np.eye(4))
+    mask_img = nib.Nifti1Image(np.ones((5, 5, 5)), np.eye(4))
     masker = NiftiMasker(mask_img)
     masker.fit(mask_img)
 
