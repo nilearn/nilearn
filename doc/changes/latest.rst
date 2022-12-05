@@ -39,3 +39,13 @@ Changes
 - :mod:`~nilearn.glm` will no longer warn that the module is experimental (:gh:`3424` by `Yasmin Mzayek`_).
 - Python ``3.6`` is no longer supported. Support for Python ``3.7`` is deprecated and will be removed in release ``0.12`` (:gh:`3429` by `Yasmin Mzayek`_).
 - The function ``_safe_cache`` is removed because it was deemed outdated and not necessary anymore (:gh:`3375` by `Yasmin Mzayek`_).
+- Minimum supported versions of packages have been bumped up:
+
+    * Numpy -- v1.19.0
+    * SciPy -- v1.6.0
+    * Scikit-learn -- v1.0.0
+    * Nibabel -- v3.2.0
+    * Pandas -- v1.1.5
+    * Joblib -- v1.0.0
+
+  (:gh:`3440` by `Yasmin Mzayek`_).
