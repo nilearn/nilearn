@@ -26,6 +26,7 @@ Enhancements
 
 - :func:`~signal.clean` imputes scrubbed volumes (defined through ``sample_masks``) with cubic spline function before applying butterworth filter (:gh:`3385` by `Hao-Ting Wang`_). 
 - As part of making the User Guide more user-friendly, the introduction was reworked (:gh:`3380` by `Alexis Thual`_)
+- Parameter ``sample_masks`` in :func:`~signal.clean` and masker functions accept binary mask (:gh:`3439 by `Hao-Ting Wang`_). 
 
 Changes
 -------
