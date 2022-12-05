@@ -27,6 +27,7 @@ Enhancements
 
 - :func:`~signal.clean` imputes scrubbed volumes (defined through ``sample_masks``) with cubic spline function before applying butterworth filter (:gh:`3385` by `Hao-Ting Wang`_). 
 - Surface plotting methods now accept the ``bg_map_rescale`` parameter, which, among other things, allows to use curvature sign as a background map (:gh:`3173` by `Alexis Thual`_).
+- Fetcher :func:`nilearn.datasets.fetch_surf_fsaverage` now provides attributes `flat_{left, right}` for all fsaverage resolutions, which can prove useful for plotting maps (:gh:`3450` by `Alexis Thual_`).
 - As part of making the User Guide more user-friendly, the introduction was reworked (:gh:`3380` by `Alexis Thual`_)
 - Added instructions for maintainers to make sure LaTeX dependencies are installed before building and deploying the stable docs (:gh:`3426` by `Yasmin Mzayek`_).
 
