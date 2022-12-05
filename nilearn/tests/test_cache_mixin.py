@@ -45,51 +45,6 @@ def test_check_memory():
             assert memory, Memory
 
 
-def test__safe_cache_dir_creation():
-    # Test the _safe_cache function that is supposed to flush the
-    # cache if the nibabel version changes
-    with tempfile.TemporaryDirectory() as temp_dir:
-        mem = Memory(location=temp_dir)
-        version_file = os.path.join(temp_dir, 'joblib', 'module_versions.json')
-        assert not os.path.exists(version_file)
-        # First test that a version file get created
-        cache_mixin._safe_cache(mem, f)
-        assert os.path.exists(version_file)
-        # Test that it does not get recreated during the same session
-        os.unlink(version_file)
-        cache_mixin._safe_cache(mem, f)
-        assert not os.path.exists(version_file)
-
-
-def test__safe_cache_flush():
-    # Test the _safe_cache function that is supposed to flush the
-    # cache if the nibabel version changes
-    with tempfile.TemporaryDirectory() as temp_dir:
-        mem = Memory(location=temp_dir)
-        version_file = os.path.join(temp_dir, 'joblib', 'module_versions.json')
-        # Create an mock version_file with old module versions
-        with open(version_file, 'w') as f:
-            json.dump({"nibabel": "0.0"}, f)
-        # Create some store structure
-        nibabel_dir = os.path.join(temp_dir, 'joblib', 'nibabel_')
-        os.makedirs(nibabel_dir)
-
-        # First turn off version checking
-        nilearn.CHECK_CACHE_VERSION = False
-        cache_mixin._safe_cache(mem, f)
-        assert os.path.exists(nibabel_dir)
-
-        # Second turn on version checking
-        nilearn.CHECK_CACHE_VERSION = True
-        # Make sure that the check will run again
-        cache_mixin.__CACHE_CHECKED = {}
-        with open(version_file, 'w') as f:
-            json.dump({"nibabel": "0.0"}, f)
-        cache_mixin._safe_cache(mem, f)
-        assert os.path.exists(version_file)
-        assert not os.path.exists(nibabel_dir)
-
-
 def test_cache_memory_level():
     with tempfile.TemporaryDirectory() as temp_dir:
         joblib_dir = Path(

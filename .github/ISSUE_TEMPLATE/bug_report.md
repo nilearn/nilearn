@@ -20,6 +20,9 @@ Nilearn version:
 
 ### Steps and code to reproduce bug
 
+<!-- Please ensure the code is a minimal runnable example using Nilearn data to showcase it. -->
+<!-- https://stackoverflow.com/help/minimal-reproducible-example -->
+
 ```python
 
 ```
