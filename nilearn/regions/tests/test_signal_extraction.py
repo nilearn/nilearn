@@ -413,7 +413,7 @@ def test__trim_maps():
 
 
 @pytest.mark.parametrize('target_dtype',
-                         (np.float, np.float32, np.float64, np.int, np.uint),
+                         (float, np.float32, np.float64, int, np.uint),
                          )
 def test_img_to_signals_labels_non_float_type(target_dtype):
     fake_fmri_data = (

@@ -327,7 +327,7 @@ def positive_reciprocal(X):
     Returns
     -------
     rX : array
-       Array of same shape as `X`, dtype np.float, with values set to
+       Array of same shape as `X`, dtype float, with values set to
        1/X where X > 0, 0 otherwise.
 
     """

@@ -191,6 +191,8 @@ html_theme_options = {
         "admonition-title-font-size": "100%",
         "color-announcement-background": "#FBB360",
         "color-announcement-text": "#111418",
+        "color-admonition-title--note": "#448aff",
+        "color-admonition-title-background--note": "#448aff10",
     },
 }
 
@@ -339,7 +341,7 @@ latex_show_urls = 'footnote'
 
 trim_doctests_flags = True
 
-_python_doc_base = 'https://docs.python.org/3.8'
+_python_doc_base = 'https://docs.python.org/3.9'
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {

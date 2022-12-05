@@ -507,7 +507,7 @@ def test_tfce_smoke(random_state=0):
 
     # tfce is True, but output_type is "legacy".
     # raise a warning, and get a dictionary.
-    with pytest.warns(match="Overriding."):
+    with pytest.warns(UserWarning, match="Overriding."):
         out = permuted_ols(
             tested_var,
             target_var,
