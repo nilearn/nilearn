@@ -49,3 +49,4 @@ Changes
     * Joblib -- v1.0.0
 
   (:gh:`3440` by `Yasmin Mzayek`_).
+- In release ``0.10.0`` the default resolution for loaded MNI152 templates will be 1mm instead of 2mm (:gh:`3433` by `Yasmin Mzayek`_).
