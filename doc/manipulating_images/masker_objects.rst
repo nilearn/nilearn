@@ -325,6 +325,10 @@ is explained in details in :ref:`resampling`.
 Inverse transform: unmasking data
 ---------------------------------
 
+.. note::
+
+  Inverse transform only performs spatial unmasking. 
+
 Once voxel signals have been processed, the result can be visualized as
 images after unmasking (masked-reduced data transformed back into
 the original whole-brain space). This step is present in many
