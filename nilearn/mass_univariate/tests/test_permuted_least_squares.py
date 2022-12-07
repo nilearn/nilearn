@@ -598,7 +598,7 @@ def test_cluster_level_parameters_smoke(random_state=0):
     import nibabel as nib
     from nilearn.maskers import NiftiMasker
 
-    rng = np.random.RandomState(0)
+    rng = np.random.RandomState(random_state)
 
     # create design
     target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
@@ -609,7 +609,7 @@ def test_cluster_level_parameters_smoke(random_state=0):
     ))
 
     columns = np.arange(0, voxel_vars.shape[1])
-    chosen_columns = random.choices(columns, k=125, weights=[1, 1, 5]) # create 125 voxels
+    chosen_columns = np.random.choice(columns, size=125, p=[0.1, 0.1, 0.8]) # create 125 voxels
     target_var = voxel_vars[:, chosen_columns]  # corresponds to 5 x 5 x 5 x 10 niimg
     tested_var = np.arange(0, 20, 2)
 
