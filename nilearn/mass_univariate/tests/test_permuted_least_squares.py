@@ -598,8 +598,7 @@ def test_cluster_level_parameters_smoke(random_state=0):
     import nibabel as nib
     from nilearn.maskers import NiftiMasker
 
-    random.seed(random_state)
-    np.random.seed(random_state)
+    rng = np.random.RandomState(0)
 
     # create design
     target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
