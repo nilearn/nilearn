@@ -603,9 +603,9 @@ def test_cluster_level_parameters_smoke(random_state=0):
     # create design
     target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
     voxel_vars = np.hstack((
-        -target_var1, # negative effect
-        target_var1, # positive effect
-        np.random.random((10, 1)), # random voxel
+        -target_var1,  # negative effect
+        target_var1,  # positive effect
+        rng.random((10, 1)),  # random voxel
     ))
 
     columns = np.arange(0, voxel_vars.shape[1])
