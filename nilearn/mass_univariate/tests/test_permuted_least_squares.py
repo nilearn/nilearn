@@ -595,7 +595,6 @@ def test_tfce_smoke(random_state=0):
 
 def test_cluster_level_parameters_smoke(random_state=0):
     """Test combinations of parameters related to cluster-level inference."""
-    import random
     import nibabel as nib
     from nilearn.maskers import NiftiMasker
 
