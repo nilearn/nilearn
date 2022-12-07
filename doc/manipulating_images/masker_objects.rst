@@ -327,7 +327,8 @@ Inverse transform: unmasking data
 
 .. note::
 
-  Inverse transform only performs spatial unmasking. 
+  Inverse transform only performs spatial unmasking.
+  The data is only brought back into either a 3D or 4D represnetaion.
 
 Once voxel signals have been processed, the result can be visualized as
 images after unmasking (masked-reduced data transformed back into
