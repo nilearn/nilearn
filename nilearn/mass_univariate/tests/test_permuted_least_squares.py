@@ -609,8 +609,10 @@ def test_cluster_level_parameters_smoke(random_state=0):
     ))
 
     columns = np.arange(0, voxel_vars.shape[1])
-    chosen_columns = np.random.choice(columns, size=125, p=[0.1, 0.1, 0.8]) # create 125 voxels
-    target_var = voxel_vars[:, chosen_columns]  # corresponds to 5 x 5 x 5 x 10 niimg
+    # create 125 voxels
+    chosen_columns = rng.choice(columns, size=125, p=[0.1, 0.1, 0.8])
+    # corresponds to 5 x 5 x 5 x 10 niimg
+    target_var = voxel_vars[:, chosen_columns]
     tested_var = np.arange(0, 20, 2)
 
     mask_img = nib.Nifti1Image(np.ones((5, 5, 5)), np.eye(4))
