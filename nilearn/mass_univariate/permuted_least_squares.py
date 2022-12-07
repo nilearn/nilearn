@@ -908,7 +908,7 @@ def permuted_ols(
                     scores_original_data_3d < -threshold_t,
                     bin_struct,
                 )
-                n_negative_clusters = np.max(temp_labeled_arr3d) 
+                n_negative_clusters = np.max(temp_labeled_arr3d)
                 labeled_arr3d[labeled_arr3d > 0] += n_negative_clusters
                 labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
                 del temp_labeled_arr3d
