@@ -242,7 +242,9 @@ Changes log entries in doc/changes/latest.rst should adhere to the following con
 
 Example entry:
 
-- Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
+.. code-block:: rst
+
+    - Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
   
 Coding Style
 -------------
