@@ -306,7 +306,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                                         )
 
     def inverse_transform(self, X):
-        """ Transform the 2D data matrix back to an image in brain space.
+        """ Transform the 2D data matrix back to an image in brain space, only performs spatial unmasking.
 
         Parameters
         ----------
