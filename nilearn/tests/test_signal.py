@@ -770,19 +770,35 @@ def test_sample_mask():
     sample_mask = np.arange(signals.shape[0])
     scrub_index = [2, 3, 6, 7, 8, 30, 31, 32]
     sample_mask = np.delete(sample_mask, scrub_index)
+    sample_mask_binary = np.full(signals.shape[0], True)
+    sample_mask_binary[scrub_index] = False
 
     scrub_clean = clean(signals, confounds=confounds, sample_mask=sample_mask)
     assert scrub_clean.shape[0] == sample_mask.shape[0]
 
+    # test the binary mask
+    scrub_clean_bin = clean(signals, confounds=confounds,
+                            sample_mask=sample_mask_binary)
+    np.testing.assert_equal(scrub_clean_bin, scrub_clean)
+
     # list of sample_mask for each run
     runs = np.ones(signals.shape[0])
-    runs[0:signals.shape[0] // 2] = 0
+    runs[:signals.shape[0] // 2] = 0
     sample_mask_sep = [np.arange(20), np.arange(20)]
     scrub_index = [[6, 7, 8], [10, 11, 12]]
     sample_mask_sep = [np.delete(sm, si)
                        for sm, si in zip(sample_mask_sep, scrub_index)]
     scrub_sep_mask = clean(signals, confounds=confounds,
                            sample_mask=sample_mask_sep, runs=runs)
+    assert scrub_sep_mask.shape[0] == signals.shape[0] - 6
+
+    # test for binary mask per run
+    sample_mask_sep_binary = [np.full(signals.shape[0] // 2, True),
+                              np.full(signals.shape[0] // 2, True)]
+    sample_mask_sep_binary[0][scrub_index[0]] = False
+    sample_mask_sep_binary[1][scrub_index[1]] = False
+    scrub_sep_mask = clean(signals, confounds=confounds,
+                           sample_mask=sample_mask_sep_binary, runs=runs)
     assert scrub_sep_mask.shape[0] == signals.shape[0] - 6
 
     # 1D sample mask with runs labels
