@@ -233,7 +233,7 @@ Other tags can describe the PR content : [FIX] for a bugfix, [DOC] for a
 change in documentation or examples, [ENH] for a new feature and [MAINT] for
 maintenance changes.
 
-Changes log entries in doc/changes/latest.rst should adhere to the following conventions:
+Changelog entries in doc/changes/latest.rst should adhere to the following conventions:
 
 - Entry in the appropriate category
 - Single line per entry
