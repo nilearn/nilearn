@@ -29,6 +29,7 @@ Enhancements
 - As part of making the User Guide more user-friendly, the introduction was reworked (:gh:`3380` by `Alexis Thual`_)
 - Added instructions for maintainers to make sure LaTeX dependencies are installed before building and deploying the stable docs (:gh:`3426` by `Yasmin Mzayek`_).
 - Parameter ``sample_masks`` in :func:`~signal.clean` and masker functions accept binary mask (:gh:`3439` by `Hao-Ting Wang`_). 
+- Contributing docs were improved by adding clear guidelines for users about changelog/whatsnew entries (:gh:`3446` by `Robert Williamson`_).
 
 Changes
 -------

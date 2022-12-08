@@ -190,6 +190,8 @@
 
 .. _Robert Luke: https://github.com/rob-luke
 
+.. _Robert Williamson: https://github.com/RobWilliamson15
+
 .. _Roberto Guidotti: https://github.com/robbisg
 
 .. _Ronald Phlypo: https://github.com/rphlypo
