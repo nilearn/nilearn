@@ -165,7 +165,7 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
     for hemi, surf_map in surface_maps.items():
         if isinstance(bg_map, str) and bg_map == "auto":
             curv_map = surface.load_surf_data(mesh['curv_{}'.format(hemi)])
-            bg_map = np.sign(curv_map)
+            actual_bg_map = np.sign(curv_map)
         info['pial_{}'.format(hemi)] = mesh_to_plotly(
             mesh['pial_{}'.format(hemi)])
         info['inflated_{}'.format(hemi)] = mesh_to_plotly(
@@ -173,7 +173,7 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
 
         info['vertexcolor_{}'.format(hemi)] = _get_vertexcolor(
             surf_map, colors['cmap'], colors['norm'],
-            colors['abs_threshold'], bg_map=bg_map,
+            colors['abs_threshold'], bg_map=actual_bg_map,
             bg_on_data=bg_on_data, bg_map_rescale=bg_map_rescale,
             darkness=darkness,
         )
