@@ -569,7 +569,7 @@ bg_on_data : :obj:`bool`, optional
     the ``surf_data`` data is multiplied by the background
     image, so that e.g. sulcal depth is jointly visible with ``surf_data``.
     Otherwise, the background image will only be visible where there
-    is no surface data (either because ``surf_data`` contains ``nan``s
+    is no surface data (either because ``surf_data`` contains ``nan``\s
     or because is was thresholded).
 
         .. note::

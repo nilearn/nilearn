@@ -40,7 +40,7 @@ def _mix_colormaps(fg, bg):
     """
     # Adapted from https://stackoverflow.com/questions/726549/algorithm-for-additive-color-mixing-for-rgb-values/727339#727339 # noqa: E501
     if fg.shape != bg.shape:
-        raise Exception(
+        raise ValueError(
             "Trying to mix colormaps with different shapes: "
             f"{fg.shape}, {bg.shape}"
         )
