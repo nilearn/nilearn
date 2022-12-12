@@ -26,14 +26,17 @@ def _mix_colormaps(fg, bg):
     Parameters
     ----------
     fg : numpy.ndarray
-        Array of shape (n, 4), foreground colors
+        Array of shape (n, 4), foreground RGBA colors
+        represented as floats in [0, 1]
     bg : numpy.ndarray
-        Array of shape (n, 4), background colors
+        Array of shape (n, 4), background RGBA colors
+        represented as floats in [0, 1]
 
     Returns
     -------
     mix : numpy.ndarray
         Array of shape (n, 4), mixed colors
+        represented as floats in [0, 1]
     """
     # Adapted from https://stackoverflow.com/questions/726549/algorithm-for-additive-color-mixing-for-rgb-values/727339#727339 # noqa: E501
     if fg.shape != bg.shape:
