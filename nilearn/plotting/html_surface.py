@@ -50,7 +50,7 @@ def _mix_colormaps(fg, bg):
     mix[:, 3] = 1 - (1 - fg[:, 3]) * (1 - bg[:, 3])
 
     for color_index in range(0, 3):
-        mix[:, 0] = (
+        mix[:, color_index] = (
             fg[:, color_index] * fg[:, 3]
             + bg[:, color_index] * bg[:, 3] * (1 - fg[:, 3])
         ) / mix[:, 3]
