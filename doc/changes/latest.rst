@@ -21,6 +21,7 @@ Fixes
 - Description of the ``opening`` parameter added to ``compute_multi_epi_mask`` docs (:gh:`3412` by `Natasha Clarke`_).
 - Fix display of colorbar in matrix plots. Colorbar was overlapping in :func:`~matplotlib.pyplot.subplots` due to a hardcoded adjustment value in the subplot (:gh:`3403` by `Raphael Meudec`_).
 - Pass values with correct type to scikit-learn estimator parameters and remove deprecated parameter (:gh:`3430` by `Yasmin Mzayek`_).
+- Fix cluster labeling for two-sided cluster level permutation tests in :func:`~mass_univariate.permuted_least_squares.permuted_ols` and associated function test :func:`~mass_univariate.tests.test_permuted_least_squares.test_cluster_level_parameters_smoke` (:gh:`3436` by `Jelle Roelof Dalenberg`_).
 
 Enhancements
 ------------

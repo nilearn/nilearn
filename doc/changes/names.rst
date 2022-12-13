@@ -102,6 +102,8 @@
 
 .. _Jean-Rémi King: https://github.com/kingjr
 
+.. _Jelle Roelof Dalenberg: https://github.com/jrdalenberg
+
 .. _Jeremy Lefort-Besnard: https://jlefortbesnard.github.io/
 
 .. _Jerome Dockes: https://jeromedockes.github.io/
