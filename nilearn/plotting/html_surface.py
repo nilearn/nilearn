@@ -169,6 +169,8 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
         if isinstance(bg_map, str) and bg_map == "auto":
             curv_map = surface.load_surf_data(mesh['curv_{}'.format(hemi)])
             actual_bg_map = np.sign(curv_map)
+        else:
+            actual_bg_map = bg_map
         info['pial_{}'.format(hemi)] = mesh_to_plotly(
             mesh['pial_{}'.format(hemi)])
         info['inflated_{}'.format(hemi)] = mesh_to_plotly(
