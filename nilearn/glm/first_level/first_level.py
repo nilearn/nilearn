@@ -348,11 +348,6 @@ class FirstLevelModel(BaseGLM):
         if minimize_memory is True,
         RegressionResults if minimize_memory is False
 
-    Notes
-    -----
-    This class is experimental.
-    It may change in any future release of Nilearn.
-
     """
 
     def __init__(self, t_r=None, slice_time_ref=0., hrf_model='glover',
