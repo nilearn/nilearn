@@ -68,8 +68,15 @@ def _get_vertexcolor(surf_map, cmap, norm,
         bg_map = surface.load_surf_data(bg_map)
 
     # scale background map if need be
-    if bg_map_rescale:
-        bg_vmin, bg_vmax = np.min(bg_map), np.max(bg_map)
+    bg_vmin, bg_vmax = np.min(bg_map), np.max(bg_map)
+    if (
+        bg_map_rescale
+        or (
+            isinstance(bg_map_rescale, str)
+            and bg_map_rescale == "auto"
+            and (bg_vmin < 0 or bg_vmax > 1)
+        )
+    ):
         bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
         bg_data = bg_norm(bg_map)
     else:
@@ -100,7 +107,7 @@ def _get_vertexcolor(surf_map, cmap, norm,
 
 def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
                   black_bg=False, bg_map=None, symmetric_cmap=True,
-                  bg_on_data=False, bg_map_rescale=True, darkness=.5,
+                  bg_on_data=False, bg_map_rescale="auto", darkness=.5,
                   vmax=None, vmin=None):
     """Prepare info for plotting one surface map on a single mesh.
 
@@ -144,7 +151,7 @@ def _check_mesh(mesh):
 
 def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
                     cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
-                    bg_map=None, bg_on_data=False, bg_map_rescale=True,
+                    bg_map=None, bg_on_data=False, bg_map_rescale="auto",
                     darkness=.5, vmax=None, vmin=None, vol_to_surf_kwargs={}):
     """Project 3D map on cortex; prepare info to plot both hemispheres.
 
@@ -203,7 +210,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
                      threshold=None, cmap=cm.cold_hot,
                      black_bg=False, vmax=None, vmin=None, symmetric_cmap=True,
                      bg_map='auto', bg_on_data=False,
-                     bg_map_rescale=True, darkness=.5,
+                     bg_map_rescale="auto", darkness=.5,
                      colorbar=True, colorbar_height=.5, colorbar_fontsize=25,
                      title=None, title_fontsize=25, vol_to_surf_kwargs={}):
     """Insert a surface plot of a statistical map into an HTML page.
@@ -250,7 +257,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         Default=False.
 
     %(bg_map_rescale)s
-        Default=True.
+        Default="auto".
 
         .. versionadded:: 0.9.3.dev
 
@@ -327,7 +334,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
 
 def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
               cmap=cm.cold_hot, black_bg=False, vmax=None, vmin=None,
-              bg_on_data=False, bg_map_rescale=True, darkness=.5,
+              bg_on_data=False, bg_map_rescale="auto", darkness=.5,
               symmetric_cmap=True, colorbar=True, colorbar_height=.5,
               colorbar_fontsize=25, title=None, title_fontsize=25):
     """Insert a surface plot of a surface map into an HTML page.
@@ -358,7 +365,7 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         Default=False.
 
     %(bg_map_rescale)s
-        Default=True.
+        Default="auto".
 
         .. versionadded:: 0.9.3.dev
 

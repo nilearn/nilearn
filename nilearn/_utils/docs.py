@@ -580,7 +580,11 @@ bg_on_data : :obj:`bool`, optional
 
 # bg_map_rescale
 docdict['bg_map_rescale'] = """
-bg_map_rescale : :obj:`bool`, optional
+bg_map_rescale : :obj:`bool`, or "auto", optional
+    If "auto" and a ``bg_map`` is specified,
+    the ``bg_map`` will be linearly normalized to the [0, 1] interval
+    if it contains values outside of the [0, 1] interval ;
+    otherwise, ``bg_map`` won't be changed.
     If ``True`` and a ``bg_map`` is specified,
     the ``bg_map`` will be linearly normalized to the [0, 1] interval.
     Otherwise, ``bg_map`` won't be changed.
