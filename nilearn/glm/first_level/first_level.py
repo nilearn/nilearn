@@ -1,8 +1,5 @@
 """
-This module presents an interface to use the glm implemented in
-nistats.regression.
-
-It contains the GLM and contrast classes that are meant to be the main objects
+This module contains the GLM and contrast classes that are meant to be the main objects
 of fMRI data analyses.
 
 Author: Bertrand Thirion, Martin Perez-Guevara, 2016
