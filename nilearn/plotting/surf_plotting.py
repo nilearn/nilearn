@@ -392,7 +392,7 @@ def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
     if bg_map is None:
         bg_data = np.ones(n_vertices) * 0.5
     else:
-        bg_data = load_surf_data(bg_map)
+        bg_data = np.copy(load_surf_data(bg_map))
         if bg_data.shape[0] != n_vertices:
             raise ValueError('The bg_map does not have the same number '
                              'of vertices as the mesh.')

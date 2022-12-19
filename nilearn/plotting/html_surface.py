@@ -65,7 +65,7 @@ def _get_vertexcolor(surf_map, cmap, norm,
         bg_map = np.ones(len(surf_map)) * .5
         bg_vmin, bg_vmax = 0, 1
     else:
-        bg_map = surface.load_surf_data(bg_map)
+        bg_map = np.copy(surface.load_surf_data(bg_map))
 
     # scale background map if need be
     bg_vmin, bg_vmax = np.min(bg_map), np.max(bg_map)
