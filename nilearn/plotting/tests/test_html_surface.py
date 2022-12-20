@@ -30,8 +30,9 @@ def test_get_vertexcolor():
         surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'])
     assert len(vertexcolors) == len(mesh[0])
     # Surface map whose value in each vertex is
-    # 0.75 if this vertex's curv >= 0
-    # 0.25 if this vertex's curv < 0
+    # 1 if this vertex's curv > 0
+    # 0 if this vertex's curv is 0
+    # -1 if this vertex's curv < 0
     bg_map = np.sign(surface.load_surf_data(fsaverage['curv_left']))
     bg_min, bg_max = np.min(bg_map), np.max(bg_map)
     assert (bg_min < 0 or bg_max > 1)
