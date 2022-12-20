@@ -62,15 +62,15 @@ def _get_vertexcolor(surf_map, cmap, norm,
                      absolute_threshold=None, bg_map=None,
                      bg_on_data=None, bg_map_rescale=None, darkness=None):
     if bg_map is None:
-        bg_map = np.ones(len(surf_map)) * .5
+        bg_data = np.ones(len(surf_map)) * .5
         bg_vmin, bg_vmax = 0, 1
     else:
-        bg_map = np.copy(surface.load_surf_data(bg_map))
+        bg_data = np.copy(surface.load_surf_data(bg_map))
 
     # scale background map if need be
-    bg_vmin, bg_vmax = np.min(bg_map), np.max(bg_map)
+    bg_vmin, bg_vmax = np.min(bg_data), np.max(bg_data)
     if (
-        bg_map_rescale
+        bg_map_rescale is True
         or (
             isinstance(bg_map_rescale, str)
             and bg_map_rescale == "auto"
@@ -78,12 +78,11 @@ def _get_vertexcolor(surf_map, cmap, norm,
         )
     ):
         bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
-        bg_data = bg_norm(bg_map)
-    else:
-        bg_data = bg_map
+        bg_data = bg_norm(bg_data)
 
     if darkness is not None:
         bg_data *= darkness
+
     bg_colors = plt.get_cmap('Greys')(bg_data)
 
     # select vertices which are filtered out by the threshold
