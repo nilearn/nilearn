@@ -3,6 +3,7 @@ Functions for surface visualization.
 """
 import itertools
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -392,22 +393,34 @@ def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
     if bg_map is None:
         bg_data = np.ones(n_vertices) * 0.5
     else:
+        # bg_data = np.copy(load_surf_data(bg_map))
         bg_data = np.copy(load_surf_data(bg_map))
         if bg_data.shape[0] != n_vertices:
             raise ValueError('The bg_map does not have the same number '
                              'of vertices as the mesh.')
 
     bg_faces = np.mean(bg_data[faces], axis=1)
-    if bg_map_rescale and bg_faces.min() != bg_faces.max():
-        bg_faces = bg_faces - bg_faces.min()
-        bg_faces = bg_faces / bg_faces.max()
+    # scale background map if need be
+    bg_vmin, bg_vmax = np.min(bg_faces), np.max(bg_faces)
+    if (
+        bg_map_rescale is True
+        or (
+            isinstance(bg_map_rescale, str)
+            and bg_map_rescale == "auto"
+            and (bg_vmin < 0 or bg_vmax > 1)
+        )
+    ):
+        bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
+        bg_faces = bg_norm(bg_faces)
 
-    # control background darkness
-    bg_faces *= darkness
+    if darkness is not None:
+        bg_data *= darkness
+
     face_colors = plt.cm.gray_r(bg_faces)
 
     # modify alpha values of background
-    face_colors[:, 3] = alpha * face_colors[:, 3]
+    if alpha is not None:
+        face_colors[:, 3] = alpha * face_colors[:, 3]
 
     return face_colors
 
