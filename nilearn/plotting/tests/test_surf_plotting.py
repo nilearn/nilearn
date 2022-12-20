@@ -13,9 +13,10 @@ from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
                                             plot_surf_roi, plot_img_on_surf,
                                             plot_surf_contours,
-                                            _get_ticks_matplotlib)
+                                            _get_ticks_matplotlib,
+                                            _compute_facecolors_matplotlib)
 from nilearn.datasets import fetch_surf_fsaverage
-from nilearn.surface import load_surf_mesh
+from nilearn.surface import load_surf_data, load_surf_mesh
 from nilearn.surface.testing_utils import generate_surf
 from numpy.testing import assert_array_equal
 from nilearn.plotting.surf_plotting import VALID_HEMISPHERES, VALID_VIEWS
@@ -843,3 +844,46 @@ def test_get_ticks_matplotlib(vmin, vmax, cbar_tick_format, expected):
     assert 1 <= len(ticks) <= 5
     assert ticks[0] == vmin and ticks[-1] == vmax
     assert len(ticks) == len(expected) and (ticks == expected).all()
+
+
+def test_compute_facecolors_matplotlib():
+    fsaverage = fetch_surf_fsaverage()
+    mesh = load_surf_mesh(fsaverage['pial_left'])
+    # Surface map whose value in each vertex is
+    # 1 if this vertex's curv > 0
+    # 0 if this vertex's curv is 0
+    # -1 if this vertex's curv < 0
+    bg_map = np.sign(load_surf_data(fsaverage['curv_left']))
+    bg_min, bg_max = np.min(bg_map), np.max(bg_map)
+    assert (bg_min < 0 or bg_max > 1)
+    # bg_map_normalized = (bg_map + 1) / 4 + 0.25
+    facecolors_normalized = _compute_facecolors_matplotlib(
+        fsaverage['sulc_left'],
+        mesh[1],
+        len(mesh[0]),
+        None,
+        None,
+        True,
+    )
+    assert len(facecolors_normalized) == len(mesh[1])
+    facecolors_unnormalized = _compute_facecolors_matplotlib(
+        fsaverage['sulc_left'],
+        mesh[1],
+        len(mesh[0]),
+        None,
+        None,
+        False,
+    )
+    assert len(facecolors_unnormalized) == len(mesh[1])
+    facecolors_auto = _compute_facecolors_matplotlib(
+        fsaverage['sulc_left'],
+        mesh[1],
+        len(mesh[0]),
+        None,
+        None,
+        "auto",
+    )
+    assert len(facecolors_auto) == len(mesh[1])
+    print(facecolors_normalized)
+    print(facecolors_normalized.shape)
+    assert np.allclose(facecolors_normalized, facecolors_auto)
