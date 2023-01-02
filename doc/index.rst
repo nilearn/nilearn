@@ -12,9 +12,6 @@ Nilearn
     for multivariate statistics with applications such as predictive modelling,
     classification, decoding, or connectivity analysis.
 
-    Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_,
-    for which we provide a :ref:`migration guide <nistats_migration>`.
-
 
 .. grid::
 
@@ -314,7 +311,6 @@ Featured examples
    :hidden:
    :caption: Development
 
-   nistats_migration.rst
    development.rst
    maintenance.rst
    changes/whats_new.rst
