@@ -32,13 +32,13 @@ fsaverage = datasets.fetch_surf_fsaverage()
 #
 # Here, we load the curvature map of the hemisphere under study,
 # and define a surface map whose value for a given vertex is
-# 0.75 if the curvature is positive, 0.25 if the curvature is negative.
+# 1 if the curvature is positive, -1 if the curvature is negative.
 
 import numpy as np
 from nilearn import surface
 
 curv_right = surface.load_surf_data(fsaverage.curv_right)
-curv_right_sign = (np.sign(curv_right) + 1) / 4 + 0.25
+curv_right_sign = np.sign(curv_right)
 
 ##############################################################################
 # Sample the 3D data around each node of the mesh
@@ -53,8 +53,6 @@ texture = surface.vol_to_surf(stat_img, fsaverage.pial_right)
 # You can visualize the texture on the surface using the function
 # :func:`~nilearn.plotting.plot_surf_stat_map` which uses ``matplotlib``
 # as the default plotting engine:.
-# Since we are using a background map whose values range between 0.25
-# and 0.75 (and we want to keep it this way), we set `bg_map_rescale=False`.
 
 from nilearn import plotting
 
@@ -62,7 +60,6 @@ fig = plotting.plot_surf_stat_map(
     fsaverage.infl_right, texture, hemi='right',
     title='Surface right hemisphere', colorbar=True,
     threshold=1., bg_map=curv_right_sign,
-    bg_map_rescale=False, bg_on_data=True,
 )
 fig.show()
 
@@ -87,8 +84,7 @@ print(f"Using plotting engine {engine}.")
 fig = plotting.plot_surf_stat_map(
     fsaverage.infl_right, texture, hemi='right',
     title='Surface right hemisphere', colorbar=True,
-    threshold=1., bg_map=curv_right_sign,
-    bg_map_rescale=False, bg_on_data=True,
+    threshold=1., bg_map=curv_right_sign, bg_on_data=True,
     engine=engine  # Specify the plotting engine here
 )
 fig.show()  # Display the figure as with matplotlib figures

@@ -102,6 +102,8 @@
 
 .. _Jean-Rémi King: https://github.com/kingjr
 
+.. _Jelle Roelof Dalenberg: https://github.com/jrdalenberg
+
 .. _Jeremy Lefort-Besnard: https://jlefortbesnard.github.io/
 
 .. _Jerome Dockes: https://jeromedockes.github.io/
@@ -189,6 +191,8 @@
 .. _Raphael Meudec: https://github.com/RaphaelMeudec
 
 .. _Robert Luke: https://github.com/rob-luke
+
+.. _Robert Williamson: https://github.com/RobWilliamson15
 
 .. _Roberto Guidotti: https://github.com/robbisg
 

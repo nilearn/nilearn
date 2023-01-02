@@ -26,18 +26,21 @@ def _mix_colormaps(fg, bg):
     Parameters
     ----------
     fg : numpy.ndarray
-        Array of shape (n, 4), foreground colors
+        Array of shape (n, 4), foreground RGBA colors
+        represented as floats in [0, 1]
     bg : numpy.ndarray
-        Array of shape (n, 4), background colors
+        Array of shape (n, 4), background RGBA colors
+        represented as floats in [0, 1]
 
     Returns
     -------
     mix : numpy.ndarray
         Array of shape (n, 4), mixed colors
+        represented as floats in [0, 1]
     """
     # Adapted from https://stackoverflow.com/questions/726549/algorithm-for-additive-color-mixing-for-rgb-values/727339#727339 # noqa: E501
     if fg.shape != bg.shape:
-        raise Exception(
+        raise ValueError(
             "Trying to mix colormaps with different shapes: "
             f"{fg.shape}, {bg.shape}"
         )
@@ -45,15 +48,12 @@ def _mix_colormaps(fg, bg):
     mix = np.empty_like(fg)
 
     mix[:, 3] = 1 - (1 - fg[:, 3]) * (1 - bg[:, 3])
-    mix[:, 0] = (
-        fg[:, 0] * fg[:, 3] + bg[:, 0] * bg[:, 3] * (1 - fg[:, 3])
-    ) / mix[:, 3]
-    mix[:, 1] = (
-        fg[:, 1] * fg[:, 3] + bg[:, 1] * bg[:, 3] * (1 - fg[:, 3])
-    ) / mix[:, 3]
-    mix[:, 2] = (
-        fg[:, 2] * fg[:, 3] + bg[:, 2] * bg[:, 3] * (1 - fg[:, 3])
-    ) / mix[:, 3]
+
+    for color_index in range(0, 3):
+        mix[:, color_index] = (
+            fg[:, color_index] * fg[:, 3]
+            + bg[:, color_index] * bg[:, 3] * (1 - fg[:, 3])
+        ) / mix[:, 3]
 
     return mix
 
@@ -62,21 +62,27 @@ def _get_vertexcolor(surf_map, cmap, norm,
                      absolute_threshold=None, bg_map=None,
                      bg_on_data=None, bg_map_rescale=None, darkness=None):
     if bg_map is None:
-        bg_map = np.ones(len(surf_map)) * .5
+        bg_data = np.ones(len(surf_map)) * .5
         bg_vmin, bg_vmax = 0, 1
     else:
-        bg_map = surface.load_surf_data(bg_map)
+        bg_data = np.copy(surface.load_surf_data(bg_map))
 
     # scale background map if need be
-    if bg_map_rescale:
-        bg_vmin, bg_vmax = np.min(bg_map), np.max(bg_map)
+    bg_vmin, bg_vmax = np.min(bg_data), np.max(bg_data)
+    if (
+        bg_map_rescale is True
+        or (
+            isinstance(bg_map_rescale, str)
+            and bg_map_rescale == "auto"
+            and (bg_vmin < 0 or bg_vmax > 1)
+        )
+    ):
         bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
-        bg_data = bg_norm(bg_map)
-    else:
-        bg_data = bg_map
+        bg_data = bg_norm(bg_data)
 
     if darkness is not None:
         bg_data *= darkness
+
     bg_colors = plt.get_cmap('Greys')(bg_data)
 
     # select vertices which are filtered out by the threshold
@@ -100,7 +106,7 @@ def _get_vertexcolor(surf_map, cmap, norm,
 
 def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
                   black_bg=False, bg_map=None, symmetric_cmap=True,
-                  bg_on_data=False, bg_map_rescale=True, darkness=.5,
+                  bg_on_data=False, bg_map_rescale="auto", darkness=.5,
                   vmax=None, vmin=None):
     """Prepare info for plotting one surface map on a single mesh.
 
@@ -144,7 +150,7 @@ def _check_mesh(mesh):
 
 def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
                     cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
-                    bg_map=None, bg_on_data=False, bg_map_rescale=True,
+                    bg_map=None, bg_on_data=False, bg_map_rescale="auto",
                     darkness=.5, vmax=None, vmin=None, vol_to_surf_kwargs={}):
     """Project 3D map on cortex; prepare info to plot both hemispheres.
 
@@ -168,7 +174,9 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
     for hemi, surf_map in surface_maps.items():
         if isinstance(bg_map, str) and bg_map == "auto":
             curv_map = surface.load_surf_data(mesh['curv_{}'.format(hemi)])
-            bg_map = np.sign(curv_map)
+            actual_bg_map = np.sign(curv_map)
+        else:
+            actual_bg_map = bg_map
         info['pial_{}'.format(hemi)] = mesh_to_plotly(
             mesh['pial_{}'.format(hemi)])
         info['inflated_{}'.format(hemi)] = mesh_to_plotly(
@@ -176,7 +184,7 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
 
         info['vertexcolor_{}'.format(hemi)] = _get_vertexcolor(
             surf_map, colors['cmap'], colors['norm'],
-            colors['abs_threshold'], bg_map=bg_map,
+            colors['abs_threshold'], bg_map=actual_bg_map,
             bg_on_data=bg_on_data, bg_map_rescale=bg_map_rescale,
             darkness=darkness,
         )
@@ -201,7 +209,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
                      threshold=None, cmap=cm.cold_hot,
                      black_bg=False, vmax=None, vmin=None, symmetric_cmap=True,
                      bg_map='auto', bg_on_data=False,
-                     bg_map_rescale=True, darkness=.5,
+                     bg_map_rescale="auto", darkness=.5,
                      colorbar=True, colorbar_height=.5, colorbar_fontsize=25,
                      title=None, title_fontsize=25, vol_to_surf_kwargs={}):
     """Insert a surface plot of a statistical map into an HTML page.
@@ -248,7 +256,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         Default=False.
 
     %(bg_map_rescale)s
-        Default=True.
+        Default="auto".
 
         .. versionadded:: 0.9.3.dev
 
@@ -325,7 +333,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
 
 def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
               cmap=cm.cold_hot, black_bg=False, vmax=None, vmin=None,
-              bg_on_data=False, bg_map_rescale=True, darkness=.5,
+              bg_on_data=False, bg_map_rescale="auto", darkness=.5,
               symmetric_cmap=True, colorbar=True, colorbar_height=.5,
               colorbar_fontsize=25, title=None, title_fontsize=25):
     """Insert a surface plot of a surface map into an HTML page.
@@ -356,7 +364,7 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         Default=False.
 
     %(bg_map_rescale)s
-        Default=True.
+        Default="auto".
 
         .. versionadded:: 0.9.3.dev
 

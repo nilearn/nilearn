@@ -528,11 +528,14 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         signal, as if all were in the same array.
         Default is None.
 
-    sample_mask : None, :class:`numpy.ndarray`, :obj:`list`,\
-    :obj:`tuple`, or :obj:`list` of
-        shape: (number of scans - number of volumes removed, )
+    sample_mask : None, Any type compatible with numpy-array indexing, \
+        or :obj:`list` of
+        shape: (number of scans - number of volumes removed, ) for explicit \
+            index, or (number of scans, ) for binary mask
         Masks the niimgs along time/fourth dimension to perform scrubbing
         (remove volumes with high motion) and/or non-steady-state volumes.
+        When passing binary mask with boolean values, ``True`` refers to
+        volumes kept, and ``False`` for volumes removed.
         This masking step is applied before signal cleaning. When supplying run
         information, sample_mask must be a list containing sets of indexes for
         each run.

@@ -30,18 +30,26 @@ def test_get_vertexcolor():
         surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'])
     assert len(vertexcolors) == len(mesh[0])
     # Surface map whose value in each vertex is
-    # 0.75 if this vertex's curv >= 0
-    # 0.25 if this vertex's curv < 0
+    # 1 if this vertex's curv > 0
+    # 0 if this vertex's curv is 0
+    # -1 if this vertex's curv < 0
     bg_map = np.sign(surface.load_surf_data(fsaverage['curv_left']))
-    bg_map = (bg_map + 1) / 4 + 0.25
-    vertexcolors = html_surface._get_vertexcolor(
+    bg_min, bg_max = np.min(bg_map), np.max(bg_map)
+    assert (bg_min < 0 or bg_max > 1)
+    # bg_map_normalized = (bg_map + 1) / 4 + 0.25
+    vertexcolors_normalized = html_surface._get_vertexcolor(
         surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'],
         bg_map, bg_map_rescale=False)
-    assert len(vertexcolors) == len(mesh[0])
-    vertexcolors = html_surface._get_vertexcolor(
+    assert len(vertexcolors_normalized) == len(mesh[0])
+    vertexcolors_unnormalized = html_surface._get_vertexcolor(
         surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'],
         bg_map, bg_map_rescale=True)
-    assert len(vertexcolors) == len(mesh[0])
+    assert len(vertexcolors_unnormalized) == len(mesh[0])
+    vertexcolors_auto = html_surface._get_vertexcolor(
+        surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'],
+        bg_map, bg_map_rescale="auto")
+    assert len(vertexcolors_auto) == len(mesh[0])
+    assert vertexcolors_normalized == vertexcolors_auto
 
 
 def test_check_mesh():

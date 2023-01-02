@@ -233,6 +233,19 @@ Other tags can describe the PR content : [FIX] for a bugfix, [DOC] for a
 change in documentation or examples, [ENH] for a new feature and [MAINT] for
 maintenance changes.
 
+Changelog entries in doc/changes/latest.rst should adhere to the following conventions:
+
+- Entry in the appropriate category
+- Single line per entry
+- Finish with a link to the PR and the author's profile
+- New contributors to add their profile to doc/changes/names.rst
+
+Example entry:
+
+.. code-block:: rst
+
+    - Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
+  
 Coding Style
 -------------
 

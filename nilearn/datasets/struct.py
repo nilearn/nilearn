@@ -37,10 +37,6 @@ _LEGACY_FORMAT_MSG = (
     "instead of recarrays."
 )
 
-# workaround for
-# https://github.com/nilearn/nilearn/pull/2738#issuecomment-869018842
-_MNI_RES_WARNING_ALREADY_SHOWN = False
-
 
 @fill_doc
 def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
@@ -172,7 +168,7 @@ def load_mni152_template(resolution=None):
 
     Parameters
     ----------
-    resolution: int, optional, Default = 2
+    resolution: int, optional, Default = 1
         If resolution is different from 1, the template is re-sampled with the
         specified resolution.
 
@@ -200,14 +196,7 @@ def load_mni152_template(resolution=None):
 
     """
 
-    global _MNI_RES_WARNING_ALREADY_SHOWN
-    if resolution is None:
-        if not _MNI_RES_WARNING_ALREADY_SHOWN:
-            warnings.warn("Default resolution of the MNI template will change "
-                          "from 2mm to 1mm in version 0.10.0", FutureWarning,
-                          stacklevel=2)
-            _MNI_RES_WARNING_ALREADY_SHOWN = True
-        resolution = 2
+    resolution = resolution or 1
 
     brain_template = check_niimg(MNI152_FILE_PATH)
 
@@ -237,7 +226,7 @@ def load_mni152_gm_template(resolution=None):
 
     Parameters
     ----------
-    resolution: int, optional, Default = 2
+    resolution: int, optional, Default = 1
         If resolution is different from 1, the template is re-sampled with the
         specified resolution.
 
@@ -256,13 +245,7 @@ def load_mni152_gm_template(resolution=None):
 
     """
 
-    global _MNI_RES_WARNING_ALREADY_SHOWN
-    if resolution is None:
-        if not _MNI_RES_WARNING_ALREADY_SHOWN:
-            warnings.warn("Default resolution of the MNI template will change "
-                          "from 2mm to 1mm in version 0.10.0", FutureWarning)
-            _MNI_RES_WARNING_ALREADY_SHOWN = True
-        resolution = 2
+    resolution = resolution or 1
 
     gm_template = check_niimg(GM_MNI152_FILE_PATH)
 
@@ -292,7 +275,7 @@ def load_mni152_wm_template(resolution=None):
 
     Parameters
     ----------
-    resolution: int, optional, Default = 2
+    resolution: int, optional, Default = 1
         If resolution is different from 1, the template is re-sampled with the
         specified resolution.
 
@@ -311,13 +294,7 @@ def load_mni152_wm_template(resolution=None):
 
     """
 
-    global _MNI_RES_WARNING_ALREADY_SHOWN
-    if resolution is None:
-        if not _MNI_RES_WARNING_ALREADY_SHOWN:
-            warnings.warn("Default resolution of the MNI template will change "
-                          "from 2mm to 1mm in version 0.10.0", FutureWarning)
-            _MNI_RES_WARNING_ALREADY_SHOWN = True
-        resolution = 2
+    resolution = resolution or 1
 
     wm_template = check_niimg(WM_MNI152_FILE_PATH)
 
@@ -346,7 +323,7 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
 
     Parameters
     ----------
-    resolution: int, optional, Default = 2
+    resolution: int, optional, Default = 1
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
@@ -372,13 +349,7 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
 
     """
 
-    global _MNI_RES_WARNING_ALREADY_SHOWN
-    if resolution is None:
-        if not _MNI_RES_WARNING_ALREADY_SHOWN:
-            warnings.warn("Default resolution of the MNI template will change "
-                          "from 2mm to 1mm in version 0.10.0", FutureWarning)
-            _MNI_RES_WARNING_ALREADY_SHOWN = True
-        resolution = 2
+    resolution = resolution or 1
 
     # Load MNI template
     target_img = load_mni152_template(resolution=resolution)
@@ -397,7 +368,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     Parameters
     ----------
-    resolution: int, optional, Default = 2
+    resolution: int, optional, Default = 1
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
@@ -425,13 +396,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     """
 
-    global _MNI_RES_WARNING_ALREADY_SHOWN
-    if resolution is None:
-        if not _MNI_RES_WARNING_ALREADY_SHOWN:
-            warnings.warn("Default resolution of the MNI template will change "
-                          "from 2mm to 1mm in version 0.10.0", FutureWarning)
-            _MNI_RES_WARNING_ALREADY_SHOWN = True
-        resolution = 2
+    resolution = resolution or 1
 
     # Load MNI template
     gm_target = load_mni152_gm_template(resolution=resolution)
@@ -455,7 +420,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     Parameters
     ----------
-    resolution: int, optional, Default = 2
+    resolution: int, optional, Default = 1
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
@@ -483,13 +448,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     """
 
-    global _MNI_RES_WARNING_ALREADY_SHOWN
-    if resolution is None:
-        if not _MNI_RES_WARNING_ALREADY_SHOWN:
-            warnings.warn("Default resolution of the MNI template will change "
-                          "from 2mm to 1mm in version 0.10.0", FutureWarning)
-            _MNI_RES_WARNING_ALREADY_SHOWN = True
-        resolution = 2
+    resolution = resolution or 1
 
     # Load MNI template
     wm_target = load_mni152_wm_template(resolution=resolution)

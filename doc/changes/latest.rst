@@ -21,6 +21,7 @@ Fixes
 - Description of the ``opening`` parameter added to ``compute_multi_epi_mask`` docs (:gh:`3412` by `Natasha Clarke`_).
 - Fix display of colorbar in matrix plots. Colorbar was overlapping in :func:`~matplotlib.pyplot.subplots` due to a hardcoded adjustment value in the subplot (:gh:`3403` by `Raphael Meudec`_).
 - Pass values with correct type to scikit-learn estimator parameters and remove deprecated parameter (:gh:`3430` by `Yasmin Mzayek`_).
+- Fix cluster labeling for two-sided cluster level permutation tests in :func:`~mass_univariate.permuted_ols` and associated function test ``test_cluster_level_parameters_smoke`` (:gh:`3436` by `Jelle Roelof Dalenberg`_).
 
 Enhancements
 ------------
@@ -30,6 +31,8 @@ Enhancements
 - Fetcher :func:`nilearn.datasets.fetch_surf_fsaverage` now provides attributes `flat_{left, right}` for all fsaverage resolutions, which can prove useful for plotting maps (:gh:`3450` by `Alexis Thual_`).
 - As part of making the User Guide more user-friendly, the introduction was reworked (:gh:`3380` by `Alexis Thual`_)
 - Added instructions for maintainers to make sure LaTeX dependencies are installed before building and deploying the stable docs (:gh:`3426` by `Yasmin Mzayek`_).
+- Parameter ``sample_masks`` in :func:`~signal.clean` and masker functions accept binary mask (:gh:`3439` by `Hao-Ting Wang`_). 
+- Contributing docs were improved by adding clear guidelines for users about changelog/whatsnew entries (:gh:`3446` by `Robert Williamson`_).
 
 Changes
 -------
@@ -51,3 +54,4 @@ Changes
     * Joblib -- v1.0.0
 
   (:gh:`3440` by `Yasmin Mzayek`_).
+- In release ``0.10.0`` the default resolution for loaded MNI152 templates will be 1mm instead of 2mm (:gh:`3433` by `Yasmin Mzayek`_).
