@@ -849,6 +849,7 @@ def test_get_ticks_matplotlib(vmin, vmax, cbar_tick_format, expected):
 def test_compute_facecolors_matplotlib():
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage['pial_left'])
+    alpha = "auto"
     # Surface map whose value in each vertex is
     # 1 if this vertex's curv > 0
     # 0 if this vertex's curv is 0
@@ -862,7 +863,7 @@ def test_compute_facecolors_matplotlib():
         mesh[1],
         len(mesh[0]),
         None,
-        None,
+        alpha,
         True,
     )
     assert len(facecolors_normalized) == len(mesh[1])
@@ -871,7 +872,7 @@ def test_compute_facecolors_matplotlib():
         mesh[1],
         len(mesh[0]),
         None,
-        None,
+        alpha,
         False,
     )
     assert len(facecolors_unnormalized) == len(mesh[1])
@@ -880,7 +881,7 @@ def test_compute_facecolors_matplotlib():
         mesh[1],
         len(mesh[0]),
         None,
-        None,
+        alpha,
         "auto",
     )
     assert len(facecolors_auto) == len(mesh[1])
