@@ -23,11 +23,13 @@ def test_get_vertexcolor():
     surf_map = np.arange(len(mesh[0]))
     colors = html_surface.colorscale('jet', surf_map, 10)
     vertexcolors = html_surface._get_vertexcolor(
-        surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'],
-        fsaverage['sulc_left'])
+        surf_map, colors['cmap'], colors['norm'],
+        absolute_threshold=colors['abs_threshold'],
+        bg_map=fsaverage['sulc_left'])
     assert len(vertexcolors) == len(mesh[0])
     vertexcolors = html_surface._get_vertexcolor(
-        surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'])
+        surf_map, colors['cmap'], colors['norm'],
+        absolute_threshold=colors['abs_threshold'])
     assert len(vertexcolors) == len(mesh[0])
     # Surface map whose value in each vertex is
     # 1 if this vertex's curv > 0
@@ -38,16 +40,19 @@ def test_get_vertexcolor():
     assert (bg_min < 0 or bg_max > 1)
     # bg_map_normalized = (bg_map + 1) / 4 + 0.25
     vertexcolors_normalized = html_surface._get_vertexcolor(
-        surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'],
-        bg_map, bg_map_rescale=False)
+        surf_map, colors['cmap'], colors['norm'],
+        absolute_threshold=colors['abs_threshold'],
+        bg_map=bg_map, bg_map_rescale=False)
     assert len(vertexcolors_normalized) == len(mesh[0])
     vertexcolors_unnormalized = html_surface._get_vertexcolor(
-        surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'],
-        bg_map, bg_map_rescale=True)
+        surf_map, colors['cmap'], colors['norm'],
+        absolute_threshold=colors['abs_threshold'],
+        bg_map=bg_map, bg_map_rescale=True)
     assert len(vertexcolors_unnormalized) == len(mesh[0])
     vertexcolors_auto = html_surface._get_vertexcolor(
-        surf_map, colors['cmap'], colors['norm'], colors['abs_threshold'],
-        bg_map, bg_map_rescale="auto")
+        surf_map, colors['cmap'], colors['norm'],
+        absolute_threshold=colors['abs_threshold'],
+        bg_map=bg_map, bg_map_rescale="auto")
     assert len(vertexcolors_auto) == len(mesh[0])
     assert vertexcolors_normalized == vertexcolors_auto
 

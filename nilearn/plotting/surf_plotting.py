@@ -221,8 +221,10 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
             symmetric_cmap=symmetric_cmap
         )
         vertexcolor = _get_vertexcolor(
-            surf_map, colors["cmap"], colors["norm"], colors["abs_threshold"],
-            bg_data, bg_on_data, bg_map_rescale, darkness
+            surf_map, colors["cmap"], colors["norm"],
+            absolute_threshold=colors["abs_threshold"],
+            bg_map=bg_data, bg_on_data=bg_on_data,
+            bg_map_rescale=bg_map_rescale, darkness=darkness
         )
     else:
         if bg_data is None:
@@ -230,7 +232,7 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
         colors = colorscale('Greys', bg_data, symmetric_cmap=False)
         vertexcolor = _get_vertexcolor(
             bg_data, colors["cmap"], colors["norm"],
-            colors["abs_threshold"]
+            absolute_threshold=colors["abs_threshold"]
         )
 
     mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k, vertexcolor=vertexcolor)

@@ -122,7 +122,7 @@ def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
     info['inflated_left'] = mesh_to_plotly(surf_mesh)
     info['vertexcolor_left'] = _get_vertexcolor(
         surf_map, colors['cmap'], colors['norm'],
-        colors['abs_threshold'], bg_map,
+        absolute_threshold=colors['abs_threshold'], bg_map=bg_map,
         bg_on_data=bg_on_data, bg_map_rescale=bg_map_rescale,
         darkness=darkness,
     )
@@ -184,7 +184,7 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
 
         info['vertexcolor_{}'.format(hemi)] = _get_vertexcolor(
             surf_map, colors['cmap'], colors['norm'],
-            colors['abs_threshold'], bg_map=actual_bg_map,
+            absolute_threshold=colors['abs_threshold'], bg_map=actual_bg_map,
             bg_on_data=bg_on_data, bg_map_rescale=bg_map_rescale,
             darkness=darkness,
         )
