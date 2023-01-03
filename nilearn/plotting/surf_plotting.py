@@ -388,10 +388,6 @@ def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
 
     This function computes the facecolors.
     """
-    # set alpha if in auto mode
-    if alpha == 'auto':
-        alpha = .5 if bg_map is None else 1
-
     if bg_map is None:
         bg_data = np.ones(n_vertices) * 0.5
     else:
@@ -419,9 +415,11 @@ def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
 
     face_colors = plt.cm.gray_r(bg_faces)
 
+    # set alpha if in auto mode
+    if alpha == 'auto':
+        alpha = .5 if bg_map is None else 1
     # modify alpha values of background
-    if alpha is not None:
-        face_colors[:, 3] = alpha * face_colors[:, 3]
+    face_colors[:, 3] = alpha * face_colors[:, 3]
 
     return face_colors
 
