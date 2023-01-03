@@ -24,6 +24,8 @@
 
 .. _Arthur Mensch: https://www.amensch.fr/
 
+.. _Audrey Duran: https://github.com/AudreyDuran
+
 .. _Ben Cipollini: https://github.com/bcipolli
 
 .. _Bertrand Thirion: https://pages.saclay.inria.fr/bertrand.thirion/
