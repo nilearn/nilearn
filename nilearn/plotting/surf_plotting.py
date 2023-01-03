@@ -393,7 +393,6 @@ def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
     if bg_map is None:
         bg_data = np.ones(n_vertices) * 0.5
     else:
-        # bg_data = np.copy(load_surf_data(bg_map))
         bg_data = np.copy(load_surf_data(bg_map))
         if bg_data.shape[0] != n_vertices:
             raise ValueError('The bg_map does not have the same number '
@@ -1280,7 +1279,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         curv_map = load_surf_data(surf_mesh[f"curv_{hemi}"])
         curv_sign_map = (np.sign(curv_map) + 1) / 4 + 0.25
         bg_map = curv_sign_map if inflate else sulc_map
-        bg_map_rescale = False if inflate else True
+        bg_map_rescale = not inflate
         ax = fig.add_subplot(grid[i + len(hemis)], projection="3d")
         axes.append(ax)
         plot_surf_stat_map(surf[hemi], texture[hemi],
