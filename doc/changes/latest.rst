@@ -54,3 +54,4 @@ Changes
 
   (:gh:`3440` by `Yasmin Mzayek`_).
 - In release ``0.10.0`` the default resolution for loaded MNI152 templates will be 1mm instead of 2mm (:gh:`3433` by `Yasmin Mzayek`_).
+- Remove all docstring mentions of GLM module being experimental and any references to nistats migration. ``doc/nistats_migration.rst`` is also removed (:gh:`3449` by `Yasmin Mzayek`_).

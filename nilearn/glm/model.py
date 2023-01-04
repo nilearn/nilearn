@@ -61,9 +61,6 @@ class LikelihoodModelResults:
         For (some subset of models) `dispersion` will typically be the mean
         square error from the estimated model (sigma^2)
 
-        This class is experimental.
-        It may change in any future release of Nilearn.
-
         """
         self.theta = theta
         self.Y = Y
