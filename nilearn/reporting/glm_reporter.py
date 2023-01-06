@@ -527,7 +527,7 @@ def _make_stat_maps(model, contrasts, output_type='z_score'):
         The type of statistical map to retain from the contrast.
         Default is 'z_score'.
 
-        .. versionadded:: 0.9.2dev
+        .. versionadded:: 0.9.2
 
     Returns
     -------

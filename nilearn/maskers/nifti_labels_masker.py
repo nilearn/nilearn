@@ -645,7 +645,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         Any mask given at initialization is taken into account.
 
-        .. versionchanged:: 0.9.2dev
+        .. versionchanged:: 0.9.2
 
             This method now supports 1D arrays, which will produce 3D images.
 
