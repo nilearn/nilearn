@@ -835,12 +835,12 @@ def test_resampling_with_int_types_no_crash(dtype):
     resample_img(img, target_affine=2. * affine)
 
 
-@pytest.mark.parametrize("dtype", ["int64", "uint64", "<i8", ">i8", int])
+@pytest.mark.parametrize("dtype", ["int64", "uint64", "<i8", ">i8"])
 @pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
 def test_resampling_with_int64_types_no_crash(dtype):
     affine = np.eye(4)
     data = np.zeros((2, 2, 2))
-    img = Nifti1Image(data.astype(dtype), affine)
+    img = Nifti1Image(data.astype(dtype), affine, dtype=dtype)
     resample_img(img, target_affine=2. * affine)
 
 

@@ -50,7 +50,8 @@ def test_get_target_dtype():
                                                target_dtype='auto')
     assert dtype_kind_float == np.float32
 
-    img2 = Nifti1Image(np.ones((2, 2, 2), dtype=np.int64), affine=np.eye(4))
+    data = np.ones((2, 2, 2), dtype=np.int64)
+    img2 = Nifti1Image(data, dtype=np.int64, affine=np.eye(4))
     assert get_data(img2).dtype.kind == 'i'
     dtype_kind_int = niimg._get_target_dtype(get_data(img2).dtype,
                                              target_dtype='auto')
@@ -70,7 +71,7 @@ def test_img_data_dtype():
         for logical_dtype in nifti1_dtypes:
             dataobj = rng.uniform(0, 255, (2, 2, 2)).astype(logical_dtype)
             for on_disk_dtype in nifti1_dtypes:
-                img = Nifti1Image(dataobj, np.eye(4))
+                img = Nifti1Image(dataobj, np.eye(4), dtype=on_disk_dtype)
                 img.set_data_dtype(on_disk_dtype)
                 img.to_filename('test.nii')
                 loaded = nb.load('test.nii')

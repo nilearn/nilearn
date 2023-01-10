@@ -521,7 +521,7 @@ def test_new_img_like_int64():
     assert image.get_data(new_img).dtype == "int32"
     data[:] = 2**40
     with pytest.warns(UserWarning, match=r".*64.*too large.*"):
-        new_img = new_img_like(img, data)
+        new_img = new_img_like(img, data, copy_header=True)
     assert image.get_data(new_img).dtype == "int64"
 
 
