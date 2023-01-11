@@ -841,7 +841,7 @@ def test_resampling_with_int64_types_no_crash(dtype):
     affine = np.eye(4)
     data = np.zeros((2, 2, 2))
     # Passing dtype or header is required when using int64
-    # https://nipy.org/nibabel/reference/nibabel.nifti1.html#nibabel.nifti1.Nifti1Header.set_data_dtype
+    # https://nipy.org/nibabel/changelog.html#api-changes-and-deprecations
     hdr = Nifti1Header()
     img = Nifti1Image(data.astype(dtype), affine, header=hdr)
     resample_img(img, target_affine=2. * affine)

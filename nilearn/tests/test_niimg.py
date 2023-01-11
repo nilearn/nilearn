@@ -49,7 +49,8 @@ def test_get_target_dtype():
     dtype_kind_float = niimg._get_target_dtype(get_data(img).dtype,
                                                target_dtype='auto')
     assert dtype_kind_float == np.float32
-
+    # Passing dtype or header is required when using int64
+    # https://nipy.org/nibabel/changelog.html#api-changes-and-deprecations
     hdr = Nifti1Header()
     data = np.ones((2, 2, 2), dtype=np.int64)
     img2 = Nifti1Image(data, affine=np.eye(4), header=hdr)
@@ -67,6 +68,8 @@ def test_img_data_dtype():
         np.int8, np.int16, np.int32,
         np.float32, np.float64)
     dtype_matches = []
+    # Passing dtype or header is required when using int64
+    # https://nipy.org/nibabel/changelog.html#api-changes-and-deprecations
     hdr = Nifti1Header()
     with InTemporaryDirectory():
         rng = np.random.RandomState(42)
