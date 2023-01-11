@@ -142,6 +142,8 @@
 
 .. _Manon Pietrantoni: https://github.com/ManonP38
 
+.. _Mathias Goncalves: https://github.com/mgxd
+
 .. _Matthias Ekman: https://github.com/mekman
 
 .. _Matthieu Joulot: https://github.com/MatthieuJoulot
