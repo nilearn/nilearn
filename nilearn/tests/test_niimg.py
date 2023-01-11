@@ -52,7 +52,7 @@ def test_get_target_dtype():
 
     hdr = Nifti1Header()
     data = np.ones((2, 2, 2), dtype=np.int64)
-    img2 = Nifti1Image(data, dtype=np.int64, affine=np.eye(4), header=hdr)
+    img2 = Nifti1Image(data, affine=np.eye(4), header=hdr)
     assert get_data(img2).dtype.kind == 'i'
     dtype_kind_int = niimg._get_target_dtype(get_data(img2).dtype,
                                              target_dtype='auto')
