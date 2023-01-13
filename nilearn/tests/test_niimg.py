@@ -52,6 +52,7 @@ def test_get_target_dtype():
     # Passing dtype or header is required when using int64
     # https://nipy.org/nibabel/changelog.html#api-changes-and-deprecations
     hdr = Nifti1Header()
+    hdr.set_data_dtype(np.int64)
     data = np.ones((2, 2, 2), dtype=np.int64)
     img2 = Nifti1Image(data, affine=np.eye(4), header=hdr)
     assert get_data(img2).dtype.kind == 'i'
@@ -76,8 +77,8 @@ def test_img_data_dtype():
         for logical_dtype in nifti1_dtypes:
             dataobj = rng.uniform(0, 255, (2, 2, 2)).astype(logical_dtype)
             for on_disk_dtype in nifti1_dtypes:
+                hdr.set_data_dtype(on_disk_dtype)
                 img = Nifti1Image(dataobj, np.eye(4), header=hdr)
-                img.set_data_dtype(on_disk_dtype)
                 img.to_filename('test.nii')
                 loaded = nb.load('test.nii')
                 # To verify later that sometimes these differ meaningfully
