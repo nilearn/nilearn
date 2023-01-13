@@ -12,7 +12,7 @@ from numpy.testing import (assert_almost_equal,
 import numpy as np
 import pytest
 
-from nibabel import Nifti1Image
+from nibabel import Nifti1Image, Nifti1Header
 
 from nilearn import _utils
 from nilearn.image.resampling import resample_img, resample_to_img, reorder_img
@@ -835,12 +835,16 @@ def test_resampling_with_int_types_no_crash(dtype):
     resample_img(img, target_affine=2. * affine)
 
 
-@pytest.mark.parametrize("dtype", ["int64", "uint64", "<i8", ">i8", int])
+@pytest.mark.parametrize("dtype", ["int64", "uint64", "<i8", ">i8"])
 @pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
 def test_resampling_with_int64_types_no_crash(dtype):
     affine = np.eye(4)
     data = np.zeros((2, 2, 2))
-    img = Nifti1Image(data.astype(dtype), affine)
+    # Passing dtype or header is required when using int64
+    # https://nipy.org/nibabel/changelog.html#api-changes-and-deprecations
+    hdr = Nifti1Header()
+    hdr.set_data_dtype(dtype)
+    img = Nifti1Image(data.astype(dtype), affine, header=hdr)
     resample_img(img, target_affine=2. * affine)
 
 
