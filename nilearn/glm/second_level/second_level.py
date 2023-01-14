@@ -843,9 +843,25 @@ def non_parametric_inference(
     # Check design matrix and effect maps agree on number of rows
     _check_effect_maps(effect_maps, design_matrix)
 
+    # Obtain design matrix vars
+    var_names = design_matrix.columns.tolist()
+
     # Obtain tested_var
-    if contrast in design_matrix.columns.tolist():
+    if contrast in var_names:
         tested_var = np.asarray(design_matrix[contrast])
+        var_names.remove(contrast)
+
+    # Obtain confounding vars
+    if len(var_names) == 0:
+        # No other vars in design matrix
+        confounding_vars = None
+    else:
+        # Exclude the intercept (constant)
+        for var_name in var_names:
+            if np.unique(np.asarray(design_matrix[var_name])).size == 1:
+                var_names.remove(var_name)
+        
+        confounding_vars = np.asarray(design_matrix[var_names])
 
     # Mask data
     target_vars = masker.transform(effect_maps)
@@ -854,6 +870,7 @@ def non_parametric_inference(
     outputs = permuted_ols(
         tested_var,
         target_vars,
+        confounding_vars=confounding_vars,
         model_intercept=model_intercept,
         n_perm=n_perm,
         two_sided_test=two_sided_test,
