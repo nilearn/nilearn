@@ -680,7 +680,7 @@ def test_non_parametric_inference_cluster_level_with_covariates(random_state=0):
         input_design = pd.DataFrame({"subject_label":labels, "cov1": cov1, "cov2": cov2})
         X = make_second_level_design_matrix(labels, input_design)
 
-        # make sure theres variablity in the images
+        # make sure there is variablity in the images
         kernels = rng.uniform(low=0, high=5, size=n_subjects)
         Y = [smooth_img(func_img, kernel) for kernel in kernels]
 
@@ -694,7 +694,7 @@ def test_non_parametric_inference_cluster_level_with_covariates(random_state=0):
             threshold=unc_pval,
         )
 
-        # Caluculate uncorrected cluster sizes
+        # Calculate uncorrected cluster sizes
         df = len(Y) - X.shape[1]
         logp_unc = new_img_like(out["t"],  t_to_neg_log_pval(get_data(out["t"]), df=df))
         logp_unc_cluster_sizes = list(get_clusters_table(logp_unc, -np.log10(unc_pval))["Cluster Size (mm3)"])
