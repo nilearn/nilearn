@@ -11,7 +11,7 @@ NEW
 Fixes
 -----
 
-- :func:`~image.resample_img` compatibility with non-NIfTI images (:gh:`3462` by `Mathias Goncalves`_).
+- Restore :func:`~image.resample_img` compatibility with all :class:`nibabel.spatialimages.SpatialImage` objects (:gh:`3462` by `Mathias Goncalves`_).
 
 Enhancements
 ------------
