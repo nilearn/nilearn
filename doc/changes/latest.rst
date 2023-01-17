@@ -11,7 +11,7 @@ NEW
 Fixes
 -----
 
-- :func:`~image.resampling.resample_img` compatibility with non-NIfTI images (:gh:`3462` by `Mathias Goncalves`_).
+- :func:`~image.resample_img` compatibility with non-NIfTI images (:gh:`3462` by `Mathias Goncalves`_).
 
 Enhancements
 ------------
