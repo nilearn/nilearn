@@ -860,7 +860,6 @@ def non_parametric_inference(
         for var_name in var_names:
             if np.unique(design_matrix[var_name]).size == 1:
                 var_names.remove(var_name)
-        
         confounding_vars = np.asarray(design_matrix[var_names])
 
     # Mask data
