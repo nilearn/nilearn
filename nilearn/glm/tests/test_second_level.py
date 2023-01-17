@@ -639,6 +639,77 @@ def test_non_parametric_inference_cluster_level():
         del func_img, FUNCFILE, out, X, Y
 
 
+def test_non_parametric_inference_cluster_level_with_covariates(random_state=0):
+    """Test non-parametric inference with cluster-level inference in the context of covariates."""
+    from nilearn.glm.second_level import make_second_level_design_matrix
+    from nilearn.image import new_img_like, smooth_img
+    from nilearn.reporting import get_clusters_table
+    from unittest import TestCase
+    from scipy import stats
+
+    class TestClusters(TestCase):
+        """Unit test for cluster sizes"""
+        def setUp(self, expected, result):
+            self.expected = expected
+            self.result = result
+
+        def test_count_eq(self):
+            self.assertCountEqual(self.result, self.expected, msg="Unexpected cluster sizes found. Check covariates and/or degrees of freedom")
+
+    def t_to_neg_log_pval(t_scores, df):
+        """Helper function that calculates negative log p-values from a set of t-values and degrees of freedom."""
+        with np.errstate(divide='ignore'):
+            neg_log_pval = -np.log10(stats.t.sf(t_scores, df=df))
+        return neg_log_pval
+
+    rng = np.random.RandomState(random_state)
+
+    with InTemporaryDirectory():
+        shapes = ((7, 8, 9, 1),)
+        mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
+        FUNCFILE = FUNCFILE[0]
+        func_img = load(FUNCFILE)
+
+        unc_pval = 0.01
+        n_subjects = 6 
+
+        # Set up one sample t-test design with two random covariates
+        labels = range(0, n_subjects)
+        cov1 = rng.random(n_subjects)
+        cov2 = rng.random(n_subjects) 
+        input_design = pd.DataFrame({"subject_label":labels, "cov1": cov1, "cov2": cov2})
+        X = make_second_level_design_matrix(labels, input_design)
+
+        # make sure theres variablity in the images
+        kernels = rng.uniform(low=0, high=5, size=n_subjects)
+        Y = [smooth_img(func_img, kernel) for kernel in kernels]
+
+        # Set up non-parametric test
+        out = non_parametric_inference(
+            Y,
+            design_matrix=X,
+            mask=mask,
+            second_level_contrast="intercept",
+            n_perm=1/unc_pval,
+            threshold=unc_pval,
+        )
+
+        # Caluculate uncorrected cluster sizes
+        df = len(Y) - X.shape[1]
+        logp_unc = new_img_like(out["t"],  t_to_neg_log_pval(get_data(out["t"]), df=df))
+        logp_unc_cluster_sizes = list(get_clusters_table(logp_unc, -np.log10(unc_pval))["Cluster Size (mm3)"])
+
+        # Calculate corrected cluster sizes,
+        logp_max_cluster_sizes = list(get_clusters_table(out["logp_max_size"], unc_pval)["Cluster Size (mm3)"])
+
+        # Compare cluster sizes
+        tc = TestClusters()
+        tc.setUp(expected=logp_unc_cluster_sizes, result=logp_max_cluster_sizes)
+        tc.test_count_eq()
+
+        del func_img, FUNCFILE, out, X, Y, logp_unc, tc
+
+
 def test_second_level_contrast_computation():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
