@@ -849,6 +849,7 @@ def non_parametric_inference(
     # Obtain tested_var
     if contrast in var_names:
         tested_var = np.asarray(design_matrix[contrast])
+        # Remove tested var from remaining var names
         var_names.remove(contrast)
 
     # Obtain confounding vars
@@ -859,7 +860,9 @@ def non_parametric_inference(
         # Exclude the intercept (constant)
         for var_name in var_names:
             if np.unique(design_matrix[var_name]).size == 1:
+                # Remove intercept from remaining var names
                 var_names.remove(var_name)
+        # Use remaining vars as confounding vars
         confounding_vars = np.asarray(design_matrix[var_names])
 
     # Mask data

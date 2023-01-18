@@ -19,11 +19,13 @@ from numpy.testing import (assert_almost_equal,
 
 from nilearn._utils.data_gen import (write_fake_fmri_data_and_design,
                                      generate_fake_fmri_data_and_design)
-from nilearn.image import concat_imgs, get_data
+from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker
 from nilearn.glm.first_level import (FirstLevelModel, run_glm)
 from nilearn.glm.second_level import (SecondLevelModel,
                                       non_parametric_inference)
+from nilearn.reporting import get_clusters_table
+from scipy import stats
 
 # This directory path
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -640,27 +642,8 @@ def test_non_parametric_inference_cluster_level():
 
 
 def test_non_parametric_inference_cluster_level_with_covariates(random_state=0):
-    """Test non-parametric inference with cluster-level inference in the context of covariates."""
-    from nilearn.glm.second_level import make_second_level_design_matrix
-    from nilearn.image import new_img_like, smooth_img
-    from nilearn.reporting import get_clusters_table
-    from unittest import TestCase
-    from scipy import stats
-
-    class TestClusters(TestCase):
-        """Unit test for cluster sizes"""
-        def setUp(self, expected, result):
-            self.expected = expected
-            self.result = result
-
-        def test_count_eq(self):
-            self.assertCountEqual(self.result, self.expected, msg="Unexpected cluster sizes found. Check covariates and/or degrees of freedom")
-
-    def t_to_neg_log_pval(t_scores, df):
-        """Helper function that calculates negative log p-values from a set of t-values and degrees of freedom."""
-        with np.errstate(divide='ignore'):
-            neg_log_pval = -np.log10(stats.t.sf(t_scores, df=df))
-        return neg_log_pval
+    """Test non-parametric inference with cluster-level inference in
+    the context of covariates."""
 
     rng = np.random.RandomState(random_state)
 
@@ -671,11 +654,11 @@ def test_non_parametric_inference_cluster_level_with_covariates(random_state=0):
         func_img = load(FUNCFILE)
 
         unc_pval = 0.01
-        n_subjects = 6 
+        n_subjects = 6
 
         # Set up one sample t-test design with two random covariates
         cov1 = rng.random(n_subjects)
-        cov2 = rng.random(n_subjects) 
+        cov2 = rng.random(n_subjects)
         X = pd.DataFrame({"cov1": cov1, "cov2": cov2, 'intercept': 1})
 
         # make sure there is variability in the images
@@ -694,18 +677,21 @@ def test_non_parametric_inference_cluster_level_with_covariates(random_state=0):
 
         # Calculate uncorrected cluster sizes
         df = len(Y) - X.shape[1]
-        logp_unc = new_img_like(out["t"],  t_to_neg_log_pval(get_data(out["t"]), df=df))
-        logp_unc_cluster_sizes = list(get_clusters_table(logp_unc, -np.log10(unc_pval))["Cluster Size (mm3)"])
+        neg_log_pval = -np.log10(stats.t.sf(get_data(out["t"]), df=df))
+        logp_unc = new_img_like(out["t"], neg_log_pval)
+        logp_unc_cluster_sizes = \
+            list(get_clusters_table(logp_unc,
+                                    -np.log10(unc_pval))["Cluster Size (mm3)"])
 
-        # Calculate corrected cluster sizes,
-        logp_max_cluster_sizes = list(get_clusters_table(out["logp_max_size"], unc_pval)["Cluster Size (mm3)"])
+        # Calculate corrected cluster sizes
+        logp_max_cluster_sizes = \
+            list(get_clusters_table(out["logp_max_size"],
+                                    unc_pval)["Cluster Size (mm3)"])
 
         # Compare cluster sizes
-        tc = TestClusters()
-        tc.setUp(expected=logp_unc_cluster_sizes, result=logp_max_cluster_sizes)
-        tc.test_count_eq()
+        assert logp_unc_cluster_sizes.sort() == logp_max_cluster_sizes.sort()
 
-        del func_img, FUNCFILE, out, X, Y, logp_unc, tc
+        del func_img, FUNCFILE, out, X, Y, logp_unc
 
 
 def test_second_level_contrast_computation():
