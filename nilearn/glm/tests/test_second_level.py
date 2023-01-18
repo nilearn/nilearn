@@ -674,7 +674,6 @@ def test_non_parametric_inference_cluster_level_with_covariates(random_state=0):
         n_subjects = 6 
 
         # Set up one sample t-test design with two random covariates
-        labels = range(0, n_subjects)
         cov1 = rng.random(n_subjects)
         cov2 = rng.random(n_subjects) 
         input_design = pd.DataFrame({"subject_label":labels, "cov1": cov1, "cov2": cov2})
