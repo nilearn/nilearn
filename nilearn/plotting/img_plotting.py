@@ -480,7 +480,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
 
 
 @fill_doc
-def plot_epi(epi_img=None, cut_coords=None, output_file=None,
+def plot_fmri(epi_img=None, cut_coords=None, output_file=None,
              display_mode='ortho', figure=None, axes=None, title=None,
              annotate=True, draw_cross=True, black_bg=True,
              colorbar=False, cbar_tick_format="%.2g",

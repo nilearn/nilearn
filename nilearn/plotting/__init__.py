@@ -46,7 +46,7 @@ _set_mpl_backend()
 ###############################################################################
 from . import cm
 from .img_plotting import (
-    plot_img, plot_anat, plot_epi, plot_roi, plot_stat_map,
+    plot_img, plot_anat, plot_fmri, plot_roi, plot_stat_map,
     plot_glass_brain, plot_connectome, plot_markers, plot_prob_atlas,
     plot_carpet, plot_img_comparison, show)
 from .find_cuts import find_xyz_cut_coords, find_cut_slices, \
@@ -59,7 +59,10 @@ from .html_connectome import view_connectome, view_markers
 from .surf_plotting import (plot_surf, plot_surf_stat_map, plot_surf_roi,
                             plot_img_on_surf, plot_surf_contours)
 
-__all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi',
+# alias for renamed function for backwards compatibility
+plot_epi = plot_fmri
+
+__all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi', 'plot_fmri',
            'plot_roi', 'plot_stat_map', 'plot_glass_brain',
            'plot_markers', 'plot_connectome', 'plot_prob_atlas',
            'find_xyz_cut_coords', 'find_cut_slices',
