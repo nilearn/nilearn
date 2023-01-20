@@ -342,7 +342,7 @@ Here are the key steps you need to go through to copy the repo before contributi
 
       git clone git@github.com:<your_username>/nilearn.git
 
-2. (optional but highly recommended) set up a conda environment to work on and activate it::
+2. (optional but highly recommended) set up a virtual environment to work in using whichever environment managenment tool you're used to and activate it. For example::
 
       conda create -n nilearn
       conda activate nilearn
