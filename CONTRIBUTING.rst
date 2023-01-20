@@ -344,6 +344,11 @@ Here are the key steps you need to go through to copy the repo before contributi
 
 2. (optional but highly recommended) set up a virtual environment to work in using whichever environment managenment tool you're used to and activate it. For example::
 
+      python3 -m venv nilearn
+      source nilearn/bin/activate
+
+   or::
+
       conda create -n nilearn
       conda activate nilearn
 
