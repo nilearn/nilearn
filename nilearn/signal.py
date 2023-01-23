@@ -78,7 +78,8 @@ def _standardize(signals, detrend=False, standardize='zscore'):
                 signals = signals - signals.mean(axis=0)
 
             std = signals.std(axis=0, ddof=1)
-            std[std < np.finfo(np.float64).eps] = 1.  # avoid numerical problems
+            # avoid numerical problems
+            std[std < np.finfo(np.float64).eps] = 1.
             signals /= std
 
         elif (standardize == 'zscore') or (standardize is True):
@@ -97,7 +98,8 @@ def _standardize(signals, detrend=False, standardize='zscore'):
                 signals = signals - signals.mean(axis=0)
 
             std = signals.std(axis=0)
-            std[std < np.finfo(np.float64).eps] = 1.  # avoid numerical problems
+            # avoid numerical problems
+            std[std < np.finfo(np.float64).eps] = 1.
             signals /= std
 
         elif standardize == 'psc':
