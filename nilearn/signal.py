@@ -40,8 +40,10 @@ def _standardize(signals, detrend=False, standardize='zscore'):
     standardize : {'zscore', 'psc', True, False}, optional
         Strategy to standardize the signal:
 
+            - 'zscore_sample': The signal is z-scored. Timeseries are shifted
+              to zero mean and scaled to unit variance. Uses sample std.
             - 'zscore': The signal is z-scored. Timeseries are shifted
-              to zero mean and scaled to unit variance.
+              to zero mean and scaled to unit variance. Uses population std.
             - 'psc':  Timeseries are shifted to zero mean value and scaled
               to percent signal change (as compared to original mean signal).
             - True: The signal is z-scored (same as option `zscore`).
@@ -69,6 +71,15 @@ def _standardize(signals, detrend=False, standardize='zscore'):
             warnings.warn('Standardization of 3D signal has been requested but '
                           'would lead to zero values. Skipping.')
             return signals
+
+        elif (standardize == 'zscore_sample'):
+            if not detrend:
+                # remove mean if not already detrended
+                signals = signals - signals.mean(axis=0)
+
+            std = signals.std(axis=0, ddof=1)
+            std[std < np.finfo(np.float64).eps] = 1.  # avoid numerical problems
+            signals /= std
 
         elif (standardize == 'zscore') or (standardize is True):
             if not detrend:
@@ -612,8 +623,10 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     standardize : {'zscore', 'psc', False}, optional
         Strategy to standardize the signal:
 
+            - 'zscore_sample': The signal is z-scored. Timeseries are shifted
+              to zero mean and scaled to unit variance. Uses sample std.
             - 'zscore': The signal is z-scored. Timeseries are shifted
-              to zero mean and scaled to unit variance.
+              to zero mean and scaled to unit variance. Uses population std.
             - 'psc':  Timeseries are shifted to zero mean value and scaled
               to percent signal change (as compared to original mean signal).
             - True: The signal is z-scored (same as option `zscore`).
