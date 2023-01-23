@@ -82,6 +82,16 @@ def _standardize(signals, detrend=False, standardize='zscore'):
             signals /= std
 
         elif (standardize == 'zscore') or (standardize is True):
+            std_strategy_default = (
+                'The default strategy for standardize is currently \'zscore\' '
+                'which incorrectly uses population std to calculate sample '
+                'zscores. The new strategy \'zscore_sample\' corrects this '
+                'behavior by using the sample std. The default strategy will '
+                'be replaced by the new strategy in release 0.13.'
+            )
+            warnings.warn(category=FutureWarning,
+                          message=std_strategy_default,
+                          stacklevel=3)
             if not detrend:
                 # remove mean if not already detrended
                 signals = signals - signals.mean(axis=0)
