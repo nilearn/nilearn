@@ -693,6 +693,20 @@ def permuted_ols(
     else:
         intercept_test = False
 
+    # check if confounding vars contain constants
+    constants = []
+    if confounding_vars is not None:
+        for column in range(confounding_vars.shape[1]):
+            if np.unique(confounding_vars[:, column]).size == 1:
+                constants.append(column)
+        if len(constants) > 0:
+            warnings.warn(
+            'One or more "confounding_vars" are constant and will be ignored. '
+            'Tip: Use "model_intercept" (default=True) for intercept control.'
+            )
+            # Remove constants from the confounding vars
+            confounding_vars = np.delete(confounding_vars, constants, axis=1)
+
     # optionally add intercept
     if model_intercept and not intercept_test:
         if confounding_vars is not None:

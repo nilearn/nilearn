@@ -857,11 +857,6 @@ def non_parametric_inference(
         # No other vars in design matrix
         confounding_vars = None
     else:
-        # Exclude the intercept (constant)
-        for var_name in var_names:
-            if np.unique(design_matrix[var_name]).size == 1:
-                # Remove intercept from remaining var names
-                var_names.remove(var_name)
         # Use remaining vars as confounding vars
         confounding_vars = np.asarray(design_matrix[var_names])
 
