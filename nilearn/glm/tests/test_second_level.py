@@ -577,7 +577,8 @@ def test_non_parametric_inference_permutation_computation():
         Y = [func_img] * 4
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
 
-        neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
+        neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X, 
+                                                     model_intercept=False,
                                                      mask=mask, n_perm=100)
 
         assert get_data(neg_log_pvals_img).shape == shapes[0][:3]
@@ -594,6 +595,7 @@ def test_non_parametric_inference_tfce():
         out = non_parametric_inference(
             FUNCFILES,
             design_matrix=X,
+            model_intercept=False,
             mask=mask,
             n_perm=10,
             tfce=True,
@@ -624,6 +626,7 @@ def test_non_parametric_inference_cluster_level():
         out = non_parametric_inference(
             Y,
             design_matrix=X,
+            model_intercept=False,
             mask=mask,
             n_perm=10,
             threshold=0.001,
@@ -670,6 +673,7 @@ def test_non_parametric_inference_cluster_level_with_covariates(random_state=0):
             Y,
             design_matrix=X,
             mask=mask,
+            model_intercept=False,
             second_level_contrast="intercept",
             n_perm=1/unc_pval,
             threshold=unc_pval,
@@ -775,18 +779,21 @@ def test_non_parametric_inference_contrast_computation():
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
         # formula should work without second-level contrast
         neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
+                                                     model_intercept=False,
                                                      mask=mask, n_perm=100)
 
         ncol = len(X.columns)
         c1, cnull = np.eye(ncol)[0, :], np.zeros(ncol)
         # formula should work with second-level contrast
         neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
+                                                     model_intercept=False,
                                                      second_level_contrast=c1,
                                                      mask=mask, n_perm=100)
         # formula should work passing variable name directly
         neg_log_pvals_img = \
             non_parametric_inference(Y, design_matrix=X,
                                      second_level_contrast='intercept',
+                                     model_intercept=False,
                                      mask=mask, n_perm=100)
 
         # passing null contrast should give back a value error
