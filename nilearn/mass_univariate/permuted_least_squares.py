@@ -700,12 +700,26 @@ def permuted_ols(
             if np.unique(confounding_vars[:, column]).size == 1:
                 constants.append(column)
         if len(constants) > 0:
-            warnings.warn(
-            'One or more "confounding_vars" are constant and will be ignored. '
-            'Tip: Use "model_intercept" (default=True) for intercept control.'
-            )
             # Remove constants from the confounding vars
             confounding_vars = np.delete(confounding_vars, constants, axis=1)
+
+            # Calculate dof penalty
+            intercept_dof = 1 if model_intercept else 0
+            confounding_vars_dof = confounding_vars.shape[1]
+            dof_penalty = n_regressors + confounding_vars_dof + intercept_dof
+
+            warnings.warn(
+            'One or more "confounding_vars" are constant and will be ignored. '
+            'If you intend to include an intercept and want to suppress this '
+            'warning, use "model_intercept" (default=True) for intercept '
+            'control and remove any confounding vars that are constant. \n'
+            f'With the current inputs, p-values are calculated using '
+            f'{n_samples} - {dof_penalty} degrees of freedom. '
+            )
+
+            # Remove confounding vars object if none are left
+            if confounding_vars_dof == 0:
+                confounding_vars = None
 
     # optionally add intercept
     if model_intercept and not intercept_test:
