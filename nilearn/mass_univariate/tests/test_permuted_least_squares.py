@@ -287,6 +287,13 @@ def test_permuted_ols_withcovar(random_state=0):
     assert_array_almost_equal(alt_score_intercept, own_score_intercept,
                               decimal=6)
 
+    # permuted OLS with constant in confounding_vars
+    confounding_vars = np.ones([n_samples, 1])
+    _, own_score, _ = permuted_ols(
+        tested_var, target_var, confounding_vars, model_intercept=False,
+        n_perm=0, random_state=random_state)
+    assert own_score.shape == (n_regressors, n_descriptors)
+
 
 def test_permuted_ols_nocovar_multivariate(random_state=0):
     """Test permuted_ols with multiple tested variates and no covariate.
