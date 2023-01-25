@@ -693,7 +693,9 @@ def test_non_parametric_inference_cluster_level_with_covariates(random_state=0):
                                     unc_pval)["Cluster Size (mm3)"])
 
         # Compare cluster sizes
-        assert logp_unc_cluster_sizes.sort() == logp_max_cluster_sizes.sort()
+        logp_unc_cluster_sizes.sort()
+        logp_max_cluster_sizes.sort()
+        assert logp_unc_cluster_sizes == logp_max_cluster_sizes
 
         del func_img, FUNCFILE, out, X, Y, logp_unc
 
