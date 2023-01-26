@@ -287,13 +287,36 @@ def test_permuted_ols_withcovar(random_state=0):
     assert_array_almost_equal(alt_score_intercept, own_score_intercept,
                               decimal=6)
 
-    # permuted OLS with constant in confounding_vars
+    ### Intercept in confounding vars
+    # permuted OLS with constant in confounding_vars, model_intercept=True
+    confounding_vars = np.ones([n_samples, 1])
+    _, own_score, _ = permuted_ols(
+        tested_var, target_var, confounding_vars, model_intercept=True,
+        n_perm=0, random_state=random_state)
+    assert own_score.shape == (n_regressors, n_descriptors)
+
+    # permuted OLS with constant in confounding_vars, model_intercept=False
     confounding_vars = np.ones([n_samples, 1])
     _, own_score, _ = permuted_ols(
         tested_var, target_var, confounding_vars, model_intercept=False,
         n_perm=0, random_state=random_state)
     assert own_score.shape == (n_regressors, n_descriptors)
 
+    ### Multiple intercepts should raise errors
+    # In confounding vars
+    with pytest.raises(ValueError):
+        confounding_vars = np.ones([n_samples, 2])
+        _, own_score, _ = permuted_ols(
+            tested_var, target_var, confounding_vars,
+            n_perm=0, random_state=random_state)
+
+    # Across tested vars and confounding vars
+    with pytest.raises(ValueError):
+        confounding_vars = np.ones([n_samples, 1])
+        tested_var = np.ones([n_samples, 1])
+        _, own_score, _ = permuted_ols(
+            tested_var, target_var, confounding_vars,
+            n_perm=0, random_state=random_state)
 
 def test_permuted_ols_nocovar_multivariate(random_state=0):
     """Test permuted_ols with multiple tested variates and no covariate.

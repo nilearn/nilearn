@@ -662,7 +662,7 @@ def test_non_parametric_inference_cluster_level_with_covariates(random_state=0):
         # Set up one sample t-test design with two random covariates
         cov1 = rng.random(n_subjects)
         cov2 = rng.random(n_subjects)
-        X = pd.DataFrame({"cov1": cov1, "cov2": cov2, 'intercept': 1})
+        X = pd.DataFrame({"cov1": cov1, "cov2": cov2, "intercept": 1})
 
         # make sure there is variability in the images
         kernels = rng.uniform(low=0, high=5, size=n_subjects)
