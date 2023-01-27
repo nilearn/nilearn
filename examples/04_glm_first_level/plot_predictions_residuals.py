@@ -72,8 +72,9 @@ plotting.plot_stat_map(z_map, bg_img=mean_img, threshold=3.1)
 from nilearn.reporting import get_clusters_table
 from nilearn.maskers import NiftiSpheresMasker
 
-table = get_clusters_table(z_map, stat_threshold=3.1,
-                           cluster_threshold=20).set_index('Cluster ID', drop=True)
+table, cluster_maps = get_clusters_table(z_map, stat_threshold=3.1,
+                           cluster_threshold=20)
+table.set_index('Cluster ID', drop=True)
 table.head()
 
 # get the 6 largest clusters' max x, y, and z coordinates
