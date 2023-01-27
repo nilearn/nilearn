@@ -365,7 +365,7 @@ def permuted_ols(
 
     model_intercept : :obj:`bool`, optional
         If True, a constant column is added to the confounding variates
-        unless the tested variate is already the intercept or when 
+        unless the tested variate is already the intercept or when
         confounding variates already contain an intercept.
         Default=True.
 
