@@ -643,7 +643,9 @@ def test_non_parametric_inference_cluster_level():
         del func_img, FUNCFILE, out, X, Y
 
 
-def test_non_parametric_inference_cluster_level_with_covariates(random_state=0):
+def test_non_parametric_inference_cluster_level_with_covariates(
+        random_state=0
+):
     """Test non-parametric inference with cluster-level inference in
     the context of covariates."""
 
