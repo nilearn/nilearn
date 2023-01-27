@@ -287,7 +287,7 @@ def test_permuted_ols_withcovar(random_state=0):
     assert_array_almost_equal(alt_score_intercept, own_score_intercept,
                               decimal=6)
 
-    ### Intercept in confounding vars
+    # Intercept in confounding vars
     # permuted OLS with constant in confounding_vars, model_intercept=True
     confounding_vars = np.ones([n_samples, 1])
     _, own_score, _ = permuted_ols(
