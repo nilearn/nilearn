@@ -298,6 +298,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     signs = [1, -1] if two_sided else [1]
     no_clusters_found = True
     rows = []
+    label_maps = []
     for sign in signs:
         # Flip map if necessary
         temp_stat_map = stat_map * sign
@@ -318,6 +319,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
 
         # Now re-label and create table
         label_map = label(binarized, bin_struct)[0]
+        label_maps.append(label_map)
         clust_ids = sorted(list(np.unique(label_map)[1:]))
         peak_vals = np.array(
             [np.max(temp_stat_map * (label_map == c)) for c in clust_ids])
@@ -384,4 +386,4 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     else:
         df = pd.DataFrame(columns=cols, data=rows)
 
-    return df
+    return df, label_maps
