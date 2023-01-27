@@ -702,8 +702,8 @@ def permuted_ols(
                 constants.append(column)
         if (intercept_test and len(constants) == 1) or len(constants) > 1:
             raise ValueError('More than one intercepts '
-                            '(i.e. constant variables) are defined, '
-                            'check inputs')
+                             '(i.e. constant variables) are defined, '
+                             'check inputs')
         if len(constants) == 1:
             intercept_test = True
 
