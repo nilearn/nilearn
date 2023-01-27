@@ -677,7 +677,7 @@ def test_non_parametric_inference_cluster_level_with_covariates(
             mask=mask,
             model_intercept=False,
             second_level_contrast="intercept",
-            n_perm=1/unc_pval,
+            n_perm=1 / unc_pval,
             threshold=unc_pval,
         )
 
