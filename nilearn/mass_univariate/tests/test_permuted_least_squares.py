@@ -302,7 +302,7 @@ def test_permuted_ols_withcovar(random_state=0):
         n_perm=0, random_state=random_state)
     assert own_score.shape == (n_regressors, n_descriptors)
 
-    ### Multiple intercepts should raise errors
+    # Multiple intercepts should raise errors
     # In confounding vars
     with pytest.raises(ValueError):
         confounding_vars = np.ones([n_samples, 2])
