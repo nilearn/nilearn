@@ -317,6 +317,7 @@ def test_permuted_ols_withcovar(random_state=0):
         _, own_score, _ = permuted_ols(
             tested_var, target_var, confounding_vars,
             n_perm=0, random_state=random_state)
+            
 
 def test_permuted_ols_nocovar_multivariate(random_state=0):
     """Test permuted_ols with multiple tested variates and no covariate.
