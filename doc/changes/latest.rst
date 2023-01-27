@@ -13,6 +13,10 @@ Fixes
 
 - Restore :func:`~image.resample_img` compatibility with all :class:`nibabel.spatialimages.SpatialImage` objects (:gh:`3462` by `Mathias Goncalves`_).
 
+- :func:`~nilearn.glm.second_level.non_parametric_inference` now supports confounding variates when they are available in the input design matrix :func:`~nilearn.mass_univariate.permuted_ols` (:gh:`3465` by `Jelle Roelof Dalenberg`_).
+
+- :func:`~nilearn.mass_univariate.permuted_ols` now checks if confounding variates contain an intercept and raises an error when multiple intercepts are defined across target and confounding variates. (:gh:`3465` by `Jelle Roelof Dalenberg`_).
+
 Enhancements
 ------------
 
