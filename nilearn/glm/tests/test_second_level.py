@@ -577,7 +577,7 @@ def test_non_parametric_inference_permutation_computation():
         Y = [func_img] * 4
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
 
-        neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X, 
+        neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
                                                      model_intercept=False,
                                                      mask=mask, n_perm=100)
 
