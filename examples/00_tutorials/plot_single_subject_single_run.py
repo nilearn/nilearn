@@ -270,7 +270,7 @@ eff_map.to_filename(join(outdir, 'active_vs_rest_eff_map.nii.gz'))
 # We can furthermore extract and report the found positions in a table.
 
 from nilearn.reporting import get_clusters_table
-table = get_clusters_table(z_map, stat_threshold=threshold,
+table, cluster_maps = get_clusters_table(z_map, stat_threshold=threshold,
                            cluster_threshold=20)
 table
 
