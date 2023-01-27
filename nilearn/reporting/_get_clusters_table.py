@@ -17,7 +17,7 @@ from scipy.ndimage import (
     center_of_mass,
     generate_binary_structure,
 )
-from nilearn.image import threshold_img
+from nilearn.image import threshold_img, new_img_like
 from nilearn.image.resampling import coord_transform
 from nilearn._utils import check_niimg_3d
 from nilearn._utils.niimg import _safe_get_data
@@ -267,6 +267,10 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
                            Rows corresponding to subpeaks will not have a value
                            in this column.
         ================== ====================================================
+        
+    label_maps : :obj:`list`
+        List of Niimg-like objects of cluster label maps.
+        If two_sided==True, first and second maps correspond to positive and negative tails.
     """
     cols = ['Cluster ID', 'X', 'Y', 'Z', 'Peak Stat', 'Cluster Size (mm3)']
     # Replace None with 0
@@ -319,7 +323,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
 
         # Now re-label and create table
         label_map = label(binarized, bin_struct)[0]
-        label_maps.append(label_map)
+        label_maps.append(new_img_like(stat_img, label_map)) # Save label map as nifti object
         clust_ids = sorted(list(np.unique(label_map)[1:]))
         peak_vals = np.array(
             [np.max(temp_stat_map * (label_map == c)) for c in clust_ids])
