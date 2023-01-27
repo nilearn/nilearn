@@ -308,6 +308,10 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
     def inverse_transform(self, X):
         """ Transform the 2D data matrix back to an image in brain space.
 
+        This step only performs spatial unmasking,
+        without inverting any additional processing performed by ``transform``,
+        such as temporal filtering or smoothing. 
+
         Parameters
         ----------
         X : 1D/2D :obj:`numpy.ndarray`

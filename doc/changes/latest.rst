@@ -16,5 +16,7 @@ Fixes
 Enhancements
 ------------
 
+- Addition to docs to note that :meth:`~maskers.BaseMasker.inverse_transform` only performs spatial unmasking (:gh:`3445` by `Robert Williamson`_).
+
 Changes
 -------
