@@ -206,7 +206,7 @@ def _pare_subpeaks(xyz, ijk, vals, min_distance):
 
 
 def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
-                       two_sided=False, min_distance=8.):
+                       two_sided=False, min_distance=8., return_label_maps=False):
     """Creates pandas dataframe with img cluster statistics.
 
     This function should work on any statistical maps where more extreme values
@@ -249,6 +249,9 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         .. note::
             If two different clusters are closer than ``min_distance``, it can
             result in peaks closer than ``min_distance``.
+    
+    return_label_maps : :obj:`bool`, optional
+        Whether or not to additionally output cluster label map images. Default=False.
 
     Returns
     -------
@@ -269,6 +272,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         ================== ====================================================
         
     label_maps : :obj:`list`
+        Returned if return_label_maps=True
         List of Niimg-like objects of cluster label maps.
         If two_sided==True, first and second maps correspond to positive and negative tails.
     """
@@ -390,4 +394,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     else:
         df = pd.DataFrame(columns=cols, data=rows)
 
-    return df, label_maps
+    if return_label_maps:
+        return df, label_maps
+    else:
+        return df
