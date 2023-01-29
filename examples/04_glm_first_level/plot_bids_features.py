@@ -140,7 +140,7 @@ plt.show()
 # We can get a latex table from a Pandas Dataframe for display and publication
 # purposes
 from nilearn.reporting import get_clusters_table
-table, cluster_maps = get_clusters_table(z_map, norm.isf(0.001), 10)
+table = get_clusters_table(z_map, norm.isf(0.001), 10)
 print(table.to_latex())
 
 #########################################################################
