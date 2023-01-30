@@ -143,9 +143,8 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None,
 
 
 @fill_doc
-def fetch_atlas_craddock_2012(homogeneity='spatial', grp_mean=True,
-                              data_dir=None, url=None, resume=True,
-                              verbose=1):
+def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True,
+                              verbose=1, homogeneity='spatial', grp_mean=True,):
     """Download and return file names for the Craddock 2012 parcellation.
 
     This function returns a :term:`probabilistic atlas<Probabilistic atlas>`.
@@ -159,16 +158,16 @@ def fetch_atlas_craddock_2012(homogeneity='spatial', grp_mean=True,
 
     Parameters
     ----------
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
     homogeneity: :obj:`str`, optional
         The choice of the homogeneity ('spatial' or 'temporal' or 'random')
         Default='spatial'.
     grp_mean: :obj:`bool`, optional
         The choice of the parcellation (with group_mean or without)
         Default=True.
-    %(data_dir)s
-    %(url)s
-    %(resume)s
-    %(verbose)s
 
     Returns
     -------
@@ -806,9 +805,9 @@ def fetch_coords_power_2011(legacy_format=True):
 
 
 @fill_doc
-def fetch_atlas_smith_2009(dimension=20, resting=True, data_dir=None,
-                           mirror='origin', url=None, resume=True,
-                           verbose=1):
+def fetch_atlas_smith_2009(data_dir=None, url=None, resume=True,
+                           verbose=1, mirror='origin', dimension=20,
+                           resting=True):
     """Download and load the Smith :term:`ICA` and BrainMap
     :term:`Probabilistic atlas` (2009).
 
@@ -816,6 +815,14 @@ def fetch_atlas_smith_2009(dimension=20, resting=True, data_dir=None,
 
     Parameters
     ----------
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
+    mirror : :obj:`str`, optional
+        By default, the dataset is downloaded from the original website of the
+        atlas. Specifying "nitrc" will force download from a mirror, with
+        potentially higher bandwidth. Default='origin'.
     dimension: :obj:`int`, optional
         Number of dimensions in the dictionary. Valid resolutions
         available are {10, 20, 70}.
@@ -823,14 +830,6 @@ def fetch_atlas_smith_2009(dimension=20, resting=True, data_dir=None,
     resting: :obj:`bool`, optional
         Either to fetch the resting-:term:`fMRI` or BrainMap components
         Default=True.
-    %(data_dir)s
-    mirror : :obj:`str`, optional
-        By default, the dataset is downloaded from the original website of the
-        atlas. Specifying "nitrc" will force download from a mirror, with
-        potentially higher bandwidth. Default='origin'.
-    %(url)s
-    %(resume)s
-    %(verbose)s
 
     Returns
     -------
@@ -1124,9 +1123,8 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
 
 
 @fill_doc
-def fetch_atlas_basc_multiscale_2015(resolution=7, version='sym',
-                                     data_dir=None, url=None, resume=True,
-                                     verbose=1):
+def fetch_atlas_basc_multiscale_2015(data_dir=None, url=None, resume=True,
+                                     verbose=1, resolution=7, version='sym'):
     """Downloads and loads multiscale functional brain parcellations.
 
     This :term:`Deterministic atlas` includes group brain parcellations
@@ -1155,6 +1153,10 @@ def fetch_atlas_basc_multiscale_2015(resolution=7, version='sym',
 
     Parameters
     ----------
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
     resolution: :ob:`int`, optional
         Number of networks in the dictionary. Valid resolutions
         available are {7, 12, 20, 36, 64, 122, 197, 325, 444}
@@ -1163,10 +1165,6 @@ def fetch_atlas_basc_multiscale_2015(resolution=7, version='sym',
         Available versions are 'sym' or 'asym'. By default all scales of
         brain parcellations of version 'sym' will be returned.
         Default='sym'.
-    %(data_dir)s
-    %(url)s
-    %(resume)s
-    %(verbose)s
 
     Returns
     -------
