@@ -445,7 +445,7 @@ def permuted_ols(
             Additionally, if ``tfce`` is True or ``threshold`` is not None,
             ``output_type`` will automatically be set to 'dict'.
 
-        .. deprecated:: 0.9.2.dev
+        .. deprecated:: 0.9.2
 
             The default value for this parameter will change from 'legacy' to
             'dict' in 0.13, and the parameter will be removed completely in
@@ -464,7 +464,7 @@ def permuted_ols(
 
             This is returned if ``output_type`` == 'legacy'.
 
-        .. deprecated:: 0.9.2.dev
+        .. deprecated:: 0.9.2
 
             The 'legacy' option for ``output_type`` is deprecated.
             The default value will change to 'dict' in 0.13,
@@ -480,7 +480,7 @@ def permuted_ols(
 
             This is returned if ``output_type`` == 'legacy'.
 
-        .. deprecated:: 0.9.2.dev
+        .. deprecated:: 0.9.2
 
             The 'legacy' option for ``output_type`` is deprecated.
             The default value will change to 'dict' in 0.13,
@@ -494,7 +494,7 @@ def permuted_ols(
 
             This is returned if ``output_type`` == 'legacy'.
 
-        .. deprecated:: 0.9.2.dev
+        .. deprecated:: 0.9.2
 
             The 'legacy' option for ``output_type`` is deprecated.
             The default value will change to 'dict' in 0.13,
@@ -688,7 +688,7 @@ def permuted_ols(
     n_samples, n_regressors = tested_vars.shape
 
     # check if explanatory variates is intercept (constant) or not
-    if (n_regressors == 1 and np.unique(tested_vars).size == 1):
+    if n_regressors == np.unique(tested_vars).size == 1:
         intercept_test = True
     else:
         intercept_test = False
@@ -903,15 +903,13 @@ def permuted_ols(
             )
 
             if two_sided_test:
-                # Label positive and negative clusters separately
-                n_positive_clusters = np.max(labeled_arr3d)
+                # Add negative cluster labels
                 temp_labeled_arr3d, _ = label(
                     scores_original_data_3d < -threshold_t,
                     bin_struct,
                 )
-                temp_labeled_arr3d[
-                    temp_labeled_arr3d > threshold_t
-                ] += n_positive_clusters
+                n_negative_clusters = np.max(temp_labeled_arr3d)
+                labeled_arr3d[labeled_arr3d > 0] += n_negative_clusters
                 labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
                 del temp_labeled_arr3d
 

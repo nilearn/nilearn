@@ -11,7 +11,7 @@ from nilearn import _utils, image, masking
 from nilearn.maskers.base_masker import _filter_and_extract, BaseMasker
 
 
-class _ExtractionFunctor(object):
+class _ExtractionFunctor:
 
     func_name = 'nifti_labels_masker_extractor'
 
@@ -645,7 +645,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         Any mask given at initialization is taken into account.
 
-        .. versionchanged:: 0.9.2dev
+        .. versionchanged:: 0.9.2
 
             This method now supports 1D arrays, which will produce 3D images.
 

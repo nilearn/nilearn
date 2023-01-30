@@ -1,8 +1,5 @@
 """
-This module presents an interface to use the glm implemented in
-nistats.regression.
-
-It provides facilities to realize a second level analysis on lists of
+This module provides facilities to realize a second level analysis on lists of
 first level contrasts or directly on fitted first level models
 
 Author: Martin Perez-Guevara, 2016
@@ -314,11 +311,6 @@ class SecondLevelModel(BaseGLM):
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
         on memory consumption. Default=True.
-
-    Notes
-    -----
-    This class is experimental.
-    It may change in any future release of Nilearn.
 
     """
     def __init__(self, mask_img=None, target_affine=None, target_shape=None,

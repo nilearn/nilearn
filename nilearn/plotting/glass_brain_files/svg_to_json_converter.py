@@ -9,7 +9,7 @@ import sys
 import json
 
 
-class SVGToJSONConverter(object):
+class SVGToJSONConverter:
     """Reads an svg file and exports paths to a JSON format
 
     Only segments and Bezier curves are supported

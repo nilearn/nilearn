@@ -23,7 +23,7 @@ sparse_encode_args = {'check_input': False}
 
 
 def _compute_loadings(components, data):
-    ridge = Ridge(fit_intercept=None, alpha=1e-8)
+    ridge = Ridge(fit_intercept=False, alpha=1e-8)
     ridge.fit(components.T, np.asarray(data.T))
     loadings = ridge.coef_.T
 

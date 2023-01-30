@@ -1,9 +1,6 @@
 """
-This module presents an interface to use the glm implemented in
-nistats.regression.
-
-It contains the GLM and contrast classes that are meant to be the main objects
-of fMRI data analyses.
+This module contains the GLM and contrast classes that are meant to be the main
+objects of fMRI data analyses.
 
 Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 
@@ -347,11 +344,6 @@ class FirstLevelModel(BaseGLM):
         Values are SimpleRegressionResults corresponding to the voxels,
         if minimize_memory is True,
         RegressionResults if minimize_memory is False
-
-    Notes
-    -----
-    This class is experimental.
-    It may change in any future release of Nilearn.
 
     """
 
@@ -865,7 +857,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 
     """
     # check arguments
-    img_filters = img_filters if img_filters else []
+    img_filters = img_filters or []
     if not isinstance(dataset_path, str):
         raise TypeError(
             'dataset_path must be a string, instead %s was given' %

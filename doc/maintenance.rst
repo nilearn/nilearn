@@ -32,7 +32,7 @@ is responsible for a very basic labeling categorizing the issue:
 	- |Enhancement| for feature requests.
 
 First of all, the user might have mislabeled the issue, in which case a member
-of the :ref:`core_devs` team or :ref:`triage` needs to correct the labels.
+of the :ref:`core_devs` team needs to correct the labels.
 
 In addition to these basic labels, we have many more labels which describes
 in more detail a given issue. First, we try to describe the **estimated amount
@@ -297,6 +297,38 @@ At this point, we need to upload the binaries to GitHub and link them to the tag
 
 Build and deploy the documentation
 ----------------------------------
+
+Before building the documentation, make sure that the following LaTeX
+dependencies are installed on your system:
+
+- `dvipng <https://ctan.org/pkg/dvipng>`_
+- `texlive-latex-base <https://ctan.org/pkg/latex-base>`_
+- `texlive-latex-extra <https://packages.debian.org/sid/texlive-latex-extra>`_
+
+You can check if each package is installed by using
+``command -v <command-name>`` as in:
+
+.. code-block:: bash
+
+    command -v dvipng
+
+If the package is installed, then the path to its location on your system will
+be returned. Otherwise, you can install using your system's package manager or
+from source, for example:
+
+.. code-block:: bash
+
+    wget https://mirrors.ctan.org/dviware/dvipng.zip
+    unzip dvipng.zip
+    cd dvipng
+    ./configure
+    make
+    make install
+
+See available linux distributions of texlive-latex-base and texlive-latex-extra:
+
+- https://pkgs.org/search/?q=texlive-latex-base
+- https://pkgs.org/search/?q=texlive-latex-extra
 
 We now need to update the documentation:
 

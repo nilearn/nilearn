@@ -15,7 +15,7 @@ from nilearn.plotting.glass_brain import plot_brain_schematics
 
 
 @fill_doc
-class BaseAxes(object):
+class BaseAxes:
     """An MPL axis-like object that displays a 2D view of 3D volumes.
 
     Parameters
@@ -564,7 +564,7 @@ class GlassBrainAxes(BaseAxes):
                 # matplotlib versions older than 3.1
                 # This can be removed once support for
                 # matplotlib pre 3.1 has been dropped.
-                if dx == 0 and dy == 0:
+                if dx == dy == 0:
                     arrow = FancyArrow(xdata[0], ydata[0],
                                        dx, dy)
                 else:

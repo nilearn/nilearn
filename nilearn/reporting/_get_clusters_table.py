@@ -222,7 +222,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
 
         This center of mass may, in some cases, appear outside of the cluster.
 
-        .. versionchanged:: 0.9.2dev
+        .. versionchanged:: 0.9.2
             In this case, the cluster voxel nearest to the center of mass is
             reported.
 

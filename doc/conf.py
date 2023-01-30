@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # nilearn documentation build configuration file, created by
 # sphinx-quickstart on Fri Jan  8 09:13:42 2010.
 #
@@ -193,6 +191,8 @@ html_theme_options = {
         "admonition-title-font-size": "100%",
         "color-announcement-background": "#FBB360",
         "color-announcement-text": "#111418",
+        "color-admonition-title--note": "#448aff",
+        "color-admonition-title-background--note": "#448aff10",
     },
 }
 
@@ -341,7 +341,7 @@ latex_show_urls = 'footnote'
 
 trim_doctests_flags = True
 
-_python_doc_base = 'https://docs.python.org/3.8'
+_python_doc_base = 'https://docs.python.org/3.9'
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
@@ -377,7 +377,7 @@ sphinx_gallery_conf = {
     'examples_dirs': '../examples/',
     'gallery_dirs': 'auto_examples',
     # Ignore the function signature leftover by joblib
-    'ignore_pattern': 'func_code\.py',
+    'ignore_pattern': r'func_code\.py',
     'show_memory': not sys.platform.startswith('win'),
     'remove_config_comments': True,
     'nested_sections': True,

@@ -131,7 +131,7 @@ def coord_transform(x, y, z, affine):
         >>> niimg = datasets.load_mni152_template()
         >>> # Find the MNI coordinates of the voxel (50, 50, 50)
         >>> image.coord_transform(50, 50, 50, niimg.affine)
-        (2.0, -34.0, 28.0)
+        (-48.0, -84.0, -22.0)
 
     """
     squeeze = (not hasattr(x, '__iter__'))
@@ -448,11 +448,12 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     # If later on we want to impute sform using qform add this condition
     # see : https://github.com/nilearn/nilearn/issues/3168#issuecomment-1159447771 # noqa:E501
-    sform, sform_code = img.get_sform(coded=True)
-    if not sform_code:
-        warnings.warn("The provided image has no sform in its header. "
-                      "Please check the provided file. "
-                      "Results may not be as expected.")
+    if hasattr(img, 'get_sform'):  # NIfTI images only
+        _, sform_code = img.get_sform(coded=True)
+        if not sform_code:
+            warnings.warn("The provided image has no sform in its header. "
+                        "Please check the provided file. "
+                        "Results may not be as expected.")
 
     # noop cases
     if target_affine is None and target_shape is None:

@@ -70,7 +70,7 @@ def mion_response_function(tr, oversampling=16, onset=0.0):
     """
     dt = tr / oversampling
     time_stamps = np.linspace(
-        0, time_length, np.rint(float(time_length) / dt).astype(int)
+        0, time_length, np.rint(time_length / dt).astype(int)
     )
     time_stamps -= onset
 

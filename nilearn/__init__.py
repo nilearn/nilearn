@@ -50,19 +50,19 @@ from .version import (
 os.environ.setdefault("KMP_INIT_AT_FORK", "FALSE")
 
 
-def _py36_deprecation_warning():
-    py36_warning = ("Python 3.6 support is deprecated and will be removed in "
-                    "release 0.10 of Nilearn. Consider switching to "
-                    "Python 3.8 or 3.9.")
-    warnings.filterwarnings('once', message=py36_warning)
-    warnings.warn(message=py36_warning,
+def _py37_deprecation_warning():
+    py37_warning = ("Python 3.7 support is deprecated and will be removed in "
+                    "release 0.12 of Nilearn. Consider switching to "
+                    "Python 3.9 or 3.10.")
+    warnings.filterwarnings('once', message=py37_warning)
+    warnings.warn(message=py37_warning,
                   category=FutureWarning,
                   stacklevel=3)
 
 
 def _python_deprecation_warnings():
-    if sys.version_info.major == 3 and sys.version_info.minor == 6:
-        _py36_deprecation_warning()
+    if sys.version_info.major == 3 and sys.version_info.minor == 7:
+        _py37_deprecation_warning()
 
 
 _check_module_dependencies()

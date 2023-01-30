@@ -37,7 +37,7 @@ def design_matrix_light(
     """ Same as make_first_level_design_matrix,
     but only returns the computed matrix and associated name.
     """
-    fir_delays = fir_delays if fir_delays else [0]
+    fir_delays = fir_delays or [0]
     dmtx = make_first_level_design_matrix(frame_times, events, hrf_model,
                                           drift_model, high_pass, drift_order,
                                           fir_delays,
@@ -158,7 +158,7 @@ def test_design_matrix10():
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3,
                                    fir_delays=range(1, 5))
-    onset = events.onset[events.trial_type == 'c0'].astype(np.int)
+    onset = events.onset[events.trial_type == 'c0'].astype(int)
     assert_array_almost_equal(X[onset + 1, 0], np.ones(3))
 
 
@@ -279,7 +279,7 @@ def test_design_matrix11():
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3,
                                    fir_delays=range(1, 5))
-    onset = events.onset[events.trial_type == 'c0'].astype(np.int)
+    onset = events.onset[events.trial_type == 'c0'].astype(int)
     assert_array_almost_equal(X[onset + 3, 2], np.ones(3))
 
 
@@ -292,7 +292,7 @@ def test_design_matrix12():
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3,
                                    fir_delays=range(1, 5))
-    onset = events.onset[events.trial_type == 'c2'].astype(np.int)
+    onset = events.onset[events.trial_type == 'c2'].astype(int)
     assert_array_almost_equal(X[onset + 4, 11], np.ones(3))
 
 
@@ -305,7 +305,7 @@ def test_design_matrix13():
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3,
                                    fir_delays=range(1, 5))
-    onset = events.onset[events.trial_type == 'c0'].astype(np.int)
+    onset = events.onset[events.trial_type == 'c0'].astype(int)
     assert_array_almost_equal(X[onset + 1, 0], np.ones(3))
 
 
@@ -319,7 +319,7 @@ def test_design_matrix14():
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3,
                                    fir_delays=range(1, 5))
-    onset = events.onset[events.trial_type == 'c0'].astype(np.int)
+    onset = events.onset[events.trial_type == 'c0'].astype(int)
     assert np.all(X[onset + 1, 0] > .5)
 
 
@@ -360,7 +360,7 @@ def test_design_matrix17():
     hrf_model = 'glover'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3)
-    ct = events.onset[events.trial_type == 'c0'].astype(np.int) + 1
+    ct = events.onset[events.trial_type == 'c0'].astype(int) + 1
     assert (X[ct, 0] > 0).all()
 
 
@@ -372,7 +372,7 @@ def test_design_matrix18():
     hrf_model = 'glover'
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3)
-    ct = events.onset[events.trial_type == 'c0'].astype(np.int) + 3
+    ct = events.onset[events.trial_type == 'c0'].astype(int) + 3
     assert (X[ct, 0] > 0).all()
 
 
@@ -385,7 +385,7 @@ def test_design_matrix19():
     X, names = design_matrix_light(frame_times, events, hrf_model=hrf_model,
                                    drift_model='polynomial', drift_order=3,
                                    fir_delays=range(1, 5))
-    idx = events.onset[events.trial_type == 0].astype(np.int)
+    idx = events.onset[events.trial_type == 0].astype(int)
     assert_array_equal(X[idx + 1, 0], X[idx + 2, 1])
 
 
@@ -423,7 +423,7 @@ def test_fir_block():
     X, names = design_matrix_light(
         frame_times, bp, hrf_model='fir', drift_model=None,
         fir_delays=range(0, 4))
-    idx = bp['onset'][bp['trial_type'] == 1].astype(np.int)
+    idx = bp['onset'][bp['trial_type'] == 1].astype(int)
     assert X.shape == (128, 13)
     assert (X[idx, 4] == 1).all()
     assert (X[idx + 1, 5] == 1).all()

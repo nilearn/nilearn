@@ -1564,16 +1564,11 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
                 get_data(atlas_img) == region_nb] = level_labels[region_name]
         new_img_like(atlas_img, level_data).to_filename(
             str(output_dir.joinpath(f"{level_name}.nii.gz")))
-        # order the labels so that image values are indices in the list of
-        # labels for each level
-        # (TODO can be removed when dropping python 3.6 support)
-        sorted_level_labels = [
-            k for (k, v) in sorted(level_labels.items(), key=lambda t: t[1])
-        ]
+        level_labels = list(level_labels.keys())
         # rename '*' -> 'Background'
-        sorted_level_labels[0] = 'Background'
+        level_labels[0] = 'Background'
         output_dir.joinpath(f"{level_name}-labels.json").write_text(
-            json.dumps(sorted_level_labels), "utf-8")
+            json.dumps(level_labels), "utf-8")
 
 
 def _download_talairach(talairach_dir, verbose):

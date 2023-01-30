@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import warnings
 
 import nibabel as nib
@@ -32,7 +30,8 @@ else:
 def test_flm_reporting(use_method):
     with InTemporaryDirectory():
         shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
-        mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(shapes, rk)
+        mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
+            shapes, rk)
         flm = FirstLevelModel(mask_img=mask).fit(
             fmri_data, design_matrices=design_matrices)
         contrast = np.eye(3)[1]
@@ -45,7 +44,7 @@ def test_flm_reporting(use_method):
                                               height_control=None,
                                               min_distance=15,
                                               alpha=0.001, threshold=2.78,
-            )
+                                              )
         '''
         catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
         Python2's limited unicode support causes  HTMLDocument.get_iframe() to
@@ -230,33 +229,38 @@ def _generate_img():
     return nib.Nifti1Image(data_positive, mni_affine)
 
 
-def test_stat_map_to_svg_slice_z():
+@pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
+def test_stat_map_to_svg_slice_z(cut_coords):
     with InTemporaryDirectory():
         img = _generate_img()
         table_details = pd.DataFrame.from_dict({'junk': 0}, orient='index')
         stat_map_html_code = glmr._stat_map_to_svg(  # noqa: F841
             stat_img=img,
             bg_img=None,
+            cut_coords=cut_coords,
             display_mode='ortho',
             plot_type='slice',
             table_details=table_details,
         )
 
 
-def test_stat_map_to_svg_glass_z():
+@pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
+def test_stat_map_to_svg_glass_z(cut_coords):
     with InTemporaryDirectory():
         img = _generate_img()
         table_details = pd.DataFrame.from_dict({'junk': 0}, orient='index')
         stat_map_html_code = glmr._stat_map_to_svg(  # noqa: F841
             stat_img=img,
             bg_img=None,
+            cut_coords=cut_coords,
             display_mode='z',
             plot_type='glass',
             table_details=table_details,
         )
 
 
-def test_stat_map_to_svg_invalid_plot_type():
+@pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
+def test_stat_map_to_svg_invalid_plot_type(cut_coords):
     with InTemporaryDirectory():
         img = _generate_img()
         expected_error = ValueError(
@@ -266,6 +270,7 @@ def test_stat_map_to_svg_invalid_plot_type():
             stat_map_html_code = glmr._stat_map_to_svg(  # noqa: F841
                 stat_img=img,
                 bg_img=None,
+                cut_coords=cut_coords,
                 display_mode='z',
                 plot_type='junk',
                 table_details={'junk': 0

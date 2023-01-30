@@ -1,14 +1,19 @@
 .. _contributing:
 
 
+Code of Conduct
+===============
+
+By participating in Nilearn, you agree to abide by the :nipy:`NIPY Code of Conduct <conduct.html>`
+
 How to get help?
 ================
 
 If you have issues when using Nilearn, or if you have questions on how to use it, please don't hesitate to reach out!
 
-There are currently three ways to interact with the Nilearn team: through the :neurostars:`neurostars <>` forum, our :nilearn-gh:`github <>` issues, and through our weekly :nilearn-gh:`office hours <issues/2882>`, usually **every Friday from 4pm to 5pm UTC**.
+There are currently three ways to interact with the Nilearn team: through the :neurostars:`neurostars <>` forum, our :nilearn-gh:`github <>` issues, and through our weekly :nilearn-gh:`drop-in hours <issues/2882>`, usually **every Wednesday from 4pm to 5pm UTC**.
 
-If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn, we would appreciate it if you either ask it during office hours or create a topic on :neurostars:`neurostars <>` with the "nilearn" tag.
+If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn, we would appreciate it if you either ask it during the drop-in hours or create a topic on :neurostars:`neurostars <>` with the "nilearn" tag.
 Asking questions or reporting issues is always valuable because it will help other users having the same problem. So, please don't hold onto a burning question!
 
 We ask that you *don't* open an issue on :nilearn-gh:`GitHub <>` for usage questions. We use our :nilearn-gh:`GitHub <>` issue board for bug reports, feature requests, and documentation changes only.
@@ -46,17 +51,6 @@ community member.
 We do not expect community members to be experts in all changes included in
 :nilearn-gh:`pull requests <pulls>`, and we encourage you to concentrate on those code changes that you feel comfortable with.
 As always, more eyes on a code change means that the code is more likely to work in a wide variety of contexts!
-
-Join the triage team
---------------------
-
-The :ref:`triage` is composed of community members who have permission on
-:nilearn-gh:`github <>` to label and close :nilearn-gh:`issues <issues>`.
-Their work is crucial to improve the communication in the project and limit the crowding of the issue tracker.
-The :ref:`issue_labels` and :ref:`closing_policy` of the project is defined in more details in the :ref:`maintenance_process` page.
-
-Any community member may become a member of the Nilearn :ref:`triage`.
-If you are interested in joining the :ref:`triage`, please read the :ref:`maintenance_process` page and contact one of the :ref:`core_devs` to express your interest!
 
 Contribute code
 ---------------
@@ -239,6 +233,19 @@ Other tags can describe the PR content : [FIX] for a bugfix, [DOC] for a
 change in documentation or examples, [ENH] for a new feature and [MAINT] for
 maintenance changes.
 
+Changelog entries in doc/changes/latest.rst should adhere to the following conventions:
+
+- Entry in the appropriate category
+- Single line per entry
+- Finish with a link to the PR and the author's profile
+- New contributors to add their profile to doc/changes/names.rst
+
+Example entry:
+
+.. code-block:: rst
+
+    - Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
+  
 Coding Style
 -------------
 
@@ -335,7 +342,12 @@ Here are the key steps you need to go through to copy the repo before contributi
 
       git clone git@github.com:<your_username>/nilearn.git
 
-2. (optional but highly recommended) set up a conda environment to work on and activate it::
+2. (optional but highly recommended) set up a virtual environment to work in using whichever environment management tool you're used to and activate it. For example::
+
+      python3 -m venv nilearn
+      source nilearn/bin/activate
+
+   or::
 
       conda create -n nilearn
       conda activate nilearn
@@ -431,7 +443,7 @@ If you wish to build documentation:
 
 6. Request the CI builds the full documentation from your branch::
 
-      git commit --allow-empty -m "[circle full] request full build"
+      git commit --allow-empty -m "[full doc] request full build"
 
 .. tip::
     When generating documentation locally, you can build only specific files
