@@ -280,8 +280,16 @@ def _check_wn(btype, freq, nyq):
 
 
 @fill_doc
-def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
-                order=5, copy=False):
+def butterworth(
+    signals,
+    sampling_rate,
+    low_pass=None,
+    high_pass=None,
+    order=5,
+    padtype="odd",
+    padlen=None,
+    copy=False,
+):
     """Apply a low-pass, high-pass or band-pass
     `Butterworth filter <https://en.wikipedia.org/wiki/Butterworth_filter>`_.
 
@@ -306,6 +314,15 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
         orders can lead to numerical instability.
         Default=5.
 
+    padtype : {"odd", "even", "constant", None}, optional
+        Type of padding to use for the Butterworth filter.
+        For more information about this, see :func:`scipy.signal.filtfilt`.
+
+    padlen : :obj:`int` or None, optional
+        The size of the padding to add to the beginning and end of ``signals``.
+        If None, the default value from :func:`scipy.signal.filtfilt` will be
+        used.
+
     copy : :obj:`bool`, optional
         If False, `signals` is modified inplace, and memory consumption is
         lower than for ``copy=True``, though computation time is higher.
@@ -324,10 +341,10 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     if low_pass is not None and high_pass is not None \
             and high_pass >= low_pass:
         raise ValueError(
-            "High pass cutoff frequency (%f) is greater or equal"
-            "to low pass filter frequency (%f). This case is not handled "
-            "by this function."
-            % (high_pass, low_pass))
+            f"High pass cutoff frequency ({high_pass}) is greater than or "
+            f"equal to low pass filter frequency ({low_pass}). "
+            "This case is not handled by this function."
+        )
 
     nyq = sampling_rate * 0.5
 
@@ -351,7 +368,8 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
             warnings.warn(
                 'Signals are returned unfiltered because band-pass critical '
                 'frequencies are equal. Please check that inputs for '
-                'sampling_rate, low_pass, and high_pass are valid.')
+                'sampling_rate, low_pass, and high_pass are valid.'
+            )
             if copy:
                 return signals.copy()
             else:
@@ -362,7 +380,13 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     b, a = sp_signal.butter(order, critical_freq, btype=btype, output='ba')
     if signals.ndim == 1:
         # 1D case
-        output = sp_signal.filtfilt(b, a, signals)
+        output = sp_signal.filtfilt(
+            b,
+            a,
+            signals,
+            padtype=padtype,
+            padlen=padlen,
+        )
         if copy:  # filtfilt does a copy in all cases.
             signals = output
         else:
@@ -371,11 +395,24 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
         if copy:
             # No way to save memory when a copy has been requested,
             # because filtfilt does out-of-place processing
-            signals = sp_signal.filtfilt(b, a, signals, axis=0)
+            signals = sp_signal.filtfilt(
+                b,
+                a,
+                signals,
+                axis=0,
+                padtype=padtype,
+                padlen=padlen,
+            )
         else:
             # Lesser memory consumption, slower.
             for timeseries in signals.T:
-                timeseries[:] = sp_signal.filtfilt(b, a, timeseries)
+                timeseries[:] = sp_signal.filtfilt(
+                    b,
+                    a,
+                    timeseries,
+                    padtype=padtype,
+                    padlen=padlen,
+                )
 
             # results returned in-place
 
