@@ -17,6 +17,7 @@ Enhancements
 ------------
 
 - Addition to docs to note that :meth:`~maskers.BaseMasker.inverse_transform` only performs spatial unmasking (:gh:`3445` by `Robert Williamson`_).
+- Give users control over Butterworth filter (:func:`~signal.butterworth`) parameters in :func:`~signal.clean` as kwargs (:gh:`3478` by `Taylor Salo`_).
 
 Changes
 -------
