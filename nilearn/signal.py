@@ -377,7 +377,13 @@ def butterworth(
     else:
         critical_freq = critical_freq[0]
 
-    b, a = sp_signal.butter(order, critical_freq, btype=btype, output='ba')
+    b, a = sp_signal.butter(
+        order,
+        critical_freq,
+        btype=btype,
+        output='ba',
+        fs=sampling_rate,
+    )
     if signals.ndim == 1:
         # 1D case
         output = sp_signal.filtfilt(
@@ -499,7 +505,7 @@ def _ensure_float(data):
 def clean(signals, runs=None, detrend=True, standardize='zscore',
           sample_mask=None, confounds=None, standardize_confounds=True,
           filter='butterworth', low_pass=None, high_pass=None, t_r=2.5,
-          ensure_finite=False):
+          ensure_finite=False, **kwargs):
     """Improve :term:`SNR` on masked :term:`fMRI` signals.
 
     This function can do several things on the input signals. With the default
@@ -613,6 +619,12 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     %(ensure_finite)s
         Default=False.
 
+    kwargs
+        Keyword arguments to be passed to functions called within ``clean``.
+        Kwargs prefixed with ``'butterworth__'`` will be passed to
+        :func:`~nilearn.signal.butterworth`.
+
+
     Returns
     -------
     cleaned_signals : :class:`numpy.ndarray`
@@ -678,13 +690,28 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
 
     # Butterworth filtering
     if filter_type == 'butterworth':
-        signals = butterworth(signals, sampling_rate=1. / t_r,
-                              low_pass=low_pass, high_pass=high_pass)
+        butterworth_kwargs = {
+            k.replace("butterworth__", ""): v for k, v in kwargs if
+            k.startswith("butterworth__")
+        }
+        signals = butterworth(
+            signals,
+            sampling_rate=1. / t_r,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            **butterworth_kwargs,
+        )
         if confounds is not None:
             # Apply low- and high-pass filters to keep filters orthogonal
             # (according to Lindquist et al. (2018))
-            confounds = butterworth(confounds, sampling_rate=1. / t_r,
-                                    low_pass=low_pass, high_pass=high_pass)
+            confounds = butterworth(
+                confounds,
+                sampling_rate=1. / t_r,
+                low_pass=low_pass,
+                high_pass=high_pass,
+                **butterworth_kwargs,
+            )
+
         # apply sample_mask to remove censored volumes after signal filtering
         if sample_mask is not None:
             signals, confounds = _censor_signals(signals, confounds,
