@@ -159,11 +159,11 @@ def fetch_atlas_craddock_2012(homogeneity='spatial', grp_mean=True,
 
     Parameters
     ----------
-    spatial: :obj:`str`, optional
-        The choice of the homogeneity (spatial or temporal or random)
-        Default=spatial.
+    homogeneity: :obj:`str`, optional
+        The choice of the homogeneity ('spatial' or 'temporal' or 'random')
+        Default='spatial'.
     grp_mean: :obj:`bool`, optional
-        The choice of the parcellation (with group_mean or no)
+        The choice of the parcellation (with group_mean or without)
         Default=True.
     %(data_dir)s
     %(url)s
@@ -838,7 +838,6 @@ def fetch_atlas_smith_2009(dimension=20, resting=True, data_dir=None,
         Dictionary-like object, contains:
 
             - 'maps': :obj:`str`, path to nifti file containing the
-              :class:`~nibabel.nifti1.Nifti1Image` defining the
               resting-:term:`fMRI` or BrainMap components.
               The shape of the image is ``(91, 109, 91, dimension)``.
             - 'description': :obj:`str`, description of the atlas.
