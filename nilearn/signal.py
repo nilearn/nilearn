@@ -261,7 +261,7 @@ def _check_wn(btype, freq, nyq):
         # should be btw 0 and 1"). But, after ("0 < wn < 1"). Due to unstable
         # results as pointed in the issue above. Hence, we forced the
         # critical frequencies to be slightly less than 1. but not 1.
-        freq = nyq - 10 * np.finfo(1.).eps
+        freq = nyq - (nyq * 10 * np.finfo(1.).eps)
         warnings.warn(
             f'The frequency specified for the {btype} pass filter is '
             'too high to be handled by a digital filter (superior to '
@@ -269,7 +269,7 @@ def _check_wn(btype, freq, nyq):
             'frequency).')
 
     if freq < 0.0:  # equal to 0.0 is okay
-        freq = np.finfo(1.).eps
+        freq = nyq * np.finfo(1.).eps
         warnings.warn(
             f'The frequency specified for the {btype} pass filter is too '
             'low to be handled by a digital filter (must be non-negative). '
