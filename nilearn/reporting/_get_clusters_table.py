@@ -277,6 +277,9 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         Returned if return_label_maps=True
         List of Niimg-like objects of cluster label maps.
         If two_sided==True, first and second maps correspond to positive and negative tails.
+        
+        .. versionadded:: 0.10.1.dev
+        
     """
     # Add future warning message
     future_warn_message = (
