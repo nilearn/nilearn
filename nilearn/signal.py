@@ -254,29 +254,28 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
 
 
 def _check_wn(btype, freq, nyq):
-    wn = freq / float(nyq)
-    if wn >= 1.:
+    if freq >= nyq:
         # results looked unstable when the critical frequencies are
         # exactly at the Nyquist frequency. See issue at SciPy
         # https://github.com/scipy/scipy/issues/6265. Before, SciPy 1.0.0 ("wn
         # should be btw 0 and 1"). But, after ("0 < wn < 1"). Due to unstable
         # results as pointed in the issue above. Hence, we forced the
         # critical frequencies to be slightly less than 1. but not 1.
-        wn = 1 - 10 * np.finfo(1.).eps
+        freq = nyq - 10 * np.finfo(1.).eps
         warnings.warn(
-            'The frequency specified for the %s pass filter is '
+            f'The frequency specified for the {btype} pass filter is '
             'too high to be handled by a digital filter (superior to '
-            'nyquist frequency). It has been lowered to %.2f (nyquist '
-            'frequency).' % (btype, wn))
+            f'nyquist frequency). It has been lowered to {freq} (nyquist '
+            'frequency).')
 
-    if wn < 0.0: # equal to 0.0 is okay
-        wn = np.finfo(1.).eps
+    if freq < 0.0:  # equal to 0.0 is okay
+        freq = np.finfo(1.).eps
         warnings.warn(
-            'The frequency specified for the %s pass filter is '
-            'too low to be handled by a digital filter (must be non-negative).'
-            ' It has been set to eps: %.5e' % (btype, wn))
+            f'The frequency specified for the {btype} pass filter is too '
+            'low to be handled by a digital filter (must be non-negative). '
+            f'It has been set to eps: {freq}')
 
-    return wn
+    return freq
 
 
 @fill_doc
@@ -303,7 +302,7 @@ def butterworth(
         of `signals`.
 
     sampling_rate : :obj:`float`
-        Number of samples per time unit (sample frequency).
+        Number of samples per second (sample frequency, in Hertz).
     %(low_pass)s
     %(high_pass)s
     order : :obj:`int`, optional
