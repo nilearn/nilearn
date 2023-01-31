@@ -252,6 +252,8 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     
     return_label_maps : :obj:`bool`, optional
         Whether or not to additionally output cluster label map images. Default=False.
+        
+        .. versionadded:: 0.10.1.dev
 
     Returns
     -------
