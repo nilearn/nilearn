@@ -265,10 +265,19 @@ def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
     request_mocker.url_mapping["*craddock*"] = local_archive
     bunch = atlas.fetch_atlas_craddock_2012(data_dir=tmp_path,
                                             verbose=0)
-
+    bunch_rand = atlas.fetch_atlas_craddock_2012(data_dir=tmp_path,
+                                                 verbose=0,
+                                                 homogeneity='random')
+    bunch_no_mean = atlas.fetch_atlas_craddock_2012(data_dir=tmp_path,
+                                                    verbose=0,
+                                                    grp_mean=False)
     assert request_mocker.url_count == 1
     assert bunch['maps'][0] == str(tmp_path / 'craddock_2012'
                                    / 'scorr05_mean_all.nii.gz')
+    assert bunch_rand['maps'][0] == str(tmp_path / 'craddock_2012'
+                                        / 'random_all.nii.gz')
+    assert bunch_no_mean['maps'][0] == str(tmp_path / 'craddock_2012'
+                                           / 'scorr05_2level_all.nii.gz')
     assert bunch.description != ''
 
 

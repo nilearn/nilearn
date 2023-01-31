@@ -144,7 +144,7 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None,
 
 @fill_doc
 def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True,
-                              verbose=1, homogeneity='spatial', grp_mean=True,):
+                              verbose=1, homogeneity='spatial', grp_mean=True):
     """Download and return file names for the Craddock 2012 parcellation.
 
     This function returns a :term:`probabilistic atlas<Probabilistic atlas>`.
