@@ -254,26 +254,33 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
 
 
 def _check_wn(btype, freq, nyq):
+    """Ensure that the critical frequency works with the Nyquist frequency.
+
+    The critical frequency must be (1) >= 0 and (2) < Nyquist.
+    When critical frequencies are exactly at the Nyquist frequency,
+    results are unstable.
+
+    See issue at SciPy https://github.com/scipy/scipy/issues/6265.
+    Due to unstable results as pointed in the issue above,
+    we force the critical frequencies to be slightly less than the Nyquist
+    frequency, and slightly more than zero.
+    """
     if freq >= nyq:
-        # results looked unstable when the critical frequencies are
-        # exactly at the Nyquist frequency. See issue at SciPy
-        # https://github.com/scipy/scipy/issues/6265. Before, SciPy 1.0.0 ("wn
-        # should be btw 0 and 1"). But, after ("0 < wn < 1"). Due to unstable
-        # results as pointed in the issue above. Hence, we forced the
-        # critical frequencies to be slightly less than 1. but not 1.
         freq = nyq - (nyq * 10 * np.finfo(1.).eps)
         warnings.warn(
             f'The frequency specified for the {btype} pass filter is '
-            'too high to be handled by a digital filter (superior to '
-            f'nyquist frequency). It has been lowered to {freq} (nyquist '
-            'frequency).')
+            'too high to be handled by a digital filter '
+            '(superior to Nyquist frequency). '
+            f'It has been lowered to {freq} (Nyquist frequency).'
+        )
 
-    if freq < 0.0:  # equal to 0.0 is okay
+    elif freq < 0.0:  # equal to 0.0 is okay
         freq = nyq * np.finfo(1.).eps
         warnings.warn(
             f'The frequency specified for the {btype} pass filter is too '
             'low to be handled by a digital filter (must be non-negative). '
-            f'It has been set to eps: {freq}')
+            f'It has been set to eps: {freq}'
+        )
 
     return freq
 
@@ -359,10 +366,10 @@ def butterworth(
     if len(critical_freq) == 2:
         btype = 'band'
         # Inappropriate parameter input might lead to coercion of both
-        # elements of critical_freq to a value just below 1.
+        # elements of critical_freq to a value just below Nyquist.
         # Scipy fix now enforces that critical frequencies cannot be equal.
-        # See https://github.com/scipy/scipy/pull/15886. If this is the case,
-        # we return the signals unfiltered.
+        # See https://github.com/scipy/scipy/pull/15886.
+        # If this is the case, we return the signals unfiltered.
         if critical_freq[0] == critical_freq[1]:
             warnings.warn(
                 'Signals are returned unfiltered because band-pass critical '
