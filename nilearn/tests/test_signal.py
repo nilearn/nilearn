@@ -259,6 +259,12 @@ def test_standardize():
     np.testing.assert_almost_equal(stds, np.ones(n_features))
     np.testing.assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
 
+    # Repeating test above but for new correct strategy
+    b = nisignal._standardize(a, standardize='zscore_sample')
+    stds = np.std(b)
+    np.testing.assert_almost_equal(stds, np.ones(n_features), decimal=1)
+    np.testing.assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
+
     # With trend removal
     a = np.atleast_2d(np.linspace(0, 2., n_features)).T
     b = nisignal._standardize(a, detrend=True, standardize=False)
@@ -268,6 +274,13 @@ def test_standardize():
     np.testing.assert_array_equal(length_1_signal,
                                   nisignal._standardize(length_1_signal,
                                                         standardize='zscore'))
+
+    # Repeating test above but for new correct strategy
+    length_1_signal = np.atleast_2d(np.linspace(0, 2., n_features))
+    np.testing.assert_array_equal(
+        length_1_signal,
+        nisignal._standardize(length_1_signal, standardize='zscore_sample')
+    )
 
 
 def test_detrend():
@@ -831,6 +844,11 @@ def test_clean_zscore():
     cleaned_signals = clean(signals, standardize='zscore')
     np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
     np.testing.assert_almost_equal(cleaned_signals.std(0), 1)
+
+    # Repeating test above but for new correct strategy
+    cleaned_signals = clean(signals, standardize='zscore_sample')
+    np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
+    np.testing.assert_almost_equal(cleaned_signals.std(0), 1, decimal=3)
 
 
 def test_create_cosine_drift_terms():
