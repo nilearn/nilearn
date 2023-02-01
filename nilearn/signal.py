@@ -697,7 +697,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     # Butterworth filtering
     if filter_type == 'butterworth':
         butterworth_kwargs = {
-            k.replace("butterworth__", ""): v for k, v in kwargs if
+            k.replace("butterworth__", ""): v for k, v in kwargs.items() if
             k.startswith("butterworth__")
         }
         signals = butterworth(

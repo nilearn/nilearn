@@ -369,13 +369,13 @@ def test_clean_kwargs():
     kwargs = [
         {
             "butterworth__padtype": "even",
-            "butterworth__padlen": 100,
+            "butterworth__padlen": 10,
             "butterworth__order": 3,
         },
         {
             "butterworth__padtype": None,
             "butterworth__padlen": None,
-            "butterworth__order": 0,
+            "butterworth__order": 1,
         },
         {
             "butterworth__padtype": "constant",
