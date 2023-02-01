@@ -57,7 +57,7 @@ def _standardize(signals, detrend=False, standardize='zscore'):
     std_signals : :class:`numpy.ndarray`
         Copy of signals, standardized.
     """
-    if standardize not in [True, False, 'psc', 'zscore']:
+    if standardize not in [True, False, 'psc', 'zscore', 'zscore_sample']:
         raise ValueError('{} is no valid standardize strategy.'
                          .format(standardize))
 
