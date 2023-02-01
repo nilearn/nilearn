@@ -253,7 +253,8 @@ def test_standardize():
 
     # transpose array to fit _standardize input.
     # Without trend removal
-    b = nisignal._standardize(a, standardize='zscore')
+    with pytest.warns(FutureWarning, match='default strategy for standardize'):
+        b = nisignal._standardize(a, standardize='zscore')
     stds = np.std(b)
     np.testing.assert_almost_equal(stds, np.ones(n_features))
     np.testing.assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
