@@ -206,8 +206,8 @@ def test_butterworth():
     # Test check for frequency lower than allowed (<0).
     # The frequency should be modified and the filter should be run.
     sampling = 1
-    high_pass = 0.01
-    low_pass = -1
+    high_pass = -1
+    low_pass = 0.4
     with pytest.warns(
         UserWarning,
         match='The frequency specified for the high pass filter is too low',
@@ -220,6 +220,26 @@ def test_butterworth():
             copy=True,
         )
     assert not np.array_equal(data, out)
+
+    # Test check for frequency lower than allowed (<0).
+    # The frequency should be modified and the filter should be run.
+    sampling = 1
+    high_pass = 0.2
+    low_pass = 0.1
+    with pytest.raises(
+        ValueError,
+        match=(
+            'High pass cutoff frequency \([0-9.]+\) is greater than or '
+            'equal to low pass filter frequency \([0-9.]+\)\.'
+        ),
+    ):
+        nisignal.butterworth(
+            data,
+            sampling,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            copy=True,
+        )
 
 
 def test_standardize():
