@@ -221,8 +221,8 @@ def test_butterworth():
         )
     assert not np.array_equal(data, out)
 
-    # Test check for frequency lower than allowed (<0).
-    # The frequency should be modified and the filter should be run.
+    # Test check for high-pass frequency higher than low-pass frequency.
+    # An error should be raised.
     sampling = 1
     high_pass = 0.2
     low_pass = 0.1
