@@ -132,7 +132,6 @@ def test_get_clusters_table(tmp_path):
     # test with returning label maps
     cluster_table, label_maps = get_clusters_table(
         stat_img, 4, 0, two_sided=True, return_label_maps=True)
-```(pep8)
     label_map_positive_data = label_maps[0].get_fdata()
     label_map_negative_data = label_maps[1].get_fdata()
     # make sure positive and negative clusters are returned in the label maps
