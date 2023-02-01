@@ -1097,7 +1097,7 @@ def binarize_img(img, threshold=0, mask_img=None):
 @rename_parameters({'sessions': 'runs'}, '0.10.0')
 def clean_img(imgs, runs=None, detrend=True, standardize=True,
               confounds=None, low_pass=None, high_pass=None, t_r=None,
-              ensure_finite=False, mask_img=None):
+              ensure_finite=False, mask_img=None, **kwargs):
     """Improve SNR on masked fMRI signals.
 
     This function can do several things on the input signals, in
@@ -1175,6 +1175,14 @@ def clean_img(imgs, runs=None, detrend=True, standardize=True,
         If not provided, all voxels are used.
         See :ref:`extracting_data`.
 
+    kwargs : dict
+        Keyword arguments to be passed to functions called within the masker.
+        Kwargs prefixed with ``'clean__'`` will be passed to
+        :func:`~nilearn.signal.clean`.
+        Within :func:`~nilearn.signal.clean`, kwargs prefixed with
+        ``'butterworth__'`` will be passed to the Butterworth filter
+        (i.e., ``clean__butterworth__``).
+
     Returns
     -------
     Niimg-like object
@@ -1204,15 +1212,13 @@ def clean_img(imgs, runs=None, detrend=True, standardize=True,
     imgs_ = check_niimg_4d(imgs)
 
     # Check if t_r is set, otherwise propose t_r from imgs header
-    if low_pass is not None or high_pass is not None:
-        if t_r is None:
-
-            # We raise an error, instead of using the header's t_r as this
-            # value is considered to be non-reliable
-            raise ValueError(
-                "Repetition time (t_r) must be specified for filtering. You "
-                "specified None. imgs header suggest it to be {0}".format(
-                    imgs.header.get_zooms()[3]))
+    if (low_pass is not None or high_pass is not None) and t_r is None:
+        # We raise an error, instead of using the header's t_r as this
+        # value is considered to be non-reliable
+        raise ValueError(
+            "Repetition time (t_r) must be specified for filtering. You "
+            "specified None. imgs header suggest it to be {0}".format(
+                imgs.header.get_zooms()[3]))
 
     # Prepare signal for cleaning
     if mask_img is not None:
@@ -1224,7 +1230,7 @@ def clean_img(imgs, runs=None, detrend=True, standardize=True,
     data = signal.clean(
         signals, runs=runs, detrend=detrend, standardize=standardize,
         confounds=confounds, low_pass=low_pass, high_pass=high_pass, t_r=t_r,
-        ensure_finite=ensure_finite)
+        ensure_finite=ensure_finite, **kwargs)
 
     # Put results back into Niimg-like object
     if mask_img is not None:

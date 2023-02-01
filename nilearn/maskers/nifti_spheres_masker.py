@@ -292,6 +292,14 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         Indicate the level of verbosity. By default, nothing is printed.
         Default=0.
 
+    kwargs : dict
+        Keyword arguments to be passed to functions called within the masker.
+        Kwargs prefixed with ``'clean__'`` will be passed to
+        :func:`~nilearn.signal.clean`.
+        Within :func:`~nilearn.signal.clean`, kwargs prefixed with
+        ``'butterworth__'`` will be passed to the Butterworth filter
+        (i.e., ``clean__butterworth__``).
+
     Attributes
     ----------
     n_elements_ : :obj:`int`
@@ -327,6 +335,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         memory=Memory(location=None, verbose=0),
         memory_level=1,
         verbose=0,
+        **kwargs,
     ):
         self.seeds = seeds
         self.mask_img = mask_img
@@ -345,6 +354,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         self.high_pass = high_pass
         self.t_r = t_r
         self.dtype = dtype
+        self.clean_kwargs = {
+            k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
+        }
 
         # Parameters for joblib
         self.memory = memory

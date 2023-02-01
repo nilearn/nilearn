@@ -625,7 +625,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     %(ensure_finite)s
         Default=False.
 
-    kwargs
+    kwargs : dict
         Keyword arguments to be passed to functions called within ``clean``.
         Kwargs prefixed with ``'butterworth__'`` will be passed to
         :func:`~nilearn.signal.butterworth`.
