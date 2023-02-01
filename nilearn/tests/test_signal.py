@@ -386,7 +386,7 @@ def test_clean_kwargs():
     # Base result
     t_r, high_pass, low_pass = 0.8, 0.01, 0.08
     base_filtered = nisignal.clean(
-        x_orig, t_r=t_r, low_pass=low_cutoff, high_pass=high_cutoff
+        x_orig, t_r=t_r, low_pass=low_pass, high_pass=high_pass
     )
     for kwarg_set in kwargs:
         test_filtered = nisignal.clean(
@@ -396,6 +396,7 @@ def test_clean_kwargs():
             high_pass=high_pass,
             **kwarg_set,
         )
+        # Check that results are **not** the same.
         np.testing.assert_(np.any(np.not_equal(
             base_filtered, test_filtered
         )))
