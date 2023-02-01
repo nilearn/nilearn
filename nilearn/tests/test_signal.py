@@ -167,15 +167,59 @@ def test_butterworth():
     sampling = 1
     low_pass = 2
     high_pass = 1
-    with pytest.warns(UserWarning,
-                      match='Signals are returned unfiltered because '
-                      'band-pass critical frequencies are equal. '
-                      'Please check that inputs for sampling_rate, '
-                      'low_pass, and high_pass are valid.'):
-        out = nisignal.butterworth(data, sampling,
-                                   low_pass=low_pass, high_pass=high_pass,
-                                   copy=True)
+    with pytest.warns(
+        UserWarning,
+        match=(
+            'Signals are returned unfiltered because '
+            'band-pass critical frequencies are equal. '
+            'Please check that inputs for sampling_rate, '
+            'low_pass, and high_pass are valid.'
+        ),
+    ):
+        out = nisignal.butterworth(
+            data,
+            sampling,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            copy=True,
+        )
     assert (out == data).all()
+
+    # Test check for frequency higher than allowed (>=Nyquist).
+    # The frequency should be modified and the filter should be run.
+    sampling = 1
+    high_pass = 0.01
+    low_pass = 0.5
+    with pytest.warns(
+        UserWarning,
+        match='The frequency specified for the low pass filter is too high',
+    ):
+        out = nisignal.butterworth(
+            data,
+            sampling,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            copy=True,
+        )
+    assert not np.array_equal(data, out)
+
+    # Test check for frequency lower than allowed (<0).
+    # The frequency should be modified and the filter should be run.
+    sampling = 1
+    high_pass = 0.01
+    low_pass = -1
+    with pytest.warns(
+        UserWarning,
+        match='The frequency specified for the high pass filter is too low',
+    ):
+        out = nisignal.butterworth(
+            data,
+            sampling,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            copy=True,
+        )
+    assert not np.array_equal(data, out)
 
 
 def test_standardize():
