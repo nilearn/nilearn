@@ -697,14 +697,32 @@ def permuted_ols(
     # check if confounding vars contains an intercept
     if confounding_vars is not None:
         constants = []
+        # Search for all constant columns
         for column in range(confounding_vars.shape[1]):
             if np.unique(confounding_vars[:, column]).size == 1:
                 constants.append(column)
+
+        # check if multiple intercepts are defined across all variates
         if (intercept_test and len(constants) == 1) or len(constants) > 1:
-            raise ValueError('More than one intercepts '
-                             '(i.e. constant variables) are defined, '
-                             'check inputs')
-        if len(constants) == 1:
+            # remove all constant columns
+            confounding_vars = np.delete(confounding_vars, constants, axis=1)
+            # warn user if multiple intercepts are found
+            warnings.warn(
+                category=UserWarning,
+                message=(
+                'Multiple columns across "confounding_vars" and/or '
+                '"target_vars" are constant. Only one will be used '
+                'as intercept.'
+                )
+            )
+            model_intercept = True
+
+            # remove confounding vars variable if it is empty
+            if confounding_vars.size == 0:
+                confounding_vars = None
+
+        # intercept is only defined in confounding vars
+        if not intercept_test and len(constants) == 1:
             intercept_test = True
 
     # optionally add intercept
