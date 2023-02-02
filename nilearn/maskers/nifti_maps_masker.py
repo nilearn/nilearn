@@ -594,6 +594,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         )
         params['target_shape'] = target_shape
         params['target_affine'] = target_affine
+        params['clean_kwargs'] = self.clean_kwargs
 
         region_signals, labels_ = self._cache(
             _filter_and_extract,

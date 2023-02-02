@@ -147,6 +147,14 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         Indicate the level of verbosity. By default, nothing is printed.
         Default=0.
 
+    kwargs : dict
+        Keyword arguments to be passed to functions called within the masker.
+        Kwargs prefixed with ``'clean__'`` will be passed to
+        :func:`~nilearn.signal.clean`.
+        Within :func:`~nilearn.signal.clean`, kwargs prefixed with
+        ``'butterworth__'`` will be passed to the Butterworth filter
+        (i.e., ``clean__butterworth__``).
+
     Attributes
     ----------
     mask_img_ : :obj:`nibabel.nifti1.Nifti1Image`
@@ -206,6 +214,9 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         self.mask_strategy = mask_strategy
         self.mask_args = mask_args
         self.dtype = dtype
+        self.clean_kwargs = {
+            k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
+        }
 
         self.memory = memory
         self.memory_level = memory_level
@@ -386,6 +397,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
                 'copy',
             ],
         )
+        params['clean_kwargs'] = self.clean_kwargs
 
         func = self._cache(
             _filter_and_mask,
