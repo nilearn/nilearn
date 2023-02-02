@@ -197,6 +197,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         memory_level=0,
         n_jobs=1,
         verbose=0,
+        **kwargs,
     ):
         # Mask is provided or computed
         self.mask_img = mask_img
