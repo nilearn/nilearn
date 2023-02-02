@@ -57,6 +57,38 @@ accuracy = (y_pred == y_test).mean() * 100.
 print("FREM classification accuracy : %g%%" % accuracy)
 
 #############################################################################
+# Plot confusion matrix
+# ------------------------------------
+
+import numpy as np
+from sklearn.metrics import confusion_matrix
+from nilearn import plotting
+
+# Calculate the confusion matrix
+matrix = confusion_matrix(
+    y_test, 
+    y_pred, 
+)
+
+# Plot the confusion matrix
+im = plotting.plot_matrix(
+    matrix,
+    labels=sorted(np.unique(y_test)),
+    vmin=0,
+    cmap='hot_r',
+)
+
+# Add x/y-axis labels
+ax = im.axes
+ax.set_ylabel('True label')
+ax.set_xlabel('Predicted label')
+
+# Adjust figure to make labels fit
+ax.get_figure().tight_layout()
+
+plotting.show()
+
+#############################################################################
 # Visualization of FREM weights
 # ------------------------------------
 from nilearn import plotting
