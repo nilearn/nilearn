@@ -25,7 +25,7 @@ from ..signal import _row_sum_of_squares
 
 
 def _fast_svd(X, n_components, random_state=None):
-    """ Automatically switch between randomized and lapack SVD (heuristic
+    """Automatically switch between randomized and lapack SVD (heuristic
         of scikit-learn).
 
     Parameters
@@ -55,15 +55,15 @@ def _fast_svd(X, n_components, random_state=None):
     random_state = check_random_state(random_state)
     # Small problem, just call full PCA
     if max(X.shape) <= 500:
-        svd_solver = 'full'
-    elif n_components >= 1 and n_components < .8 * min(X.shape):
-        svd_solver = 'randomized'
+        svd_solver = "full"
+    elif n_components >= 1 and n_components < 0.8 * min(X.shape):
+        svd_solver = "randomized"
     # This is also the case of n_components in (0,1)
     else:
-        svd_solver = 'full'
+        svd_solver = "full"
 
     # Call different fits for either full or truncated SVD
-    if svd_solver == 'full':
+    if svd_solver == "full":
         U, S, V = linalg.svd(X, full_matrices=False)
         # flip eigenvectors' sign to enforce deterministic output
         U, V = svd_flip(U, V)
@@ -73,22 +73,29 @@ def _fast_svd(X, n_components, random_state=None):
         S = S[:n_components]
         V = V[:n_components].copy()
     else:
-        n_iter = 'auto'
+        n_iter = "auto"
 
-        U, S, V = randomized_svd(X, n_components=n_components,
-                                 n_iter=n_iter,
-                                 flip_sign=True,
-                                 random_state=random_state)
+        U, S, V = randomized_svd(
+            X,
+            n_components=n_components,
+            n_iter=n_iter,
+            flip_sign=True,
+            random_state=random_state,
+        )
     return U, S, V
 
 
-def _mask_and_reduce(masker, imgs,
-                    confounds=None,
-                    reduction_ratio='auto',
-                    n_components=None, random_state=None,
-                    memory_level=0,
-                    memory=Memory(location=None),
-                    n_jobs=1):
+def _mask_and_reduce(
+    masker,
+    imgs,
+    confounds=None,
+    reduction_ratio="auto",
+    n_components=None,
+    random_state=None,
+    memory_level=0,
+    memory=Memory(location=None),
+    n_jobs=1,
+):
     """Mask and reduce provided 4D images with given masker.
 
     Uses a PCA (randomized for small reduction ratio) or a range finding matrix
@@ -139,10 +146,10 @@ def _mask_and_reduce(masker, imgs,
         Concatenation of reduced data.
 
     """
-    if not hasattr(imgs, '__iter__'):
+    if not hasattr(imgs, "__iter__"):
         imgs = [imgs]
 
-    if reduction_ratio == 'auto':
+    if reduction_ratio == "auto":
         if n_components is None:
             # Reduction ratio is 1 if
             # neither n_components nor ratio is provided
@@ -153,13 +160,15 @@ def _mask_and_reduce(masker, imgs,
         else:
             reduction_ratio = float(reduction_ratio)
         if not 0 <= reduction_ratio <= 1:
-            raise ValueError('Reduction ratio should be between 0. and 1.,'
-                             'got %.2f' % reduction_ratio)
+            raise ValueError(
+                "Reduction ratio should be between 0. and 1.,"
+                "got %.2f" % reduction_ratio
+            )
 
     if confounds is None:
         confounds = itertools.repeat(confounds)
 
-    if reduction_ratio == 'auto':
+    if reduction_ratio == "auto":
         n_samples = n_components
         reduction_ratio = None
     else:
@@ -170,23 +179,23 @@ def _mask_and_reduce(masker, imgs,
     data_list = Parallel(n_jobs=n_jobs)(
         delayed(_mask_and_reduce_single)(
             masker,
-            img, confound,
+            img,
+            confound,
             reduction_ratio=reduction_ratio,
             n_samples=n_samples,
             memory=memory,
             memory_level=memory_level,
-            random_state=random_state
-        ) for img, confound in zip(imgs, confounds))
+            random_state=random_state,
+        )
+        for img, confound in zip(imgs, confounds)
+    )
 
-    subject_n_samples = [subject_data.shape[0]
-                         for subject_data in data_list]
+    subject_n_samples = [subject_data.shape[0] for subject_data in data_list]
 
     n_samples = np.sum(subject_n_samples)
     n_voxels = int(np.sum(_safe_get_data(masker.mask_img_)))
-    dtype = (np.float64 if data_list[0].dtype.type is np.float64
-             else np.float32)
-    data = np.empty((n_samples, n_voxels), order='F',
-                    dtype=dtype)
+    dtype = np.float64 if data_list[0].dtype.type is np.float64 else np.float32
+    data = np.empty((n_samples, n_voxels), order="F", dtype=dtype)
 
     current_position = 0
     for i, next_position in enumerate(np.cumsum(subject_n_samples)):
@@ -198,13 +207,16 @@ def _mask_and_reduce(masker, imgs,
     return data
 
 
-def _mask_and_reduce_single(masker,
-                            img, confound,
-                            reduction_ratio=None,
-                            n_samples=None,
-                            memory=None,
-                            memory_level=0,
-                            random_state=None):
+def _mask_and_reduce_single(
+    masker,
+    img,
+    confound,
+    reduction_ratio=None,
+    n_samples=None,
+    memory=None,
+    memory_level=0,
+    random_state=None,
+):
     """Utility function for multiprocessing from MaskReducer"""
     this_data = masker.transform(img, confound)
     # Now get rid of the img as fast as possible, to free a
@@ -220,11 +232,9 @@ def _mask_and_reduce_single(masker,
     else:
         n_samples = int(ceil(data_n_samples * reduction_ratio))
 
-    U, S, V = cache(_fast_svd, memory,
-                    memory_level=memory_level,
-                    func_memory_level=3)(this_data.T,
-                                         n_samples,
-                                         random_state=random_state)
+    U, S, V = cache(_fast_svd, memory, memory_level=memory_level, func_memory_level=3)(
+        this_data.T, n_samples, random_state=random_state
+    )
     U = U.T.copy()
     U = U * S[:, np.newaxis]
     return U
@@ -328,16 +338,27 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
     """
 
-    def __init__(self, n_components=20,
-                 random_state=None,
-                 mask=None, smoothing_fwhm=None,
-                 standardize=True, standardize_confounds=True,
-                 detrend=True, low_pass=None, high_pass=None, t_r=None,
-                 target_affine=None, target_shape=None,
-                 mask_strategy='epi', mask_args=None,
-                 memory=Memory(location=None), memory_level=0,
-                 n_jobs=1,
-                 verbose=0):
+    def __init__(
+        self,
+        n_components=20,
+        random_state=None,
+        mask=None,
+        smoothing_fwhm=None,
+        standardize=True,
+        standardize_confounds=True,
+        detrend=True,
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        target_affine=None,
+        target_shape=None,
+        mask_strategy="epi",
+        mask_args=None,
+        memory=Memory(location=None),
+        memory_level=0,
+        n_jobs=1,
+        verbose=0,
+    ):
         self.n_components = n_components
         self.random_state = random_state
         self.mask = mask
@@ -385,17 +406,21 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             if nilearn.EXPAND_PATH_WILDCARDS and glob.has_magic(imgs):
                 imgs = _resolve_globbing(imgs)
 
-        if isinstance(imgs, str) or not hasattr(imgs, '__iter__'):
+        if isinstance(imgs, str) or not hasattr(imgs, "__iter__"):
             # these classes are meant for list of 4D images
             # (multi-subject), we want it to work also on a single
             # subject, so we hack it.
-            imgs = [imgs, ]
+            imgs = [
+                imgs,
+            ]
 
         if len(imgs) == 0:
             # Common error that arises from a null glob. Capture
             # it early and raise a helpful message
-            raise ValueError('Need one or more Niimg-like objects as input, '
-                             'an empty list was given.')
+            raise ValueError(
+                "Need one or more Niimg-like objects as input, "
+                "an empty list was given."
+            )
         self.masker_ = _check_embedded_nifti_masker(self)
 
         # Avoid warning with imgs != None
@@ -411,30 +436,34 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         if self.verbose:
             print("[{0}] Loading data".format(self.__class__.__name__))
         data = _mask_and_reduce(
-            self.masker_, imgs, confounds=confounds,
+            self.masker_,
+            imgs,
+            confounds=confounds,
             n_components=self.n_components,
             random_state=self.random_state,
             memory=self.memory,
             memory_level=max(0, self.memory_level + 1),
-            n_jobs=self.n_jobs)
+            n_jobs=self.n_jobs,
+        )
         self._raw_fit(data)
 
         # Create and fit NiftiMapsMasker for transform
         # and inverse_transform
         self.nifti_maps_masker_ = NiftiMapsMasker(
-            self.components_img_,
-            self.masker_.mask_img_,
-            resampling_target='maps')
+            self.components_img_, self.masker_.mask_img_, resampling_target="maps"
+        )
 
         self.nifti_maps_masker_.fit()
 
         return self
 
     def _check_components_(self):
-        if not hasattr(self, 'components_'):
-            raise ValueError("Object has no components_ attribute. "
-                             "This is probably because fit has not "
-                             "been called.")
+        if not hasattr(self, "components_"):
+            raise ValueError(
+                "Object has no components_ attribute. "
+                "This is probably because fit has not "
+                "been called."
+            )
 
     def transform(self, imgs, confounds=None):
         """Project the data into a reduced representation
@@ -462,8 +491,10 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         # XXX: dealing properly with 4D/ list of 4D data?
         if confounds is None:
             confounds = [None] * len(imgs)
-        return [self.nifti_maps_masker_.transform(img, confounds=confound)
-                for img, confound in zip(imgs, confounds)]
+        return [
+            self.nifti_maps_masker_.transform(img, confounds=confound)
+            for img, confound in zip(imgs, confounds)
+        ]
 
     def inverse_transform(self, loadings):
         """Use provided loadings to compute corresponding linear component
@@ -480,15 +511,18 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             For each loading, reconstructed Nifti1Image
 
         """
-        if not hasattr(self, 'components_'):
-            raise ValueError('Object has no components_ attribute. This is '
-                             'either because fit has not been called '
-                             'or because _DecompositionEstimator has '
-                             'directly been used')
+        if not hasattr(self, "components_"):
+            raise ValueError(
+                "Object has no components_ attribute. This is "
+                "either because fit has not been called "
+                "or because _DecompositionEstimator has "
+                "directly been used"
+            )
         self._check_components_()
         # XXX: dealing properly with 2D/ list of 2D data?
-        return [self.nifti_maps_masker_.inverse_transform(loading)
-                for loading in loadings]
+        return [
+            self.nifti_maps_masker_.inverse_transform(loading) for loading in loadings
+        ]
 
     def _sort_by_score(self, data):
         """Sort components on the explained variance over data of estimator
@@ -499,8 +533,9 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
     def _raw_score(self, data, per_component=True):
         """Return explained variance over data of estimator components_"""
-        return self._cache(_explained_variance)(data, self.components_,
-                                               per_component=per_component)
+        return self._cache(_explained_variance)(
+            data, self.components_, per_component=per_component
+        )
 
     def score(self, imgs, confounds=None, per_component=False):
         """Score function based on explained variance on imgs.
@@ -530,53 +565,56 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
         """
         self._check_components_()
-        data = _mask_and_reduce(self.masker_, imgs, confounds,
-                               reduction_ratio=1.,
-                               random_state=self.random_state)
+        data = _mask_and_reduce(
+            self.masker_,
+            imgs,
+            confounds,
+            reduction_ratio=1.0,
+            random_state=self.random_state,
+        )
         return self._raw_score(data, per_component=per_component)
 
 
 def _explained_variance(X, components, per_component=True):
     """Score function based on explained variance
 
-        Parameters
-        ----------
-        X : ndarray
-            Holds single subject data to be tested against components.
+    Parameters
+    ----------
+    X : ndarray
+        Holds single subject data to be tested against components.
 
-        components : array-like
-            Represents the components estimated by the decomposition algorithm.
+    components : array-like
+        Represents the components estimated by the decomposition algorithm.
 
-        per_component : boolean, optional
-            Specify whether the explained variance ratio is desired for each
-            map or for the global set of components_.
-            Default=True.
+    per_component : boolean, optional
+        Specify whether the explained variance ratio is desired for each
+        map or for the global set of components_.
+        Default=True.
 
-        Returns
-        -------
-        score : ndarray
-            Holds the score for each subjects. score is two dimensional if
-            per_component = True.
+    Returns
+    -------
+    score : ndarray
+        Holds the score for each subjects. score is two dimensional if
+        per_component = True.
 
-        """
+    """
     full_var = np.var(X)
     n_components = components.shape[0]
-    S = np.sqrt(np.sum(components ** 2, axis=1))
+    S = np.sqrt(np.sum(components**2, axis=1))
     S[S == 0] = 1
     components = components / S[:, np.newaxis]
     projected_data = components.dot(X.T)
     if per_component:
         res_var = np.zeros(n_components)
         for i in range(n_components):
-            res = X - np.outer(projected_data[i],
-                               components[i])
+            res = X - np.outer(projected_data[i], components[i])
             res_var[i] = np.var(res)
             # Free some memory
             del res
-        return np.maximum(0., 1. - res_var / full_var)
+        return np.maximum(0.0, 1.0 - res_var / full_var)
     else:
         lr = LinearRegression(fit_intercept=True)
         lr.fit(components.T, X.T)
         res = X - lr.coef_.dot(components)
         res_var = _row_sum_of_squares(res).sum()
-        return np.maximum(0., 1. - res_var / _row_sum_of_squares(X).sum())
+        return np.maximum(0.0, 1.0 - res_var / _row_sum_of_squares(X).sum())

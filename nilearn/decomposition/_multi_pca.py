@@ -134,52 +134,71 @@ class _MultiPCA(_BaseDecomposition):
 
     """
 
-    def __init__(self, n_components=20,
-                 mask=None,
-                 smoothing_fwhm=None,
-                 do_cca=True,
-                 random_state=None,
-                 standardize=False, standardize_confounds=True,
-                 detrend=False, low_pass=None, high_pass=None, t_r=None,
-                 target_affine=None, target_shape=None,
-                 mask_strategy='epi', mask_args=None,
-                 memory=Memory(location=None), memory_level=0,
-                 n_jobs=1,
-                 verbose=0
-                 ):
+    def __init__(
+        self,
+        n_components=20,
+        mask=None,
+        smoothing_fwhm=None,
+        do_cca=True,
+        random_state=None,
+        standardize=False,
+        standardize_confounds=True,
+        detrend=False,
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        target_affine=None,
+        target_shape=None,
+        mask_strategy="epi",
+        mask_args=None,
+        memory=Memory(location=None),
+        memory_level=0,
+        n_jobs=1,
+        verbose=0,
+    ):
         self.n_components = n_components
         self.do_cca = do_cca
 
         _BaseDecomposition.__init__(
-            self, n_components=n_components,
+            self,
+            n_components=n_components,
             random_state=random_state,
-            mask=mask, smoothing_fwhm=smoothing_fwhm,
+            mask=mask,
+            smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
             standardize_confounds=standardize_confounds,
-            detrend=detrend, low_pass=low_pass,
-            high_pass=high_pass, t_r=t_r,
+            detrend=detrend,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            t_r=t_r,
             target_affine=target_affine,
             target_shape=target_shape,
-            mask_strategy=mask_strategy, mask_args=mask_args,
-            memory=memory, memory_level=memory_level,
-            n_jobs=n_jobs, verbose=verbose
+            mask_strategy=mask_strategy,
+            mask_args=mask_args,
+            memory=memory,
+            memory_level=memory_level,
+            n_jobs=n_jobs,
+            verbose=verbose,
         )
 
     def _raw_fit(self, data):
         """Helper function that directly process unmasked data"""
         if self.do_cca:
-            S = np.sqrt(np.sum(data ** 2, axis=1))
+            S = np.sqrt(np.sum(data**2, axis=1))
             S[S == 0] = 1
             data /= S[:, np.newaxis]
         components_, self.variance_, _ = self._cache(
-            randomized_svd, func_memory_level=2)(
-            data.T, n_components=self.n_components,
+            randomized_svd, func_memory_level=2
+        )(
+            data.T,
+            n_components=self.n_components,
             transpose=True,
-            random_state=self.random_state, n_iter=3)
+            random_state=self.random_state,
+            n_iter=3,
+        )
         if self.do_cca:
             data *= S[:, np.newaxis]
         self.components_ = components_.T
         if hasattr(self, "masker_"):
-            self.components_img_ = self.masker_.inverse_transform(
-                components_.T)
+            self.components_img_ = self.masker_.inverse_transform(components_.T)
         return components_
