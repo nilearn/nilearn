@@ -1176,7 +1176,7 @@ def clean_img(imgs, runs=None, detrend=True, standardize=True,
         See :ref:`extracting_data`.
 
     kwargs : dict
-        Keyword arguments to be passed to functions called within this fucntion.
+        Keyword arguments to be passed to functions called within this function.
         Kwargs prefixed with ``'clean__'`` will be passed to
         :func:`~nilearn.signal.clean`.
         Within :func:`~nilearn.signal.clean`, kwargs prefixed with
