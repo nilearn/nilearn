@@ -94,13 +94,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         If set to True, data is saved in order to produce a report.
         Default=True.
 
-    kwargs : dict
-        Keyword arguments to be passed to functions called within the masker.
-        Kwargs prefixed with ``'clean__'`` will be passed to
-        :func:`~nilearn.signal.clean`.
-        Within :func:`~nilearn.signal.clean`, kwargs prefixed with
-        ``'butterworth__'`` will be passed to the Butterworth filter
-        (i.e., ``clean__butterworth__``).
+    %(masker_kwargs)s
 
     See also
     --------

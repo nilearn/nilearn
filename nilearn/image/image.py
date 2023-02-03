@@ -1176,7 +1176,7 @@ def clean_img(imgs, runs=None, detrend=True, standardize=True,
         See :ref:`extracting_data`.
 
     kwargs : dict
-        Keyword arguments to be passed to functions called within the masker.
+        Keyword arguments to be passed to functions called within this fucntion.
         Kwargs prefixed with ``'clean__'`` will be passed to
         :func:`~nilearn.signal.clean`.
         Within :func:`~nilearn.signal.clean`, kwargs prefixed with
@@ -1227,10 +1227,13 @@ def clean_img(imgs, runs=None, detrend=True, standardize=True,
         signals = get_data(imgs_).reshape(-1, imgs_.shape[-1]).T
 
     # Clean signal
+    clean_kwargs = {
+        k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
+    }
     data = signal.clean(
         signals, runs=runs, detrend=detrend, standardize=standardize,
         confounds=confounds, low_pass=low_pass, high_pass=high_pass, t_r=t_r,
-        ensure_finite=ensure_finite, **kwargs)
+        ensure_finite=ensure_finite, **clean_kwargs)
 
     # Put results back into Niimg-like object
     if mask_img is not None:
