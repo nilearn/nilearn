@@ -1,0 +1,37 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.3.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-ast
+      - id: check-case-conflict
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: https://github.com/psf/black
+    rev: 22.10.0
+    hooks:
+      - id: black
+        files: tools/schemacode
+        args: [--verbose]
+
+  - repo: https://github.com/pyCQA/flake8
+    rev: 5.0.4
+    hooks:
+      - id: flake8
+        files: tools/schemacode
+        args: [--config=setup.cfg]
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.2
+    hooks:
+      - id: codespell
+        args: [--config=setup.cfg]
+
+exclude: "tools/schemacode/bidsschematools/tests/data/broken_dataset_description.json"
