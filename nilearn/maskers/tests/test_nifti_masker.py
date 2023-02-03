@@ -405,6 +405,7 @@ def test_filter_and_mask():
 
     masker = NiftiMasker()
     params = get_params(NiftiMasker, masker)
+    params["clean_kwargs"] = {}
 
     # Test return_affine = False
     data = _filter_and_mask(data_img, mask_img, params)

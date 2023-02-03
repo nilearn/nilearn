@@ -91,8 +91,16 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         standard_deviation. Default='mean'.
 
     reports : :obj:`bool`, optional
-         If set to True, data is saved in order to produce a report.
-         Default=True.
+        If set to True, data is saved in order to produce a report.
+        Default=True.
+
+    kwargs : dict
+        Keyword arguments to be passed to functions called within the masker.
+        Kwargs prefixed with ``'clean__'`` will be passed to
+        :func:`~nilearn.signal.clean`.
+        Within :func:`~nilearn.signal.clean`, kwargs prefixed with
+        ``'butterworth__'`` will be passed to the Butterworth filter
+        (i.e., ``clean__butterworth__``).
 
     See also
     --------
@@ -122,7 +130,8 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         verbose=0,
         strategy='mean',
         reports=True,
-        n_jobs=1
+        n_jobs=1,
+        **kwargs,
     ):
         self.n_jobs = n_jobs
         super().__init__(
@@ -145,6 +154,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             verbose=verbose,
             strategy=strategy,
             reports=reports,
+            **kwargs,
         )
 
     def transform_imgs(self, imgs_list, confounds=None, n_jobs=1,

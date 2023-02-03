@@ -494,6 +494,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         self._check_fitted()
 
         params = get_params(NiftiSpheresMasker, self)
+        params['clean_kwargs'] = self.clean_kwargs
 
         signals, _ = self._cache(
             _filter_and_extract,

@@ -87,6 +87,14 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         If set to True, data is saved in order to produce a report.
         Default=True.
 
+    kwargs : dict
+        Keyword arguments to be passed to functions called within the masker.
+        Kwargs prefixed with ``'clean__'`` will be passed to
+        :func:`~nilearn.signal.clean`.
+        Within :func:`~nilearn.signal.clean`, kwargs prefixed with
+        ``'butterworth__'`` will be passed to the Butterworth filter
+        (i.e., ``clean__butterworth__``).
+
     Notes
     -----
     If resampling_target is set to "maps", every 3D image processed by
@@ -121,7 +129,8 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         memory_level=0,
         verbose=0,
         reports=True,
-        n_jobs=1
+        n_jobs=1,
+        **kwargs,
     ):
         self.n_jobs = n_jobs
         super().__init__(
@@ -142,6 +151,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             memory_level=memory_level,
             verbose=verbose,
             reports=reports,
+            **kwargs,
         )
 
     def transform_imgs(self, imgs_list, confounds=None, n_jobs=1,
