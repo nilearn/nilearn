@@ -1,9 +1,9 @@
 """
-Decoding with FREM: face vs house object recognition
-=========================================================
+Decoding with FREM: face vs house vs cat object recognition
+===============================================================
 
 This example uses fast ensembling of regularized models (FREM) to decode
-a face vs house discrimination task from Haxby 2001 study. FREM uses an
+a face vs house vs cat discrimination task from Haxby 2001 study. FREM uses an
 implicit spatial regularization through fast clustering and aggregates a
 high number of estimators trained on various splits of the training set,
 thus returning a very robust decoder at a lower computational cost than
@@ -22,9 +22,9 @@ data_files = fetch_haxby()
 import pandas as pd
 behavioral = pd.read_csv(data_files.session_target[0], sep=" ")
 
-# Restrict to face and house conditions
+# Restrict to face, house, and cat conditions
 conditions = behavioral['labels']
-condition_mask = conditions.isin(['face', 'house'])
+condition_mask = conditions.isin(['face', 'house', 'cat'])
 
 # Split data into train and test samples, using the chunks
 condition_mask_train = (condition_mask) & (behavioral['chunks'] <= 6)
