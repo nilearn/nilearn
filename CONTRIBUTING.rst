@@ -247,13 +247,7 @@ Example entry:
     - Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
   
 Coding Style
--------------
-
-.. warning::
-
-      We are gradually transitioning to use Black to format the codebase.
-      See `issue #2528 <https://github.com/nilearn/nilearn/issues/2528>`_ 
-      for more details.
+------------
 
 The nilearn codebase follows PEP8_ styling.
 The main conventions we enforce are :
@@ -267,6 +261,22 @@ The main conventions we enforce are :
 - classes in CamelCase
 - 2 empty lines between functions or classes
 
+You can check that any code you may have edited follows these conventions 
+by running `flake8 <https://flake8.pycqa.org/en/latest/user/invocation.html#invoking-flake8>`_.
+
+Additionally, we recommend using `Black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_ 
+to format your code.
+
+.. warning::
+
+      We are gradually transitioning to use `Black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_ 
+      to format the codebase.
+      Only certain modules have been formatted so far,
+      and running `black` may not affect the files you are working on,
+      because of how black is currently configured.
+      See `issue #2528 <https://github.com/nilearn/nilearn/issues/2528>`_ 
+      for more details.
+
 Each function and class must come with a “docstring” at the top of the function code,
 using numpydoc_ formatting.
 The docstring must summarize what the function does and document every parameter.
@@ -277,6 +287,27 @@ This is also useful for writing unit tests.
 
 Writing small functions is not always possible, and we do not recommend trying to reorganize larger,
 but well-tested, older functions in the codebase, unless there is a strong reason to do so (e.g., when adding a new feature).
+
+Pre-commit
+----------
+
+We use `pre-commit <https://pre-commit.com/>`_ 
+to run a set of linters and autoformatters on the codebase.
+
+To install pre-commit, run:
+
+.. code-block:: bash
+
+      pip install pre-commit
+
+Then run the following to install the pre-commit hooks:
+
+.. code-block:: bash
+
+      pre-commit install
+
+Pre-commit will then run all those hooks on the files you have staged for commit. 
+Note that if some of those hooks fail you may have to edit some files and stage them again.
 
 Tests
 ------
