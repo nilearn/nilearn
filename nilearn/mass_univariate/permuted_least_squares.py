@@ -445,7 +445,7 @@ def permuted_ols(
             Additionally, if ``tfce`` is True or ``threshold`` is not None,
             ``output_type`` will automatically be set to 'dict'.
 
-        .. deprecated:: 0.9.2.dev
+        .. deprecated:: 0.9.2
 
             The default value for this parameter will change from 'legacy' to
             'dict' in 0.13, and the parameter will be removed completely in
@@ -464,7 +464,7 @@ def permuted_ols(
 
             This is returned if ``output_type`` == 'legacy'.
 
-        .. deprecated:: 0.9.2.dev
+        .. deprecated:: 0.9.2
 
             The 'legacy' option for ``output_type`` is deprecated.
             The default value will change to 'dict' in 0.13,
@@ -480,7 +480,7 @@ def permuted_ols(
 
             This is returned if ``output_type`` == 'legacy'.
 
-        .. deprecated:: 0.9.2.dev
+        .. deprecated:: 0.9.2
 
             The 'legacy' option for ``output_type`` is deprecated.
             The default value will change to 'dict' in 0.13,
@@ -494,7 +494,7 @@ def permuted_ols(
 
             This is returned if ``output_type`` == 'legacy'.
 
-        .. deprecated:: 0.9.2.dev
+        .. deprecated:: 0.9.2
 
             The 'legacy' option for ``output_type`` is deprecated.
             The default value will change to 'dict' in 0.13,

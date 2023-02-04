@@ -60,14 +60,14 @@ def _make_canica_components(shape):
                       component3.ravel(), component4.ravel()))
 
 
-def _make_canica_test_data(rng=None, n_subjects=8, noisy=False):
+def _make_canica_test_data(rng=None, n_subjects=8, noisy=True):
     if rng is None:
         rng = np.random.RandomState(0)
     shape = (30, 30, 5)
     affine = np.eye(4)
     components = _make_canica_components(shape)
     if noisy:  # Creating noisy non positive data
-        components[rng.randn(*components.shape) > .8] *= -5.
+        components[rng.randn(*components.shape) > .8] *= -2.
 
     for mp in components:
         assert mp.max() <= -mp.min()  # Goal met ?

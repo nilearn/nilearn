@@ -142,7 +142,7 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
 
     labels_img, mask_img must have the same shapes and affines.
 
-    .. versionchanged:: 0.9.2dev
+    .. versionchanged:: 0.9.2
         Support 1D signals.
 
     Parameters

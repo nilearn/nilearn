@@ -24,6 +24,8 @@
 
 .. _Arthur Mensch: https://www.amensch.fr/
 
+.. _Audrey Duran: https://github.com/AudreyDuran
+
 .. _Ben Cipollini: https://github.com/bcipolli
 
 .. _Bertrand Thirion: https://pages.saclay.inria.fr/bertrand.thirion/
@@ -139,6 +141,8 @@
 .. _Luz Paz: https://github.com/luzpaz
 
 .. _Manon Pietrantoni: https://github.com/ManonP38
+
+.. _Mathias Goncalves: https://github.com/mgxd
 
 .. _Matthias Ekman: https://github.com/mekman
 

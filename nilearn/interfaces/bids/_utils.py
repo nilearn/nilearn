@@ -8,7 +8,7 @@ import nilearn
 def _clean_contrast_name(contrast_name):
     """Remove prohibited characters from name and convert to camelCase.
 
-    .. versionadded:: 0.9.2dev
+    .. versionadded:: 0.9.2
 
     BIDS filenames, in which the contrast name will appear as a
     contrast-<name> key/value pair, must be alphanumeric strings.
@@ -54,7 +54,7 @@ def _clean_contrast_name(contrast_name):
 def _generate_model_metadata(out_file, model):
     """Generate a sidecar JSON file containing model metadata.
 
-    .. versionadded:: 0.9.2dev
+    .. versionadded:: 0.9.2
 
     Parameters
     ----------
@@ -123,7 +123,7 @@ def _generate_model_metadata(out_file, model):
 def _generate_dataset_description(out_file, model_level):
     """Generate a BIDS dataset_description.json file with relevant metadata.
 
-    .. versionadded:: 0.9.2dev
+    .. versionadded:: 0.9.2
 
     Parameters
     ----------

@@ -21,6 +21,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
+from .._utils import fill_doc
 from nilearn.plotting import (plot_glass_brain,
                               plot_roi,
                               plot_stat_map,
@@ -47,6 +48,7 @@ HTML_TEMPLATE_ROOT_PATH = os.path.join(os.path.dirname(__file__),
                                        'glm_reporter_templates')
 
 
+@fill_doc
 def make_glm_report(model,
                     contrasts,
                     title=None,
@@ -58,6 +60,7 @@ def make_glm_report(model,
                     two_sided=False,
                     min_distance=8.,
                     plot_type='slice',
+                    cut_coords=None,
                     display_mode=None,
                     report_dims=(1600, 800),
                     ):
@@ -142,6 +145,8 @@ def make_glm_report(model,
         Specifies the type of plot to be drawn for the statistical maps.
         Default='slice'.
 
+    %(cut_coords)s
+
     display_mode : string, optional
         Default is 'z' if plot_type is 'slice'; '
         ortho' if plot_type is 'glass'.
@@ -186,10 +191,10 @@ def make_glm_report(model,
         design_matrices = [model.design_matrix_]
 
     html_head_template_path = os.path.join(HTML_TEMPLATE_ROOT_PATH,
-                                          'report_head_template.html')
+                                           'report_head_template.html')
 
     html_body_template_path = os.path.join(HTML_TEMPLATE_ROOT_PATH,
-                                          'report_body_template.html')
+                                           'report_body_template.html')
 
     with open(html_head_template_path) as html_head_file_obj:
         html_head_template_text = html_head_file_obj.read()
@@ -240,6 +245,7 @@ def make_glm_report(model,
         two_sided=two_sided,
         min_distance=min_distance,
         bg_img=bg_img,
+        cut_coords=cut_coords,
         display_mode=display_mode,
         plot_type=plot_type,
     )
@@ -250,13 +256,18 @@ def make_glm_report(model,
                           'page_heading_2': page_heading_2,
                           'model_attributes': model_attributes_html,
                           'all_contrasts_with_plots': ''.join(
-                               contrast_plots.values()),
+                              contrast_plots.values()),
                           'design_matrices': html_design_matrices,
                           'mask_plot': mask_plot_html_code,
                           'component': all_components_text,
-                         }
-    report_text_body = report_body_template.safe_substitute(**report_values_body)
-    report_text = HTMLReport(body=report_text_body, head_tpl=report_head_template, head_values=report_values_head)
+                          }
+    report_text_body = report_body_template.safe_substitute(
+        **report_values_body)
+    report_text = HTMLReport(
+        body=report_text_body,
+        head_tpl=report_head_template,
+        head_values=report_values_head
+    )
     # setting report size for better visual experience in Jupyter Notebooks.
     report_text.width, report_text.height = _check_report_dims(report_dims)
     return report_text
@@ -516,7 +527,7 @@ def _make_stat_maps(model, contrasts, output_type='z_score'):
         The type of statistical map to retain from the contrast.
         Default is 'z_score'.
 
-        .. versionadded:: 0.9.2dev
+        .. versionadded:: 0.9.2
 
     Returns
     -------
@@ -655,11 +666,12 @@ def _mask_to_svg(mask_img, bg_img):
     return mask_plot_svg
 
 
+@fill_doc
 def _make_stat_maps_contrast_clusters(stat_img, contrasts_plots, threshold,
                                       alpha,
                                       cluster_threshold, height_control,
                                       two_sided,
-                                      min_distance, bg_img,
+                                      min_distance, bg_img, cut_coords,
                                       display_mode, plot_type):
     """Populates a smaller HTML sub-template with the proper values,
     make a list containing one or more of such components
@@ -712,6 +724,8 @@ def _make_stat_maps_contrast_clusters(stat_img, contrasts_plots, threshold,
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
 
+    %(cut_coords)s
+
     display_mode : string
         Choose the direction of the cuts:
         'x' - sagittal, 'y' - coronal, 'z' - axial,
@@ -758,6 +772,7 @@ def _make_stat_maps_contrast_clusters(stat_img, contrasts_plots, threshold,
         stat_map_svg = _stat_map_to_svg(
             stat_img=thresholded_stat_map,
             bg_img=bg_img,
+            cut_coords=cut_coords,
             display_mode=display_mode,
             plot_type=plot_type,
             table_details=table_details,
@@ -859,8 +874,10 @@ def _clustering_params_to_dataframe(threshold,
     return table_details
 
 
+@fill_doc
 def _stat_map_to_svg(stat_img,
                      bg_img,
+                     cut_coords,
                      display_mode,
                      plot_type,
                      table_details,
@@ -881,6 +898,9 @@ def _stat_map_to_svg(stat_img,
         The background image for stat maps to be plotted on upon.
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
+
+
+    %(cut_coords)s
 
     display_mode : string
         Choose the direction of the cuts:
@@ -909,6 +929,7 @@ def _stat_map_to_svg(stat_img,
     if plot_type == 'slice':
         stat_map_plot = plot_stat_map(stat_img,
                                       bg_img=bg_img,
+                                      cut_coords=cut_coords,
                                       display_mode=display_mode,
                                       )
     elif plot_type == 'glass':
