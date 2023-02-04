@@ -172,15 +172,15 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
         symmetric_cmap=symmetric_cmap, vmax=vmax, vmin=vmin)
 
     for hemi, surf_map in surface_maps.items():
-        actual_bg_map = None
+        bg_map = None
         if isinstance(bg_maps, str) and bg_maps == "auto":
             curv_map = surface.load_surf_data(mesh["curv_{}".format(hemi)])
-            actual_bg_map = np.sign(curv_map)
+            bg_map = np.sign(curv_map)
         elif isinstance(bg_maps, list) and len(bg_maps) >= 2:
             if hemi == "left":
-                actual_bg_map = bg_maps[0]
+                bg_map = bg_maps[0]
             elif hemi == "right":
-                actual_bg_map = bg_maps[1]
+                bg_map = bg_maps[1]
 
         info['pial_{}'.format(hemi)] = mesh_to_plotly(
             mesh['pial_{}'.format(hemi)])
@@ -189,7 +189,7 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
 
         info['vertexcolor_{}'.format(hemi)] = _get_vertexcolor(
             surf_map, colors['cmap'], colors['norm'],
-            absolute_threshold=colors['abs_threshold'], bg_map=actual_bg_map,
+            absolute_threshold=colors['abs_threshold'], bg_map=bg_map,
             bg_on_data=bg_on_data, bg_map_rescale=bg_map_rescale,
             darkness=darkness,
         )
