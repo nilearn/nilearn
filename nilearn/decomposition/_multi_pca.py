@@ -187,9 +187,7 @@ class _MultiPCA(_BaseDecomposition):
             S = np.sqrt(np.sum(data**2, axis=1))
             S[S == 0] = 1
             data /= S[:, np.newaxis]
-        components_, self.variance_, _ = self._cache(
-            randomized_svd, func_memory_level=2
-        )(
+        components_, self.variance_, _ = self._cache(randomized_svd, func_memory_level=2)(
             data.T,
             n_components=self.n_components,
             transpose=True,

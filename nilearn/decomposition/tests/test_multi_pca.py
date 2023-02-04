@@ -89,8 +89,7 @@ def test_multi_pca():
     # Test if raises an error when empty list of provided.
     with pytest.raises(
         ValueError,
-        match="Need one or more Niimg-like objects as input, "
-        "an empty list was given.",
+        match="Need one or more Niimg-like objects as input, " "an empty list was given.",
     ):
         multi_pca.fit([])
     # Test passing masker arguments to estimator

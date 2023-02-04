@@ -264,9 +264,7 @@ class DictLearning(_BaseDecomposition):
         self.components_init_ = components
 
     def _init_loadings(self, data):
-        self.loadings_init_ = self._cache(_compute_loadings)(
-            self.components_init_, data
-        )
+        self.loadings_init_ = self._cache(_compute_loadings)(self.components_init_, data)
 
     def _raw_fit(self, data):
         """Helper function that directly process unmasked data

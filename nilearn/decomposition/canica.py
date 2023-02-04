@@ -239,8 +239,7 @@ class CanICA(_MultiPCA):
 
         ica_maps_gen_ = (result[2].T for result in results)
         ica_maps_and_sparsities = (
-            (ica_map, np.sum(np.abs(ica_map), axis=1).max())
-            for ica_map in ica_maps_gen_
+            (ica_map, np.sum(np.abs(ica_map), axis=1).max()) for ica_map in ica_maps_gen_
         )
         ica_maps, _ = min(ica_maps_and_sparsities, key=itemgetter(-1))
 
