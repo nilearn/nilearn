@@ -566,7 +566,7 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
     oversampling = int(oversampling)
 
     # this is the minimal tr in this session, not necessarily the true tr
-    tr = float(np.min(frame_times[1:] - frame_times[:-1]))
+    tr = np.min(np.diff(frame_times))
     # 1. create the high temporal resolution regressor
     hr_regressor, hr_frame_times = _sample_condition(
         exp_condition, frame_times, oversampling, min_onset)
