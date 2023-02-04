@@ -13,8 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  pep8:
-    name: PEP8 checks
+  flake8:
+    name: run flake8
     runs-on: ubuntu-latest
 
     defaults:
