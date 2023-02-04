@@ -186,12 +186,10 @@ class CanICA(_MultiPCA):
         n_jobs=1,
         verbose=0,
     ):
-
         super(CanICA, self).__init__(
             n_components=n_components,
             do_cca=do_cca,
             random_state=random_state,
-            # feature_compression=feature_compression,
             mask=mask,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
