@@ -12,7 +12,7 @@ from matplotlib.colorbar import make_axes
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize, LinearSegmentedColormap
 from mpl_toolkits.mplot3d import Axes3D  # noqa
-from nilearn import image
+from nilearn import image, surface
 from nilearn.plotting.cm import cold_hot
 from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges
 from nilearn.surface import (load_surf_data,
@@ -1169,6 +1169,7 @@ def _colorbar_from_array(array, vmax, threshold, kwargs,
 @fill_doc
 def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
                      hemispheres=['left', 'right'],
+                     bg_maps=None, bg_map_rescale="auto", bg_on_data=False,
                      inflate=False,
                      views=['lateral', 'medial'],
                      output_file=None, title=None, colorbar=True,
@@ -1275,16 +1276,26 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     for i, (mode, hemi) in enumerate(itertools.product(modes, hemis)):
         # Add sulc background map if mesh is not inflated
         # or curv sign background map otherwise
-        sulc_map = surf_mesh['sulc_%s' % hemi]
-        curv_map = load_surf_data(surf_mesh[f"curv_{hemi}"])
-        curv_sign_map = (np.sign(curv_map) + 1) / 4 + 0.25
-        bg_map = curv_sign_map if inflate else sulc_map
-        bg_map_rescale = not inflate
+        bg_map = None
+        if isinstance(bg_maps, str) and bg_maps == "auto":
+            if inflate:
+                curv_map = surface.load_surf_data(
+                    surf_mesh["curv_{}".format(hemi)]
+                )
+                curv_sign_map = (np.sign(curv_map) + 1) / 4 + 0.25
+                bg_map = curv_sign_map
+            else:
+                sulc_map = surf_mesh['sulc_%s' % hemi]
+                bg_map = sulc_map
+        elif isinstance(bg_maps, list) and len(bg_maps) >= len(hemispheres):
+            bg_map = bg_maps[i]
+
         ax = fig.add_subplot(grid[i + len(hemis)], projection="3d")
         axes.append(ax)
         plot_surf_stat_map(surf[hemi], texture[hemi],
                            view=mode, hemi=hemi,
                            bg_map=bg_map,
+                           bg_on_data=bg_on_data,
                            bg_map_rescale=bg_map_rescale,
                            axes=ax,
                            colorbar=False,  # Colorbar created externally.
