@@ -23,6 +23,11 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: "Install black"
+        shell: bash {0}
+        run: |
+          python -m pip install --upgrade pip black
+
       - name: "Run Black on diff"
         run:
           black --diff --color --check tools/schemacode --config=pyproject.toml
