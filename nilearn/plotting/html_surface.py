@@ -150,7 +150,7 @@ def _check_mesh(mesh):
 
 def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
                     cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
-                    bg_map=None, bg_on_data=False, bg_map_rescale="auto",
+                    bg_maps=None, bg_on_data=False, bg_map_rescale="auto",
                     darkness=.7, vmax=None, vmin=None, vol_to_surf_kwargs={}):
     """Project 3D map on cortex; prepare info to plot both hemispheres.
 
@@ -172,11 +172,16 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
         symmetric_cmap=symmetric_cmap, vmax=vmax, vmin=vmin)
 
     for hemi, surf_map in surface_maps.items():
-        if isinstance(bg_map, str) and bg_map == "auto":
-            curv_map = surface.load_surf_data(mesh['curv_{}'.format(hemi)])
+        actual_bg_map = None
+        if isinstance(bg_maps, str) and bg_maps == "auto":
+            curv_map = surface.load_surf_data(mesh["curv_{}".format(hemi)])
             actual_bg_map = np.sign(curv_map)
-        else:
-            actual_bg_map = bg_map
+        elif isinstance(bg_maps, list) and len(bg_maps) >= 2:
+            if hemi == "left":
+                actual_bg_map = bg_maps[0]
+            elif hemi == "right":
+                actual_bg_map = bg_maps[1]
+
         info['pial_{}'.format(hemi)] = mesh_to_plotly(
             mesh['pial_{}'.format(hemi)])
         info['inflated_{}'.format(hemi)] = mesh_to_plotly(
@@ -208,7 +213,7 @@ def _fill_html_template(info, embed_js=True):
 def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
                      threshold=None, cmap=cm.cold_hot,
                      black_bg=False, vmax=None, vmin=None, symmetric_cmap=True,
-                     bg_map='auto', bg_on_data=False,
+                     bg_maps="auto", bg_on_data=False,
                      bg_map_rescale="auto", darkness=.7,
                      colorbar=True, colorbar_height=.5, colorbar_fontsize=25,
                      title=None, title_fontsize=25, vol_to_surf_kwargs={}):
@@ -244,10 +249,12 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         If True, image is plotted on a black background. Otherwise on a
         white background. Default=False.
 
-    bg_map : Surface data object (to be defined) or 'auto', optional
-        Background image to be plotted on the mesh underneath the
+    bg_maps : 'auto' or list of Surface data objects (to be defined), optional
+        Background images to be plotted on the mesh underneath the
         surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
+        The first and second elements of the list will be used to set
+        the left and right hemisphere background image respectively.
         If 'auto', the sign of the curvature map given in `surf_mesh`
         will be used as background image.
         Default="auto".
@@ -319,7 +326,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     stat_map_img = check_niimg_3d(stat_map_img)
     info = full_brain_info(
         volume_img=stat_map_img, mesh=surf_mesh, threshold=threshold,
-        cmap=cmap, black_bg=black_bg, vmax=vmax, vmin=vmin, bg_map=bg_map,
+        cmap=cmap, black_bg=black_bg, vmax=vmax, vmin=vmin, bg_maps=bg_maps,
         bg_on_data=bg_on_data, bg_map_rescale=bg_map_rescale,
         darkness=darkness, symmetric_cmap=symmetric_cmap,
         vol_to_surf_kwargs=vol_to_surf_kwargs)
