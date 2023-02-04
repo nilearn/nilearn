@@ -1,2 +1,3 @@
 [tool.black]
 line-length = 91
+include = 'nilearn/decomposition'

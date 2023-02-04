@@ -249,6 +249,12 @@ Example entry:
 Coding Style
 -------------
 
+.. warning::
+
+      We are gradually transitioning to use Black to format the codebase.
+      See `issue #2528 <https://github.com/nilearn/nilearn/issues/2528>`_ 
+      for more details.
+
 The nilearn codebase follows PEP8_ styling.
 The main conventions we enforce are :
 
@@ -363,6 +369,11 @@ The installed version will also reflect any changes you make to your code.
 4. check that all tests pass with (this can take a while)::
 
       pytest nilearn
+
+5. (optional) install `pre-commit <https://pre-commit.com/#usage>`_ hooks
+   to run the linter and other checks before each commit::
+
+      pre-commit install
 
 
 Contributing
