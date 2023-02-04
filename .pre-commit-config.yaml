@@ -19,7 +19,7 @@ repos:
     rev: 22.10.0
     hooks:
       - id: black
-        args: [--verbose]
+        args: [--config=pyproject.toml, --verbose]
 
   - repo: https://github.com/pyCQA/flake8
     rev: 6.0.0
