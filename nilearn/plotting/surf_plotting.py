@@ -1289,10 +1289,11 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         left=0., right=1., bottom=0., top=1.,
         height_ratios=height_ratios, hspace=0.0, wspace=0.0)
     axes = []
+
     for i, (mode, hemi) in enumerate(itertools.product(modes, hemis)):
-        # Add sulc background map if mesh is not inflated
-        # or curv sign background map otherwise
         bg_map = None
+        # By default, add curv sign background map if mesh is inflated,
+        # sulc depth background map otherwise
         if isinstance(bg_maps, str) and bg_maps == "auto":
             if inflate:
                 curv_map = surface.load_surf_data(
@@ -1303,8 +1304,15 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
             else:
                 sulc_map = surf_mesh['sulc_%s' % hemi]
                 bg_map = sulc_map
-        elif isinstance(bg_maps, list) and len(bg_maps) >= len(hemispheres):
-            bg_map = bg_maps[i]
+        # Otherwise, use custom background maps
+        elif isinstance(bg_maps, list):
+            if len(bg_maps) == len(hemis):
+                bg_map = bg_maps[i % len(hemis)]
+            else:
+                raise ValueError(
+                    "bg_maps length (%i) " % len(bg_maps),
+                    "should match that of hemispheres (%i)" % len(hemispheres)
+                )
 
         ax = fig.add_subplot(grid[i + len(hemis)], projection="3d")
         axes.append(ax)
