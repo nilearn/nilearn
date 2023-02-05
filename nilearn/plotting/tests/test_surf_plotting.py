@@ -919,6 +919,4 @@ def test_compute_facecolors_matplotlib():
         "auto",
     )
     assert len(facecolors_auto) == len(mesh[1])
-    print(facecolors_normalized)
-    print(facecolors_normalized.shape)
     assert np.allclose(facecolors_normalized, facecolors_auto)
