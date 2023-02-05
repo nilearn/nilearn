@@ -265,7 +265,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     %(bg_map_rescale)s
         Default="auto".
 
-        .. versionadded:: 0.9.3.dev
+        .. versionadded:: 0.10.1.dev
 
     %(darkness)s
         Default=1.
@@ -373,7 +373,7 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
     %(bg_map_rescale)s
         Default="auto".
 
-        .. versionadded:: 0.9.3.dev
+        .. versionadded:: 0.10.1.dev
 
     %(darkness)s
         Default=1.

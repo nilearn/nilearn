@@ -663,7 +663,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
     %(bg_map_rescale)s
         Default="auto".
 
-        .. versionadded:: 0.9.3.dev
+        .. versionadded:: 0.10.1.dev
 
     %(darkness)s
         Default=1.
@@ -1018,7 +1018,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     %(bg_map_rescale)s
         Default="auto".
 
-        .. versionadded:: 0.9.3.dev
+        .. versionadded:: 0.10.1.dev
 
     %(darkness)s
         Default=1.
@@ -1439,7 +1439,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
     %(bg_map_rescale)s
         Default="auto".
 
-        .. versionadded:: 0.9.3.dev
+        .. versionadded:: 0.10.1.dev
 
     %(darkness)s
         Default=1.
