@@ -1202,6 +1202,23 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         during projection of the volume to the surface.
         If ``None``, don't apply any mask.
 
+    bg_maps : 'auto' or list of Surface data objects (to be defined), optional
+        Background images to be plotted on the mesh underneath the
+        surf_data in greyscale, most likely a sulcal depth map for
+        realistic shading.
+        If a list is given, its length should match that of hemispheres.
+        Default="auto".
+
+    %(bg_on_data)s
+        Default=False.
+
+    %(bg_map_rescale)s
+        Default="auto".
+
+        .. versionadded:: 0.10.1.dev
+
+    %(hemispheres)s
+
     inflate : bool, optional
         If True, display images in inflated brain.
         If False, display images in pial surface.
@@ -1213,7 +1230,6 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         display mode. Order is preserved, and left and right hemispheres
         are shown on the left and right sides of the figure.
         Default=['lateral', 'medial'].
-    %(hemispheres)s
     %(output_file)s
     %(title)s
     %(colorbar)s
