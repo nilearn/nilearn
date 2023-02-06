@@ -16,7 +16,9 @@ from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
 from nilearn.image import get_data
 
 
-def _make_data_from_components(components, affine, shape, rng=None, n_subjects=8):
+def _make_data_from_components(
+    components, affine, shape, rng=None, n_subjects=8
+):
     data = []
     if rng is None:
         rng = np.random.RandomState(0)
@@ -56,7 +58,12 @@ def _make_canica_components(shape):
     component4[-10:-5, :10] = -1
 
     return np.vstack(
-        (component1.ravel(), component2.ravel(), component3.ravel(), component4.ravel())
+        (
+            component1.ravel(),
+            component2.ravel(),
+            component3.ravel(),
+            component4.ravel(),
+        )
     )
 
 
@@ -93,7 +100,11 @@ def test_canica_square_img():
 
     # We do a large number of inits to be sure to find the good match
     canica = CanICA(
-        n_components=4, random_state=rng, mask=mask_img, smoothing_fwhm=0.0, n_init=50
+        n_components=4,
+        random_state=rng,
+        mask=mask_img,
+        smoothing_fwhm=0.0,
+        n_init=50,
     )
     canica.fit(data)
     maps = get_data(canica.components_img_)
@@ -120,7 +131,9 @@ def test_canica_single_subject():
     data, mask_img, components, rng = _make_canica_test_data(n_subjects=1)
 
     # We do a large number of inits to be sure to find the good match
-    canica = CanICA(n_components=4, random_state=rng, smoothing_fwhm=0.0, n_init=1)
+    canica = CanICA(
+        n_components=4, random_state=rng, smoothing_fwhm=0.0, n_init=1
+    )
     # This is a smoke test: we just check that things run
     canica.fit(data[0])
 
@@ -130,7 +143,9 @@ def test_component_sign():
     # CanICA to have more positive values than negative values, for
     # instance by making sure that the largest value is positive.
 
-    data, mask_img, components, rng = _make_canica_test_data(n_subjects=2, noisy=True)
+    data, mask_img, components, rng = _make_canica_test_data(
+        n_subjects=2, noisy=True
+    )
 
     # run CanICA many times (this is known to produce different results)
     canica = CanICA(n_components=4, random_state=rng, mask=mask_img)
@@ -164,7 +179,9 @@ def test_percentile_range():
         ]
         assert sum(not_deprecation_warning) == 1  # ensure single warning
         idx_critical_warning = not_deprecation_warning.index(True)
-        assert "critical threshold" in str(warning[idx_critical_warning].message)
+        assert "critical threshold" in str(
+            warning[idx_critical_warning].message
+        )
 
 
 def test_masker_attributes_with_fit():
@@ -190,7 +207,8 @@ def test_masker_attributes_with_fit():
     # Test if raises an error when empty list of provided.
     with pytest.raises(
         ValueError,
-        match="Need one or more Niimg-like objects as input, " "an empty list was given.",
+        match="Need one or more Niimg-like objects as input, "
+        "an empty list was given.",
     ):
         canica.fit([])
     # Test passing masker arguments to estimator

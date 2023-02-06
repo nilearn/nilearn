@@ -252,7 +252,7 @@ Coding Style
 The nilearn codebase follows PEP8_ styling.
 The main conventions we enforce are :
 
-- line length < 90
+- line length < 80
 - spaces around operators
 - meaningful variable names
 - function names are underscore separated (e.g., ``a_nice_function``) and as short as possible

@@ -75,12 +75,18 @@ def test_component_sign():
     # DictLearning to have more positive values than negative values, for
     # instance by making sure that the largest value is positive.
 
-    data, mask_img, components, rng = _make_canica_test_data(n_subjects=2, noisy=True)
+    data, mask_img, components, rng = _make_canica_test_data(
+        n_subjects=2, noisy=True
+    )
     for mp in components:
         assert -mp.min() <= mp.max()
 
     dict_learning = DictLearning(
-        n_components=4, random_state=rng, mask=mask_img, smoothing_fwhm=0.0, alpha=1
+        n_components=4,
+        random_state=rng,
+        mask=mask_img,
+        smoothing_fwhm=0.0,
+        alpha=1,
     )
     dict_learning.fit(data)
     for mp in iter_img(dict_learning.components_img_):
@@ -112,7 +118,8 @@ def test_masker_attributes_with_fit():
     # Test if raises an error when empty list of provided.
     with pytest.raises(
         ValueError,
-        match="Need one or more Niimg-like objects " "as input, an empty list was given.",
+        match="Need one or more Niimg-like objects "
+        "as input, an empty list was given.",
     ):
         dict_learning.fit([])
     # Test passing masker arguments to estimator

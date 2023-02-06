@@ -155,7 +155,9 @@ def _mask_and_reduce(
             # neither n_components nor ratio is provided
             reduction_ratio = 1
     else:
-        reduction_ratio = 1 if reduction_ratio is None else float(reduction_ratio)
+        reduction_ratio = (
+            1 if reduction_ratio is None else float(reduction_ratio)
+        )
         if not 0 <= reduction_ratio <= 1:
             raise ValueError(
                 "Reduction ratio should be between 0. and 1.,"
@@ -229,9 +231,9 @@ def _mask_and_reduce_single(
     else:
         n_samples = int(ceil(data_n_samples * reduction_ratio))
 
-    U, S, V = cache(_fast_svd, memory, memory_level=memory_level, func_memory_level=3)(
-        this_data.T, n_samples, random_state=random_state
-    )
+    U, S, V = cache(
+        _fast_svd, memory, memory_level=memory_level, func_memory_level=3
+    )(this_data.T, n_samples, random_state=random_state)
     U = U.T.copy()
     U = U * S[:, np.newaxis]
     return U
@@ -386,9 +388,11 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             Data on which the mask is calculated. If this is a list,
             the affine is considered the same for all.
 
-        confounds : list of CSV file paths, numpy.ndarrays or pandas DataFrames, optional
-            This parameter is passed to nilearn.signal.clean. Please see the
-            related documentation for details. Should match with the list of imgs given.
+        confounds : list of CSV file paths, numpy.ndarrays
+            or pandas DataFrames, optional.
+            This parameter is passed to nilearn.signal.clean.
+            Please see the related documentation for details.
+            Should match with the list of imgs given.
 
          Returns
          -------
@@ -450,7 +454,9 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         # Create and fit NiftiMapsMasker for transform
         # and inverse_transform
         self.nifti_maps_masker_ = NiftiMapsMasker(
-            self.components_img_, self.masker_.mask_img_, resampling_target="maps"
+            self.components_img_,
+            self.masker_.mask_img_,
+            resampling_target="maps",
         )
 
         self.nifti_maps_masker_.fit()
@@ -474,7 +480,8 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             See http://nilearn.github.io/manipulating_images/input_output.html
             Data to be projected
 
-        confounds : CSV file path or numpy.ndarray or pandas DataFrame, optional
+        confounds : CSV file path or numpy.ndarray
+            or pandas DataFrame, optional
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
 
@@ -521,7 +528,8 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         self._check_components_()
         # XXX: dealing properly with 2D/ list of 2D data?
         return [
-            self.nifti_maps_masker_.inverse_transform(loading) for loading in loadings
+            self.nifti_maps_masker_.inverse_transform(loading)
+            for loading in loadings
         ]
 
     def _sort_by_score(self, data):
@@ -548,7 +556,8 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             See http://nilearn.github.io/manipulating_images/input_output.html
             Data to be scored
 
-        confounds : CSV file path or numpy.ndarray or pandas DataFrame, optional
+        confounds : CSV file path or numpy.ndarray
+            or pandas DataFrame, optional
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details
 

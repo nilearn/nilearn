@@ -237,7 +237,8 @@ class CanICA(_MultiPCA):
 
         ica_maps_gen_ = (result[2].T for result in results)
         ica_maps_and_sparsities = (
-            (ica_map, np.sum(np.abs(ica_map), axis=1).max()) for ica_map in ica_maps_gen_
+            (ica_map, np.sum(np.abs(ica_map), axis=1).max())
+            for ica_map in ica_maps_gen_
         )
         ica_maps, _ = min(ica_maps_and_sparsities, key=itemgetter(-1))
 
@@ -262,7 +263,8 @@ class CanICA(_MultiPCA):
                     "(= %s percentile).\n"
                     "No threshold will be applied. "
                     "Threshold should be decreased or "
-                    "number of components should be adjusted." % str(percentile),
+                    "number of components should be adjusted."
+                    % str(percentile),
                     UserWarning,
                     stacklevel=4,
                 )
@@ -277,7 +279,9 @@ class CanICA(_MultiPCA):
             if component.max() < -component.min():
                 component *= -1
         if hasattr(self, "masker_"):
-            self.components_img_ = self.masker_.inverse_transform(self.components_)
+            self.components_img_ = self.masker_.inverse_transform(
+                self.components_
+            )
 
     # Overriding _MultiPCA._raw_fit overrides _MultiPCA.fit behavior
     def _raw_fit(self, data):

@@ -30,7 +30,8 @@ class _MultiPCA(_BaseDecomposition):
     random_state : int or RandomState, optional
         Pseudo number generator state used for random sampling.
     %(smoothing_fwhm)s
-    mask : Niimg-like object, instance of NiftiMasker or MultiNiftiMasker, optional
+    mask : Niimg-like object, instance of NiftiMasker
+        or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
         it will be computed automatically by a MultiNiftiMasker with default
@@ -187,7 +188,9 @@ class _MultiPCA(_BaseDecomposition):
             S = np.sqrt(np.sum(data**2, axis=1))
             S[S == 0] = 1
             data /= S[:, np.newaxis]
-        components_, self.variance_, _ = self._cache(randomized_svd, func_memory_level=2)(
+        components_, self.variance_, _ = self._cache(
+            randomized_svd, func_memory_level=2
+        )(
             data.T,
             n_components=self.n_components,
             transpose=True,
@@ -198,5 +201,7 @@ class _MultiPCA(_BaseDecomposition):
             data *= S[:, np.newaxis]
         self.components_ = components_.T
         if hasattr(self, "masker_"):
-            self.components_img_ = self.masker_.inverse_transform(components_.T)
+            self.components_img_ = self.masker_.inverse_transform(
+                components_.T
+            )
         return components_
