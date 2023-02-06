@@ -418,21 +418,28 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
 
       git checkout -b your_branch
 
-3. implement changes and (optional but highly recommended) lint:
+3. implement changes, lint and format
 
 .. admonition:: Recommendation
 
     To lint your code and verify PEP8 compliance, you can run
     `flake8 <https://flake8.pycqa.org/en/latest/>`_ locally on the
-    changes you have made in your branch compared to the main branch.
-    To do this, find the latest common ancestor (commit) of your branch with
-    main and then get the diff between your working directory and this commit
-    and pipe it to flake8 by running:
+    changes you have made.
 
     .. code-block:: bash
 
-        COMMIT=$(git merge-base main @)
-        git diff $COMMIT | flake8 --diff
+        flake8 <path_to_edited_file>
+
+    To automatically format your code, you can run
+    `Black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_ 
+    locally on the changes you have made.
+
+    .. code-block:: bash
+
+        black <path_to_edited_file>
+
+    Note that if you installed pre-commit and the pre-commit hooks,
+    those 2 commands will be run automatically before each commit.
 
 4. commit your changes on this branch (don't forget to write tests!)
 
