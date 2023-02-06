@@ -866,13 +866,13 @@ def threshold_img(
         Those with intensities greater or equal than the requested threshold
         will keep their original value.
         If float, we threshold the image based on image intensities.
-        The given value should be within the range of minimum and maximum intensity 
+        The given value should be within the range of minimum and maximum intensity
         of the input image.
-        If string, it should finish with percent sign e.g. "80%" 
-        and we threshold based on the score obtained 
+        If string, it should finish with percent sign e.g. "80%"
+        and we threshold based on the score obtained
         using this percentile on the image data.
         The given string should be within the range of "0%" to "100%".
-        The percentile rank is computed using ``scipy.stats.scoreatpercentile``. 
+        The percentile rank is computed using ``scipy.stats.scoreatpercentile``.
 
     cluster_threshold : :obj:`float`, optional
         Cluster size threshold, in voxels. In the returned thresholded map,
