@@ -39,7 +39,7 @@ def test_mask_reducer():
 
     # Create a "multi-subject" dataset
     imgs = []
-    for i in range(8):
+    for _ in range(8):
         this_img = rng.normal(size=shape)
         # Create fake activation to get non empty mask
         this_img[2:4, 2:4, 2:4, :] += 10

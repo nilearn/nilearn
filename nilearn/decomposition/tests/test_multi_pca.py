@@ -29,7 +29,7 @@ def test_multi_pca():
 
     # Create a "multi-subject" dataset
     data = []
-    for i in range(8):
+    for _ in range(8):
         this_data = rng.normal(size=shape)
         # Create fake activation to get non empty mask
         this_data[2:4, 2:4, 2:4, :] += 10
@@ -109,7 +109,7 @@ def test_multi_pca_score():
 
     # Create a "multi-subject" dataset
     imgs = []
-    for i in range(8):
+    for _ in range(8):
         this_img = rng.normal(size=shape)
         imgs.append(nibabel.Nifti1Image(this_img, affine))
 
@@ -120,7 +120,7 @@ def test_multi_pca_score():
     multi_pca.fit(imgs)
     s = multi_pca.score(imgs)
     assert np.all(s <= 1)
-    assert np.all(0 <= s)
+    assert np.all(s >= 0)
 
     # Assert that score does not fail with single subject data
     multi_pca = _MultiPCA(mask=mask_img, random_state=0, memory_level=0, n_components=3)
@@ -143,7 +143,7 @@ def test_multi_pca_score():
     s = multi_pca._raw_score(masker.transform(imgs[0]), per_component=True)
     assert s.shape == (5,)
     assert np.all(s <= 1)
-    assert np.all(0 <= s)
+    assert np.all(s >= 0)
 
 
 def test_components_img():
@@ -153,7 +153,7 @@ def test_components_img():
 
     # Create a "multi-subject" dataset
     data = []
-    for i in range(8):
+    for _ in range(8):
         this_data = rng.normal(size=shape)
         # Create fake activation to get non empty mask
         this_data[2:4, 2:4, 2:4, :] += 10

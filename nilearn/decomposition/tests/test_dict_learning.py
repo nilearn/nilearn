@@ -193,4 +193,4 @@ def test_dictlearning_score():
     scores = dictlearn.score(imgs, per_component=True)
     assert scores.shape, (n_components,)
     assert np.all(scores <= 1)
-    assert np.all(0 <= scores)
+    assert np.all(scores >= 0)
