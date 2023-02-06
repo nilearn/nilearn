@@ -29,7 +29,9 @@ def test_fast_svd():
         assert Ur.shape == (n_samples, k)
 
         # check the singular vectors too (while not checking the sign)
-        assert_array_almost_equal(np.abs(np.diag(np.corrcoef(V_[:k], Vr)))[:k], np.ones(k))
+        assert_array_almost_equal(
+            np.abs(np.diag(np.corrcoef(V_[:k], Vr)))[:k], np.ones(k)
+        )
 
 
 def test_mask_reducer():

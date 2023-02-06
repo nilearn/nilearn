@@ -161,7 +161,8 @@ def _mask_and_reduce(
             reduction_ratio = float(reduction_ratio)
         if not 0 <= reduction_ratio <= 1:
             raise ValueError(
-                "Reduction ratio should be between 0. and 1.," "got %.2f" % reduction_ratio
+                "Reduction ratio should be between 0. and 1.,"
+                "got %.2f" % reduction_ratio
             )
 
     if confounds is None:
@@ -388,7 +389,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             Data on which the mask is calculated. If this is a list,
             the affine is considered the same for all.
 
-        confounds : list of CSV file paths or numpy.ndarrays or pandas DataFrames, optional
+        confounds : list of CSV file paths, numpy.ndarrays or pandas DataFrames, optional
             This parameter is passed to nilearn.signal.clean. Please see the
             related documentation for details. Should match with the list of imgs given.
 
@@ -417,7 +418,8 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             # Common error that arises from a null glob. Capture
             # it early and raise a helpful message
             raise ValueError(
-                "Need one or more Niimg-like objects as input, " "an empty list was given."
+                "Need one or more Niimg-like objects as input, "
+                "an empty list was given."
             )
         self.masker_ = _check_embedded_nifti_masker(self)
 
@@ -518,7 +520,9 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             )
         self._check_components_()
         # XXX: dealing properly with 2D/ list of 2D data?
-        return [self.nifti_maps_masker_.inverse_transform(loading) for loading in loadings]
+        return [
+            self.nifti_maps_masker_.inverse_transform(loading) for loading in loadings
+        ]
 
     def _sort_by_score(self, data):
         """Sort components on the explained variance over data of estimator
