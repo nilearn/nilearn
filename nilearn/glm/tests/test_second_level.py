@@ -699,6 +699,18 @@ def test_non_parametric_inference_cluster_level_with_covariates(
         logp_max_cluster_sizes.sort()
         assert logp_unc_cluster_sizes == logp_max_cluster_sizes
 
+        # Test single covariate
+        X = pd.DataFrame({"intercept": [1] * len(Y)})
+        non_parametric_inference(
+                    Y,
+                    design_matrix=X,
+                    mask=mask,
+                    model_intercept=False,
+                    second_level_contrast="intercept",
+                    n_perm=1 / unc_pval,
+                    threshold=unc_pval,
+                )
+
         del func_img, FUNCFILE, out, X, Y, logp_unc
 
 
