@@ -65,9 +65,18 @@ labels = [
 from nilearn.maskers import NiftiSpheresMasker
 
 masker = NiftiSpheresMasker(
-    dmn_coords, radius=8, detrend=True, standardize=True,
-    low_pass=0.1, high_pass=0.01, t_r=2,
-    memory='nilearn_cache', memory_level=1, verbose=2)
+    dmn_coords,
+    radius=8,
+    detrend=True,
+    standardize=True,
+    low_pass=0.1,
+    high_pass=0.01,
+    t_r=2,
+    memory='nilearn_cache',
+    memory_level=1,
+    verbose=2,
+    clean__butterworth__padtype='even',  # kwarg to modify Butterworth filter
+)
 
 # Additionally, we pass confound information to ensure our extracted
 # signal is cleaned from confounds.
