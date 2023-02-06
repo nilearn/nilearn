@@ -16,8 +16,7 @@ from nilearn._utils.testing import write_tmp_imgs
 
 def _tmp_dir():
     """For testing globbing patterns in input images"""
-    tmp_dir = tempfile.tempdir + os.sep
-    return tmp_dir
+    return tempfile.tempdir + os.sep
 
 
 def test_multi_pca():

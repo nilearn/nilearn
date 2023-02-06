@@ -155,10 +155,7 @@ def _mask_and_reduce(
             # neither n_components nor ratio is provided
             reduction_ratio = 1
     else:
-        if reduction_ratio is None:
-            reduction_ratio = 1
-        else:
-            reduction_ratio = float(reduction_ratio)
+        reduction_ratio = 1 if reduction_ratio is None else float(reduction_ratio)
         if not 0 <= reduction_ratio <= 1:
             raise ValueError(
                 "Reduction ratio should be between 0. and 1.,"
@@ -402,9 +399,12 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         """
         # Base fit for decomposition estimators : compute the embedded masker
 
-        if isinstance(imgs, str):
-            if nilearn.EXPAND_PATH_WILDCARDS and glob.has_magic(imgs):
-                imgs = _resolve_globbing(imgs)
+        if (
+            isinstance(imgs, str)
+            and nilearn.EXPAND_PATH_WILDCARDS
+            and glob.has_magic(imgs)
+        ):
+            imgs = _resolve_globbing(imgs)
 
         if isinstance(imgs, str) or not hasattr(imgs, "__iter__"):
             # these classes are meant for list of 4D images

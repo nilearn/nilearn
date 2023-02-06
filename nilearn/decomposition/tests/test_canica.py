@@ -262,4 +262,4 @@ def test_canica_score():
     scores = canica.score(imgs, per_component=True)
     assert scores.shape, (n_components,)
     assert np.all(scores <= 1)
-    assert np.all(0 <= scores)
+    assert np.all(scores >= 0)
