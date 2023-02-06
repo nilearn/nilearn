@@ -22,7 +22,7 @@ import requests
 from .._utils import fill_doc
 
 _REQUESTS_TIMEOUT = (15.1, 61)
-
+_PACKAGE_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 def md5_hash(string):
     m = hashlib.md5()
@@ -950,3 +950,15 @@ def make_fresh_openneuro_dataset_urls_index(
               "to update the file without breaking the fetcher download link."
               .format(urls_path))
     return urls_path, urls
+
+
+def load_sample_motor_activation_image():
+    """Load a single functional image showing motor activations.
+
+    Returns
+    -------
+    str
+        Path to the sample functional image.
+    """
+
+    return os.path.join(_PACKAGE_DIRECTORY, "data", "image_10426.nii.gz")
