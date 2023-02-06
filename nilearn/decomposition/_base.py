@@ -432,7 +432,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         # _mask_and_reduce step for decomposition estimators i.e.
         # MultiPCA, CanICA and Dictionary Learning
         if self.verbose:
-            print("[{0}] Loading data".format(self.__class__.__name__))
+            print(f"[{self.__class__.__name__}] Loading data")
         data = _mask_and_reduce(
             self.masker_,
             imgs,
