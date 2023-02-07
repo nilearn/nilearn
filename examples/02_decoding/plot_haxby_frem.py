@@ -1,9 +1,9 @@
 """
-Decoding with FREM: face vs house vs cat object recognition
+Decoding with FREM: face vs house vs chair object recognition
 ===============================================================
 
 This example uses fast ensembling of regularized models (FREM) to decode
-a face vs house vs cat discrimination task from Haxby 2001 study. FREM uses an
+a face vs house vs chair discrimination task from Haxby 2001 study. FREM uses an
 implicit spatial regularization through fast clustering and aggregates a
 high number of estimators trained on various splits of the training set,
 thus returning a very robust decoder at a lower computational cost than
@@ -22,9 +22,9 @@ data_files = fetch_haxby()
 import pandas as pd
 behavioral = pd.read_csv(data_files.session_target[0], sep=" ")
 
-# Restrict to face, house, and cat conditions
+# Restrict to face, house, and chair conditions
 conditions = behavioral['labels']
-condition_mask = conditions.isin(['face', 'house', 'cat'])
+condition_mask = conditions.isin(['face', 'house', 'chair'])
 
 # Split data into train and test samples, using the chunks
 condition_mask_train = (condition_mask) & (behavioral['chunks'] <= 6)
@@ -94,7 +94,7 @@ plotting.show()
 from nilearn import plotting
 plotting.plot_stat_map(decoder.coef_img_["face"], background_img,
                        title="FREM: accuracy %g%%, 'face coefs'" % accuracy,
-                       cut_coords=(-52, -5), display_mode="yz")
+                       cut_coords=(-50, -4), display_mode="yz")
 plotting.show()
 #############################################################################
 # FREM ensembling procedure yields an important improvement of decoding
