@@ -21,3 +21,5 @@ Enhancements
 
 Changes
 -------
+
+- The documentation for :func:`~image.threshold_img` has been improved, with more information about which voxels are set to 0 and which ones keep their original values (:gh:`3485` by `Rémi Gau`_).
