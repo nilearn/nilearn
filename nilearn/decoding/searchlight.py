@@ -31,8 +31,17 @@ ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
 
 
 @fill_doc
-def search_light(X, y, estimator, A, groups=None, scoring=None,
-                 cv=None, n_jobs=-1, verbose=0):
+def search_light(
+    X,
+    y,
+    estimator,
+    A,
+    groups=None,
+    scoring=None,
+    cv=None,
+    n_jobs=-1,
+    verbose=0,
+):
     """Function for computing a search_light
 
     Parameters
@@ -77,13 +86,22 @@ def search_light(X, y, estimator, A, groups=None, scoring=None,
     """
     group_iter = GroupIterator(A.shape[0], n_jobs)
     with warnings.catch_warnings():  # might not converge
-        warnings.simplefilter('ignore', ConvergenceWarning)
+        warnings.simplefilter("ignore", ConvergenceWarning)
         scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
             delayed(_group_iter_search_light)(
                 A.rows[list_i],
-                estimator, X, y, groups, scoring, cv,
-                thread_id + 1, A.shape[0], verbose)
-            for thread_id, list_i in enumerate(group_iter))
+                estimator,
+                X,
+                y,
+                groups,
+                scoring,
+                cv,
+                thread_id + 1,
+                A.shape[0],
+                verbose,
+            )
+            for thread_id, list_i in enumerate(group_iter)
+        )
     return np.concatenate(scores)
 
 
@@ -101,6 +119,7 @@ class GroupIterator:
     %(n_jobs)s
 
     """
+
     def __init__(self, n_features, n_jobs=1):
         self.n_features = n_features
         if n_jobs == -1:
@@ -109,12 +128,21 @@ class GroupIterator:
 
     def __iter__(self):
         split = np.array_split(np.arange(self.n_features), self.n_jobs)
-        for list_i in split:
-            yield list_i
+        yield from split
 
 
-def _group_iter_search_light(list_rows, estimator, X, y, groups,
-                             scoring, cv, thread_id, total, verbose=0):
+def _group_iter_search_light(
+    list_rows,
+    estimator,
+    X,
+    y,
+    groups,
+    scoring,
+    cv,
+    thread_id,
+    total,
+    verbose=0,
+):
     """Function for grouped iterations of search_light
 
     Parameters
@@ -163,15 +191,15 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
     t0 = time.time()
     for i, row in enumerate(list_rows):
         kwargs = dict()
-        kwargs['scoring'] = scoring
-        kwargs['groups'] = groups
-        par_scores[i] = np.mean(cross_val_score(estimator, X[:, row],
-                                                y, cv=cv, n_jobs=1,
-                                                **kwargs))
+        kwargs["scoring"] = scoring
+        kwargs["groups"] = groups
+        par_scores[i] = np.mean(
+            cross_val_score(estimator, X[:, row], y, cv=cv, n_jobs=1, **kwargs)
+        )
         if verbose > 0:
             # One can't print less than each 10 iterations
             step = 11 - min(verbose, 10)
-            if (i % step == 0):
+            if i % step == 0:
                 # If there is only one job, progress information is fixed
                 if total == len(list_rows):
                     crlf = "\r"
@@ -181,11 +209,12 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
                 percent = round(percent * 100, 2)
                 dt = time.time() - t0
                 # We use a max to avoid a division by zero
-                remaining = (100. - percent) / max(0.01, percent) * dt
+                remaining = (100.0 - percent) / max(0.01, percent) * dt
                 sys.stderr.write(
                     "Job #%d, processed %d/%d voxels "
                     "(%0.2f%%, %i seconds remaining)%s"
-                    % (thread_id, i, len(list_rows), percent, remaining, crlf))
+                    % (thread_id, i, len(list_rows), percent, remaining, crlf)
+                )
     return par_scores
 
 
@@ -244,10 +273,17 @@ class SearchLight(BaseEstimator):
     vol. 103, no. 10, pages 3863-3868, March 2006
     """
 
-    def __init__(self, mask_img, process_mask_img=None, radius=2.,
-                 estimator='svc',
-                 n_jobs=1, scoring=None, cv=None,
-                 verbose=0):
+    def __init__(
+        self,
+        mask_img,
+        process_mask_img=None,
+        radius=2.0,
+        estimator="svc",
+        n_jobs=1,
+        scoring=None,
+        cv=None,
+        verbose=0,
+    ):
         self.mask_img = mask_img
         self.process_mask_img = process_mask_img
         self.radius = radius
@@ -287,24 +323,40 @@ class SearchLight(BaseEstimator):
 
         # Compute world coordinates of the seeds
         process_mask, process_mask_affine = masking._load_mask_img(
-            process_mask_img)
+            process_mask_img
+        )
         process_mask_coords = np.where(process_mask != 0)
         process_mask_coords = coord_transform(
-            process_mask_coords[0], process_mask_coords[1],
-            process_mask_coords[2], process_mask_affine)
+            process_mask_coords[0],
+            process_mask_coords[1],
+            process_mask_coords[2],
+            process_mask_affine,
+        )
         process_mask_coords = np.asarray(process_mask_coords).T
 
         X, A = _apply_mask_and_get_affinity(
-            process_mask_coords, imgs, self.radius, True,
-            mask_img=self.mask_img)
+            process_mask_coords,
+            imgs,
+            self.radius,
+            True,
+            mask_img=self.mask_img,
+        )
 
         estimator = self.estimator
         if isinstance(estimator, str):
             estimator = ESTIMATOR_CATALOG[estimator]()
 
-        scores = search_light(X, y, estimator, A, groups,
-                              self.scoring, self.cv, self.n_jobs,
-                              self.verbose)
+        scores = search_light(
+            X,
+            y,
+            estimator,
+            A,
+            groups,
+            self.scoring,
+            self.cv,
+            self.n_jobs,
+            self.verbose,
+        )
         scores_3D = np.zeros(process_mask.shape)
         scores_3D[process_mask] = scores
         self.scores_ = scores_3D

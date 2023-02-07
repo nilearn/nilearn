@@ -1,4 +1,3 @@
-
 """
 Common functions and base classes.
 
@@ -88,13 +87,14 @@ def _squared_loss(X, y, w, compute_energy=True, compute_grad=False):
     """
     if not (compute_energy or compute_grad):
         raise RuntimeError(
-            "At least one of compute_energy or compute_grad must be True.")
+            "At least one of compute_energy or compute_grad must be True."
+        )
 
     residual = np.dot(X, w) - y
 
     # compute energy
     if compute_energy:
-        energy = .5 * np.dot(residual, residual)
+        energy = 0.5 * np.dot(residual, residual)
         if not compute_grad:
             return energy
 
@@ -120,13 +120,14 @@ def _tv_l1_from_gradient(spatial_grad):
         Energy contribution due to penalized gradient.
     """
 
-    tv_term = np.sum(np.sqrt(np.sum(spatial_grad[:-1] * spatial_grad[:-1],
-                                    axis=0)))
+    tv_term = np.sum(
+        np.sqrt(np.sum(spatial_grad[:-1] * spatial_grad[:-1], axis=0))
+    )
     l1_term = np.abs(spatial_grad[-1]).sum()
     return l1_term + tv_term
 
 
-def _div_id(grad, l1_ratio=.5):
+def _div_id(grad, l1_ratio=0.5):
     """Compute divergence + id of image gradient + id
 
     Parameters
@@ -149,14 +150,15 @@ def _div_id(grad, l1_ratio=.5):
 
     """
 
-    if not (0. <= l1_ratio <= 1.):
+    if not (0.0 <= l1_ratio <= 1.0):
         raise RuntimeError(
-            "l1_ratio must be in the interval [0, 1]; got %s" % l1_ratio)
+            "l1_ratio must be in the interval [0, 1]; got %s" % l1_ratio
+        )
 
     res = np.zeros(grad.shape[1:])
 
     # the divergence part
-    for d in range((grad.shape[0] - 1)):
+    for d in range(grad.shape[0] - 1):
         this_grad = np.rollaxis(grad[d], d)
         this_res = np.rollaxis(res, d)
         this_res[:-1] += this_grad[:-1]
@@ -164,7 +166,7 @@ def _div_id(grad, l1_ratio=.5):
         if len(this_grad) > 1:
             this_res[-1] -= this_grad[-2]
 
-    res *= (1. - l1_ratio)
+    res *= 1.0 - l1_ratio
 
     # the identity part
     res -= l1_ratio * grad[-1]
@@ -172,7 +174,7 @@ def _div_id(grad, l1_ratio=.5):
     return res
 
 
-def _gradient_id(img, l1_ratio=.5):
+def _gradient_id(img, l1_ratio=0.5):
     """Compute gradient + id of an image
 
     Parameters
@@ -195,9 +197,10 @@ def _gradient_id(img, l1_ratio=.5):
 
     """
 
-    if not (0. <= l1_ratio <= 1.):
+    if not (0.0 <= l1_ratio <= 1.0):
         raise RuntimeError(
-            "l1_ratio must be in the interval [0, 1]; got %s" % l1_ratio)
+            "l1_ratio must be in the interval [0, 1]; got %s" % l1_ratio
+        )
 
     shape = [img.ndim + 1] + list(img.shape)
     gradient = np.zeros(shape, dtype=np.float64)
@@ -210,7 +213,7 @@ def _gradient_id(img, l1_ratio=.5):
         slice_all[0] = d + 1
         slice_all.insert(1, slice(None))
 
-    gradient[:-1] *= (1. - l1_ratio)
+    gradient[:-1] *= 1.0 - l1_ratio
 
     # the identity part
     gradient[-1] = l1_ratio * img
@@ -222,9 +225,9 @@ def _sigmoid(t, copy=True):
     """Helper function: return 1. / (1 + np.exp(-t))"""
     if copy:
         t = np.copy(t)
-    t *= -1.
+    t *= -1.0
     t = np.exp(t, t)
-    t += 1.
+    t += 1.0
     t = np.reciprocal(t, t)
     return t
 
@@ -264,7 +267,7 @@ def _logistic_loss_grad(X, y, w):
     z = np.dot(X, w[:-1]) + w[-1]
     yz = y * z
     z = _sigmoid(yz, copy=False)
-    z0 = (z - 1.) * y
+    z0 = (z - 1.0) * y
     grad = np.empty(w.shape)
     grad[:-1] = np.dot(X.T, z0)
     grad[-1] = np.sum(z0)
@@ -272,15 +275,16 @@ def _logistic_loss_grad(X, y, w):
 
 
 # gradient of squared loss function
-_squared_loss_grad = partial(_squared_loss, compute_energy=False,
-                             compute_grad=True)
+_squared_loss_grad = partial(
+    _squared_loss, compute_energy=False, compute_grad=True
+)
 
 
 def _gradient(w):
     """Pure spatial gradient"""
-    return _gradient_id(w, l1_ratio=0.)[:-1]  # pure nabla
+    return _gradient_id(w, l1_ratio=0.0)[:-1]  # pure nabla
 
 
 def _div(v):
     """Pure spatial divergence"""
-    return _div_id(np.vstack((v, [np.zeros_like(v[0])])), l1_ratio=0.)
+    return _div_id(np.vstack((v, [np.zeros_like(v[0])])), l1_ratio=0.0)

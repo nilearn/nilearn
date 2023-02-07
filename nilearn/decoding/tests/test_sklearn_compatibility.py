@@ -9,13 +9,23 @@ def test_get_params():
     for penalty in ["graph-net", "tv-l1"]:
         for is_classif in [True, False]:
             kwargs = {}
-            for param in ["max_iter", "alphas", "l1_ratios", "verbose",
-                          "tol", "mask", "memory", "fit_intercept", "alphas"]:
+            for param in [
+                "max_iter",
+                "alphas",
+                "l1_ratios",
+                "verbose",
+                "tol",
+                "mask",
+                "memory",
+                "fit_intercept",
+                "alphas",
+            ]:
                 m = BaseSpaceNet(
-                    mask='dummy',
+                    mask="dummy",
                     penalty=penalty,
                     is_classif=is_classif,
-                    **kwargs)
+                    **kwargs
+                )
                 try:
                     params = m.get_params()
                 except AttributeError:
@@ -24,5 +34,9 @@ def test_get_params():
                     else:
                         raise
 
-                assert param in params, "%s doesn't have parameter '%s'." % (
-                                m, param)
+                assert (
+                    param in params
+                ), "{} doesn't have parameter '{}'.".format(
+                    m,
+                    param,
+                )

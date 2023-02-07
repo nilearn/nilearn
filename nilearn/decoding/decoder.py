@@ -25,12 +25,20 @@ from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
 from nilearn.regions.rena_clustering import ReNA
 from sklearn import clone
 from sklearn.dummy import DummyClassifier, DummyRegressor
-from sklearn.linear_model import (LinearRegression, LogisticRegression,
-                                  RidgeClassifierCV, RidgeCV)
+from sklearn.linear_model import (
+    LinearRegression,
+    LogisticRegression,
+    RidgeClassifierCV,
+    RidgeCV,
+)
 from sklearn.metrics import get_scorer
-from sklearn.model_selection import (LeaveOneGroupOut, ParameterGrid,
-                                     ShuffleSplit, StratifiedShuffleSplit,
-                                     check_cv)
+from sklearn.model_selection import (
+    LeaveOneGroupOut,
+    ParameterGrid,
+    ShuffleSplit,
+    StratifiedShuffleSplit,
+    check_cv,
+)
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.svm import SVR, LinearSVC, l1_min_c
 from sklearn.utils import check_random_state
@@ -45,19 +53,18 @@ except ImportError:
 
 
 SUPPORTED_ESTIMATORS = dict(
-    svc_l1=LinearSVC(penalty='l1', dual=False, max_iter=10000),
-    svc_l2=LinearSVC(penalty='l2', max_iter=10000),
-    svc=LinearSVC(penalty='l2', max_iter=10000),
-    logistic_l1=LogisticRegression(penalty='l1', solver='liblinear'),
-    logistic_l2=LogisticRegression(penalty='l2', solver='liblinear'),
-    logistic=LogisticRegression(penalty='l2', solver='liblinear'),
+    svc_l1=LinearSVC(penalty="l1", dual=False, max_iter=10000),
+    svc_l2=LinearSVC(penalty="l2", max_iter=10000),
+    svc=LinearSVC(penalty="l2", max_iter=10000),
+    logistic_l1=LogisticRegression(penalty="l1", solver="liblinear"),
+    logistic_l2=LogisticRegression(penalty="l2", solver="liblinear"),
+    logistic=LogisticRegression(penalty="l2", solver="liblinear"),
     ridge_classifier=RidgeClassifierCV(),
     ridge_regressor=RidgeCV(),
     ridge=RidgeCV(),
-    svr=SVR(kernel='linear', max_iter=10000),
-    dummy_classifier=DummyClassifier(strategy='stratified',
-                                     random_state=0),
-    dummy_regressor=DummyRegressor(strategy='mean'),
+    svr=SVR(kernel="linear", max_iter=10000),
+    dummy_classifier=DummyClassifier(strategy="stratified", random_state=0),
+    dummy_regressor=DummyRegressor(strategy="mean"),
 )
 
 
@@ -106,30 +113,35 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         param_grid = {}
         # define loss function
         if isinstance(estimator, LogisticRegression):
-            loss = 'log'
-        elif isinstance(estimator,
-                        (LinearSVC, RidgeCV, RidgeClassifierCV, SVR)):
-            loss = 'squared_hinge'
-        elif isinstance(estimator,
-                        (DummyClassifier, DummyRegressor)):
-            if estimator.strategy in ['constant']:
-                message = ('Dummy classification implemented only for strategies'
-                           ' "most_frequent", "prior", "stratified"')
+            loss = "log"
+        elif isinstance(
+            estimator, (LinearSVC, RidgeCV, RidgeClassifierCV, SVR)
+        ):
+            loss = "squared_hinge"
+        elif isinstance(estimator, (DummyClassifier, DummyRegressor)):
+            if estimator.strategy in ["constant"]:
+                message = (
+                    "Dummy classification implemented only for strategies"
+                    ' "most_frequent", "prior", "stratified"'
+                )
                 raise NotImplementedError(message)
         else:
             raise ValueError(
                 "Invalid estimator. The supported estimators are: {}".format(
-                    list(SUPPORTED_ESTIMATORS.keys()))
+                    list(SUPPORTED_ESTIMATORS.keys())
+                )
             )
         # define sensible default for different types of estimators
-        if hasattr(estimator, 'penalty') and (estimator.penalty == 'l1'):
+        if hasattr(estimator, "penalty") and (estimator.penalty == "l1"):
             min_c = l1_min_c(X, y, loss=loss)
         else:
             min_c = 0.5
 
-        if not isinstance(estimator, (RidgeCV, RidgeClassifierCV,
-                                      DummyClassifier, DummyRegressor)):
-            param_grid['C'] = np.array([2, 20, 200]) * min_c
+        if not isinstance(
+            estimator,
+            (RidgeCV, RidgeClassifierCV, DummyClassifier, DummyRegressor),
+        ):
+            param_grid["C"] = np.array([2, 20, 200]) * min_c
         else:
             param_grid = {}
 
@@ -138,22 +150,36 @@ def _check_param_grid(estimator, X, y, param_grid=None):
 
 def _check_estimator(estimator):
     if not isinstance(estimator, str):
-        warnings.warn('Use a custom estimator at your own risk '
-                      'of the process not working as intended.')
+        warnings.warn(
+            "Use a custom estimator at your own risk "
+            "of the process not working as intended."
+        )
     elif estimator in SUPPORTED_ESTIMATORS.keys():
         estimator = SUPPORTED_ESTIMATORS.get(estimator)
     else:
         raise ValueError(
             "Invalid estimator. Known estimators are: {}".format(
-                list(SUPPORTED_ESTIMATORS.keys()))
+                list(SUPPORTED_ESTIMATORS.keys())
+            )
         )
 
     return estimator
 
 
-def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
-                  selector, scorer, mask_img, class_index,
-                  clustering_percentile):
+def _parallel_fit(
+    estimator,
+    X,
+    y,
+    train,
+    test,
+    param_grid,
+    is_classification,
+    selector,
+    scorer,
+    mask_img,
+    class_index,
+    clustering_percentile,
+):
     """Find the best estimator for a fold within a job.
     This function tries several parameters for the estimator for the train and
     test fold provided and save the one that performs best.
@@ -169,9 +195,14 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
     # clustering to reduce the number of feature by agglomerating similar ones
 
     if clustering_percentile < 100:
-        n_clusters = int(X_train.shape[1] * clustering_percentile / 100.)
-        clustering = ReNA(mask_img, n_clusters=n_clusters, n_iter=20,
-                          threshold=1e-7, scaling=False)
+        n_clusters = int(X_train.shape[1] * clustering_percentile / 100.0)
+        clustering = ReNA(
+            mask_img,
+            n_clusters=n_clusters,
+            n_iter=20,
+            threshold=1e-7,
+            scaling=False,
+        )
         X_train = clustering.fit_transform(X_train)
         X_test = clustering.transform(X_test)
 
@@ -190,7 +221,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
 
         if is_classification:
             score = scorer(estimator, X_test, y_test)
-            if hasattr(estimator, 'coef_') and np.all(estimator.coef_ == 0):
+            if hasattr(estimator, "coef_") and np.all(estimator.coef_ == 0):
                 score = 0
         else:  # regression
             score = scorer(estimator, X_test, y_test)
@@ -198,7 +229,7 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
         # Store best parameters and estimator coefficients
         if (best_score is None) or (score >= best_score):
             best_score = score
-            if hasattr(estimator, 'coef_'):
+            if hasattr(estimator, "coef_"):
                 best_coef = np.reshape(estimator.coef_, (1, -1))
                 best_intercept = estimator.intercept_
                 dummy_output = None
@@ -217,7 +248,14 @@ def _parallel_fit(estimator, X, y, train, test, param_grid, is_classification,
         if clustering_percentile < 100:
             best_coef = clustering.inverse_transform(best_coef)
 
-    return class_index, best_coef, best_intercept, best_param, best_score, dummy_output
+    return (
+        class_index,
+        best_coef,
+        best_intercept,
+        best_param,
+        best_score,
+        dummy_output,
+    )
 
 
 @fill_doc
@@ -327,13 +365,29 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
     """
 
-    def __init__(self, estimator='svc', mask=None, cv=10, param_grid=None,
-                 clustering_percentile=100, screening_percentile=20,
-                 scoring=None, smoothing_fwhm=None, standardize=True,
-                 target_affine=None, target_shape=None,
-                 low_pass=None, high_pass=None, t_r=None,
-                 mask_strategy='background', is_classification=True,
-                 memory=None, memory_level=0, n_jobs=1, verbose=0):
+    def __init__(
+        self,
+        estimator="svc",
+        mask=None,
+        cv=10,
+        param_grid=None,
+        clustering_percentile=100,
+        screening_percentile=20,
+        scoring=None,
+        smoothing_fwhm=None,
+        standardize=True,
+        target_affine=None,
+        target_shape=None,
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        mask_strategy="background",
+        is_classification=True,
+        memory=None,
+        memory_level=0,
+        n_jobs=1,
+        verbose=0,
+    ):
         self.estimator = estimator
         self.mask = mask
         self.cv = cv
@@ -443,12 +497,14 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         `n_outputs_` : int
             Number of outputs (column-wise)
 
-        `dummy_output_`: ndarray, shape=(n_classes, 2) or shape=(1, 1) for regression
-            Contains dummy estimator attributes after class predictions using strategies
-            of DummyClassifier (class_prior) and DummyRegressor (constant)
-            from scikit-learn. This attribute is necessary for estimating class
-            predictions after fit. Returns None if non-dummy estimators are
-            provided.
+        `dummy_output_`: ndarray, shape=(n_classes, 2)
+            or shape=(1, 1) for regression
+            Contains dummy estimator attributes after class predictions
+            using strategies of DummyClassifier (class_prior)
+            and DummyRegressor (constant) from scikit-learn.
+            This attribute is necessary for estimating class predictions
+            after fit.
+            Returns None if non-dummy estimators are provided.
         """
         self.estimator = _check_estimator(self.estimator)
         self.memory_ = _check_memory(self.memory, self.verbose)
@@ -463,8 +519,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         # Setup scorer
         if self.scoring is not None:
-            self.scorer_ = check_scoring(self.estimator,
-                                         self.scoring)
+            self.scorer_ = check_scoring(self.estimator, self.scoring)
         else:
             if self.is_classification:
                 self.scorer_ = get_scorer("accuracy")
@@ -478,9 +533,9 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         cv = self.cv
         if (isinstance(cv, int) or cv is None) and groups is not None:
             warnings.warn(
-                'groups parameter is specified but '
-                'cv parameter is not set to custom CV splitter. '
-                'Using default object LeaveOneGroupOut().'
+                "groups parameter is specified but "
+                "cv parameter is not set to custom CV splitter. "
+                "Using default object LeaveOneGroupOut()."
             )
             cv_object = LeaveOneGroupOut()
         else:
@@ -501,54 +556,82 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         # Check if the size of the mask image and the number of features allow
         # to perform feature screening.
-        selector = check_feature_screening(self.screening_percentile,
-                                           self.mask_img_,
-                                           self.is_classification)
+        selector = check_feature_screening(
+            self.screening_percentile, self.mask_img_, self.is_classification
+        )
         # Return a suitable screening percentile according to the mask image
-        if hasattr(selector, 'percentile'):
+        if hasattr(selector, "percentile"):
             self.screening_percentile_ = selector.percentile
         elif self.screening_percentile is None:
             self.screening_percentile_ = 100.0
         else:
             self.screening_percentile_ = self.screening_percentile
 
-        n_final_features = int(X.shape[1] * self.screening_percentile_
-                               * self.clustering_percentile / 10000)
+        n_final_features = int(
+            X.shape[1]
+            * self.screening_percentile_
+            * self.clustering_percentile
+            / 10000
+        )
         if n_final_features < 50:
             warnings.warn(
                 "After clustering and screening, the decoding model will "
                 "be trained only on {} features. ".format(n_final_features)
                 + "Consider raising clustering_percentile or "
-                + "screening_percentile parameters", UserWarning)
+                + "screening_percentile parameters",
+                UserWarning,
+            )
 
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
 
         parallel_fit_outputs = parallel(
             delayed(self._cache(_parallel_fit))(
                 estimator=self.estimator,
-                X=X, y=y[:, c], train=train, test=test,
+                X=X,
+                y=y[:, c],
+                train=train,
+                test=test,
                 param_grid=self.param_grid,
-                is_classification=self.is_classification, selector=selector,
-                scorer=self.scorer_, mask_img=self.mask_img_, class_index=c,
-                clustering_percentile=self.clustering_percentile)
+                is_classification=self.is_classification,
+                selector=selector,
+                scorer=self.scorer_,
+                mask_img=self.mask_img_,
+                class_index=c,
+                clustering_percentile=self.clustering_percentile,
+            )
             for c, (train, test) in itertools.product(
-                range(n_problems), self.cv_))
+                range(n_problems), self.cv_
+            )
+        )
 
         coefs, intercepts = self._fetch_parallel_fit_outputs(
-            parallel_fit_outputs, y, n_problems)
+            parallel_fit_outputs, y, n_problems
+        )
 
         # Build the final model (the aggregated one)
-        if not isinstance(self.estimator, (DummyClassifier,
-                                           DummyRegressor)):
-            self.coef_ = np.vstack([np.mean(coefs[class_index], axis=0)
-                                    for class_index in self.classes_])
-            self.std_coef_ = np.vstack([np.std(coefs[class_index], axis=0)
-                                        for class_index in self.classes_])
-            self.intercept_ = np.hstack([np.mean(intercepts[class_index], axis=0)
-                                         for class_index in self.classes_])
+        if not isinstance(self.estimator, (DummyClassifier, DummyRegressor)):
+            self.coef_ = np.vstack(
+                [
+                    np.mean(coefs[class_index], axis=0)
+                    for class_index in self.classes_
+                ]
+            )
+            self.std_coef_ = np.vstack(
+                [
+                    np.std(coefs[class_index], axis=0)
+                    for class_index in self.classes_
+                ]
+            )
+            self.intercept_ = np.hstack(
+                [
+                    np.mean(intercepts[class_index], axis=0)
+                    for class_index in self.classes_
+                ]
+            )
 
             self.coef_img_, self.std_coef_img_ = self._output_image(
-                self.classes_, self.coef_, self.std_coef_)
+                self.classes_, self.coef_, self.std_coef_
+            )
 
             if self.is_classification and (self.n_classes_ == 2):
                 self.coef_ = self.coef_[0, :][np.newaxis, :]
@@ -556,9 +639,12 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         else:
             # For Dummy estimators
             self.coef_ = None
-            self.dummy_output_ = \
-                np.vstack([np.mean(self.dummy_output_[class_index], axis=0)
-                           for class_index in self.classes_])
+            self.dummy_output_ = np.vstack(
+                [
+                    np.mean(self.dummy_output_[class_index], axis=0)
+                    for class_index in self.classes_
+                ]
+            )
             if self.is_classification and (self.n_classes_ == 2):
                 self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
 
@@ -606,10 +692,14 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         if X.shape[1] != n_features:
             raise ValueError(
                 "X has {} features per sample; expecting {}".format(
-                    X.shape[1], n_features))
+                    X.shape[1], n_features
+                )
+            )
 
-        scores = safe_sparse_dot(X, self.coef_.T,
-                                 dense_output=True) + self.intercept_
+        scores = (
+            safe_sparse_dot(X, self.coef_.T, dense_output=True)
+            + self.intercept_
+        )
 
         return scores.ravel() if scores.shape[1] == 1 else scores
 
@@ -688,9 +778,14 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         self.dummy_output_ = {}
         classes = self.classes_
 
-        for i, (class_index, coef, intercept, params,
-                scores, dummy_output) in enumerate(parallel_fit_outputs):
-
+        for i, (
+            class_index,
+            coef,
+            intercept,
+            params,
+            scores,
+            dummy_output,
+        ) in enumerate(parallel_fit_outputs):
             coefs.setdefault(classes[class_index], []).append(coef)
             intercepts.setdefault(classes[class_index], []).append(intercept)
 
@@ -698,14 +793,17 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
             self.cv_params_.setdefault(classes[class_index], {})
             if isinstance(self.estimator, (DummyClassifier, DummyRegressor)):
-                self.dummy_output_.setdefault(classes[class_index],
-                                              []).append(dummy_output)
+                self.dummy_output_.setdefault(classes[class_index], []).append(
+                    dummy_output
+                )
             else:
-                self.dummy_output_.setdefault(classes[class_index],
-                                              []).append(None)
+                self.dummy_output_.setdefault(classes[class_index], []).append(
+                    None
+                )
             for k in params:
-                self.cv_params_[classes[class_index]].setdefault(
-                    k, []).append(params[k])
+                self.cv_params_[classes[class_index]].setdefault(k, []).append(
+                    params[k]
+                )
 
             if (n_problems <= 2) and self.is_classification:
                 # Binary classification
@@ -719,10 +817,14 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
                 cv_scores.setdefault(other_class, []).append(scores)
                 self.cv_params_[other_class] = self.cv_params_[
-                    classes[class_index]]
-                if isinstance(self.estimator, (DummyClassifier, DummyRegressor)):
-                    self.dummy_output_.setdefault(other_class,
-                                                  []).append(dummy_output)
+                    classes[class_index]
+                ]
+                if isinstance(
+                    self.estimator, (DummyClassifier, DummyRegressor)
+                ):
+                    self.dummy_output_.setdefault(other_class, []).append(
+                        dummy_output
+                    )
                 else:
                     self.dummy_output_.setdefault(other_class, []).append(None)
 
@@ -752,23 +854,26 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
     def _predict_dummy(self, n_samples):
         """Non-sparse scikit-learn based prediction steps for classification
-           and regression"""
+        and regression"""
 
         if len(self.dummy_output_) == 1:
             dummy_output = self.dummy_output_[0]
         else:
             dummy_output = self.dummy_output_[:, 1]
         if isinstance(self.estimator, DummyClassifier):
-            strategy = self.estimator.get_params()['strategy']
-            if strategy in ['most_frequent', 'prior']:
+            strategy = self.estimator.get_params()["strategy"]
+            if strategy in ["most_frequent", "prior"]:
                 scores = np.tile(dummy_output, reps=(n_samples, 1))
-            elif strategy == 'stratified':
+            elif strategy == "stratified":
                 rs = check_random_state(0)
                 scores = rs.multinomial(1, dummy_output, size=n_samples)
 
         elif isinstance(self.estimator, DummyRegressor):
-            scores = np.full((n_samples, self.n_outputs_), self.dummy_output_,
-                             dtype=np.array(self.dummy_output_).dtype)
+            scores = np.full(
+                (n_samples, self.n_outputs_),
+                self.dummy_output_,
+                dtype=np.array(self.dummy_output_).dtype,
+            )
         return scores.ravel() if scores.shape[1] == 1 else scores
 
 
@@ -863,21 +968,48 @@ class Decoder(_BaseDecoder):
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
 
-    def __init__(self, estimator='svc', mask=None, cv=10, param_grid=None,
-                 screening_percentile=20, scoring='roc_auc',
-                 smoothing_fwhm=None, standardize=True, target_affine=None,
-                 target_shape=None, mask_strategy='background',
-                 low_pass=None, high_pass=None, t_r=None, memory=None,
-                 memory_level=0, n_jobs=1, verbose=0):
+    def __init__(
+        self,
+        estimator="svc",
+        mask=None,
+        cv=10,
+        param_grid=None,
+        screening_percentile=20,
+        scoring="roc_auc",
+        smoothing_fwhm=None,
+        standardize=True,
+        target_affine=None,
+        target_shape=None,
+        mask_strategy="background",
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        memory=None,
+        memory_level=0,
+        n_jobs=1,
+        verbose=0,
+    ):
         super().__init__(
-            estimator=estimator, mask=mask, cv=cv, param_grid=param_grid,
-            screening_percentile=screening_percentile, scoring=scoring,
-            smoothing_fwhm=smoothing_fwhm, standardize=standardize,
-            target_affine=target_affine, target_shape=target_shape,
-            mask_strategy=mask_strategy, low_pass=low_pass,
-            high_pass=high_pass, t_r=t_r, memory=memory,
-            is_classification=True, memory_level=memory_level,
-            verbose=verbose, n_jobs=n_jobs)
+            estimator=estimator,
+            mask=mask,
+            cv=cv,
+            param_grid=param_grid,
+            screening_percentile=screening_percentile,
+            scoring=scoring,
+            smoothing_fwhm=smoothing_fwhm,
+            standardize=standardize,
+            target_affine=target_affine,
+            target_shape=target_shape,
+            mask_strategy=mask_strategy,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            t_r=t_r,
+            memory=memory,
+            is_classification=True,
+            memory_level=memory_level,
+            verbose=verbose,
+            n_jobs=n_jobs,
+        )
 
 
 @fill_doc
@@ -971,28 +1103,55 @@ class DecoderRegressor(_BaseDecoder):
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
 
-    def __init__(self, estimator='svr', mask=None, cv=10, param_grid=None,
-                 screening_percentile=20, scoring='r2',
-                 smoothing_fwhm=None, standardize=True, target_affine=None,
-                 target_shape=None, mask_strategy='background',
-                 low_pass=None, high_pass=None, t_r=None, memory=None,
-                 memory_level=0, n_jobs=1, verbose=0):
-        self.classes_ = ['beta']
+    def __init__(
+        self,
+        estimator="svr",
+        mask=None,
+        cv=10,
+        param_grid=None,
+        screening_percentile=20,
+        scoring="r2",
+        smoothing_fwhm=None,
+        standardize=True,
+        target_affine=None,
+        target_shape=None,
+        mask_strategy="background",
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        memory=None,
+        memory_level=0,
+        n_jobs=1,
+        verbose=0,
+    ):
+        self.classes_ = ["beta"]
 
         super().__init__(
-            estimator=estimator, mask=mask, cv=cv, param_grid=param_grid,
-            screening_percentile=screening_percentile, scoring=scoring,
-            smoothing_fwhm=smoothing_fwhm, standardize=standardize,
-            target_affine=target_affine, target_shape=target_shape,
-            low_pass=low_pass, high_pass=high_pass, t_r=t_r,
-            mask_strategy=mask_strategy, memory=memory,
-            is_classification=False, memory_level=memory_level,
-            verbose=verbose, n_jobs=n_jobs)
+            estimator=estimator,
+            mask=mask,
+            cv=cv,
+            param_grid=param_grid,
+            screening_percentile=screening_percentile,
+            scoring=scoring,
+            smoothing_fwhm=smoothing_fwhm,
+            standardize=standardize,
+            target_affine=target_affine,
+            target_shape=target_shape,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            t_r=t_r,
+            mask_strategy=mask_strategy,
+            memory=memory,
+            is_classification=False,
+            memory_level=memory_level,
+            verbose=verbose,
+            n_jobs=n_jobs,
+        )
 
 
 @fill_doc
 class FREMRegressor(_BaseDecoder):
-    """ State of the art decoding scheme applied to usual regression estimators.
+    """State of the art decoding scheme applied to usual regression estimators.
 
     FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
@@ -1089,33 +1248,60 @@ class FREMRegressor(_BaseDecoder):
         for Neuroimaging
     """
 
-    def __init__(self, estimator='svr', mask=None, cv=30, param_grid=None,
-                 clustering_percentile=10, screening_percentile=20,
-                 scoring='r2', smoothing_fwhm=None, standardize=True,
-                 target_affine=None, target_shape=None,
-                 mask_strategy='background', low_pass=None, high_pass=None,
-                 t_r=None, memory=None,
-                 memory_level=0, n_jobs=1, verbose=0):
-        self.classes_ = ['beta']
+    def __init__(
+        self,
+        estimator="svr",
+        mask=None,
+        cv=30,
+        param_grid=None,
+        clustering_percentile=10,
+        screening_percentile=20,
+        scoring="r2",
+        smoothing_fwhm=None,
+        standardize=True,
+        target_affine=None,
+        target_shape=None,
+        mask_strategy="background",
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        memory=None,
+        memory_level=0,
+        n_jobs=1,
+        verbose=0,
+    ):
+        self.classes_ = ["beta"]
 
         if isinstance(cv, int):
             cv = ShuffleSplit(cv, random_state=0)
 
         super().__init__(
-            estimator=estimator, mask=mask, cv=cv, param_grid=param_grid,
+            estimator=estimator,
+            mask=mask,
+            cv=cv,
+            param_grid=param_grid,
             clustering_percentile=clustering_percentile,
-            screening_percentile=screening_percentile, scoring=scoring,
-            smoothing_fwhm=smoothing_fwhm, standardize=standardize,
-            target_affine=target_affine, target_shape=target_shape,
-            low_pass=low_pass, high_pass=high_pass, t_r=t_r,
-            mask_strategy=mask_strategy, memory=memory,
-            is_classification=False, memory_level=memory_level,
-            verbose=verbose, n_jobs=n_jobs)
+            screening_percentile=screening_percentile,
+            scoring=scoring,
+            smoothing_fwhm=smoothing_fwhm,
+            standardize=standardize,
+            target_affine=target_affine,
+            target_shape=target_shape,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            t_r=t_r,
+            mask_strategy=mask_strategy,
+            memory=memory,
+            is_classification=False,
+            memory_level=memory_level,
+            verbose=verbose,
+            n_jobs=n_jobs,
+        )
 
 
 @fill_doc
 class FREMClassifier(_BaseDecoder):
-    """ State of the art decoding scheme applied to usual classifiers.
+    """State of the art decoding scheme applied to usual classifiers.
 
     FREM uses an implicit spatial regularization through fast clustering and
     aggregates a high number of estimators trained on various splits of the
@@ -1213,21 +1399,47 @@ class FREMClassifier(_BaseDecoder):
 
     """
 
-    def __init__(self, estimator='svc', mask=None, cv=30,
-                 param_grid=None, clustering_percentile=10,
-                 screening_percentile=20, scoring='roc_auc',
-                 smoothing_fwhm=None, standardize=True, target_affine=None,
-                 target_shape=None, mask_strategy='background',
-                 low_pass=None, high_pass=None, t_r=None, memory=None,
-                 memory_level=0, n_jobs=1, verbose=0):
+    def __init__(
+        self,
+        estimator="svc",
+        mask=None,
+        cv=30,
+        param_grid=None,
+        clustering_percentile=10,
+        screening_percentile=20,
+        scoring="roc_auc",
+        smoothing_fwhm=None,
+        standardize=True,
+        target_affine=None,
+        target_shape=None,
+        mask_strategy="background",
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        memory=None,
+        memory_level=0,
+        n_jobs=1,
+        verbose=0,
+    ):
         if isinstance(cv, int):
             cv = StratifiedShuffleSplit(cv, random_state=0)
 
         super().__init__(
-            estimator=estimator, mask=mask, cv=cv, param_grid=param_grid,
+            estimator=estimator,
+            mask=mask,
+            cv=cv,
+            param_grid=param_grid,
             clustering_percentile=clustering_percentile,
-            screening_percentile=screening_percentile, scoring=scoring,
-            smoothing_fwhm=smoothing_fwhm, standardize=standardize,
-            target_affine=target_affine, target_shape=target_shape,
-            mask_strategy=mask_strategy, memory=memory, is_classification=True,
-            memory_level=memory_level, verbose=verbose, n_jobs=n_jobs)
+            screening_percentile=screening_percentile,
+            scoring=scoring,
+            smoothing_fwhm=smoothing_fwhm,
+            standardize=standardize,
+            target_affine=target_affine,
+            target_shape=target_shape,
+            mask_strategy=mask_strategy,
+            memory=memory,
+            is_classification=True,
+            memory_level=memory_level,
+            verbose=verbose,
+            n_jobs=n_jobs,
+        )

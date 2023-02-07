@@ -37,24 +37,24 @@ def _projector_on_tvl1_dual(grad, l1_ratio):
     """
 
     # The l21 ball for the gradient direction
-    if l1_ratio < 1.:
+    if l1_ratio < 1.0:
         # infer number of axes and include an additional axis if l1_ratio > 0
-        end = len(grad) - int(l1_ratio > 0.)
+        end = len(grad) - int(l1_ratio > 0.0)
         norm = np.sqrt(np.sum(grad[:end] * grad[:end], 0))
-        norm.clip(1., out=norm)  # set everythx < 1 to 1
+        norm.clip(1.0, out=norm)  # set everythx < 1 to 1
         for grad_comp in grad[:end]:
             grad_comp /= norm
 
     # The L1 ball for the identity direction
-    if l1_ratio > 0.:
+    if l1_ratio > 0.0:
         norm = np.abs(grad[-1])
-        norm.clip(1., out=norm)
+        norm.clip(1.0, out=norm)
         grad[-1] /= norm
 
     return grad
 
 
-def _dual_gap_prox_tvl1(input_img_norm, new, gap, weight, l1_ratio=1.):
+def _dual_gap_prox_tvl1(input_img_norm, new, gap, weight, l1_ratio=1.0):
     """
     Dual gap of total variation denoising
     see "Total variation regularization for fMRI-based prediction of behavior",
@@ -62,21 +62,34 @@ def _dual_gap_prox_tvl1(input_img_norm, new, gap, weight, l1_ratio=1.):
     """
     tv_new = _tv_l1_from_gradient(_gradient_id(new, l1_ratio=l1_ratio))
     gap = gap.ravel()
-    d_gap = np.dot(gap, gap) + 2 * weight * tv_new - input_img_norm + (
-        new * new).sum()
+    d_gap = (
+        np.dot(gap, gap)
+        + 2 * weight * tv_new
+        - input_img_norm
+        + (new * new).sum()
+    )
     return 0.5 * d_gap
 
 
-def _objective_function_prox_tvl1(
-        input_img, output_img, gradient, weight):
+def _objective_function_prox_tvl1(input_img, output_img, gradient, weight):
     diff = (input_img - output_img).ravel()
-    return (.5 * (diff * diff).sum()
-            + weight * _tv_l1_from_gradient(gradient))
+    return 0.5 * (diff * diff).sum() + weight * _tv_l1_from_gradient(gradient)
 
 
-def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
-               max_iter=200, check_gap_frequency=4, val_min=None, val_max=None,
-               verbose=False, fista=True, init=None):
+def _prox_tvl1(
+    input_img,
+    l1_ratio=0.05,
+    weight=50,
+    dgap_tol=5.0e-5,
+    x_tol=None,
+    max_iter=200,
+    check_gap_frequency=4,
+    val_min=None,
+    val_max=None,
+    verbose=False,
+    fista=True,
+    init=None,
+):
     """
     Compute the TV-L1 proximal (ie total-variation +l1 denoising) on 3d images.
 
@@ -159,15 +172,16 @@ def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
     input_img_flat = input_img.view()
     input_img_flat.shape = input_img.size
     input_img_norm = np.dot(input_img_flat, input_img_flat)
-    if not input_img.dtype.kind == 'f':
+    if not input_img.dtype.kind == "f":
         input_img = input_img.astype(np.float64)
     shape = [len(input_img.shape) + 1] + list(input_img.shape)
     grad_im = np.zeros(shape)
     grad_aux = np.zeros(shape)
-    t = 1.
+    t = 1.0
     i = 0
-    lipschitz_constant = 1.1 * (4 * input_img.ndim * (1 - l1_ratio)
-                                ** 2 + l1_ratio ** 2)
+    lipschitz_constant = 1.1 * (
+        4 * input_img.ndim * (1 - l1_ratio) ** 2 + l1_ratio**2
+    )
 
     # negated_output is the negated primal variable in the optimization
     # loop
@@ -196,17 +210,15 @@ def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
 
     while i < max_iter:
         grad_tmp = _gradient_id(negated_output, l1_ratio=l1_ratio)
-        grad_tmp *= 1. / (lipschitz_constant * weight)
+        grad_tmp *= 1.0 / (lipschitz_constant * weight)
         grad_aux += grad_tmp
-        grad_tmp = _projector_on_tvl1_dual(
-            grad_aux, l1_ratio
-        )
+        grad_tmp = _projector_on_tvl1_dual(grad_aux, l1_ratio)
 
         # Careful, in the next few lines, grad_tmp and grad_aux are a
         # view on the same array, as _projector_on_tvl1_dual returns a view
         # on the input array
-        t_new = 0.5 * (1. + sqrt(1. + 4. * t * t))
-        t_factor = (t - 1.) / t_new
+        t_new = 0.5 * (1.0 + sqrt(1.0 + 4.0 * t * t))
+        t_factor = (t - 1.0) / t_new
         if fista_step:
             grad_aux = (1 + t_factor) * grad_tmp - t_factor * grad_im
         else:
@@ -217,10 +229,10 @@ def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
 
         # Compute the primal variable
         negated_output = gap - input_img
-        if (val_min is not None or val_max is not None):
-            negated_output = negated_output.clip(negated_val_max,
-                                                 negated_val_min,
-                                                 out=negated_output)
+        if val_min is not None or val_max is not None:
+            negated_output = negated_output.clip(
+                negated_val_max, negated_val_min, out=negated_output
+            )
         if (i % check_gap_frequency) == 0:
             if x_tol is None:
                 # Stopping criterion based on the dual gap
@@ -228,11 +240,18 @@ def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
                     # We need to recompute the dual variable
                     gap = negated_output + input_img
                 old_dgap = dgap
-                dgap = _dual_gap_prox_tvl1(input_img_norm, -negated_output,
-                                           gap, weight, l1_ratio=l1_ratio)
+                dgap = _dual_gap_prox_tvl1(
+                    input_img_norm,
+                    -negated_output,
+                    gap,
+                    weight,
+                    l1_ratio=l1_ratio,
+                )
                 if verbose:
-                    print('\tProxTVl1: Iteration % 2i, dual gap: % 6.3e' % (
-                        i, dgap))
+                    print(
+                        "\tProxTVl1: Iteration % 2i, dual gap: % 6.3e"
+                        % (i, dgap)
+                    )
                 if dgap < dgap_tol:
                     break
                 if old_dgap < dgap:
@@ -247,11 +266,13 @@ def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
                 diff /= np.max(np.abs(negated_output))
                 if verbose:
                     gid = _gradient_id(negated_output, l1_ratio=l1_ratio)
-                    energy = _objective_function_prox_tvl1(input_img,
-                                                           -negated_output,
-                                                           gid, weight)
-                    print('\tProxTVl1 iteration % 2i, relative difference:'
-                          ' % 6.3e, energy: % 6.3e' % (i, diff, energy))
+                    energy = _objective_function_prox_tvl1(
+                        input_img, -negated_output, gid, weight
+                    )
+                    print(
+                        "\tProxTVl1 iteration % 2i, relative difference:"
+                        " % 6.3e, energy: % 6.3e" % (i, diff, energy)
+                    )
                 if diff < x_tol:
                     break
                 negated_output_old = negated_output
@@ -260,13 +281,21 @@ def _prox_tvl1(input_img, l1_ratio=.05, weight=50, dgap_tol=5.e-5, x_tol=None,
     # Compute the primal variable, however, here we must use the ista
     # value, not the fista one
     output = input_img - weight * _div_id(grad_im, l1_ratio=l1_ratio)
-    if (val_min is not None or val_max is not None):
+    if val_min is not None or val_max is not None:
         output = output.clip(val_min, val_max, out=output)
     return output, dict(converged=(i < max_iter))
 
 
-def _prox_tvl1_with_intercept(w, shape, l1_ratio, weight, dgap_tol,
-                              max_iter=5000, init=None, verbose=False):
+def _prox_tvl1_with_intercept(
+    w,
+    shape,
+    l1_ratio,
+    weight,
+    dgap_tol,
+    max_iter=5000,
+    init=None,
+    verbose=False,
+):
     """
     Computation of TV-L1 prox, taking into account the intercept.
 
@@ -293,10 +322,15 @@ def _prox_tvl1_with_intercept(w, shape, l1_ratio, weight, dgap_tol,
 
     """
 
-    init = init.reshape(shape) if not init is None else init
+    init = init.reshape(shape) if init is not None else init
     out, prox_info = _prox_tvl1(
-        w[:-1].reshape(shape), weight=weight,
-        l1_ratio=l1_ratio, dgap_tol=dgap_tol, init=init, max_iter=max_iter,
-        verbose=verbose)
+        w[:-1].reshape(shape),
+        weight=weight,
+        l1_ratio=l1_ratio,
+        dgap_tol=dgap_tol,
+        init=init,
+        max_iter=max_iter,
+        verbose=verbose,
+    )
 
     return np.append(out, w[-1]), prox_info
