@@ -202,7 +202,7 @@ def mfista(
             break
         if np.abs(energy_delta) < tol:
             if verbose:
-                print("\tConverged (|dE| < %g)" % tol)
+                print(f"\tConverged (|dE| < {tol:g})")
             break
 
         # forward (gradient) step

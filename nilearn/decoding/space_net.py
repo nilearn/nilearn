@@ -253,15 +253,14 @@ class _EarlyStoppingCallback:
                 if self.verbose:
                     if self.verbose > 1:
                         print(
-                            "Early stopping. Test score: %.8f %s"
-                            % (score, 40 * "-")
+                            f"Early stopping. Test score: {score:.8f} {40 * '-'}"
                         )
                     else:
                         sys.stderr.write(".")
                 return True
 
         if self.verbose > 1:
-            print("Test score: %.8f" % score)
+            print(f"Test score: {score:.8f}")
         return False
 
     def _debias(self, w):
@@ -786,8 +785,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
             for l1_ratio in l1_ratios:
                 if not 0 <= l1_ratio <= 1.0:
                     raise ValueError(
-                        "l1_ratio must be in the interval [0, 1]; got %g"
-                        % (l1_ratio)
+                        f"l1_ratio must be in the interval [0, 1]; got {l1_ratio:g}"
                     )
                 elif l1_ratio in (0.0, 1.0):
                     warnings.warn(
@@ -1087,8 +1085,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         # cast X into usual 2D array
         if not hasattr(self, "masker_"):
             raise RuntimeError(
-                "This %s instance is not fitted yet!"
-                % (self.__class__.__name__)
+                f"This {self.__class__.__name__} instance is not fitted yet!"
             )
         X = self.masker_.transform(X)
 

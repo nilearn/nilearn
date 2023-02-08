@@ -460,7 +460,7 @@ def _tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss="mse"):
     loss = loss.lower()
     if loss not in ["mse", "logistic"]:
         raise ValueError(
-            "loss must be one of 'mse' or 'logistic'; got '%s'" % loss
+            f"loss must be one of 'mse' or 'logistic'; got '{loss}'"
         )
 
     if loss == "mse":
@@ -560,7 +560,7 @@ def tvl1_solver(
     # sanitize loss
     if loss not in ["mse", "logistic"]:
         raise ValueError(
-            "'%s' loss not implemented. Should be 'mse' or " "'logistic" % loss
+            f"'{loss}' loss not implemented. Should be 'mse' or 'logistic"
         )
 
     # shape of image box

@@ -152,7 +152,7 @@ def _div_id(grad, l1_ratio=0.5):
 
     if not (0.0 <= l1_ratio <= 1.0):
         raise RuntimeError(
-            "l1_ratio must be in the interval [0, 1]; got %s" % l1_ratio
+            f"l1_ratio must be in the interval [0, 1]; got {l1_ratio}"
         )
 
     res = np.zeros(grad.shape[1:])
@@ -199,7 +199,7 @@ def _gradient_id(img, l1_ratio=0.5):
 
     if not (0.0 <= l1_ratio <= 1.0):
         raise RuntimeError(
-            "l1_ratio must be in the interval [0, 1]; got %s" % l1_ratio
+            f"l1_ratio must be in the interval [0, 1]; got {l1_ratio}"
         )
 
     shape = [img.ndim + 1] + list(img.shape)

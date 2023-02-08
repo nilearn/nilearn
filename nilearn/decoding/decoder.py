@@ -691,9 +691,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
             raise ValueError(
-                "X has {} features per sample; expecting {}".format(
-                    X.shape[1], n_features
-                )
+                f"X has {X.shape[1]} features per sample; expecting {n_features}"
             )
 
         scores = (

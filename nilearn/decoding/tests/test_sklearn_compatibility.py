@@ -36,7 +36,4 @@ def test_get_params():
 
                 assert (
                     param in params
-                ), "{} doesn't have parameter '{}'.".format(
-                    m,
-                    param,
-                )
+                ), f"{m} doesn't have parameter '{param}'."
