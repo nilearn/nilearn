@@ -24,7 +24,7 @@ def test_get_params():
                     mask="dummy",
                     penalty=penalty,
                     is_classif=is_classif,
-                    **kwargs
+                    **kwargs,
                 )
                 try:
                     params = m.get_params()

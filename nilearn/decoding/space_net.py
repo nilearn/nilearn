@@ -469,7 +469,7 @@ def path_scores(
                     init=init,
                     callback=early_stopper,
                     verbose=max(verbose - 1, 0.0),
-                    **path_solver_params
+                    **path_solver_params,
                 )
 
                 # We use 2 scores for model selection: the second one is to
@@ -513,7 +513,7 @@ def path_scores(
         mask=mask,
         init=best_init,
         verbose=max(verbose - 1, 0),
-        **solver_params
+        **solver_params,
     )
     if debias:
         best_w = _EarlyStoppingCallback(
