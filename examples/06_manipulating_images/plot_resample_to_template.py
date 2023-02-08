@@ -13,7 +13,7 @@ Function :func:`nilearn.image.resample_img` could also be used to achieve this.
 from nilearn.datasets import fetch_neurovault_motor_task
 from nilearn.datasets import load_mni152_template
 
-template = load_mni152_template()
+template = load_mni152_template(resolution=2)
 
 motor_images = fetch_neurovault_motor_task()
 stat_img = motor_images.images[0]
