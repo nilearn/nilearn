@@ -216,7 +216,7 @@ def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
         bg_min, bg_max = 0, 0
     else:
         if isinstance(bg_img, str) and bg_img == "MNI152":
-            bg_img = load_mni152_template()
+            bg_img = load_mni152_template(resolution=2)
         else:
             bg_img = check_niimg_3d(bg_img)
         masked_data = np.ma.masked_inside(
