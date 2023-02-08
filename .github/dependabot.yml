@@ -7,4 +7,5 @@ updates:
     schedule:
       interval: "weekly"
     labels:
-      - "exclude-from-changelog"
+      - "dependencies"
+      - "Infrastructure"
