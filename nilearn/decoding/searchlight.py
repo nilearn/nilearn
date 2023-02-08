@@ -59,8 +59,8 @@ def search_light(
         adjacency matrix. Defines for each feature the neigbhoring features
         following a given structure of the data.
 
-    groups : array-like, optional
-        group label for each sample for cross validation. default None
+    groups : array-like, optional, (default None)
+        group label for each sample for cross validation.
 
         .. note::
             This will have no effect for scikit learn < 0.18

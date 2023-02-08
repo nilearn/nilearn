@@ -127,9 +127,8 @@ def _check_param_grid(estimator, X, y, param_grid=None):
                 raise NotImplementedError(message)
         else:
             raise ValueError(
-                "Invalid estimator. The supported estimators are: {}".format(
-                    list(SUPPORTED_ESTIMATORS.keys())
-                )
+                "Invalid estimator. The supported estimators are:"
+                f" {list(SUPPORTED_ESTIMATORS.keys())}"
             )
         # define sensible default for different types of estimators
         if hasattr(estimator, "penalty") and (estimator.penalty == "l1"):
@@ -158,9 +157,8 @@ def _check_estimator(estimator):
         estimator = SUPPORTED_ESTIMATORS.get(estimator)
     else:
         raise ValueError(
-            "Invalid estimator. Known estimators are: {}".format(
-                list(SUPPORTED_ESTIMATORS.keys())
-            )
+            "Invalid estimator. Known estimators are: "
+            f"{list(SUPPORTED_ESTIMATORS.keys())}"
         )
 
     return estimator
@@ -279,18 +277,19 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         %(regressor_options)s
         Default 'svc'.
 
-    mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
+    mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional,\
+        (Default None)
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
         masker with default parameters. Refer to NiftiMasker or
-        MultiNiftiMasker to check for default parameters. Default None
+        MultiNiftiMasker to check for default parameters.
 
-    cv: cross-validation generator or int, optional. Default 10
+    cv: cross-validation generator or int, optional, (default 10)
         A cross-validation generator.
         See: https://scikit-learn.org/stable/modules/cross_validation.html
 
-    param_grid: dict of str to sequence, or sequence of such. Default None
+    param_grid: dict of str to sequence, or sequence of such, (Default None)
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -576,9 +575,9 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         if n_final_features < 50:
             warnings.warn(
                 "After clustering and screening, the decoding model will "
-                "be trained only on {} features. ".format(n_final_features)
+                f"be trained only on {n_final_features} features. "
                 + "Consider raising clustering_percentile or "
-                + "screening_percentile parameters",
+                + "screening_percentile parameters.",
                 UserWarning,
             )
 
@@ -691,7 +690,8 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
             raise ValueError(
-                f"X has {X.shape[1]} features per sample; expecting {n_features}"
+                f"X has {X.shape[1]} features per sample;"
+                f" expecting {n_features}"
             )
 
         scores = (
@@ -753,7 +753,8 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         Parameters
         ----------
 
-        parallel_fit_outputs : list of tuples, each tuple contains results of
+        parallel_fit_outputs : list of tuples,
+            each tuple contains results of
             one _parallel_fit for each cv fold (and each classification in the
             case of multiclass classification).
 
@@ -917,12 +918,12 @@ class Decoder(_BaseDecoder):
         For DummyClassifier, parameter grid defaults to empty dictionary, class
         predictions are estimated using default strategy.
 
-    screening_percentile: int, float, optional, in the closed interval [0, 100]
+    screening_percentile: int, float, optional,\
+        in the closed interval [0, 100]\\, (default 20)
         The percentage of brain volume that will be kept with respect to a full
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
-        performed. A float according to a percentile of the highest
-        scores. Default: 20.
+        performed. A float according to a percentile of the highest scores.
 
     scoring: str, callable or None, optional. Default: 'roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
@@ -1163,12 +1164,13 @@ class FREMRegressor(_BaseDecoder):
         %(regressor_options)s
         Default 'svr'.
 
-    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
+    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional,
+        (default None)
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
         masker with default parameters. Refer to NiftiMasker or
-        MultiNiftiMasker to check for default parameters. Default None
+        MultiNiftiMasker to check for default parameters.
 
     cv : int or cross-validation generator, optional (default 30)
         If int, number of shuffled splits returned, which is usually the right
@@ -1188,20 +1190,22 @@ class FREMRegressor(_BaseDecoder):
         or have no effect. See scikit-learn documentation for more information,
         for example: https://scikit-learn.org/stable/modules/grid_search.html
 
-    clustering_percentile : int, float, optional, in closed interval [0, 100]
+    clustering_percentile : int, float, optional, in closed interval [0, 100]\
+        (default 10)
         Used to perform a fast ReNA clustering on input data as a first step of
         fit. It agglomerates similar features together to reduce their number
         by this percentile. ReNA is typically efficient for cluster_percentile
-        equal to 10. Default: 10.
+        equal to 10.
 
-    screening_percentile : int, float, optional, in closed interval [0, 100]
+    screening_percentile : int, float, optional, in closed interval [0, 100]\
+        (default 20)
         The percentage of brain volume that will be kept with respect to a full
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
         performed. A float according to a percentile of the highest
-        scores. Default: 20.
+        scores.
 
-    scoring : str, callable or None, optional. Default: 'r2'
+    scoring : str, callable or None, optional. (default 'r2')
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
@@ -1210,7 +1214,7 @@ class FREMRegressor(_BaseDecoder):
         e.g. scorer(estimator, X_test, y_test)
 
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
-        or 'neg_mean_squared_error'. Default: 'r2'.
+        or 'neg_mean_squared_error' (default 'r2').
     %(smoothing_fwhm)s
     %(standardize)s
     %(target_affine)s
@@ -1308,17 +1312,18 @@ class FREMClassifier(_BaseDecoder):
 
     Parameters
     -----------
-    estimator : str, optional
+    estimator : str, optional, (default 'svc')
         The estimator to choose among:
         %(classifier_options)s
-        Default 'svc'.
 
-    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
+
+    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional,\
+        (default None)
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
         masker with default parameters. Refer to NiftiMasker or
-        MultiNiftiMasker to check for default parameters. Default None
+        MultiNiftiMasker to check for default parameters.
 
     cv : int or cross-validation generator, optional (default 30)
         If int, number of stratified shuffled splits returned, which is usually
@@ -1338,20 +1343,22 @@ class FREMClassifier(_BaseDecoder):
         or have no effect. See scikit-learn documentation for more information,
         for example: https://scikit-learn.org/stable/modules/grid_search.html
 
-    clustering_percentile : int, float, optional, in closed interval [0, 100]
+    clustering_percentile : int, float, optional, in closed interval [0, 100]\
+        (default 10)
         Used to perform a fast ReNA clustering on input data as a first step of
         fit. It agglomerates similar features together to reduce their number
         down to this percentile. ReNA is typically efficient for
-        cluster_percentile equal to 10. Default: 10.
+        cluster_percentile equal to 10.
 
-    screening_percentile : int, float, optional, in closed interval [0, 100]
+    screening_percentile : int, float, optional, in closed interval [0, 100],\
+        (default 20)
         The percentage of brain volume that will be kept with respect to a full
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
         performed. A float according to a percentile of the highest
-        scores. Default: 20.
+        scores.
 
-    scoring : str, callable or None, optional. Default: 'roc_auc'
+    scoring : str, callable or None, optional. (default: 'roc_auc')
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
@@ -1360,7 +1367,7 @@ class FREMClassifier(_BaseDecoder):
         e.g. scorer(estimator, X_test, y_test)
 
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
-        'recall' or 'roc_auc'. Default: 'roc_auc'.
+        'recall' or 'roc_auc'. (default 'roc_auc').
     %(smoothing_fwhm)s
     %(standardize)s
     %(target_affine)s

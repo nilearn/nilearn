@@ -511,7 +511,7 @@ def tvl1_solver(
     alpha : float
         Constant that scales the overall regularization term. Defaults to 1.0.
 
-    l1_ratio : float in the interval [0, 1]; optional (default .5)
+    l1_ratio : float in the interval [0, 1]; optional (default 0.5)
         Constant that mixes L1 and TV penalization.
         l1_ratio == 0 : just smooth. l1_ratio == 1 : just lasso.
         Defaults to 0.5.
@@ -527,8 +527,8 @@ def tvl1_solver(
         Maximum number of iterations for inner FISTA loop in which
         the prox of TV is approximated.
 
-    tol : float
-        Defines the tolerance for convergence. Defaults to 1e-4.
+    tol : float, optional (default 1e-4)
+        Defines the tolerance for convergence.
 
     loss : string
         Loss model for regression. Can be "mse" (for squared loss) or

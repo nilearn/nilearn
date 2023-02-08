@@ -253,7 +253,8 @@ class _EarlyStoppingCallback:
                 if self.verbose:
                     if self.verbose > 1:
                         print(
-                            f"Early stopping. Test score: {score:.8f} {40 * '-'}"
+                            "Early stopping. "
+                            f"Test score: {score:.8f} {40 * '-'}"
                         )
                     else:
                         sys.stderr.write(".")
@@ -345,8 +346,8 @@ def path_scores(
     test : array or list of integers
         List of indices for the test samples.
 
-    l1_ratios : float or list of floats in the interval [0, 1];
-    optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1];\
+        optional (default .5)
         Constant that mixes L1 and TV (resp. Graph-Net) penalization.
         l1_ratios == 0: just smooth. l1_ratios == 1: just lasso.
 
@@ -376,14 +377,14 @@ def path_scores(
         If set, then the estimated weights maps will be debiased.
         Default=False.
 
-    screening_percentile : float in the interval [0, 100], optional
+    screening_percentile : float in the interval [0, 100], optional\
+        (default 20)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means 'keep all features'. This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
         at runtime to correspond to the volume of the user-supplied mask
         (which is typically smaller). If '100' is given, all the features
         are used, regardless of the number of voxels.
-        Default=20.
     %(verbose)s
 
     """
@@ -574,8 +575,8 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
     is_classif : bool, optional (default False)
         Flag telling whether the learning task is classification or regression.
 
-    l1_ratios : float or list of floats in the interval [0, 1];
-    optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1];\
+        optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
@@ -606,8 +607,8 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    screening_percentile : float in the interval [0, 100]; Optional (
-    default 20)
+    screening_percentile : float in the interval [0, 100]; Optional (\
+        default 20)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means 'keep all features'. This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
@@ -660,8 +661,9 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
     `n_classes_` : int
         Number of classes (for classification problems)
 
-    `coef_` : ndarray, shape
-        (1, n_features) for 2 class classification problems (i.e n_classes = 2)
+    `coef_` : ndarray, shape\
+        (1, n_features) for 2 class classification problems\
+        (i.e n_classes = 2)\
         (n_classes, n_features) for n_classes > 2
         Coefficient of the features in the decision function.
 
@@ -691,7 +693,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         Each pair is the list of indices for the train and test samples
         for the corresponding fold.
 
-    `cv_scores_` : ndarray, shape (n_folds, n_alphas)
+    `cv_scores_` : ndarray, shape (n_folds, n_alphas)\
         or (n_l1_ratios, n_folds, n_alphas)
         Scores (misclassification) for each alpha, and on each fold
 
@@ -785,7 +787,8 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
             for l1_ratio in l1_ratios:
                 if not 0 <= l1_ratio <= 1.0:
                     raise ValueError(
-                        f"l1_ratio must be in the interval [0, 1]; got {l1_ratio:g}"
+                        "l1_ratio must be in the interval [0, 1]; "
+                        f" got {l1_ratio:g}"
                     )
                 elif l1_ratio in (0.0, 1.0):
                     warnings.warn(
@@ -1120,8 +1123,8 @@ class SpaceNetClassifier(BaseSpaceNet):
     loss : string, optional (default "logistic")
         Loss to be used in the classifier. Must be one of "mse", or "logistic".
 
-    l1_ratios : float or list of floats in the interval [0, 1];
-    optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1];\
+        optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
@@ -1150,7 +1153,7 @@ class SpaceNetClassifier(BaseSpaceNet):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    screening_percentile : float in the interval [0, 100]; Optional
+    screening_percentile : float in the interval [0, 100]; Optional\
         (default 20)
         Percentile value for ANOVA univariate feature selection.
         A value of 100 means 'keep all features'.
@@ -1237,7 +1240,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         Each pair is the list of indices for the train and test
         samples for the corresponding fold.
 
-    `cv_scores_` : ndarray, shape (n_folds, n_alphas)
+    `cv_scores_` : ndarray, shape (n_folds, n_alphas)\
         or (n_l1_ratios, n_folds, n_alphas)
         Scores (misclassification) for each alpha, and on each fold
 
@@ -1366,8 +1369,8 @@ class SpaceNetRegressor(BaseSpaceNet):
     penalty : string, optional (default 'graph-net')
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    l1_ratios : float or list of floats in the interval [0, 1];
-    optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1];\
+        optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
@@ -1396,7 +1399,7 @@ class SpaceNetRegressor(BaseSpaceNet):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    screening_percentile : float in the interval [0, 100]; Optional
+    screening_percentile : float in the interval [0, 100]; Optional\
         (default 20)
         Percentile value for ANOVA univariate feature selection.
         A value of 100 means 'keep all features'.
@@ -1470,7 +1473,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         Each pair is the list of indices for the train and test
         samples for the corresponding fold.
 
-    `cv_scores_` : ndarray, shape (n_folds, n_alphas)
+    `cv_scores_` : ndarray, shape (n_folds, n_alphas)\
         or (n_l1_ratios, n_folds, n_alphas)
         Scores (misclassification) for each alpha, and on each fold
 
