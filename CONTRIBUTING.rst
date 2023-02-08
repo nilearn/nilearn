@@ -262,7 +262,7 @@ The main conventions we enforce are :
 - 2 empty lines between functions or classes
 
 You can check that any code you may have edited follows these conventions 
-by running `flake8 <https://flake8.pycqa.org/en/latest/user/invocation.html#invoking-flake8>`_.
+by running `flake8 <https://flake8.pycqa.org/en/latest/user/invocation.html#invoking-flake8>`__.
 
 Additionally, we recommend using `Black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_ 
 to format your code.
@@ -291,7 +291,7 @@ but well-tested, older functions in the codebase, unless there is a strong reaso
 Pre-commit
 ----------
 
-We use `pre-commit <https://pre-commit.com/>`_ 
+We use `pre-commit <https://pre-commit.com/>`__
 to run a set of linters and autoformatters on the codebase.
 
 To install pre-commit, run:
@@ -401,7 +401,7 @@ The installed version will also reflect any changes you make to your code.
 
       pytest nilearn
 
-5. (optional) install `pre-commit <https://pre-commit.com/#usage>`_ hooks
+5. (optional) install `pre-commit <https://pre-commit.com/#usage>`__ hooks
    to run the linter and other checks before each commit::
 
       pre-commit install
@@ -423,7 +423,7 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
 .. admonition:: Recommendation
 
     To lint your code and verify PEP8 compliance, you can run
-    `flake8 <https://flake8.pycqa.org/en/latest/>`_ locally on the
+    `flake8 <https://flake8.pycqa.org/en/latest/>`__ locally on the
     changes you have made.
 
     .. code-block:: bash
