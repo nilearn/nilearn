@@ -36,7 +36,7 @@ def _test_data_with_nans(img):
 
 def test_mni152template_is_reordered():
     """See issue #2550."""
-    reordered_mni = reorder_img(load_mni152_template())
+    reordered_mni = reorder_img(load_mni152_template(resolution=2))
     assert np.allclose(get_data(reordered_mni), get_data(MNI152TEMPLATE))
     assert np.allclose(reordered_mni.affine, MNI152TEMPLATE.affine)
     assert np.allclose(reordered_mni.shape, MNI152TEMPLATE.shape)
@@ -156,7 +156,7 @@ def test_plot_with_nans(plot_func, testdata_3d):  # noqa:F811
 @pytest.mark.parametrize("cmap", ['Paired', 'Set1', 'Set2', 'Set3', 'viridis'])
 def test_plotting_functions_with_cmaps(plot_func, cmap):
     """Some test for plotting functions with different cmaps."""
-    plot_func(load_mni152_template(), cmap=cmap, colorbar=True)
+    plot_func(load_mni152_template(resolution=2), cmap=cmap, colorbar=True)
     plt.close()
 
 
