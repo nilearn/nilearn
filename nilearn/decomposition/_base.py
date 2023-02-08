@@ -160,7 +160,8 @@ def _mask_and_reduce(
         )
         if not 0 <= reduction_ratio <= 1:
             raise ValueError(
-                f"Reduction ratio should be between 0. and 1.,got {reduction_ratio:.2f}"
+                "Reduction ratio should be between 0.0 and 1.0, "
+                f"got {reduction_ratio:.2f}"
             )
 
     if confounds is None:
