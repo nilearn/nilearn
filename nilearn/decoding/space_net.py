@@ -264,7 +264,7 @@ class _EarlyStoppingCallback:
         return False
 
     def _debias(self, w):
-        """ "Debias w by rescaling the coefficients by a fixed factor.
+        """Debias w by rescaling the coefficients by a fixed factor.
 
         Precisely, the scaling factor is: <y_pred, y_test> / ||y_test||^2.
         """
