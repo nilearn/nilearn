@@ -55,17 +55,19 @@ def test_input_args_and_kwargs():
     alpha_ = alpha * X.shape[0]
     l1_ratio = 0.2
     l1_weight = alpha_ * l1_ratio
-    f1 = lambda w: _squared_loss(X, y, w, compute_grad=False)  # noqa: E731
-    f1_grad = lambda w: _squared_loss(  # noqa: E731
-        X, y, w, compute_grad=True, compute_energy=False
-    )
-    f2_prox = lambda w, l, *args, **kwargs: (  # noqa: E731, E741
-        _prox_l1(w, l * l1_weight),
-        dict(converged=True),
-    )
-    total_energy = lambda w: f1(w) + l1_weight * np.sum(  # noqa: E731
-        np.abs(w)
-    )  # noqa: E731
+
+    def f1(w):
+        return _squared_loss(X, y, w, compute_grad=False)
+
+    def f1_grad(w):
+        return _squared_loss(X, y, w, compute_grad=True, compute_energy=False)
+
+    def f2_prox(w, l, *args, **kwargs):  # noqa: E741
+        return _prox_l1(w, l * l1_weight), dict(converged=True)
+
+    def total_energy(w):
+        return f1(w) + l1_weight * np.sum(np.abs(w))
+
     for cb_retval in [0, 1]:
         for verbose in [0, 1]:
             for dgap_factor in [1.0, None]:

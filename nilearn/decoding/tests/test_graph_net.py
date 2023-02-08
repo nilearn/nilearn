@@ -135,14 +135,15 @@ def test__squared_loss_gradient_at_simple_points():
     a not so hard test, just for detecting big errors"""
     X, y, w, mask = create_graph_net_simulation_data(n_samples=10, size=4)
     grad_weight = 1
-    func = lambda w: _squared_loss_and_spatial_grad(  # noqa: E731
-        X, y, w, mask, grad_weight
-    )
-    func_grad = (
-        lambda w: _squared_loss_and_spatial_grad_derivative(  # noqa: E731
+
+    def func(w):
+        return _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight)
+
+    def func_grad(w):
+        return _squared_loss_and_spatial_grad_derivative(
             X, y, w, mask, grad_weight
         )
-    )
+
     for i in range(0, w.size, 2):
         point = np.zeros(*w.shape)
         point[i] = 1
@@ -158,12 +159,15 @@ def test_logistic_gradient_at_simple_points():
     grad_weight = 1
     # Add the intercept
     w = np.append(w, 0)
-    func = lambda w: _logistic_data_loss_and_spatial_grad(  # noqa: E731
-        X, y, w, mask, grad_weight
-    )
-    func_grad = lambda w: _logistic_data_loss_and_spatial_grad_derivative(  # noqa: E731, E501
-        X, y, w, mask, grad_weight
-    )
+
+    def func(w):
+        return _logistic_data_loss_and_spatial_grad(X, y, w, mask, grad_weight)
+
+    def func_grad(w):
+        return _logistic_data_loss_and_spatial_grad_derivative(
+            X, y, w, mask, grad_weight
+        )
+
     for i in range(0, w.size, 7):
         point = np.zeros(*w.shape)
         point[i] = 1
@@ -268,14 +272,16 @@ def test_mfista_solver_graph_net_no_l1_term():
     w = np.zeros(2)
     X = np.array([[1, 0], [0, 4]])
     y = np.array([-10, 20])
-    f1 = lambda w: 0.5 * np.dot(  # noqa: E731
-        np.dot(X, w) - y, np.dot(X, w) - y
-    )
-    f1_grad = lambda w: np.dot(X.T, np.dot(X, w) - y)  # noqa: E731
-    f2_prox = lambda w, l, *args, **kwargs: (  # noqa: E731, E741
-        w,
-        dict(converged=True),
-    )
+
+    def f1(w):
+        return 0.5 * np.dot(np.dot(X, w) - y, np.dot(X, w) - y)
+
+    def f1_grad(w):
+        return np.dot(X.T, np.dot(X, w) - y)
+
+    def f2_prox(w, l, *args, **kwargs):  # noqa: E741
+        return w, dict(converged=True)
+
     lipschitz_constant = _squared_loss_derivative_lipschitz_constant(
         X, (np.eye(2) == 1).astype(bool), 1
     )
