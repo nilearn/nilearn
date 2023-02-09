@@ -302,6 +302,14 @@ def test_permuted_ols_withcovar(random_state=0):
         n_perm=0, random_state=random_state)
     assert own_score.shape == (n_regressors, n_descriptors)
 
+    # permuted OLS, multiple constants and covars, model_intercept=False
+    confounding_vars = np.hstack((rng.randn(n_samples, n_covars),
+                                  np.ones([n_samples, 2])))
+    _, own_score, _ = permuted_ols(
+        tested_var, target_var, confounding_vars, model_intercept=False,
+        n_perm=0, random_state=random_state)
+    assert own_score.shape == (n_regressors, n_descriptors)
+
     # Multiple intercepts should raise a warning
     # In confounding vars
     with pytest.warns(UserWarning):
