@@ -206,7 +206,8 @@ def _pare_subpeaks(xyz, ijk, vals, min_distance):
 
 
 def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
-                       two_sided=False, min_distance=8., return_label_maps=False):
+                       two_sided=False, min_distance=8.,
+                       return_label_maps=False):
     """Creates pandas dataframe with img cluster statistics.
 
     This function should work on any statistical maps where more extreme values
@@ -249,10 +250,11 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         .. note::
             If two different clusters are closer than ``min_distance``, it can
             result in peaks closer than ``min_distance``.
-    
+
     return_label_maps : :obj:`bool`, optional
-        Whether or not to additionally output cluster label map images. Default=False.
-        
+        Whether or not to additionally output cluster label map images.
+        Default=False.
+    
         .. versionadded:: 0.10.1.dev
 
     Returns
@@ -276,15 +278,16 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     label_maps : :obj:`list`
         Returned if return_label_maps=True
         List of Niimg-like objects of cluster label maps.
-        If two_sided==True, first and second maps correspond to positive and negative tails.
-        
+        If two_sided==True, first and second maps correspond
+        to positive and negative tails.
+
         .. versionadded:: 0.10.1.dev
-        
+
     """
     # Add future warning message
     future_warn_message = (
-        "The 'return_label_maps' parameter will default to 'True' in release `0.12.0`, "
-    "The 'return_label_maps' argument will be removed a couple of releases later."
+    "The 'return_label_maps' parameter will"
+    " default to 'True' in release `0.12.0`"
     )
     warnings.warn(future_warn_message, FutureWarning)
 
@@ -294,7 +297,8 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
 
     # check that stat_img is niimg-like object and 3D
     stat_img = check_niimg_3d(stat_img)
-
+    affine = stat_img.affine
+    
     # Apply threshold(s) to image
     stat_img = threshold_img(
         img=stat_img,
@@ -339,7 +343,9 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
 
         # Now re-label and create table
         label_map = label(binarized, bin_struct)[0]
-        label_maps.append(new_img_like(stat_img, label_map)) # Save label map as nifti object
+        # Save label maps as nifti objects
+        label_maps.append(new_img_like(stat_img, label_map,
+                                      affine=affine))
         clust_ids = sorted(list(np.unique(label_map)[1:]))
         peak_vals = np.array(
             [np.max(temp_stat_map * (label_map == c)) for c in clust_ids])
