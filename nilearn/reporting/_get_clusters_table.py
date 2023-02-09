@@ -344,8 +344,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         # Now re-label and create table
         label_map = label(binarized, bin_struct)[0]
         # Save label maps as nifti objects
-        label_maps.append(new_img_like(stat_img, label_map,
-                                      affine=affine))
+        label_maps.append(new_img_like(stat_img, label_map, affine=affine))
         clust_ids = sorted(list(np.unique(label_map)[1:]))
         peak_vals = np.array(
             [np.max(temp_stat_map * (label_map == c)) for c in clust_ids])
