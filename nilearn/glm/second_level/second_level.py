@@ -847,10 +847,9 @@ def non_parametric_inference(
     var_names = design_matrix.columns.tolist()
 
     # Obtain tested_var
-    if contrast in var_names:
-        tested_var = np.asarray(design_matrix[contrast])
-        # Remove tested var from remaining var names
-        var_names.remove(contrast)
+    tested_var = np.asarray(design_matrix[contrast])
+    # Remove tested var from remaining var names
+    var_names.remove(contrast)
 
     # Obtain confounding vars
     if len(var_names) == 0:
