@@ -286,8 +286,8 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     """
     # Add future warning message
     future_warn_message = (
-    "The 'return_label_maps' parameter will"
-    " default to 'True' in release `0.12.0`"
+        "The 'return_label_maps' parameter will"
+        " default to 'True' in release `0.12.0`"
     )
     warnings.warn(future_warn_message, FutureWarning)
 
