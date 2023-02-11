@@ -323,8 +323,8 @@ def _graph_net_squared_loss(
     def f2(w):
         return np.sum(np.abs(w)) * l1_weight
 
-    def f2_prox(w, l, *args, **kwargs):  # noqa: E741
-        return _prox_l1(w, l * l1_weight), dict(converged=True)
+    def f2_prox(w, step_size, *args, **kwargs):
+        return _prox_l1(w, step_size * l1_weight), dict(converged=True)
 
     # total energy (smooth + nonsmooth)
     def total_energy(w):
@@ -406,8 +406,10 @@ def _graph_net_logistic(
     def f2(w):
         return np.sum(np.abs(w[:-1])) * l1_weight
 
-    def f2_prox(w, l, *args, **kwargs):  # noqa: E741
-        return _prox_l1_with_intercept(w, l * l1_weight), dict(converged=True)
+    def f2_prox(w, step_size, *args, **kwargs):
+        return _prox_l1_with_intercept(w, step_size * l1_weight), dict(
+            converged=True
+        )
 
     # total energy (smooth + nonsmooth)
     def total_energy(w):

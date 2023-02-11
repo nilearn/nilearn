@@ -279,7 +279,7 @@ def test_mfista_solver_graph_net_no_l1_term():
     def f1_grad(w):
         return np.dot(X.T, np.dot(X, w) - y)
 
-    def f2_prox(w, l, *args, **kwargs):  # noqa: E741
+    def f2_prox(w, step_size, *args, **kwargs):
         return w, dict(converged=True)
 
     lipschitz_constant = _squared_loss_derivative_lipschitz_constant(

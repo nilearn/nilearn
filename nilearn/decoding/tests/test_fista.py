@@ -62,8 +62,8 @@ def test_input_args_and_kwargs():
     def f1_grad(w):
         return _squared_loss(X, y, w, compute_grad=True, compute_energy=False)
 
-    def f2_prox(w, l, *args, **kwargs):  # noqa: E741
-        return _prox_l1(w, l * l1_weight), dict(converged=True)
+    def f2_prox(w, step_size, *args, **kwargs):
+        return _prox_l1(w, step_size * l1_weight), dict(converged=True)
 
     def total_energy(w):
         return f1(w) + l1_weight * np.sum(np.abs(w))
