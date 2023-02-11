@@ -41,7 +41,6 @@ def _fast_svd(X, n_components, random_state=None):
 
     Returns
     -------
-
     U : array, shape (n_samples, n_components)
         The first matrix of the truncated svd
 
@@ -141,7 +140,7 @@ def _mask_and_reduce(
         'all CPUs', -2 'all CPUs but one', and so on. Default=1.
 
     Returns
-    ------
+    -------
     data : ndarray or memorymap
         Concatenation of reduced data.
 
@@ -486,7 +485,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             related documentation for details
 
         Returns
-        ----------
+        -------
         loadings : list of 2D ndarray,
             For each subject, each sample, loadings for each decomposition
             components

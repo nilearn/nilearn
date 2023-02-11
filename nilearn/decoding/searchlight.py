@@ -146,7 +146,7 @@ def _group_iter_search_light(
     """Function for grouped iterations of search_light
 
     Parameters
-    -----------
+    ----------
     list_rows : array of arrays of int
         adjacency rows. For a voxel with index i in X, list_rows[i] is the list
         of neighboring voxels indices (in X).
@@ -226,7 +226,7 @@ class SearchLight(BaseEstimator):
     """Implement search_light analysis using an arbitrary type of classifier.
 
     Parameters
-    -----------
+    ----------
     mask_img : Niimg-like object
         See :ref:`extracting_data`.
         Boolean image giving location of voxels containing usable signals.

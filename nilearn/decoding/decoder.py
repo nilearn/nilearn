@@ -73,7 +73,7 @@ def _check_param_grid(estimator, X, y, param_grid=None):
     """Check param_grid and return sensible default if param_grid is None.
 
     Parameters
-    -----------
+    ----------
     estimator: str, optional
         The estimator to choose among:
         %(classifier_options)s
@@ -269,7 +269,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
     with the Nifti files on disk.
 
     Parameters
-    -----------
+    ----------
     estimator: str, optional
         The estimator to use. For classification, choose among:
         %(classifier_options)s
@@ -887,7 +887,7 @@ class Decoder(_BaseDecoder):
     provide a direct interface with the Nifti files on disk.
 
     Parameters
-    -----------
+    ----------
     estimator: str, optional
         The estimator to choose among:
         %(classifier_options)s
@@ -1022,7 +1022,7 @@ class DecoderRegressor(_BaseDecoder):
     to provide a direct interface with the Nifti files on disk.
 
     Parameters
-    -----------
+    ----------
     estimator: str, optional
         The estimator to choose among:
         %(regressor_options)s
@@ -1158,7 +1158,7 @@ class FREMRegressor(_BaseDecoder):
     cost than other spatially regularized methods :footcite:`Hoyos-Idrobo2018`.
 
     Parameters
-    -----------
+    ----------
     estimator : str, optional
         The estimator to choose among:
         %(regressor_options)s
@@ -1311,7 +1311,7 @@ class FREMClassifier(_BaseDecoder):
     cost than other spatially regularized methods :footcite:`Hoyos-Idrobo2018`.
 
     Parameters
-    -----------
+    ----------
     estimator : str, optional, (default 'svc')
         The estimator to choose among:
         %(classifier_options)s
