@@ -603,10 +603,11 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array with a value for each vertex of the surf_mesh.
 
-    bg_map : Surface data object (to be defined), optional
+    bg_map : str or numpy.ndarray, optional
         Background image to be plotted on the mesh underneath the
         surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
+
     %(hemi)s
     %(view)s
     engine : {'matplotlib', 'plotly'}, optional
@@ -961,10 +962,11 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         .sulc, .annot, .label) or
         a Numpy array with a value for each vertex of the surf_mesh.
 
-    bg_map : Surface data object (to be defined), optional
+    bg_map : str or numpy.ndarray, optional
         Background image to be plotted on the mesh underneath the
         stat_map in greyscale, most likely a sulcal depth map for
         realistic shading.
+
     %(hemi)s
     %(view)s
     engine : {'matplotlib', 'plotly'}, optional
@@ -1211,7 +1213,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         during projection of the volume to the surface.
         If ``None``, don't apply any mask.
 
-    bg_maps : 'auto' or list of Surface data objects (to be defined), optional
+    bg_maps : "auto" or list of (str or numpy.ndarray), optional
         Background images to be plotted on the mesh underneath the
         surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
@@ -1392,10 +1394,12 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
         a Numpy array with a value for each vertex of the surf_mesh.
         The value at each vertex one inside the ROI and zero inside ROI, or an
         integer giving the label number for atlases.
-    bg_map : Surface data object (to be defined), optional
+
+    bg_map : str or numpy.ndarray, optional
         Background image to be plotted on the mesh underneath the
         stat_map in greyscale, most likely a sulcal depth map for
         realistic shading.
+
     %(hemi)s
     %(view)s
     engine : {'matplotlib', 'plotly'}, optional

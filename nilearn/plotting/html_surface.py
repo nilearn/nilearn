@@ -263,7 +263,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         If True, image is plotted on a black background. Otherwise on a
         white background. Default=False.
 
-    bg_maps : 'auto' or list of Surface data objects (to be defined), optional
+    bg_maps : "auto" or list of (str or numpy.ndarray), optional
         Background images to be plotted on the mesh underneath the
         surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
@@ -375,7 +375,7 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         .thickness, .area, .curv, .sulc, .annot, .label) or
         a Numpy array
 
-    bg_map : Surface data object (to be defined), optional
+    bg_map : str or numpy.ndarray, optional
         Background image to be plotted on the mesh underneath the
         surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
