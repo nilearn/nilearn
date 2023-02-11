@@ -2,6 +2,7 @@
 Functions for surface visualization.
 """
 import itertools
+import warnings
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -21,7 +22,11 @@ from nilearn.surface import (load_surf_data,
 from nilearn.surface.surface import _check_mesh
 from nilearn._utils import check_niimg_3d, fill_doc
 from nilearn.plotting.js_plotting_utils import colorscale
-from nilearn.plotting.html_surface import _get_vertexcolor, _mix_colormaps
+from nilearn.plotting.html_surface import (
+    _get_vertexcolor,
+    _mix_colormaps,
+    SCALED_BACKGROUND_WARNING
+)
 
 from matplotlib.colors import to_rgba
 from matplotlib.patches import Patch
@@ -407,6 +412,10 @@ def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
             and (bg_vmin < 0 or bg_vmax > 1)
         )
     ):
+        warnings.warn(
+            message=SCALED_BACKGROUND_WARNING,
+            category=DeprecationWarning,
+        )
         bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
         bg_faces = bg_norm(bg_faces)
 

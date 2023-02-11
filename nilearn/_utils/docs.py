@@ -600,6 +600,12 @@ bg_map_rescale : :obj:`bool`, or "auto", optional
     the ``bg_map`` will be linearly normalized to the [0, 1] interval.
     Otherwise, ``bg_map`` won't be changed.
 
+        .. warning::
+            This is a temporary parameter meant to allow users to
+            not automatically scale background maps. It will be deprecated
+            in the 0.11 release, in which not scaling background maps
+            will become the default behaviour.
+
 """
 
 # darkness

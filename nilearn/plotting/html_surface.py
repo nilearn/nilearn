@@ -1,5 +1,6 @@
-import json
 import collections.abc
+import json
+import warnings
 
 import numpy as np
 import matplotlib as mpl
@@ -14,6 +15,15 @@ from nilearn.plotting import cm
 from nilearn.plotting.js_plotting_utils import (
     colorscale, mesh_to_plotly, get_html_template, add_js_lib,
     to_color_strings)
+
+SCALED_BACKGROUND_WARNING = (
+    "Background maps "
+    "are automatically scaled to have values in [0, 1]. "
+    "This behaviour will be removed in the 0.11 release. "
+    "You can already simulate this future behaviour "
+    "by setting bg_map_rescale=False in this function "
+    "and scaling background maps yourself beforehand."
+)
 
 
 class SurfaceView(HTMLDocument):
@@ -77,6 +87,10 @@ def _get_vertexcolor(surf_map, cmap, norm,
             and (bg_vmin < 0 or bg_vmax > 1)
         )
     ):
+        warnings.warn(
+            message=SCALED_BACKGROUND_WARNING,
+            category=DeprecationWarning,
+        )
         bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
         bg_data = bg_norm(bg_data)
 
