@@ -414,7 +414,7 @@ def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
     ):
         warnings.warn(
             message=SCALED_BACKGROUND_WARNING,
-            category=DeprecationWarning,
+            category=FutureWarning,
         )
         bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
         bg_faces = bg_norm(bg_faces)

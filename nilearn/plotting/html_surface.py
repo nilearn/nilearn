@@ -89,7 +89,7 @@ def _get_vertexcolor(surf_map, cmap, norm,
     ):
         warnings.warn(
             message=SCALED_BACKGROUND_WARNING,
-            category=DeprecationWarning,
+            category=FutureWarning,
         )
         bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
         bg_data = bg_norm(bg_data)
