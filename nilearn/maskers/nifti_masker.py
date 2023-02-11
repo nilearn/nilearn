@@ -233,6 +233,8 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         If set to True, data is saved in order to produce a report.
         Default=True.
 
+    %(masker_kwargs)s
+
     Attributes
     ----------
     mask_img_ : :obj:`nibabel.nifti1.Nifti1Image`
@@ -277,6 +279,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         memory=Memory(location=None),
         verbose=0,
         reports=True,
+        **kwargs,
     ):
         # Mask is provided or computed
         self.mask_img = mask_img
@@ -312,6 +315,9 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             'hover over the displayed image.'
         )
         self._shelving = False
+        self.clean_kwargs = {
+            k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
+        }
 
     def generate_report(self):
         from nilearn.reporting.html_report import generate_report
@@ -566,6 +572,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
                 'sample_mask',
             ],
         )
+        params['clean_kwargs'] = self.clean_kwargs
 
         data = self._cache(
             _filter_and_mask,

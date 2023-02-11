@@ -325,6 +325,17 @@ sample_mask : Any type compatible with numpy-array indexing, optional
     This parameter is passed to :func:`nilearn.signal.clean`.
 """
 
+# kwargs for Maskers
+docdict['masker_kwargs'] = """
+kwargs : dict
+    Keyword arguments to be passed to functions called within the masker.
+    Kwargs prefixed with ``'clean__'`` will be passed to
+    :func:`~nilearn.signal.clean`.
+    Within :func:`~nilearn.signal.clean`, kwargs prefixed with
+    ``'butterworth__'`` will be passed to the Butterworth filter
+    (i.e., ``clean__butterworth__``).
+"""
+
 # cut_coords
 docdict['cut_coords'] = """
 cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional

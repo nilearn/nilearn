@@ -30,8 +30,8 @@ def test_fast_svd():
 
         # check the singular vectors too (while not checking the sign)
         assert_array_almost_equal(
-                np.abs(np.diag(np.corrcoef(V_[:k], Vr)))[:k],
-                np.ones(k))
+            np.abs(np.diag(np.corrcoef(V_[:k], Vr)))[:k], np.ones(k)
+        )
 
 
 def test_mask_reducer():
@@ -41,7 +41,7 @@ def test_mask_reducer():
 
     # Create a "multi-subject" dataset
     imgs = []
-    for i in range(8):
+    for _ in range(8):
         this_img = rng.normal(size=shape)
         # Create fake activation to get non empty mask
         this_img[2:4, 2:4, 2:4, :] += 10
@@ -65,14 +65,14 @@ def test_mask_reducer():
     assert data_single.shape == (3, 6 * 8 * 10)
 
     # Test n_jobs > 1
-    data = _mask_and_reduce(masker, imgs[0], n_components=3,
-                           n_jobs=2, random_state=0)
+    data = _mask_and_reduce(
+        masker, imgs[0], n_components=3, n_jobs=2, random_state=0
+    )
     assert data.shape == (3, 6 * 8 * 10)
     assert_array_almost_equal(data_single, data)
 
     # Test that reduced data is orthogonal
-    data = _mask_and_reduce(masker, imgs[0], n_components=3,
-                           random_state=0)
+    data = _mask_and_reduce(masker, imgs[0], n_components=3, random_state=0)
     assert data.shape == (3, 6 * 8 * 10)
     cov = data.dot(data.T)
     cov_diag = np.zeros((3, 3))
@@ -81,8 +81,8 @@ def test_mask_reducer():
     assert_array_almost_equal(cov, cov_diag)
 
     # Test reproducibility
-    data1 = _mask_and_reduce(masker, imgs[0], n_components=3,
-                                  random_state=0)
-    data2 = _mask_and_reduce(masker, [imgs[0]] * 2, n_components=3,
-                                  random_state=0)
+    data1 = _mask_and_reduce(masker, imgs[0], n_components=3, random_state=0)
+    data2 = _mask_and_reduce(
+        masker, [imgs[0]] * 2, n_components=3, random_state=0
+    )
     assert_array_almost_equal(np.tile(data1, (2, 1)), data2)

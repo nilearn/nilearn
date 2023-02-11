@@ -194,6 +194,8 @@
 
 .. _Raphael Meudec: https://github.com/RaphaelMeudec
 
+.. _Rémi Gau: https://github.com/Remi-Gau
+
 .. _Robert Luke: https://github.com/rob-luke
 
 .. _Robert Williamson: https://github.com/RobWilliamson15

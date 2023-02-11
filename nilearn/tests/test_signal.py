@@ -167,15 +167,79 @@ def test_butterworth():
     sampling = 1
     low_pass = 2
     high_pass = 1
-    with pytest.warns(UserWarning,
-                      match='Signals are returned unfiltered because '
-                      'band-pass critical frequencies are equal. '
-                      'Please check that inputs for sampling_rate, '
-                      'low_pass, and high_pass are valid.'):
-        out = nisignal.butterworth(data, sampling,
-                                   low_pass=low_pass, high_pass=high_pass,
-                                   copy=True)
+    with pytest.warns(
+        UserWarning,
+        match=(
+            'Signals are returned unfiltered because '
+            'band-pass critical frequencies are equal. '
+            'Please check that inputs for sampling_rate, '
+            'low_pass, and high_pass are valid.'
+        ),
+    ):
+        out = nisignal.butterworth(
+            data,
+            sampling,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            copy=True,
+        )
     assert (out == data).all()
+
+    # Test check for frequency higher than allowed (>=Nyquist).
+    # The frequency should be modified and the filter should be run.
+    sampling = 1
+    high_pass = 0.01
+    low_pass = 0.5
+    with pytest.warns(
+        UserWarning,
+        match='The frequency specified for the low pass filter is too high',
+    ):
+        out = nisignal.butterworth(
+            data,
+            sampling,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            copy=True,
+        )
+    assert not np.array_equal(data, out)
+
+    # Test check for frequency lower than allowed (<0).
+    # The frequency should be modified and the filter should be run.
+    sampling = 1
+    high_pass = -1
+    low_pass = 0.4
+    with pytest.warns(
+        UserWarning,
+        match='The frequency specified for the high pass filter is too low',
+    ):
+        out = nisignal.butterworth(
+            data,
+            sampling,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            copy=True,
+        )
+    assert not np.array_equal(data, out)
+
+    # Test check for high-pass frequency higher than low-pass frequency.
+    # An error should be raised.
+    sampling = 1
+    high_pass = 0.2
+    low_pass = 0.1
+    with pytest.raises(
+        ValueError,
+        match=(
+            'High pass cutoff frequency \([0-9.]+\) is greater than or '
+            'equal to low pass filter frequency \([0-9.]+\)\.'
+        ),
+    ):
+        nisignal.butterworth(
+            data,
+            sampling,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            copy=True,
+        )
 
 
 def test_standardize():
@@ -357,6 +421,49 @@ def test_clean_t_r():
                                                        det_diff_tr)),
                                    msg)
                 del det_one_tr, det_diff_tr
+
+
+def test_clean_kwargs():
+    """Providing kwargs to clean should change the filtered results."""
+    n_samples = 34
+    n_features = 501
+    x_orig = generate_signals_plus_trends(
+        n_features=n_features, n_samples=n_samples
+    )
+    kwargs = [
+        {
+            "butterworth__padtype": "even",
+            "butterworth__padlen": 10,
+            "butterworth__order": 3,
+        },
+        {
+            "butterworth__padtype": None,
+            "butterworth__padlen": None,
+            "butterworth__order": 1,
+        },
+        {
+            "butterworth__padtype": "constant",
+            "butterworth__padlen": 20,
+            "butterworth__order": 10,
+        },
+    ]
+    # Base result
+    t_r, high_pass, low_pass = 0.8, 0.01, 0.08
+    base_filtered = nisignal.clean(
+        x_orig, t_r=t_r, low_pass=low_pass, high_pass=high_pass
+    )
+    for kwarg_set in kwargs:
+        test_filtered = nisignal.clean(
+            x_orig,
+            t_r=t_r,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            **kwarg_set,
+        )
+        # Check that results are **not** the same.
+        np.testing.assert_(np.any(np.not_equal(
+            base_filtered, test_filtered
+        )))
 
 
 def test_clean_frequencies():

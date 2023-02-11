@@ -91,8 +91,10 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         standard_deviation. Default='mean'.
 
     reports : :obj:`bool`, optional
-         If set to True, data is saved in order to produce a report.
-         Default=True.
+        If set to True, data is saved in order to produce a report.
+        Default=True.
+
+    %(masker_kwargs)s
 
     See also
     --------
@@ -122,7 +124,8 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         verbose=0,
         strategy='mean',
         reports=True,
-        n_jobs=1
+        n_jobs=1,
+        **kwargs,
     ):
         self.n_jobs = n_jobs
         super().__init__(
@@ -145,6 +148,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             verbose=verbose,
             strategy=strategy,
             reports=reports,
+            **kwargs,
         )
 
     def transform_imgs(self, imgs_list, confounds=None, n_jobs=1,
