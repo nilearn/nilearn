@@ -38,7 +38,7 @@ def _get_vertexcolor(surf_map, cmap, norm,
     return to_color_strings(vertexcolor)
 
 
-def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
+def _one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
                   black_bg=False, bg_map=None, symmetric_cmap=True,
                   vmax=None, vmin=None):
     """Prepare info for plotting one surface map on a single mesh.
@@ -78,7 +78,7 @@ def _check_mesh(mesh):
     return mesh
 
 
-def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
+def _full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
                     cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
                     vmax=None, vmin=None, vol_to_surf_kwargs={}):
     """Project 3D map on cortex; prepare info to plot both hemispheres.
