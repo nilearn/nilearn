@@ -1,7 +1,4 @@
-"""
-Common functions and base classes.
-
-"""
+"""Common functions and base classes."""
 # Author: DOHMATOB Elvis Dopgima,
 #         PIZARRO Gaspar,
 #         VAROQUAUX Gael,
@@ -15,7 +12,7 @@ from scipy import linalg
 
 
 def spectral_norm_squared(X):
-    """Computes square of the operator 2-norm (spectral norm) of X
+    """Compute square of the operator 2-norm (spectral norm) of X.
 
     This corresponds to the Lipschitz constant of the gradient of the
     squared-loss function:
@@ -39,10 +36,10 @@ def spectral_norm_squared(X):
 
 
 def _logistic_loss_lipschitz_constant(X):
-    """Compute the Lipschitz constant (upper bound) for the gradient of the
-    logistic sum:
+    """Compute the Lipschitz constant (upper bound) for the gradient of the\
+    logistic sum.
 
-         w -> \\sum_i log(1+exp(-y_i*(x_i*w + v)))
+        w -> \\sum_i log(1+exp(-y_i*(x_i*w + v)))
 
     """
     # N.B: we handle intercept!
@@ -107,7 +104,7 @@ def _squared_loss(X, y, w, compute_energy=True, compute_grad=False):
 
 
 def _tv_l1_from_gradient(spatial_grad):
-    """Energy contribution due to penalized gradient, in TV-L1 model.
+    """Compute energy contribution due to penalized gradient, in TV-L1 model.
 
     Parameters
     ----------
@@ -119,7 +116,6 @@ def _tv_l1_from_gradient(spatial_grad):
     out : float
         Energy contribution due to penalized gradient.
     """
-
     tv_term = np.sum(
         np.sqrt(np.sum(spatial_grad[:-1] * spatial_grad[:-1], axis=0))
     )
@@ -128,7 +124,7 @@ def _tv_l1_from_gradient(spatial_grad):
 
 
 def _div_id(grad, l1_ratio=0.5):
-    """Compute divergence + id of image gradient + id
+    """Compute divergence + id of image gradient + id.
 
     Parameters
     ----------
@@ -149,7 +145,6 @@ def _div_id(grad, l1_ratio=0.5):
     RuntimeError
 
     """
-
     if not (0.0 <= l1_ratio <= 1.0):
         raise RuntimeError(
             f"l1_ratio must be in the interval [0, 1]; got {l1_ratio}"
@@ -175,7 +170,7 @@ def _div_id(grad, l1_ratio=0.5):
 
 
 def _gradient_id(img, l1_ratio=0.5):
-    """Compute gradient + id of an image
+    """Compute gradient + id of an image.
 
     Parameters
     ----------
@@ -196,7 +191,6 @@ def _gradient_id(img, l1_ratio=0.5):
     RuntimeError
 
     """
-
     if not (0.0 <= l1_ratio <= 1.0):
         raise RuntimeError(
             f"l1_ratio must be in the interval [0, 1]; got {l1_ratio}"
@@ -222,7 +216,7 @@ def _gradient_id(img, l1_ratio=0.5):
 
 
 def _sigmoid(t, copy=True):
-    """Helper function: return 1. / (1 + np.exp(-t))"""
+    """Helper function: return 1. / (1 + np.exp(-t))."""
     if copy:
         t = np.copy(t)
     t *= -1.0
@@ -233,7 +227,7 @@ def _sigmoid(t, copy=True):
 
 
 def _logistic(X, y, w):
-    """Compute the logistic function of the data: sum(sigmoid(yXw))
+    """Compute the logistic function of the data: sum(sigmoid(yXw)).
 
     Parameters
     ----------
@@ -251,7 +245,6 @@ def _logistic(X, y, w):
     energy : float
         Energy contribution due to logistic data-fit term.
     """
-
     z = np.dot(X, w[:-1]) + w[-1]
     yz = y * z
     idx = yz > 0
@@ -263,7 +256,7 @@ def _logistic(X, y, w):
 
 
 def _logistic_loss_grad(X, y, w):
-    """Computes the derivative of logistic"""
+    """Compute the derivative of logistic."""
     z = np.dot(X, w[:-1]) + w[-1]
     yz = y * z
     z = _sigmoid(yz, copy=False)
@@ -281,10 +274,10 @@ _squared_loss_grad = partial(
 
 
 def _gradient(w):
-    """Pure spatial gradient"""
+    """Pure spatial gradient."""
     return _gradient_id(w, l1_ratio=0.0)[:-1]  # pure nabla
 
 
 def _div(v):
-    """Pure spatial divergence"""
+    """Pure spatial divergence."""
     return _div_id(np.vstack((v, [np.zeros_like(v[0])])), l1_ratio=0.0)

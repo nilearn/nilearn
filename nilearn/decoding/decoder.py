@@ -1,6 +1,7 @@
-"""High-level decoding object that exposes standard classification and
-regression strategies such as SVM, LogisticRegression and Ridge, with optional
-feature selection, integrated hyper-parameter selection and aggregation
+"""High-level decoding object that exposes standard classification and \
+regression strategies such as SVM, LogisticRegression and Ridge,
+with optional feature selection, \
+integrated hyper-parameter selection and aggregation \
 strategy in which the best models within a cross validation loop are averaged.
 
 Also exposes a high-level method FREM that uses clustering and model
@@ -179,6 +180,7 @@ def _parallel_fit(
     clustering_percentile,
 ):
     """Find the best estimator for a fold within a job.
+
     This function tries several parameters for the estimator for the train and
     test fold provided and save the one that performs best.
 
@@ -258,7 +260,7 @@ def _parallel_fit(
 
 @fill_doc
 class _BaseDecoder(LinearRegression, CacheMixin):
-    """A wrapper for popular classification/regression strategies in
+    """A wrapper for popular classification/regression strategies in \
     neuroimaging.
 
     The `BaseDecoder` object supports classification and regression methods.
@@ -648,7 +650,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
                 self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
 
     def score(self, X, y, *args):
-        """Compute the prediction score using the scoring
+        """Compute the prediction score using the scoring \
         metric defined by the scoring attribute.
 
         Parameters
@@ -716,7 +718,6 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             case, confidence score for self.classes_[1] where >0 means this
             class would be predicted.
         """
-
         check_is_fitted(self, "coef_")
         check_is_fitted(self, "masker_")
 
@@ -748,11 +749,10 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         return X
 
     def _fetch_parallel_fit_outputs(self, parallel_fit_outputs, y, n_problems):
-        """Fetch the outputs from parallel_fit to be ready for ensembling
+        """Fetch the outputs from parallel_fit to be ready for ensembling.
 
         Parameters
         ----------
-
         parallel_fit_outputs : list of tuples,
             each tuple contains results of
             one _parallel_fit for each cv fold (and each classification in the
@@ -763,13 +763,11 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         Returns
         -------
-
         coefs : dict
             Coefficients for each classification/regression problem
         intercepts : dict
             Intercept for each classification/regression problem
         """
-
         coefs = {}
         intercepts = {}
         cv_scores = {}
@@ -852,9 +850,8 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         return y
 
     def _predict_dummy(self, n_samples):
-        """Non-sparse scikit-learn based prediction steps for classification
-        and regression"""
-
+        """Non-sparse scikit-learn based prediction steps for classification \
+        and regression."""
         if len(self.dummy_output_) == 1:
             dummy_output = self.dummy_output_[0]
         else:
@@ -918,7 +915,7 @@ class Decoder(_BaseDecoder):
         For DummyClassifier, parameter grid defaults to empty dictionary, class
         predictions are estimated using default strategy.
 
-    screening_percentile: int, float, optional,\
+    screening_percentile: int, float, optional, \
         in the closed interval [0, 100]\\, (default 20)
         The percentage of brain volume that will be kept with respect to a full
         MNI template. In particular, if it is lower than 100, a univariate
@@ -960,7 +957,7 @@ class Decoder(_BaseDecoder):
     %(verbose0)s
 
     See Also
-    ------------
+    --------
     nilearn.decoding.DecoderRegressor: regression strategies for Neuro-imaging,
     nilearn.decoding.FREMClassifier: State of the art classification pipeline
         for Neuroimaging

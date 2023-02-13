@@ -1,9 +1,7 @@
-"""
-The searchlight is a widely used approach for the study of the
-fine-grained patterns of information in fMRI analysis, in which
-multivariate statistical relationships are iteratively tested in the
-neighborhood of each location of a domain.
-"""
+"""The searchlight is a widely used approach for the study \
+of the fine-grained patterns of information in fMRI analysis, \
+in which multivariate statistical relationships are iteratively tested \
+in the neighborhood of each location of a domain."""
 # Authors : Vincent Michel (vm.michel@gmail.com)
 #           Alexandre Gramfort (alexandre.gramfort@inria.fr)
 #           Philippe Gervais (philippe.gervais@inria.fr)
@@ -42,7 +40,7 @@ def search_light(
     n_jobs=-1,
     verbose=0,
 ):
-    """Function for computing a search_light
+    """Compute a search_light.
 
     Parameters
     ----------
@@ -107,7 +105,7 @@ def search_light(
 
 @fill_doc
 class GroupIterator:
-    """Group iterator
+    """Group iterator.
 
     Provides group of features for search_light loop
     that may be used with Parallel.
@@ -143,7 +141,7 @@ def _group_iter_search_light(
     total,
     verbose=0,
 ):
-    """Function for grouped iterations of search_light
+    """Function for grouped iterations of search_light.
 
     Parameters
     ----------
@@ -294,7 +292,7 @@ class SearchLight(BaseEstimator):
         self.verbose = verbose
 
     def fit(self, imgs, y, groups=None):
-        """Fit the searchlight
+        """Fit the searchlight.
 
         Parameters
         ----------
@@ -312,7 +310,6 @@ class SearchLight(BaseEstimator):
             NOTE: will have no effect for scikit learn < 0.18
 
         """
-
         # check if image is 4D
         imgs = check_niimg_4d(imgs)
 

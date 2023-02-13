@@ -1,7 +1,6 @@
-"""
-sklearn-compatible implementation of spatially structured learners (
-TV-L1, Graph-Net, etc.)
+"""sklearn-compatible implementation of spatially structured learners.
 
+For example: TV-L1, Graph-Net, etc
 """
 # Author: DOHMATOB Elvis Dopgima,
 #         PIZARRO Gaspar,
@@ -52,8 +51,8 @@ from nilearn.image import get_data
 
 
 def _crop_mask(mask):
-    """Crops input mask to produce tighter (i.e smaller) bounding box with
-    the same support (active voxels)"""
+    """Crops input mask to produce tighter (i.e smaller) bounding box \
+    with the same support (active voxels)."""
     idx = np.where(mask)
     if idx[0].size == 0:
         raise ValueError(
@@ -75,8 +74,7 @@ def _crop_mask(mask):
 def _univariate_feature_screening(
     X, y, mask, is_classif, screening_percentile, smoothing_fwhm=2.0
 ):
-    """
-    Selects the most import features, via a univariate test
+    """Select the most import features, via a univariate test.
 
     Parameters
     ----------
@@ -215,7 +213,7 @@ def _space_net_alpha_grid(
 
 
 class _EarlyStoppingCallback:
-    """Out-of-bag early stopping
+    """Out-of-bag early stopping.
 
     A callable that returns True when the test error starts
     rising. We use a Spearman correlation (between X_test.w and y_test)
@@ -323,8 +321,8 @@ def path_scores(
     screening_percentile=20.0,
     verbose=1,
 ):
-    """Function to compute scores of different alphas in regression and
-    classification used by CV objects
+    """Function to compute scores of different alphas in regression \
+    and classification used by CV objects.
 
     Parameters
     ----------
@@ -556,8 +554,7 @@ def path_scores(
 
 @fill_doc
 class BaseSpaceNet(LinearRegression, CacheMixin):
-    """
-    Regression and classification learners with sparsity and spatial priors
+    """Regression and classification learners with sparsity and spatial priors.
 
     `SpaceNet` implements Graph-Net and TV-L1 priors /
     penalties. Thus, the penalty is a sum of an L1 term and a spatial term. The
@@ -779,7 +776,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         self.check_params()
 
     def check_params(self):
-        """Makes sure parameters are sane"""
+        """Make sure parameters are sane."""
         if self.l1_ratios is not None:
             l1_ratios = self.l1_ratios
             if not isinstance(l1_ratios, collections.abc.Iterable):
@@ -832,7 +829,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
             )
 
     def _set_coef_and_intercept(self, w):
-        """Sets the loadings vector (coef) and the intercept of the fitted
+        """Set the loadings vector (coef) and the intercept of the fitted \
         model."""
         self.w_ = np.array(w)
         if self.w_.ndim == 1:
@@ -844,7 +841,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
             self._set_intercept(self.Xmean_, self.ymean_, self.Xstd_)
 
     def fit(self, X, y):
-        """Fit the learner
+        """Fit the learner.
 
         Parameters
         ----------
@@ -1035,7 +1032,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         return self
 
     def decision_function(self, X):
-        """Predict confidence scores for samples
+        """Predict confidence scores for samples.
 
         The confidence score for a sample is the signed distance of that
         sample to the hyperplane.
@@ -1334,7 +1331,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         return y
 
     def score(self, X, y):
-        """Returns the mean accuracy on the given test data and labels.
+        """Return the mean accuracy on the given test data and labels.
 
         Parameters
         ----------

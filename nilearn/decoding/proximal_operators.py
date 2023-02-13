@@ -1,6 +1,4 @@
-"""Implementation of multiple proximal operators for TV-L1, Graph-Net, etc.
-
-"""
+"""Implementation of multiple proximal operators for TV-L1, Graph-Net, etc."""
 # Author: DOHMATOB Elvis Dopgima,
 #         VAROQUAUX Gael,
 #         GRAMFORT Alexandre,
@@ -12,7 +10,7 @@ from .objective_functions import _tv_l1_from_gradient, _div_id, _gradient_id
 
 
 def _prox_l1(y, alpha, copy=True):
-    """proximity operator for L1 norm"""
+    """Compute proximity operator for L1 norm."""
     shrink = np.zeros(y.shape)
     if copy:
         y = y.copy()
@@ -23,19 +21,18 @@ def _prox_l1(y, alpha, copy=True):
 
 
 def _prox_l1_with_intercept(x, tau):
-    """The same as prox_l1, but just for the n-1 components"""
+    """The same as prox_l1, but just for the n-1 components."""
     x[:-1] = _prox_l1(x[:-1], tau)
     return x
 
 
 def _projector_on_tvl1_dual(grad, l1_ratio):
-    """Function to compute TV-l1 duality gap.
+    """Compute TV-l1 duality gap.
 
     Modifies IN PLACE the gradient + id to project it
     on the l21 unit ball in the gradient direction and the L1 ball in the
     identity direction.
     """
-
     # The l21 ball for the gradient direction
     if l1_ratio < 1.0:
         # infer number of axes and include an additional axis if l1_ratio > 0
@@ -55,9 +52,9 @@ def _projector_on_tvl1_dual(grad, l1_ratio):
 
 
 def _dual_gap_prox_tvl1(input_img_norm, new, gap, weight, l1_ratio=1.0):
-    """
-    Dual gap of total variation denoising
-    see "Total variation regularization for fMRI-based prediction of behavior",
+    """Compute dual gap of total variation denoising.
+
+    See "Total variation regularization for fMRI-based prediction of behavior",
     by Michel et al. (2011) for a derivation of the dual gap
     """
     tv_new = _tv_l1_from_gradient(_gradient_id(new, l1_ratio=l1_ratio))
@@ -296,8 +293,7 @@ def _prox_tvl1_with_intercept(
     init=None,
     verbose=False,
 ):
-    """
-    Computation of TV-L1 prox, taking into account the intercept.
+    """Compute TV-L1 prox taking into account the intercept.
 
     Parameters
     ----------
@@ -321,7 +317,6 @@ def _prox_tvl1_with_intercept(
         Dual-gap tolerance for TV-L1 prox operator approximation loop.
 
     """
-
     init = init.reshape(shape) if init is not None else init
     out, prox_info = _prox_tvl1(
         w[:-1].reshape(shape),

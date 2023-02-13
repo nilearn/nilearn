@@ -1,7 +1,4 @@
-"""
-Regression with spatial priors like TV-L1 and Graph-Net.
-
-"""
+"""Regression with spatial priors like TV-L1 and Graph-Net."""
 # Author: DOHMATOB Elvis Dopgima,
 #         Gael Varoquaux,
 #         Alexandre Gramfort,
@@ -34,8 +31,7 @@ from .fista import mfista
 
 
 def _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
-    """
-    Computes the squared loss (data fidelity term) + squared l2 norm
+    """Compute the squared loss (data fidelity term) + squared l2 norm \
     of gradient (penalty term).
 
     Parameters
@@ -69,8 +65,7 @@ def _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
 
 
 def _squared_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
-    """
-    Computes the derivative of _squared_loss_and_spatial_grad.
+    """Compute the derivative of _squared_loss_and_spatial_grad.
 
     Parameters
     ----------
@@ -101,8 +96,7 @@ def _squared_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
 
 
 def _graph_net_data_function(X, w, mask, grad_weight):
-    """
-    Computes dot([X; grad_weight * grad], w).
+    """Compute dot([X; grad_weight * grad], w).
 
     This function is made for the Lasso-like interpretation of the
     Graph-Net.
@@ -139,10 +133,13 @@ def _graph_net_data_function(X, w, mask, grad_weight):
 
 
 def _graph_net_adjoint_data_function(X, w, adjoint_mask, grad_weight):
-    """
-    Computes the adjoint of the _graph_net_data_function, that is
-    np.dot([X.T; grad_weight * div], w). This function is made for the
-    Lasso-like interpretation of the Graph-Net.
+    """Compute the adjoint of the _graph_net_data_function.
+
+    That is:
+
+    np.dot([X.T; grad_weight * div], w).
+
+    This function is made for the Lasso-like interpretation of the Graph-Net.
 
     Parameters
     ----------
@@ -174,12 +171,9 @@ def _graph_net_adjoint_data_function(X, w, adjoint_mask, grad_weight):
 def _squared_loss_derivative_lipschitz_constant(
     X, mask, grad_weight, n_iterations=100
 ):
-    """
-    Computes the lipschitz constant of the gradient of the smooth part
-    of the Graph-Net regression problem (squared_loss + grad_weight*grad)
-    via power method
-
-    """
+    """Compute the lipschitz constant of the gradient of the smooth part \
+    of the Graph-Net regression problem (squared_loss + grad_weight*grad) \
+    via power method."""
     rng = np.random.RandomState(42)
     a = rng.randn(X.shape[1])
     a /= sqrt(np.dot(a, a))
@@ -214,12 +208,10 @@ def _squared_loss_derivative_lipschitz_constant(
 def _logistic_derivative_lipschitz_constant(
     X, mask, grad_weight, n_iterations=100
 ):
-    """
-    Computes the lipschitz constant of the gradient of the smooth part
-    of the Graph-Net classification problem (logistic_loss +
-    grad_weight*grad) via analytical formula on the logistic loss +
-    power method on the smooth part
-    """
+    """Compute the lipschitz constant of the gradient of the smooth part \
+    of the Graph-Net classification problem (logistic_loss + \
+    grad_weight*grad) via analytical formula on the logistic loss + \
+    power method on the smooth part."""
     # L. constant for the data term (logistic)
     # data_constant = sp.linalg.norm(X, 2) ** 2
     data_constant = _logistic_loss_lipschitz_constant(X)
@@ -241,8 +233,8 @@ def _logistic_derivative_lipschitz_constant(
 
 
 def _logistic_data_loss_and_spatial_grad(X, y, w, mask, grad_weight):
-    """Compute the smooth part of the Graph-Net objective, with
-    logistic loss"""
+    """Compute the smooth part of the Graph-Net objective, \
+    with logistic loss."""
     grad_buffer = np.zeros(mask.shape)
     grad_buffer[mask] = w[:-1]
     grad_mask = np.array([mask for _ in range(mask.ndim)])
@@ -255,7 +247,7 @@ def _logistic_data_loss_and_spatial_grad(X, y, w, mask, grad_weight):
 def _logistic_data_loss_and_spatial_grad_derivative(
     X, y, w, mask, grad_weight
 ):
-    """Compute the derivative of _logistic_loss_and_spatial_grad"""
+    """Compute the derivative of _logistic_loss_and_spatial_grad."""
     image_buffer = np.zeros(mask.shape)
     image_buffer[mask] = w[:-1]
     data_section = _logistic_loss_grad(X, y, w)
@@ -278,7 +270,7 @@ def _graph_net_squared_loss(
     lipschitz_constant=None,
     verbose=0,
 ):
-    """Computes a solution for the Graph-Net regression problem.
+    """Compute a solution for the Graph-Net regression problem.
 
     This function invokes the mfista backend (from fista.py) to solve the
     underlying optimization problem.
@@ -358,8 +350,8 @@ def _graph_net_logistic(
     verbose=0,
     lipschitz_constant=None,
 ):
-    """Computes a solution for the Graph-Net classification problem, with
-    response vector in {-1, 1}^n_samples.
+    """Compute a solution for the Graph-Net classification problem, \
+    with response vector in {-1, 1}^n_samples.
 
     This function invokes the mfista backend (from fista.py) to solve the
     underlying optimization problem.
@@ -432,7 +424,7 @@ def _graph_net_logistic(
 
 
 def _tvl1_objective_from_gradient(gradient):
-    """Computes TV-l1 objective function from gradient.
+    """Compute TV-l1 objective function from gradient.
 
     Parameters
     ----------
@@ -444,7 +436,6 @@ def _tvl1_objective_from_gradient(gradient):
     float
         Value of TV-L1 penalty.
     """
-
     tv_term = np.sum(np.sqrt(np.sum(gradient[:-1] * gradient[:-1], axis=0)))
     l1_term = np.abs(gradient[-1]).sum()
     return l1_term + tv_term
@@ -458,7 +449,6 @@ def _tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss="mse"):
     float
         Value of TV-L1 penalty.
     """
-
     loss = loss.lower()
     if loss not in ["mse", "logistic"]:
         raise ValueError(
@@ -558,7 +548,6 @@ def tvl1_solver(
         Solver information, for warm start.
 
     """
-
     # sanitize loss
     if loss not in ["mse", "logistic"]:
         raise ValueError(
