@@ -24,6 +24,7 @@ from .._utils import fill_doc
 
 _REQUESTS_TIMEOUT = (15.1, 61)
 
+
 def md5_hash(string):
     m = hashlib.md5()
     m.update(string.encode('utf-8'))
