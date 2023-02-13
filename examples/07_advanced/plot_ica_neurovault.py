@@ -71,7 +71,7 @@ with warnings.catch_warnings():
     warnings.simplefilter('ignore', UserWarning)
     warnings.simplefilter('ignore', DeprecationWarning)
 
-    mask_img = load_mni152_brain_mask()
+    mask_img = load_mni152_brain_mask(resolution=2)
     masker = NiftiMasker(
         mask_img=mask_img, memory='nilearn_cache', memory_level=1)
     masker = masker.fit()
