@@ -7,6 +7,7 @@ import collections.abc
 import contextlib
 import fnmatch
 import hashlib
+from pathlib import Path
 import pickle
 import shutil
 import time
@@ -22,7 +23,6 @@ import requests
 from .._utils import fill_doc
 
 _REQUESTS_TIMEOUT = (15.1, 61)
-_PACKAGE_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 def md5_hash(string):
     m = hashlib.md5()
@@ -961,4 +961,4 @@ def load_sample_motor_activation_image():
         Path to the sample functional image.
     """
 
-    return os.path.join(_PACKAGE_DIRECTORY, "data", "image_10426.nii.gz")
+    return str(Path(__file__).parent / "data" / "image_10426.nii.gz")
