@@ -1,5 +1,5 @@
-"""
-PCA dimension reduction on multiple subjects.
+"""PCA dimension reduction on multiple subjects.
+
 This is a good initialization method for ICA.
 """
 import numpy as np
@@ -183,7 +183,7 @@ class _MultiPCA(_BaseDecomposition):
         )
 
     def _raw_fit(self, data):
-        """Helper function that directly process unmasked data"""
+        """Helper function that directly process unmasked data."""
         if self.do_cca:
             S = np.sqrt(np.sum(data**2, axis=1))
             S[S == 0] = 1

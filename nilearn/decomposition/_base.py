@@ -1,6 +1,6 @@
-"""
-Base class for decomposition estimators, utilities for masking and dimension
-reduction of group data
+"""Base class for decomposition estimators.
+
+Utilities for masking and dimension reduction of group data
 """
 from math import ceil
 import itertools
@@ -25,8 +25,8 @@ from ..signal import _row_sum_of_squares
 
 
 def _fast_svd(X, n_components, random_state=None):
-    """Automatically switch between randomized and lapack SVD (heuristic
-        of scikit-learn).
+    """Automatically switch between randomized and lapack SVD (heuristic \
+    of scikit-learn).
 
     Parameters
     ----------
@@ -215,7 +215,7 @@ def _mask_and_reduce_single(
     memory_level=0,
     random_state=None,
 ):
-    """Utility function for multiprocessing from MaskReducer"""
+    """Utility function for multiprocessing from MaskReducer."""
     this_data = masker.transform(img, confound)
     # Now get rid of the img as fast as possible, to free a
     # reference count on it, and possibly free the corresponding
@@ -378,7 +378,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         self.verbose = verbose
 
     def fit(self, imgs, y=None, confounds=None):
-        """Compute the mask and the components across subjects
+        """Compute the mask and the components across subjects.
 
         Parameters
         ----------
@@ -471,7 +471,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             )
 
     def transform(self, imgs, confounds=None):
-        """Project the data into a reduced representation
+        """Project the data into a reduced representation.
 
         Parameters
         ----------
@@ -492,7 +492,6 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             shape: number of subjects * (number of scans, number of regions)
 
         """
-
         self._check_components_()
         # XXX: dealing properly with 4D/ list of 4D data?
         if confounds is None:
@@ -503,8 +502,8 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         ]
 
     def inverse_transform(self, loadings):
-        """Use provided loadings to compute corresponding linear component
-        combination in whole-brain voxel space
+        """Use provided loadings to compute corresponding linear component \
+        combination in whole-brain voxel space.
 
         Parameters
         ----------
@@ -532,14 +531,14 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         ]
 
     def _sort_by_score(self, data):
-        """Sort components on the explained variance over data of estimator
-        components_"""
+        """Sort components on the explained variance over data of estimator \
+        components_."""
         components_score = self._raw_score(data, per_component=True)
         order = np.argsort(components_score)[::-1]
         self.components_ = self.components_[order]
 
     def _raw_score(self, data, per_component=True):
-        """Return explained variance over data of estimator components_"""
+        """Return explained variance over data of estimator components_."""
         return self._cache(_explained_variance)(
             data, self.components_, per_component=per_component
         )
@@ -584,7 +583,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
 
 def _explained_variance(X, components, per_component=True):
-    """Score function based on explained variance
+    """Score function based on explained variance.
 
     Parameters
     ----------
