@@ -47,8 +47,8 @@ jobs:
         uses: peter-evans/create-pull-request@v4
         with:
           commit-message: pre-commit hooks autoupdate
-          base: master
+          base: main
           token: ${{ secrets.GITHUB_TOKEN }}
           delete-branch: true
           title: '[BOT] update pre-commit hooks'
-          body: 'done via this [GitHub Action](https://github.com/nilearn/nilearn/blob/main/.github/workflows/update_precommit_hooks.yml)'
+          body: 'done via this [GitHub Action](https://github.com/${{ github.repository_owner }}/nilearn/blob/main/.github/workflows/update_precommit_hooks.yml)'
