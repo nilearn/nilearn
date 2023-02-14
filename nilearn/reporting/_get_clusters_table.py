@@ -284,13 +284,6 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         .. versionadded:: 0.10.1.dev
 
     """
-    # Add future warning message
-    future_warn_message = (
-        "The 'return_label_maps' parameter will"
-        " default to 'True' in release `0.12.0`"
-    )
-    warnings.warn(future_warn_message, FutureWarning)
-
     cols = ['Cluster ID', 'X', 'Y', 'Z', 'Peak Stat', 'Cluster Size (mm3)']
     # Replace None with 0
     cluster_threshold = 0 if cluster_threshold is None else cluster_threshold
