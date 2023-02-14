@@ -30,7 +30,7 @@ on:
 jobs:
   update_precommit_hooks:
     # only run on upstream repo
-    if: github.repository_owner == 'nilearn'
+    if: github.repository_owner == 'Remi-Gau'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
