@@ -46,7 +46,7 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:
-          commit-message: pre-commit hooks autoupdate
+          commit-message: pre-commit hooks auto-update
           base: main
           token: ${{ secrets.GITHUB_TOKEN }}
           delete-branch: true
