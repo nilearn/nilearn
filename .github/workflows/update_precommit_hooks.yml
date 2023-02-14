@@ -1,0 +1,54 @@
+---
+name: Update precommit hooks
+
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Uses the cron schedule for github actions
+#
+# https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#scheduled-events
+#
+#            ┌───────────── minute (0 - 59)
+#            │ ┌───────────── hour (0 - 23)
+#            │ │ ┌───────────── day of the month (1 - 31)
+#            │ │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+#            │ │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+#            │ │ │ │ │
+#            │ │ │ │ │
+#            │ │ │ │ │
+#            * * * * *
+  schedule:
+    - cron: "0 0 * * 1" # every monday
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  update_precommit_hooks:
+    # only run on upstream repo
+    if: github.repository_owner == 'nilearn'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: Install pre-commit
+        run: pip install pre-commit
+      - name: Update pre-commit hooks
+        run: pre-commit autoupdate
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          commit-message: pre-commit hooks autoupdate
+          base: master
+          token: ${{ secrets.GITHUB_TOKEN }}
+          delete-branch: true
+          title: '[BOT] update pre-commit hooks'
+          body: 'done via this [GitHub Action](https://github.com/nilearn/nilearn/blob/main/.github/workflows/update_precommit_hooks.yml)'
