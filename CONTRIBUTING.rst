@@ -213,7 +213,7 @@ with the tools we use for development and deployment.
 .. _numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
 
 PR Structure
--------------
+------------
 
 A new pull request must have a clear scope, conveyed through its name, a
 reference to the issue it targets (through the exact mention "Closes #XXXX"),
@@ -233,7 +233,10 @@ Other tags can describe the PR content : [FIX] for a bugfix, [DOC] for a
 change in documentation or examples, [ENH] for a new feature and [MAINT] for
 maintenance changes.
 
-Changelog entries in doc/changes/latest.rst should adhere to the following conventions:
+Changelog
+---------
+
+Changelog entries in ``doc/changes/latest.rst`` should adhere to the following conventions:
 
 - Entry in the appropriate category
 - Single line per entry
