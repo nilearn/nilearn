@@ -8,6 +8,10 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+          # TODO after next release: 
+          # - update the link to changelog item in the checklist to this:
+          #     
+          #       (see our documentation on [changelogs](https://nilearn.github.io/stable/development.html#changelog))
           pullRequestOpened: >
             👋 @{{ author }} Thanks for creating a PR!
 
@@ -29,7 +33,7 @@ jobs:
                   (see our documentation on [coding style](https://nilearn.github.io/stable/development.html#coding-style))
 
             - [ ] Changelog or what's new entry in `doc/changes/latest.rst`
-                  (see our documentation on [changelogs](https://nilearn.github.io/stable/development.html#changelog))
+                  (see our documentation on [PR structure](https://nilearn.github.io/stable/development.html#pr-structure))
 
             For new features:
 
