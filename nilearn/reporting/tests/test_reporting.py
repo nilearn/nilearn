@@ -128,6 +128,15 @@ def test_get_clusters_table(tmp_path):
     stat_img.to_filename(fname)
     cluster_table = get_clusters_table(fname, 4, 0, two_sided=True)
     assert len(cluster_table) == 2
+    
+    # test with returning label maps
+    cluster_table, label_maps = get_clusters_table(
+        stat_img, 4, 0, two_sided=True, return_label_maps=True)
+    label_map_positive_data = label_maps[0].get_fdata()
+    label_map_negative_data = label_maps[1].get_fdata()
+    # make sure positive and negative clusters are returned in the label maps
+    assert np.sum(label_map_positive_data[2:4, 5:7, 6:8] != 0) == 8
+    assert np.sum(label_map_negative_data[4:6, 7:9, 8:10] != 0) == 8
 
     # test with extra dimension
     data_extra_dim = data[..., np.newaxis]
