@@ -27,18 +27,18 @@ jobs:
             - [ ] PR has an interpretable title.
 
             - [ ] PR links to Github issue with mention `Closes #XXXX`
-                  (see our documentation on [PR structure](https://nilearn.github.io/stable/development.html#pr-structure))
+            (see our documentation on [PR structure](https://nilearn.github.io/stable/development.html#pr-structure))
 
             - [ ] Code is PEP8-compliant
-                  (see our documentation on [coding style](https://nilearn.github.io/stable/development.html#coding-style))
+            (see our documentation on [coding style](https://nilearn.github.io/stable/development.html#coding-style))
 
             - [ ] Changelog or what's new entry in `doc/changes/latest.rst`
-                  (see our documentation on [PR structure](https://nilearn.github.io/stable/development.html#pr-structure))
+            (see our documentation on [PR structure](https://nilearn.github.io/stable/development.html#pr-structure))
 
             For new features:
 
             - [ ] There is at least one unit test per new function / class 
-                  (see our documentation on [testing](https://nilearn.github.io/stable/development.html#tests))
+            (see our documentation on [testing](https://nilearn.github.io/stable/development.html#tests))
 
             - [ ] The new feature is demoed in at least one relevant example.
 
