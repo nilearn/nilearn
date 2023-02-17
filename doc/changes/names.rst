@@ -216,6 +216,8 @@
 
 .. _Sourav Singh: https://github.com/souravsingh
 
+.. _Steven Meisler: https://www.stevenmeisler.com
+
 .. _Sylvain Lan: https://github.com/SylvainLan
 
 .. _Sylvain Takerkart: https://github.com/SylvainTakerkart
