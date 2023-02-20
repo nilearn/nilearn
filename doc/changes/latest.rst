@@ -8,6 +8,8 @@
 NEW
 ---
 
+- New function :func:`~datasets.load_sample_motor_activation_image` to load example contrast map (:gh:`3498` by `Michelle Wang`_).
+
 Fixes
 -----
 
