@@ -15,11 +15,12 @@ from .._utils.niimg import _safe_get_data
 from .. import masking
 from ..image import new_img_like
 
-INF = 1e-9
+INF = 1000 * np.finfo(np.float32).eps
 
 
-def _check_shappe_affine_label_img(labels_img, target_shape, target_affine):
+def _check_shape_affine_label_img(labels_img, target_shape, target_affine):
     """Validate shapes and affines of labels.
+
     Parameters
     ----------
     labels_img : Niimg-like object
@@ -34,15 +35,19 @@ def _check_shappe_affine_label_img(labels_img, target_shape, target_affine):
 
     """
     if labels_img.shape != target_shape:
-        raise ValueError("label_imgs.shape and target_shape must be identical.")
+        raise ValueError("label_imgs.shape and target_shape "
+                         "must be identical.")
     if (labels_img.affine.shape != target_affine.shape
-        or abs(labels_img.affine - target_affine).max() > INF):
+            or abs(labels_img.affine - target_affine).max() > INF):
         raise ValueError("label img and imgs affines must be identical.")
 
 
-def _check_shappe_affine_maps_masks(target_shape, target_affine,
-                                    img=None, dim=None):
+def _check_shape_affine_maps_masks(target_shape,
+                                   target_affine,
+                                   img=None,
+                                   dim=None):
     """Validate shapes and affines of maps and masks.
+
     Parameters
     ----------
     target_shape : tuple
@@ -62,7 +67,7 @@ def _check_shappe_affine_maps_masks(target_shape, target_affine,
     -------
     non_empty : bool,
         Is only true for non-empty img.
-        
+
     """
     state = False
 
@@ -87,7 +92,7 @@ def _check_shappe_affine_maps_masks(target_shape, target_affine,
 
 def _get_labels_data(labels_img, target_shape, target_affine,
                      mask_img=None, background_label=0, dim=None):
-    """Gets the label data.
+    """Get the label data.
 
     Ensures that labels, imgs and mask shapes and affines fit.
 
@@ -125,14 +130,14 @@ def _get_labels_data(labels_img, target_shape, target_affine,
         Extracted data for each region within the mask.
         Data outside the mask are assigned to the background
         label to restrict signal extraction
-        
+
     See also
     --------
     nilearn.regions.signals_to_img_labels
     nilearn.regions.img_to_signals_labels
-    
+
     """
-    _check_shappe_affine_label_img(labels_img, target_shape, target_affine)
+    _check_shape_affine_label_img(labels_img, target_shape, target_affine)
 
     labels_data = _safe_get_data(
         labels_img, ensure_finite=True)
@@ -142,7 +147,7 @@ def _get_labels_data(labels_img, target_shape, target_affine,
         labels.remove(background_label)
 
     # Consider only data within the mask
-    img_state = _check_shappe_affine_maps_masks(
+    img_state = _check_shape_affine_maps_masks(
         target_shape, target_affine, mask_img, dim)
     if img_state:
         mask_img = _utils.check_niimg_3d(mask_img)
@@ -243,8 +248,8 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     # Set to zero signals for missing labels. Workaround for Scipy behaviour
     missing_labels = set(labels) - set(np.unique(labels_data))
     labels_index = dict([(l, n) for n, l in enumerate(labels)])
-    for l in missing_labels:
-        signals[:, labels_index[l]] = 0
+    for this_label in missing_labels:
+        signals[:, labels_index[this_label]] = 0
     return signals, labels
 
 
@@ -359,8 +364,8 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
     target_affine = imgs.affine
     target_shape = imgs.shape[:3]
 
-    _check_shappe_affine_maps_masks(target_shape, target_affine, maps_img, 3)
-    img_state = _check_shappe_affine_maps_masks(
+    _check_shape_affine_maps_masks(target_shape, target_affine, maps_img, 3)
+    img_state = _check_shape_affine_maps_masks(
         target_shape, target_affine, mask_img)
 
     maps_data = _safe_get_data(maps_img, ensure_finite=True)
@@ -419,7 +424,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     target_affine = maps_img.affine
     target_shape = maps_img.shape[:3]
 
-    img_state = _check_shappe_affine_maps_masks(
+    img_state = _check_shape_affine_maps_masks(
         target_shape, target_affine, mask_img)
     if img_state:
         mask_img = _utils.check_niimg_3d(mask_img)

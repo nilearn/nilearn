@@ -26,12 +26,11 @@ _TEST_AFFINE_LABEL_ERROR_MSG = "label img and imgs affines must be identical."
 _TEST_SHAPE_IMG_ERROR_MSG = "mask/map and imgs shapes must be identical."
 _TEST_AFFINE_IMG_ERROR_MSG = "mask/map and imgs affines must be identical."
 
-INF = 1e-9
+INF = 1000 * np.finfo(np.float32).eps
 
 
 def test_generate_regions_ts():
-    """Minimal testing of generate_regions_ts()"""
-
+    """Minimal testing of generate_regions_ts()."""
     # Check that no regions overlap
     n_voxels = 50
     n_regions = 10
@@ -65,7 +64,7 @@ def test_generate_regions_ts():
 
 
 def test_generate_labeled_regions():
-    """Minimal testing of generate_labeled_regions"""
+    """Minimal testing of generate_labeled_regions."""
     shape = (3, 4, 5)
     shape_4D = (3, 4, 5, 2)
     n_regions = 10
@@ -77,9 +76,8 @@ def test_generate_labeled_regions():
     assert (len(np.unique(get_data(regions_4d))) == n_regions + 1)
 
 
-def test__check_shappe_affine_label_img():
+def test__check_shape_affine_label_img():
     """Test to ensure correct check for valid shapes & affines of labels."""
-
     shape = (8, 9, 10)
     test_shape = (8, 9, 5)
 
@@ -92,24 +90,23 @@ def test__check_shappe_affine_label_img():
 
     # Ensure correct behaviour for valid data.
     with pytest.warns(None):
-        signal_extraction._check_shappe_affine_label_img(
+        signal_extraction._check_shape_affine_label_img(
             labels_img, shape, affine)
 
     # Smoke test to make sure an error is raised when affine is not correct.
     with pytest.raises(ValueError, match=_TEST_SHAPE_LABEL_ERROR_MSG):
-        signal_extraction._check_shappe_affine_label_img(
+        signal_extraction._check_shape_affine_label_img(
             labels_img, test_shape, affine)
 
     # Smoke test to make sure an error is raised when affine is not correct.
     with pytest.raises(ValueError, match=_TEST_AFFINE_LABEL_ERROR_MSG):
-        signal_extraction._check_shappe_affine_label_img(
+        signal_extraction._check_shape_affine_label_img(
             labels_img, shape, test_affine)
 
 
-def test__check_shappe_affine_maps_masks():
-    """Test to ensure correct check for valid shapes & affines of masks
+def test__check_shape_affine_maps_masks():
+    """Test to ensure correct check for valid shapes & affines of masks \
     and maps."""
-
     maps_shape = (2, 3, 4, 7)
     mask_shape = (2, 3, 4)
     test_mask_shape = (2, 3, 5)
@@ -119,14 +116,14 @@ def test__check_shappe_affine_maps_masks():
 
     # Ensure correct behaviour for valid data without dim.
     with pytest.warns(None):
-        signal_extraction._check_shappe_affine_maps_masks(
+        signal_extraction._check_shape_affine_maps_masks(
             mask_shape,
             affine,
             nibabel.Nifti1Image(np.zeros(mask_shape), affine))
 
     # Ensure correct behaviour for valid data with dim.
     with pytest.warns(None):
-        signal_extraction._check_shappe_affine_maps_masks(
+        signal_extraction._check_shape_affine_maps_masks(
             maps_shape[:3],
             affine,
             nibabel.Nifti1Image(np.zeros(maps_shape), affine),
@@ -134,30 +131,29 @@ def test__check_shappe_affine_maps_masks():
 
     # Smoke test for shape error.
     with pytest.raises(ValueError, match=_TEST_SHAPE_IMG_ERROR_MSG):
-        signal_extraction._check_shappe_affine_maps_masks(
+        signal_extraction._check_shape_affine_maps_masks(
             mask_shape,
             affine,
             nibabel.Nifti1Image(np.zeros(test_mask_shape), affine))
 
     # Smoke test for affine error.
     with pytest.raises(ValueError, match=_TEST_AFFINE_IMG_ERROR_MSG):
-        signal_extraction._check_shappe_affine_maps_masks(
+        signal_extraction._check_shape_affine_maps_masks(
             mask_shape,
             affine,
             nibabel.Nifti1Image(np.zeros(mask_shape), test_affine))
 
 
 def test_signals_extraction_with_labels():
-    """Test conversion between signals and images using regions defined
-    by labels."""
-
+    """Test conversion between signals and images \
+    using regions defined by labels."""
     shape = (8, 9, 10)
     shape_4d = (8, 9, 10, 2)
     n_instants = 11
     n_regions = 8  # must be 8
 
     eps = np.finfo(np.float64).eps
-    
+
     # data
     affine = np.eye(4)
     signals = generate_timeseries(n_instants, n_regions)
@@ -179,7 +175,7 @@ def test_signals_extraction_with_labels():
     # test labels - labels data is evaluated via signals below
     r_labels, _ = signal_extraction._get_labels_data(labels_img, shape, affine)
     assert r_labels == labels
-    
+
     data_img = signal_extraction.signals_to_img_labels(signals, labels_img)
     data = get_data(data_img)
     assert data_img.shape == (shape + (n_instants,))
