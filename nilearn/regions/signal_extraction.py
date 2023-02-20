@@ -92,11 +92,15 @@ def _check_shape_affine_maps_masks(target_shape,
     return state
 
 
-def _get_labels_data(labels_img, target_shape, target_affine,
-                     mask_img=None, background_label=0, dim=None):
+def _get_labels_data(labels_img,
+                     target_img,
+                     mask_img=None,
+                     background_label=0,
+                     dim=None):
     """Get the label data.
 
-    Ensures that labels, imgs and mask shapes and affines fit.
+    Ensures that labels, imgs and mask shapes and affines fit,
+    then extracts the data from it.
 
     Parameters
     ----------
@@ -105,8 +109,8 @@ def _get_labels_data(labels_img, target_shape, target_affine,
         regions definition as labels. By default, the label zero is used to
         denote an absence of region. Use background_label to change it.
 
-    target_shape : tuple
-        Desired shape of labels image and mask.
+    target_img : Niimg-like object
+        Image to extract the data from.
 
     target_affine : numpy.ndarray
         Desired affine of labels image and mask.
@@ -139,6 +143,8 @@ def _get_labels_data(labels_img, target_shape, target_affine,
     nilearn.regions.img_to_signals_labels
 
     """
+    target_affine = target_img.affine
+    target_shape = target_img.shape[:3]
     _check_shape_affine_label_img(labels_img, target_shape, target_affine)
 
     labels_data = _safe_get_data(
@@ -149,8 +155,9 @@ def _get_labels_data(labels_img, target_shape, target_affine,
         labels.remove(background_label)
 
     # Consider only data within the mask
-    img_state = _check_shape_affine_maps_masks(
-        target_shape, target_affine, mask_img, dim)
+    img_state = _check_shape_affine_maps_masks(target_shape,
+                                               target_affine,
+                                               mask_img, dim)
     if img_state:
         mask_img = _utils.check_niimg_3d(mask_img)
         mask_data = _safe_get_data(mask_img, ensure_finite=True)
@@ -219,12 +226,6 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     """
     labels_img = _utils.check_niimg_3d(labels_img)
 
-    # TODO: Make a special case for list of strings (load one image at a
-    # time).
-    imgs = _utils.check_niimg_4d(imgs)
-    target_affine = imgs.affine
-    target_shape = imgs.shape[:3]
-
     available_reduction_strategies = {'mean', 'median', 'sum',
                                       'minimum', 'maximum',
                                       'standard_deviation', 'variance'}
@@ -235,8 +236,14 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
             available_reduction_strategies
         ))
 
-    labels, labels_data = _get_labels_data(
-        labels_img, target_shape, target_affine, mask_img, background_label)
+    # TODO: Make a special case for list of strings (load one image at a
+    # time).
+    imgs = _utils.check_niimg_4d(imgs)
+    target_image = imgs
+    labels, labels_data = _get_labels_data(labels_img,
+                                           target_image,
+                                           mask_img,
+                                           background_label)
 
     data = _safe_get_data(imgs, ensure_finite=True)
     target_datatype = np.float32 if data.dtype == np.float32 else np.float64
@@ -307,13 +314,15 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
     """
     labels_img = _utils.check_niimg_3d(labels_img)
 
+    target_image = labels_img
+    labels, labels_data = _get_labels_data(labels_img,
+                                           target_image,
+                                           mask_img,
+                                           background_label)
+
     signals = np.asarray(signals)
-    target_affine = labels_img.affine
+
     target_shape = labels_img.shape[:3]
-
-    labels, labels_data = _get_labels_data(
-        labels_img, target_shape, target_affine, mask_img, background_label)
-
     # nditer is not available in numpy 1.3: using multiple loops.
     # Using these loops still gives a much faster code (6x) than this one:
     # for n, label in enumerate(labels):
@@ -335,6 +344,7 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
                     else:
                         data[i, j, k] = signals[num]
 
+    target_affine = labels_img.affine
     return new_img_like(labels_img, data, target_affine)
 
 
@@ -382,12 +392,6 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
     imgs = _utils.check_niimg_4d(imgs)
     affine = imgs.affine
     shape = imgs.shape[:3]
-
-    # Check shapes and affines.
-    if maps_img.shape[:3] != shape:
-        raise ValueError("maps_img and imgs shapes must be identical.")
-    if abs(maps_img.affine - affine).max() > INF:
-        raise ValueError("maps_img and imgs affines must be identical")
 
     maps_data = _safe_get_data(maps_img, ensure_finite=True)
 
