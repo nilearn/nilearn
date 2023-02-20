@@ -39,7 +39,7 @@ def _check_shape_affine_label_img(labels_img, target_shape, target_affine):
                          "must be identical.")
     if (labels_img.affine.shape != target_affine.shape
             or abs(labels_img.affine - target_affine).max() > INF):
-        raise ValueError("labels_img.affine and target_affine " 
+        raise ValueError("labels_img.affine and target_affine "
                          "must be identical.")
 
 
@@ -70,7 +70,6 @@ def _check_shape_affine_maps_masks(target_shape,
         Is only true for non-empty img.
 
     """
-
     # Check shape
     if img is not None and dim is None:
         img = _utils.check_niimg_3d(img)
@@ -159,6 +158,7 @@ def _get_labels_data(labels_img, target_shape, target_affine,
         labels_data[np.logical_not(mask_data)] = background_label
 
     return labels, labels_data
+
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
 @_utils.fill_doc
@@ -251,8 +251,8 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     # Set to zero signals for missing labels. Workaround for Scipy behaviour
     missing_labels = set(labels) - set(np.unique(labels_data))
     labels_index = dict([(l, n) for n, l in enumerate(labels)])
-    for l in missing_labels:
-        signals[:, labels_index[l]] = 0
+    for this_label in missing_labels:
+        signals[:, labels_index[this_label]] = 0
     return signals, labels
 
 
