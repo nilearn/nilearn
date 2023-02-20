@@ -74,7 +74,7 @@ def _check_shape_affine_maps_masks(target_shape,
         return False
 
     err_msg = lambda x : f"mask/map and imgs must have same {x}."
-    
+
     # Check shape
     if dim is None:
         img = _utils.check_niimg_3d(img)
@@ -159,10 +159,10 @@ def _get_labels_data(labels_img,
         labels.remove(background_label)
 
     # Consider only data within the mask
-    img_state = _check_shape_affine_maps_masks(target_shape,
+    use_mask = _check_shape_affine_maps_masks(target_shape,
                                                target_affine,
                                                mask_img, dim)
-    if img_state:
+    if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
         mask_data = _safe_get_data(mask_img, ensure_finite=True)
         labels_data = labels_data.copy()
@@ -247,9 +247,8 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     # TODO: Make a special case for list of strings 
     # (load one image at a time).
     imgs = _utils.check_niimg_4d(imgs)
-    target_image = imgs
     labels, labels_data = _get_labels_data(labels_img,
-                                           target_image,
+                                           imgs,
                                            mask_img,
                                            background_label)
 
@@ -323,9 +322,8 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
     """
     labels_img = _utils.check_niimg_3d(labels_img)
 
-    target_image = labels_img
     labels, labels_data = _get_labels_data(labels_img,
-                                           target_image,
+                                           labels_img,
                                            mask_img,
                                            background_label)
 
