@@ -463,7 +463,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     else:
         maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
 
-    assert(maps_mask.shape == maps_data.shape[:3])
+    assert (maps_mask.shape == maps_data.shape[:3])
 
     data = np.dot(region_signals, maps_data[maps_mask, :].T)
     return masking.unmask(data, new_img_like(maps_img, maps_mask, affine))
