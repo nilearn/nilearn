@@ -24,7 +24,9 @@ def _check_shape_affine_label_img(labels_img, target_shape, target_affine):
     Parameters
     ----------
     labels_img : Niimg-like object
-        regions definition as labels. Encodes the region labels of the signals.
+        See :ref:`extracting_data`.
+        Regions definition as labels. 
+        Encodes the region labels of the signals.
 
     target_shape : numpy.ndarray
         Desired shape of label images.
@@ -57,6 +59,7 @@ def _check_shape_affine_maps_masks(target_shape,
         Desired affine of maps or masks.
 
     img : Niimg-like object, optional
+        See :ref:`extracting_data`.
         Contains map or mask.
 
     dim : integer, optional
@@ -103,17 +106,20 @@ def _get_labels_data(labels_img,
     Parameters
     ----------
     labels_img : Niimg-like object
-        regions definition as labels.
+        See :ref:`extracting_data`.
+        Regions definition as labels.
         By default, the label zero is used to denote an absence of region.
         Use background_label to change it.
 
     target_img : Niimg-like object
+        See :ref:`extracting_data`.
         Image to extract the data from.
 
     target_affine : numpy.ndarray
         Desired affine of labels image and mask.
 
     mask_img : Niimg-like object, optional
+        See :ref:`extracting_data`.
         Mask to apply to labels before extracting signals.
         Every point outside the mask is considered as background
         (i.e. no region).
@@ -224,9 +230,13 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     """
     labels_img = _utils.check_niimg_3d(labels_img)
 
-    available_reduction_strategies = {'mean', 'median', 'sum',
-                                      'minimum', 'maximum',
-                                      'standard_deviation', 'variance'}
+    available_reduction_strategies = {'mean',
+                                      'median',
+                                      'sum',
+                                      'minimum',
+                                      'maximum',
+                                      'standard_deviation',
+                                      'variance'}
     if strategy not in available_reduction_strategies:
         raise ValueError(str.format(
             "Invalid strategy '{}'. Valid strategies are {}.",
@@ -234,8 +244,8 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
             available_reduction_strategies
         ))
 
-    # TODO: Make a special case for list of strings (load one image at a
-    # time).
+    # TODO: Make a special case for list of strings 
+    # (load one image at a time).
     imgs = _utils.check_niimg_4d(imgs)
     target_image = imgs
     labels, labels_data = _get_labels_data(labels_img,
@@ -287,6 +297,7 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
         Region definitions using labels.
 
     mask_img : Niimg-like object, optional
+        See :ref:`extracting_data`.
         Boolean array giving voxels to process. integer arrays also accepted,
         In this array, zero means False, non-zero means True.
 
@@ -391,10 +402,9 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
     affine = imgs.affine
     shape = imgs.shape[:3]
 
-    maps_data = _safe_get_data(maps_img, ensure_finite=True)
-
     _check_shape_affine_maps_masks(shape, affine, maps_img, 3)
 
+    maps_data = _safe_get_data(maps_img, ensure_finite=True)
     maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
     labels = np.arange(maps_data.shape[-1], dtype=int)
 
@@ -519,10 +529,7 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
     sums = abs(maps[_utils.as_ndarray(mask, dtype=bool),
                     :]).sum(axis=0)
 
-    if keep_empty:
-        n_regions = maps.shape[-1]
-    else:
-        n_regions = (sums > 0).sum()
+    n_regions = maps.shape[-1] if keep_empty else (sums > 0).sum()
     trimmed_maps = np.zeros(maps.shape[:3] + (n_regions, ),
                             dtype=maps.dtype, order=order)
     # use int8 instead of np.bool for Nifti1Image
