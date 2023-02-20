@@ -18,7 +18,7 @@ from ..image import new_img_like
 INF = 1000 * np.finfo(np.float32).eps
 
 
-def _check_shape_affine_label_img(labels_img, target_shape, target_affine):
+def _check_shape_affine_label_img(target_img, labels_img):
     """Validate shapes and affines of labels.
 
     Parameters
@@ -28,13 +28,13 @@ def _check_shape_affine_label_img(labels_img, target_shape, target_affine):
         Regions definition as labels.
         Encodes the region labels of the signals.
 
-    target_shape : numpy.ndarray
-        Desired shape of label images.
-
-    target_affine : numpy.ndarray
-        Desired affine of label images.
+    target_img : Niimg-like object
+        See :ref:`extracting_data`.
+        Image to extract the data from.
 
     """
+    target_affine = target_img.affine
+    target_shape = target_img.shape[:3]
     def err_msg(x):
         return f"labels_img and target_img must have same {x}."
     if labels_img.shape != target_shape:
@@ -44,21 +44,18 @@ def _check_shape_affine_label_img(labels_img, target_shape, target_affine):
         raise ValueError(err_msg("affine"))
 
 
-def _check_shape_affine_maps_masks(target_shape,
-                                   target_affine,
-                                   img=None,
+def _check_shape_affine_maps_masks(target_img,
+                                   mask_img=None,
                                    dim=None):
     """Validate shapes and affines of maps and masks.
 
     Parameters
     ----------
-    target_shape : tuple
-        Desired shape of maps or masks.
+    target_img : Niimg-like object
+        See :ref:`extracting_data`.
+        Image to extract the data from.
 
-    target_affine : numpy.ndarray
-        Desired affine of maps or masks.
-
-    img : Niimg-like object, optional
+    mask_img : Niimg-like object, optional
         See :ref:`extracting_data`.
         Contains map or mask.
 
@@ -71,32 +68,32 @@ def _check_shape_affine_maps_masks(target_shape,
         Is only true for non-empty img.
 
     """
-    if img is None:
+    if mask_img is None:
         return False
 
     def err_msg(x):
         return f"mask/map and imgs must have same {x}."
 
-    # Check shape
+    target_shape = target_img.shape[:3]
     if dim is None:
-        img = _utils.check_niimg_3d(img)
-        if img.shape != target_shape:
+        mask_img = _utils.check_niimg_3d(mask_img)
+        if mask_img.shape != target_shape:
             raise ValueError(err_msg("shape"))
-    if img.shape[:dim] != target_shape:
+    if mask_img.shape[:dim] != target_shape:
         raise ValueError(err_msg("shape"))
 
-    # Check affines & set state
+    target_affine = target_img.affine
     if (
-        img.affine.shape != target_affine.shape
-        or abs(img.affine - target_affine).max() > INF
+        mask_img.affine.shape != target_affine.shape
+        or abs(mask_img.affine - target_affine).max() > INF
     ):
         raise ValueError(err_msg("affine"))
 
     return True
 
 
-def _get_labels_data(labels_img,
-                     target_img,
+def _get_labels_data(target_img,
+                     labels_img,
                      mask_img=None,
                      background_label=0,
                      dim=None):
@@ -149,21 +146,16 @@ def _get_labels_data(labels_img,
     nilearn.regions.img_to_signals_labels
 
     """
-    target_affine = target_img.affine
-    target_shape = target_img.shape[:3]
-    _check_shape_affine_label_img(labels_img, target_shape, target_affine)
+    _check_shape_affine_label_img(target_img, labels_img)
 
-    labels_data = _safe_get_data(
-        labels_img, ensure_finite=True)
+    labels_data = _safe_get_data(labels_img, ensure_finite=True)
     labels = list(np.unique(labels_data))
 
     if background_label in labels:
         labels.remove(background_label)
 
     # Consider only data within the mask
-    use_mask = _check_shape_affine_maps_masks(target_shape,
-                                              target_affine,
-                                              mask_img, dim)
+    use_mask = _check_shape_affine_maps_masks(target_img, mask_img, dim)
     if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
         mask_data = _safe_get_data(mask_img, ensure_finite=True)
@@ -249,8 +241,8 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     # TODO: Make a special case for list of strings
     # (load one image at a time).
     imgs = _utils.check_niimg_4d(imgs)
-    labels, labels_data = _get_labels_data(labels_img,
-                                           imgs,
+    labels, labels_data = _get_labels_data(imgs,
+                                           labels_img,
                                            mask_img,
                                            background_label)
 
@@ -399,16 +391,14 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
     """
     maps_img = _utils.check_niimg_4d(maps_img)
     imgs = _utils.check_niimg_4d(imgs)
-    affine = imgs.affine
-    shape = imgs.shape[:3]
 
-    _check_shape_affine_maps_masks(shape, affine, maps_img, 3)
+    _check_shape_affine_maps_masks(imgs, maps_img, 3)
 
     maps_data = _safe_get_data(maps_img, ensure_finite=True)
     maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
     labels = np.arange(maps_data.shape[-1], dtype=int)
 
-    use_mask = _check_shape_affine_maps_masks(shape, affine, mask_img)
+    use_mask = _check_shape_affine_maps_masks(imgs, mask_img)
     if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
         maps_data, maps_mask, labels = _trim_maps(
@@ -468,7 +458,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
 
     maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
 
-    use_mask = _check_shape_affine_maps_masks(shape, affine, mask_img)
+    use_mask = _check_shape_affine_maps_masks(maps_img, mask_img)
     if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
         maps_data, maps_mask, _ = _trim_maps(

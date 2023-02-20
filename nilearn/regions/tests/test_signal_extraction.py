@@ -38,25 +38,28 @@ def test__check_shape_affine_label_img():
 
     # data
     affine = np.eye(4)
-    test_affine = np.eye(3)
+    test_affine = np.eye(4) * 2 
 
     # labels
     labels_img = generate_labeled_regions(shape, 7, affine=affine)
 
     # Ensure correct behaviour for valid data.
+    target_img = nibabel.Nifti1Image(np.zeros(shape), affine)
     with pytest.warns(None):
         signal_extraction._check_shape_affine_label_img(
-            labels_img, shape, affine)
+            labels_img, target_img)
 
     # Smoke test to make sure an error is raised when shape is not correct.
+    target_img = nibabel.Nifti1Image(np.zeros(test_shape), affine)
     with pytest.raises(ValueError, match=_TEST_SHAPE_LABEL_ERROR_MSG):
         signal_extraction._check_shape_affine_label_img(
-            labels_img, test_shape, affine)
+            labels_img, target_img)
 
     # Smoke test to make sure an error is raised when affine is not correct.
+    target_img = nibabel.Nifti1Image(np.zeros(shape), test_affine)
     with pytest.raises(ValueError, match=_TEST_AFFINE_LABEL_ERROR_MSG):
         signal_extraction._check_shape_affine_label_img(
-            labels_img, shape, test_affine)
+            labels_img, target_img)
 
 
 def test__check_shape_affine_maps_masks():
@@ -70,32 +73,32 @@ def test__check_shape_affine_maps_masks():
     test_affine = 2 * affine
 
     # Ensure correct behaviour for valid data without dim.
+    target_img = nibabel.Nifti1Image(np.zeros(mask_shape), affine)
     with pytest.warns(None):
         signal_extraction._check_shape_affine_maps_masks(
-            mask_shape,
-            affine,
+            target_img,
             nibabel.Nifti1Image(np.zeros(mask_shape), affine))
 
     # Ensure correct behaviour for valid data with dim.
+    target_img = nibabel.Nifti1Image(np.zeros(maps_shape[:3]), affine)
     with pytest.warns(None):
         signal_extraction._check_shape_affine_maps_masks(
-            maps_shape[:3],
-            affine,
+            target_img,
             nibabel.Nifti1Image(np.zeros(maps_shape), affine),
             3)
 
     # Smoke test for shape error.
+    target_img = nibabel.Nifti1Image(np.zeros(mask_shape), affine)
     with pytest.raises(ValueError, match=_TEST_SHAPE_IMG_ERROR_MSG):
         signal_extraction._check_shape_affine_maps_masks(
-            mask_shape,
-            affine,
+            target_img,
             nibabel.Nifti1Image(np.zeros(test_mask_shape), affine))
 
     # Smoke test for affine error.
+    target_img = nibabel.Nifti1Image(np.zeros(mask_shape), affine)
     with pytest.raises(ValueError, match=_TEST_AFFINE_IMG_ERROR_MSG):
         signal_extraction._check_shape_affine_maps_masks(
-            mask_shape,
-            affine,
+            target_img,
             nibabel.Nifti1Image(np.zeros(mask_shape), test_affine))
 
 
