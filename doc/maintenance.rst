@@ -379,3 +379,13 @@ Finally, we need to include this new file in ``doc/changes/whats_new.rst``:
 
    .. _latest:
    .. include:: latest.rst
+
+Pre-Releases
+------------
+
+Every month, in between major and minor releases, we will release a
+pre-release version of Nilearn. This will basically follow the same steps as
+outlined above with the exception that the release with be tagged with
+x.y.zrcN (release candidate). For example, version 0.10.1.dev will
+become 0.10.1rc1. Every month the release candidate number (N) will increase
+by one until version x.y.z is planned to be released.
