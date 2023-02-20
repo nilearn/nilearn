@@ -62,7 +62,7 @@ def _check_shape_affine_maps_masks(target_shape,
         See http://nilearn.github.io/manipulating_images/input_output.html
 
     dim : integer, optional
-        Integer slices a mask for a specific dimension. Default=None.
+        Integer slices a mask for a specific dimension.
 
     Returns
     -------
@@ -117,10 +117,10 @@ def _get_labels_data(labels_img, target_shape, target_affine,
         outside the mask is considered as background (i.e. no region).
 
     background_label : number, optional
-        Number representing background in labels_img. Default=0.
+        Number representing background in labels_img.
 
     dim : integer, optional
-        Integer slices mask for a specific dimension. Default=None.
+        Integer slices mask for a specific dimension.
 
     Returns
     -------
