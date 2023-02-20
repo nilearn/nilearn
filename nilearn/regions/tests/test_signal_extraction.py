@@ -262,29 +262,6 @@ def test_signals_extraction_with_labels():
     np.testing.assert_almost_equal(signals_r, signals)
     assert labels_r == list(range(1, 9))
 
-    # Test input validation
-    data_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 5)), np.eye(4))
-
-    good_labels_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4))
-    bad_labels1_img = nibabel.Nifti1Image(np.zeros((2, 3, 5)), np.eye(4))
-    bad_labels2_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), 2 * np.eye(4))
-
-    good_mask_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4))
-    bad_mask1_img = nibabel.Nifti1Image(np.zeros((2, 3, 5)), np.eye(4))
-    bad_mask2_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), 2 * np.eye(4))
-    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
-                  data_img, bad_labels1_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
-                  data_img, bad_labels2_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
-                  data_img, bad_labels1_img, mask_img=good_mask_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
-                  data_img, bad_labels2_img, mask_img=good_mask_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
-                  data_img, good_labels_img, mask_img=bad_mask1_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
-                  data_img, good_labels_img, mask_img=bad_mask2_img)
-
 
 def test_signal_extraction_with_maps():
     shape = (10, 11, 12)
@@ -332,28 +309,54 @@ def test_signal_extraction_with_maps():
     img_r = signal_extraction.signals_to_img_maps(signals, maps_img)
     np.testing.assert_almost_equal(get_data(img_r), get_data(img))
 
-    # Test input validation
+@pytest.mark.parametrize("z_dim,affine_diag",
+                        [(5, 1), (4, 2)],
+                         )
+def test_input_validation_bad_mask(z_dim, affine_diag):
     data_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 5)), np.eye(4))
 
-    good_maps_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 7)), np.eye(4))
-    bad_maps1_img = nibabel.Nifti1Image(np.zeros((2, 3, 5, 7)), np.eye(4))
-    bad_maps2_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 7)), 2 * np.eye(4))
+    bad_mask_img = nibabel.Nifti1Image(np.zeros((2, 3, z_dim)), 
+                                       affine_diag * np.eye(4))
+
+    labels_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4))
+    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
+                  data_img, labels_img, mask_img=bad_mask_img)    
+
+    maps_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 7)), np.eye(4))    
+    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
+                  maps_img, mask_img=bad_mask_img)      
+
+@pytest.mark.parametrize("z_dim,affine_diag",
+                        [(5, 1), (4, 2)],
+                         )
+def test_input_validation_bad_labels(z_dim, affine_diag):
+    data_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 5)), np.eye(4))
+
+    bad_labels_img = nibabel.Nifti1Image(np.zeros((2, 3, z_dim)), 
+                                       affine_diag * np.eye(4))
+
+    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
+                  data_img, bad_labels_img)
 
     good_mask_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4))
-    bad_mask1_img = nibabel.Nifti1Image(np.zeros((2, 3, 5)), np.eye(4))
-    bad_mask2_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), 2 * np.eye(4))
+    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
+                  data_img, bad_labels_img, mask_img=good_mask_img)
+
+@pytest.mark.parametrize("z_dim,affine_diag",
+                        [(5, 1), (4, 2)],
+                         )
+def test_input_validation_bad_maps(z_dim, affine_diag):
+    data_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 5)), np.eye(4))
+
+    bad_maps_img =  nibabel.Nifti1Image(np.zeros((2, 3, z_dim, 7)), 
+                                        affine_diag * np.eye(4))    
+
     pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
-                  bad_maps1_img)
+                  bad_maps_img)
+
+    good_mask_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4))
     pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
-                  bad_maps2_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
-                  bad_maps1_img, mask_img=good_mask_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
-                  bad_maps2_img, mask_img=good_mask_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
-                  good_maps_img, mask_img=bad_mask1_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
-                  good_maps_img, mask_img=bad_mask2_img)
+                  bad_maps_img, mask_img=good_mask_img)
 
 
 def test_signal_extraction_with_maps_and_labels():
