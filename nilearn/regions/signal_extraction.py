@@ -238,14 +238,14 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     # Check shapes and affines.
     if labels_img.shape != target_shape:
         raise ValueError("labels_img and imgs shapes must be identical.")
-    if abs(labels_img.affine - target_affine).max() > 1e-9:
+    if abs(labels_img.affine - target_affine).max() > INF:
         raise ValueError("labels_img and imgs affines must be identical")
 
     if mask_img is not None:
         mask_img = _utils.check_niimg_3d(mask_img)
         if mask_img.shape != target_shape:
             raise ValueError("mask_img and imgs shapes must be identical.")
-        if abs(mask_img.affine - target_affine).max() > 1e-9:
+        if abs(mask_img.affine - target_affine).max() > INF:
             raise ValueError("mask_img and imgs affines must be identical")
 
     # Perform computation
@@ -337,7 +337,7 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
         if mask_img.shape != target_shape:
             raise ValueError("mask_img and labels_img shapes "
                              "must be identical.")
-        if abs(mask_img.affine - target_affine).max() > 1e-9:
+        if abs(mask_img.affine - target_affine).max() > INF:
             raise ValueError("mask_img and labels_img affines "
                              "must be identical")
 
@@ -423,7 +423,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
     # Check shapes and affines.
     if maps_img.shape[:3] != shape:
         raise ValueError("maps_img and imgs shapes must be identical.")
-    if abs(maps_img.affine - affine).max() > 1e-9:
+    if abs(maps_img.affine - affine).max() > INF:
         raise ValueError("maps_img and imgs affines must be identical")
 
     maps_data = _safe_get_data(maps_img, ensure_finite=True)
@@ -432,7 +432,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
         mask_img = _utils.check_niimg_3d(mask_img)
         if mask_img.shape != shape:
             raise ValueError("mask_img and imgs shapes must be identical.")
-        if abs(mask_img.affine - affine).max() > 1e-9:
+        if abs(mask_img.affine - affine).max() > INF:
             raise ValueError("mask_img and imgs affines must be identical")
         maps_data, maps_mask, labels = _trim_maps(
             maps_data,
@@ -496,7 +496,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
         mask_img = _utils.check_niimg_3d(mask_img)
         if mask_img.shape != shape:
             raise ValueError("mask_img and maps_img shapes must be identical.")
-        if abs(mask_img.affine - affine).max() > 1e-9:
+        if abs(mask_img.affine - affine).max() > INF:
             raise ValueError("mask_img and maps_img affines must be "
                              "identical.")
         maps_data, maps_mask, _ = _trim_maps(
