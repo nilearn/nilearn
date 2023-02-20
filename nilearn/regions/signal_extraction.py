@@ -25,7 +25,7 @@ def _check_shape_affine_label_img(labels_img, target_shape, target_affine):
     ----------
     labels_img : Niimg-like object
         See :ref:`extracting_data`.
-        Regions definition as labels. 
+        Regions definition as labels.
         Encodes the region labels of the signals.
 
     target_shape : numpy.ndarray
@@ -35,7 +35,8 @@ def _check_shape_affine_label_img(labels_img, target_shape, target_affine):
         Desired affine of label images.
 
     """
-    err_msg = lambda x : f"labels_img and target_img must have same {x}."
+    def err_msg(x):
+        return f"labels_img and target_img must have same {x}."
     if labels_img.shape != target_shape:
         raise ValueError(err_msg("shape"))
     if (labels_img.affine.shape != target_affine.shape
@@ -73,7 +74,8 @@ def _check_shape_affine_maps_masks(target_shape,
     if img is None:
         return False
 
-    err_msg = lambda x : f"mask/map and imgs must have same {x}."
+    def err_msg(x):
+        return f"mask/map and imgs must have same {x}."
 
     # Check shape
     if dim is None:
@@ -160,8 +162,8 @@ def _get_labels_data(labels_img,
 
     # Consider only data within the mask
     use_mask = _check_shape_affine_maps_masks(target_shape,
-                                               target_affine,
-                                               mask_img, dim)
+                                              target_affine,
+                                              mask_img, dim)
     if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
         mask_data = _safe_get_data(mask_img, ensure_finite=True)
@@ -244,7 +246,7 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
             available_reduction_strategies
         ))
 
-    # TODO: Make a special case for list of strings 
+    # TODO: Make a special case for list of strings
     # (load one image at a time).
     imgs = _utils.check_niimg_4d(imgs)
     labels, labels_data = _get_labels_data(labels_img,
