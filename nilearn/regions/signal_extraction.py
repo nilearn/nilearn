@@ -470,8 +470,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
             maps_data, _safe_get_data(mask_img, ensure_finite=True),
             keep_empty=True)
         maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
-
-    assert (maps_mask.shape == maps_data.shape[:3])
+        assert (maps_mask.shape == maps_data.shape[:3])
 
     data = np.dot(region_signals, maps_data[maps_mask, :].T)
     return masking.unmask(data, new_img_like(maps_img, maps_mask, affine))
