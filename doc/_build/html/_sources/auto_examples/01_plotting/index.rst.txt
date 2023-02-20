@@ -1,0 +1,350 @@
+
+
+.. _sphx_glr_auto_examples_01_plotting:
+
+=============================
+Visualization of brain images
+=============================
+
+See :ref:`plotting` for more details.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="See plotting for more plotting functionalities.">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_demo_glass_brain_thumb.png
+    :alt: Glass brain plotting in nilearn
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_demo_glass_brain.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Glass brain plotting in nilearn</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to fetch network matrices data from HCP beta-release of the Functional C...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_visualize_megatrawls_netmats_thumb.png
+    :alt: Visualizing Megatrawls Network Matrices from Human Connectome Project
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_visualize_megatrawls_netmats.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Visualizing Megatrawls Network Matrices from Human Connectome Project</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Plot the regions of a reference atlas (Harvard-Oxford and Juelich atlases).">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_atlas_thumb.png
+    :alt: Basic Atlas plotting
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_atlas.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Basic Atlas plotting</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to download and fetch brain parcellations of multiple networks using nil...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_multiscale_parcellations_thumb.png
+    :alt: Visualizing multiscale functional brain parcellations
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_multiscale_parcellations.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Visualizing multiscale functional brain parcellations</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Visualize HCP connectome workbench color maps shipped with Nilearn which can be used for plotti...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_colormaps_thumb.png
+    :alt: Matplotlib colormaps in Nilearn
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_colormaps.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Matplotlib colormaps in Nilearn</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Visualizing a probabilistic atlas requires visualizing the different maps that compose it.">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_overlay_thumb.png
+    :alt: Visualizing a probabilistic atlas: the default mode in the MSDL atlas
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_overlay.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Visualizing a probabilistic atlas: the default mode in the MSDL atlas</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The dim argument controls the contrast of the background.">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_dim_plotting_thumb.png
+    :alt: Controlling the contrast of the background when plotting
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_dim_plotting.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Controlling the contrast of the background when plotting</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Simple example to show Nifti data visualization.">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_visualization_thumb.png
+    :alt: NeuroImaging volumes visualization
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_visualization.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">NeuroImaging volumes visualization</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="A common quality control step for functional MRI data is to visualize the data over time in a c...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_carpet_thumb.png
+    :alt: Visualizing global patterns with a carpet plot
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_carpet.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Visualizing global patterns with a carpet plot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Small script to plot the masks of the Haxby dataset.">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_haxby_masks_thumb.png
+    :alt: Plot Haxby masks
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_haxby_masks.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Plot Haxby masks</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="In nilearn, nilearn.surface.vol_to_surf allows us to measure values of a 3d volume at the nodes...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_surface_projection_strategies_thumb.png
+    :alt: Technical point: Illustration of the volume to surface sampling schemes
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_surface_projection_strategies.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Technical point: Illustration of the volume to surface sampling schemes</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Nilearn comes with a set of plotting functions for easy visualization of Nifti-like images such...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_demo_plotting_thumb.png
+    :alt: Plotting tools in nilearn
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_demo_plotting.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Plotting tools in nilearn</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to visualize probabilistic atlases made of 4D images. There are 3 differ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_prob_atlas_thumb.png
+    :alt: Visualizing 4D probabilistic atlas maps
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_prob_atlas.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Visualizing 4D probabilistic atlas maps</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The dataset that is a subset of the enhanced NKI Rockland sample (http://fcon_1000.projects.nit...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_surf_stat_map_thumb.png
+    :alt: Seed-based connectivity on the surface
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Seed-based connectivity on the surface</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The Destrieux parcellation (Destrieux et al, 2010) in fsaverage5 space as distributed with Free...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_surf_atlas_thumb.png
+    :alt: Loading and plotting of a cortical surface atlas
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_surf_atlas.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Loading and plotting of a cortical surface atlas</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="In this example, we will project a 3D statistical map onto a cortical mesh using vol_to_surf, d...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_3d_map_to_surface_projection_thumb.png
+    :alt: Making a surface plot of a 3D statistical map
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_3d_map_to_surface_projection.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Making a surface plot of a 3D statistical map</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The first part of this example goes through different options of the plot_glass_brain function ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_demo_glass_brain_extensive_thumb.png
+    :alt: Glass brain plotting in nilearn (all options)
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_demo_glass_brain_extensive.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Glass brain plotting in nilearn (all options)</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="In this example, we show how to use some plotting options available with plotting functions of ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_demo_more_plotting_thumb.png
+    :alt: More plotting tools from nilearn
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_demo_more_plotting.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">More plotting tools from nilearn</div>
+    </div>
+
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /auto_examples/01_plotting/plot_demo_glass_brain
+   /auto_examples/01_plotting/plot_visualize_megatrawls_netmats
+   /auto_examples/01_plotting/plot_atlas
+   /auto_examples/01_plotting/plot_multiscale_parcellations
+   /auto_examples/01_plotting/plot_colormaps
+   /auto_examples/01_plotting/plot_overlay
+   /auto_examples/01_plotting/plot_dim_plotting
+   /auto_examples/01_plotting/plot_visualization
+   /auto_examples/01_plotting/plot_carpet
+   /auto_examples/01_plotting/plot_haxby_masks
+   /auto_examples/01_plotting/plot_surface_projection_strategies
+   /auto_examples/01_plotting/plot_demo_plotting
+   /auto_examples/01_plotting/plot_prob_atlas
+   /auto_examples/01_plotting/plot_surf_stat_map
+   /auto_examples/01_plotting/plot_surf_atlas
+   /auto_examples/01_plotting/plot_3d_map_to_surface_projection
+   /auto_examples/01_plotting/plot_demo_glass_brain_extensive
+   /auto_examples/01_plotting/plot_demo_more_plotting
+

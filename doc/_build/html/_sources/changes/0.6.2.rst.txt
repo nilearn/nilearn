@@ -1,0 +1,40 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.6.2
+======
+
+**Released February 2020**
+
+ENHANCEMENTS
+------------
+
+- Generated documentation now includes Binder links to launch examples interactively in the browser (:gh:`2300` by `Elizabeth DuPre`_).
+- :class:`~maskers.NiftiSpheresMasker` now has an inverse transform, projecting spheres to the corresponding ``mask_img`` (:gh:`2429` by `Simon Steinkamp`_).
+
+Fixes
+-----
+
+- More robust matplotlib backend selection (:gh:`2302` by `Gael Varoquaux`_).
+- Typo in example fixed (:gh:`2312` by `Jon Haitz Legarreta Gorrono`_).
+
+Changes
+-------
+
+- Function ``nilearn.datasets.fetch_nyu_rest`` has been deprecated and will be removed in Nilearn ``0.8.0`` (:gh:`2308` by `Joshua Teves`_).
+
+Contributors
+------------
+
+The following people contributed to this release:
+
+    * `Elizabeth DuPre`_
+    * `Franz Liem`_
+    * `Gael Varoquaux`_
+    * `Jon Haitz Legarreta Gorrono`_
+    * `Joshua Teves`_
+    * `Kshitij Chawla`_
+    * `Zvi Baratz`_
+    * `Simon Steinkamp`_

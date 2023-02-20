@@ -1,0 +1,19 @@
+﻿.. note::
+
+   This page is a reference documentation. It only explains the
+   function signature, and not how to use it. Please refer to the
+   :ref:`user guide <user_guide>` for the big picture.
+
+
+nilearn.image.concat_imgs
+=========================
+
+.. currentmodule:: nilearn.image
+
+.. autofunction:: concat_imgs
+
+.. include:: nilearn.image.concat_imgs.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

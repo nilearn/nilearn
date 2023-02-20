@@ -1,0 +1,19 @@
+﻿.. note::
+
+   This page is a reference documentation. It only explains the
+   function signature, and not how to use it. Please refer to the
+   :ref:`user guide <user_guide>` for the big picture.
+
+
+nilearn.datasets.fetch_localizer_contrasts
+==========================================
+
+.. currentmodule:: nilearn.datasets
+
+.. autofunction:: fetch_localizer_contrasts
+
+.. include:: nilearn.datasets.fetch_localizer_contrasts.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

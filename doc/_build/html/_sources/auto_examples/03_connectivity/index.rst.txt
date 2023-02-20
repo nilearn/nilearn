@@ -1,0 +1,243 @@
+
+
+.. _sphx_glr_auto_examples_03_connectivity:
+
+=======================
+Functional connectivity
+=======================
+
+See :ref:`parcellating_brain`, :ref:`extracting_rsn` or
+:ref:`functional_connectomes` for more details.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example extracts the signal on regions defined via a probabilistic atlas, to construct a f...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_probabilistic_atlas_extraction_thumb.png
+    :alt: Extracting signals of a probabilistic atlas of functional regions
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_probabilistic_atlas_extraction.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Extracting signals of a probabilistic atlas of functional regions</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example constructs a functional connectome using the sparse inverse covariance.">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_inverse_covariance_connectome_thumb.png
+    :alt: Computing a connectome with sparse inverse covariance
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_inverse_covariance_connectome.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Computing a connectome with sparse inverse covariance</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows a comparison of graph lasso and group-sparse covariance estimation of connec...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_simulated_connectome_thumb.png
+    :alt: Connectivity structure estimation on simulated data
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_simulated_connectome.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Connectivity structure estimation on simulated data</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Various approaches exist to derive spatial maps or networks from group fmr data. The methods ex...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_compare_decomposition_thumb.png
+    :alt: Deriving spatial maps from group fMRI data using ICA and Dictionary Learning
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_compare_decomposition.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Deriving spatial maps from group fMRI data using ICA and Dictionary Learning</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to produce seed-to-:term:`voxel` correlation maps for a single subject b...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_seed_to_voxel_correlation_thumb.png
+    :alt: Producing single subject maps of seed-to-voxel correlation
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Producing single subject maps of seed-to-voxel correlation</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to estimate a connectome on a group of subjects using the group sparse i...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_multi_subject_connectome_thumb.png
+    :alt: Group Sparse inverse covariance for multi-subject connectome
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Group Sparse inverse covariance for multi-subject connectome</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to use nilearn.regions.RegionExtractor to extract spatially constrained ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_extract_regions_dictlearning_maps_thumb.png
+    :alt: Regions extraction using dictionary learning and functional connectomes
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Regions extraction using dictionary learning and functional connectomes</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This examples shows how to turn a parcellation into connectome for visualization. This requires...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_atlas_comparison_thumb.png
+    :alt: Comparing connectomes on different reference atlases
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Comparing connectomes on different reference atlases</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example compares different kinds of functional connectivity between regions of interest : ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_group_level_connectivity_thumb.png
+    :alt: Classification of age groups using functional connectivity
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_group_level_connectivity.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Classification of age groups using functional connectivity</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Here we show how to extract signals from a brain parcellation and compute a correlation matrix.">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_signal_extraction_thumb.png
+    :alt: Extracting signals from a brain parcellation
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_signal_extraction.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Extracting signals from a brain parcellation</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to extract signals from spherical regions. We show how to build spheres ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_sphere_based_connectome_thumb.png
+    :alt: Extract signals on spheres and plot a connectome
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_sphere_based_connectome.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Extract signals on spheres and plot a connectome</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="We use spatially-constrained Ward-clustering, KMeans, Hierarchical KMeans and Recursive Neighbo...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_data_driven_parcellations_thumb.png
+    :alt: Clustering methods to learn a brain parcellation from fMRI
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_data_driven_parcellations.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Clustering methods to learn a brain parcellation from fMRI</div>
+    </div>
+
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /auto_examples/03_connectivity/plot_probabilistic_atlas_extraction
+   /auto_examples/03_connectivity/plot_inverse_covariance_connectome
+   /auto_examples/03_connectivity/plot_simulated_connectome
+   /auto_examples/03_connectivity/plot_compare_decomposition
+   /auto_examples/03_connectivity/plot_seed_to_voxel_correlation
+   /auto_examples/03_connectivity/plot_multi_subject_connectome
+   /auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps
+   /auto_examples/03_connectivity/plot_atlas_comparison
+   /auto_examples/03_connectivity/plot_group_level_connectivity
+   /auto_examples/03_connectivity/plot_signal_extraction
+   /auto_examples/03_connectivity/plot_sphere_based_connectome
+   /auto_examples/03_connectivity/plot_data_driven_parcellations
+

@@ -1,0 +1,19 @@
+﻿.. note::
+
+   This page is a reference documentation. It only explains the
+   function signature, and not how to use it. Please refer to the
+   :ref:`user guide <user_guide>` for the big picture.
+
+
+nilearn.glm.second_level.make_second_level_design_matrix
+========================================================
+
+.. currentmodule:: nilearn.glm.second_level
+
+.. autofunction:: make_second_level_design_matrix
+
+.. include:: nilearn.glm.second_level.make_second_level_design_matrix.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

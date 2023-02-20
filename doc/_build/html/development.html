@@ -1,0 +1,1353 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+<meta property="og:title" content="Contributing" />
+  
+<meta property="og:type" content="website" />
+  
+<meta property="og:url" content="https://nilearn.github.io/development.html" />
+  
+<meta property="og:site_name" content="Nilearn" />
+  
+<meta property="og:description" content="Code of Conduct: By participating in Nilearn, you agree to abide by the NIPY Code of Conduct How to get help?: If you have issues when using Nilearn, or if you have questions on how to use it, plea..." />
+  
+<meta property="og:image" content="https://nilearn.github.io/_static/nilearn-logo.png" />
+  
+<meta property="og:image:alt" content="Nilearn" />
+  <link rel="search" title="Search" href="search.html" /><link rel="next" title="Maintenance" href="maintenance.html" /><link rel="prev" title="Glossary" href="glossary.html" />
+
+    <link rel="shortcut icon" href="_static/favicon.ico"/><meta name="generator" content="sphinx-5.1.1, furo 2022.06.21"/>
+        <title>Contributing - Nilearn</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-binder.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-dataframe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sg_gallery-rendered-html.css" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #ffffff;
+  --color-code-foreground: black;
+  --admonition-font-size: 100%;
+  --admonition-title-font-size: 100%;
+  --color-announcement-background: #FBB360;
+  --color-announcement-text: #111418;
+  --color-admonition-title--note: #448aff;
+  --color-admonition-title-background--note: #448aff10;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #232629;
+  --color-code-foreground: #cccccc;
+  --color-announcement-background: #935610;
+  --color-announcement-text: #FFFFFF;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #232629;
+  --color-code-foreground: #cccccc;
+  --color-announcement-background: #935610;
+  --color-announcement-text: #FFFFFF;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<div class="announcement">
+  <aside class="announcement-content">
+     <p>This is the development documentation of nilearn (0.10.1.dev) <a class="sd-sphinx-override sd-badge sd-text-wrap sd-btn-outline-dark reference external" href="https://nilearn.github.io"><span>Switch to stable version (0.10.0)</span></a></p> 
+  </aside>
+</div>
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">Nilearn</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand centered" href="index.html">
+  
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="_static/nilearn-transparent.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">Nilearn</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="auto_examples/index.html">Examples</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="auto_examples/00_tutorials/index.html">Basic tutorials</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/00_tutorials/plot_python_101.html">Basic numerics and plotting with Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/00_tutorials/plot_nilearn_101.html">Basic nilearn example: manipulating and looking at data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/00_tutorials/plot_3d_and_4d_niimg.html">3D and 4D niimgs: handling and visualizing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/00_tutorials/plot_decoding_tutorial.html">A introduction tutorial to fMRI decoding</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/00_tutorials/plot_single_subject_single_run.html">Intro to GLM Analysis: a single-session, single-subject fMRI dataset</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="auto_examples/01_plotting/index.html">Visualization of brain images</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/01_plotting/plot_demo_glass_brain.html">Glass brain plotting in nilearn</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/01_plotting/plot_visualize_megatrawls_netmats.html">Visualizing Megatrawls Network Matrices from Human Connectome Project</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/01_plotting/plot_atlas.html">Basic Atlas plotting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/01_plotting/plot_multiscale_parcellations.html">Visualizing multiscale functional brain parcellations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/01_plotting/plot_colormaps.html">Matplotlib colormaps in Nilearn</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/01_plotting/plot_overlay.html">Visualizing a probabilistic atlas: the default mode in the MSDL atlas</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/01_plotting/plot_overlay.html#visualizing-a-probabilistic-atlas-with-plot-prob-atlas">Visualizing a probabilistic atlas with plot_prob_atlas</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/01_plotting/plot_dim_plotting.html">Controlling the contrast of the background when plotting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/01_plotting/plot_visualization.html">NeuroImaging volumes visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/01_plotting/plot_carpet.html">Visualizing global patterns with a carpet plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/01_plotting/plot_haxby_masks.html">Plot Haxby masks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/01_plotting/plot_surface_projection_strategies.html">Technical point: Illustration of the volume to surface sampling schemes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/01_plotting/plot_demo_plotting.html">Plotting tools in nilearn</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/01_plotting/plot_prob_atlas.html">Visualizing 4D probabilistic atlas maps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/01_plotting/plot_surf_stat_map.html">Seed-based connectivity on the surface</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/01_plotting/plot_surf_atlas.html">Loading and plotting of a cortical surface atlas</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/01_plotting/plot_3d_map_to_surface_projection.html">Making a surface plot of a 3D statistical map</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/01_plotting/plot_demo_glass_brain_extensive.html">Glass brain plotting in nilearn (all options)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/01_plotting/plot_demo_more_plotting.html">More plotting tools from nilearn</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="auto_examples/02_decoding/index.html">Decoding and predicting from brain images</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/02_decoding/plot_haxby_stimuli.html">Show stimuli of Haxby et al. dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/02_decoding/plot_mixed_gambles_frem.html">FREM on Jimura et al “mixed gambles” dataset.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/02_decoding/plot_haxby_frem.html">Decoding with FREM: face vs house object recognition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/02_decoding/plot_oasis_vbm_space_net.html">Voxel-Based Morphometry on Oasis dataset with Space-Net prior</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/02_decoding/plot_haxby_anova_svm.html">Decoding with ANOVA + SVM: face vs house in the Haxby dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/02_decoding/plot_haxby_searchlight_surface.html">Cortical surface-based searchlight decoding</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/02_decoding/plot_haxby_multiclass.html">The haxby dataset: different multi-class strategies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/02_decoding/plot_haxby_searchlight.html">Searchlight analysis of face vs house recognition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/02_decoding/plot_haxby_glm_decoding.html">Decoding of a dataset after GLM fit for signal extraction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/02_decoding/plot_haxby_grid_search.html">Setting a parameter by cross-validation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/02_decoding/plot_haxby_full_analysis.html">ROI-based decoding analysis in Haxby et al. dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/02_decoding/plot_haxby_different_estimators.html">Different classifiers in decoding the Haxby dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/02_decoding/plot_oasis_vbm.html">Voxel-Based Morphometry on Oasis dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/02_decoding/plot_simulated_data.html">Example of pattern recognition on simulated data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/02_decoding/plot_miyawaki_encoding.html">Encoding models for visual stimuli from Miyawaki et al. 2008</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/02_decoding/plot_miyawaki_reconstruction.html">Reconstruction of visual stimuli from Miyawaki et al. 2008</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="auto_examples/03_connectivity/index.html">Functional connectivity</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/03_connectivity/plot_probabilistic_atlas_extraction.html">Extracting signals of a probabilistic atlas of functional regions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/03_connectivity/plot_inverse_covariance_connectome.html">Computing a connectome with sparse inverse covariance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/03_connectivity/plot_simulated_connectome.html">Connectivity structure estimation on simulated data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/03_connectivity/plot_compare_decomposition.html">Deriving spatial maps from group fMRI data using ICA and Dictionary Learning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/03_connectivity/plot_seed_to_voxel_correlation.html">Producing single subject maps of seed-to-voxel correlation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/03_connectivity/plot_multi_subject_connectome.html">Group Sparse inverse covariance for multi-subject connectome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html">Regions extraction using dictionary learning and functional connectomes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/03_connectivity/plot_atlas_comparison.html">Comparing connectomes on different reference atlases</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/03_connectivity/plot_group_level_connectivity.html">Classification of age groups using functional connectivity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/03_connectivity/plot_signal_extraction.html">Extracting signals from a brain parcellation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/03_connectivity/plot_sphere_based_connectome.html">Extract signals on spheres and plot a connectome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/03_connectivity/plot_data_driven_parcellations.html">Clustering methods to learn a brain parcellation from fMRI</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="auto_examples/04_glm_first_level/index.html">GLM: First level analysis</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/04_glm_first_level/plot_write_events_file.html">Generate an events.tsv file for the NeuroSpin localizer task</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/04_glm_first_level/plot_fixed_effects.html">Example of explicit fixed effects fMRI model fitting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/04_glm_first_level/plot_adhd_dmn.html">Default Mode Network extraction of ADHD dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/04_glm_first_level/plot_design_matrix.html">Examples of design matrices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/04_glm_first_level/plot_fir_model.html">Analysis of an fMRI dataset with a Finite Impule Response (FIR) model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/04_glm_first_level/plot_spm_multimodal_faces.html">Single-subject data (two sessions) in native space</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/04_glm_first_level/plot_hrf.html">Example of MRI response functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/04_glm_first_level/plot_fiac_analysis.html">Simple example of two-session fMRI model fitting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/04_glm_first_level/plot_predictions_residuals.html">Predicted time series and residuals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/04_glm_first_level/plot_bids_features.html">First level analysis of a complete BIDS dataset from openneuro</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/04_glm_first_level/plot_localizer_surface_analysis.html">Example of surface-based first-level analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/04_glm_first_level/plot_first_level_details.html">Understanding parameters of the first-level model</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="auto_examples/05_glm_second_level/index.html">GLM: Second level analysis</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/05_glm_second_level/plot_second_level_design_matrix.html">Example of second level design matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/05_glm_second_level/plot_proportion_activated_voxels.html">Second-level fMRI model: true positive proportion in clusters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/05_glm_second_level/plot_thresholding.html">Statistical testing of a second-level analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/05_glm_second_level/plot_oasis.html">Voxel-Based Morphometry on OASIS dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/05_glm_second_level/plot_second_level_two_sample_test.html">Second-level fMRI model: two-sample test, unpaired and paired</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/05_glm_second_level/plot_second_level_one_sample_test.html">Second-level fMRI model: one sample test</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/05_glm_second_level/plot_second_level_association_test.html">Example of generic design in second-level models</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="auto_examples/06_manipulating_images/index.html">Manipulating brain image volumes</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/06_manipulating_images/plot_negate_image.html">Negating an image with math_img</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/06_manipulating_images/plot_compare_mean_image.html">Comparing the means of 2 images</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/06_manipulating_images/plot_smooth_mean_image.html">Smoothing an image</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/06_manipulating_images/plot_extract_rois_smith_atlas.html">Regions Extraction of Default Mode Networks using Smith Atlas</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/06_manipulating_images/plot_extract_regions_labels_image.html">Breaking an atlas of labels in separated regions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/06_manipulating_images/plot_resample_to_template.html">Resample an image to a template</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/06_manipulating_images/plot_nifti_simple.html">Simple example of NiftiMasker use</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/06_manipulating_images/plot_nifti_labels_simple.html">Extracting signals from brain regions using the NiftiLabelsMasker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/06_manipulating_images/plot_extract_rois_statistical_maps.html">Region Extraction using a t-statistical map (3D)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/06_manipulating_images/plot_mask_computation.html">Understanding NiftiMasker and mask computation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/06_manipulating_images/plot_affine_transformation.html">Visualization of affine resamplings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/06_manipulating_images/plot_roi_extraction.html">Computing a Region of Interest (ROI) mask manually</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="auto_examples/07_advanced/index.html">Advanced statistical analysis of brain images</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_ica_resting_state.html">Multivariate decompositions: Independent component analysis of fMRI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_localizer_simple_analysis.html">Massively univariate analysis of a calculation task from the Localizer dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_bids_analysis.html">BIDS dataset first and second level analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_age_group_prediction_cross_val.html">Functional connectivity predicts age group</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_neurovault_meta_analysis.html">NeuroVault meta-analysis of stop-go paradigm studies.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_surface_bids_analysis.html">Surface-based dataset first and second level analysis of a dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_localizer_mass_univariate_methods.html">Massively univariate analysis of a motor task from the Localizer dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_ica_neurovault.html">NeuroVault cross-study ICA maps.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_haxby_mass_univariate.html">Massively univariate analysis of face vs house recognition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_advanced_decoding_scikit.html">Advanced decoding using scikit learn</a></li>
+<li class="toctree-l3"><a class="reference internal" href="auto_examples/07_advanced/plot_beta_series.html">Beta-Series Modeling for Task-Based Functional Connectivity and Decoding</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="user_guide.html">User guide</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html">1. Introduction</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="decoding/index.html">2. Decoding and MVPA: predicting from brain images</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="decoding/decoding_intro.html">2.1. An introduction to decoding</a></li>
+<li class="toctree-l3"><a class="reference internal" href="decoding/estimator_choice.html">2.2. Choosing the right predictive model for neuroimaging</a></li>
+<li class="toctree-l3"><a class="reference internal" href="decoding/frem.html">2.3. FREM: fast ensembling of regularized models for robust decoding</a></li>
+<li class="toctree-l3"><a class="reference internal" href="decoding/space_net.html">2.4. SpaceNet: decoding with spatial structure for better maps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="decoding/searchlight.html">2.5. Searchlight : finding voxels containing information</a></li>
+<li class="toctree-l3"><a class="reference internal" href="decoding/going_further.html">2.6. Running scikit-learn functions for more control on the analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="connectivity/index.html">3. Functional connectivity and resting state</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="connectivity/functional_connectomes.html">3.1. Extracting times series to build a functional connectome</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="connectivity/connectome_extraction.html">3.2. Connectome extraction: inverse covariance for direct connections</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="developers/group_sparse_covariance.html">3.2.3.1. Group-sparse covariance estimation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="connectivity/resting_state_networks.html">3.3. Extracting functional brain networks: ICA and related</a></li>
+<li class="toctree-l3"><a class="reference internal" href="connectivity/region_extraction.html">3.4. Region Extraction for better brain parcellations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="connectivity/parcellating.html">3.5. Clustering to parcellate the brain in regions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="plotting/index.html">4. Plotting brain images</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="glm/index.html">5. Analyzing fMRI using GLMs</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="glm/glm_intro.html">5.1. An introduction to GLMs in fMRI statistical analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glm/first_level_model.html">5.2. First level models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="glm/second_level_model.html">5.3. Second level models</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="manipulating_images/index.html">6. Manipulation brain volumes with nilearn</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="manipulating_images/input_output.html">6.1. Input and output: neuroimaging data representation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manipulating_images/manipulating_images.html">6.2. Manipulating images: resampling, smoothing, masking, ROIs…</a></li>
+<li class="toctree-l3"><a class="reference internal" href="manipulating_images/masker_objects.html">6.3. From neuroimaging volumes to data matrices: the masker objects</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="building_blocks/index.html">7. Advanced usage: manual pipelines and scaling up</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="building_blocks/manual_pipeline.html">7.1. Building your own neuroimaging machine-learning pipeline</a></li>
+<li class="toctree-l3"><a class="reference internal" href="building_blocks/neurovault.html">7.2. Downloading statistical maps from the Neurovault repository</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="modules/index.html">API References</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="modules/connectome.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nilearn.connectome</span></code>: Functional Connectivity</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.connectome.ConnectivityMeasure.html">nilearn.connectome.ConnectivityMeasure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.connectome.GroupSparseCovariance.html">nilearn.connectome.GroupSparseCovariance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.connectome.GroupSparseCovarianceCV.html">nilearn.connectome.GroupSparseCovarianceCV</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.connectome.sym_matrix_to_vec.html">nilearn.connectome.sym_matrix_to_vec</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.connectome.vec_to_sym_matrix.html">nilearn.connectome.vec_to_sym_matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.connectome.group_sparse_covariance.html">nilearn.connectome.group_sparse_covariance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.connectome.cov_to_corr.html">nilearn.connectome.cov_to_corr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.connectome.prec_to_partial.html">nilearn.connectome.prec_to_partial</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="modules/datasets.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nilearn.datasets</span></code>: Automatic Dataset Fetching</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" role="switch" type="checkbox"/><label for="toctree-checkbox-19"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_icbm152_2009.html">nilearn.datasets.fetch_icbm152_2009</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_icbm152_brain_gm_mask.html">nilearn.datasets.fetch_icbm152_brain_gm_mask</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_surf_fsaverage.html">nilearn.datasets.fetch_surf_fsaverage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.load_mni152_brain_mask.html">nilearn.datasets.load_mni152_brain_mask</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.load_mni152_gm_mask.html">nilearn.datasets.load_mni152_gm_mask</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.load_mni152_gm_template.html">nilearn.datasets.load_mni152_gm_template</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.load_mni152_template.html">nilearn.datasets.load_mni152_template</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.load_mni152_wm_mask.html">nilearn.datasets.load_mni152_wm_mask</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.load_mni152_wm_template.html">nilearn.datasets.load_mni152_wm_template</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_atlas_aal.html">nilearn.datasets.fetch_atlas_aal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_atlas_allen_2011.html">nilearn.datasets.fetch_atlas_allen_2011</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_atlas_basc_multiscale_2015.html">nilearn.datasets.fetch_atlas_basc_multiscale_2015</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_atlas_craddock_2012.html">nilearn.datasets.fetch_atlas_craddock_2012</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_atlas_destrieux_2009.html">nilearn.datasets.fetch_atlas_destrieux_2009</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_atlas_difumo.html">nilearn.datasets.fetch_atlas_difumo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_atlas_harvard_oxford.html">nilearn.datasets.fetch_atlas_harvard_oxford</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_atlas_juelich.html">nilearn.datasets.fetch_atlas_juelich</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_atlas_msdl.html">nilearn.datasets.fetch_atlas_msdl</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_atlas_pauli_2017.html">nilearn.datasets.fetch_atlas_pauli_2017</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_atlas_schaefer_2018.html">nilearn.datasets.fetch_atlas_schaefer_2018</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_atlas_smith_2009.html">nilearn.datasets.fetch_atlas_smith_2009</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_atlas_surf_destrieux.html">nilearn.datasets.fetch_atlas_surf_destrieux</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_atlas_talairach.html">nilearn.datasets.fetch_atlas_talairach</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_atlas_yeo_2011.html">nilearn.datasets.fetch_atlas_yeo_2011</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_coords_dosenbach_2010.html">nilearn.datasets.fetch_coords_dosenbach_2010</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_coords_power_2011.html">nilearn.datasets.fetch_coords_power_2011</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_coords_seitzman_2018.html">nilearn.datasets.fetch_coords_seitzman_2018</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_abide_pcp.html">nilearn.datasets.fetch_abide_pcp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_adhd.html">nilearn.datasets.fetch_adhd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_bids_langloc_dataset.html">nilearn.datasets.fetch_bids_langloc_dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_development_fmri.html">nilearn.datasets.fetch_development_fmri</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_ds000030_urls.html">nilearn.datasets.fetch_ds000030_urls</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_fiac_first_level.html">nilearn.datasets.fetch_fiac_first_level</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_haxby.html">nilearn.datasets.fetch_haxby</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_language_localizer_demo_dataset.html">nilearn.datasets.fetch_language_localizer_demo_dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_localizer_first_level.html">nilearn.datasets.fetch_localizer_first_level</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_miyawaki2008.html">nilearn.datasets.fetch_miyawaki2008</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_openneuro_dataset_index.html">nilearn.datasets.fetch_openneuro_dataset_index</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_spm_auditory.html">nilearn.datasets.fetch_spm_auditory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_spm_multimodal_fmri.html">nilearn.datasets.fetch_spm_multimodal_fmri</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_surf_nki_enhanced.html">nilearn.datasets.fetch_surf_nki_enhanced</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_localizer_button_task.html">nilearn.datasets.fetch_localizer_button_task</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_localizer_calculation_task.html">nilearn.datasets.fetch_localizer_calculation_task</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_localizer_contrasts.html">nilearn.datasets.fetch_localizer_contrasts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_megatrawls_netmats.html">nilearn.datasets.fetch_megatrawls_netmats</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_mixed_gambles.html">nilearn.datasets.fetch_mixed_gambles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_oasis_vbm.html">nilearn.datasets.fetch_oasis_vbm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_neurovault_auditory_computation_task.html">nilearn.datasets.fetch_neurovault_auditory_computation_task</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_neurovault_motor_task.html">nilearn.datasets.fetch_neurovault_motor_task</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_neurovault.html">nilearn.datasets.fetch_neurovault</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_neurovault_ids.html">nilearn.datasets.fetch_neurovault_ids</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.fetch_openneuro_dataset.html">nilearn.datasets.fetch_openneuro_dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.get_data_dirs.html">nilearn.datasets.get_data_dirs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.patch_openneuro_dataset.html">nilearn.datasets.patch_openneuro_dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.datasets.select_from_index.html">nilearn.datasets.select_from_index</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="modules/decoding.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nilearn.decoding</span></code>: Decoding</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" role="switch" type="checkbox"/><label for="toctree-checkbox-20"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.decoding.Decoder.html">nilearn.decoding.Decoder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.decoding.DecoderRegressor.html">nilearn.decoding.DecoderRegressor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.decoding.FREMClassifier.html">nilearn.decoding.FREMClassifier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.decoding.FREMRegressor.html">nilearn.decoding.FREMRegressor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.decoding.SpaceNetClassifier.html">nilearn.decoding.SpaceNetClassifier</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.decoding.SpaceNetRegressor.html">nilearn.decoding.SpaceNetRegressor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.decoding.SearchLight.html">nilearn.decoding.SearchLight</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="modules/decomposition.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nilearn.decomposition</span></code>: Multivariate Decompositions</a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.decomposition.CanICA.html">nilearn.decomposition.CanICA</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.decomposition.DictLearning.html">nilearn.decomposition.DictLearning</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="modules/glm.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nilearn.glm</span></code>: Generalized Linear Models</a><input class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" role="switch" type="checkbox"/><label for="toctree-checkbox-22"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.Contrast.html">nilearn.glm.Contrast</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.FContrastResults.html">nilearn.glm.FContrastResults</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.TContrastResults.html">nilearn.glm.TContrastResults</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.ARModel.html">nilearn.glm.ARModel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.OLSModel.html">nilearn.glm.OLSModel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.LikelihoodModelResults.html">nilearn.glm.LikelihoodModelResults</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.RegressionResults.html">nilearn.glm.RegressionResults</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.SimpleRegressionResults.html">nilearn.glm.SimpleRegressionResults</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.compute_contrast.html">nilearn.glm.compute_contrast</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.compute_fixed_effects.html">nilearn.glm.compute_fixed_effects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.expression_to_contrast_vector.html">nilearn.glm.expression_to_contrast_vector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.fdr_threshold.html">nilearn.glm.fdr_threshold</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.cluster_level_inference.html">nilearn.glm.cluster_level_inference</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.threshold_stats_img.html">nilearn.glm.threshold_stats_img</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.first_level.FirstLevelModel.html">nilearn.glm.first_level.FirstLevelModel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.first_level.check_design_matrix.html">nilearn.glm.first_level.check_design_matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.first_level.compute_regressor.html">nilearn.glm.first_level.compute_regressor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.first_level.first_level_from_bids.html">nilearn.glm.first_level.first_level_from_bids</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.first_level.glover_dispersion_derivative.html">nilearn.glm.first_level.glover_dispersion_derivative</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.first_level.glover_hrf.html">nilearn.glm.first_level.glover_hrf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.first_level.glover_time_derivative.html">nilearn.glm.first_level.glover_time_derivative</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.first_level.make_first_level_design_matrix.html">nilearn.glm.first_level.make_first_level_design_matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.first_level.mean_scaling.html">nilearn.glm.first_level.mean_scaling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.first_level.run_glm.html">nilearn.glm.first_level.run_glm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.first_level.spm_dispersion_derivative.html">nilearn.glm.first_level.spm_dispersion_derivative</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.first_level.spm_hrf.html">nilearn.glm.first_level.spm_hrf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.first_level.spm_time_derivative.html">nilearn.glm.first_level.spm_time_derivative</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.second_level.SecondLevelModel.html">nilearn.glm.second_level.SecondLevelModel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.second_level.make_second_level_design_matrix.html">nilearn.glm.second_level.make_second_level_design_matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.glm.second_level.non_parametric_inference.html">nilearn.glm.second_level.non_parametric_inference</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="modules/image.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nilearn.image</span></code>: Image Processing and Resampling Utilities</a><input class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" role="switch" type="checkbox"/><label for="toctree-checkbox-23"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.binarize_img.html">nilearn.image.binarize_img</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.clean_img.html">nilearn.image.clean_img</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.concat_imgs.html">nilearn.image.concat_imgs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.coord_transform.html">nilearn.image.coord_transform</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.copy_img.html">nilearn.image.copy_img</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.crop_img.html">nilearn.image.crop_img</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.get_data.html">nilearn.image.get_data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.high_variance_confounds.html">nilearn.image.high_variance_confounds</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.index_img.html">nilearn.image.index_img</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.iter_img.html">nilearn.image.iter_img</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.largest_connected_component_img.html">nilearn.image.largest_connected_component_img</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.load_img.html">nilearn.image.load_img</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.math_img.html">nilearn.image.math_img</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.mean_img.html">nilearn.image.mean_img</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.new_img_like.html">nilearn.image.new_img_like</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.resample_img.html">nilearn.image.resample_img</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.resample_to_img.html">nilearn.image.resample_to_img</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.reorder_img.html">nilearn.image.reorder_img</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.smooth_img.html">nilearn.image.smooth_img</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.swap_img_hemispheres.html">nilearn.image.swap_img_hemispheres</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.image.threshold_img.html">nilearn.image.threshold_img</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="modules/interfaces.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nilearn.interfaces</span></code>: Loading components from interfaces</a><input class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" role="switch" type="checkbox"/><label for="toctree-checkbox-24"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.interfaces.bids.get_bids_files.html">nilearn.interfaces.bids.get_bids_files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.interfaces.bids.parse_bids_filename.html">nilearn.interfaces.bids.parse_bids_filename</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.interfaces.bids.save_glm_to_bids.html">nilearn.interfaces.bids.save_glm_to_bids</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.interfaces.fmriprep.load_confounds.html">nilearn.interfaces.fmriprep.load_confounds</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.interfaces.fmriprep.load_confounds_strategy.html">nilearn.interfaces.fmriprep.load_confounds_strategy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.interfaces.fsl.get_design_from_fslmat.html">nilearn.interfaces.fsl.get_design_from_fslmat</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="modules/maskers.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nilearn.maskers</span></code>: Extracting Signals from Brain Images</a><input class="toctree-checkbox" id="toctree-checkbox-25" name="toctree-checkbox-25" role="switch" type="checkbox"/><label for="toctree-checkbox-25"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.maskers.BaseMasker.html">nilearn.maskers.BaseMasker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.maskers.NiftiMasker.html">nilearn.maskers.NiftiMasker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.maskers.MultiNiftiMasker.html">nilearn.maskers.MultiNiftiMasker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.maskers.NiftiLabelsMasker.html">nilearn.maskers.NiftiLabelsMasker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.maskers.MultiNiftiLabelsMasker.html">nilearn.maskers.MultiNiftiLabelsMasker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.maskers.NiftiMapsMasker.html">nilearn.maskers.NiftiMapsMasker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.maskers.MultiNiftiMapsMasker.html">nilearn.maskers.MultiNiftiMapsMasker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.maskers.NiftiSpheresMasker.html">nilearn.maskers.NiftiSpheresMasker</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="modules/masking.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nilearn.masking</span></code>: Data Masking Utilities</a><input class="toctree-checkbox" id="toctree-checkbox-26" name="toctree-checkbox-26" role="switch" type="checkbox"/><label for="toctree-checkbox-26"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.masking.compute_epi_mask.html">nilearn.masking.compute_epi_mask</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.masking.compute_multi_epi_mask.html">nilearn.masking.compute_multi_epi_mask</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.masking.compute_brain_mask.html">nilearn.masking.compute_brain_mask</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.masking.compute_multi_brain_mask.html">nilearn.masking.compute_multi_brain_mask</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.masking.compute_background_mask.html">nilearn.masking.compute_background_mask</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.masking.compute_multi_background_mask.html">nilearn.masking.compute_multi_background_mask</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.masking.intersect_masks.html">nilearn.masking.intersect_masks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.masking.apply_mask.html">nilearn.masking.apply_mask</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.masking.unmask.html">nilearn.masking.unmask</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="modules/mass_univariate.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nilearn.mass_univariate</span></code>: Mass-Univariate Analysis</a><input class="toctree-checkbox" id="toctree-checkbox-27" name="toctree-checkbox-27" role="switch" type="checkbox"/><label for="toctree-checkbox-27"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.mass_univariate.permuted_ols.html">nilearn.mass_univariate.permuted_ols</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="modules/plotting.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nilearn.plotting</span></code>: Plotting Brain Data</a><input class="toctree-checkbox" id="toctree-checkbox-28" name="toctree-checkbox-28" role="switch" type="checkbox"/><label for="toctree-checkbox-28"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.find_cut_slices.html">nilearn.plotting.find_cut_slices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.find_xyz_cut_coords.html">nilearn.plotting.find_xyz_cut_coords</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.find_parcellation_cut_coords.html">nilearn.plotting.find_parcellation_cut_coords</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.find_probabilistic_atlas_cut_coords.html">nilearn.plotting.find_probabilistic_atlas_cut_coords</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.plot_anat.html">nilearn.plotting.plot_anat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.plot_img.html">nilearn.plotting.plot_img</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.plot_epi.html">nilearn.plotting.plot_epi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.plot_matrix.html">nilearn.plotting.plot_matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.plot_roi.html">nilearn.plotting.plot_roi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.plot_stat_map.html">nilearn.plotting.plot_stat_map</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.plot_glass_brain.html">nilearn.plotting.plot_glass_brain</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.plot_connectome.html">nilearn.plotting.plot_connectome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.plot_markers.html">nilearn.plotting.plot_markers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.plot_prob_atlas.html">nilearn.plotting.plot_prob_atlas</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.plot_carpet.html">nilearn.plotting.plot_carpet</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.plot_surf.html">nilearn.plotting.plot_surf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.plot_surf_roi.html">nilearn.plotting.plot_surf_roi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.plot_surf_contours.html">nilearn.plotting.plot_surf_contours</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.plot_surf_stat_map.html">nilearn.plotting.plot_surf_stat_map</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.plot_img_on_surf.html">nilearn.plotting.plot_img_on_surf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.plot_img_comparison.html">nilearn.plotting.plot_img_comparison</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.plot_design_matrix.html">nilearn.plotting.plot_design_matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.plot_event.html">nilearn.plotting.plot_event</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.plot_contrast_matrix.html">nilearn.plotting.plot_contrast_matrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.view_surf.html">nilearn.plotting.view_surf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.view_img_on_surf.html">nilearn.plotting.view_img_on_surf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.view_connectome.html">nilearn.plotting.view_connectome</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.view_markers.html">nilearn.plotting.view_markers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.view_img.html">nilearn.plotting.view_img</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.show.html">nilearn.plotting.show</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.get_projector.html">nilearn.plotting.displays.get_projector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.get_slicer.html">nilearn.plotting.displays.get_slicer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.OrthoProjector.html">nilearn.plotting.displays.OrthoProjector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.XZProjector.html">nilearn.plotting.displays.XZProjector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.YZProjector.html">nilearn.plotting.displays.YZProjector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.YXProjector.html">nilearn.plotting.displays.YXProjector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.XProjector.html">nilearn.plotting.displays.XProjector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.YProjector.html">nilearn.plotting.displays.YProjector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.ZProjector.html">nilearn.plotting.displays.ZProjector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.LZRYProjector.html">nilearn.plotting.displays.LZRYProjector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.LYRZProjector.html">nilearn.plotting.displays.LYRZProjector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.LYRProjector.html">nilearn.plotting.displays.LYRProjector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.LZRProjector.html">nilearn.plotting.displays.LZRProjector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.LRProjector.html">nilearn.plotting.displays.LRProjector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.LProjector.html">nilearn.plotting.displays.LProjector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.RProjector.html">nilearn.plotting.displays.RProjector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.BaseAxes.html">nilearn.plotting.displays.BaseAxes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.CutAxes.html">nilearn.plotting.displays.CutAxes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.GlassBrainAxes.html">nilearn.plotting.displays.GlassBrainAxes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.BaseSlicer.html">nilearn.plotting.displays.BaseSlicer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.OrthoSlicer.html">nilearn.plotting.displays.OrthoSlicer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.PlotlySurfaceFigure.html">nilearn.plotting.displays.PlotlySurfaceFigure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.TiledSlicer.html">nilearn.plotting.displays.TiledSlicer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.MosaicSlicer.html">nilearn.plotting.displays.MosaicSlicer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.XZSlicer.html">nilearn.plotting.displays.XZSlicer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.YZSlicer.html">nilearn.plotting.displays.YZSlicer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.YXSlicer.html">nilearn.plotting.displays.YXSlicer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.XSlicer.html">nilearn.plotting.displays.XSlicer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.YSlicer.html">nilearn.plotting.displays.YSlicer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.plotting.displays.ZSlicer.html">nilearn.plotting.displays.ZSlicer</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="modules/regions.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nilearn.regions</span></code>: Operating on Regions</a><input class="toctree-checkbox" id="toctree-checkbox-29" name="toctree-checkbox-29" role="switch" type="checkbox"/><label for="toctree-checkbox-29"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.regions.connected_regions.html">nilearn.regions.connected_regions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.regions.connected_label_regions.html">nilearn.regions.connected_label_regions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.regions.img_to_signals_labels.html">nilearn.regions.img_to_signals_labels</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.regions.signals_to_img_labels.html">nilearn.regions.signals_to_img_labels</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.regions.img_to_signals_maps.html">nilearn.regions.img_to_signals_maps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.regions.signals_to_img_maps.html">nilearn.regions.signals_to_img_maps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.regions.recursive_neighbor_agglomeration.html">nilearn.regions.recursive_neighbor_agglomeration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.regions.RegionExtractor.html">nilearn.regions.RegionExtractor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.regions.Parcellations.html">nilearn.regions.Parcellations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.regions.ReNA.html">nilearn.regions.ReNA</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.regions.HierarchicalKMeans.html">nilearn.regions.HierarchicalKMeans</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="modules/reporting.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nilearn.reporting</span></code>: Reporting Functions</a><input class="toctree-checkbox" id="toctree-checkbox-30" name="toctree-checkbox-30" role="switch" type="checkbox"/><label for="toctree-checkbox-30"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.reporting.HTMLReport.html">nilearn.reporting.HTMLReport</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.reporting.get_clusters_table.html">nilearn.reporting.get_clusters_table</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.reporting.make_glm_report.html">nilearn.reporting.make_glm_report</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="modules/signal.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nilearn.signal</span></code>: Preprocessing Time Series</a><input class="toctree-checkbox" id="toctree-checkbox-31" name="toctree-checkbox-31" role="switch" type="checkbox"/><label for="toctree-checkbox-31"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.signal.butterworth.html">nilearn.signal.butterworth</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.signal.clean.html">nilearn.signal.clean</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.signal.high_variance_confounds.html">nilearn.signal.high_variance_confounds</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="modules/surface.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nilearn.surface</span></code>: Manipulating Surface Data</a><input class="toctree-checkbox" id="toctree-checkbox-32" name="toctree-checkbox-32" role="switch" type="checkbox"/><label for="toctree-checkbox-32"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.surface.load_surf_data.html">nilearn.surface.load_surf_data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.surface.load_surf_mesh.html">nilearn.surface.load_surf_mesh</a></li>
+<li class="toctree-l3"><a class="reference internal" href="modules/generated/nilearn.surface.vol_to_surf.html">nilearn.surface.vol_to_surf</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maintenance.html">Maintenance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changes/whats_new.html">What’s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Team</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/nilearn/nilearn">GitHub Repository</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="contributing">
+<span id="development-process"></span><h1>Contributing<a class="headerlink" href="#contributing" title="Permalink to this heading">#</a></h1>
+<section id="code-of-conduct">
+<span id="id1"></span><h2>Code of Conduct<a class="headerlink" href="#code-of-conduct" title="Permalink to this heading">#</a></h2>
+<p>By participating in Nilearn, you agree to abide by the <a class="reference external" href="https://nipy.org/conduct.html">NIPY Code of Conduct</a></p>
+</section>
+<section id="how-to-get-help">
+<h2>How to get help?<a class="headerlink" href="#how-to-get-help" title="Permalink to this heading">#</a></h2>
+<p>If you have issues when using Nilearn, or if you have questions on how to use it, please don’t hesitate to reach out!</p>
+<p>There are currently three ways to interact with the Nilearn team: through the <a class="reference external" href="https://neurostars.org/tag/nilearn/">neurostars</a> forum, our <a class="reference external" href="https://github.com/nilearn/nilearn/">github</a> issues, and through our weekly <a class="reference external" href="https://github.com/nilearn/nilearn/issues/2882">drop-in hours</a>, usually <strong>every Wednesday from 4pm to 5pm UTC</strong>.</p>
+<p>If you have a <em>usage question</em>, that is if you need help troubleshooting scripts using Nilearn, we would appreciate it if you either ask it during the drop-in hours or create a topic on <a class="reference external" href="https://neurostars.org/tag/nilearn/">neurostars</a> with the “nilearn” tag.
+Asking questions or reporting issues is always valuable because it will help other users having the same problem. So, please don’t hold onto a burning question!</p>
+<p>We ask that you <em>don’t</em> open an issue on <a class="reference external" href="https://github.com/nilearn/nilearn/">GitHub</a> for usage questions. We use our <a class="reference external" href="https://github.com/nilearn/nilearn/">GitHub</a> issue board for bug reports, feature requests, and documentation changes only.</p>
+</section>
+<section id="how-to-help-the-project">
+<h2>How to help the project?<a class="headerlink" href="#how-to-help-the-project" title="Permalink to this heading">#</a></h2>
+<p>If you are interested in contributing to the Nilearn project, we thank you very much. Note that there are multiple ways to help us, and not all of them require writing code.</p>
+<section id="report-bugs-or-discuss-enhancement-ideas">
+<h3>Report bugs or discuss enhancement ideas<a class="headerlink" href="#report-bugs-or-discuss-enhancement-ideas" title="Permalink to this heading">#</a></h3>
+<p>We welcome open discussion around improvements—both to the documentation as well as to the code base—through our GitHub issue board!</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>If you think you have discovered a bug, please start by searching through the existing <a class="reference external" href="https://github.com/nilearn/nilearn/issues">issues</a> to make sure it has not already been reported. If the bug has not been reported yet,  create an <a class="reference external" href="https://github.com/nilearn/nilearn/issues/new/choose">new issue</a> including a <a class="reference external" href="https://stackoverflow.com/help/minimal-reproducible-example">minimal runnable example</a> to showcase it (using Nilearn data) as well as your OS and Nilearn version.</p></li>
+<li><p>If you have an idea for a new feature, check if it is in the <a class="reference internal" href="#nilearn-scope"><span class="std std-ref">Scope of the project</span></a> and feel free to open a <a class="reference external" href="https://github.com/nilearn/nilearn/issues/new/choose">new issue</a> to discuss it.</p></li>
+<li><p>If you think the documentation can be improved, please open a <a class="reference external" href="https://github.com/nilearn/nilearn/issues/new/choose">new issue</a> to discuss what you would like to change! This helps to confirm that your proposed improvements don’t overlap with any ongoing work.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="answer-questions">
+<h3>Answer questions<a class="headerlink" href="#answer-questions" title="Permalink to this heading">#</a></h3>
+<p>Another way to help the project is to answer questions on <a class="reference external" href="https://neurostars.org/tag/nilearn/">neurostars</a>, or comment on github <a class="reference external" href="https://github.com/nilearn/nilearn/issues">issues</a>.
+Some <a class="reference external" href="https://github.com/nilearn/nilearn/issues">issues</a> are used to gather user opinions on various questions, and any input from the community is valuable to us.</p>
+</section>
+<section id="review-pull-requests">
+<h3>Review Pull Requests<a class="headerlink" href="#review-pull-requests" title="Permalink to this heading">#</a></h3>
+<p>Any addition to the Nilearn’s code base has to be reviewed and approved by several people including at least two <a class="reference internal" href="authors.html#core-devs"><span class="std std-ref">Core developers</span></a>.
+This can put a heavy burden on <a class="reference internal" href="authors.html#core-devs"><span class="std std-ref">Core developers</span></a> when a lot of
+<a class="reference external" href="https://github.com/nilearn/nilearn/pulls">pull requests</a> are opened at the same time.
+We welcome help in reviewing <a class="reference external" href="https://github.com/nilearn/nilearn/pulls">pull requests</a> from any
+community member.
+We do not expect community members to be experts in all changes included in
+<a class="reference external" href="https://github.com/nilearn/nilearn/pulls">pull requests</a>, and we encourage you to concentrate on those code changes that you feel comfortable with.
+As always, more eyes on a code change means that the code is more likely to work in a wide variety of contexts!</p>
+</section>
+<section id="contribute-code">
+<h3>Contribute code<a class="headerlink" href="#contribute-code" title="Permalink to this heading">#</a></h3>
+<p>If you want to contribute code:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>For new features, please be sure to create a <a class="reference external" href="https://github.com/nilearn/nilearn/issues/new/choose">new issue</a> first, to discuss whether it can be included and its specifications.</p></li>
+<li><p>To help with known <a class="reference external" href="https://github.com/nilearn/nilearn/issues">issues</a>, please check <a class="reference external" href="https://github.com/nilearn/nilearn/labels/Good%20first%20issue">good first issues</a> to get started, <a class="reference external" href="https://github.com/nilearn/nilearn/labels/Bug">known bugs</a>, or <a class="reference external" href="https://github.com/nilearn/nilearn/labels/Enhancement">proposed enhancements</a>.</p></li>
+</ul>
+</div></blockquote>
+<p>Please see the <a class="reference internal" href="#contributing-code"><span class="std std-ref">How to contribute to nilearn</span></a> section for more detailed information, including
+instructions for  <a class="reference internal" href="#setting-up-your-environment">Setting up your environment</a> and a description of the <a class="reference internal" href="#id2">Contribution Guidelines</a>.</p>
+</section>
+</section>
+<section id="how-do-we-decide-what-code-goes-in">
+<h2>How do we decide what code goes in?<a class="headerlink" href="#how-do-we-decide-what-code-goes-in" title="Permalink to this heading">#</a></h2>
+<p>The following sections explain the <a class="reference internal" href="#nilearn-scope"><span class="std std-ref">Scope of the project</span></a> and <a class="reference internal" href="#nilearn-governance"><span class="std std-ref">Who makes decisions</span></a>, which jointly determine whether potential contributions will be accepted into the project.</p>
+<section id="scope-of-the-project">
+<span id="nilearn-scope"></span><h3>Scope of the project<a class="headerlink" href="#scope-of-the-project" title="Permalink to this heading">#</a></h3>
+<p>Nilearn is an Open-source Python package for visualizing and analyzing human
+brain MRI data.
+It provides statistical and machine-learning tools for brain mapping,
+connectivity estimation and predictive modelling.
+It brings visualization tools with instructive documentation &amp; open community.</p>
+<p>Nilearn targets ease of use, but as Python code.
+In other words, we will not add graphical user interfaces, but we want our
+code to be as easy to understand as possible, with easy prototyping and
+debugging, even for beginners in Python.</p>
+<p>We are parsimonious in the way we add features to the project, as it
+puts on weight.
+To assess new features, our main concern is their usefulness to a number of
+our users.
+To make Nilearn high-quality and sustainable we also weigh their benefits
+(i.e., new features, ease of use) with their cost (i.e., complexity of the code,
+runtime of the examples). As a rule of thumb:</p>
+<ul class="simple">
+<li><p>To be accepted, new features must be <strong>in the scope of the project</strong> and
+correspond to an <strong>established practice</strong> (typically as used in scientific
+publications).</p></li>
+<li><p>It must have a concrete use case, illustrated with a <strong>simple example</strong> in the
+Nilearn documentation to teach it easily to end-users.</p></li>
+<li><p>It must be <strong>thoroughly tested</strong>, and respect <strong>coding conventions</strong> of the
+existing codebase.</p></li>
+<li><p>Features introducing new dependencies will generally not be accepted.</p></li>
+<li><p>Downloaders for new atlases are welcome if they comes with an example.</p></li>
+<li><p>Downloaders for new datasets are usually discouraged. We will consider adding
+fetchers only for light datasets which are needed to demo and teach features.</p></li>
+</ul>
+<p>Exhaustive criteria used in the review process are detailed in the <strong>contribution
+guide below</strong>.
+Be sure to read and follow them so that your code can be accepted quickly.</p>
+</section>
+<section id="who-makes-decisions">
+<span id="nilearn-governance"></span><h3>Who makes decisions<a class="headerlink" href="#who-makes-decisions" title="Permalink to this heading">#</a></h3>
+<p>We strongly aim to be a community oriented project where decisions are
+made based on consensus according to the criteria described above.
+Discussions are public, held on <a class="reference external" href="https://github.com/nilearn/nilearn/issues">issues</a> and
+<a class="reference external" href="https://github.com/nilearn/nilearn/pulls">pull requests</a> in Github.
+All modifications of the codebase are ultimately checked during a reviewing
+process, where maintainers or contributors make sure they respect the
+<a class="reference internal" href="#contribution-guidelines"><span class="std std-ref">Contribution Guidelines</span></a>.
+To be merged, a pull request usually needs to be accepted by two maintainers.
+In case a consensus does not emerge easily, the decisions are made by the
+<a class="reference internal" href="authors.html#core-devs"><span class="std std-ref">Core developers</span></a>, i.e., people with write access to the repository, as
+listed <a class="reference internal" href="authors.html#core-devs"><span class="std std-ref">here</span></a>.</p>
+</section>
+</section>
+<section id="how-to-contribute-to-nilearn">
+<span id="contributing-code"></span><h2>How to contribute to nilearn<a class="headerlink" href="#how-to-contribute-to-nilearn" title="Permalink to this heading">#</a></h2>
+<p>This project, hosted on <a class="reference external" href="https://github.com/nilearn/nilearn/">https://github.com/nilearn/nilearn/</a>, is a community
+effort, and everyone is welcome to contribute.
+We value very much your feedback and opinion on features that should be
+improved or added.
+All discussions are public and held on relevant <a class="reference external" href="https://github.com/nilearn/nilearn/issues">issues</a> or
+<a class="reference external" href="https://github.com/nilearn/nilearn/pulls">pull requests</a>.
+To discuss your matter, please comment on a relevant
+<a class="reference external" href="https://github.com/nilearn/nilearn/issues">issue</a> or open a new one.</p>
+<p>The best way to contribute and to help the project is to start working on known
+<a class="reference external" href="https://github.com/nilearn/nilearn/issues">issues</a> such as
+<a class="reference external" href="https://github.com/nilearn/nilearn/labels/Good%20first%20issue">good first issues</a>,
+<a class="reference external" href="https://github.com/nilearn/nilearn/labels/Bug">known bugs</a> or
+<a class="reference external" href="https://github.com/nilearn/nilearn/labels/Enhancement">proposed enhancements</a>.
+If an issue does not already exist for a potential contribution, we ask that
+you first open a <a class="reference external" href="https://github.com/nilearn/nilearn/issues/new/choose">new issue</a> before sending a
+<a class="reference internal" href="maintenance.html#pull-request"><span class="std std-ref">Pull Requests</span></a> to discuss scope and potential design choices in advance.</p>
+<section id="contribution-guidelines">
+<span id="id2"></span><h3>Contribution Guidelines<a class="headerlink" href="#contribution-guidelines" title="Permalink to this heading">#</a></h3>
+<p>When modifying the codebase, we ask every contributor to respect common
+guidelines.
+Those are inspired from <a class="reference external" href="https://scikit-learn.org/stable/developers/contributing.html#contributing-code">scikit-learn</a>
+and ensure Nilearn remains simple to understand, efficient and maintainable.
+For example, code needs to be tested and those tests need to run quickly in order
+not to burden the development process.
+To keep continuous integration efficient with our limited infrastructure,
+running all the examples must lead to downloading a limited amount of data
+(gigabytes) and execute in a reasonable amount of time (less than an hour).
+Those guidelines will hence be enforced during the reviewing process.
+The section <a class="reference internal" href="#setting-up-your-environment">Setting up your environment</a> will help you to quickly get familiar
+with the tools we use for development and deployment.</p>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 17%" />
+<col style="width: 60%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p>Which PR ?</p></th>
+<th class="head"><p>Guidelines</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference internal" href="#pr-structure">PR Structure</a></p></td>
+<td><p>Any</p></td>
+<td><ul class="simple">
+<li><p>Clear name</p></li>
+<li><p>Link issue through mention :”Closes #XXXX”</p></li>
+<li><p>Clearly outline goals and changes proposed</p></li>
+<li><p>Doesn’t include “unrelated” code change</p></li>
+<li><p>Add entry in “doc/changes/latest.rst”</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#coding-style">Coding Style</a></p></td>
+<td><p>Any</p></td>
+<td><ul class="simple">
+<li><p>Variables, functions, arguments have clear names</p></li>
+<li><p>Easy to read, <a class="reference external" href="https://www.python.org/dev/peps/pep-0008/">PEP8</a> compliant</p></li>
+<li><p>Public functions have docstring (<a class="reference external" href="https://numpydoc.readthedocs.io/en/latest/format.html">numpydoc</a> format)</p></li>
+<li><p>Low redundancy</p></li>
+<li><p>No new dependency</p></li>
+<li><p>Backward compatibility</p></li>
+<li><p>All internal imports are absolute, not relative</p></li>
+<li><p>Impacted docstrings have versionadded and/or
+versionchanged directives as needed.
+These should use the current dev version.</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#tests">Tests</a></p></td>
+<td><ul class="simple">
+<li><p>Bugfixes</p></li>
+<li><p>New features</p></li>
+</ul>
+</td>
+<td><ul class="simple">
+<li><p>Test type is adapted to function behavior</p></li>
+<li><p>Tests pass continuous integration</p></li>
+<li><p>Coverage doesn’t decrease</p></li>
+<li><p>Fast, using small mocked data</p></li>
+<li><p>Atomic (one per function) and seeded</p></li>
+<li><p>For Bugfixes: non-regression test</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>Examples</p></td>
+<td><p>New features</p></td>
+<td><ul class="simple">
+<li><p>Clearly showcase benefits</p></li>
+<li><p>Run in a few seconds</p></li>
+<li><p>Use light data (generated or from Nilearn)</p></li>
+<li><p>Renders well after build</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#documentation">Documentation</a></p></td>
+<td><p>Any</p></td>
+<td><ul class="simple">
+<li><p>Simple and didactic</p></li>
+<li><p>Links to relevant examples</p></li>
+<li><p>Renders well after build</p></li>
+<li><p>Doesn’t include code</p></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="pr-structure">
+<h3>PR Structure<a class="headerlink" href="#pr-structure" title="Permalink to this heading">#</a></h3>
+<p>A new pull request must have a clear scope, conveyed through its name, a
+reference to the issue it targets (through the exact mention “Closes #XXXX”),
+and a synthetic summary of its goals and main steps.
+When working on big contributions, we advise contributors to split them into
+several PRs when possible.
+This has the benefit of making code changes clearer, making PRs easier to review,
+and overall smoothening the whole process.
+No changes unrelated to the PR should be included.</p>
+<p>When relevant, PR names should also include tags if they fall in various
+categories.
+When opening a PR, the authors should include the [WIP] tag in its name, or use
+github draft mode. When ready for review, they should switch the tag to [MRG] or
+can switch it back to normal mode.
+Other tags can describe the PR content : [FIX] for a bugfix, [DOC] for a
+change in documentation or examples, [ENH] for a new feature and [MAINT] for
+maintenance changes.</p>
+</section>
+<section id="changelog">
+<h3>Changelog<a class="headerlink" href="#changelog" title="Permalink to this heading">#</a></h3>
+<p>Changelog entries in <code class="docutils literal notranslate"><span class="pre">doc/changes/latest.rst</span></code> should adhere to the following conventions:</p>
+<ul class="simple">
+<li><p>Entry in the appropriate category</p></li>
+<li><p>Single line per entry</p></li>
+<li><p>Finish with a link to the PR and the author’s profile</p></li>
+<li><p>New contributors to add their profile to doc/changes/names.rst</p></li>
+</ul>
+<p>Example entry:</p>
+<div class="highlight-rst notranslate"><div class="highlight"><pre><span></span><span class="m">-</span> Fix off-by-one error when setting ticks in <span class="na">:func:</span><span class="nv">`~plotting.plot_surf`</span> (<span class="na">:gh:</span><span class="nv">`3105`</span> by <span class="s">`Dimitri Papadopoulos Orfanos`_</span>).
+</pre></div>
+</div>
+</section>
+<section id="coding-style">
+<h3>Coding Style<a class="headerlink" href="#coding-style" title="Permalink to this heading">#</a></h3>
+<p>The nilearn codebase follows <a class="reference external" href="https://www.python.org/dev/peps/pep-0008/">PEP8</a> styling.
+The main conventions we enforce are :</p>
+<ul class="simple">
+<li><p>line length &lt; 80</p></li>
+<li><p>spaces around operators</p></li>
+<li><p>meaningful variable names</p></li>
+<li><p>function names are underscore separated (e.g., <code class="docutils literal notranslate"><span class="pre">a_nice_function</span></code>) and as short as possible</p></li>
+<li><p>public functions exposed in their parent module’s init file</p></li>
+<li><p>private function names preceded with a “_” and very explicit</p></li>
+<li><p>classes in CamelCase</p></li>
+<li><p>2 empty lines between functions or classes</p></li>
+</ul>
+<p>You can check that any code you may have edited follows these conventions
+by running <a class="reference external" href="https://flake8.pycqa.org/en/latest/user/invocation.html#invoking-flake8">flake8</a>.</p>
+<p>Additionally, we recommend using <a class="reference external" href="https://black.readthedocs.io/en/stable/getting_started.html#basic-usage">Black</a>
+to format your code.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>We are gradually transitioning to use <a class="reference external" href="https://black.readthedocs.io/en/stable/getting_started.html#basic-usage">Black</a>
+to format the codebase.
+Only certain modules have been formatted so far,
+and running <cite>black</cite> may not affect the files you are working on,
+because of how black is currently configured.
+See <a class="reference external" href="https://github.com/nilearn/nilearn/issues/2528">issue #2528</a>
+for more details.</p>
+</div>
+<p>Each function and class must come with a “docstring” at the top of the function code,
+using <a class="reference external" href="https://numpydoc.readthedocs.io/en/latest/format.html">numpydoc</a> formatting.
+The docstring must summarize what the function does and document every parameter.</p>
+<p>Additionally, we consider it best practice to write modular functions;
+i.e., functions should preferably be relatively short and do <em>one</em> thing.
+This is also useful for writing unit tests.</p>
+<p>Writing small functions is not always possible, and we do not recommend trying to reorganize larger,
+but well-tested, older functions in the codebase, unless there is a strong reason to do so (e.g., when adding a new feature).</p>
+</section>
+<section id="pre-commit">
+<h3>Pre-commit<a class="headerlink" href="#pre-commit" title="Permalink to this heading">#</a></h3>
+<p>We use <a class="reference external" href="https://pre-commit.com/">pre-commit</a>
+to run a set of linters and autoformatters on the codebase.</p>
+<p>To install pre-commit, run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install pre-commit
+</pre></div>
+</div>
+<p>Then run the following to install the pre-commit hooks:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pre-commit install
+</pre></div>
+</div>
+<p>Pre-commit will then run all those hooks on the files you have staged for commit.
+Note that if some of those hooks fail you may have to edit some files and stage them again.</p>
+</section>
+<section id="tests">
+<h3>Tests<a class="headerlink" href="#tests" title="Permalink to this heading">#</a></h3>
+<p>When fixing a bug, the first step is to write a minimal test that fails because
+of it, and then write the bugfix to make this test pass.
+For new code you should have roughly one test function per function covering
+every line and testing the logic of the function.
+They should run on small mocked data, cover a representative range of parameters.</p>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>It is easier to write good unit tests for short, self-contained functions.
+Try to keep this in mind when you write new functions.
+For more information about this coding approach,
+see <a class="reference external" href="https://en.wikipedia.org/wiki/Test-driven_development">test-driven development</a>.</p>
+</div>
+<p>Tests must be seeded to avoid random failures.
+For objects using random seeds (e.g. scikit-learn estimators), pass either
+a  <cite>np.random.RandomState</cite> or an <cite>int</cite> as the seed.
+When your test use random numbers,  those must be generated through:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">my_number</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>To check your changes worked and didn’t break anything run <cite>pytest nilearn</cite>.
+To do quicker checks it’s possible to run only a subset of tests:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pytest</span> <span class="o">-</span><span class="n">v</span> <span class="n">test_module</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</section>
+<section id="documentation">
+<h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this heading">#</a></h3>
+<p>Documentation must be understandable by people from different backgrounds.
+The “narrative” documentation should be an introduction to the concepts of
+the library.
+It includes very little code and should first help the user figure out which
+parts of the library he needs and then how to use it.
+It must be full of links, of easily-understandable titles, colorful boxes and
+figures.</p>
+<p>Examples take a hands-on approach focused on a generic usecase from which users
+will be able to adapt code to solve their own problems.
+They include plain text for explanations, python code and its output and
+most importantly figures to depict its results.
+Each example should take only a few seconds to run.</p>
+<p>To build our documentation, we are using
+<a class="reference external" href="https://www.sphinx-doc.org/en/master/usage/quickstart.html">sphinx</a> for the
+main documentation and
+<a class="reference external" href="https://sphinx-gallery.github.io/stable/index.html">sphinx-gallery</a> for the
+example tutorials. If you want to work on those, check out next section to
+learn how to use those tools to build documentation.</p>
+</section>
+</section>
+<section id="setting-up-your-environment">
+<span id="git-repo"></span><h2>Setting up your environment<a class="headerlink" href="#setting-up-your-environment" title="Permalink to this heading">#</a></h2>
+<section id="installing">
+<h3>Installing<a class="headerlink" href="#installing" title="Permalink to this heading">#</a></h3>
+<p>Here are the key steps you need to go through to copy the repo before contributing:</p>
+<ol class="arabic">
+<li><p>fork the repo from github (fork button in the top right corner of our <a class="reference external" href="https://github.com/nilearn/nilearn/">main github page</a>) and clone your fork locally:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="p">:</span><span class="o">&lt;</span><span class="n">your_username</span><span class="o">&gt;/</span><span class="n">nilearn</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+</li>
+<li><p>(optional but highly recommended) set up a virtual environment to work in using whichever environment management tool you’re used to and activate it. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">venv</span> <span class="n">nilearn</span>
+<span class="n">source</span> <span class="n">nilearn</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">nilearn</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">nilearn</span>
+</pre></div>
+</div>
+</li>
+<li><p>install the forked version of <cite>nilearn</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="s1">&#39;.[dev]&#39;</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p>This installs your local version of Nilearn, along with all dependencies necessary for developers (hence the <code class="docutils literal notranslate"><span class="pre">[dev]</span></code> tag).
+For more information about the dependency installation options, see <code class="docutils literal notranslate"><span class="pre">setup.cfg</span></code>.
+The installed version will also reflect any changes you make to your code.</p>
+<ol class="arabic" start="4">
+<li><p>check that all tests pass with (this can take a while):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pytest</span> <span class="n">nilearn</span>
+</pre></div>
+</div>
+</li>
+<li><p>(optional) install <a class="reference external" href="https://pre-commit.com/#usage">pre-commit</a> hooks
+to run the linter and other checks before each commit:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pre</span><span class="o">-</span><span class="n">commit</span> <span class="n">install</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<section id="id4">
+<h3>Contributing<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h3>
+<p>Here are the key steps you need to go through to contribute code to <cite>nilearn</cite>:</p>
+<ol class="arabic">
+<li><p>open or join an already existing issue explaining what you want to work on</p></li>
+<li><p>on your fork, create a new branch from main:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="n">your_branch</span>
+</pre></div>
+</div>
+</li>
+<li><p>implement changes, lint and format</p></li>
+</ol>
+<div class="admonition-recommendation admonition">
+<p class="admonition-title">Recommendation</p>
+<p>To lint your code and verify PEP8 compliance, you can run
+<a class="reference external" href="https://flake8.pycqa.org/en/latest/">flake8</a> locally on the
+changes you have made.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>flake8 &lt;path_to_edited_file&gt;
+</pre></div>
+</div>
+<p>To automatically format your code, you can run
+<a class="reference external" href="https://black.readthedocs.io/en/stable/getting_started.html#basic-usage">Black</a>
+locally on the changes you have made.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>black &lt;path_to_edited_file&gt;
+</pre></div>
+</div>
+<p>Note that if you installed pre-commit and the pre-commit hooks,
+those 2 commands will be run automatically before each commit.</p>
+</div>
+<ol class="arabic" start="4">
+<li><p>commit your changes on this branch (don’t forget to write tests!)</p></li>
+<li><p>run the tests locally (to go faster, only run tests which are relevant to what
+you work on with, for example):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pytest</span> <span class="o">-</span><span class="n">v</span> <span class="n">nilearn</span><span class="o">/</span><span class="n">plotting</span><span class="o">/</span><span class="n">tests</span><span class="o">/</span><span class="n">test_surf_plotting</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</li>
+<li><p>push your changes to your online fork:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">push</span>
+</pre></div>
+</div>
+</li>
+<li><p>in github, open a pull request from your online fork to the main repo
+(most likely from <cite>your_fork:your_branch</cite> to <cite>nilearn:main</cite>).</p></li>
+<li><p>check that all continuous integration tests pass</p></li>
+</ol>
+<p>For more details about the Fork Clone Push workflows, read <a class="reference external" href="https://guides.github.com/activities/forking/">here</a>.</p>
+</section>
+<section id="building-documentation">
+<h3>Building documentation<a class="headerlink" href="#building-documentation" title="Permalink to this heading">#</a></h3>
+<p>If you wish to build documentation:</p>
+<ol class="arabic">
+<li><p>First, ensure that you have installed sphinx and sphinx-gallery. When in your
+fork top folder, you can install the required packages using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="s1">&#39;.[doc]&#39;</span>
+</pre></div>
+</div>
+</li>
+<li><p>Then go to <code class="docutils literal notranslate"><span class="pre">nilearn/examples</span></code> or <code class="docutils literal notranslate"><span class="pre">nilearn/doc</span></code> and make needed changes
+using <a class="reference external" href="https://www.sphinx-doc.org/en/2.0/usage/restructuredtext/basics.html">reStructuredText files</a></p></li>
+<li><p>You can now go to <cite>nilearn/doc</cite> and build the examples locally:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">html</span><span class="o">-</span><span class="n">strict</span>
+</pre></div>
+</div>
+<p>or, if you do not have make install (for instance under Windows):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">sphinx</span> <span class="o">-</span><span class="n">b</span> <span class="n">html</span> <span class="o">-</span><span class="n">d</span> <span class="n">_build</span><span class="o">/</span><span class="n">doctrees</span> <span class="o">.</span> <span class="n">_build</span><span class="o">/</span><span class="n">html</span>
+</pre></div>
+</div>
+<p>if you don’t need the plots, a quicker option is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">html</span><span class="o">-</span><span class="n">noplot</span>
+</pre></div>
+</div>
+</li>
+<li><p>Visually review the output in <code class="docutils literal notranslate"><span class="pre">nilearn/doc/_build/html/auto_examples/</span></code>.
+If all looks well and there were no errors, commit and push the changes.</p></li>
+<li><p>You can now open a Pull Request from Nilearn’s Pull Request page.</p></li>
+<li><p>Request the CI builds the full documentation from your branch:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">commit</span> <span class="o">--</span><span class="n">allow</span><span class="o">-</span><span class="n">empty</span> <span class="o">-</span><span class="n">m</span> <span class="s2">&quot;[full doc] request full build&quot;</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>When generating documentation locally, you can build only specific files
+to reduce building time. To do so, use the <code class="docutils literal notranslate"><span class="pre">filename_pattern</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">sphinx</span> <span class="o">-</span><span class="n">D</span> <span class="n">sphinx_gallery_conf</span><span class="o">.</span><span class="n">filename_pattern</span><span class="o">=</span>\\
+<span class="n">plot_decoding_tutorial</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">b</span> <span class="n">html</span> <span class="o">-</span><span class="n">d</span> <span class="n">_build</span><span class="o">/</span><span class="n">doctrees</span> <span class="o">.</span> <span class="n">_build</span><span class="o">/</span><span class="n">html</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="additional-cases">
+<h2>Additional cases<a class="headerlink" href="#additional-cases" title="Permalink to this heading">#</a></h2>
+<section id="how-to-contribute-an-atlas">
+<h3>How to contribute an atlas<a class="headerlink" href="#how-to-contribute-an-atlas" title="Permalink to this heading">#</a></h3>
+<p>We want atlases in nilearn to be internally consistent. Specifically,
+your atlas object should have three attributes (as with the existing
+atlases):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">description</span></code> (bytes): A text description of the atlas. This should be
+brief but thorough, describing the source (paper), relevant information
+related to its construction (modality, dataset, method), and, if there is
+more than one map, a description of each map.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">labels</span></code> (list): a list of string labels corresponding to each atlas
+label, in the same (numerical) order as the atlas labels</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">maps</span></code> (list or string): the path to the nifti image, or a list of paths</p></li>
+</ul>
+<p>In addition, the atlas will need to be called by a fetcher. For example, see <a class="reference external" href="https://github.com/nilearn/nilearn/blob/main/nilearn/datasets/atlas.py">here</a>.</p>
+<p>Finally, as with other features, please provide a test for your atlas.
+Examples can be found <a class="reference external" href="https://github.com/nilearn/nilearn/blob/main/nilearn/datasets/tests/test_atlas.py">here</a>.</p>
+</section>
+<section id="how-to-contribute-a-dataset-fetcher">
+<h3>How to contribute a dataset fetcher<a class="headerlink" href="#how-to-contribute-a-dataset-fetcher" title="Permalink to this heading">#</a></h3>
+<p>The <a class="reference internal" href="modules/datasets.html#module-nilearn.datasets" title="nilearn.datasets"><code class="xref py py-mod docutils literal notranslate"><span class="pre">nilearn.datasets</span></code></a> module provides functions to download some
+neuroimaging datasets, such as <a class="reference internal" href="modules/generated/nilearn.datasets.fetch_haxby.html#nilearn.datasets.fetch_haxby" title="nilearn.datasets.fetch_haxby"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.datasets.fetch_haxby</span></code></a> or
+<a class="reference internal" href="modules/generated/nilearn.datasets.fetch_atlas_harvard_oxford.html#nilearn.datasets.fetch_atlas_harvard_oxford" title="nilearn.datasets.fetch_atlas_harvard_oxford"><code class="xref py py-func docutils literal notranslate"><span class="pre">nilearn.datasets.fetch_atlas_harvard_oxford</span></code></a>. The goal is not to provide a comprehensive
+collection of downloaders for the most widely used datasets, and this would be
+outside the scope of this project. Rather, this module provides data downloading utilities that are
+required to showcase nilearn features in the example gallery.</p>
+<p>Downloading data takes time and large datasets slow down the build of the
+example gallery. Moreover, downloads can fail for reasons we do not control,
+such as a web service that is temporarily unavailable. This is frustrating for
+users and a major issue for continuous integration (new code cannot be merged
+unless the examples run successfully on the CI infrastructure). Finally,
+datasets or the APIs that provide them sometimes change, in which case the
+downloader needs to be adapted.</p>
+<p>As for any contributed feature, before starting working on a new downloader,
+we recommend opening a <a class="reference external" href="https://github.com/nilearn/nilearn/issues/new/choose">new issue</a> to discuss
+whether it is necessary or if existing downloaders could be used instead.</p>
+<p>To add a new fetcher, <code class="docutils literal notranslate"><span class="pre">nilearn.datasets.utils</span></code> provides some helper functions,
+such as <code class="docutils literal notranslate"><span class="pre">_get_dataset_dir</span></code> to find a directory where the dataset is or will be
+stored according to the user’s configuration, or <code class="docutils literal notranslate"><span class="pre">_fetch_files</span></code> to load files
+from the disk or download them if they are missing.</p>
+<p>The new fetcher, as any other function, also needs to be tested (in the relevant
+submodule of <code class="docutils literal notranslate"><span class="pre">nilearn.datasets.tests</span></code>). When the tests run, the fetcher does
+not have access to the network and will not actually download files. This is to
+avoid spurious failures due to unavailable network or servers, and to avoid
+slowing down the tests with long downloads.
+The functions from the standard library and the <code class="docutils literal notranslate"><span class="pre">requests</span></code> library that
+nilearn uses to download files are mocked: they are replaced with dummy
+functions that return fake data.</p>
+<p>Exactly what fake data is returned can be configured through the object
+returned by the <code class="docutils literal notranslate"><span class="pre">request_mocker</span></code> pytest fixture, defined in
+<code class="docutils literal notranslate"><span class="pre">nilearn.datasets._testing</span></code>. The docstrings of this module and the <code class="docutils literal notranslate"><span class="pre">Sender</span></code>
+class it contains provide information on how to write a test using this fixture.
+Existing tests can also serve as examples.</p>
+</section>
+</section>
+<section id="maintenance">
+<h2>Maintenance<a class="headerlink" href="#maintenance" title="Permalink to this heading">#</a></h2>
+<p>More information about the project organization, conventions, and maintenance
+process can be found there : <a class="reference internal" href="maintenance.html#maintenance-process"><span class="std std-ref">Maintenance</span></a>.</p>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="maintenance.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Maintenance</div>
+              </div>
+              <svg><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="glossary.html">
+              <svg><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Glossary</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; The nilearn developers 2010-2022
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            Contents
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Contributing</a><ul>
+<li><a class="reference internal" href="#code-of-conduct">Code of Conduct</a></li>
+<li><a class="reference internal" href="#how-to-get-help">How to get help?</a></li>
+<li><a class="reference internal" href="#how-to-help-the-project">How to help the project?</a><ul>
+<li><a class="reference internal" href="#report-bugs-or-discuss-enhancement-ideas">Report bugs or discuss enhancement ideas</a></li>
+<li><a class="reference internal" href="#answer-questions">Answer questions</a></li>
+<li><a class="reference internal" href="#review-pull-requests">Review Pull Requests</a></li>
+<li><a class="reference internal" href="#contribute-code">Contribute code</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#how-do-we-decide-what-code-goes-in">How do we decide what code goes in?</a><ul>
+<li><a class="reference internal" href="#scope-of-the-project">Scope of the project</a></li>
+<li><a class="reference internal" href="#who-makes-decisions">Who makes decisions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#how-to-contribute-to-nilearn">How to contribute to nilearn</a><ul>
+<li><a class="reference internal" href="#contribution-guidelines">Contribution Guidelines</a></li>
+<li><a class="reference internal" href="#pr-structure">PR Structure</a></li>
+<li><a class="reference internal" href="#changelog">Changelog</a></li>
+<li><a class="reference internal" href="#coding-style">Coding Style</a></li>
+<li><a class="reference internal" href="#pre-commit">Pre-commit</a></li>
+<li><a class="reference internal" href="#tests">Tests</a></li>
+<li><a class="reference internal" href="#documentation">Documentation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#setting-up-your-environment">Setting up your environment</a><ul>
+<li><a class="reference internal" href="#installing">Installing</a></li>
+<li><a class="reference internal" href="#id4">Contributing</a></li>
+<li><a class="reference internal" href="#building-documentation">Building documentation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#additional-cases">Additional cases</a><ul>
+<li><a class="reference internal" href="#how-to-contribute-an-atlas">How to contribute an atlas</a></li>
+<li><a class="reference internal" href="#how-to-contribute-a-dataset-fetcher">How to contribute a dataset fetcher</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#maintenance">Maintenance</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/scripts/furo.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script src="_static/design-tabs.js"></script>
+    </body>
+</html>

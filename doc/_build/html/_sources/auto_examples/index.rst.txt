@@ -1,0 +1,1778 @@
+:orphan:
+
+########
+Examples
+########
+
+.. warning::
+
+    If you want to run the examples, make sure you execute them in a directory
+    where you have write permissions, or you copy the examples into such a
+    directory. If you install nilearn manually, make sure you have followed
+    :ref:`the instructions <installation>`.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+
+.. raw:: html
+
+    </div>
+
+
+===============
+Basic tutorials
+===============
+
+Introductory examples that teach how to use nilearn.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="A simple example of basic Python numerics and how to plot it.">
+
+.. only:: html
+
+  .. image:: /auto_examples/00_tutorials/images/thumb/sphx_glr_plot_python_101_thumb.png
+    :alt: Basic numerics and plotting with Python
+
+  :ref:`sphx_glr_auto_examples_00_tutorials_plot_python_101.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Basic numerics and plotting with Python</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="A simple example showing how to load an existing Nifti file and use basic nilearn functionaliti...">
+
+.. only:: html
+
+  .. image:: /auto_examples/00_tutorials/images/thumb/sphx_glr_plot_nilearn_101_thumb.png
+    :alt: Basic nilearn example: manipulating and looking at data
+
+  :ref:`sphx_glr_auto_examples_00_tutorials_plot_nilearn_101.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Basic nilearn example: manipulating and looking at data</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Here we discover how to work with 3D and 4D niimgs.">
+
+.. only:: html
+
+  .. image:: /auto_examples/00_tutorials/images/thumb/sphx_glr_plot_3d_and_4d_niimg_thumb.png
+    :alt: 3D and 4D niimgs: handling and visualizing
+
+  :ref:`sphx_glr_auto_examples_00_tutorials_plot_3d_and_4d_niimg.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">3D and 4D niimgs: handling and visualizing</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Here is a simple tutorial on decoding with nilearn. It reproduces the Haxby 2001 study on a fac...">
+
+.. only:: html
+
+  .. image:: /auto_examples/00_tutorials/images/thumb/sphx_glr_plot_decoding_tutorial_thumb.png
+    :alt: A introduction tutorial to fMRI decoding
+
+  :ref:`sphx_glr_auto_examples_00_tutorials_plot_decoding_tutorial.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">A introduction tutorial to fMRI decoding</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="In this tutorial, we use a General Linear Model (:term:`GLM`) to compare the fMRI signal during...">
+
+.. only:: html
+
+  .. image:: /auto_examples/00_tutorials/images/thumb/sphx_glr_plot_single_subject_single_run_thumb.png
+    :alt: Intro to GLM Analysis: a single-session, single-subject fMRI dataset
+
+  :ref:`sphx_glr_auto_examples_00_tutorials_plot_single_subject_single_run.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Intro to GLM Analysis: a single-session, single-subject fMRI dataset</div>
+    </div>
+
+
+.. raw:: html
+
+    </div>
+
+=============================
+Visualization of brain images
+=============================
+
+See :ref:`plotting` for more details.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="See plotting for more plotting functionalities.">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_demo_glass_brain_thumb.png
+    :alt: Glass brain plotting in nilearn
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_demo_glass_brain.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Glass brain plotting in nilearn</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to fetch network matrices data from HCP beta-release of the Functional C...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_visualize_megatrawls_netmats_thumb.png
+    :alt: Visualizing Megatrawls Network Matrices from Human Connectome Project
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_visualize_megatrawls_netmats.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Visualizing Megatrawls Network Matrices from Human Connectome Project</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Plot the regions of a reference atlas (Harvard-Oxford and Juelich atlases).">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_atlas_thumb.png
+    :alt: Basic Atlas plotting
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_atlas.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Basic Atlas plotting</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to download and fetch brain parcellations of multiple networks using nil...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_multiscale_parcellations_thumb.png
+    :alt: Visualizing multiscale functional brain parcellations
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_multiscale_parcellations.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Visualizing multiscale functional brain parcellations</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Visualize HCP connectome workbench color maps shipped with Nilearn which can be used for plotti...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_colormaps_thumb.png
+    :alt: Matplotlib colormaps in Nilearn
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_colormaps.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Matplotlib colormaps in Nilearn</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Visualizing a probabilistic atlas requires visualizing the different maps that compose it.">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_overlay_thumb.png
+    :alt: Visualizing a probabilistic atlas: the default mode in the MSDL atlas
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_overlay.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Visualizing a probabilistic atlas: the default mode in the MSDL atlas</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The dim argument controls the contrast of the background.">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_dim_plotting_thumb.png
+    :alt: Controlling the contrast of the background when plotting
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_dim_plotting.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Controlling the contrast of the background when plotting</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Simple example to show Nifti data visualization.">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_visualization_thumb.png
+    :alt: NeuroImaging volumes visualization
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_visualization.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">NeuroImaging volumes visualization</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="A common quality control step for functional MRI data is to visualize the data over time in a c...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_carpet_thumb.png
+    :alt: Visualizing global patterns with a carpet plot
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_carpet.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Visualizing global patterns with a carpet plot</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Small script to plot the masks of the Haxby dataset.">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_haxby_masks_thumb.png
+    :alt: Plot Haxby masks
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_haxby_masks.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Plot Haxby masks</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="In nilearn, nilearn.surface.vol_to_surf allows us to measure values of a 3d volume at the nodes...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_surface_projection_strategies_thumb.png
+    :alt: Technical point: Illustration of the volume to surface sampling schemes
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_surface_projection_strategies.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Technical point: Illustration of the volume to surface sampling schemes</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Nilearn comes with a set of plotting functions for easy visualization of Nifti-like images such...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_demo_plotting_thumb.png
+    :alt: Plotting tools in nilearn
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_demo_plotting.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Plotting tools in nilearn</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to visualize probabilistic atlases made of 4D images. There are 3 differ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_prob_atlas_thumb.png
+    :alt: Visualizing 4D probabilistic atlas maps
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_prob_atlas.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Visualizing 4D probabilistic atlas maps</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The dataset that is a subset of the enhanced NKI Rockland sample (http://fcon_1000.projects.nit...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_surf_stat_map_thumb.png
+    :alt: Seed-based connectivity on the surface
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Seed-based connectivity on the surface</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The Destrieux parcellation (Destrieux et al, 2010) in fsaverage5 space as distributed with Free...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_surf_atlas_thumb.png
+    :alt: Loading and plotting of a cortical surface atlas
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_surf_atlas.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Loading and plotting of a cortical surface atlas</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="In this example, we will project a 3D statistical map onto a cortical mesh using vol_to_surf, d...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_3d_map_to_surface_projection_thumb.png
+    :alt: Making a surface plot of a 3D statistical map
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_3d_map_to_surface_projection.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Making a surface plot of a 3D statistical map</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The first part of this example goes through different options of the plot_glass_brain function ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_demo_glass_brain_extensive_thumb.png
+    :alt: Glass brain plotting in nilearn (all options)
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_demo_glass_brain_extensive.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Glass brain plotting in nilearn (all options)</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="In this example, we show how to use some plotting options available with plotting functions of ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_demo_more_plotting_thumb.png
+    :alt: More plotting tools from nilearn
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_demo_more_plotting.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">More plotting tools from nilearn</div>
+    </div>
+
+
+.. raw:: html
+
+    </div>
+
+=========================================
+Decoding and predicting from brain images
+=========================================
+
+See :ref:`decoding` for more details.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="In this script we plot an overview of the stimuli used in &quot;Distributed and Overlapping Represen...">
+
+.. only:: html
+
+  .. image:: /auto_examples/02_decoding/images/thumb/sphx_glr_plot_haxby_stimuli_thumb.png
+    :alt: Show stimuli of Haxby et al. dataset
+
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_stimuli.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Show stimuli of Haxby et al. dataset</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="In this example, we use fast ensembling of regularized models (FREM) to solve a regression prob...">
+
+.. only:: html
+
+  .. image:: /auto_examples/02_decoding/images/thumb/sphx_glr_plot_mixed_gambles_frem_thumb.png
+    :alt: FREM on Jimura et al "mixed gambles" dataset.
+
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_mixed_gambles_frem.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">FREM on Jimura et al "mixed gambles" dataset.</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example uses fast ensembling of regularized models (FREM) to decode a face vs house discri...">
+
+.. only:: html
+
+  .. image:: /auto_examples/02_decoding/images/thumb/sphx_glr_plot_haxby_frem_thumb.png
+    :alt: Decoding with FREM: face vs house object recognition
+
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Decoding with FREM: face vs house object recognition</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Predicting age from gray-matter concentration maps from OASIS dataset. Note that age is a conti...">
+
+.. only:: html
+
+  .. image:: /auto_examples/02_decoding/images/thumb/sphx_glr_plot_oasis_vbm_space_net_thumb.png
+    :alt: Voxel-Based Morphometry on Oasis dataset with Space-Net prior
+
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_oasis_vbm_space_net.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Voxel-Based Morphometry on Oasis dataset with Space-Net prior</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example does a simple but efficient decoding on the Haxby dataset: using a feature selecti...">
+
+.. only:: html
+
+  .. image:: /auto_examples/02_decoding/images/thumb/sphx_glr_plot_haxby_anova_svm_thumb.png
+    :alt: Decoding with ANOVA + SVM: face vs house in the Haxby dataset
+
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Decoding with ANOVA + SVM: face vs house in the Haxby dataset</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This is a demo for surface-based searchlight decoding, as described in: Chen, Y., Namburi, P., ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/02_decoding/images/thumb/sphx_glr_plot_haxby_searchlight_surface_thumb.png
+    :alt: Cortical surface-based searchlight decoding
+
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight_surface.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Cortical surface-based searchlight decoding</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="We compare one vs all and one vs one multi-class strategies: the overall cross-validated accura...">
+
+.. only:: html
+
+  .. image:: /auto_examples/02_decoding/images/thumb/sphx_glr_plot_haxby_multiclass_thumb.png
+    :alt: The haxby dataset: different multi-class strategies
+
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_multiclass.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">The haxby dataset: different multi-class strategies</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Searchlight analysis requires fitting a classifier a large amount of times. As a result, it is ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/02_decoding/images/thumb/sphx_glr_plot_haxby_searchlight_thumb.png
+    :alt: Searchlight analysis of face vs house recognition
+
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Searchlight analysis of face vs house recognition</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Full step-by-step example of fitting a GLM to perform a decoding experiment. We use the data fr...">
+
+.. only:: html
+
+  .. image:: /auto_examples/02_decoding/images/thumb/sphx_glr_plot_haxby_glm_decoding_thumb.png
+    :alt: Decoding of a dataset after GLM fit for signal extraction
+
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Decoding of a dataset after GLM fit for signal extraction</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Here we set the number of features selected in an Anova-SVC approach to maximize the cross-vali...">
+
+.. only:: html
+
+  .. image:: /auto_examples/02_decoding/images/thumb/sphx_glr_plot_haxby_grid_search_thumb.png
+    :alt: Setting a parameter by cross-validation
+
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_grid_search.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Setting a parameter by cross-validation</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="In this script we reproduce the data analysis conducted by Haxby et al. in &quot;Distributed and Ove...">
+
+.. only:: html
+
+  .. image:: /auto_examples/02_decoding/images/thumb/sphx_glr_plot_haxby_full_analysis_thumb.png
+    :alt: ROI-based decoding analysis in Haxby et al. dataset
+
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_full_analysis.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">ROI-based decoding analysis in Haxby et al. dataset</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Here we compare different classifiers on a visual object recognition decoding task.">
+
+.. only:: html
+
+  .. image:: /auto_examples/02_decoding/images/thumb/sphx_glr_plot_haxby_different_estimators_thumb.png
+    :alt: Different classifiers in decoding the Haxby dataset
+
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_different_estimators.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Different classifiers in decoding the Haxby dataset</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example uses Voxel-Based Morphometry (VBM) to study the relationship between aging and gra...">
+
+.. only:: html
+
+  .. image:: /auto_examples/02_decoding/images/thumb/sphx_glr_plot_oasis_vbm_thumb.png
+    :alt: Voxel-Based Morphometry on Oasis dataset
+
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_oasis_vbm.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Voxel-Based Morphometry on Oasis dataset</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example simulates data according to a very simple sketch of brain imaging data and applies...">
+
+.. only:: html
+
+  .. image:: /auto_examples/02_decoding/images/thumb/sphx_glr_plot_simulated_data_thumb.png
+    :alt: Example of pattern recognition on simulated data
+
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_simulated_data.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Example of pattern recognition on simulated data</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example partly reproduces the encoding model presented in     `Visual image reconstruction...">
+
+.. only:: html
+
+  .. image:: /auto_examples/02_decoding/images/thumb/sphx_glr_plot_miyawaki_encoding_thumb.png
+    :alt: Encoding models for visual stimuli from Miyawaki et al. 2008
+
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_encoding.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Encoding models for visual stimuli from Miyawaki et al. 2008</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example reproduces the experiment presented in     `Visual image reconstruction from human...">
+
+.. only:: html
+
+  .. image:: /auto_examples/02_decoding/images/thumb/sphx_glr_plot_miyawaki_reconstruction_thumb.png
+    :alt: Reconstruction of visual stimuli from Miyawaki et al. 2008
+
+  :ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_reconstruction.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Reconstruction of visual stimuli from Miyawaki et al. 2008</div>
+    </div>
+
+
+.. raw:: html
+
+    </div>
+
+=======================
+Functional connectivity
+=======================
+
+See :ref:`parcellating_brain`, :ref:`extracting_rsn` or
+:ref:`functional_connectomes` for more details.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example extracts the signal on regions defined via a probabilistic atlas, to construct a f...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_probabilistic_atlas_extraction_thumb.png
+    :alt: Extracting signals of a probabilistic atlas of functional regions
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_probabilistic_atlas_extraction.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Extracting signals of a probabilistic atlas of functional regions</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example constructs a functional connectome using the sparse inverse covariance.">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_inverse_covariance_connectome_thumb.png
+    :alt: Computing a connectome with sparse inverse covariance
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_inverse_covariance_connectome.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Computing a connectome with sparse inverse covariance</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows a comparison of graph lasso and group-sparse covariance estimation of connec...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_simulated_connectome_thumb.png
+    :alt: Connectivity structure estimation on simulated data
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_simulated_connectome.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Connectivity structure estimation on simulated data</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Various approaches exist to derive spatial maps or networks from group fmr data. The methods ex...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_compare_decomposition_thumb.png
+    :alt: Deriving spatial maps from group fMRI data using ICA and Dictionary Learning
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_compare_decomposition.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Deriving spatial maps from group fMRI data using ICA and Dictionary Learning</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to produce seed-to-:term:`voxel` correlation maps for a single subject b...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_seed_to_voxel_correlation_thumb.png
+    :alt: Producing single subject maps of seed-to-voxel correlation
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Producing single subject maps of seed-to-voxel correlation</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to estimate a connectome on a group of subjects using the group sparse i...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_multi_subject_connectome_thumb.png
+    :alt: Group Sparse inverse covariance for multi-subject connectome
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Group Sparse inverse covariance for multi-subject connectome</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to use nilearn.regions.RegionExtractor to extract spatially constrained ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_extract_regions_dictlearning_maps_thumb.png
+    :alt: Regions extraction using dictionary learning and functional connectomes
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Regions extraction using dictionary learning and functional connectomes</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This examples shows how to turn a parcellation into connectome for visualization. This requires...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_atlas_comparison_thumb.png
+    :alt: Comparing connectomes on different reference atlases
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Comparing connectomes on different reference atlases</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example compares different kinds of functional connectivity between regions of interest : ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_group_level_connectivity_thumb.png
+    :alt: Classification of age groups using functional connectivity
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_group_level_connectivity.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Classification of age groups using functional connectivity</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Here we show how to extract signals from a brain parcellation and compute a correlation matrix.">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_signal_extraction_thumb.png
+    :alt: Extracting signals from a brain parcellation
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_signal_extraction.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Extracting signals from a brain parcellation</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to extract signals from spherical regions. We show how to build spheres ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_sphere_based_connectome_thumb.png
+    :alt: Extract signals on spheres and plot a connectome
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_sphere_based_connectome.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Extract signals on spheres and plot a connectome</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="We use spatially-constrained Ward-clustering, KMeans, Hierarchical KMeans and Recursive Neighbo...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_data_driven_parcellations_thumb.png
+    :alt: Clustering methods to learn a brain parcellation from fMRI
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_data_driven_parcellations.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Clustering methods to learn a brain parcellation from fMRI</div>
+    </div>
+
+
+.. raw:: html
+
+    </div>
+
+=========================
+GLM: First level analysis
+=========================
+
+These are examples focused on showcasing first level models functionality and single subject analysis.
+
+See :ref:`glm` for more details.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Create a BIDS-compatible events.tsv file from onset/trial-type information.">
+
+.. only:: html
+
+  .. image:: /auto_examples/04_glm_first_level/images/thumb/sphx_glr_plot_write_events_file_thumb.png
+    :alt: Generate an events.tsv file for the NeuroSpin localizer task
+
+  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_write_events_file.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Generate an events.tsv file for the NeuroSpin localizer task</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example illustrates how to run a fixed effects model based on pre-computed statistics. Thi...">
+
+.. only:: html
+
+  .. image:: /auto_examples/04_glm_first_level/images/thumb/sphx_glr_plot_fixed_effects_thumb.png
+    :alt: Example of explicit fixed effects fMRI model fitting
+
+  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_fixed_effects.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Example of explicit fixed effects fMRI model fitting</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows a full step-by-step workflow of fitting a GLM to data extracted from a seed ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/04_glm_first_level/images/thumb/sphx_glr_plot_adhd_dmn_thumb.png
+    :alt: Default Mode Network extraction of ADHD dataset
+
+  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_adhd_dmn.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Default Mode Network extraction of ADHD dataset</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Three examples of design matrices specification and computation for first-level fMRI data analy...">
+
+.. only:: html
+
+  .. image:: /auto_examples/04_glm_first_level/images/thumb/sphx_glr_plot_design_matrix_thumb.png
+    :alt: Examples of design matrices
+
+  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_design_matrix.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Examples of design matrices</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="FIR models are used to estimate the hemodyamic response non-parametrically. The example below s...">
+
+.. only:: html
+
+  .. image:: /auto_examples/04_glm_first_level/images/thumb/sphx_glr_plot_fir_model_thumb.png
+    :alt: Analysis of an fMRI dataset with a Finite Impule Response (FIR) model
+
+  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_fir_model.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Analysis of an fMRI dataset with a Finite Impule Response (FIR) model</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The example shows the analysis of an SPM dataset studying face perception.  The analysis is per...">
+
+.. only:: html
+
+  .. image:: /auto_examples/04_glm_first_level/images/thumb/sphx_glr_plot_spm_multimodal_faces_thumb.png
+    :alt: Single-subject data (two sessions) in native space
+
+  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_spm_multimodal_faces.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Single-subject data (two sessions) in native space</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Within this example we are going to plot the hemodynamic response function (:term:`HRF`) model ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/04_glm_first_level/images/thumb/sphx_glr_plot_hrf_thumb.png
+    :alt: Example of MRI response functions
+
+  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_hrf.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Example of MRI response functions</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Here, we will go through a full step-by-step example of fitting a GLM to experimental data and ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/04_glm_first_level/images/thumb/sphx_glr_plot_fiac_analysis_thumb.png
+    :alt: Simple example of two-session fMRI model fitting
+
+  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_fiac_analysis.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Simple example of two-session fMRI model fitting</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Here we fit a First Level GLM with the minimize_memory-argument set to False. By doing so, the ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/04_glm_first_level/images/thumb/sphx_glr_plot_predictions_residuals_thumb.png
+    :alt: Predicted time series and residuals
+
+  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_predictions_residuals.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Predicted time series and residuals</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip=" Full step-by-step example of fitting a GLM to perform a first level analysis in an openneuro B...">
+
+.. only:: html
+
+  .. image:: /auto_examples/04_glm_first_level/images/thumb/sphx_glr_plot_bids_features_thumb.png
+    :alt: First level analysis of a complete BIDS dataset from openneuro
+
+  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_bids_features.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">First level analysis of a complete BIDS dataset from openneuro</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="A full step-by-step example of fitting a GLM to experimental data sampled on the cortical surfa...">
+
+.. only:: html
+
+  .. image:: /auto_examples/04_glm_first_level/images/thumb/sphx_glr_plot_localizer_surface_analysis_thumb.png
+    :alt: Example of surface-based first-level analysis
+
+  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_localizer_surface_analysis.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Example of surface-based first-level analysis</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="In this tutorial, we study how first-level models are parametrized for fMRI data analysis and c...">
+
+.. only:: html
+
+  .. image:: /auto_examples/04_glm_first_level/images/thumb/sphx_glr_plot_first_level_details_thumb.png
+    :alt: Understanding parameters of the first-level model
+
+  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_first_level_details.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Understanding parameters of the first-level model</div>
+    </div>
+
+
+.. raw:: html
+
+    </div>
+
+===========================
+GLM: Second level analysis
+===========================
+
+These are examples focused on showcasing second level models functionality and group level analysis.
+
+See :ref:`glm` for more details.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how a second-level design matrix is specified: assuming that the data refer ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/05_glm_second_level/images/thumb/sphx_glr_plot_second_level_design_matrix_thumb.png
+    :alt: Example of second level design matrix
+
+  :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_design_matrix.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Example of second level design matrix</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This script showcases the so-called &quot;All resolution inference&quot; procedure, in which the proporti...">
+
+.. only:: html
+
+  .. image:: /auto_examples/05_glm_second_level/images/thumb/sphx_glr_plot_proportion_activated_voxels_thumb.png
+    :alt: Second-level fMRI model: true positive proportion in clusters
+
+  :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_proportion_activated_voxels.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Second-level fMRI model: true positive proportion in clusters</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Perform a one-sample t-test on a bunch of images (a.k.a. second-level analysis in fMRI) and thr...">
+
+.. only:: html
+
+  .. image:: /auto_examples/05_glm_second_level/images/thumb/sphx_glr_plot_thresholding_thumb.png
+    :alt: Statistical testing of a second-level analysis
+
+  :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_thresholding.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Statistical testing of a second-level analysis</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example uses voxel-based morphometry (:term:`VBM`) to study the relationship between aging...">
+
+.. only:: html
+
+  .. image:: /auto_examples/05_glm_second_level/images/thumb/sphx_glr_plot_oasis_thumb.png
+    :alt: Voxel-Based Morphometry on OASIS dataset
+
+  :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_oasis.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Voxel-Based Morphometry on OASIS dataset</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Full step-by-step example of fitting a GLM to perform a second level analysis in experimental d...">
+
+.. only:: html
+
+  .. image:: /auto_examples/05_glm_second_level/images/thumb/sphx_glr_plot_second_level_two_sample_test_thumb.png
+    :alt: Second-level fMRI model: two-sample test, unpaired and paired
+
+  :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_two_sample_test.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Second-level fMRI model: two-sample test, unpaired and paired</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Full step-by-step example of fitting a GLM to perform a second-level analysis (one-sample test)...">
+
+.. only:: html
+
+  .. image:: /auto_examples/05_glm_second_level/images/thumb/sphx_glr_plot_second_level_one_sample_test_thumb.png
+    :alt: Second-level fMRI model: one sample test
+
+  :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_one_sample_test.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Second-level fMRI model: one sample test</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows the results obtained in a group analysis using a more complex contrast than ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/05_glm_second_level/images/thumb/sphx_glr_plot_second_level_association_test_thumb.png
+    :alt: Example of generic design in second-level models
+
+  :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_association_test.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Example of generic design in second-level models</div>
+    </div>
+
+
+.. raw:: html
+
+    </div>
+
+================================
+Manipulating brain image volumes
+================================
+
+See :ref:`data_manipulation` for more details.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The goal of this example is to illustrate the use of the function nilearn.image.math_img on T-m...">
+
+.. only:: html
+
+  .. image:: /auto_examples/06_manipulating_images/images/thumb/sphx_glr_plot_negate_image_thumb.png
+    :alt: Negating an image with math_img
+
+  :ref:`sphx_glr_auto_examples_06_manipulating_images_plot_negate_image.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Negating an image with math_img</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The goal of this example is to illustrate the use of the function nilearn.image.math_img with a...">
+
+.. only:: html
+
+  .. image:: /auto_examples/06_manipulating_images/images/thumb/sphx_glr_plot_compare_mean_image_thumb.png
+    :alt: Comparing the means of 2 images
+
+  :ref:`sphx_glr_auto_examples_06_manipulating_images_plot_compare_mean_image.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Comparing the means of 2 images</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Here we smooth a mean EPI image and plot the result">
+
+.. only:: html
+
+  .. image:: /auto_examples/06_manipulating_images/images/thumb/sphx_glr_plot_smooth_mean_image_thumb.png
+    :alt: Smoothing an image
+
+  :ref:`sphx_glr_auto_examples_06_manipulating_images_plot_smooth_mean_image.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Smoothing an image</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This simple example shows how to extract regions from Smith atlas resting state networks.">
+
+.. only:: html
+
+  .. image:: /auto_examples/06_manipulating_images/images/thumb/sphx_glr_plot_extract_rois_smith_atlas_thumb.png
+    :alt: Regions Extraction of Default Mode Networks using Smith Atlas
+
+  :ref:`sphx_glr_auto_examples_06_manipulating_images_plot_extract_rois_smith_atlas.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Regions Extraction of Default Mode Networks using Smith Atlas</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to use nilearn.regions.connected_label_regions to assign each spatially-...">
+
+.. only:: html
+
+  .. image:: /auto_examples/06_manipulating_images/images/thumb/sphx_glr_plot_extract_regions_labels_image_thumb.png
+    :alt: Breaking an atlas of labels in separated regions
+
+  :ref:`sphx_glr_auto_examples_06_manipulating_images_plot_extract_regions_labels_image.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Breaking an atlas of labels in separated regions</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="The goal of this example is to illustrate the use of the function nilearn.image.resample_to_img...">
+
+.. only:: html
+
+  .. image:: /auto_examples/06_manipulating_images/images/thumb/sphx_glr_plot_resample_to_template_thumb.png
+    :alt: Resample an image to a template
+
+  :ref:`sphx_glr_auto_examples_06_manipulating_images_plot_resample_to_template.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Resample an image to a template</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Here is a simple example of automatic mask computation using the nifti masker. The mask is comp...">
+
+.. only:: html
+
+  .. image:: /auto_examples/06_manipulating_images/images/thumb/sphx_glr_plot_nifti_simple_thumb.png
+    :alt: Simple example of NiftiMasker use
+
+  :ref:`sphx_glr_auto_examples_06_manipulating_images_plot_nifti_simple.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Simple example of NiftiMasker use</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This simple example shows how to extract signals from functional fMRI data and brain regions de...">
+
+.. only:: html
+
+  .. image:: /auto_examples/06_manipulating_images/images/thumb/sphx_glr_plot_nifti_labels_simple_thumb.png
+    :alt: Extracting signals from brain regions using the NiftiLabelsMasker
+
+  :ref:`sphx_glr_auto_examples_06_manipulating_images_plot_nifti_labels_simple.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Extracting signals from brain regions using the NiftiLabelsMasker</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to extract regions or separate the regions from a statistical map.">
+
+.. only:: html
+
+  .. image:: /auto_examples/06_manipulating_images/images/thumb/sphx_glr_plot_extract_rois_statistical_maps_thumb.png
+    :alt: Region Extraction using a t-statistical map (3D)
+
+  :ref:`sphx_glr_auto_examples_06_manipulating_images_plot_extract_rois_statistical_maps.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Region Extraction using a t-statistical map (3D)</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="In this example, the Nifti masker is used to automatically compute a mask.">
+
+.. only:: html
+
+  .. image:: /auto_examples/06_manipulating_images/images/thumb/sphx_glr_plot_mask_computation_thumb.png
+    :alt: Understanding NiftiMasker and mask computation
+
+  :ref:`sphx_glr_auto_examples_06_manipulating_images_plot_mask_computation.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Understanding NiftiMasker and mask computation</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how an affine resampling works.">
+
+.. only:: html
+
+  .. image:: /auto_examples/06_manipulating_images/images/thumb/sphx_glr_plot_affine_transformation_thumb.png
+    :alt: Visualization of affine resamplings
+
+  :ref:`sphx_glr_auto_examples_06_manipulating_images_plot_affine_transformation.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Visualization of affine resamplings</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows manual steps to create and further modify an ROI spatial mask. They represen...">
+
+.. only:: html
+
+  .. image:: /auto_examples/06_manipulating_images/images/thumb/sphx_glr_plot_roi_extraction_thumb.png
+    :alt: Computing a Region of Interest (ROI) mask manually
+
+  :ref:`sphx_glr_auto_examples_06_manipulating_images_plot_roi_extraction.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Computing a Region of Interest (ROI) mask manually</div>
+    </div>
+
+
+.. raw:: html
+
+    </div>
+
+=============================================
+Advanced statistical analysis of brain images
+=============================================
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip=" This example is meant to demonstrate nilearn as a low-level tools used to combine feature extr...">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_ica_resting_state_thumb.png
+    :alt: Multivariate decompositions: Independent component analysis of fMRI
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_ica_resting_state.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Multivariate decompositions: Independent component analysis of fMRI</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to use the Localizer dataset in a basic analysis. A standard Anova is pe...">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_localizer_simple_analysis_thumb.png
+    :alt: Massively univariate analysis of a calculation task from the Localizer dataset
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_localizer_simple_analysis.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Massively univariate analysis of a calculation task from the Localizer dataset</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip=" Full step-by-step example of fitting a GLM to perform a first and second level analysis in a B...">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_bids_analysis_thumb.png
+    :alt: BIDS dataset first and second level analysis
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_bids_analysis.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">BIDS dataset first and second level analysis</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example compares different kinds of functional connectivity between regions of interest : ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_age_group_prediction_cross_val_thumb.png
+    :alt: Functional connectivity predicts age group
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_age_group_prediction_cross_val.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Functional connectivity predicts age group</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to download statistical maps from NeuroVault">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_neurovault_meta_analysis_thumb.png
+    :alt: NeuroVault meta-analysis of stop-go paradigm studies.
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_neurovault_meta_analysis.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">NeuroVault meta-analysis of stop-go paradigm studies.</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip=" Full step-by-step example of fitting a GLM (first and second level analysis) in a 10-subjects ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_surface_bids_analysis_thumb.png
+    :alt: Surface-based dataset first and second level analysis of a dataset
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_surface_bids_analysis.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Surface-based dataset first and second level analysis of a dataset</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows the results obtained in a massively univariate analysis performed at the int...">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_localizer_mass_univariate_methods_thumb.png
+    :alt: Massively univariate analysis of a motor task from the Localizer dataset
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_localizer_mass_univariate_methods.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Massively univariate analysis of a motor task from the Localizer dataset</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to download statistical maps from NeuroVault, label them with NeuroSynth...">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_ica_neurovault_thumb.png
+    :alt: NeuroVault cross-study ICA maps.
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_ica_neurovault.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">NeuroVault cross-study ICA maps.</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="A permuted Ordinary Least Squares algorithm is run at each voxel in order to determine whether ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_haxby_mass_univariate_thumb.png
+    :alt: Massively univariate analysis of face vs house recognition
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_haxby_mass_univariate.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Massively univariate analysis of face vs house recognition</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This tutorial opens the box of decoding pipelines to bridge integrated functionalities provided...">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_advanced_decoding_scikit_thumb.png
+    :alt: Advanced decoding using scikit learn
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_advanced_decoding_scikit.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Advanced decoding using scikit learn</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Beta series models fit trial-wise conditions, which allow users to create &quot;time series&quot; of thes...">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_beta_series_thumb.png
+    :alt: Beta-Series Modeling for Task-Based Functional Connectivity and Decoding
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_beta_series.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Beta-Series Modeling for Task-Based Functional Connectivity and Decoding</div>
+    </div>
+
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+   :includehidden:
+
+   /auto_examples/00_tutorials/index.rst
+   /auto_examples/01_plotting/index.rst
+   /auto_examples/02_decoding/index.rst
+   /auto_examples/03_connectivity/index.rst
+   /auto_examples/04_glm_first_level/index.rst
+   /auto_examples/05_glm_second_level/index.rst
+   /auto_examples/06_manipulating_images/index.rst
+   /auto_examples/07_advanced/index.rst
+
+
+.. only:: html
+
+  .. container:: sphx-glr-footer sphx-glr-footer-gallery
+
+    .. container:: sphx-glr-download sphx-glr-download-python
+
+      :download:`Download all examples in Python source code: auto_examples_python.zip </auto_examples/auto_examples_python.zip>`
+
+    .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+      :download:`Download all examples in Jupyter notebooks: auto_examples_jupyter.zip </auto_examples/auto_examples_jupyter.zip>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_

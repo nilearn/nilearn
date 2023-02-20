@@ -1,0 +1,19 @@
+﻿.. note::
+
+   This page is a reference documentation. It only explains the
+   function signature, and not how to use it. Please refer to the
+   :ref:`user guide <user_guide>` for the big picture.
+
+
+nilearn.plotting.displays.get_slicer
+====================================
+
+.. currentmodule:: nilearn.plotting.displays
+
+.. autofunction:: get_slicer
+
+.. include:: nilearn.plotting.displays.get_slicer.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

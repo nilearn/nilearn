@@ -1,0 +1,19 @@
+﻿.. note::
+
+   This page is a reference documentation. It only explains the
+   function signature, and not how to use it. Please refer to the
+   :ref:`user guide <user_guide>` for the big picture.
+
+
+nilearn.connectome.group_sparse_covariance
+==========================================
+
+.. currentmodule:: nilearn.connectome
+
+.. autofunction:: group_sparse_covariance
+
+.. include:: nilearn.connectome.group_sparse_covariance.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>

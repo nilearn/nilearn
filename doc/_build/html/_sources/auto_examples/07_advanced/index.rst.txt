@@ -1,0 +1,222 @@
+
+
+.. _sphx_glr_auto_examples_07_advanced:
+
+=============================================
+Advanced statistical analysis of brain images
+=============================================
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip=" This example is meant to demonstrate nilearn as a low-level tools used to combine feature extr...">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_ica_resting_state_thumb.png
+    :alt: Multivariate decompositions: Independent component analysis of fMRI
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_ica_resting_state.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Multivariate decompositions: Independent component analysis of fMRI</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to use the Localizer dataset in a basic analysis. A standard Anova is pe...">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_localizer_simple_analysis_thumb.png
+    :alt: Massively univariate analysis of a calculation task from the Localizer dataset
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_localizer_simple_analysis.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Massively univariate analysis of a calculation task from the Localizer dataset</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip=" Full step-by-step example of fitting a GLM to perform a first and second level analysis in a B...">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_bids_analysis_thumb.png
+    :alt: BIDS dataset first and second level analysis
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_bids_analysis.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">BIDS dataset first and second level analysis</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example compares different kinds of functional connectivity between regions of interest : ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_age_group_prediction_cross_val_thumb.png
+    :alt: Functional connectivity predicts age group
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_age_group_prediction_cross_val.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Functional connectivity predicts age group</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to download statistical maps from NeuroVault">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_neurovault_meta_analysis_thumb.png
+    :alt: NeuroVault meta-analysis of stop-go paradigm studies.
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_neurovault_meta_analysis.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">NeuroVault meta-analysis of stop-go paradigm studies.</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip=" Full step-by-step example of fitting a GLM (first and second level analysis) in a 10-subjects ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_surface_bids_analysis_thumb.png
+    :alt: Surface-based dataset first and second level analysis of a dataset
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_surface_bids_analysis.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Surface-based dataset first and second level analysis of a dataset</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows the results obtained in a massively univariate analysis performed at the int...">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_localizer_mass_univariate_methods_thumb.png
+    :alt: Massively univariate analysis of a motor task from the Localizer dataset
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_localizer_mass_univariate_methods.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Massively univariate analysis of a motor task from the Localizer dataset</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows how to download statistical maps from NeuroVault, label them with NeuroSynth...">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_ica_neurovault_thumb.png
+    :alt: NeuroVault cross-study ICA maps.
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_ica_neurovault.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">NeuroVault cross-study ICA maps.</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="A permuted Ordinary Least Squares algorithm is run at each voxel in order to determine whether ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_haxby_mass_univariate_thumb.png
+    :alt: Massively univariate analysis of face vs house recognition
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_haxby_mass_univariate.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Massively univariate analysis of face vs house recognition</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This tutorial opens the box of decoding pipelines to bridge integrated functionalities provided...">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_advanced_decoding_scikit_thumb.png
+    :alt: Advanced decoding using scikit learn
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_advanced_decoding_scikit.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Advanced decoding using scikit learn</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Beta series models fit trial-wise conditions, which allow users to create &quot;time series&quot; of thes...">
+
+.. only:: html
+
+  .. image:: /auto_examples/07_advanced/images/thumb/sphx_glr_plot_beta_series_thumb.png
+    :alt: Beta-Series Modeling for Task-Based Functional Connectivity and Decoding
+
+  :ref:`sphx_glr_auto_examples_07_advanced_plot_beta_series.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Beta-Series Modeling for Task-Based Functional Connectivity and Decoding</div>
+    </div>
+
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /auto_examples/07_advanced/plot_ica_resting_state
+   /auto_examples/07_advanced/plot_localizer_simple_analysis
+   /auto_examples/07_advanced/plot_bids_analysis
+   /auto_examples/07_advanced/plot_age_group_prediction_cross_val
+   /auto_examples/07_advanced/plot_neurovault_meta_analysis
+   /auto_examples/07_advanced/plot_surface_bids_analysis
+   /auto_examples/07_advanced/plot_localizer_mass_univariate_methods
+   /auto_examples/07_advanced/plot_ica_neurovault
+   /auto_examples/07_advanced/plot_haxby_mass_univariate
+   /auto_examples/07_advanced/plot_advanced_decoding_scikit
+   /auto_examples/07_advanced/plot_beta_series
+

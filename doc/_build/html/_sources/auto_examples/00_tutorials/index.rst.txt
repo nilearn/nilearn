@@ -1,0 +1,118 @@
+
+
+.. _sphx_glr_auto_examples_00_tutorials:
+
+.. _tutorial_examples:
+
+===============
+Basic tutorials
+===============
+
+Introductory examples that teach how to use nilearn.
+
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbnails">
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="A simple example of basic Python numerics and how to plot it.">
+
+.. only:: html
+
+  .. image:: /auto_examples/00_tutorials/images/thumb/sphx_glr_plot_python_101_thumb.png
+    :alt: Basic numerics and plotting with Python
+
+  :ref:`sphx_glr_auto_examples_00_tutorials_plot_python_101.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Basic numerics and plotting with Python</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="A simple example showing how to load an existing Nifti file and use basic nilearn functionaliti...">
+
+.. only:: html
+
+  .. image:: /auto_examples/00_tutorials/images/thumb/sphx_glr_plot_nilearn_101_thumb.png
+    :alt: Basic nilearn example: manipulating and looking at data
+
+  :ref:`sphx_glr_auto_examples_00_tutorials_plot_nilearn_101.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Basic nilearn example: manipulating and looking at data</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Here we discover how to work with 3D and 4D niimgs.">
+
+.. only:: html
+
+  .. image:: /auto_examples/00_tutorials/images/thumb/sphx_glr_plot_3d_and_4d_niimg_thumb.png
+    :alt: 3D and 4D niimgs: handling and visualizing
+
+  :ref:`sphx_glr_auto_examples_00_tutorials_plot_3d_and_4d_niimg.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">3D and 4D niimgs: handling and visualizing</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Here is a simple tutorial on decoding with nilearn. It reproduces the Haxby 2001 study on a fac...">
+
+.. only:: html
+
+  .. image:: /auto_examples/00_tutorials/images/thumb/sphx_glr_plot_decoding_tutorial_thumb.png
+    :alt: A introduction tutorial to fMRI decoding
+
+  :ref:`sphx_glr_auto_examples_00_tutorials_plot_decoding_tutorial.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">A introduction tutorial to fMRI decoding</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="In this tutorial, we use a General Linear Model (:term:`GLM`) to compare the fMRI signal during...">
+
+.. only:: html
+
+  .. image:: /auto_examples/00_tutorials/images/thumb/sphx_glr_plot_single_subject_single_run_thumb.png
+    :alt: Intro to GLM Analysis: a single-session, single-subject fMRI dataset
+
+  :ref:`sphx_glr_auto_examples_00_tutorials_plot_single_subject_single_run.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Intro to GLM Analysis: a single-session, single-subject fMRI dataset</div>
+    </div>
+
+
+.. raw:: html
+
+    </div>
+
+
+.. toctree::
+   :hidden:
+
+   /auto_examples/00_tutorials/plot_python_101
+   /auto_examples/00_tutorials/plot_nilearn_101
+   /auto_examples/00_tutorials/plot_3d_and_4d_niimg
+   /auto_examples/00_tutorials/plot_decoding_tutorial
+   /auto_examples/00_tutorials/plot_single_subject_single_run
+

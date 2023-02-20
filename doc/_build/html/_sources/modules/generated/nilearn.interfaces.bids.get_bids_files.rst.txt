@@ -1,0 +1,19 @@
+﻿.. note::
+
+   This page is a reference documentation. It only explains the
+   function signature, and not how to use it. Please refer to the
+   :ref:`user guide <user_guide>` for the big picture.
+
+
+nilearn.interfaces.bids.get_bids_files
+======================================
+
+.. currentmodule:: nilearn.interfaces.bids
+
+.. autofunction:: get_bids_files
+
+.. include:: nilearn.interfaces.bids.get_bids_files.examples
+
+.. raw:: html
+
+    <div style='clear:both'></div>
