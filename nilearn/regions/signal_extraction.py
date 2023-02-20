@@ -80,12 +80,14 @@ def _check_shape_affine_maps_masks(target_shape,
         raise ValueError("mask/map and imgs shapes must be identical.")
 
     # Check affines & set state
-    if img is not None and (
-       img.affine.shape != target_affine.shape or
-       abs(img.affine - target_affine).max() > INF):
-        raise ValueError("mask/map and imgs affines must be identical.")
-    elif img is not None:
-        state = True
+    if img is not None:
+        if (
+            img.affine.shape != target_affine.shape
+            or abs(img.affine - target_affine).max() > INF
+        ):
+            raise ValueError("mask/map and imgs affines must be identical.")
+        else:
+            state = True
 
     return state
 
