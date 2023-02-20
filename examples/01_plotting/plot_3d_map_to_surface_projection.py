@@ -16,8 +16,7 @@ different plotting engines, and add contours of regions of interest using
 
 from nilearn import datasets
 
-motor_images = datasets.fetch_neurovault_motor_task()
-stat_img = motor_images.images[0]
+stat_img = datasets.load_sample_motor_activation_image()
 
 
 ##############################################################################
