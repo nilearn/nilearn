@@ -70,7 +70,6 @@ def _check_shape_affine_maps_masks(target_shape,
         Is only true for non-empty img.
 
     """
-    state = False
 
     # Check shape
     if img is not None and dim is None:
@@ -81,6 +80,7 @@ def _check_shape_affine_maps_masks(target_shape,
         raise ValueError("mask/map and imgs shapes must be identical.")
 
     # Check affines & set state
+    state = False
     if img is not None:
         if (
             img.affine.shape != target_affine.shape
@@ -235,29 +235,8 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
             available_reduction_strategies
         ))
 
-    # Check shapes and affines.
-    if labels_img.shape != target_shape:
-        raise ValueError("labels_img and imgs shapes must be identical.")
-    if abs(labels_img.affine - target_affine).max() > INF:
-        raise ValueError("labels_img and imgs affines must be identical")
-
-    if mask_img is not None:
-        mask_img = _utils.check_niimg_3d(mask_img)
-        if mask_img.shape != target_shape:
-            raise ValueError("mask_img and imgs shapes must be identical.")
-        if abs(mask_img.affine - target_affine).max() > INF:
-            raise ValueError("mask_img and imgs affines must be identical")
-
-    # Perform computation
-    labels_data = _safe_get_data(labels_img, ensure_finite=True)
-    labels = list(np.unique(labels_data))
-    if background_label in labels:
-        labels.remove(background_label)
-
-    if mask_img is not None:
-        mask_data = _safe_get_data(mask_img, ensure_finite=True)
-        labels_data = labels_data.copy()
-        labels_data[np.logical_not(mask_data)] = background_label
+    labels, labels_data = _get_labels_data(
+        labels_img, target_shape, target_affine, mask_img, background_label)
 
     data = _safe_get_data(imgs, ensure_finite=True)
     target_datatype = np.float32 if data.dtype == np.float32 else np.float64
@@ -332,24 +311,8 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
     target_affine = labels_img.affine
     target_shape = labels_img.shape[:3]
 
-    if mask_img is not None:
-        mask_img = _utils.check_niimg_3d(mask_img)
-        if mask_img.shape != target_shape:
-            raise ValueError("mask_img and labels_img shapes "
-                             "must be identical.")
-        if abs(mask_img.affine - target_affine).max() > INF:
-            raise ValueError("mask_img and labels_img affines "
-                             "must be identical")
-
-    labels_data = _safe_get_data(labels_img, ensure_finite=True)
-    labels = list(np.unique(labels_data))
-    if background_label in labels:
-        labels.remove(background_label)
-
-    if mask_img is not None:
-        mask_data = _safe_get_data(mask_img, ensure_finite=True)
-        labels_data = labels_data.copy()
-        labels_data[np.logical_not(mask_data)] = background_label
+    labels, labels_data = _get_labels_data(
+        labels_img, target_shape, target_affine, mask_img, background_label)
 
     # nditer is not available in numpy 1.3: using multiple loops.
     # Using these loops still gives a much faster code (6x) than this one:
@@ -428,12 +391,10 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
 
     maps_data = _safe_get_data(maps_img, ensure_finite=True)
 
-    if mask_img is not None:
+    _check_shape_affine_maps_masks(shape, affine, maps_img, 3)
+    img_state = _check_shape_affine_maps_masks(shape, affine, mask_img)
+    if img_state:
         mask_img = _utils.check_niimg_3d(mask_img)
-        if mask_img.shape != shape:
-            raise ValueError("mask_img and imgs shapes must be identical.")
-        if abs(mask_img.affine - affine).max() > INF:
-            raise ValueError("mask_img and imgs affines must be identical")
         maps_data, maps_mask, labels = _trim_maps(
             maps_data,
             _safe_get_data(mask_img, ensure_finite=True),
@@ -492,13 +453,9 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     shape = maps_img.shape[:3]
     affine = maps_img.affine
 
-    if mask_img is not None:
+    img_state = _check_shape_affine_maps_masks(shape, affine, mask_img)
+    if img_state:
         mask_img = _utils.check_niimg_3d(mask_img)
-        if mask_img.shape != shape:
-            raise ValueError("mask_img and maps_img shapes must be identical.")
-        if abs(mask_img.affine - affine).max() > INF:
-            raise ValueError("mask_img and maps_img affines must be "
-                             "identical.")
         maps_data, maps_mask, _ = _trim_maps(
             maps_data, _safe_get_data(mask_img, ensure_finite=True),
             keep_empty=True)
