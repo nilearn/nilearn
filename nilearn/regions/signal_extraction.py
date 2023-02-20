@@ -23,20 +23,22 @@ def _check_shape_affine_label_img(target_img, labels_img):
 
     Parameters
     ----------
+    target_img : Niimg-like object
+        See :ref:`extracting_data`.
+        Image to extract the data from.
+
     labels_img : Niimg-like object
         See :ref:`extracting_data`.
         Regions definition as labels.
         Encodes the region labels of the signals.
 
-    target_img : Niimg-like object
-        See :ref:`extracting_data`.
-        Image to extract the data from.
-
     """
     target_affine = target_img.affine
     target_shape = target_img.shape[:3]
+
     def err_msg(x):
         return f"labels_img and target_img must have same {x}."
+
     if labels_img.shape != target_shape:
         raise ValueError(err_msg("shape"))
     if (labels_img.affine.shape != target_affine.shape
@@ -104,18 +106,15 @@ def _get_labels_data(target_img,
 
     Parameters
     ----------
+    target_img : Niimg-like object
+        See :ref:`extracting_data`.
+        Image to extract the data from.
+
     labels_img : Niimg-like object
         See :ref:`extracting_data`.
         Regions definition as labels.
         By default, the label zero is used to denote an absence of region.
         Use background_label to change it.
-
-    target_img : Niimg-like object
-        See :ref:`extracting_data`.
-        Image to extract the data from.
-
-    target_affine : numpy.ndarray
-        Desired affine of labels image and mask.
 
     mask_img : Niimg-like object, optional
         See :ref:`extracting_data`.
@@ -149,8 +148,8 @@ def _get_labels_data(target_img,
     _check_shape_affine_label_img(target_img, labels_img)
 
     labels_data = _safe_get_data(labels_img, ensure_finite=True)
-    labels = list(np.unique(labels_data))
 
+    labels = list(np.unique(labels_data))
     if background_label in labels:
         labels.remove(background_label)
 
@@ -167,8 +166,11 @@ def _get_labels_data(target_img,
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
 @_utils.fill_doc
-def img_to_signals_labels(imgs, labels_img, mask_img=None,
-                          background_label=0, order="F", strategy='mean'):
+def img_to_signals_labels(imgs, labels_img,
+                          mask_img=None,
+                          background_label=0,
+                          order="F",
+                          strategy='mean'):
     """Extract region signals from image.
 
     This function is applicable to regions defined by labels.
@@ -188,19 +190,20 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
 
     mask_img : Niimg-like object, optional
         See :ref:`extracting_data`.
-        Mask to apply to labels before extracting signals. Every point
-        outside the mask is considered as background (i.e. no region).
+        Mask to apply to labels before extracting signals.
+        Every point outside the mask is considered
+        as background (i.e. no region).
 
     background_label : number, optional
-        Number representing background in labels_img. Default=0.
+        Number representing background in labels_img.
 
     order : :obj:`str`, optional
-        Ordering of output array ("C" or "F"). Default="F".
+        Ordering of output array ("C" or "F").
 
     strategy : :obj:`str`, optional
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation. Default='mean'.
+        standard_deviation.
 
     Returns
     -------
@@ -264,8 +267,11 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     return signals, labels
 
 
-def signals_to_img_labels(signals, labels_img, mask_img=None,
-                          background_label=0, order="F"):
+def signals_to_img_labels(signals,
+                          labels_img,
+                          mask_img=None,
+                          background_label=0,
+                          order="F"):
     """Create image from region signals defined as labels.
 
     The same region signal is used for each :term:`voxel` of the
@@ -345,8 +351,7 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
                     else:
                         data[i, j, k] = signals[num]
 
-    target_affine = labels_img.affine
-    return new_img_like(labels_img, data, target_affine)
+    return new_img_like(labels_img, data, labels_img.affine)
 
 
 @_utils.fill_doc
@@ -367,9 +372,9 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
 
     mask_img : Niimg-like object, optional
         See :ref:`extracting_data`.
-        Mask to apply to regions before extracting signals. Every point
-        outside the mask is considered as background (i.e. outside of any
-        region).
+        Mask to apply to regions before extracting signals.
+        Every point outside the mask is considered
+        as background (i.e. outside of any region).
 
     Returns
     -------
@@ -453,8 +458,6 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     """
     maps_img = _utils.check_niimg_4d(maps_img)
     maps_data = _safe_get_data(maps_img, ensure_finite=True)
-    shape = maps_img.shape[:3]
-    affine = maps_img.affine
 
     maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
 
@@ -468,7 +471,9 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
         assert (maps_mask.shape == maps_data.shape[:3])
 
     data = np.dot(region_signals, maps_data[maps_mask, :].T)
-    return masking.unmask(data, new_img_like(maps_img, maps_mask, affine))
+    return masking.unmask(data, new_img_like(maps_img,
+                                             maps_mask,
+                                             maps_img.affine))
 
 
 def _trim_maps(maps, mask, keep_empty=False, order="F"):

@@ -38,7 +38,7 @@ def test__check_shape_affine_label_img():
 
     # data
     affine = np.eye(4)
-    test_affine = np.eye(4) * 2 
+    test_affine = np.eye(4) * 2
 
     # labels
     labels_img = generate_labeled_regions(shape, 7, affine=affine)
