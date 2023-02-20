@@ -21,12 +21,10 @@ from nilearn.image import get_data, new_img_like
 _TEST_DIM_ERROR_MSG = ("Input data has incompatible dimensionality: "
                        "Expected dimension is 3D and you provided "
                        "a 4D image")
-_TEST_SHAPE_LABEL_ERROR_MSG = ("labels_img.shape and target_shape "
-                               "must be identical.")
-_TEST_AFFINE_LABEL_ERROR_MSG = ("labels_img.affine and target_affine "
-                                "must be identical.")
-_TEST_SHAPE_IMG_ERROR_MSG = "mask/map and imgs shapes must be identical."
-_TEST_AFFINE_IMG_ERROR_MSG = "mask/map and imgs affines must be identical."
+_TEST_SHAPE_LABEL_ERROR_MSG = ("labels_img and target_img must have same shape.")
+_TEST_AFFINE_LABEL_ERROR_MSG = ("labels_img and target_img must have same affine.")
+_TEST_SHAPE_IMG_ERROR_MSG = "mask/map and imgs must have same shape."
+_TEST_AFFINE_IMG_ERROR_MSG = "mask/map and imgs must have same affine."
 
 INF = 1000 * np.finfo(np.float32).eps
 

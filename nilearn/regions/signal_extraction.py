@@ -35,13 +35,12 @@ def _check_shape_affine_label_img(labels_img, target_shape, target_affine):
         Desired affine of label images.
 
     """
+    err_msg = lambda x : f"labels_img and target_img must have same {x}."
     if labels_img.shape != target_shape:
-        raise ValueError("labels_img.shape and target_shape "
-                         "must be identical.")
+        raise ValueError(err_msg("shape"))
     if (labels_img.affine.shape != target_affine.shape
             or abs(labels_img.affine - target_affine).max() > INF):
-        raise ValueError("labels_img.affine and target_affine "
-                         "must be identical.")
+        raise ValueError(err_msg("affine"))
 
 
 def _check_shape_affine_maps_masks(target_shape,
@@ -71,26 +70,27 @@ def _check_shape_affine_maps_masks(target_shape,
         Is only true for non-empty img.
 
     """
+    if img is None:
+        return False
+
+    err_msg = lambda x : f"mask/map and imgs must have same {x}."
+    
     # Check shape
-    if img is not None and dim is None:
+    if dim is None:
         img = _utils.check_niimg_3d(img)
         if img.shape != target_shape:
-            raise ValueError("mask/map and imgs shapes must be identical.")
-    elif img is not None and img.shape[:dim] != target_shape:
-        raise ValueError("mask/map and imgs shapes must be identical.")
+            raise ValueError(err_msg("shape"))
+    if img.shape[:dim] != target_shape:
+        raise ValueError(err_msg("shape"))
 
     # Check affines & set state
-    state = False
-    if img is not None:
-        if (
-            img.affine.shape != target_affine.shape
-            or abs(img.affine - target_affine).max() > INF
-        ):
-            raise ValueError("mask/map and imgs affines must be identical.")
-        else:
-            state = True
+    if (
+        img.affine.shape != target_affine.shape
+        or abs(img.affine - target_affine).max() > INF
+    ):
+        raise ValueError(err_msg("affine"))
 
-    return state
+    return True
 
 
 def _get_labels_data(labels_img,
