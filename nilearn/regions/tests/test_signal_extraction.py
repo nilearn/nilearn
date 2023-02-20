@@ -17,9 +17,86 @@ from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import get_data, new_img_like
 
+
 _TEST_DIM_ERROR_MSG = ("Input data has incompatible dimensionality: "
                        "Expected dimension is 3D and you provided "
                        "a 4D image")
+_TEST_SHAPE_LABEL_ERROR_MSG = ("labels_img.shape and target_shape "
+                               "must be identical.")
+_TEST_AFFINE_LABEL_ERROR_MSG = ("labels_img.affine and target_affine "
+                                "must be identical.")
+_TEST_SHAPE_IMG_ERROR_MSG = "mask/map and imgs shapes must be identical."
+_TEST_AFFINE_IMG_ERROR_MSG = "mask/map and imgs affines must be identical."
+
+INF = 1000 * np.finfo(np.float32).eps
+
+
+def test__check_shape_affine_label_img():
+    """Test to ensure correct check for valid shapes & affines of labels."""
+    shape = (8, 9, 10)
+    test_shape = (8, 9, 5)
+
+    # data
+    affine = np.eye(4)
+    test_affine = np.eye(3)
+
+    # labels
+    labels_img = generate_labeled_regions(shape, 7, affine=affine)
+
+    # Ensure correct behaviour for valid data.
+    with pytest.warns(None):
+        signal_extraction._check_shape_affine_label_img(
+            labels_img, shape, affine)
+
+    # Smoke test to make sure an error is raised when affine is not correct.
+    with pytest.raises(ValueError, match=_TEST_SHAPE_LABEL_ERROR_MSG):
+        signal_extraction._check_shape_affine_label_img(
+            labels_img, test_shape, affine)
+
+    # Smoke test to make sure an error is raised when affine is not correct.
+    with pytest.raises(ValueError, match=_TEST_AFFINE_LABEL_ERROR_MSG):
+        signal_extraction._check_shape_affine_label_img(
+            labels_img, shape, test_affine)
+
+
+def test__check_shape_affine_maps_masks():
+    """Test to ensure correct check for valid shapes & affines of masks \
+    and maps."""
+    maps_shape = (2, 3, 4, 7)
+    mask_shape = (2, 3, 4)
+    test_mask_shape = (2, 3, 5)
+
+    affine = np.eye(4)
+    test_affine = 2 * affine
+
+    # Ensure correct behaviour for valid data without dim.
+    with pytest.warns(None):
+        signal_extraction._check_shape_affine_maps_masks(
+            mask_shape,
+            affine,
+            nibabel.Nifti1Image(np.zeros(mask_shape), affine))
+
+    # Ensure correct behaviour for valid data with dim.
+    with pytest.warns(None):
+        signal_extraction._check_shape_affine_maps_masks(
+            maps_shape[:3],
+            affine,
+            nibabel.Nifti1Image(np.zeros(maps_shape), affine),
+            3)
+
+    # Smoke test for shape error.
+    with pytest.raises(ValueError, match=_TEST_SHAPE_IMG_ERROR_MSG):
+        signal_extraction._check_shape_affine_maps_masks(
+            mask_shape,
+            affine,
+            nibabel.Nifti1Image(np.zeros(test_mask_shape), affine))
+
+    # Smoke test for affine error.
+    with pytest.raises(ValueError, match=_TEST_AFFINE_IMG_ERROR_MSG):
+        signal_extraction._check_shape_affine_maps_masks(
+            mask_shape,
+            affine,
+            nibabel.Nifti1Image(np.zeros(mask_shape), test_affine))
 
 
 def test_generate_regions_ts():

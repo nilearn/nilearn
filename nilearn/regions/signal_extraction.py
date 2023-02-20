@@ -15,6 +15,150 @@ from .._utils.niimg import _safe_get_data
 from .. import masking
 from ..image import new_img_like
 
+INF = 1000 * np.finfo(np.float32).eps
+
+
+def _check_shape_affine_label_img(labels_img, target_shape, target_affine):
+    """Validate shapes and affines of labels.
+
+    Parameters
+    ----------
+    labels_img : Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        regions definition as labels. Encodes the region labels of the signals.
+
+    target_shape : numpy.ndarray
+        Desired shape of label images.
+
+    target_affine : numpy.ndarray
+        Desired affine of label images.
+
+    """
+    if labels_img.shape != target_shape:
+        raise ValueError("labels_img.shape and target_shape "
+                         "must be identical.")
+    if (labels_img.affine.shape != target_affine.shape
+            or abs(labels_img.affine - target_affine).max() > INF):
+        raise ValueError("labels_img.affine and target_affine " 
+                         "must be identical.")
+
+
+def _check_shape_affine_maps_masks(target_shape,
+                                   target_affine,
+                                   img=None,
+                                   dim=None):
+    """Validate shapes and affines of maps and masks.
+
+    Parameters
+    ----------
+    target_shape : tuple
+        Desired shape of maps or masks.
+
+    target_affine : numpy.ndarray
+        Desired affine of maps or masks.
+
+    img : Niimg-like object, optional
+        Contains map or mask.
+        See http://nilearn.github.io/manipulating_images/input_output.html
+
+    dim : integer, optional
+        Integer slices a mask for a specific dimension. Default=None.
+
+    Returns
+    -------
+    non_empty : bool,
+        Is only true for non-empty img.
+
+    """
+    state = False
+
+    # Check shape
+    if img is not None and dim is None:
+        img = _utils.check_niimg_3d(img)
+        if img.shape != target_shape:
+            raise ValueError("mask/map and imgs shapes must be identical.")
+    elif img is not None and img.shape[:dim] != target_shape:
+        raise ValueError("mask/map and imgs shapes must be identical.")
+
+    # Check affines & set state
+    if img is not None:
+        if (
+            img.affine.shape != target_affine.shape
+            or abs(img.affine - target_affine).max() > INF
+        ):
+            raise ValueError("mask/map and imgs affines must be identical.")
+        else:
+            state = True
+
+    return state
+
+
+def _get_labels_data(labels_img, target_shape, target_affine,
+                     mask_img=None, background_label=0, dim=None):
+    """Get the label data.
+
+    Ensures that labels, imgs and mask shapes and affines fit.
+
+    Parameters
+    ----------
+    labels_img : Niimg-like object
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        regions definition as labels. By default, the label zero is used to
+        denote an absence of region. Use background_label to change it.
+
+    target_shape : tuple
+        Desired shape of labels image and mask.
+
+    target_affine : numpy.ndarray
+        Desired affine of labels image and mask.
+
+    mask_img : Niimg-like object, optional
+        See http://nilearn.github.io/manipulating_images/input_output.html
+        Mask to apply to labels before extracting signals. Every point
+        outside the mask is considered as background (i.e. no region).
+
+    background_label : number, optional
+        Number representing background in labels_img. Default=0.
+
+    dim : integer, optional
+        Integer slices mask for a specific dimension. Default=None.
+
+    Returns
+    -------
+    labels : list or tuple
+        Corresponding labels for each signal. signal[:, n] was extracted from
+        the region with label labels[n].
+
+    labels_data : numpy.ndarray
+        Extracted data for each region within the mask.
+        Data outside the mask are assigned to the background
+        label to restrict signal extraction
+
+    See also
+    --------
+    nilearn.regions.signals_to_img_labels
+    nilearn.regions.img_to_signals_labels
+
+    """
+    _check_shape_affine_label_img(labels_img, target_shape, target_affine)
+
+    labels_data = _safe_get_data(
+        labels_img, ensure_finite=True)
+    labels = list(np.unique(labels_data))
+
+    if background_label in labels:
+        labels.remove(background_label)
+
+    # Consider only data within the mask
+    img_state = _check_shape_affine_maps_masks(
+        target_shape, target_affine, mask_img, dim)
+    if img_state:
+        mask_img = _utils.check_niimg_3d(mask_img)
+        mask_data = _safe_get_data(mask_img, ensure_finite=True)
+        labels_data = labels_data.copy()
+        labels_data[np.logical_not(mask_data)] = background_label
+
+    return labels, labels_data
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
 @_utils.fill_doc
