@@ -1,112 +1,321 @@
-
-..
-    We are putting the title as a raw HTML so that it doesn't appear in
-    the contents
+Nilearn
+=======
 
 .. container:: index-paragraph
 
     Nilearn enables **approachable and versatile analyses of brain
     volumes**. It provides statistical and machine-learning tools, with
     **instructive documentation & open community**.
-    
-    It supports general linear model (GLM) based analysis and leverages the `scikit-learn <http://scikit-learn.org>`__ Python toolbox
+
+    It supports general linear model (GLM) based analysis and leverages
+    the :sklearn:`scikit-learn <>` Python toolbox
     for multivariate statistics with applications such as predictive modelling,
     classification, decoding, or connectivity analysis.
 
-    Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_.
-    :ref:`Here's a guide to replacing Nistats imports to work in Nilearn. <nistats_migration>`
 
+.. grid::
 
-.. Here we are building the carousel
+    .. grid-item-card:: :fas:`rocket` Quickstart
+        :link: quickstart
+        :link-type: ref
+        :columns: 12 12 4 4
+        :class-card: sd-shadow-md
+        :class-title: sd-text-primary
+        :margin: 2 2 0 0
 
-.. |glass_brain| image:: auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_002.png
-   :target: auto_examples/01_plotting/plot_demo_glass_brain.html
+        Get started with Nilearn
 
-.. |connectome| image:: auto_examples/03_connectivity/images/sphx_glr_plot_inverse_covariance_connectome_004.png
-     :target: auto_examples/03_connectivity/plot_inverse_covariance_connectome.html
+    .. grid-item-card:: :fas:`th` Examples
+        :link: auto_examples/index.html
+        :link-type: url
+        :columns: 12 12 4 4
+        :class-card: sd-shadow-md
+        :class-title: sd-text-primary
+        :margin: 2 2 0 0
 
-.. |surface_plot| image:: auto_examples/01_plotting/images/sphx_glr_plot_3d_map_to_surface_projection_001.png
-     :target: auto_examples/01_plotting/plot_3d_map_to_surface_projection.html
+        Discover functionalities by reading examples
 
-.. |haxby_weights| image:: auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
-   :target: auto_examples/plot_decoding_tutorial.html
+    .. grid-item-card:: :fas:`book` User guide
+        :link: user_guide
+        :link-type: ref
+        :columns: 12 12 4 4
+        :class-card: sd-shadow-md
+        :class-title: sd-text-primary
+        :margin: 2 2 0 0
 
-.. |oasis_weights| image:: auto_examples/02_decoding/images/sphx_glr_plot_oasis_vbm_002.png
-   :target: auto_examples/02_decoding/plot_oasis_vbm.html
+        Learn about neuroimaging analysis
 
-.. |rest_parcellations| image:: auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_001.png
-   :target: auto_examples/03_connectivity/plot_data_driven_parcellations.html
+Featured examples
+-----------------
 
-.. |canica| image:: auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_011.png
-   :target: auto_examples/03_connectivity/plot_compare_decomposition.html
+.. grid::
 
-.. |tvl1_haxby| image:: auto_examples/02_decoding/images/sphx_glr_plot_haxby_frem_001.png
-   :target: auto_examples/02_decoding/plot_haxby_frem.html
+  .. grid-item-card::
+    :link: auto_examples/01_plotting/plot_demo_glass_brain.html
+    :link-type: url
+    :columns: 12 12 12 12
+    :class-card: sd-shadow-sm
+    :margin: 2 2 auto auto
 
-.. |searchlight| image:: auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_001.png
-   :target: auto_examples/02_decoding/plot_haxby_searchlight.html
+    .. grid::
+      :gutter: 3
+      :margin: 0
+      :padding: 0
 
-.. raw:: html
+      .. grid-item::
+        :columns: 12 4 4 4
 
-   <div id="index-grid" class="section group">
-    <div class="col span_1_of_3">
-        <h3><a
-        href="introduction.html#python-for-neuroimaging-a-quick-start">First Steps</a></h3>
-        <p>Get started with nilearn</p>
+        .. image:: auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_002.png
 
-        <h3><a href="auto_examples/index.html"> Examples</a></h3>
-        <p>Visit our example gallery</p>
-        <h3><a href="user_guide.html"> User Guide</a></h3>
-        <p>Browse the full documentation</p>
-    </div>
-    <div class="col span_2_of_3">
-    <div class="jcarousel-wrapper">
-    <div class="jcarousel">
+      .. grid-item::
+        :columns: 12 8 8 8
 
-* |glass_brain|
+        .. div:: sd-font-weight-bold
 
-* |surface_plot|
+          Glass brain plotting
 
-* |oasis_weights|
+        Explore how to retrieve data and plot whole brain cuts
+        in glass mode.
 
-* |connectome|
+  .. grid-item-card::
+    :link: auto_examples/03_connectivity/plot_inverse_covariance_connectome.html
+    :link-type: url
+    :columns: 12 12 12 12
+    :class-card: sd-shadow-sm
+    :margin: 2 2 auto auto
 
-* |rest_parcellations|
+    .. grid::
+      :gutter: 3
+      :margin: 0
+      :padding: 0
 
-* |canica|
+      .. grid-item::
+        :columns: 12 4 4 4
 
-* |tvl1_haxby|
+        .. image:: auto_examples/03_connectivity/images/sphx_glr_plot_inverse_covariance_connectome_004.png
 
-* |haxby_weights|
+      .. grid-item::
+        :columns: 12 8 8 8
 
-* |searchlight|
+        .. div:: sd-font-weight-bold
 
-.. raw:: html
+          Computing a connectome with sparse inverse covariance
 
-            </div>
+        Construct a functional connectome using the sparse inverse covariance,
+        and display the corresponding graph and matrix.
 
-        <a href="#" class="jcarousel-control-prev">&lsaquo;</a>
-        <a href="#" class="jcarousel-control-next">&rsaquo;</a>
+  .. grid-item-card::
+    :link: auto_examples/01_plotting/plot_3d_map_to_surface_projection.html
+    :link-type: url
+    :columns: 12 12 12 12
+    :class-card: sd-shadow-sm
+    :margin: 2 2 auto auto
 
-        <p class="jcarousel-pagination">
+    .. grid::
+      :gutter: 3
+      :margin: 0
+      :padding: 0
 
-        </p>
+      .. grid-item::
+        :columns: 12 4 4 4
 
-        </div>
-        </div>
+        .. image:: auto_examples/01_plotting/images/sphx_glr_plot_3d_map_to_surface_projection_001.png
 
-   </div>
-   <div style="clear: left"></div>
+      .. grid-item::
+        :columns: 12 8 8 8
+
+        .. div:: sd-font-weight-bold
+
+          Making a surface plot of a 3D statistical map
+
+        Project a 3D statistical map onto a cortical mesh
+        and display the surface map as png or in interactive mode.
+
+  .. grid-item-card::
+    :link: auto_examples/00_tutorials/plot_decoding_tutorial.html
+    :link-type: url
+    :columns: 12 12 12 12
+    :class-card: sd-shadow-sm
+    :margin: 2 2 auto auto
+
+    .. grid::
+      :gutter: 3
+      :margin: 0
+      :padding: 0
+
+      .. grid-item::
+        :columns: 12 4 4 4
+
+        .. image:: auto_examples/00_tutorials/images/sphx_glr_plot_decoding_tutorial_001.png
+
+      .. grid-item::
+        :columns: 12 8 8 8
+
+        .. div:: sd-font-weight-bold
+
+          Introduction tutorial to fMRI decoding
+
+        Learn to perform decoding with nilearn. Reproduce the Haxby 2001 study on a face vs cat discrimination task in a mask of the ventral stream.
+
+  .. grid-item-card::
+    :link: auto_examples/02_decoding/plot_oasis_vbm.html
+    :link-type: url
+    :columns: 12 12 12 12
+    :class-card: sd-shadow-sm
+    :margin: 2 2 auto auto
+
+    .. grid::
+      :gutter: 3
+      :margin: 0
+      :padding: 0
+
+      .. grid-item::
+        :columns: 12 4 4 4
+
+        .. image:: auto_examples/02_decoding/images/sphx_glr_plot_oasis_vbm_002.png
+
+      .. grid-item::
+        :columns: 12 8 8 8
+
+        .. div:: sd-font-weight-bold
+
+          Voxel-Based Morphometry on Oasis dataset
+
+        Study the relationship between aging and gray matter density
+        using data from the OASIS project.
+
+  .. grid-item-card::
+    :link: auto_examples/03_connectivity/plot_data_driven_parcellations.html
+    :link-type: url
+    :columns: 12 12 12 12
+    :class-card: sd-shadow-sm
+    :margin: 2 2 auto auto
+
+    .. grid::
+      :gutter: 3
+      :margin: 0
+      :padding: 0
+
+      .. grid-item::
+        :columns: 12 4 4 4
+
+        .. image:: auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_001.png
+
+      .. grid-item::
+        :columns: 12 8 8 8
+
+        .. div:: sd-font-weight-bold
+
+          Clustering methods to learn a brain parcellation from fMRI
+
+        Use spatially-constrained Ward-clustering, KMeans, Hierarchical KMeans
+        and Recursive Neighbor Agglomeration (ReNA) to create a set of parcels,
+        and display them.
+
+  .. grid-item-card::
+    :link: auto_examples/03_connectivity/plot_compare_decomposition.html
+    :link-type: url
+    :columns: 12 12 12 12
+    :class-card: sd-shadow-sm
+    :margin: 2 2 auto auto
+
+    .. grid::
+      :gutter: 3
+      :margin: 0
+      :padding: 0
+
+      .. grid-item::
+        :columns: 12 4 4 4
+
+        .. image:: auto_examples/03_connectivity/images/sphx_glr_plot_compare_decomposition_001.png
+
+      .. grid-item::
+        :columns: 12 8 8 8
+
+        .. div:: sd-font-weight-bold
+
+          Deriving spatial maps from group fMRI data using ICA and Dictionary Learning
+
+        Derive spatial maps or networks from group fMRI data
+        using two popular decomposition methods, ICA and Dictionary learning
+        on data of children and young adults watching movies.
+
+  .. grid-item-card::
+    :link: auto_examples/02_decoding/plot_haxby_frem.html
+    :link-type: url
+    :columns: 12 12 12 12
+    :class-card: sd-shadow-sm
+    :margin: 2 2 auto auto
+
+    .. grid::
+      :gutter: 3
+      :margin: 0
+      :padding: 0
+
+      .. grid-item::
+        :columns: 12 4 4 4
+
+        .. image:: auto_examples/02_decoding/images/sphx_glr_plot_haxby_frem_001.png
+
+      .. grid-item::
+        :columns: 12 8 8 8
+
+        .. div:: sd-font-weight-bold
+
+          Decoding with FREM: face vs house object recognition
+
+        Use fast ensembling of regularized models (FREM)
+        to decode a face vs house discrimination task from Haxby 2001 study.
+
+  .. grid-item-card::
+    :link: auto_examples/02_decoding/plot_haxby_searchlight.html
+    :link-type: url
+    :columns: 12 12 12 12
+    :class-card: sd-shadow-sm
+    :margin: 2 2 auto auto
+
+    .. grid::
+      :gutter: 3
+      :margin: 0
+      :padding: 0
+
+      .. grid-item::
+        :columns: 12 4 4 4
+
+        .. image:: auto_examples/02_decoding/images/sphx_glr_plot_haxby_searchlight_001.png
+
+      .. grid-item::
+        :columns: 12 8 8 8
+
+        .. div:: sd-font-weight-bold
+
+          Searchlight analysis of face vs house recognition
+
+        Fit a classifier a large amount of times
+        in order to distinguish between face- and house-related
+        cortical areas.
+
 
 .. toctree::
    :hidden:
+   :includehidden:
+   :titlesonly:
 
-   nistats_migration.rst
-   authors.rst
-   user_guide.rst
+   quickstart.md
    auto_examples/index.rst
-   whats_new.rst
-   development.rst
+   user_guide.rst
+   modules/index.rst
    glossary.rst
 
-Nilearn is part of the `NiPy ecosystem <http://nipy.org>`_.
+.. toctree::
+   :hidden:
+   :caption: Development
+
+   development.rst
+   maintenance.rst
+   changes/whats_new.rst
+   authors.rst
+   GitHub Repository <https://github.com/nilearn/nilearn>
+
+
+Nilearn is part of the :nipy:`NiPy ecosystem <>`.

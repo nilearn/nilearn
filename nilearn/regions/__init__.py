@@ -10,11 +10,13 @@ from .signal_extraction import (
 )
 from .parcellations import Parcellations
 
-from .rena_clustering import ReNA
+from .rena_clustering import ReNA, recursive_neighbor_agglomeration
+from .hierarchical_kmeans_clustering import HierarchicalKMeans
 
 __all__ = [
     'connected_regions', 'RegionExtractor',
     'connected_label_regions',
     'img_to_signals_labels', 'signals_to_img_labels',
     'img_to_signals_maps', 'signals_to_img_maps',
-    'Parcellations', 'ReNA']
+    'Parcellations', 'ReNA', 'recursive_neighbor_agglomeration',
+    'HierarchicalKMeans']

@@ -7,135 +7,14 @@ import numpy as np
 from scipy import stats
 from sklearn.utils import check_random_state
 
-from numpy.testing import (assert_almost_equal, assert_array_almost_equal,
+from numpy.testing import (assert_array_almost_equal,
                            assert_array_less, assert_equal)
 import pytest
 
 from nilearn.mass_univariate import permuted_ols
-from nilearn.mass_univariate.permuted_least_squares import (
-    _t_score_with_covars_and_normalized_design, orthonormalize_matrix)
-
-
-def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):
-    """Utility function to compute tvalues with linalg or statsmodels
-
-    Massively univariate linear model (= each target is considered
-    independently).
-
-    Parameters
-    ----------
-    tested_vars: array-like, shape=(n_samples, n_regressors)
-      Tested variates, the associated coefficient of which are to be tested
-      independently with a t-test, resulting in as many t-values.
-
-    target_vars: array-like, shape=(n_samples, n_descriptors)
-      Target variates, to be approximated with a linear combination of
-      the tested variates and the confounding variates.
-
-    covars: array-like, shape=(n_samples, n_confounds)
-      Confounding variates, to be fitted but not to be tested
-
-    Returns
-    -------
-    t-values: np.ndarray, shape=(n_regressors, n_descriptors)
-
-    """
-    ### set up design
-    n_samples, n_regressors = tested_vars.shape
-    n_descriptors = target_vars.shape[1]
-    if covars is not None:
-        n_covars = covars.shape[1]
-        design_matrix = np.hstack((tested_vars, covars))
-    else:
-        n_covars = 0
-        design_matrix = tested_vars
-    mask_covars = np.ones(n_regressors + n_covars, dtype=bool)
-    mask_covars[:n_regressors] = False
-    test_matrix = np.array([[1.] + [0.] * n_covars])
-
-    ### t-values computation
-    try:  # try with statsmodels if available (more concise)
-        from statsmodels.regression.linear_model import OLS
-        t_values = np.empty((n_descriptors, n_regressors))
-        for i in range(n_descriptors):
-            current_target = target_vars[:, i].reshape((-1, 1))
-            for j in range(n_regressors):
-                current_tested_mask = mask_covars.copy()
-                current_tested_mask[j] = True
-                current_design_matrix = design_matrix[:, current_tested_mask]
-                ols_fit = OLS(current_target, current_design_matrix).fit()
-                t_values[i, j] = np.ravel(ols_fit.t_test(test_matrix).tvalue)
-    except:  # use linalg if statsmodels is not available
-        from numpy import linalg
-        lost_dof = n_covars + 1  # fit all tested variates independently
-        t_values = np.empty((n_descriptors, n_regressors))
-        for i in range(n_regressors):
-            current_tested_mask = mask_covars.copy()
-            current_tested_mask[i] = True
-            current_design_matrix = design_matrix[:, current_tested_mask]
-            invcov = linalg.pinv(current_design_matrix)
-            normalized_cov = np.dot(invcov, invcov.T)
-            t_val_denom_aux = np.diag(
-                np.dot(test_matrix, np.dot(normalized_cov, test_matrix.T)))
-            t_val_denom_aux = t_val_denom_aux.reshape((-1, 1))
-            for j in range(n_descriptors):
-                current_target = target_vars[:, j].reshape((-1, 1))
-                res_lstsq = linalg.lstsq(current_design_matrix, current_target)
-                residuals = (current_target
-                             - np.dot(current_design_matrix, res_lstsq[0]))
-                t_val_num = np.dot(test_matrix, res_lstsq[0])
-                t_val_denom = np.sqrt(
-                    np.sum(residuals ** 2, 0) / float(n_samples - lost_dof)
-                    * t_val_denom_aux)
-                t_values[j, i] = np.ravel(t_val_num / t_val_denom)
-    t_values = t_values.T
-    assert t_values.shape == (n_regressors, n_descriptors)
-    return t_values
-
-
-### Tests t-scores computation ################################################
-def test_t_score_with_covars_and_normalized_design_nocovar(random_state=0):
-    rng = check_random_state(random_state)
-
-    ### Normalized data
-    n_samples = 50
-
-    # generate data
-    var1 = np.ones((n_samples, 1)) / np.sqrt(n_samples)
-    var2 = rng.randn(n_samples, 1)
-    var2 = var2 / np.sqrt(np.sum(var2 ** 2, 0))  # normalize
-
-    # compute t-scores with nilearn routine
-    t_val_own = _t_score_with_covars_and_normalized_design(var1, var2)
-
-    # compute t-scores with linalg or statsmodels
-    t_val_alt = get_tvalue_with_alternative_library(var1, var2)
-    assert_array_almost_equal(t_val_own, t_val_alt)
-
-
-def test_t_score_with_covars_and_normalized_design_withcovar(random_state=0):
-    """
-
-    """
-    rng = check_random_state(random_state)
-
-    ### Normalized data
-    n_samples = 50
-
-    # generate data
-    var1 = np.ones((n_samples, 1)) / np.sqrt(n_samples)  # normalized
-    var2 = rng.randn(n_samples, 1)
-    var2 = var2 / np.sqrt(np.sum(var2 ** 2, 0))  # normalize
-    covars = np.eye(n_samples, 3)  # covars is orthogonal
-    covars[3] = -1  # covars is orthogonal to var1
-    covars = orthonormalize_matrix(covars)
-
-    # nilearn t-score
-    own_score = _t_score_with_covars_and_normalized_design(var1, var2, covars)
-
-    # compute t-scores with linalg or statmodels
-    ref_score = get_tvalue_with_alternative_library(var1, var2, covars)
-    assert_array_almost_equal(own_score, ref_score)
+from nilearn.mass_univariate.tests.utils import (
+    get_tvalue_with_alternative_library,
+)
 
 
 ### General tests for permuted_ols function ###################################
@@ -144,6 +23,7 @@ def test_permuted_ols_check_h0_noeffect_labelswap(random_state=0):
 
     # design parameters
     n_samples = 100
+    n_regressors = 1
 
     # create dummy design with no effect
     target_var = rng.randn(n_samples, 1)
@@ -169,38 +49,47 @@ def test_permuted_ols_check_h0_noeffect_labelswap(random_state=0):
         pval, orig_scores, h0 = permuted_ols(
             tested_var, target_var, model_intercept=False,
             n_perm=n_perm, two_sided_test=False, random_state=i)
-        assert_equal(h0.size, n_perm)
+        assert_equal(h0.shape, (n_regressors, n_perm))
+        h0_intercept = h0[0, :]
+
         # Kolmogorov-Smirnov test
-        kstest_pval = stats.kstest(h0, stats.t(n_samples - 1).cdf)[1]
+        kstest_pval = stats.kstest(h0_intercept, stats.t(n_samples - 1).cdf)[1]
         all_kstest_pvals.append(kstest_pval)
         mse = np.mean(
-            (stats.t(n_samples - 1).cdf(np.sort(h0))
-             - np.linspace(0, 1, h0.size + 1)[1:]) ** 2)
+            (stats.t(n_samples - 1).cdf(np.sort(h0_intercept))
+             - np.linspace(0, 1, h0_intercept.size + 1)[1:]) ** 2)
         all_mse.append(mse)
+
         ### Case no. 2: intercept in the model
         pval, orig_scores, h0 = permuted_ols(
             tested_var, target_var, model_intercept=True,
             n_perm=n_perm, two_sided_test=False, random_state=i)
         assert_array_less(pval, 1.)  # pval should not be significant
+        h0_intercept = h0[0, :]
+
         # Kolmogorov-Smirnov test
-        kstest_pval = stats.kstest(h0, stats.t(n_samples - 2).cdf)[1]
+        kstest_pval = stats.kstest(h0_intercept, stats.t(n_samples - 2).cdf)[1]
         all_kstest_pvals_intercept.append(kstest_pval)
         mse = np.mean(
-            (stats.t(n_samples - 2).cdf(np.sort(h0))
-             - np.linspace(0, 1, h0.size + 1)[1:]) ** 2)
+            (stats.t(n_samples - 2).cdf(np.sort(h0_intercept))
+             - np.linspace(0, 1, h0_intercept.size + 1)[1:]) ** 2)
         all_mse_intercept.append(mse)
+
         ### Case no. 3: intercept in the model, no centering of tested vars
         pval, orig_scores, h0 = permuted_ols(
             tested_var_not_centered, target_var, model_intercept=True,
             n_perm=n_perm, two_sided_test=False, random_state=i)
         assert_array_less(pval, 1.)  # pval should not be significant
+        h0_intercept = h0[0, :]
+
         # Kolmogorov-Smirnov test
-        kstest_pval = stats.kstest(h0, stats.t(n_samples - 2).cdf)[1]
+        kstest_pval = stats.kstest(h0_intercept, stats.t(n_samples - 2).cdf)[1]
         all_kstest_pvals_intercept2.append(kstest_pval)
         mse = np.mean(
-            (stats.t(n_samples - 2).cdf(np.sort(h0))
-             - np.linspace(0, 1, h0.size + 1)[1:]) ** 2)
+            (stats.t(n_samples - 2).cdf(np.sort(h0_intercept))
+             - np.linspace(0, 1, h0_intercept.size + 1)[1:]) ** 2)
         all_mse_intercept2.append(mse)
+
     all_kstest_pvals = np.array(all_kstest_pvals).reshape(
         (len(perm_ranges), -1))
     all_kstest_pvals_intercept = np.array(all_kstest_pvals_intercept).reshape(
@@ -227,10 +116,11 @@ def test_permuted_ols_check_h0_noeffect_signswap(random_state=0):
 
     # design parameters
     n_samples = 100
+    n_regressors = 1
 
     # create dummy design with no effect
     target_var = rng.randn(n_samples, 1)
-    tested_var = np.ones((n_samples, 1))
+    tested_var = np.ones((n_samples, n_regressors))
 
     # permuted OLS
     # We check that h0 is close to the theoretical distribution, which is
@@ -245,14 +135,17 @@ def test_permuted_ols_check_h0_noeffect_signswap(random_state=0):
         pval, orig_scores, h0 = permuted_ols(
             tested_var, target_var, model_intercept=False,
             n_perm=n_perm, two_sided_test=False, random_state=i)
-        assert_equal(h0.size, n_perm)
+        assert h0.shape == (n_regressors, n_perm)
+        h0_intercept = h0[0, :]
+
         # Kolmogorov-Smirnov test
-        kstest_pval = stats.kstest(h0, stats.t(n_samples).cdf)[1]
+        kstest_pval = stats.kstest(h0_intercept, stats.t(n_samples).cdf)[1]
         all_kstest_pvals.append(kstest_pval)
         mse = np.mean(
-            (stats.t(n_samples).cdf(np.sort(h0))
-             - np.linspace(0, 1, h0.size + 1)[1:]) ** 2)
+            (stats.t(n_samples).cdf(np.sort(h0_intercept))
+             - np.linspace(0, 1, h0_intercept.size + 1)[1:]) ** 2)
         all_mse.append(mse)
+
     all_kstest_pvals = np.array(all_kstest_pvals).reshape(
         (len(perm_ranges), -1))
     all_mse = np.array(all_mse).reshape((len(perm_ranges), -1))
@@ -308,8 +201,9 @@ def test_permuted_ols_nocovar(random_state=0):
 
 
 def test_permuted_ols_nocovar_warning(random_state=0):
-    """
-    Ensure that a warning is raised when a given voxel has all zeros.
+    """Ensure that a warning is raised when a given voxel has all zeros.
+
+    This test also checks that an invalid n_jobs value will raise a ValueError.
     """
     rng = check_random_state(random_state)
 
@@ -336,6 +230,17 @@ def test_permuted_ols_nocovar_warning(random_state=0):
             n_perm=100, random_state=random_state)
 
     assert np.array_equal(own_score[1:], own_score2[1:])
+
+    # Ensure that passing an unacceptable n_jobs value will raise a ValueError
+    with pytest.raises(ValueError):
+        permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            n_perm=100,
+            n_jobs=0,  # not allowed
+            random_state=random_state,
+        )
 
 
 def test_permuted_ols_withcovar(random_state=0):
@@ -382,6 +287,45 @@ def test_permuted_ols_withcovar(random_state=0):
     assert_array_almost_equal(alt_score_intercept, own_score_intercept,
                               decimal=6)
 
+    # Intercept in confounding vars
+    # permuted OLS with constant in confounding_vars, model_intercept=True
+    confounding_vars = np.ones([n_samples, 1])
+    _, own_score, _ = permuted_ols(
+        tested_var, target_var, confounding_vars, model_intercept=True,
+        n_perm=0, random_state=random_state)
+    assert own_score.shape == (n_regressors, n_descriptors)
+
+    # permuted OLS with constant in confounding_vars, model_intercept=False
+    confounding_vars = np.ones([n_samples, 1])
+    _, own_score, _ = permuted_ols(
+        tested_var, target_var, confounding_vars, model_intercept=False,
+        n_perm=0, random_state=random_state)
+    assert own_score.shape == (n_regressors, n_descriptors)
+
+    # permuted OLS, multiple constants and covars, model_intercept=False
+    confounding_vars = np.hstack((rng.randn(n_samples, n_covars),
+                                  np.ones([n_samples, 2])))
+    _, own_score, _ = permuted_ols(
+        tested_var, target_var, confounding_vars, model_intercept=False,
+        n_perm=0, random_state=random_state)
+    assert own_score.shape == (n_regressors, n_descriptors)
+
+    # Multiple intercepts should raise a warning
+    # In confounding vars
+    with pytest.warns(UserWarning):
+        confounding_vars = np.ones([n_samples, 2])
+        _, own_score, _ = permuted_ols(
+            tested_var, target_var, confounding_vars,
+            n_perm=0, random_state=random_state)
+
+    # Across tested vars and confounding vars
+    with pytest.warns(UserWarning):
+        confounding_vars = np.ones([n_samples, 1])
+        tested_var = np.ones([n_samples, 1])
+        _, own_score, _ = permuted_ols(
+            tested_var, target_var, confounding_vars,
+            n_perm=0, random_state=random_state)
+
 
 def test_permuted_ols_nocovar_multivariate(random_state=0):
     """Test permuted_ols with multiple tested variates and no covariate.
@@ -395,6 +339,7 @@ def test_permuted_ols_nocovar_multivariate(random_state=0):
     n_samples = 50
     n_descriptors = 10
     n_regressors = 2
+    n_perm = 10
 
     # create design
     target_vars = rng.randn(n_samples, n_descriptors)
@@ -404,10 +349,16 @@ def test_permuted_ols_nocovar_multivariate(random_state=0):
     ref_scores = get_tvalue_with_alternative_library(tested_var, target_vars)
 
     # permuted OLS
-    _, own_scores, _ = permuted_ols(
-        tested_var, target_vars, model_intercept=False,
-        n_perm=0, random_state=random_state)
+    neg_log10_pvals, own_scores, h0_fmax = permuted_ols(
+        tested_var,
+        target_vars,
+        model_intercept=False,
+        n_perm=n_perm,
+        random_state=random_state,
+    )
     assert_array_almost_equal(ref_scores, own_scores, decimal=6)
+    assert neg_log10_pvals.shape == (n_regressors, n_descriptors)
+    assert h0_fmax.shape == (n_regressors, n_perm)
 
     ### Adds intercept (should be equivalent to centering variates)
     # permuted OLS
@@ -423,53 +374,6 @@ def test_permuted_ols_nocovar_multivariate(random_state=0):
     )
     assert_array_almost_equal(ref_scores_intercept, own_scores_intercept,
                               decimal=6)
-
-
-def test_permuted_ols_withcovar_multivariate(random_state=0):
-    """Test permuted_ols with multiple tested variates and covariates.
-
-    It is equivalent to fitting several models with only one tested variate.
-
-    """
-    rng = check_random_state(random_state)
-
-    # design parameters
-    n_samples = 50
-    n_descriptors = 10
-    n_regressors = 1
-    n_covars = 2
-
-    # create design
-    target_vars = rng.randn(n_samples, n_descriptors)
-    tested_var = rng.randn(n_samples, n_regressors)
-    confounding_vars = rng.randn(n_samples, n_covars)
-
-    # compute t-scores with linalg or statmodels
-    ref_scores = get_tvalue_with_alternative_library(tested_var, target_vars,
-                                                     confounding_vars)
-    assert ref_scores.shape == (n_regressors, n_descriptors)
-
-    # permuted OLS
-    _, own_scores, _ = permuted_ols(
-        tested_var, target_vars, confounding_vars, model_intercept=False,
-        n_perm=0, random_state=random_state)
-    assert own_scores.shape == (n_regressors, n_descriptors)
-    assert_almost_equal(ref_scores, own_scores, decimal=6)
-
-    ### Adds intercept
-    # permuted OLS
-    _, own_scores_intercept, _ = permuted_ols(
-        tested_var, target_vars, confounding_vars, model_intercept=True,
-        n_perm=0, random_state=random_state)
-    assert own_scores_intercept.shape == (n_regressors, n_descriptors)
-
-    # compute t-scores with linalg or statmodels
-    confounding_vars = np.hstack((confounding_vars, np.ones((n_samples, 1))))
-    ref_scores_intercept = get_tvalue_with_alternative_library(
-        tested_var, target_vars, confounding_vars)
-    assert ref_scores_intercept.shape == (n_regressors, n_descriptors)
-    assert_array_almost_equal(ref_scores_intercept,
-                              own_scores_intercept, decimal=6)
 
 
 ### Tests for sign swapping permutation scheme ##############################
@@ -540,71 +444,6 @@ def test_permuted_ols_intercept_statsmodels_withcovar(random_state=0):
     assert_array_almost_equal(ref_scores, own_scores_intercept, decimal=6)
 
 
-def test_permuted_ols_intercept_nocovar_multivariate(random_state=0):
-    rng = check_random_state(random_state)
-
-    # design parameters
-    n_samples = 50
-    n_descriptors = 10
-    n_regressors = 1
-
-    # create design
-    target_vars = rng.randn(n_samples, n_descriptors)
-    tested_vars = np.ones((n_samples, n_regressors))
-
-    # compute t-scores with nilearn routine
-    ref_scores = get_tvalue_with_alternative_library(tested_vars, target_vars)
-    assert ref_scores.shape == (n_regressors, n_descriptors)
-
-    # permuted OLS
-    _, own_scores, _ = permuted_ols(
-        tested_vars, target_vars, confounding_vars=None, n_perm=0,
-        random_state=random_state)
-    assert own_scores.shape == (n_regressors, n_descriptors)
-    assert_array_almost_equal(ref_scores, own_scores, decimal=6)
-
-    # same thing but with model_intercept=True to check it has no effect
-    _, own_scores_intercept, _ = permuted_ols(
-        tested_vars, target_vars, confounding_vars=None, model_intercept=True,
-        n_perm=0, random_state=random_state)
-    assert own_scores_intercept.shape == (n_regressors, n_descriptors)
-    assert_array_almost_equal(ref_scores, own_scores_intercept, decimal=6)
-
-
-def test_permuted_ols_intercept_withcovar_multivariate(random_state=0):
-    rng = check_random_state(random_state)
-
-    # design parameters
-    n_samples = 50
-    n_descriptors = 10
-    n_regressors = 1
-    n_covars = 2
-
-    # create design
-    target_vars = rng.randn(n_samples, n_descriptors)
-    tested_var = np.ones((n_samples, n_regressors))
-    confounding_vars = rng.randn(n_samples, n_covars)
-
-    # compute t-scores with linalg or statsmodels
-    ref_scores = get_tvalue_with_alternative_library(tested_var, target_vars,
-                                                     confounding_vars)
-    assert ref_scores.shape == (n_regressors, n_descriptors)
-
-    # permuted OLS
-    _, own_scores, _ = permuted_ols(
-        tested_var, target_vars, confounding_vars, n_perm=0,
-        random_state=random_state)
-    assert own_scores.shape == (n_regressors, n_descriptors)
-    assert_almost_equal(ref_scores, own_scores, decimal=6)
-
-    # same thing but with model_intercept=True to check it has no effect
-    _, own_scores_intercept, _ = permuted_ols(
-        tested_var, target_vars, confounding_vars, model_intercept=True,
-        n_perm=0, random_state=random_state)
-    assert own_scores_intercept.shape == (n_regressors, n_descriptors)
-    assert_array_almost_equal(own_scores, own_scores_intercept, decimal=6)
-
-
 ### Test one-sided versus two-sided ###########################################
 def test_sided_test(random_state=0):
     """Check that a positive effect is always better recovered with one-sided.
@@ -668,3 +507,266 @@ def test_sided_test2(random_state=0):
                               neg_log_pvals_onesided2[0][::-1])
     assert_array_almost_equal(neg_log_pvals_onesided + neg_log_pvals_onesided2,
                               neg_log_pvals_twosided)
+
+
+def test_tfce_smoke(random_state=0):
+    """Test combinations of parameters related to TFCE inference."""
+    import nibabel as nib
+    from nilearn.maskers import NiftiMasker
+
+    # create design
+    target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
+    target_var = np.hstack((  # corresponds to 3 x 3 x 3 x 10 niimg
+        target_var1,  # voxel 1 has positive effect
+        - target_var1,  # voxel 2 has negative effect
+        np.random.random((10, 25)),  # 25 remaining voxels
+    ))
+    tested_var = np.arange(0, 20, 2)
+
+    mask_img = nib.Nifti1Image(np.ones((3, 3, 3)), np.eye(4))
+    masker = NiftiMasker(mask_img)
+    masker.fit(mask_img)
+    n_descriptors = np.prod(mask_img.shape)
+    n_regressors = 1  # tested_var is 1D
+
+    # tfce is True, indicating TFCE inference should be done,
+    # but masker is not defined.
+    with pytest.raises(ValueError):
+        permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            two_sided_test=False,
+            n_perm=100,
+            random_state=random_state,
+            threshold=None,
+            masker=None,
+            tfce=True,
+        )
+
+    # tfce is True, but output_type is "legacy".
+    # raise a warning, and get a dictionary.
+    with pytest.warns(UserWarning, match="Overriding."):
+        out = permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            two_sided_test=False,
+            n_perm=0,
+            random_state=random_state,
+            threshold=None,
+            masker=masker,
+            tfce=True,
+            output_type="legacy",
+        )
+
+    assert isinstance(out, dict)
+
+    # output_type is "legacy".
+    # raise a deprecation warning, but get the standard output.
+    with pytest.warns(DeprecationWarning):
+        out = permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            two_sided_test=False,
+            n_perm=100,
+            random_state=random_state,
+            threshold=None,
+            masker=None,
+            tfce=False,
+            output_type="legacy",
+        )
+
+    assert isinstance(out, tuple)
+
+    # no permutations and output_type is "dict", so check for "t" and
+    # "tfce" maps
+    out = permuted_ols(
+        tested_var,
+        target_var,
+        model_intercept=False,
+        two_sided_test=False,
+        n_perm=0,
+        random_state=random_state,
+        threshold=None,
+        masker=masker,
+        tfce=True,
+        output_type="dict",
+    )
+
+    assert isinstance(out, dict)
+    assert "t" in out.keys()
+    assert "tfce" in out.keys()
+    assert out["t"].shape == (n_regressors, n_descriptors)
+    assert out["tfce"].shape == (n_regressors, n_descriptors)
+
+    # permutations, TFCE, and masker are defined,
+    # so check for TFCE maps
+    n_perm = 10
+    out = permuted_ols(
+        tested_var,
+        target_var,
+        model_intercept=False,
+        two_sided_test=False,
+        n_perm=n_perm,
+        random_state=random_state,
+        threshold=None,
+        masker=masker,
+        tfce=True,
+        output_type="dict",
+    )
+
+    assert isinstance(out, dict)
+    assert "t" in out.keys()
+    assert "tfce" in out.keys()
+    assert "logp_max_t" in out.keys()
+    assert "logp_max_tfce" in out.keys()
+    assert "h0_max_t" in out.keys()
+    assert "h0_max_tfce" in out.keys()
+    assert out["t"].shape == (n_regressors, n_descriptors)
+    assert out["tfce"].shape == (n_regressors, n_descriptors)
+    assert out["logp_max_t"].shape == (n_regressors, n_descriptors)
+    assert out["logp_max_tfce"].shape == (n_regressors, n_descriptors)
+    assert out["h0_max_t"].size == n_perm
+    assert out["h0_max_tfce"].size == n_perm
+
+
+def test_cluster_level_parameters_smoke(random_state=0):
+    """Test combinations of parameters related to cluster-level inference."""
+    import nibabel as nib
+    from nilearn.maskers import NiftiMasker
+
+    rng = np.random.RandomState(random_state)
+
+    # create design
+    target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
+    voxel_vars = np.hstack((
+        -target_var1,  # negative effect
+        target_var1,  # positive effect
+        rng.random((10, 1)),  # random voxel
+    ))
+
+    columns = np.arange(0, voxel_vars.shape[1])
+    # create 125 voxels
+    chosen_columns = rng.choice(columns, size=125, p=[0.1, 0.1, 0.8])
+    # corresponds to 5 x 5 x 5 x 10 niimg
+    target_var = voxel_vars[:, chosen_columns]
+    tested_var = np.arange(0, 20, 2)
+
+    mask_img = nib.Nifti1Image(np.ones((5, 5, 5)), np.eye(4))
+    masker = NiftiMasker(mask_img)
+    masker.fit(mask_img)
+
+    # threshold is defined, indicating cluster-level inference should be done,
+    # but masker is not defined.
+    with pytest.raises(ValueError):
+        permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            two_sided_test=False,
+            n_perm=100,
+            random_state=random_state,
+            threshold=0.001,
+            masker=None,
+            tfce=False,
+        )
+
+    # masker is defined, but threshold is not.
+    # no cluster-level inference is performed, but there's a warning.
+    with pytest.warns(Warning):
+        out = permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            two_sided_test=False,
+            n_perm=100,
+            random_state=random_state,
+            threshold=None,
+            masker=masker,
+            tfce=False,
+            output_type="legacy",
+        )
+
+    assert isinstance(out, tuple)
+
+    # threshold is defined, but output_type is "legacy".
+    # raise a warning, and get a dictionary.
+    with pytest.warns(Warning):
+        out = permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            two_sided_test=False,
+            n_perm=0,
+            random_state=random_state,
+            threshold=0.001,
+            masker=masker,
+            tfce=False,
+            output_type="legacy",
+        )
+
+    assert isinstance(out, dict)
+
+    # output_type is "legacy".
+    # raise a deprecation warning, but get the standard output.
+    with pytest.warns(DeprecationWarning):
+        out = permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            two_sided_test=False,
+            n_perm=100,
+            random_state=random_state,
+            threshold=None,
+            masker=None,
+            tfce=False,
+            output_type="legacy",
+        )
+
+    assert isinstance(out, tuple)
+
+    # no permutations and output_type is "dict", so check for "t" map
+    out = permuted_ols(
+        tested_var,
+        target_var,
+        model_intercept=False,
+        two_sided_test=False,
+        n_perm=0,
+        random_state=random_state,
+        threshold=None,
+        masker=None,
+        tfce=False,
+        output_type="dict",
+    )
+
+    assert isinstance(out, dict)
+    assert "t" in out.keys()
+
+    # permutations, threshold, and masker are defined,
+    # so check for cluster-level maps
+    n_perm = 10
+    out = permuted_ols(
+        tested_var,
+        target_var,
+        model_intercept=False,
+        two_sided_test=True,
+        n_perm=n_perm,
+        random_state=random_state,
+        threshold=0.001,
+        masker=masker,
+        output_type="dict",
+    )
+
+    assert isinstance(out, dict)
+    assert "t" in out.keys()
+    assert "logp_max_t" in out.keys()
+    assert "logp_max_size" in out.keys()
+    assert "logp_max_mass" in out.keys()
+    assert "h0_max_t" in out.keys()
+    assert "h0_max_size" in out.keys()
+    assert "h0_max_mass" in out.keys()
+    assert out["h0_max_t"].size == n_perm
+    assert out["h0_max_size"].size == n_perm
+    assert out["h0_max_mass"].size == n_perm

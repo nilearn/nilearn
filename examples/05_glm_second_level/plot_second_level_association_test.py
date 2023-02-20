@@ -19,7 +19,9 @@ is included in the model.
 from nilearn import datasets
 n_samples = 94
 localizer_dataset = datasets.fetch_localizer_contrasts(
-    ['left button press (auditory cue)'], n_subjects=n_samples)
+    ['left button press (auditory cue)'],
+    n_subjects=n_samples, legacy_format=False
+)
 
 ##############################################################################
 # Let's print basic information on the dataset.
@@ -34,11 +36,13 @@ print(tested_var)
 ##############################################################################
 # It is worth to do a auality check and remove subjects with missing values.
 import numpy as np
-mask_quality_check = np.where(tested_var != b'n/a')[0]
+mask_quality_check = np.where(
+    np.logical_not(np.isnan(tested_var))
+)[0]
 n_samples = mask_quality_check.size
 contrast_map_filenames = [localizer_dataset.cmaps[i]
                           for i in mask_quality_check]
-tested_var = tested_var[mask_quality_check].astype(float).reshape((-1, 1))
+tested_var = tested_var[mask_quality_check].values.reshape((-1, 1))
 print("Actual number of subjects after quality check: %d" % n_samples)
 
 ############################################################################

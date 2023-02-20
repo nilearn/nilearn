@@ -39,6 +39,7 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 
+from nilearn._utils import fill_doc
 from nilearn._utils.glm import full_rank
 from nilearn.glm.first_level.experimental_paradigm import check_events
 from nilearn.glm.first_level.hemodynamic_models import (_orthogonalize,
@@ -182,8 +183,8 @@ def _convolve_regressors(events, hrf_model, frame_times, fir_delays=[0],
     ----------
     events : DataFrame instance,
         Events data describing the experimental paradigm
-        see nistats.experimental_paradigm to check the specification
-        for these to be valid paradigm descriptors
+        see nilearn.glm.first_level.experimental_paradigm to check the
+        specification for these to be valid paradigm descriptors
 
     hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
         'glover', 'glover + derivative', 'glover + derivative + dispersion',
@@ -219,7 +220,7 @@ def _convolve_regressors(events, hrf_model, frame_times, fir_delays=[0],
         if 'spm + derivative + dispersion' or
             'glover + derivative + dispersion',
             a third name is used, i.e. '#name_dispersion'
-        if 'fir', the regressos are numbered accoding to '#name_#delay'
+        if 'fir', the regressos are numbered according to '#name_#delay'
 
     """
     regressor_names = []
@@ -248,6 +249,7 @@ def _convolve_regressors(events, hrf_model, frame_times, fir_delays=[0],
 ######################################################################
 
 
+@fill_doc
 def make_first_level_design_matrix(
         frame_times, events=None, hrf_model='glover',
         drift_model='cosine', high_pass=.01, drift_order=1, fir_delays=[0],
@@ -280,12 +282,7 @@ def make_first_level_design_matrix(
         For the others keys a warning will be displayed.
         Particular attention should be given to the 'trial_type' key
         which defines the different conditions in the experimental paradigm.
-
-    hrf_model : {'glover', 'spm', 'spm + derivative', 'spm + derivative + dispersion',
-        'glover + derivative', 'glover + derivative + dispersion',
-        'fir', None}, optional
-        Specifies the hemodynamic response function. Default='glover'.
-
+    %(hrf_model)s
     drift_model : {'cosine', 'polynomial', None}, optional
         Specifies the desired drift model. Default='cosine'.
 
@@ -301,13 +298,14 @@ def make_first_level_design_matrix(
         In case of FIR design, yields the array of delays used in the FIR
         model (in scans). Default=[0].
 
-    add_regs : array of shape(n_frames, n_add_reg) or pandas DataFrame, optional
+    add_regs : array of shape(n_frames, n_add_reg) or \
+            pandas DataFrame, optional
         additional user-supplied regressors, e.g. data driven noise regressors
         or seed based regressors.
 
     add_reg_names : list of (n_add_reg,) strings, optional
         If None, while add_regs was provided, these will be termed
-        'reg_%i', i = 0..n_add_reg - 1
+        'reg_i', i = 0..n_add_reg - 1
         If add_regs is a DataFrame, the corresponding column names are used
         and add_reg_names is ignored.
 
@@ -428,19 +426,20 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
 
     Parameters
     ----------
-    subjects_label : list of str
+    subjects_label : :obj:`list` of :obj:`str`
         Contain subject labels to extract confounders in the right order,
         corresponding with the images, to create the design matrix.
 
-    confounds : pandas DataFrame, optional
-        If given, contains at least two columns, 'subject_label' and one
+    confounds : :class:`pandas.DataFrame` or ``None``, optional
+        If given, contains at least two columns, ``subject_label`` and one
         confound. The subjects list determines the rows to extract from
-        confounds thanks to its 'subject_label' column. All subjects must
+        confounds thanks to its ``subject_label`` column. All subjects must
         have confounds specified. There should be only one row per subject.
+        Default=None.
 
     Returns
     -------
-    design_matrix : pandas DataFrame
+    design_matrix : :class:`pandas.DataFrame`
         The second level design matrix.
 
     """

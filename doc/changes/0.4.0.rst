@@ -1,0 +1,98 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.4.0
+=====
+
+**Released November 2017**
+
+Highlights
+----------
+
+- New function :func:`~surface.vol_to_surf` to project volume data to the surface.
+
+- New function :func:`~plotting.plot_matrix` to display matrices, eg connectomes.
+
+Enhancements
+------------
+
+- New function :func:`~surface.vol_to_surf` to project a 3d or 4d brain volume on the cortical surface.
+
+- New function :func:`~plotting.plot_matrix` to display connectome matrices.
+
+- Expose function :func:`~image.coord_transform` for end users. Useful to transform coordinates (x, y, z) from one image space to another space.
+
+- Function :func:`~image.resample_img` now takes a linear resampling option (implemented by Joe Necus).
+
+- Function :func:`~datasets.fetch_atlas_talairach` to fetch the `Talairach atlas <http://talairach.org>`_ (:gh:`1523` by `Jerome Dockes`_).
+
+- Enhancing new surface plotting functions, added new parameters ``axes`` and ``figure`` to accept user-specified instances in :func:`~plotting.plot_surf`, :func:`~plotting.plot_surf_stat_map`, and :func:`~plotting.plot_surf_roi`.
+
+- Class :class:`~decoding.SearchLight` has new parameter ``groups`` to do ``LeaveOneGroupOut`` type cv with new scikit-learn module model selection.
+
+- Enhancing the glass brain plotting in back view 'y' direction.
+
+- New parameter ``resampling_interpolation`` is added in most used plotting functions to have user control for faster visualizations.
+
+- Upgraded to ``Sphinx-Gallery 0.1.11``.
+
+Fixes
+-----
+
+- Dimming factor applied to background image in plotting functions with ``dim`` parameter will no longer accepts as string ('-1'). An error will be raised.
+
+- Fixed issues with ``matplotlib 2.1.0``.
+
+- Fixed issues with ``SciPy 1.0.0``.
+
+Changes
+-------
+
+- **Backward incompatible change**: Function :func:`~plotting.find_xyz_cut_coords` now takes a ``mask_img`` argument which is a niimg, rather than a ``mask`` argument, which used to be a numpy array.
+
+- The minimum required version for ``scipy`` is now ``0.14``.
+
+- Dropped support for ``Nibabel`` older than ``2.0.2``.
+
+- Function :func:`~image.smooth_img` no longer accepts smoothing parameter :term:`FWHM` as 0. Behavior is changed in according to the issues with recent ``SciPy`` version ``1.0.0``.
+
+- ``dim`` factor range is slightly increased to -2 to 2 from -1 to 1. Range exceeding -1 meaning more increase in contrast should be cautiously set.
+
+- New ``anterior`` and ``posterior`` view added to the ``plot_surf`` family views.
+
+- Using argument ``anat_img`` for placing background image in function :func:`~plotting.plot_prob_atlas` is deprecated. Use argument ``bg_img`` instead.
+
+- The examples now use ``pandas`` for the behavioral information.
+
+Contributors
+------------
+
+The following people contributed to this release:
+
+    * `Jerome Dockes`_ (127)
+    * `Gael Varoquaux`_ (62)
+    * `Kamalakar Reddy Daddy`_ (36)
+    * Jeff Chiang (11)
+    * `Elizabeth DuPre`_ (9)
+    * `Jona Sassenhagen`_ (9)
+    * `Sylvain Lan`_ (7)
+    * J Necus (6)
+    * `Pierre-Olivier Quirion`_ (5)
+    * AnaLu (3)
+    * `Jean-Rémi King` (3)
+    * MADHYASTHA Meghana (3)
+    * `Salma Bougacha`_ (3)
+    * sfvnMAC (3)
+    * `Eric Larson`_ (2)
+    * `Christian Horea`_ (2)
+    * `Moritz Boos`_ (2)
+    * `Alex Rothberg`_ (1)
+    * `Bertrand Thirion`_ (1)
+    * Christophe Bedetti (1)
+    * John Griffiths (1)
+    * `Mehdi Rahim`_ (1)
+    * Sylvain LANNUZEL (1)
+    * Yaroslav Halchenko (1)
+    * clfs (1)

@@ -4,20 +4,20 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
 trigger:
-- master
+- main
 
 jobs:
 
 
 - job: 'run_tests_on_windows'
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-latest'
   strategy:
     matrix:
-      Python35:
-        python.version: '3.5'
-      Python37:
-        python.version: '3.7'
+      Python38:
+        python.version: '3.8'
+      Python39:
+        python.version: '3.9'
     maxParallel: 4
 
   steps:
@@ -26,14 +26,15 @@ jobs:
       versionSpec: '$(python.version)'
       architecture: 'x64'
 
+  # Install the standard and testing-related dependencies
+  # See setup.cfg for dependency group options
   - script: |
       python -m pip install --upgrade pip
-      pip install --prefer-binary -r requirements-dev.txt
-      pip install pytest-azurepipelines codecov
+      pip install pytest-azurepipelines
+      pip install --prefer-binary .[plotting,plotly,test]
     displayName: 'Install dependencies'
 
   - script: |
-      pip install .
       python -m pytest --pyargs nilearn --cov-report=xml --cov=nilearn --cov-append --junitxml=test-results.xml
     displayName: 'test'
 
@@ -52,11 +53,11 @@ jobs:
 
 - job: 'test_installing_on_linux'
   pool:
-    vmImage: 'ubuntu-18.04'
+    vmImage: 'ubuntu-20.04'
   strategy:
     matrix:
-      Python36:
-        python.version: '3.6'
+      Python38:
+        python.version: '3.8'
     maxParallel: 4
 
   steps:
@@ -93,8 +94,8 @@ jobs:
     vmImage: 'macOS-latest'
   strategy:
     matrix:
-      Python36:
-        python.version: '3.6'
+      Python38:
+        python.version: '3.8'
     maxParallel: 4
 
   steps:
@@ -128,11 +129,11 @@ jobs:
 
 - job: 'test_installing_on_windows'
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-latest'
   strategy:
     matrix:
-      Python36:
-        python.version: '3.6'
+      Python38:
+        python.version: '3.8'
     maxParallel: 4
 
   steps:
@@ -164,9 +165,9 @@ jobs:
     displayName: 'Test that required package are installed'
 
 
-- job: 'test_expeceted_to_fail_installation_on_linux'
+- job: 'test_expected_to_fail_installation_on_linux'
   pool:
-    vmImage: 'ubuntu-18.04'
+    vmImage: 'ubuntu-20.04'
   strategy:
     matrix:
       Python27:

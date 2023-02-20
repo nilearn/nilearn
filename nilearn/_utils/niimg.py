@@ -14,6 +14,8 @@ import nibabel
 
 from pathlib import Path
 
+from .helpers import stringify_path
+
 
 def _get_data(img):
     # copy-pasted from https://github.com/nipy/nibabel/blob/de44a105c1267b07ef9e28f6c35b31f851d5a005/nibabel/dataobj_images.py#L204
@@ -108,7 +110,7 @@ def load_niimg(niimg, dtype=None):
     -----------
 
     niimg: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
         Image to load.
 
     dtype: {dtype, "auto"}
@@ -123,6 +125,7 @@ def load_niimg(niimg, dtype=None):
     """
     from ..image import new_img_like  # avoid circular imports
 
+    niimg = stringify_path(niimg)
     if isinstance(niimg, str):
         # data is a filename, we load it
         niimg = nibabel.load(niimg)
@@ -152,7 +155,7 @@ def _is_binary_niimg(niimg):
     Parameters
     ----------
     niimg: Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
         Image to test.
 
     Returns
@@ -235,13 +238,13 @@ def _repr_niimgs(niimgs, shorten=True):
                    (niimgs.__class__.__name__,
                     repr(niimgs.shape),
                     repr(niimgs.affine))
-    except:
+    except Exception:
         pass
     return _short_repr(repr(niimgs), shorten=shorten)
 
 
 def _short_repr(niimg_rep, shorten=True, truncate=20):
-    """Gives a shorten version on niimg representation
+    """Gives a shorter version of niimg representation
     """
     # Make sure truncate has a reasonable value
     truncate = max(truncate, 10)
@@ -263,7 +266,6 @@ def _short_repr(niimg_rep, shorten=True, truncate=20):
                     rep = str(Path("...", rep))
                     break
         return rep
-    return niimg_rep
 
 
 def img_data_dtype(niimg):

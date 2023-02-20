@@ -4,11 +4,6 @@
 An introduction to GLMs in fMRI statistical analysis
 ====================================================
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
-
 A primer on BOLD-fMRI data analysis
 ===================================
 
@@ -33,7 +28,7 @@ fMRI data modelling
 One way to analyze times series consists in comparing them to a *model* built from our knowledge of the events that occurred during the functional session. Events can correspond to actions of the participant (e.g. button presses), presentations of sensory stimui (e.g. sound, images), or hypothesized internal processes (e.g. memorization of a stimulus), ...
 
 
-  .. figure:: ../images/stimulation-time-diagram.png
+.. figure:: ../images/stimulation-time-diagram.png
 
 
 One expects that a brain region involved in the processing of a certain type of event (e.g. the auditory cortex for sounds) would show a time course of activation that correlates with the time-diagram of these events. If the fMRI signal directly showed neural activity and did not contain any noise, we could just look at it in various voxels and detect those that conform to the time-diagrams.
@@ -56,7 +51,7 @@ Correlations are computed separately at each voxel and a correlation map can be 
 
 .. note::
 
-    In this approach, hypothesis tests are conducted in parallel at many voxels, increasing the liklelihood of False Positives. This is known as the Problem of `Multiple Comparisons`_. Some common strategies for dealing with this are discussed later in this page. This issue can be addressed in nilearn using permutations tests.
+    In this approach, hypothesis tests are conducted in parallel at many voxels, increasing the likelihood of False Positives. This is known as the Problem of `Multiple Comparisons`_. Some common strategies for dealing with this are discussed later in this page. This issue can be addressed in nilearn using permutations tests.
 
 
 .. figure:: ../images/example-spmZ_map.png
@@ -89,7 +84,7 @@ It can be shown that this is equivalent to studying whether the estimated contra
 
 With this we can do statistical inference. Given a pre-defined error rate :math:`\alpha`, we compare the observed `t` to the :math:`(1-\alpha)` quantile of the Student distribution with `dof` degrees of freedom. If `t` is greater than this number we can reject the null hypothesis with a *p-value* :math:`\alpha`; meaning, if there were no effect, the probability of observing an effect as large as `t` would be less than :math:`\alpha`.
 
-  .. figure:: ../images/student.png
+.. figure:: ../images/student.png
 
 .. note::
 

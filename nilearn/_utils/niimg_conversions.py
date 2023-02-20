@@ -19,6 +19,7 @@ from .path_finding import _resolve_globbing
 
 from .exceptions import DimensionError
 from .niimg import _get_data
+from .helpers import stringify_path
 
 
 def _check_fov(img, affine, shape):
@@ -190,10 +191,10 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
     Parameters
     ----------
     niimg : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
-        If niimg is a string, consider it as a path to Nifti image and
-        call nibabel.load on it. The '~' symbol is expanded to the user home
-        folder.
+        See :ref:`extracting_data`.
+        If niimg is a string or pathlib.Path, consider it as a path to
+        Nifti image and call nibabel.load on it. The '~' symbol is expanded to
+        the user home folder.
         If it is an object, check if the affine attribute present and that
         nilearn.image.get_data returns a result, raise TypeError otherwise.
 
@@ -246,6 +247,8 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
 
     """
     from ..image import new_img_like  # avoid circular imports
+
+    niimg = stringify_path(niimg)
 
     if isinstance(niimg, str):
         if wildcards and ni.EXPAND_PATH_WILDCARDS:
@@ -307,7 +310,7 @@ def check_niimg_3d(niimg, dtype=None):
     Parameters
     ----------
     niimg : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it.
         If it is an object, check if the affine attribute present and that
@@ -344,7 +347,7 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
     Parameters
     ----------
     niimg : 4D Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         If niimgs is an iterable, checks if data is really 4D. Then,
         considering that it is a list of niimg and load them one by one.
         If niimg is a string, consider it as a path to Nifti image and
@@ -392,7 +395,7 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
     Parameters
     ----------
     niimgs : iterable of Niimg-like objects or glob pattern
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Niimgs to concatenate.
 
     dtype : numpy dtype, optional
@@ -476,7 +479,7 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
         lengths.append(niimg.shape[-1] if ndim == 4 else 1)
 
     target_shape = first_niimg.shape[:3]
-    if dtype == None:
+    if dtype is None:
         dtype = _get_data(first_niimg).dtype
     data = np.ndarray(target_shape + (sum(lengths), ),
                       order="F", dtype=dtype)

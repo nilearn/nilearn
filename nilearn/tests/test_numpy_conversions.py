@@ -81,61 +81,61 @@ def test_as_ndarray():
     # input dtype, input order, should copy, output dtype, output order, copied
     test_cases = [
         # no-op
-        (np.float, "C", False, None, None, False),
-        (np.float, "F", False, None, None, False),
+        (float, "C", False, None, None, False),
+        (float, "F", False, None, None, False),
 
         # simple copy
-        (np.float, "C", True, None, None, True),
-        (np.float, "F", True, None, None, True),
+        (float, "C", True, None, None, True),
+        (float, "F", True, None, None, True),
 
         # dtype provided, identical
-        (np.float, "C", False, np.float, None, False),
-        (np.float, "F", False, np.float, None, False),
+        (float, "C", False, float, None, False),
+        (float, "F", False, float, None, False),
 
         # dtype changed
-        (np.float, "C", False, np.float32, None, True),
-        (np.float, "F", False, np.float32, None, True),
+        (float, "C", False, np.float32, None, True),
+        (float, "F", False, np.float32, None, True),
 
         # dtype and order provided, but identical
-        (np.float, "C", False, np.float, "C", False),
-        (np.float, "F", False, np.float, "F", False),
+        (float, "C", False, float, "C", False),
+        (float, "F", False, float, "F", False),
 
         # order provided, unchanged
-        (np.float, "C", False, None, "C", False),
-        (np.float, "F", False, None, "F", False),
-        (np.float, "C", True, None, "C", True),
-        (np.float, "F", True, None, "F", True),
+        (float, "C", False, None, "C", False),
+        (float, "F", False, None, "F", False),
+        (float, "C", True, None, "C", True),
+        (float, "F", True, None, "F", True),
 
         # order provided, changed
-        (np.float, "C", False, None, "F", True),
-        (np.float, "F", False, None, "C", True),
-        (np.float, "C", True, None, "F", True),
-        (np.float, "F", True, None, "C", True),
+        (float, "C", False, None, "F", True),
+        (float, "F", False, None, "C", True),
+        (float, "C", True, None, "F", True),
+        (float, "F", True, None, "C", True),
 
         # Special case for int8 <-> bool conversion.
-        (np.int8, "C", False, np.bool, None, False),
-        (np.int8, "F", False, np.bool, None, False),
-        (np.int8, "C", False, np.bool, "C", False),
-        (np.int8, "F", False, np.bool, "F", False),
-        (np.int8, "C", False, np.bool, "F", True),
-        (np.int8, "F", False, np.bool, "C", True),
+        (np.int8, "C", False, bool, None, False),
+        (np.int8, "F", False, bool, None, False),
+        (np.int8, "C", False, bool, "C", False),
+        (np.int8, "F", False, bool, "F", False),
+        (np.int8, "C", False, bool, "F", True),
+        (np.int8, "F", False, bool, "C", True),
 
-        (np.int8, "C", True, np.bool, None, True),
-        (np.int8, "F", True, np.bool, None, True),
-        (np.int8, "C", True, np.bool, "C", True),
-        (np.int8, "F", True, np.bool, "F", True),
+        (np.int8, "C", True, bool, None, True),
+        (np.int8, "F", True, bool, None, True),
+        (np.int8, "C", True, bool, "C", True),
+        (np.int8, "F", True, bool, "F", True),
 
-        (np.bool, "C", False, np.int8, None, False),
-        (np.bool, "F", False, np.int8, None, False),
-        (np.bool, "C", False, np.int8, "C", False),
-        (np.bool, "F", False, np.int8, "F", False),
-        (np.bool, "C", False, np.int8, "F", True),
-        (np.bool, "F", False, np.int8, "C", True),
+        (bool, "C", False, np.int8, None, False),
+        (bool, "F", False, np.int8, None, False),
+        (bool, "C", False, np.int8, "C", False),
+        (bool, "F", False, np.int8, "F", False),
+        (bool, "C", False, np.int8, "F", True),
+        (bool, "F", False, np.int8, "C", True),
 
-        (np.bool, "C", True, np.int8, None, True),
-        (np.bool, "F", True, np.int8, None, True),
-        (np.bool, "C", True, np.int8, "C", True),
-        (np.bool, "F", True, np.int8, "F", True),
+        (bool, "C", True, np.int8, None, True),
+        (bool, "F", True, np.int8, None, True),
+        (bool, "C", True, np.int8, "C", True),
+        (bool, "F", True, np.int8, "F", True),
     ]
 
     shape = (10, 11)
@@ -171,8 +171,8 @@ def test_as_ndarray():
 
     # different dtype
     arr1 = np.memmap(filename, dtype='float32', mode='readwrite', shape=(5,))
-    arr2 = as_ndarray(arr1, dtype=np.int)
-    assert(arr2.dtype == np.int)
+    arr2 = as_ndarray(arr1, dtype=int)
+    assert(arr2.dtype == int)
     assert(not are_arrays_identical(arr1, arr2))
 
     # same dtype, explicitly provided: must copy
@@ -217,14 +217,14 @@ def test_as_ndarray():
 
     # different dtype
     arr1 = [0, 1, 2, 3]
-    arr2 = as_ndarray(arr1, dtype=np.float)
-    assert(arr2.dtype == np.float)
+    arr2 = as_ndarray(arr1, dtype=float)
+    assert(arr2.dtype == float)
     assert(not are_arrays_identical(arr1, arr2))
 
     # order specified
     arr1 = [[0, 1, 2, 3], [0, 1, 2, 3]]
-    arr2 = as_ndarray(arr1, dtype=np.float, order="F")
-    assert(arr2.dtype == np.float)
+    arr2 = as_ndarray(arr1, dtype=float, order="F")
+    assert(arr2.dtype == float)
     assert(arr2.flags["F_CONTIGUOUS"] and not arr2.flags["C_CONTIGUOUS"])
     assert(not are_arrays_identical(arr1[0], arr2[0]))
 
@@ -233,9 +233,11 @@ def test_as_ndarray():
     pytest.raises(ValueError, as_ndarray, [], order="invalid")
 
 
-def test_csv_to_array():
+def test_csv_to_array(tmp_path):
     # Create a phony CSV file
-    filename = tempfile.mktemp(suffix='.csv')
+    fd, filename = tempfile.mkstemp(suffix='.csv',
+                                    dir=tmp_path)
+    os.close(fd)
     try:
         with open(filename, mode='wt') as fp:
             fp.write('1.,2.,3.,4.,5.\n')

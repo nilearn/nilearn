@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Functionality to create an HTML report using a fitted GLM & contrasts.
 
@@ -22,6 +21,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
+from .._utils import fill_doc
 from nilearn.plotting import (plot_glass_brain,
                               plot_roi,
                               plot_stat_map,
@@ -40,12 +40,15 @@ with warnings.catch_warnings():
 
 from nilearn.reporting._get_clusters_table import get_clusters_table
 from nilearn.reporting.utils import figure_to_svg_quoted
+from nilearn.maskers import NiftiMasker
+from nilearn._utils import check_niimg
 
 
 HTML_TEMPLATE_ROOT_PATH = os.path.join(os.path.dirname(__file__),
                                        'glm_reporter_templates')
 
 
+@fill_doc
 def make_glm_report(model,
                     contrasts,
                     title=None,
@@ -57,6 +60,7 @@ def make_glm_report(model,
                     two_sided=False,
                     min_distance=8.,
                     plot_type='slice',
+                    cut_coords=None,
                     display_mode=None,
                     report_dims=(1600, 800),
                     ):
@@ -105,7 +109,7 @@ def make_glm_report(model,
         using contrast names.
 
     bg_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The background image for mask and stat maps to be plotted on upon.
         To turn off background image, just pass "bg_img=None".
         Default='MNI152TEMPLATE'.
@@ -140,6 +144,8 @@ def make_glm_report(model,
     plot_type : String, {'slice', 'glass'}, optional
         Specifies the type of plot to be drawn for the statistical maps.
         Default='slice'.
+
+    %(cut_coords)s
 
     display_mode : string, optional
         Default is 'z' if plot_type is 'slice'; '
@@ -185,10 +191,10 @@ def make_glm_report(model,
         design_matrices = [model.design_matrix_]
 
     html_head_template_path = os.path.join(HTML_TEMPLATE_ROOT_PATH,
-                                          'report_head_template.html')
+                                           'report_head_template.html')
 
     html_body_template_path = os.path.join(HTML_TEMPLATE_ROOT_PATH,
-                                          'report_body_template.html')
+                                           'report_body_template.html')
 
     with open(html_head_template_path) as html_head_file_obj:
         html_head_template_text = html_head_file_obj.read()
@@ -214,7 +220,18 @@ def make_glm_report(model,
                                                    )
     statistical_maps = _make_stat_maps(model, contrasts)
     html_design_matrices = _dmtx_to_svg_url(design_matrices)
-    mask_img = model.mask_img or model.masker_.mask_img_
+
+    # Select mask_img to use for plotting
+    if isinstance(model.mask_img, NiftiMasker):
+        mask_img = model.masker_.mask_img_
+    else:
+        try:
+            # check that mask_img is a niiimg-like object
+            check_niimg(model.mask_img)
+            mask_img = model.mask_img
+        except Exception:
+            mask_img = model.masker_.mask_img_
+
     mask_plot_html_code = _mask_to_svg(mask_img=mask_img,
                                        bg_img=bg_img,
                                        )
@@ -228,6 +245,7 @@ def make_glm_report(model,
         two_sided=two_sided,
         min_distance=min_distance,
         bg_img=bg_img,
+        cut_coords=cut_coords,
         display_mode=display_mode,
         plot_type=plot_type,
     )
@@ -238,13 +256,18 @@ def make_glm_report(model,
                           'page_heading_2': page_heading_2,
                           'model_attributes': model_attributes_html,
                           'all_contrasts_with_plots': ''.join(
-                               contrast_plots.values()),
+                              contrast_plots.values()),
                           'design_matrices': html_design_matrices,
                           'mask_plot': mask_plot_html_code,
                           'component': all_components_text,
-                         }
-    report_text_body = report_body_template.safe_substitute(**report_values_body)
-    report_text = HTMLReport(body=report_text_body, head_tpl=report_head_template, head_values=report_values_head)
+                          }
+    report_text_body = report_body_template.safe_substitute(
+        **report_values_body)
+    report_text = HTMLReport(
+        body=report_text_body,
+        head_tpl=report_head_template,
+        head_values=report_values_head
+    )
     # setting report size for better visual experience in Jupyter Notebooks.
     report_text.width, report_text.height = _check_report_dims(report_dims)
     return report_text
@@ -485,7 +508,7 @@ def _model_attributes_to_dataframe(model):
     return model_attributes
 
 
-def _make_stat_maps(model, contrasts):
+def _make_stat_maps(model, contrasts, output_type='z_score'):
     """Given a model and contrasts, return the corresponding z-maps
 
     Parameters
@@ -500,6 +523,12 @@ def _make_stat_maps(model, contrasts):
         & second_level_contrast for a SecondLevelModel
         (nilearn.glm.second_level.SecondLevelModel.compute_contrast)
 
+    output_type : :obj:`str`, optional
+        The type of statistical map to retain from the contrast.
+        Default is 'z_score'.
+
+        .. versionadded:: 0.9.2
+
     Returns
     -------
     statistical_maps : Dict[str, niimg]
@@ -511,9 +540,13 @@ def _make_stat_maps(model, contrasts):
     nilearn.glm.second_level.SecondLevelModel.compute_contrast
 
     """
-    statistical_maps = {contrast_id: model.compute_contrast(contrast_val)
-                        for contrast_id, contrast_val in contrasts.items()
-                        }
+    statistical_maps = {
+        contrast_id: model.compute_contrast(
+            contrast_val,
+            output_type=output_type,
+        )
+        for contrast_id, contrast_val in contrasts.items()
+    }
     return statistical_maps
 
 
@@ -620,11 +653,11 @@ def _mask_to_svg(mask_img, bg_img):
 
     """
     if mask_img:
-        mask_plot = plot_roi(roi_img=mask_img,  # noqa: F841
-                             bg_img=bg_img,
-                             display_mode='z',
-                             cmap='Set1',
-                             )
+        plot_roi(roi_img=mask_img,
+                 bg_img=bg_img,
+                 display_mode='z',
+                 cmap='Set1',
+                 )
         mask_plot_svg = _plot_to_svg(plt.gcf())
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close()
@@ -633,11 +666,12 @@ def _mask_to_svg(mask_img, bg_img):
     return mask_plot_svg
 
 
+@fill_doc
 def _make_stat_maps_contrast_clusters(stat_img, contrasts_plots, threshold,
                                       alpha,
                                       cluster_threshold, height_control,
                                       two_sided,
-                                      min_distance, bg_img,
+                                      min_distance, bg_img, cut_coords,
                                       display_mode, plot_type):
     """Populates a smaller HTML sub-template with the proper values,
     make a list containing one or more of such components
@@ -690,6 +724,8 @@ def _make_stat_maps_contrast_clusters(stat_img, contrasts_plots, threshold,
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
 
+    %(cut_coords)s
+
     display_mode : string
         Choose the direction of the cuts:
         'x' - sagittal, 'y' - coronal, 'z' - axial,
@@ -736,6 +772,7 @@ def _make_stat_maps_contrast_clusters(stat_img, contrasts_plots, threshold,
         stat_map_svg = _stat_map_to_svg(
             stat_img=thresholded_stat_map,
             bg_img=bg_img,
+            cut_coords=cut_coords,
             display_mode=display_mode,
             plot_type=plot_type,
             table_details=table_details,
@@ -837,8 +874,10 @@ def _clustering_params_to_dataframe(threshold,
     return table_details
 
 
+@fill_doc
 def _stat_map_to_svg(stat_img,
                      bg_img,
+                     cut_coords,
                      display_mode,
                      plot_type,
                      table_details,
@@ -859,6 +898,9 @@ def _stat_map_to_svg(stat_img,
         The background image for stat maps to be plotted on upon.
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
+
+
+    %(cut_coords)s
 
     display_mode : string
         Choose the direction of the cuts:
@@ -887,6 +929,7 @@ def _stat_map_to_svg(stat_img,
     if plot_type == 'slice':
         stat_map_plot = plot_stat_map(stat_img,
                                       bg_img=bg_img,
+                                      cut_coords=cut_coords,
                                       display_mode=display_mode,
                                       )
     elif plot_type == 'glass':
@@ -899,7 +942,7 @@ def _stat_map_to_svg(stat_img,
         raise ValueError('Invalid plot type provided. Acceptable options are'
                          "'slice' or 'glass'.")
     with pd.option_context('display.precision', 2):
-        stat_map_plot = _add_params_to_plot(table_details, stat_map_plot)
+        _add_params_to_plot(table_details, stat_map_plot)
     fig = plt.gcf()
     stat_map_svg = _plot_to_svg(fig)
     # prevents sphinx-gallery & jupyter from scraping & inserting plots
@@ -933,10 +976,10 @@ def _add_params_to_plot(table_details, stat_map_plot):
                                  wrap=True,
                                  )
     fig = list(stat_map_plot.axes.values())[0].ax.figure
-    fig = _resize_plot_inches(plot=fig,
-                              width_change=.2,
-                              height_change=1,
-                              )
+    _resize_plot_inches(plot=fig,
+                        width_change=.2,
+                        height_change=1,
+                        )
     if stat_map_plot._black_bg:
         suptitle_text.set_color('w')
     return stat_map_plot

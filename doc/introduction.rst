@@ -1,436 +1,338 @@
 .. for doc tests to run with recent NumPy 1.14, we need to set print options
    to older versions. See issue #1593 for more details
     >>> import numpy as np
-    >>> from distutils.version import LooseVersion
-    >>> if LooseVersion(np.__version__) >= LooseVersion('1.14'):
+    >>> from nilearn.version import _compare_version
+    >>> if _compare_version(np.__version__, '>=', '1.14'):
     ...     np.set_printoptions(legacy='1.13')
 
-=====================================
-Introduction: nilearn in a nutshell
-=====================================
-
-.. contents:: **Contents**
-    :local:
-    :depth: 1
+============
+Introduction
+============
 
 
-What is nilearn: MVPA, decoding, predictive models, functional connectivity
-===========================================================================
-
-.. topic:: **Why use nilearn?**
-
-    Nilearn makes it easy to use many advanced **machine learning**,
-    **pattern recognition** and **multivariate statistical** techniques on
-    neuroimaging data for applications such as **MVPA** (Mutli-Voxel
-    Pattern Analysis),
-    :ref:`decoding <decoding>`,
-    :ref:`predictive modelling <decoding>`,
-    :ref:`functional connectivity <functional_connectomes>`,
-    :ref:`brain parcellations <parcellating_brain>`,
-    :ref:`connectomes <functional_connectomes>`.
-
-    Nilearn can readily be used on :ref:`task fMRI <decoding_intro>`,
-    :ref:`resting-state <functional_connectomes>`, or
-    :ref:`VBM <sphx_glr_auto_examples_02_decoding_plot_oasis_vbm.py>` data.
-
-    For a machine-learning expert, the value of nilearn can be seen as
-    domain-specific **feature engineering** construction, that is, shaping
-    neuroimaging data into a feature matrix well suited to statistical
-    learning, or vice versa.
-
-
-Why is machine learning relevant to NeuroImaging? A few examples!
------------------------------------------------------------------
-
-:Diagnosis and prognosis:
-
-    Predicting a clinical score or even treatment response
-    from brain imaging with :ref:`supervised
-    learning <decoding>` e.g. `[Mourao-Miranda 2012]
-    <http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0029482>`_
-
-:Measuring generalization scores:
-
-    * **Information mapping**: using the prediction accuracy of a classifier
-      to characterize relationships between brain images and stimuli. (e.g.
-      :ref:`searchlight <searchlight>`) `[Kriegeskorte 2005]
-      <http://www.pnas.org/content/103/10/3863.short>`_
-
-    * **Transfer learning**: measuring how much an estimator trained on one
-      specific psychological process/task can predict the neural activity
-      underlying another specific psychological process/task
-      (e.g. discriminating left from
-      right eye movements also discriminates additions from subtractions
-      `[Knops 2009]
-      <http://www.sciencemag.org/content/324/5934/1583.short>`_)
-
-:High-dimensional multivariate statistics:
-
-    From a statistical point of view, machine learning implements
-    statistical estimation of models with a large number of parameters.
-    Tricks pulled in machine learning (e.g. regularization) can
-    make this estimation possible despite the usually
-    small number of observations in the neuroimaging domain
-    `[Varoquaux 2012] <http://icml.cc/2012/papers/688.pdf>`_. This
-    usage of machine learning requires some understanding of the models.
-
-:Data mining / exploration:
-
-    Data-driven exploration of brain images. This includes the extraction of
-    the major brain networks from resting-state data ("resting-state networks")
-    or movie-watching data as well as the discovery of connectionally coherent
-    functional modules ("connectivity-based parcellation").
-    For example,
-    :ref:`extracting_rsn` or :ref:`parcellating_brain` with clustering.
-
-
-.. _installation:
-
-Installing nilearn
+What is ``nilearn``?
 ====================
 
-.. raw:: html
-   :file: install_doc_component.html
+``nilearn`` is a package that makes it easy to use advanced machine learning techniques to analyze data acquired with MRI machines.
+In particular, underlying machine learning problems include
+:ref:`decoding brain data <decoding>`,
+computing :ref:`brain parcellations <parcellating_brain>`,
+analyzing :ref:`functional connectivity <functional_connectomes>` and :ref:`connectomes <functional_connectomes>`,
+doing multi-voxel pattern analysis (MVPA) or :ref:`predictive modelling <decoding>`.
 
-.. _quick_start:
+``nilearn`` can readily be used on :ref:`task fMRI <decoding_intro>`,
+:ref:`resting-state <functional_connectomes>`, or
+:ref:`voxel-based morphometry (VBM) <sphx_glr_auto_examples_02_decoding_plot_oasis_vbm.py>` data.
 
-Python for NeuroImaging, a quick start
-==========================================
-
-If you don't know Python, **Don't panic. Python is easy**. It is important
-to realize that most things you will do in nilearn require only a few or a
-few dozen lines of Python code.
-Here, we give
-the basics to help you get started. For a very quick start into the programming
-language, you can `learn it online <http://www.learnpython.org/>`_.
-For a full-blown introduction to
-using Python for science, see the `scipy lecture notes
-<http://scipy-lectures.github.io/>`_.
-
-
-We will be using `Jupyter <http://jupyter.org>`_ for notebooks, or
-`IPython <http://ipython.org>`_, which provides an interactive scientific
-environment that facilitates many everyday data-manipulation steps (e.g.
-interactive debugging, easy visualization). You can choose notebooks or
-terminal:
-
-:Notebooks:
-
-    Start the Jupter notebook either with the application menu, or by
-    typing::
-
-        jupyter notebook
-
-:Terminal:
-
-    Start ipython by typing::
-
-        ipython --matplotlib
-
-    .. note::
-
-        The ``--matplotlib`` flag, which configures matplotlib for
-        interactive use inside IPython.
-
-These will give you a *prompt* in which you can execute commands::
-
-    In [1]: 1 + 2 * 3
-    Out[1]: 7
-
-.. topic:: `>>>` **Prompt**
-
-   Below we'll be using `>>>` to indicate input lines. If you wish to copy and
-   paste these input lines directly, click on the `>>>` located
-   at the top right of the code block to toggle these prompt signs
-
-
-Your first steps with nilearn
-------------------------------
-
-First things first, nilearn does not have a graphical user interface.
-But you will soon realize that you don't really need one.
-It is typically used interactively in IPython or in an automated way by Python
-code.
-Most importantly, nilearn functions that process neuroimaging data accept
-either a filename (i.e., a string variable) or a `NiftiImage object
-<http://nipy.org/nibabel/nibabel_images.html>`_. We call the latter
-"niimg-like".
-
-Suppose for instance that you have a Tmap image saved in the Nifti file
-"t_map000.nii" in the directory "/home/user". To visualize that image, you will
-first have to import the :ref:`plotting <plotting>` functionality by::
-
-    >>> from nilearn import plotting
-
-Then you can call the function that creates a "glass brain" by giving it
-the file name::
-
-    >>> plotting.plot_glass_brain("/home/user/t_map000.nii")   # doctest: +SKIP
-
-.. sidebar:: File name matchings
-
-   The filename could be given as "~/t_map000.nii' as nilearn expands "~" to
-   the home directory.
-   :ref:`See more on file name matchings <filename_matching>`.
-
-
-.. image:: auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_001.png
-    :target: auto_examples/01_plotting/plot_demo_glass_brain.html
-    :align: center
-    :scale: 60
+For machine learning experts, the value of ``nilearn`` can be seen as
+domain-specific **feature engineering** construction, that is, shaping
+neuroimaging data into a feature matrix well suited for statistical learning.
 
 .. note::
 
-   There are many other plotting functions. Take your time to have a look
-   at the :ref:`different options <plotting>`.
+    It is ok if these terms don't make sense to you yet:
+    this guide will walk you through them in a comprehensive manner.
 
-|
 
-.. currentmodule:: nilearn
+.. _quick_start:
 
-For simple functions/operations on images, many functions exist, such as in
-the :mod:`nilearn.image` module for image manipulation, e.g.
-:func:`image.smooth_img` for smoothing::
 
-    >>> from nilearn import image
-    >>> smoothed_img = image.smooth_img("/home/user/t_map000.nii", fwhm=5)   # doctest: +SKIP
+Using ``nilearn`` for the first time
+====================================
 
-The returned value `smoothed_img` is a `NiftiImage object
-<http://nipy.org/nibabel/nibabel_images.html>`_. It can either be passed
-to other nilearn functions operating on niimgs (neuroimaging images) or
-saved to disk with::
+``nilearn`` is a Python library. If you have never used Python before,
+you should probably have a look at a `general introduction about Python <http://www.learnpython.org/>`_
+as well as to an `introduction to using Python for science <http://scipy-lectures.github.io/>`_ before diving into ``nilearn``.
 
-    >>> smoothed_img.to_filename("/home/user/t_map000_smoothed.nii")   # doctest: +SKIP
+First steps with nilearn
+------------------------
 
-Finally, nilearn deals with Nifti images that come in two flavors: 3D
-images, which represent a brain volume, and 4D images, which represent a
-series of brain volumes. To extract the n-th 3D image from a 4D image, you can
-use the :func:`image.index_img` function (keep in mind that array indexing
-always starts at 0 in the Python language)::
+At this stage, you should have :ref:`installed <quickstart>` ``nilearn`` and opened a Jupyter notebook
+or an IPython / Python session.  First, load ``nilearn`` with
 
-    >>> first_volume = image.index_img("/home/user/fmri_volumes.nii", 0)   # doctest: +SKIP
+.. code-block:: default
 
-To loop over each individual volume of a 4D image, use :func:`image.iter_img`::
+    import nilearn
 
-   >>> for volume in image.iter_img("/home/user/fmri_volumes.nii"):   # doctest: +SKIP
-   ...     smoothed_img = image.smooth_img(volume, fwhm=5)
+``nilearn`` comes in with some data that are commonly used in neuroimaging.
+For instance, it comes with volumic template images of brains such as MNI:
+    
+.. code-block:: default
 
-.. topic:: **Exercise: varying the amount of smoothing**
-   :class: green
+    print(nilearn.datasets.MNI152_FILE_PATH)
 
-   Want to sharpen your skills with nilearn?
-   Compute the mean EPI for first subject of the brain development
+Output:
+
+.. code-block:: text
+    :class: highlight-primary
+
+    '/home/yasmin/nilearn/nilearn/nilearn/datasets/data/mni_icbm152_t1_tal_nlin_sym_09a_converted.nii.gz'
+
+Let's have a look at this image:
+
+.. code-block:: default
+
+    nilearn.plotting.plot_img(nilearn.datasets.MNI152_FILE_PATH)
+
+.. image:: auto_examples/01_plotting/images/sphx_glr_plot_demo_glass_brain_001.png
+    :target: auto_examples/00_tutorials/images/sphx_glr_plot_nilearn_101_001.png
+    :align: center
+    :scale: 60
+
+Learning with the API references
+--------------------------------
+
+In the last command, you just made use of 2 ``nilearn`` modules: :mod:`nilearn.datasets`
+and :mod:`nilearn.plotting`.
+All modules are described in the :ref:`API references <modules>`.
+
+Oftentimes, if you are already familiar with the problems and vocabulary of MRI analysis,
+the module and function names are explicit enough that you should understand what ``nilearn`` does.
+
+.. note:: **Exercise: Varying the amount of smoothing in an image**
+
+   Compute the mean :term:`EPI` for one individual of the brain development
    dataset downloaded with :func:`nilearn.datasets.fetch_development_fmri` and
-   smooth it with an FWHM varying from 0mm to 20mm in increments of 5mm
+   smooth it with an :term:`FWHM` varying from 0mm to 20mm in increments of 5mm
 
-   **Hints:**
+   **Intermediate steps:**
 
-      * Inspect the '.keys()' of the object returned by
-        :func:`nilearn.datasets.fetch_development_fmri`
+   1. Run :func:`nilearn.datasets.fetch_development_fmri` and inspect the ``.keys()`` of the returned object
 
-      * Look at the "reference" section of the documentation: there is a
-        function to compute the mean of a 4D image
+   2. Check the :mod:`nilearn.image` module in the documentation to find a function to compute the mean of a 4D image
 
-      * To perform a for loop in Python, you can use the "range" function
+   3. Check the :mod:`nilearn.image` module again to find a function which smoothes images
 
-      * The solution can be found :ref:`here
-        <sphx_glr_auto_examples_06_manipulating_images_plot_smooth_mean_image.py>`
+   4. Plot the computed image for each smoothing value
 
-|
+   A solution can be found :ref:`here <sphx_glr_auto_examples_06_manipulating_images_plot_smooth_mean_image.py>`.
 
+Learning with examples
+----------------------
 
-.. topic:: **Tutorials to learn the basics**
+``nilearn`` comes with a lot of :ref:`examples/tutorials <tutorial_examples>`.
+Going through them should give you a precise overview of what you can achieve with this package.
 
-   The two following tutorials may be useful to get familiar with data
-   representation in nilearn:
+For new-comers, we recommend going through the following examples in the suggested order:
 
-   * :ref:`sphx_glr_auto_examples_plot_nilearn_101.py`
+.. raw:: html
 
-   * :ref:`sphx_glr_auto_examples_plot_3d_and_4d_niimg.py`
-
-   More tutorials can be found :ref:`here <tutorial_examples>`
-
-____
-
-Now, if you want out-of-the-box methods to process neuroimaging data, jump
-directly to the section you need:
-
-* :ref:`decoding`
-
-* :ref:`functional_connectivity`
-
-|
-
-Scientific computing with Python
----------------------------------
-
-In case you plan to become a casual nilearn user, note that you will not need
-to deal with number and array manipulation directly in Python.
-However, if you plan to go beyond that, here are a few pointers.
-
-Basic numerics
-...............
-
-:Numerical arrays:
-
-  The numerical data (e.g. matrices) are stored in numpy arrays:
-
-  ::
-
-    >>> import numpy as np
-    >>> t = np.linspace(1, 10, 2000)  # 2000 points between 1 and 10
-    >>> t
-    array([  1.        ,   1.00450225,   1.0090045 , ...,   9.9909955 ,
-             9.99549775,  10.        ])
-    >>> t / 2
-    array([ 0.5       ,  0.50225113,  0.50450225, ...,  4.99549775,
-            4.99774887,  5.        ])
-    >>> np.cos(t) # Operations on arrays are defined in the numpy module
-    array([ 0.54030231,  0.53650833,  0.53270348, ..., -0.84393609,
-           -0.84151234, -0.83907153])
-    >>> t[:3] # In Python indexing is done with [] and starts at zero
-    array([ 1.        ,  1.00450225,  1.0090045 ])
-
-  `More documentation ...
-  <http://scipy-lectures.github.io/intro/numpy/index.html>`__
-
-:Plotting and figures:
-
- .. figure:: auto_examples/images/sphx_glr_plot_python_101_001.png
-   :target: auto_examples/plot_python_101.html
-   :align: right
-   :scale: 30
-
- ::
-
-    >>> import matplotlib.pyplot as plt
-    >>> plt.plot(t, np.cos(t))       # doctest: +ELLIPSIS
-    [<matplotlib.lines.Line2D object at ...>]
+    <div class="sphx-glr-thumbnails">
 
 
- `More documentation ...
- <http://scipy-lectures.github.io/intro/matplotlib/matplotlib.html>`__
+.. raw:: html
 
-:Image processing:
+    <div class="sphx-glr-thumbcontainer" tooltip="A simple example showing how to load an existing Nifti file and use basic nilearn functiona...">
 
- ::
+.. only:: html
 
-    >>> from scipy import ndimage
-    >>> t_smooth = ndimage.gaussian_filter(t, sigma=2)
+  .. image:: /auto_examples/00_tutorials/images/thumb/sphx_glr_plot_nilearn_101_thumb.png
+    :alt: Basic nilearn example: manipulating and looking at data
 
- `More documentation ...
- <http://scipy-lectures.github.io/advanced/image_processing/index.html>`__
+  :ref:`sphx_glr_auto_examples_00_tutorials_plot_nilearn_101.py`
 
-:Signal processing:
+.. raw:: html
 
-    >>> from scipy import signal
-    >>> t_detrended = signal.detrend(t)
-
- `More documentation ...
- <http://scipy-lectures.github.io/intro/scipy.html#signal-processing-scipy-signal>`__
-
-:Much more:
-
-  .. hlist::
-
-     * Simple statistics::
-
-        >>> from scipy import stats
-
-     * Linear algebra::
-
-        >>> from scipy import linalg
-
-  `More documentation...
-  <http://scipy-lectures.github.io/intro/scipy.html>`__
+      <div class="sphx-glr-thumbnail-title">Basic nilearn example: manipulating and looking at data</div>
+    </div>
 
 
-Scikit-learn: machine learning in Python
-.........................................
+.. raw:: html
 
-.. topic:: **What is scikit-learn?**
+    <div class="sphx-glr-thumbcontainer" tooltip="Here we discover how to work with 3D and 4D niimgs.">
 
-    `Scikit-learn <http://scikit-learn.org>`_ is a Python library for machine
-    learning. Its strong points are:
+.. only:: html
 
-    - Easy to use and well documented
-    - Computationally efficient
-    - Provides a wide variety of standard machine learning methods for non-experts
+  .. image:: /auto_examples/00_tutorials/images/thumb/sphx_glr_plot_3d_and_4d_niimg_thumb.png
+    :alt: 3D and 4D niimgs: handling and visualizing
 
-The core concept in `scikit-learn <http://scikit-learn.org>`_ is the
-estimator object, for instance an SVC (`support vector classifier
-<http://scikit-learn.org/stable/modules/svm.html>`_).
-It is first created with the relevant parameters::
+  :ref:`sphx_glr_auto_examples_00_tutorials_plot_3d_and_4d_niimg.py`
 
-    >>> import sklearn; sklearn.set_config(print_changed_only=False)
-    >>> from sklearn.svm import SVC
-    >>> svc = SVC(kernel='linear', C=1.)
+.. raw:: html
 
-These parameters are detailed in the documentation of
-the object: in IPython or Jupter you can do::
+      <div class="sphx-glr-thumbnail-title">3D and 4D niimgs: handling and visualizing</div>
+    </div>
 
-    In [3]: SVC?
-    ...
-    Parameters
-    ----------
-    C : float or None, optional (default=None)
-        Penalty parameter C of the error term. If None then C is set
-        to n_samples.
 
-    kernel : string, optional (default='rbf')
-        Specifies the kernel type to be used in the algorithm.
-        It must be one of 'linear', 'poly', 'rbf', 'sigmoid', 'precomputed'.
-        If none is given, 'rbf' will be used.
-    ...
+.. raw:: html
 
-Once the object is created, you can fit it on data. For instance, here we
-use a hand-written digits dataset, which comes with scikit-learn::
+    <div class="sphx-glr-thumbcontainer" tooltip="Here is a simple tutorial on decoding with nilearn. It reproduces the Haxby 2001 study on a fac...">
 
-    >>> from sklearn import datasets
-    >>> digits = datasets.load_digits()
-    >>> data = digits.data
-    >>> labels = digits.target
+.. only:: html
 
-Let's use all but the last 10 samples to train the SVC::
+  .. image:: /auto_examples/00_tutorials/images/thumb/sphx_glr_plot_decoding_tutorial_thumb.png
+    :alt: A introduction tutorial to fMRI decoding
 
-    >>> svc.fit(data[:-10], labels[:-10])   # doctest: +ELLIPSIS
-    SVC(C=1.0, ...)
+  :ref:`sphx_glr_auto_examples_00_tutorials_plot_decoding_tutorial.py`
 
-and try predicting the labels on the left-out data::
+.. raw:: html
 
-    >>> svc.predict(data[-10:])     # doctest: +SKIP
-    array([5, 4, 8, 8, 4, 9, 0, 8, 9, 8])
-    >>> labels[-10:]    # The actual labels
-    array([5, 4, 8, 8, 4, 9, 0, 8, 9, 8])
+      <div class="sphx-glr-thumbnail-title">A introduction tutorial to fMRI decoding</div>
+    </div>
 
-To find out more, try the `scikit-learn tutorials
-<http://scikit-learn.org/stable/tutorial/index.html>`_.
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="In this tutorial, we use a General Linear Model (:term:`GLM`) to compare the fMRI signal during...">
+
+.. only:: html
+
+  .. image:: /auto_examples/00_tutorials/images/thumb/sphx_glr_plot_single_subject_single_run_thumb.png
+    :alt: Intro to GLM Analysis: a single-session, single-subject fMRI dataset
+
+  :ref:`sphx_glr_auto_examples_00_tutorials_plot_single_subject_single_run.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Intro to GLM Analysis: a single-session, single-subject fMRI dataset</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="In this example, we will project a 3D statistical map onto a cortical mesh using vol_to_surf, d...">
+
+.. only:: html
+
+  .. image:: /auto_examples/01_plotting/images/thumb/sphx_glr_plot_3d_map_to_surface_projection_thumb.png
+    :alt: Making a surface plot of a 3D statistical map
+
+  :ref:`sphx_glr_auto_examples_01_plotting_plot_3d_map_to_surface_projection.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Making a surface plot of a 3D statistical map</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example shows manual steps to create and further modify an ROI spatial mask. They represen...">
+
+.. only:: html
+
+  .. image:: /auto_examples/06_manipulating_images/images/thumb/sphx_glr_plot_roi_extraction_thumb.png
+    :alt: Computing a Region of Interest (ROI) mask manually
+
+  :ref:`sphx_glr_auto_examples_06_manipulating_images_plot_roi_extraction.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Computing a Region of Interest (ROI) mask manually</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="Here, we will go through a full step-by-step example of fitting a GLM to experimental data and ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/04_glm_first_level/images/thumb/sphx_glr_plot_fiac_analysis_thumb.png
+    :alt: Simple example of two-session fMRI model fitting
+
+  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_fiac_analysis.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Simple example of two-session fMRI model fitting</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This example compares different kinds of functional connectivity between regions of interest : ...">
+
+.. only:: html
+
+  .. image:: /auto_examples/03_connectivity/images/thumb/sphx_glr_plot_group_level_connectivity_thumb.png
+    :alt: Classification of age groups using functional connectivity
+
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_group_level_connectivity.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Classification of age groups using functional connectivity</div>
+    </div>
+
+
+.. raw:: html
+
+    </div>
+
 
 Finding help
--------------
+------------
 
-:Reference material:
+On top of this guide, there is a lot of content available outside of ``nilearn``
+that could be of interest to new-comers:
 
-    * A quick and gentle introduction to scientific computing with Python can
-      be found in the
-      `scipy lecture notes <http://scipy-lectures.github.io/>`_.
+1. `An introduction to fMRI <https://www.cs.mtsu.edu/~xyang/fMRIHandBook.pdf>`_ by Russel Poldrack, Jeanette Mumford and Thomas Nichols.
 
-    * The documentation of scikit-learn explains each method with tips on
-      practical use and examples:
-      `http://scikit-learn.org/ <http://scikit-learn.org/>`_.
-      While not specific to neuroimaging, it is often a recommended read.
-      Be careful to consult the documentation of the scikit-learn version
-      that you are using.
+2. (For French readers) `An introduction to cognitive neuroscience <https://psy3018.github.io/intro.html>`_ given at the University of Montréal.
 
-:Mailing lists and forums:
+3. The documentation of ``scikit-learn`` explains each method with tips on practical use and examples: :sklearn:`\ `.  While not specific to neuroimaging, it is often a recommended read.
 
-    * Don't hesitate to ask questions about nilearn on `neurostars
-      <https://neurostars.org/t/nilearn/>`_.
+4. (For Python beginners) A quick and gentle introduction to scientific computing with Python with the `scipy lecture notes <http://scipy-lectures.github.io/>`_.
+Moreover, you can use ``nilearn`` with `Jupyter <http://jupyter.org>`_ notebooks or
+`IPython <http://ipython.org>`_ sessions. They provide an interactive 
+environment that greatly facilitates debugging and visualisation.
 
-    * You can find help with neuroimaging in Python (file I/O,
-      neuroimaging-specific questions) via the nipy user group:
-      https://groups.google.com/forum/?fromgroups#!forum/nipy-user
 
-    * For machine-learning and scikit-learn questions, expertise can be
-      found on the scikit-learn mailing list:
-      https://mail.python.org/mailman/listinfo/scikit-learn
+Besides, you can find help on :neurostars:`neurostars <>` for questions
+related to ``nilearn`` and to computational neuroscience in general.
+Finally, the ``nilearn`` team organizes weekly :ref:`drop-in hours <quickstart>`.
+We can also be reached on :nilearn-gh:`github <issues>`
+in case you find a bug.
+
+
+Machine learning applications to Neuroimaging
+=============================================
+
+``nilearn`` brings easy-to-use machine learning tools that can be leveraged to solve more complex applications.
+The interested reader can dive into the following articles for more content.
+
+We give a non-exhaustive list of such important applications.
+    
+**Diagnosis and prognosis**
+
+Predicting a clinical score or even treatment response
+from brain imaging with :ref:`supervised
+learning <decoding>` e.g. `[Mourao-Miranda 2012]
+<http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0029482>`_
+
+**Information mapping**
+
+Using the prediction accuracy of a classifier
+to characterize relationships between brain images and stimuli. (e.g.
+:ref:`searchlight <searchlight>`) `[Kriegeskorte 2006]
+<http://www.pnas.org/content/103/10/3863.short>`_
+
+**Transfer learning**
+
+Measuring how much an estimator trained on one
+specific psychological process/task can predict the neural activity
+underlying another specific psychological process/task
+(e.g. discriminating left from
+right eye movements also discriminates additions from subtractions
+`[Knops 2009] <http://www.sciencemag.org/content/324/5934/1583.short>`_)
+
+**High-dimensional multivariate statistics**
+
+From a statistical point of view, machine learning implements
+statistical estimation of models with a large number of parameters.
+Tricks pulled in machine learning (e.g. regularization) can
+make this estimation possible despite the usually
+small number of observations in the neuroimaging domain
+`[Varoquaux 2012] <http://icml.cc/2012/papers/688.pdf>`_. This
+usage of machine learning requires some understanding of the models.
+
+**Data mining / exploration**
+
+Data-driven exploration of brain images. This includes the extraction of
+the major brain networks from resting-state data ("resting-state networks")
+or movie-watching data as well as the discovery of connectionally coherent
+functional modules ("connectivity-based parcellation").
+For example,
+:ref:`extracting_rsn` or :ref:`parcellating_brain` with clustering.
+

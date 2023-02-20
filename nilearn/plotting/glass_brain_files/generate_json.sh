@@ -11,4 +11,3 @@ for svg_fn in *.svg; do
     json_fn="$(basename $svg_fn .svg).json"
     python svg_to_json_converter.py $svg_fn $json_fn
 done
-

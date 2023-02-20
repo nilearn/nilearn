@@ -10,11 +10,6 @@ Extracting times series to build a functional connectome
    interactions between regions. Here we show how to extract activation
    time-series to compute functional connectomes.
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
-
 .. topic:: **References**
 
    * `Varoquaux and Craddock, "Learning and comparing functional
@@ -63,29 +58,39 @@ Plotting can then be done as::
 Extracting signals on a parcellation
 ------------------------------------
 
-.. currentmodule:: nilearn.input_data
+.. currentmodule:: nilearn.maskers
 
 To extract signal on the parcellation, the easiest option is to use the
-:class:`nilearn.input_data.NiftiLabelsMasker`. As any "maskers" in
+:class:`NiftiLabelsMasker`. As any "maskers" in
 nilearn, it is a processing object that is created by specifying all
 the important parameters, but not the data::
 
-    from nilearn.input_data import NiftiLabelsMasker
+    from nilearn.maskers import NiftiLabelsMasker
     masker = NiftiLabelsMasker(labels_img=atlas_filename, standardize=True)
 
 The Nifti data can then be turned to time-series by calling the
-:class:`NiftiLabelsMasker` `fit_transform` method, that takes either
+:meth:`NiftiLabelsMasker.fit_transform` method, that takes either
 filenames or `NiftiImage objects
 <http://nipy.org/nibabel/nibabel_images.html>`_::
 
-    time_series = masker.fit_transform(frmi_files, confounds=csv_file)
+    time_series = masker.fit_transform(frmi_files,
+                                       confounds=confounds_dataframe)
 
 |
 
 Note that confound signals can be specified in the call. Indeed, to
 obtain time series that capture well the functional interactions between
-regions, regressing out noise sources is indeed very important
+regions, regressing out noise sources is very important
 `[Varoquaux & Craddock 2013] <https://hal.inria.fr/hal-00812911/>`_.
+For data processed by :term:`fMRIPrep`,
+:func:`~nilearn.interfaces.fmriprep.load_confounds` and
+:func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` can help you
+retrieve confound variables.
+:func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` selects confounds
+based on past literature with limited parameters for customisation.
+For more freedoms of confounds selection,
+:func:`~nilearn.interfaces.fmriprep.load_confounds` groups confound variables as
+sets of noise components and one can fine tune each of the parameters.
 
 .. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_signal_extraction_001.png
    :target: ../auto_examples/03_connectivity/plot_signal_extraction.html
@@ -111,6 +116,14 @@ regions, regressing out noise sources is indeed very important
 
    * Inspect the '.keys()' of the object returned by
      :func:`nilearn.datasets.fetch_development_fmri`.
+
+   * Use :func:`~nilearn.interfaces.fmriprep.load_confounds` to get a set of
+     confounds of your choice. (Note: CompCor and ICA-AROMA related options are
+     not applicable to the brain development dataset).
+
+   * Use :func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` to get a
+     set of confounds. (Note: only ``simple`` and ``scrubbing`` are applicable
+     to the brain development dataset).
 
    * :class:`nilearn.connectome.ConnectivityMeasure` can be used to compute
      a correlation matrix (check the shape of your matrices).
@@ -149,14 +162,14 @@ of these maps, which requires accessing them with
 Extracting signals from a probabilistic atlas
 ---------------------------------------------
 
-.. currentmodule:: nilearn.input_data
+.. currentmodule:: nilearn.maskers
 
 As with extraction of signals on a parcellation, extracting signals from
 a probabilistic atlas can be done with a "masker" object:  the
-:class:`nilearn.input_data.NiftiMapsMasker`. It is created by
+:class:`NiftiMapsMasker`. It is created by
 specifying the important parameters, in particular the atlas::
 
-    from nilearn.input_data import NiftiMapsMasker
+    from nilearn.maskers import NiftiMapsMasker
     masker = NiftiMapsMasker(maps_img=atlas_filename, standardize=True)
 
 The `fit_transform` method turns filenames or `NiftiImage objects
@@ -170,7 +183,7 @@ the same considerations on using confounds regressors apply.
 
 .. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_probabilistic_atlas_extraction_001.png
    :target: ../auto_examples/03_connectivity/plot_probabilistic_atlas_extraction.html
-   :scale: 30
+   :scale: 40
 
 
 .. topic:: **Full example**
@@ -204,7 +217,7 @@ We can display it with the :func:`nilearn.plotting.plot_connectome`
 function that take the matrix, and coordinates of the nodes in MNI space.
 In the case of the MSDL atlas
 (:func:`nilearn.datasets.fetch_atlas_msdl`), the CSV file readily comes
-with MNI coordinates for each region (see for instance example:
+with :term:`MNI` coordinates for each region (see for instance example:
 :ref:`sphx_glr_auto_examples_03_connectivity_plot_probabilistic_atlas_extraction.py`).
 
 .. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_probabilistic_atlas_extraction_002.png

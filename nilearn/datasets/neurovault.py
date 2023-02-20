@@ -26,10 +26,10 @@ from .utils import _fetch_file, _get_dataset_dir, _get_dataset_descr
 from ..image import resample_img
 import uuid
 
-_NEUROVAULT_BASE_URL = 'http://neurovault.org/api/'
+_NEUROVAULT_BASE_URL = 'https://neurovault.org/api/'
 _NEUROVAULT_COLLECTIONS_URL = urljoin(_NEUROVAULT_BASE_URL, 'collections/')
 _NEUROVAULT_IMAGES_URL = urljoin(_NEUROVAULT_BASE_URL, 'images/')
-_NEUROSYNTH_FETCH_WORDS_URL = 'http://neurosynth.org/api/decode/'
+_NEUROSYNTH_FETCH_WORDS_URL = 'https://neurosynth.org/api/decode/'
 
 _COL_FILTERS_AVAILABLE_ON_SERVER = ('DOI', 'name', 'owner', 'id')
 _IM_FILTERS_AVAILABLE_ON_SERVER = tuple()
@@ -66,7 +66,7 @@ def _requests_session():
 
 # Helpers for filtering images and collections.
 
-class _SpecialValue(object):
+class _SpecialValue:
     """Base class for special values used to filter terms.
 
     Derived classes should override ``__eq__`` in order to create
@@ -677,7 +677,7 @@ def _empty_filter(arg):
     return True
 
 
-class ResultFilter(object):
+class ResultFilter:
     """Easily create callable (local) filters for ``fetch_neurovault``.
 
     Constructed from a mapping of key-value pairs (optional) and a
@@ -839,7 +839,7 @@ class ResultFilter(object):
 # Utilities for composing queries and interacting with
 # neurovault and neurosynth
 
-class _TemporaryDirectory(object):
+class _TemporaryDirectory:
     """Context manager that provides a temporary directory
 
     A temporary directory is created on __enter__
@@ -1776,7 +1776,7 @@ def _scroll_collection(collection, download_params):
     _print_if(
         'On neurovault.org: '
         '{0} image{1} matched query in collection {2}'.format(
-            (n_im_in_collection if n_im_in_collection else 'no'),
+            (n_im_in_collection or 'no'),
             ('s' if n_im_in_collection > 1 else ''), collection['id']),
         _INFO, download_params['verbose'])
 
@@ -2238,7 +2238,7 @@ def _result_list_to_bunch(result_list, download_params):
         images_meta, collections_meta = zip(*result_list)
         images_meta = list(images_meta)
         collections_meta = list(collections_meta)
-    
+
     if download_params['resample']:
         images = [im_meta.get('resampled_absolute_path') for im_meta in images_meta]
     else:
@@ -2314,7 +2314,8 @@ def fetch_neurovault(
     skimmed through the whole database or until an (optional) maximum
     number of images to fetch has been reached.
 
-    For more information, see [1]_ and [2]_.
+    For more information, see :footcite:`Gorgolewski2015`,
+    and :footcite:`Yarkoni2011`.
 
     Parameters
     ----------
@@ -2452,17 +2453,7 @@ def fetch_neurovault(
 
     References
     ----------
-    .. [1] Gorgolewski KJ, Varoquaux G, Rivera G, Schwartz Y, Ghosh SS,
-       Maumet C, Sochat VV, Nichols TE, Poldrack RA, Poline J-B,
-       Yarkoni T and Margulies DS (2015) NeuroVault.org: a web-based
-       repository for collecting and sharing unthresholded
-       statistical maps of the human brain. Front. Neuroinform. 9:8.
-       doi: 10.3389/fninf.2015.00008
-
-    .. [2] Yarkoni, Tal, Russell A. Poldrack, Thomas E. Nichols, David
-       C. Van Essen, and Tor D. Wager. "Large-scale automated synthesis
-       of human functional neuroimaging data." Nature methods 8, no. 8
-       (2011): 665-670.
+    .. footbibliography::
 
     Examples
     --------
@@ -2528,7 +2519,8 @@ def fetch_neurovault_ids(
     This is the fast way to get the data from the server if we already
     know which images or collections we want.
 
-    For more information, see [1]_ and [2]_.
+    For more information, see :footcite:`Gorgolewski2015`,
+    and :footcite:`Yarkoni2011`.
 
     Parameters
     ----------
@@ -2609,17 +2601,7 @@ def fetch_neurovault_ids(
 
     References
     ----------
-    .. [1] Gorgolewski KJ, Varoquaux G, Rivera G, Schwartz Y, Ghosh SS,
-       Maumet C, Sochat VV, Nichols TE, Poldrack RA, Poline J-B,
-       Yarkoni T and Margulies DS (2015) NeuroVault.org: a web-based
-       repository for collecting and sharing unthresholded
-       statistical maps of the human brain. Front. Neuroinform. 9:8.
-       doi: 10.3389/fninf.2015.00008
-
-    .. [2] Yarkoni, Tal, Russell A. Poldrack, Thomas E. Nichols, David
-       C. Van Essen, and Tor D. Wager. "Large-scale automated synthesis
-       of human functional neuroimaging data." Nature methods 8, no. 8
-       (2011): 665-670.
+    .. footbibliography::
 
     """
     return _fetch_neurovault_implementation(

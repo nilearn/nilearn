@@ -29,7 +29,7 @@ func_filename = haxby_dataset.func[0]
 mean_haxby = mean_img(func_filename)
 
 from nilearn.plotting import plot_epi, show
-plot_epi(mean_haxby)
+plot_epi(mean_haxby, colorbar=True, cbar_tick_format="%i")
 
 ##############################################################################
 # Extracting a brain mask

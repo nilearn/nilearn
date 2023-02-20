@@ -1,8 +1,8 @@
-"""
-Generic FISTA for solving TV-L1, Graph-Net, etc., problems. For problems on
-which the prox of the nonsmooth term cannot be computed closed-form
-(e.g TV-L1), we approximate the prox using an inner FISTA loop.
+"""Generic FISTA for solving TV-L1, Graph-Net, etc., problems.
 
+For problems on which the prox of the nonsmooth term \
+cannot be computed closed-form (e.g TV-L1), \
+we approximate the prox using an inner FISTA loop.
 """
 # Author: DOHMATOB Elvis Dopgima,
 #         PIZARRO Gaspar,
@@ -17,8 +17,9 @@ from scipy import linalg
 from sklearn.utils import check_random_state
 
 
-def _check_lipschitz_continuous(f, ndim, lipschitz_constant, n_trials=10,
-                                random_state=42):
+def _check_lipschitz_continuous(
+    f, ndim, lipschitz_constant, n_trials=10, random_state=42
+):
     """Empirically check Lipschitz continuity of a function.
 
     If this test is passed, then we are empirically confident in the
@@ -52,20 +53,30 @@ def _check_lipschitz_continuous(f, ndim, lipschitz_constant, n_trials=10,
     ------
     RuntimeError
     """
-
     rng = check_random_state(random_state)
     for x in rng.randn(n_trials, ndim):
         for y in rng.randn(n_trials, ndim):
             a = linalg.norm(f(x).ravel() - f(y).ravel(), 2)
             b = lipschitz_constant * linalg.norm(x - y, 2)
             if a > b:
-                raise RuntimeError("Counter example: (%s, %s)" % (x, y))
+                raise RuntimeError(f"Counter example: ({x}, {y})")
 
 
-def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
-           dgap_tol=None, init=None, max_iter=1000, tol=1e-4,
-           check_lipschitz=False, dgap_factor=None, callback=None,
-           verbose=2):
+def mfista(
+    f1_grad,
+    f2_prox,
+    total_energy,
+    lipschitz_constant,
+    w_size,
+    dgap_tol=None,
+    init=None,
+    max_iter=1000,
+    tol=1e-4,
+    check_lipschitz=False,
+    dgap_factor=None,
+    callback=None,
+    verbose=2,
+):
     """Generic FISTA solver.
 
     Minimizes the a sum `f + g` of two convex functions f (smooth)
@@ -148,14 +159,14 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
     # initialization
     if init is None:
         init = dict()
-    w = init.get('w', np.zeros(w_size))
+    w = init.get("w", np.zeros(w_size))
     z = init.get("z", w.copy())
-    t = init.get("t", 1.)
-    stepsize = init.get("stepsize", 1. / lipschitz_constant)
+    t = init.get("t", 1.0)
+    stepsize = init.get("stepsize", 1.0 / lipschitz_constant)
     if dgap_tol is None:
-        dgap_tol = init.get('dgap_tol', np.inf)
+        dgap_tol = init.get("dgap_tol", np.inf)
     if dgap_factor is None:
-        dgap_factor = init.get("dgap_factor", 1.)
+        dgap_factor = init.get("dgap_factor", 1.0)
 
     # check Lipschitz continuity of gradient of smooth part
     if check_lipschitz:
@@ -171,7 +182,7 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
     best_z = z.copy()
     best_t = t
     prox_info = dict(converged=True)
-    stepsize = 1. / lipschitz_constant
+    stepsize = 1.0 / lipschitz_constant
     history = []
     w_old = w.copy()
 
@@ -182,13 +193,15 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
 
         # invoke callback
         if verbose:
-            print('mFISTA: Iteration % 2i/%2i: E = %7.4e, dE % 4.4e' % (
-                  i + 1, max_iter, old_energy, energy_delta))
+            print(
+                "mFISTA: Iteration % 2i/%2i: E = %7.4e, dE % 4.4e"
+                % (i + 1, max_iter, old_energy, energy_delta)
+            )
         if callback and callback(locals()):
             break
         if np.abs(energy_delta) < tol:
             if verbose:
-                print("\tConverged (|dE| < %g)" % tol)
+                print(f"\tConverged (|dE| < {tol:g})")
             break
 
         # forward (gradient) step
@@ -196,15 +209,19 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
 
         # backward (prox) step
         for _ in range(10):
-            w, prox_info = f2_prox(z - stepsize * gradient_buffer, stepsize,
-                                   dgap_factor * dgap_tol, init=w)
+            w, prox_info = f2_prox(
+                z - stepsize * gradient_buffer,
+                stepsize,
+                dgap_factor * dgap_tol,
+                init=w,
+            )
             energy = total_energy(w)
-            if ista_step and prox_info['converged'] and old_energy <= energy:
+            if ista_step and prox_info["converged"] and old_energy <= energy:
                 # Even when doing ISTA steps we are not decreasing.
                 # Thus we need a tighter dual_gap on the prox_tv
                 # This corresponds to a line search on the dual_gap
                 # tolerance.
-                dgap_factor *= .2
+                dgap_factor *= 0.2
                 if verbose:
                     print("decreased dgap_tol")
             else:
@@ -215,24 +232,24 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
         old_energy = energy
 
         # z update
-        if energy_delta < 0.:
+        if energy_delta < 0.0:
             # M-FISTA strategy: rewind and switch temporarily to an ISTA step
             z[:] = w_old
             w[:] = w_old
             ista_step = True
             if verbose:
-                print('Monotonous FISTA: Switching to ISTA')
+                print("Monotonous FISTA: Switching to ISTA")
         else:
             if ista_step:
                 z = w
             else:
                 t0 = t
-                t = 0.5 * (1. + sqrt(1. + 4. * t * t))
-                z = w + ((t0 - 1.) / t) * (w - w_old)
+                t = 0.5 * (1.0 + sqrt(1.0 + 4.0 * t * t))
+                z = w + ((t0 - 1.0) / t) * (w - w_old)
             ista_step = False
 
         # misc
-        if energy_delta != 0.:
+        if energy_delta != 0.0:
             # We need to decrease the tolerance on the dual_gap as 1/i**4
             # (see Mark Schmidt, Nicolas le Roux and Francis Bach, NIPS
             # 2011), thus we need to count how many times we are called,
@@ -243,7 +260,7 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
             #
             # For this reason, we rely more on the linesearch-like
             # strategy to set the dgap_tol
-            dgap_tol = abs(energy_delta) / (i + 1.)
+            dgap_tol = abs(energy_delta) / (i + 1.0)
 
         # dgap_tol house-keeping
         if energy < best_energy:
@@ -253,6 +270,11 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
             best_t = t
             best_dgap_tol = dgap_tol
 
-    init = dict(w=best_w.copy(), z=best_z, t=best_t, dgap_tol=best_dgap_tol,
-                stepsize=stepsize)
+    init = dict(
+        w=best_w.copy(),
+        z=best_z,
+        t=best_t,
+        dgap_tol=best_dgap_tol,
+        stepsize=stepsize,
+    )
     return best_w, history, init

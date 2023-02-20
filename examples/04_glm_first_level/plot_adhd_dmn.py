@@ -1,4 +1,4 @@
-"""Default Mode Network extraction of AHDH dataset
+"""Default Mode Network extraction of ADHD dataset
 ===============================================
 
 This example shows a full step-by-step workflow of fitting a GLM to data
@@ -11,11 +11,13 @@ More specifically:
 3. A GLM is applied to the dataset (effect/covariance, then contrast estimation).
 4. The Default Mode Network is displayed.
 
+.. include:: ../../../examples/masker_note.rst
+
 """
 import numpy as np
 
 from nilearn import datasets, plotting
-from nilearn.input_data import NiftiSpheresMasker
+from nilearn.maskers import NiftiSpheresMasker
 
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.first_level import make_first_level_design_matrix

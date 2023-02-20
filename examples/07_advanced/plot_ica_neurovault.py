@@ -4,10 +4,12 @@ NeuroVault cross-study ICA maps.
 
 This example shows how to download statistical maps from
 NeuroVault, label them with NeuroSynth terms,
-and compute ICA components across all the maps.
+and compute :term:`ICA` components across all the maps.
 
 See :func:`nilearn.datasets.fetch_neurovault`
 documentation for more details.
+
+.. include:: ../../../examples/masker_note.rst
 
 """
 # Author: Ben Cipollini
@@ -24,7 +26,7 @@ from nilearn.datasets import fetch_neurovault
 from nilearn.image import smooth_img
 
 from nilearn.datasets import load_mni152_brain_mask
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 
 from nilearn import plotting
 
@@ -69,7 +71,7 @@ with warnings.catch_warnings():
     warnings.simplefilter('ignore', UserWarning)
     warnings.simplefilter('ignore', DeprecationWarning)
 
-    mask_img = load_mni152_brain_mask()
+    mask_img = load_mni152_brain_mask(resolution=2)
     masker = NiftiMasker(
         mask_img=mask_img, memory='nilearn_cache', memory_level=1)
     masker = masker.fit()

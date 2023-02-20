@@ -1,6 +1,4 @@
-"""
-CanICA
-"""
+"""Canonical Independent Component Analysis."""
 
 # Author: Alexandre Abraham, Gael Varoquaux,
 # License: BSD 3 clause
@@ -15,10 +13,12 @@ from sklearn.decomposition import fastica
 from joblib import Memory, delayed, Parallel
 from sklearn.utils import check_random_state
 
-from .multi_pca import MultiPCA
+from ._multi_pca import _MultiPCA
+from nilearn._utils import fill_doc
 
 
-class CanICA(MultiPCA):
+@fill_doc
+class CanICA(_MultiPCA):
     """Perform Canonical Independent Component Analysis [1]_ [2]_.
 
     Parameters
@@ -31,10 +31,8 @@ class CanICA(MultiPCA):
 
     n_components : int, optional
         Number of components to extract. Default=20.
-
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the size in millimeters of the
-        spatial smoothing to apply to the signal. Default=6mm.
+    %(smoothing_fwhm)s
+        Default=6mm.
 
     do_cca : boolean, optional
         Indicate if a Canonical Correlation Analysis must be run after the
@@ -91,15 +89,15 @@ class CanICA(MultiPCA):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    mask_strategy : {'epi', 'background', or 'template'}, optional
-        The strategy used to compute the mask: use 'background' if your
-        images present a clear homogeneous background, 'epi' if they
-        are raw EPI images, or you could use 'template' which will
-        extract the gray matter part of your data by resampling the MNI152
-        brain mask for your data's field of view.
-        Depending on this value, the mask will be computed from
-        masking.compute_background_mask, masking.compute_epi_mask or
-        masking.compute_brain_mask. Default='epi'.
+    %(mask_strategy)s
+
+        .. note::
+             Depending on this value, the mask will be computed from
+             :func:`nilearn.masking.compute_background_mask`,
+             :func:`nilearn.masking.compute_epi_mask`, or
+             :func:`nilearn.masking.compute_brain_mask`.
+
+        Default='epi'.
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
@@ -128,16 +126,18 @@ class CanICA(MultiPCA):
     Attributes
     ----------
     `components_` : 2D numpy array (n_components x n-voxels)
-        Masked ICA components extracted from the input images. They can be
-        unmasked thanks to the `masker_` attribute.
+        Masked ICA components extracted from the input images.
 
-        Deprecated since version 0.4.1. Use `components_img_` instead.
+        .. note::
+
+            Use attribute `components_img_` rather than manually unmasking
+            `components_` with `masker_` attribute.
 
     `components_img_` : 4D Nifti image
         4D image giving the extracted ICA components. Each 3D image is a
         component.
 
-        New in version 0.4.1.
+        .. versionadded:: 0.4.1
 
     `masker_` : instance of MultiNiftiMasker
         Masker used to filter and mask data as first step. If an instance of
@@ -146,7 +146,7 @@ class CanICA(MultiPCA):
         of `mask` and other NiftiMasker related parameters as initialization.
 
     `mask_img_` : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 
@@ -160,84 +160,115 @@ class CanICA(MultiPCA):
 
     """
 
-    def __init__(self, mask=None, n_components=20, smoothing_fwhm=6,
-                 do_cca=True,
-                 threshold='auto',
-                 n_init=10,
-                 random_state=None,
-                 standardize=True, standardize_confounds=True, detrend=True,
-                 low_pass=None, high_pass=None, t_r=None,
-                 target_affine=None, target_shape=None,
-                 mask_strategy='epi', mask_args=None,
-                 memory=Memory(location=None), memory_level=0,
-                 n_jobs=1, verbose=0
-                 ):
-
-        super(CanICA, self).__init__(
+    def __init__(
+        self,
+        mask=None,
+        n_components=20,
+        smoothing_fwhm=6,
+        do_cca=True,
+        threshold="auto",
+        n_init=10,
+        random_state=None,
+        standardize=True,
+        standardize_confounds=True,
+        detrend=True,
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        target_affine=None,
+        target_shape=None,
+        mask_strategy="epi",
+        mask_args=None,
+        memory=Memory(location=None),
+        memory_level=0,
+        n_jobs=1,
+        verbose=0,
+    ):
+        super().__init__(
             n_components=n_components,
             do_cca=do_cca,
             random_state=random_state,
-            # feature_compression=feature_compression,
-            mask=mask, smoothing_fwhm=smoothing_fwhm,
-            standardize=standardize, standardize_confounds=standardize_confounds,
-            detrend=detrend, low_pass=low_pass, high_pass=high_pass, t_r=t_r,
-            target_affine=target_affine, target_shape=target_shape,
-            mask_strategy=mask_strategy, mask_args=mask_args,
-            memory=memory, memory_level=memory_level,
-            n_jobs=n_jobs, verbose=verbose)
+            mask=mask,
+            smoothing_fwhm=smoothing_fwhm,
+            standardize=standardize,
+            standardize_confounds=standardize_confounds,
+            detrend=detrend,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            t_r=t_r,
+            target_affine=target_affine,
+            target_shape=target_shape,
+            mask_strategy=mask_strategy,
+            mask_args=mask_args,
+            memory=memory,
+            memory_level=memory_level,
+            n_jobs=n_jobs,
+            verbose=verbose,
+        )
 
         if isinstance(threshold, float) and threshold > n_components:
-            raise ValueError("Threshold must not be higher than number "
-                             "of maps. "
-                             "Number of maps is %s and you provided "
-                             "threshold=%s" %
-                             (str(n_components), str(threshold)))
+            raise ValueError(
+                "Threshold must not be higher than number "
+                "of maps. "
+                "Number of maps is %s and you provided "
+                "threshold=%s" % (str(n_components), str(threshold))
+            )
         self.threshold = threshold
         self.n_init = n_init
 
     def _unmix_components(self, components):
-        """Core function of CanICA than rotate components_ to maximize
-        independance"""
+        """Core function of CanICA than rotate components_ to maximize \
+        independence."""
         random_state = check_random_state(self.random_state)
 
         seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)
         # Note: fastICA is very unstable, hence we use 64bit on it
         results = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
-            delayed(self._cache(fastica, func_memory_level=2))
-            (components.astype(np.float64), whiten=True, fun='cube',
-             random_state=seed)
-            for seed in seeds)
+            delayed(self._cache(fastica, func_memory_level=2))(
+                components.astype(np.float64),
+                whiten=True,
+                fun="cube",
+                random_state=seed,
+            )
+            for seed in seeds
+        )
 
         ica_maps_gen_ = (result[2].T for result in results)
-        ica_maps_and_sparsities = ((ica_map,
-                                    np.sum(np.abs(ica_map), axis=1).max())
-                                   for ica_map in ica_maps_gen_)
+        ica_maps_and_sparsities = (
+            (ica_map, np.sum(np.abs(ica_map), axis=1).max())
+            for ica_map in ica_maps_gen_
+        )
         ica_maps, _ = min(ica_maps_and_sparsities, key=itemgetter(-1))
 
         # Thresholding
         ratio = None
         if isinstance(self.threshold, float):
             ratio = self.threshold
-        elif self.threshold == 'auto':
-            ratio = 1.
+        elif self.threshold == "auto":
+            ratio = 1.0
         elif self.threshold is not None:
-            raise ValueError("Threshold must be None, "
-                             "'auto' or float. You provided %s." %
-                             str(self.threshold))
+            raise ValueError(
+                "Threshold must be None, "
+                "'auto' or float. You provided %s." % str(self.threshold)
+            )
         if ratio is not None:
             abs_ica_maps = np.abs(ica_maps)
-            percentile = 100. - (100. / len(ica_maps)) * ratio
+            percentile = 100.0 - (100.0 / len(ica_maps)) * ratio
             if percentile <= 0:
-                _warnings.warn("Nilearn's decomposition module "
-                               "obtained a critical threshold "
-                               "(= %s percentile).\n"
-                               "No threshold will be applied. "
-                               "Threshold should be decreased or "
-                               "number of components should be adjusted." %
-                               str(percentile), UserWarning, stacklevel=4)
+                _warnings.warn(
+                    "Nilearn's decomposition module "
+                    "obtained a critical threshold "
+                    "(= %s percentile).\n"
+                    "No threshold will be applied. "
+                    "Threshold should be decreased or "
+                    "number of components should be adjusted."
+                    % str(percentile),
+                    UserWarning,
+                    stacklevel=4,
+                )
             else:
                 threshold = scoreatpercentile(abs_ica_maps, percentile)
-                ica_maps[abs_ica_maps < threshold] = 0.
+                ica_maps[abs_ica_maps < threshold] = 0.0
         # We make sure that we keep the dtype of components
         self.components_ = ica_maps.astype(self.components_.dtype)
 
@@ -247,9 +278,10 @@ class CanICA(MultiPCA):
                 component *= -1
         if hasattr(self, "masker_"):
             self.components_img_ = self.masker_.inverse_transform(
-                self.components_)
+                self.components_
+            )
 
-    # Overriding MultiPCA._raw_fit overrides MultiPCA.fit behavior
+    # Overriding _MultiPCA._raw_fit overrides _MultiPCA.fit behavior
     def _raw_fit(self, data):
         """Helper function that directly process unmasked data.
 
@@ -262,6 +294,6 @@ class CanICA(MultiPCA):
             Unmasked data to process
 
         """
-        components = MultiPCA._raw_fit(self, data)
+        components = _MultiPCA._raw_fit(self, data)
         self._unmix_components(components)
         return self

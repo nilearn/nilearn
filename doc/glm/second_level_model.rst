@@ -11,10 +11,6 @@ Second level models
    be grouped and statistical tests  performed to make broader inferences on fMRI activity. Some common
    second level models are one-sample (unpaired or paired) and two-sample t-tests.
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
 
 Fitting a second level model
 ============================
@@ -31,8 +27,9 @@ fits the model is :func:`nilearn.glm.second_level.SecondLevelModel.fit`.
 
 Some examples to get you going with second level models are provided below::
   * General design matrix setup: :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_design_matrix.py`
-  * One-sample testing, unpaired: :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_one_sample_test.py`
-  * One-sample testing, paired: :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_paired_sample_test.py`
+  * One-sample testing, with non-parametric multiple comparisons correction:
+    :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_one_sample_test.py`
+  * Two-sample testing, unpaired and paired: :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_two_sample_test.py`
   * Complex contrast: :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_association_test.py`
 
 
@@ -55,7 +52,13 @@ important to address with statistical analysis of fMRI data. Nilearn provides pa
 to address this issue.
 
 Refer to the example :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_thresholding.py` for a guide
-to applying FPR, FDR and FWER corrections. These corrections are applied using the :func:`nilearn.glm.threshold_stats_img` function.
+to applying :term:`FPR<FPR correction>`, :term:`FDR<FDR correction>`, and :term:`FWER<FWER correction>` corrections.
+These corrections are applied using the :func:`nilearn.glm.threshold_stats_img` function.
+
+You can additionally employ a non-parametric correction procedure using either
+:func:`nilearn.glm.second_level.non_parametric_inference` or :func:`nilearn.mass_univariate.permuted_ols`.
+Refer to the example :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_second_level_one_sample_test.py`
+for a practical use of this function.
 
 Within an activated cluster, not all voxels represent true activation. To estimate true positives within a cluster,
 Nilearn provides the :func:`nilearn.glm.cluster_level_inference` function. An example with usage information is available

@@ -11,7 +11,7 @@ import numpy as np
 import scipy.stats as sps
 import pandas as pd
 
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from nilearn._utils.glm import z_score
 
 DEF_TINY = 1e-50
@@ -29,18 +29,21 @@ def expression_to_contrast_vector(expression, design_columns):
     design_columns : list or array of strings
         The column names of the design matrix.
 
-    Notes
-    -----
-    This function is experimental.
-    It may change in any future release of Nilearn.
-
     """
     if expression in design_columns:
         contrast_vector = np.zeros(len(design_columns))
         contrast_vector[list(design_columns).index(expression)] = 1.
         return contrast_vector
     df = pd.DataFrame(np.eye(len(design_columns)), columns=design_columns)
-    contrast_vector = df.eval(expression, engine="python").values
+    try:
+        contrast_vector = df.eval(expression, engine="python").values
+    except Exception:
+        raise ValueError(
+            'The expression (%s) is not valid. This could be due to '
+            'defining the contrasts using design matrix columns that are '
+            'invalid python identifiers. '
+            % expression
+        )
     return contrast_vector
 
 
@@ -66,12 +69,8 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     Returns
     -------
     con : Contrast instance,
-        Yields the statistics of the contrast (effects, variance, p-values)
-
-    Notes
-    -----
-    This function is experimental.
-    It may change in any future release of Nilearn.
+        Yields the statistics of the contrast
+        (:term:`effects<Parameter Estimate>`, variance, p-values).
 
     """
     con_val = np.asarray(con_val)
@@ -86,7 +85,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     if contrast_type not in acceptable_contrast_types:
         raise ValueError(
             '"{0}" is not a known contrast type. Allowed types are {1}'.
-                format(contrast_type, acceptable_contrast_types))
+            format(contrast_type, acceptable_contrast_types))
 
     if contrast_type == 't':
         effect_ = np.zeros((1, labels.size))
@@ -140,7 +139,7 @@ def _compute_fixed_effect_contrast(labels, results, con_vals,
     return contrast * (1. / n_contrasts)
 
 
-class Contrast(object):
+class Contrast:
     """ The contrast class handles the estimation of statistical contrasts
     on a given model: student (t) or Fisher (F).
     The important feature is that it supports addition,
@@ -148,7 +147,7 @@ class Contrast(object):
 
     The current implementation is meant to be simple,
     and could be enhanced in the future on the computational side
-    (high-dimensional F constrasts may lead to memory breakage).
+    (high-dimensional F contrasts may lead to memory breakage).
 
     """
     def __init__(self, effect, variance, dim=None, dof=DEF_DOFMAX,
@@ -180,11 +179,6 @@ class Contrast(object):
         dofmax : scalar, optional
             The maximum degrees of freedom of the residuals.
             Default=DEF_DOFMAX.
-
-        Warnings
-        --------
-        This class is experimental.
-        It may change in any future release of Nilearn.
 
         """
         if variance.ndim != 1:
@@ -240,8 +234,8 @@ class Contrast(object):
 
         # Case: one-dimensional contrast ==> t or t**2
         if self.contrast_type == 'F':
-            stat = np.sum((self.effect - baseline) ** 2, 0) / self.dim / \
-                   np.maximum(self.variance, self.tiny)
+            stat = np.sum((self.effect - baseline) ** 2, 0) / \
+                self.dim / np.maximum(self.variance, self.tiny)
         elif self.contrast_type == 't':
             # avoids division by zero
             stat = (self.effect - baseline) / np.sqrt(
@@ -343,7 +337,7 @@ class Contrast(object):
         This should be used only on indepndent contrasts"""
         if self.contrast_type != other.contrast_type:
             raise ValueError(
-                'The two contrasts do not have consistant type dimensions')
+                'The two contrasts do not have consistent type dimensions')
         if self.dim != other.dim:
             raise ValueError(
                 'The two contrasts do not have compatible dimensions')
@@ -399,11 +393,6 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
 
     fixed_fx_t_img : Nifti1Image
         The fixed effects t-test computed within the mask.
-
-    Notes
-    -----
-    This function is experimental.
-    It may change in any future release of Nilearn.
 
     """
     if len(contrast_imgs) != len(variance_imgs):

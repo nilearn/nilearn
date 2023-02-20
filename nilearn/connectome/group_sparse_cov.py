@@ -34,7 +34,7 @@ def compute_alpha_max(emp_covs, n_samples):
     matrices are fully dense (i.e. minimal number of zero coefficients).
 
     The formula used in this function was derived using the same method
-    as in [1]_.
+    as in :footcite:`Duchi2012`.
 
     Parameters
     ----------
@@ -55,11 +55,9 @@ def compute_alpha_max(emp_covs, n_samples):
         minimal value for the regularization parameter that gives a fully
         dense matrix.
 
-    Reference
+    References
     ---------
-    .. [1] Duchi, John, Stephen Gould, and Daphne Koller. 'Projected Subgradient
-       Methods for Learning Sparse Gaussians'. ArXiv E-prints 1206 (1 June
-       2012): 3249.
+    .. footbibliography::
 
     """
     A = np.copy(emp_covs)
@@ -145,7 +143,7 @@ def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3, verbose=0,
     Running time is linear on max_iter, and number of subjects (len(subjects)),
     but cubic on number of features (subjects[0].shape[1]).
 
-    The present algorithm is based on [1]_.
+    The present algorithm is based on :footcite:`Honorio2015`.
 
     Parameters
     ----------
@@ -205,9 +203,7 @@ def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3, verbose=0,
 
     References
     ----------
-    .. [1] Jean Honorio and Dimitris Samaras, "Simultaneous and Group-Sparse
-       Multi-Task Learning of Gaussian Graphical Models". arXiv:1207.4255
-       (17 July 2012). http://arxiv.org/abs/1207.4255.
+    .. footbibliography::
 
     """
 
@@ -274,7 +270,7 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
                    dtype=np.float64, order="F")
     W_inv = np.ndarray(shape=W.shape, dtype=np.float64, order="F")
 
-    # Auxilliary arrays.
+    # Auxiliary arrays.
     v = np.ndarray((omega.shape[0] - 1,), dtype=np.float64)
     h = np.ndarray((omega.shape[1] - 1,), dtype=np.float64)
 
@@ -456,8 +452,8 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
 class GroupSparseCovariance(BaseEstimator, CacheMixin):
     """Covariance and precision matrix estimator.
 
-    The model used has been introduced in [1]_, and the algorithm used is
-    based on what is described in [2]_.
+    The model used has been introduced in :footcite:`Varoquaux2010a`, and the
+    algorithm used is based on what is described in :footcite:`Honorio2015`.
 
     Parameters
     ----------
@@ -497,12 +493,7 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
 
     References
     ----------
-    .. [1] Gael Varoquaux, et al. `Brain Covariance Selection: Better Individual
-       Functional Connectivity Models Using Population Prior
-       <http://arxiv.org/abs/1008.5071>`_'.
-
-    .. [2] Jean Honorio and Dimitris Samaras, "Simultaneous and Group-Sparse
-       Multi-Task Learning of Gaussian Graphical Models". http://arxiv.org/abs/1207.4255.
+    .. footbibliography::
 
     """
 
@@ -689,7 +680,6 @@ def group_sparse_scores(precisions, n_samples, emp_covs, alpha,
             # duality gap.
             A[..., k].flat[::A.shape[0] + 1] = 0
 
-        alpha_max = np.sqrt((A ** 2).sum(axis=-1)).max()
         dual_obj = 0  # dual objective
         for k in range(n_subjects):
             B = emp_covs[..., k] + A[..., k] / n_samples[k]
@@ -799,7 +789,7 @@ def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
         return precisions_list
 
 
-class EarlyStopProbe(object):
+class EarlyStopProbe:
     """Callable probe for early stopping in GroupSparseCovarianceCV.
 
     Stop optimizing as soon as the score on the test set starts decreasing.
@@ -966,7 +956,6 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
 
         if isinstance(n_alphas, collections.abc.Sequence):
             alphas = list(self.alphas)
-            n_alphas = len(alphas)
             n_refinements = 1
         else:
             n_refinements = self.n_refinements
@@ -1015,7 +1004,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             #   value of alpha.
             precisions_list, scores = list(zip(*this_path))
             # now scores[i][j] is the score for the i-th folding, j-th value of
-            # alpha (analoguous for precisions_list)
+            # alpha (analogous for precisions_list)
             precisions_list = list(zip(*precisions_list))
             scores = [np.mean(sc) for sc in zip(*scores)]
             # scores[i] is the mean score obtained for the i-th value of alpha.

@@ -1,9 +1,7 @@
-"""
-The searchlight is a widely used approach for the study of the
-fine-grained patterns of information in fMRI analysis, in which
-multivariate statistical relationships are iteratively tested in the
-neighborhood of each location of a domain.
-"""
+"""The searchlight is a widely used approach for the study \
+of the fine-grained patterns of information in fMRI analysis, \
+in which multivariate statistical relationships are iteratively tested \
+in the neighborhood of each location of a domain."""
 # Authors : Vincent Michel (vm.michel@gmail.com)
 #           Alexandre Gramfort (alexandre.gramfort@inria.fr)
 #           Philippe Gervais (philippe.gervais@inria.fr)
@@ -23,16 +21,26 @@ from sklearn.exceptions import ConvergenceWarning
 
 from .. import masking
 from ..image.resampling import coord_transform
-from ..input_data.nifti_spheres_masker import _apply_mask_and_get_affinity
-from .._utils import check_niimg_4d
+from nilearn.maskers.nifti_spheres_masker import _apply_mask_and_get_affinity
+from .._utils import check_niimg_4d, fill_doc
 from sklearn.model_selection import cross_val_score
 
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
 
 
-def search_light(X, y, estimator, A, groups=None, scoring=None,
-                 cv=None, n_jobs=-1, verbose=0):
-    """Function for computing a search_light
+@fill_doc
+def search_light(
+    X,
+    y,
+    estimator,
+    A,
+    groups=None,
+    scoring=None,
+    cv=None,
+    n_jobs=-1,
+    verbose=0,
+):
+    """Compute a search_light.
 
     Parameters
     ----------
@@ -49,14 +57,16 @@ def search_light(X, y, estimator, A, groups=None, scoring=None,
         adjacency matrix. Defines for each feature the neigbhoring features
         following a given structure of the data.
 
-    groups : array-like, optional
-        group label for each sample for cross validation. default None
-        NOTE: will have no effect for scikit learn < 0.18
+    groups : array-like, optional, (default None)
+        group label for each sample for cross validation.
+
+        .. note::
+            This will have no effect for scikit learn < 0.18
 
     scoring : string or callable, optional
         The scoring strategy to use. See the scikit-learn documentation
         for possible values.
-        If callable, it taks as arguments the fitted estimator, the
+        If callable, it takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
 
@@ -64,13 +74,8 @@ def search_light(X, y, estimator, A, groups=None, scoring=None,
         A cross-validation generator. If None, a 3-fold cross
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
-
-    n_jobs : int, optional
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs'.
-
-    verbose : int, optional
-        The verbosity level. Defaut is 0
+    %(n_jobs_all)s
+    %(verbose0)s
 
     Returns
     -------
@@ -79,18 +84,28 @@ def search_light(X, y, estimator, A, groups=None, scoring=None,
     """
     group_iter = GroupIterator(A.shape[0], n_jobs)
     with warnings.catch_warnings():  # might not converge
-        warnings.simplefilter('ignore', ConvergenceWarning)
+        warnings.simplefilter("ignore", ConvergenceWarning)
         scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
             delayed(_group_iter_search_light)(
                 A.rows[list_i],
-                estimator, X, y, groups, scoring, cv,
-                thread_id + 1, A.shape[0], verbose)
-            for thread_id, list_i in enumerate(group_iter))
+                estimator,
+                X,
+                y,
+                groups,
+                scoring,
+                cv,
+                thread_id + 1,
+                A.shape[0],
+                verbose,
+            )
+            for thread_id, list_i in enumerate(group_iter)
+        )
     return np.concatenate(scores)
 
 
-class GroupIterator(object):
-    """Group iterator
+@fill_doc
+class GroupIterator:
+    """Group iterator.
 
     Provides group of features for search_light loop
     that may be used with Parallel.
@@ -99,11 +114,10 @@ class GroupIterator(object):
     ----------
     n_features : int
         Total number of features
+    %(n_jobs)s
 
-    n_jobs : int, optional
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs'. Defaut is 1
     """
+
     def __init__(self, n_features, n_jobs=1):
         self.n_features = n_features
         if n_jobs == -1:
@@ -112,16 +126,25 @@ class GroupIterator(object):
 
     def __iter__(self):
         split = np.array_split(np.arange(self.n_features), self.n_jobs)
-        for list_i in split:
-            yield list_i
+        yield from split
 
 
-def _group_iter_search_light(list_rows, estimator, X, y, groups,
-                             scoring, cv, thread_id, total, verbose=0):
-    """Function for grouped iterations of search_light
+def _group_iter_search_light(
+    list_rows,
+    estimator,
+    X,
+    y,
+    groups,
+    scoring,
+    cv,
+    thread_id,
+    total,
+    verbose=0,
+):
+    """Function for grouped iterations of search_light.
 
     Parameters
-    -----------
+    ----------
     list_rows : array of arrays of int
         adjacency rows. For a voxel with index i in X, list_rows[i] is the list
         of neighboring voxels indices (in X).
@@ -155,7 +178,7 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
         Total number of voxels, used for display
 
     verbose : int, optional
-        The verbosity level. Defaut is 0
+        The verbosity level. Default is 0
 
     Returns
     -------
@@ -166,15 +189,15 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
     t0 = time.time()
     for i, row in enumerate(list_rows):
         kwargs = dict()
-        kwargs['scoring'] = scoring
-        kwargs['groups'] = groups
-        par_scores[i] = np.mean(cross_val_score(estimator, X[:, row],
-                                                y, cv=cv, n_jobs=1,
-                                                **kwargs))
+        kwargs["scoring"] = scoring
+        kwargs["groups"] = groups
+        par_scores[i] = np.mean(
+            cross_val_score(estimator, X[:, row], y, cv=cv, n_jobs=1, **kwargs)
+        )
         if verbose > 0:
             # One can't print less than each 10 iterations
             step = 11 - min(verbose, 10)
-            if (i % step == 0):
+            if i % step == 0:
                 # If there is only one job, progress information is fixed
                 if total == len(list_rows):
                     crlf = "\r"
@@ -184,29 +207,31 @@ def _group_iter_search_light(list_rows, estimator, X, y, groups,
                 percent = round(percent * 100, 2)
                 dt = time.time() - t0
                 # We use a max to avoid a division by zero
-                remaining = (100. - percent) / max(0.01, percent) * dt
+                remaining = (100.0 - percent) / max(0.01, percent) * dt
                 sys.stderr.write(
                     "Job #%d, processed %d/%d voxels "
                     "(%0.2f%%, %i seconds remaining)%s"
-                    % (thread_id, i, len(list_rows), percent, remaining, crlf))
+                    % (thread_id, i, len(list_rows), percent, remaining, crlf)
+                )
     return par_scores
 
 
 ##############################################################################
 # Class for search_light #####################################################
 ##############################################################################
+@fill_doc
 class SearchLight(BaseEstimator):
     """Implement search_light analysis using an arbitrary type of classifier.
 
     Parameters
-    -----------
+    ----------
     mask_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
-        boolean image giving location of voxels containing usable signals.
+        See :ref:`extracting_data`.
+        Boolean image giving location of voxels containing usable signals.
 
     process_mask_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
-        boolean image giving voxels on which searchlight should be
+        See :ref:`extracting_data`.
+        Boolean image giving voxels on which searchlight should be
         computed.
 
     radius : float, optional
@@ -214,11 +239,7 @@ class SearchLight(BaseEstimator):
 
     estimator : 'svr', 'svc', or an estimator object implementing 'fit'
         The object to use to fit the data
-
-    n_jobs : int, optional. Default is -1.
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs'.
-
+    %(n_jobs)s
     scoring : string or callable, optional
         The scoring strategy to use. See the scikit-learn documentation
         If callable, takes as arguments the fitted estimator, the
@@ -229,9 +250,7 @@ class SearchLight(BaseEstimator):
         A cross-validation generator. If None, a 3-fold cross
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
-
-    verbose : int, optional
-        Verbosity level. Defaut is False
+    %(verbose0)s
 
     Notes
     ------
@@ -252,10 +271,17 @@ class SearchLight(BaseEstimator):
     vol. 103, no. 10, pages 3863-3868, March 2006
     """
 
-    def __init__(self, mask_img, process_mask_img=None, radius=2.,
-                 estimator='svc',
-                 n_jobs=1, scoring=None, cv=None,
-                 verbose=0):
+    def __init__(
+        self,
+        mask_img,
+        process_mask_img=None,
+        radius=2.0,
+        estimator="svc",
+        n_jobs=1,
+        scoring=None,
+        cv=None,
+        verbose=0,
+    ):
         self.mask_img = mask_img
         self.process_mask_img = process_mask_img
         self.radius = radius
@@ -266,12 +292,12 @@ class SearchLight(BaseEstimator):
         self.verbose = verbose
 
     def fit(self, imgs, y, groups=None):
-        """Fit the searchlight
+        """Fit the searchlight.
 
         Parameters
         ----------
         imgs : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             4D image.
 
         y : 1D array-like
@@ -284,7 +310,6 @@ class SearchLight(BaseEstimator):
             NOTE: will have no effect for scikit learn < 0.18
 
         """
-
         # check if image is 4D
         imgs = check_niimg_4d(imgs)
 
@@ -295,24 +320,40 @@ class SearchLight(BaseEstimator):
 
         # Compute world coordinates of the seeds
         process_mask, process_mask_affine = masking._load_mask_img(
-            process_mask_img)
+            process_mask_img
+        )
         process_mask_coords = np.where(process_mask != 0)
         process_mask_coords = coord_transform(
-            process_mask_coords[0], process_mask_coords[1],
-            process_mask_coords[2], process_mask_affine)
+            process_mask_coords[0],
+            process_mask_coords[1],
+            process_mask_coords[2],
+            process_mask_affine,
+        )
         process_mask_coords = np.asarray(process_mask_coords).T
 
         X, A = _apply_mask_and_get_affinity(
-            process_mask_coords, imgs, self.radius, True,
-            mask_img=self.mask_img)
+            process_mask_coords,
+            imgs,
+            self.radius,
+            True,
+            mask_img=self.mask_img,
+        )
 
         estimator = self.estimator
         if isinstance(estimator, str):
             estimator = ESTIMATOR_CATALOG[estimator]()
 
-        scores = search_light(X, y, estimator, A, groups,
-                              self.scoring, self.cv, self.n_jobs,
-                              self.verbose)
+        scores = search_light(
+            X,
+            y,
+            estimator,
+            A,
+            groups,
+            self.scoring,
+            self.cv,
+            self.n_jobs,
+            self.verbose,
+        )
         scores_3D = np.zeros(process_mask.shape)
         scores_3D[process_mask] = scores
         self.scores_ = scores_3D

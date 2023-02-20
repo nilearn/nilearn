@@ -10,17 +10,9 @@ features in the analysis and inspect the outcome, i.e. the resulting brain
 maps.
 
 Readers without prior experience in fMRI data analysis should first run the
-:ref:`sphx_glr_auto_examples_plot_single_subject_single_run.py` tutorial to get
-a bit more familiar with the base concepts, and only then run this tutorial
-example.
-
-To run this example, you must launch IPython via ``ipython --matplotlib`` in a
-terminal, or use ``jupyter-notebook``.
-
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
+:ref:`sphx_glr_auto_examples_00_tutorials_plot_single_subject_single_run.py`
+tutorial to get a bit more familiar with the base concepts,
+and only then run this tutorial example.
 """
 
 ###############################################################################
@@ -343,30 +335,61 @@ plot_contrast(first_level_model)
 plt.show()
 
 #########################################################################
-# Not a huge effect. For the sake of simplicity and readibility, we
+# Not a huge effect. For the sake of simplicity and readability, we
 # can drop that one.
 
 #########################################################################
-# The noise model: ar(1) or ols ?
-# -------------------------------
+# The noise model: ar(1), ols, or higher order ar?
+# ------------------------------------------------
 #
-# So far,we have implicitly used a lag-1 autoregressive model ---aka
-# ar(1)--- for the temporal structure of the noise. An alternative
+# So far,we have implicitly used a lag-1 autoregressive model---aka
+# ar(1)---for the temporal structure of the noise. An alternative
 # choice is to use an ordinary least squares model (ols) that assumes
-# no temporal structure (time-independent noise).
+# no temporal structure (time-independent noise) or
+# to use an autoregressive model with a higher order,
+# for example a third order autoregressive model---aka ar(3).
+#
+# First we recompute using the `spm + derivative` hrf model, the
+# slice_time_ref parameter chosen above, and explicitly set
+# the noise model to be ar(1).
+
+first_level_model = FirstLevelModel(t_r, slice_time_ref=0.5,
+                                    hrf_model='spm + derivative',
+                                    noise_model='ar1')
+first_level_model = first_level_model.fit(fmri_img, events=events)
+plot_contrast(first_level_model)
+plt.show()
+
+
+#########################################################################
+# Next we change the noise model to ols and observe the difference
+# relative to the ar(1) model.
 
 first_level_model = FirstLevelModel(t_r, slice_time_ref=0.5,
                                     hrf_model='spm + derivative',
                                     noise_model='ols')
 first_level_model = first_level_model.fit(fmri_img, events=events)
-design_matrix = first_level_model.design_matrices_[0]
-plot_design_matrix(design_matrix)
 plot_contrast(first_level_model)
 plt.show()
 
 #########################################################################
 # While the difference is not obvious you should rather stick to the
 # ar(1) model, which is arguably more accurate.
+#
+# Alternatively we can include more terms in the autoregressive model to
+# account for greater temporal complexity in the noise structure.
+
+first_level_model = FirstLevelModel(t_r, slice_time_ref=0.5,
+                                    hrf_model='spm + derivative',
+                                    noise_model='ar3')
+first_level_model = first_level_model.fit(fmri_img, events=events)
+plot_contrast(first_level_model)
+plt.show()
+
+#########################################################################
+# This noise model arguably reduces the amount of spurious activity.
+# However, as the difference is not obvious you may wish to stick to the
+# ar(1) model, which is computationally more efficient.
 
 #########################################################################
 # Removing confounds
@@ -381,10 +404,8 @@ plt.show()
 # is to estimate confounding effects from the data themselves, using
 # the CompCor approach, and take those into account in the model.
 #
-# For this we rely on the so-called `high_variance_confounds`_
-# routine of Nilearn.
-#
-# .. _high_variance_confounds: https://nilearn.github.io/modules/generated/nilearn.image.high_variance_confounds.html
+# For this we rely on the so-called
+# :func:`~nilearn.image.high_variance_confounds` routine of Nilearn.
 
 
 from nilearn.image import high_variance_confounds
@@ -406,6 +427,33 @@ plt.show()
 # other hand, some of the maps become cleaner (horizontal-vertical,
 # computation) after this addition.
 
+#########################################################################
+# Volume censoring
+# ------------------
+#
+# Volume censoring is a common way to remove non-steady state volumes, or
+# high-motion volumes in scrubbing based noise removal strategies. In this
+# scenario, we can apply a sample mask along the time dimension to exclude
+# unwanted volumes. When using :term:`fMRIPrep` outputs from 1.4.x series or
+# above, wecan use the :func:`~nilearn.interfaces.fmriprep.load_confounds`
+# function of Nilearn to retrieve sample masks based on the given scrubbing
+# threshold and the non-steady state columns.
+# For non-fMRIPrep output, we can still define a sample mask. Here we apply a
+# sample mask that removes the first 50 volumes.
+#
+
+sample_masks = np.arange(events.shape[0])[50:]
+first_level_model = FirstLevelModel(t_r, hrf_model='spm + derivative',
+                                    slice_time_ref=0.5)
+first_level_model = first_level_model.fit(fmri_img, events=events,
+                                          sample_masks=sample_masks)
+design_matrix = first_level_model.design_matrices_[0]
+plot_design_matrix(design_matrix)
+plt.show()
+
+#########################################################################
+# Note the significantly shorter design matrix compared to the previous
+# examples.
 
 #########################################################################
 # Smoothing
@@ -415,8 +463,8 @@ plt.show()
 # decrease the noise level in images, and reduce the discrepancy
 # between individuals. The drawback is that it biases the shape and
 # position of activation. Here, we simply illustrate the statistical
-# gains.  We use a mild smoothing of 5mm full-width at half maximum
-# (fwhm).
+# gains.  We use a mild smoothing of 5mm
+# :term:`full-width at half maximum<FWHM>` (:term:`FWHM`).
 
 first_level_model = FirstLevelModel(
     t_r, hrf_model='spm + derivative', smoothing_fwhm=5,

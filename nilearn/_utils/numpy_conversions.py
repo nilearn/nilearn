@@ -7,6 +7,8 @@ Validation and conversion utilities for numpy.
 import csv
 import numpy as np
 
+from .helpers import stringify_path
+
 
 def _asarray(arr, dtype=None, order=None):
     # np.asarray does not take "K" and "A" orders in version 1.3.0
@@ -18,7 +20,7 @@ def _asarray(arr, dtype=None, order=None):
         else:
             ret = np.asarray(arr, dtype=dtype)
     else:
-        if (((arr.itemsize == 1 and dtype in (bool, np.bool)) or
+        if (((arr.itemsize == 1 and dtype in (bool, np.bool_)) or
             (arr.dtype in (bool, np.bool_) and np.dtype(dtype).itemsize == 1))
             and (order == "F" and arr.flags["F_CONTIGUOUS"]
                  or order == "C" and arr.flags["C_CONTIGUOUS"])):
@@ -104,7 +106,7 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
                 # Changing order while reading through a memmap is incredibly
                 # inefficient.
                 ret = np.array(arr, copy=True)
-                ret = _asarray(arr, dtype=dtype, order=order)
+                ret = _asarray(ret, dtype=dtype, order=order)
 
     elif isinstance(arr, np.ndarray):
         ret = _asarray(arr, dtype=dtype, order=order)
@@ -133,7 +135,7 @@ def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
 
     Parameters
     ----------
-    csv_path: string
+    csv_path: string or pathlib.Path
         Path of the CSV file to load.
 
     delimiters: string
@@ -149,13 +151,14 @@ def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
     array: numpy.ndarray
         An array containing the data loaded from the CSV file.
     """
+    csv_path = stringify_path(csv_path)
     if not isinstance(csv_path, str):
         raise TypeError('CSV must be a file path. Got a CSV of type: %s' %
                         type(csv_path))
 
     try:
         # First, we try genfromtxt which works in most cases.
-        array = np.genfromtxt(csv_path, loose=False, **kwargs)
+        array = np.genfromtxt(csv_path, loose=False, encoding=None, **kwargs)
     except ValueError:
         # There was an error during the conversion to numpy array, probably
         # because the delimiter is wrong.
@@ -167,6 +170,7 @@ def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
             raise TypeError(
                 'Could not read CSV file [%s]: %s' % (csv_path, e.args[0]))
 
-        array = np.genfromtxt(csv_path, delimiter=dialect.delimiter, **kwargs)
+        array = np.genfromtxt(csv_path, delimiter=dialect.delimiter,
+                              encoding=None, **kwargs)
 
     return array

@@ -1,8 +1,5 @@
 """
-This module presents an interface to use the glm implemented in
-nistats.regression.
-
-It provides facilities to realize a second level analysis on lists of
+This module provides facilities to realize a second level analysis on lists of
 first level contrasts or directly on fitted first level models
 
 Author: Martin Perez-Guevara, 2016
@@ -18,14 +15,16 @@ from joblib import Memory
 from nibabel import Nifti1Image
 from sklearn.base import clone
 
+from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn.input_data import NiftiMasker
+from nilearn._utils import stringify_path
+from nilearn.maskers import NiftiMasker
 from nilearn.glm.contrasts import (compute_contrast,
                                    expression_to_contrast_vector)
 from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.first_level.design_matrix import \
     make_second_level_design_matrix
-from nilearn.glm.regression import SimpleRegressionResults
+from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
 from nilearn.image import mean_img
 from nilearn.mass_univariate import permuted_ols
 from nilearn.glm._base import BaseGLM
@@ -41,12 +40,15 @@ def _check_second_level_input(second_level_input, design_matrix,
             raise ValueError('A second level model requires a list with at'
                              ' least two first level models or niimgs')
         # Check FirstLevelModel objects case
-        if flm_object and isinstance(second_level_input[0], FirstLevelModel):
+        if isinstance(second_level_input[0], FirstLevelModel):
+            if not flm_object:
+                raise ValueError("Contradictory arguments: flm_object is set "
+                                 "to False yet second_level_input is a list "
+                                 "of FirstLevelModel objects")
             models_input = enumerate(second_level_input)
             for model_idx, first_level in models_input:
                 if (first_level.labels_ is None
-                    or first_level.results_ is None
-                    ):
+                        or first_level.results_ is None):
                     raise ValueError(
                         'Model %s at index %i has not been fit yet'
                         '' % (first_level.subject_label, model_idx))
@@ -82,7 +84,8 @@ def _check_second_level_input(second_level_input, design_matrix,
                                  ' columns subject_label, map_name and'
                                  ' effects_map_path')
         # Make sure subject_label contain strings
-        if not all([isinstance(_, str) for _ in second_level_input['subject_label'].tolist()]):
+        if not all([isinstance(_, str) for _ in
+                    second_level_input['subject_label'].tolist()]):
             raise ValueError('subject_label column must contain only strings')
     elif isinstance(second_level_input, (str, Nifti1Image)):
         if design_matrix is None:
@@ -115,7 +118,8 @@ def _check_confounds(confounds):
                              ' one called "subject_label" and the other'
                              ' with a given confound')
         # Make sure subject_label contain strings
-        if not all([isinstance(_, str) for _ in confounds['subject_label'].tolist()]):
+        if not all([isinstance(_, str) for _ in
+                    confounds['subject_label'].tolist()]):
             raise ValueError('subject_label column must contain only strings')
 
 
@@ -221,59 +225,92 @@ def _infer_effect_maps(second_level_input, contrast_def):
     return effect_maps
 
 
+def _process_second_level_input(second_level_input):
+    """Helper function to process second_level_input."""
+    if isinstance(second_level_input, pd.DataFrame):
+        return _process_second_level_input_as_dataframe(second_level_input)
+    elif(hasattr(second_level_input, "__iter__")
+         and isinstance(second_level_input[0], FirstLevelModel)):
+        return _process_second_level_input_as_firstlevelmodels(
+            second_level_input
+        )
+    else:
+        return mean_img(second_level_input), None
+
+
+def _process_second_level_input_as_dataframe(second_level_input):
+    """Helper function to process second_level_input provided
+    as a pandas DataFrame.
+    """
+    sample_map = second_level_input['effects_map_path'][0]
+    labels = second_level_input['subject_label']
+    subjects_label = labels.values.tolist()
+    return sample_map, subjects_label
+
+
+def _sort_input_dataframe(second_level_input):
+    """This function sorts the pandas dataframe by subject_label to
+    avoid inconsistencies with the design matrix row order when
+    automatically extracting maps.
+    """
+    columns = second_level_input.columns.tolist()
+    column_index = columns.index('subject_label')
+    sorted_matrix = sorted(
+        second_level_input.values, key=lambda x: x[column_index]
+    )
+    return pd.DataFrame(sorted_matrix, columns=columns)
+
+
+def _process_second_level_input_as_firstlevelmodels(second_level_input):
+    """Helper function to process second_level_input provided
+    as a list of FirstLevelModel objects.
+    """
+    sample_model = second_level_input[0]
+    sample_condition = sample_model.design_matrices_[0].columns[0]
+    sample_map = sample_model.compute_contrast(
+        sample_condition, output_type='effect_size'
+    )
+    labels = [model.subject_label for model in second_level_input]
+    return sample_map, labels
+
+
+@fill_doc
 class SecondLevelModel(BaseGLM):
-    """ Implementation of the General Linear Model for multiple subject
-    fMRI data
+    """Implementation of the :term:`General Linear Model<GLM>` for multiple
+    subject :term:`fMRI` data.
 
     Parameters
     ----------
-    mask_img : Niimg-like, NiftiMasker or MultiNiftiMasker object, optional
+    mask_img : Niimg-like, :class:`~nilearn.maskers.NiftiMasker` or\
+    :class:`~nilearn.maskers.MultiNiftiMasker`, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
-        it will be computed automatically by a MultiNiftiMasker with default
+        it will be computed automatically by a
+        :class:`~nilearn.maskers.MultiNiftiMasker` with default
         parameters. Automatic mask computation assumes first level imgs have
         already been masked.
+    %(target_affine)s
 
-    target_affine : 3x3 or 4x4 matrix, optional
-        This parameter is passed to :func:`nilearn.image.resample_img`.
-        Please see the related documentation for details.
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
-    target_shape : 3-tuple of integers, optional
-        This parameter is passed to :func:`nilearn.image.resample_img`.
-        Please see the related documentation for details.
+    %(target_shape)s
 
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the size in millimeters of the
-        spatial smoothing to apply to the signal.
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
-    memory : string, optional
-        Path to the directory used to cache the masking process and the glm
-        fit. By default, no caching is done. Creates instance of joblib.Memory.
-
-    memory_level : integer, optional
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching. Default=1.
-
-    verbose : integer, optional
-        Indicate the level of verbosity. By default, nothing is printed.
+    %(smoothing_fwhm)s
+    %(memory)s
+    %(memory_level1)s
+    %(verbose0)s
         If 0 prints nothing. If 1 prints final computation time.
-        If 2 prints masker computation details. Default=0.
-
-    n_jobs : integer, optional
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs', -2 'all CPUs but one', and so on.
-        Default=1.
-
-    minimize_memory : boolean, optional
+        If 2 prints masker computation details.
+    %(n_jobs)s
+    minimize_memory : :obj:`bool`, optional
         Gets rid of some variables on the model fit results that are not
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
         on memory consumption. Default=True.
-
-    Notes
-    -----
-    This class is experimental.
-    It may change in any future release of Nilearn.
 
     """
     def __init__(self, mask_img=None, target_affine=None, target_shape=None,
@@ -284,6 +321,7 @@ class SecondLevelModel(BaseGLM):
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
+        memory = stringify_path(memory)
         if isinstance(memory, str):
             self.memory = Memory(memory)
         else:
@@ -294,9 +332,12 @@ class SecondLevelModel(BaseGLM):
         self.minimize_memory = minimize_memory
         self.second_level_input_ = None
         self.confounds_ = None
+        self.labels_ = None
+        self.results_ = None
 
+    @fill_doc
     def fit(self, second_level_input, confounds=None, design_matrix=None):
-        """ Fit the second-level GLM
+        """Fit the second-level :term:`GLM`.
 
         1. create design matrix
         2. do a masker job: fMRI_data -> Y
@@ -304,40 +345,21 @@ class SecondLevelModel(BaseGLM):
 
         Parameters
         ----------
-        second_level_input: list of `FirstLevelModel` objects or pandas
-                            DataFrame or list of Niimg-like objects.
-
-            Giving FirstLevelModel objects will allow to easily compute
-            the second level contast of arbitrary first level contrasts thanks
-            to the first_level_contrast argument of the compute_contrast
-            method. Effect size images will be computed for each model to
-            contrast at the second level.
-
-            If a pandas DataFrame, then they have to contain subject_label,
-            map_name and effects_map_path. It can contain multiple maps that
-            would be selected during contrast estimation with the argument
-            first_level_contrast of the compute_contrast function. The
-            DataFrame will be sorted based on the subject_label column to avoid
-            order inconsistencies when extracting the maps. So the rows of the
-            automatically computed design matrix, if not provided, will
-            correspond to the sorted subject_label column.
-
-            If list of Niimg-like objects then this is taken literally as Y
-            for the model fit and design_matrix must be provided.
-
-        confounds : pandas DataFrame, optional
-            Must contain a subject_label column. All other columns are
+        %(second_level_input)s
+        confounds : :class:`pandas.DataFrame`, optional
+            Must contain a ``subject_label`` column. All other columns are
             considered as confounds and included in the model. If
-            design_matrix is provided then this argument is ignored.
+            ``design_matrix`` is provided then this argument is ignored.
             The resulting second level design matrix uses the same column
-            names as in the given DataFrame for confounds. At least two columns
-            are expected, "subject_label" and at least one confound.
+            names as in the given :class:`~pandas.DataFrame` for confounds.
+            At least two columns are expected, ``subject_label`` and at
+            least one confound.
 
-        design_matrix : pandas DataFrame, optional
-            Design matrix to fit the GLM. The number of rows
+        design_matrix : :class:`pandas.DataFrame`, optional
+            Design matrix to fit the :term:`GLM`. The number of rows
             in the design matrix must agree with the number of maps derived
-            from second_level_input.
-            Ensure that the order of maps given by a second_level_input
+            from ``second_level_input``.
+            Ensure that the order of maps given by a ``second_level_input``
             list of Niimgs matches the order of the rows in the design matrix.
 
         """
@@ -351,42 +373,19 @@ class SecondLevelModel(BaseGLM):
         # check design matrix
         _check_design_matrix(design_matrix)
 
-        # sort a pandas dataframe by subject_label to avoid inconsistencies
-        # with the design matrix row order when automatically extracting maps
         if isinstance(second_level_input, pd.DataFrame):
-            columns = second_level_input.columns.tolist()
-            column_index = columns.index('subject_label')
-            sorted_matrix = sorted(
-                second_level_input.values, key=lambda x: x[column_index])
-            sorted_input = pd.DataFrame(sorted_matrix, columns=columns)
-            second_level_input = sorted_input
-
+            second_level_input = _sort_input_dataframe(second_level_input)
         self.second_level_input_ = second_level_input
         self.confounds_ = confounds
+        sample_map, subjects_label = _process_second_level_input(
+            second_level_input
+        )
 
         # Report progress
         t0 = time.time()
         if self.verbose > 0:
             sys.stderr.write("Fitting second level model. "
                              "Take a deep breath\r")
-
-        # Select sample map for masker fit and get subjects_label for design
-        if isinstance(second_level_input, pd.DataFrame):
-            sample_map = second_level_input['effects_map_path'][0]
-            labels = second_level_input['subject_label']
-            subjects_label = labels.values.tolist()
-        elif isinstance(second_level_input, Nifti1Image):
-            sample_map = mean_img(second_level_input)
-        elif isinstance(second_level_input[0], FirstLevelModel):
-            sample_model = second_level_input[0]
-            sample_condition = sample_model.design_matrices_[0].columns[0]
-            sample_map = sample_model.compute_contrast(
-                sample_condition, output_type='effect_size')
-            labels = [model.subject_label for model in second_level_input]
-            subjects_label = labels
-        else:
-            # In this case design matrix had to be provided
-            sample_map = mean_img(second_level_input)
 
         # Create and set design matrix, if not given
         if design_matrix is None:
@@ -411,7 +410,7 @@ class SecondLevelModel(BaseGLM):
                 if our_param is None:
                     continue
                 if getattr(self.masker_, param_name) is not None:
-                    warn('Parameter %s of the masker overriden' % param_name)
+                    warn('Parameter %s of the masker overridden' % param_name)
                 setattr(self.masker_, param_name, our_param)
         self.masker_.fit(sample_map)
 
@@ -422,6 +421,7 @@ class SecondLevelModel(BaseGLM):
 
         return self
 
+    @fill_doc
     def compute_contrast(self, second_level_contrast=None,
                          first_level_contrast=None,
                          second_level_stat_type=None, output_type='z_score'):
@@ -430,38 +430,32 @@ class SecondLevelModel(BaseGLM):
 
         Parameters
         ----------
-        second_level_contrast : str or array of shape (n_col), optional
-            Where ``n_col`` is the number of columns of the design matrix. The
-            string can be a formula compatible with `pandas.DataFrame.eval`.
-            Basically one can use the name of the conditions as they appear in
-            the design matrix of the fitted model combined with operators +-
-            and combined with numbers with operators +-`*`/. The default (None)
-            is accepted if the design matrix has a single column, in which case
-            the only possible contrast array((1)) is applied; when the design
-            matrix has multiple columns, an error is raised.
+        %(second_level_contrast)s
+        first_level_contrast : :obj:`str` or :class:`numpy.ndarray` of\
+        shape (n_col) with respect to\
+        :class:`~nilearn.glm.first_level.FirstLevelModel`, optional
 
-        first_level_contrast : str or array of shape (n_col) with respect to
-                               FirstLevelModel, optional
+            - In case a :obj:`list` of
+              :class:`~nilearn.glm.first_level.FirstLevelModel` was provided
+              as ``second_level_input``, we have to provide a contrast to
+              apply to the first level models to get the corresponding list
+              of images desired, that would be tested at the second level.
+            - In case a :class:`~pandas.DataFrame` was provided as
+              ``second_level_input`` this is the map name to extract from the
+              :class:`~pandas.DataFrame` ``map_name`` column. It has to be
+              a 't' contrast.
 
-            In case a list of FirstLevelModel was provided as
-            second_level_input, we have to provide a contrast to apply to
-            the first level models to get the corresponding list of images
-            desired, that would be tested at the second level. In case a
-            pandas DataFrame was provided as second_level_input this is the
-            map name to extract from the pandas dataframe map_name column.
-            It has to be a 't' contrast.
+        second_level_stat_type : {'t', 'F'} or None, optional
+            Type of the second level contrast. Default=None.
 
-        second_level_stat_type : {'t', 'F'}, optional
-            Type of the second level contrast
-
-        output_type : str, optional
-            Type of the output map. Can be 'z_score', 'stat', 'p_value',
-            'effect_size', 'effect_variance' or 'all'.
-            Default='z-score'.
+        output_type : {'z_score', 'stat', 'p_value', \
+                :term:`'effect_size'<Parameter Estimate>`, 'effect_variance', \
+                'all'}, optional
+            Type of the output map. Default='z-score'.
 
         Returns
         -------
-        output_image : Nifti1Image
+        output_image : :class:`~nibabel.nifti1.Nifti1Image`
             The desired output image(s). If ``output_type == 'all'``, then
             the output is a dictionary of images, keyed by the type of image.
 
@@ -529,21 +523,101 @@ class SecondLevelModel(BaseGLM):
 
         return outputs if output_type == 'all' else output
 
+    def _get_voxelwise_model_attribute(self, attribute,
+                                       result_as_time_series):
+        """Transform RegressionResults instances within a dictionary
+        (whose keys represent the autoregressive coefficient under the 'ar1'
+        noise model or only 0.0 under 'ols' noise_model and values are the
+        RegressionResults instances) into input nifti space.
 
-def non_parametric_inference(second_level_input, confounds=None,
-                             design_matrix=None, second_level_contrast=None,
-                             mask=None, smoothing_fwhm=None,
-                             model_intercept=True, n_perm=10000,
-                             two_sided_test=False, random_state=None,
-                             n_jobs=1, verbose=0):
+        Parameters
+        ----------
+        attribute : str
+            an attribute of a RegressionResults instance.
+            possible values include: 'residuals', 'normalized_residuals',
+            'predicted', SSE, r_square, MSE.
+
+        result_as_time_series : bool
+            whether the RegressionResult attribute has a value
+            per timepoint of the input nifti image.
+
+        Returns
+        -------
+        output : list
+            A list of Nifti1Image(s).
+
+        """
+        # check if valid attribute is being accessed.
+        all_attributes = dict(vars(RegressionResults)).keys()
+        possible_attributes = [prop
+                               for prop in all_attributes
+                               if '__' not in prop
+                               ]
+        if attribute not in possible_attributes:
+            msg = ("attribute must be one of: "
+                   "{attr}".format(attr=possible_attributes)
+                   )
+            raise ValueError(msg)
+
+        if self.minimize_memory:
+            raise ValueError(
+                'To access voxelwise attributes like '
+                'R-squared, residuals, and predictions, '
+                'the `SecondLevelModel`-object needs to store '
+                'there attributes. '
+                'To do so, set `minimize_memory` to `False` '
+                'when initializing the `SecondLevelModel`-object.')
+
+        if self.labels_ is None or self.results_ is None:
+            raise ValueError("The model has no results. This could be "
+                             "because the model has not been fitted yet "
+                             "or because no contrast has been computed "
+                             "already.")
+
+        if result_as_time_series:
+            voxelwise_attribute = np.zeros(
+                (self.design_matrix_.shape[0], len(self.labels_))
+            )
+        else:
+            voxelwise_attribute = np.zeros((1, len(self.labels_)))
+
+        for label_ in self.results_:
+            label_mask = self.labels_ == label_
+            voxelwise_attribute[:, label_mask] = getattr(
+                self.results_[label_], attribute
+            )
+        return self.masker_.inverse_transform(voxelwise_attribute)
+
+
+@fill_doc
+def non_parametric_inference(
+    second_level_input,
+    confounds=None,
+    design_matrix=None,
+    second_level_contrast=None,
+    first_level_contrast=None,
+    mask=None,
+    smoothing_fwhm=None,
+    model_intercept=True,
+    n_perm=10000,
+    two_sided_test=False,
+    random_state=None,
+    n_jobs=1,
+    verbose=0,
+    threshold=None,
+    tfce=False,
+):
     """Generate p-values corresponding to the contrasts provided
-    based on permutation testing. This fuction reuses the 'permuted_ols'
-    function Nilearn.
+    based on permutation testing.
+
+    This function is a light wrapper around
+    :func:`~nilearn.mass_univariate.permuted_ols`, with additional steps to
+    ensure compatibility with the :mod:`~nilearn.glm.second_level` module.
 
     Parameters
     ----------
-    second_level_input : pandas DataFrame or list of Niimg-like objects.
-
+    second_level_input : :obj:`pandas.DataFrame` or :obj:`list` of Niimg-like \
+            objects
         If a pandas DataFrame, then they have to contain subject_label,
         map_name and effects_map_path. It can contain multiple maps that
         would be selected during contrast estimation with the argument
@@ -556,88 +630,189 @@ def non_parametric_inference(second_level_input, confounds=None,
         If list of Niimg-like objects then this is taken literally as Y
         for the model fit and design_matrix must be provided.
 
-    confounds : pandas DataFrame, optional
+    confounds : :obj:`pandas.DataFrame` or None, optional
         Must contain a subject_label column. All other columns are
         considered as confounds and included in the model. If
-        design_matrix is provided then this argument is ignored.
+        ``design_matrix`` is provided then this argument is ignored.
         The resulting second level design matrix uses the same column
-        names as in the given DataFrame for confounds. At least two columns
-        are expected, "subject_label" and at least one confound.
+        names as in the given :obj:`~pandas.DataFrame` for confounds.
+        At least two columns are expected, ``subject_label`` and at
+        least one confound.
 
-    design_matrix : pandas DataFrame, optional
-        Design matrix to fit the GLM. The number of rows
+    design_matrix : :obj:`pandas.DataFrame` or None, optional
+        Design matrix to fit the :term:`GLM`. The number of rows
         in the design matrix must agree with the number of maps derived
-        from second_level_input.
-        Ensure that the order of maps given by a second_level_input
+        from ``second_level_input``.
+        Ensure that the order of maps given by a ``second_level_input``
         list of Niimgs matches the order of the rows in the design matrix.
 
-    second_level_contrast : str or array of shape (n_col), optional
+    second_level_contrast : :obj:`str` or array of shape (n_col), optional
         Where ``n_col`` is the number of columns of the design matrix.
         The default (None) is accepted if the design matrix has a single
         column, in which case the only possible contrast array((1)) is
         applied; when the design matrix has multiple columns, an error is
         raised.
 
-    mask : Niimg-like, NiftiMasker or MultiNiftiMasker object, optional
+    first_level_contrast : :obj:`str`, optional
+        In case a pandas DataFrame was provided as second_level_input this
+        is the map name to extract from the pandas dataframe map_name column.
+        It has to be a 't' contrast.
+
+        .. versionadded:: 0.9.0
+
+    mask : Niimg-like, :obj:`~nilearn.maskers.NiftiMasker` or \
+            :obj:`~nilearn.maskers.MultiNiftiMasker` object, optional
         Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given,
-        it will be computed automatically by a MultiNiftiMasker with default
-        parameters. Automatic mask computation assumes first level imgs have
-        already been masked.
+        then its mask will be used. If no mask is given, it will be computed
+        automatically by a :class:`~nilearn.maskers.MultiNiftiMasker` with
+        default parameters. Automatic mask computation assumes first level
+        imgs have already been masked.
+    %(smoothing_fwhm)s
+    model_intercept : :obj:`bool`, optional
+        If ``True``, a constant column is added to the confounding variates
+        unless the tested variate is already the intercept.
+        Default=True.
 
-    smoothing_fwhm : float, optional
-        If smoothing_fwhm is not None, it gives the size in millimeters of the
-        spatial smoothing to apply to the signal.
+    n_perm : :obj:`int`, optional
+        Number of permutations to perform.
+        Permutations are costly but the more are performed, the more precision
+        one gets in the p-values estimation. Default=10000.
 
-    model_intercept : bool, optional
-      If True, a constant column is added to the confounding variates
-      unless the tested variate is already the intercept.
-      Default=True.
+    two_sided_test : :obj:`bool`, optional
 
-    n_perm : int, optional
-      Number of permutations to perform.
-      Permutations are costly but the more are performed, the more precision
-      one gets in the p-values estimation. Default=10000.
+        - If ``True``, performs an unsigned t-test.
+          Both positive and negative effects are considered; the null
+          hypothesis is that the effect is zero.
+        - If ``False``, only positive effects are considered as relevant.
+          The null hypothesis is that the effect is zero or negative.
 
-    two_sided_test : boolean, optional
-      If True, performs an unsigned t-test. Both positive and negative
-      effects are considered; the null hypothesis is that the effect is zero.
-      If False, only positive effects are considered as relevant. The null
-      hypothesis is that the effect is zero or negative.
-      Default=False.
+        Default=False.
+    %(random_state)s
+        Use this parameter to have the same permutations in each
+        computing units.
+    %(n_jobs)s
+    %(verbose0)s
 
-    random_state : int or None, optional
-      Seed for random number generator, to have the same permutations
-      in each computing units.
+    threshold : None or :obj:`float`, optional
+        Cluster-forming threshold in p-scale.
+        This is only used for cluster-level inference.
+        If None, no cluster-level inference will be performed.
+        Default=None.
 
-    n_jobs : int, optional
-      Number of parallel workers.
-      If -1 is provided, all CPUs are used.
-      A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
-      ones will be used. Default=1.
+        .. warning::
 
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=0.
+            Performing cluster-level inference will increase the computation
+            time of the permutation procedure.
+
+        .. versionadded:: 0.9.2
+
+    tfce : :obj:`bool`, optional
+        Whether to calculate :term:`TFCE` as part of the permutation procedure
+        or not.
+        The TFCE calculation is implemented as described in
+        :footcite:t:`Smith2009a`.
+        Default=False.
+
+        .. warning::
+
+            Performing TFCE-based inference will increase the computation
+            time of the permutation procedure considerably.
+            The permutations may take multiple hours, depending on how many
+            permutations are requested and how many jobs are performed in
+            parallel.
+
+        .. versionadded:: 0.9.2
 
     Returns
     -------
-    neg_log_corrected_pvals_img : Nifti1Image
+    neg_log10_vfwe_pvals_img : :class:`~nibabel.nifti1.Nifti1Image`
         The image which contains negative logarithm of the
-        corrected p-values.
+        voxel-level FWER-corrected p-values.
 
+        .. note::
+            This is returned if ``threshold`` is None (the default).
+
+    outputs : :obj:`dict`
+        Output images, organized in a dictionary.
+        Each image is 3D/4D, with the potential fourth dimension corresponding
+        to the regressors.
+
+        .. note::
+            This is returned if ``tfce`` is False or ``threshold`` is not None.
+
+        .. versionadded:: 0.9.2
+
+        Here are the keys:
+
+        =============== =======================================================
+        key             description
+        =============== =======================================================
+        t               T-statistics associated with the significance test of
+                        the n_regressors explanatory variates against the
+                        n_descriptors target variates.
+        logp_max_t      Negative log10 family-wise error rate-corrected
+                        p-values corrected based on the distribution of maximum
+                        t-statistics from permutations.
+        size            Cluster size values associated with the significance
+                        test of the n_regressors explanatory variates against
+                        the n_descriptors target variates.
+
+                        Returned only if ``threshold`` is not None.
+        logp_max_size   Negative log10 family-wise error rate-corrected
+                        p-values corrected based on the distribution of maximum
+                        cluster sizes from permutations.
+                        This map is generated through cluster-level methods, so
+                        the values in the map describe the significance of
+                        clusters, rather than individual voxels.
+
+                        Returned only if ``threshold`` is not None.
+        mass            Cluster mass values associated with the significance
+                        test of the n_regressors explanatory variates against
+                        the n_descriptors target variates.
+
+                        Returned only if ``threshold`` is not None.
+        logp_max_mass   Negative log10 family-wise error rate-corrected
+                        p-values corrected based on the distribution of maximum
+                        cluster masses from permutations.
+                        This map is generated through cluster-level methods, so
+                        the values in the map describe the significance of
+                        clusters, rather than individual voxels.
+
+                        Returned only if ``threshold`` is not None.
+        tfce            TFCE values associated with the significance test of
+                        the n_regressors explanatory variates against the
+                        n_descriptors target variates.
+
+                        Returned only if ``tfce`` is True.
+        logp_max_tfce   Negative log10 family-wise error rate-corrected
+                        p-values corrected based on the distribution of maximum
+                        TFCE values from permutations.
+
+                        Returned only if ``tfce`` is True.
+        =============== =======================================================
+
+    See also
+    --------
+    :func:`~nilearn.mass_univariate.permuted_ols` : For more information on \
+        the permutation procedure.
+
+    References
+    ----------
+    .. footbibliography::
     """
     _check_second_level_input(second_level_input, design_matrix,
-                              flm_object=False, df_object=False)
+                              flm_object=False, df_object=True)
     _check_confounds(confounds)
     _check_design_matrix(design_matrix)
+
+    if isinstance(second_level_input, pd.DataFrame):
+        second_level_input = _sort_input_dataframe(second_level_input)
+    sample_map, _ = _process_second_level_input(second_level_input)
 
     # Report progress
     t0 = time.time()
     if verbose > 0:
         sys.stderr.write("Fitting second level model...")
-
-    # Select sample map for masker fit and get subjects_label for design
-    sample_map = mean_img(second_level_input)
 
     # Learn the mask. Assume the first level imgs have been masked.
     if not isinstance(mask, NiftiMasker):
@@ -645,12 +820,14 @@ def non_parametric_inference(second_level_input, confounds=None,
             mask_img=mask, smoothing_fwhm=smoothing_fwhm,
             memory=Memory(None), verbose=max(0, verbose - 1),
             memory_level=1)
+
     else:
         masker = clone(mask)
         if smoothing_fwhm is not None:
             if getattr(masker, 'smoothing_fwhm') is not None:
-                warn('Parameter smoothing_fwhm of the masker overriden')
+                warn('Parameter smoothing_fwhm of the masker overridden')
                 setattr(masker, 'smoothing_fwhm', smoothing_fwhm)
+
     masker.fit(sample_map)
 
     # Report progress
@@ -660,27 +837,82 @@ def non_parametric_inference(second_level_input, confounds=None,
 
     # Check and obtain the contrast
     contrast = _get_contrast(second_level_contrast, design_matrix)
-
-    # Get effect_maps
-    effect_maps = _infer_effect_maps(second_level_input, None)
+    # Get first-level effect_maps
+    effect_maps = _infer_effect_maps(second_level_input, first_level_contrast)
 
     # Check design matrix and effect maps agree on number of rows
     _check_effect_maps(effect_maps, design_matrix)
 
+    # Obtain design matrix vars
+    var_names = design_matrix.columns.tolist()
+
     # Obtain tested_var
-    if contrast in design_matrix.columns.tolist():
-        tested_var = np.asarray(design_matrix[contrast])
+    tested_var = np.asarray(design_matrix[contrast])
+    # Remove tested var from remaining var names
+    var_names.remove(contrast)
+
+    # Obtain confounding vars
+    if len(var_names) == 0:
+        # No other vars in design matrix
+        confounding_vars = None
+    else:
+        # Use remaining vars as confounding vars
+        confounding_vars = np.asarray(design_matrix[var_names])
 
     # Mask data
     target_vars = masker.transform(effect_maps)
 
     # Perform massively univariate analysis with permuted OLS
-    neg_log_pvals_permuted_ols, _, _ = permuted_ols(
-        tested_var, target_vars, model_intercept=model_intercept,
-        n_perm=n_perm, two_sided_test=two_sided_test,
-        random_state=random_state, n_jobs=n_jobs,
-        verbose=max(0, verbose - 1))
-    neg_log_corrected_pvals_img = masker.inverse_transform(
-        np.ravel(neg_log_pvals_permuted_ols))
+    outputs = permuted_ols(
+        tested_var,
+        target_vars,
+        confounding_vars=confounding_vars,
+        model_intercept=model_intercept,
+        n_perm=n_perm,
+        two_sided_test=two_sided_test,
+        random_state=random_state,
+        n_jobs=n_jobs,
+        verbose=max(0, verbose - 1),
+        masker=masker,
+        threshold=threshold,
+        tfce=tfce,
+        output_type='dict',
+    )
+    neg_log10_vfwe_pvals_img = masker.inverse_transform(np.ravel(
+        outputs['logp_max_t']
+    ))
 
-    return neg_log_corrected_pvals_img
+    if (not tfce) and (threshold is None):
+        return neg_log10_vfwe_pvals_img
+
+    t_img = masker.inverse_transform(np.ravel(outputs['t']))
+
+    out = {
+        't': t_img,
+        'logp_max_t': neg_log10_vfwe_pvals_img,
+    }
+
+    if tfce:
+        neg_log10_tfce_pvals_img = masker.inverse_transform(
+            np.ravel(outputs['logp_max_tfce']),
+        )
+        out['tfce'] = masker.inverse_transform(np.ravel(outputs['tfce']))
+        out['logp_max_tfce'] = neg_log10_tfce_pvals_img
+
+    if threshold is not None:
+        # Cluster size-based p-values
+        neg_log10_csfwe_pvals_img = masker.inverse_transform(
+            np.ravel(outputs['logp_max_size']),
+        )
+
+        # Cluster mass-based p-values
+        neg_log10_cmfwe_pvals_img = masker.inverse_transform(
+            np.ravel(outputs['logp_max_mass']),
+        )
+
+        out['size'] = masker.inverse_transform(np.ravel(outputs['size']))
+        out['logp_max_size'] = neg_log10_csfwe_pvals_img
+        out['mass'] = masker.inverse_transform(np.ravel(outputs['mass']))
+        out['logp_max_mass'] = neg_log10_cmfwe_pvals_img
+
+    return out

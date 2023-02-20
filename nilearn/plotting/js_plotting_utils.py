@@ -10,11 +10,11 @@ from string import Template
 
 import matplotlib as mpl
 import numpy as np
-from matplotlib import cm as mpl_cm
+import matplotlib.pyplot as plt
 
 # included here for backward compatibility
 from nilearn.plotting.html_document import (
-    HTMLDocument, set_max_img_views_before_warning,)  # noqa
+    HTMLDocument, set_max_img_views_before_warning,)  # noqa: F401
 from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
 from .. import surface
@@ -35,7 +35,7 @@ def add_js_lib(html, embed_js=True):
     if not embed_js:
         js_lib = """
         <script
-        src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js">
+        src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
         </script>
         <script src="https://cdn.plot.ly/plotly-gl3d-latest.min.js"></script>
         <script>
@@ -70,7 +70,7 @@ def get_html_template(template_name):
 def colorscale(cmap, values, threshold=None, symmetric_cmap=True,
                vmax=None, vmin=None):
     """Normalize a cmap, put it in plotly format, get threshold and range."""
-    cmap = mpl_cm.get_cmap(cmap)
+    cmap = plt.get_cmap(cmap)
     abs_values = np.abs(values)
     if not symmetric_cmap and (values.min() < 0):
         warnings.warn('you have specified symmetric_cmap=False '

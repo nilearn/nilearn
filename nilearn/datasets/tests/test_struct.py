@@ -1,9 +1,10 @@
 """
 Test the datasets module
 """
-# Author: Alexandre Abraham
+# Authors: Alexandre Abraham, Ana Luisa Pinho
 # License: simplified BSD
 
+import warnings
 import os
 import shutil
 from pathlib import Path
@@ -109,27 +110,37 @@ def _make_oasis_data(dartel=True):
     return dict_to_archive(data)
 
 
-def test_fetch_oasis_vbm(tmp_path, request_mocker):
+@pytest.mark.parametrize('legacy_format', [True, False])
+def test_fetch_oasis_vbm(tmp_path, request_mocker, legacy_format):
     request_mocker.url_mapping["*archive_dartel.tgz*"] = _make_oasis_data()
     request_mocker.url_mapping["*archive.tgz*"] = _make_oasis_data(False)
 
     dataset = struct.fetch_oasis_vbm(
-        data_dir=str(tmp_path), verbose=0)
+        data_dir=str(tmp_path), verbose=0, legacy_format=legacy_format
+    )
     assert len(dataset.gray_matter_maps) == 403
     assert len(dataset.white_matter_maps) == 403
     assert isinstance(dataset.gray_matter_maps[0], str)
     assert isinstance(dataset.white_matter_maps[0], str)
-    assert isinstance(dataset.ext_vars, np.recarray)
+    if legacy_format:
+        assert isinstance(dataset.ext_vars, np.recarray)
+    else:
+        assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.data_usage_agreement, str)
     assert request_mocker.url_count == 1
 
-    dataset = struct.fetch_oasis_vbm(data_dir=str(tmp_path),
-                                     dartel_version=False, verbose=0)
+    dataset = struct.fetch_oasis_vbm(
+        data_dir=str(tmp_path), dartel_version=False, verbose=0,
+        legacy_format=legacy_format
+    )
     assert len(dataset.gray_matter_maps) == 415
     assert len(dataset.white_matter_maps) == 415
     assert isinstance(dataset.gray_matter_maps[0], str)
     assert isinstance(dataset.white_matter_maps[0], str)
-    assert isinstance(dataset.ext_vars, np.recarray)
+    if legacy_format:
+        assert isinstance(dataset.ext_vars, np.recarray)
+    else:
+        assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.data_usage_agreement, str)
     assert request_mocker.url_count == 2
     assert dataset.description != ''
@@ -137,48 +148,108 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker):
 
 def test_load_mni152_template():
     # All subjects
-    template_nii = struct.load_mni152_template()
-    assert template_nii.shape == (91, 109, 91)
-    assert template_nii.header.get_zooms() == (2.0, 2.0, 2.0)
+    template_nii_1mm = struct.load_mni152_template()
+    template_nii_2mm = struct.load_mni152_template(resolution=2)
+    assert template_nii_1mm.shape == (197, 233, 189)
+    assert template_nii_2mm.shape == (99, 117, 95)
+    assert template_nii_1mm.header.get_zooms() == (1.0, 1.0, 1.0)
+    assert template_nii_2mm.header.get_zooms() == (2.0, 2.0, 2.0)
+
+
+def test_load_mni152_gm_template():
+    # All subjects
+    gm_template_nii_1mm = struct.load_mni152_gm_template()
+    gm_template_nii_2mm = struct.load_mni152_gm_template(resolution=2)
+    assert gm_template_nii_1mm.shape == (197, 233, 189)
+    assert gm_template_nii_2mm.shape == (99, 117, 95)
+    assert gm_template_nii_1mm.header.get_zooms() == (1.0, 1.0, 1.0)
+    assert gm_template_nii_2mm.header.get_zooms() == (2.0, 2.0, 2.0)
+
+
+def test_load_mni152_wm_template():
+    # All subjects
+    wm_template_nii_1mm = struct.load_mni152_wm_template()
+    wm_template_nii_2mm = struct.load_mni152_wm_template(resolution=2)
+    assert wm_template_nii_1mm.shape == (197, 233, 189)
+    assert wm_template_nii_2mm.shape == (99, 117, 95)
+    assert wm_template_nii_1mm.header.get_zooms() == (1.0, 1.0, 1.0)
+    assert wm_template_nii_2mm.header.get_zooms() == (2.0, 2.0, 2.0)
 
 
 def test_load_mni152_brain_mask():
-    brain_mask = struct.load_mni152_brain_mask()
-    assert isinstance(brain_mask, nibabel.Nifti1Image)
+    brain_mask_1mm = struct.load_mni152_brain_mask()
+    brain_mask_2mm = struct.load_mni152_brain_mask(resolution=2)
+    assert isinstance(brain_mask_1mm, nibabel.Nifti1Image)
+    assert isinstance(brain_mask_2mm, nibabel.Nifti1Image)
     # standard MNI template shape
-    assert brain_mask.shape == (91, 109, 91)
+    assert brain_mask_1mm.shape == (197, 233, 189)
+    assert brain_mask_2mm.shape == (99, 117, 95)
+
+
+def test_load_mni152_gm_mask():
+    gm_mask_1mm = struct.load_mni152_gm_mask()
+    gm_mask_2mm = struct.load_mni152_gm_mask(resolution=2)
+    assert isinstance(gm_mask_1mm, nibabel.Nifti1Image)
+    assert isinstance(gm_mask_2mm, nibabel.Nifti1Image)
+    # standard MNI template shape
+    assert gm_mask_1mm.shape == (197, 233, 189)
+    assert gm_mask_2mm.shape == (99, 117, 95)
+
+
+def test_load_mni152_wm_mask():
+    wm_mask_1mm = struct.load_mni152_wm_mask()
+    wm_mask_2mm = struct.load_mni152_wm_mask(resolution=2)
+    assert isinstance(wm_mask_1mm, nibabel.Nifti1Image)
+    assert isinstance(wm_mask_2mm, nibabel.Nifti1Image)
+    # standard MNI template shape
+    assert wm_mask_1mm.shape == (197, 233, 189)
+    assert wm_mask_2mm.shape == (99, 117, 95)
 
 
 def test_fetch_icbm152_brain_gm_mask(tmp_path, request_mocker):
     dataset = struct.fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
-    struct.load_mni152_template().to_filename(dataset.gm)
+    struct.load_mni152_template(resolution=2).to_filename(dataset.gm)
     grey_matter_img = struct.fetch_icbm152_brain_gm_mask(
         data_dir=str(tmp_path), verbose=0)
     assert isinstance(grey_matter_img, nibabel.Nifti1Image)
 
 
-@pytest.mark.parametrize("mesh", ["fsaverage5", "fsaverage"])
+@pytest.mark.parametrize(
+    "mesh",
+    [
+        "fsaverage3",
+        "fsaverage4",
+        "fsaverage5",
+        "fsaverage6",
+        "fsaverage7",
+        "fsaverage",
+    ]
+)
 def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
-    keys = {'pial_left', 'pial_right', 'infl_left', 'infl_right',
-            'sulc_left', 'sulc_right', 'white_left', 'white_right'}
-    request_mocker.url_mapping["*fsaverage.tar.gz"] = list_to_archive(
-        [Path("fsaverage") / "{}.gii".format(k.replace("infl", "inflated")) for
-         k in keys])
+    # Define attribute list that nilearn meshs should contain
+    # (each attribute should eventually map to a _.gii.gz file
+    # named after the attribute)
+    mesh_attributes = {
+        "{}_{}".format(part, side)
+        for part in [
+            "area", "curv", "infl", "pial",
+            "sphere", "sulc", "thick", "white"
+        ]
+        for side in ["left", "right"]
+    }
+
+    # Mock fsaverage3, 4, 6, 7 download (with actual url)
+    fs_urls = [
+        "https://osf.io/asvjk/download",
+        "https://osf.io/x2j49/download",
+        "https://osf.io/um5ag/download",
+        "https://osf.io/q7a5k/download",
+    ]
+    for fs_url in fs_urls:
+        request_mocker.url_mapping[fs_url] = list_to_archive(
+            ["{}.gii.gz".format(name) for name in mesh_attributes]
+        )
+
     dataset = struct.fetch_surf_fsaverage(mesh, data_dir=str(tmp_path))
-    assert keys.issubset(set(dataset.keys()))
+    assert mesh_attributes.issubset(set(dataset.keys()))
     assert dataset.description != ''
-
-
-def test_fetch_surf_fsaverage5_sphere(tmp_path, request_mocker):
-    request_mocker.url_mapping["*b79fy*"] = list_to_archive([
-        "sphere_right.gii", "sphere_left.gii"
-    ])
-    for mesh in ['fsaverage5_sphere']:
-
-        dataset = struct.fetch_surf_fsaverage(
-            mesh, data_dir=str(tmp_path))
-
-        keys = {'sphere_left', 'sphere_right'}
-
-        assert keys.issubset(set(dataset.keys()))
-        assert dataset.description != ''

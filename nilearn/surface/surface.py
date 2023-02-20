@@ -3,11 +3,9 @@ Functions for surface manipulation.
 """
 import os
 import warnings
-import collections
 import gzip
-from distutils.version import LooseVersion
 from collections import namedtuple
-
+from collections.abc import Mapping
 
 import numpy as np
 from scipy import sparse, interpolate
@@ -27,6 +25,7 @@ from nilearn import datasets
 from nilearn.image import load_img
 from nilearn.image import resampling
 from nilearn._utils.path_finding import _resolve_globbing
+from nilearn._utils import stringify_path
 from nilearn import _utils
 from nilearn.image import get_data
 
@@ -99,7 +98,6 @@ def _vertex_outer_normals(mesh):
     rule) points outwards.
 
     """
-    vertices, faces = load_surf_mesh(mesh)
     vertex_faces = _surrounding_faces(mesh)
     face_normals = _face_outer_normals(mesh)
     normals = vertex_faces.dot(face_normals)
@@ -478,9 +476,9 @@ def vol_to_surf(img, surf_mesh,
     Parameters
     ----------
     img : Niimg-like object, 3d or 4d.
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
 
-    surf_mesh : str or numpy.ndarray or Mesh
+    surf_mesh : str, pathlib.Path, numpy.ndarray, or Mesh
         Either a file containing surface mesh geometry (valid formats
         are .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or two Numpy arrays organized in a list,
@@ -581,7 +579,9 @@ def vol_to_surf(img, surf_mesh,
 
         - with 'depth', data is sampled at various cortical depths between
           corresponding nodes of `surface_mesh` and `inner_mesh` (which can be,
-          for example, a pial surface and a white matter surface).
+          for example, a pial surface and a white matter surface). This is the
+          recommended strategy when both the pial and white matter surfaces are
+          available, which is the case for the fsaverage meshes.
         - 'ball' uses points regularly spaced in a ball centered at the mesh
           vertex. The radius of the ball is controlled by the parameter
           `radius`.
@@ -615,10 +615,20 @@ def vol_to_surf(img, surf_mesh,
     interpolated values are averaged to produce the value associated to this
     particular mesh vertex.
 
-    Warnings
+    Examples
     --------
-    This function is experimental and details such as the interpolation method
-    are subject to change.
+    When both the pial and white matter surface are available, the recommended
+    approach is to provide the `inner_mesh` to rely on the 'depth' sampling
+    strategy::
+
+     >>> from nilearn import datasets, surface
+     >>> fsaverage = datasets.fetch_surf_fsaverage("fsaverage5")
+     >>> img = datasets.load_mni152_template(2)
+     >>> surf_data = surface.vol_to_surf(
+     ...     img,
+     ...     surf_mesh=fsaverage["pial_left"],
+     ...     inner_mesh=fsaverage["white_left"],
+     ... )
 
     """
     sampling_schemes = {'linear': _interpolation_sampling,
@@ -653,26 +663,12 @@ def _load_surf_files_gifti_gzip(surf_file):
     function is used by load_surf_mesh and load_surf_data for
     extracting gzipped files.
 
-    Part of the code can be removed while bumping nibabel 2.0.2
-
     """
     with gzip.open(surf_file) as f:
         as_bytes = f.read()
-    if LooseVersion(nibabel.__version__) >= LooseVersion('2.1.0'):
-        parser = gifti.GiftiImage.parser()
-        parser.parse(as_bytes)
-        gifti_img = parser.img
-    else:
-        from nibabel.gifti.parse_gifti_fast import ParserCreate, Outputter
-        parser = ParserCreate()
-        parser.buffer_text = True
-        out = Outputter()
-        parser.StartElementHandler = out.StartElementHandler
-        parser.EndElementHandler = out.EndElementHandler
-        parser.CharacterDataHandler = out.CharacterDataHandler
-        parser.Parse(as_bytes)
-        gifti_img = out.img
-    return gifti_img
+    parser = gifti.GiftiImage.parser()
+    parser.parse(as_bytes)
+    return parser.img
 
 
 def _gifti_img_to_data(gifti_img):
@@ -694,7 +690,7 @@ def load_surf_data(surf_data):
 
     Parameters
     ----------
-    surf_data : str or numpy.ndarray
+    surf_data : str, pathlib.Path, or numpy.ndarray
         Either a file containing surface data (valid format are .gii,
         .gii.gz, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
         .thickness, .curv, .sulc, .annot, .label), lists of 1D data files are
@@ -707,6 +703,7 @@ def load_surf_data(surf_data):
 
     """
     # if the input is a filename, load it
+    surf_data = stringify_path(surf_data)
     if isinstance(surf_data, str):
 
         # resolve globbing
@@ -718,19 +715,19 @@ def load_surf_data(surf_data):
             if (surf_data.endswith('nii') or surf_data.endswith('nii.gz') or
                     surf_data.endswith('mgz')):
                 data_part = np.squeeze(get_data(nibabel.load(surf_data)))
-            elif (surf_data.endswith('curv') or surf_data.endswith('sulc') or
-                    surf_data.endswith('thickness')):
+            elif (
+                surf_data.endswith('area')
+                or surf_data.endswith('curv')
+                or surf_data.endswith('sulc')
+                or surf_data.endswith('thickness')
+            ):
                 data_part = fs.io.read_morph_data(surf_data)
             elif surf_data.endswith('annot'):
                 data_part = fs.io.read_annot(surf_data)[0]
             elif surf_data.endswith('label'):
                 data_part = fs.io.read_label(surf_data)
             elif surf_data.endswith('gii'):
-                if LooseVersion(nibabel.__version__) >= LooseVersion('2.1.0'):
-                    gii = nibabel.load(surf_data)
-                else:
-                    gii = gifti.read(surf_data)
-                data_part = _gifti_img_to_data(gii)
+                data_part = _gifti_img_to_data(nibabel.load(surf_data))
             elif surf_data.endswith('gii.gz'):
                 gii = _load_surf_files_gifti_gzip(surf_data)
                 data_part = _gifti_img_to_data(gii)
@@ -739,8 +736,8 @@ def load_surf_data(surf_data):
                                   'given while valid inputs are a Numpy array '
                                   'or one of the following file formats: .gii,'
                                   ' .gii.gz, .mgz, .nii, .nii.gz, Freesurfer '
-                                  'specific files such as .curv, .sulc, '
-                                  '.thickness, .annot, .label') % surf_data)
+                                  'specific files such as .area, .curv, .sulc,'
+                                  ' .thickness, .annot, .label') % surf_data)
 
             if len(data_part.shape) == 1:
                 data_part = data_part[:, np.newaxis]
@@ -761,8 +758,8 @@ def load_surf_data(surf_data):
         raise ValueError('The input type is not recognized. '
                          'Valid inputs are a Numpy array or one of the '
                          'following file formats: .gii, .gii.gz, .mgz, .nii, '
-                         '.nii.gz, Freesurfer specific files such as .curv, '
-                         '.sulc, .thickness, .annot, .label')
+                         '.nii.gz, Freesurfer specific files such as .area, '
+                         '.curv, .sulc, .thickness, .annot, .label')
     return np.squeeze(data)
 
 
@@ -777,37 +774,20 @@ def _gifti_img_to_mesh(gifti_img):
                      'surface mesh inputs are .pial, .inflated, .sphere, '
                      '.orig, .white. You provided input which have no '
                      '{0} or of empty value={1}')
-    if LooseVersion(nibabel.__version__) >= LooseVersion('2.1.0'):
-        try:
-            coords = gifti_img.get_arrays_from_intent(
-                nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
-        except IndexError:
-            raise ValueError(error_message.format(
-                'NIFTI_INTENT_POINTSET', gifti_img.get_arrays_from_intent(
-                    nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])))
-        try:
-            faces = gifti_img.get_arrays_from_intent(
-                nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
-        except IndexError:
-            raise ValueError(error_message.format(
-                'NIFTI_INTENT_TRIANGLE', gifti_img.get_arrays_from_intent(
-                    nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])))
-    else:
-        try:
-            coords = gifti_img.getArraysFromIntent(
-                nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
-        except IndexError:
-            raise ValueError(error_message.format(
-                'NIFTI_INTENT_POINTSET', gifti_img.getArraysFromIntent(
-                    nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])))
-        try:
-            faces = gifti_img.getArraysFromIntent(
-                nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
-        except IndexError:
-            raise ValueError(error_message.format(
-                'NIFTI_INTENT_TRIANGLE', gifti_img.getArraysFromIntent(
-                    nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])))
-
+    try:
+        coords = gifti_img.get_arrays_from_intent(
+            nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
+    except IndexError:
+        raise ValueError(error_message.format(
+            'NIFTI_INTENT_POINTSET', gifti_img.get_arrays_from_intent(
+                nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])))
+    try:
+        faces = gifti_img.get_arrays_from_intent(
+            nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
+    except IndexError:
+        raise ValueError(error_message.format(
+            'NIFTI_INTENT_TRIANGLE', gifti_img.get_arrays_from_intent(
+                nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])))
     return coords, faces
 
 
@@ -817,7 +797,7 @@ def load_surf_mesh(surf_mesh):
 
     Parameters
     ----------
-    surf_mesh : str or numpy.ndarray or Mesh
+    surf_mesh : str, pathlib.Path, or numpy.ndarray or Mesh
         Either a file containing surface mesh geometry (valid formats
         are .gii .gii.gz or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or two Numpy arrays organized in a list,
@@ -833,6 +813,7 @@ def load_surf_mesh(surf_mesh):
     """
 
     # if input is a filename, try to load it
+    surf_mesh = stringify_path(surf_mesh)
     if isinstance(surf_mesh, str):
         # resolve globbing
         file_list = _resolve_globbing(surf_mesh)
@@ -847,14 +828,14 @@ def load_surf_mesh(surf_mesh):
         if (surf_mesh.endswith('orig') or surf_mesh.endswith('pial') or
                 surf_mesh.endswith('white') or surf_mesh.endswith('sphere') or
                 surf_mesh.endswith('inflated')):
-            coords, faces = fs.io.read_geometry(surf_mesh)
+            coords, faces, header = fs.io.read_geometry(surf_mesh,
+                                                        read_metadata=True)
+            # See https://github.com/nilearn/nilearn/pull/3235
+            if 'cras' in header:
+                coords += header['cras']
             mesh = Mesh(coordinates=coords, faces=faces)
         elif surf_mesh.endswith('gii'):
-            if LooseVersion(nibabel.__version__) >= LooseVersion('2.1.0'):
-                gifti_img = nibabel.load(surf_mesh)
-            else:
-                gifti_img = gifti.read(surf_mesh)
-            coords, faces = _gifti_img_to_mesh(gifti_img)
+            coords, faces = _gifti_img_to_mesh(nibabel.load(surf_mesh))
             mesh = Mesh(coordinates=coords, faces=faces)
         elif surf_mesh.endswith('.gii.gz'):
             gifti_img = _load_surf_files_gifti_gzip(surf_mesh)
@@ -956,7 +937,7 @@ def _check_mesh(mesh):
     """
     if isinstance(mesh, str):
         return datasets.fetch_surf_fsaverage(mesh)
-    if not isinstance(mesh, collections.Mapping):
+    if not isinstance(mesh, Mapping):
         raise TypeError("The mesh should be a str or a dictionary, "
                         "you provided: {}.".format(type(mesh).__name__))
     missing = {'pial_left', 'pial_right', 'sulc_left', 'sulc_right',
@@ -983,8 +964,9 @@ def check_mesh_and_data(mesh, data):
     data : str or numpy.ndarray
         Either a file containing surface data (valid format are .gii,
         .gii.gz, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
-        .thickness, .curv, .sulc, .annot, .label), lists of 1D data files are
-        returned as 2D arrays, or a Numpy array containing surface data.
+        .thickness, .area, .curv, .sulc, .annot, .label),
+        lists of 1D data files are returned as 2D arrays,
+        or a Numpy array containing surface data.
 
     Returns
     -------

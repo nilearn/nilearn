@@ -18,16 +18,8 @@ More specifically:
 3. Demonstrate Quality assurance of Nistats estimation against available FSL.
    estimation in the openneuro dataset.
 4. Display contrast plot and uncorrected first level statistics table report.
-
-
-
-To run this example, you must launch IPython via ``ipython
---matplotlib`` in a terminal, or use the Jupyter notebook.
-
-.. contents:: **Contents**
-    :local:
-    :depth: 1
 """
+
 ##############################################################################
 # Fetch openneuro BIDS dataset
 # -----------------------------
@@ -36,10 +28,13 @@ To run this example, you must launch IPython via ``ipython
 # This dataset contains the necessary information to run a statistical analysis
 # using Nilearn. The dataset also contains statistical results from a previous
 # FSL analysis that we can employ for comparison with the Nilearn estimation.
-from nilearn.datasets import (fetch_openneuro_dataset_index,
-                              fetch_openneuro_dataset, select_from_index)
+from nilearn.datasets import (
+    fetch_ds000030_urls,
+    fetch_openneuro_dataset,
+    select_from_index,
+)
 
-_, urls = fetch_openneuro_dataset_index()
+_, urls = fetch_ds000030_urls()
 
 exclusion_patterns = ['*group*', '*phenotype*', '*mriqc*',
                       '*parameter_plots*', '*physio_plots*',
@@ -62,7 +57,7 @@ data_dir, _ = fetch_openneuro_dataset(urls=urls)
 # To get the first level models we have to specify the dataset directory,
 # the task_label and the space_label as specified in the file names.
 # We also have to provide the folder with the desired derivatives, that in this
-# case were produced by the fmriprep :term:`BIDS` app.
+# case were produced by the :term:`fMRIPrep` :term:`BIDS` app.
 from nilearn.glm.first_level import first_level_from_bids
 task_label = 'stopsignal'
 space_label = 'MNI152NLin2009cAsym'
@@ -77,9 +72,10 @@ models, models_run_imgs, models_events, models_confounds = \
 model, imgs, events, confounds = (
     models[0], models_run_imgs[0], models_events[0], models_confounds[0])
 subject = 'sub-' + model.subject_label
+model.minimize_memory = False  # override default
 
 import os
-from nilearn._utils.glm import get_design_from_fslmat
+from nilearn.interfaces.fsl import get_design_from_fslmat
 fsl_design_matrix_path = os.path.join(
     data_dir, 'derivatives', 'task', subject, 'stopsignal.feat', 'design.mat')
 design_matrix = get_design_from_fslmat(
@@ -144,7 +140,8 @@ plt.show()
 # We can get a latex table from a Pandas Dataframe for display and publication
 # purposes
 from nilearn.reporting import get_clusters_table
-print(get_clusters_table(z_map, norm.isf(0.001), 10).to_latex())
+table = get_clusters_table(z_map, norm.isf(0.001), 10)
+print(table.to_latex())
 
 #########################################################################
 # Generating a report
@@ -164,3 +161,22 @@ report = make_glm_report(model=model,
 # report  # This report can be viewed in a notebook
 # report.save_as_html('report.html')
 # report.open_in_browser()
+
+#########################################################################
+# Saving model outputs to disk
+# ----------------------------
+from nilearn.interfaces.bids import save_glm_to_bids
+
+save_glm_to_bids(
+    model,
+    contrasts='StopSuccess - Go',
+    contrast_types={'StopSuccess - Go': 't'},
+    out_dir='derivatives/nilearn_glm/',
+    prefix=subject + '_task-stopsignal',
+)
+
+#########################################################################
+# View the generated files
+from glob import glob
+
+print('\n'.join(sorted(glob('derivatives/nilearn_glm/*'))))

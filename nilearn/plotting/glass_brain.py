@@ -5,7 +5,7 @@ Brain schematics plotting for glass brain functionality
 import json
 import os
 
-from distutils.version import LooseVersion
+from nilearn.version import _compare_version
 
 import matplotlib
 from matplotlib.path import Path
@@ -85,7 +85,7 @@ def _get_mpl_patches(json_content, transform=None,
 
 
 def _get_json_and_transform(direction):
-    """Returns the json filename and and an affine transform, which has
+    """Returns the json filename and an affine transform, which has
     been tweaked by hand to fit the MNI template
     """
     direction_to_view_name = {'x': 'side',
@@ -166,7 +166,7 @@ def plot_brain_schematics(ax, direction, **kwargs):
         Useful for the caller to be able to set axes limits.
 
     """
-    if LooseVersion(matplotlib.__version__) >= LooseVersion("2.0"):
+    if _compare_version(matplotlib.__version__, '>=', "2.0"):
         get_axis_bg_color = ax.get_facecolor()
     else:
         get_axis_bg_color = ax.get_axis_bgcolor()

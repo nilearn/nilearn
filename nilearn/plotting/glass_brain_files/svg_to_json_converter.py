@@ -9,7 +9,7 @@ import sys
 import json
 
 
-class SVGToJSONConverter(object):
+class SVGToJSONConverter:
     """Reads an svg file and exports paths to a JSON format
 
     Only segments and Bezier curves are supported
@@ -129,7 +129,7 @@ class SVGToJSONConverter(object):
         result = {'metadata': metadata,
                   'paths': paths}
 
-        return json.dumps(result, indent=2)
+        return json.dumps(result, indent=2, separators=(',', ': '))
 
     def save_json(self, filename):
         json_content = self.to_json()
