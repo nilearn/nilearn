@@ -106,10 +106,12 @@ def _get_labels_data(labels_img,
     ----------
     labels_img : Niimg-like object
         See https://nilearn.github.io/stable/manipulating_images/input_output.html
-        regions definition as labels. By default, the label zero is used to
-        denote an absence of region. Use background_label to change it.
+        regions definition as labels.
+        By default, the label zero is used to denote an absence of region.
+        Use background_label to change it.
 
     target_img : Niimg-like object
+        See https://nilearn.github.io/stable/manipulating_images/input_output.html
         Image to extract the data from.
 
     target_affine : numpy.ndarray
@@ -117,8 +119,9 @@ def _get_labels_data(labels_img,
 
     mask_img : Niimg-like object, optional
         See https://nilearn.github.io/stable/manipulating_images/input_output.html
-        Mask to apply to labels before extracting signals. Every point
-        outside the mask is considered as background (i.e. no region).
+        Mask to apply to labels before extracting signals.
+        Every point outside the mask is considered as background
+        (i.e. no region).
 
     background_label : number, optional
         Number representing background in labels_img.
@@ -129,8 +132,8 @@ def _get_labels_data(labels_img,
     Returns
     -------
     labels : list or tuple
-        Corresponding labels for each signal. signal[:, n] was extracted from
-        the region with label labels[n].
+        Corresponding labels for each signal.
+        signal[:, n] was extracted from the region with label labels[n].
 
     labels_data : numpy.ndarray
         Extracted data for each region within the mask.
@@ -396,8 +399,12 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
     maps_data = _safe_get_data(maps_img, ensure_finite=True)
 
     _check_shape_affine_maps_masks(shape, affine, maps_img, 3)
-    img_state = _check_shape_affine_maps_masks(shape, affine, mask_img)
-    if img_state:
+
+    maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
+    labels = np.arange(maps_data.shape[-1], dtype=int)
+
+    use_mask = _check_shape_affine_maps_masks(shape, affine, mask_img)
+    if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
         maps_data, maps_mask, labels = _trim_maps(
             maps_data,
@@ -405,9 +412,6 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
             keep_empty=True,
         )
         maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
-    else:
-        maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
-        labels = np.arange(maps_data.shape[-1], dtype=int)
 
     data = _safe_get_data(imgs, ensure_finite=True)
     region_signals = linalg.lstsq(maps_data[maps_mask, :],
@@ -457,15 +461,15 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     shape = maps_img.shape[:3]
     affine = maps_img.affine
 
-    img_state = _check_shape_affine_maps_masks(shape, affine, mask_img)
-    if img_state:
+    maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
+
+    use_mask = _check_shape_affine_maps_masks(shape, affine, mask_img)
+    if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
         maps_data, maps_mask, _ = _trim_maps(
             maps_data, _safe_get_data(mask_img, ensure_finite=True),
             keep_empty=True)
         maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
-    else:
-        maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
 
     assert (maps_mask.shape == maps_data.shape[:3])
 
