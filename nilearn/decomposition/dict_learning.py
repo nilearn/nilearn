@@ -1,5 +1,6 @@
-"""
-Dictionary learning estimator: Perform a map learning algorithm by learning
+"""Dictionary learning estimator.
+
+Perform a map learning algorithm by learning
 a temporal dense dictionary along with sparse spatial loadings, that
 constitutes output maps
 """
@@ -35,8 +36,9 @@ def _compute_loadings(components, data):
 
 @fill_doc
 class DictLearning(_BaseDecomposition):
-    """Perform a map learning algorithm based on spatial component sparsity,
+    """Perform a map learning algorithm based on spatial component sparsity, \
     over a :term:`CanICA` initialization [1]_.
+
     This yields more stable maps than :term:`CanICA`.
 
      .. versionadded:: 0.2
@@ -269,7 +271,7 @@ class DictLearning(_BaseDecomposition):
         )
 
     def _raw_fit(self, data):
-        """Helper function that directly process unmasked data
+        """Helper function that directly process unmasked data.
 
         Parameters
         ----------
