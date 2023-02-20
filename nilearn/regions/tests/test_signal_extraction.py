@@ -318,8 +318,9 @@ def test_signal_extraction_with_maps():
         img, maps_img, mask_img=mask_img)
 
     # The output must be identical to the input signals, because every region
-    # is homogeneous: there is the same signal in all voxels of one given
-    # region (and all maps are uniform).
+    # is homogeneous: 
+    # there is the same signal in all voxels of one given region 
+    # (and all maps are uniform).
     np.testing.assert_almost_equal(signals, signals_r)
 
     # Same thing without mask (in that case)

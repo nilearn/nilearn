@@ -24,7 +24,6 @@ def _check_shape_affine_label_img(labels_img, target_shape, target_affine):
     Parameters
     ----------
     labels_img : Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html
         regions definition as labels. Encodes the region labels of the signals.
 
     target_shape : numpy.ndarray
@@ -59,7 +58,6 @@ def _check_shape_affine_maps_masks(target_shape,
 
     img : Niimg-like object, optional
         Contains map or mask.
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html
 
     dim : integer, optional
         Integer slices a mask for a specific dimension.
@@ -105,20 +103,17 @@ def _get_labels_data(labels_img,
     Parameters
     ----------
     labels_img : Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html
         regions definition as labels.
         By default, the label zero is used to denote an absence of region.
         Use background_label to change it.
 
     target_img : Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html
         Image to extract the data from.
 
     target_affine : numpy.ndarray
         Desired affine of labels image and mask.
 
     mask_img : Niimg-like object, optional
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html
         Mask to apply to labels before extracting signals.
         Every point outside the mask is considered as background
         (i.e. no region).
