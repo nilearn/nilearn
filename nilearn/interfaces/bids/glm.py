@@ -143,7 +143,6 @@ def save_glm_to_bids(
         design_matrix.to_csv(
             dm_file,
             sep='\t',
-            lineterminator='\n',
             index=False,
         )
 
