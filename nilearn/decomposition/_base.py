@@ -108,7 +108,7 @@ def _mask_and_reduce(
         Instance used to mask provided data.
 
     imgs : list of 4D Niimg-like objects
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         List of subject data to mask, reduce and stack.
 
     confounds : CSV file path or numpy ndarray, or pandas DataFrame, optional
@@ -330,7 +330,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
     Attributes
     ----------
     `mask_img_` : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 
@@ -383,7 +383,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         Parameters
         ----------
         imgs : list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             Data on which the mask is calculated. If this is a list,
             the affine is considered the same for all.
 
@@ -476,7 +476,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         Parameters
         ----------
         imgs : iterable of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             Data to be projected
 
         confounds : CSV file path or numpy.ndarray
@@ -551,7 +551,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         Parameters
         ----------
         imgs : iterable of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             Data to be scored
 
         confounds : CSV file path or numpy.ndarray

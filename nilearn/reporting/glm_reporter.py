@@ -637,12 +637,12 @@ def _mask_to_svg(mask_img, bg_img):
     Parameters
     ----------
     mask_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The mask image; it could be binary mask or an atlas or ROIs
         with integer values.
 
     bg_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The background image that the mask will be plotted on top of.
         To turn off background image, just pass "bg_img=None".
 
@@ -719,7 +719,7 @@ def _make_stat_maps_contrast_clusters(stat_img, contrasts_plots, threshold,
 
     bg_img : Niimg-like object
         Only used when plot_type is 'slice'.
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The background image for stat maps to be plotted on upon.
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
@@ -894,7 +894,7 @@ def _stat_map_to_svg(stat_img,
 
     bg_img : Niimg-like object
         Only used when plot_type is 'slice'.
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The background image for stat maps to be plotted on upon.
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".

@@ -82,7 +82,7 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         Default 'svc'.
 
     X: list of Niimg-like objects
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Data on which model is to be fitted. If this is a list,
         the affine is considered the same for all.
 

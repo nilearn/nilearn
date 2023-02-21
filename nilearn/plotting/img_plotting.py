@@ -1,6 +1,6 @@
 """
 Functions to do automatic visualization of Niimg-like objects
-See http://nilearn.github.io/manipulating_images/input_output.html
+See http://nilearn.github.io/stable/manipulating_images/input_output.html
 
 Only matplotlib is required.
 """
