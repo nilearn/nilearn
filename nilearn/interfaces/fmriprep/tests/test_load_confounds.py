@@ -551,7 +551,7 @@ def test_sample_mask(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "image_type", ["regular", "ica_aroma", "gifti", "cifti"]
+    "image_type", ["regular", "native", "ica_aroma", "gifti", "cifti"]
 )
 def test_inputs(tmp_path, image_type):
     """Test multiple images as input."""
@@ -560,7 +560,7 @@ def test_inputs(tmp_path, image_type):
     for i in range(2):  # gifti edge case
         nii, _ = create_tmp_filepath(
             tmp_path,
-            suffix=f"img{i+1}",
+            suffix=f"sub-test{i+1}_task-testimg",
             image_type=image_type,
             copy_confounds=True,
             copy_json=True,

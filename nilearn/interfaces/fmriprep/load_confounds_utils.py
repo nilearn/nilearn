@@ -10,7 +10,7 @@ from .load_confounds_scrub import _extract_outlier_regressors
 from nilearn._utils.fmriprep_confounds import (
     _flag_single_gifti, _is_camel_case
 )
-
+from nilearn.interfaces.bids import parse_bids_filename
 
 img_file_patterns = {
     "aroma": "_desc-smoothAROMAnonaggr_bold",
@@ -89,15 +89,22 @@ def _get_file_name(nii_file):
     """Construct the raw confound file name from processed functional data."""
     if isinstance(nii_file, list):  # catch gifti
         nii_file = nii_file[0]
-    suffix = "_space-" + nii_file.split("space-")[1]
+    entities = parse_bids_filename(nii_file)
+    subject_label = f"sub-{entities['sub']}"
+    if "session" in entities:
+        subject_label = f"{subject_label}_ses-{entities['ses']}"
+    specifiers = f"task-{entities['task']}"
+    if "run" in entities:
+        specifiers = f"{specifiers}_run-{entities['run']}"
+    img_filename = nii_file.split(os.sep)[-1]
     # fmriprep has changed the file suffix between v20.1.1 and v20.2.0 with
     # respect to BEP 012.
     # cf. https://neurostars.org/t/naming-change-confounds-regressors-to-confounds-timeseries/17637 # noqa
     # Check file with new naming scheme exists or replace,
     # for backward compatibility.
     confounds_raw_candidates = [
-        nii_file.replace(suffix, "_desc-confounds_timeseries.tsv"),
-        nii_file.replace(suffix, "_desc-confounds_regressors.tsv"),
+        nii_file.replace(img_filename, f"{subject_label}_{specifiers}_desc-confounds_timeseries.tsv"),
+        nii_file.replace(img_filename, f"{subject_label}_{specifiers}_desc-confounds_regressors.tsv"),
     ]
 
     confounds_raw = [
