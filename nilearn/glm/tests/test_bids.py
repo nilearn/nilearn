@@ -20,4 +20,13 @@ def test_first_level_from_bids_bug_3524(entity):
                               img_filters=[('desc', 'preproc'), (entity, 'A')])
 
 
+# bids_path = create_fake_bids_dataset(n_sub=10,
+#                                         n_ses=2,
+#                                         tasks=['localizer', 'main'],
+#                                         n_runs=[1, 3], 
+#                                         entities = ['echo', ['A', 'B']])
 
+# first_level_from_bids(dataset_path=bids_path, 
+#                         task_label='main', 
+#                         space_label='MNI', 
+#                         img_filters=[('desc', 'preproc'), ('echo', 'A')])

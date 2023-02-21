@@ -856,6 +856,16 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         Items for the FirstLevelModel fit function of their respective model.
 
     """
+    SUPPORTED_FILTERS_RAW = ['acq',
+                            'ce',
+                            'rec',
+                            'dir',
+                            'run',
+                            'echo',
+                            'part']
+    SUPPORTED_FILTERS_DERIVATIVE = ['res', 'den', 'desc']
+    SUPPORTED_FILTERS = SUPPORTED_FILTERS_RAW + SUPPORTED_FILTERS_DERIVATIVE
+
     # check arguments
     img_filters = img_filters or []
     if not isinstance(dataset_path, str):
@@ -878,13 +888,10 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                 or not isinstance(img_filter[1], str)):
             raise TypeError('filters in img filters must be (str, str), '
                             'instead %s was given' % type(img_filter))
-        if img_filter[0] not in ['acq', 'ce', 'dir', 'rec', 'run',
-                                 'echo', 'desc', 'res', 'den',
-                                 ]:
+        if img_filter[0] not in SUPPORTED_FILTERS:
             raise ValueError(
-                "field %s is not a possible filter. Only "
-                "'acq', 'ce', 'dir', 'rec', 'run', 'echo', "
-                "'desc', 'res', 'den' are allowed." % img_filter[0])
+                "field %s is not a possible filter. "
+                f"Only {SUPPORTED_FILTERS} are allowed." % img_filter[0])
 
     # check derivatives folder is present
     derivatives_path = os.path.join(dataset_path, derivatives_folder)
@@ -900,7 +907,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     else:
         filters = [('task', task_label)]
         for img_filter in img_filters:
-            if img_filter[0] in ['acq', 'rec', 'run']:
+            if img_filter[0] in SUPPORTED_FILTERS:
                 filters.append(img_filter)
 
         img_specs = get_bids_files(derivatives_path, modality_folder='func',
@@ -1021,18 +1028,23 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                             img_dict['run'])
                     else:
                         run_check_list.append(img_dict['run'])
+
+        if not imgs:
+            raise ValueError(f'No bold files found for filter: {filters}')
+
         models_run_imgs.append(imgs)
 
-        # Get events and extra confounds
+        # Get events files
         filters = [('task', task_label)]
         for img_filter in img_filters:
-            if img_filter[0] in ['acq', 'rec', 'run']:
-                filters.append(img_filter)
-
-        # Get events files
-        events = get_bids_files(dataset_path, modality_folder='func',
-                                file_tag='events', file_type='tsv',
-                                sub_label=sub_label, filters=filters)
+            if img_filter[0] in SUPPORTED_FILTERS_RAW:
+                filters.append(img_filter)        
+        events = get_bids_files(dataset_path,
+                                modality_folder='func',
+                                file_tag='events',
+                                file_type='tsv',
+                                sub_label=sub_label,
+                                filters=filters)
         if events:
             if len(events) != len(imgs):
                 raise ValueError('%d events.tsv files found for %d bold '
@@ -1043,13 +1055,20 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                       for event in events]
             models_events.append(events)
         else:
-            raise ValueError('No events.tsv files found')
+            raise ValueError(f'No events.tsv files found for filter: {filters}')
 
-        # Get confounds. If not found it will be assumed there are none.
+        # Get confounds. 
+        # If not found it will be assumed there are none.
         # If there are confounds, they are assumed to be present for all runs.
-        confounds = get_bids_files(derivatives_path, modality_folder='func',
+        filters = [('task', task_label)]
+        for img_filter in img_filters:
+            if img_filter[0] in SUPPORTED_FILTERS:
+                filters.append(img_filter)          
+        confounds = get_bids_files(derivatives_path,
+                                   modality_folder='func',
                                    file_tag='desc-confounds*',
-                                   file_type='tsv', sub_label=sub_label,
+                                   file_type='tsv',
+                                   sub_label=sub_label,
                                    filters=filters)
 
         if confounds:

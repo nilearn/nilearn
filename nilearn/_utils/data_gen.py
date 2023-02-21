@@ -911,6 +911,20 @@ def create_fake_bids_dataset(base_dir='',
         Creates a directory with dummy files.
 
     """
+    # FIXME entities are not ordered properly in the generated filenames
+    # sub-01_ses-01_task-main_echo-B_run-01_bold.nii.gz
+    # instead of
+    # sub-01_ses-01_task-main_run-01_echo-B_bold.nii.gz
+    ENTITIES_RAW = ['acq',
+                            'ce',
+                            'rec',
+                            'dir',
+                            'run',
+                            'echo',
+                            'part']
+    ENTITIES_DERIVATIVE = ['res', 'den', 'desc']
+    ENTITIES = ENTITIES_RAW + ENTITIES_DERIVATIVE                       
+
     bids_path = os.path.join(base_dir, 'bids_dataset')
     os.makedirs(bids_path)
     rand_gen = check_random_state(random_state)
@@ -922,7 +936,9 @@ def create_fake_bids_dataset(base_dir='',
         created_sessions = ['']
     for subject in ['sub-%02d' % label for label in range(1, n_sub + 1)]:
         for session in created_sessions:
+
             subses_dir = os.path.join(bids_path, subject, session)
+
             if session in ('ses-01', ''):
                 anat_path = os.path.join(subses_dir, 'anat')
                 os.makedirs(anat_path)
@@ -930,12 +946,13 @@ def create_fake_bids_dataset(base_dir='',
                 open(anat_file, 'w')
             func_path = os.path.join(subses_dir, 'func')
             os.makedirs(func_path)
+
             for task, n_run in zip(tasks, n_runs):
                 run_labels = [
                     'run-%02d' % label for label in range(1, n_run + 1)
                 ]
                 for run in run_labels:
-                    if entities is None:
+                    if entities is None or entities[0] in ENTITIES_DERIVATIVE:
                         fields = [subject, session, 'task-' + task]
                         file_id = _return_file_id(fields, n_run, run)
                         _write_bids_raw_func(func_path, file_id, vox, rand_gen)
@@ -947,7 +964,7 @@ def create_fake_bids_dataset(base_dir='',
                             file_id = _return_file_id(fields, n_run, run)
                             _write_bids_raw_func(func_path, file_id, vox, rand_gen)
 
-
+    
     # Create derivatives files
     if with_derivatives:
         bids_path = os.path.join(base_dir, 'bids_dataset', 'derivatives')
@@ -965,7 +982,7 @@ def create_fake_bids_dataset(base_dir='',
                         if entities is None:
                             fields = [subject, session, 'task-' + task]
                             file_id = _return_file_id(fields, n_run, run)                        
-                        else:
+                        elif entities[0] in ENTITIES:
                             entity = entities[0]
                             labels = entities[1]
                             for i_label in labels:
