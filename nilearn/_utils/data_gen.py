@@ -787,50 +787,6 @@ def basic_confounds(length, random_state=0):
     confounds = pd.DataFrame(data, columns=columns)
     return confounds
 
-def _return_file_id(fields, n_run, run):
-    if '' in fields:
-        fields.remove('')
-    file_id = '_'.join(fields)
-    if n_run > 1:
-        file_id += '_' + run
-    return file_id
-
-def _write_bids_raw_func(func_path, file_id, vox, rand_gen):
-    bold_path = os.path.join(func_path,
-                            file_id + '_bold.nii.gz')
-    write_fake_bold_img(bold_path, [vox, vox, vox, 100],
-                        random_state=rand_gen)
-    events_path = os.path.join(func_path,
-                            file_id + '_events.tsv')
-    basic_paradigm().to_csv(events_path, sep='\t', index=None)
-    param_path = os.path.join(func_path,
-                            file_id + '_bold.json')
-    with open(param_path, 'w') as param_file:
-        json.dump({'RepetitionTime': 1.5}, param_file)
-
-def _write_bids_derivative_func(func_path, file_id, vox, rand_gen, with_confounds, confounds_tag):
-    preproc = (
-        file_id + '_space-MNI_desc-preproc_bold.nii.gz')
-    preproc_path = os.path.join(func_path, preproc)
-    write_fake_bold_img(preproc_path, [vox, vox, vox, 100],
-                        random_state=rand_gen)
-    preproc = (
-        file_id + '_space-T1w_desc-preproc_bold.nii.gz')
-    preproc_path = os.path.join(func_path, preproc)
-    write_fake_bold_img(preproc_path, [vox, vox, vox, 100],
-                        random_state=rand_gen)
-    preproc = (
-        file_id + '_space-T1w_desc-fmriprep_bold.nii.gz')
-    preproc_path = os.path.join(func_path, preproc)
-    write_fake_bold_img(preproc_path, [vox, vox, vox, 100],
-                        random_state=rand_gen)
-    if with_confounds:
-        confounds_path = os.path.join(
-            func_path,
-            file_id + '_' + confounds_tag + '.tsv',
-        )
-        basic_confounds(100, random_state=rand_gen).to_csv(
-            confounds_path, sep='\t', index=None)
 
 def create_fake_bids_dataset(base_dir='',
                              n_sub=10,
@@ -843,7 +799,7 @@ def create_fake_bids_dataset(base_dir='',
                              no_session=False,
                              random_state=0,
                              entities=None,):
-    """Creates a fake :term:`bids<BIDS>` dataset directory with dummy files.
+    """Create a fake :term:`bids<BIDS>` dataset directory with dummy files.
 
     Returns fake dataset directory name.
 
@@ -856,50 +812,41 @@ def create_fake_bids_dataset(base_dir='',
 
     n_sub : :obj:`int`, optional
         Number of subjects to be simulated in the dataset.
-        Default=10.
 
     n_ses : :obj:`int`, optional
         Number of sessions to be simulated in the dataset.
         Ignored if no_session=True.
-        Default=2.
 
     tasks : :obj:`list` of :obj:`str`, optional
         List of tasks to be simulated in the dataset.
-        Default=["localizer", "main"].
 
     n_runs : :obj:`list` of :obj:`int`, optional
         Number of runs to create, where each element indicates the
         number of runs for the corresponding task.
         The length of this list must match the number of items in ``tasks``.
         Each run creates 100 volumes.
-        Default=[1, 3].
 
     with_derivatives : :obj:`bool`, optional
         In the case derivatives are included, they come with two spaces and
         descriptions. Spaces are 'MNI' and 'T1w'. Descriptions are 'preproc'
         and :term:`fMRIPrep`. Only space 'T1w' include both descriptions.
-        Default=True.
 
     with_confounds : :obj:`bool`, optional
         Whether to generate associated confounds files or not.
-        Default=True.
 
     confounds_tag : :obj:`str` (filename suffix), optional
         If generating confounds, what path should they have? Defaults to
         `desc-confounds_timeseries` as in :term:`fMRIPrep` >= 20.2
         but can be other values (e.g. "desc-confounds_regressors" as
         in :term:`fMRIPrep` < 20.2).
-        Default="desc-confounds_timeseries".
 
     no_session : :obj:`bool`, optional
         Specifying no_sessions will only produce runs and files without the
         optional session field. In this case n_ses will be ignored.
-        Default=False.
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
                    optional
         Random number generator, or seed.
-        Default=0.
 
     Returns
     -------
@@ -916,24 +863,27 @@ def create_fake_bids_dataset(base_dir='',
     # instead of
     # sub-01_ses-01_task-main_run-01_echo-B_bold.nii.gz
     ENTITIES_RAW = ['acq',
-                            'ce',
-                            'rec',
-                            'dir',
-                            'run',
-                            'echo',
-                            'part']
+                    'ce',
+                    'rec',
+                    'dir',
+                    'run',
+                    'echo',
+                    'part']
     ENTITIES_DERIVATIVE = ['res', 'den', 'desc']
-    ENTITIES = ENTITIES_RAW + ENTITIES_DERIVATIVE                       
+    ENTITIES = ENTITIES_RAW + ENTITIES_DERIVATIVE
 
     bids_path = os.path.join(base_dir, 'bids_dataset')
     os.makedirs(bids_path)
     rand_gen = check_random_state(random_state)
-    # Create surface bids dataset
+
+    # Create bids dataset
     open(os.path.join(bids_path, 'README.txt'), 'w')
     vox = 4
+
     created_sessions = ['ses-%02d' % label for label in range(1, n_ses + 1)]
     if no_session:
         created_sessions = ['']
+
     for subject in ['sub-%02d' % label for label in range(1, n_sub + 1)]:
         for session in created_sessions:
 
@@ -944,6 +894,7 @@ def create_fake_bids_dataset(base_dir='',
                 os.makedirs(anat_path)
                 anat_file = os.path.join(anat_path, subject + '_T1w.nii.gz')
                 open(anat_file, 'w')
+
             func_path = os.path.join(subses_dir, 'func')
             os.makedirs(func_path)
 
@@ -954,26 +905,37 @@ def create_fake_bids_dataset(base_dir='',
                 for run in run_labels:
                     if entities is None or entities[0] in ENTITIES_DERIVATIVE:
                         fields = [subject, session, 'task-' + task]
-                        file_id = _return_file_id(fields, n_run, run)
-                        _write_bids_raw_func(func_path, file_id, vox, rand_gen)
+                        _write_bids_raw_func(func_path,
+                                             _file_id(fields, n_run, run),
+                                             vox,
+                                             rand_gen)
                     else:
                         entity = entities[0]
                         labels = entities[1]
                         for i_label in labels:
-                            fields = [subject, session, 'task-' + task, f"{entity}-{i_label}"]
-                            file_id = _return_file_id(fields, n_run, run)
-                            _write_bids_raw_func(func_path, file_id, vox, rand_gen)
+                            fields = [subject,
+                                      session,
+                                      'task-' + task,
+                                      f"{entity}-{i_label}"]
+                            _write_bids_raw_func(func_path,
+                                                 _file_id(fields, n_run, run),
+                                                 vox,
+                                                 rand_gen)
 
-    
     # Create derivatives files
     if with_derivatives:
+
         bids_path = os.path.join(base_dir, 'bids_dataset', 'derivatives')
         os.makedirs(bids_path)
+
         for subject in ['sub-%02d' % label for label in range(1, 11)]:
             for session in created_sessions:
+
                 subses_dir = os.path.join(bids_path, subject, session)
+
                 func_path = os.path.join(subses_dir, 'func')
                 os.makedirs(func_path)
+
                 for task, n_run in zip(tasks, n_runs):
                     for run in [
                             'run-%02d' % label
@@ -981,21 +943,87 @@ def create_fake_bids_dataset(base_dir='',
                     ]:
                         if entities is None:
                             fields = [subject, session, 'task-' + task]
-                            file_id = _return_file_id(fields, n_run, run)                        
+                            _write_bids_derivative_func(func_path,
+                                                        _file_id(fields,
+                                                                 n_run,
+                                                                 run),
+                                                        vox,
+                                                        rand_gen,
+                                                        with_confounds,
+                                                        confounds_tag)
                         elif entities[0] in ENTITIES:
                             entity = entities[0]
                             labels = entities[1]
                             for i_label in labels:
-                                fields = [subject, session, 'task-' + task, f"{entity}-{i_label}"]
-                                file_id = _return_file_id(fields, n_run, run)
-                                _write_bids_derivative_func(func_path, 
-                                                            file_id, 
-                                                            vox, 
-                                                            rand_gen, 
-                                                            with_confounds, 
+                                fields = [subject,
+                                          session,
+                                          'task-' + task,
+                                          f"{entity}-{i_label}"]
+                                _write_bids_derivative_func(func_path,
+                                                            _file_id(fields,
+                                                                     n_run,
+                                                                     run),
+                                                            vox,
+                                                            rand_gen,
+                                                            with_confounds,
                                                             confounds_tag)
     return 'bids_dataset'
 
+
+def _file_id(fields, n_run, run):
+    if '' in fields:
+        fields.remove('')
+    value = '_'.join(fields)
+    if n_run > 1:
+        value += '_' + run
+    return value
+
+
+def _write_bids_raw_func(func_path, file_id, vox, rand_gen):
+    REPETITION_TIME = 1.5
+    bold_path = os.path.join(func_path, file_id + '_bold.nii.gz')
+    write_fake_bold_img(bold_path,
+                        [vox, vox, vox, 100],
+                        random_state=rand_gen)
+
+    events_path = os.path.join(func_path, file_id + '_events.tsv')
+    basic_paradigm().to_csv(events_path, sep='\t', index=None)
+
+    param_path = os.path.join(func_path, file_id + '_bold.json')
+    with open(param_path, 'w') as param_file:
+        json.dump({'RepetitionTime': REPETITION_TIME}, param_file)
+
+
+def _write_bids_derivative_func(func_path,
+                                file_id,
+                                vox,
+                                rand_gen,
+                                with_confounds,
+                                confounds_tag):
+    preproc = (file_id + '_space-MNI_desc-preproc_bold.nii.gz')
+    preproc_path = os.path.join(func_path, preproc)
+    write_fake_bold_img(preproc_path, [vox, vox, vox, 100],
+                        random_state=rand_gen)
+
+    preproc = (file_id + '_space-T1w_desc-preproc_bold.nii.gz')
+    preproc_path = os.path.join(func_path, preproc)
+    write_fake_bold_img(preproc_path,
+                        [vox, vox, vox, 100],
+                        random_state=rand_gen)
+
+    preproc = (file_id + '_space-T1w_desc-fmriprep_bold.nii.gz')
+    preproc_path = os.path.join(func_path, preproc)
+    write_fake_bold_img(preproc_path,
+                        [vox, vox, vox, 100],
+                        random_state=rand_gen)
+
+    if with_confounds:
+        confounds_path = os.path.join(
+            func_path,
+            file_id + '_' + confounds_tag + '.tsv',
+        )
+        basic_confounds(100, random_state=rand_gen).to_csv(
+            confounds_path, sep='\t', index=None)
 
 
 def generate_random_img(

@@ -857,12 +857,12 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 
     """
     SUPPORTED_FILTERS_RAW = ['acq',
-                            'ce',
-                            'rec',
-                            'dir',
-                            'run',
-                            'echo',
-                            'part']
+                             'ce',
+                             'rec',
+                             'dir',
+                             'run',
+                             'echo',
+                             'part']
     SUPPORTED_FILTERS_DERIVATIVE = ['res', 'den', 'desc']
     SUPPORTED_FILTERS = SUPPORTED_FILTERS_RAW + SUPPORTED_FILTERS_DERIVATIVE
 
@@ -883,15 +883,15 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     if not isinstance(img_filters, list):
         raise TypeError('img_filters must be a list, instead %s was given' %
                         type(img_filters))
-    for img_filter in img_filters:
-        if (not isinstance(img_filter[0], str)
-                or not isinstance(img_filter[1], str)):
+    for this_filter in img_filters:
+        if (not isinstance(this_filter[0], str)
+                or not isinstance(this_filter[1], str)):
             raise TypeError('filters in img filters must be (str, str), '
-                            'instead %s was given' % type(img_filter))
-        if img_filter[0] not in SUPPORTED_FILTERS:
+                            'instead %s was given' % type(this_filter))
+        if this_filter[0] not in SUPPORTED_FILTERS:
             raise ValueError(
                 "field %s is not a possible filter. "
-                f"Only {SUPPORTED_FILTERS} are allowed." % img_filter[0])
+                f"Only {SUPPORTED_FILTERS} are allowed." % this_filter[0])
 
     # check derivatives folder is present
     derivatives_path = os.path.join(dataset_path, derivatives_folder)
@@ -906,9 +906,9 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
              'time' % slice_time_ref)
     else:
         filters = [('task', task_label)]
-        for img_filter in img_filters:
-            if img_filter[0] in SUPPORTED_FILTERS:
-                filters.append(img_filter)
+        for this_filter in img_filters:
+            if this_filter[0] in SUPPORTED_FILTERS:
+                filters.append(this_filter)
 
         img_specs = get_bids_files(derivatives_path, modality_folder='func',
                                    file_tag='bold', file_type='json',
@@ -1036,34 +1036,36 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 
         # Get events files
         filters = [('task', task_label)]
-        for img_filter in img_filters:
-            if img_filter[0] in SUPPORTED_FILTERS_RAW:
-                filters.append(img_filter)        
+        for this_filter in img_filters:
+            if this_filter[0] in SUPPORTED_FILTERS_RAW:
+                filters.append(this_filter)
         events = get_bids_files(dataset_path,
                                 modality_folder='func',
                                 file_tag='events',
                                 file_type='tsv',
                                 sub_label=sub_label,
                                 filters=filters)
-        if events:
-            if len(events) != len(imgs):
-                raise ValueError('%d events.tsv files found for %d bold '
-                                 'files. Same number of event files as '
-                                 'the number of runs is expected' %
-                                 (len(events), len(imgs)))
-            events = [pd.read_csv(event, sep='\t', index_col=None)
-                      for event in events]
-            models_events.append(events)
-        else:
-            raise ValueError(f'No events.tsv files found for filter: {filters}')
 
-        # Get confounds. 
+        if not events:
+            raise ValueError('No events.tsv files found '
+                             f'for filter: {filters}.')
+        if len(events) != len(imgs):
+            raise ValueError(f'{len(events)} events.tsv files found'
+                             f' for {len(imgs)} bold files. '
+                             'Same number of event files '
+                             'as the number of runs is expected.')
+
+        events = [pd.read_csv(event, sep='\t', index_col=None)
+                  for event in events]
+        models_events.append(events)
+
+        # Get confounds.
         # If not found it will be assumed there are none.
         # If there are confounds, they are assumed to be present for all runs.
         filters = [('task', task_label)]
-        for img_filter in img_filters:
-            if img_filter[0] in SUPPORTED_FILTERS:
-                filters.append(img_filter)          
+        for this_filter in img_filters:
+            if this_filter[0] in SUPPORTED_FILTERS:
+                filters.append(this_filter)
         confounds = get_bids_files(derivatives_path,
                                    modality_folder='func',
                                    file_tag='desc-confounds*',
