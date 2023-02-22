@@ -1,8 +1,5 @@
-"""
-Test the first level model.
-"""
+"""Test the first level model."""
 import os
-import shutil
 import unittest.mock
 
 import numpy as np
@@ -14,18 +11,16 @@ from numpy.testing import (assert_almost_equal, assert_array_almost_equal,
                            assert_array_equal, assert_array_less)
 from sklearn.cluster import KMeans
 
-from nilearn._utils.data_gen import (create_fake_bids_dataset,
-                                     generate_fake_fmri_data_and_design,
+from nilearn._utils.data_gen import (generate_fake_fmri_data_and_design,
                                      write_fake_fmri_data_and_design,
                                      basic_paradigm)
 from nilearn.glm.contrasts import compute_fixed_effects
-from nilearn.glm.first_level import (FirstLevelModel, first_level_from_bids,
+from nilearn.glm.first_level import (FirstLevelModel,
                                      mean_scaling, run_glm)
 from nilearn.glm.first_level.design_matrix import (
     check_design_matrix, make_first_level_design_matrix)
 from nilearn.glm.first_level.first_level import _yule_walker
 from nilearn.image import get_data
-from nilearn.interfaces.bids import get_bids_files
 from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.maskers import NiftiMasker
 
@@ -80,7 +75,7 @@ def test_high_level_glm_one_session():
 
 
 def test_explicit_fixed_effects():
-    """ tests the fixed effects performed manually/explicitly"""
+    """Test the fixed effects performed manually/explicitly."""
     with InTemporaryDirectory():
         shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
         mask, fmri_data, design_matrices =\
@@ -351,7 +346,6 @@ def test_run_glm():
 
 def test_glm_AR_estimates():
     """Test that Yule-Walker AR fits are correct."""
-
     n, p, q = 1, 500, 2
     X_orig = np.random.RandomState(2).randn(p, q)
     Y_orig = np.random.RandomState(2).randn(p, n)
@@ -410,7 +404,7 @@ def test_glm_random_state(random_state):
 
 
 def test_scaling():
-    """Test the scaling function"""
+    """Test the scaling function."""
     rng = np.random.RandomState(42)
     shape = (400, 10)
     u = rng.standard_normal(size=shape)
@@ -629,97 +623,6 @@ def test_first_level_contrast_computation():
         del func_img, FUNCFILE, model
 
 
-def test_first_level_from_bids():
-    with InTemporaryDirectory():
-        bids_path = create_fake_bids_dataset(n_sub=10, n_ses=2,
-                                             tasks=['localizer', 'main'],
-                                             n_runs=[1, 3])
-        # test arguments are provided correctly
-        with pytest.raises(TypeError):
-            first_level_from_bids(2, 'main', 'MNI')
-        with pytest.raises(ValueError):
-            first_level_from_bids('lolo', 'main', 'MNI')
-        with pytest.raises(TypeError):
-            first_level_from_bids(bids_path, 2, 'MNI')
-        with pytest.raises(TypeError):
-            first_level_from_bids(bids_path, 'main', 'MNI',
-                                  model_init=[])
-        with pytest.raises(TypeError,
-                           match="space_label must be a string"):
-            first_level_from_bids(bids_path, 'main',
-                                  space_label=42)
-
-        with pytest.raises(TypeError,
-                           match="img_filters must be a list"):
-            first_level_from_bids(bids_path, 'main',
-                                  img_filters="foo")
-
-        with pytest.raises(TypeError,
-                           match="filters in img"):
-            first_level_from_bids(bids_path, 'main',
-                                  img_filters=[(1, 2)])
-
-        with pytest.raises(ValueError,
-                           match="field foo is not a possible filter."):
-            first_level_from_bids(bids_path, 'main',
-                                  img_filters=[("foo", "bar")])
-
-        # test output is as expected
-        models, m_imgs, m_events, m_confounds = first_level_from_bids(
-            bids_path, 'main', 'MNI', [('desc', 'preproc')])
-        assert len(models) == len(m_imgs)
-        assert len(models) == len(m_events)
-        assert len(models) == len(m_confounds)
-        # test repeated run tag error when run tag is in filenames
-        # can arise when desc or space is present and not specified
-        with pytest.raises(ValueError):
-            first_level_from_bids(
-                bids_path, 'main', 'T1w')  # desc not specified
-        # test more than one ses file error when run tag is not in filenames
-        # can arise when desc or space is present and not specified
-        with pytest.raises(ValueError):
-            first_level_from_bids(
-                bids_path, 'localizer', 'T1w')  # desc not specified
-        # test issues with confound files. There should be only one confound
-        # file per img. An one per image or None. Case when one is missing
-        confound_files = get_bids_files(os.path.join(bids_path, 'derivatives'),
-                                        file_tag='desc-confounds_timeseries')
-        os.remove(confound_files[-1])
-        with pytest.raises(ValueError):
-            first_level_from_bids(
-                bids_path, 'main', 'MNI')
-        # test issues with event files
-        events_files = get_bids_files(bids_path, file_tag='events')
-        os.remove(events_files[0])
-        # one file missing
-        with pytest.raises(ValueError):
-            first_level_from_bids(bids_path, 'main', 'MNI')
-        for f in events_files[1:]:
-            os.remove(f)
-        # all files missing
-        with pytest.raises(ValueError):
-            first_level_from_bids(bids_path, 'main', 'MNI')
-
-        # In case different desc and spaces exist and are not selected we
-        # fail and ask for more specific information
-        shutil.rmtree(os.path.join(bids_path, 'derivatives'))
-        # issue if no derivatives folder is present
-        with pytest.raises(ValueError):
-            first_level_from_bids(
-                bids_path, 'main', 'MNI')
-
-        # check runs are not repeated when ses field is not used
-        shutil.rmtree(bids_path)
-        bids_path = create_fake_bids_dataset(n_sub=10, n_ses=1,
-                                             tasks=['localizer', 'main'],
-                                             n_runs=[1, 3], no_session=True)
-        # test repeated run tag error when run tag is in filenames and not ses
-        # can arise when desc or space is present and not specified
-        with pytest.raises(ValueError):
-            first_level_from_bids(
-                bids_path, 'main', 'T1w')  # desc not specified
-
-
 def test_first_level_with_scaling():
     shapes, rk = [(3, 1, 1, 2)], 1
     fmri_data = list()
@@ -747,9 +650,10 @@ def test_first_level_with_scaling():
 
 
 def test_first_level_with_no_signal_scaling():
-    """
-    test to ensure that the FirstLevelModel works correctly with a
-    signal_scaling==False. In particular, that derived theta are correct for a
+    """Test to ensure that the FirstLevelModel works correctly \
+    with a signal_scaling==False.
+
+    In particular, that derived theta are correct for a
     constant design matrix with a single valued fmri image
     """
     shapes, rk = [(3, 1, 1, 2)], 1
@@ -877,9 +781,10 @@ def test_first_level_predictions_r_square():
     True
 ])
 def test_first_level_hrf_model(hrf_model, spaces):
-    """
-    Ensure that FirstLevelModel runs without raising errors
-    for different values of hrf_model. In particular, one checks that it runs
+    """Ensure that FirstLevelModel runs without raising errors \
+    for different values of hrf_model.
+
+    In particular, one checks that it runs
     without raising errors when given a custom response function.
     When :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`
     is used errors should be raised when event (ie condition) names are not
