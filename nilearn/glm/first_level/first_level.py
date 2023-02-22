@@ -5,11 +5,14 @@ objects of fMRI data analyses.
 Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 
 """
+from __future__ import annotations
+
 import glob
 import json
 import os
 import sys
 import time
+from typing import List, Tuple
 from warnings import warn
 
 import numpy as np
@@ -905,19 +908,17 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         warn('slice_time_ref is %d percent of the repetition '
              'time' % slice_time_ref)
     else:
-        filters = [('task', task_label)]
-        for this_filter in img_filters:
-            if this_filter[0] in SUPPORTED_FILTERS:
-                filters.append(this_filter)
+        filters =_bids_filter(task_label=task_label,
+                              supported_filters=SUPPORTED_FILTERS, 
+                              extra_filter=img_filters)
         img_specs = get_bids_files(derivatives_path, modality_folder='func',
                                    file_tag='bold', file_type='json',
                                    filters=filters)
         # If we don't find the parameter information in the derivatives folder
-        # we try to search in the raw data folder
-        filters = [('task', task_label)]
-        for this_filter in img_filters:
-            if this_filter[0] in SUPPORTED_FILTERS_RAW:
-                filters.append(this_filter)        
+        # we try to search in the raw data folder     
+        filters =_bids_filter(task_label=task_label,
+                              supported_filters=SUPPORTED_FILTERS_RAW, 
+                              extra_filter=img_filters)                  
         if not img_specs:
             img_specs = get_bids_files(dataset_path, modality_folder='func',
                                        file_tag='bold', file_type='json',
@@ -972,16 +973,15 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         models.append(model)
 
         # Get preprocessed imgs
-        if space_label is None:
-            filters = [('task', task_label)] + img_filters
-        else:
-            filters = [('task', task_label),
-                       ('space', space_label)] + img_filters
+        filters =_bids_filter(task_label=task_label,
+                              space_label=space_label,
+                              supported_filters=SUPPORTED_FILTERS, 
+                              extra_filter=img_filters)             
         imgs = get_bids_files(derivatives_path, modality_folder='func',
                               file_tag='bold', file_type='nii*',
                               sub_label=sub_label, filters=filters)
-        # If there is more than one file for the same (ses, run), likely we
-        # have an issue of underspecification of filters.
+        # If there is more than one file for the same (ses, run), 
+        # likely we have an issue of underspecification of filters.
         run_check_list = []
         # If more than one run is present the run field is mandatory in BIDS
         # as well as the ses field if more than one session is present.
@@ -1040,10 +1040,9 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         models_run_imgs.append(imgs)
 
         # Get events files
-        filters = [('task', task_label)]
-        for this_filter in img_filters:
-            if this_filter[0] in SUPPORTED_FILTERS_RAW:
-                filters.append(this_filter)
+        filters =_bids_filter(task_label=task_label,
+                              supported_filters=SUPPORTED_FILTERS_RAW, 
+                              extra_filter=img_filters)                 
         events = get_bids_files(dataset_path,
                                 modality_folder='func',
                                 file_tag='events',
@@ -1070,10 +1069,9 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         # If there are confounds, they are assumed to be present for all runs.
         confounds_filters = SUPPORTED_FILTERS.copy()
         confounds_filters.remove('desc')
-        filters = [('task', task_label)]
-        for this_filter in img_filters:
-            if this_filter[0] in confounds_filters:
-                filters.append(this_filter)
+        filters =_bids_filter(task_label=task_label,
+                              supported_filters=confounds_filters, 
+                              extra_filter=img_filters)          
         confounds = get_bids_files(derivatives_path,
                                    modality_folder='func',
                                    file_tag='desc-confounds*',
@@ -1092,3 +1090,18 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
             models_confounds.append(confounds)
 
     return models, models_run_imgs, models_events, models_confounds
+
+
+def _bids_filter(task_label: str,
+                 space_label: str | None = None, 
+                 supported_filters: List(str) | None = None, 
+                 extra_filter: List(Tuple(str)) | None = None):
+    filters = [('task', task_label)]
+    if space_label is not None:
+        filters.append(('space', space_label))    
+    if extra_filter and supported_filters:
+        for this_filter in extra_filter:
+            if this_filter[0] in supported_filters:
+                filters.append(this_filter)    
+    return filters
+
