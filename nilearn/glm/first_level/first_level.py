@@ -1098,10 +1098,12 @@ def _bids_filter(task_label: str,
                  extra_filter: List(Tuple(str)) | None = None):
     filters = [('task', task_label)]
     if space_label is not None:
-        filters.append(('space', space_label))    
+        filters.append(('space', space_label))
     if extra_filter and supported_filters:
-        for this_filter in extra_filter:
-            if this_filter[0] in supported_filters:
-                filters.append(this_filter)    
+        filters.extend(
+            this_filter
+            for this_filter in extra_filter
+            if this_filter[0] in supported_filters
+        )
     return filters
 
