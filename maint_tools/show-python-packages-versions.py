@@ -1,3 +1,4 @@
+"""Print the versions of python and several packages used in the project."""
 import sys
 import pkg_resources
 
@@ -12,6 +13,7 @@ DEPENDENCIES = [
 
 
 def print_package_version(package_name, indent="  "):
+    """Print install status and version of a package."""
     try:
         dist = pkg_resources.get_distribution(package_name)
     except pkg_resources.DistributionNotFound:
