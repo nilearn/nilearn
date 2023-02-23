@@ -12,7 +12,7 @@ import json
 import os
 import sys
 import time
-from typing import List, Tuple
+from typing import Tuple
 from warnings import warn
 
 import numpy as np
@@ -1027,7 +1027,7 @@ def _bids_validate_arguments(dataset_path: str,
                              img_filters: list[Tuple[str, str]],
                              derivatives_path: str,
                              supported_filters: list[str],
-                             ):
+                             ) -> None:
     if not isinstance(dataset_path, str):
         raise TypeError(
             "dataset_path must be a string, "
@@ -1070,7 +1070,8 @@ def _bids_validate_arguments(dataset_path: str,
 def _bids_filter(task_label: str,
                  space_label: str | None = None,
                  supported_filters: list[str] | None = None,
-                 extra_filter: list[Tuple[str, str]] | None = None):
+                 extra_filter: list[Tuple[str, str]] | None = None
+                 ) -> list[Tuple[str, str]]:
     filters = [('task', task_label)]
     if space_label is not None:
         filters.append(('space', space_label))
@@ -1085,7 +1086,7 @@ def _bids_filter(task_label: str,
 
 def _bids_check_image_list(imgs: list[str] | None,
                            sub_label: str,
-                           filters: list[Tuple[str, str]]):
+                           filters: list[Tuple[str, str]]) -> None:
 
     if not imgs:
         raise ValueError('No bold files found '

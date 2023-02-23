@@ -1007,7 +1007,7 @@ def _file_id(fields: list[str], n_run: int, run: str) -> str:
 def _write_bids_raw_func(func_path: str,
                          file_id: str,
                          n_voxels: int,
-                         rand_gen: np.random.RandomState):
+                         rand_gen: np.random.RandomState) -> None:
     """Create BIDS functional raw and events files.
 
     Parameters
@@ -1043,7 +1043,7 @@ def _write_bids_derivative_func(func_path: str,
                                 n_voxels: int,
                                 rand_gen: np.random.RandomState,
                                 with_confounds: bool,
-                                confounds_tag: str):
+                                confounds_tag: str) -> None:
     """Create BIDS functional derivative and confounds files.
 
     Parameters
