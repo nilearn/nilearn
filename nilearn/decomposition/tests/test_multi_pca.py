@@ -1,6 +1,4 @@
-"""
-Test the multi-PCA module
-"""
+"""Test the multi-PCA module."""
 import os
 import tempfile
 import numpy as np
@@ -15,7 +13,7 @@ from nilearn._utils.testing import write_tmp_imgs
 
 
 def _tmp_dir():
-    """For testing globbing patterns in input images"""
+    """Test globbing patterns in input images."""
     return tempfile.tempdir + os.sep
 
 
