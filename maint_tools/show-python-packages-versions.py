@@ -17,16 +17,14 @@ def print_package_version(package_name, indent="  "):
     except pkg_resources.DistributionNotFound:
         provenance_info = "not installed"
     else:
-        provenance_info = "{} installed in {}".format(
-            dist.version, dist.location
-        )
+        provenance_info = f"{dist.version} installed in {dist.location}"
 
     print(f"{indent}{package_name}: {provenance_info}")
 
 
 if __name__ == "__main__":
     print("=" * 120)
-    print("Python %s" % str(sys.version))
+    print(f"Python {str(sys.version)}")
     print("from: %s\n" % sys.executable)
 
     print("Dependencies versions")
