@@ -30,27 +30,24 @@ class CanICA(_MultiPCA):
         parameters.
 
     n_components : int, optional
-        Number of components to extract. Default=20.
+        Number of components to extract.
     %(smoothing_fwhm)s
-        Default=6mm.
 
     do_cca : boolean, optional
         Indicate if a Canonical Correlation Analysis must be run after the
-        PCA. Default=True.
+        PCA.
 
     standardize : boolean, optional
         If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1 in the time dimension.
-        Default=True.
 
     standardize_confounds : boolean, optional
         If standardize_confounds is True, the confounds are zscored:
         their mean is put to 0 and their variance to 1 in the time dimension.
-        Default=True.
 
     detrend : boolean, optional
         If detrend is True, the time-series will be detrended before
-        components extraction. Default=True.
+        components extraction.
 
     threshold : None, 'auto' or float, optional
         If None, no thresholding is applied. If 'auto',
@@ -60,11 +57,9 @@ class CanICA(_MultiPCA):
         ratio of voxels to keep (2. means that the maps will together
         have 2 x n_voxels non-zero voxels ). The float value
         must be bounded by [0. and n_components].
-        Default='auto'.
 
     n_init : int, optional
         The number of times the fastICA algorithm is restarted
-        Default=10.
 
     random_state : int or RandomState, optional
         Pseudo number generator state used for random sampling.
@@ -97,8 +92,6 @@ class CanICA(_MultiPCA):
              :func:`nilearn.masking.compute_epi_mask`, or
              :func:`nilearn.masking.compute_brain_mask`.
 
-        Default='epi'.
-
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
         masking.compute_background_mask or masking.compute_epi_mask
@@ -109,19 +102,17 @@ class CanICA(_MultiPCA):
         Used to cache the masking process.
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
-        Default=Memory(location=None).
 
     memory_level : integer, optional
         Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching. Default=0.
+        means more memory for caching.
 
     n_jobs : integer, optional
         The number of CPUs to use to do the computation. -1 means
-        'all CPUs', -2 'all CPUs but one', and so on. Default=1.
+        'all CPUs', -2 'all CPUs but one', and so on.
 
     verbose : integer, optional
         Indicate the level of verbosity. By default, nothing is printed
-        Default=0.
 
     Attributes
     ----------

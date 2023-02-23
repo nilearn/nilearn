@@ -52,16 +52,16 @@ class DictLearning(_BaseDecomposition):
         parameters.
 
     n_components : int, optional
-        Number of components to extract. Default=20.
+        Number of components to extract.
 
     batch_size : int, optional
-        The number of samples to take in each batch. Default=20.
+        The number of samples to take in each batch.
 
     n_epochs : float, optional
-        Number of epochs the algorithm should run on the data. Default=1.
+        Number of epochs the algorithm should run on the data.
 
     alpha : float, optional
-        Sparsity controlling parameter. Default=10.
+        Sparsity controlling parameter.
 
     dict_init : Niimg-like object, optional
         Initial estimation of dictionary maps. Would be computed from CanICA if
@@ -71,7 +71,7 @@ class DictLearning(_BaseDecomposition):
         - Between 0. or 1. : controls data reduction in the temporal domain.
           1. means no reduction, < 1. calls for an SVD based reduction.
         - if set to 'auto', estimator will set the number of components per
-          reduced session to be n_components. Default='auto'.
+          reduced session to be n_components.
 
     method : {'cd', 'lars'}, optional
         Coding method used by sklearn backend. Below are the possible values.
@@ -80,20 +80,18 @@ class DictLearning(_BaseDecomposition):
         cd: uses the coordinate descent method to compute the
         Lasso solution (linear_model.Lasso). Lars will be faster if
         the estimated components are sparse.
-        Default='cd'.
 
     random_state : int or RandomState, optional
         Pseudo number generator state used for random sampling.
     %(smoothing_fwhm)s
-        Default=4mm.
 
     standardize : boolean, optional
         If standardize is True, the time-series are centered and normed:
-        their variance is put to 1 in the time dimension. Default=True.
+        their variance is put to 1 in the time dimension.
 
     detrend : boolean, optional
         If detrend is True, the time-series will be detrended before
-        components extraction. Default=True.
+        components extraction.
 
     target_affine : 3x3 or 4x4 matrix, optional
         This parameter is passed to image.resample_img. Please see the
@@ -123,8 +121,6 @@ class DictLearning(_BaseDecomposition):
              :func:`nilearn.masking.compute_epi_mask`, or
              :func:`nilearn.masking.compute_brain_mask`.
 
-        Default='epi'.
-
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
         masking.compute_background_mask or masking.compute_epi_mask
@@ -138,15 +134,14 @@ class DictLearning(_BaseDecomposition):
 
     memory_level : integer, optional
         Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching. Default=0.
+        means more memory for caching.
 
     n_jobs : integer, optional
         The number of CPUs to use to do the computation. -1 means
-        'all CPUs', -2 'all CPUs but one', and so on. Default=1.
+        'all CPUs', -2 'all CPUs but one', and so on.
 
     verbose : integer, optional
         Indicate the level of verbosity. By default, nothing is printed.
-        Default=0.
 
     Attributes
     ----------

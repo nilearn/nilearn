@@ -120,7 +120,6 @@ def _mask_and_reduce(
         , 1. means no reduction, < 1. calls for an SVD based reduction.
         - if set to 'auto', estimator will set the number of components per
           reduced session to be n_components.
-        Default='auto'.
 
     n_components : integer, optional
         Number of components per subject to be extracted by dimension reduction
@@ -130,14 +129,14 @@ def _mask_and_reduce(
 
     memory_level : integer, optional
         Integer indicating the level of memorization. The higher, the more
-        function calls are cached. Default=0.
+        function calls are cached.
 
     memory : joblib.Memory, optional
         Used to cache the function calls.
 
     n_jobs : integer, optional
         The number of CPUs to use to do the computation. -1 means
-        'all CPUs', -2 'all CPUs but one', and so on. Default=1.
+        'all CPUs', -2 'all CPUs but one', and so on.
 
     Returns
     -------
@@ -250,7 +249,6 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
     ----------
     n_components : int, optional
         Number of components to extract, for each 4D-Niimage
-        Default=20.
 
     random_state : int or RandomState, optional
         Pseudo number generator state used for random sampling.
@@ -263,16 +261,14 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
     standardize : boolean, optional
         If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1 in the time dimension.
-        Default=True.
 
     standardize_confounds : boolean, optional
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
-        Default=True.
 
     detrend : boolean, optional
         This parameter is passed to signal.clean. Please see the related
-        documentation for details. Default=True.
+        documentation for details.
 
     low_pass : None or float, optional
         This parameter is passed to signal.clean. Please see the related
@@ -302,8 +298,6 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
              :func:`nilearn.masking.compute_epi_mask`, or
              :func:`nilearn.masking.compute_brain_mask`.
 
-        Default='epi'.
-
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
         masking.compute_background_mask or masking.compute_epi_mask
@@ -317,15 +311,14 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
     memory_level : integer, optional
         Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching. Default=0.
+        means more memory for caching.
 
     n_jobs : integer, optional
         The number of CPUs to use to do the computation. -1 means
-        'all CPUs', -2 'all CPUs but one', and so on. Default=1.
+        'all CPUs', -2 'all CPUs but one', and so on.
 
     verbose : integer, optional
         Indicate the level of verbosity. By default, nothing is printed.
-        Default=0.
 
     Attributes
     ----------
@@ -561,7 +554,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
         per_component : bool, optional
             Specify whether the explained variance ratio is desired for each
-            map or for the global set of components. Default=False.
+            map or for the global set of components.
 
         Returns
         -------
@@ -596,7 +589,6 @@ def _explained_variance(X, components, per_component=True):
     per_component : boolean, optional
         Specify whether the explained variance ratio is desired for each
         map or for the global set of components_.
-        Default=True.
 
     Returns
     -------
