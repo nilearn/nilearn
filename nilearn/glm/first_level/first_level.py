@@ -869,37 +869,17 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     SUPPORTED_FILTERS_DERIVATIVE = ['res', 'den', 'desc']
     SUPPORTED_FILTERS = SUPPORTED_FILTERS_RAW + SUPPORTED_FILTERS_DERIVATIVE
 
-    # check arguments
     img_filters = img_filters or []
-    if not isinstance(dataset_path, str):
-        raise TypeError(
-            'dataset_path must be a string, instead %s was given' %
-            type(task_label))
-    if not os.path.exists(dataset_path):
-        raise ValueError('given path do not exist: %s' % dataset_path)
-    if not isinstance(task_label, str):
-        raise TypeError('task_label must be a string, instead %s was given' %
-                        type(task_label))
-    if space_label is not None and not isinstance(space_label, str):
-        raise TypeError('space_label must be a string, instead %s was given' %
-                        type(space_label))
-    if not isinstance(img_filters, list):
-        raise TypeError('img_filters must be a list, instead %s was given' %
-                        type(img_filters))
-    for this_filter in img_filters:
-        if (not isinstance(this_filter[0], str)
-                or not isinstance(this_filter[1], str)):
-            raise TypeError('filters in img filters must be (str, str), '
-                            'instead %s was given' % type(this_filter))
-        if this_filter[0] not in SUPPORTED_FILTERS:
-            raise ValueError(
-                "field %s is not a possible filter. "
-                f"Only {SUPPORTED_FILTERS} are allowed." % this_filter[0])
 
-    # check derivatives folder is present
     derivatives_path = os.path.join(dataset_path, derivatives_folder)
-    if not os.path.exists(derivatives_path):
-        raise ValueError('derivatives folder does not exist in given dataset')
+
+    _bids_validate_arguments(dataset_path,
+                             task_label,
+                             space_label,
+                             img_filters,
+                             derivatives_path,
+                             SUPPORTED_FILTERS
+                             )
 
     # Get acq specs for models. RepetitionTime and SliceTimingReference.
     # Throw warning if no bold.json is found
@@ -908,17 +888,17 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         warn('slice_time_ref is %d percent of the repetition '
              'time' % slice_time_ref)
     else:
-        filters =_bids_filter(task_label=task_label,
-                              supported_filters=SUPPORTED_FILTERS, 
-                              extra_filter=img_filters)
+        filters = _bids_filter(task_label=task_label,
+                               supported_filters=SUPPORTED_FILTERS,
+                               extra_filter=img_filters)
         img_specs = get_bids_files(derivatives_path, modality_folder='func',
                                    file_tag='bold', file_type='json',
                                    filters=filters)
         # If we don't find the parameter information in the derivatives folder
-        # we try to search in the raw data folder     
-        filters =_bids_filter(task_label=task_label,
-                              supported_filters=SUPPORTED_FILTERS_RAW, 
-                              extra_filter=img_filters)                  
+        # we try to search in the raw data folder
+        filters = _bids_filter(task_label=task_label,
+                               supported_filters=SUPPORTED_FILTERS_RAW,
+                               extra_filter=img_filters)
         if not img_specs:
             img_specs = get_bids_files(dataset_path, modality_folder='func',
                                        file_tag='bold', file_type='json',
@@ -970,79 +950,26 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
             signal_scaling=signal_scaling, noise_model=noise_model,
             verbose=verbose, n_jobs=n_jobs,
             minimize_memory=minimize_memory, subject_label=sub_label)
+
         models.append(model)
 
         # Get preprocessed imgs
-        filters =_bids_filter(task_label=task_label,
-                              space_label=space_label,
-                              supported_filters=SUPPORTED_FILTERS, 
-                              extra_filter=img_filters)             
+        filters = _bids_filter(task_label=task_label,
+                               space_label=space_label,
+                               supported_filters=SUPPORTED_FILTERS,
+                               extra_filter=img_filters)
         imgs = get_bids_files(derivatives_path, modality_folder='func',
                               file_tag='bold', file_type='nii*',
                               sub_label=sub_label, filters=filters)
-        # If there is more than one file for the same (ses, run), 
-        # likely we have an issue of underspecification of filters.
-        run_check_list = []
-        # If more than one run is present the run field is mandatory in BIDS
-        # as well as the ses field if more than one session is present.
-        if len(imgs) > 1:
-            for img in imgs:
-                img_dict = parse_bids_filename(img)
-                if (
-                    '_ses-' in img_dict['file_basename']
-                    and '_run-' in img_dict['file_basename']
-                ):
-                    if (img_dict['ses'], img_dict['run']) in run_check_list:
-                        raise ValueError(
-                            'More than one nifti image found '
-                            'for the same run %s and session %s. '
-                            'Please verify that the '
-                            'desc_label and space_label labels '
-                            'corresponding to the BIDS spec '
-                            'were correctly specified.' %
-                            (img_dict['run'], img_dict['ses']))
-                    else:
-                        run_check_list.append((img_dict['ses'],
-                                               img_dict['run']))
 
-                elif '_ses-' in img_dict['file_basename']:
-                    if img_dict['ses'] in run_check_list:
-                        raise ValueError(
-                            'More than one nifti image '
-                            'found for the same ses %s, while '
-                            'no additional run specification present'
-                            '. Please verify that the desc_label and '
-                            'space_label labels '
-                            'corresponding to the BIDS spec '
-                            'were correctly specified.' %
-                            img_dict['ses'])
-                    else:
-                        run_check_list.append(img_dict['ses'])
-
-                elif '_run-' in img_dict['file_basename']:
-                    if img_dict['run'] in run_check_list:
-                        raise ValueError(
-                            'More than one nifti image '
-                            'found for the same run %s. '
-                            'Please verify that the desc_label and '
-                            'space_label labels '
-                            'corresponding to the BIDS spec '
-                            'were correctly specified.' %
-                            img_dict['run'])
-                    else:
-                        run_check_list.append(img_dict['run'])
-
-        if not imgs:
-            raise ValueError('No bold files found '
-                             f'for subject {sub_label} '
-                             f'for filter: {filters}')
+        _bids_check_image_list(imgs, sub_label, filters)
 
         models_run_imgs.append(imgs)
 
         # Get events files
-        filters =_bids_filter(task_label=task_label,
-                              supported_filters=SUPPORTED_FILTERS_RAW, 
-                              extra_filter=img_filters)                 
+        filters = _bids_filter(task_label=task_label,
+                               supported_filters=SUPPORTED_FILTERS_RAW,
+                               extra_filter=img_filters)
         events = get_bids_files(dataset_path,
                                 modality_folder='func',
                                 file_tag='events',
@@ -1062,6 +989,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 
         events = [pd.read_csv(event, sep='\t', index_col=None)
                   for event in events]
+
         models_events.append(events)
 
         # Get confounds.
@@ -1069,9 +997,9 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         # If there are confounds, they are assumed to be present for all runs.
         confounds_filters = SUPPORTED_FILTERS.copy()
         confounds_filters.remove('desc')
-        filters =_bids_filter(task_label=task_label,
-                              supported_filters=confounds_filters, 
-                              extra_filter=img_filters)          
+        filters = _bids_filter(task_label=task_label,
+                               supported_filters=confounds_filters,
+                               extra_filter=img_filters)
         confounds = get_bids_files(derivatives_path,
                                    modality_folder='func',
                                    file_tag='desc-confounds*',
@@ -1087,15 +1015,62 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                                  (len(events), len(imgs)))
             confounds = [pd.read_csv(c, sep='\t', index_col=None)
                          for c in confounds]
+
             models_confounds.append(confounds)
 
     return models, models_run_imgs, models_events, models_confounds
 
 
+def _bids_validate_arguments(dataset_path: str,
+                             task_label: str,
+                             space_label: str | None,
+                             img_filters: List(Tuple(str, str)),
+                             derivatives_path: str,
+                             supported_filters: List(str),
+                             ):
+    if not isinstance(dataset_path, str):
+        raise TypeError(
+            "dataset_path must be a string, "
+            f"instead {type(dataset_path)} was given"
+        )
+    if not os.path.exists(dataset_path):
+        raise ValueError(f'given path do not exist: {dataset_path}')
+
+    if not os.path.exists(derivatives_path):
+        raise ValueError('derivatives folder does not exist in given dataset')
+
+    if not isinstance(task_label, str):
+        raise TypeError(
+            "task_label must be a string, "
+            f"instead {type(task_label)} was given"
+        )
+
+    if space_label is not None and not isinstance(space_label, str):
+        raise TypeError(
+            "space_label must be a string, "
+            f"instead {type(space_label)} was given."
+        )
+
+    if not isinstance(img_filters, list):
+        raise TypeError(
+            f"img_filters must be a list, "
+            f"instead {type(img_filters)} was given."
+        )
+    for this_filter in img_filters:
+        if (not isinstance(this_filter[0], str)
+                or not isinstance(this_filter[1], str)):
+            raise TypeError('filters in img filters must be (str, str), '
+                            f"instead {type(this_filter)} was given.")
+        if this_filter[0] not in supported_filters:
+            raise ValueError(
+                f"field {this_filter[0]} is not a possible filter. "
+                f"Only {supported_filters} are allowed.")
+
+
 def _bids_filter(task_label: str,
-                 space_label: str | None = None, 
-                 supported_filters: List(str) | None = None, 
-                 extra_filter: List(Tuple(str)) | None = None):
+                 space_label: str | None = None,
+                 supported_filters: List(str) | None = None,
+                 extra_filter: List(Tuple(str, str)) | None = None):
     filters = [('task', task_label)]
     if space_label is not None:
         filters.append(('space', space_label))
@@ -1107,3 +1082,53 @@ def _bids_filter(task_label: str,
         )
     return filters
 
+
+def _bids_check_image_list(imgs: List(str) | None,
+                           sub_label: str,
+                           filters: List(Tuple(str))):
+
+    if not imgs:
+        raise ValueError('No bold files found '
+                         f'for subject {sub_label} '
+                         f'for filter: {filters}')
+
+    if len(imgs) <= 1:
+        return
+
+    # If there is more than one file for the same (ses, run),
+    # likely we have an issue of underspecification of filters.
+    # If more than one run is present the run field is mandatory in BIDS
+    # as well as the ses field if more than one session is present.
+    msg_end = ('Please verify that the desc_label and space_label labels '
+               'corresponding to the BIDS spec were correctly specified.')
+    run_check_list = []
+    for img in imgs:
+        img_dict = parse_bids_filename(img)
+        if (
+            '_ses-' in img_dict['file_basename']
+            and '_run-' in img_dict['file_basename']
+        ):
+            if (img_dict['ses'], img_dict['run']) in run_check_list:
+                raise ValueError(
+                    'More than one nifti image found '
+                    f"for the same run {img_dict['run']} and ",
+                    f"session {img_dict['ses']}. {msg_end}")
+            else:
+                run_check_list.append((img_dict['ses'], img_dict['run']))
+
+        elif '_ses-' in img_dict['file_basename']:
+            if img_dict['ses'] in run_check_list:
+                raise ValueError(
+                    'More than one nifti image ',
+                    f"found for the same ses {img_dict['ses']}, while ",
+                    f'no additional run specification present. {msg_end}')
+            else:
+                run_check_list.append(img_dict['ses'])
+
+        elif '_run-' in img_dict['file_basename']:
+            if img_dict['run'] in run_check_list:
+                raise ValueError(
+                    'More than one nifti image '
+                    f"found for the same run {img_dict['run']}. {msg_end}")
+            else:
+                run_check_list.append(img_dict['run'])

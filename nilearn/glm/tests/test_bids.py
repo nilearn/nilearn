@@ -10,19 +10,6 @@ from nilearn.interfaces.bids import get_bids_files
 from nibabel.tmpdirs import InTemporaryDirectory
 
 
-# bids_path = create_fake_bids_dataset(n_sub=3,
-#                                         n_ses=2,
-#                                         tasks=['localizer', 'main'],
-#                                         n_runs=[1, 3])
-
-bids_path = "/home/remi/github/nilearn/bids_dataset"
-# test output is as expected
-# models, m_imgs, m_events, m_confounds = first_level_from_bids(
-#     bids_path,
-#     task_label='main',
-#     space_label='MNI',
-#     img_filters=[('desc', 'preproc')])
-
 def test_first_level_from_bids():
     with InTemporaryDirectory():
 
@@ -64,7 +51,8 @@ def test_first_level_from_bids_bug_3524(entity):
             img_filters=[('desc', 'preproc'), (entity, 'A')])
         assert len(models) == len(m_imgs)
         assert len(models) == len(m_events)
-        assert len(models) == len(m_confounds)        
+        assert len(models) == len(m_confounds)
+
 
 def test_first_level_from_bids_validation_input():
     with InTemporaryDirectory():
@@ -75,22 +63,22 @@ def test_first_level_from_bids_validation_input():
         # test arguments are provided correctly
         with pytest.raises(TypeError):
             first_level_from_bids(2,
-                                  task_label='main', 
+                                  task_label='main',
                                   space_label='MNI')
         with pytest.raises(ValueError):
             first_level_from_bids('lolo',
-                                  task_label='main', 
+                                  task_label='main',
                                   space_label='MNI')
         with pytest.raises(TypeError):
             first_level_from_bids(bids_path,
-                                  task_label=2, 
+                                  task_label=2,
                                   space_label='MNI')
         with pytest.raises(TypeError):
             first_level_from_bids(bids_path,
-                                  task_label='main', 
+                                  task_label='main',
                                   space_label='MNI',
                                   model_init=[])
-            
+
         with pytest.raises(TypeError,
                            match="space_label must be a string"):
             first_level_from_bids(bids_path,
@@ -113,6 +101,7 @@ def test_first_level_from_bids_validation_input():
                                   task_label='main',
                                   img_filters=[("foo", "bar")])
 
+
 def test_first_level_from_bids_with_missing_files():
     with InTemporaryDirectory():
         bids_path = create_fake_bids_dataset(n_sub=3,
@@ -121,21 +110,21 @@ def test_first_level_from_bids_with_missing_files():
                                              n_runs=[1, 3])
         # test repeated run tag error when run tag is in filenames
         # can arise when desc or space is present and not specified
-        # 
+        #
         # desc not specified
         with pytest.raises(ValueError):
             first_level_from_bids(bids_path,
                                   task_label='main',
-                                  space_label='T1w')  
+                                  space_label='T1w')
         # test more than one ses file error when run tag is not in filenames
         # can arise when desc or space is present and not specified
-        # 
+        #
         # desc not specified
         with pytest.raises(ValueError):
             first_level_from_bids(bids_path,
                                   task_label='localizer',
-                                  space_label='T1w')  
-            
+                                  space_label='T1w')
+
         # test issues with confound files. There should be only one confound
         # file per img. An one per image or None. Case when one is missing
         confound_files = get_bids_files(os.path.join(bids_path, 'derivatives'),
@@ -170,8 +159,9 @@ def test_first_level_from_bids_with_missing_files():
                                   task_label='main',
                                   space_label='MNI')
 
+
 def test_first_level_from_bids_no_session():
-    """check runs are not repeated when ses field is not used"""
+    """Check runs are not repeated when ses field is not used."""
     with InTemporaryDirectory():
         bids_path = create_fake_bids_dataset(n_sub=3,
                                              n_ses=1,
@@ -184,4 +174,4 @@ def test_first_level_from_bids_no_session():
             first_level_from_bids(
                 bids_path,
                 task_label='main',
-                space_label='T1w') 
+                space_label='T1w')
