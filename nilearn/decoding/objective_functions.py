@@ -67,10 +67,10 @@ def _squared_loss(X, y, w, compute_energy=True, compute_grad=False):
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
-    compute_energy : bool, optional (default True)
+    compute_energy : bool, optional
         If set then energy is computed, otherwise only gradient is computed.
 
-    compute_grad : bool, optional (default False)
+    compute_grad : bool, optional
         If set then gradient is computed, otherwise only energy is computed.
 
     Returns
@@ -132,7 +132,7 @@ def _div_id(grad, l1_ratio=0.5):
         where `img_shape` is the shape of the brain bounding box, and
         n_axes = len(img_shape).
 
-    l1_ratio : float in the interval [0, 1]; optional (default .5)
+    l1_ratio : float in the interval [0, 1]; optional
         Constant that mixes L1 and spatial prior terms in the penalization.
 
     Returns
@@ -177,7 +177,7 @@ def _gradient_id(img, l1_ratio=0.5):
     img : ndarray, shape (nx, ny, nz, ...)
         N-dimensional image
 
-    l1_ratio : float in the interval [0, 1]; optional (default .5)
+    l1_ratio : float in the interval [0, 1]; optional
         Constant that mixes L1 and spatial prior terms in the penalization.
 
     Returns

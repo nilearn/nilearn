@@ -79,7 +79,6 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         The estimator to choose among:
         %(classifier_options)s
         %(regressor_options)s
-        Default 'svc'.
 
     X: list of Niimg-like objects
         See http://nilearn.github.io/manipulating_images/input_output.html
@@ -91,7 +90,7 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         Target variable to predict. Must have exactly as many elements as
         3D images in niimg.
 
-    param_grid: dict of str to sequence, or sequence of such. Default None
+    param_grid: dict of str to sequence, or sequence of such.
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -277,21 +276,19 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         %(classifier_options)s
         For regression, choose among:
         %(regressor_options)s
-        Default 'svc'.
 
-    mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional,\
-        (Default None)
+    mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters.
 
-    cv: cross-validation generator or int, optional, (default 10)
+    cv: cross-validation generator or int, optional
         A cross-validation generator.
         See: https://scikit-learn.org/stable/modules/cross_validation.html
 
-    param_grid: dict of str to sequence, or sequence of such, (Default None)
+    param_grid: dict of str to sequence, or sequence of such
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -304,7 +301,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         For Dummy estimators, parameter grid defaults to empty dictionary.
 
-    clustering_percentile: int, float, optional, in the [0, 100] Default: 10.
+    clustering_percentile: int, float, optional, in the [0, 100]
         Percentile of features to keep after clustering. If it is lower
         than 100, a ReNA clustering is performed as a first step of fit
         to agglomerate similar features together. ReNA is typically efficient
@@ -315,9 +312,9 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
         performed. A float according to a percentile of the highest
-        scores. Default: 20.
+        scores.
 
-    scoring: str, callable or None, optional. Default None
+    scoring: str, callable or None, optional.
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
@@ -326,10 +323,10 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         e.g. scorer(estimator, X_test, y_test)
 
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error', or
-        'neg_mean_squared_error'. Default: 'r2'.
+        'neg_mean_squared_error'.
 
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
-        'recall' or 'roc_auc'. Default: 'roc_auc'.
+        'recall' or 'roc_auc'.
     %(smoothing_fwhm)s
     %(standardize)s
     %(target_affine)s
@@ -348,7 +345,6 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             :func:`nilearn.masking.compute_epi_mask`, or
             :func:`nilearn.masking.compute_brain_mask`.
 
-        Default is 'background'.
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
@@ -427,7 +423,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         groups: None
             Group labels for the samples used while splitting the dataset into
-            train/test set. Default None.
+            train/test set.
 
             Note that this parameter must be specified in some scikit-learn
             cross-validation generators to calculate the number of splits, e.g.
@@ -888,16 +884,15 @@ class Decoder(_BaseDecoder):
     estimator: str, optional
         The estimator to choose among:
         %(classifier_options)s
-        Default 'svc'.
 
     mask: filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
         masker with default parameters. Refer to NiftiMasker or
-        MultiNiftiMasker to check for default parameters. Default None
+        MultiNiftiMasker to check for default parameters.
 
-    cv: cross-validation generator or int, optional (default 10)
+    cv: cross-validation generator or int, optional
         A cross-validation generator.
         See: https://scikit-learn.org/stable/modules/cross_validation.html
 

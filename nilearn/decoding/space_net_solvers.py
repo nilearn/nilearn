@@ -501,37 +501,36 @@ def tvl1_solver(
         Target / response vector.
 
     alpha : float
-        Constant that scales the overall regularization term. Defaults to 1.0.
+        Constant that scales the overall regularization term.
 
-    l1_ratio : float in the interval [0, 1]; optional (default 0.5)
+    l1_ratio : float in the interval [0, 1], optional
         Constant that mixes L1 and TV penalization.
         l1_ratio == 0 : just smooth. l1_ratio == 1 : just lasso.
-        Defaults to 0.5.
 
     mask : ndarray, shape (nx, ny, nz)
         The support of this mask defines the ROIs being considered in
         the problem.
 
     max_iter : int
-        Defines the iterations for the solver. Defaults to 100
+        Defines the iterations for the solver.
 
-    prox_max_iter : int, optional (default 5000)
+    prox_max_iter : int, optional
         Maximum number of iterations for inner FISTA loop in which
         the prox of TV is approximated.
 
-    tol : float, optional (default 1e-4)
+    tol : float, optional
         Defines the tolerance for convergence.
 
     loss : string
         Loss model for regression. Can be "mse" (for squared loss) or
         "logistic" (for logistic loss).
 
-    lipschitz_constant : float, optional (default None)
+    lipschitz_constant : float, optional
         Lipschitz constant (i.e an upper bound of) of gradient of smooth part
         of the energy being minimized. If no value is specified (None),
         then it will be calculated.
 
-    callback : callable(dict) -> bool, optional (default None)
+    callback : callable(dict) -> bool, optional
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 

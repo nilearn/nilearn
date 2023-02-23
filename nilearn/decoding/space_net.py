@@ -94,7 +94,6 @@ def _univariate_feature_screening(
         Only the `screening_percentile * 100" percent most import voxels will
         be retained.
     %(smoothing_fwhm)s
-        Default=2.
 
     Returns
     -------
@@ -161,20 +160,16 @@ def _space_net_alpha_grid(
         (Graph-Net, TV, etc.). ``For l1_ratio = 1`` it is an L1 penalty.
         For ``0 < l1_ratio < 1``, the penalty is a combination of L1
         and a spatial prior.
-        Default=1.
 
     eps : float, optional
         Length of the path. ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
-        Default=1e-3.
 
     n_alphas : int, optional
         Number of alphas along the regularization path.
-        Default=10.
 
     logistic : bool, optional
         Indicates where the underlying loss function is logistic.
-        Default=False.
 
     """
     if logistic:
@@ -344,16 +339,15 @@ def path_scores(
     test : array or list of integers
         List of indices for the test samples.
 
-    l1_ratios : float or list of floats in the interval [0, 1];\
-        optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1], optional
         Constant that mixes L1 and TV (resp. Graph-Net) penalization.
         l1_ratios == 0: just smooth. l1_ratios == 1: just lasso.
 
-    eps : float, optional (default 1e-3)
+    eps : float, optional
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
 
-    n_alphas : int, optional (default 10).
+    n_alphas : int, optional
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
@@ -365,7 +359,7 @@ def path_scores(
 
     is_classif : bool, optional
         Indicates whether the loss is a classification loss or a
-        regression loss. Default=False.
+        regression loss.
 
     Xmean: ??? TODO: Add description.
 
@@ -373,10 +367,8 @@ def path_scores(
 
     debias : bool, optional
         If set, then the estimated weights maps will be debiased.
-        Default=False.
 
-    screening_percentile : float in the interval [0, 100], optional\
-        (default 20)
+    screening_percentile : float in the interval [0, 100], optional
         Percentile value for ANOVA univariate feature selection. A value of
         100 means 'keep all features'. This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
@@ -563,37 +555,36 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
 
     Parameters
     ----------
-    penalty : string, optional (default 'graph-net')
+    penalty : string, optional
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    loss : string, optional (default None)
+    loss : string, optional
         Loss to be used in the model. Must be an one of "mse", or "logistic".
 
-    is_classif : bool, optional (default False)
+    is_classif : bool, optional
         Flag telling whether the learning task is classification or regression.
 
-    l1_ratios : float or list of floats in the interval [0, 1];\
-        optional (default .5)
+    l1_ratios : float or list of floats in the interval [0, 1], optional
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
-    alphas : float or list of floats, optional (default None)
+    alphas : float or list of floats, optional
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
         If None or list of floats is provided, then the best value will be
         selected by cross-validation.
 
-    n_alphas : int, optional (default 10).
+    n_alphas : int, optional
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps : float, optional (default 1e-3)
+    eps : float, optional
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    mask : filename, niimg, NiftiMasker instance, optional (default None)
+    mask : filename, niimg, NiftiMasker instance, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a NiftiMasker.
@@ -604,8 +595,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    screening_percentile : float in the interval [0, 100]; Optional (\
-        default 20)
+    screening_percentile : float in the interval [0, 100], optional
         Percentile value for ANOVA univariate feature selection. A value of
         100 means 'keep all features'. This percentile is expressed
         w.r.t the volume of a standard (MNI152) brain, and so is corrected
@@ -613,30 +603,30 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         (which is typically smaller). If '100' is given, all the features
         are used, regardless of the number of voxels.
 
-    standardize : bool, optional (default True):
+    standardize : bool, optional
         If set, then the data (X, y) are centered to have mean zero along
         axis 0. This is here because nearly all linear models will want
         their data to be centered.
 
-    fit_intercept : bool, optional (default True)
+    fit_intercept : bool, optional
         Fit or not an intercept.
 
-    max_iter : int (default 200)
+    max_iter : int
         Defines the iterations for the solver.
 
-    tol : float, optional (default 5e-4)
+    tol : float, optional
         Defines the tolerance for convergence for the backend FISTA solver.
     %(verbose)s
     %(n_jobs)s
     %(memory)s
     %(memory_level1)s
-    cv : int, a cv generator instance, or None (default 8)
+    cv : int, a cv generator instance, or None
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    debias : bool, optional (default False)
+    debias : bool, optional
         If set, then the estimated weights maps will be debiased.
 
     Attributes
@@ -1114,7 +1104,7 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     Parameters
     ----------
-    penalty : string, optional (default 'graph-net')
+    penalty : string, optional
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
     loss : string, optional (default "logistic")

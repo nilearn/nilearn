@@ -46,7 +46,7 @@ def _check_lipschitz_continuous(
       function `f`. The more tests, the more confident we are in the
       Lipschitz continuity of `f` if the test passes.
 
-    random_state : int, optional (default 42)
+    random_state : int, optional
         Random state for initializing local rng.
 
     Raises
@@ -100,14 +100,13 @@ def mfista(
 
     check_lipschitz : boolean, optional
         If True, check Lipschitz continuity of gradient of smooth part.
-        Default=False.
 
     w_size : int
         Size of the solution. f1, f2, f1_grad, f2_prox (fixed l, tol) must
         accept a w such that w.shape = (w_size,).
 
     tol : float, optional
-        Tolerance on the (primal) cost function. Default=1e-4.
+        Tolerance on the (primal) cost function.
 
     dgap_tol : float, optional
         If None, the nonsmooth_prox argument returns a float, with the value,
@@ -129,11 +128,9 @@ def mfista(
 
     max_iter : integer, optional
         Maximum number of iterations for the solver.
-        Default=1000.
 
     verbose : integer, optional
         Indicate the level of verbosity.
-        Default=2.
 
     Returns
     -------

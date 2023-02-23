@@ -57,7 +57,7 @@ def search_light(
         adjacency matrix. Defines for each feature the neigbhoring features
         following a given structure of the data.
 
-    groups : array-like, optional, (default None)
+    groups : array-like, optional
         group label for each sample for cross validation.
 
         .. note::
@@ -178,7 +178,7 @@ def _group_iter_search_light(
         Total number of voxels, used for display
 
     verbose : int, optional
-        The verbosity level. Default is 0
+        The verbosity level.
 
     Returns
     -------
@@ -235,7 +235,7 @@ class SearchLight(BaseEstimator):
         computed.
 
     radius : float, optional
-        radius of the searchlight ball, in millimeters. Defaults to 2.
+        radius of the searchlight ball, in millimeters.
 
     estimator : 'svr', 'svc', or an estimator object implementing 'fit'
         The object to use to fit the data
@@ -306,7 +306,7 @@ class SearchLight(BaseEstimator):
 
         groups : array-like, optional
             group label for each sample for cross validation. Must have
-            exactly as many elements as 3D images in img. default None
+            exactly as many elements as 3D images in img.
             NOTE: will have no effect for scikit learn < 0.18
 
         """
