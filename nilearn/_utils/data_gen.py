@@ -848,6 +848,12 @@ def create_fake_bids_dataset(base_dir='',
                    optional
         Random number generator, or seed.
 
+    entities : :obj:`list`, optional
+        Extra entity to add to the BIDS filename with a list of values.
+        For example, if you want to add an 'echo' entity
+        with values 'A' for some files and 'B' for others,
+        you would pass: ``entities=[entity, ['A', 'B']]``.
+
     Returns
     -------
     dataset directory name : :obj:`str`
@@ -879,8 +885,7 @@ def create_fake_bids_dataset(base_dir='',
     rand_gen = check_random_state(random_state)
 
     # Create bids dataset
-    open(os.path.join(bids_path, 'README.md'), 'w')
-    
+    open(os.path.join(bids_path, 'README.txt'), 'w')
 
     created_sessions = ['ses-%02d' % label for label in range(1, n_ses + 1)]
     if no_session:
@@ -930,7 +935,7 @@ def create_fake_bids_dataset(base_dir='',
         bids_path = os.path.join(base_dir, 'bids_dataset', 'derivatives')
         os.makedirs(bids_path)
 
-        for subject in ['sub-%02d' % label for label in range(1, n_sub + 1)]:            
+        for subject in ['sub-%02d' % label for label in range(1, n_sub + 1)]:
             for session in created_sessions:
 
                 subses_dir = os.path.join(bids_path, subject, session)
@@ -972,65 +977,112 @@ def create_fake_bids_dataset(base_dir='',
     return 'bids_dataset'
 
 
-def _file_id(fields, n_run, run):
+def _file_id(fields: list[str], n_run: int, run: str) -> str:
+    """Create BIDS filename from list of entity-label pairs.
+
+    Parameters
+    ----------
+    fields : list[str]
+        _description_
+    n_run : int
+        _description_
+    run : str
+        _description_
+
+    Returns
+    -------
+    BIDS filename : str
+        'file_id'.
+    """
     if '' in fields:
         fields.remove('')
-    value = '_'.join(fields)
+    file_id = '_'.join(fields)
     if n_run > 1:
-        value += '_' + run
-    return value
+        file_id += f'_{run}'
+    return file_id
 
 
-def _write_bids_raw_func(func_path, file_id, n_voxels, rand_gen):
+def _write_bids_raw_func(func_path: str,
+                         file_id: str,
+                         n_voxels: int,
+                         rand_gen: np.random.RandomState):
+    """Create BIDS functional raw and events files.
+
+    Parameters
+    ----------
+    func_path : str
+        _description_
+    file_id : str
+        _description_
+    n_voxels : int
+        _description_
+    rand_gen : np.random.RandomState
+        _description_
+    """
     REPETITION_TIME = 1.5
-    NB_TIME_POINTS = 100
+    N_TIME_POINTS = 100
 
-    bold_path = os.path.join(func_path, file_id + '_bold.nii.gz')
+    bold_path = os.path.join(func_path, f'{file_id}_bold.nii.gz')
     write_fake_bold_img(bold_path,
-                        [n_voxels, n_voxels, n_voxels, NB_TIME_POINTS],
+                        [n_voxels, n_voxels, n_voxels, N_TIME_POINTS],
                         random_state=rand_gen)
 
-    events_path = os.path.join(func_path, file_id + '_events.tsv')
+    events_path = os.path.join(func_path, f'{file_id}_events.tsv')
     basic_paradigm().to_csv(events_path, sep='\t', index=None)
 
-    param_path = os.path.join(func_path, file_id + '_bold.json')
+    param_path = os.path.join(func_path, f'{file_id}_bold.json')
     with open(param_path, 'w') as param_file:
-        json.dump({'RepetitionTime': REPETITION_TIME}, 
+        json.dump({'RepetitionTime': REPETITION_TIME},
                   param_file)
 
 
-def _write_bids_derivative_func(func_path,
-                                file_id,
-                                n_voxels,
-                                rand_gen,
-                                with_confounds,
-                                confounds_tag):
-    NB_TIME_POINTS = 100
+def _write_bids_derivative_func(func_path: str,
+                                file_id: str,
+                                n_voxels: int,
+                                rand_gen: np.random.RandomState,
+                                with_confounds: bool,
+                                confounds_tag: str):
+    """Create BIDS functional derivative and confounds files.
 
-    preproc = (file_id + '_space-MNI_desc-preproc_bold.nii.gz')
-    preproc_path = os.path.join(func_path, preproc)
-    write_fake_bold_img(preproc_path, 
-                        [n_voxels, n_voxels, n_voxels, NB_TIME_POINTS],
-                        random_state=rand_gen)
+    Parameters
+    ----------
+    func_path : str
+        _description_
+    file_id : str
+        _description_
+    n_voxels : int
+        _description_
+    rand_gen : np.random.RandomState
+        _description_
+    with_confounds : bool
+        _description_
+    confounds_tag : str
+        _description_
+    """
+    N_TIME_POINTS = 100
 
-    preproc = (file_id + '_space-T1w_desc-preproc_bold.nii.gz')
+    preproc = f'{file_id}_space-MNI_desc-preproc_bold.nii.gz'
     preproc_path = os.path.join(func_path, preproc)
     write_fake_bold_img(preproc_path,
-                        [n_voxels, n_voxels, n_voxels, NB_TIME_POINTS],
+                        [n_voxels, n_voxels, n_voxels, N_TIME_POINTS],
                         random_state=rand_gen)
 
-    preproc = (file_id + '_space-T1w_desc-fmriprep_bold.nii.gz')
+    preproc = f'{file_id}_space-T1w_desc-preproc_bold.nii.gz'
     preproc_path = os.path.join(func_path, preproc)
     write_fake_bold_img(preproc_path,
-                        [n_voxels, n_voxels, n_voxels, NB_TIME_POINTS],
+                        [n_voxels, n_voxels, n_voxels, N_TIME_POINTS],
+                        random_state=rand_gen)
+
+    preproc = f'{file_id}_space-T1w_desc-fmriprep_bold.nii.gz'
+    preproc_path = os.path.join(func_path, preproc)
+    write_fake_bold_img(preproc_path,
+                        [n_voxels, n_voxels, n_voxels, N_TIME_POINTS],
                         random_state=rand_gen)
 
     if with_confounds:
-        confounds_path = os.path.join(
-            func_path,
-            file_id + '_' + confounds_tag + '.tsv',
-        )
-        basic_confounds(NB_TIME_POINTS, random_state=rand_gen).to_csv(
+        confounds_path = os.path.join(func_path,
+                                      f'{file_id}_{confounds_tag}.tsv')
+        basic_confounds(N_TIME_POINTS, random_state=rand_gen).to_csv(
             confounds_path, sep='\t', index=None)
 
 

@@ -1024,9 +1024,9 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 def _bids_validate_arguments(dataset_path: str,
                              task_label: str,
                              space_label: str | None,
-                             img_filters: List(Tuple(str, str)),
+                             img_filters: list[Tuple[str, str]],
                              derivatives_path: str,
-                             supported_filters: List(str),
+                             supported_filters: list[str],
                              ):
     if not isinstance(dataset_path, str):
         raise TypeError(
@@ -1069,8 +1069,8 @@ def _bids_validate_arguments(dataset_path: str,
 
 def _bids_filter(task_label: str,
                  space_label: str | None = None,
-                 supported_filters: List(str) | None = None,
-                 extra_filter: List(Tuple(str, str)) | None = None):
+                 supported_filters: list[str] | None = None,
+                 extra_filter: list[Tuple[str, str]] | None = None):
     filters = [('task', task_label)]
     if space_label is not None:
         filters.append(('space', space_label))
@@ -1083,9 +1083,9 @@ def _bids_filter(task_label: str,
     return filters
 
 
-def _bids_check_image_list(imgs: List(str) | None,
+def _bids_check_image_list(imgs: list[str] | None,
                            sub_label: str,
-                           filters: List(Tuple(str))):
+                           filters: list[Tuple[str, str]]):
 
     if not imgs:
         raise ValueError('No bold files found '
