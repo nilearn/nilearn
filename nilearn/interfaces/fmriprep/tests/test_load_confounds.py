@@ -14,7 +14,7 @@ from nilearn.interfaces.fmriprep.load_confounds import _check_strategy, \
 from nilearn._utils.fmriprep_confounds import _to_camel_case
 
 from nilearn.interfaces.fmriprep.tests.utils import (
-    create_tmp_filepath, get_leagal_confound
+    create_tmp_filepath, get_legal_confound
 )
 
 
@@ -460,7 +460,7 @@ def test_invalid_filetype(tmp_path):
 
     # more than one legal filename for confounds
     add_conf = "test_desc-confounds_regressors.tsv"
-    leagal_confounds, _ = get_leagal_confound()
+    leagal_confounds, _ = get_legal_confound()
     leagal_confounds.to_csv(tmp_path / add_conf, sep="\t", index=False)
     with pytest.raises(ValueError) as info:
         load_confounds(bad_nii)
@@ -475,7 +475,7 @@ def test_invalid_filetype(tmp_path):
     assert "The confound file contains no header." in str(error_log.value)
 
     # invalid fmriprep version: old camel case header (<1.2)
-    leagal_confounds, _ = get_leagal_confound()
+    leagal_confounds, _ = get_legal_confound()
     camel_confounds = leagal_confounds.copy()
     camel_confounds.columns = [
         _to_camel_case(col_name) for col_name in leagal_confounds.columns
@@ -546,7 +546,7 @@ def test_sample_mask(tmp_path):
     assert reg.shape[0] - len(mask) == 1
 
     # When no non-steady state volumes are present
-    conf_data, _ = get_leagal_confound(non_steady_state=False)
+    conf_data, _ = get_legal_confound(non_steady_state=False)
     conf_data.to_csv(regular_conf, sep="\t", index=False)  # save to tmp
     reg, mask = load_confounds(regular_nii, strategy=("motion", ))
     assert mask is None
