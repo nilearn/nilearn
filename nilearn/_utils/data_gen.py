@@ -866,7 +866,8 @@ def create_fake_bids_dataset(base_dir='',
         Creates a directory with dummy files.
 
     """
-    # FIXME entities are not ordered properly in the generated filenames
+    # Note than entities will not be ordered properly (according to BIDS)
+    # in the generated filenames
     # sub-01_ses-01_task-main_echo-B_run-01_bold.nii.gz
     # instead of
     # sub-01_ses-01_task-main_run-01_echo-B_bold.nii.gz

@@ -1028,6 +1028,30 @@ def _bids_validate_arguments(dataset_path: str,
                              derivatives_path: str,
                              supported_filters: list[str],
                              ) -> None:
+    """Check type and value of arguments of first_level_from_bids.
+
+    Parameters
+    ----------
+    dataset_path : str
+        _description_
+    task_label : str
+        _description_
+    space_label : str | None
+        _description_
+    img_filters : list[Tuple[str, str]]
+        _description_
+    derivatives_path : str
+        _description_
+    supported_filters : list[str]
+        _description_
+
+    Raises
+    ------
+    TypeError
+        _description_
+    ValueError
+        _description_
+    """    
     if not isinstance(dataset_path, str):
         raise TypeError(
             "dataset_path must be a string, "
@@ -1072,6 +1096,24 @@ def _bids_filter(task_label: str,
                  supported_filters: list[str] | None = None,
                  extra_filter: list[Tuple[str, str]] | None = None
                  ) -> list[Tuple[str, str]]:
+    """Return a filter to specific files from a BIDS dataset.
+
+    Parameters
+    ----------
+    task_label : str
+        _description_
+    space_label : str | None, optional
+        _description_
+    supported_filters : list[str] | None, optional
+        _description_
+    extra_filter : list[Tuple[str, str]] | None, optional
+        _description_
+
+    Returns
+    -------
+    list[Tuple[str, str]]
+        Filter to be used by :func:`get_bids_files`.
+    """    
     filters = [('task', task_label)]
     if space_label is not None:
         filters.append(('space', space_label))
@@ -1087,6 +1129,22 @@ def _bids_filter(task_label: str,
 def _bids_check_image_list(imgs: list[str] | None,
                            sub_label: str,
                            filters: list[Tuple[str, str]]) -> None:
+    """_summary_
+
+    Parameters
+    ----------
+    imgs : list[str] | None
+        _description_
+    sub_label : str
+        _description_
+    filters : list[Tuple[str, str]]
+        _description_
+
+    Raises
+    ------
+    ValueError
+        _description_
+    """    
 
     if not imgs:
         raise ValueError('No bold files found '
