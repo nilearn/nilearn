@@ -35,6 +35,7 @@ jobs:
             - [ ] Changelog or what's new entry in `doc/changes/latest.rst`
             (see our documentation on [PR structure](https://nilearn.github.io/stable/development.html#pr-structure))
 
+
             For new features:
 
             - [ ] There is at least one unit test per new function / class 
@@ -42,8 +43,9 @@ jobs:
 
             - [ ] The new feature is demoed in at least one relevant example.
 
-            For bug fixes:
 
+            For bug fixes:
+            
             - [ ] There is at least one test that would fail
             under the original bug conditions.            
 
