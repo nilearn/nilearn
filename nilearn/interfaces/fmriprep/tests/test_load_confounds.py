@@ -450,7 +450,6 @@ def test_invalid_filetype(tmp_path):
                                             suffix="sub-test01_task-test",
                                             copy_confounds=True,
                                             old_derivative_suffix=False)
-    print(bad_nii)
     conf, _ = load_confounds(bad_nii)
 
     # more than one legal filename for confounds
@@ -563,7 +562,7 @@ def test_inputs(tmp_path, image_type):
     for i in range(2):  # gifti edge case
         nii, _ = create_tmp_filepath(
             tmp_path,
-            suffix=f"sub-test{i+1}_task-testimg",
+            suffix=f"sub-test{i+1}_ses-test_task-testimg_run-01",
             image_type=image_type,
             copy_confounds=True,
             copy_json=True,

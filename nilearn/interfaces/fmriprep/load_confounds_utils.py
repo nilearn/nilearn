@@ -12,6 +12,7 @@ from nilearn._utils.fmriprep_confounds import (
 )
 from nilearn.interfaces.bids import parse_bids_filename
 
+
 img_file_patterns = {
     "aroma": "_desc-smoothAROMAnonaggr_bold",
     "nii.gz": "(_space-.*)?_desc-preproc_bold\.nii\.gz",
@@ -91,7 +92,7 @@ def _get_file_name(nii_file):
         nii_file = nii_file[0]
     entities = parse_bids_filename(nii_file)
     subject_label = f"sub-{entities['sub']}"
-    if "session" in entities:
+    if "ses" in entities:
         subject_label = f"{subject_label}_ses-{entities['ses']}"
     specifiers = f"task-{entities['task']}"
     if "run" in entities:
