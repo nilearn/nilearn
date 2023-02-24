@@ -631,24 +631,24 @@ def index_img(imgs, index):
      >>> joint_mni_image = concat_imgs([datasets.load_mni152_template(),
      ...                                datasets.load_mni152_template()])
      >>> print(joint_mni_image.shape)
-     (99, 117, 95, 2)
+     (197, 233, 189, 2)
 
     We can now select one slice from the last dimension of this 4D-image::
 
      >>> single_mni_image = index_img(joint_mni_image, 1)
      >>> print(single_mni_image.shape)
-     (99, 117, 95)
+     (197, 233, 189)
 
     We can also select multiple frames using the `slice` constructor::
 
      >>> five_mni_images = concat_imgs([datasets.load_mni152_template()] * 5)
      >>> print(five_mni_images.shape)
-     (99, 117, 95, 5)
+     (197, 233, 189, 5)
 
      >>> first_three_images = index_img(five_mni_images,
      ...                                slice(0, 3))
      >>> print(first_three_images.shape)
-     (99, 117, 95, 3)
+     (197, 233, 189, 3)
 
     """
     imgs = check_niimg_4d(imgs)
@@ -717,7 +717,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         Data to be stored in the image. If data dtype is a boolean, then data
         is cast to 'uint8' by default.
 
-    .. versionchanged:: 0.9.2dev
+    .. versionchanged:: 0.9.2
         Changed default dtype casting of booleans from 'int8' to 'uint8'.
 
     affine : 4x4 :class:`numpy.ndarray`, optional
@@ -861,14 +861,19 @@ def threshold_img(
         Image containing statistical or atlas maps which should be thresholded.
 
     threshold : :obj:`float` or :obj:`str`
-        If float, we threshold the image based on image intensities meaning
-        voxels which have intensities greater than this value will be kept.
-        The given value should be within the range of minimum and
-        maximum intensity of the input image.
-        If string, it should finish with percent sign e.g. "80%" and we threshold
-        based on the score obtained using this percentile on the image data. The
-        voxels which have intensities greater than this score will be kept.
+        Voxels with intensities less than the requested threshold
+        will be set to zero.
+        Those with intensities greater or equal than the requested threshold
+        will keep their original value.
+        If float, we threshold the image based on image intensities.
+        The given value should be within the range of minimum and maximum
+        intensity of the input image.
+        If string, it should finish with percent sign e.g. "80%"
+        and we threshold based on the score obtained
+        using this percentile on the image data.
         The given string should be within the range of "0%" to "100%".
+        The percentile rank is computed using
+        :func:`scipy.stats.scoreatpercentile`.
 
     cluster_threshold : :obj:`float`, optional
         Cluster size threshold, in voxels. In the returned thresholded map,
@@ -1097,7 +1102,7 @@ def binarize_img(img, threshold=0, mask_img=None):
 @rename_parameters({'sessions': 'runs'}, '0.10.0')
 def clean_img(imgs, runs=None, detrend=True, standardize=True,
               confounds=None, low_pass=None, high_pass=None, t_r=None,
-              ensure_finite=False, mask_img=None):
+              ensure_finite=False, mask_img=None, **kwargs):
     """Improve SNR on masked fMRI signals.
 
     This function can do several things on the input signals, in
@@ -1175,6 +1180,14 @@ def clean_img(imgs, runs=None, detrend=True, standardize=True,
         If not provided, all voxels are used.
         See :ref:`extracting_data`.
 
+    kwargs : dict
+        Keyword arguments to be passed to functions called within this function.
+        Kwargs prefixed with ``'clean__'`` will be passed to
+        :func:`~nilearn.signal.clean`.
+        Within :func:`~nilearn.signal.clean`, kwargs prefixed with
+        ``'butterworth__'`` will be passed to the Butterworth filter
+        (i.e., ``clean__butterworth__``).
+
     Returns
     -------
     Niimg-like object
@@ -1204,15 +1217,13 @@ def clean_img(imgs, runs=None, detrend=True, standardize=True,
     imgs_ = check_niimg_4d(imgs)
 
     # Check if t_r is set, otherwise propose t_r from imgs header
-    if low_pass is not None or high_pass is not None:
-        if t_r is None:
-
-            # We raise an error, instead of using the header's t_r as this
-            # value is considered to be non-reliable
-            raise ValueError(
-                "Repetition time (t_r) must be specified for filtering. You "
-                "specified None. imgs header suggest it to be {0}".format(
-                    imgs.header.get_zooms()[3]))
+    if (low_pass is not None or high_pass is not None) and t_r is None:
+        # We raise an error, instead of using the header's t_r as this
+        # value is considered to be non-reliable
+        raise ValueError(
+            "Repetition time (t_r) must be specified for filtering. You "
+            "specified None. imgs header suggest it to be {0}".format(
+                imgs.header.get_zooms()[3]))
 
     # Prepare signal for cleaning
     if mask_img is not None:
@@ -1221,10 +1232,13 @@ def clean_img(imgs, runs=None, detrend=True, standardize=True,
         signals = get_data(imgs_).reshape(-1, imgs_.shape[-1]).T
 
     # Clean signal
+    clean_kwargs = {
+        k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
+    }
     data = signal.clean(
         signals, runs=runs, detrend=detrend, standardize=standardize,
         confounds=confounds, low_pass=low_pass, high_pass=high_pass, t_r=t_r,
-        ensure_finite=ensure_finite)
+        ensure_finite=ensure_finite, **clean_kwargs)
 
     # Put results back into Niimg-like object
     if mask_img is not None:

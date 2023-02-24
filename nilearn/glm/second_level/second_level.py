@@ -1,8 +1,5 @@
 """
-This module presents an interface to use the glm implemented in
-nistats.regression.
-
-It provides facilities to realize a second level analysis on lists of
+This module provides facilities to realize a second level analysis on lists of
 first level contrasts or directly on fitted first level models
 
 Author: Martin Perez-Guevara, 2016
@@ -314,11 +311,6 @@ class SecondLevelModel(BaseGLM):
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
         on memory consumption. Default=True.
-
-    Notes
-    -----
-    This class is experimental.
-    It may change in any future release of Nilearn.
 
     """
     def __init__(self, mask_img=None, target_affine=None, target_shape=None,
@@ -638,16 +630,16 @@ def non_parametric_inference(
         If list of Niimg-like objects then this is taken literally as Y
         for the model fit and design_matrix must be provided.
 
-    confounds : :obj:`pandas.DataFrame`, optional
+    confounds : :obj:`pandas.DataFrame` or None, optional
         Must contain a subject_label column. All other columns are
         considered as confounds and included in the model. If
         ``design_matrix`` is provided then this argument is ignored.
         The resulting second level design matrix uses the same column
-        names as in the given :class:`~pandas.DataFrame` for confounds.
+        names as in the given :obj:`~pandas.DataFrame` for confounds.
         At least two columns are expected, ``subject_label`` and at
         least one confound.
 
-    design_matrix : :class:`pandas.DataFrame`, optional
+    design_matrix : :obj:`pandas.DataFrame` or None, optional
         Design matrix to fit the :term:`GLM`. The number of rows
         in the design matrix must agree with the number of maps derived
         from ``second_level_input``.
@@ -851,9 +843,21 @@ def non_parametric_inference(
     # Check design matrix and effect maps agree on number of rows
     _check_effect_maps(effect_maps, design_matrix)
 
+    # Obtain design matrix vars
+    var_names = design_matrix.columns.tolist()
+
     # Obtain tested_var
-    if contrast in design_matrix.columns.tolist():
-        tested_var = np.asarray(design_matrix[contrast])
+    tested_var = np.asarray(design_matrix[contrast])
+    # Remove tested var from remaining var names
+    var_names.remove(contrast)
+
+    # Obtain confounding vars
+    if len(var_names) == 0:
+        # No other vars in design matrix
+        confounding_vars = None
+    else:
+        # Use remaining vars as confounding vars
+        confounding_vars = np.asarray(design_matrix[var_names])
 
     # Mask data
     target_vars = masker.transform(effect_maps)
@@ -862,6 +866,7 @@ def non_parametric_inference(
     outputs = permuted_ols(
         tested_var,
         target_vars,
+        confounding_vars=confounding_vars,
         model_intercept=model_intercept,
         n_perm=n_perm,
         two_sided_test=two_sided_test,

@@ -20,7 +20,7 @@ def _asarray(arr, dtype=None, order=None):
         else:
             ret = np.asarray(arr, dtype=dtype)
     else:
-        if (((arr.itemsize == 1 and dtype in (bool, np.bool)) or
+        if (((arr.itemsize == 1 and dtype in (bool, np.bool_)) or
             (arr.dtype in (bool, np.bool_) and np.dtype(dtype).itemsize == 1))
             and (order == "F" and arr.flags["F_CONTIGUOUS"]
                  or order == "C" and arr.flags["C_CONTIGUOUS"])):

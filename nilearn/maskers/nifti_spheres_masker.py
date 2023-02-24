@@ -184,7 +184,7 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
         yield X[:, row]
 
 
-class _ExtractionFunctor(object):
+class _ExtractionFunctor:
 
     func_name = 'nifti_spheres_masker_extractor'
 
@@ -292,6 +292,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         Indicate the level of verbosity. By default, nothing is printed.
         Default=0.
 
+    %(masker_kwargs)s
+
     Attributes
     ----------
     n_elements_ : :obj:`int`
@@ -327,6 +329,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         memory=Memory(location=None, verbose=0),
         memory_level=1,
         verbose=0,
+        **kwargs,
     ):
         self.seeds = seeds
         self.mask_img = mask_img
@@ -345,6 +348,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         self.high_pass = high_pass
         self.t_r = t_r
         self.dtype = dtype
+        self.clean_kwargs = {
+            k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
+        }
 
         # Parameters for joblib
         self.memory = memory
@@ -482,6 +488,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         self._check_fitted()
 
         params = get_params(NiftiSpheresMasker, self)
+        params['clean_kwargs'] = self.clean_kwargs
 
         signals, _ = self._cache(
             _filter_and_extract,

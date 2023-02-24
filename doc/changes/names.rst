@@ -24,6 +24,8 @@
 
 .. _Arthur Mensch: https://www.amensch.fr/
 
+.. _Audrey Duran: https://github.com/AudreyDuran
+
 .. _Ben Cipollini: https://github.com/bcipolli
 
 .. _Bertrand Thirion: https://pages.saclay.inria.fr/bertrand.thirion/
@@ -102,6 +104,8 @@
 
 .. _Jean-Rémi King: https://github.com/kingjr
 
+.. _Jelle Roelof Dalenberg: https://github.com/jrdalenberg
+
 .. _Jeremy Lefort-Besnard: https://jlefortbesnard.github.io/
 
 .. _Jerome Dockes: https://jeromedockes.github.io/
@@ -140,6 +144,8 @@
 
 .. _Manon Pietrantoni: https://github.com/ManonP38
 
+.. _Mathias Goncalves: https://github.com/mgxd
+
 .. _Matthias Ekman: https://github.com/mekman
 
 .. _Matthieu Joulot: https://github.com/MatthieuJoulot
@@ -162,6 +168,8 @@
 
 .. _Myeong Seop Song: https://github.com/NeuroVR-Song
 
+.. _Natasha Clarke: https://github.com/clarkenj
+
 .. _Neelay Shah: https://github.com/NeelayS
 
 .. _Nicolas Gensollen: https://nicolasgensollen.github.io/
@@ -169,6 +177,8 @@
 .. _Oscar Esteban: https://github.com/oesteban
 
 .. _Óscar Nájera: https://github.com/Titan-C
+
+.. _Paul Bogdan: https://github.com/paulcbogdan
 
 .. _Paula Sanz-Leon: https://github.com/pausz
 
@@ -186,7 +196,11 @@
 
 .. _Raphael Meudec: https://github.com/RaphaelMeudec
 
+.. _Rémi Gau: https://github.com/Remi-Gau
+
 .. _Robert Luke: https://github.com/rob-luke
+
+.. _Robert Williamson: https://github.com/RobWilliamson15
 
 .. _Roberto Guidotti: https://github.com/robbisg
 
@@ -203,6 +217,8 @@
 .. _Simon Steinkamp: https://github.com/SRSteinkamp
 
 .. _Sourav Singh: https://github.com/souravsingh
+
+.. _Steven Meisler: https://www.stevenmeisler.com
 
 .. _Sylvain Lan: https://github.com/SylvainLan
 

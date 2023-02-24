@@ -12,7 +12,8 @@ from numpy.testing import (assert_almost_equal,
 import numpy as np
 import pytest
 
-from nibabel import Nifti1Image
+from nibabel import Nifti1Image, Nifti1Header
+from nibabel.freesurfer import MGHImage
 
 from nilearn import _utils
 from nilearn.image.resampling import resample_img, resample_to_img, reorder_img
@@ -827,7 +828,7 @@ def test_resample_img_segmentation_fault():
 @pytest.mark.parametrize("dtype",
                          [np.int8, np.int16, np.int32,
                           np.uint8, np.uint16, np.uint32,
-                          np.float32, np.float64, np.float, '>i4', '<i4'])
+                          np.float32, np.float64, float, '>i4', '<i4'])
 def test_resampling_with_int_types_no_crash(dtype):
     affine = np.eye(4)
     data = np.zeros((2, 2, 2))
@@ -835,12 +836,16 @@ def test_resampling_with_int_types_no_crash(dtype):
     resample_img(img, target_affine=2. * affine)
 
 
-@pytest.mark.parametrize("dtype", ["int64", "uint64", "<i8", ">i8", int])
+@pytest.mark.parametrize("dtype", ["int64", "uint64", "<i8", ">i8"])
 @pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
 def test_resampling_with_int64_types_no_crash(dtype):
     affine = np.eye(4)
     data = np.zeros((2, 2, 2))
-    img = Nifti1Image(data.astype(dtype), affine)
+    # Passing dtype or header is required when using int64
+    # https://nipy.org/nibabel/changelog.html#api-changes-and-deprecations
+    hdr = Nifti1Header()
+    hdr.set_data_dtype(dtype)
+    img = Nifti1Image(data.astype(dtype), affine, header=hdr)
     resample_img(img, target_affine=2. * affine)
 
 
@@ -855,3 +860,14 @@ def test_resample_input():
     with testing.write_tmp_imgs(img, create_files=True) as filename:
         filename = Path(filename)
         resample_img(filename, target_affine=affine, interpolation='nearest')
+
+
+def test_smoke_resampling_non_nifti():
+    rng = np.random.RandomState(42)
+    shape = (3, 2, 5, 2)
+    affine = np.eye(4)
+    target_affine = 2 * affine
+    data = rng.randint(0, 10, shape, dtype="int32")
+    img = MGHImage(data, affine)
+
+    resample_img(img, target_affine=target_affine, interpolation='nearest')

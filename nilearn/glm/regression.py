@@ -53,7 +53,7 @@ def _deprecation_warning(old_param,
     return _warned_func
 
 
-class OLSModel(object):
+class OLSModel:
     """ A simple ordinary least squares model.
 
     Parameters
@@ -89,11 +89,6 @@ class OLSModel(object):
 
     df_model : scalar
         Degrees of freedome of the model.  The rank of the design.
-
-    Notes
-    -----
-    This class is experimental.
-    It may change in any future release of Nilearn.
 
     """
     def __init__(self, design):
@@ -249,11 +244,6 @@ class ARModel(OLSModel):
     and sigma, a scalar nuisance parameter that
     shows up as multiplier in front of the AR(p) covariance.
 
-    Notes
-    -----
-    This class is experimental.
-    It may change in any future release of Nilearn.
-
     """
     def __init__(self, design, rho):
         """ Initialize AR model instance
@@ -309,11 +299,6 @@ class RegressionResults(LikelihoodModelResults):
     """This class summarizes the fit of a linear regression model.
 
     It handles the output of contrasts, estimates of covariance, etc.
-
-    Notes
-    -----
-    This class is experimental.
-    It may change in any future release of Nilearn.
 
     """
 
@@ -394,11 +379,6 @@ class SimpleRegressionResults(LikelihoodModelResults):
     for contrast computation.
 
     Its intended to save memory when details of the model are unnecessary.
-
-    Notes
-    -----
-    This class is experimental.
-    It may change in any future release of Nilearn.
 
     """
     def __init__(self, results):

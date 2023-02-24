@@ -12,7 +12,8 @@ import unittest.mock as mock
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
                                             plot_surf_roi, plot_img_on_surf,
-                                            plot_surf_contours)
+                                            plot_surf_contours,
+                                            _get_ticks_matplotlib)
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.surface import load_surf_mesh
 from nilearn.surface.testing_utils import generate_surf
@@ -822,3 +823,23 @@ def test_plot_surf_contours_error():
             ValueError,
             match='Levels, labels, and colors argument need to be either the same length or None.'):
         plot_surf_contours(mesh, parcellation, levels=[1, 2], colors=['r'], labels=['1', '2'])
+
+
+@pytest.mark.parametrize("vmin,vmax,cbar_tick_format,expected", [
+    (0, 0, "%i", [0]),
+    (0, 3, "%i", [0, 1, 2, 3]),
+    (0, 4, "%i", [0, 1, 2, 3, 4]),
+    (1, 5, "%i", [1, 2, 3, 4, 5]),
+    (0, 5, "%i", [0, 1.25, 2.5, 3.75, 5]),
+    (0, 10, "%i", [0, 2.5, 5, 7.5, 10]),
+    (0, 0, "%.1f", [0]),
+    (0, 1, "%.1f", [0, 0.25, 0.5, 0.75, 1]),
+    (1, 2, "%.1f", [1, 1.25, 1.5, 1.75, 2]),
+    (1.1, 1.2, "%.1f", [1.1, 1.125, 1.15, 1.175, 1.2]),
+    (0, np.nextafter(0, 1), "%.1f", [0.e+000, 5.e-324]),
+])
+def test_get_ticks_matplotlib(vmin, vmax, cbar_tick_format, expected):
+    ticks = _get_ticks_matplotlib(vmin, vmax, cbar_tick_format)
+    assert 1 <= len(ticks) <= 5
+    assert ticks[0] == vmin and ticks[-1] == vmax
+    assert len(ticks) == len(expected) and (ticks == expected).all()

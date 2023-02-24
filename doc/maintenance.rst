@@ -32,7 +32,7 @@ is responsible for a very basic labeling categorizing the issue:
 	- |Enhancement| for feature requests.
 
 First of all, the user might have mislabeled the issue, in which case a member
-of the :ref:`core_devs` team or :ref:`triage` needs to correct the labels.
+of the :ref:`core_devs` team needs to correct the labels.
 
 In addition to these basic labels, we have many more labels which describes
 in more detail a given issue. First, we try to describe the **estimated amount
@@ -212,26 +212,6 @@ to be:
     __version__ = x.y.z
 
 
-We also need to update the website news section by editing the file ``nilearn/doc/themes/nilearn/layout.html``. The news section typically contains links to the last 3 releases that should look like:
-
-.. code-block:: html
-
-    <h4> News </h4>
-        <ul>
-            <li><p><strong>November 2020</strong>:
-                <a href="whats_new.html#v0-7-0">Nilearn 0.7.0 released</a>
-            </p></li>
-            <li><p><strong>February 2020</strong>:
-                <a href="whats_new.html#v0-6-2">Nilearn 0.6.2 released</a>
-            </p></li>
-            <li><p><strong>January 2020</strong>:
-                <a href="whats_new.html#v0-6-1">Nilearn 0.6.1 released</a>
-            </p></li>
-        </ul>
-
-
-Here, we should remove the last entry and add the new release on top of the list.
-
 In addition, we can have a look at `MANIFEST.in` to check that all additional files that we want to be included or excluded from the release are indicated. Normally we shouldn't have to touch this file.
 
 Add these changes and submit a PR:
@@ -317,6 +297,38 @@ At this point, we need to upload the binaries to GitHub and link them to the tag
 
 Build and deploy the documentation
 ----------------------------------
+
+Before building the documentation, make sure that the following LaTeX
+dependencies are installed on your system:
+
+- `dvipng <https://ctan.org/pkg/dvipng>`_
+- `texlive-latex-base <https://ctan.org/pkg/latex-base>`_
+- `texlive-latex-extra <https://packages.debian.org/sid/texlive-latex-extra>`_
+
+You can check if each package is installed by using
+``command -v <command-name>`` as in:
+
+.. code-block:: bash
+
+    command -v dvipng
+
+If the package is installed, then the path to its location on your system will
+be returned. Otherwise, you can install using your system's package manager or
+from source, for example:
+
+.. code-block:: bash
+
+    wget https://mirrors.ctan.org/dviware/dvipng.zip
+    unzip dvipng.zip
+    cd dvipng
+    ./configure
+    make
+    make install
+
+See available linux distributions of texlive-latex-base and texlive-latex-extra:
+
+- https://pkgs.org/search/?q=texlive-latex-base
+- https://pkgs.org/search/?q=texlive-latex-extra
 
 We now need to update the documentation:
 

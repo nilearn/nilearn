@@ -19,7 +19,7 @@ def save_glm_to_bids(
 ):
     """Save GLM results to BIDS-like files.
 
-    .. versionadded:: 0.9.2dev
+    .. versionadded:: 0.9.2
 
     Parameters
     ----------
@@ -143,7 +143,6 @@ def save_glm_to_bids(
         design_matrix.to_csv(
             dm_file,
             sep='\t',
-            line_terminator='\n',
             index=False,
         )
 

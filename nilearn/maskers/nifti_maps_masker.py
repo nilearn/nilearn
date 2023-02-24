@@ -10,7 +10,7 @@ from nilearn import _utils, image
 from nilearn.maskers.base_masker import _filter_and_extract, BaseMasker
 
 
-class _ExtractionFunctor(object):
+class _ExtractionFunctor:
 
     func_name = 'nifti_maps_masker_extractor'
 
@@ -120,6 +120,8 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         If set to True, data is saved in order to produce a report.
         Default=True.
 
+    %(masker_kwargs)s
+
     Attributes
     ----------
     maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
@@ -164,6 +166,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         memory_level=0,
         verbose=0,
         reports=True,
+        **kwargs,
     ):
         self.maps_img = maps_img
         self.mask_img = mask_img
@@ -183,6 +186,9 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         self.high_pass = high_pass
         self.t_r = t_r
         self.dtype = dtype
+        self.clean_kwargs = {
+            k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
+        }
 
         # Parameters for resampling
         self.resampling_target = resampling_target
@@ -582,6 +588,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         )
         params['target_shape'] = target_shape
         params['target_affine'] = target_affine
+        params['clean_kwargs'] = self.clean_kwargs
 
         region_signals, labels_ = self._cache(
             _filter_and_extract,

@@ -10,13 +10,14 @@ parcellation based on labels and
 parcellation based on probabilistic values.
 
 In the intermediary steps, we make use of
-:class:`nilearn.maskers.NiftiLabelsMasker` and
-:class:`nilearn.maskers.NiftiMapsMasker` to extract time series from nifti
-objects using different parcellation atlases.
+:class:`nilearn.maskers.MultiNiftiLabelsMasker` and
+:class:`nilearn.maskers.MultiNiftiMapsMasker` to extract time series from nifti
+objects from multiple subjects using different parcellation atlases.
 
-The time series of all subjects of the brain development dataset are concatenated and
-given directly to :class:`nilearn.connectome.ConnectivityMeasure` for
-computing parcel-wise correlation matrices for each atlas across all subjects.
+The time series of all subjects of the brain development dataset are
+concatenated and given directly to
+:class:`nilearn.connectome.ConnectivityMeasure` for computing parcel-wise
+correlation matrices for each atlas across all subjects.
 
 Mean correlation matrix is displayed on glass brain on extracted coordinates.
 
@@ -48,7 +49,7 @@ print('Counfound csv files (of same subject) are located at : %r'
 ##########################################################################
 # Extract coordinates on Yeo atlas - parcellations
 # ------------------------------------------------
-from nilearn.maskers import NiftiLabelsMasker
+from nilearn.maskers import MultiNiftiLabelsMasker
 from nilearn.connectome import ConnectivityMeasure
 
 # ConenctivityMeasure from Nilearn uses simple 'correlation' to compute
@@ -58,14 +59,14 @@ connectome_measure = ConnectivityMeasure(kind='correlation')
 # useful for plotting connectivity interactions on glass brain
 from nilearn import plotting
 
-# create masker to extract functional data within atlas parcels
-masker = NiftiLabelsMasker(labels_img=yeo['thick_17'], standardize=True,
-                           memory='nilearn_cache')
+# create masker using MultiNiftiLabelsMasker to extract functional data within
+# atlas parcels from multiple subjects using parallelization to speed up the
+# computation
+masker = MultiNiftiLabelsMasker(labels_img=yeo['thick_17'], standardize=True,
+                                memory='nilearn_cache', n_jobs=2)
 
-# extract time series from all subjects and concatenate them
-time_series = []
-for func, confounds in zip(data.func, data.confounds):
-    time_series.append(masker.fit_transform(func, confounds=confounds))
+# extract time series from all subjects
+time_series = masker.fit_transform(data.func, confounds=data.confounds)
 
 # calculate correlation matrices across subjects and display
 correlation_matrices = connectome_measure.fit_transform(time_series)
@@ -127,16 +128,16 @@ difumo = datasets.fetch_atlas_difumo(
 ##########################################################################
 # Iterate over fetched atlases to extract coordinates - probabilistic
 # -------------------------------------------------------------------
-from nilearn.maskers import NiftiMapsMasker
+from nilearn.maskers import MultiNiftiMapsMasker
 
-# create masker to extract functional data within atlas parcels
-masker = NiftiMapsMasker(maps_img=difumo.maps, standardize=True,
-                         memory='nilearn_cache')
+# create masker using MultiNiftiMapsMasker to extract functional data within
+# atlas parcels from multiple subjects using parallelization to speed up the
+# # computation
+masker = MultiNiftiMapsMasker(maps_img=difumo.maps, standardize=True,
+                              memory='nilearn_cache', n_jobs=2)
 
-# extract time series from all subjects and concatenate them
-time_series = []
-for func, confounds in zip(data.func, data.confounds):
-    time_series.append(masker.fit_transform(func, confounds=confounds))
+# extract time series from all subjects
+time_series = masker.fit_transform(data.func, confounds=data.confounds)
 
 # calculate correlation matrices across subjects and display
 correlation_matrices = connectome_measure.fit_transform(time_series)

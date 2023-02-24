@@ -14,7 +14,7 @@ from .test_js_plotting_utils import check_colors, check_html
 
 
 def _get_img():
-    return datasets.load_mni152_template()
+    return datasets.load_mni152_template(resolution=2)
 
 
 def test_get_vertexcolor():
