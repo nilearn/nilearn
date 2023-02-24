@@ -2,11 +2,13 @@
 
 .. include:: names.rst
 
-0.10.1.dev
-==========
+0.10.1rc1
+=========
 
-NEW
----
+**Released February 2023**
+
+This is a pre-release.
+
 
 Fixes
 -----
@@ -21,10 +23,13 @@ Enhancements
 ------------
 
 - Addition to docs to note that :meth:`~maskers.BaseMasker.inverse_transform` only performs spatial unmasking (:gh:`3445` by `Robert Williamson`_).
+
 - Give users control over Butterworth filter (:func:`~signal.butterworth`) parameters in :func:`~signal.clean` and Masker objects as kwargs (:gh:`3478` by `Taylor Salo`_).
+
 - Allow users to output label maps from :func:`~reporting.get_clusters_table` (:gh:`3477` by `Steven Meisler`_).
 
 Changes
 -------
 
 - The documentation for :func:`~image.threshold_img` has been improved, with more information about which voxels are set to 0 and which ones keep their original values (:gh:`3485` by `Rémi Gau`_).
+
