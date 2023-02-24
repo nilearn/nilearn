@@ -879,7 +879,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
 @fill_doc
 class Decoder(_BaseDecoder):
-    r"""A wrapper for popular classification strategies in neuroimaging.
+    """A wrapper for popular classification strategies in neuroimaging.
 
     The `Decoder` object supports classification methods.
     It implements a model selection scheme that averages the best models
@@ -920,7 +920,7 @@ class Decoder(_BaseDecoder):
         predictions are estimated using default strategy.
 
     screening_percentile: int, float, optional, \
-        in the closed interval [0, 100]\\, (default 20)
+        in the closed interval [0, 100]
         The percentage of brain volume that will be kept with respect to a full
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
