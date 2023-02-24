@@ -159,7 +159,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         warnings.warn(nan_msg)
 
     if (isinstance(cut_coords, numbers.Number) and
-            (display_mode == 'ortho' or display_mode == 'tiled')):
+            display_mode in ('ortho', 'tiled')):
         raise ValueError(
             "The input given for display_mode='{0}' needs to be "
             "a list of 3d world coordinates in (x, y, z). "
@@ -297,7 +297,7 @@ class _MNI152Template(SpatialImage):
 
     def load(self):
         if self.data is None:
-            anat_img = load_mni152_template()
+            anat_img = load_mni152_template(resolution=2)
             anat_img = reorder_img(anat_img)
             data = get_data(anat_img)
             data = data.astype(np.float64)
@@ -423,7 +423,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
     Parameters
     ----------
     anat_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The anatomical image to be used as a background. If None is
         given, nilearn tries to find a T1 template.
         Default=MNI152TEMPLATE.
@@ -538,7 +538,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
         An object with background image on which contours are shown.
 
     roi_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The ROI/mask image, it could be binary mask or an atlas or ROIs
         with integer values.
 
@@ -562,7 +562,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
     roi_img = _utils.check_niimg_3d(roi_img)
     roi_data = get_data(roi_img)
     labels = np.unique(roi_data)
-    cmap = plt.cm.get_cmap(cmap)
+    cmap = plt.get_cmap(cmap)
     color_list = cmap(np.linspace(0, 1, len(labels)))
     for idx, label in enumerate(labels):
         if label == 0:
@@ -590,7 +590,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     Parameters
     ----------
     roi_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The ROI/mask image, it could be binary mask or an atlas or ROIs
         with integer values.
     %(bg_img)s
@@ -777,7 +777,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
             (str(view_type), str(valid_view_types))
         )
 
-    cmap = plt.cm.get_cmap(cmap)
+    cmap = plt.get_cmap(cmap)
     color_list = cmap(np.linspace(0, 1, n_maps))
 
     if view_type == 'auto':
@@ -872,7 +872,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     Parameters
     ----------
     stat_map_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The statistical map image
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
@@ -975,7 +975,7 @@ def plot_glass_brain(stat_map_img,
     Parameters
     ----------
     stat_map_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The statistical map image. It needs to be in MNI space
         in order to align with the brain schematics.
     %(output_file)s
@@ -1147,7 +1147,7 @@ def plot_connectome(adjacency_matrix, node_coords,
     nilearn.plotting.find_parcellation_cut_coords : Extraction of node
         coords on brain parcellations.
     nilearn.plotting.find_probabilistic_atlas_cut_coords : Extraction of
-        node coords on brain probabilisitic atlases.
+        node coords on brain probabilistic atlases.
 
     """
     display = plot_glass_brain(None,
@@ -1325,7 +1325,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
         value and a colorbar will be added to the left side of the figure
         with atlas labels.
         If not specified, a new mask will be derived from data.
-        See http://nilearn.github.io/manipulating_images/input_output.html.
+        See :ref:`extracting_data`.
 
     mask_labels : :obj:`dict`, optional
         If ``mask_img`` corresponds to an atlas, then this dictionary maps
@@ -1337,7 +1337,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
             If ``t_r`` is not provided, it will be inferred from ``img``'s
             header (``img.header.get_zooms()[-1]``).
 
-        .. versionadded:: 0.9.1.dev
+        .. versionadded:: 0.9.1
             Prior to this, ``t_r`` would be inferred from ``img`` without
             user input.
 
@@ -1367,7 +1367,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
 
     Notes
     -----
-    This figure was originally developed in :footcite:`POWER2017150`.
+    This figure was originally developed in :footcite:`Power2017`.
 
     In cases of long acquisitions (>800 volumes), the data will be downsampled
     to have fewer than 800 volumes before being plotted.

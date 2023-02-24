@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Functions related to the documentation.
 
 docdict contains the standard documentation entries
@@ -15,12 +14,6 @@ import sys
 # Standard documentation entries
 #
 docdict = dict()
-
-NILEARN_LINKS = {"landing_page": "http://nilearn.github.io"}
-NILEARN_LINKS["input_output"] = (
-    "{}/manipulating_images/input_output.html".format(
-        NILEARN_LINKS["landing_page"])
-)
 
 # Verbose
 verbose = """
@@ -269,7 +262,8 @@ mask_img : Niimg-like object
 
 # Memory
 docdict['memory'] = """
-memory : instance of :class:`joblib.Memory` or :obj:`str`
+memory : instance of :class:`joblib.Memory`, :obj:`str`, or \
+:class:`pathlib.Path`
     Used to cache the masking process.
     By default, no caching is done. If a :obj:`str` is given, it is the
     path to the caching directory."""
@@ -289,7 +283,7 @@ random_state : :obj:`int` or RandomState, optional
 memory_level = """
 memory_level : :obj:`int`, optional.
     Rough estimator of the amount of memory used by caching. Higher value
-    means more memory for caching.
+    means more memory for caching. Zero means no caching.
     Default={}."""
 docdict['memory_level'] = memory_level.format(0)
 docdict['memory_level1'] = memory_level.format(1)
@@ -305,14 +299,42 @@ docdict['n_jobs_all'] = n_jobs.format("-1")
 # img
 docdict['img'] = """
 img : Niimg-like object
-    See `input-output <%(input_output)s>`_.
-""" % NILEARN_LINKS
+    See :ref:`extracting_data`.
+"""
 
 # imgs
 docdict['imgs'] = """
 imgs : :obj:`list` of Niimg-like objects
-    See `input-output <%(input_output)s>`_.
-""" % NILEARN_LINKS
+    See :ref:`extracting_data`.
+"""
+
+# confounds
+docdict['confounds'] = """
+confounds : CSV file or array-like, optional
+    This parameter is passed to :func:`nilearn.signal.clean`.
+    Please see the related documentation for details.
+    shape: list of (number of scans, number of confounds)
+"""
+
+# sample_mask
+docdict['sample_mask'] = """
+sample_mask : Any type compatible with numpy-array indexing, optional
+    shape: (number of scans - number of volumes removed, )
+    Masks the niimgs along time/fourth dimension to perform scrubbing
+    (remove volumes with high motion) and/or non-steady-state volumes.
+    This parameter is passed to :func:`nilearn.signal.clean`.
+"""
+
+# kwargs for Maskers
+docdict['masker_kwargs'] = """
+kwargs : dict
+    Keyword arguments to be passed to functions called within the masker.
+    Kwargs prefixed with ``'clean__'`` will be passed to
+    :func:`~nilearn.signal.clean`.
+    Within :func:`~nilearn.signal.clean`, kwargs prefixed with
+    ``'butterworth__'`` will be passed to the Butterworth filter
+    (i.e., ``clean__butterworth__``).
+"""
 
 # cut_coords
 docdict['cut_coords'] = """
@@ -367,7 +389,7 @@ display_mode : {'ortho', 'tiled', 'mosaic','x',\
 'y', 'z', 'yx', 'xz', 'yz'}, optional
     Choose the direction of the cuts:
 
-        - 'x': sagital
+        - 'x': sagittal
         - 'y': coronal
         - 'z': axial
         - 'ortho': three cuts are performed in orthogonal
@@ -456,9 +478,9 @@ cbar_tick_format : :obj:`str`, optional
 # bg_img
 docdict['bg_img'] = """
 bg_img : Niimg-like object, optional
-    See `input_output <%(input_output)s>`_.
+    See :ref:`extracting_data`.
     The background image to plot on top of.
-""" % NILEARN_LINKS
+"""
 
 # vmin
 docdict['vmin'] = """

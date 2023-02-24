@@ -11,7 +11,7 @@
 HIGHLIGHTS
 ----------
 
-- Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_ as :mod:`nilearn.glm`. This module is experimental, hence subject to change in any future release. :ref:`Here's a guide to replacing Nistats imports to work in Nilearn. <nistats_migration>` (:gh:`2299`, :gh:`2304`, and :gh:`2307` by `Kshitij Chawla`_, and :gh:`2509` by `Binh Nguyen`_).
+- Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_ as :mod:`nilearn.glm`. This module is experimental, hence subject to change in any future release. (:gh:`2299`, :gh:`2304`, and :gh:`2307` by `Kshitij Chawla`_, and :gh:`2509` by `Binh Nguyen`_).
 
 - New classes :class:`nilearn.decoding.Decoder` (for :term:`classification`) and :class:`nilearn.decoding.DecoderRegressor` (for :term:`regression`) implement a model selection scheme that averages the best models within a cross validation loop (:gh:`2000` by `Binh Nguyen`_).
 
@@ -34,7 +34,6 @@ HIGHLIGHTS
 NEW
 ---
 - Nilearn now includes the functionality of `Nistats <https://nistats.github.io>`_.
-  :ref:`Here's a guide to replacing Nistats imports to work in Nilearn. <nistats_migration>`
 - New decoder object
   :class:`nilearn.decoding.Decoder` (for classification) and
   :class:`nilearn.decoding.DecoderRegressor` (for regression) implement a model

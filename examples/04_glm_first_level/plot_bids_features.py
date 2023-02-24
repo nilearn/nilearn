@@ -18,16 +18,8 @@ More specifically:
 3. Demonstrate Quality assurance of Nistats estimation against available FSL.
    estimation in the openneuro dataset.
 4. Display contrast plot and uncorrected first level statistics table report.
-
-
-
-To run this example, you must launch IPython via ``ipython
---matplotlib`` in a terminal, or use the Jupyter notebook.
-
-.. contents:: **Contents**
-    :local:
-    :depth: 1
 """
+
 ##############################################################################
 # Fetch openneuro BIDS dataset
 # -----------------------------
@@ -148,7 +140,8 @@ plt.show()
 # We can get a latex table from a Pandas Dataframe for display and publication
 # purposes
 from nilearn.reporting import get_clusters_table
-print(get_clusters_table(z_map, norm.isf(0.001), 10).to_latex())
+table = get_clusters_table(z_map, norm.isf(0.001), 10)
+print(table.to_latex())
 
 #########################################################################
 # Generating a report

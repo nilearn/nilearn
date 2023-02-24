@@ -42,7 +42,7 @@ def fetch_haxby(data_dir=None, subjects=(2,),
                 fetch_stimuli=False, url=None, resume=True, verbose=1):
     """Download and loads complete haxby dataset.
 
-    See :footcite:`Haxby2425`.
+    See :footcite:`Haxby2001`.
 
     Parameters
     ----------
@@ -96,8 +96,7 @@ def fetch_haxby(data_dir=None, subjects=(2,),
     if isinstance(subjects, numbers.Number) and subjects > 6:
         subjects = 6
 
-    if subjects is not None and (isinstance(subjects, list) or
-                                 isinstance(subjects, tuple)):
+    if subjects is not None and isinstance(subjects, (list, tuple)):
         for sub_id in subjects:
             if sub_id not in [1, 2, 3, 4, 5, 6]:
                 raise ValueError("You provided invalid subject id {0} in a "
@@ -279,7 +278,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
 def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     """Download and loads Miyawaki et al. 2008 dataset (153MB).
 
-    See :footcite:`MIYAWAKI2008915`.
+    See :footcite:`Miyawaki2008`.
 
     Parameters
     ----------
@@ -434,11 +433,11 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     Functional Localizer page."
     (see https://osf.io/vhtf6/)
 
-    You may cite :footcite:`PAPADOPOULOSORFANOS2017309`
+    You may cite :footcite:`Papadopoulos-Orfanos2017`
     when using this dataset.
 
     Scientific results obtained using this dataset are described
-    in :footcite:`Pinel2007fast`.
+    in :footcite:`Pinel2007`.
 
     Parameters
     ----------
@@ -864,7 +863,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     Fetch the Autism Brain Imaging Data Exchange (ABIDE) dataset wrt criteria
     that can be passed as parameter. Note that this is the preprocessed
     version of ABIDE provided by the preprocess connectome projects (PCP).
-    See :footcite:`Nielsen2013Multisite`.
+    See :footcite:`Nielsen2013`.
 
     Parameters
     ----------
@@ -1088,7 +1087,7 @@ def fetch_mixed_gambles(n_subjects=1, data_dir=None, url=None, resume=True,
                         return_raw_data=False, verbose=1):
     """Fetch Jimura "mixed gambles" dataset.
 
-    See :footcite:`JIMURA2012544`.
+    See :footcite:`Jimura2012`.
 
     Parameters
     ----------
@@ -1163,9 +1162,9 @@ def fetch_megatrawls_netmats(dimensionality=100, timeseries='eigen_regression',
     The network matrices are estimated from functional connectivity
     datasets of 461 subjects. Full technical details in references.
 
-    More information available in :footcite:`smithhcp2015`,
-    :footcite:`smith2015positive`, :footcite:`Filippini7209`,
-    :footcite:`smith2014methods`, and :footcite:`reilly2009cerebellum`.
+    More information available in :footcite:`Smith2015b`,
+    :footcite:`Smith2015a`, :footcite:`Filippini2009`,
+    :footcite:`Smith2014`, and :footcite:`Reilly2009`.
 
     Parameters
     ----------
@@ -1266,7 +1265,7 @@ def fetch_surf_nki_enhanced(n_subjects=10, data_dir=None,
     """Download and load the NKI enhanced resting-state dataset,
     preprocessed and projected to the fsaverage5 space surface.
 
-    See :footcite:`Nooner2012NKI`.
+    See :footcite:`Nooner2012`.
 
     Direct download link :footcite:`NKIdataset`.
 
@@ -1519,7 +1518,7 @@ def fetch_development_fmri(n_subjects=None, reduce_confounds=True,
     The data is downsampled to 4mm resolution for convenience with a repetition time (TR)
     of 2 secs. The origin of the data is coming from OpenNeuro. See Notes below.
 
-    Please cite :footcite:`richardson2018development`
+    Please cite :footcite:`Richardson2018`
     if you are using this dataset.
 
     .. versionadded:: 0.5.2
@@ -1842,7 +1841,7 @@ def fetch_ds000030_urls(data_dir=None, verbose=1):
 
     This dataset is version 1.0.4 of the "UCLA Consortium for
     Neuropsychiatric Phenomics LA5c" dataset
-    :footcite:p:`poldrack_phenome-wide_2016`.
+    :footcite:p:`Poldrack2016`.
 
     Downloading the index allows users to explore the dataset directories
     to select specific files to download.
@@ -1929,8 +1928,8 @@ def select_from_index(urls, inclusion_filters=None, exclusion_filters=None,
         Sorted list of filtered dataset directories.
 
     """
-    inclusion_filters = inclusion_filters if inclusion_filters else []
-    exclusion_filters = exclusion_filters if exclusion_filters else []
+    inclusion_filters = inclusion_filters or []
+    exclusion_filters = exclusion_filters or []
     # We apply filters to the urls
     for exclusion in exclusion_filters:
         urls = [url for url in urls if not fnmatch.fnmatch(url, exclusion)]
@@ -2036,7 +2035,7 @@ def fetch_openneuro_dataset(
     -----
     The default dataset downloaded by this function is the
     "UCLA Consortium for Neuropsychiatric Phenomics LA5c" dataset
-    :footcite:p:`poldrack_phenome-wide_2016`.
+    :footcite:p:`Poldrack2016`.
 
     This copy includes filenames that are not compliant with the current
     version of :term:`BIDS`, so this function also calls
@@ -2557,7 +2556,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
 
     # No. Download the data
     print('Data absent, downloading...')
-    url = 'http://nipy.sourceforge.net/data-packages/nipy-data-0.2.tar.gz'
+    url = 'https://nipy.org/data-packages/nipy-data-0.2.tar.gz'
 
     archive_path = os.path.join(data_dir, os.path.basename(url))
     _fetch_file(url, data_dir)

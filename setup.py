@@ -31,9 +31,9 @@ with open('README.rst') as fp:
     LONG_DESCRIPTION = fp.read()
 MAINTAINER = 'Gael Varoquaux'
 MAINTAINER_EMAIL = 'gael.varoquaux@normalesup.org'
-URL = 'http://nilearn.github.io'
+URL = 'https://nilearn.github.io'
 LICENSE = 'new BSD'
-DOWNLOAD_URL = 'http://nilearn.github.io'
+DOWNLOAD_URL = 'https://nilearn.github.io'
 VERSION = _VERSION_GLOBALS['__version__']
 
 
@@ -60,7 +60,6 @@ if __name__ == "__main__":
               'Operating System :: POSIX',
               'Operating System :: Unix',
               'Operating System :: MacOS',
-              'Programming Language :: Python :: 3.6',
               'Programming Language :: Python :: 3.7',
               'Programming Language :: Python :: 3.8',
               'Programming Language :: Python :: 3.9',

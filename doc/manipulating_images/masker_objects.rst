@@ -8,10 +8,6 @@ This chapter introduces the maskers: objects that go from
 neuroimaging volumes, on the disk or in memory, to data matrices, eg of
 time series.
 
-.. contents:: **Chapters contents**
-    :local:
-    :depth: 1
-
 
 The concept of "masker" objects
 ===============================
@@ -27,6 +23,12 @@ network nodes). Think of masker objects as swiss-army knives for shaping
 the raw neuroimaging data in 3D space into the units of observation
 relevant for the research questions at hand.
 
+.. tip::
+    Masker objects can transform both 3D and 4D image objects.
+    Transforming a 4D image produces a 2D (samples x features) matrix.
+    Currently, transforming a 3D image also produces a 2D (1 x features) matrix,
+    but starting in version 0.12, it will produce a 1D (features) array.
+
 
 .. |niimgs| image:: ../images/niimgs.jpg
     :scale: 50%
@@ -39,8 +41,6 @@ relevant for the research questions at hand.
    <span style="padding: .5em; font-size: 400%">&rarr;</span>
 
 .. centered:: |niimgs|  |arrow|  |arrays|
-
-
 
 "masker" objects (found in module :mod:`nilearn.maskers`)
 simplify these "data folding" steps that often precede the
@@ -280,7 +280,7 @@ properties, before conversion to voxel signals.
 
    You can, more as a training than as an exercise, try to play with
    the parameters in
-   :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`.
+   :ref:`sphx_glr_auto_examples_00_tutorials_plot_decoding_tutorial.py`.
    Try to enable detrending and run the script:
    does it have a big impact on the result?
 
@@ -325,18 +325,29 @@ is explained in details in :ref:`resampling`.
 Inverse transform: unmasking data
 ---------------------------------
 
+.. note::
+
+  Inverse transform only performs spatial unmasking.
+  The data is only brought back into either a 3D or 4D represenetation,
+  without inverting any signal processing performed by ``transform``.
+
 Once voxel signals have been processed, the result can be visualized as
 images after unmasking (masked-reduced data transformed back into
 the original whole-brain space). This step is present in many
 :ref:`examples <examples-index>` provided in nilearn. Below you will find
 an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
-<sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py>`):
+<sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py>`:
 
 .. literalinclude:: ../../examples/02_decoding/plot_haxby_anova_svm.py
     :start-after: # Look at the SVC's discriminating weights
     :end-before: # Or we can plot the weights
 
 |
+
+.. tip::
+    Masker objects can inverse-transform both 1D and 2D arrays.
+    Inverse-transforming a 2D array produces a 4D (X x Y x Z x samples) image,
+    while inverse-transforming a 1D array produces a 3D (X x Y x Z) image.
 
 .. topic:: **Examples to better understand the NiftiMasker**
 
@@ -425,6 +436,50 @@ possible option.
 .. topic:: **Examples**
 
    * :ref:`sphx_glr_auto_examples_03_connectivity_plot_probabilistic_atlas_extraction.py`
+
+Extraction of signals from regions for multiple subjects:\  :class:`MultiNiftiMasker`, :class:`MultiNiftiLabelsMasker`, :class:`MultiNiftiMapsMasker`
+=====================================================================================================================================================
+
+The purpose of :class:`MultiNiftiMasker`, :class:`MultiNiftiLabelsMasker` and
+:class:`MultiNiftiMapsMasker` is to extend the capabilities of
+:class:`NiftiMasker`, :class:`NiftiLabelsMasker` and :class:`NiftiMapsMasker`
+as to facilitate the computation of voxel signals in multi-subjects settings.
+While :class:`NiftiMasker`, :class:`NiftiLabelsMasker` and
+:class:`NiftiMapsMasker` work with 3D inputs (single brain volume) or 4D inputs
+(sequence of brain volumes in time for one subject), :class:`MultiNiftiMasker`,
+:class:`MultiNiftiLabelsMasker` and :class:`MultiNiftiMapsMasker` expect 5D
+inputs (list of sequences of brain volumes).
+
+:class:`MultiNiftiMasker` Usage
+-------------------------------
+
+:class:`MultiNiftiMasker` extracts voxel signals for each subject in the areas defined by the
+masks.
+
+.. topic:: **Examples**
+
+    * :ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_reconstruction.py`
+    * :ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_encoding.py`
+
+:class:`MultiNiftiLabelsMasker` Usage
+-------------------------------------
+
+:class:`MultiNiftiLabelsMasker` extracts signals from regions defined by labels
+for each subject.
+
+.. topic:: **Examples**
+
+    * :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
+
+:class:`MultiNiftiMapsMasker` Usage
+-------------------------------------
+
+:class:`MultiNiftiMapsMasker` extracts signals regions defined by maps
+for each subject.
+
+.. topic:: **Examples**
+
+    * :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 
 Extraction of signals from seeds:\  :class:`NiftiSpheresMasker`
 ===============================================================

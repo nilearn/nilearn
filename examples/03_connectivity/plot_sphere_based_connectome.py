@@ -4,8 +4,8 @@ Extract signals on spheres and plot a connectome
 
 This example shows how to extract signals from spherical regions.
 We show how to build spheres around user-defined coordinates, as well as
-centered on coordinates from the Power-264 atlas [1], and the Dosenbach-160
-atlas [2].
+centered on coordinates from the Power-264 atlas [1],
+and the Dosenbach-160 atlas [2].
 
 .. include:: ../../../examples/masker_note.rst
 
@@ -50,7 +50,7 @@ labels = [
     'Left Temporoparietal junction',
     'Right Temporoparietal junction',
     'Medial prefrontal cortex',
-    ]
+]
 
 ##########################################################################
 # Extracts signal from sphere around DMN seeds
@@ -65,9 +65,18 @@ labels = [
 from nilearn.maskers import NiftiSpheresMasker
 
 masker = NiftiSpheresMasker(
-    dmn_coords, radius=8, detrend=True, standardize=True,
-    low_pass=0.1, high_pass=0.01, t_r=2,
-    memory='nilearn_cache', memory_level=1, verbose=2)
+    dmn_coords,
+    radius=8,
+    detrend=True,
+    standardize=True,
+    low_pass=0.1,
+    high_pass=0.01,
+    t_r=2,
+    memory='nilearn_cache',
+    memory_level=1,
+    verbose=2,
+    clean__butterworth__padtype='even',  # kwarg to modify Butterworth filter
+)
 
 # Additionally, we pass confound information to ensure our extracted
 # signal is cleaned from confounds.
@@ -377,7 +386,13 @@ print('Dosenbach networks names are {0}'.format(np.unique(dosenbach.networks)))
 plotting.show()
 
 ###############################################################################
-# .. seealso::
+# References
+# ----------
+#
+# .. footbibliography::
+#
+# See also
+# --------
 #
 #    * :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 #

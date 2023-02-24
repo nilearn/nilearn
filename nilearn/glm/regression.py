@@ -53,7 +53,7 @@ def _deprecation_warning(old_param,
     return _warned_func
 
 
-class OLSModel(object):
+class OLSModel:
     """ A simple ordinary least squares model.
 
     Parameters
@@ -90,11 +90,6 @@ class OLSModel(object):
     df_model : scalar
         Degrees of freedome of the model.  The rank of the design.
 
-    Notes
-    -----
-    This class is experimental.
-    It may change in any future release of Nilearn.
-
     """
     def __init__(self, design):
         """
@@ -128,7 +123,7 @@ class OLSModel(object):
 
         Given the whitened design matrix, the loglikelihood is evaluated
         at the parameter vector, beta, for the dependent variable, Y
-        and the nuisance parameter, sigma :footcite:`GreeneEconometric`.
+        and the nuisance parameter, sigma :footcite:`Greene2003`.
 
         Parameters
         ----------
@@ -249,11 +244,6 @@ class ARModel(OLSModel):
     and sigma, a scalar nuisance parameter that
     shows up as multiplier in front of the AR(p) covariance.
 
-    Notes
-    -----
-    This class is experimental.
-    It may change in any future release of Nilearn.
-
     """
     def __init__(self, design, rho):
         """ Initialize AR model instance
@@ -310,11 +300,6 @@ class RegressionResults(LikelihoodModelResults):
 
     It handles the output of contrasts, estimates of covariance, etc.
 
-    Notes
-    -----
-    This class is experimental.
-    It may change in any future release of Nilearn.
-
     """
 
     def __init__(self, theta, Y, model, whitened_Y, whitened_residuals,
@@ -342,7 +327,7 @@ class RegressionResults(LikelihoodModelResults):
     def normalized_residuals(self):
         """Residuals, normalized to have unit length.
 
-        See :footcite:`Montgomery` and :footcite:`GVK393847152`.
+        See :footcite:`Montgomery2006` and :footcite:`Davidson2004`.
 
         Notes
         -----
@@ -395,11 +380,6 @@ class SimpleRegressionResults(LikelihoodModelResults):
 
     Its intended to save memory when details of the model are unnecessary.
 
-    Notes
-    -----
-    This class is experimental.
-    It may change in any future release of Nilearn.
-
     """
     def __init__(self, results):
         """See LikelihoodModelResults constructor.
@@ -432,7 +412,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
     def normalized_residuals(self, Y):
         """Residuals, normalized to have unit length.
 
-        See :footcite:`Montgomery` and :footcite:`GVK393847152`.
+        See :footcite:`Montgomery2006` and :footcite:`Davidson2004`.
 
         Notes
         -----

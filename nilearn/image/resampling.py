@@ -4,7 +4,6 @@ See http://nilearn.github.io/manipulating_images/input_output.html
 """
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
 # License: simplified BSD
-
 import warnings
 from nilearn.version import _compare_version
 import numbers
@@ -17,6 +16,7 @@ from scipy.ndimage import find_objects, affine_transform
 from .image import crop_img
 from .. import _utils
 from .._utils.niimg import _get_data
+from .._utils import stringify_path
 
 ###############################################################################
 # Affine utils
@@ -131,7 +131,7 @@ def coord_transform(x, y, z, affine):
         >>> niimg = datasets.load_mni152_template()
         >>> # Find the MNI coordinates of the voxel (50, 50, 50)
         >>> image.coord_transform(50, 50, 50, niimg.affine)
-        (2.0, -34.0, 28.0)
+        (-48.0, -84.0, -22.0)
 
     """
     squeeze = (not hasattr(x, '__iter__'))
@@ -194,7 +194,7 @@ def get_mask_bounds(img):
         Parameters
         ----------
         img : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             The image to inspect. Zero values are considered as
             background.
 
@@ -314,7 +314,7 @@ def resample_img(img, target_affine=None, target_shape=None,
     Parameters
     ----------
     img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Image(s) to resample.
 
     target_affine : numpy.ndarray, optional
@@ -435,6 +435,7 @@ def resample_img(img, target_affine=None, target_shape=None,
                    "or 'nearest' but it was set to '{0}'").format(interpolation)
         raise ValueError(message)
 
+    img = stringify_path(img)
     if isinstance(img, str):
         # Avoid a useless copy
         input_img_is_string = True
@@ -447,11 +448,12 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     # If later on we want to impute sform using qform add this condition
     # see : https://github.com/nilearn/nilearn/issues/3168#issuecomment-1159447771 # noqa:E501
-    sform, sform_code = img.get_sform(coded=True)
-    if not sform_code:
-        warnings.warn("The provided image has no sform in its header. "
-                      "Please check the provided file. "
-                      "Results may not be as expected.")
+    if hasattr(img, 'get_sform'):  # NIfTI images only
+        _, sform_code = img.get_sform(coded=True)
+        if not sform_code:
+            warnings.warn("The provided image has no sform in its header. "
+                        "Please check the provided file. "
+                        "Results may not be as expected.")
 
     # noop cases
     if target_affine is None and target_shape is None:
@@ -637,11 +639,11 @@ def resample_to_img(source_img, target_img,
     Parameters
     ----------
     source_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Image(s) to resample.
 
     target_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Reference image taken for resampling.
 
     interpolation : str, optional
@@ -706,7 +708,7 @@ def reorder_img(img, resample=None):
     Parameters
     -----------
     img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Image to reorder.
 
     resample : None or string in {'continuous', 'linear', 'nearest'}, optional

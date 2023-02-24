@@ -10,17 +10,9 @@ features in the analysis and inspect the outcome, i.e. the resulting brain
 maps.
 
 Readers without prior experience in fMRI data analysis should first run the
-:ref:`sphx_glr_auto_examples_plot_single_subject_single_run.py` tutorial to get
-a bit more familiar with the base concepts, and only then run this tutorial
-example.
-
-To run this example, you must launch IPython via ``ipython --matplotlib`` in a
-terminal, or use ``jupyter-notebook``.
-
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
+:ref:`sphx_glr_auto_examples_00_tutorials_plot_single_subject_single_run.py`
+tutorial to get a bit more familiar with the base concepts,
+and only then run this tutorial example.
 """
 
 ###############################################################################
@@ -412,10 +404,8 @@ plt.show()
 # is to estimate confounding effects from the data themselves, using
 # the CompCor approach, and take those into account in the model.
 #
-# For this we rely on the so-called `high_variance_confounds`_
-# routine of Nilearn.
-#
-# .. _high_variance_confounds: https://nilearn.github.io/modules/generated/nilearn.image.high_variance_confounds.html
+# For this we rely on the so-called
+# :func:`~nilearn.image.high_variance_confounds` routine of Nilearn.
 
 
 from nilearn.image import high_variance_confounds

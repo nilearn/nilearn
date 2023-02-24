@@ -18,6 +18,7 @@ from .. import signal
 from .. import _utils
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.class_inspect import enclosing_scope_name
+from .._utils import stringify_path
 from nilearn.image import high_variance_confounds
 
 
@@ -57,6 +58,7 @@ def _filter_and_extract(
 
     # If we have a string (filename), we won't need to copy, as
     # there will be no side effect
+    imgs = stringify_path(imgs)
     if isinstance(imgs, str):
         copy = False
 
@@ -64,6 +66,22 @@ def _filter_and_extract(
         print("[%s] Loading data from %s" % (
             class_name,
             _utils._repr_niimgs(imgs, shorten=False)))
+
+    # Convert input to niimg to check shape.
+    # This must be repeated after the shape check because check_niimg will
+    # coerce 5D data to 4D, which we don't want.
+    temp_imgs = _utils.check_niimg(imgs)
+
+    # Raise warning if a 3D niimg is provided.
+    if temp_imgs.ndim == 3:
+        warnings.warn(
+            'Starting in version 0.12, 3D images will be transformed to '
+            '1D arrays. '
+            'Until then, 3D images will be coerced to 2D arrays, with a '
+            'singleton first dimension representing time.',
+            DeprecationWarning,
+        )
+
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4,
                               dtype=dtype)
 
@@ -105,18 +123,23 @@ def _filter_and_extract(
         print("[%s] Cleaning extracted signals" % class_name)
     runs = parameters.get('runs', None)
     region_signals = cache(
-        signal.clean, memory=memory, func_memory_level=2,
-        memory_level=memory_level)(
-            region_signals,
-            detrend=parameters['detrend'],
-            standardize=parameters['standardize'],
-            standardize_confounds=parameters['standardize_confounds'],
-            t_r=parameters['t_r'],
-            low_pass=parameters['low_pass'],
-            high_pass=parameters['high_pass'],
-            confounds=confounds,
-            sample_mask=sample_mask,
-            runs=runs)
+        signal.clean,
+        memory=memory,
+        func_memory_level=2,
+        memory_level=memory_level,
+    )(
+        region_signals,
+        detrend=parameters['detrend'],
+        standardize=parameters['standardize'],
+        standardize_confounds=parameters['standardize_confounds'],
+        t_r=parameters['t_r'],
+        low_pass=parameters['low_pass'],
+        high_pass=parameters['high_pass'],
+        confounds=confounds,
+        sample_mask=sample_mask,
+        runs=runs,
+        **parameters['clean_kwargs'],
+    )
 
     return region_signals, aux
 
@@ -132,9 +155,10 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         imgs : 3D/4D Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
-            Images to process. It must boil down to a 4D image with scans
-            number as last dimension.
+            See :ref:`extracting_data`.
+            Images to process.
+            If a 3D niimg is provided, a singleton dimension will be added to
+            the output to represent the single scan in the niimg.
 
         confounds : CSV file or array-like, optional
             This parameter is passed to signal.clean. Please see the related
@@ -158,6 +182,14 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             Signal for each element.
             shape: (number of scans, number of elements)
 
+        Warns
+        -----
+        DeprecationWarning
+            If a 3D niimg input is provided, the current behavior
+            (adding a singleton dimension to produce a 2D array) is deprecated.
+            Starting in version 0.12, a 1D array will be returned for 3D
+            inputs.
+
         """
         raise NotImplementedError()
 
@@ -167,9 +199,10 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         imgs : 3D/4D Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
-            Images to process. It must boil down to a 4D image with scans
-            number as last dimension.
+            See :ref:`extracting_data`.
+            Images to process.
+            If a 3D niimg is provided, a singleton dimension will be added to
+            the output to represent the single scan in the niimg.
 
         confounds : CSV file or array-like, optional
             This parameter is passed to signal.clean. Please see the related
@@ -189,6 +222,14 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         region_signals : 2D numpy.ndarray
             Signal for each element.
             shape: (number of scans, number of elements)
+
+        Warns
+        -----
+        DeprecationWarning
+            If a 3D niimg input is provided, the current behavior
+            (adding a singleton dimension to produce a 2D array) is deprecated.
+            Starting in version 0.12, a 1D array will be returned for 3D
+            inputs.
 
         """
         self._check_fitted()
@@ -220,7 +261,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         Parameters
         ----------
         X : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
 
         y : numpy array of shape [n_samples], optional
             Target values.
@@ -272,10 +313,20 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
     def inverse_transform(self, X):
         """ Transform the 2D data matrix back to an image in brain space.
 
+        This step only performs spatial unmasking,
+        without inverting any additional processing performed by ``transform``,
+        such as temporal filtering or smoothing.
+
         Parameters
         ----------
-        X : Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
+        X : 1D/2D :obj:`numpy.ndarray`
+            Signal for each element in the mask.
+            If a 1D array is provided, then the shape should be
+            (number of elements,), and a 3D img will be returned.
+            If a 2D array is provided, then the shape should be
+            (number of scans, number of elements), and a 4D img will be
+            returned.
+            See :ref:`extracting_data`.
 
         Returns
         -------
@@ -283,6 +334,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         """
         self._check_fitted()
+
         img = self._cache(masking.unmask)(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
         # internal structures of the header: remove the memmaped array

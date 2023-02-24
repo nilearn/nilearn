@@ -7,17 +7,14 @@ import string
 
 import numpy as np
 import pandas as pd
-import scipy.signal
-from scipy.ndimage import binary_dilation
-
-from sklearn.utils import check_random_state
 import scipy.linalg
-
+import scipy.signal
 from nibabel import Nifti1Image
+from scipy.ndimage import binary_dilation
+from sklearn.utils import check_random_state
 
-from .. import masking
-from . import logger
-from nilearn import datasets, image, maskers
+from nilearn import datasets, image, maskers, masking
+from nilearn._utils import as_ndarray, logger
 
 
 def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
@@ -53,10 +50,7 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
 
     """
     rand_gen = check_random_state(random_state)
-    mni = datasets.load_mni152_brain_mask()
-    target_affine = np.eye(3) * res
-    mask_img = image.resample_img(
-        mni, target_affine=target_affine, interpolation="nearest")
+    mask_img = datasets.load_mni152_brain_mask(resolution=res)
     masker = maskers.NiftiMasker(mask_img).fit()
     n_voxels = image.get_data(mask_img).sum()
     data = rand_gen.randn(n_scans, n_voxels)
@@ -884,7 +878,7 @@ def create_fake_bids_dataset(base_dir='',
     for subject in ['sub-%02d' % label for label in range(1, n_sub + 1)]:
         for session in created_sessions:
             subses_dir = os.path.join(bids_path, subject, session)
-            if session == 'ses-01' or session == '':
+            if session in ('ses-01', ''):
                 anat_path = os.path.join(subses_dir, 'anat')
                 os.makedirs(anat_path)
                 anat_file = os.path.join(anat_path, subject + '_T1w.nii.gz')
@@ -957,3 +951,39 @@ def create_fake_bids_dataset(base_dir='',
                             basic_confounds(100, random_state=rand_gen).to_csv(
                                 confounds_path, sep='\t', index=None)
     return 'bids_dataset'
+
+
+def generate_random_img(
+    shape,
+    affine=np.eye(4),
+    random_state=np.random.RandomState(0),
+):
+    """Create a random 3D or 4D image with a given shape and affine.
+
+    Parameters
+    ----------
+    shape : length-3 or length-4 tuple
+        The shape of the image being generated.
+        The number of elements determines the dimensionality of the image.
+    affine : 4x4 numpy.ndarray
+        The affine of the image
+    random_state : numpy.random.RandomState instance, optional
+        random number generator.
+
+    Returns
+    -------
+    data_img : 3D or 4D niimg
+        The data image.
+    mask_img : 3D niimg
+        The mask image.
+    """
+    data = random_state.standard_normal(size=shape)
+    data_img = Nifti1Image(data, affine)
+    if len(shape) == 4:
+        mask_data = as_ndarray(data[..., 0] > 0.2, dtype=np.int8)
+    else:
+        mask_data = as_ndarray(data > 0.2, dtype=np.int8)
+
+    mask_img = Nifti1Image(mask_data, affine)
+
+    return data_img, mask_img

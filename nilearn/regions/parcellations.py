@@ -15,6 +15,7 @@ from nilearn.maskers import NiftiLabelsMasker
 from .._utils.niimg import _safe_get_data
 from .._utils.niimg_conversions import _iter_check_niimg
 from .._utils import fill_doc
+from .._utils import stringify_path
 
 
 def _estimator_fit(data, estimator, method=None):
@@ -65,6 +66,8 @@ def _check_parameters_transform(imgs, confounds):
     as a list.
 
     """
+    imgs = stringify_path(imgs)
+    confounds = stringify_path(confounds)
     if not isinstance(imgs, (list, tuple)) or \
             isinstance(imgs, str):
         imgs = [imgs, ]

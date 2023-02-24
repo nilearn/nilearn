@@ -33,12 +33,12 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
         Input images.
 
     labels_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
-        regions definition as labels. By default, the label zero is used to
+        See :ref:`extracting_data`.
+        Regions definition as labels. By default, the label zero is used to
         denote an absence of region. Use background_label to change it.
 
     mask_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Mask to apply to labels before extracting signals. Every point
         outside the mask is considered as background (i.e. no region).
 
@@ -120,7 +120,7 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     # Nilearn issue: 2135, PR: 2195 for why this is necessary.
     signals = np.ndarray((data.shape[-1], len(labels)), order=order,
                          dtype=target_datatype)
-    reduction_function = getattr(ndimage.measurements, strategy)
+    reduction_function = getattr(ndimage, strategy)
     for n, img in enumerate(np.rollaxis(data, -1)):
         signals[n] = np.asarray(reduction_function(img,
                                                    labels=labels_data,
@@ -142,13 +142,20 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
 
     labels_img, mask_img must have the same shapes and affines.
 
+    .. versionchanged:: 0.9.2
+        Support 1D signals.
+
     Parameters
     ----------
     signals : :class:`numpy.ndarray`
-        2D array with shape: (scan number, number of regions in labels_img).
+        1D or 2D array.
+        If this is a 1D array, it must have as many elements as there are
+        regions in the labels_img.
+        If it is 2D, it should have the shape
+        (number of scans, number of regions in labels_img).
 
     labels_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Region definitions using labels.
 
     mask_img : Niimg-like object, optional
@@ -202,10 +209,12 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
 
     # nditer is not available in numpy 1.3: using multiple loops.
     # Using these loops still gives a much faster code (6x) than this one:
-    ## for n, label in enumerate(labels):
-    ##     data[labels_data == label, :] = signals[:, n]
-    data = np.zeros(target_shape + (signals.shape[0],),
-                    dtype=signals.dtype, order=order)
+    # for n, label in enumerate(labels):
+    #     data[labels_data == label, :] = signals[:, n]
+    if signals.ndim == 2:
+        target_shape = target_shape + (signals.shape[0],)
+
+    data = np.zeros(target_shape, dtype=signals.dtype, order=order)
     labels_dict = dict([(label, n) for n, label in enumerate(labels)])
     # optimized for "data" in F order.
     for k in range(labels_data.shape[2]):
@@ -214,7 +223,10 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
                 label = labels_data[i, j, k]
                 num = labels_dict.get(label, None)
                 if num is not None:
-                    data[i, j, k, :] = signals[:, num]
+                    if signals.ndim == 2:
+                        data[i, j, k, :] = signals[:, num]
+                    else:
+                        data[i, j, k] = signals[num]
 
     return new_img_like(labels_img, data, target_affine)
 
@@ -231,13 +243,13 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
         Input images.
 
     maps_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
-        regions definition as maps (array of weights).
+        See :ref:`extracting_data`.
+        Regions definition as maps (array of weights).
         shape: imgs.shape + (region number, )
 
     mask_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
-        mask to apply to regions before extracting signals. Every point
+        See :ref:`extracting_data`.
+        Mask to apply to regions before extracting signals. Every point
         outside the mask is considered as background (i.e. outside of any
         region).
 
@@ -278,10 +290,11 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
             raise ValueError("mask_img and imgs shapes must be identical.")
         if abs(mask_img.affine - affine).max() > 1e-9:
             raise ValueError("mask_img and imgs affines must be identical")
-        maps_data, maps_mask, labels = \
-                   _trim_maps(maps_data,
-                              _safe_get_data(mask_img, ensure_finite=True),
-                              keep_empty=True)
+        maps_data, maps_mask, labels = _trim_maps(
+            maps_data,
+            _safe_get_data(mask_img, ensure_finite=True),
+            keep_empty=True,
+        )
         maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
     else:
         maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
@@ -310,11 +323,11 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
                 region_signals.shape[1] == maps_img.shape[-1]
 
     maps_img : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Region definitions using maps.
 
     mask_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Boolean array giving :term:`voxels<voxel>` to process.
         Integer arrays also accepted, zero meaning False.
 

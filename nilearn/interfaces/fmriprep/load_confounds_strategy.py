@@ -86,7 +86,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
           :footcite:`Fox2005`. With the global signal regression, this approach
           can remove confounds without compromising the temporal degrees of
           freedom.
-        - 'srubbing': Load confounds for scrubbing describbed in
+        - 'srubbing': Load confounds for scrubbing described in
           :footcite:`Power2012`. This approach can reliably remove the
           impact of high motion volumes in functional connectome, however, it
           might not be suitable with subjects with high motion (more than 50%
@@ -94,7 +94,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
           based on the characteristics of the dataset, or remove high motion
           subjects from the dataset.
         - 'compcor': Load confounds using the CompCor strategy from
-          :footcite:`BEHZADI200790`. CompCor estimates noise through principal
+          :footcite:`Behzadi2007`. CompCor estimates noise through principal
           component analysis on regions that are unlikely to contain signal.
           Thus it might not be a suitable approach for researchers who want
           explicit description of the source of noise. Empirically, Compcor
@@ -122,7 +122,6 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
     confounds : pandas.DataFrame, or list of
         A reduced version of :term:`fMRIPrep` confounds based on selected
         strategy and flags.
-        An intercept is automatically added to the list of confounds.
         The columns contains the labels of the regressors.
 
     sample_mask : None, numpy.ndarray, or list of

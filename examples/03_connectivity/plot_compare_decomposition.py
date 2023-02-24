@@ -103,7 +103,7 @@ dict_learning = DictLearning(n_components=20,
                              n_epochs=1,
                              mask_strategy='whole-brain-template')
 
-print('[Example] Fitting dicitonary learning model')
+print('[Example] Fitting dictionary learning model')
 dict_learning.fit(func_filenames)
 print('[Example] Saving results')
 # Grab extracted components umasked back to Nifti image.

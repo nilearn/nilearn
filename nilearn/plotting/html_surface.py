@@ -3,7 +3,7 @@ import collections.abc
 
 import numpy as np
 import matplotlib as mpl
-from matplotlib import cm as mpl_cm
+import matplotlib.pyplot as plt
 
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils import fill_doc
@@ -32,7 +32,7 @@ def _get_vertexcolor(surf_map, cmap, norm,
         bg_map = surface.load_surf_data(bg_map)
         bg_vmin, bg_vmax = np.min(bg_map), np.max(bg_map)
     bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
-    bg_color = mpl_cm.get_cmap('Greys')(bg_norm(bg_map))
+    bg_color = plt.get_cmap('Greys')(bg_norm(bg_map))
     vertexcolor[np.abs(surf_map) < absolute_threshold] = bg_color[
         np.abs(surf_map) < absolute_threshold]
     return to_color_strings(vertexcolor)
@@ -137,7 +137,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     Parameters
     ----------
     stat_map_img : Niimg-like object, 3D
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa: E501
+        See :ref:`extracting_data`.
 
     surf_mesh : str or dict, optional.
         If a string, it should be one of the following values:

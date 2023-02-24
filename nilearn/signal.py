@@ -12,11 +12,13 @@ import warnings
 import numpy as np
 import pandas as pd
 from scipy import linalg, signal as sp_signal
+from scipy.interpolate import CubicSpline
 from sklearn.utils import gen_even_slices, as_float_array
 
 from ._utils.numpy_conversions import csv_to_array, as_ndarray
 from ._utils import fill_doc
 from nilearn._utils.glm import _check_run_sample_masks
+from ._utils import stringify_path
 
 availiable_filters = ['butterworth',
                       'cosine'
@@ -252,34 +254,48 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
 
 
 def _check_wn(btype, freq, nyq):
-    wn = freq / float(nyq)
-    if wn >= 1.:
-        # results looked unstable when the critical frequencies are
-        # exactly at the Nyquist frequency. See issue at SciPy
-        # https://github.com/scipy/scipy/issues/6265. Before, SciPy 1.0.0 ("wn
-        # should be btw 0 and 1"). But, after ("0 < wn < 1"). Due to unstable
-        # results as pointed in the issue above. Hence, we forced the
-        # critical frequencies to be slightly less than 1. but not 1.
-        wn = 1 - 10 * np.finfo(1.).eps
-        warnings.warn(
-            'The frequency specified for the %s pass filter is '
-            'too high to be handled by a digital filter (superior to '
-            'nyquist frequency). It has been lowered to %.2f (nyquist '
-            'frequency).' % (btype, wn))
+    """Ensure that the critical frequency works with the Nyquist frequency.
 
-    if wn < 0.0: # equal to 0.0 is okay
-        wn = np.finfo(1.).eps
-        warnings.warn(
-            'The frequency specified for the %s pass filter is '
-            'too low to be handled by a digital filter (must be non-negative).'
-            ' It has been set to eps: %.5e' % (btype, wn))
+    The critical frequency must be (1) >= 0 and (2) < Nyquist.
+    When critical frequencies are exactly at the Nyquist frequency,
+    results are unstable.
 
-    return wn
+    See issue at SciPy https://github.com/scipy/scipy/issues/6265.
+    Due to unstable results as pointed in the issue above,
+    we force the critical frequencies to be slightly less than the Nyquist
+    frequency, and slightly more than zero.
+    """
+    if freq >= nyq:
+        freq = nyq - (nyq * 10 * np.finfo(1.).eps)
+        warnings.warn(
+            f'The frequency specified for the {btype} pass filter is '
+            'too high to be handled by a digital filter '
+            '(superior to Nyquist frequency). '
+            f'It has been lowered to {freq} (Nyquist frequency).'
+        )
+
+    elif freq < 0.0:  # equal to 0.0 is okay
+        freq = nyq * np.finfo(1.).eps
+        warnings.warn(
+            f'The frequency specified for the {btype} pass filter is too '
+            'low to be handled by a digital filter (must be non-negative). '
+            f'It has been set to eps: {freq}'
+        )
+
+    return freq
 
 
 @fill_doc
-def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
-                order=5, copy=False):
+def butterworth(
+    signals,
+    sampling_rate,
+    low_pass=None,
+    high_pass=None,
+    order=5,
+    padtype="odd",
+    padlen=None,
+    copy=False,
+):
     """Apply a low-pass, high-pass or band-pass
     `Butterworth filter <https://en.wikipedia.org/wiki/Butterworth_filter>`_.
 
@@ -293,7 +309,7 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
         of `signals`.
 
     sampling_rate : :obj:`float`
-        Number of samples per time unit (sample frequency).
+        Number of samples per second (sample frequency, in Hertz).
     %(low_pass)s
     %(high_pass)s
     order : :obj:`int`, optional
@@ -303,6 +319,15 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
         Increasing the order sharpens this decay. Be aware that very high
         orders can lead to numerical instability.
         Default=5.
+
+    padtype : {"odd", "even", "constant", None}, optional
+        Type of padding to use for the Butterworth filter.
+        For more information about this, see :func:`scipy.signal.filtfilt`.
+
+    padlen : :obj:`int` or None, optional
+        The size of the padding to add to the beginning and end of ``signals``.
+        If None, the default value from :func:`scipy.signal.filtfilt` will be
+        used.
 
     copy : :obj:`bool`, optional
         If False, `signals` is modified inplace, and memory consumption is
@@ -322,10 +347,10 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     if low_pass is not None and high_pass is not None \
             and high_pass >= low_pass:
         raise ValueError(
-            "High pass cutoff frequency (%f) is greater or equal"
-            "to low pass filter frequency (%f). This case is not handled "
-            "by this function."
-            % (high_pass, low_pass))
+            f"High pass cutoff frequency ({high_pass}) is greater than or "
+            f"equal to low pass filter frequency ({low_pass}). "
+            "This case is not handled by this function."
+        )
 
     nyq = sampling_rate * 0.5
 
@@ -341,15 +366,16 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     if len(critical_freq) == 2:
         btype = 'band'
         # Inappropriate parameter input might lead to coercion of both
-        # elements of critical_freq to a value just below 1.
+        # elements of critical_freq to a value just below Nyquist.
         # Scipy fix now enforces that critical frequencies cannot be equal.
-        # See https://github.com/scipy/scipy/pull/15886. If this is the case,
-        # we return the signals unfiltered.
+        # See https://github.com/scipy/scipy/pull/15886.
+        # If this is the case, we return the signals unfiltered.
         if critical_freq[0] == critical_freq[1]:
             warnings.warn(
                 'Signals are returned unfiltered because band-pass critical '
                 'frequencies are equal. Please check that inputs for '
-                'sampling_rate, low_pass, and high_pass are valid.')
+                'sampling_rate, low_pass, and high_pass are valid.'
+            )
             if copy:
                 return signals.copy()
             else:
@@ -357,10 +383,22 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     else:
         critical_freq = critical_freq[0]
 
-    b, a = sp_signal.butter(order, critical_freq, btype=btype, output='ba')
+    b, a = sp_signal.butter(
+        order,
+        critical_freq,
+        btype=btype,
+        output='ba',
+        fs=sampling_rate,
+    )
     if signals.ndim == 1:
         # 1D case
-        output = sp_signal.filtfilt(b, a, signals)
+        output = sp_signal.filtfilt(
+            b,
+            a,
+            signals,
+            padtype=padtype,
+            padlen=padlen,
+        )
         if copy:  # filtfilt does a copy in all cases.
             signals = output
         else:
@@ -369,11 +407,24 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
         if copy:
             # No way to save memory when a copy has been requested,
             # because filtfilt does out-of-place processing
-            signals = sp_signal.filtfilt(b, a, signals, axis=0)
+            signals = sp_signal.filtfilt(
+                b,
+                a,
+                signals,
+                axis=0,
+                padtype=padtype,
+                padlen=padlen,
+            )
         else:
             # Lesser memory consumption, slower.
             for timeseries in signals.T:
-                timeseries[:] = sp_signal.filtfilt(b, a, timeseries)
+                timeseries[:] = sp_signal.filtfilt(
+                    b,
+                    a,
+                    timeseries,
+                    padtype=padtype,
+                    padlen=padlen,
+                )
 
             # results returned in-place
 
@@ -411,7 +462,7 @@ def high_variance_confounds(series, n_confounds=5, percentile=2.,
     Notes
     -----
     This method is related to what has been published in the literature
-    as 'CompCor' :footcite:`BEHZADI200790`.
+    as 'CompCor' :footcite:`Behzadi2007`.
 
     The implemented algorithm does the following:
 
@@ -460,14 +511,14 @@ def _ensure_float(data):
 def clean(signals, runs=None, detrend=True, standardize='zscore',
           sample_mask=None, confounds=None, standardize_confounds=True,
           filter='butterworth', low_pass=None, high_pass=None, t_r=2.5,
-          ensure_finite=False):
+          ensure_finite=False, **kwargs):
     """Improve :term:`SNR` on masked :term:`fMRI` signals.
 
-    This function can do several things on the input signals, in
-    the following order:
+    This function can do several things on the input signals. With the default
+    options, the procedures are performed in the following order:
 
     - detrend
-    - low- and high-pass filter
+    - low- and high-pass butterworth filter
     - remove confounds
     - standardize
 
@@ -475,11 +526,33 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
 
     High-pass filtering should be kept small, to keep some sensitivity.
 
-    Filtering is only meaningful on evenly-sampled signals.
+    Butterworth filtering is only meaningful on evenly-sampled signals.
 
-    According to :footcite:`Lindquist407676`, removal of confounds will be done
+    When performing scrubbing (censoring high-motion volumes) with butterworth
+    filtering, the signal is processed in the following order, based on the
+    second recommendation in :footcite:`Lindquist2018`:
+
+    - interpolate high motion volumes with cubic spline interpolation
+    - detrend
+    - low- and high-pass butterworth filter
+    - censor high motion volumes
+    - remove confounds
+    - standardize
+
+    According to :footcite:`Lindquist2018`, removal of confounds will be done
     orthogonally to temporal filters (low- and/or high-pass filters), if both
-    are specified.
+    are specified. The censored volumes should be removed in both signals and
+    confounds before the nuisance regression.
+
+    When performing scrubbing with cosine drift term filtering, the signal is
+    processed in the following order, based on the first recommendation in
+    :footcite:`Lindquist2018`:
+
+    - generate cosine drift term
+    - censor high motion volumes in both signal and confounds
+    - detrend
+    - remove confounds
+    - standardize
 
     Parameters
     ----------
@@ -492,10 +565,10 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         cleaned independently. Must be a 1D array of n_samples elements.
         Default is None.
 
-    confounds : :class:`numpy.ndarray`, :obj:`str`,\
-    :class:`pandas.DataFrame` or :obj:`list` of
-        Confounds timeseries. Shape must be
-        (instant number, confound number), or just (instant number,)
+    confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`,\
+    :class:`pandas.DataFrame` or :obj:`list` of confounds timeseries.
+        Shape must be (instant number, confound number), or just
+        (instant number,).
         The number of time instants in ``signals`` and ``confounds`` must be
         identical (i.e. ``signals.shape[0] == confounds.shape[0]``).
         If a string is provided, it is assumed to be the name of a csv file
@@ -504,11 +577,14 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
         signal, as if all were in the same array.
         Default is None.
 
-    sample_mask : None, :class:`numpy.ndarray`, :obj:`list`,\
-    :obj:`tuple`, or :obj:`list` of
-        shape: (number of scans - number of volumes removed, )
+    sample_mask : None, Any type compatible with numpy-array indexing, \
+        or :obj:`list` of
+        shape: (number of scans - number of volumes removed, ) for explicit \
+            index, or (number of scans, ) for binary mask
         Masks the niimgs along time/fourth dimension to perform scrubbing
         (remove volumes with high motion) and/or non-steady-state volumes.
+        When passing binary mask with boolean values, ``True`` refers to
+        volumes kept, and ``False`` for volumes removed.
         This masking step is applied before signal cleaning. When supplying run
         information, sample_mask must be a list containing sets of indexes for
         each run.
@@ -549,10 +625,17 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     %(ensure_finite)s
         Default=False.
 
+    kwargs : dict
+        Keyword arguments to be passed to functions called within ``clean``.
+        Kwargs prefixed with ``'butterworth__'`` will be passed to
+        :func:`~nilearn.signal.butterworth`.
+
+
     Returns
     -------
     cleaned_signals : :class:`numpy.ndarray`
-        Input signals, cleaned. Same shape as `signals`.
+        Input signals, cleaned. Same shape as `signals` unless `sample_mask`
+        is applied.
 
     Notes
     -----
@@ -560,7 +643,7 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     of the signal space. See :footcite:`Friston1994`.
 
     Orthogonalization between temporal filters and confound removal is based on
-    suggestions in :footcite:`Lindquist407676`.
+    suggestions in :footcite:`Lindquist2018`.
 
     References
     ----------
@@ -571,32 +654,74 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     nilearn.image.clean_img
     """
     # Raise warning for some parameter combinations when confounds present
+    confounds = stringify_path(confounds)
     if confounds is not None:
         _check_signal_parameters(detrend, standardize_confounds)
+    # check if filter parameters are satisfied and return correct filter
+    filter_type = _check_filter_parameters(filter, low_pass, high_pass, t_r)
 
     # Read confounds and signals
-    signals, runs, confounds = _sanitize_inputs(
+    signals, runs, confounds, sample_mask = _sanitize_inputs(
         signals, runs, confounds, sample_mask, ensure_finite
     )
-    use_filter = _check_filter_parameters(filter, low_pass, high_pass, t_r)
-    # Restrict the signal to the orthogonal of the confounds
+
+    # Process each run independently
     if runs is not None:
-        signals = _process_runs(signals, runs, detrend, standardize,
-                                   confounds, low_pass, high_pass, t_r)
+        return _process_runs(signals, runs, detrend, standardize,
+                             confounds, sample_mask,
+                             filter_type, low_pass, high_pass, t_r)
+
+    # For the following steps, sample_mask should be either None or index-like
+
+    # Generate cosine drift terms using the full length of the signals
+    if filter_type == 'cosine':
+        confounds = _create_cosine_drift_terms(signals, confounds, high_pass,
+                                               t_r)
+
+    # Interpolation / censoring
+    signals, confounds = _handle_scrubbed_volumes(signals, confounds,
+                                                  sample_mask, filter_type,
+                                                  t_r)
 
     # Detrend
     # Detrend and filtering should apply to confounds, if confound presents
     # keep filters orthogonal (according to Lindquist et al. (2018))
+    # Restrict the signal to the orthogonal of the confounds
     if detrend:
         mean_signals = signals.mean(axis=0)
         signals = _standardize(signals, standardize=False, detrend=detrend)
         if confounds is not None:
             confounds = _standardize(confounds, standardize=False,
-                                detrend=detrend)
-    if use_filter:
-        # check if filter parameters are satisfied and filter according to the strategy
-        signals, confounds = _filter_signal(signals, confounds, filter,
-                                            low_pass, high_pass, t_r)
+                                     detrend=detrend)
+
+    # Butterworth filtering
+    if filter_type == 'butterworth':
+        butterworth_kwargs = {
+            k.replace("butterworth__", ""): v for k, v in kwargs.items() if
+            k.startswith("butterworth__")
+        }
+        signals = butterworth(
+            signals,
+            sampling_rate=1. / t_r,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            **butterworth_kwargs,
+        )
+        if confounds is not None:
+            # Apply low- and high-pass filters to keep filters orthogonal
+            # (according to Lindquist et al. (2018))
+            confounds = butterworth(
+                confounds,
+                sampling_rate=1. / t_r,
+                low_pass=low_pass,
+                high_pass=high_pass,
+                **butterworth_kwargs,
+            )
+
+        # apply sample_mask to remove censored volumes after signal filtering
+        if sample_mask is not None:
+            signals, confounds = _censor_signals(signals, confounds,
+                                                 sample_mask)
 
     # Remove confounds
     if confounds is not None:
@@ -628,29 +753,84 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     return signals
 
 
-def _filter_signal(signals, confounds, filter, low_pass, high_pass, t_r):
-    '''Filter signal based on provided strategy.'''
-    if filter == 'butterworth':
-        signals = butterworth(signals, sampling_rate=1. / t_r,
-                              low_pass=low_pass, high_pass=high_pass)
+def _handle_scrubbed_volumes(signals, confounds, sample_mask, filter_type,
+                             t_r):
+    """Interpolate or censor scrubbed volumes."""
+    if sample_mask is None:
+        return signals, confounds
+
+    if filter_type == 'butterworth':
+        signals = _interpolate_volumes(signals, sample_mask, t_r)
         if confounds is not None:
-            # Apply low- and high-pass filters to keep filters orthogonal
-            # (according to Lindquist et al. (2018))
-            confounds = butterworth(confounds, sampling_rate=1. / t_r,
-                                    low_pass=low_pass, high_pass=high_pass)
-    elif filter == 'cosine':
-        from .glm.first_level.design_matrix import _cosine_drift
-        frame_times = np.arange(signals.shape[0]) * t_r
-        cosine_drift = _cosine_drift(high_pass, frame_times)
-        if confounds is None:
-            confounds = cosine_drift.copy()
-        else:
-            confounds = np.hstack((confounds, cosine_drift))
+            confounds = _interpolate_volumes(confounds, sample_mask, t_r)
+    else:  # Or censor when no filtering, or cosine filter
+        signals, confounds = _censor_signals(signals, confounds, sample_mask)
     return signals, confounds
 
 
-def _process_runs(signals, runs, detrend, standardize, confounds,
-                  low_pass, high_pass, t_r):
+def _censor_signals(signals, confounds, sample_mask):
+    """Apply sample masks to data."""
+    signals = signals[sample_mask, :]
+    if confounds is not None:
+        confounds = confounds[sample_mask, :]
+    return signals, confounds
+
+
+def _interpolate_volumes(volumes, sample_mask, t_r):
+    """Interpolate censored volumes in signals/confounds."""
+    frame_times = np.arange(volumes.shape[0]) * t_r
+    remained_vol = frame_times[sample_mask]
+    remained_x = volumes[sample_mask, :]
+    cubic_spline_fitter = CubicSpline(remained_vol, remained_x)
+    volumes_interpolated = cubic_spline_fitter(frame_times)
+    volumes[~sample_mask, :] = volumes_interpolated[~sample_mask, :]
+    return volumes
+
+
+def _create_cosine_drift_terms(signals, confounds, high_pass, t_r):
+    """Create cosine drift terms, append to confounds regressors."""
+    from nilearn.glm.first_level.design_matrix import _cosine_drift
+    frame_times = np.arange(signals.shape[0]) * t_r
+    # remove constant, as the signal is mean centered
+    cosine_drift = _cosine_drift(high_pass, frame_times)[:, :-1]
+    confounds = _check_cosine_by_user(confounds, cosine_drift)
+    return confounds
+
+
+def _check_cosine_by_user(confounds, cosine_drift):
+    """Check if cosine term exists, based on correlation > 0.9. """
+    # stack consine drift terms if there's no cosine drift term in data
+    n_cosines = cosine_drift.shape[1]
+
+    if n_cosines == 0:
+        warnings.warn(
+            "Cosine filter was not created. The time series might be too "
+            "short or the high pass filter is not suitable for the data."
+        )
+        return confounds
+
+    if confounds is None:
+        return cosine_drift.copy()
+
+    # check if cosine drift term is supplied by user
+    # given the threshold and timeseries length, there can be no cosine drift
+    # term
+    corr_cosine = np.corrcoef(cosine_drift.T, confounds.T)
+    np.fill_diagonal(corr_cosine, 0)
+    cosine_exists = sum(corr_cosine[:n_cosines, :].flatten() > 0.9) > 0
+
+    if cosine_exists:
+        warnings.warn(
+            "Cosine filter(s) exist in user supplied confounds."
+            "Use user supplied regressors only."
+        )
+        return confounds
+
+    return np.hstack((confounds, cosine_drift))
+
+
+def _process_runs(signals, runs, detrend, standardize, confounds, sample_mask,
+                  filter, low_pass, high_pass, t_r):
     """Process each run independently."""
     if len(runs) != len(signals):
         raise ValueError(
@@ -659,16 +839,22 @@ def _process_runs(signals, runs, detrend, standardize, confounds,
                 'does not match the length of the signals (%i)'
             ) % (len(runs), len(signals))
         )
-    for run in np.unique(runs):
+    cleaned_signals = []
+    for i, run in enumerate(np.unique(runs)):
         run_confounds = None
+        run_sample_mask = None
         if confounds is not None:
             run_confounds = confounds[runs == run]
-        signals[runs == run, :] = \
+        if sample_mask is not None:
+            run_sample_mask = sample_mask[i]
+        run_signals = \
             clean(signals[runs == run],
                   detrend=detrend, standardize=standardize,
-                  confounds=run_confounds, low_pass=low_pass,
+                  confounds=run_confounds, sample_mask=run_sample_mask,
+                  filter=filter, low_pass=low_pass,
                   high_pass=high_pass, t_r=t_r)
-    return signals
+        cleaned_signals.append(run_signals)
+    return np.vstack(cleaned_signals)
 
 
 def _sanitize_inputs(signals, runs, confounds, sample_mask, ensure_finite):
@@ -678,15 +864,7 @@ def _sanitize_inputs(signals, runs, confounds, sample_mask, ensure_finite):
     confounds = _sanitize_confounds(n_time, n_runs, confounds)
     sample_mask = _sanitize_sample_mask(n_time, n_runs, runs, sample_mask)
     signals = _sanitize_signals(signals, ensure_finite)
-
-    if sample_mask is None:
-        return signals, runs, confounds
-
-    if confounds is not None:
-        confounds = confounds[sample_mask, :]
-    if runs is not None:
-        runs = runs[sample_mask]
-    return signals[sample_mask, :], runs, confounds
+    return signals, runs, confounds, sample_mask
 
 
 def _sanitize_confounds(n_time, n_runs, confounds):
@@ -716,21 +894,17 @@ def _sanitize_sample_mask(n_time, n_runs, runs, sample_mask):
     """Check sample_mask is the right data type and matches the run index."""
     if sample_mask is None:
         return sample_mask
+
     sample_mask = _check_run_sample_masks(n_runs, sample_mask)
 
     if runs is None:
         runs = np.zeros(n_time)
 
-    # handle multiple runs
-    masks = []
-    starting_index = 0
+    # check sample mask of each run
     for i, current_mask in enumerate(sample_mask):
         _check_sample_mask_index(i, n_runs, runs, current_mask)
-        current_mask += starting_index
-        masks.append(current_mask)
-        starting_index = sum(i == runs)
-    sample_mask = np.hstack(masks)
-    return sample_mask
+
+    return sample_mask[0] if sum(runs) == 0 else sample_mask
 
 
 def _check_sample_mask_index(i, n_runs, runs, current_mask):
@@ -839,7 +1013,7 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
                     "high_pass='{0}', low_pass='{1}'"
                     .format(high_pass, low_pass)
                 )
-        return True
+        return filter
     else:
         raise ValueError("Filter method {} not implemented.".format(filter))
 

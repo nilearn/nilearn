@@ -11,11 +11,6 @@ Region Extraction for better brain parcellations
    region and also shows how to learn functional connectivity
    interactions between each separate region.
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
-
 .. topic:: **References**
 
    * `Abraham et al. "Region segmentation for sparse decompositions: better
@@ -171,7 +166,7 @@ connectivity relations to brain regions plotted using :func:`plot_connectome`
 Validating results
 ==================
 
-Showing only one specific network regions before and after region extraction. The first image displays the regions of one specific functional network without region extraction. 
+Showing only one specific network regions before and after region extraction. The first image displays the regions of one specific functional network without region extraction.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # region extraction (left plot).

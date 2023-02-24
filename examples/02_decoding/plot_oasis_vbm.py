@@ -125,7 +125,7 @@ prediction_score = -np.mean(decoder.cv_scores_['beta'])
 
 print("=== DECODER ===")
 print("explained variance for the cross-validation: %f" % prediction_score)
-print("")
+print()
 
 ###############################################################################
 # Visualization

@@ -26,7 +26,7 @@ def _remove_after_n_seconds(file_name, n_seconds):
     return proc
 
 
-class HTMLDocument(object):
+class HTMLDocument:
     """Embeds a plot in a web page.
 
     If you are running a Jupyter notebook, the plot will be displayed

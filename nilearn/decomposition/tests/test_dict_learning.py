@@ -16,44 +16,56 @@ def test_dict_learning():
     mask = get_data(mask_img) != 0
     flat_mask = mask.ravel()
     dict_init = masker.inverse_transform(components[:, flat_mask])
-    dict_learning = DictLearning(n_components=4, random_state=0,
-                                 dict_init=dict_init,
-                                 mask=mask_img,
-                                 smoothing_fwhm=0., alpha=1)
+    dict_learning = DictLearning(
+        n_components=4,
+        random_state=0,
+        dict_init=dict_init,
+        mask=mask_img,
+        smoothing_fwhm=0.0,
+        alpha=1,
+    )
 
-    dict_learning_auto_init = DictLearning(n_components=4, random_state=0,
-                                           mask=mask_img,
-                                           smoothing_fwhm=0., n_epochs=10,
-                                           alpha=1)
+    dict_learning_auto_init = DictLearning(
+        n_components=4,
+        random_state=0,
+        mask=mask_img,
+        smoothing_fwhm=0.0,
+        n_epochs=10,
+        alpha=1,
+    )
     maps = {}
-    for estimator in [dict_learning,
-                      dict_learning_auto_init]:
+    for estimator in [dict_learning, dict_learning_auto_init]:
         estimator.fit(data)
         maps[estimator] = get_data(estimator.components_img_)
         maps[estimator] = np.reshape(
-                        np.rollaxis(maps[estimator], 3, 0)[:, mask],
-                        (4, flat_mask.sum()))
+            np.rollaxis(maps[estimator], 3, 0)[:, mask], (4, flat_mask.sum())
+        )
 
     masked_components = components[:, flat_mask]
     for this_dict_learning in [dict_learning]:
         these_maps = maps[this_dict_learning]
-        S = np.sqrt(np.sum(masked_components ** 2, axis=1))
+        S = np.sqrt(np.sum(masked_components**2, axis=1))
         S[S == 0] = 1
         masked_components /= S[:, np.newaxis]
 
-        S = np.sqrt(np.sum(these_maps ** 2, axis=1))
+        S = np.sqrt(np.sum(these_maps**2, axis=1))
         S[S == 0] = 1
         these_maps /= S[:, np.newaxis]
 
         K = np.abs(masked_components.dot(these_maps.T))
         recovered_maps = np.sum(K > 0.9)
-        assert(recovered_maps >= 2)
+        assert recovered_maps >= 2
 
     # Smoke test n_epochs > 1
-    dict_learning = DictLearning(n_components=4, random_state=0,
-                                 dict_init=dict_init,
-                                 mask=mask_img,
-                                 smoothing_fwhm=0., n_epochs=2, alpha=1)
+    dict_learning = DictLearning(
+        n_components=4,
+        random_state=0,
+        dict_init=dict_init,
+        mask=mask_img,
+        smoothing_fwhm=0.0,
+        n_epochs=2,
+        alpha=1,
+    )
     dict_learning.fit(data)
 
 
@@ -63,14 +75,19 @@ def test_component_sign():
     # DictLearning to have more positive values than negative values, for
     # instance by making sure that the largest value is positive.
 
-    data, mask_img, components, rng = _make_canica_test_data(n_subjects=2,
-                                                             noisy=True)
+    data, mask_img, components, rng = _make_canica_test_data(
+        n_subjects=2, noisy=True
+    )
     for mp in components:
         assert -mp.min() <= mp.max()
 
-    dict_learning = DictLearning(n_components=4, random_state=rng,
-                                 mask=mask_img,
-                                 smoothing_fwhm=0., alpha=1)
+    dict_learning = DictLearning(
+        n_components=4,
+        random_state=rng,
+        mask=mask_img,
+        smoothing_fwhm=0.0,
+        alpha=1,
+    )
     dict_learning.fit(data)
     for mp in iter_img(dict_learning.components_img_):
         mp = get_data(mp)
@@ -91,21 +108,27 @@ def test_masker_attributes_with_fit():
     dict_learning.fit(data)
     assert dict_learning.mask_img_ == dict_learning.masker_.mask_img_
     dict_learning = DictLearning(mask=mask_img, n_components=3)
-    with pytest.raises(ValueError,
-                       match="Object has no components_ attribute. "
-                             "This is probably because "
-                             "fit has not been called"):
+    with pytest.raises(
+        ValueError,
+        match="Object has no components_ attribute. "
+        "This is probably because "
+        "fit has not been called",
+    ):
         dict_learning.transform(data)
     # Test if raises an error when empty list of provided.
-    with pytest.raises(ValueError,
-                       match='Need one or more Niimg-like objects '
-                             'as input, an empty list was given.'):
+    with pytest.raises(
+        ValueError,
+        match="Need one or more Niimg-like objects "
+        "as input, an empty list was given.",
+    ):
         dict_learning.fit([])
     # Test passing masker arguments to estimator
-    dict_learning = DictLearning(n_components=3,
-                                 target_affine=np.eye(4),
-                                 target_shape=(6, 8, 10),
-                                 mask_strategy='background')
+    dict_learning = DictLearning(
+        n_components=3,
+        target_affine=np.eye(4),
+        target_shape=(6, 8, 10),
+        mask_strategy="background",
+    )
     dict_learning.fit(data)
 
 
@@ -140,8 +163,9 @@ def test_with_globbing_patterns_with_multi_subjects():
     data, mask_img, _, _ = _make_canica_test_data(n_subjects=3)
     n_components = 3
     dictlearn = DictLearning(n_components=n_components, mask=mask_img)
-    with write_tmp_imgs(data[0], data[1], data[2], create_files=True,
-                        use_wildcards=True) as img:
+    with write_tmp_imgs(
+        data[0], data[1], data[2], create_files=True, use_wildcards=True
+    ) as img:
         input_image = _tmp_dir() + img
         dictlearn.fit(input_image)
         components_img = dictlearn.components_img_
@@ -159,9 +183,10 @@ def test_dictlearning_score():
 
     # Test error before object fit
     with pytest.raises(
-            ValueError,
-            match="Object has no components_ attribute. "
-                  "This is probably because fit has not been called"):
+        ValueError,
+        match="Object has no components_ attribute. "
+        "This is probably because fit has not been called",
+    ):
         dictlearn.score(imgs, per_component=False)
 
     dictlearn.fit(imgs)
@@ -175,4 +200,4 @@ def test_dictlearning_score():
     scores = dictlearn.score(imgs, per_component=True)
     assert scores.shape, (n_components,)
     assert np.all(scores <= 1)
-    assert np.all(0 <= scores)
+    assert np.all(scores >= 0)
