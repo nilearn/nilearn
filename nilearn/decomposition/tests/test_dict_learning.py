@@ -1,7 +1,6 @@
 import nibabel
 import numpy as np
 import pytest
-
 from nilearn._utils.testing import write_tmp_imgs
 from nilearn.decomposition.dict_learning import DictLearning
 from nilearn.decomposition.tests.test_canica import _make_canica_test_data

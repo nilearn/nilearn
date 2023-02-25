@@ -4,3 +4,4 @@ include = 'nilearn/de.*'
 
 [tool.isort]
 profile = "black"
+src_paths= ['nilearn/de.*']

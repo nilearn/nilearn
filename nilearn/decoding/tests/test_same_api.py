@@ -6,9 +6,6 @@ for computing image gradient, loss functions, etc.).
 
 import nibabel
 import numpy as np
-from sklearn.datasets import load_iris
-from sklearn.utils import check_random_state
-
 from nilearn.decoding.objective_functions import (
     _logistic_loss_lipschitz_constant,
     _squared_loss,
@@ -31,6 +28,8 @@ from nilearn.decoding.space_net_solvers import (
 )
 from nilearn.image import get_data
 from nilearn.masking import _unmask_from_to_3d_array
+from sklearn.datasets import load_iris
+from sklearn.utils import check_random_state
 
 
 def _make_data(rng=None, masked=False, dim=(2, 2, 2)):

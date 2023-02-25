@@ -11,7 +11,6 @@
 from math import sqrt
 
 import numpy as np
-
 from nilearn.masking import _unmask_from_to_3d_array
 
 from .fista import mfista

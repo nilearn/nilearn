@@ -3,12 +3,6 @@ from functools import partial
 
 import numpy as np
 import pytest
-from scipy import linalg
-from sklearn.datasets import load_iris
-from sklearn.linear_model import Lasso, LogisticRegression
-from sklearn.metrics import accuracy_score
-from sklearn.utils import check_random_state
-
 from nilearn._utils.param_validation import _adjust_screening_percentile
 from nilearn.decoding.space_net import (
     BaseSpaceNet,
@@ -25,6 +19,11 @@ from nilearn.decoding.space_net_solvers import (
     _graph_net_squared_loss,
 )
 from nilearn.image import get_data
+from scipy import linalg
+from sklearn.datasets import load_iris
+from sklearn.linear_model import Lasso, LogisticRegression
+from sklearn.metrics import accuracy_score
+from sklearn.utils import check_random_state
 
 mni152_brain_mask = (
     "/usr/share/fsl/data/standard/MNI152_T1_1mm_brain_mask.nii.gz"

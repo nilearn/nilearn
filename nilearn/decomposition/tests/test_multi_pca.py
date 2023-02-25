@@ -7,11 +7,10 @@ import tempfile
 import nibabel
 import numpy as np
 import pytest
-from numpy.testing import assert_almost_equal
-
 from nilearn._utils.testing import write_tmp_imgs
 from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker
+from numpy.testing import assert_almost_equal
 
 
 def _tmp_dir():

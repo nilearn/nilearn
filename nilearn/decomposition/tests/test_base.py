@@ -1,10 +1,9 @@
 import nibabel
 import numpy as np
-from numpy.testing import assert_array_almost_equal
-from scipy import linalg
-
 from nilearn.decomposition._base import _fast_svd, _mask_and_reduce
 from nilearn.maskers import MultiNiftiMasker
+from numpy.testing import assert_array_almost_equal
+from scipy import linalg
 
 
 def test_fast_svd():

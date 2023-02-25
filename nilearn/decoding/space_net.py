@@ -18,6 +18,7 @@ from functools import partial
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
+from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
 from scipy import stats
 from scipy.ndimage import binary_dilation, binary_erosion, gaussian_filter
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
@@ -27,8 +28,6 @@ from sklearn.model_selection import check_cv
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.extmath import safe_sparse_dot
-
-from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
 
 from .._utils import fill_doc
 from .._utils.param_validation import _adjust_screening_percentile

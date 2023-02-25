@@ -1,7 +1,6 @@
 import itertools
 
 import numpy as np
-
 from nilearn.decoding.proximal_operators import _prox_l1, _prox_tvl1
 
 
