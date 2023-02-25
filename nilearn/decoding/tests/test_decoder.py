@@ -12,6 +12,16 @@ import warnings
 
 import numpy as np
 import pytest
+from sklearn.datasets import load_iris, make_classification, make_regression
+from sklearn.dummy import DummyClassifier, DummyRegressor
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.exceptions import NotFittedError
+from sklearn.linear_model import LogisticRegression, RidgeClassifierCV, RidgeCV
+from sklearn.metrics import accuracy_score, get_scorer, r2_score, roc_auc_score
+from sklearn.model_selection import KFold, LeaveOneGroupOut
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVR, LinearSVC
+
 from nilearn._utils.param_validation import check_feature_screening
 from nilearn.decoding.decoder import (
     Decoder,
@@ -25,15 +35,6 @@ from nilearn.decoding.decoder import (
 )
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.maskers import NiftiMasker
-from sklearn.datasets import load_iris, make_classification, make_regression
-from sklearn.dummy import DummyClassifier, DummyRegressor
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.exceptions import NotFittedError
-from sklearn.linear_model import LogisticRegression, RidgeClassifierCV, RidgeCV
-from sklearn.metrics import accuracy_score, get_scorer, r2_score, roc_auc_score
-from sklearn.model_selection import KFold, LeaveOneGroupOut
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVR, LinearSVC
 
 try:
     from sklearn.metrics import check_scoring

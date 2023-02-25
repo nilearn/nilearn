@@ -12,6 +12,7 @@ we approximate the prox using an inner FISTA loop.
 # License: simplified BSD
 
 from math import sqrt
+
 import numpy as np
 from scipy import linalg
 from sklearn.utils import check_random_state

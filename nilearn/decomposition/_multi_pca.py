@@ -6,8 +6,9 @@ import numpy as np
 from joblib import Memory
 from sklearn.utils.extmath import randomized_svd
 
-from ._base import _BaseDecomposition
 from nilearn._utils import fill_doc
+
+from ._base import _BaseDecomposition
 
 
 @fill_doc

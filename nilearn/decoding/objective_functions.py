@@ -7,6 +7,7 @@
 # License: simplified BSD
 
 from functools import partial
+
 import numpy as np
 from scipy import linalg
 

@@ -1,14 +1,14 @@
 import numpy as np
-from nilearn.decoding.fista import mfista
-from nilearn.decoding.proximal_operators import _prox_l1
+
+from nilearn.decoding.fista import _check_lipschitz_continuous, mfista
 from nilearn.decoding.objective_functions import (
-    _squared_loss,
     _logistic,
-    _squared_loss_grad,
     _logistic_loss_lipschitz_constant,
+    _squared_loss,
+    _squared_loss_grad,
     spectral_norm_squared,
 )
-from nilearn.decoding.fista import _check_lipschitz_continuous
+from nilearn.decoding.proximal_operators import _prox_l1
 
 
 def test_logistic_lipschitz(n_samples=4, n_features=2, random_state=42):
