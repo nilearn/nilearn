@@ -61,12 +61,12 @@ def _check_shape_affine_maps_masks(target_img,
         See :ref:`extracting_data`.
         Contains map or mask.
 
-    dim : integer, optional
+    dim : :obj:`int`, optional
         Integer slices a mask for a specific dimension.
 
     Returns
     -------
-    non_empty : bool,
+    non_empty : :obj:`bool`,
         Is only true for non-empty img.
 
     """
@@ -125,12 +125,12 @@ def _get_labels_data(target_img,
     background_label : number, optional
         Number representing background in labels_img.
 
-    dim : integer, optional
+    dim : :obj:`int`, optional
         Integer slices mask for a specific dimension.
 
     Returns
     -------
-    labels : list or tuple
+    labels : :obj:`list` or :obj:`tuple`
         Corresponding labels for each signal.
         signal[:, n] was extracted from the region with label labels[n].
 
