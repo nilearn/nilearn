@@ -816,14 +816,14 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 
     Parameters
     ----------
-    dataset_path : str
+    dataset_path : :obj:`str`
         Directory of the highest level folder of the BIDS dataset. Should
         contain subject folders and a derivatives folder.
 
-    task_label : str
+    task_label : :obj:`str`
         Task_label as specified in the file names like _task-<task_label>_.
 
-    space_label : str, optional
+    space_label : :obj:`str`, optional
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like _space-<space_label>_.
 
@@ -834,7 +834,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         'den', and 'desc'. Filter examples would be ('desc', 'preproc'),
         ('dir', 'pa') and ('run', '10').
 
-    derivatives_folder : str, optional
+    derivatives_folder : :obj:`str`, optional
         derivatives and app folder path containing preprocessed files.
         Like "derivatives/FMRIPREP". Default="derivatives".
 
@@ -1032,15 +1032,15 @@ def _bids_validate_arguments(dataset_path: str,
 
     Parameters
     ----------
-    dataset_path : str
+    dataset_path : :obj:`str`
         _description_
-    task_label : str
+    task_label : :obj:`str`
         _description_
-    space_label : str | None
+    space_label : :obj:`str` or None
         _description_
     img_filters : list[Tuple[str, str]]
         _description_
-    derivatives_path : str
+    derivatives_path : :obj:`str`
         _description_
     supported_filters : list[str]
         _description_
@@ -1100,13 +1100,13 @@ def _bids_filter(task_label: str,
 
     Parameters
     ----------
-    task_label : str
+    task_label : :obj:`str`
         _description_
-    space_label : str | None, optional
+    space_label : :obj:`str` or None, optional
         _description_
-    supported_filters : list[str] | None, optional
+    supported_filters : list[str] or None, optional
         _description_
-    extra_filter : list[Tuple[str, str]] | None, optional
+    extra_filter : list[Tuple[str, str]] or None, optional
         _description_
 
     Returns
@@ -1135,7 +1135,7 @@ def _bids_check_image_list(imgs: list[str] | None,
     ----------
     imgs : list[str] | None
         _description_
-    sub_label : str
+    sub_label : :obj:`str`
         _description_
     filters : list[Tuple[str, str]]
         _description_

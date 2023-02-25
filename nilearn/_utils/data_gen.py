@@ -987,14 +987,14 @@ def _file_id(fields: list[str], n_run: int, run: str) -> str:
     ----------
     fields : list[str]
         _description_
-    n_run : int
+    n_run : :obj:`int`
         _description_
-    run : str
+    run : :obj:`str`
         _description_
 
     Returns
     -------
-    BIDS filename : str
+    BIDS filename : :obj:`str`
         'file_id'.
     """
     if '' in fields:
@@ -1013,11 +1013,11 @@ def _write_bids_raw_func(func_path: str,
 
     Parameters
     ----------
-    func_path : str
+    func_path : :obj:`str`
         _description_
-    file_id : str
+    file_id : :obj:`str`
         _description_
-    n_voxels : int
+    n_voxels : :obj:`int`
         _description_
     rand_gen : np.random.RandomState
         _description_
@@ -1049,17 +1049,17 @@ def _write_bids_derivative_func(func_path: str,
 
     Parameters
     ----------
-    func_path : str
+    func_path : :obj:`str`
         _description_
-    file_id : str
+    file_id : :obj:`str`
         _description_
-    n_voxels : int
+    n_voxels : :obj:`int`
         _description_
     rand_gen : np.random.RandomState
         _description_
-    with_confounds : bool
+    with_confounds : :obj:`bool`
         _description_
-    confounds_tag : str
+    confounds_tag : :obj:`str`
         _description_
     """
     N_TIME_POINTS = 100
