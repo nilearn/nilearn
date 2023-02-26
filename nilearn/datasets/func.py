@@ -553,7 +553,7 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     .. footbibliography::
 
     See Also
-    ---------
+    --------
     nilearn.datasets.fetch_localizer_calculation_task
     nilearn.datasets.fetch_localizer_button_task
 
@@ -793,7 +793,7 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
     The 'calculation (auditory and visual cue)' contrast is used.
 
     See Also
-    ---------
+    --------
     nilearn.datasets.fetch_localizer_button_task
     nilearn.datasets.fetch_localizer_contrasts
 
@@ -835,7 +835,7 @@ def fetch_localizer_button_task(data_dir=None, url=None,
     The 'left vs right button press' contrast is used.
 
     See Also
-    ---------
+    --------
     nilearn.datasets.fetch_localizer_calculation_task
     nilearn.datasets.fetch_localizer_contrasts
 
