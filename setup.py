@@ -29,13 +29,12 @@ DISTNAME = "nilearn"
 DESCRIPTION = "Statistical learning for neuroimaging in Python"
 with open("README.rst") as fp:
     LONG_DESCRIPTION = fp.read()
-MAINTAINER = "Gael Varoquaux"
-MAINTAINER_EMAIL = "gael.varoquaux@normalesup.org"
+MAINTAINER = "Bertrand Thirion"
+MAINTAINER_EMAIL = "bertrand.thirion@inria.fr"
 URL = "https://nilearn.github.io"
 LICENSE = "new BSD"
 DOWNLOAD_URL = "https://nilearn.github.io"
 VERSION = _VERSION_GLOBALS["__version__"]
-
 
 if __name__ == "__main__":
     setup(
