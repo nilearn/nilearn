@@ -734,7 +734,11 @@ def test_first_level_from_bids_with_subject_labels():
                            ' the dataset and cannot be processed')
         # check that the incorrect label `foo` raises a warning
         with pytest.warns(UserWarning, match=warning_message):
-            first_level_from_bids(bids_path, 'main', sub_labels=["foo", "01"])
+            models, m_imgs, m_events, m_confounds = first_level_from_bids(
+                                  bids_path, 'main',
+                                  sub_labels=["foo", "01"],
+                                  space_label='MNI',
+                                  img_filters=[('desc', 'preproc')])
             # check that the correct label `01` gets a model
             assert models[0].subject_label == '01'
 
