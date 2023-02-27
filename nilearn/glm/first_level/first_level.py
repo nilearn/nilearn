@@ -1219,6 +1219,30 @@ def _bids_check_events_list(events: list[str] | None,
                            dataset_path: str,
                            events_filters: list[str],
                            supported_filters: list[str]) -> None:
+    """_summary_
+
+    Parameters
+    ----------
+    events : list[str] | None
+        _description_
+    imgs : list[str]
+        _description_
+    sub_label : str
+        _description_
+    task_label : str
+        _description_
+    dataset_path : str
+        _description_
+    events_filters : list[str]
+        _description_
+    supported_filters : list[str]
+        _description_
+
+    Raises
+    ------
+    ValueError
+        _description_
+    """    
     if not events:
         raise ValueError('No events.tsv files found '
                             f'for subject {sub_label} '
