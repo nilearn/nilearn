@@ -914,16 +914,19 @@ def _file_id(fields: list[str], n_run: int, run: str) -> str:
     Parameters
     ----------
     fields : :obj:`list` of :obj:`str`
-        _description_
+        List of entity-label pairs, for example `['acq-ap', 'desc-preproc']`.
+
     n_run : :obj:`int`
-        _description_
+        Number of runs.
+
     run : :obj:`str`
-        _description_
+        Run entity, for example `'run-01'`.
 
     Returns
     -------
-    BIDS filename : :obj:`str`
+    Root of the BIDS filename : :obj:`str`
         'file_id'.
+
     """
     if '' in fields:
         fields.remove('')
@@ -942,13 +945,18 @@ def _write_bids_raw_func(func_path: Path,
     Parameters
     ----------
     func_path : :obj:`Path`
-        _description_
+        Path to a subject functional directory.
+
     file_id : :obj:`str`
-        _description_
+        Root of the BIDS filename: 
+        typically basename without the BIDS suffix and extension.
+
     n_voxels : :obj:`int`
-        _description_
-    rand_gen : np.random.RandomState
-        _description_
+        Number of voxels along a given axis in the functional image.
+
+    rand_gen : :obj:`numpy.random.RandomState` instance
+        Random number generator.
+
     """
     repetition_time = 1.5
     n_time_points = 100
@@ -968,6 +976,13 @@ def _write_bids_raw_func(func_path: Path,
 
 
 def _bids_entites() -> dict[str, list[str]]:
+    """Return a dictionary of BIDS entities.
+
+    Returns
+    -------
+    Dictionary of raw and derivatives entities : dict[str, list[str]]
+
+    """    
     return {"raw": ['acq',
                     'ce',
                     'rec',
@@ -1047,17 +1062,27 @@ def _write_bids_derivative_func(func_path: Path,
     Parameters
     ----------
     func_path : :obj:`Path`
-        _description_
+        Path to a subject functional directory.
+
     file_id : :obj:`str`
-        _description_
+        Root of the BIDS filename: 
+        typically basename without the BIDS suffix and extension.
+
     n_voxels : :obj:`int`
-        _description_
-    rand_gen : np.random.RandomState
-        _description_
+        Number of voxels along a given axis in the functional image.
+
+    rand_gen : :obj:`numpy.random.RandomState` instance
+        Random number generator.
+
     with_confounds : :obj:`bool`
-        _description_
-    confounds_tag : :obj:`str`
-        _description_
+        Whether to generate associated confounds files or not.
+
+    confounds_tag : :obj:`str` (filename suffix)
+        If generating confounds, what path should they have? Defaults to
+        `desc-confounds_timeseries` as in :term:`fMRIPrep` >= 20.2
+        but can be other values (e.g. "desc-confounds_regressors" as
+        in :term:`fMRIPrep` < 20.2).
+
     """
     n_time_points = 100
     shape = [n_voxels, n_voxels, n_voxels, n_time_points]
