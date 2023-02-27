@@ -888,7 +888,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         warn('slice_time_ref is %d percent of the repetition '
              'time' % slice_time_ref)
     else:
-        filters = _bids_filter(task_label=task_label,
+        filters = _filter_for_bids_query(task_label=task_label,
                                supported_filters=SUPPORTED_FILTERS,
                                extra_filter=img_filters)
         img_specs = get_bids_files(derivatives_path,
@@ -898,7 +898,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                                    filters=filters)
         # If we don't find the parameter information in the derivatives folder
         # we try to search in the raw data folder
-        filters = _bids_filter(task_label=task_label,
+        filters = _filter_for_bids_query(task_label=task_label,
                                supported_filters=SUPPORTED_FILTERS_RAW,
                                extra_filter=img_filters)
         if not img_specs:
@@ -958,7 +958,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         models.append(model)
 
         # Get preprocessed imgs
-        filters = _bids_filter(task_label=task_label,
+        filters = _filter_for_bids_query(task_label=task_label,
                                space_label=space_label,
                                supported_filters=SUPPORTED_FILTERS,
                                extra_filter=img_filters)
@@ -979,7 +979,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         models_run_imgs.append(imgs)
 
         # Get events files
-        events_filters = _bids_filter(task_label=task_label,
+        events_filters = _filter_for_bids_query(task_label=task_label,
                                supported_filters=SUPPORTED_FILTERS_RAW,
                                extra_filter=img_filters)
         events = get_bids_files(dataset_path,
@@ -1015,7 +1015,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         # If there are confounds, they are assumed to be present for all runs.
         confounds_filters = SUPPORTED_FILTERS.copy()
         confounds_filters.remove('desc')
-        filters = _bids_filter(task_label=task_label,
+        filters = _filter_for_bids_query(task_label=task_label,
                                supported_filters=confounds_filters,
                                extra_filter=img_filters)
         confounds = get_bids_files(derivatives_path,
@@ -1109,7 +1109,7 @@ def _validate_args_first_level_from_bids(dataset_path: str,
                 f"Only {supported_filters} are allowed.")
 
 
-def _bids_filter(task_label: str,
+def _filter_for_bids_query(task_label: str,
                  space_label: str | None = None,
                  supported_filters: list[str] | None = None,
                  extra_filter: list[Tuple[str, str]] | None = None
@@ -1133,14 +1133,21 @@ def _bids_filter(task_label: str,
         Filter to be used by :func:`get_bids_files`.
     """    
     filters = [('task', task_label)]
+
     if space_label is not None:
         filters.append(('space', space_label))
+
     if extra_filter and supported_filters:
-        filters.extend(
-            this_filter
-            for this_filter in extra_filter
-            if this_filter[0] in supported_filters
-        )
+        for this_filter in extra_filter:
+
+            if this_filter[0] not in supported_filters:
+                warn(f"The filter {this_filter} will be skipped."
+                     f"'{this_filter[0]}' is not among the supported filters."
+                     f"Only {supported_filters} are allowed.")
+                continue
+            
+            filters.append(this_filter)
+
     return filters
 
 
@@ -1256,7 +1263,7 @@ def _check_bids_events_list(events: list[str] | None,
         extra_filter = [(key, img_dict[key]) 
                         for key in img_dict 
                         if key in supported_filters]
-        filters = _bids_filter(task_label=task_label,
+        filters = _filter_for_bids_query(task_label=task_label,
                     space_label=None,
                     supported_filters=supported_filters,
                     extra_filter=extra_filter)

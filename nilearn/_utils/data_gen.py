@@ -1199,7 +1199,10 @@ def _mock_bids_derivatives(bids_path: Path,
                                                 rand_gen=rand_gen,
                                                 with_confounds=with_confounds,
                                                 confounds_tag=confounds_tag)
-                elif entities[0] in _bids_entites()["raw"] + _bids_entites()["derivatives"]:
+                elif (
+                        entities[0] in 
+                        _bids_entites()["raw"] + _bids_entites()["derivatives"]
+                    ):
                     entity, labels  = entities
                     for i_label in labels:
                         fields = [subject,
@@ -1228,8 +1231,10 @@ def generate_random_img(
     shape : length-3 or length-4 tuple
         The shape of the image being generated.
         The number of elements determines the dimensionality of the image.
+
     affine : 4x4 numpy.ndarray
         The affine of the image
+
     random_state : numpy.random.RandomState instance, optional
         random number generator.
 
@@ -1237,6 +1242,7 @@ def generate_random_img(
     -------
     data_img : 3D or 4D niimg
         The data image.
+
     mask_img : 3D niimg
         The mask image.
     """
