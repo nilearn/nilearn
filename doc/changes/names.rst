@@ -194,6 +194,8 @@
 
 .. _Raphael Meudec: https://github.com/RaphaelMeudec
 
+.. _Rémi Gau: https://github.com/Remi-Gau
+
 .. _Robert Luke: https://github.com/rob-luke
 
 .. _Robert Williamson: https://github.com/RobWilliamson15
@@ -213,6 +215,8 @@
 .. _Simon Steinkamp: https://github.com/SRSteinkamp
 
 .. _Sourav Singh: https://github.com/souravsingh
+
+.. _Steven Meisler: https://www.stevenmeisler.com
 
 .. _Sylvain Lan: https://github.com/SylvainLan
 

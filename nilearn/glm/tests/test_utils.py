@@ -124,11 +124,19 @@ def test_z_score_opposite_contrast():
             contrasts['seed1 - seed2'], output_type='z_score')
         z_map_seed2_vs_seed1 = fmri_glm.compute_contrast(
             contrasts['seed2 - seed1'], output_type='z_score')
-        assert_almost_equal(z_map_seed1_vs_seed2.get_data().min(),
-                            -z_map_seed2_vs_seed1.get_data().max(),
+        assert_almost_equal(z_map_seed1_vs_seed2.get_fdata(
+                                dtype="float32"
+                            ).min(),
+                            -z_map_seed2_vs_seed1.get_fdata(
+                                dtype="float32"
+                            ).max(),
                             decimal=10)
-        assert_almost_equal(z_map_seed1_vs_seed2.get_data().max(),
-                            -z_map_seed2_vs_seed1.get_data().min(),
+        assert_almost_equal(z_map_seed1_vs_seed2.get_fdata(
+                                dtype="float32"
+                            ).max(),
+                            -z_map_seed2_vs_seed1.get_fdata(
+                                dtype="float32"
+                            ).min(),
                             decimal=10)
 
 

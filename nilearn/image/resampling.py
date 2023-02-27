@@ -1,6 +1,6 @@
 """
 Utilities to resample a Niimg-like object
-See http://nilearn.github.io/manipulating_images/input_output.html
+See http://nilearn.github.io/stable/manipulating_images/input_output.html
 """
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
 # License: simplified BSD

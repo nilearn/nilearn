@@ -1,6 +1,4 @@
-"""
-Test the multi-PCA module
-"""
+"""Test the multi-PCA module."""
 import os
 import tempfile
 import numpy as np
@@ -15,10 +13,8 @@ from nilearn._utils.testing import write_tmp_imgs
 
 
 def _tmp_dir():
-    """For testing globbing patterns in input images
-    """
-    tmp_dir = tempfile.tempdir + os.sep
-    return tmp_dir
+    """Test globbing patterns in input images."""
+    return tempfile.tempdir + os.sep
 
 
 def test_multi_pca():
@@ -30,15 +26,14 @@ def test_multi_pca():
 
     # Create a "multi-subject" dataset
     data = []
-    for i in range(8):
+    for _ in range(8):
         this_data = rng.normal(size=shape)
         # Create fake activation to get non empty mask
         this_data[2:4, 2:4, 2:4, :] += 10
         data.append(nibabel.Nifti1Image(this_data, affine))
 
     mask_img = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
-    multi_pca = _MultiPCA(mask=mask_img, n_components=3,
-                          random_state=0)
+    multi_pca = _MultiPCA(mask=mask_img, n_components=3, random_state=0)
     # fit to the data and test for masker attributes
     multi_pca.fit(data)
     assert multi_pca.mask_img_ == mask_img
@@ -70,8 +65,11 @@ def test_multi_pca():
     assert multi_pca.mask_img_ == multi_pca.masker_.mask_img_
 
     # Smoke test the use of a masker and without CCA
-    multi_pca = _MultiPCA(mask=MultiNiftiMasker(mask_args=dict(opening=0)),
-                          do_cca=False, n_components=3)
+    multi_pca = _MultiPCA(
+        mask=MultiNiftiMasker(mask_args=dict(opening=0)),
+        do_cca=False,
+        n_components=3,
+    )
     multi_pca.fit(data[:2])
 
     # Smoke test the transform and inverse_transform
@@ -81,20 +79,26 @@ def test_multi_pca():
     pytest.raises(TypeError, multi_pca.fit)
 
     multi_pca = _MultiPCA(mask=mask_img, n_components=3)
-    with pytest.raises(ValueError,
-                       match="Object has no components_ attribute. This is "
-                             "probably because fit has not been called"):
+    with pytest.raises(
+        ValueError,
+        match="Object has no components_ attribute. This is "
+        "probably because fit has not been called",
+    ):
         multi_pca.transform(data)
     # Test if raises an error when empty list of provided.
-    with pytest.raises(ValueError,
-                       match='Need one or more Niimg-like objects as input, '
-                             'an empty list was given.'):
+    with pytest.raises(
+        ValueError,
+        match="Need one or more Niimg-like objects as input, "
+        "an empty list was given.",
+    ):
         multi_pca.fit([])
     # Test passing masker arguments to estimator
-    multi_pca = _MultiPCA(target_affine=affine,
-                          target_shape=shape[:3],
-                          n_components=3,
-                          mask_strategy='background')
+    multi_pca = _MultiPCA(
+        target_affine=affine,
+        target_shape=shape[:3],
+        n_components=3,
+        mask_strategy="background",
+    )
     multi_pca.fit(data)
 
 
@@ -105,45 +109,49 @@ def test_multi_pca_score():
 
     # Create a "multi-subject" dataset
     imgs = []
-    for i in range(8):
+    for _ in range(8):
         this_img = rng.normal(size=shape)
         imgs.append(nibabel.Nifti1Image(this_img, affine))
 
     mask_img = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
 
     # Assert that score is between zero and one
-    multi_pca = _MultiPCA(mask=mask_img, random_state=0, memory_level=0,
-                          n_components=3)
+    multi_pca = _MultiPCA(
+        mask=mask_img, random_state=0, memory_level=0, n_components=3
+    )
     multi_pca.fit(imgs)
     s = multi_pca.score(imgs)
     assert np.all(s <= 1)
-    assert np.all(0 <= s)
+    assert np.all(s >= 0)
 
     # Assert that score does not fail with single subject data
-    multi_pca = _MultiPCA(mask=mask_img, random_state=0, memory_level=0,
-                          n_components=3)
+    multi_pca = _MultiPCA(
+        mask=mask_img, random_state=0, memory_level=0, n_components=3
+    )
     multi_pca.fit(imgs[0])
     s = multi_pca.score(imgs[0])
     assert isinstance(s, float)
-    assert(0. <= s <= 1.)
+    assert 0.0 <= s <= 1.0
 
     # Assert that score is one for n_components == n_sample
     # in single subject configuration
-    multi_pca = _MultiPCA(mask=mask_img, random_state=0, memory_level=0,
-                          n_components=5)
+    multi_pca = _MultiPCA(
+        mask=mask_img, random_state=0, memory_level=0, n_components=5
+    )
     multi_pca.fit(imgs[0])
     s = multi_pca.score(imgs[0])
-    assert_almost_equal(s, 1., 1)
+    assert_almost_equal(s, 1.0, 1)
 
     # Per component score
-    multi_pca = _MultiPCA(mask=mask_img, random_state=0, memory_level=0,
-                          n_components=5)
+    multi_pca = _MultiPCA(
+        mask=mask_img, random_state=0, memory_level=0, n_components=5
+    )
     multi_pca.fit(imgs[0])
     masker = NiftiMasker(mask_img).fit()
     s = multi_pca._raw_score(masker.transform(imgs[0]), per_component=True)
     assert s.shape == (5,)
     assert np.all(s <= 1)
-    assert np.all(0 <= s)
+    assert np.all(s >= 0)
 
 
 def test_components_img():
@@ -153,7 +161,7 @@ def test_components_img():
 
     # Create a "multi-subject" dataset
     data = []
-    for i in range(8):
+    for _ in range(8):
         this_data = rng.normal(size=shape)
         # Create fake activation to get non empty mask
         this_data[2:4, 2:4, 2:4, :] += 10
@@ -161,8 +169,9 @@ def test_components_img():
 
     mask_img = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
     n_components = 3
-    multi_pca = _MultiPCA(mask=mask_img, n_components=n_components,
-                          random_state=0)
+    multi_pca = _MultiPCA(
+        mask=mask_img, n_components=n_components, random_state=0
+    )
     # fit to the data and test for components images
     multi_pca.fit(data)
     components_img = multi_pca.components_img_
@@ -197,8 +206,9 @@ def test_with_globbing_patterns_with_multiple_images():
     img_4d = nibabel.Nifti1Image(data_4d, affine=np.eye(4))
     multi_pca = _MultiPCA(n_components=3)
 
-    with write_tmp_imgs(img_4d, img_4d, create_files=True,
-                        use_wildcards=True) as imgs:
+    with write_tmp_imgs(
+        img_4d, img_4d, create_files=True, use_wildcards=True
+    ) as imgs:
         input_image = _tmp_dir() + imgs
         multi_pca.fit(input_image)
         components_img = multi_pca.components_img_

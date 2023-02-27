@@ -1,6 +1,6 @@
 """
 Functions to do automatic visualization of Niimg-like objects
-See http://nilearn.github.io/manipulating_images/input_output.html
+See http://nilearn.github.io/stable/manipulating_images/input_output.html
 
 Only matplotlib is required.
 """
@@ -297,7 +297,7 @@ class _MNI152Template(SpatialImage):
 
     def load(self):
         if self.data is None:
-            anat_img = load_mni152_template()
+            anat_img = load_mni152_template(resolution=2)
             anat_img = reorder_img(anat_img)
             data = get_data(anat_img)
             data = data.astype(np.float64)
