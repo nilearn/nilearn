@@ -42,8 +42,7 @@ from nilearn.image import get_data
 from nilearn.masking import _unmask_from_to_3d_array
 
 from .._utils.cache_mixin import CacheMixin
-
-from .space_net_solvers import (  # isort:skip
+from .space_net_solvers import (
     _graph_net_logistic,
     _graph_net_squared_loss,
     tvl1_solver,
