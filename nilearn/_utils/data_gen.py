@@ -804,7 +804,7 @@ def create_fake_bids_dataset(base_dir='',
                              confounds_tag="desc-confounds_timeseries",
                              no_session=False,
                              random_state=0,
-                             entities=None,):
+                             entities=None,) -> str:
     """Create a fake :term:`bids<BIDS>` dataset directory with dummy files.
 
     Returns fake dataset directory name.
@@ -913,7 +913,7 @@ def _file_id(fields: list[str], n_run: int, run: str) -> str:
 
     Parameters
     ----------
-    fields : list[str]
+    fields : :obj:`list` of :obj:`str`
         _description_
     n_run : :obj:`int`
         _description_

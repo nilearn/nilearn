@@ -650,7 +650,7 @@ def test_first_level_with_scaling():
 
 
 def test_first_level_with_no_signal_scaling():
-    """Test to ensure that the FirstLevelModel works correctly \
+    """Test to ensure that the FirstLevelModel works correctly
     with a signal_scaling==False.
 
     In particular, that derived theta are correct for a
@@ -781,7 +781,7 @@ def test_first_level_predictions_r_square():
     True
 ])
 def test_first_level_hrf_model(hrf_model, spaces):
-    """Ensure that FirstLevelModel runs without raising errors \
+    """Ensure that FirstLevelModel runs without raising errors
     for different values of hrf_model.
 
     In particular, one checks that it runs
