@@ -178,7 +178,7 @@ def test_first_level_from_bids_with_one_events_missing():
         os.remove(events_files[0])
         # one file missing
         with pytest.raises(
-            ValueError, match="No events.tsv files corresponding"
+            ValueError, match="Same number of event files "
         ):
             first_level_from_bids(
                 dataset_path=bids_path, task_label="main", space_label="MNI"
@@ -195,7 +195,7 @@ def test_first_level_from_bids_with_missing_events():
         for f in events_files[1:]:
             os.remove(f)
         # all files missing
-        with pytest.raises(ValueError, match="No events.tsv files found for"):
+        with pytest.raises(ValueError, match="Same number of event files "):
             first_level_from_bids(
                 dataset_path=bids_path, task_label="main", space_label="MNI"
             )
