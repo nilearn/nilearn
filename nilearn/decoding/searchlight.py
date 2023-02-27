@@ -141,7 +141,7 @@ def _group_iter_search_light(
     total,
     verbose=0,
 ):
-    """Function for grouped iterations of search_light.
+    """Perform grouped iterations of search_light.
 
     Parameters
     ----------
@@ -253,7 +253,7 @@ class SearchLight(BaseEstimator):
     %(verbose0)s
 
     Notes
-    ------
+    -----
     The searchlight [Kriegeskorte 06] is a widely used approach for the
     study of the fine-grained patterns of information in fMRI analysis.
     Its principle is relatively simple: a small group of neighboring

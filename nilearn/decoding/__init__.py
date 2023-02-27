@@ -1,6 +1,4 @@
-"""
-Decoding tools and algorithms.
-"""
+"""Decoding tools and algorithms."""
 
 
 from nilearn.decoding.searchlight import SearchLight
