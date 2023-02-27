@@ -989,44 +989,16 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                                 file_type='tsv',
                                 sub_label=sub_label,
                                 filters=events_filters)
-
-        if not events:
-            raise ValueError('No events.tsv files found '
-                             f'for subject {sub_label} '
-                             f'for filter: {filters}.')
-        if len(events) != len(imgs):
-            raise ValueError(f'{len(events)} events.tsv files found'
-                             f' for {len(imgs)} bold files. '
-                             'Same number of event files '
-                             'as the number of runs is expected.')
-        for this_img in imgs:
-            img_dict = parse_bids_filename(this_img)
-            extra_filter = [(key, img_dict[key]) 
-                            for key in img_dict 
-                            if key in ["sub", "ses", "task", *SUPPORTED_FILTERS_RAW]]
-            filters = _bids_filter(task_label=task_label,
-                        space_label=None,
-                        supported_filters=["ses", "task", *SUPPORTED_FILTERS_RAW],
-                        extra_filter=extra_filter)
-            this_event = get_bids_files(dataset_path,
-                           modality_folder='func',
-                           file_tag='events',
-                           file_type='tsv',
-                           sub_label=sub_label,
-                           filters=filters)
-            msg_suffix = (f' bold file:\n{this_img}\nfilter:\n{filters})\n'
-                          'Found all the following events files '
-                          f'for filter {events_filters}:\n{events}\n')
-            if len(this_event) == 0:
-                raise ValueError(f'No events.tsv files '
-                                 f'corresponding to {msg_suffix}')
-            if len(this_event) > 1:
-                raise ValueError(f'More than 1 events.tsv files '
-                                 f'corresponding to {msg_suffix}')
-            if this_event[0] not in events:                        
-                raise ValueError(f'\n{this_event} not in {events}.\n'
-                                 f'No corresponding events.tsv files found '
-                                 f'for {msg_suffix}')
+        _bids_check_events_list(events=events,
+                                imgs=imgs,
+                                sub_label=sub_label,
+                                task_label=task_label,
+                                dataset_path=dataset_path, 
+                                events_filters=events_filters,
+                                supported_filters=["sub", 
+                                                   "ses", 
+                                                   "task", 
+                                                   *SUPPORTED_FILTERS_RAW]) 
 
         if verbose:
             print('Found the following events files',
@@ -1238,3 +1210,49 @@ def _bids_check_image_list(imgs: list[str] | None,
                     f"found for the same run {img_dict['run']}. {msg_end}")
             else:
                 run_check_list.append(img_dict['run'])
+
+
+def _bids_check_events_list(events: list[str] | None,
+                           imgs: list[str],
+                           sub_label: str,
+                           task_label: str,
+                           dataset_path: str,
+                           events_filters: list[str],
+                           supported_filters: list[str]) -> None:
+    if not events:
+        raise ValueError('No events.tsv files found '
+                            f'for subject {sub_label} '
+                            f'for filter: {events_filters}.')
+    if len(events) != len(imgs):
+        raise ValueError(f'{len(events)} events.tsv files found'
+                            f' for {len(imgs)} bold files. '
+                            'Same number of event files '
+                            'as the number of runs is expected.')
+    for this_img in imgs:
+        img_dict = parse_bids_filename(this_img)
+        extra_filter = [(key, img_dict[key]) 
+                        for key in img_dict 
+                        if key in supported_filters]
+        filters = _bids_filter(task_label=task_label,
+                    space_label=None,
+                    supported_filters=supported_filters,
+                    extra_filter=extra_filter)
+        this_event = get_bids_files(dataset_path,
+                        modality_folder='func',
+                        file_tag='events',
+                        file_type='tsv',
+                        sub_label=sub_label,
+                        filters=filters)
+        msg_suffix = (f' bold file:\n{this_img}\nfilter:\n{filters})\n'
+                        'Found all the following events files '
+                        f'for filter:\n{events}\n')
+        if len(this_event) == 0:
+            raise ValueError(f'No events.tsv files '
+                                f'corresponding to {msg_suffix}')
+        if len(this_event) > 1:
+            raise ValueError(f'More than 1 events.tsv files '
+                                f'corresponding to {msg_suffix}')
+        if this_event[0] not in events:                        
+            raise ValueError(f'\n{this_event} not in {events}.\n'
+                                f'No corresponding events.tsv files found '
+                                f'for {msg_suffix}')    
