@@ -988,7 +988,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                                 file_type='tsv',
                                 sub_label=sub_label,
                                 filters=events_filters)
-        _bids_check_events_list(events=events,
+        _check_bids_events_list(events=events,
                                 imgs=imgs,
                                 sub_label=sub_label,
                                 task_label=task_label,
@@ -1027,10 +1027,10 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 
         if confounds:
             if len(confounds) != len(imgs):
-                raise ValueError('%d confounds.tsv files found for %d bold '
-                                 'files. Same number of confound files as '
-                                 'the number of runs is expected' %
-                                 (len(events), len(imgs)))
+                raise ValueError(f"{len(events)} confounds.tsv files found "
+                                 f"for {len(imgs)} bold files. " 
+                                 "Same number of confound files as "
+                                 "the number of runs is expected")
             confounds = [pd.read_csv(c, sep='\t', index_col=None)
                          for c in confounds]
 
@@ -1176,7 +1176,7 @@ def _check_bids_image_list(imgs: list[str] | None,
     # likely we have an issue of underspecification of filters.
     # If more than one run is present the run field is mandatory in BIDS
     # as well as the ses field if more than one session is present.
-    msg_end = ('Please verify that the desc_label and space_label labels '
+    msg_end = ('Please verify that the desc_label and space_label labels ' +
                'corresponding to the BIDS spec were correctly specified.')
     run_check_list = []
     for img in imgs:
@@ -1188,7 +1188,7 @@ def _check_bids_image_list(imgs: list[str] | None,
             if (img_dict['ses'], img_dict['run']) in run_check_list:
                 raise ValueError(
                     'More than one nifti image found '
-                    f"for the same run {img_dict['run']} and ",
+                    f"for the same run {img_dict['run']} and "
                     f"session {img_dict['ses']}. {msg_end}")
             else:
                 run_check_list.append((img_dict['ses'], img_dict['run']))
@@ -1197,7 +1197,7 @@ def _check_bids_image_list(imgs: list[str] | None,
             if img_dict['ses'] in run_check_list:
                 raise ValueError(
                     'More than one nifti image ',
-                    f"found for the same ses {img_dict['ses']}, while ",
+                    f"found for the same ses {img_dict['ses']}, while "
                     f'no additional run specification present. {msg_end}')
             else:
                 run_check_list.append(img_dict['ses'])
@@ -1211,7 +1211,7 @@ def _check_bids_image_list(imgs: list[str] | None,
                 run_check_list.append(img_dict['run'])
 
 
-def _bids_check_events_list(events: list[str] | None,
+def _check_bids_events_list(events: list[str] | None,
                            imgs: list[str],
                            sub_label: str,
                            task_label: str,

@@ -892,15 +892,15 @@ def create_fake_bids_dataset(base_dir='',
     os.makedirs(bids_path)
     rand_gen = check_random_state(random_state)
 
-    _mock_bids_dataset(bids_path=bids_path,
-                       n_sub=n_sub,
-                       n_ses=n_ses,
-                       tasks=tasks,
-                       n_runs=n_runs,
-                       no_session=no_session,
-                       entities=entities,
-                       n_voxels=n_voxels,
-                       rand_gen=rand_gen)
+    # _mock_bids_dataset(bids_path=bids_path,
+    #                    n_sub=n_sub,
+    #                    n_ses=n_ses,
+    #                    tasks=tasks,
+    #                    n_runs=n_runs,
+    #                    no_session=no_session,
+    #                    entities=entities,
+    #                    n_voxels=n_voxels,
+    #                    rand_gen=rand_gen)
 
     # Create bids dataset
     Path(bids_path, 'README.txt').write_text('')
@@ -950,7 +950,7 @@ def create_fake_bids_dataset(base_dir='',
         bids_path = os.path.join(base_dir, "bids_dataset", "derivatives")
         os.makedirs(bids_path)
 
-        for subject in [f"run-{label:02}" for label in range(1, n_sub + 1)]:
+        for subject in [f"sub-{label:02}" for label in range(1, n_sub + 1)]:
             for session in created_sessions:
 
                 subses_dir = os.path.join(bids_path, subject, session)
@@ -1071,11 +1071,11 @@ def _mock_bids_dataset(bids_path: str,
                        rand_gen:np.random.RandomState) -> None:
     Path(bids_path, 'README.txt').write_text('')
 
-    created_sessions = [f"run-{label:02}" for label in range(1, n_ses + 1)]
+    created_sessions = [f"ses-{label:02}" for label in range(1, n_ses + 1)]
     if no_session:
         created_sessions = ['']
 
-    for subject, session in itertools.product([f"run-{label:02}" for label 
+    for subject, session in itertools.product([f"sub-{label:02}" for label 
                                                in range(1, n_sub + 1)], 
                                               created_sessions):
         subses_dir = os.path.join(bids_path, subject, session)
