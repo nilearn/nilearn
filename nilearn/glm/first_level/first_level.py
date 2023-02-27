@@ -873,7 +873,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 
     derivatives_path = os.path.join(dataset_path, derivatives_folder)
 
-    _bids_validate_arguments(dataset_path,
+    _validate_args_first_level_from_bids(dataset_path,
                              task_label,
                              space_label,
                              img_filters,
@@ -968,8 +968,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                               file_type='nii*',
                               sub_label=sub_label,
                               filters=filters)
-
-        _bids_check_image_list(imgs, sub_label, filters)
+        _check_bids_image_list(imgs, sub_label, filters)
 
         if verbose:
             print('Found the following bold files',

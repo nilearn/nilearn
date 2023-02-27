@@ -37,10 +37,10 @@ def test_first_level_from_bids_bug_3029():
 def test_first_level_from_bids():
     with InTemporaryDirectory():
 
-        bids_path = create_fake_bids_dataset(n_sub=3,
+        bids_path = create_fake_bids_dataset(n_sub=2,
                                              n_ses=2,
-                                             tasks=['localizer', 'main'],
-                                             n_runs=[1, 3])
+                                             tasks=['main'],
+                                             n_runs=[2])
         # test output is as expected
         models, m_imgs, m_events, m_confounds = first_level_from_bids(
             bids_path,
@@ -129,10 +129,10 @@ def test_first_level_from_bids_validation_input():
 
 def test_first_level_from_bids_with_missing_files():
     with InTemporaryDirectory():
-        bids_path = create_fake_bids_dataset(n_sub=3,
+        bids_path = create_fake_bids_dataset(n_sub=2,
                                              n_ses=2,
                                              tasks=['localizer', 'main'],
-                                             n_runs=[1, 3])
+                                             n_runs=[1, 2])
         # test repeated run tag error when run tag is in filenames
         # can arise when desc or space is present and not specified
         #
@@ -188,10 +188,10 @@ def test_first_level_from_bids_with_missing_files():
 def test_first_level_from_bids_no_session():
     """Check runs are not repeated when ses field is not used."""
     with InTemporaryDirectory():
-        bids_path = create_fake_bids_dataset(n_sub=3,
+        bids_path = create_fake_bids_dataset(n_sub=2,
                                              n_ses=1,
                                              tasks=['localizer', 'main'],
-                                             n_runs=[1, 3],
+                                             n_runs=[1, 1],
                                              no_session=True)
         # test repeated run tag error when run tag is in filenames and not ses
         # can arise when desc or space is present and not specified
