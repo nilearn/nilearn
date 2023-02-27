@@ -833,8 +833,8 @@ def create_fake_bids_dataset(base_dir='',
 
     with_derivatives : :obj:`bool`, optional
         In the case derivatives are included, they come with two spaces and
-        descriptions. 
-        Spaces are 'MNI' and 'T1w'. 
+        descriptions.
+        Spaces are 'MNI' and 'T1w'.
         Descriptions are 'preproc' and :term:`fMRIPrep`.
         Only space 'T1w' include both descriptions.
 
@@ -843,7 +843,7 @@ def create_fake_bids_dataset(base_dir='',
 
     confounds_tag : :obj:`str`, optional
         Filename "suffix":
-        If generating confounds, what path should they have? 
+        If generating confounds, what path should they have?
         Defaults to `desc-confounds_timeseries` as in :term:`fMRIPrep` >= 20.2
         but can be other values (e.g. "desc-confounds_regressors" as
         in :term:`fMRIPrep` < 20.2).
@@ -950,7 +950,7 @@ def _write_bids_raw_func(func_path: Path,
         Path to a subject functional directory.
 
     file_id : :obj:`str`
-        Root of the BIDS filename: 
+        Root of the BIDS filename:
         typically basename without the BIDS suffix and extension.
 
     n_voxels : :obj:`int`
@@ -989,7 +989,7 @@ def _bids_entites() -> dict[str, list[str]]:
     -------
     Dictionary of raw and derivatives entities : dict[str, list[str]]
 
-    """    
+    """
     return {"raw": ['acq',
                     'ce',
                     'rec',
@@ -1069,7 +1069,7 @@ def _mock_bids_dataset(bids_path: Path,
             for run in run_labels:
                 if (entities is None or
                     entities[0] in _bids_entites()["derivatives"]
-                    ):
+                   ):
 
                     fields = [subject, session, f"task-{task}"]
                     _write_bids_raw_func(func_path=func_path,
@@ -1103,8 +1103,8 @@ def _write_bids_derivative_func(func_path: Path,
                                 confounds_tag: str) -> None:
     """Create BIDS functional derivative and confounds files.
 
-    Files created come with two spaces and descriptions. 
-    Spaces are: 'MNI' and 'T1w'. 
+    Files created come with two spaces and descriptions.
+    Spaces are: 'MNI' and 'T1w'.
     Descriptions are: 'preproc' and :term:`fMRIPrep`.
     Only space 'T1w' include both descriptions.
 
@@ -1114,7 +1114,7 @@ def _write_bids_derivative_func(func_path: Path,
         Path to a subject functional directory.
 
     file_id : :obj:`str`
-        Root of the BIDS filename: 
+        Root of the BIDS filename:
         typically basename without the BIDS suffix and extension.
 
     n_voxels : :obj:`int`
@@ -1126,9 +1126,9 @@ def _write_bids_derivative_func(func_path: Path,
     with_confounds : :obj:`bool`
         Whether to generate associated confounds files or not.
 
-    confounds_tag : :obj:`str` 
+    confounds_tag : :obj:`str`
         Filename "suffix":
-        For example: `desc-confounds_timeseries` 
+        For example: `desc-confounds_timeseries`
         or "desc-confounds_regressors".
 
     """
@@ -1141,7 +1141,7 @@ def _write_bids_derivative_func(func_path: Path,
                 continue
             file_path = func_path.joinpath(
                 f'{file_id}_space-{space}_desc-{desc}_bold.nii.gz'
-            ) 
+            )
             write_fake_bold_img(file_path,
                                 shape=shape,
                                 random_state=rand_gen)
@@ -1164,7 +1164,7 @@ def _subjects_to_create(n_sub: int) -> list[str]:
     -------
     List of subjects : :obj:`list` of :obj:`str`
 
-    """    
+    """
     return [f"sub-{label:02}" for label in range(1, n_sub + 1)]
 
 
@@ -1177,15 +1177,15 @@ def _sessions_to_create(n_ses: int, no_session: bool) -> list[str]:
         Number of sessions to create.
 
     no_session : :obj:`bool`
-        Specifying no_sessions will produce files without the session level. 
+        Specifying no_sessions will produce files without the session level.
         In this case `['']` is returned.
 
     Returns
     -------
     List of runs : :obj:`list` of :obj:`str`
 
-    """ 
-    return [''] if no_session else ['ses-%02d' % label 
+    """
+    return [''] if no_session else ['ses-%02d' % label
                                     for label in range(1, n_ses + 1)]
 
 
@@ -1201,7 +1201,7 @@ def _runs_to_create(n_run: int) -> list[str]:
     -------
     List of runs : :obj:`list` of :obj:`str`
 
-    """   
+    """
     return [f"run-{label:02}" for label in range(1, n_run + 1)]
 
 
@@ -1244,9 +1244,9 @@ def _mock_bids_derivatives(bids_path: Path,
     with_confounds : :obj:`bool`
         Whether to generate associated confounds files or not.
 
-    confounds_tag : :obj:`str` 
+    confounds_tag : :obj:`str`
         Filename "suffix":
-        For example: `desc-confounds_timeseries` 
+        For example: `desc-confounds_timeseries`
         or "desc-confounds_regressors".
 
     entities : :obj:`list`
@@ -1282,10 +1282,10 @@ def _mock_bids_derivatives(bids_path: Path,
                                                 with_confounds=with_confounds,
                                                 confounds_tag=confounds_tag)
                 elif (
-                        entities[0] in 
+                        entities[0] in
                         _bids_entites()["raw"] + _bids_entites()["derivatives"]
                     ):
-                    entity, labels  = entities
+                    entity, labels = entities
                     for i_label in labels:
                         fields = [subject,
                                   session,

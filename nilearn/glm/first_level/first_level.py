@@ -829,10 +829,10 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 
     img_filters : list of tuples (str, str), optional
         Filters are of the form (field, label). Only one filter per field
-        allowed. 
+        allowed.
         A file that does not match a filter will be discarded.
         Possible filters are 'acq', 'ce', 'dir', 'rec', 'run', 'echo', 'res',
-        'den', and 'desc'. 
+        'den', and 'desc'.
         Filter examples would be ('desc', 'preproc'), ('dir', 'pa')
         and ('run', '10').
 
@@ -841,15 +841,15 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         Like "derivatives/FMRIPREP". Default="derivatives".
 
     All other parameters correspond to a `FirstLevelModel` object, which
-    contains their documentation. 
+    contains their documentation.
     The subject label of the model will be determined directly
     from the BIDS dataset.
 
     Returns
     -------
     models : list of `FirstLevelModel` objects
-        Each FirstLevelModel object corresponds to a subject. 
-        All runs from different sessions are considered together 
+        Each FirstLevelModel object corresponds to a subject.
+        All runs from different sessions are considered together
         for the same subject to run a fixed effects analysis on them.
 
     models_run_imgs : list of list of Niimg-like objects,
@@ -867,11 +867,10 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     derivatives_path = os.path.join(dataset_path, derivatives_folder)
 
     _validate_args_first_level_from_bids(dataset_path=dataset_path,
-                             task_label=task_label,
-                             space_label=space_label,
-                             img_filters=img_filters,
-                             derivatives_path=derivatives_path,
-                             )
+                                         task_label=task_label,
+                                         space_label=space_label,
+                                         img_filters=img_filters,
+                                         derivatives_path=derivatives_path,)
 
     # Get acq specs for models. RepetitionTime and SliceTimingReference.
     # Throw warning if no bold.json is found
@@ -882,9 +881,8 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     else:
         filters = _filter_for_bids_query(
             task_label=task_label,
-            supported_filters=\
-                _supported_bids_filter()["raw"]
-                +_supported_bids_filter()["derivatives"],
+            supported_filters=_supported_bids_filter()["raw"]
+            + _supported_bids_filter()["derivatives"],
             extra_filter=img_filters
         )
         img_specs = get_bids_files(derivatives_path,
@@ -894,10 +892,11 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                                    filters=filters)
         # If we don't find the parameter information in the derivatives folder
         # we try to search in the raw data folder
-        filters = _filter_for_bids_query(task_label=task_label,
-                                         supported_filters=\
-                                             _supported_bids_filter()["raw"],
-                                         extra_filter=img_filters)
+        filters = _filter_for_bids_query(
+            task_label=task_label,
+            supported_filters=_supported_bids_filter()["raw"],
+            extra_filter=img_filters
+        )
         if not img_specs:
             img_specs = get_bids_files(dataset_path,
                                        modality_folder='func',
@@ -907,7 +906,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         if not img_specs:
             warn('No bold.json found in the derivatives or dataset folder.',
                  ' t_r can not be inferred ',
-                 ' and will need to be set manually in the list of models', 
+                 ' and will need to be set manually in the list of models',
                  ' otherwise their fit will throw an exception.')
         else:
             specs = json.load(open(img_specs[0], 'r'))
@@ -916,7 +915,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
             else:
                 warn(f'RepetitionTime not found in file {img_specs[0]}.'
                      ' t_r can not be inferred ',
-                     ' and will need to be set manually in the list of models', 
+                     ' and will need to be set manually in the list of models',
                      ' otherwise their fit will throw an exception.')
             if 'SliceTimingRef' in specs:
                 slice_time_ref = float(specs['SliceTimingRef'])
@@ -955,12 +954,13 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         models.append(model)
 
         # Get preprocessed imgs
-        filters = _filter_for_bids_query(task_label=task_label,
-                               space_label=space_label,
-                               supported_filters=\
-                                _supported_bids_filter()["raw"]
-                                +_supported_bids_filter()["derivatives"],
-                               extra_filter=img_filters)
+        filters = _filter_for_bids_query(
+            task_label=task_label,
+            space_label=space_label,
+            supported_filters=_supported_bids_filter()["raw"]
+            + _supported_bids_filter()["derivatives"],
+            extra_filter=img_filters
+        )
         imgs = get_bids_files(derivatives_path,
                               modality_folder='func',
                               file_tag='bold',
@@ -971,17 +971,18 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 
         if verbose:
             print('Found the following bold files',
-                   f'for subject {sub_label}',
-                   f'for filter: {filters}:\n',
-                   f'{imgs}\n')
+                  f'for subject {sub_label}',
+                  f'for filter: {filters}:\n',
+                  f'{imgs}\n')
 
         models_run_imgs.append(imgs)
 
         # Get events files
-        events_filters = _filter_for_bids_query(task_label=task_label,
-                               supported_filters=\
-                                _supported_bids_filter()["raw"],
-                               extra_filter=img_filters)
+        events_filters = _filter_for_bids_query(
+            task_label=task_label,
+            supported_filters=_supported_bids_filter()["raw"],
+            extra_filter=img_filters
+        )
         events = get_bids_files(dataset_path,
                                 modality_folder='func',
                                 file_tag='events',
@@ -992,14 +993,14 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                                 imgs=imgs,
                                 sub_label=sub_label,
                                 task_label=task_label,
-                                dataset_path=dataset_path, 
-                                events_filters=events_filters,) 
+                                dataset_path=dataset_path,
+                                events_filters=events_filters,)
 
         if verbose:
             print('Found the following events files',
                   f'for subject {sub_label}',
                   f'for filter: {filters}:\n',
-                  f'{events}\n')        
+                  f'{events}\n')
 
         events = [pd.read_csv(event, sep='\t', index_col=None)
                   for event in events]
@@ -1010,11 +1011,11 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         # If not found it will be assumed there are none.
         # If there are confounds, they are assumed to be present for all runs.
         confounds_filters = _supported_bids_filter()["raw"] + \
-                                _supported_bids_filter()["derivatives"]
+                            _supported_bids_filter()["derivatives"]
         confounds_filters.remove('desc')
         filters = _filter_for_bids_query(task_label=task_label,
-                               supported_filters=confounds_filters,
-                               extra_filter=img_filters)
+                                         supported_filters=confounds_filters,
+                                         extra_filter=img_filters)
         confounds = get_bids_files(derivatives_path,
                                    modality_folder='func',
                                    file_tag='desc-confounds*',
@@ -1025,7 +1026,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         if confounds:
             if len(confounds) != len(imgs):
                 raise ValueError(f"{len(events)} confounds.tsv files found "
-                                 f"for {len(imgs)} bold files. " 
+                                 f"for {len(imgs)} bold files. "
                                  "Same number of confound files as "
                                  "the number of runs is expected")
             confounds = [pd.read_csv(c, sep='\t', index_col=None)
@@ -1034,6 +1035,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
             models_confounds.append(confounds)
 
     return models, models_run_imgs, models_events, models_confounds
+
 
 def _supported_bids_filter() -> dict[str, list[str]]:
     """Return a dictionary of BIDS entities.
@@ -1047,7 +1049,7 @@ def _supported_bids_filter() -> dict[str, list[str]]:
     -------
     Dictionary of raw and derivatives entities : dict[str, list[str]]
 
-    """    
+    """
     return {"raw": ['acq',
                     'ce',
                     'rec',
@@ -1057,6 +1059,7 @@ def _supported_bids_filter() -> dict[str, list[str]]:
                     'part'],
             "derivatives": ['res', 'den', 'desc']
             }
+
 
 def _validate_args_first_level_from_bids(dataset_path: str,
                                          task_label: str,
@@ -1070,7 +1073,7 @@ def _validate_args_first_level_from_bids(dataset_path: str,
         - dataset_path is a string and exists
         - derivatives_path exists
         - task_label and space_label are strings
-        - img_filters is a list of tuples of strings 
+        - img_filters is a list of tuples of strings
           and all filters are valid bids entities.
 
     Parameters
@@ -1086,13 +1089,13 @@ def _validate_args_first_level_from_bids(dataset_path: str,
         As they are specified in the file names like _space-<space_label>_.
 
     img_filters : :obj:`list` of :obj:`tuples` (str, str)
-        Filters are of the form (field, label). 
-        Only one filter per field allowed. 
+        Filters are of the form (field, label).
+        Only one filter per field allowed.
 
     derivatives_path : :obj:`str`
         Fullpath of the BIDS dataset derivative folder.
 
-    """    
+    """
     if not isinstance(dataset_path, str):
         raise TypeError(
             "dataset_path must be a string, "
@@ -1121,9 +1124,9 @@ def _validate_args_first_level_from_bids(dataset_path: str,
             f"img_filters must be a list, "
             f"instead {type(img_filters)} was given."
         )
-    
+
     supported_filters = _supported_bids_filter()["raw"] +\
-                         _supported_bids_filter()["derivatives"]
+                        _supported_bids_filter()["derivatives"]
     for this_filter in img_filters:
         if (not isinstance(this_filter[0], str)
                 or not isinstance(this_filter[1], str)):
@@ -1163,7 +1166,7 @@ def _filter_for_bids_query(task_label: str,
         :obj:`list` of :obj:`tuple` (str, str)
         filters
 
-    """    
+    """
     filters = [('task', task_label)]
 
     if space_label is not None:
@@ -1193,7 +1196,6 @@ def _check_bids_image_list(imgs: list[str] | None,
         - if more than one image was found, check that there is not more than
           one image for a given session / run combination.
 
-
     Parameters
     ----------
     imgs : list[str] or None
@@ -1206,8 +1208,7 @@ def _check_bids_image_list(imgs: list[str] | None,
         Filters of the form (field, label) used to select the files.
         See :func:`get_bids_files`.
 
-    """    
-
+    """
     if not imgs:
         raise ValueError('No bold files found '
                          f'for subject {sub_label} '
@@ -1261,7 +1262,13 @@ def _check_bids_events_list(events: list[str] | None,
                             task_label: str,
                             dataset_path: str,
                             events_filters: list[str]) -> None:
-    """_summary_
+    """Check input BIDS events.
+
+    Check that:
+        - some events.tsv files were found
+        - as many events.tsv were found as images
+        - there is only one events.tsv per image and that they have the same
+          raw entities.
 
     Parameters
     ----------
@@ -1284,46 +1291,46 @@ def _check_bids_events_list(events: list[str] | None,
         Filters of the form (field, label) used to select the files.
         See :func:`get_bids_files`.
 
-    """ 
+    """
     if not events:
         raise ValueError('No events.tsv files found '
-                            f'for subject {sub_label} '
-                            f'for filter: {events_filters}.')
+                         f'for subject {sub_label} '
+                         f'for filter: {events_filters}.')
     if len(events) != len(imgs):
         raise ValueError(f'{len(events)} events.tsv files found'
-                            f' for {len(imgs)} bold files. '
-                            'Same number of event files '
-                            'as the number of runs is expected.')
-    
-    supported_filters = ["sub", 
-                         "ses", 
-                         "task", 
+                         f' for {len(imgs)} bold files. '
+                         'Same number of event files '
+                         'as the number of runs is expected.')
+
+    supported_filters = ["sub",
+                         "ses",
+                         "task",
                          *_supported_bids_filter()["raw"]]
     for this_img in imgs:
         img_dict = parse_bids_filename(this_img)
-        extra_filter = [(key, img_dict[key]) 
-                        for key in img_dict 
+        extra_filter = [(key, img_dict[key])
+                        for key in img_dict
                         if key in supported_filters]
         filters = _filter_for_bids_query(task_label=task_label,
-                    space_label=None,
-                    supported_filters=supported_filters,
-                    extra_filter=extra_filter)
+                                         space_label=None,
+                                         supported_filters=supported_filters,
+                                         extra_filter=extra_filter)
         this_event = get_bids_files(dataset_path,
-                        modality_folder='func',
-                        file_tag='events',
-                        file_type='tsv',
-                        sub_label=sub_label,
-                        filters=filters)
+                                    modality_folder='func',
+                                    file_tag='events',
+                                    file_type='tsv',
+                                    sub_label=sub_label,
+                                    filters=filters)
         msg_suffix = (f' bold file:\n{this_img}\nfilter:\n{filters})\n'
-                        'Found all the following events files '
-                        f'for filter:\n{events}\n')
+                      'Found all the following events files '
+                      f'for filter:\n{events}\n')
         if len(this_event) == 0:
             raise ValueError(f'No events.tsv files '
-                                f'corresponding to {msg_suffix}')
+                             f'corresponding to {msg_suffix}')
         if len(this_event) > 1:
             raise ValueError(f'More than 1 events.tsv files '
-                                f'corresponding to {msg_suffix}')
-        if this_event[0] not in events:                        
+                             f'corresponding to {msg_suffix}')
+        if this_event[0] not in events:
             raise ValueError(f'\n{this_event} not in {events}.\n'
-                                f'No corresponding events.tsv files found '
-                                f'for {msg_suffix}')    
+                             f'No corresponding events.tsv files found '
+                             f'for {msg_suffix}')

@@ -12,7 +12,7 @@ from nibabel.tmpdirs import InTemporaryDirectory
 
 
 def test_first_level_from_bids_bug_3029():
-    "Test error when events.tsv is missing for a bold file."
+    """Test error when events.tsv is missing for a bold file."""
     with InTemporaryDirectory():
         bids_path = create_fake_bids_dataset(
             n_sub=2, n_ses=2, tasks=["main"], n_runs=[2]
@@ -71,7 +71,7 @@ def test_first_level_from_bids():
     "entity", ["acq", "ce", "dir", "rec", "echo", "res", "den"]
 )
 def test_first_level_from_bids_bug_3524(entity):
-    "Test right files are selected when entities have several labels."
+    """Test right files are selected when entities have several labels."""
     with InTemporaryDirectory():
         n_sub = 2
         n_ses = 2
