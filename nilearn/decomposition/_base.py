@@ -215,7 +215,7 @@ def _mask_and_reduce_single(
     memory_level=0,
     random_state=None,
 ):
-    """Utility function for multiprocessing from MaskReducer."""
+    """Utility function for multiprocessing from MaskReducer."""  # noqa
     this_data = masker.transform(img, confound)
     # Now get rid of the img as fast as possible, to free a
     # reference count on it, and possibly free the corresponding
@@ -393,9 +393,9 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             Please see the related documentation for details.
             Should match with the list of imgs given.
 
-         Returns
-         -------
-         self : object
+        Returns
+        -------
+        self : object
             Returns the instance itself. Contains attributes listed
             at the object level.
 

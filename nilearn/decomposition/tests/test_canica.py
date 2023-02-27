@@ -1,4 +1,4 @@
-"""Test CanICA"""
+"""Test CanICA."""
 
 import numpy as np
 import pytest

@@ -1,7 +1,9 @@
-"""High-level decoding object that exposes standard classification and \
+"""High-level decoding object.
+
+Exposes standard classification and
 regression strategies such as SVM, LogisticRegression and Ridge,
-with optional feature selection, \
-integrated hyper-parameter selection and aggregation \
+with optional feature selection,
+integrated hyper-parameter selection and aggregation
 strategy in which the best models within a cross validation loop are averaged.
 
 Also exposes a high-level method FREM that uses clustering and model
@@ -355,7 +357,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
     %(verbose0)s
 
     See Also
-    ------------
+    --------
     nilearn.decoding.Decoder: Classification strategies for Neuroimaging,
     nilearn.decoding.DecoderRegressor: Regression strategies for Neuroimaging,
     nilearn.decoding.FREMClassifier: State of the art classification pipeline
@@ -839,10 +841,12 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         return coef_img, std_coef_img
 
     def _binarize_y(self, y):
-        """Helper function invoked just before fitting a classifier."""
+        """Encode target classes as -1 and 1.
+
+        Helper function invoked just before fitting a classifier.
+        """
         y = np.array(y)
 
-        # encode target classes as -1 and 1
         self._enc = LabelBinarizer(pos_label=1, neg_label=-1)
         y = self._enc.fit_transform(y)
         self.classes_ = self._enc.classes_
@@ -916,7 +920,7 @@ class Decoder(_BaseDecoder):
         predictions are estimated using default strategy.
 
     screening_percentile: int, float, optional, \
-        in the closed interval [0, 100]\\, (default 20)
+        in the closed interval [0, 100]
         The percentage of brain volume that will be kept with respect to a full
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
@@ -1092,7 +1096,7 @@ class DecoderRegressor(_BaseDecoder):
     %(verbose0)s
 
     See Also
-    ------------
+    --------
     nilearn.decoding.Decoder: classification strategies for Neuroimaging,
     nilearn.decoding.FREMRegressor: State of the art regression pipeline
         for Neuroimaging
@@ -1241,7 +1245,7 @@ class FREMRegressor(_BaseDecoder):
     .. footbibliography::
 
     See Also
-    ------------
+    --------
     nilearn.decoding.DecoderRegressor: Regression strategies for Neuroimaging,
     nilearn.decoding.FREMClassifier: State of the art classification pipeline
         for Neuroimaging
@@ -1394,7 +1398,7 @@ class FREMClassifier(_BaseDecoder):
     .. footbibliography::
 
     See Also
-    ------------
+    --------
     nilearn.decoding.Decoder: Classification strategies for Neuroimaging,
     nilearn.decoding.FREMRegressor: State of the art regression pipeline
         for Neuroimaging
