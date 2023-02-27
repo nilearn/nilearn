@@ -31,8 +31,7 @@ def test_first_level_from_bids_bug_3029():
                 dataset_path=bids_path,
                 task_label="main",
                 space_label="MNI",
-                img_filters=[("desc", "preproc")],
-                verbose=1,
+                img_filters=[("desc", "preproc")]
             )
 
 
@@ -57,6 +56,15 @@ def test_first_level_from_bids():
         assert len(models) == len(m_events)
         assert len(models) == len(m_confounds)
         assert len(m_imgs[0]) == n_ses * n_runs[0]
+
+        # test verbose
+        models, m_imgs, m_events, m_confounds = first_level_from_bids(
+            dataset_path=bids_path,
+            task_label="main",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            verbose=1,
+        )
 
 
 @pytest.mark.parametrize(
