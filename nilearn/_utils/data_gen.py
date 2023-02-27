@@ -980,6 +980,11 @@ def _write_bids_raw_func(func_path: Path,
 def _bids_entites() -> dict[str, list[str]]:
     """Return a dictionary of BIDS entities.
 
+    Note that:
+
+    - this only contains the entities for functional data
+    - the entities `sub` and `ses` are not included
+
     Returns
     -------
     Dictionary of raw and derivatives entities : dict[str, list[str]]
@@ -1005,6 +1010,41 @@ def _mock_bids_dataset(bids_path: Path,
                        entities,
                        n_voxels: int,
                        rand_gen: np.random.RandomState) -> None:
+    """Create a fake raw :term:`bids<BIDS>` dataset directory with dummy files.
+
+    Parameters
+    ----------
+    base_dir : :obj:`Path`
+        Path where to create the fake :term:`BIDS` dataset.
+
+    n_sub : :obj:`int`
+        Number of subjects to be simulated in the dataset.
+
+    n_ses : :obj:`int`
+        Number of sessions to be simulated in the dataset.
+        Ignored if no_session=True.
+
+    tasks : :obj:`list` of :obj:`str`
+        List of tasks to be simulated in the dataset.
+
+    n_runs : :obj:`list` of :obj:`int`
+        Number of runs to create, where each element indicates the
+        number of runs for the corresponding task.
+
+    no_session : :obj:`bool`
+        Specifying no_sessions will only produce runs and files without the
+        optional session field. In this case n_ses will be ignored.
+
+    entities : :obj:`list`
+        Extra entity to add to the BIDS filename with a list of values.
+
+    n_voxels : :obj:`int`
+        Number of voxels along a given axis in the functional image.
+
+    rand_gen : :obj:`numpy.random.RandomState` instance
+        Random number generator.
+
+    """
     bids_path.mkdir(parents=True, exist_ok=True)
 
     bids_path.joinpath('README.txt').write_text('')
@@ -1176,7 +1216,49 @@ def _mock_bids_derivatives(bids_path: Path,
                            entities,
                            n_voxels: int,
                            rand_gen: np.random.RandomState) -> None:
+    """Create a fake raw :term:`bids<BIDS>` dataset directory with dummy files.
 
+    Parameters
+    ----------
+    base_dir : :obj:`Path`
+        Path where to create the fake :term:`BIDS` dataset.
+
+    n_sub : :obj:`int`
+        Number of subjects to be simulated in the dataset.
+
+    n_ses : :obj:`int`
+        Number of sessions to be simulated in the dataset.
+        Ignored if no_session=True.
+
+    tasks : :obj:`list` of :obj:`str`
+        List of tasks to be simulated in the dataset.
+
+    n_runs : :obj:`list` of :obj:`int`
+        Number of runs to create, where each element indicates the
+        number of runs for the corresponding task.
+
+    no_session : :obj:`bool`
+        Specifying no_sessions will only produce runs and files without the
+        optional session field. In this case n_ses will be ignored.
+
+    with_confounds : :obj:`bool`
+        Whether to generate associated confounds files or not.
+
+    confounds_tag : :obj:`str` 
+        Filename "suffix":
+        For example: `desc-confounds_timeseries` 
+        or "desc-confounds_regressors".
+
+    entities : :obj:`list`
+        Extra entity to add to the BIDS filename with a list of values.
+
+    n_voxels : :obj:`int`
+        Number of voxels along a given axis in the functional image.
+
+    rand_gen : :obj:`numpy.random.RandomState` instance
+        Random number generator.
+
+    """
     bids_path = bids_path / "derivatives"
     bids_path.mkdir(parents=True, exist_ok=True)
 
