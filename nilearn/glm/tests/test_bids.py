@@ -2,6 +2,8 @@
 import os
 import shutil
 
+from pathlib import Path
+
 import pytest
 
 from nilearn._utils.data_gen import (create_fake_bids_dataset)
@@ -9,6 +11,28 @@ from nilearn.glm.first_level import (first_level_from_bids)
 from nilearn.interfaces.bids import get_bids_files
 from nibabel.tmpdirs import InTemporaryDirectory
 
+def test_first_level_from_bids_bug_3029():
+    "Test error when events.tsv is missing for a bold file."
+    with InTemporaryDirectory():
+
+        bids_path = create_fake_bids_dataset(n_sub=2,
+                                            n_ses=2,
+                                            tasks=['main'],
+                                            n_runs=[2])
+        files_to_rename = Path(bids_path).joinpath('derivatives').glob(
+            '**/func/*_task-main_*desc-*')
+        for file in files_to_rename:
+            new_file = file.parent / file.name.replace('run-0', 'run-')
+            file.rename(new_file)
+
+        with pytest.raises(ValueError, 
+                           match=".*events.tsv files.*"):
+            first_level_from_bids(
+                bids_path,
+                task_label='main',
+                space_label='MNI',
+                img_filters=[('desc', 'preproc')],
+                verbose=1)
 
 def test_first_level_from_bids():
     with InTemporaryDirectory():
@@ -36,12 +60,13 @@ def test_first_level_from_bids():
                                     'res',
                                     'den'])
 def test_first_level_from_bids_bug_3524(entity):
+    "Test right files are selected when entities have several labels."
     with InTemporaryDirectory():
 
-        bids_path = create_fake_bids_dataset(n_sub=3,
+        bids_path = create_fake_bids_dataset(n_sub=2,
                                              n_ses=2,
-                                             tasks=['localizer', 'main'],
-                                             n_runs=[1, 3],
+                                             tasks=['main'],
+                                             n_runs=[3],
                                              entities=[entity, ['A', 'B']])
 
         models, m_imgs, m_events, m_confounds = first_level_from_bids(
@@ -51,7 +76,7 @@ def test_first_level_from_bids_bug_3524(entity):
             img_filters=[('desc', 'preproc'), (entity, 'A')])
         assert len(models) == len(m_imgs)
         assert len(models) == len(m_events)
-        assert len(models) == len(m_confounds)
+        assert len(models) == len(m_confounds)    
 
 
 def test_first_level_from_bids_validation_input():

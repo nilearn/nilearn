@@ -891,8 +891,10 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         filters = _bids_filter(task_label=task_label,
                                supported_filters=SUPPORTED_FILTERS,
                                extra_filter=img_filters)
-        img_specs = get_bids_files(derivatives_path, modality_folder='func',
-                                   file_tag='bold', file_type='json',
+        img_specs = get_bids_files(derivatives_path,
+                                   modality_folder='func',
+                                   file_tag='bold',
+                                   file_type='json',
                                    filters=filters)
         # If we don't find the parameter information in the derivatives folder
         # we try to search in the raw data folder
@@ -900,23 +902,25 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                                supported_filters=SUPPORTED_FILTERS_RAW,
                                extra_filter=img_filters)
         if not img_specs:
-            img_specs = get_bids_files(dataset_path, modality_folder='func',
-                                       file_tag='bold', file_type='json',
+            img_specs = get_bids_files(dataset_path,
+                                       modality_folder='func',
+                                       file_tag='bold',
+                                       file_type='json',
                                        filters=filters)
         if not img_specs:
-            warn('No bold.json found in derivatives folder or '
-                 'in dataset folder. t_r can not be inferred and will need to'
-                 ' be set manually in the list of models, otherwise their fit'
-                 ' will throw an exception')
+            warn('No bold.json found in the derivatives or dataset folder.',
+                 ' t_r can not be inferred ',
+                 ' and will need to be set manually in the list of models', 
+                 ' otherwise their fit will throw an exception.')
         else:
             specs = json.load(open(img_specs[0], 'r'))
             if 'RepetitionTime' in specs:
                 t_r = float(specs['RepetitionTime'])
             else:
-                warn('RepetitionTime not found in file %s. t_r can not be '
-                     'inferred and will need to be set manually in the '
-                     'list of models. Otherwise their fit will throw an '
-                     ' exception' % img_specs[0])
+                warn(f'RepetitionTime not found in file {img_specs[0]}.'
+                     ' t_r can not be inferred ',
+                     ' and will need to be set manually in the list of models', 
+                     ' otherwise their fit will throw an exception.')
             if 'SliceTimingRef' in specs:
                 slice_time_ref = float(specs['SliceTimingRef'])
             else:
@@ -958,16 +962,25 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                                space_label=space_label,
                                supported_filters=SUPPORTED_FILTERS,
                                extra_filter=img_filters)
-        imgs = get_bids_files(derivatives_path, modality_folder='func',
-                              file_tag='bold', file_type='nii*',
-                              sub_label=sub_label, filters=filters)
+        imgs = get_bids_files(derivatives_path,
+                              modality_folder='func',
+                              file_tag='bold',
+                              file_type='nii*',
+                              sub_label=sub_label,
+                              filters=filters)
 
         _bids_check_image_list(imgs, sub_label, filters)
+
+        if verbose:
+            print('Found the following bold files',
+                   f'for subject {sub_label}',
+                   f'for filter: {filters}:\n',
+                   f'{imgs}\n')
 
         models_run_imgs.append(imgs)
 
         # Get events files
-        filters = _bids_filter(task_label=task_label,
+        events_filters = _bids_filter(task_label=task_label,
                                supported_filters=SUPPORTED_FILTERS_RAW,
                                extra_filter=img_filters)
         events = get_bids_files(dataset_path,
@@ -975,7 +988,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                                 file_tag='events',
                                 file_type='tsv',
                                 sub_label=sub_label,
-                                filters=filters)
+                                filters=events_filters)
 
         if not events:
             raise ValueError('No events.tsv files found '
@@ -986,6 +999,40 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                              f' for {len(imgs)} bold files. '
                              'Same number of event files '
                              'as the number of runs is expected.')
+        for this_img in imgs:
+            img_dict = parse_bids_filename(this_img)
+            extra_filter = [(key, img_dict[key]) 
+                            for key in img_dict 
+                            if key in ["sub", "ses", "task", *SUPPORTED_FILTERS_RAW]]
+            filters = _bids_filter(task_label=task_label,
+                        space_label=None,
+                        supported_filters=["ses", "task", *SUPPORTED_FILTERS_RAW],
+                        extra_filter=extra_filter)
+            this_event = get_bids_files(dataset_path,
+                           modality_folder='func',
+                           file_tag='events',
+                           file_type='tsv',
+                           sub_label=sub_label,
+                           filters=filters)
+            msg_suffix = (f' bold file:\n{this_img}\nfilter:\n{filters})\n'
+                          'Found all the following events files '
+                          f'for filter {events_filters}:\n{events}\n')
+            if len(this_event) == 0:
+                raise ValueError(f'No events.tsv files '
+                                 f'corresponding to {msg_suffix}')
+            if len(this_event) > 1:
+                raise ValueError(f'More than 1 events.tsv files '
+                                 f'corresponding to {msg_suffix}')
+            if this_event[0] not in events:                        
+                raise ValueError(f'\n{this_event} not in {events}.\n'
+                                 f'No corresponding events.tsv files found '
+                                 f'for {msg_suffix}')
+
+        if verbose:
+            print('Found the following events files',
+                  f'for subject {sub_label}',
+                  f'for filter: {filters}:\n',
+                  f'{events}\n')        
 
         events = [pd.read_csv(event, sep='\t', index_col=None)
                   for event in events]
