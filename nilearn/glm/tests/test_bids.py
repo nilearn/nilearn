@@ -1,6 +1,5 @@
 """Test the first level model on BIDS datasets."""
 import os
-import shutil
 
 from pathlib import Path
 

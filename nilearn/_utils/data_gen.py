@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import itertools
 import json
-import os
 import string
 
 from pathlib import Path
@@ -834,15 +833,18 @@ def create_fake_bids_dataset(base_dir='',
 
     with_derivatives : :obj:`bool`, optional
         In the case derivatives are included, they come with two spaces and
-        descriptions. Spaces are 'MNI' and 'T1w'. Descriptions are 'preproc'
-        and :term:`fMRIPrep`. Only space 'T1w' include both descriptions.
+        descriptions. 
+        Spaces are 'MNI' and 'T1w'. 
+        Descriptions are 'preproc' and :term:`fMRIPrep`.
+        Only space 'T1w' include both descriptions.
 
     with_confounds : :obj:`bool`, optional
         Whether to generate associated confounds files or not.
 
-    confounds_tag : :obj:`str` (filename suffix), optional
-        If generating confounds, what path should they have? Defaults to
-        `desc-confounds_timeseries` as in :term:`fMRIPrep` >= 20.2
+    confounds_tag : :obj:`str`, optional
+        Filename "suffix":
+        If generating confounds, what path should they have? 
+        Defaults to `desc-confounds_timeseries` as in :term:`fMRIPrep` >= 20.2
         but can be other values (e.g. "desc-confounds_regressors" as
         in :term:`fMRIPrep` < 20.2).
 
@@ -1025,7 +1027,9 @@ def _mock_bids_dataset(bids_path: Path,
         for task, n_run in zip(tasks, n_runs):
             run_labels = _runs_to_create(n_run)
             for run in run_labels:
-                if entities is None or entities[0] in _bids_entites()["derivatives"]:
+                if (entities is None or
+                    entities[0] in _bids_entites()["derivatives"]
+                    ):
 
                     fields = [subject, session, f"task-{task}"]
                     _write_bids_raw_func(func_path=func_path,
@@ -1059,6 +1063,11 @@ def _write_bids_derivative_func(func_path: Path,
                                 confounds_tag: str) -> None:
     """Create BIDS functional derivative and confounds files.
 
+    Files created come with two spaces and descriptions. 
+    Spaces are: 'MNI' and 'T1w'. 
+    Descriptions are: 'preproc' and :term:`fMRIPrep`.
+    Only space 'T1w' include both descriptions.
+
     Parameters
     ----------
     func_path : :obj:`Path`
@@ -1077,11 +1086,10 @@ def _write_bids_derivative_func(func_path: Path,
     with_confounds : :obj:`bool`
         Whether to generate associated confounds files or not.
 
-    confounds_tag : :obj:`str` (filename suffix)
-        If generating confounds, what path should they have? Defaults to
-        `desc-confounds_timeseries` as in :term:`fMRIPrep` >= 20.2
-        but can be other values (e.g. "desc-confounds_regressors" as
-        in :term:`fMRIPrep` < 20.2).
+    confounds_tag : :obj:`str` 
+        Filename "suffix":
+        For example: `desc-confounds_timeseries` 
+        or "desc-confounds_regressors".
 
     """
     n_time_points = 100
@@ -1089,7 +1097,11 @@ def _write_bids_derivative_func(func_path: Path,
 
     for space in ('MNI', 'T1w'):
         for desc in ('preproc', 'fmriprep'):
-            file_path = func_path / f'{file_id}_space-{space}_desc-{desc}_bold.nii.gz'
+            if space == 'MNI' and desc == 'fmriprep':
+                continue
+            file_path = func_path.joinpath(
+                f'{file_id}_space-{space}_desc-{desc}_bold.nii.gz'
+            ) 
             write_fake_bold_img(file_path,
                                 shape=shape,
                                 random_state=rand_gen)
@@ -1101,14 +1113,55 @@ def _write_bids_derivative_func(func_path: Path,
 
 
 def _subjects_to_create(n_sub: int) -> list[str]:
+    """Return a list of subject entities.
+
+    Parameters
+    ----------
+    n_sub : :obj:`int`
+        Number of subjects to create.
+
+    Returns
+    -------
+    List of subjects : :obj:`list` of :obj:`str`
+
+    """    
     return [f"sub-{label:02}" for label in range(1, n_sub + 1)]
 
 
 def _sessions_to_create(n_ses: int, no_session: bool) -> list[str]:
-    return [''] if no_session else ['ses-%02d' % label for label in range(1, n_ses + 1)]
+    """Return a list of session entities.
+
+    Parameters
+    ----------
+    n_ses : :obj:`int`
+        Number of sessions to create.
+
+    no_session : :obj:`bool`
+        Specifying no_sessions will produce files without the session level. 
+        In this case `['']` is returned.
+
+    Returns
+    -------
+    List of runs : :obj:`list` of :obj:`str`
+
+    """ 
+    return [''] if no_session else ['ses-%02d' % label 
+                                    for label in range(1, n_ses + 1)]
 
 
 def _runs_to_create(n_run: int) -> list[str]:
+    """Return a list of run entities.
+
+    Parameters
+    ----------
+    n_run : :obj:`int`
+        Number of runs to create.
+
+    Returns
+    -------
+    List of runs : :obj:`list` of :obj:`str`
+
+    """   
     return [f"run-{label:02}" for label in range(1, n_run + 1)]
 
 
