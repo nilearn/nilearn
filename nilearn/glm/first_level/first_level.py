@@ -1040,7 +1040,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     return models, models_run_imgs, models_events, models_confounds
 
 
-def _bids_validate_arguments(dataset_path: str,
+def _validate_args_first_level_from_bids(dataset_path: str,
                              task_label: str,
                              space_label: str | None,
                              img_filters: list[Tuple[str, str]],
@@ -1145,7 +1145,7 @@ def _bids_filter(task_label: str,
     return filters
 
 
-def _bids_check_image_list(imgs: list[str] | None,
+def _check_bids_image_list(imgs: list[str] | None,
                            sub_label: str,
                            filters: list[Tuple[str, str]]) -> None:
     """_summary_

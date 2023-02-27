@@ -914,18 +914,17 @@ def create_fake_bids_dataset(base_dir='',
                 ]
                 for run in run_labels:
                     if entities is None or entities[0] in ENTITIES_DERIVATIVE:
-                        fields = [subject, session, 'task-' + task]
+                        fields = [subject, session, f'task-{task}']
                         _write_bids_raw_func(func_path,
                                              _file_id(fields, n_run, run),
                                              N_VOXELS,
                                              rand_gen)
                     else:
-                        entity = entities[0]
-                        labels = entities[1]
+entity, labels  = entities
                         for i_label in labels:
                             fields = [subject,
                                       session,
-                                      'task-' + task,
+f'task-{task}',
                                       f"{entity}-{i_label}"]
                             _write_bids_raw_func(func_path,
                                                  _file_id(fields, n_run, run),
@@ -962,8 +961,7 @@ def create_fake_bids_dataset(base_dir='',
                                                         with_confounds,
                                                         confounds_tag)
                         elif entities[0] in ENTITIES:
-                            entity = entities[0]
-                            labels = entities[1]
+entity, labels  = entities
                             for i_label in labels:
                                 fields = [subject,
                                           session,
@@ -1034,9 +1032,9 @@ def _write_bids_raw_func(func_path: str,
     basic_paradigm().to_csv(events_path, sep='\t', index=None)
 
     param_path = os.path.join(func_path, f'{file_id}_bold.json')
-    with open(param_path, 'w') as param_file:
-        json.dump({'RepetitionTime': REPETITION_TIME},
-                  param_file)
+Path(param_path).write_text(
+    json.dumps({'RepetitionTime': REPETITION_TIME})
+)
 
 
 def _write_bids_derivative_func(func_path: str,
@@ -1064,16 +1062,15 @@ def _write_bids_derivative_func(func_path: str,
     """
     N_TIME_POINTS = 100
 
-    preproc = f'{file_id}_space-MNI_desc-preproc_bold.nii.gz'
-    preproc_path = os.path.join(func_path, preproc)
-    write_fake_bold_img(preproc_path,
+write_fake_bold_img(preproc_path=Path(func_path) / f'{file_id}_space-MNI_desc-preproc_bold.nii.gz',
                         [n_voxels, n_voxels, n_voxels, N_TIME_POINTS],
                         random_state=rand_gen)
 
     preproc = f'{file_id}_space-T1w_desc-preproc_bold.nii.gz'
     preproc_path = os.path.join(func_path, preproc)
     write_fake_bold_img(preproc_path,
-                        [n_voxels, n_voxels, n_voxels, N_TIME_POINTS],
+    write_fake_bold_img(
+         preproc_path=Path(preproc_path) / f'{file_id}_space-T1w_desc-preproc_bold.nii.gz',
                         random_state=rand_gen)
 
     preproc = f'{file_id}_space-T1w_desc-fmriprep_bold.nii.gz'
