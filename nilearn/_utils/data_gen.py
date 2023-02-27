@@ -892,15 +892,15 @@ def create_fake_bids_dataset(base_dir='',
     os.makedirs(bids_path)
     rand_gen = check_random_state(random_state)
 
-    # _mock_bids_dataset(bids_path=bids_path,
-    #                    n_sub=n_sub,
-    #                    n_ses=n_ses,
-    #                    tasks=tasks,
-    #                    n_runs=n_runs,
-    #                    no_session=no_session,
-    #                    entities=entities,
-    #                    n_voxels=n_voxels,
-    #                    rand_gen=rand_gen)
+    _mock_bids_dataset(bids_path=bids_path,
+                       n_sub=n_sub,
+                       n_ses=n_ses,
+                       tasks=tasks,
+                       n_runs=n_runs,
+                       no_session=no_session,
+                       entities=entities,
+                       n_voxels=n_voxels,
+                       rand_gen=rand_gen)
 
     # Create bids dataset
     Path(bids_path, 'README.txt').write_text('')
@@ -909,40 +909,40 @@ def create_fake_bids_dataset(base_dir='',
     if no_session:
         created_sessions = ['']
 
-    for subject in ['sub-%02d' % label for label in range(1, n_sub + 1)]:
-        for session in created_sessions:
+    # for subject in ['sub-%02d' % label for label in range(1, n_sub + 1)]:
+    #     for session in created_sessions:
 
-            subses_dir = os.path.join(bids_path, subject, session)
+    #         subses_dir = os.path.join(bids_path, subject, session)
 
-            func_path = os.path.join(subses_dir, 'func')
-            os.makedirs(func_path)
+    #         func_path = os.path.join(subses_dir, 'func')
+    #         os.makedirs(func_path)
 
-            for task, n_run in zip(tasks, n_runs):
-                run_labels = [
-                    f"run-{label:02}" for label in range(1, n_run + 1)
-                ]
-                for run in run_labels:
-                    if entities is None or entities[0] in ENTITIES_DERIVATIVE:
-                        fields = [subject, session, f"task-{task}"]
-                        _write_bids_raw_func(func_path=func_path,
-                                             file_id=_file_id(fields,
-                                                              n_run,
-                                                              run),
-                                             n_voxels=n_voxels,
-                                             rand_gen=rand_gen)
-                    else:
-                        entity, labels  = entities
-                        for i_label in labels:
-                            fields = [subject,
-                                      session,
-                                      f"task-{task}",
-                                        f"{entity}-{i_label}"]
-                            _write_bids_raw_func(func_path=func_path,
-                                                file_id=_file_id(fields,
-                                                                n_run,
-                                                                run),
-                                                n_voxels=n_voxels,
-                                                rand_gen=rand_gen)
+    #         for task, n_run in zip(tasks, n_runs):
+    #             run_labels = [
+    #                 f"run-{label:02}" for label in range(1, n_run + 1)
+    #             ]
+    #             for run in run_labels:
+    #                 if entities is None or entities[0] in ENTITIES_DERIVATIVE:
+    #                     fields = [subject, session, f"task-{task}"]
+    #                     _write_bids_raw_func(func_path=func_path,
+    #                                          file_id=_file_id(fields,
+    #                                                           n_run,
+    #                                                           run),
+    #                                          n_voxels=n_voxels,
+    #                                          rand_gen=rand_gen)
+    #                 else:
+    #                     entity, labels  = entities
+    #                     for i_label in labels:
+    #                         fields = [subject,
+    #                                   session,
+    #                                   f"task-{task}",
+    #                                     f"{entity}-{i_label}"]
+    #                         _write_bids_raw_func(func_path=func_path,
+    #                                             file_id=_file_id(fields,
+    #                                                             n_run,
+    #                                                             run),
+    #                                             n_voxels=n_voxels,
+    #                                             rand_gen=rand_gen)
 
     # Create derivatives files
     if with_derivatives:
