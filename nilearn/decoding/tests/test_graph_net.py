@@ -41,7 +41,8 @@ X, y, w, mask, mask_, X_ = _make_data()
 
 
 def get_gradient_matrix(w_size, mask):
-    """
+    """Return gradient matrix.
+
     Given a number of features and a mask (which has the property
     mask[mask==True].size == w_size) computes a matrix G such that for
     a w vector we have np.dot(G, w) == gradient(w_masked)[mask]
@@ -61,7 +62,7 @@ def get_gradient_matrix(w_size, mask):
 
 
 def test_grad_matrix():
-    """Test for matricial form of gradient"""
+    """Test for matricial form of gradient."""
     rng = check_random_state(42)
     G = get_gradient_matrix(w.size, mask)
     image_buffer = np.zeros(mask.shape)
@@ -73,7 +74,7 @@ def test_grad_matrix():
 
 
 def test_adjointness(size=4):
-    """Tests for adjointness between gradient and div operators"""
+    """Test for adjointness between gradient and div operators."""
     rng = check_random_state(42)
     for _ in range(3):
         image_1 = rng.rand(size, size, size)
@@ -84,8 +85,8 @@ def test_adjointness(size=4):
 
 
 def test_identity_adjointness(size=4):
-    """Tests adjointess between _graph_net_data_function and
-    _graph_net_adjoint_data_function, with identity design matrix"""
+    """Test adjointess between _graph_net_data_function and \
+    _graph_net_adjoint_data_function, with identity design matrix."""
     rng = check_random_state(42)
 
     # A mask full of ones
@@ -108,7 +109,7 @@ def test_identity_adjointness(size=4):
 
 
 def test_operators_adjointness(size=4):
-    """The same as test_identity_adjointness, but with generic design matrix"""
+    """Perform same as test_identity_adjointness with generic design matrix."""
     rng = check_random_state(42)
 
     # A mask full of ones
@@ -131,8 +132,10 @@ def test_operators_adjointness(size=4):
 
 
 def test__squared_loss_gradient_at_simple_points():
-    """Tests gradient of data loss function in points near to zero. This is
-    a not so hard test, just for detecting big errors"""
+    """Test gradient of data loss function in points near to zero.
+
+    This is a not so hard test, just for detecting big errors.
+    """
     X, y, w, mask = create_graph_net_simulation_data(n_samples=10, size=4)
     grad_weight = 1
 
@@ -222,8 +225,8 @@ def test_logistic_derivative_lipschitz_constant():
 
 
 def test_max_alpha__squared_loss():
-    """Tests that models with L1 regularization over the theoretical bound
-    are full of zeros, for logistic regression"""
+    """Tests that models with L1 regularization over the theoretical bound \
+    are full of zeros, for logistic regression."""
     l1_ratios = np.linspace(0.1, 1, 3)
     reg = BaseSpaceNet(
         mask=mask_, max_iter=10, penalty="graph-net", is_classif=False

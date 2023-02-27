@@ -37,10 +37,12 @@ def spectral_norm_squared(X):
 
 
 def _logistic_loss_lipschitz_constant(X):
-    """Compute the Lipschitz constant (upper bound) for the gradient of the\
+    """Compute the Lipschitz constant (upper bound) for the gradient of the \
     logistic sum.
 
-        w -> \\sum_i log(1+exp(-y_i*(x_i*w + v)))
+    .. code-block::
+
+        w -> sum_i log(1+exp(-y_i*(x_i*w + v)))
 
     """
     # N.B: we handle intercept!
@@ -217,7 +219,7 @@ def _gradient_id(img, l1_ratio=0.5):
 
 
 def _sigmoid(t, copy=True):
-    """Helper function: return 1. / (1 + np.exp(-t))."""
+    """Return 1 / (1 + np.exp(-t))."""
     if copy:
         t = np.copy(t)
     t *= -1.0

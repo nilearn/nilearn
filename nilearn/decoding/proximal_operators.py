@@ -23,7 +23,7 @@ def _prox_l1(y, alpha, copy=True):
 
 
 def _prox_l1_with_intercept(x, tau):
-    """The same as prox_l1, but just for the n-1 components."""
+    """Return the same as prox_l1, but just for the n-1 components."""
     x[:-1] = _prox_l1(x[:-1], tau)
     return x
 

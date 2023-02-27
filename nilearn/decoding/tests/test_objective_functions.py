@@ -1,7 +1,4 @@
-"""
-Test module for functions related cost functions (including penalties).
-
-"""
+"""Test module for functions related cost functions (including penalties)."""
 
 import numpy as np
 import pytest

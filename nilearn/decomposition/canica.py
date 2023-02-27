@@ -282,7 +282,7 @@ class CanICA(_MultiPCA):
 
     # Overriding _MultiPCA._raw_fit overrides _MultiPCA.fit behavior
     def _raw_fit(self, data):
-        """Helper function that directly process unmasked data.
+        """Process unmasked data directly.
 
         Useful when called by another estimator that has already
         unmasked data.
