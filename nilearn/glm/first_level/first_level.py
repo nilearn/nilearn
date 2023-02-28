@@ -1217,13 +1217,13 @@ def _check_bids_image_list(imgs: list[str] | None,
     if len(imgs) <= 1:
         return
 
-    # If there is more than one file for the same (ses, run),
-    # likely we have an issue of underspecification of filters.
-    # If more than one run is present the run field is mandatory in BIDS
-    # as well as the ses field if more than one session is present.
-    msg_end = ('Please verify that the desc_label and space_label labels ' +
-               'corresponding to the BIDS spec were correctly specified.')
-    
+    msg_start = ("More than one nifti image found\n "
+                 f"for subject: '{sub_label}'\n"
+                 f"for filters: {filters}\n")
+    msg_end = ("Adapt that the arguments"
+               "'task_label', 'space_label' and 'img_filters'"
+               "to make sure only file per session, per run gets selected.")
+
     run_check_list = []
 
     for img_ in imgs:
@@ -1231,31 +1231,33 @@ def _check_bids_image_list(imgs: list[str] | None,
         parsed_filename = parse_bids_filename(img_)
 
         if 'ses' in parsed_filename and 'run' in parsed_filename:
-            if ((parsed_filename['ses'], parsed_filename['run']) 
-                in set(run_check_list)):
+            if ((parsed_filename['ses'], parsed_filename['run'])
+                 in set(run_check_list)):
                 raise ValueError(
-                    'More than one nifti image found '
+                    f"{msg_start}"
                     f"for the same run {parsed_filename['run']} and "
                     f"session {parsed_filename['ses']}. {msg_end}")
-            
-            run_check_list.append((parsed_filename['ses'], 
+
+            run_check_list.append((parsed_filename['ses'],
                                    parsed_filename['run']))
 
         elif 'ses' in parsed_filename:
             if parsed_filename['ses'] in set(run_check_list):
                 raise ValueError(
-                    'More than one nifti image ',
-                    f"found for the same ses {parsed_filename['ses']}, while "
-                    f'no additional run specification present. {msg_end}')
-            
+                    f"{msg_start}"
+                    f"for the same ses {parsed_filename['ses']}, "
+                    f"while no additional run specification present."
+                    f"{msg_end}")
+
             run_check_list.append(parsed_filename['ses'])
 
         elif 'run' in parsed_filename:
             if parsed_filename['run'] in set(run_check_list):
                 raise ValueError(
-                    'More than one nifti image '
-                    f"found for the same run {parsed_filename['run']}. {msg_end}")
-            
+                    f"{msg_start}"
+                    f"for the same run {parsed_filename['run']}. "
+                    f"{msg_end}")
+
             run_check_list.append(parsed_filename['run'])
 
 
