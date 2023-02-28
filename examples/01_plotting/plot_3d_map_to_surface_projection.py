@@ -52,7 +52,7 @@ texture = surface.vol_to_surf(stat_img, fsaverage.pial_right)
 #
 # You can visualize the texture on the surface using the function
 # :func:`~nilearn.plotting.plot_surf_stat_map` which uses ``matplotlib``
-# as the default plotting engine:.
+# as the default plotting engine.
 
 from nilearn import plotting
 
