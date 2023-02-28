@@ -187,7 +187,7 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True,
 
     Warns
     -----
-    DeprecationWarning
+    FutureWarning
         If an homogeneity input is provided, the current behavior
         (returning multiple maps) is deprecated.
         Starting in version 0.13, one map will be returned depending on
@@ -898,7 +898,7 @@ def fetch_atlas_smith_2009(data_dir=None, url=None, resume=True,
 
     Warns
     -----
-    DeprecationWarning
+    FutureWarning
         If a dimension input is provided, the current behavior
         (returning multiple maps) is deprecated.
         Starting in version 0.13, one map will be returned depending on
@@ -1257,7 +1257,7 @@ def fetch_atlas_basc_multiscale_2015(data_dir=None, url=None, resume=True,
 
     Warns
     -----
-    DeprecationWarning
+    FutureWarning
         If a resolution input is provided, the current behavior
         (returning multiple maps) is deprecated.
         Starting in version 0.13, one map will be returned depending on
