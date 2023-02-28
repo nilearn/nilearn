@@ -41,3 +41,6 @@ doc/themes/nilearn/static/jquery.js
 examples/results/
 examples/**/results/
 examples/**/*.pdf
+
+# created during testing
+bids_dataset
