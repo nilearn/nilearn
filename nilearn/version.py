@@ -20,7 +20,7 @@ nilearn version, required package versions, and utilities for checking
 # Dev branch marker is: 'X.Y.dev' or 'X.Y.devN' where N is an integer.
 # 'X.Y.dev0' is the canonical version of 'X.Y.dev'
 #
-__version__ = '0.10.1rc1'
+__version__ = '0.10.1.dev'
 
 _NILEARN_INSTALL_MSG = 'See %s for installation information.' % (
     'https://nilearn.github.io/stable/introduction.html#installation')
