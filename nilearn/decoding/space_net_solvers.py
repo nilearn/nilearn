@@ -14,9 +14,11 @@ import numpy as np
 from nilearn.masking import _unmask_from_to_3d_array
 
 from .fista import mfista
-from .objective_functions import _div, _gradient, _gradient_id
-from .objective_functions import _logistic as _logistic_loss
 from .objective_functions import (
+    _div,
+    _gradient,
+    _gradient_id,
+    _logistic as _logistic_loss,
     _logistic_loss_grad,
     _logistic_loss_lipschitz_constant,
     _squared_loss,

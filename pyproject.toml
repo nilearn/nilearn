@@ -7,3 +7,4 @@ profile = "black"
 src_paths = ['nilearn/de.*']
 line_length = 79
 skip_gitignore = true
+combine_as_imports = true
