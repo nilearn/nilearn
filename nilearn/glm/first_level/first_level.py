@@ -1223,34 +1223,40 @@ def _check_bids_image_list(imgs: list[str] | None,
     # as well as the ses field if more than one session is present.
     msg_end = ('Please verify that the desc_label and space_label labels ' +
                'corresponding to the BIDS spec were correctly specified.')
+    
     run_check_list = []
+
     for img_ in imgs:
-        img_dict = parse_bids_filename(img_)
-        if (
-            '_ses-' in img_dict['file_basename']
-            and '_run-' in img_dict['file_basename']
-        ):
-            if (img_dict['ses'], img_dict['run']) in run_check_list:
+
+        parsed_filename = parse_bids_filename(img_)
+
+        if 'ses' in parsed_filename and 'run' in parsed_filename:
+            if ((parsed_filename['ses'], parsed_filename['run']) 
+                in set(run_check_list)):
                 raise ValueError(
                     'More than one nifti image found '
-                    f"for the same run {img_dict['run']} and "
-                    f"session {img_dict['ses']}. {msg_end}")
-            run_check_list.append((img_dict['ses'], img_dict['run']))
+                    f"for the same run {parsed_filename['run']} and "
+                    f"session {parsed_filename['ses']}. {msg_end}")
+            
+            run_check_list.append((parsed_filename['ses'], 
+                                   parsed_filename['run']))
 
-        elif '_ses-' in img_dict['file_basename']:
-            if img_dict['ses'] in run_check_list:
+        elif 'ses' in parsed_filename:
+            if parsed_filename['ses'] in set(run_check_list):
                 raise ValueError(
                     'More than one nifti image ',
-                    f"found for the same ses {img_dict['ses']}, while "
+                    f"found for the same ses {parsed_filename['ses']}, while "
                     f'no additional run specification present. {msg_end}')
-            run_check_list.append(img_dict['ses'])
+            
+            run_check_list.append(parsed_filename['ses'])
 
-        elif '_run-' in img_dict['file_basename']:
-            if img_dict['run'] in run_check_list:
+        elif 'run' in parsed_filename:
+            if parsed_filename['run'] in set(run_check_list):
                 raise ValueError(
                     'More than one nifti image '
-                    f"found for the same run {img_dict['run']}. {msg_end}")
-            run_check_list.append(img_dict['run'])
+                    f"found for the same run {parsed_filename['run']}. {msg_end}")
+            
+            run_check_list.append(parsed_filename['run'])
 
 
 def _check_bids_events_list(events: list[str] | None,
@@ -1304,9 +1310,9 @@ def _check_bids_events_list(events: list[str] | None,
                          "task",
                          *_supported_bids_filter()["raw"]]
     for this_img in imgs:
-        img_dict = parse_bids_filename(this_img)
-        extra_filter = [(key, img_dict[key])
-                        for key in img_dict
+        parsed_filename = parse_bids_filename(this_img)
+        extra_filter = [(key, parsed_filename[key])
+                        for key in parsed_filename
                         if key in supported_filters]
         filters = _filter_for_bids_query(task_label=task_label,
                                          space_label=None,
