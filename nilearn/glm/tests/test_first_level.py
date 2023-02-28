@@ -1037,7 +1037,8 @@ def test_first_level_from_bids_no_session():
         )
         # test repeated run tag error when run tag is in filenames and not ses
         # can arise when desc or space is present and not specified
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, 
+                           match="More than one nifti image found"):
             first_level_from_bids(
                 dataset_path=bids_path, task_label="main", space_label="T1w"
             )
