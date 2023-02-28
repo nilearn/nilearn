@@ -1128,15 +1128,24 @@ def _validate_args_first_level_from_bids(dataset_path: str,
     supported_filters = _supported_bids_filter()["raw"] +\
                         _supported_bids_filter()["derivatives"]
     for filter_ in img_filters:
-        if (not isinstance(filter_[0], str)
-                or not isinstance(filter_[1], str)):
+
+        if not isinstance(filter_[0], str):
             raise TypeError('filters in img_filters must be (str, str), '
-                            f"instead {type(filter_)} was given.")
+                            f"Got {type(filter_[0])} for {filter_} instead.")
+
         if filter_[0] not in supported_filters:
             raise ValueError(
-                f"field {filter_[0]} is not a possible filter. "
-                f"Only {supported_filters} are allowed.")
+                f"Entity {filter_[0]} for {filter_} is not a possible filter. "
+                f"Only {supported_filters} are allowed.")        
 
+        if (not isinstance(filter_[1], str) 
+            or not _is_alphanumeric(filter_[1])):
+            raise TypeError('BIDS labels in img_filters must be alphanumeric. '
+                            f"Got {type(filter_[1])} for {filter_} instead.")
+
+
+def _is_alphanumeric(string: str):
+    return all(char.isalnum() for char in string)
 
 def _filter_for_bids_query(task_label: str,
                            space_label: str | None = None,

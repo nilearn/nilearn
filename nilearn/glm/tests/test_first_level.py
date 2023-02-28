@@ -928,6 +928,7 @@ def test_first_level_from_bids_validation_space_label():
     "img_filters,match", [
         ("foo", "img_filters must be a list"),
         ([(1, 2)], "filters in img"),
+        ([("desc", "*/-")], "must be alphanumeric"),
     ]
 )
 def test_first_level_from_bids_validation_img_filter_type(img_filters, match):
@@ -945,7 +946,7 @@ def test_first_level_from_bids_validation_img_filter_value():
     with InTemporaryDirectory():
         bids_path = fake_bids_path()
         with pytest.raises(
-            ValueError, match="field foo is not a possible filter."
+            ValueError, match="is not a possible filter"
         ):
             first_level_from_bids(
                 dataset_path=bids_path,
