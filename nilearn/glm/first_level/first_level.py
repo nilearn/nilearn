@@ -1127,14 +1127,14 @@ def _validate_args_first_level_from_bids(dataset_path: str,
 
     supported_filters = _supported_bids_filter()["raw"] +\
                         _supported_bids_filter()["derivatives"]
-    for this_filter in img_filters:
-        if (not isinstance(this_filter[0], str)
-                or not isinstance(this_filter[1], str)):
-            raise TypeError('filters in img filters must be (str, str), '
-                            f"instead {type(this_filter)} was given.")
-        if this_filter[0] not in supported_filters:
+    for filter_ in img_filters:
+        if (not isinstance(filter_[0], str)
+                or not isinstance(filter_[1], str)):
+            raise TypeError('filters in img_filters must be (str, str), '
+                            f"instead {type(filter_)} was given.")
+        if filter_[0] not in supported_filters:
             raise ValueError(
-                f"field {this_filter[0]} is not a possible filter. "
+                f"field {filter_[0]} is not a possible filter. "
                 f"Only {supported_filters} are allowed.")
 
 
@@ -1173,15 +1173,15 @@ def _filter_for_bids_query(task_label: str,
         filters.append(('space', space_label))
 
     if extra_filter and supported_filters:
-        for this_filter in extra_filter:
+        for filter_ in extra_filter:
 
-            if this_filter[0] not in supported_filters:
-                warn(f"The filter {this_filter} will be skipped. "
-                     f"'{this_filter[0]}' is not among the supported filters. "
+            if filter_[0] not in supported_filters:
+                warn(f"The filter {filter_} will be skipped. "
+                     f"'{filter_[0]}' is not among the supported filters. "
                      f"Only {supported_filters} are allowed.")
                 continue
 
-            filters.append(this_filter)
+            filters.append(filter_)
 
     return filters
 
@@ -1224,8 +1224,8 @@ def _check_bids_image_list(imgs: list[str] | None,
     msg_end = ('Please verify that the desc_label and space_label labels ' +
                'corresponding to the BIDS spec were correctly specified.')
     run_check_list = []
-    for img in imgs:
-        img_dict = parse_bids_filename(img)
+    for img_ in imgs:
+        img_dict = parse_bids_filename(img_)
         if (
             '_ses-' in img_dict['file_basename']
             and '_run-' in img_dict['file_basename']
