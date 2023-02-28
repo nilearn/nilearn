@@ -15,12 +15,12 @@ def largest_connected_component(volume):
     """Return the largest connected component of a 3D array.
 
     Parameters
-    -----------
+    ----------
     volume : numpy.ndarray
         3D boolean array indicating a volume.
 
     Returns
-    --------
+    -------
     volume : numpy.ndarray
         3D boolean array with only one connected component.
 

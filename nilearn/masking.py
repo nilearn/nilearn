@@ -658,7 +658,7 @@ def apply_mask(imgs, mask_img, dtype='f',
     Read the time series from the given Niimg-like object, using the mask.
 
     Parameters
-    -----------
+    ----------
     imgs : :obj:`list` of 4D Niimg-like objects
         See :ref:`extracting_data`.
         Images to be masked. list of lists of 3D images are also accepted.
@@ -683,7 +683,7 @@ def apply_mask(imgs, mask_img, dtype='f',
         Default=True.
 
     Returns
-    --------
+    -------
     session_series : :class:`numpy.ndarray`
         2D array of series with shape (image number, :term:`voxel` number)
 
