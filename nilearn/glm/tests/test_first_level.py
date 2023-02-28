@@ -887,27 +887,16 @@ def test_first_level_from_bids_validation_input_dataset_path():
         first_level_from_bids(dataset_path=2,
                               task_label="main",
                               space_label="MNI")
-    with pytest.raises(ValueError, match="given path do not exist"):
+    with pytest.raises(ValueError, match="'dataset_path' does not exist"):
         first_level_from_bids(dataset_path="lolo",
                               task_label="main",
                               space_label="MNI")
 
 
-def test_first_level_from_bids_missing_derivatives_folder():
-    with InTemporaryDirectory():
-        bids_path = fake_bids_path()
-        shutil.rmtree(Path(bids_path) / "derivatives")
-        with pytest.raises(ValueError,
-                           match="derivatives folder does not exist"):
-            first_level_from_bids(
-                dataset_path=bids_path, task_label="main", space_label="MNI"
-            )
-
-
 def test_first_level_from_bids_validation_task_label():
     with InTemporaryDirectory():
         bids_path = fake_bids_path()
-        with pytest.raises(TypeError, match="task_label must be a string"):
+        with pytest.raises(TypeError, match="'task_label' must be a string"):
             first_level_from_bids(dataset_path=bids_path,
                                   task_label=2,
                                   space_label="MNI")
@@ -916,7 +905,7 @@ def test_first_level_from_bids_validation_task_label():
 def test_first_level_from_bids_validation_space_label():
     with InTemporaryDirectory():
         bids_path = fake_bids_path()
-        with pytest.raises(TypeError, match="space_label must be a string"):
+        with pytest.raises(TypeError, match="'space_label' must be a string"):
             first_level_from_bids(
                 dataset_path=bids_path,
                 task_label="main",
@@ -926,8 +915,8 @@ def test_first_level_from_bids_validation_space_label():
 
 @pytest.mark.parametrize(
     "img_filters,match", [
-        ("foo", "img_filters must be a list"),
-        ([(1, 2)], "filters in img"),
+        ("foo", "'img_filters' must be a list"),
+        ([(1, 2)], "Filters in img"),
         ([("desc", "*/-")], "must be alphanumeric"),
     ]
 )
@@ -1030,7 +1019,7 @@ def test_first_level_from_bids_no_derivatives():
             n_runs=[1],
             with_derivatives=False,
         )
-        with pytest.raises(ValueError, match="derivatives folder does not"):
+        with pytest.raises(ValueError, match="derivatives folder not found"):
             first_level_from_bids(
                 dataset_path=bids_path, task_label="main", space_label="MNI"
             )

@@ -1097,31 +1097,32 @@ def _validate_args_first_level_from_bids(dataset_path: str,
     """
     if not isinstance(dataset_path, str):
         raise TypeError(
-            "dataset_path must be a string, "
-            f"instead {type(dataset_path)} was given"
+            "'dataset_path' must be a string. "
+            f"Got {type(dataset_path)} instead."
         )
     if not os.path.exists(dataset_path):
-        raise ValueError(f'given path do not exist: {dataset_path}')
+        raise ValueError(f"'dataset_path' does not exist:\n{dataset_path}")
 
     if not os.path.exists(derivatives_path):
-        raise ValueError('derivatives folder does not exist in given dataset')
+        raise ValueError("derivatives folder not found in given dataset:\n"
+                         f"{derivatives_path}")
 
     if not isinstance(task_label, str):
         raise TypeError(
-            "task_label must be a string, "
-            f"instead {type(task_label)} was given"
+            "'task_label' must be a string. "
+            f"Got {type(task_label)} instead."
         )
 
     if space_label is not None and not isinstance(space_label, str):
         raise TypeError(
-            "space_label must be a string, "
-            f"instead {type(space_label)} was given."
+            "'space_label' must be a string, "
+            f"Got {type(space_label)} instead."
         )
 
     if not isinstance(img_filters, list):
         raise TypeError(
-            f"img_filters must be a list, "
-            f"instead {type(img_filters)} was given."
+            f"'img_filters' must be a list. "
+            f"Got {type(img_filters)} instead."
         )
 
     supported_filters = _supported_bids_filter()["raw"] +\
@@ -1129,7 +1130,7 @@ def _validate_args_first_level_from_bids(dataset_path: str,
     for filter_ in img_filters:
 
         if not isinstance(filter_[0], str):
-            raise TypeError('filters in img_filters must be (str, str), '
+            raise TypeError('Filters in img_filters must be (str, str). '
                             f"Got {type(filter_[0])} for {filter_} instead.")
 
         if filter_[0] not in supported_filters:
@@ -1186,7 +1187,7 @@ def _filter_for_bids_query(task_label: str,
             if filter_[0] not in supported_filters:
                 warn(f"The filter {filter_} will be skipped. "
                      f"'{filter_[0]}' is not among the supported filters. "
-                     f"Only {supported_filters} are allowed.")
+                     f"Allowed filters include: {supported_filters}")
                 continue
 
             filters.append(filter_)
