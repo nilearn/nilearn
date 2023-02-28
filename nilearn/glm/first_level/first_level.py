@@ -12,7 +12,6 @@ import json
 import os
 import sys
 import time
-from typing import Tuple
 from warnings import warn
 
 import numpy as np
@@ -1064,7 +1063,7 @@ def _supported_bids_filter() -> dict[str, list[str]]:
 def _validate_args_first_level_from_bids(dataset_path: str,
                                          task_label: str,
                                          space_label: str | None,
-                                         img_filters: list[Tuple[str, str]],
+                                         img_filters: list[tuple[str, str]],
                                          derivatives_path: str,
                                          ) -> None:
     """Check type and value of arguments of first_level_from_bids.
@@ -1144,14 +1143,14 @@ def _validate_args_first_level_from_bids(dataset_path: str,
                             f"Got {type(filter_[1])} for {filter_} instead.")
 
 
-def _is_alphanumeric(string: str):
+def _is_alphanumeric(string: str) -> bool:
     return all(char.isalnum() for char in string)
 
 def _filter_for_bids_query(task_label: str,
                            space_label: str | None = None,
                            supported_filters: list[str] | None = None,
-                           extra_filter: list[Tuple[str, str]] | None = None
-                           ) -> list[Tuple[str, str]]:
+                           extra_filter: list[tuple[str, str]] | None = None
+                           ) -> list[tuple[str, str]]:
     """Return a filter to specific files from a BIDS dataset.
 
     Parameters
@@ -1197,7 +1196,7 @@ def _filter_for_bids_query(task_label: str,
 
 def _check_bids_image_list(imgs: list[str] | None,
                            sub_label: str,
-                           filters: list[Tuple[str, str]]) -> None:
+                           filters: list[tuple[str, str]]) -> None:
     """Check input BIDS images.
 
     Check that:
@@ -1233,7 +1232,7 @@ def _check_bids_image_list(imgs: list[str] | None,
                "'task_label', 'space_label' and 'img_filters'"
                "to make sure only file per session, per run gets selected.")
 
-    run_check_list = []
+    run_check_list: list = []
 
     for img_ in imgs:
 
@@ -1245,7 +1244,8 @@ def _check_bids_image_list(imgs: list[str] | None,
                 raise ValueError(
                     f"{msg_start}"
                     f"for the same run {parsed_filename['run']} and "
-                    f"session {parsed_filename['ses']}. {msg_end}")
+                    f"session {parsed_filename['ses']}. "
+                    f"{msg_end}")
 
             run_check_list.append((parsed_filename['ses'],
                                    parsed_filename['run']))
@@ -1255,7 +1255,7 @@ def _check_bids_image_list(imgs: list[str] | None,
                 raise ValueError(
                     f"{msg_start}"
                     f"for the same ses {parsed_filename['ses']}, "
-                    f"while no additional run specification present."
+                    f"while no additional run specification present. "
                     f"{msg_end}")
 
             run_check_list.append(parsed_filename['ses'])

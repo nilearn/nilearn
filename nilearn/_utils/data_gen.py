@@ -9,6 +9,7 @@ import json
 import string
 
 from pathlib import Path
+from typing import Final
 
 import numpy as np
 import pandas as pd
@@ -878,11 +879,11 @@ def create_fake_bids_dataset(base_dir='',
         Creates a directory with dummy files.
 
     """
-    n_voxels = 4
+    n_voxels: Final = 4
 
-    rand_gen = check_random_state(random_state)
+    rand_gen: Final = check_random_state(random_state)
 
-    bids_dataset_dir = 'bids_dataset'
+    bids_dataset_dir: Final = 'bids_dataset'
 
     if entities is not None:
         for label in entities[1]:
@@ -915,7 +916,7 @@ def create_fake_bids_dataset(base_dir='',
 
     return bids_dataset_dir
 
-def _is_alphanumeric(string):
+def _is_alphanumeric(string: str) -> bool:
     return all(char.isalnum() for char in string)
 
 def _file_id(fields: list[str], n_run: int, run: str) -> str:
@@ -968,8 +969,8 @@ def _write_bids_raw_func(func_path: Path,
         Random number generator.
 
     """
-    repetition_time = 1.5
-    n_time_points = 100
+    repetition_time: Final = 1.5
+    n_time_points: Final = 100
 
     bold_path = func_path / f'{file_id}_bold.nii.gz'
     write_fake_bold_img(bold_path,
@@ -1140,8 +1141,8 @@ def _write_bids_derivative_func(func_path: Path,
         or "desc-confounds_regressors".
 
     """
-    n_time_points = 100
-    shape = [n_voxels, n_voxels, n_voxels, n_time_points]
+    n_time_points: Final = 100
+    shape: Final = [n_voxels, n_voxels, n_voxels, n_time_points]
 
     for space in ('MNI', 'T1w'):
         for desc in ('preproc', 'fmriprep'):
