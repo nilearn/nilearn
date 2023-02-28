@@ -836,7 +836,7 @@ def test_glm_sample_mask():
 
 def fake_bids_path():
     return create_fake_bids_dataset(
-            n_sub=2, n_ses=2, tasks=["main"], n_runs=[2]
+            n_sub=1, n_ses=2, tasks=["main"], n_runs=[2]
         )
 
 @pytest.mark.parametrize(
