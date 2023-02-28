@@ -273,12 +273,12 @@ def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
                                                     grp_mean=False,
                                                     homogeneity='spatial')
     assert request_mocker.url_count == 1
-    assert bunch['maps'][0] == str(tmp_path / 'craddock_2012'
-                                   / 'scorr05_mean_all.nii.gz')
-    assert bunch_rand['maps'][0] == str(tmp_path / 'craddock_2012'
-                                        / 'random_all.nii.gz')
-    assert bunch_no_mean['maps'][0] == str(tmp_path / 'craddock_2012'
-                                           / 'scorr05_2level_all.nii.gz')
+    assert bunch['map'] == str(tmp_path / 'craddock_2012'
+                               / 'scorr05_mean_all.nii.gz')
+    assert bunch_rand['map'] == str(tmp_path / 'craddock_2012'
+                                    / 'random_all.nii.gz')
+    assert bunch_no_mean['map'] == str(tmp_path / 'craddock_2012'
+                                       / 'scorr05_2level_all.nii.gz')
     assert bunch.description != ''
 
     # Old code
@@ -304,7 +304,7 @@ def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
 def test_fetch_atlas_smith_2009(tmp_path, request_mocker):
     bunch = atlas.fetch_atlas_smith_2009(data_dir=tmp_path, verbose=0,
                                          dimension=20)
-    assert bunch['maps'][0] == str(tmp_path / 'smith_2009' / 'rsn20.nii.gz')
+    assert bunch['map'] == str(tmp_path / 'smith_2009' / 'rsn20.nii.gz')
     assert len(bunch.keys()) == 2
     assert bunch.description != ''
 
@@ -521,13 +521,13 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
     name_sym = 'template_cambridge_basc_multiscale_nii_sym'
     basename_sym = 'template_cambridge_basc_multiscale_sym_scale007.nii.gz'
 
-    assert data_sym['maps'][0] == str(tmp_path / dataset_name / name_sym
-                                      / basename_sym)
+    assert data_sym['map'] == str(tmp_path / dataset_name / name_sym
+                                  / basename_sym)
 
     name_asym = 'template_cambridge_basc_multiscale_nii_asym'
     basename_asym = 'template_cambridge_basc_multiscale_asym_scale007.nii.gz'
-    assert data_asym['maps'][0] == str(tmp_path / dataset_name / name_asym
-                                       / basename_asym)
+    assert data_asym['map'] == str(tmp_path / dataset_name / name_asym
+                                   / basename_asym)
 
     assert len(data_sym) == 2
     with pytest.raises(
