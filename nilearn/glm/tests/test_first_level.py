@@ -1,4 +1,3 @@
-"""Test the first level model."""
 import os
 import shutil
 import unittest.mock
@@ -834,10 +833,15 @@ def test_glm_sample_mask():
 
 """Test the first level model on BIDS datasets."""
 
+
 def fake_bids_path():
     return create_fake_bids_dataset(
-            n_sub=1, n_ses=2, tasks=["main"], n_runs=[2]
-        )
+        n_sub=1,
+        n_ses=2,
+        tasks=["main"],
+        n_runs=[2]
+    )
+
 
 @pytest.mark.parametrize(
     "task_index", [0, 1]
@@ -853,7 +857,7 @@ def test_first_level_from_bids(task_index, space_label, verbose):
 
         n_sub = 2
         n_ses = 2
-        tasks=["localizer", "main"]
+        tasks = ["localizer", "main"]
         n_runs = [1, 2]
 
         bids_path = create_fake_bids_dataset(
@@ -881,30 +885,32 @@ def test_first_level_from_bids(task_index, space_label, verbose):
 def test_first_level_from_bids_validation_input_dataset_path():
     with pytest.raises(TypeError, match='expected str'):
         first_level_from_bids(dataset_path=2,
-                                task_label="main",
-                                space_label="MNI")
+                              task_label="main",
+                              space_label="MNI")
     with pytest.raises(ValueError, match="given path do not exist"):
         first_level_from_bids(dataset_path="lolo",
-                                task_label="main",
-                                space_label="MNI")
+                              task_label="main",
+                              space_label="MNI")
+
 
 def test_first_level_from_bids_missing_derivatives_folder():
     with InTemporaryDirectory():
         bids_path = fake_bids_path()
         shutil.rmtree(Path(bids_path) / "derivatives")
-        with pytest.raises(ValueError, 
+        with pytest.raises(ValueError,
                            match="derivatives folder does not exist"):
             first_level_from_bids(
                 dataset_path=bids_path, task_label="main", space_label="MNI"
             )
+
 
 def test_first_level_from_bids_validation_task_label():
     with InTemporaryDirectory():
         bids_path = fake_bids_path()
         with pytest.raises(TypeError, match="task_label must be a string"):
             first_level_from_bids(dataset_path=bids_path,
-                                    task_label=2,
-                                    space_label="MNI")
+                                  task_label=2,
+                                  space_label="MNI")
 
 
 def test_first_level_from_bids_validation_space_label():
@@ -949,14 +955,14 @@ def test_first_level_from_bids_validation_img_filter_value():
 
 
 def test_first_level_from_bids_with_missing_files():
-    """Too many bold files if img_filters is underspecified, 
+    """Too many bold files if img_filters is underspecified,
     should raise an error.
 
     Here there is a desc-preproc and desc-fmriprep image for the space-T1w.
     """
     with InTemporaryDirectory():
         bids_path = fake_bids_path()
-        with pytest.raises(ValueError, 
+        with pytest.raises(ValueError,
                            match="More than one nifti image found"):
             first_level_from_bids(
                 dataset_path=bids_path, task_label="main", space_label="T1w"
@@ -1037,7 +1043,7 @@ def test_first_level_from_bids_no_session():
         )
         # test repeated run tag error when run tag is in filenames and not ses
         # can arise when desc or space is present and not specified
-        with pytest.raises(ValueError, 
+        with pytest.raises(ValueError,
                            match="More than one nifti image found"):
             first_level_from_bids(
                 dataset_path=bids_path, task_label="main", space_label="T1w"
