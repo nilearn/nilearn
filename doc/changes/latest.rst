@@ -28,3 +28,4 @@ Changes
 -------
 
 - The documentation for :func:`~image.threshold_img` has been improved, with more information about which voxels are set to 0 and which ones keep their original values (:gh:`3485` by `Rémi Gau`_).
+- The behavior of :func:`fetch_atlas_craddock_2012`, :func:`fetch_atlas_smith_2009` and :func:`fetch_atlas_basc_multiscale_2015` is updated with their new parameters to return one map along with a deprecation cycle (:gh:`3353` by `Ahmad Chamma`_)
