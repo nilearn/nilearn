@@ -945,26 +945,20 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                      img_specs[0])
 
     # Infer subjects in dataset
-    if sub_labels:
-        sub_folders_in = [
-            os.path.join(derivatives_path, f"sub-{s}") for s in sub_labels
-        ]
-        
-        sub_labels_exist = []
-        sub_folders = []
-        for i, sub_folder in enumerate(sub_folders_in):
-            if os.path.exists(sub_folder):
-                sub_labels_exist.append(sub_labels[i])
-                sub_folders.append(sub_folder)
-            else:
-                warn(f'Subject label {sub_labels[i]} is not present in the'
-                     ' dataset and cannot be processed')
-    else:
+    if not sub_labels:
         sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*/'))
-        sub_labels_exist = [
+        sub_labels = [
             os.path.basename(s[:-1]).split('-')[1] for s in sub_folders
         ]
-        sub_labels_exist = sorted(list(set(sub_labels_exist)))
+        sub_labels = sorted(list(set(sub_labels)))
+
+    sub_labels_exist = []
+    for this_label in sub_labels:
+        if os.path.exists(os.path.join(derivatives_path, f"sub-{this_label}")):
+            sub_labels_exist.append(this_label)
+        else:
+            warn(f'Subject label {this_label} is not present in the'
+                    ' dataset and cannot be processed.')
 
     # Build fit_kwargs dictionaries to pass to their respective models fit
     # Events and confounds files must match number of imgs (runs)
