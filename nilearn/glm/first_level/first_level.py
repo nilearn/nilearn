@@ -1235,8 +1235,7 @@ def _check_bids_image_list(imgs: list[str] | None,
                     'More than one nifti image found '
                     f"for the same run {img_dict['run']} and "
                     f"session {img_dict['ses']}. {msg_end}")
-            else:
-                run_check_list.append((img_dict['ses'], img_dict['run']))
+            run_check_list.append((img_dict['ses'], img_dict['run']))
 
         elif '_ses-' in img_dict['file_basename']:
             if img_dict['ses'] in run_check_list:
@@ -1244,16 +1243,14 @@ def _check_bids_image_list(imgs: list[str] | None,
                     'More than one nifti image ',
                     f"found for the same ses {img_dict['ses']}, while "
                     f'no additional run specification present. {msg_end}')
-            else:
-                run_check_list.append(img_dict['ses'])
+            run_check_list.append(img_dict['ses'])
 
         elif '_run-' in img_dict['file_basename']:
             if img_dict['run'] in run_check_list:
                 raise ValueError(
                     'More than one nifti image '
                     f"found for the same run {img_dict['run']}. {msg_end}")
-            else:
-                run_check_list.append(img_dict['run'])
+            run_check_list.append(img_dict['run'])
 
 
 def _check_bids_events_list(events: list[str] | None,
