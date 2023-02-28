@@ -1,6 +1,4 @@
-"""
-Test the decoder module
-"""
+"""Test the decoder module."""
 
 # Author: Andres Hoyos-Idrobo
 #         Binh Nguyen
@@ -72,10 +70,10 @@ y_multiclass = np.hstack([[0] * 35, [1] * 30, [2] * 35])
 
 
 def test_check_param_grid():
-    """testing several estimators, each one with its specific regularization
-    parameter
-    """
+    """Test several estimators.
 
+    Each one with its specific regularization parameter.
+    """
     # Regression
     for _, (regressor, param) in regressors.items():
         param_grid = _check_param_grid(regressor, X, y_regression, None)
@@ -112,10 +110,10 @@ def test_check_inputs_length():
 
 
 def test_check_estimator():
-    """Check if the estimator is one of the supported estimators, and if not,
-    if it is a string, and if not, then raise the error
-    """
+    """Check if the estimator is one of the supported estimators.
 
+    If not, if it is a string, and if not, then raise the error.
+    """
     supported_estimators = [
         "svc",
         "svc_l2",
@@ -157,10 +155,8 @@ def test_check_estimator():
 
 
 def test_parallel_fit():
-    """The goal of this test is to check that results of _parallel_fit is the
-    same for different controlled param_grid
-    """
-
+    """Check that results of _parallel_fit is the same \
+    for different controlled param_grid."""
     X, y = make_regression(
         n_samples=100,
         n_features=20,

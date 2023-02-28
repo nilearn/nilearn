@@ -271,7 +271,7 @@ class DictLearning(_BaseDecomposition):
         )
 
     def _raw_fit(self, data):
-        """Helper function that directly process unmasked data.
+        """Process unmasked data directly.
 
         Parameters
         ----------

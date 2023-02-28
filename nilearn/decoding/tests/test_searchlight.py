@@ -1,6 +1,4 @@
-"""
-Test the searchlight module
-"""
+"""Test the searchlight module."""
 # Author: Alexandre Abraham
 # License: simplified BSD
 

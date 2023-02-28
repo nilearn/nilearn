@@ -231,7 +231,7 @@ class _EarlyStoppingCallback:
         self.counter = 0.0
 
     def __call__(self, variables):
-        """The callback proper"""
+        """Perform callback."""
         # misc
         if not isinstance(variables, dict):
             variables = dict(w=variables)
@@ -321,7 +321,7 @@ def path_scores(
     screening_percentile=20.0,
     verbose=1,
 ):
-    """Function to compute scores of different alphas in regression \
+    """Compute scores of different alphas in regression \
     and classification used by CV objects.
 
     Parameters
@@ -1320,7 +1320,10 @@ class SpaceNetClassifier(BaseSpaceNet):
         )
 
     def _binarize_y(self, y):
-        """Helper function invoked just before fitting a classifier."""
+        """Encode target classes as -1 and 1.
+
+        Helper function invoked just before fitting a classifier.
+        """
         y = np.array(y)
 
         # encode target classes as -1 and 1
