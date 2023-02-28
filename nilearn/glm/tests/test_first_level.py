@@ -1053,9 +1053,9 @@ def test_first_level_from_bids_bug_3029():
             .joinpath("derivatives")
             .glob("**/func/*_task-main_*desc-*")
         )
-        for file in files_to_rename:
-            new_file = file.parent / file.name.replace("run-0", "run-")
-            file.rename(new_file)
+        for file_ in files_to_rename:
+            new_file = file_.parent / file_.name.replace("run-0", "run-")
+            file_.rename(new_file)
 
         with pytest.raises(ValueError, match=".*events.tsv files.*"):
             first_level_from_bids(
