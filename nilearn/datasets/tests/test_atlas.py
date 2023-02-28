@@ -264,13 +264,14 @@ def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
         __file__).parent / "data" / "craddock_2011_parcellations.tar.gz"
     request_mocker.url_mapping["*craddock*"] = local_archive
     bunch = atlas.fetch_atlas_craddock_2012(data_dir=tmp_path,
-                                            verbose=0)
+                                            verbose=0, homogeneity='spatial')
     bunch_rand = atlas.fetch_atlas_craddock_2012(data_dir=tmp_path,
                                                  verbose=0,
                                                  homogeneity='random')
     bunch_no_mean = atlas.fetch_atlas_craddock_2012(data_dir=tmp_path,
                                                     verbose=0,
-                                                    grp_mean=False)
+                                                    grp_mean=False,
+                                                    homogeneity='spatial')
     assert request_mocker.url_count == 1
     assert bunch['maps'][0] == str(tmp_path / 'craddock_2012'
                                    / 'scorr05_mean_all.nii.gz')
@@ -280,11 +281,50 @@ def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
                                            / 'scorr05_2level_all.nii.gz')
     assert bunch.description != ''
 
+    # Old code
+    bunch = atlas.fetch_atlas_craddock_2012(data_dir=tmp_path,
+                                            verbose=0)
+
+    keys = ("scorr_mean", "tcorr_mean",
+            "scorr_2level", "tcorr_2level",
+            "random")
+    filenames = [
+        "scorr05_mean_all.nii.gz",
+        "tcorr05_mean_all.nii.gz",
+        "scorr05_2level_all.nii.gz",
+        "tcorr05_2level_all.nii.gz",
+        "random_all.nii.gz",
+    ]
+    assert request_mocker.url_count == 1
+    for key, fn in zip(keys, filenames):
+        assert bunch[key] == str(tmp_path / 'craddock_2012' / fn)
+    assert bunch.description != ''
+
 
 def test_fetch_atlas_smith_2009(tmp_path, request_mocker):
-    bunch = atlas.fetch_atlas_smith_2009(data_dir=tmp_path, verbose=0)
+    bunch = atlas.fetch_atlas_smith_2009(data_dir=tmp_path, verbose=0,
+                                         dimension=20)
     assert bunch['maps'][0] == str(tmp_path / 'smith_2009' / 'rsn20.nii.gz')
     assert len(bunch.keys()) == 2
+    assert bunch.description != ''
+
+    # Old code
+    bunch = atlas.fetch_atlas_smith_2009(data_dir=tmp_path, verbose=0)
+
+    keys = ("rsn20", "rsn10", "rsn70",
+            "bm20", "bm10", "bm70")
+    filenames = [
+        "rsn20.nii.gz",
+        "PNAS_Smith09_rsn10.nii.gz",
+        "rsn70.nii.gz",
+        "bm20.nii.gz",
+        "PNAS_Smith09_bm10.nii.gz",
+        "bm70.nii.gz",
+    ]
+
+    assert request_mocker.url_count == 6
+    for key, fn in zip(keys, filenames):
+        assert bunch[key] == str(tmp_path / 'smith_2009' / fn)
     assert bunch.description != ''
 
 
@@ -470,11 +510,12 @@ def test_fetch_atlas_aal_version_error(tmp_path, request_mocker):
 def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
     # default version='sym',
     data_sym = atlas.fetch_atlas_basc_multiscale_2015(data_dir=tmp_path,
-                                                      verbose=0)
+                                                      verbose=0, resolution=7)
     # version='asym'
     data_asym = atlas.fetch_atlas_basc_multiscale_2015(version='asym',
                                                        verbose=0,
-                                                       data_dir=tmp_path)
+                                                       data_dir=tmp_path,
+                                                       resolution=7)
 
     dataset_name = 'basc_multiscale_2015'
     name_sym = 'template_cambridge_basc_multiscale_nii_sym'
@@ -489,6 +530,45 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
                                        / basename_asym)
 
     assert len(data_sym) == 2
+    with pytest.raises(
+            ValueError,
+            match='The version of Brain parcellations requested "aym"'):
+        atlas.fetch_atlas_basc_multiscale_2015(version="aym",
+                                               data_dir=tmp_path,
+                                               verbose=0)
+
+    assert request_mocker.url_count == 2
+    assert data_sym.description != ''
+    assert data_asym.description != ''
+
+    # Old code
+    # default version='sym',
+    data_sym = atlas.fetch_atlas_basc_multiscale_2015(data_dir=tmp_path,
+                                                      verbose=0)
+    # version='asym'
+    data_asym = atlas.fetch_atlas_basc_multiscale_2015(version='asym',
+                                                       verbose=0,
+                                                       data_dir=tmp_path)
+
+    keys = ['scale007', 'scale012', 'scale020', 'scale036', 'scale064',
+            'scale122', 'scale197', 'scale325', 'scale444']
+
+    dataset_name = 'basc_multiscale_2015'
+    name_sym = 'template_cambridge_basc_multiscale_nii_sym'
+    basenames_sym = ['template_cambridge_basc_multiscale_sym_' +
+                     key + '.nii.gz' for key in keys]
+    for key, basename_sym in zip(keys, basenames_sym):
+        assert data_sym[key] == str(tmp_path / dataset_name / name_sym
+                                    / basename_sym)
+
+    name_asym = 'template_cambridge_basc_multiscale_nii_asym'
+    basenames_asym = ['template_cambridge_basc_multiscale_asym_' +
+                      key + '.nii.gz' for key in keys]
+    for key, basename_asym in zip(keys, basenames_asym):
+        assert data_asym[key] == str(tmp_path / dataset_name / name_asym
+                                     / basename_asym)
+
+    assert len(data_sym) == 10
     with pytest.raises(
             ValueError,
             match='The version of Brain parcellations requested "aym"'):

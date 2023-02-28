@@ -144,7 +144,7 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None,
 
 @fill_doc
 def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True,
-                              verbose=1, homogeneity='spatial', grp_mean=True):
+                              verbose=1, homogeneity=None, grp_mean=True):
     """Download and return file names for the Craddock 2012 parcellation.
 
     This function returns a :term:`probabilistic atlas<Probabilistic atlas>`.
@@ -164,7 +164,6 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True,
     %(verbose)s
     homogeneity: :obj:`str`, optional
         The choice of the homogeneity ('spatial' or 'temporal' or 'random')
-        Default='spatial'.
     grp_mean: :obj:`bool`, optional
         The choice of the parcellation (with group_mean or without)
         Default=True.
@@ -173,8 +172,17 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True,
     -------
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
-            - 'maps': :obj:`str`, path to nifti file containing the
-            parcellation with the predefined homogeneity.
+
+            - 'scorr_mean': obj:`str`, path to nifti file containing the
+              group-mean parcellation when emphasizing spatial homogeneity.
+            - 'tcorr_mean': obj:`str`, path to nifti file containing the
+              group-mean parcellation when emphasizing temporal homogeneity.
+            - 'scorr_2level': obj:`str`, path to nifti file containing the
+              parcellation obtained when emphasizing spatial homogeneity.
+            - 'tcorr_2level': obj:`str`, path to nifti file containing the
+              parcellation obtained when emphasizing temporal homogeneity.
+            - 'random': obj:`str`, path to nifti file containing the
+              parcellation obtained with random clustering.
             - 'description': :obj:`str`, general description of the dataset.
 
     References
@@ -189,23 +197,45 @@ def fetch_atlas_craddock_2012(data_dir=None, url=None, resume=True,
 
     dataset_name = "craddock_2012"
 
-    if homogeneity in ['spatial', 'temporal']:
-        if grp_mean:
-            filename = [(homogeneity[0] + "corr05_mean_all.nii.gz", url, opts)]
-        else:
-            filename = [(homogeneity[0]
-                        + "corr05_2level_all.nii.gz", url, opts)]
-    else:
-        filename = [("random_all.nii.gz", url, opts)]
+    keys = ("scorr_mean", "tcorr_mean",
+            "scorr_2level", "tcorr_2level",
+            "random")
+    filenames = [
+        ("scorr05_mean_all.nii.gz", url, opts),
+        ("tcorr05_mean_all.nii.gz", url, opts),
+        ("scorr05_2level_all.nii.gz", url, opts),
+        ("tcorr05_2level_all.nii.gz", url, opts),
+        ("random_all.nii.gz", url, opts)
+    ]
 
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    data = _fetch_files(data_dir, filename, resume=resume,
-                        verbose=verbose)
+
+    sub_files = _fetch_files(data_dir, filenames, resume=resume,
+                             verbose=verbose)
 
     fdescr = _get_dataset_descr(dataset_name)
 
-    return Bunch(maps=data, description=fdescr)
+    if homogeneity:
+        if homogeneity in ['spatial', 'temporal']:
+            if grp_mean:
+                filename = [(homogeneity[0] + "corr05_mean_all.nii.gz",
+                            url, opts)]
+            else:
+                filename = [(homogeneity[0]
+                            + "corr05_2level_all.nii.gz", url, opts)]
+        else:
+            filename = [("random_all.nii.gz", url, opts)]
+        data = _fetch_files(data_dir, filename, resume=resume, verbose=verbose)
+        params = dict(maps=data, description=fdescr)
+    else:
+        params = dict([('description', fdescr)] + list(zip(keys, sub_files)))
+        warnings.warn(category=FutureWarning,
+                      message="The default behavior of the function will " +
+                              "be deprecated in release 0.13 to use the new " +
+                              "parameter homogeneity")
+
+    return Bunch(**params)
 
 
 @fill_doc
@@ -806,7 +836,7 @@ def fetch_coords_power_2011(legacy_format=True):
 
 @fill_doc
 def fetch_atlas_smith_2009(data_dir=None, url=None, resume=True,
-                           verbose=1, mirror='origin', dimension=20,
+                           verbose=1, mirror='origin', dimension=None,
                            resting=True):
     """Download and load the Smith :term:`ICA` and BrainMap
     :term:`Probabilistic atlas` (2009).
@@ -826,7 +856,6 @@ def fetch_atlas_smith_2009(data_dir=None, url=None, resume=True,
     dimension: :obj:`int`, optional
         Number of dimensions in the dictionary. Valid resolutions
         available are {10, 20, 70}.
-        Default=20.
     resting: :obj:`bool`, optional
         Either to fetch the resting-:term:`fMRI` or BrainMap components
         Default=True.
@@ -836,9 +865,26 @@ def fetch_atlas_smith_2009(data_dir=None, url=None, resume=True,
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-            - 'maps': :obj:`str`, path to nifti file containing the
-              resting-:term:`fMRI` or BrainMap components.
-              The shape of the image is ``(91, 109, 91, dimension)``.
+            - 'rsn20': :obj:`str`, path to nifti file containing the
+              20-dimensional :term:`ICA`, resting-:term:`fMRI` components.
+              The shape of the image is ``(91, 109, 91, 20)``.
+            - 'rsn10': :obj:`str`, path to nifti file containing the
+              10 well-matched maps from the 20 maps obtained as for 'rsn20',
+              as shown in :footcite:`Smith2009b`. The shape of the
+              image is ``(91, 109, 91, 10)``.
+            - 'bm20': :obj:`str`, path to nifti file containing the
+              20-dimensional :term:`ICA`, BrainMap components.
+              The shape of the image is ``(91, 109, 91, 20)``.
+            - 'bm10': :obj:`str`, path to nifti file containing the
+              10 well-matched maps from the 20 maps obtained as for 'bm20',
+              as shown in :footcite:`Smith2009b`. The shape of the
+              image is ``(91, 109, 91, 10)``.
+            - 'rsn70': :obj:`str`, path to nifti file containing the
+              70-dimensional :term:`ICA`, resting-:term:`fMRI` components.
+              The shape of the image is ``(91, 109, 91, 70)``.
+            - 'bm70': :obj:`str`, path to nifti file containing the
+              70-dimensional :term:`ICA`, BrainMap components.
+              The shape of the image is ``(91, 109, 91, 70)``.
             - 'description': :obj:`str`, description of the atlas.
 
     References
@@ -876,23 +922,36 @@ def fetch_atlas_smith_2009(data_dir=None, url=None, resume=True,
         'bm70': 'bm70.nii.gz'
     }
 
-    key = f"{'rsn' if resting else 'bm'}{dimension}"
-    key_index = list(files).index(key)
-
     if isinstance(url, str):
         url = [url] * len(files)
-
-    file = [(files[key], url[key_index] + files[key], {})]
 
     dataset_name = 'smith_2009'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
-    data = _fetch_files(data_dir, file, resume=resume,
-                        verbose=verbose)
 
     fdescr = _get_dataset_descr(dataset_name)
 
-    return Bunch(maps=data, description=fdescr)
+    if dimension:
+        key = f"{'rsn' if resting else 'bm'}{dimension}"
+        key_index = list(files).index(key)
+
+        file = [(files[key], url[key_index] + files[key], {})]
+        data = _fetch_files(data_dir, file, resume=resume,
+                            verbose=verbose)
+        params = Bunch(maps=data, description=fdescr)
+    else:
+        keys = list(files.keys())
+        files = [(f, u + f, {}) for f, u in zip(files.values(), url)]
+        files_ = _fetch_files(data_dir, files, resume=resume,
+                              verbose=verbose)
+        params = dict(zip(keys, files_))
+        params['description'] = fdescr
+        warnings.warn(category=FutureWarning,
+                      message="The default behavior of the function will " +
+                              "be deprecated in release 0.13 to use the new " +
+                              "parameters dimension")
+
+    return Bunch(**params)
 
 
 @fill_doc
@@ -1124,7 +1183,8 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
 
 @fill_doc
 def fetch_atlas_basc_multiscale_2015(data_dir=None, url=None, resume=True,
-                                     verbose=1, resolution=7, version='sym'):
+                                     verbose=1, resolution=None,
+                                     version='sym'):
     """Downloads and loads multiscale functional brain parcellations.
 
     This :term:`Deterministic atlas` includes group brain parcellations
@@ -1160,7 +1220,6 @@ def fetch_atlas_basc_multiscale_2015(data_dir=None, url=None, resume=True,
     resolution: :ob:`int`, optional
         Number of networks in the dictionary. Valid resolutions
         available are {7, 12, 20, 36, 64, 122, 197, 325, 444}
-        Default=7.
     version : {'sym', 'asym'}, optional
         Available versions are 'sym' or 'asym'. By default all scales of
         brain parcellations of version 'sym' will be returned.
@@ -1171,10 +1230,11 @@ def fetch_atlas_basc_multiscale_2015(data_dir=None, url=None, resume=True,
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, Keys are:
 
-        - 'maps': :obj:`str`, path to Nifti file of various scales of brain
-          parcellations. Images have shape ``(53, 64, 52)`` and contain
-          consecutive integer values from 0 to the selected number
-          of networks (resolution).
+        - "scale007", "scale012", "scale020", "scale036", "scale064",
+          "scale122", "scale197", "scale325", "scale444": :obj:`str`, path
+          to Nifti file of various scales of brain parcellations.
+          Images have shape ``(53, 64, 52)`` and contain consecutive integer
+          values from 0 to the selected number of networks (scale).
         - "description": :obj:`str`, details about the data release.
 
     References
@@ -1199,21 +1259,41 @@ def fetch_atlas_basc_multiscale_2015(data_dir=None, url=None, resume=True,
         url = "https://ndownloader.figshare.com/files/1861820"
     opts = {'uncompress': True}
 
+    keys = ['scale007', 'scale012', 'scale020', 'scale036', 'scale064',
+            'scale122', 'scale197', 'scale325', 'scale444']
+
     dataset_name = "basc_multiscale_2015"
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
 
     folder_name = 'template_cambridge_basc_multiscale_nii_' + version
-    basename = 'template_cambridge_basc_multiscale_' + version + \
-        f'_scale{resolution:03}' + '.nii.gz'
-
-    filename = [(os.path.join(folder_name, basename), url, opts)]
-
-    data = _fetch_files(data_dir, filename, resume=resume, verbose=verbose)
-
     fdescr = _get_dataset_descr(dataset_name)
 
-    return Bunch(maps=data, description=fdescr)
+    if resolution:
+        basename = 'template_cambridge_basc_multiscale_' + version + \
+            f'_scale{resolution:03}' + '.nii.gz'
+
+        filename = [(os.path.join(folder_name, basename), url, opts)]
+
+        data = _fetch_files(data_dir, filename, resume=resume, verbose=verbose)
+        params = Bunch(maps=data, description=fdescr)
+    else:
+        basenames = ['template_cambridge_basc_multiscale_' + version +
+                     '_' + key + '.nii.gz' for key in keys]
+        filenames = [(os.path.join(folder_name, basename), url, opts)
+                     for basename in basenames]
+        data = _fetch_files(data_dir, filenames, resume=resume,
+                            verbose=verbose)
+
+        descr = _get_dataset_descr(dataset_name)
+
+        params = dict(zip(keys, data))
+        params['description'] = descr
+        warnings.warn(category=FutureWarning,
+                      message="The default behavior of the function will " +
+                              "be deprecated in release 0.13 to use the new " +
+                              "parameter resolution")
+    return Bunch(**params)
 
 
 @fill_doc
