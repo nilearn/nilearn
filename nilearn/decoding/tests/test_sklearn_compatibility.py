@@ -1,5 +1,6 @@
-from nilearn.decoding.space_net import BaseSpaceNet
 import traceback
+
+from nilearn.decoding.space_net import BaseSpaceNet
 
 
 def test_get_params():

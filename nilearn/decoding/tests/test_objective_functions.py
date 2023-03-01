@@ -2,15 +2,15 @@
 
 import numpy as np
 import pytest
-from scipy.optimize import check_grad
-from sklearn.utils import check_random_state
 from nilearn.decoding.objective_functions import (
+    _div_id,
     _gradient_id,
     _logistic,
-    _div_id,
     _logistic_loss_grad,
 )
 from nilearn.decoding.space_net import BaseSpaceNet
+from scipy.optimize import check_grad
+from sklearn.utils import check_random_state
 
 
 def test_grad_div_adjoint_arbitrary_ndim(size=5, max_ndim=5):

@@ -1,26 +1,26 @@
+# Data used in almost all tests
+import nibabel
 import numpy as np
 import scipy as sp
+from nilearn.decoding.objective_functions import _div, _gradient
+from nilearn.decoding.space_net import BaseSpaceNet
+from nilearn.decoding.space_net_solvers import (
+    _graph_net_adjoint_data_function,
+    _graph_net_data_function,
+    _logistic_data_loss_and_spatial_grad,
+    _logistic_data_loss_and_spatial_grad_derivative,
+    _logistic_derivative_lipschitz_constant,
+    _squared_loss_and_spatial_grad,
+    _squared_loss_and_spatial_grad_derivative,
+    _squared_loss_derivative_lipschitz_constant,
+    mfista,
+)
 from numpy.testing import assert_almost_equal
 from scipy import linalg
 from sklearn.utils import check_random_state
-from nilearn.decoding.objective_functions import _gradient, _div
-from nilearn.decoding.space_net_solvers import (
-    _graph_net_data_function,
-    _graph_net_adjoint_data_function,
-    _squared_loss_and_spatial_grad,
-    _logistic_data_loss_and_spatial_grad,
-    _squared_loss_and_spatial_grad_derivative,
-    _logistic_data_loss_and_spatial_grad_derivative,
-    _squared_loss_derivative_lipschitz_constant,
-    _logistic_derivative_lipschitz_constant,
-    mfista,
-)
-from nilearn.decoding.space_net import BaseSpaceNet
 
-# Data used in almost all tests
-import nibabel
-from .test_same_api import to_niimgs
 from .simulate_graph_net_data import create_graph_net_simulation_data
+from .test_same_api import to_niimgs
 
 
 def _make_data(task="regression", size=4):

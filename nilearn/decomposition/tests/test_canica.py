@@ -1,19 +1,16 @@
 """Test CanICA."""
 
-import numpy as np
-import pytest
 import warnings
 
-from numpy.testing import assert_array_almost_equal
 import nibabel
-
+import numpy as np
+import pytest
 from nilearn._utils.testing import write_tmp_imgs
-
 from nilearn.decomposition.canica import CanICA
-from nilearn.maskers import MultiNiftiMasker
-from nilearn.image import iter_img
 from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
-from nilearn.image import get_data
+from nilearn.image import get_data, iter_img
+from nilearn.maskers import MultiNiftiMasker
+from numpy.testing import assert_array_almost_equal
 
 
 def _make_data_from_components(

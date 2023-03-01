@@ -2,8 +2,8 @@
 # Author: Alexandre Abraham
 # License: simplified BSD
 
-import numpy as np
 import nibabel
+import numpy as np
 from nilearn.decoding import searchlight
 
 

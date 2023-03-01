@@ -1,3 +1,10 @@
 [tool.black]
 line-length = 79
 include = "(nilearn/de.*)|(maint_tools/.*)|(setup.py)"
+
+[tool.isort]
+profile = "black"
+src_paths = ['nilearn/de.*']
+line_length = 79
+skip_gitignore = true
+combine_as_imports = true
