@@ -17,8 +17,7 @@ stimulus_information = haxby_dataset.stimuli
 
 for stim_type in stimulus_information:
     # skip control images, there are too many
-    if stim_type != 'controls':
-
+    if stim_type != "controls":
         file_names = stimulus_information[stim_type]
 
         fig, axes = plt.subplots(6, 8)
