@@ -878,7 +878,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         warn(f'slice_time_ref is {slice_time_ref} percent '
              'of the repetition time')
     else:
-        filters = _filter_for_bids_query(
+        filters = _make_bids_files_filter(
             task_label=task_label,
             supported_filters=_supported_bids_filter()["raw"]
             + _supported_bids_filter()["derivatives"],
@@ -891,7 +891,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                                    filters=filters)
         # If we don't find the parameter information in the derivatives folder
         # we try to search in the raw data folder
-        filters = _filter_for_bids_query(
+        filters = _make_bids_files_filter(
             task_label=task_label,
             supported_filters=_supported_bids_filter()["raw"],
             extra_filter=img_filters
@@ -953,7 +953,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         models.append(model)
 
         # Get preprocessed imgs
-        filters = _filter_for_bids_query(
+        filters = _make_bids_files_filter(
             task_label=task_label,
             space_label=space_label,
             supported_filters=_supported_bids_filter()["raw"]
@@ -977,7 +977,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         models_run_imgs.append(imgs)
 
         # Get events files
-        events_filters = _filter_for_bids_query(
+        events_filters = _make_bids_files_filter(
             task_label=task_label,
             supported_filters=_supported_bids_filter()["raw"],
             extra_filter=img_filters
@@ -1012,7 +1012,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         confounds_filters = _supported_bids_filter()["raw"] + \
                             _supported_bids_filter()["derivatives"]
         confounds_filters.remove('desc')
-        filters = _filter_for_bids_query(task_label=task_label,
+        filters = _make_bids_files_filter(task_label=task_label,
                                          supported_filters=confounds_filters,
                                          extra_filter=img_filters)
         confounds = get_bids_files(derivatives_path,
@@ -1147,7 +1147,7 @@ def _validate_args_first_level_from_bids(dataset_path: str,
 def _is_alphanumeric(string: str) -> bool:
     return all(char.isalnum() for char in string)
 
-def _filter_for_bids_query(task_label: str,
+def _make_bids_files_filter(task_label: str,
                            space_label: str | None = None,
                            supported_filters: list[str] | None = None,
                            extra_filter: list[tuple[str, str]] | None = None
@@ -1326,7 +1326,7 @@ def _check_bids_events_list(events: list[str] | None,
         extra_filter = [(key, parsed_filename[key])
                         for key in parsed_filename
                         if key in supported_filters]
-        filters = _filter_for_bids_query(task_label=task_label,
+        filters = _make_bids_files_filter(task_label=task_label,
                                          space_label=None,
                                          supported_filters=supported_filters,
                                          extra_filter=extra_filter)
