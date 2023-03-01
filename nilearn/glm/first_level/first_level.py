@@ -1147,16 +1147,17 @@ def _validate_args_first_level_from_bids(dataset_path: str,
             f"Got {task_label} instead."
         )    
 
-    if space_label is not None and not isinstance(space_label, str):
-        raise TypeError(
-            "'space_label' must be a string, "
-            f"Got {type(space_label)} instead."
-        )
-    if not _is_alphanumeric(space_label):
-        raise ValueError(
-            "'space_label' must be alphanumeric. "
-            f"Got {space_label} instead."
-        )      
+    if space_label is not None:
+        if not isinstance(space_label, str):
+            raise TypeError(
+                "'space_label' must be a string, "
+                f"Got {type(space_label)} instead."
+            )
+        if not _is_alphanumeric(space_label):
+            raise ValueError(
+                "'space_label' must be alphanumeric. "
+                f"Got {space_label} instead."
+            )      
 
     if not isinstance(img_filters, list):
         raise TypeError(
