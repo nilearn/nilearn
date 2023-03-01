@@ -957,10 +957,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                                    space_label=space_label,
                                    img_filters=img_filters)
         if verbose:
-            print(f'Found the following {len(imgs)} preprocessed BOLD files',
-                  f'for subject {sub_label}',
-                  f'for filter: {filters}:\n',
-                  f'{imgs}\n')
+            _report_found_files(imgs, 'preprocessed BOLD', sub_label, filters)
         models_run_imgs.append(imgs)
 
         events = _get_events_files(dataset_path = dataset_path,
@@ -969,10 +966,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                                    img_filters=img_filters,
                                    imgs=imgs)
         if verbose:
-            print(f'Found the following {len(events)} events files',
-                  f'for subject {sub_label}\n',
-                  f'for filter: {filters}:\n',
-                  f'{events}\n')
+            _report_found_files(events, 'events', sub_label, filters) 
         events = [pd.read_csv(event, sep='\t', index_col=None)
                   for event in events]
         models_events.append(events)
@@ -983,10 +977,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                                    img_filters=img_filters,
                                    imgs=imgs)
         if verbose:
-            print(f'Found the following {len(confounds)} confounds files',
-                  f'for subject {sub_label}\n',
-                  f'for filter: {filters}:\n',
-                  f'{confounds}\n')        
+            _report_found_files(confounds, 'confounds', sub_label, filters)     
         if confounds:
             confounds = [pd.read_csv(c, sep='\t', index_col=None)
                          for c in confounds]
@@ -995,6 +986,12 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         models_confounds.append(confounds)
 
     return models, models_run_imgs, models_events, models_confounds
+
+def _report_found_files(files, text, sub_label, filters):
+    print(f'Found the following {len(files)} {text} files\n',
+        f'for subject {sub_label}\n',
+        f'for filter: {filters}:\n',
+        f'{files}\n') 
 
 def _get_processed_imgs(derivatives_path: str,
                       sub_label: str,

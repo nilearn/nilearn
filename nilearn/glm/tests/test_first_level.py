@@ -1040,8 +1040,12 @@ def test_first_level_from_bids_no_session():
             )
 
 
-def test_first_level_from_bids_bug_3029():
-    """Test error when events.tsv is missing for a bold file."""
+def test_first_level_from_bids_mismatch_run_index():
+    """Test error when run index is zero padded in raw but not in derivatives.
+    
+    Regression test for https://github.com/nilearn/nilearn/issues/3029
+    
+    """
     with InTemporaryDirectory():
 
         bids_path = fake_bids_path()
@@ -1066,8 +1070,12 @@ def test_first_level_from_bids_bug_3029():
 @pytest.mark.parametrize(
     "entity", ["acq", "ce", "dir", "rec", "echo", "res", "den"]
 )
-def test_first_level_from_bids_bug_3524(entity):
-    """Test right files are selected when entities have several labels."""
+def test_first_level_from_bids_several_labels(entity):
+    """Test right files are selected when entities have several labels.
+    
+    Regression test for https://github.com/nilearn/nilearn/issues/3524
+    
+    """
     with InTemporaryDirectory():
         n_sub = 2
         n_ses = 2
