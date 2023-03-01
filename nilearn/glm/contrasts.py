@@ -386,9 +386,10 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
         Whether fixed effects estimates should be weighted by inverse
         variance or not. Default=False.
 
-    dofs = array-like, with len = len(variance_imgs) or None
+    dofs : array-like, with len = len(variance_imgs) or None
         the degrees of freedom of the models
         when None, it is assumed that the degrees of freedom are 100 per input.
+        Default=None.
 
     Returns
     -------
@@ -474,10 +475,12 @@ def _compute_fixed_effects_params(
     fixed_fx_z_score = con.z_score()
     fixed_fx_stat = con.stat_
 
+    """
     if contrast_type == 't':
         if len(fixed_fx_z_score.shape) == 2:
             fixed_fx_z_score = fixed_fx_z_score[:, 0]
         if len(fixed_fx_stat.shape) == 2:
             fixed_fx_stat = fixed_fx_stat[:, 0]
+    """
     return (fixed_fx_contrasts, fixed_fx_variance, fixed_fx_stat,
             fixed_fx_z_score)
