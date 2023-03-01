@@ -981,8 +981,6 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         if confounds:
             confounds = [pd.read_csv(c, sep='\t', index_col=None)
                          for c in confounds]
-        # FIXME: should always append something
-        # add a test where one participant only does not have confounds
         models_confounds.append(confounds)
 
     return models, models_run_imgs, models_events, models_confounds

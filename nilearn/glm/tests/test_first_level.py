@@ -964,7 +964,7 @@ def test_first_level_from_bids_with_one_events_missing():
     with InTemporaryDirectory():
 
         bids_path = fake_bids_path()
-        events_files = get_bids_files(bids_path, file_tag="events")
+        events_files = get_bids_files(main_path=bids_path, file_tag="events")
         os.remove(events_files[0])
 
         with pytest.raises(
@@ -980,7 +980,7 @@ def test_first_level_from_bids_with_missing_events():
     with InTemporaryDirectory():
 
         bids_path = fake_bids_path()
-        events_files = get_bids_files(bids_path, file_tag="events")
+        events_files = get_bids_files(main_path=bids_path, file_tag="events")
         for f in events_files[1:]:
             os.remove(f)
 
@@ -999,7 +999,7 @@ def test_first_level_from_bids_one_confound_missing():
 
         bids_path = fake_bids_path()
         confound_files = get_bids_files(
-            os.path.join(bids_path, "derivatives"),
+            main_path=os.path.join(bids_path, "derivatives"),
             file_tag="desc-confounds_timeseries",
         )
         os.remove(confound_files[-1])
@@ -1009,6 +1009,31 @@ def test_first_level_from_bids_one_confound_missing():
                 dataset_path=bids_path, task_label="main", space_label="MNI"
             )
 
+def test_first_level_from_bids_all_confounds_missing():
+    """If all confound files are missing, confounds should be an array of None."""
+    with InTemporaryDirectory():
+
+        bids_path = fake_bids_path()
+        confound_files = get_bids_files(
+            main_path=os.path.join(bids_path, "derivatives"),
+            file_tag="desc-confounds_timeseries",
+        )
+        for f in confound_files:
+            os.remove(f)
+
+        models, m_imgs, m_events, m_confounds = first_level_from_bids(
+            dataset_path=bids_path,
+            task_label="main",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            verbose=0,
+        )
+
+        assert len(models) == len(m_imgs)
+        assert len(models) == len(m_events)
+        assert len(models) == len(m_confounds)
+        for condounds_ in m_confounds:
+            assert condounds_ is None
 
 def test_first_level_from_bids_no_derivatives():
     with InTemporaryDirectory():
