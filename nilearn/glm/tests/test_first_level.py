@@ -966,6 +966,21 @@ def test_first_level_from_bids_with_missing_files():
                 dataset_path=bids_path, task_label="main", space_label="T1w"
             )
 
+def test_first_level_from_bids_no_bold_files():
+    with InTemporaryDirectory():
+
+        bids_path = fake_bids_path()
+        imgs = get_bids_files(main_path=os.path.join(bids_path, "derivatives"), 
+                              file_tag="bold",
+                              file_type="*gz")
+        for img_ in imgs:
+            os.remove(img_)
+
+        with pytest.raises(ValueError, match="No BOLD files found "):
+            first_level_from_bids(
+                dataset_path=bids_path, task_label="main", space_label="MNI"
+            )            
+
 
 def test_first_level_from_bids_with_one_events_missing():
     """Only one events.tsv file is missing, should raise an error."""
