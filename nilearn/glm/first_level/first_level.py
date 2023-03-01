@@ -826,7 +826,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like _space-<space_label>_.
 
-    img_filters : list of tuples (str, str), optional
+    img_filters : :obj:`list` of :obj:`tuples` (str, str), optional
         Filters are of the form (field, label). Only one filter per field
         allowed.
         A file that does not match a filter will be discarded.
@@ -937,7 +937,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     models_events = []
     models_confounds = []
     for sub_label in sub_labels:
-        # Create model
+
         model = FirstLevelModel(
             t_r=t_r, slice_time_ref=slice_time_ref, hrf_model=hrf_model,
             drift_model=drift_model, high_pass=high_pass,
@@ -949,66 +949,103 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
             signal_scaling=signal_scaling, noise_model=noise_model,
             verbose=verbose, n_jobs=n_jobs,
             minimize_memory=minimize_memory, subject_label=sub_label)
-
         models.append(model)
 
-        # Get preprocessed imgs
-        filters = _make_bids_files_filter(
+        imgs = _get_processed_imgs(derivatives_path=derivatives_path,
+                                   sub_label=sub_label,
+                                   task_label=task_label,
+                                   space_label=space_label,
+                                   img_filters=img_filters)
+        if verbose:
+            print(f'Found the following {len(imgs)} preprocessed BOLD files',
+                  f'for subject {sub_label}',
+                  f'for filter: {filters}:\n',
+                  f'{imgs}\n')
+        models_run_imgs.append(imgs)
+
+        events = _get_events_files(dataset_path = dataset_path,
+                                   sub_label=sub_label,
+                                   task_label=task_label,
+                                   img_filters=img_filters,
+                                   imgs=imgs)
+        if verbose:
+            print(f'Found the following {len(events)} events files',
+                  f'for subject {sub_label}\n',
+                  f'for filter: {filters}:\n',
+                  f'{events}\n')
+        events = [pd.read_csv(event, sep='\t', index_col=None)
+                  for event in events]
+        models_events.append(events)
+
+        confounds = _get_confounds(derivatives_path=derivatives_path,
+                                   sub_label=sub_label,
+                                   task_label=task_label,
+                                   img_filters=img_filters,
+                                   imgs=imgs)
+        if verbose:
+            print(f'Found the following {len(confounds)} confounds files',
+                  f'for subject {sub_label}\n',
+                  f'for filter: {filters}:\n',
+                  f'{confounds}\n')        
+        if confounds:
+            confounds = [pd.read_csv(c, sep='\t', index_col=None)
+                         for c in confounds]
+        # FIXME: should always append something
+        # add a test where one participant only does not have confounds
+        models_confounds.append(confounds)
+
+    return models, models_run_imgs, models_events, models_confounds
+
+def _get_processed_imgs(derivatives_path: str,
+                      sub_label: str,
+                      task_label: str,
+                      space_label: str,
+                      img_filters: list[tuple[str,str]]):
+    filters = _make_bids_files_filter(
             task_label=task_label,
             space_label=space_label,
             supported_filters=_supported_bids_filter()["raw"]
             + _supported_bids_filter()["derivatives"],
             extra_filter=img_filters
         )
-        imgs = get_bids_files(derivatives_path,
-                              modality_folder='func',
-                              file_tag='bold',
-                              file_type='nii*',
-                              sub_label=sub_label,
-                              filters=filters)
-        _check_bids_image_list(imgs, sub_label, filters)
+    imgs = get_bids_files(main_path=derivatives_path,
+                            modality_folder='func',
+                            file_tag='bold',
+                            file_type='nii*',
+                            sub_label=sub_label,
+                            filters=filters)
+    _check_bids_image_list(imgs, sub_label, filters)
+    return imgs
 
-        if verbose:
-            print('Found the following bold files',
-                  f'for subject {sub_label}',
-                  f'for filter: {filters}:\n',
-                  f'{imgs}\n')
-
-        models_run_imgs.append(imgs)
-
-        # Get events files
-        events_filters = _make_bids_files_filter(
-            task_label=task_label,
-            supported_filters=_supported_bids_filter()["raw"],
-            extra_filter=img_filters
-        )
-        events = get_bids_files(dataset_path,
-                                modality_folder='func',
-                                file_tag='events',
-                                file_type='tsv',
-                                sub_label=sub_label,
-                                filters=events_filters)
-        _check_bids_events_list(events=events,
+def _get_events_files(dataset_path: str,
+                      sub_label: str,
+                      task_label: str,
+                      img_filters: list[tuple[str,str]],
+                      imgs: list[str]):
+    events_filters = _make_bids_files_filter(
+        task_label=task_label,
+        supported_filters=_supported_bids_filter()["raw"],
+        extra_filter=img_filters
+    )
+    events = get_bids_files(dataset_path,
+                            modality_folder='func',
+                            file_tag='events',
+                            file_type='tsv',
+                            sub_label=sub_label,
+                            filters=events_filters)
+    _check_bids_events_list(events=events,
                                 imgs=imgs,
                                 sub_label=sub_label,
                                 task_label=task_label,
                                 dataset_path=dataset_path,
-                                events_filters=events_filters,)
+                                events_filters=events_filters)    
+    return events 
 
-        if verbose:
-            print('Found the following events files',
-                  f'for subject {sub_label}',
-                  f'for filter: {filters}:\n',
-                  f'{events}\n')
-
-        events = [pd.read_csv(event, sep='\t', index_col=None)
-                  for event in events]
-
-        models_events.append(events)
-
-        # Get confounds.
-        # If not found it will be assumed there are none.
-        # If there are confounds, they are assumed to be present for all runs.
+def _get_confounds(derivatives_path: str,
+                   sub_label: str,
+                   task_label: str,
+                   img_filters: list[tuple[str,str]],
+                   imgs: list[str]):
         confounds_filters = _supported_bids_filter()["raw"] + \
                             _supported_bids_filter()["derivatives"]
         confounds_filters.remove('desc')
@@ -1021,20 +1058,17 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                                    file_type='tsv',
                                    sub_label=sub_label,
                                    filters=filters)
+        _check_confounds_list(confounds=confounds, imgs=imgs)        
+        return None if len(confounds)==0 else confounds    
 
-        if confounds:
-            if len(confounds) != len(imgs):
-                raise ValueError(f"{len(events)} confounds.tsv files found "
-                                 f"for {len(imgs)} bold files. "
-                                 "Same number of confound files as "
-                                 "the number of runs is expected")
-            confounds = [pd.read_csv(c, sep='\t', index_col=None)
-                         for c in confounds]
-
-            models_confounds.append(confounds)
-
-    return models, models_run_imgs, models_events, models_confounds
-
+def _check_confounds_list(confounds: list[str], imgs: list[str]):
+    # If not found it will be assumed there are none.
+    # If there are confounds, there must be one per run.
+    if confounds and len(confounds) != len(imgs):
+        raise ValueError(f"{len(confounds)} confounds.tsv files found "
+                         f"for {len(imgs)} bold files. "
+                         "Same number of confound files as "
+                         "the number of runs is expected")    
 
 def _supported_bids_filter() -> dict[str, list[str]]:
     """Return a dictionary of BIDS entities.
