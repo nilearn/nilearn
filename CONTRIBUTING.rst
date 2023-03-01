@@ -270,9 +270,9 @@ by running `flake8 <https://flake8.pycqa.org/en/latest/user/invocation.html#invo
 Additionally, we recommend using:
 
 - `black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_ 
-to format your code,
+  to format your code,
 - `isort <https://pycqa.github.io/isort/index.html#using-isort>`_ 
-to organize the import statements.
+  to organize the import statements.
 
 .. warning::
 
