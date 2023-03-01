@@ -1295,7 +1295,7 @@ def _check_bids_image_list(imgs: list[str] | None,
             if parsed_filename['ses'] in set(run_check_list):
                 raise ValueError(
                     f"{msg_start}"
-                    f"for the same ses {parsed_filename['ses']}, "
+                    f"for the same session {parsed_filename['ses']}, "
                     "while no additional run specification present. "
                     f"{msg_end}")
 
