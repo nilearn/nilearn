@@ -94,7 +94,7 @@ def test_get_index_from_direction_exception():
 @pytest.fixture
 def img():
     """Image used for testing."""
-    return load_mni152_template()
+    return load_mni152_template(resolution=2)
 
 
 @pytest.fixture

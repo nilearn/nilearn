@@ -87,7 +87,7 @@ def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
             Highest variance confounds. Shape: *(number_of_scans, n_confounds)*.
 
         Notes
-        ------
+        -----
         This method is related to what has been published in the literature
         as 'CompCor' (Behzadi NeuroImage 2007).
 
@@ -99,7 +99,7 @@ def high_variance_confounds(imgs, n_confounds=5, percentile=2.,
         - Returns a given number (n_confounds) of signals from the SVD with
           highest singular values.
 
-        See also
+        See Also
         --------
         nilearn.signal.high_variance_confounds
 

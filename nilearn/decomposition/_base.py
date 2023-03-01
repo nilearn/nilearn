@@ -1,6 +1,6 @@
-"""
-Base class for decomposition estimators, utilities for masking and dimension
-reduction of group data
+"""Base class for decomposition estimators.
+
+Utilities for masking and dimension reduction of group data
 """
 from math import ceil
 import itertools
@@ -25,8 +25,8 @@ from ..signal import _row_sum_of_squares
 
 
 def _fast_svd(X, n_components, random_state=None):
-    """Automatically switch between randomized and lapack SVD (heuristic
-        of scikit-learn).
+    """Automatically switch between randomized and lapack SVD (heuristic \
+    of scikit-learn).
 
     Parameters
     ----------
@@ -41,7 +41,6 @@ def _fast_svd(X, n_components, random_state=None):
 
     Returns
     -------
-
     U : array, shape (n_samples, n_components)
         The first matrix of the truncated svd
 
@@ -109,7 +108,7 @@ def _mask_and_reduce(
         Instance used to mask provided data.
 
     imgs : list of 4D Niimg-like objects
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         List of subject data to mask, reduce and stack.
 
     confounds : CSV file path or numpy ndarray, or pandas DataFrame, optional
@@ -141,7 +140,7 @@ def _mask_and_reduce(
         'all CPUs', -2 'all CPUs but one', and so on. Default=1.
 
     Returns
-    ------
+    -------
     data : ndarray or memorymap
         Concatenation of reduced data.
 
@@ -160,8 +159,8 @@ def _mask_and_reduce(
         )
         if not 0 <= reduction_ratio <= 1:
             raise ValueError(
-                "Reduction ratio should be between 0. and 1.,"
-                "got %.2f" % reduction_ratio
+                "Reduction ratio should be between 0.0 and 1.0, "
+                f"got {reduction_ratio:.2f}"
             )
 
     if confounds is None:
@@ -216,7 +215,7 @@ def _mask_and_reduce_single(
     memory_level=0,
     random_state=None,
 ):
-    """Utility function for multiprocessing from MaskReducer"""
+    """Utility function for multiprocessing from MaskReducer."""  # noqa
     this_data = masker.transform(img, confound)
     # Now get rid of the img as fast as possible, to free a
     # reference count on it, and possibly free the corresponding
@@ -331,7 +330,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
     Attributes
     ----------
     `mask_img_` : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
 
@@ -379,12 +378,12 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         self.verbose = verbose
 
     def fit(self, imgs, y=None, confounds=None):
-        """Compute the mask and the components across subjects
+        """Compute the mask and the components across subjects.
 
         Parameters
         ----------
         imgs : list of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             Data on which the mask is calculated. If this is a list,
             the affine is considered the same for all.
 
@@ -394,9 +393,9 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             Please see the related documentation for details.
             Should match with the list of imgs given.
 
-         Returns
-         -------
-         self : object
+        Returns
+        -------
+        self : object
             Returns the instance itself. Contains attributes listed
             at the object level.
 
@@ -472,12 +471,12 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             )
 
     def transform(self, imgs, confounds=None):
-        """Project the data into a reduced representation
+        """Project the data into a reduced representation.
 
         Parameters
         ----------
         imgs : iterable of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             Data to be projected
 
         confounds : CSV file path or numpy.ndarray
@@ -486,14 +485,13 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
             related documentation for details
 
         Returns
-        ----------
+        -------
         loadings : list of 2D ndarray,
             For each subject, each sample, loadings for each decomposition
             components
             shape: number of subjects * (number of scans, number of regions)
 
         """
-
         self._check_components_()
         # XXX: dealing properly with 4D/ list of 4D data?
         if confounds is None:
@@ -504,8 +502,8 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         ]
 
     def inverse_transform(self, loadings):
-        """Use provided loadings to compute corresponding linear component
-        combination in whole-brain voxel space
+        """Use provided loadings to compute corresponding linear component \
+        combination in whole-brain voxel space.
 
         Parameters
         ----------
@@ -533,14 +531,14 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         ]
 
     def _sort_by_score(self, data):
-        """Sort components on the explained variance over data of estimator
-        components_"""
+        """Sort components on the explained variance over data of estimator \
+        components_."""
         components_score = self._raw_score(data, per_component=True)
         order = np.argsort(components_score)[::-1]
         self.components_ = self.components_[order]
 
     def _raw_score(self, data, per_component=True):
-        """Return explained variance over data of estimator components_"""
+        """Return explained variance over data of estimator components_."""
         return self._cache(_explained_variance)(
             data, self.components_, per_component=per_component
         )
@@ -553,7 +551,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         Parameters
         ----------
         imgs : iterable of Niimg-like objects
-            See http://nilearn.github.io/manipulating_images/input_output.html
+            See :ref:`extracting_data`.
             Data to be scored
 
         confounds : CSV file path or numpy.ndarray
@@ -585,7 +583,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
 
 def _explained_variance(X, components, per_component=True):
-    """Score function based on explained variance
+    """Score function based on explained variance.
 
     Parameters
     ----------

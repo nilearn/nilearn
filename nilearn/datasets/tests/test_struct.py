@@ -208,7 +208,7 @@ def test_load_mni152_wm_mask():
 
 def test_fetch_icbm152_brain_gm_mask(tmp_path, request_mocker):
     dataset = struct.fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
-    struct.load_mni152_template().to_filename(dataset.gm)
+    struct.load_mni152_template(resolution=2).to_filename(dataset.gm)
     grey_matter_img = struct.fetch_icbm152_brain_gm_mask(
         data_dir=str(tmp_path), verbose=0)
     assert isinstance(grey_matter_img, nibabel.Nifti1Image)

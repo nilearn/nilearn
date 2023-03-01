@@ -213,7 +213,7 @@ with the tools we use for development and deployment.
 .. _numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
 
 PR Structure
--------------
+------------
 
 A new pull request must have a clear scope, conveyed through its name, a
 reference to the issue it targets (through the exact mention "Closes #XXXX"),
@@ -233,7 +233,10 @@ Other tags can describe the PR content : [FIX] for a bugfix, [DOC] for a
 change in documentation or examples, [ENH] for a new feature and [MAINT] for
 maintenance changes.
 
-Changelog entries in doc/changes/latest.rst should adhere to the following conventions:
+Changelog
+---------
+
+Changelog entries in ``doc/changes/latest.rst`` should adhere to the following conventions:
 
 - Entry in the appropriate category
 - Single line per entry
@@ -245,7 +248,7 @@ Example entry:
 .. code-block:: rst
 
     - Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
-  
+
 Coding Style
 ------------
 
@@ -261,20 +264,20 @@ The main conventions we enforce are :
 - classes in CamelCase
 - 2 empty lines between functions or classes
 
-You can check that any code you may have edited follows these conventions 
+You can check that any code you may have edited follows these conventions
 by running `flake8 <https://flake8.pycqa.org/en/latest/user/invocation.html#invoking-flake8>`__.
 
-Additionally, we recommend using `Black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_ 
+Additionally, we recommend using `Black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_
 to format your code.
 
 .. warning::
 
-      We are gradually transitioning to use `Black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_ 
+      We are gradually transitioning to use `Black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_
       to format the codebase.
       Only certain modules have been formatted so far,
       and running `black` may not affect the files you are working on,
       because of how black is currently configured.
-      See `issue #2528 <https://github.com/nilearn/nilearn/issues/2528>`_ 
+      See `issue #2528 <https://github.com/nilearn/nilearn/issues/2528>`_
       for more details.
 
 Each function and class must come with a “docstring” at the top of the function code,
@@ -306,7 +309,7 @@ Then run the following to install the pre-commit hooks:
 
       pre-commit install
 
-Pre-commit will then run all those hooks on the files you have staged for commit. 
+Pre-commit will then run all those hooks on the files you have staged for commit.
 Note that if some of those hooks fail you may have to edit some files and stage them again.
 
 Tests
@@ -431,7 +434,7 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
         flake8 <path_to_edited_file>
 
     To automatically format your code, you can run
-    `Black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_ 
+    `Black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_
     locally on the changes you have made.
 
     .. code-block:: bash

@@ -50,10 +50,7 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
 
     """
     rand_gen = check_random_state(random_state)
-    mni = datasets.load_mni152_brain_mask()
-    target_affine = np.eye(3) * res
-    mask_img = image.resample_img(
-        mni, target_affine=target_affine, interpolation="nearest")
+    mask_img = datasets.load_mni152_brain_mask(resolution=res)
     masker = maskers.NiftiMasker(mask_img).fit()
     n_voxels = image.get_data(mask_img).sum()
     data = rand_gen.randn(n_scans, n_voxels)
@@ -533,7 +530,7 @@ def write_fake_fmri_data_and_design(shapes,
         A list of paths to the generated design matrix files.
 
     See Also
-    ------
+    --------
     nilearn._utils.data_gen.generate_fake_fmri_data_and_design
 
     """
