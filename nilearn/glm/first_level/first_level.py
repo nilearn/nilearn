@@ -1219,7 +1219,7 @@ def _check_bids_image_list(imgs: list[str] | None,
 
     """
     if not imgs:
-        raise ValueError('No bold files found '
+        raise ValueError('No BOLD files found '
                          f'for subject {sub_label} '
                          f'for filter: {filters}')
 
