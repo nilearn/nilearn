@@ -23,7 +23,6 @@ _TEST_DIM_ERROR_MSG = ("Input data has incompatible dimensionality: "
                        "a 4D image")
 _TEST_SHAPE_ERROR_MSG = "Images have incompatible shapes."
 _TEST_AFFINE_ERROR_MSG = "Images have different affine matrices."
-_TEST_SHAPE_IMG_ERROR_MSG = "mask/map and imgs must have same shape."
 
 INF = 1000 * np.finfo(np.float32).eps
 
@@ -86,7 +85,7 @@ def test__check_shape_affine_maps_masks():
 
     # Smoke test for shape error.
     target_img = nibabel.Nifti1Image(np.zeros(mask_shape), affine)
-    with pytest.raises(ValueError, match=_TEST_SHAPE_IMG_ERROR_MSG):
+    with pytest.raises(ValueError, match=_TEST_SHAPE_ERROR_MSG):
         signal_extraction._check_shape_affine_maps_masks(
             target_img,
             nibabel.Nifti1Image(np.zeros(test_mask_shape), affine))

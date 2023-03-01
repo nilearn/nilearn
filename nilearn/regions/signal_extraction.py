@@ -18,14 +18,11 @@ from ..image import new_img_like
 INF = 1000 * np.finfo(np.float32).eps
 
 
-def _check_shape_and_affine_compatibility(img1, img2, dim=3):
-    _check_shape_compatibility(img1, img2, dim=dim)
-    _check_affine_equality(img1, img2)
-
 def _check_shape_compatibility(img1, img2, dim=3):
      """Check that shapes match for dimensions going from 0 to dim-1."""
      if img1.shape[:dim] != img2.shape[:dim]:
          raise ValueError("Images have incompatible shapes.")
+
 
 def _check_affine_equality(img1, img2):
      if (
@@ -88,16 +85,12 @@ def _check_shape_affine_maps_masks(target_img,
     if mask_img is None:
         return False
 
-    def err_msg(x):
-        return f"mask/map and imgs must have same {x}."
-
-    target_shape = target_img.shape[:3]
     if dim is None:
         mask_img = _utils.check_niimg_3d(mask_img)
-        if mask_img.shape != target_shape:
-            raise ValueError(err_msg("shape"))
-    if mask_img.shape[:dim] != target_shape:
-        raise ValueError(err_msg("shape"))
+        if mask_img.shape != target_img.shape[:3]:
+            raise ValueError("Images have incompatible shapes.")
+    else:
+        _check_shape_compatibility(target_img, mask_img, dim=dim)
 
     _check_affine_equality(target_img, mask_img)
 
