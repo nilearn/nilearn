@@ -15,9 +15,9 @@ from nilearn.interfaces.bids import parse_bids_filename
 
 img_file_patterns = {
     "aroma": "_desc-smoothAROMAnonaggr_bold",
-    "nii.gz": "(_space-.*)?_desc-preproc_bold\.nii\.gz",
-    "dtseries.nii": "(_space-.*)?_bold.dtseries\.nii",
-    "func.gii": "(_space-.*)?_hemi-[LR]_bold\.func\.gii",
+    "nii.gz": "(_space-.*)?_desc-preproc_bold.nii.gz",
+    "dtseries.nii": "(_space-.*)?_bold.dtseries.nii",
+    "func.gii": "(_space-.*)?_hemi-[LR]_bold.func.gii",
 }
 
 img_file_error = {
