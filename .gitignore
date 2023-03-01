@@ -41,3 +41,5 @@ doc/themes/nilearn/static/jquery.js
 examples/results/
 examples/**/results/
 examples/**/*.pdf
+
+examples/04_glm_first_level/derivatives
