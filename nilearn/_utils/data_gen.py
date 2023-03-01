@@ -915,8 +915,10 @@ def create_fake_bids_dataset(base_dir='',
 
     return bids_dataset_dir
 
+
 def _is_alphanumeric(string: str) -> bool:
     return all(char.isalnum() for char in string)
+
 
 def _file_id(fields: list[str], n_run: int, run: str) -> str:
     """Create BIDS filename from list of entity-label pairs.

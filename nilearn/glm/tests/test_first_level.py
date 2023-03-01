@@ -900,6 +900,10 @@ def test_first_level_from_bids_validation_task_label():
             first_level_from_bids(dataset_path=bids_path,
                                   task_label=2,
                                   space_label="MNI")
+        with pytest.raises(ValueError, match="alphanumeric"):
+            first_level_from_bids(dataset_path=bids_path,
+                                  task_label='$$$',
+                                  space_label="MNI")            
 
 
 def test_first_level_from_bids_validation_space_label():
@@ -911,6 +915,10 @@ def test_first_level_from_bids_validation_space_label():
                 task_label="main",
                 space_label=42
             )
+        with pytest.raises(ValueError, match="alphanumeric"):
+            first_level_from_bids(dataset_path=bids_path,
+                                  task_label='main',
+                                  space_label="$$$")              
 
 
 @pytest.mark.parametrize(
