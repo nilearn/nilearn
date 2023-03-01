@@ -26,7 +26,7 @@ img_file_error = {
         " strategy."
     ),    "nii.gz": "Invalid file type for the selected method.",
     "dtseries.nii": "Invalid file type for the selected method.",
-    "fnc.gii": "need fMRIprep output with extension func.gii",
+    "func.gii": "need fMRIprep output with extension func.gii",
 }
 
 def _check_params(confounds_raw, params):
