@@ -10,6 +10,7 @@ region specific mask images.
 See :ref:`plotting` for more details.
 """
 
+
 ###############################################################################
 # Retrieve data from nilearn provided (general-purpose) datasets
 # ---------------------------------------------------------------
@@ -20,10 +21,12 @@ from nilearn import datasets
 haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
-print('First subject anatomical nifti image (3D) is at: %s' %
-      haxby_dataset.anat[0])
-print('First subject functional nifti image (4D) is at: %s' %
-      haxby_dataset.func[0])  # 4D data
+print("First subject anatomical nifti image (3D) is "
+      f"at: {haxby_dataset.anat[0]}")
+print(
+    "First subject functional nifti image (4D) is "
+    f"at: {haxby_dataset.func[0]}"
+)
 
 haxby_anat_filename = haxby_dataset.anat[0]
 haxby_mask_filename = haxby_dataset.mask_vt[0]
@@ -86,8 +89,8 @@ plotting.plot_anat(haxby_anat_filename, title="plot_anat")
 # -------------------------------------------------------
 #
 # Visualizing ventral temporal region image from haxby dataset overlaid on
-# subject specific anatomical image with coordinates positioned automatically on
-# region of interest (roi)
+# subject specific anatomical image 
+# with coordinates positioned automatically on region of interest (roi)
 plotting.plot_roi(haxby_mask_filename, bg_img=haxby_anat_filename,
                   title="plot_roi")
 

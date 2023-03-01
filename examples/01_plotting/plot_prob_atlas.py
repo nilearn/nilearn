@@ -25,8 +25,8 @@ See :ref:`plotting` for more information to know how to tune the parameters.
 from nilearn import datasets
 
 # Harvard Oxford Atlasf
-harvard_oxford = datasets.fetch_atlas_harvard_oxford('cort-prob-2mm')
-harvard_oxford_sub = datasets.fetch_atlas_harvard_oxford('sub-prob-2mm')
+harvard_oxford = datasets.fetch_atlas_harvard_oxford("cort-prob-2mm")
+harvard_oxford_sub = datasets.fetch_atlas_harvard_oxford("sub-prob-2mm")
 
 # Multi Subject Dictionary Learning Atlas
 msdl = datasets.fetch_atlas_msdl()
@@ -53,25 +53,27 @@ difumo = datasets.fetch_atlas_difumo(
 # Visualization
 from nilearn import plotting
 
-atlas_types = {'Harvard_Oxford': harvard_oxford.maps,
-               'Harvard_Oxford sub': harvard_oxford_sub.maps,
-               'MSDL': msdl.maps, 'Smith 2009 10 RSNs': smith.rsn10,
-               'Smith2009 20 RSNs': smith.rsn20,
-               'Smith2009 70 RSNs': smith.rsn70,
-               'Smith2009 20 Brainmap': smith.bm20,
-               'Smith2009 70 Brainmap': smith.bm70,
-               'ICBM tissues': (icbm['wm'], icbm['gm'], icbm['csf']),
-               'Allen2011': allen.rsn28,
-               'Pauli2017 Subcortical Atlas': subcortex.maps,
-               'DiFuMo dimension {0} resolution {1}'.format(dim, res): difumo.maps,
-               }
+atlas_types = {
+    "Harvard_Oxford": harvard_oxford.maps,
+    "Harvard_Oxford sub": harvard_oxford_sub.maps,
+    "MSDL": msdl.maps,
+    "Smith 2009 10 RSNs": smith.rsn10,
+    "Smith2009 20 RSNs": smith.rsn20,
+    "Smith2009 70 RSNs": smith.rsn70,
+    "Smith2009 20 Brainmap": smith.bm20,
+    "Smith2009 70 Brainmap": smith.bm70,
+    "ICBM tissues": (icbm["wm"], icbm["gm"], icbm["csf"]),
+    "Allen2011": allen.rsn28,
+    "Pauli2017 Subcortical Atlas": subcortex.maps,
+    f"DiFuMo dimension {dim} resolution {res}": difumo.maps,
+}
 
 for name, atlas in sorted(atlas_types.items()):
     plotting.plot_prob_atlas(atlas, title=name)
 
 # An optional colorbar can be set
-plotting.plot_prob_atlas(smith.bm10, title='Smith2009 10 Brainmap (with'
-                                           ' colorbar)',
-                         colorbar=True)
-print('ready')
+plotting.plot_prob_atlas(
+    smith.bm10, title="Smith2009 10 Brainmap (with" " colorbar)", colorbar=True
+)
+print("ready")
 plotting.show()
