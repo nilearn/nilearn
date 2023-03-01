@@ -874,9 +874,9 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     # Get acq specs for models. RepetitionTime and SliceTimingReference.
     # Throw warning if no bold.json is found
     if t_r is not None:
-        warn('RepetitionTime given in model_init as %d' % t_r)
-        warn('slice_time_ref is %d percent of the repetition '
-             'time' % slice_time_ref)
+        warn(f'RepetitionTime given in as {t_r}')
+        warn(f'slice_time_ref is {slice_time_ref} percent '
+             'of the repetition time')
     else:
         filters = _filter_for_bids_query(
             task_label=task_label,
@@ -1256,7 +1256,7 @@ def _check_bids_image_list(imgs: list[str] | None,
                 raise ValueError(
                     f"{msg_start}"
                     f"for the same ses {parsed_filename['ses']}, "
-                    f"while no additional run specification present. "
+                    "while no additional run specification present. "
                     f"{msg_end}")
 
             run_check_list.append(parsed_filename['ses'])
@@ -1347,5 +1347,5 @@ def _check_bids_events_list(events: list[str] | None,
                              f'corresponding to {msg_suffix}')
         if this_event[0] not in events:
             raise ValueError(f'\n{this_event} not in {events}.\n'
-                             f'No corresponding events.tsv files found '
+                             'No corresponding events.tsv files found '
                              f'for {msg_suffix}')
