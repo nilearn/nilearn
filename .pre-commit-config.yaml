@@ -1,7 +1,7 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 
-files: "nilearn/de.*"
+files: "(nilearn/de.*)|(.*binder/)|(.*circleci/)|(.*github/)|(maint_tools/.*)|(setup.*)|(.*coverage)|(.*toml$)|(.*in$)|(.*yml)|(.*yaml)|(CONTRIBUTING.rst)|(AUTHORS.rst)|(LICENSE)|(Makefile)|(.*gitignore)"
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
