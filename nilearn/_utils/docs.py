@@ -589,25 +589,6 @@ bg_on_data : :obj:`bool`, optional
 
 """
 
-# bg_map_rescale
-docdict['bg_map_rescale'] = """
-bg_map_rescale : :obj:`bool`, or "auto", optional
-    If "auto" and a ``bg_map`` is specified,
-    the ``bg_map`` will be linearly normalized to the [0, 1] interval
-    if it contains values outside of the [0, 1] interval ;
-    otherwise, ``bg_map`` won't be changed.
-    If ``True`` and a ``bg_map`` is specified,
-    the ``bg_map`` will be linearly normalized to the [0, 1] interval.
-    Otherwise, ``bg_map`` won't be changed.
-
-        .. warning::
-            This is a temporary parameter meant to allow users to
-            not automatically scale background maps. It will be deprecated
-            in the 0.11 release, in which not scaling background maps
-            will become the default behaviour.
-
-"""
-
 # darkness
 docdict['darkness'] = """
 darkness : :obj:`float` between 0 and 1, optional

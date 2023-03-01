@@ -38,23 +38,29 @@ def test_get_vertexcolor():
     bg_map = np.sign(surface.load_surf_data(fsaverage['curv_left']))
     bg_min, bg_max = np.min(bg_map), np.max(bg_map)
     assert (bg_min < 0 or bg_max > 1)
-    # bg_map_normalized = (bg_map + 1) / 4 + 0.25
-    vertexcolors_normalized = html_surface._get_vertexcolor(
+    vertexcolors_auto_normalized = html_surface._get_vertexcolor(
         surf_map, colors['cmap'], colors['norm'],
         absolute_threshold=colors['abs_threshold'],
-        bg_map=bg_map, bg_map_rescale=False)
-    assert len(vertexcolors_normalized) == len(mesh[0])
-    vertexcolors_unnormalized = html_surface._get_vertexcolor(
+        bg_map=bg_map)
+    assert len(vertexcolors_auto_normalized) == len(mesh[0])
+    # Manually set values of background map between 0 and 1
+    bg_map_normalized = (bg_map - bg_min) / (bg_max - bg_min)
+    assert np.min(bg_map_normalized) == 0 and np.max(bg_map_normalized) == 1
+    vertexcolors_manually_normalized = html_surface._get_vertexcolor(
         surf_map, colors['cmap'], colors['norm'],
         absolute_threshold=colors['abs_threshold'],
-        bg_map=bg_map, bg_map_rescale=True)
-    assert len(vertexcolors_unnormalized) == len(mesh[0])
-    vertexcolors_auto = html_surface._get_vertexcolor(
+        bg_map=bg_map_normalized)
+    assert len(vertexcolors_manually_normalized) == len(mesh[0])
+    assert vertexcolors_manually_normalized == vertexcolors_auto_normalized
+    # Scale background map between 0.25 and 0.75
+    bg_map_scaled = bg_map_normalized / 2 + 0.25
+    assert np.min(bg_map_scaled) == 0.25 and np.max(bg_map_scaled) == 0.75
+    vertexcolors_manually_rescaled = html_surface._get_vertexcolor(
         surf_map, colors['cmap'], colors['norm'],
         absolute_threshold=colors['abs_threshold'],
-        bg_map=bg_map, bg_map_rescale="auto")
-    assert len(vertexcolors_auto) == len(mesh[0])
-    assert vertexcolors_normalized == vertexcolors_auto
+        bg_map=bg_map_scaled)
+    assert len(vertexcolors_manually_rescaled) == len(mesh[0])
+    assert vertexcolors_manually_rescaled != vertexcolors_auto_normalized
 
 
 def test_check_mesh():
