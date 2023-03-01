@@ -19,23 +19,24 @@ INF = 1000 * np.finfo(np.float32).eps
 
 
 def _check_shape_compatibility(img1, img2, dim=3):
-     """Check that shapes match for dimensions going from 0 to dim-1."""
-     if img1.shape[:dim] != img2.shape[:dim]:
-         raise ValueError("Images have incompatible shapes.")
+    """Check that shapes match for dimensions going from 0 to dim-1."""
+    if img1.shape[:dim] != img2.shape[:dim]:
+        raise ValueError("Images have incompatible shapes.")
 
 
 def _check_affine_equality(img1, img2):
-     if (
-         img1.affine.shape != img2.affine.shape
-         or abs(img1.affine - img2.affine).max() > INF
-     ):
-         raise ValueError("Images have different affine matrices.")
+    if (
+        img1.affine.shape != img2.affine.shape
+        or abs(img1.affine - img2.affine).max() > INF
+    ):
+        raise ValueError("Images have different affine matrices.")
+
 
 def _check_shape_affine_label_img(target_img, labels_img):
     """Validate shapes and affines of labels.
 
     Check that the provided target and labels images:
-        - have the same shape 
+        - have the same shape
         - have the same affine matrix.
 
     Parameters
@@ -60,8 +61,8 @@ def _check_shape_affine_maps_masks(target_img,
     """Validate shapes and affines of maps and masks.
 
     Check that the provided target and mask images:
-        - have the same shape 
-        - have the same affine matrix.    
+        - have the same shape
+        - have the same affine matrix.
 
     Parameters
     ----------
@@ -142,7 +143,7 @@ def _get_labels_data(target_img,
         Data outside the mask are assigned to the background
         label to restrict signal extraction
 
-    See also
+    See Also
     --------
     nilearn.regions.signals_to_img_labels
     nilearn.regions.img_to_signals_labels
@@ -220,7 +221,7 @@ def img_to_signals_labels(imgs, labels_img,
         Corresponding labels for each signal. signal[:, n] was extracted from
         the region with label labels[n].
 
-    See also
+    See Also
     --------
     nilearn.regions.signals_to_img_labels
     nilearn.regions.img_to_signals_maps
@@ -315,7 +316,7 @@ def signals_to_img_labels(signals,
         Reconstructed image. dtype is that of "signals", affine and shape are
         those of labels_img.
 
-    See also
+    See Also
     --------
     nilearn.regions.img_to_signals_labels
     nilearn.regions.signals_to_img_maps
@@ -389,7 +390,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
         maps_img[..., labels[n]] is the region that has been used to extract
         signal region_signals[:, n].
 
-    See also
+    See Also
     --------
     nilearn.regions.img_to_signals_labels
     nilearn.regions.signals_to_img_maps
@@ -452,7 +453,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     img : :class:`nibabel.nifti1.Nifti1Image`
         Reconstructed image. affine and shape are those of maps_img.
 
-    See also
+    See Also
     --------
     nilearn.regions.signals_to_img_labels
     nilearn.regions.img_to_signals_maps
