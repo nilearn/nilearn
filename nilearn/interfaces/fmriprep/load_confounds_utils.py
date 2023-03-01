@@ -104,8 +104,14 @@ def _get_file_name(nii_file):
     # Check file with new naming scheme exists or replace,
     # for backward compatibility.
     confounds_raw_candidates = [
-        nii_file.replace(img_filename, f"{subject_label}_{specifiers}_desc-confounds_timeseries.tsv"),
-        nii_file.replace(img_filename, f"{subject_label}_{specifiers}_desc-confounds_regressors.tsv"),
+~         nii_file.replace(
+~             img_filename,
++             f"{subject_label}_{specifiers}_desc-confounds_timeseries.tsv"
++         ),
++         nii_file.replace(
++             img_filename,
++             f"{subject_label}_{specifiers}_desc-confounds_regressors.tsv"
++         ),
     ]
 
     confounds_raw = [
