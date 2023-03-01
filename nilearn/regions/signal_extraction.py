@@ -18,8 +18,28 @@ from ..image import new_img_like
 INF = 1000 * np.finfo(np.float32).eps
 
 
+def _check_shape_and_affine_compatibility(img1, img2, dim=3):
+    _check_shape_compatibility(img1, img2, dim=dim)
+    _check_affine_equality(img1, img2)
+
+def _check_shape_compatibility(img1, img2, dim=3):
+     """Check that shapes match for dimensions going from 0 to dim-1."""
+     if img1.shape[:dim] != img2.shape[:dim]:
+         raise ValueError("Images have incompatible shapes.")
+
+def _check_affine_equality(img1, img2):
+     if (
+         img1.affine.shape != img2.affine.shape
+         or abs(img1.affine - img2.affine).max() > INF
+     ):
+         raise ValueError("Images have different affine matrices.")
+
 def _check_shape_affine_label_img(target_img, labels_img):
     """Validate shapes and affines of labels.
+
+    Check that the provided target and labels images:
+        - have the same shape 
+        - have the same affine matrix.
 
     Parameters
     ----------
@@ -33,23 +53,18 @@ def _check_shape_affine_label_img(target_img, labels_img):
         Encodes the region labels of the signals.
 
     """
-    target_affine = target_img.affine
-    target_shape = target_img.shape[:3]
-
-    def err_msg(x):
-        return f"labels_img and target_img must have same {x}."
-
-    if labels_img.shape != target_shape:
-        raise ValueError(err_msg("shape"))
-    if (labels_img.affine.shape != target_affine.shape
-            or abs(labels_img.affine - target_affine).max() > INF):
-        raise ValueError(err_msg("affine"))
+    _check_shape_compatibility(target_img, labels_img, dim=3)
+    _check_affine_equality(target_img, labels_img)
 
 
 def _check_shape_affine_maps_masks(target_img,
                                    mask_img=None,
                                    dim=None):
     """Validate shapes and affines of maps and masks.
+
+    Check that the provided target and mask images:
+        - have the same shape 
+        - have the same affine matrix.    
 
     Parameters
     ----------
@@ -84,12 +99,7 @@ def _check_shape_affine_maps_masks(target_img,
     if mask_img.shape[:dim] != target_shape:
         raise ValueError(err_msg("shape"))
 
-    target_affine = target_img.affine
-    if (
-        mask_img.affine.shape != target_affine.shape
-        or abs(mask_img.affine - target_affine).max() > INF
-    ):
-        raise ValueError(err_msg("affine"))
+    _check_affine_equality(target_img, mask_img)
 
     return True
 

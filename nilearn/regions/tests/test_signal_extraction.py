@@ -21,12 +21,9 @@ from nilearn.image import get_data, new_img_like
 _TEST_DIM_ERROR_MSG = ("Input data has incompatible dimensionality: "
                        "Expected dimension is 3D and you provided "
                        "a 4D image")
-_TEST_SHAPE_LABEL_ERROR_MSG = ("labels_img and target_img must have same "
-                               "shape.")
-_TEST_AFFINE_LABEL_ERROR_MSG = ("labels_img and target_img must have same "
-                                "affine.")
+_TEST_SHAPE_ERROR_MSG = "Images have incompatible shapes."
+_TEST_AFFINE_ERROR_MSG = "Images have different affine matrices."
 _TEST_SHAPE_IMG_ERROR_MSG = "mask/map and imgs must have same shape."
-_TEST_AFFINE_IMG_ERROR_MSG = "mask/map and imgs must have same affine."
 
 INF = 1000 * np.finfo(np.float32).eps
 
@@ -51,13 +48,13 @@ def test__check_shape_affine_label_img():
 
     # Smoke test to make sure an error is raised when shape is not correct.
     target_img = nibabel.Nifti1Image(np.zeros(test_shape), affine)
-    with pytest.raises(ValueError, match=_TEST_SHAPE_LABEL_ERROR_MSG):
+    with pytest.raises(ValueError, match=_TEST_SHAPE_ERROR_MSG):
         signal_extraction._check_shape_affine_label_img(
             labels_img, target_img)
 
     # Smoke test to make sure an error is raised when affine is not correct.
     target_img = nibabel.Nifti1Image(np.zeros(shape), test_affine)
-    with pytest.raises(ValueError, match=_TEST_AFFINE_LABEL_ERROR_MSG):
+    with pytest.raises(ValueError, match=_TEST_AFFINE_ERROR_MSG):
         signal_extraction._check_shape_affine_label_img(
             labels_img, target_img)
 
@@ -96,7 +93,7 @@ def test__check_shape_affine_maps_masks():
 
     # Smoke test for affine error.
     target_img = nibabel.Nifti1Image(np.zeros(mask_shape), affine)
-    with pytest.raises(ValueError, match=_TEST_AFFINE_IMG_ERROR_MSG):
+    with pytest.raises(ValueError, match=_TEST_AFFINE_ERROR_MSG):
         signal_extraction._check_shape_affine_maps_masks(
             target_img,
             nibabel.Nifti1Image(np.zeros(mask_shape), test_affine))
