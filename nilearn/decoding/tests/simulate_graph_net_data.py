@@ -1,6 +1,4 @@
-"""
-Simple code to simulate data
-"""
+"""Simple code to simulate data."""
 
 import numpy as np
 from scipy import linalg
@@ -17,10 +15,7 @@ def create_graph_net_simulation_data(
     task="regression",
     smooth_X=1,
 ):
-    """
-    Function to generate data
-
-    """
+    """Generate graph net simulation data."""
     generator = check_random_state(random_state)
     # Coefs
     w = np.zeros((size, size, size))

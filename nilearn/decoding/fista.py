@@ -77,7 +77,7 @@ def mfista(
     callback=None,
     verbose=2,
 ):
-    """Generic FISTA solver.
+    """Solve FISTA in a generic way.
 
     Minimizes the a sum `f + g` of two convex functions f (smooth)
     and g (proximable nonsmooth).

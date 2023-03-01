@@ -3,10 +3,6 @@ name: Update precommit hooks
 
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
 
 # Uses the cron schedule for github actions
 #
@@ -29,8 +25,10 @@ on:
 
 jobs:
   update_precommit_hooks:
+  
     # only run on upstream repo
-    if: github.repository_owner == 'Remi-Gau'
+    if: github.repository_owner == 'nilearn'
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo

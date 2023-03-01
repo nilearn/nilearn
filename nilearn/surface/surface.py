@@ -274,8 +274,8 @@ def _sample_locations(mesh, affine, radius, kind='auto', n_points=None,
 def _masked_indices(sample_locations, img_shape, mask=None):
     """Get the indices of sample points which should be ignored.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     sample_locations : array, shape(n_sample_locations, 3)
         The coordinates of candidate interpolation points.
 
@@ -805,7 +805,7 @@ def load_surf_mesh(surf_mesh):
         Mesh object with "coordinates" and "faces" attributes.
 
     Returns
-    --------
+    -------
     mesh : Mesh
         With the fields "coordinates" and "faces", each containing a
         numpy.ndarray
@@ -900,7 +900,7 @@ def load_surface(surface):
                     or (n_time_points, n_vertices)
 
     Returns
-    --------
+    -------
     surface : Surface
         With the fields "mesh" (Mesh object) and "data" (numpy.ndarray).
 
