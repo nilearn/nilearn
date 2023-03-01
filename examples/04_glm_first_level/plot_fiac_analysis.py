@@ -106,7 +106,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
         contrast_val, output_type='z_score')
 
     # write the resulting stat images to file
-    z_image_path = path.join(write_dir, '%s_z_map.nii.gz' % contrast_id)
+    z_image_path = path.join(write_dir, f'{contrast_id}_z_map.nii.gz')
     z_map.to_filename(z_image_path)
 
 #########################################################################
@@ -124,7 +124,7 @@ z_map = fmri_glm.compute_contrast(
     contrasts[contrast_id], output_type='z_score')
 plotting.plot_stat_map(
     z_map, bg_img=mean_img_, threshold=3.0,
-    title='%s, first session' % contrast_id)
+    title=f'{contrast_id}, first session')
 
 #########################################################################
 # Compute the statistics for the second session.
@@ -134,7 +134,7 @@ z_map = fmri_glm.compute_contrast(
     contrasts[contrast_id], output_type='z_score')
 plotting.plot_stat_map(
     z_map, bg_img=mean_img_, threshold=3.0,
-    title='%s, second session' % contrast_id)
+    title=f'{contrast_id}, second session')
 
 #########################################################################
 # Compute the Fixed effects statistics.
@@ -144,7 +144,7 @@ z_map = fmri_glm.compute_contrast(
     contrasts[contrast_id], output_type='z_score')
 plotting.plot_stat_map(
     z_map, bg_img=mean_img_, threshold=3.0,
-    title='%s, fixed effects' % contrast_id)
+    title=f'{contrast_id}, fixed effects')
 
 plotting.show()
 

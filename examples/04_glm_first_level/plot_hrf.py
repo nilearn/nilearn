@@ -53,7 +53,8 @@ from scipy.stats import gamma
 
 
 def mion_response_function(tr, oversampling=16, onset=0.0):
-    """Implementation of the MION response function model.
+    """Implement the MION response function model.
+
     Parameters
     ----------
     tr: float
@@ -86,7 +87,8 @@ def mion_response_function(tr, oversampling=16, onset=0.0):
 
 
 def mion_time_derivative(tr, oversampling=16.0):
-    """Implementation of the MION time derivative response function model.
+    """Implement the MION time derivative response function model.
+
     Parameters
     ----------
     tr: float
@@ -126,6 +128,7 @@ rf_models = [
 # ----------------------------------
 
 import matplotlib.pyplot as plt
+
 from nilearn.glm.first_level import compute_regressor
 
 oversampling = 16

@@ -71,7 +71,7 @@ summary_statistics_session1 = fmri_glm.compute_contrast(
 plotting.plot_stat_map(
     summary_statistics_session1['z_score'],
     bg_img=mean_img_, threshold=3.0, cut_coords=cut_coords,
-    title='{0}, first session'.format(contrast_id))
+    title=f'{contrast_id}, first session')
 
 #########################################################################
 # Statistics for the second session
@@ -82,7 +82,7 @@ summary_statistics_session2 = fmri_glm.compute_contrast(
 plotting.plot_stat_map(
     summary_statistics_session2['z_score'],
     bg_img=mean_img_, threshold=3.0, cut_coords=cut_coords,
-    title='{0}, second session'.format(contrast_id))
+    title=f'{contrast_id}, second session')
 
 #########################################################################
 # Fixed effects statistics
@@ -97,7 +97,7 @@ fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat = compute_fixed_effects(
     contrast_imgs, variance_imgs, data['mask'])
 plotting.plot_stat_map(
     fixed_fx_stat, bg_img=mean_img_, threshold=3.0, cut_coords=cut_coords,
-    title='{0}, fixed effects'.format(contrast_id))
+    title=f'{contrast_id}, fixed effects')
 
 #########################################################################
 # Not unexpectedly, the fixed effects version displays higher peaks than the
