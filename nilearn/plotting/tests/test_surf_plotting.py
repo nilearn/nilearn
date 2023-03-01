@@ -709,40 +709,6 @@ def test_plot_img_on_surf_with_invalid_hemisphere():
         )
 
 
-def test_plot_img_on_surf_with_bg_maps():
-    nii = _generate_img()
-    fsaverage = fetch_surf_fsaverage(mesh="fsaverage5")
-    plot_img_on_surf(
-        nii,
-        hemispheres=["right"],
-        inflate=False,
-        bg_maps="auto",
-    )
-    plot_img_on_surf(
-        nii,
-        hemispheres=["right"],
-        inflate=True,
-        bg_maps="auto",
-    )
-    plot_img_on_surf(
-        nii,
-        hemispheres=["right"],
-        bg_maps=[fsaverage.sulc_right],
-    )
-    with pytest.raises(ValueError):
-        plot_img_on_surf(
-            nii,
-            hemispheres=["left", "right"],
-            bg_maps=[fsaverage.sulc_left],
-        )
-    with pytest.raises(ValueError):
-        plot_img_on_surf(
-            nii,
-            hemispheres=["left"],
-            bg_maps=[fsaverage.sulc_left, fsaverage.sulc_right],
-        )
-
-
 def test_plot_img_on_surf_with_figure_kwarg():
     nii = _generate_img()
     with pytest.raises(ValueError):

@@ -197,13 +197,6 @@ def test_view_img_on_surf():
                                              "radius": 0.,
                                              "interpolation": "nearest"})
     check_html(html)
-    fsaverage = datasets.fetch_surf_fsaverage()
-    html = html_surface.view_img_on_surf(
-        img,
-        symmetric_cmap=False,
-        bg_maps=[fsaverage.sulc_left, fsaverage.sulc_right],
-    )
-    check_html(html)
 
 
 def test_mix_colormaps():

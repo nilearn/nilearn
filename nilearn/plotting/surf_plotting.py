@@ -1165,8 +1165,7 @@ def _colorbar_from_array(array, vmax, threshold, kwargs,
 @fill_doc
 def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
                      hemispheres=['left', 'right'],
-                     bg_maps=None, bg_on_data=False,
-                     inflate=False,
+                     bg_on_data=False, inflate=False,
                      views=['lateral', 'medial'],
                      output_file=None, title=None, colorbar=True,
                      vmax=None, threshold=None,
@@ -1197,13 +1196,6 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         Samples falling out of this mask or out of the image are ignored
         during projection of the volume to the surface.
         If ``None``, don't apply any mask.
-
-    bg_maps : "auto" or list of (str or numpy.ndarray), optional
-        Background images to be plotted on the mesh underneath the
-        surf_data in greyscale, most likely a sulcal depth map for
-        realistic shading.
-        If a list is given, its length should match that of hemispheres.
-        Default="auto".
 
     %(bg_on_data)s
         Default=False.
@@ -1285,25 +1277,15 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         bg_map = None
         # By default, add curv sign background map if mesh is inflated,
         # sulc depth background map otherwise
-        if isinstance(bg_maps, str) and bg_maps == "auto":
-            if inflate:
-                curv_map = surface.load_surf_data(
-                    surf_mesh["curv_{}".format(hemi)]
-                )
-                curv_sign_map = (np.sign(curv_map) + 1) / 4 + 0.25
-                bg_map = curv_sign_map
-            else:
-                sulc_map = surf_mesh['sulc_%s' % hemi]
-                bg_map = sulc_map
-        # Otherwise, use custom background maps
-        elif isinstance(bg_maps, list):
-            if len(bg_maps) == len(hemis):
-                bg_map = bg_maps[i % len(hemis)]
-            else:
-                raise ValueError(
-                    "bg_maps length (%i) " % len(bg_maps),
-                    "should match that of hemispheres (%i)" % len(hemispheres)
-                )
+        if inflate:
+            curv_map = surface.load_surf_data(
+                surf_mesh["curv_{}".format(hemi)]
+            )
+            curv_sign_map = (np.sign(curv_map) + 1) / 4 + 0.25
+            bg_map = curv_sign_map
+        else:
+            sulc_map = surf_mesh['sulc_%s' % hemi]
+            bg_map = sulc_map
 
         ax = fig.add_subplot(grid[i + len(hemis)], projection="3d")
         axes.append(ax)
