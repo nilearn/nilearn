@@ -22,14 +22,12 @@ img_file_patterns = {
 
 img_file_error = {
     "aroma": (
-        "Input must be ~desc-smoothAROMAnonaggr_bold for full ICA-AROMA"
+        "Input must be desc-smoothAROMAnonaggr_bold for full ICA-AROMA"
         " strategy."
-    ),
-    "nii.gz": "Invalid file type for the selected method.",
+    ),    "nii.gz": "Invalid file type for the selected method.",
     "dtseries.nii": "Invalid file type for the selected method.",
-    "func.gii": "need fMRIprep output with extension func.gii",
+    "fnc.gii": "need fMRIprep output with extension func.gii",
 }
-
 
 def _check_params(confounds_raw, params):
     """Check that specified parameters can be found in the confounds."""
@@ -104,14 +102,14 @@ def _get_file_name(nii_file):
     # Check file with new naming scheme exists or replace,
     # for backward compatibility.
     confounds_raw_candidates = [
-~         nii_file.replace(
-~             img_filename,
-+             f"{subject_label}_{specifiers}_desc-confounds_timeseries.tsv"
-+         ),
-+         nii_file.replace(
-+             img_filename,
-+             f"{subject_label}_{specifiers}_desc-confounds_regressors.tsv"
-+         ),
+        nii_file.replace(
+            img_filename,
+            f"{subject_label}_{specifiers}_desc-confounds_timeseries.tsv"
+        ),
+        nii_file.replace(
+            img_filename,
+            f"{subject_label}_{specifiers}_desc-confounds_regressors.tsv"
+        ),
     ]
 
     confounds_raw = [
