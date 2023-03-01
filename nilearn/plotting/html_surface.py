@@ -351,7 +351,7 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         Background image to be plotted on the mesh underneath the
         surf_data in greyscale, most likely a sulcal depth map for
         realistic shading.
-        If the map contains values oustide [0, 1], it will be
+        If the map contains values outside [0, 1], it will be
         rescaled such that all values are in [0, 1]. Otherwise,
         it will not be modified.
         Default=None.
