@@ -150,7 +150,7 @@ vmax = np.max(get_data(mean_func_img))
 plotting.plot_epi(
     mean_func_img,
     cut_coords=cut_coords,
-    title="Original (%i voxels)" % original_voxels,
+    title=f"Original ({int(original_voxels)} voxels)",
     vmax=vmax,
     vmin=vmin,
     display_mode="xz",
@@ -401,7 +401,7 @@ plotting.plot_roi(
 plotting.plot_epi(
     mean_func_img,
     cut_coords=cut_coords,
-    title="Original (%i voxels)" % original_voxels,
+    title=f"Original ({int(original_voxels)} voxels)",
     vmax=vmax,
     vmin=vmin,
     display_mode="xz",

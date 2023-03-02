@@ -83,7 +83,7 @@ for i, cur_img in enumerate(iter_img(canica_components_img)):
     plot_stat_map(
         cur_img,
         display_mode="z",
-        title="IC %d" % i,
+        title=f"IC {int(i)}",
         cut_coords=1,
         colorbar=False,
     )
@@ -146,7 +146,7 @@ for i, cur_img in enumerate(iter_img(dictlearning_components_img)):
     plot_stat_map(
         cur_img,
         display_mode="z",
-        title="Comp %d" % i,
+        title=f"Comp {int(i)}",
         cut_coords=1,
         colorbar=False,
     )

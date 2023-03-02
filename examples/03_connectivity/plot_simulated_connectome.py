@@ -40,7 +40,7 @@ for n in range(n_displayed):
 
     if n == 0:
         plt.title("ground truth")
-    plt.ylabel("subject %d" % n)
+    plt.ylabel(f"subject {int(n)}")
 
 
 # Run group-sparse covariance on all subjects
