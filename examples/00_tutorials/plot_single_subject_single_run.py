@@ -121,10 +121,10 @@ design_matrix = fmri_glm.design_matrices_[0]
 ###############################################################################
 # Formally, we have taken the first design matrix, because the model is
 # implictily meant to for multiple runs.
+import matplotlib.pyplot as plt
 from nilearn.plotting import plot_design_matrix
 
 plot_design_matrix(design_matrix)
-import matplotlib.pyplot as plt
 
 plt.show()
 
@@ -167,50 +167,11 @@ plt.show()
 # the two effects in isolation ---let's call them "conditions"---
 # then a :term:`contrast` that makes the difference between these conditions.
 
-from numpy import array
+import numpy as np
 
-conditions = {
-    "active": array(
-        [
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-        ]
-    ),
-    "rest": array(
-        [
-            0.0,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-        ]
-    ),
-}
+conditions = {"active": np.zeros(16), "rest": np.zeros(16)}
+conditions["active"][0] = 1
+conditions["rest"][1] = 1
 
 ###############################################################################
 # We can then compare the two conditions 'active' and 'rest' by
@@ -387,8 +348,6 @@ table.to_csv(join(outdir, "table.csv"))
 # Specify the contrast and compute the corresponding map. Actually, the
 # contrast specification is done exactly the same way as for t-
 # contrasts.
-
-import numpy as np
 
 effects_of_interest = np.vstack((conditions["active"], conditions["rest"]))
 plot_contrast_matrix(effects_of_interest, design_matrix)
