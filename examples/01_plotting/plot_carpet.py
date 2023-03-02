@@ -9,6 +9,7 @@ The :func:`nilearn.plotting.plot_carpet()` function generates a carpet plot
 from a 4D functional image.
 """
 
+
 ###############################################################################
 # Fetching data from ADHD dataset
 # -------------------------------
@@ -21,8 +22,9 @@ adhd_dataset = datasets.fetch_adhd(n_subjects=1)
 t_r = 2.
 
 # Print basic information on the dataset
-print('First subject functional nifti image (4D) is at: %s' %
-      adhd_dataset.func[0])  # 4D data
+print(
+    f'First subject functional nifti image (4D) is at: {adhd_dataset.func[0]}'
+)
 
 ###############################################################################
 # Deriving a mask
