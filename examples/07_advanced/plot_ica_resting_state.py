@@ -33,7 +33,7 @@ func_filename = dataset.func[0]
 # print basic information on the dataset
 print(
     f"First subject functional nifti image (4D) is at: {dataset.func[0]}"
-)  # 4D data
+)
 
 
 #####################################################################
