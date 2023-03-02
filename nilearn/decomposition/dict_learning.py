@@ -37,7 +37,7 @@ def _compute_loadings(components, data):
 @fill_doc
 class DictLearning(_BaseDecomposition):
     """Perform a map learning algorithm based on spatial component sparsity, \
-    over a :term:`CanICA` initialization [1]_.
+    over a :term:`CanICA` initialization :footcite:`Mensch2016`.
 
     This yields more stable maps than :term:`CanICA`.
 
@@ -176,10 +176,7 @@ class DictLearning(_BaseDecomposition):
 
     References
     ----------
-    .. [1] Arthur Mensch, Gael Varoquaux, Bertrand Thirion,
-       Compressed online dictionary learning for fast resting-state fMRI
-       decomposition. IEEE 13th International Symposium on Biomedical
-       Imaging (ISBI), 2016. pp. 1282-1285
+    .. footbibliography::
 
     """
 
