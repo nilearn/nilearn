@@ -7,6 +7,7 @@ which can be used for plotting brain images on surface.
 
 See :ref:`surface-plotting` for surface plotting details.
 """
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -36,10 +37,11 @@ for index, cmap in enumerate(nilearn_cmaps):
 plt.figure(figsize=(10, 5))
 plt.subplots_adjust(top=0.8, bottom=0.05, left=0.01, right=0.99)
 deprecated_cmaps = ["Vega10", "Vega20", "Vega20b", "Vega20c", "spectral"]
-m_cmaps = []
-for m in plt.cm.datad:
-    if not m.endswith("_r") and m not in deprecated_cmaps:
-        m_cmaps.append(m)
+m_cmaps = [
+    m
+    for m in plt.cm.datad
+    if not m.endswith("_r") and m not in deprecated_cmaps
+]
 m_cmaps.sort()
 
 for index, cmap in enumerate(m_cmaps):
