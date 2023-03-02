@@ -43,7 +43,7 @@ miyawaki_dataset = datasets.fetch_miyawaki2008()
 print(
     "First functional nifti image (4D) is located "
     f"at: {miyawaki_dataset.func[0]}"
-)  # 4D data
+)
 
 miyawaki_filename = miyawaki_dataset.func[0]
 miyawaki_mean_img = image.mean_img(miyawaki_filename)
