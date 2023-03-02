@@ -138,7 +138,7 @@ with warnings.catch_warnings():
         ic_threshold = stats.scoreatpercentile(np.abs(ic_map), 90)
         ic_img = masker.inverse_transform(ic_map)
         important_terms = vocabulary[np.argsort(ic_terms)[-3:]]
-        title = "IC%i  %s" % (index, ", ".join(important_terms[::-1]))
+        title = f"IC{int(index)}  {', '.join(important_terms[::-1])}"
 
         plotting.plot_stat_map(
             ic_img, threshold=ic_threshold, colorbar=False, title=title
