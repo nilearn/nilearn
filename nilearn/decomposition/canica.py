@@ -18,7 +18,8 @@ from ._multi_pca import _MultiPCA
 
 @fill_doc
 class CanICA(_MultiPCA):
-    """Perform Canonical Independent Component Analysis :footcite:`Varoquaux2010c` :footcite:`Varoquaux2010d`.
+    """Perform Canonical Independent Component Analysis \
+    :footcite:`Varoquaux2010c` :footcite:`Varoquaux2010d`.
 
     Parameters
     ----------
