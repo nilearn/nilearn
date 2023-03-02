@@ -374,6 +374,6 @@ for i in np.arange(2):
     plt.xticks(
         np.arange(len(condition_names)) + 1, condition_names, rotation=25
     )
-    plt.title("Boxplots of data in ROI%i per condition" % (i + 1))
+    plt.title(f"Boxplots of data in ROI{int(i + 1)} per condition")
 
 show()
