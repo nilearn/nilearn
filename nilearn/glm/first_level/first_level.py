@@ -1275,37 +1275,33 @@ def _check_bids_image_list(imgs: list[str] | None,
     for img_ in imgs:
 
         parsed_filename = parse_bids_filename(img_)
+        session = parsed_filename.get("ses", None)
+        run = parsed_filename.get("run", None)
 
-        if 'ses' in parsed_filename and 'run' in parsed_filename:
-            if ((parsed_filename['ses'], parsed_filename['run'])
-                 in set(run_check_list)):
+        if session and run:
+            if (session, run) in set(run_check_list):
+               raise ValueError(
+                   f"{msg_start}"
+                   f"for the same run {run} and session {session}. "
+                   f"{msg_end}")
+            run_check_list.append((session, run))
+
+        elif session:
+            if session in set(run_check_list):
                 raise ValueError(
                     f"{msg_start}"
-                    f"for the same run {parsed_filename['run']} and "
-                    f"session {parsed_filename['ses']}. "
-                    f"{msg_end}")
-
-            run_check_list.append((parsed_filename['ses'],
-                                   parsed_filename['run']))
-
-        elif 'ses' in parsed_filename:
-            if parsed_filename['ses'] in set(run_check_list):
-                raise ValueError(
-                    f"{msg_start}"
-                    f"for the same session {parsed_filename['ses']}, "
+                    f"for the same session {session}, "
                     "while no additional run specification present. "
                     f"{msg_end}")
+            run_check_list.append(session)
 
-            run_check_list.append(parsed_filename['ses'])
-
-        elif 'run' in parsed_filename:
-            if parsed_filename['run'] in set(run_check_list):
+        elif run:
+            if run in set(run_check_list):
                 raise ValueError(
                     f"{msg_start}"
-                    f"for the same run {parsed_filename['run']}. "
+                    f"for the same run {run}. "
                     f"{msg_end}")
-
-            run_check_list.append(parsed_filename['run'])
+            run_check_list.append(run)
 
 
 def _check_bids_events_list(events: list[str] | None,
