@@ -38,7 +38,7 @@ fmri_filename = haxby_dataset.func[0]
 # print basic information on the dataset
 print(
     f"First subject functional nifti images (4D) are at: {fmri_filename}"
-)  # 4D data
+)
 
 ###########################################################################
 # Visualizing the fmri volume
