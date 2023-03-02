@@ -97,7 +97,7 @@ for classifier_name in sorted(classifiers):
     decoder.fit(fmri_niimgs, classification_target, groups=session_labels)
 
     classifiers_data[classifier_name] = {"score": decoder.cv_scores_}
-    print("%10s: %.2fs" % (classifier_name, time.time() - t0))
+    print(f"{classifier_name:10}: {time.time() - t0:.2f}s")
     for category in categories:
         print(
             "    %14s vs all -- AUC: %1.2f +- %1.2f"

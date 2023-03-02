@@ -216,6 +216,6 @@ title = (
 display.title(title, y=1.2)
 
 n_detections = (get_data(signed_neg_log_pvals_unmasked) > threshold).sum()
-print("\n%d detections" % n_detections)
+print(f"\n{int(n_detections)} detections")
 
 show()

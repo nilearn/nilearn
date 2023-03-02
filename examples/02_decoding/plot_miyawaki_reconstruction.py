@@ -160,7 +160,7 @@ from sklearn.preprocessing import StandardScaler
 clfs = []
 n_clfs = y_train.shape[1]
 for i in range(y_train.shape[1]):
-    sys.stderr.write("Training classifiers %03d/%d... \r" % (i + 1, n_clfs))
+    sys.stderr.write(f"Training classifiers {int(i + 1):03}/{int(n_clfs)}... \r")
 
     clf = Pipeline(
         [
@@ -334,6 +334,6 @@ for i in range(6):
         cmap=plt.cm.gray,
         interpolation="nearest",
     )
-    plt.savefig("miyawaki2008_reconstruction_%d" % i)
+    plt.savefig(f"miyawaki2008_reconstruction_{int(i)}")
 
 show()
