@@ -40,7 +40,7 @@ data = datasets.fetch_development_fmri(n_subjects=1)
 # print basic information on the dataset
 print(
     f"First subject functional nifti images (4D) are at: {data.func[0]}"
-)  # 4D data
+)
 
 ##############################################################################
 # Extract time series

@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
 from nilearn.plotting import show
 
-n_subjects = 20  # number of subjects
-n_displayed = 3  # number of subjects displayed
+n_subjects = 20
+n_displayed = 3
 subjects, precisions, topology = generate_group_sparse_gaussian_graphs(
     n_subjects=n_subjects,
     n_features=10,

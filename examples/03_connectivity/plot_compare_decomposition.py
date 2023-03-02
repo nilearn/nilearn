@@ -36,7 +36,7 @@ func_filenames = rest_dataset.func  # list of 4D nifti files for each subject
 # print basic information on the dataset
 print(
     f"First functional nifti image (4D) is at: {rest_dataset.func[0]}"
-)  # 4D data
+)
 
 
 ####################################################################

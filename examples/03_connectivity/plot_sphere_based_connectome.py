@@ -41,7 +41,7 @@ dataset = datasets.fetch_development_fmri(n_subjects=10)
 # print basic information on the dataset
 print(
     f"First subject functional nifti image (4D) is at: {dataset.func[0]}"
-)  # 4D data
+)
 
 
 ##########################################################################
