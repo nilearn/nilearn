@@ -23,7 +23,7 @@ t_r = 2.0
 # Print basic information on the dataset
 print(
     f"First subject functional nifti image (4D) is at: {adhd_dataset.func[0]}"
-)  # 4D data
+)
 
 ###############################################################################
 # Deriving a mask

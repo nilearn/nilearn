@@ -16,7 +16,7 @@ print(
 )
 print(
     f"First subject functional nifti image (4D) is at: {haxby_dataset.func[0]}"
-)  # 4D data
+)
 
 # Build the mean image because we have no anatomic data
 from nilearn import image
@@ -36,30 +36,17 @@ display = plot_anat(
 mask_vt_filename = haxby_dataset.mask_vt[0]
 mask_house_filename = haxby_dataset.mask_house[0]
 mask_face_filename = haxby_dataset.mask_face[0]
-display.add_contours(
-    mask_vt_filename,
-    contours=1,
-    antialiased=False,
-    linewidths=4.0,
-    levels=[0],
-    colors=["red"],
-)
-display.add_contours(
-    mask_house_filename,
-    contours=1,
-    antialiased=False,
-    linewidths=4.0,
-    levels=[0],
-    colors=["blue"],
-)
-display.add_contours(
-    mask_face_filename,
-    contours=1,
-    antialiased=False,
-    linewidths=4.0,
-    levels=[0],
-    colors=["limegreen"],
-)
+masks = [mask_vt_filename, mask_house_filename, mask_face_filename]
+colors = ["red", "blue", "limegreen"]
+for mask, color in zip(masks, colors):
+    display.add_contours(
+        mask,
+        contours=1,
+        antialiased=False,
+        linewidth=4.0,
+        levels=[0],
+        colors=[color],
+    )
 
 # We generate a legend using the trick described on
 # http://matplotlib.sourceforge.net/users/legend_guide.httpml#using-proxy-artist
