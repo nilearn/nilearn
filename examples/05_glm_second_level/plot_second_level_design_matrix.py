@@ -23,7 +23,7 @@ except ImportError:
 # --------------------------------------
 # We want to get the group result of a contrast for 20 subjects.
 n_subjects = 20
-subjects_label = ["sub-%02d" % i for i in range(1, n_subjects + 1)]
+subjects_label = [f"sub-{int(i):02}" for i in range(1, n_subjects + 1)]
 
 ##############################################################################
 # Next, we specify extra information about the subjects to create confounders.

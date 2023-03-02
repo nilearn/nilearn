@@ -47,7 +47,7 @@ contrast_map_filenames = [
     localizer_dataset.cmaps[i] for i in mask_quality_check
 ]
 tested_var = tested_var[mask_quality_check].values.reshape((-1, 1))
-print("Actual number of subjects after quality check: %d" % n_samples)
+print(f"Actual number of subjects after quality check: {int(n_samples)}")
 
 ############################################################################
 # Estimate second level model
