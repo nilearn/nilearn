@@ -18,6 +18,8 @@ hemisphere, negative in the left hemisphere).
 
 """
 
+
+import itertools
 ###############################################################################
 # Fetch dataset
 # -------------
@@ -201,24 +203,20 @@ TITLES = [
 ]
 
 fig, axes = plt.subplots(figsize=(8, 8), nrows=2, ncols=2)
-img_counter = 0
-for i_row in range(2):
-    for j_col in range(2):
-        ax = axes[i_row, j_col]
-        plotting.plot_glass_brain(
-            IMAGES[img_counter],
-            colorbar=True,
-            vmax=vmax,
-            display_mode="z",
-            plot_abs=False,
-            cut_coords=cut_coords,
-            threshold=threshold,
-            figure=fig,
-            axes=ax,
-        )
-        ax.set_title(TITLES[img_counter])
-        img_counter += 1
-
+for img_counter, (i_row, j_col) in enumerate(itertools.product(range(2), range(2))):
+    ax = axes[i_row, j_col]
+    plotting.plot_glass_brain(
+        IMAGES[img_counter],
+        colorbar=True,
+        vmax=vmax,
+        display_mode="z",
+        plot_abs=False,
+        cut_coords=cut_coords,
+        threshold=threshold,
+        figure=fig,
+        axes=ax,
+    )
+    ax.set_title(TITLES[img_counter])
 fig.suptitle("Group left-right button press\n(negative log10 p-values)")
 plt.show()
 

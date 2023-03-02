@@ -12,6 +12,7 @@ This example requires matplotlib.
 
 """
 
+
 try:
     import matplotlib.pyplot as plt
 except ImportError:
@@ -33,7 +34,7 @@ extra_info_subjects = pd.DataFrame(
     {
         "subject_label": subjects_label,
         "age": range(15, 15 + n_subjects),
-        "sex": [0, 1] * int(n_subjects / 2),
+        "sex": [0, 1] * (n_subjects // 2),
     }
 )
 
