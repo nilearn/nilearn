@@ -16,6 +16,7 @@ functional cognitive networks.
 BMC Neurosci 8, 91 (2007). https://doi.org/10.1186/1471-2202-8-91
 """
 
+
 print(__doc__)
 
 #########################################################################
@@ -243,7 +244,7 @@ import os
 outdir = "results"
 if not os.path.exists(outdir):
     os.mkdir(outdir)
-tsvfile = outdir + "/localizer_events.tsv"
+tsvfile = f"{outdir}/localizer_events.tsv"
 events.to_csv(tsvfile, sep="\t", index=False)
 print(f"The event information has been saved to {tsvfile}")
 

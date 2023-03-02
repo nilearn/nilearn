@@ -14,6 +14,7 @@ quality of the model fit.
 """
 
 
+
 import pandas as pd
 
 from nilearn import image, masking
@@ -97,7 +98,7 @@ import matplotlib.pyplot as plt
 colors = ["blue", "navy", "purple", "magenta", "olive", "teal"]
 # plot the time series and corresponding locations
 fig1, axs1 = plt.subplots(2, 6)
-for i in range(0, 6):
+for i in range(6):
     # plotting time series
     axs1[0, i].set_title(f"Cluster peak {coords[i]}\n")
     axs1[0, i].plot(real_timeseries[:, i], c=colors[i], lw=2)
@@ -131,7 +132,7 @@ resid = masker.fit_transform(fmri_glm.residuals[0])
 # Note that residuals are not really distributed normally.
 fig2, axs2 = plt.subplots(2, 3)
 axs2 = axs2.flatten()
-for i in range(0, 6):
+for i in range(6):
     axs2[i].set_title(f"Cluster peak {coords[i]}\n")
     axs2[i].hist(resid[:, i], color=colors[i])
     print(f"Mean residuals: {resid[:, i].mean()}")
