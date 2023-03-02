@@ -22,11 +22,7 @@ For an encoding approach for the same dataset, see also
 .. include:: ../../../examples/masker_note.rst
 
 """
-
-
 import sys
-
-# Some basic imports
 import time
 
 ############################################################################
@@ -150,8 +146,6 @@ sys.stderr.write("Training classifiers... \r")
 t0 = time.time()
 
 from sklearn.feature_selection import SelectKBest, f_classif
-
-# OMP: Orthogonal Matching Pursuit
 from sklearn.linear_model import OrthogonalMatchingPursuit as OMP
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler

@@ -172,11 +172,11 @@ thresholded_score_map_img = threshold_img(
     score_map_img, threshold=1e-6, copy=False
 )
 
-from nilearn.image import coord_transform
 
 ##############################################################################
 # Plotting the statistical map on a background brain, we mark four voxels
 # which we will inspect more closely later on.
+from nilearn.image import coord_transform
 from nilearn.plotting import plot_stat_map
 
 

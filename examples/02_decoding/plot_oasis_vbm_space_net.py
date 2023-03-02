@@ -26,9 +26,8 @@ age = np.array(age)
 gm_imgs = np.array(dataset_files.gray_matter_maps)
 
 
-from sklearn.model_selection import train_test_split
-
 # Split data into training set and test set
+from sklearn.model_selection import train_test_split
 from sklearn.utils import check_random_state
 
 rng = check_random_state(42)
