@@ -126,13 +126,12 @@ print(stimuli.shape)
 # using the pixel-values of the visual stimuli to predict the neuronal
 # activity in this voxel.
 
-from sklearn.linear_model import Ridge
-
 ##############################################################################
 # Using 10-fold cross-validation, we partition the data into 10 'folds'.
 # We hold out each fold of the data for testing, then fit a ridge regression
 # to the remaining 9/10 of the data, using stimuli as predictors
 # and fmri_data as targets, and create predictions for the held-out 10th.
+from sklearn.linear_model import Ridge
 from sklearn.metrics import r2_score
 from sklearn.model_selection import KFold
 

@@ -9,12 +9,12 @@ cross-validated accuracy and the confusion matrix.
 
 """
 
-import numpy as np
-import pandas as pd
-
 ##############################################################################
 # Load the Haxby data dataset
 # ----------------------------
+
+import numpy as np
+import pandas as pd
 from nilearn import datasets
 
 # By default 2nd subject from haxby datasets will be fetched.
@@ -112,13 +112,12 @@ plt.boxplot([cv_scores_ova, cv_scores_ovo])
 plt.xticks([1, 2], ["One vs All", "One vs One"])
 plt.title("Prediction: accuracy score")
 
-from nilearn.plotting import plot_matrix, show
-
 ##############################################################################
 # Plot a confusion matrix
 # ------------------------
 # We fit on the first 10 sessions and plot a confusion matrix on the
 # last 2 sessions
+from nilearn.plotting import plot_matrix, show
 from sklearn.metrics import confusion_matrix
 
 svc_ovo.fit(X[session < 10], y[session < 10])
