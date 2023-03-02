@@ -886,7 +886,7 @@ def create_fake_bids_dataset(base_dir='',
 
     if entities is not None:
         for label in entities[1]:
-            if not _is_alphanumeric(label):
+            if not all(char.isalnum() for char in label):
                 raise ValueError(f"Entity label must be alphanumeric. "
                                 f"Got '{label}' instead.")
 
@@ -914,10 +914,6 @@ def create_fake_bids_dataset(base_dir='',
                                rand_gen=rand_gen)
 
     return bids_dataset_dir
-
-
-def _is_alphanumeric(string: str) -> bool:
-    return all(char.isalnum() for char in string)
 
 
 def _file_id(fields: list[str], n_run: int, run: str) -> str:

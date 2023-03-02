@@ -1141,7 +1141,7 @@ def _validate_args_first_level_from_bids(dataset_path: str,
             "'task_label' must be a string. "
             f"Got {type(task_label)} instead."
         )
-    if not _is_alphanumeric(task_label):
+    if not all(char.isalnum() for char in task_label):
         raise ValueError(
             "'task_label' must be alphanumeric. "
             f"Got {task_label} instead."
@@ -1153,7 +1153,7 @@ def _validate_args_first_level_from_bids(dataset_path: str,
                 "'space_label' must be a string, "
                 f"Got {type(space_label)} instead."
             )
-        if not _is_alphanumeric(space_label):
+        if not all(char.isalnum() for char in space_label):
             raise ValueError(
                 "'space_label' must be alphanumeric. "
                 f"Got {space_label} instead."
@@ -1179,13 +1179,10 @@ def _validate_args_first_level_from_bids(dataset_path: str,
                 f"Only {supported_filters} are allowed.")        
 
         if (not isinstance(filter_[1], str) 
-            or not _is_alphanumeric(filter_[1])):
+            or not all(char.isalnum() for char in filter_[1])):
             raise TypeError('BIDS labels in img_filters must be alphanumeric. '
                             f"Got {type(filter_[1])} for {filter_} instead.")
 
-
-def _is_alphanumeric(string: str) -> bool:
-    return all(char.isalnum() for char in string)
 
 def _make_bids_files_filter(task_label: str,
                            space_label: str | None = None,
