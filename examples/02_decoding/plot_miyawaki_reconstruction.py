@@ -167,8 +167,7 @@ for i in range(y_train.shape[1]):
     clfs.append(clf)
 
 sys.stderr.write(
-    "Training classifiers %03d/%d... Done (%.2fs).\n"
-    % (n_clfs, n_clfs, time.time() - t0)
+    f"Training classifiers {n_clfs:03d}/{n_clfs:d}... Done ({(time.time() - t0):.2f}s).\n"
 )
 
 

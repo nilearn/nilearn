@@ -100,13 +100,9 @@ for mask_name in mask_names:
         )
         decoder.fit(task_data, classification_target, groups=session_labels)
         mask_scores[mask_name][category] = decoder.cv_scores_[1]
-        print(
-            "Scores: %1.2f +- %1.2f"
-            % (
-                np.mean(mask_scores[mask_name][category]),
-                np.std(mask_scores[mask_name][category]),
-            )
-        )
+        mean = np.mean(mask_scores[mask_name][category])
+        std = np.std(mask_scores[mask_name][category])
+        print(f"Scores: {mean:1.2f} +- {std:1.2f}")
 
         dummy_classifier = Decoder(
             estimator="dummy_classifier", cv=cv, mask=masker, scoring="roc_auc"
