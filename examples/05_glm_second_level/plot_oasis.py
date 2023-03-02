@@ -48,11 +48,11 @@ sex = oasis_dataset.ext_vars["mf"] == "F"
 print(
     "First gray-matter anatomy image (3D) is located at: "
     f"{oasis_dataset.gray_matter_maps[0]}"
-)  # 3D data
+)
 print(
     "First white-matter anatomy image (3D) is located at: "
     f"{oasis_dataset.white_matter_maps[0]}"
-)  # 3D data
+)
 
 ###############################################################################
 # Get a mask image: A mask of the cortex of the ICBM template.
