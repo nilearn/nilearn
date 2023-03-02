@@ -6,6 +6,8 @@ Here we compare different classifiers on a visual object recognition
 decoding task.
 """
 
+
+
 #############################################################################
 # Loading the data
 # -----------------
@@ -94,9 +96,7 @@ for classifier_name in sorted(classifiers):
     t0 = time.time()
     decoder.fit(fmri_niimgs, classification_target, groups=session_labels)
 
-    classifiers_data[classifier_name] = {}
-    classifiers_data[classifier_name]["score"] = decoder.cv_scores_
-
+    classifiers_data[classifier_name] = {"score": decoder.cv_scores_}
     print("%10s: %.2fs" % (classifier_name, time.time() - t0))
     for category in categories:
         print(
@@ -127,9 +127,7 @@ tick_position = np.arange(len(all_categories))
 plt.yticks(tick_position + 0.25, all_categories)
 height = 0.1
 
-for i, (color, classifier_name) in enumerate(
-    zip(["b", "m", "k", "r", "g"], classifiers)
-):
+for color, classifier_name in zip(["b", "m", "k", "r", "g"], classifiers):
     score_means = [
         np.mean(classifiers_data[classifier_name]["score"][category])
         for category in all_categories

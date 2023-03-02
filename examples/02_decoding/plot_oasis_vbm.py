@@ -75,13 +75,13 @@ gm_imgs_train, gm_imgs_test, age_train, age_test = train_test_split(
 
 # print basic information on the dataset
 print(
-    "First gray-matter anatomy image (3D) is located at: %s"
-    % oasis_dataset.gray_matter_maps[0]
-)  # 3D data
+    "First gray-matter anatomy image (3D) is located at: "
+    f"{oasis_dataset.gray_matter_maps[0]}"
+)
 print(
-    "First white-matter anatomy image (3D) is located at: %s"
-    % oasis_dataset.white_matter_maps[0]
-)  # 3D data
+    "First white-matter anatomy image (3D) is located at: "
+    f"{oasis_dataset.white_matter_maps[0]}"
+)
 
 #############################################################################
 # Preprocess data

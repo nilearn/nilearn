@@ -9,6 +9,9 @@ searchlight decoding. NeuroImage 56, 582–592.
 
 """
 
+
+
+
 #########################################################################
 # Load Haxby dataset
 # -------------------
@@ -47,7 +50,7 @@ hemi = "left"
 
 # Average voxels 5 mm close to the 3d pial surface
 radius = 5.0
-pial_mesh = fsaverage["pial_" + hemi]
+pial_mesh = fsaverage[f"pial_{hemi}"]
 X = surface.vol_to_surf(fmri_img, pial_mesh, radius=radius).T
 
 # To define the :term:`BOLD` responses
@@ -55,7 +58,7 @@ X = surface.vol_to_surf(fmri_img, pial_mesh, radius=radius).T
 # we define an adjacency matrix based on the inflated surface vertices such
 # that nearby surfaces are concatenated within the same searchlight.
 
-infl_mesh = fsaverage["infl_" + hemi]
+infl_mesh = fsaverage[f"infl_{hemi}"]
 coords, _ = surface.load_surf_mesh(infl_mesh)
 radius = 3.0
 nn = neighbors.NearestNeighbors(radius=radius)
@@ -93,7 +96,7 @@ plotting.plot_surf_stat_map(
     view="medial",
     colorbar=True,
     threshold=0.1,
-    bg_map=fsaverage["sulc_" + hemi],
+    bg_map=fsaverage[f"sulc_{hemi}"],
     title="Accuracy map, left hemisphere",
 )
 plotting.show()

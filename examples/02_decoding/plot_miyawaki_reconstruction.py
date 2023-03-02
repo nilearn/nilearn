@@ -23,6 +23,7 @@ For an encoding approach for the same dataset, see also
 
 """
 
+
 import sys
 
 # Some basic imports
@@ -42,7 +43,7 @@ miyawaki_dataset = datasets.fetch_miyawaki2008()
 print(
     "First functional nifti image (4D) is located "
     f"at: {miyawaki_dataset.func[0]}"
-)  # 4D data
+)
 
 X_random_filenames = miyawaki_dataset.func[12:]
 X_figure_filenames = miyawaki_dataset.func[:12]
@@ -70,23 +71,18 @@ masker.fit()
 X_train = masker.transform(X_random_filenames)
 X_test = masker.transform(X_figure_filenames)
 
-# We load the visual stimuli from csv files
-y_train = []
-for y in y_random_filenames:
-    y_train.append(
-        np.reshape(
-            np.loadtxt(y, dtype=int, delimiter=","), (-1,) + y_shape, order="F"
-        )
+y_train = [
+    np.reshape(
+        np.loadtxt(y, dtype=int, delimiter=","), (-1,) + y_shape, order="F"
     )
-
-y_test = []
-for y in y_figure_filenames:
-    y_test.append(
-        np.reshape(
-            np.loadtxt(y, dtype=int, delimiter=","), (-1,) + y_shape, order="F"
-        )
+    for y in y_random_filenames
+]
+y_test = [
+    np.reshape(
+        np.loadtxt(y, dtype=int, delimiter=","), (-1,) + y_shape, order="F"
     )
-
+    for y in y_figure_filenames
+]
 X_train = np.vstack([x[2:] for x in X_train])
 y_train = np.vstack([y[:-2] for y in y_train]).astype(float)
 X_test = np.vstack([x[2:] for x in X_test])
@@ -97,9 +93,7 @@ n_features = X_train.shape[1]
 
 
 def flatten(list_of_2d_array):
-    flattened = []
-    for array in list_of_2d_array:
-        flattened.append(array.ravel())
+    flattened = [array.ravel() for array in list_of_2d_array]
     return flattened
 
 
@@ -190,9 +184,7 @@ sys.stderr.write(
 sys.stderr.write("Calculating scores and outputs...")
 t0 = time.time()
 
-y_pred = []
-for clf in clfs:
-    y_pred.append(clf.predict(X_test))
+y_pred = [clf.predict(X_test) for clf in clfs]
 y_pred = np.asarray(y_pred).T
 
 
