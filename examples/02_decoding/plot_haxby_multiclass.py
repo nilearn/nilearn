@@ -112,14 +112,14 @@ plt.boxplot([cv_scores_ova, cv_scores_ovo])
 plt.xticks([1, 2], ["One vs All", "One vs One"])
 plt.title("Prediction: accuracy score")
 
+from nilearn.plotting import plot_matrix, show
+
 ##############################################################################
 # Plot a confusion matrix
 # ------------------------
 # We fit on the first 10 sessions and plot a confusion matrix on the
 # last 2 sessions
 from sklearn.metrics import confusion_matrix
-
-from nilearn.plotting import plot_matrix, show
 
 svc_ovo.fit(X[session < 10], y[session < 10])
 y_pred_ovo = svc_ovo.predict(X[session >= 10])

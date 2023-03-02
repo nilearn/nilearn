@@ -79,9 +79,8 @@ classifiers = [
 # classifiers
 import time
 
-from sklearn.model_selection import LeaveOneGroupOut
-
 from nilearn.decoding import Decoder
+from sklearn.model_selection import LeaveOneGroupOut
 
 cv = LeaveOneGroupOut()
 classifiers_data = {}

@@ -169,7 +169,6 @@ print(f"Nested CV score: {np.mean(nested_cv_scores):.4f}")
 # Plot the prediction scores using matplotlib
 # ---------------------------------------------
 from matplotlib import pyplot as plt
-
 from nilearn.plotting import show
 
 plt.figure(figsize=(6, 4))

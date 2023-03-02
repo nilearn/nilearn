@@ -50,7 +50,6 @@ ____
 
 import matplotlib.pyplot as plt
 import numpy as np
-
 from nilearn import datasets
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker

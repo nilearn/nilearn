@@ -8,7 +8,6 @@ Cortex" (Science 2001)
 """
 
 import matplotlib.pyplot as plt
-
 from nilearn import datasets
 from nilearn.plotting import show
 
