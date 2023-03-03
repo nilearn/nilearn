@@ -1040,8 +1040,8 @@ def math_img(formula, **imgs):
     except Exception as exc:
         exc.args = (
             "Input images cannot be compared, "
-            f"you provided '{imgs.values()}', {exc.args}"
-        )
+            f"you provided '{imgs.values()}',",
+        ) + exc.args
         raise
 
     # Computing input data as a dictionary of numpy arrays. Keep a reference
