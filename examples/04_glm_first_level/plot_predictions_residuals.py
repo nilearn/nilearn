@@ -119,6 +119,7 @@ fig1.set_size_inches(24, 14)
 #########################################################################
 # Get residuals
 # -------------
+
 resid = masker.fit_transform(fmri_glm.residuals[0])
 
 
@@ -126,6 +127,7 @@ resid = masker.fit_transform(fmri_glm.residuals[0])
 # Plot distribution of residuals
 # ------------------------------
 # Note that residuals are not really distributed normally.
+
 fig2, axs2 = plt.subplots(2, 3)
 axs2 = axs2.flatten()
 for i in range(6):
@@ -152,6 +154,7 @@ fig2.tight_layout()
 # because the voxel/region fits the noise factors (such as drift or motion)
 # that could be present in the GLM. To isolate the influence of the experiment,
 # we can use an F-test as shown in the next section.
+
 plotting.plot_stat_map(
     fmri_glm.r_square[0],
     bg_img=mean_img,

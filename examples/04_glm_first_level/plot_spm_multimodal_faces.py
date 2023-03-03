@@ -49,7 +49,6 @@ hrf_model = "spm + derivative"
 #
 # This is achieved by the concat_imgs function of Nilearn.
 import warnings
-
 from nilearn.image import concat_imgs, mean_img, resample_img
 
 # Avoid getting too many warnings due to resampling
@@ -71,7 +70,6 @@ mean_image = mean_img(fmri_img)
 # Make the design matrices.
 import numpy as np
 import pandas as pd
-
 from nilearn.glm.first_level import make_first_level_design_matrix
 
 design_matrices = []
@@ -134,8 +132,9 @@ fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices)
 #########################################################################
 # Now we can compute contrast-related statistical maps (in z-scale), and plot
 # them.
-print("Computing contrasts")
 from nilearn import plotting
+
+print("Computing contrasts")
 
 # Iterate on contrasts
 for contrast_id, contrast_val in contrasts.items():

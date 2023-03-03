@@ -16,7 +16,6 @@ More specifically:
 
 """
 import numpy as np
-
 from nilearn import datasets, plotting
 from nilearn.glm.first_level import (
     FirstLevelModel,
@@ -99,7 +98,6 @@ print(f"Save z-map in '{filename}'.")
 # portable, ready-to-view report with most of the pertinent information.
 # This is easy to do if you have a fitted model and the list of contrasts,
 # which we do here.
-
 from nilearn.reporting import make_glm_report
 
 report = make_glm_report(

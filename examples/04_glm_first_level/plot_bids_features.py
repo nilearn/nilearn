@@ -23,7 +23,6 @@ More specifically:
 """
 
 
-
 ##############################################################################
 # Fetch openneuro BIDS dataset
 # -----------------------------
@@ -94,6 +93,7 @@ derivatives_folder = "derivatives/fmriprep"
 
 #############################################################################
 # Access the model and model arguments of the subject and process events.
+
 model, imgs, events, confounds = (
     models[0],
     models_run_imgs[0],
@@ -152,9 +152,8 @@ fsl_z_map = nib.load(
 )
 
 import matplotlib.pyplot as plt
-from scipy.stats import norm
-
 from nilearn import plotting
+from scipy.stats import norm
 
 plotting.plot_glass_brain(
     z_map,
@@ -211,7 +210,6 @@ print(table.to_latex())
 # -------------------
 # Using the computed FirstLevelModel and contrast information,
 # we can quickly create a summary report.
-
 from nilearn.reporting import make_glm_report
 
 report = make_glm_report(

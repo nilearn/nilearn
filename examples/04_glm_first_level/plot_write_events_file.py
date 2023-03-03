@@ -113,6 +113,7 @@ onsets = np.array(
 #########################################################################
 # Associated trial types: these are numbered between 0 and 9, hence
 # corresponding to 10 different conditions.
+
 trial_type_idx = np.array(
     [
         7,
@@ -219,6 +220,7 @@ trial_types = [condition_ids[i] for i in trial_type_idx]
 #########################################################################
 # We must also define a duration (required by :term:`BIDS` conventions).
 # In this case, all trials lasted one second.
+
 durations = np.ones_like(onsets)
 
 #########################################################################
@@ -252,7 +254,6 @@ print(f"The event information has been saved to {tsvfile}")
 # Optionally, the events can be visualized using the
 # :func:`~nilearn.plotting.plot_event` function.
 import matplotlib.pyplot as plt
-
 from nilearn.plotting import plot_event
 
 plot_event(events, figsize=(15, 5))

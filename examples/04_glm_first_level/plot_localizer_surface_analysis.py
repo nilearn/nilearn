@@ -42,13 +42,15 @@ slice_time_ref = 0.5
 # Prepare the data.
 # First, the volume-based fMRI data.
 from nilearn.datasets import fetch_localizer_first_level
+
 data = fetch_localizer_first_level()
 fmri_img = data.epi_img
 
 ###############################################################################
 # Second, the experimental paradigm.
-events_file = data.events
 import pandas as pd
+
+events_file = data.events
 events = pd.read_table(events_file)
 
 ###############################################################################
@@ -58,14 +60,15 @@ events = pd.read_table(events_file)
 # For this we need to get a mesh representing the geometry of the surface. We
 # could use an individual mesh, but we first resort to a standard mesh, the
 # so-called fsaverage5 template from the FreeSurfer software.
-
 import nilearn
+
 fsaverage = nilearn.datasets.fetch_surf_fsaverage()
 
 ###############################################################################
 # The projection function simply takes the fMRI data and the mesh.
 # Note that those correspond spatially, are they are both in MNI space.
 from nilearn import surface
+
 texture = surface.vol_to_surf(fmri_img, fsaverage.pial_right)
 
 ###############################################################################
@@ -74,8 +77,8 @@ texture = surface.vol_to_surf(fmri_img, fsaverage.pial_right)
 #
 # This involves computing the design matrix and fitting the model.
 # We start by specifying the timing of fMRI frames.
-
 import numpy as np
+
 n_scans = texture.shape[1]
 frame_times = t_r * (np.arange(n_scans) + .5)
 
@@ -85,6 +88,7 @@ frame_times = t_r * (np.arange(n_scans) + .5)
 # We specify an hrf model containing the Glover model and its time derivative
 # The drift model is implicitly a cosine basis with a period cutoff at 128s.
 from nilearn.glm.first_level import make_first_level_design_matrix
+
 design_matrix = make_first_level_design_matrix(frame_times,
                                                events=events,
                                                hrf_model='glover + derivative'
@@ -97,8 +101,8 @@ design_matrix = make_first_level_design_matrix(frame_times,
 # `labels` tags voxels according to noise autocorrelation.
 # `estimates` contains the parameter estimates.
 # We keep them for later contrast computation.
-
 from nilearn.glm.first_level import run_glm
+
 labels, estimates = run_glm(texture.T, design_matrix.values)
 
 ###############################################################################
@@ -168,8 +172,8 @@ contrasts = {
 
 ###############################################################################
 # Let's estimate the contrasts by iterating over them.
-from nilearn.glm.contrasts import compute_contrast
 from nilearn import plotting
+from nilearn.glm.contrasts import compute_contrast
 
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % i out of %i: %s, right hemisphere' %

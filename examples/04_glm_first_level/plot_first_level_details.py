@@ -61,11 +61,10 @@ fmri_img = data.epi_img
 # * audio_computation: Mental subtraction, indicated by auditory instruction
 # * visual_computation: Mental subtraction, indicated by visual instruction
 #
+import pandas as pd
 
 t_r = 2.4
 events_file = data["events"]
-import pandas as pd
-
 events = pd.read_table(events_file)
 events
 
@@ -101,7 +100,6 @@ plt.show()
 # the corresponding contrasts.  This will be useful to repeat contrast
 # specification when we change the design matrix.
 import numpy as np
-
 
 def make_localizer_contrasts(design_matrix):
     """Return a dictionary of four contrasts, given the design matrix."""
@@ -171,8 +169,9 @@ def make_localizer_contrasts(design_matrix):
 #   when performing a mental comptation task
 #   versus simply reading sentences.
 #
-contrasts = make_localizer_contrasts(design_matrix)
 from nilearn.plotting import plot_contrast_matrix
+
+contrasts = make_localizer_contrasts(design_matrix)
 
 for key, values in contrasts.items():
     plot_contrast_matrix(values, design_matrix=design_matrix)
@@ -188,7 +187,6 @@ plt.show()
 # fitting and plotting in a function that we call when needed.
 #
 from nilearn import plotting
-
 
 def plot_contrast(first_level_model):
     """Specify, estimate and plot the main contrasts for given a first model.
@@ -344,6 +342,7 @@ plt.show()
 # timing, by increasing the slice_time_ref parameter from 0 to 0.5. Now the
 # reference for model sampling is not the beginning of the volume
 # acquisition, but the middle of it.
+
 first_level_model = FirstLevelModel(
     t_r, hrf_model="spm + derivative", slice_time_ref=0.5
 )
@@ -356,6 +355,7 @@ plotting.plot_stat_map(
     title="effect of time derivatives after model shift",
 )
 plt.show()
+
 #########################################################################
 # The time derivatives regressors capture less signal: it's better like that.
 
@@ -365,6 +365,7 @@ plt.show()
 #
 # This is done by specifying `hrf_model='spm + derivative + dispersion'`.
 #
+
 first_level_model = FirstLevelModel(
     t_r, slice_time_ref=0.5, hrf_model="spm + derivative + dispersion"
 )
@@ -446,8 +447,6 @@ plt.show()
 #
 # For this we rely on the so-called
 # :func:`~nilearn.image.high_variance_confounds` routine of Nilearn.
-
-
 from nilearn.image import high_variance_confounds
 
 confounds = pd.DataFrame(high_variance_confounds(fmri_img, percentile=1))
@@ -538,13 +537,12 @@ plt.show()
 # non-grey matter regions, in which no BOLD signal is expected.  The
 # downside is that the mask may not fit very well this particular
 # data.
+from nilearn.datasets import fetch_icbm152_brain_gm_mask
+from nilearn.plotting import plot_roi
 
 data_mask = first_level_model.masker_.mask_img_
-from nilearn.datasets import fetch_icbm152_brain_gm_mask
 
 icbm_mask = fetch_icbm152_brain_gm_mask()
-
-from nilearn.plotting import plot_roi
 
 plt.figure(figsize=(16, 4))
 ax = plt.subplot(121)

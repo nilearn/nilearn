@@ -52,9 +52,9 @@ events = pd.DataFrame(
 #########################################################################
 # We sample the events into a design matrix, also including additional
 # regressors.
-hrf_model = "glover"
 from nilearn.glm.first_level import make_first_level_design_matrix
 
+hrf_model = "glover"
 X1 = make_first_level_design_matrix(
     frame_times,
     events,
@@ -69,6 +69,7 @@ X1 = make_first_level_design_matrix(
 # Now we compute a block design matrix. We add duration to create the blocks.
 # For this we first define an event structure that includes the duration
 # parameter.
+
 duration = 7.0 * np.ones(len(conditions))
 events = pd.DataFrame(
     {"trial_type": conditions, "onset": onsets, "duration": duration}
@@ -76,6 +77,7 @@ events = pd.DataFrame(
 
 #########################################################################
 # Then we sample the design matrix.
+
 X2 = make_first_level_design_matrix(
     frame_times,
     events,
@@ -86,6 +88,7 @@ X2 = make_first_level_design_matrix(
 
 #########################################################################
 # Finally we compute a FIR model
+
 events = pd.DataFrame(
     {"trial_type": conditions, "onset": onsets, "duration": duration}
 )
@@ -113,5 +116,6 @@ ax3.set_title("FIR design matrix", fontsize=12)
 
 #########################################################################
 # Let's improve the layout and show the result.
+
 plt.subplots_adjust(left=0.08, top=0.9, bottom=0.21, right=0.96, wspace=0.3)
 plt.show()

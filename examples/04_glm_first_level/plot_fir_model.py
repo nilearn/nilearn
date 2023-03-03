@@ -19,9 +19,7 @@ presented : ['audio_computation', 'audio_left_hand_button_press',
 
 #########################################################################
 # At first, we grab the localizer data.
-
 import pandas as pd
-
 from nilearn.datasets import func
 
 data = func.fetch_localizer_first_level()
@@ -41,7 +39,6 @@ events = pd.read_table(events_file)
 # 3] (scans) corresponding to a 3-step functions on the [1 * t_r, 4 *
 # t_r] seconds interval.
 #
-
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.plotting import plot_contrast_matrix, plot_design_matrix
 
@@ -50,11 +47,11 @@ first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
 plot_design_matrix(design_matrix)
 
+
 #########################################################################
 # We have to adapt contrast specification. We characterize the :term:`BOLD`
 # response by the sum across the three time lags. It's a bit hairy,
 # sorry, but this is the price to pay for flexibility...
-
 import numpy as np
 
 contrast_matrix = np.eye(design_matrix.shape[1])
@@ -122,17 +119,17 @@ contrasts = {
     ),
 }
 
+
 #########################################################################
 # Take a look at the contrasts.
+
 plot_contrast_matrix(contrasts["left-right"], design_matrix)
 
 #########################################################################
 # Take a breath.
 #
 # We can now  proceed by estimating the contrasts and displaying them.
-
 import matplotlib.pyplot as plt
-
 from nilearn.plotting import plot_stat_map
 
 fig = plt.figure(figsize=(11, 3))
@@ -150,6 +147,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
         cut_coords=1,
     )
 plt.show()
+
 
 #########################################################################
 # The result is acceptable. Note that we're asking a lot of questions
