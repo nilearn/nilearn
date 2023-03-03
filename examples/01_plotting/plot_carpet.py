@@ -19,11 +19,11 @@ adhd_dataset = datasets.fetch_adhd(n_subjects=1)
 
 # plot_carpet can infer TR from the image header, but preprocessing can often
 # overwrite that particular header field, so we will be explicit.
-t_r = 2.
+t_r = 2.0
 
 # Print basic information on the dataset
 print(
-    f'First subject functional nifti image (4D) is at: {adhd_dataset.func[0]}'
+    f"First subject functional nifti image (4D) is at: {adhd_dataset.func[0]}"
 )
 
 ###############################################################################
@@ -51,6 +51,7 @@ display.show()
 # Create a gray matter/white matter/cerebrospinal fluid mask from
 # ICBM152 tissue probability maps.
 import numpy as np
+
 from nilearn import image
 
 atlas = datasets.fetch_icbm152_2009()
@@ -66,8 +67,6 @@ discrete_atlas_img = image.new_img_like(atlas_img, discrete_version)
 ###############################################################################
 # Visualizing global patterns, separated by tissue type
 # -----------------------------------------------------
-import matplotlib.pyplot as plt
-
 from nilearn.plotting import plot_carpet
 
 fig, ax = plt.subplots(figsize=(10, 10))
