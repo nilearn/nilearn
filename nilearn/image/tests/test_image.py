@@ -307,7 +307,7 @@ def test_mean_img():
         [img2, img1, img2],
         [img3, img1, img2],  # Mixture of 4D and 3D images
     ):
-        arrays = list()
+        arrays = []
         # Ground-truth:
         for img in imgs:
             img = get_data(img)
