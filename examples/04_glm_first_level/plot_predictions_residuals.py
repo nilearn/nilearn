@@ -13,15 +13,11 @@ quality of the model fit.
 
 """
 
-
-
-import pandas as pd
-
-from nilearn import image, masking
-
 #########################################################################
 # Import modules
 # --------------
+import pandas as pd
+from nilearn import image, masking
 from nilearn.datasets import fetch_spm_auditory
 
 # load fMRI data
@@ -69,11 +65,11 @@ z_map = fmri_glm.compute_contrast("active - rest")
 
 plotting.plot_stat_map(z_map, bg_img=mean_img, threshold=3.1)
 
-from nilearn.maskers import NiftiSpheresMasker
 
 #########################################################################
 # Extract the largest clusters
 # ----------------------------
+from nilearn.maskers import NiftiSpheresMasker
 from nilearn.reporting import get_clusters_table
 
 table = get_clusters_table(z_map, stat_threshold=3.1, cluster_threshold=20)

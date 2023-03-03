@@ -239,12 +239,12 @@ events
 
 #########################################################################
 # Export them to a tsv file.
-import os
+from pathlib import Path
 
-outdir = "results"
-if not os.path.exists(outdir):
-    os.mkdir(outdir)
-tsvfile = f"{outdir}/localizer_events.tsv"
+outdir = Path("results")
+if not outdir.exists():
+    outdir.mkdir()
+tsvfile = outdir / "localizer_events.tsv"
 events.to_csv(tsvfile, sep="\t", index=False)
 print(f"The event information has been saved to {tsvfile}")
 

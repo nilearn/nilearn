@@ -191,9 +191,8 @@ from nilearn import plotting
 
 
 def plot_contrast(first_level_model):
-    """Specify, estimate and plot the main contrasts
+    """Specify, estimate and plot the main contrasts for given a first model.
 
-    For given a first model.
     """
     design_matrix = first_level_model.design_matrices_[0]
     # Call the contrast specification within the function
