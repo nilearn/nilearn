@@ -300,9 +300,7 @@ def test_mean_img():
     img2 = nibabel.Nifti1Image(data2, affine=affine)
     img3 = nibabel.Nifti1Image(data3, affine=affine)
     for imgs in (
-        [
-            img1,
-        ],
+        [img1],
         [img1, img2],
         [img2, img1, img2],
         [img3, img1, img2],  # Mixture of 4D and 3D images
