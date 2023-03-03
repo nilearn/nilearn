@@ -435,21 +435,15 @@ def test_raises_bbox_error_if_data_outside_box():
     img = Nifti1Image(data, affine)
 
     # some axis flipping affines
-    axis_flips = np.array(
-        list(
-            map(
-                np.diag,
-                [
-                    [-1, 1, 1, 1],
-                    [1, -1, 1, 1],
-                    [1, 1, -1, 1],
-                    [-1, -1, 1, 1],
-                    [-1, 1, -1, 1],
-                    [1, -1, -1, 1],
-                ],
-            )
-        )
-    )
+    diag = [
+        [-1, 1, 1, 1],
+        [1, -1, 1, 1],
+        [1, 1, -1, 1],
+        [-1, -1, 1, 1],
+        [-1, 1, -1, 1],
+        [1, -1, -1, 1],
+    ]
+    axis_flips = np.array(list(map(np.diag, diag)))
 
     # some in plane 90 degree rotations base on these
     # (by permuting two lines)
@@ -469,14 +463,13 @@ def test_raises_bbox_error_if_data_outside_box():
     new_offset = np.array([0.0, 0.0, 0.0])
     new_affines[:, :3, 3] = new_offset[np.newaxis, :]
 
+    exception = BoundingBoxError
+    message = (
+        "The field of view given "
+        "by the target affine does "
+        "not contain any of the data"
+    )
     for new_affine in new_affines:
-        exception = BoundingBoxError
-        message = (
-            "The field of view given "
-            "by the target affine does "
-            "not contain any of the data"
-        )
-
         with pytest.raises(exception, match=message):
             resample_img(img, target_affine=new_affine)
 
