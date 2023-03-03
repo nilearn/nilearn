@@ -4,6 +4,8 @@ Plot Haxby masks
 
 Small script to plot the masks of the Haxby dataset.
 """
+
+
 import matplotlib.pyplot as plt
 
 from nilearn import datasets
