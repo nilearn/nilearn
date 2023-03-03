@@ -13,7 +13,8 @@ Here we discover how to work with 3D and 4D niimgs.
 #
 # Let's first check where the data is downloaded on our disk:
 from nilearn import datasets
-print('Datasets are stored in: %r' % datasets.get_data_dirs())
+
+print(f"Datasets are stored in: {datasets.get_data_dirs()!r}")
 
 ###############################################################################
 # Let's now retrieve a motor contrast from a Neurovault repository
@@ -32,6 +33,7 @@ tmap_filename = motor_images.images[0]
 # The file contains a 3D volume, we can easily visualize it as a
 # statistical map:
 from nilearn import plotting
+
 plotting.plot_stat_map(tmap_filename)
 
 ###############################################################################
@@ -52,6 +54,7 @@ rsn
 # It is a 4D nifti file. We load it into the memory to print its
 # shape.
 from nilearn import image
+
 print(image.load_img(rsn).shape)
 
 ###############################################################################
@@ -77,8 +80,9 @@ plotting.plot_stat_map(first_rsn)
 # compact display.
 for img in image.iter_img(rsn):
     # img is now an in-memory 3D img
-    plotting.plot_stat_map(img, threshold=3, display_mode="z", cut_coords=1,
-                           colorbar=False)
+    plotting.plot_stat_map(
+        img, threshold=3, display_mode="z", cut_coords=1, colorbar=False
+    )
 
 
 ###############################################################################

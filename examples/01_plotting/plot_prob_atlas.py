@@ -25,8 +25,8 @@ See :ref:`plotting` for more information to know how to tune the parameters.
 from nilearn import datasets
 
 # Harvard Oxford Atlasf
-harvard_oxford = datasets.fetch_atlas_harvard_oxford('cort-prob-2mm')
-harvard_oxford_sub = datasets.fetch_atlas_harvard_oxford('sub-prob-2mm')
+harvard_oxford = datasets.fetch_atlas_harvard_oxford("cort-prob-2mm")
+harvard_oxford_sub = datasets.fetch_atlas_harvard_oxford("sub-prob-2mm")
 
 # Multi Subject Dictionary Learning Atlas
 msdl = datasets.fetch_atlas_msdl()
