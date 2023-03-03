@@ -11,14 +11,14 @@ Plot the regions of a reference atlas (Harvard-Oxford and Juelich atlases).
 
 from nilearn import datasets
 
-dataset_ho = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
-dataset_ju = datasets.fetch_atlas_juelich('maxprob-thr0-1mm')
+dataset_ho = datasets.fetch_atlas_harvard_oxford("cort-maxprob-thr25-2mm")
+dataset_ju = datasets.fetch_atlas_juelich("maxprob-thr0-1mm")
 
 atlas_ho_filename = dataset_ho.filename
 atlas_ju_filename = dataset_ju.filename
 
-print('Atlas ROIs are located at: %s' % atlas_ho_filename)
-print('Atlas ROIs are located at: %s' % atlas_ju_filename)
+print(f"Atlas ROIs are located at: {atlas_ho_filename}")
+print(f"Atlas ROIs are located at: {atlas_ju_filename}")
 
 ###########################################################################
 # Visualizing the Harvard-Oxford atlas
@@ -37,13 +37,17 @@ plotting.plot_roi(atlas_ju_filename, title="Juelich atlas")
 ###########################################################################
 # Visualizing the Harvard-Oxford atlas with contours
 # --------------------------------------------------
-plotting.plot_roi(atlas_ho_filename, view_type='contours',
-                  title="Harvard Oxford atlas in contours")
+plotting.plot_roi(
+    atlas_ho_filename,
+    view_type="contours",
+    title="Harvard Oxford atlas in contours",
+)
 plotting.show()
 
 ###########################################################################
 # Visualizing the Juelich atlas with contours
 # --------------------------------------------------
-plotting.plot_roi(atlas_ju_filename, view_type='contours',
-                  title="Juelich atlas in contours")
+plotting.plot_roi(
+    atlas_ju_filename, view_type="contours", title="Juelich atlas in contours"
+)
 plotting.show()
