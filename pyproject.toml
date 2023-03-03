@@ -1,6 +1,6 @@
 [tool.black]
 line-length = 79
-include = "(nilearn/de.*)|(maint_tools/.*)|(setup.py)|(nilearn/image)"
+include = "(nilearn/de.*)|(maint_tools/.*)|(setup.py)|(nilearn/image.*py)"
 
 [tool.isort]
 profile = "black"
