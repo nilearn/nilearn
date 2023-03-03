@@ -101,6 +101,7 @@ plt.show()
 # specification when we change the design matrix.
 import numpy as np
 
+
 def make_localizer_contrasts(design_matrix):
     """Return a dictionary of four contrasts, given the design matrix."""
     # first generate canonical contrasts
@@ -187,6 +188,7 @@ plt.show()
 # fitting and plotting in a function that we call when needed.
 #
 from nilearn import plotting
+
 
 def plot_contrast(first_level_model):
     """Specify, estimate and plot the main contrasts for given a first model.

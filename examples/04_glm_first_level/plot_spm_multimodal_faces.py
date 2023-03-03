@@ -49,6 +49,7 @@ hrf_model = "spm + derivative"
 #
 # This is achieved by the concat_imgs function of Nilearn.
 import warnings
+
 from nilearn.image import concat_imgs, mean_img, resample_img
 
 # Avoid getting too many warnings due to resampling
