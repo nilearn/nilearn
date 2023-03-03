@@ -157,9 +157,7 @@ display = plot_stat_map(
     threshold=threshold,
     cmap=plt.cm.RdBu_r,
     display_mode="z",
-    cut_coords=[
-        -1,
-    ],
+    cut_coords=[-1],
     vmax=vmax,
 )
 
