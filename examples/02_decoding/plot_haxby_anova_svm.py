@@ -25,7 +25,6 @@ print(f"Functional nifti image (4D) is located at: {func_img}")
 import pandas as pd
 
 # Load target information as string and give a numerical identifier to each
-
 behavioral = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 conditions = behavioral["labels"]
 
