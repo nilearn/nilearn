@@ -186,12 +186,8 @@ def test_smooth_img():
     lengths = (17, 18)
     fwhm = (1.0, 2.0, 3.0)
 
-    img1, mask1 = data_gen.generate_fake_fmri(
-        shape=shapes[0], length=lengths[0]
-    )
-    img2, mask2 = data_gen.generate_fake_fmri(
-        shape=shapes[1], length=lengths[1]
-    )
+    img1, _ = data_gen.generate_fake_fmri(shape=shapes[0], length=lengths[0])
+    img2, _ = data_gen.generate_fake_fmri(shape=shapes[1], length=lengths[1])
 
     for create_files in (False, True):
         with testing.write_tmp_imgs(
@@ -523,9 +519,7 @@ def test_new_img_like():
     affine = np.diag((4, 3, 2, 1))
     img = nibabel.Nifti1Image(data, affine=affine)
     img2 = new_img_like(
-        [
-            img,
-        ],
+        [img],
         data,
     )
     np.testing.assert_array_equal(get_data(img), get_data(img2))
@@ -533,9 +527,7 @@ def test_new_img_like():
     # test_new_img_like_with_nifti2image_copy_header
     img_nifti2 = nibabel.Nifti2Image(data, affine=affine)
     img2_nifti2 = new_img_like(
-        [
-            img_nifti2,
-        ],
+        [img_nifti2],
         data,
         copy_header=True,
     )
