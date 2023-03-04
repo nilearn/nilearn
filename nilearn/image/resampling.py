@@ -462,17 +462,19 @@ def resample_img(
             "Affine shape should be (4, 4) and not (3, 3)"
         )
 
+    allowed_interpolations = ("continuous", "linear", "nearest")
+    if interpolation not in allowed_interpolations:
+        raise ValueError(
+            f"interpolation must be one of {allowed_interpolations}.\n"
+            f"Got '{interpolation}' instead."
+        )
+
     if interpolation == "continuous":
         interpolation_order = 3
     elif interpolation == "linear":
         interpolation_order = 1
     elif interpolation == "nearest":
         interpolation_order = 0
-    else:
-        raise ValueError(
-            "interpolation must be either 'continuous', 'linear' "
-            f"or 'nearest' but it was set to '{interpolation}'"
-        )
 
     img = stringify_path(img)
     if isinstance(img, str):
