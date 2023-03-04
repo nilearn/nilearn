@@ -25,6 +25,7 @@ from nilearn._utils.niimg import _safe_get_data
 
 def _local_max(data, affine, min_distance):
     """Find all local maxima of the array, separated by at least min_distance.
+
     Adapted from https://stackoverflow.com/a/22631583/2589328
 
     Parameters
@@ -416,7 +417,4 @@ def get_clusters_table(
     else:
         df = pd.DataFrame(columns=cols, data=rows)
 
-    if return_label_maps:
-        return df, label_maps
-    else:
-        return df
+    return (df, label_maps) if return_label_maps else df
