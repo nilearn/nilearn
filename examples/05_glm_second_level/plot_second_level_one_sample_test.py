@@ -37,14 +37,13 @@ data = fetch_localizer_contrasts(
     legacy_format=False,
 )
 
-import matplotlib.pyplot as plt
-
 ###############################################################################
 # Display subject t_maps
 # ----------------------
 # We plot a grid with all the subjects t-maps thresholded at t = 2 for simple
 # visualization purposes. The button press effect is visible among all
 # subjects.
+import matplotlib.pyplot as plt
 from nilearn import plotting
 
 subjects = data["ext_vars"]["participant_id"].tolist()
