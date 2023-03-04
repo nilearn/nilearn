@@ -18,8 +18,6 @@ hemisphere, negative in the left hemisphere).
 
 """
 
-
-import itertools
 ###############################################################################
 # Fetch dataset
 # -------------
@@ -183,6 +181,8 @@ out_dict = non_parametric_inference(
 # We will also cap the negative log10 p-values at 2.69, because this is the
 # maximum observable value for the nonparametric tests, which were run with
 # only 500 permutations.
+import itertools
+
 threshold = 1  # p < 0.1
 vmax = 2.69  # ~= -np.log10(1 / 500)
 
