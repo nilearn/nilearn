@@ -1,6 +1,6 @@
 """Mathematical operations working on Niimg-like objects.
 
-Like for exampl a (3+)D block of data, and an affine.
+Like, for example, a (3+)D block of data, and an affine.
 """
 from .._utils.niimg import copy_img
 from .._utils.niimg_conversions import concat_niimgs as concat_imgs
