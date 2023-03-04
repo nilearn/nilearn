@@ -19,13 +19,6 @@ underlying routine that extract masks from EPI
 
 """
 
-import nilearn.image as image
-
-# Load Miyawaki dataset
-from nilearn import datasets
-from nilearn.maskers import NiftiMasker
-from nilearn.plotting import plot_epi, plot_roi, show
-
 ###############################################################################
 # Computing a mask from the background
 ###############################################################################
@@ -35,7 +28,10 @@ from nilearn.plotting import plot_epi, plot_roi, show
 #
 # With data that has already been masked, this will work well, as it lies
 # on a homogeneous background
-
+import nilearn.image as image
+from nilearn import datasets
+from nilearn.maskers import NiftiMasker
+from nilearn.plotting import plot_epi, plot_roi, show
 
 miyawaki_dataset = datasets.fetch_miyawaki2008()
 

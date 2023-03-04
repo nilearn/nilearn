@@ -37,10 +37,9 @@ nifti_masker = NiftiMasker(
 nifti_masker.fit(func_filename)
 mask_img = nifti_masker.mask_img_
 
-from nilearn.image.image import mean_img
-
 ###########################################################################
 # Visualize the mask using the plot_roi method
+from nilearn.image.image import mean_img
 from nilearn.plotting import plot_roi
 
 # calculate mean image for the background
