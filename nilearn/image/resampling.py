@@ -469,11 +469,10 @@ def resample_img(
     elif interpolation == "nearest":
         interpolation_order = 0
     else:
-        message = (
+        raise ValueError(
             "interpolation must be either 'continuous', 'linear' "
-            "or 'nearest' but it was set to '{}'"
-        ).format(interpolation)
-        raise ValueError(message)
+            f"or 'nearest' but it was set to '{interpolation}'"
+        )
 
     img = stringify_path(img)
     if isinstance(img, str):

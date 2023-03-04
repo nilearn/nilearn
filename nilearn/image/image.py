@@ -769,8 +769,8 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
             ref_niimg = nibabel.load(ref_niimg)
         else:
             raise TypeError(
-                ("The reference image should be a niimg, %r " "was passed")
-                % orig_ref_niimg
+                "The reference image should be a niimg."
+                f" {orig_ref_niimg!r} was passed"
             )
 
     if affine is None:
