@@ -5,7 +5,7 @@ import pytest
 # Set backend to avoid DISPLAY problems
 from nilearn.plotting import _set_mpl_backend
 
-from nilearn.reporting import (
+from nilearn.reporting import get_clusters_table
     get_clusters_table,
 )
 from nilearn.image import get_data
