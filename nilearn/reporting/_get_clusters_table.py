@@ -311,7 +311,9 @@ def get_clusters_table(
     # If cluster threshold is used, there is chance that stat_map will be
     # modified, therefore copy is needed
     stat_map = _safe_get_data(
-        stat_img, ensure_finite=True, copy_data=(cluster_threshold is not None)
+        stat_img,
+        ensure_finite=True,
+        copy_data=(cluster_threshold is not None),
     )
 
     # Define array for 6-connectivity, aka NN1 or "faces"

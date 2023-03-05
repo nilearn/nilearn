@@ -6,8 +6,6 @@ import pytest
 from nilearn.plotting import _set_mpl_backend
 
 from nilearn.reporting import get_clusters_table
-    get_clusters_table,
-)
 from nilearn.image import get_data
 from nilearn.reporting._get_clusters_table import (
     _local_max,
@@ -148,7 +146,10 @@ def test_get_clusters_table(tmp_path):
     data_extra_dim = data[..., np.newaxis]
     stat_img_extra_dim = nib.Nifti1Image(data_extra_dim, np.eye(4))
     cluster_table = get_clusters_table(
-        stat_img_extra_dim, 4, 0, two_sided=True
+        stat_img_extra_dim,
+        4,
+        0,
+        two_sided=True,
     )
     assert len(cluster_table) == 2
 
@@ -160,6 +161,9 @@ def test_get_clusters_table(tmp_path):
 
 
 def test_get_clusters_table_relabel_label_maps():
+    """Check that the cluster's labels in label_maps match their corresponding
+    cluster IDs in the clusters table.
+    """
     shape = (9, 10, 11)
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 6.0
@@ -167,7 +171,10 @@ def test_get_clusters_table_relabel_label_maps():
     stat_img = nib.Nifti1Image(data, np.eye(4))
 
     cluster_table, label_maps = get_clusters_table(
-        stat_img, 4, 0, return_label_maps=True
+        stat_img,
+        4,
+        0,
+        return_label_maps=True,
     )
 
     # Get cluster ids from clusters table
@@ -191,7 +198,10 @@ def test_get_clusters_table_not_modifying_stat_image():
 
     # test one cluster should be removed
     clusters_table = get_clusters_table(
-        stat_img, 4, cluster_threshold=10, two_sided=True
+        stat_img,
+        4,
+        cluster_threshold=10,
+        two_sided=True,
     )
     assert np.allclose(data_orig, get_data(stat_img))
     assert len(clusters_table) == 1
@@ -199,7 +209,10 @@ def test_get_clusters_table_not_modifying_stat_image():
     # test no clusters should be removed
     stat_img = nib.Nifti1Image(data, np.eye(4))
     clusters_table = get_clusters_table(
-        stat_img, 4, cluster_threshold=7, two_sided=False
+        stat_img,
+        4,
+        cluster_threshold=7,
+        two_sided=False,
     )
     assert np.allclose(data_orig, get_data(stat_img))
     assert len(clusters_table) == 2
@@ -207,7 +220,10 @@ def test_get_clusters_table_not_modifying_stat_image():
     # test cluster threshold is None
     stat_img = nib.Nifti1Image(data, np.eye(4))
     clusters_table = get_clusters_table(
-        stat_img, 4, cluster_threshold=None, two_sided=False
+        stat_img,
+        4,
+        cluster_threshold=None,
+        two_sided=False,
     )
     assert np.allclose(data_orig, get_data(stat_img))
     assert len(clusters_table) == 2
