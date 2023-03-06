@@ -9,12 +9,44 @@ from nilearn.image import get_data, iter_img
 from nilearn.maskers import NiftiMasker
 
 
-def test_dict_learning():
-    data, mask_img, components, rng = _make_canica_test_data(n_subjects=8)
+def prepare_data_dict_learning():
+    data, mask_img, components, _ = _make_canica_test_data(n_subjects=4)
+
     masker = NiftiMasker(mask_img=mask_img).fit()
     mask = get_data(mask_img) != 0
+
     flat_mask = mask.ravel()
+
     dict_init = masker.inverse_transform(components[:, flat_mask])
+
+    return data, mask_img, dict_init, components, flat_mask, mask
+
+
+def test_dict_learning_smoke_epoch_gt_1():
+    data, mask_img, dict_init, _, _, _ = prepare_data_dict_learning()
+
+    dict_learning = DictLearning(
+        n_components=4,
+        random_state=0,
+        dict_init=dict_init,
+        mask=mask_img,
+        smoothing_fwhm=0.0,
+        n_epochs=2,
+        alpha=1,
+    )
+    dict_learning.fit(data)
+
+
+def test_dict_learning():
+    (
+        data,
+        mask_img,
+        dict_init,
+        components,
+        flat_mask,
+        mask,
+    ) = prepare_data_dict_learning()
+
     dict_learning = DictLearning(
         n_components=4,
         random_state=0,
@@ -53,19 +85,8 @@ def test_dict_learning():
 
         K = np.abs(masked_components.dot(these_maps.T))
         recovered_maps = np.sum(K > 0.9)
-        assert recovered_maps >= 2
 
-    # Smoke test n_epochs > 1
-    dict_learning = DictLearning(
-        n_components=4,
-        random_state=0,
-        dict_init=dict_init,
-        mask=mask_img,
-        smoothing_fwhm=0.0,
-        n_epochs=2,
-        alpha=1,
-    )
-    dict_learning.fit(data)
+        assert recovered_maps >= 2
 
 
 def test_component_sign():
@@ -95,18 +116,24 @@ def test_component_sign():
 
 def test_masker_attributes_with_fit():
     # Test base module at sub-class
-    data, mask_img, components, rng = _make_canica_test_data(n_subjects=3)
+    data, mask_img, _, _ = _make_canica_test_data(n_subjects=3)
+
     # Passing mask_img
     dict_learning = DictLearning(n_components=3, mask=mask_img, random_state=0)
     dict_learning.fit(data)
+
     assert dict_learning.mask_img_ == mask_img
     assert dict_learning.mask_img_ == dict_learning.masker_.mask_img_
+
     # Passing masker
     masker = NiftiMasker(mask_img=mask_img)
     dict_learning = DictLearning(n_components=3, mask=masker, random_state=0)
     dict_learning.fit(data)
+
     assert dict_learning.mask_img_ == dict_learning.masker_.mask_img_
+
     dict_learning = DictLearning(mask=mask_img, n_components=3)
+
     with pytest.raises(
         ValueError,
         match="Object has no components_ attribute. "
@@ -114,6 +141,7 @@ def test_masker_attributes_with_fit():
         "fit has not been called",
     ):
         dict_learning.transform(data)
+
     # Test if raises an error when empty list of provided.
     with pytest.raises(
         ValueError,
@@ -121,6 +149,7 @@ def test_masker_attributes_with_fit():
         "as input, an empty list was given.",
     ):
         dict_learning.fit([])
+
     # Test passing masker arguments to estimator
     dict_learning = DictLearning(
         n_components=3,
@@ -134,43 +163,34 @@ def test_masker_attributes_with_fit():
 def test_components_img():
     data, mask_img, _, _ = _make_canica_test_data(n_subjects=3)
     n_components = 3
+
     dict_learning = DictLearning(n_components=n_components, mask=mask_img)
+
     dict_learning.fit(data)
+
     components_img = dict_learning.components_img_
     assert isinstance(components_img, nibabel.Nifti1Image)
-    check_shape = data[0].shape + (n_components,)
+
+    check_shape = data[0].shape[:3] + (n_components,)
     assert components_img.shape, check_shape
 
 
-def test_with_globbing_patterns_with_single_subject():
-    # single subject
-    data, mask_img, _, _ = _make_canica_test_data(n_subjects=1)
+@pytest.mark.parametrize("n_subjects", [1, 3])
+def test_with_globbing_patterns(n_subjects):
+    data, mask_img, _, _ = _make_canica_test_data(n_subjects=n_subjects)
     n_components = 3
-    dictlearn = DictLearning(n_components=n_components, mask=mask_img)
-    with write_tmp_imgs(data[0], create_files=True, use_wildcards=True) as img:
-        input_image = _tmp_dir() + img
-        dictlearn.fit(input_image)
-        components_img = dictlearn.components_img_
-        assert isinstance(components_img, nibabel.Nifti1Image)
-        # n_components = 3
-        check_shape = data[0].shape[:3] + (3,)
-        assert components_img.shape, check_shape
 
+    dict_learning = DictLearning(n_components=n_components, mask=mask_img)
 
-def test_with_globbing_patterns_with_multi_subjects():
-    # multi subjects
-    data, mask_img, _, _ = _make_canica_test_data(n_subjects=3)
-    n_components = 3
-    dictlearn = DictLearning(n_components=n_components, mask=mask_img)
-    with write_tmp_imgs(
-        data[0], data[1], data[2], create_files=True, use_wildcards=True
-    ) as img:
+    with write_tmp_imgs(*data, create_files=True, use_wildcards=True) as img:
         input_image = _tmp_dir() + img
-        dictlearn.fit(input_image)
-        components_img = dictlearn.components_img_
+
+        dict_learning.fit(input_image)
+
+        components_img = dict_learning.components_img_
         assert isinstance(components_img, nibabel.Nifti1Image)
-        # n_components = 3
-        check_shape = data[0].shape[:3] + (3,)
+
+        check_shape = data[0].shape[:3] + (n_components,)
         assert components_img.shape, check_shape
 
 
@@ -178,7 +198,9 @@ def test_dictlearning_score():
     # Multi subjects
     imgs, mask_img, _, _ = _make_canica_test_data(n_subjects=3)
     n_components = 10
-    dictlearn = DictLearning(n_components=10, mask=mask_img, random_state=0)
+    dict_learning = DictLearning(
+        n_components=10, mask=mask_img, random_state=0
+    )
 
     # Test error before object fit
     with pytest.raises(
@@ -186,17 +208,17 @@ def test_dictlearning_score():
         match="Object has no components_ attribute. "
         "This is probably because fit has not been called",
     ):
-        dictlearn.score(imgs, per_component=False)
+        dict_learning.score(imgs, per_component=False)
 
-    dictlearn.fit(imgs)
+    dict_learning.fit(imgs)
 
     # One score for all components
-    scores = dictlearn.score(imgs, per_component=False)
+    scores = dict_learning.score(imgs, per_component=False)
     assert scores <= 1
     assert 0 <= scores
 
     # Per component score
-    scores = dictlearn.score(imgs, per_component=True)
+    scores = dict_learning.score(imgs, per_component=True)
     assert scores.shape, (n_components,)
     assert np.all(scores <= 1)
     assert np.all(scores >= 0)
