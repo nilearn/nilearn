@@ -1263,12 +1263,12 @@ def _check_bids_image_list(imgs: list[str] | None,
     if len(imgs) <= 1:
         return
 
-    msg_start = ("More than one nifti image found\n "
+    msg_start = ("Too many images found\n "
                  f"for subject: '{sub_label}'\n"
                  f"for filters: {filters}\n")
-    msg_end = ("Adapt that the arguments"
-               "'task_label', 'space_label' and 'img_filters'"
-               "to make sure only file per session, per run gets selected.")
+    msg_end = ("Please specify it further by setting, "
+               "for example, some required task_label, "
+               "space_label or img_filters")
 
     run_check_list: list = []
 
