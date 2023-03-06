@@ -985,17 +985,63 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 
     return models, models_run_imgs, models_events, models_confounds
 
-def _report_found_files(files, text, sub_label, filters):
+def _report_found_files(files: list[str],
+                        text: str,
+                        sub_label: str,
+                        filters: list[tuple[str,str]]):
+    """Print list of files found for a given subject and filter.
+
+    Parameters
+    ----------
+    files : :obj:`list` of :obj:`str`
+        List of fullpath of files.
+
+    text :  :obj:`str`
+        Text description of the file type.
+
+    sub_label : :obj:`str`
+        Subject label as specified in the file names like sub-<sub_label>_.
+
+    filters : :obj:`list` of :obj:`tuple` (str, str)
+        Filters are of the form (field, label).
+        Only one filter per field allowed.
+
+    """
     print(f'Found the following {len(files)} {text} files\n',
         f'for subject {sub_label}\n',
         f'for filter: {filters}:\n',
         f'{files}\n') 
 
 def _get_processed_imgs(derivatives_path: str,
-                      sub_label: str,
-                      task_label: str,
-                      space_label: str,
-                      img_filters: list[tuple[str,str]]):
+                        sub_label: str,
+                        task_label: str,
+                        space_label: str,
+                        img_filters: list[tuple[str,str]]):
+    """Get images for a given subject, task and filters.
+
+    Also checks that the number of the number of images.
+
+    Parameters
+    ----------
+    derivatives_path : :obj:`str`
+        Directory of the derivatves BIDS dataset.
+
+    sub_label : :obj:`str`
+        Subject label as specified in the file names like sub-<sub_label>_.
+
+    task_label : :obj:`str`
+        Task label as specified in the file names like _task-<task_label>_.
+
+    img_filters : :obj:`list` of :obj:`tuple` (str, str)
+        Filters are of the form (field, label).
+        Only one filter per field allowed.
+
+    Returns
+    -------
+    imgs : :obj:`list` of :obj:`str`
+        List of fullpath to the imgs files
+
+    """    
     filters = _make_bids_files_filter(
             task_label=task_label,
             space_label=space_label,
@@ -1017,6 +1063,34 @@ def _get_events_files(dataset_path: str,
                       task_label: str,
                       img_filters: list[tuple[str,str]],
                       imgs: list[str]):
+    """Get events.tsv files for a given subject, task and filters.
+
+    Also checks that the number of events.tsv files
+    matches the number of images.
+
+    Parameters
+    ----------
+    dataset_path : :obj:`str`
+        Directory of the derivatves BIDS dataset.
+
+    sub_label : :obj:`str`
+        Subject label as specified in the file names like sub-<sub_label>_.
+
+    task_label : :obj:`str`
+        Task label as specified in the file names like _task-<task_label>_.
+
+    img_filters : :obj:`list` of :obj:`tuple` (str, str)
+        Filters are of the form (field, label).
+        Only one filter per field allowed.
+
+    imgs : :obj:`list` of :obj:`str`
+        List of fullpath to the preprocessed images
+
+    Returns
+    -------
+    events : :obj:`list` of :obj:`str`
+        List of fullpath to the events files
+    """    
     events_filters = _make_bids_files_filter(
         task_label=task_label,
         supported_filters=_supported_bids_filter()["raw"],
@@ -1041,24 +1115,65 @@ def _get_confounds(derivatives_path: str,
                    task_label: str,
                    img_filters: list[tuple[str,str]],
                    imgs: list[str]):
-        confounds_filters = _supported_bids_filter()["raw"] + \
-                            _supported_bids_filter()["derivatives"]
-        confounds_filters.remove('desc')
-        filters = _make_bids_files_filter(task_label=task_label,
-                                         supported_filters=confounds_filters,
-                                         extra_filter=img_filters)
-        confounds = get_bids_files(derivatives_path,
-                                   modality_folder='func',
-                                   file_tag='desc-confounds*',
-                                   file_type='tsv',
-                                   sub_label=sub_label,
-                                   filters=filters)
-        _check_confounds_list(confounds=confounds, imgs=imgs)        
-        return None if len(confounds)==0 else confounds    
+    """Get confounds.tsv files for a given subject, task and filters.
+
+    Also checks that the number of confounds.tsv files
+    matches the number of images.
+
+    Parameters
+    ----------
+    derivatives_path : :obj:`str`
+        Directory of the derivatves BIDS dataset.
+
+    sub_label : :obj:`str`
+        Subject label as specified in the file names like sub-<sub_label>_.
+
+    task_label : :obj:`str`
+        Task label as specified in the file names like _task-<task_label>_.
+
+    img_filters : :obj:`list` of :obj:`tuple` (str, str)
+        Filters are of the form (field, label).
+        Only one filter per field allowed.
+
+    imgs : :obj:`list` of :obj:`str`
+        List of fullpath to the preprocessed images
+
+    Returns
+    -------
+    confounds : :obj:`list` of :obj:`str`
+        List of fullpath to the confounds.tsv files
+
+    """    
+    confounds_filters = _supported_bids_filter()["raw"] + \
+                        _supported_bids_filter()["derivatives"]
+    confounds_filters.remove('desc')
+    filters = _make_bids_files_filter(task_label=task_label,
+                                        supported_filters=confounds_filters,
+                                        extra_filter=img_filters)
+    confounds = get_bids_files(derivatives_path,
+                                modality_folder='func',
+                                file_tag='desc-confounds*',
+                                file_type='tsv',
+                                sub_label=sub_label,
+                                filters=filters)
+    _check_confounds_list(confounds=confounds, imgs=imgs)        
+    return confounds    
 
 def _check_confounds_list(confounds: list[str], imgs: list[str]):
-    # If not found it will be assumed there are none.
-    # If there are confounds, there must be one per run.
+    """Check the number of confounds.tsv files.
+    
+    If no file is found, it will be assumed there are none, 
+    but if there are any confounds files, there must be one per run.
+
+    Parameters
+    ----------
+    confounds : :obj:`list` of :obj:`str`
+        List of fullpath to the confounds.tsv files
+
+    imgs : :obj:`list` of :obj:`str`
+        List of fullpath to the preprocessed images
+
+    """
     if confounds and len(confounds) != len(imgs):
         raise ValueError(f"{len(confounds)} confounds.tsv files found "
                          f"for {len(imgs)} bold files. "
@@ -1194,7 +1309,7 @@ def _make_bids_files_filter(task_label: str,
     Parameters
     ----------
     task_label : :obj:`str`
-        Task_label as specified in the file names like _task-<task_label>_.
+        Task label as specified in the file names like _task-<task_label>_.
 
     space_label : :obj:`str` or None, optional
         Specifies the space label of the preprocessed bold.nii images.
