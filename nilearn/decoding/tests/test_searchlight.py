@@ -8,7 +8,7 @@ from nilearn.decoding import searchlight
 from sklearn.model_selection import KFold
 
 
-def create_toy_dataset(frames):
+def _make_searchlight_test_data(frames):
     # Initialize with 4x4x4 scans of random values on 30 frames
     rand = np.random.RandomState(0)
     frames = frames
@@ -35,7 +35,7 @@ def define_cross_validation():
 
 def test_searchlight_small_radius():
     frames = 30
-    data_img, cond, mask_img = create_toy_dataset(frames)
+    data_img, cond, mask_img = _make_searchlight_test_data(frames)
     cv, n_jobs = define_cross_validation()
 
     # Small radius : only one pixel is selected
@@ -56,7 +56,7 @@ def test_searchlight_small_radius():
 
 def test_searchlight_mask_far_from_signal():
     frames = 30
-    data_img, cond, mask_img = create_toy_dataset(frames)
+    data_img, cond, mask_img = _make_searchlight_test_data(frames)
     cv, n_jobs = define_cross_validation()
 
     process_mask = np.zeros((5, 5, 5), dtype=bool)
@@ -79,7 +79,7 @@ def test_searchlight_mask_far_from_signal():
 
 def test_searchlight_medium_radius():
     frames = 30
-    data_img, cond, mask_img = create_toy_dataset(frames)
+    data_img, cond, mask_img = _make_searchlight_test_data(frames)
     cv, n_jobs = define_cross_validation()
 
     sl = searchlight.SearchLight(
@@ -104,7 +104,7 @@ def test_searchlight_medium_radius():
 
 def test_searchlight_large_radius():
     frames = 30
-    data_img, cond, mask_img = create_toy_dataset(frames)
+    data_img, cond, mask_img = _make_searchlight_test_data(frames)
     cv, n_jobs = define_cross_validation()
 
     sl = searchlight.SearchLight(
@@ -134,7 +134,7 @@ def group_cross_validation(cv):
 
 def test_searchlight_group_cross_validation():
     frames = 30
-    data_img, cond, mask_img = create_toy_dataset(frames)
+    data_img, cond, mask_img = _make_searchlight_test_data(frames)
     cv, n_jobs = define_cross_validation()
     gcv = group_cross_validation(cv)
 
@@ -157,7 +157,7 @@ def test_searchlight_group_cross_validation():
 
 def test_searchlight_group_cross_validation_with_extra_group_variable():
     frames = 30
-    data_img, cond, mask_img = create_toy_dataset(frames)
+    data_img, cond, mask_img = _make_searchlight_test_data(frames)
     cv, n_jobs = define_cross_validation()
 
     groups = np.random.RandomState(42).permutation(

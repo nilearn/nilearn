@@ -202,7 +202,7 @@ def test_parallel_fit():
             assert a == b
 
 
-def prepare_binary_classification_data(n_samples):
+def _make_binary_classification_test_data(n_samples):
     X, y = make_classification(
         n_samples=n_samples,
         n_features=125,
@@ -216,7 +216,7 @@ def prepare_binary_classification_data(n_samples):
 
 
 def test_decoder_binary_classification_with_masker_object():
-    X, y, mask = prepare_binary_classification_data(n_samples=200)
+    X, y, mask = _make_binary_classification_test_data(n_samples=200)
 
     model = Decoder(mask=NiftiMasker())
     model.fit(X, y)
@@ -229,7 +229,7 @@ def test_decoder_binary_classification_with_masker_object():
 
 def test_decoder_binary_classification_with_logistic_model():
     """Check decoder with predict_proba for scoring with logistic model."""
-    X, y, mask = prepare_binary_classification_data(n_samples=200)
+    X, y, mask = _make_binary_classification_test_data(n_samples=200)
 
     model = Decoder(estimator="logistic_l2", mask=mask)
     model.fit(X, y)
@@ -240,7 +240,7 @@ def test_decoder_binary_classification_with_logistic_model():
 
 @pytest.mark.parametrize("screening_percentile", [100, 20, None])
 def test_decoder_binary_classification_screening(screening_percentile):
-    X, y, mask = prepare_binary_classification_data(n_samples=200)
+    X, y, mask = _make_binary_classification_test_data(n_samples=200)
 
     model = Decoder(mask=mask, screening_percentile=screening_percentile)
     model.fit(X, y)
@@ -251,7 +251,7 @@ def test_decoder_binary_classification_screening(screening_percentile):
 
 @pytest.mark.parametrize("clustering_percentile", [100, 99])
 def test_decoder_binary_classification_clustering(clustering_percentile):
-    X, y, mask = prepare_binary_classification_data(n_samples=200)
+    X, y, mask = _make_binary_classification_test_data(n_samples=200)
 
     model = FREMClassifier(
         estimator="logistic_l2",
@@ -268,7 +268,7 @@ def test_decoder_binary_classification_clustering(clustering_percentile):
 
 @pytest.mark.parametrize("cv", [KFold(n_splits=5), LeaveOneGroupOut()])
 def test_decoder_binary_classification_cross_validation(cv):
-    X, y, mask = prepare_binary_classification_data(n_samples=200)
+    X, y, mask = _make_binary_classification_test_data(n_samples=200)
 
     # check cross-validation scheme and fit attribute with groups enabled
     rand_local = np.random.RandomState(42)
@@ -285,7 +285,7 @@ def test_decoder_binary_classification_cross_validation(cv):
 
 def test_decoder_dummy_classifier():
     n_samples = 400
-    X, y, mask = prepare_binary_classification_data(n_samples=n_samples)
+    X, y, mask = _make_binary_classification_test_data(n_samples=n_samples)
 
     # We make 80% of y to have value of 1.0 to check whether the stratified
     # strategy returns a proportion prediction value of 1.0 of roughly 80%
@@ -301,7 +301,7 @@ def test_decoder_dummy_classifier():
 
 
 def test_decoder_dummy_classifier_with_callable():
-    X, y, mask = prepare_binary_classification_data(n_samples=400)
+    X, y, mask = _make_binary_classification_test_data(n_samples=400)
 
     accuracy_scorer = get_scorer("accuracy")
     model = Decoder(
@@ -315,7 +315,7 @@ def test_decoder_dummy_classifier_with_callable():
 
 
 def test_decoder_error_model_not_fitted():
-    X, y, mask = prepare_binary_classification_data(n_samples=400)
+    X, y, mask = _make_binary_classification_test_data(n_samples=400)
 
     model = Decoder(estimator="dummy_classifier", mask=mask)
     with pytest.raises(
@@ -325,7 +325,7 @@ def test_decoder_error_model_not_fitted():
 
 
 def test_decoder_dummy_classifier_strategy_prior():
-    X, y, mask = prepare_binary_classification_data(n_samples=400)
+    X, y, mask = _make_binary_classification_test_data(n_samples=400)
 
     param = dict(strategy="prior")
     dummy_classifier.set_params(**param)
@@ -338,7 +338,7 @@ def test_decoder_dummy_classifier_strategy_prior():
 
 
 def test_decoder_dummy_classifier_strategy_most_frequent():
-    X, y, mask = prepare_binary_classification_data(n_samples=400)
+    X, y, mask = _make_binary_classification_test_data(n_samples=400)
 
     param = dict(strategy="most_frequent")
     dummy_classifier.set_params(**param)
@@ -355,7 +355,7 @@ def test_decoder_dummy_classifier_strategy_most_frequent():
 
 
 def test_decoder_dummy_classifier_roc_scoring():
-    X, y, mask = prepare_binary_classification_data(n_samples=400)
+    X, y, mask = _make_binary_classification_test_data(n_samples=400)
 
     model = Decoder(estimator="dummy_classifier", mask=mask, scoring="roc_auc")
     model.fit(X, y)
@@ -364,7 +364,7 @@ def test_decoder_dummy_classifier_roc_scoring():
 
 
 def test_decoder_error_not_implemented():
-    X, y, mask = prepare_binary_classification_data(n_samples=400)
+    X, y, mask = _make_binary_classification_test_data(n_samples=400)
 
     param = dict(strategy="constant")
     dummy_classifier.set_params(**param)
@@ -374,7 +374,7 @@ def test_decoder_error_not_implemented():
 
 
 def test_decoder_error_unknown_scoring_metrics():
-    X, y, mask = prepare_binary_classification_data(n_samples=400)
+    X, y, mask = _make_binary_classification_test_data(n_samples=400)
 
     model = Decoder(estimator=dummy_classifier, mask=mask, scoring="foo")
 
@@ -383,7 +383,7 @@ def test_decoder_error_unknown_scoring_metrics():
 
 
 def test_decoder_dummy_classifier_default_scoring():
-    X, y, _ = prepare_binary_classification_data(n_samples=400)
+    X, y, _ = _make_binary_classification_test_data(n_samples=400)
 
     model = Decoder(estimator="dummy_classifier", scoring=None)
 
@@ -409,7 +409,7 @@ def test_decoder_classification_string_label():
     assert accuracy_score(y_str, y_pred) > 0.95
 
 
-def prepare_regression_data(n_samples, dim):
+def _make_regression_test_data(n_samples, dim):
     X, y = make_regression(
         n_samples=n_samples,
         n_features=dim**3,
@@ -425,7 +425,7 @@ def prepare_regression_data(n_samples, dim):
 
 @pytest.mark.parametrize("screening_percentile", [100, 20, 1, None])
 def test_decoder_regression_screening(screening_percentile):
-    X, y, mask = prepare_regression_data(n_samples=100, dim=30)
+    X, y, mask = _make_regression_test_data(n_samples=100, dim=30)
 
     for reg in regressors:
         model = DecoderRegressor(
@@ -441,7 +441,7 @@ def test_decoder_regression_screening(screening_percentile):
 
 @pytest.mark.parametrize("clustering_percentile", [100, 99])
 def test_decoder_regression_clustering(clustering_percentile):
-    X, y, mask = prepare_regression_data(n_samples=100, dim=5)
+    X, y, mask = _make_regression_test_data(n_samples=100, dim=5)
 
     for reg in regressors:
         model = FREMRegressor(
@@ -460,7 +460,7 @@ def test_decoder_regression_clustering(clustering_percentile):
 
 
 def test_decoder_dummy_regression():
-    X, y, mask = prepare_regression_data(n_samples=100, dim=30)
+    X, y, mask = _make_regression_test_data(n_samples=100, dim=30)
 
     # Regression with dummy estimator
     model = DecoderRegressor(
@@ -497,7 +497,7 @@ def test_decoder_dummy_regression():
     assert model.cv_scores_ is not None
 
 
-def prepare_multiclass_classification_data(n_samples=200):
+def _make_multiclass_classification_test_data(n_samples=200):
     X, y = make_classification(
         n_samples=n_samples,
         n_features=125,
@@ -511,7 +511,7 @@ def prepare_multiclass_classification_data(n_samples=200):
 
 
 def test_decoder_multiclass_classification_masker():
-    X, y, _ = prepare_multiclass_classification_data()
+    X, y, _ = _make_multiclass_classification_test_data()
 
     model = Decoder(mask=NiftiMasker())
     model.fit(X, y)
@@ -521,7 +521,7 @@ def test_decoder_multiclass_classification_masker():
 
 
 def test_decoder_multiclass_classification_masker_dummy_classifier():
-    X, y, _ = prepare_multiclass_classification_data()
+    X, y, _ = _make_multiclass_classification_test_data()
 
     model = Decoder(
         estimator="dummy_classifier", mask=NiftiMasker(), scoring="accuracy"
@@ -537,7 +537,7 @@ def test_decoder_multiclass_classification_masker_dummy_classifier():
 
 @pytest.mark.parametrize("screening_percentile", [100, 20, None])
 def test_decoder_multiclass_classification_screening(screening_percentile):
-    X, y, mask = prepare_multiclass_classification_data()
+    X, y, mask = _make_multiclass_classification_test_data()
 
     model = Decoder(mask=mask, screening_percentile=screening_percentile)
     model.fit(X, y)
@@ -551,7 +551,7 @@ def test_decoder_multiclass_classification_screening(screening_percentile):
 def test_decoder_multiclass_classification_clustering(
     clustering_percentile, estimator
 ):
-    X, y, mask = prepare_multiclass_classification_data()
+    X, y, mask = _make_multiclass_classification_test_data()
 
     model = FREMClassifier(
         estimator=estimator,
@@ -569,7 +569,7 @@ def test_decoder_multiclass_classification_clustering(
 
 @pytest.mark.parametrize("cv", [KFold(n_splits=5), LeaveOneGroupOut()])
 def test_decoder_multiclass_classification_cross_validation(cv):
-    X, y, mask = prepare_multiclass_classification_data()
+    X, y, mask = _make_multiclass_classification_test_data()
 
     # check cross-validation scheme and fit attribute with groups enabled
     rand_local = np.random.RandomState(42)
@@ -629,7 +629,7 @@ def test_decoder_apply_mask():
 
 
 def test_decoder_split_cv():
-    X, y, _ = prepare_multiclass_classification_data()
+    X, y, _ = _make_multiclass_classification_test_data()
     rand_local = np.random.RandomState(42)
     groups = rand_local.binomial(2, 0.3, size=len(y))
 
