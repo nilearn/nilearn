@@ -4,6 +4,8 @@ Download statistical maps available on Neurovault (http://neurovault.org).
 # Author: Jerome Dockes
 # License: simplified BSD
 
+from __future__ import annotations
+
 import os
 import warnings
 import traceback
@@ -32,7 +34,7 @@ _NEUROVAULT_IMAGES_URL = urljoin(_NEUROVAULT_BASE_URL, 'images/')
 _NEUROSYNTH_FETCH_WORDS_URL = 'https://neurosynth.org/api/decode/'
 
 _COL_FILTERS_AVAILABLE_ON_SERVER = ('DOI', 'name', 'owner', 'id')
-_IM_FILTERS_AVAILABLE_ON_SERVER = tuple()  # type: ignore
+_IM_FILTERS_AVAILABLE_ON_SERVER : tuple = tuple()
 
 _DEFAULT_BATCH_SIZE = 100
 _DEFAULT_MAX_IMAGES = 100

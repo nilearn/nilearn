@@ -794,9 +794,9 @@ docdict["templateflow"] = """
     ICBM152 2009, release a. If you wish to use the exact same release as
     :term:`fMRIPrep`, please refer to TemplateFlow
     (https://www.templateflow.org/).
-""" # type: ignore
+"""
 
-docdict_indented = {}  # type: ignore
+docdict_indented : dict = {}
 
 
 def _indentcount_lines(lines):

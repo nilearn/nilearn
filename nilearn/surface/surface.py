@@ -30,10 +30,10 @@ from nilearn import _utils
 from nilearn.image import get_data
 
 # Create a namedtuple object for meshes
-Mesh = namedtuple("mesh", ["coordinates", "faces"])
+Mesh = namedtuple("Mesh", ["coordinates", "faces"])
 
 # Create a namedtuple object for surfaces
-Surface = namedtuple("surface", ["mesh", "data"])
+Surface = namedtuple("Surface", ["mesh", "data"])
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
     """Get points uniformly spaced in the unit ball."""
