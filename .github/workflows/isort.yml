@@ -29,4 +29,4 @@ jobs:
           python -m pip install --upgrade pip isort
 
       - name: "Run isort"
-        run: isort --diff --check --settings-path pyproject.toml nilearn/de*
+        run: isort --diff --check --settings-path pyproject.toml nilearn/de* nilearn/image
