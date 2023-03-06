@@ -283,7 +283,7 @@ hkmeans_labels_img.to_filename("hierarchical_kmeans_parcellation.nii.gz")
 # First count how many voxels have each label (except 0 which is the
 # background).
 
-kmeans_labels, kmeans_counts = np.unique(
+_, kmeans_counts = np.unique(
     get_data(kmeans_labels_img), return_counts=True
 )
 

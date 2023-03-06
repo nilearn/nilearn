@@ -58,15 +58,10 @@ print(
 )
 
 
-# A "memory" to avoid recomputation
-from joblib import Memory
-
 ##############################################################################
 # Extracting region signals
 # --------------------------
 from nilearn.maskers import NiftiMapsMasker
-
-mem = Memory("nilearn_cache")
 
 masker = NiftiMapsMasker(
     msdl_atlas_dataset.maps,
