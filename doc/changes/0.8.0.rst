@@ -65,17 +65,17 @@ Enhancements
 ------------
 
 - Function :func:`~plotting.view_markers` now accepts an optional argument ``marker_labels`` to provide labels to each marker (:gh:`2745` by `Greydon Gilmore`_).
-  
+
 - Function :func:`~plotting.plot_surf` now accepts new values for ``avg_method`` argument, such as ``min``, ``max``, or even a custom python function to compute the value displayed for each face of the plotted mesh (:gh:`2790` by `Alexis Thual`_).
 
 - Function :func:`~plotting.view_img_on_surf` can now optionally pass through parameters to function :func:`~surface.vol_to_surf` using the ``vol_to_surf_kwargs`` argument. One application is better HTML visualization of atlases (https://nilearn.github.io/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html) (:gh:`2805` by `Evan Edmond`_).
 
 - Function :func:`~plotting.view_connectome` now accepts an optional argument ``node_color`` to provide a single color for all nodes, or one color per node. It defaults to ``auto`` which colors markers according to the viridis colormap (:gh:`2810` by `Raphael Meudec`_).
-  
+
 - Function :func:`~signal.clean` has been refactored to clarify the data flow (:gh:`2821` by `Hao-Ting Wang`_).
-  
+
 - Parameter ``sessions`` has been replaced with ``runs`` in :func:`~signal.clean` to match BIDS semantics. ``sessions`` has been deprecated and will be removed in ``0.9.0`` (:gh:`2821` by `Hao-Ting Wang`_).
-  
+
 - Add argument ``filter`` in :func:`~signal.clean` and allow a selection of signal filtering strategies: ``butterwoth`` for butterworth filter, ``cosine`` for discrete cosine transformation, and ``False`` for no filtering (:gh:`2821` by `Hao-Ting Wang`_).
 
 - Change the default strategy for :class:`sklearn.dummy.DummyClassifier` from ``prior`` to ``stratified`` (:gh:`2826` by `Binh Nguyen`_).
