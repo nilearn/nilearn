@@ -30,37 +30,50 @@ localizer_anat_filename = localizer_dataset.anat
 # --------------------------------------------------------------------------
 
 from nilearn import plotting
-plotting.plot_stat_map(localizer_tmap_filename,
-                       bg_img=localizer_anat_filename,
-                       cut_coords=(36, -27, 66),
-                       threshold=3, title="dim=-.5",
-                       dim=-.5)
+
+plotting.plot_stat_map(
+    localizer_tmap_filename,
+    bg_img=localizer_anat_filename,
+    cut_coords=(36, -27, 66),
+    threshold=3,
+    title="dim=-.5",
+    dim=-0.5,
+)
 
 ########################################################################
 # Plotting with no change of contrast in background image with dim=0
 # -------------------------------------------------------------------
-plotting.plot_stat_map(localizer_tmap_filename,
-                       bg_img=localizer_anat_filename,
-                       cut_coords=(36, -27, 66),
-                       threshold=3, title="dim=0",
-                       dim=0)
+plotting.plot_stat_map(
+    localizer_tmap_filename,
+    bg_img=localizer_anat_filename,
+    cut_coords=(36, -27, 66),
+    threshold=3,
+    title="dim=0",
+    dim=0,
+)
 
 ########################################################################
 # Plotting with decrease of contrast in background image with dim=.5
 # -------------------------------------------------------------------
-plotting.plot_stat_map(localizer_tmap_filename,
-                       bg_img=localizer_anat_filename,
-                       cut_coords=(36, -27, 66),
-                       threshold=3, title="dim=.5",
-                       dim=.5)
+plotting.plot_stat_map(
+    localizer_tmap_filename,
+    bg_img=localizer_anat_filename,
+    cut_coords=(36, -27, 66),
+    threshold=3,
+    title="dim=.5",
+    dim=0.5,
+)
 
 ########################################################################
 # Plotting with more decrease in contrast with dim=1
 # ---------------------------------------------------
-plotting.plot_stat_map(localizer_tmap_filename,
-                       bg_img=localizer_anat_filename,
-                       cut_coords=(36, -27, 66),
-                       threshold=3, title="dim=1",
-                       dim=1)
+plotting.plot_stat_map(
+    localizer_tmap_filename,
+    bg_img=localizer_anat_filename,
+    cut_coords=(36, -27, 66),
+    threshold=3,
+    title="dim=1",
+    dim=1,
+)
 
 plotting.show()

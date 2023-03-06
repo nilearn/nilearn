@@ -80,4 +80,3 @@ Contributors (from ``git shortlog -ns 0.2.4..0.2.5``):
     * `Bertrand Thirion`_ (1)
     * Ivan Gonzalez (1)
     * `Roberto Guidotti`_ (1)
-  

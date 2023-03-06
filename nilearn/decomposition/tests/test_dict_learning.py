@@ -1,13 +1,12 @@
-import numpy as np
 import nibabel
+import numpy as np
 import pytest
-
 from nilearn._utils.testing import write_tmp_imgs
 from nilearn.decomposition.dict_learning import DictLearning
 from nilearn.decomposition.tests.test_canica import _make_canica_test_data
-from nilearn.image import iter_img, get_data
-from nilearn.maskers import NiftiMasker
 from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
+from nilearn.image import get_data, iter_img
+from nilearn.maskers import NiftiMasker
 
 
 def test_dict_learning():

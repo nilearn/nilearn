@@ -284,7 +284,7 @@ class BaseSlicer:
         """ Contour a 3D map in all the views.
 
         Parameters
-        -----------
+        ----------
         %(img)s
             Provides image to plot.
 

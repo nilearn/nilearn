@@ -19,21 +19,21 @@ operation in just a few lines of code.
 # and we restrict the example to one subject only.
 
 from nilearn import datasets
+
 dataset = datasets.fetch_development_fmri(n_subjects=1)
 func_filename = dataset.func[0]
 
 # print basic information on the dataset
-print('First functional nifti image (4D) is at: %s' % func_filename)
+print(f"First functional nifti image (4D) is at: {func_filename}")
 
 ###########################################################################
 # Load an atlas
 #
 # We then load the Harvard-Oxford atlas to define the brain regions
-atlas = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
+atlas = datasets.fetch_atlas_harvard_oxford("cort-maxprob-thr25-2mm")
 
 # The first label correspond to the background
-print('The atlas contains {} non-overlapping regions'.format(
-    len(atlas.labels) - 1))
+print(f"The atlas contains {len(atlas.labels) - 1} non-overlapping regions")
 
 ###########################################################################
 # Instantiate the mask and visualize atlas
@@ -41,9 +41,7 @@ print('The atlas contains {} non-overlapping regions'.format(
 from nilearn.maskers import NiftiLabelsMasker
 
 # Instantiate the masker with label image and label values
-masker = NiftiLabelsMasker(atlas.maps,
-                           labels=atlas.labels,
-                           standardize=True)
+masker = NiftiLabelsMasker(atlas.maps, labels=atlas.labels, standardize=True)
 
 # Visualize the atlas
 # Note that we need to call fit prior to generating the mask
@@ -82,9 +80,9 @@ import matplotlib.pyplot as plt
 fig = plt.figure(figsize=(15, 5))
 ax = fig.add_subplot(111)
 for label_idx in range(3):
-    ax.plot(signals[:, label_idx],
-            linewidth=2,
-            label=atlas.labels[label_idx + 1])  # 0 is background
+    ax.plot(
+        signals[:, label_idx], linewidth=2, label=atlas.labels[label_idx + 1]
+    )  # 0 is background
 ax.legend(loc=2)
 ax.set_title("Signals for first 3 regions")
 plt.show()

@@ -535,7 +535,7 @@ def write_fake_fmri_data_and_design(shapes,
         A list of paths to the generated design matrix files.
 
     See Also
-    ------
+    --------
     nilearn._utils.data_gen.generate_fake_fmri_data_and_design
 
     """

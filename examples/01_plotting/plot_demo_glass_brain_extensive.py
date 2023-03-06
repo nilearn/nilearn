@@ -27,7 +27,8 @@ about the plotting data and associated meta-data.
 # Let us first see where the data will be downloaded and stored on our disk:
 #
 from nilearn import datasets
-print('Datasets shipped with nilearn are stored in: %r' % datasets.get_data_dirs())
+print("Datasets shipped with nilearn are stored "
+      f"at: {datasets.get_data_dirs()!r}")
 
 ###############################################################################
 # Let us now retrieve a motor task contrast map

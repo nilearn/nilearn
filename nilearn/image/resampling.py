@@ -199,7 +199,7 @@ def get_mask_bounds(img):
             background.
 
         Returns
-        --------
+        -------
         xmin, xmax, ymin, ymax, zmin, zmax : floats
             The world-space bounds (field of view) occupied by the
             non-zero values in the image
@@ -706,7 +706,7 @@ def reorder_img(img, resample=None):
     'ValueError' is raised.
 
     Parameters
-    -----------
+    ----------
     img : Niimg-like object
         See :ref:`extracting_data`.
         Image to reorder.

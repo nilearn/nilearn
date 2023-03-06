@@ -8,9 +8,9 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-          # TODO after next release: 
+          # TODO after next release:
           # - update the link to changelog item in the checklist to this:
-          #     
+          #
           #       (see our documentation on [changelogs](https://nilearn.github.io/stable/development.html#changelog))
           pullRequestOpened: >
             👋 @{{ author }} Thanks for creating a PR!
@@ -20,7 +20,7 @@ jobs:
             in its title, or leave it as a github draft.
 
 
-            Please make sure it is compliant 
+            Please make sure it is compliant
             with our [contributing guidelines](https://nilearn.github.io/stable/development.html#contribution-guidelines).
             In particular, be sure it checks the boxes listed below.
 
@@ -38,7 +38,7 @@ jobs:
 
             For new features:
 
-            - [ ] There is at least one unit test per new function / class 
+            - [ ] There is at least one unit test per new function / class
             (see our documentation on [testing](https://nilearn.github.io/stable/development.html#tests))
 
             - [ ] The new feature is demoed in at least one relevant example.
@@ -47,7 +47,7 @@ jobs:
             For bug fixes:
             
             - [ ] There is at least one test that would fail
-            under the original bug conditions.            
+            under the original bug conditions.
 
 
             We will review it as quick as possible, feel free to ping us with
