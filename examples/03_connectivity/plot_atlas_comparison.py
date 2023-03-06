@@ -34,8 +34,8 @@ from nilearn import datasets
 
 yeo = datasets.fetch_atlas_yeo_2011()
 print(
-    "Yeo atlas nifti image (3D) with 17 parcels and liberal mask is located "
-    "at: %s" % yeo["thick_17"]
+    "Yeo atlas nifti image (3D) with 17 parcels and liberal mask "
+    f" is located at: {yeo['thick_17']}" 
 )
 
 #########################################################################
@@ -44,8 +44,8 @@ print(
 data = datasets.fetch_development_fmri(n_subjects=10)
 
 print(
-    "Functional nifti images (4D, e.g., one subject) are located at : %r"
-    % data["func"][0]
+    "Functional nifti images (4D, e.g., one subject) "
+    f"are located at : {data.func[0]!r}"
 )
 print(
     "Counfound csv files (of same subject) are located "

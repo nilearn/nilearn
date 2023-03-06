@@ -201,11 +201,9 @@ display.savefig("pcc_seed_correlation.pdf")
 # The transformed array can now have values more extreme than +/- 1.
 seed_to_voxel_correlations_fisher_z = np.arctanh(seed_to_voxel_correlations)
 print(
-    "Seed-to-voxel correlation Fisher-z transformed: min = %.3f; max = %.3f"
-    % (
-        seed_to_voxel_correlations_fisher_z.min(),
-        seed_to_voxel_correlations_fisher_z.max(),
-    )
+    "Seed-to-voxel correlation Fisher-z transformed: "
+    f"min = {seed_to_voxel_correlations_fisher_z.min():.3f}; "
+    f"max = {seed_to_voxel_correlations_fisher_z.max():.3f}f"
 )
 
 ##########################################################################
