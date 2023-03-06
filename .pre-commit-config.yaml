@@ -1,7 +1,8 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 
-files: "(nilearn/de.*)|(.*binder/)|(.*circleci/)|(.*github/)|(maint_tools/.*)|(setup.*)|(.*coverage)|(.*toml$)|(.*in$)|(.*yml)|(.*yaml)|(CONTRIBUTING.rst)|(AUTHORS.rst)|(LICENSE)|(Makefile)|(.*gitignore)"
+files: "(nilearn/de.*)|(.*binder/)|(.*circleci/)|(.*github/)|(maint_tools/.*)|(setup.*)|(.*coverage)|(.*toml$)|(.*in$)|(.*yml)|(.*yaml)|(CONTRIBUTING.rst)|(AUTHORS.rst)|(LICENSE)|(Makefile)|(.*gitignore)|(doc/.*)"
+exclude: "^(doc/whats_new.rst)|(doc/changes/(names|latest|0\\.9\\.[0-2]|0\\.10\\.0).rst)|(doc/(glm/first_level_model\\.rst|introduction\\.rst|maintenance\\.rst|manipulating_images/input_output\\.rst|modules/datasets\\.rst|modules/reference\\.rst|references\\.bib|themes/nilearn/static/nature\\.css_t))$"
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -13,13 +14,13 @@ repos:
       - id: check-merge-conflict
       - id: check-yaml
       - id: end-of-file-fixer
-      - id: trailing-whitespace   
+      - id: trailing-whitespace
 
   - repo: https://github.com/pycqa/isort
     rev: 5.12.0
     hooks:
       - id: isort
-        args: ["--profile", "black"]   
+        args: ["--profile", "black"]
 
   - repo: https://github.com/psf/black
     rev: 23.1.0
