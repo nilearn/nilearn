@@ -12,6 +12,7 @@ import json
 import os
 import sys
 import time
+from typing import Optional
 from warnings import warn
 
 import numpy as np
@@ -988,7 +989,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 def _report_found_files(files: list[str],
                         text: str,
                         sub_label: str,
-                        filters: list[tuple[str,str]]):
+                        filters: list[tuple[str,str]]) -> None:
     """Print list of files found for a given subject and filter.
 
     Parameters
@@ -1016,7 +1017,7 @@ def _get_processed_imgs(derivatives_path: str,
                         sub_label: str,
                         task_label: str,
                         space_label: str,
-                        img_filters: list[tuple[str,str]]):
+                        img_filters: list[tuple[str,str]]) -> list[str]:
     """Get images for a given subject, task and filters.
 
     Also checks that the number of the number of images.
@@ -1062,7 +1063,7 @@ def _get_events_files(dataset_path: str,
                       sub_label: str,
                       task_label: str,
                       img_filters: list[tuple[str,str]],
-                      imgs: list[str]):
+                      imgs: list[str]) -> list[str]:
     """Get events.tsv files for a given subject, task and filters.
 
     Also checks that the number of events.tsv files
@@ -1114,7 +1115,7 @@ def _get_confounds(derivatives_path: str,
                    sub_label: str,
                    task_label: str,
                    img_filters: list[tuple[str,str]],
-                   imgs: list[str]):
+                   imgs: list[str]) -> Optional[list[str]]:
     """Get confounds.tsv files for a given subject, task and filters.
 
     Also checks that the number of confounds.tsv files
@@ -1140,7 +1141,7 @@ def _get_confounds(derivatives_path: str,
 
     Returns
     -------
-    confounds : :obj:`list` of :obj:`str`
+    confounds : :obj:`list` of :obj:`str` or None
         List of fullpath to the confounds.tsv files
 
     """    
@@ -1156,10 +1157,10 @@ def _get_confounds(derivatives_path: str,
                                 file_type='tsv',
                                 sub_label=sub_label,
                                 filters=filters)
-    _check_confounds_list(confounds=confounds, imgs=imgs)        
-    return confounds    
+    _check_confounds_list(confounds=confounds, imgs=imgs)
+    return confounds or None
 
-def _check_confounds_list(confounds: list[str], imgs: list[str]):
+def _check_confounds_list(confounds: list[str], imgs: list[str]) -> None:
     """Check the number of confounds.tsv files.
     
     If no file is found, it will be assumed there are none, 
