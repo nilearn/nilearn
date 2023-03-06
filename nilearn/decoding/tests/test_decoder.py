@@ -203,7 +203,27 @@ def test_parallel_fit():
             assert a == b
 
 
-def test_decoder_binary_classification():
+def test_decoder_binary_classification_with_masker_object():
+    X, y = make_classification(
+        n_samples=200,
+        n_features=125,
+        scale=3.0,
+        n_informative=5,
+        n_classes=2,
+        random_state=42,
+    )
+    X, _ = to_niimgs(X, [5, 5, 5])
+
+    model = Decoder(mask=NiftiMasker())
+    model.fit(X, y)
+    y_pred = model.predict(X)
+    assert model.scoring == "roc_auc"
+    assert model.score(X, y) == 1.0
+    assert accuracy_score(y, y_pred) > 0.95
+
+
+def test_decoder_binary_classification_with_logistic_model():
+    """Check decoder with predict_proba for scoring with logistic model."""
     X, y = make_classification(
         n_samples=200,
         n_features=125,
@@ -214,49 +234,76 @@ def test_decoder_binary_classification():
     )
     X, mask = to_niimgs(X, [5, 5, 5])
 
-    # check classification with masker object
-    model = Decoder(mask=NiftiMasker())
-    model.fit(X, y)
-    y_pred = model.predict(X)
-    assert model.scoring == "roc_auc"
-    assert model.score(X, y) == 1.0
-    assert accuracy_score(y, y_pred) > 0.95
-
-    # decoder object use predict_proba for scoring with logistic model
     model = Decoder(estimator="logistic_l2", mask=mask)
     model.fit(X, y)
     y_pred = model.predict(X)
     assert accuracy_score(y, y_pred) > 0.95
 
-    # check different screening_percentile value
-    for screening_percentile in [100, 20, None]:
-        model = Decoder(mask=mask, screening_percentile=screening_percentile)
-        model.fit(X, y)
-        y_pred = model.predict(X)
-        assert accuracy_score(y, y_pred) > 0.95
 
-    for clustering_percentile in [100, 99]:
-        model = FREMClassifier(
-            estimator="logistic_l2",
-            mask=mask,
-            clustering_percentile=clustering_percentile,
-            screening_percentile=90,
-            cv=5,
-        )
-        model.fit(X, y)
-        y_pred = model.predict(X)
-        assert accuracy_score(y, y_pred) > 0.9
+@pytest.mark.parametrize("screening_percentile", [100, 20, None])
+def test_decoder_binary_classification_screening(screening_percentile):
+    X, y = make_classification(
+        n_samples=200,
+        n_features=125,
+        scale=3.0,
+        n_informative=5,
+        n_classes=2,
+        random_state=42,
+    )
+    X, mask = to_niimgs(X, [5, 5, 5])
+
+    model = Decoder(mask=mask, screening_percentile=screening_percentile)
+    model.fit(X, y)
+    y_pred = model.predict(X)
+    assert accuracy_score(y, y_pred) > 0.95
+
+
+@pytest.mark.parametrize("clustering_percentile", [100, 99])
+def test_decoder_binary_classification_clustering(clustering_percentile):
+    X, y = make_classification(
+        n_samples=200,
+        n_features=125,
+        scale=3.0,
+        n_informative=5,
+        n_classes=2,
+        random_state=42,
+    )
+    X, mask = to_niimgs(X, [5, 5, 5])
+
+    model = FREMClassifier(
+        estimator="logistic_l2",
+        mask=mask,
+        clustering_percentile=clustering_percentile,
+        screening_percentile=90,
+        cv=5,
+    )
+    model.fit(X, y)
+    y_pred = model.predict(X)
+    assert accuracy_score(y, y_pred) > 0.9
+
+
+@pytest.mark.parametrize("cv", [KFold(n_splits=5), LeaveOneGroupOut()])
+def test_decoder_binary_classification_cross_validation(cv):
+    X, y = make_classification(
+        n_samples=200,
+        n_features=125,
+        scale=3.0,
+        n_informative=5,
+        n_classes=2,
+        random_state=42,
+    )
+    X, mask = to_niimgs(X, [5, 5, 5])
 
     # check cross-validation scheme and fit attribute with groups enabled
     rand_local = np.random.RandomState(42)
-    for cv in [KFold(n_splits=5), LeaveOneGroupOut()]:
-        model = Decoder(estimator="svc", mask=mask, standardize=True, cv=cv)
-        if isinstance(cv, LeaveOneGroupOut):
-            groups = rand_local.binomial(2, 0.3, size=len(y))
-        else:
-            groups = None
-        model.fit(X, y, groups=groups)
-        assert accuracy_score(y, y_pred) > 0.9
+
+    model = Decoder(estimator="svc", mask=mask, standardize=True, cv=cv)
+    groups = None
+    if isinstance(cv, LeaveOneGroupOut):
+        groups = rand_local.binomial(2, 0.3, size=len(y))
+    model.fit(X, y, groups=groups)
+    y_pred = model.predict(X)
+    assert accuracy_score(y, y_pred) > 0.9
 
 
 def test_decoder_dummy_classifier():
