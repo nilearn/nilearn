@@ -77,22 +77,22 @@ class loop_pos:
 
     def index(self):
         return self.pos
-    index = property(index)
+    index = property(index) # type: ignore
 
     def number(self):
         return self.pos + 1
-    number = property(number)
+    number = property(number) # type: ignore
 
     def item(self):
         return self.seq[self.pos]
-    item = property(item)
+    item = property(item) # type: ignore
 
     def __next__(self):
         try:
             return self.seq[self.pos + 1]
         except IndexError:
             return None
-    __next__ = property(__next__)
+    __next__ = property(__next__) # type: ignore
 
     if sys.version < "3":
         next = __next__
@@ -101,27 +101,27 @@ class loop_pos:
         if self.pos == 0:
             return None
         return self.seq[self.pos - 1]
-    previous = property(previous)
+    previous = property(previous) # type: ignore
 
     def odd(self):
         return not self.pos % 2
-    odd = property(odd)
+    odd = property(odd) # type: ignore
 
     def even(self):
         return self.pos % 2
-    even = property(even)
+    even = property(even) # type: ignore
 
     def first(self):
         return self.pos == 0
-    first = property(first)
+    first = property(first) # type: ignore
 
     def last(self):
         return self.pos == len(self.seq) - 1
-    last = property(last)
+    last = property(last) # type: ignore
 
     def length(self):
         return len(self.seq)
-    length = property(length)
+    length = property(length) # type: ignore
 
     def first_group(self, getter=None):
         """

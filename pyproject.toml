@@ -8,3 +8,41 @@ src_paths = ['nilearn/de.*']
 line_length = 79
 skip_gitignore = true
 combine_as_imports = true
+
+
+[tool.mypy]
+exclude = [
+    "^doc/.*py$",
+    "^examples/.*py$",
+	"^.*tempita/.*py$",
+	"^nilearn/.*/tests/.*py$",
+	"^env/.*py$",
+]
+# check_untyped_defs = true
+# disallow_any_generics = true
+# disallow_incomplete_defs = true
+# disallow_untyped_defs = true
+# no_implicit_optional = true
+# warn_redundant_casts = true
+# warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = [
+    "boto3",
+    "botocore.handlers",
+    "joblib",
+    "kaleido",
+    # "lxml.*",
+    "matplotlib.*",
+    "memory_profiler",
+    "mpl_toolkits.*",
+    "nibabel.*",
+    "numpy.*",
+    "plotly.*",
+    "scipy.*",
+    "sklearn.*",
+    "sphinx_gallery.notebook",
+    "statsmodels",
+    "svg",
+]
+ignore_missing_imports = true

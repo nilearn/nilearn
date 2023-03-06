@@ -38,9 +38,9 @@ try:
     from io import StringIO
     from html import escape as html_escape
 except ImportError:
-    from urllib import quote as url_quote
-    from cStringIO import StringIO
-    from cgi import escape as html_escape
+    from urllib import quote as url_quote # type: ignore
+    from cStringIO import StringIO # type: ignore
+    from cgi import escape as html_escape # type: ignore
 from ._looper import looper
 from .compat3 import (
     PY3, bytes, basestring_, next, is_unicode, coerce_text, iteritems)
@@ -309,7 +309,7 @@ class Template:
             return value
         except:
             exc_info = sys.exc_info()
-            e = exc_info[1]
+            e = exc_info[1] # type: ignore
             if getattr(e, 'args', None):
                 arg0 = e.args[0]
             else:
