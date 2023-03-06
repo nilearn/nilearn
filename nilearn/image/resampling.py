@@ -466,7 +466,7 @@ def resample_img(
     if interpolation not in allowed_interpolations:
         raise ValueError(
             f"interpolation must be one of {allowed_interpolations}.\n"
-            f"Got '{interpolation}' instead."
+            f" Got '{interpolation}' instead."
         )
 
     if interpolation == "continuous":
