@@ -4,7 +4,7 @@ include = "(nilearn/de.*)|(maint_tools/.*)|(setup.py)|(nilearn/image.*py)"
 
 [tool.isort]
 profile = "black"
-src_paths = ['nilearn/de.*']
+src_paths = ['nilearn/de.*', 'nilearn/image.*']
 line_length = 79
 skip_gitignore = true
 combine_as_imports = true
