@@ -125,8 +125,8 @@ for (fmri_img, confound, events) in zip(
 # compute population-level maps for left and right hemisphere
 # We directly do that on the value arrays.
 from scipy.stats import ttest_1samp, norm
-t_left, pval_left = ttest_1samp(np.array(z_scores_left), 0)
-t_right, pval_right = ttest_1samp(np.array(z_scores_right), 0)
+_, pval_left = ttest_1samp(np.array(z_scores_left), 0)
+_, pval_right = ttest_1samp(np.array(z_scores_right), 0)
 
 ############################################################################
 # What we have so far are p-values: we convert them to z-values for plotting.
@@ -143,7 +143,7 @@ plotting.plot_surf_stat_map(
 ############################################################################
 # Next, on the right hemisphere.
 plotting.plot_surf_stat_map(
-    fsaverage.infl_right, z_val_left, hemi='right',
+    fsaverage.infl_right, z_val_right, hemi='right',
     title="language-string, right hemisphere", colorbar=True,
     threshold=3., bg_map=fsaverage.sulc_right)
 

@@ -41,7 +41,6 @@ stop_go_image_ids = (151, 3041, 3042, 2676, 2675, 2818, 2834)
 nv_data = fetch_neurovault_ids(image_ids=stop_go_image_ids)
 
 images_meta = nv_data["images_meta"]
-collections = nv_data["collections_meta"]
 
 ######################################################################
 # Visualize the data
@@ -68,7 +67,6 @@ def t_to_z(t_scores, deg_of_freedom):
 
 
 # Compute z values
-mean_maps = []
 z_imgs = []
 current_collection = None
 

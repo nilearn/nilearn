@@ -233,7 +233,7 @@ for name, estimator in estimators:
 
     print(title)
 
-f_values, p_values = f_regression(X_train, y_train)
+_, p_values = f_regression(X_train, y_train)
 p_values = np.reshape(p_values, (size, size, size))
 p_values = -np.log10(p_values)
 p_values[np.isnan(p_values)] = 0

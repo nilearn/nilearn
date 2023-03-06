@@ -106,7 +106,7 @@ fmri_masked = nifti_masker.fit_transform(fmri_img)
 
 from sklearn.feature_selection import f_classif
 
-f_values, p_values = f_classif(fmri_masked, y)
+_, p_values = f_classif(fmri_masked, y)
 p_values = -np.log10(p_values)
 p_values[p_values > 10] = 10
 p_unmasked = get_data(nifti_masker.inverse_transform(p_values))

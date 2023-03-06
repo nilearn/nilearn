@@ -83,9 +83,7 @@ y_train = np.vstack([y[:-2] for y in y_train]).astype(float)
 X_test = np.vstack([x[2:] for x in X_test])
 y_test = np.vstack([y[:-2] for y in y_test]).astype(float)
 
-n_pixels = y_train.shape[1]
 n_features = X_train.shape[1]
-
 
 def flatten(list_of_2d_array):
     flattened = [array.ravel() for array in list_of_2d_array]

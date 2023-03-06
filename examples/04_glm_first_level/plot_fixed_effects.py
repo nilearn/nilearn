@@ -98,11 +98,15 @@ contrast_imgs = [summary_statistics_session1['effect_size'],
 variance_imgs = [summary_statistics_session1['effect_variance'],
                  summary_statistics_session2['effect_variance']]
 
-fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat = compute_fixed_effects(
+fixed_fx_contrast_, fixed_fx_variance_, fixed_fx_stat = compute_fixed_effects(
     contrast_imgs, variance_imgs, data['mask'])
 plotting.plot_stat_map(
-    fixed_fx_stat, bg_img=mean_img_, threshold=3.0, cut_coords=cut_coords,
-    title=f'{contrast_id}, fixed effects')
+    fixed_fx_stat,
+    bg_img=mean_img_,
+    threshold=3.0,
+    cut_coords=cut_coords,
+    title=f'{contrast_id}, fixed effects'
+)
 
 #########################################################################
 # Not unexpectedly, the fixed effects version displays higher peaks than the
