@@ -38,7 +38,7 @@ class HTMLDocument:
     web page, and ``document.get_iframe()`` to have it wrapped in an iframe.
 
     """
-    _all_open_html_repr = weakref.WeakSet()
+    _all_open_html_repr = weakref.WeakSet() # type: ignore
 
     def __init__(self, html, width=600, height=400):
         self.html = html

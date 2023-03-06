@@ -14,7 +14,7 @@ import sklearn.cluster
 try:
     from sklearn.exceptions import EfficiencyWarning
 except ImportError:
-    class EfficiencyWarning(UserWarning):
+    class EfficiencyWarning(UserWarning):  # type: ignore
         """Warning used to notify the user of inefficient computation."""
 
 import nibabel
