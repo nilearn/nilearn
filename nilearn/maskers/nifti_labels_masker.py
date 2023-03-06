@@ -135,6 +135,8 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         If set to True, data is saved in order to produce a report.
         Default=True.
 
+    %(masker_kwargs)s
+
     Attributes
     ----------
     mask_img_ : :obj:`nibabel.nifti1.Nifti1Image`
@@ -177,6 +179,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         verbose=0,
         strategy='mean',
         reports=True,
+        **kwargs,
     ):
         self.labels_img = labels_img
         self.labels = labels
@@ -195,6 +198,9 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         self.high_pass = high_pass
         self.t_r = t_r
         self.dtype = dtype
+        self.clean_kwargs = {
+            k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
+        }
 
         # Parameters for resampling
         self.resampling_target = resampling_target
@@ -613,6 +619,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         )
         params['target_shape'] = target_shape
         params['target_affine'] = target_affine
+        params['clean_kwargs'] = self.clean_kwargs
 
         region_signals, labels_ = self._cache(
             _filter_and_extract,

@@ -35,7 +35,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     """ Find the center of the largest activation connected component.
 
     Parameters
-    -----------
+    ----------
     img : 3D Nifti1Image
         The brain map.
 

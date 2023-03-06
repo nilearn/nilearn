@@ -16,9 +16,8 @@ from nilearn import datasets
 haxby_dataset = datasets.fetch_haxby()
 func_img = haxby_dataset.func[0]
 # print basic information on the dataset
-print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
-print('Functional nifti image (4D) is located at: %s' %
-      func_img)
+print(f"Mask nifti image (3D) is located at: {haxby_dataset.mask}")
+print(f"Functional nifti image (4D) is located at: {func_img}")
 
 #############################################################################
 # Load the behavioral data
@@ -26,13 +25,13 @@ print('Functional nifti image (4D) is located at: %s' %
 import pandas as pd
 
 # Load target information as string and give a numerical identifier to each
-
 behavioral = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
-conditions = behavioral['labels']
+conditions = behavioral["labels"]
 
 # Restrict the analysis to faces and places
 from nilearn.image import index_img
-condition_mask = behavioral['labels'].isin(['face', 'house'])
+
+condition_mask = behavioral["labels"].isin(["face", "house"])
 conditions = conditions[condition_mask]
 func_img = index_img(func_img, condition_mask)
 
@@ -41,7 +40,7 @@ print(conditions.unique())
 
 # The number of the session is stored in the CSV file giving the behavioral
 # data. We have to apply our session mask, to select only faces and houses.
-session_label = behavioral['chunks'][condition_mask]
+session_label = behavioral["chunks"][condition_mask]
 
 #############################################################################
 # ANOVA pipeline with :class:`nilearn.decoding.Decoder` object
@@ -54,10 +53,17 @@ session_label = behavioral['chunks'][condition_mask]
 # estimators (in this example is Support Vector Machine with a linear kernel)
 # on nested cross-validation.
 from nilearn.decoding import Decoder
+
 # Here screening_percentile is set to 5 percent
 mask_img = haxby_dataset.mask
-decoder = Decoder(estimator='svc', mask=mask_img, smoothing_fwhm=4,
-                  standardize=True, screening_percentile=5, scoring='accuracy')
+decoder = Decoder(
+    estimator="svc",
+    mask=mask_img,
+    smoothing_fwhm=4,
+    standardize=True,
+    screening_percentile=5,
+    scoring="accuracy",
+)
 
 #############################################################################
 # Fit the decoder and predict
@@ -76,32 +82,40 @@ y_pred = decoder.predict(func_img)
 # `Measuring prediction scores using cross-validation\
 # <../00_tutorials/plot_decoding_tutorial.html#measuring-prediction-scores-using-cross-validation>`_
 from sklearn.model_selection import LeaveOneGroupOut
+
 cv = LeaveOneGroupOut()
 
-decoder = Decoder(estimator='svc', mask=mask_img, standardize=True,
-                  screening_percentile=5, scoring='accuracy', cv=cv)
+decoder = Decoder(
+    estimator="svc",
+    mask=mask_img,
+    standardize=True,
+    screening_percentile=5,
+    scoring="accuracy",
+    cv=cv,
+)
 # Compute the prediction accuracy for the different folds (i.e. session)
 decoder.fit(func_img, conditions, groups=session_label)
 
 # Print the CV scores
-print(decoder.cv_scores_['face'])
+print(decoder.cv_scores_["face"])
 
 #############################################################################
 # Visualize the results
 # ----------------------
 # Look at the SVC's discriminating weights using
 # :class:`nilearn.plotting.plot_stat_map`
-weight_img = decoder.coef_img_['face']
+weight_img = decoder.coef_img_["face"]
 from nilearn.plotting import plot_stat_map, show
-plot_stat_map(weight_img, bg_img=haxby_dataset.anat[0], title='SVM weights')
+
+plot_stat_map(weight_img, bg_img=haxby_dataset.anat[0], title="SVM weights")
 
 show()
 #############################################################################
 # Or we can plot the weights using :class:`nilearn.plotting.view_img` as a
 # dynamic html viewer
 from nilearn.plotting import view_img
-view_img(weight_img, bg_img=haxby_dataset.anat[0],
-         title="SVM weights", dim=-1)
+
+view_img(weight_img, bg_img=haxby_dataset.anat[0], title="SVM weights", dim=-1)
 #############################################################################
 # Saving the results as a Nifti file may also be important
-weight_img.to_filename('haxby_face_vs_house.nii')
+weight_img.to_filename("haxby_face_vs_house.nii")

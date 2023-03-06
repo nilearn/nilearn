@@ -325,7 +325,7 @@ def test_get_cut_slices():
 
 
 def test_view_img():
-    mni = datasets.load_mni152_template()
+    mni = datasets.load_mni152_template(resolution=2)
     with warnings.catch_warnings(record=True) as w:
         # Create a fake functional image by resample the template
         img = image.resample_img(mni, target_affine=3 * np.eye(3))

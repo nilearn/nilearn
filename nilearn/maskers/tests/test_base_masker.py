@@ -32,19 +32,19 @@ def test_cropping_code_paths():
 
     cropped_mask_img = image.crop_img(mask_img)
 
-    parameters = {"smoothing_fwhm": None,
-                  "high_pass": None,
-                  "low_pass": None,
-                  "t_r": None,
-                  "detrend": None,
-                  "standardize": 'zscore',
-                  "standardize_confounds": True,
-                  }
+    parameters = {
+        "smoothing_fwhm": None,
+        "high_pass": None,
+        "low_pass": None,
+        "t_r": None,
+        "detrend": None,
+        "standardize": 'zscore',
+        "standardize_confounds": True,
+        "clean_kwargs": {},
+    }
 
     # Now do the two maskings
-    out_data_uncropped = _filter_and_mask(
-        img, mask_img, parameters)
-    out_data_cropped = _filter_and_mask(
-        img, cropped_mask_img, parameters)
+    out_data_uncropped = _filter_and_mask(img, mask_img, parameters)
+    out_data_cropped = _filter_and_mask(img, cropped_mask_img, parameters)
 
     assert_array_almost_equal(out_data_cropped, out_data_uncropped)

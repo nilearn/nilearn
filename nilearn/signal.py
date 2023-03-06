@@ -254,34 +254,48 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
 
 
 def _check_wn(btype, freq, nyq):
-    wn = freq / float(nyq)
-    if wn >= 1.:
-        # results looked unstable when the critical frequencies are
-        # exactly at the Nyquist frequency. See issue at SciPy
-        # https://github.com/scipy/scipy/issues/6265. Before, SciPy 1.0.0 ("wn
-        # should be btw 0 and 1"). But, after ("0 < wn < 1"). Due to unstable
-        # results as pointed in the issue above. Hence, we forced the
-        # critical frequencies to be slightly less than 1. but not 1.
-        wn = 1 - 10 * np.finfo(1.).eps
-        warnings.warn(
-            'The frequency specified for the %s pass filter is '
-            'too high to be handled by a digital filter (superior to '
-            'nyquist frequency). It has been lowered to %.2f (nyquist '
-            'frequency).' % (btype, wn))
+    """Ensure that the critical frequency works with the Nyquist frequency.
 
-    if wn < 0.0: # equal to 0.0 is okay
-        wn = np.finfo(1.).eps
-        warnings.warn(
-            'The frequency specified for the %s pass filter is '
-            'too low to be handled by a digital filter (must be non-negative).'
-            ' It has been set to eps: %.5e' % (btype, wn))
+    The critical frequency must be (1) >= 0 and (2) < Nyquist.
+    When critical frequencies are exactly at the Nyquist frequency,
+    results are unstable.
 
-    return wn
+    See issue at SciPy https://github.com/scipy/scipy/issues/6265.
+    Due to unstable results as pointed in the issue above,
+    we force the critical frequencies to be slightly less than the Nyquist
+    frequency, and slightly more than zero.
+    """
+    if freq >= nyq:
+        freq = nyq - (nyq * 10 * np.finfo(1.).eps)
+        warnings.warn(
+            f'The frequency specified for the {btype} pass filter is '
+            'too high to be handled by a digital filter '
+            '(superior to Nyquist frequency). '
+            f'It has been lowered to {freq} (Nyquist frequency).'
+        )
+
+    elif freq < 0.0:  # equal to 0.0 is okay
+        freq = nyq * np.finfo(1.).eps
+        warnings.warn(
+            f'The frequency specified for the {btype} pass filter is too '
+            'low to be handled by a digital filter (must be non-negative). '
+            f'It has been set to eps: {freq}'
+        )
+
+    return freq
 
 
 @fill_doc
-def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
-                order=5, copy=False):
+def butterworth(
+    signals,
+    sampling_rate,
+    low_pass=None,
+    high_pass=None,
+    order=5,
+    padtype="odd",
+    padlen=None,
+    copy=False,
+):
     """Apply a low-pass, high-pass or band-pass
     `Butterworth filter <https://en.wikipedia.org/wiki/Butterworth_filter>`_.
 
@@ -295,7 +309,7 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
         of `signals`.
 
     sampling_rate : :obj:`float`
-        Number of samples per time unit (sample frequency).
+        Number of samples per second (sample frequency, in Hertz).
     %(low_pass)s
     %(high_pass)s
     order : :obj:`int`, optional
@@ -305,6 +319,15 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
         Increasing the order sharpens this decay. Be aware that very high
         orders can lead to numerical instability.
         Default=5.
+
+    padtype : {"odd", "even", "constant", None}, optional
+        Type of padding to use for the Butterworth filter.
+        For more information about this, see :func:`scipy.signal.filtfilt`.
+
+    padlen : :obj:`int` or None, optional
+        The size of the padding to add to the beginning and end of ``signals``.
+        If None, the default value from :func:`scipy.signal.filtfilt` will be
+        used.
 
     copy : :obj:`bool`, optional
         If False, `signals` is modified inplace, and memory consumption is
@@ -324,10 +347,10 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     if low_pass is not None and high_pass is not None \
             and high_pass >= low_pass:
         raise ValueError(
-            "High pass cutoff frequency (%f) is greater or equal"
-            "to low pass filter frequency (%f). This case is not handled "
-            "by this function."
-            % (high_pass, low_pass))
+            f"High pass cutoff frequency ({high_pass}) is greater than or "
+            f"equal to low pass filter frequency ({low_pass}). "
+            "This case is not handled by this function."
+        )
 
     nyq = sampling_rate * 0.5
 
@@ -343,15 +366,16 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     if len(critical_freq) == 2:
         btype = 'band'
         # Inappropriate parameter input might lead to coercion of both
-        # elements of critical_freq to a value just below 1.
+        # elements of critical_freq to a value just below Nyquist.
         # Scipy fix now enforces that critical frequencies cannot be equal.
-        # See https://github.com/scipy/scipy/pull/15886. If this is the case,
-        # we return the signals unfiltered.
+        # See https://github.com/scipy/scipy/pull/15886.
+        # If this is the case, we return the signals unfiltered.
         if critical_freq[0] == critical_freq[1]:
             warnings.warn(
                 'Signals are returned unfiltered because band-pass critical '
                 'frequencies are equal. Please check that inputs for '
-                'sampling_rate, low_pass, and high_pass are valid.')
+                'sampling_rate, low_pass, and high_pass are valid.'
+            )
             if copy:
                 return signals.copy()
             else:
@@ -359,10 +383,22 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
     else:
         critical_freq = critical_freq[0]
 
-    b, a = sp_signal.butter(order, critical_freq, btype=btype, output='ba')
+    b, a = sp_signal.butter(
+        order,
+        critical_freq,
+        btype=btype,
+        output='ba',
+        fs=sampling_rate,
+    )
     if signals.ndim == 1:
         # 1D case
-        output = sp_signal.filtfilt(b, a, signals)
+        output = sp_signal.filtfilt(
+            b,
+            a,
+            signals,
+            padtype=padtype,
+            padlen=padlen,
+        )
         if copy:  # filtfilt does a copy in all cases.
             signals = output
         else:
@@ -371,11 +407,24 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
         if copy:
             # No way to save memory when a copy has been requested,
             # because filtfilt does out-of-place processing
-            signals = sp_signal.filtfilt(b, a, signals, axis=0)
+            signals = sp_signal.filtfilt(
+                b,
+                a,
+                signals,
+                axis=0,
+                padtype=padtype,
+                padlen=padlen,
+            )
         else:
             # Lesser memory consumption, slower.
             for timeseries in signals.T:
-                timeseries[:] = sp_signal.filtfilt(b, a, timeseries)
+                timeseries[:] = sp_signal.filtfilt(
+                    b,
+                    a,
+                    timeseries,
+                    padtype=padtype,
+                    padlen=padlen,
+                )
 
             # results returned in-place
 
@@ -462,7 +511,7 @@ def _ensure_float(data):
 def clean(signals, runs=None, detrend=True, standardize='zscore',
           sample_mask=None, confounds=None, standardize_confounds=True,
           filter='butterworth', low_pass=None, high_pass=None, t_r=2.5,
-          ensure_finite=False):
+          ensure_finite=False, **kwargs):
     """Improve :term:`SNR` on masked :term:`fMRI` signals.
 
     This function can do several things on the input signals. With the default
@@ -576,6 +625,12 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
     %(ensure_finite)s
         Default=False.
 
+    kwargs : dict
+        Keyword arguments to be passed to functions called within ``clean``.
+        Kwargs prefixed with ``'butterworth__'`` will be passed to
+        :func:`~nilearn.signal.butterworth`.
+
+
     Returns
     -------
     cleaned_signals : :class:`numpy.ndarray`
@@ -641,13 +696,28 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
 
     # Butterworth filtering
     if filter_type == 'butterworth':
-        signals = butterworth(signals, sampling_rate=1. / t_r,
-                              low_pass=low_pass, high_pass=high_pass)
+        butterworth_kwargs = {
+            k.replace("butterworth__", ""): v for k, v in kwargs.items() if
+            k.startswith("butterworth__")
+        }
+        signals = butterworth(
+            signals,
+            sampling_rate=1. / t_r,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            **butterworth_kwargs,
+        )
         if confounds is not None:
             # Apply low- and high-pass filters to keep filters orthogonal
             # (according to Lindquist et al. (2018))
-            confounds = butterworth(confounds, sampling_rate=1. / t_r,
-                                    low_pass=low_pass, high_pass=high_pass)
+            confounds = butterworth(
+                confounds,
+                sampling_rate=1. / t_r,
+                low_pass=low_pass,
+                high_pass=high_pass,
+                **butterworth_kwargs,
+            )
+
         # apply sample_mask to remove censored volumes after signal filtering
         if sample_mask is not None:
             signals, confounds = _censor_signals(signals, confounds,

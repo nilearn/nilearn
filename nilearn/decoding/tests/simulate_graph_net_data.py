@@ -1,6 +1,4 @@
-"""
-Simple code to simulate data
-"""
+"""Simple code to simulate data."""
 
 import numpy as np
 from scipy import linalg
@@ -9,18 +7,24 @@ from sklearn.utils import check_random_state
 
 
 def create_graph_net_simulation_data(
-        snr=1., n_samples=200, size=8, n_points=10, random_state=42,
-        task="regression", smooth_X=1):
-    """
-    Function to generate data
-
-    """
+    snr=1.0,
+    n_samples=200,
+    size=8,
+    n_points=10,
+    random_state=42,
+    task="regression",
+    smooth_X=1,
+):
+    """Generate graph net simulation data."""
     generator = check_random_state(random_state)
     # Coefs
     w = np.zeros((size, size, size))
     for _ in range(n_points):
-        point = (generator.randint(0, size), generator.randint(0, size),
-                 generator.randint(0, size))
+        point = (
+            generator.randint(0, size),
+            generator.randint(0, size),
+            generator.randint(0, size),
+        )
         w[point] = 1.0
     mask = np.ones((size, size, size), dtype=bool)
     w = gaussian_filter(w, sigma=1)
@@ -42,7 +46,7 @@ def create_graph_net_simulation_data(
         y = np.ones(n_samples)
         y[0::2] = -1
     X = np.dot(y[:, np.newaxis], w[np.newaxis])
-    norm_noise = linalg.norm(X, 2) / np.exp(snr / 20.)
+    norm_noise = linalg.norm(X, 2) / np.exp(snr / 20.0)
     noise_coef = norm_noise / linalg.norm(noise, 2)
     noise *= noise_coef
     snr = 20 * np.log(linalg.norm(X, 2) / linalg.norm(noise, 2))

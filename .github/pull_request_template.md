@@ -4,7 +4,7 @@ It's designed to capture information we've found to be useful in reviewing pull 
 
 If there is other information that would be helpful to include, please don't hesitate to add it!
 
-Please make sure your pull request also follows the 
+Please make sure your pull request also follows the
 [contribution guidelines](https://nilearn.github.io/stable/development.html#contribution-guidelines) that
 will be enforced during the review process.
 -->

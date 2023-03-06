@@ -87,6 +87,8 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         If set to True, data is saved in order to produce a report.
         Default=True.
 
+    %(masker_kwargs)s
+
     Notes
     -----
     If resampling_target is set to "maps", every 3D image processed by
@@ -121,7 +123,8 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         memory_level=0,
         verbose=0,
         reports=True,
-        n_jobs=1
+        n_jobs=1,
+        **kwargs,
     ):
         self.n_jobs = n_jobs
         super().__init__(
@@ -142,6 +145,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             memory_level=memory_level,
             verbose=verbose,
             reports=reports,
+            **kwargs,
         )
 
     def transform_imgs(self, imgs_list, confounds=None, n_jobs=1,

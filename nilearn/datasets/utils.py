@@ -819,8 +819,8 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
 def _tree(path, pattern=None, dictionary=False):
     """Return a directory tree under the form of a dictionaries and list
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     path : string
         Path browsed.
 

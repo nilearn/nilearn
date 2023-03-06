@@ -222,8 +222,14 @@ _cmap_d['videen_style'] = _colors.LinearSegmentedColormap.from_list(
 globals().update(_cmap_d)
 # Register cmaps in matplotlib too
 for k, v in _cmap_d.items():
+    try:
+        from matplotlib import colormaps as _colormaps
+    except ImportError:
+        _register_cmap = _cm.register_cmap
+    else:
+        _register_cmap = _colormaps.register  # 3.5+
     try:  # "bwr" is in latest matplotlib
-        _cm.register_cmap(name=k, cmap=v)
+        _register_cmap(name=k, cmap=v)
     except ValueError:
         pass
 

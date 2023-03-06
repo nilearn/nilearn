@@ -287,6 +287,45 @@ def test_permuted_ols_withcovar(random_state=0):
     assert_array_almost_equal(alt_score_intercept, own_score_intercept,
                               decimal=6)
 
+    # Intercept in confounding vars
+    # permuted OLS with constant in confounding_vars, model_intercept=True
+    confounding_vars = np.ones([n_samples, 1])
+    _, own_score, _ = permuted_ols(
+        tested_var, target_var, confounding_vars, model_intercept=True,
+        n_perm=0, random_state=random_state)
+    assert own_score.shape == (n_regressors, n_descriptors)
+
+    # permuted OLS with constant in confounding_vars, model_intercept=False
+    confounding_vars = np.ones([n_samples, 1])
+    _, own_score, _ = permuted_ols(
+        tested_var, target_var, confounding_vars, model_intercept=False,
+        n_perm=0, random_state=random_state)
+    assert own_score.shape == (n_regressors, n_descriptors)
+
+    # permuted OLS, multiple constants and covars, model_intercept=False
+    confounding_vars = np.hstack((rng.randn(n_samples, n_covars),
+                                  np.ones([n_samples, 2])))
+    _, own_score, _ = permuted_ols(
+        tested_var, target_var, confounding_vars, model_intercept=False,
+        n_perm=0, random_state=random_state)
+    assert own_score.shape == (n_regressors, n_descriptors)
+
+    # Multiple intercepts should raise a warning
+    # In confounding vars
+    with pytest.warns(UserWarning):
+        confounding_vars = np.ones([n_samples, 2])
+        _, own_score, _ = permuted_ols(
+            tested_var, target_var, confounding_vars,
+            n_perm=0, random_state=random_state)
+
+    # Across tested vars and confounding vars
+    with pytest.warns(UserWarning):
+        confounding_vars = np.ones([n_samples, 1])
+        tested_var = np.ones([n_samples, 1])
+        _, own_score, _ = permuted_ols(
+            tested_var, target_var, confounding_vars,
+            n_perm=0, random_state=random_state)
+
 
 def test_permuted_ols_nocovar_multivariate(random_state=0):
     """Test permuted_ols with multiple tested variates and no covariate.
