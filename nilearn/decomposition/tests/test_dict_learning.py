@@ -9,7 +9,7 @@ from nilearn.image import get_data, iter_img
 from nilearn.maskers import NiftiMasker
 
 
-def prepare_data_dict_learning():
+def _make_dict_learning_data():
     data, mask_img, components, _ = _make_canica_test_data(n_subjects=4)
 
     masker = NiftiMasker(mask_img=mask_img).fit()
@@ -23,7 +23,7 @@ def prepare_data_dict_learning():
 
 
 def test_dict_learning_smoke_epoch_gt_1():
-    data, mask_img, dict_init, _, _, _ = prepare_data_dict_learning()
+    data, mask_img, dict_init, *_ = _make_dict_learning_data()
 
     dict_learning = DictLearning(
         n_components=4,
@@ -45,7 +45,7 @@ def test_dict_learning():
         components,
         flat_mask,
         mask,
-    ) = prepare_data_dict_learning()
+    ) = _make_dict_learning_data()
 
     dict_learning = DictLearning(
         n_components=4,
@@ -116,7 +116,7 @@ def test_component_sign():
 
 def test_masker_attributes_with_fit():
     # Test base module at sub-class
-    data, mask_img, _, _ = _make_canica_test_data(n_subjects=3)
+    data, mask_img, *_ = _make_canica_test_data(n_subjects=3)
 
     # Passing mask_img
     dict_learning = DictLearning(n_components=3, mask=mask_img, random_state=0)
@@ -161,7 +161,7 @@ def test_masker_attributes_with_fit():
 
 
 def test_components_img():
-    data, mask_img, _, _ = _make_canica_test_data(n_subjects=3)
+    data, mask_img, *_ = _make_canica_test_data(n_subjects=3)
     n_components = 3
 
     dict_learning = DictLearning(n_components=n_components, mask=mask_img)
@@ -177,7 +177,7 @@ def test_components_img():
 
 @pytest.mark.parametrize("n_subjects", [1, 3])
 def test_with_globbing_patterns(n_subjects):
-    data, mask_img, _, _ = _make_canica_test_data(n_subjects=n_subjects)
+    data, mask_img, *_ = _make_canica_test_data(n_subjects=n_subjects)
     n_components = 3
 
     dict_learning = DictLearning(n_components=n_components, mask=mask_img)
@@ -196,7 +196,7 @@ def test_with_globbing_patterns(n_subjects):
 
 def test_dictlearning_score():
     # Multi subjects
-    imgs, mask_img, _, _ = _make_canica_test_data(n_subjects=3)
+    imgs, mask_img, *_ = _make_canica_test_data(n_subjects=3)
     n_components = 10
     dict_learning = DictLearning(
         n_components=10, mask=mask_img, random_state=0

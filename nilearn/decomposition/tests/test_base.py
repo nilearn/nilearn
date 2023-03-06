@@ -35,7 +35,7 @@ def test_fast_svd():
         )
 
 
-def prepare_data():
+def _make_mask_reduce_test_data():
     shape = (6, 8, 10, 5)
     affine = np.eye(4)
     rng = np.random.RandomState(0)
@@ -63,7 +63,7 @@ def prepare_data():
     ],
 )
 def test_mask_reducer_multiple_image(n_components, reduction_ratio, shape_0):
-    masker, imgs = prepare_data()
+    masker, imgs = _make_mask_reduce_test_data()
 
     data = _mask_and_reduce(
         masker=masker,
@@ -76,7 +76,7 @@ def test_mask_reducer_multiple_image(n_components, reduction_ratio, shape_0):
 
 
 def test_mask_reducer_single_image():
-    masker, imgs = prepare_data()
+    masker, imgs = _make_mask_reduce_test_data()
 
     # Test on single image
     data_single = _mask_and_reduce(masker, imgs[0], n_components=3)
@@ -94,7 +94,7 @@ def test_mask_reducer_single_image():
 
 
 def test_mask_reducer_reduced_data_is_orthogonal():
-    masker, imgs = prepare_data()
+    masker, imgs = _make_mask_reduce_test_data()
 
     data = _mask_and_reduce(masker, imgs[0], n_components=3, random_state=0)
 
