@@ -52,11 +52,11 @@ print(
     f"at : {data['confounds'][0]!r}"
 )
 
-from nilearn.connectome import ConnectivityMeasure
 
 ##########################################################################
 # Extract coordinates on Yeo atlas - parcellations
 # ------------------------------------------------
+from nilearn.connectome import ConnectivityMeasure
 from nilearn.maskers import MultiNiftiLabelsMasker
 
 # ConenctivityMeasure from Nilearn uses simple 'correlation' to compute
