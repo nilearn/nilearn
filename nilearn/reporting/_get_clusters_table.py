@@ -297,6 +297,7 @@ def get_clusters_table(
     # check that stat_img is niimg-like object and 3D
     stat_img = check_niimg_3d(stat_img)
     affine = stat_img.affine
+    shape = stat_img.shape
 
     # Apply threshold(s) to image
     stat_img = threshold_img(
@@ -352,13 +353,18 @@ def get_clusters_table(
         # Sort by descending max value
         clust_ids = [clust_ids[c] for c in (-peak_vals).argsort()]
 
-        re_label_map = np.zeros_like(label_map)
+        if return_label_maps:
+            # Relabel label_map based on sorted ids
+            relabel_idx = np.insert(clust_ids, 0, 0).argsort().astype(np.int32)
+            relabel_map = relabel_idx[label_map.flatten()].reshape(shape)
+            # Save label maps as nifti objects
+            label_maps.append(
+                new_img_like(stat_img, relabel_map, affine=affine)
+            )
+
         for c_id, c_val in enumerate(clust_ids):
             cluster_mask = label_map == c_val
             masked_data = temp_stat_map * cluster_mask
-
-            # Relabel label_map
-            re_label_map[cluster_mask] = c_id + 1
 
             cluster_size_mm = int(np.sum(cluster_mask) * voxel_size)
 
@@ -407,9 +413,6 @@ def get_clusters_table(
                         "",
                     ]
                 rows += [row]
-
-        # Save label maps as nifti objects
-        label_maps.append(new_img_like(stat_img, re_label_map, affine=affine))
 
         # If we reach this point, there are clusters in this sign
         no_clusters_found = False
