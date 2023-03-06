@@ -167,6 +167,7 @@ def test_get_clusters_table_relabel_label_maps():
     shape = (9, 10, 11)
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 6.0
+    data[5:7, 7:9, 7:9] = 5.5
     data[0:3, 0:3, 0:3] = 5.0
     stat_img = nib.Nifti1Image(data, np.eye(4))
 
