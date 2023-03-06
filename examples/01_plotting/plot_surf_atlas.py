@@ -92,8 +92,8 @@ atlas = destrieux_atlas
 coordinates = []
 labels = destrieux_atlas['labels']
 for hemi in ['left', 'right']:
-    vert = destrieux_atlas['map_%s' % hemi]
-    rr, _ = surface.load_surf_mesh(fsaverage['pial_%s' % hemi])
+    vert = destrieux_atlas[f'map_{hemi}']
+    rr, _ = surface.load_surf_mesh(fsaverage[f'pial_{hemi}'])
     for k, label in enumerate(labels):
         if "Unknown" not in str(label):  # Omit the Unknown label.
             # Compute mean location of vertices in label of index k
