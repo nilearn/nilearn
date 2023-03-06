@@ -33,28 +33,35 @@ Mean correlation matrix is displayed on glass brain on extracted coordinates.
 from nilearn import datasets
 
 yeo = datasets.fetch_atlas_yeo_2011()
-print('Yeo atlas nifti image (3D) with 17 parcels and liberal mask is located '
-      'at: %s' % yeo['thick_17'])
+print(
+    "Yeo atlas nifti image (3D) with 17 parcels and liberal mask "
+    f" is located at: {yeo['thick_17']}" 
+)
 
 #########################################################################
 # Load functional data
 # --------------------
 data = datasets.fetch_development_fmri(n_subjects=10)
 
-print('Functional nifti images (4D, e.g., one subject) are located at : %r'
-      % data['func'][0])
-print('Counfound csv files (of same subject) are located at : %r'
-      % data['confounds'][0])
+print(
+    "Functional nifti images (4D, e.g., one subject) "
+    f"are located at : {data.func[0]!r}"
+)
+print(
+    "Counfound csv files (of same subject) are located "
+    f"at : {data['confounds'][0]!r}"
+)
+
 
 ##########################################################################
 # Extract coordinates on Yeo atlas - parcellations
 # ------------------------------------------------
-from nilearn.maskers import MultiNiftiLabelsMasker
 from nilearn.connectome import ConnectivityMeasure
+from nilearn.maskers import MultiNiftiLabelsMasker
 
 # ConenctivityMeasure from Nilearn uses simple 'correlation' to compute
 # connectivity matrices for all subjects in a list
-connectome_measure = ConnectivityMeasure(kind='correlation')
+connectome_measure = ConnectivityMeasure(kind="correlation")
 
 # useful for plotting connectivity interactions on glass brain
 from nilearn import plotting
@@ -62,8 +69,12 @@ from nilearn import plotting
 # create masker using MultiNiftiLabelsMasker to extract functional data within
 # atlas parcels from multiple subjects using parallelization to speed up the
 # computation
-masker = MultiNiftiLabelsMasker(labels_img=yeo['thick_17'], standardize=True,
-                                memory='nilearn_cache', n_jobs=2)
+masker = MultiNiftiLabelsMasker(
+    labels_img=yeo["thick_17"],
+    standardize=True,
+    memory="nilearn_cache",
+    n_jobs=2,
+)
 
 # extract time series from all subjects
 time_series = masker.fit_transform(data.func, confounds=data.confounds)
@@ -76,12 +87,15 @@ correlation_matrices = connectome_measure.fit_transform(time_series)
 mean_correlation_matrix = connectome_measure.mean_
 
 # grab center coordinates for atlas labels
-coordinates = plotting.find_parcellation_cut_coords(labels_img=yeo['thick_17'])
+coordinates = plotting.find_parcellation_cut_coords(labels_img=yeo["thick_17"])
 
 # plot connectome with 80% edge strength in the connectivity
-plotting.plot_connectome(mean_correlation_matrix, coordinates,
-                         edge_threshold="80%",
-                         title='Yeo Atlas 17 thick (func)')
+plotting.plot_connectome(
+    mean_correlation_matrix,
+    coordinates,
+    edge_threshold="80%",
+    title="Yeo Atlas 17 thick (func)",
+)
 
 ##########################################################################
 # Plot a directed connectome - asymmetric connectivity measure
@@ -92,6 +106,7 @@ plotting.plot_connectome(mean_correlation_matrix, coordinates,
 # matrices, but plot the latter as a directed graph.
 import numpy as np
 
+
 # Define a custom function to compute lag correlation on the time series
 def lag_correlation(time_series, lag):
     n_subjects = len(time_series)
@@ -101,20 +116,25 @@ def lag_correlation(time_series, lag):
         for i in range(n_features):
             for j in range(n_features):
                 if lag == 0:
-                    lag_cor[subject, i, j] = np.corrcoef(serie[:, i],
-                                                         serie[:, j])[0, 1]
+                    lag_cor[subject, i, j] = np.corrcoef(
+                        serie[:, i], serie[:, j]
+                    )[0, 1]
                 else:
-                    lag_cor[subject, i, j] = np.corrcoef(serie[lag:, i],
-                                                         serie[:-lag, j])[0, 1]
+                    lag_cor[subject, i, j] = np.corrcoef(
+                        serie[lag:, i], serie[:-lag, j]
+                    )[0, 1]
     return np.mean(lag_cor, axis=0)
+
 
 # Compute lag-0 and lag-1 correlations and plot associated connectomes
 for lag in [0, 1]:
     lag_correlation_matrix = lag_correlation(time_series, lag)
-    plotting.plot_connectome(lag_correlation_matrix, coordinates,
-                             edge_threshold="90%",
-                             title='Lag-{} correlation'.format(
-                                 lag))
+    plotting.plot_connectome(
+        lag_correlation_matrix,
+        coordinates,
+        edge_threshold="90%",
+        title=f"Lag-{lag} correlation",
+    )
 
 ##########################################################################
 # Load probabilistic atlases - extracting coordinates on brain maps
@@ -133,8 +153,9 @@ from nilearn.maskers import MultiNiftiMapsMasker
 # create masker using MultiNiftiMapsMasker to extract functional data within
 # atlas parcels from multiple subjects using parallelization to speed up the
 # # computation
-masker = MultiNiftiMapsMasker(maps_img=difumo.maps, standardize=True,
-                              memory='nilearn_cache', n_jobs=2)
+masker = MultiNiftiMapsMasker(
+    maps_img=difumo.maps, standardize=True, memory="nilearn_cache", n_jobs=2
+)
 
 # extract time series from all subjects
 time_series = masker.fit_transform(data.func, confounds=data.confounds)
@@ -147,10 +168,15 @@ correlation_matrices = connectome_measure.fit_transform(time_series)
 mean_correlation_matrix = connectome_measure.mean_
 
 # grab center coordinates for probabilistic atlas
-coordinates = plotting.find_probabilistic_atlas_cut_coords(maps_img=difumo.maps)
+coordinates = plotting.find_probabilistic_atlas_cut_coords(
+    maps_img=difumo.maps
+)
 
 # plot connectome with 85% edge strength in the connectivity
-plotting.plot_connectome(mean_correlation_matrix, coordinates,
-                         edge_threshold="85%",
-                         title='DiFuMo with {0} dimensions (probabilistic)'.format(dim))
+plotting.plot_connectome(
+    mean_correlation_matrix,
+    coordinates,
+    edge_threshold="85%",
+    title=f"DiFuMo with {dim} dimensions (probabilistic)",
+)
 plotting.show()
