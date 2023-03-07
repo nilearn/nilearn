@@ -31,11 +31,11 @@ Fixes
 - :bdg-success:`API` :func:`~plotting.plot_roi` failed before when used with the "contours" view type and passing a list of cut coordinates in display mode "x", "y" or "z"; this has been corrected (:gh:`3241` by `Jerome Dockes`_).
 - :bdg-info:`Plotting` :func:`~plotting.plot_markers` can now plot a single scatter point (:gh:`3255` by `Caglar Cakan`_).
 - :bdg-info:`Plotting` Fix title display for :func:`~plotting.plot_surf_stat_map`. The ``title`` argument does not set the figure title anymore but the axis title. (:gh:`3220` by `Raphael Meudec`).
-- :bdg-light:`Code` :func:`~surface.load_surf_mesh` loaded FreeSurfer specific surface files (e.g. `.pial`) with a shift in the coordinates. This is fixed by adding the c_ras coordinates to the mesh coordinates (:gh:`3235` by `Yasmin Mzayek`_).
+- :bdg-dark:`Code` :func:`~surface.load_surf_mesh` loaded FreeSurfer specific surface files (e.g. `.pial`) with a shift in the coordinates. This is fixed by adding the c_ras coordinates to the mesh coordinates (:gh:`3235` by `Yasmin Mzayek`_).
 - :bdg-success:`API` Function ``nilearn.glm.second_level.second_level._check_second_level_input`` now raises an error when ``flm_object`` argument is ``False`` and ``second_level_input`` is a list of :class:`~glm.first_level.FirstLevelModel` (:gh:`3283` by `Matthieu Joulot`_).
-- :bdg-light:`Code` Function :func:`~image.resample_img` now warns the user if the provided image has an ``sform`` code equal to 0 or None  (:gh:`3284` by `Matthieu Joulot`_).
-- :bdg-light:`Code` Fix usage of ``scipy.stats.gamma.pdf`` in ``_gamma_difference_hrf`` function under ``nilearn/glm/first_level/hemodynamic_models.py``, which resulted in slight distortion of HRF (:gh:`3297` by `Kun CHEN`_).
-- :bdg-light:`Code` Fix bug introduced due to a fix in the pre-release version of scipy (``1.9.0rc1``) which now enforces that elements of a band-pass filter must meet condition ``Wn[0] < Wn[1]``.
+- :bdg-dark:`Code` Function :func:`~image.resample_img` now warns the user if the provided image has an ``sform`` code equal to 0 or None  (:gh:`3284` by `Matthieu Joulot`_).
+- :bdg-dark:`Code` Fix usage of ``scipy.stats.gamma.pdf`` in ``_gamma_difference_hrf`` function under ``nilearn/glm/first_level/hemodynamic_models.py``, which resulted in slight distortion of HRF (:gh:`3297` by `Kun CHEN`_).
+- :bdg-dark:`Code` Fix bug introduced due to a fix in the pre-release version of scipy (``1.9.0rc1``) which now enforces that elements of a band-pass filter must meet condition ``Wn[0] < Wn[1]``.
   Now if band-pass elements are equal :func:`~nilearn.signal.butterworth` returns an unfiltered signal with a warning (:gh:`3293` by `Yasmin Mzayek`_).
 - :bdg-info:`Plotting` The parameter ``alpha`` is now correctly passed to :func:`~plotting.plot_glass_brain` in :func:`~plotting.plot_connectome` (:gh:`3306` by `Koen Helwegen`_).
 - :bdg-info:`Plotting` Fix plotting of background image in :func:`~nilearn.plotting.view_img` when the background is not the MNI template (:gh:`3312` by `Jerome Dockes`_).
@@ -48,7 +48,7 @@ Enhancements
 - :bdg-success:`API` Function :func:`~glm.first_level.run_glm` and class :class:`~glm.first_level.FirstLevelModel` now accept a ``random_state`` parameter, which allows users to seed the ``KMeans`` cluster model used to estimate AR coefficients. (:gh:`3185` by `Sami Jawhar`_).
 - :bdg-secondary:`Maint` Conform seeding and docstrings in module ``_utils.data_gen`` (:gh:`3262` by `Yasmin Mzayek`_).
 - Docstrings of module :mod:`~nilearn.glm.second_level` were improved (:gh:`3030` by `Nicolas Gensollen`_).
-- :bdg-light:`Code` In :func:`~reporting.get_clusters_table`, when the center of mass of a binary cluster falls outside the cluster, report the nearest within-cluster voxel instead (:gh:`3292` by `Connor Lane`_).
+- :bdg-dark:`Code` In :func:`~reporting.get_clusters_table`, when the center of mass of a binary cluster falls outside the cluster, report the nearest within-cluster voxel instead (:gh:`3292` by `Connor Lane`_).
 - :bdg-success:`API` Add ``n_elements_`` attribute to masker classes (:gh:`3311` by `Taylor Salo`_).
 - :bdg-secondary:`Maint` Functions expecting string filesystem paths now also accept path-like objects (:gh:`3300` by `Yasmin Mzayek`_).
 - :bdg-primary:`Doc` Contributing guidelines now include a recommendation to run flake8 locally on the branch diff with main (:gh:`3317` by `Yasmin Mzayek`_).
@@ -80,5 +80,5 @@ Changes
   separate steps (:gh:`3274` by `David G Ellis`_).
 - :bdg-secondary:`Maint` Private submodules, functions, and classes from the :mod:`~nilearn.decomposition` module now start with a "_" character to make it clear that they are not part of the public API (:gh:`3141` by `Nicolas Gensollen`_).
 - :bdg-secondary:`Maint` Convert references in ``nilearn/glm/regression.py`` and ``nilearn/glm/thresholding.py`` to use footcite/footbibliography (:gh:`3302` by `Ahmad Chamma`_).
-- :bdg-light:`Code` Boolean input data in :func:`~image.new_img_like` now defaults to `np.uint8` instead of `np.int8` (:gh:`3286` by `Yasmin Mzayek`_).
+- :bdg-dark:`Code` Boolean input data in :func:`~image.new_img_like` now defaults to `np.uint8` instead of `np.int8` (:gh:`3286` by `Yasmin Mzayek`_).
 - :bdg-danger:`Deprecation` The current behavior of maskers' ``transform`` on 3D niimg inputs, in which a 2D array is returned, is deprecated, and 1D arrays will be returned starting in version ``0.12`` (:gh:`3322` by `Taylor Salo`_).

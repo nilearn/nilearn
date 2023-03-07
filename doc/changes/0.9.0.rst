@@ -79,19 +79,19 @@ NEW
 Fixes
 -----
 
-- :bdg-light:`Code` When a label image with non integer values was provided to the :class:`~maskers.NiftiLabelsMasker`, its :meth:`~maskers.NiftiLabelsMasker.generate_report` method was raising an ``IndexError`` (:gh:`3009` by `Nicolas Gensollen`_).
+- :bdg-dark:`Code` When a label image with non integer values was provided to the :class:`~maskers.NiftiLabelsMasker`, its :meth:`~maskers.NiftiLabelsMasker.generate_report` method was raising an ``IndexError`` (:gh:`3009` by `Nicolas Gensollen`_).
 
 - :bdg-info:`Plotting` Function :func:`~plotting.plot_markers` did not work when the ``display_mode`` parameter included ``l`` and ``r`` and the parameter ``node_size`` was provided as an array (:gh:`3013` by `Leonard Sasse`_).
 
-- :bdg-light:`Code` Method :meth:`~glm.first_level.FirstLevelModel.generate_report` threw a ``TypeError`` when :class:`~glm.first_level.FirstLevelModel` was instantiated with ``mask_img`` being a :class:`~maskers.NiftiMasker`. Function :func:`~reporting.make_glm_report` was fixed accordingly (:gh:`3035` by `Alexis Thual`_).
+- :bdg-dark:`Code` Method :meth:`~glm.first_level.FirstLevelModel.generate_report` threw a ``TypeError`` when :class:`~glm.first_level.FirstLevelModel` was instantiated with ``mask_img`` being a :class:`~maskers.NiftiMasker`. Function :func:`~reporting.make_glm_report` was fixed accordingly (:gh:`3035` by `Alexis Thual`_).
 
-- :bdg-light:`Code` Function :func:`~plotting.find_parcellation_cut_coords` now returns coordinates and labels having the same order as the one of the input labels index (:gh:`3078` by `Myeong Seop Song`_).
+- :bdg-dark:`Code` Function :func:`~plotting.find_parcellation_cut_coords` now returns coordinates and labels having the same order as the one of the input labels index (:gh:`3078` by `Myeong Seop Song`_).
 
 - :bdg-primary:`Doc` Convert references in ``nilearn/regions/region_extractor.py`` to use footcite / footbibliography (:gh:`3111` by `Neelay Shah`_).
 
-- :bdg-light:`Code` Fixed Hommel value computation in ``nilearn/glm/thresholding.py`` used in the ``cluster_level_inference`` function (:gh:`3109` by `Bertrand Thirion`_).
+- :bdg-dark:`Code` Fixed Hommel value computation in ``nilearn/glm/thresholding.py`` used in the ``cluster_level_inference`` function (:gh:`3109` by `Bertrand Thirion`_).
 
-- :bdg-light:`Code` Fixed computation of Benjamini-Hocheberg threshold in ``nilearn/glm/thresholding.py`` function (:gh:`3137` by `Bertrand Thirion`_).
+- :bdg-dark:`Code` Fixed computation of Benjamini-Hocheberg threshold in ``nilearn/glm/thresholding.py`` function (:gh:`3137` by `Bertrand Thirion`_).
 
 - :bdg-danger:`Deprecation` Attribute ``scaling_axis`` of :class:`~.glm.first_level.FirstLevelModel` has been deprecated and will be removed in ``0.11.0``. When scaling is performed, the attribute ``signal_scaling`` is used to define the axis instead (:gh:`3135` by `Nicolas Gensollen`_).
 
@@ -107,7 +107,7 @@ Enhancements
 
 - :bdg-success:`API` It is now possible to provide custom :term:`HRF` models to :class:`~glm.first_level.FirstLevelModel`. The custom model should be defined as a function, or a list of functions, implementing the same API as Nilearn's usual models (see :func:`~glm.first_level.spm_hrf` for example). The example :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_hrf.py` was also modified to demo how to define custom :term:`HRF` models (:gh:`2942` by `Nicolas Gensollen`_).
 
-- :bdg-light:`Code` Class :class:`~maskers.NiftiLabelsMasker` now gives a warning when some labels are removed from the label image at transform time due to resampling of the label image to the data image (:gh:`3008` by `Nicolas Gensollen`_).
+- :bdg-dark:`Code` Class :class:`~maskers.NiftiLabelsMasker` now gives a warning when some labels are removed from the label image at transform time due to resampling of the label image to the data image (:gh:`3008` by `Nicolas Gensollen`_).
 
 - :bdg-success:`API` Function :func:`~glm.second_level.non_parametric_inference` now accepts :class:`~pandas.DataFrame` as possible values for its ``second_level_input`` parameter. Note that a new parameter ``first_level_contrast`` has been added to this function to enable this feature (:gh:`3042` by `Nicolas Gensollen`_).
 

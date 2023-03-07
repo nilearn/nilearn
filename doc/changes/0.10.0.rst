@@ -45,7 +45,7 @@ NEW
 Fixes
 -----
 
-- :bdg-light:`Code` Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
+- :bdg-dark:`Code` Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
 
 - :bdg-success:`API` Regressor names can now be invalid identifiers but will raise an error with :meth:`~glm.first_level.FirstLevelModel.compute_contrast` if combined to make an invalid expression (:gh:`3374` by `Yasmin Mzayek`_).
 
@@ -61,7 +61,7 @@ Fixes
 
 - :bdg-success:`API` Pass values with correct type to scikit-learn estimator parameters and remove deprecated parameter (:gh:`3430` by `Yasmin Mzayek`_).
 
-- :bdg-light:`Code` Fix cluster labeling for two-sided cluster level permutation tests in :func:`~mass_univariate.permuted_ols` and associated function test ``test_cluster_level_parameters_smoke`` (:gh:`3436` by `Jelle Roelof Dalenberg`_).
+- :bdg-dark:`Code` Fix cluster labeling for two-sided cluster level permutation tests in :func:`~mass_univariate.permuted_ols` and associated function test ``test_cluster_level_parameters_smoke`` (:gh:`3436` by `Jelle Roelof Dalenberg`_).
 
 - :bdg-warning:`Test` Fix failing CanICA test by adding noise to the data creation step (:gh:`3453` by `Yasmin Mzayek`_).
 
