@@ -163,6 +163,19 @@ def test_get_clusters_table(tmp_path):
     cluster_table = get_clusters_table(stat_img_nans, 1e-2, 0, two_sided=False)
     assert len(cluster_table) == 1
 
+    # Test that subpeaks are handled correctly for len(subpeak_vals) > 1
+    # 1 cluster and two subpeaks, 10 voxels apart.
+    data = np.zeros(shape)
+    data[4, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
+    data[5, 5, :] = [5, 4, 3, 2, 1, 1, 1, 2, 3, 4, 6]
+    data[6, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
+    stat_img = nib.Nifti1Image(data, np.eye(4))
+
+    cluster_table = get_clusters_table(stat_img, 0, 0, min_distance=9)
+    assert len(cluster_table) == 2
+    assert 1 in cluster_table["Cluster ID"].values
+    assert "1a" in cluster_table["Cluster ID"].values
+
 
 def test_get_clusters_table_relabel_label_maps():
     """Check that the cluster's labels in label_maps match their corresponding
