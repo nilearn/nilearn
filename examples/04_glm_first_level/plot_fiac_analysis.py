@@ -86,6 +86,7 @@ def pad_vector(contrast_, n_columns):
     """Append zeros in contrast vectors."""
     return np.hstack((contrast_, np.zeros(n_columns - len(contrast_))))
 
+
 #########################################################################
 # Contrast specification
 
