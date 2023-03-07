@@ -18,7 +18,7 @@ for a careful study.
 
 ###############################################################################
 # Load brain development fMRI dataset and MSDL atlas
-# -------------------------------------------------------------------
+# --------------------------------------------------
 # We study only 60 subjects from the dataset, to save computation time.
 from nilearn import datasets
 
@@ -41,6 +41,7 @@ masker = NiftiMapsMasker(
     memory="nilearn_cache",
     memory_level=1,
 ).fit()
+
 masked_data = [
     masker.transform(func, confounds)
     for (func, confounds) in zip(
@@ -55,11 +56,10 @@ masked_data = [
 # adults. We use cross-validation and measure classification accuracy to
 # compare the different kinds of connectivity matrices.
 
+# prepare the classification pipeline
 from nilearn.connectome import ConnectivityMeasure
 from sklearn.dummy import DummyClassifier
 from sklearn.model_selection import GridSearchCV
-
-# prepare the classification pipeline
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
 
@@ -118,7 +118,6 @@ plt.xlabel("Classification accuracy")
 plt.gca().grid(True)
 plt.gca().set_axisbelow(True)
 plt.tight_layout()
-
 
 ###############################################################################
 # This is a small example to showcase nilearn features. In practice such

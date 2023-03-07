@@ -1,6 +1,6 @@
 """
 Advanced decoding using scikit learn
-==========================================
+====================================
 
 This tutorial opens the box of decoding pipelines to bridge integrated
 functionalities provided by the :class:`nilearn.decoding.Decoder` object
@@ -23,10 +23,10 @@ face and cat images.
 
 ###########################################################################
 # Retrieve and load the fMRI data from the Haxby study
-# ------------------------------------------------------
+# ----------------------------------------------------
 #
 # First download the data
-# ........................
+# .......................
 #
 
 # The :func:`nilearn.datasets.fetch_haxby` function will download the
@@ -37,6 +37,7 @@ from nilearn import datasets
 haxby_dataset = datasets.fetch_haxby()
 mask_filename = haxby_dataset.mask_vt[0]
 fmri_filename = haxby_dataset.func[0]
+
 # Loading the behavioral labels
 import pandas as pd
 
@@ -57,10 +58,10 @@ session_label = behavioral["chunks"][condition_mask]
 
 ###########################################################################
 # Performing decoding with scikit-learn
-# --------------------------------------
+# -------------------------------------
 
 # Importing a classifier
-# ........................
+# ......................
 # We can import many predictive models from scikit-learn that can be used in a
 # decoding pipelines. They are all used with the same `fit()` and `predict()`
 # functions.
@@ -73,7 +74,7 @@ svc = SVC()
 
 ###########################################################################
 # Masking the data
-# ...................................
+# ................
 # To use a scikit-learn estimator on brain images, you should first mask the
 # data using a :class:`nilearn.maskers.NiftiMasker` to extract only the
 # voxels inside the mask of interest, and transform 4D input fMRI data to
@@ -92,7 +93,7 @@ fmri_masked = masker.fit_transform(fmri_niimgs)
 
 ###########################################################################
 # Cross-validation with scikit-learn
-# ...................................
+# ..................................
 # To train and test the model in a meaningful way we use cross-validation with
 # the function :func:`sklearn.model_selection.cross_val_score` that computes
 # for you the score for the different folds of cross-validation.
@@ -102,10 +103,9 @@ from sklearn.model_selection import cross_val_score
 cv_scores = cross_val_score(svc, fmri_masked, conditions, cv=5)
 print(f"SVC accuracy: {cv_scores.mean():.3f}")
 
-
 ###########################################################################
 # Tuning cross-validation parameters
-# ...................................
+# ..................................
 # You can change many parameters of the cross_validation here, for example:
 #
 # * use a different cross - validation scheme, for example LeaveOneGroupOut()
@@ -131,7 +131,7 @@ print(f"SVC accuracy (tuned parameters): {cv_scores.mean():.3f}")
 
 ###########################################################################
 # Measuring the chance level
-# ------------------------------------
+# --------------------------
 # :class:`sklearn.dummy.DummyClassifier` (purely random) estimators are the
 # simplest way to measure prediction performance at chance. A more controlled
 # way, but slower, is to do permutation testing on the labels, with
@@ -139,7 +139,7 @@ print(f"SVC accuracy (tuned parameters): {cv_scores.mean():.3f}")
 
 ###########################################################################
 # Dummy estimator
-# ...................................
+# ...............
 from sklearn.dummy import DummyClassifier
 
 null_cv_scores = cross_val_score(
@@ -150,7 +150,7 @@ print(f"Dummy accuracy: {null_cv_scores.mean():.3f}")
 
 ###########################################################################
 # Permutation test
-# ...................................
+# ................
 from sklearn.model_selection import permutation_test_score
 
 null_cv_scores = permutation_test_score(
@@ -158,28 +158,28 @@ null_cv_scores = permutation_test_score(
 )[1]
 print(f"Permutation test score: {null_cv_scores.mean():.3f}")
 
-from sklearn.feature_selection import SelectPercentile, f_classif
-from sklearn.model_selection import cross_validate
-
 ###########################################################################
 # Decoding without a mask: Anova-SVM in scikit-lean
-# --------------------------------------------------
+# -------------------------------------------------
 # We can also implement feature selection before decoding as a scikit-learn
 # `pipeline`(:class:`sklearn.pipeline.Pipeline`). For this, we need to import
 # the :mod:`sklearn.feature_selection` module and use
 # :func:`sklearn.feature_selection.f_classif`, a simple F-score
 # based feature selection (a.k.a.
 # `Anova <https://en.wikipedia.org/wiki/Analysis_of_variance#The_F-test>`_).
+from sklearn.feature_selection import SelectPercentile, f_classif
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
 
 feature_selection = SelectPercentile(f_classif, percentile=10)
 anova_svc = Pipeline([("anova", feature_selection), ("svc", LinearSVC())])
+
 # We can use our ``anova_svc`` object exactly as we were using our ``svc``
 # object previously.
 # As we want to investigate our model, we use sklearn `cross_validate` function
 # with `return_estimator = True` instead of cross_val_score,
 # to save the estimator
+from sklearn.model_selection import cross_validate
 
 fitted_pipeline = cross_validate(
     anova_svc,
@@ -193,7 +193,7 @@ print(f"ANOVA+SVC test score: {fitted_pipeline['test_score'].mean():.3f}")
 
 ###########################################################################
 # Visualize the ANOVA + SVC's discriminating weights
-# ...................................................
+# ..................................................
 
 # retrieve the pipeline fitted on the first cross-validation fold and its SVC
 # coefficients
@@ -220,19 +220,17 @@ plot_stat_map(weight_img, title="Anova+SVC weights")
 
 ###########################################################################
 # Going further with scikit-learn
-# ------------------------------------
+# -------------------------------
 
 ###########################################################################
 # Changing the prediction engine
-# ...............................
+# ..............................
 # To change the prediction engine, we just need to import it and use in our
 # pipeline instead of the SVC.
 # We can try Fisher's
 # `Linear Discriminant Analysis (LDA) <http://scikit-learn.org/stable/auto_examples/decomposition/plot_pca_vs_lda.html>`_ # noqa
 
-
 # Construct the new estimator object and use it in a new pipeline after anova
-
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
 feature_selection = SelectPercentile(f_classif, percentile=10)
@@ -254,7 +252,7 @@ print(
 
 ###########################################################################
 # Changing the feature selection
-# ...........................................
+# ..............................
 # Let's say that you want a more sophisticated feature selection, for example a
 # Recursive Feature Elimination(RFE) before a svc.
 # We follows the same principle.

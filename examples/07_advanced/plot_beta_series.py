@@ -1,6 +1,7 @@
 """
 Beta-Series Modeling for Task-Based Functional Connectivity and Decoding
 ========================================================================
+
 This example shows how to run beta series :term:`GLM` models, which are a
 common modeling approach for a variety of analyses of task-based :term:`fMRI`
 data with an event-related task design, including
@@ -66,11 +67,9 @@ from nilearn import image, plotting
 # Download data in :term:`BIDS` format and event information for one subject,
 # and create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
 from nilearn.datasets import fetch_language_localizer_demo_dataset
-from nilearn.glm.first_level import FirstLevelModel
+from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 
 data_dir, _ = fetch_language_localizer_demo_dataset()
-
-from nilearn.glm.first_level import first_level_from_bids
 
 models, models_run_imgs, events_dfs, models_confounds = first_level_from_bids(
     data_dir,
@@ -85,8 +84,9 @@ events_df = events_dfs[0][0]
 
 # We will use first_level_from_bids's parameters for the other models
 glm_parameters = standard_glm.get_params()
-# We need to override one parameter (signal_scaling) with the value of
-# scaling_axis
+
+# We need to override one parameter (signal_scaling)
+# with the value of scaling_axis
 glm_parameters["signal_scaling"] = standard_glm.scaling_axis
 
 ##############################################################################
@@ -97,6 +97,7 @@ glm_parameters["signal_scaling"] = standard_glm.scaling_axis
 # models.
 # We will just use the one created by
 # :func:`~nilearn.glm.first_level.first_level_from_bids`.
+
 standard_glm.fit(fmri_file, events_df)
 
 # The standard design matrix has one column for each condition, along with
@@ -138,6 +139,7 @@ fig.show()
 # Aggregate beta maps from the LSA model based on condition
 # `````````````````````````````````````````````````````````
 # Collect the :term:`Parameter Estimate` maps
+
 lsa_beta_maps = {cond: [] for cond in events_df["trial_type"].unique()}
 trialwise_conditions = lsa_events_df["trial_type"].unique()
 for condition in trialwise_conditions:
@@ -333,7 +335,7 @@ lang_corrs = (
 )
 language_connectivity_img = brain_masker.inverse_transform(lang_corrs.T)
 
-# Perform the seed-to-voxel correlation for the LSS 'string' beta series
+# Same but now for the LSS 'string' beta series
 string_seed_beta_series = seed_masker.fit_transform(lss_beta_maps["string"])
 string_beta_series = brain_masker.fit_transform(lss_beta_maps["string"])
 string_corrs = (

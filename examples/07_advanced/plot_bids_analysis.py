@@ -2,7 +2,6 @@
 BIDS dataset first and second level analysis
 ============================================
 
-
 Full step-by-step example of fitting a :term:`GLM`
 to perform a first and second level
 analysis in a :term:`BIDS` dataset and visualizing the results.
@@ -19,7 +18,6 @@ More specifically:
    Notice that in this case the preprocessed :term:`bold<BOLD>`
    images were already normalized to the same :term:`MNI` space.
 """
-
 
 ##############################################################################
 # Fetch example BIDS dataset
@@ -101,10 +99,9 @@ from scipy.stats import norm
 
 p001_unc = norm.isf(0.001)
 
-import matplotlib.pyplot as plt
-
 ############################################################################
 # Prepare figure for concurrent plot of individual maps.
+import matplotlib.pyplot as plt
 from nilearn import plotting
 
 fig, axes = plt.subplots(nrows=2, ncols=5, figsize=(8, 4.5))

@@ -2,7 +2,6 @@
 Multivariate decompositions: Independent component analysis of fMRI
 ===================================================================
 
-
 This example is meant to demonstrate nilearn as a low-level tools used to
 combine feature extraction with a multivariate decomposition algorithm
 for movie-watching.
@@ -33,7 +32,6 @@ func_filename = dataset.func[0]
 # print basic information on the dataset
 print(f"First subject functional nifti image (4D) is at: {dataset.func[0]}")
 
-
 #####################################################################
 # Preprocess
 from nilearn.maskers import NiftiMasker
@@ -50,10 +48,8 @@ masker = NiftiMasker(
 )
 data_masked = masker.fit_transform(func_filename)
 
-
 #####################################################################
 # Apply ICA
-
 from sklearn.decomposition import FastICA
 
 n_components = 10
@@ -63,6 +59,7 @@ components_masked = ica.fit_transform(data_masked.T).T
 # Normalize estimated components, for thresholding to make sense
 components_masked -= components_masked.mean(axis=0)
 components_masked /= components_masked.std(axis=0)
+
 # Threshold
 import numpy as np
 
@@ -74,10 +71,10 @@ component_img = masker.inverse_transform(components_masked)
 
 #####################################################################
 # Visualize the results
-
-# Show some interesting components
 from nilearn import image
 from nilearn.plotting import plot_stat_map, show
+
+# Show some interesting components
 
 # Use the mean as a background
 mean_img = image.mean_img(func_filename)

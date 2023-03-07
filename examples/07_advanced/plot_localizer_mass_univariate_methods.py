@@ -43,6 +43,7 @@ print(
 )
 
 tested_var = localizer_dataset.ext_vars["pseudo"]
+
 # Quality check / Remove subjects with bad tested variate
 mask_quality_check = np.where(np.logical_not(np.isnan(tested_var)))[0]
 n_samples = mask_quality_check.size
@@ -52,12 +53,11 @@ contrast_map_filenames = [
 tested_var = tested_var[mask_quality_check].values.reshape((-1, 1))
 print(f"Actual number of subjects after quality check: {int(n_samples)}")
 
-
 ##############################################################################
 # Mask data
 nifti_masker = NiftiMasker(
     smoothing_fwhm=5, memory="nilearn_cache", memory_level=1
-)  # cache options
+)
 fmri_masked = nifti_masker.fit_transform(contrast_map_filenames)
 
 
@@ -74,7 +74,6 @@ neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
     neg_log_pvals_anova
 )
 
-
 ##############################################################################
 # Perform massively univariate analysis with permuted OLS
 #
@@ -86,6 +85,7 @@ neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
 #   of analysis designs, depending on the ``tested_var``.
 #   For example, if you wished to perform a one-sample test, you could
 #   simply provide an array of ones (e.g., ``np.ones(n_samples)``).
+
 ols_outputs = permuted_ols(
     tested_var,  # this is equivalent to the design matrix, in array form
     fmri_masked,
@@ -103,7 +103,6 @@ neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(
 neg_log_pvals_tfce_unmasked = nifti_masker.inverse_transform(
     ols_outputs["logp_max_tfce"][0, :]  # select first regressor
 )
-
 
 ##############################################################################
 # Visualization

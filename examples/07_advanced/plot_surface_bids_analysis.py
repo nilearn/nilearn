@@ -1,6 +1,6 @@
-"""Surface-based dataset first and second level analysis of a dataset
+"""
+Surface-based dataset first and second level analysis of a dataset
 ==================================================================
-
 
 Full step-by-step example of fitting a :term:`GLM` (first and second level
 analysis) in a 10-subjects dataset and visualizing the results.
@@ -58,6 +58,7 @@ _, models_run_imgs, models_events, models_confounds = \
 #############################################################################
 # We also need to get the TR information. For that we use the json sidecar file
 # of the dataset's functional images.
+import json
 import os
 
 json_file = os.path.join(
@@ -67,7 +68,6 @@ json_file = os.path.join(
     'func',
     'sub-01_task-languagelocalizer_desc-preproc_bold.json'
 )
-import json
 
 with open(json_file, 'r') as f:
     t_r = json.load(f)['RepetitionTime']

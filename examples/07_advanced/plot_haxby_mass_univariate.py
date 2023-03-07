@@ -58,16 +58,17 @@ conditions_encoded = conditions_encoded[condition_mask]
 
 ##############################################################################
 # Mask data
-mask_filename = haxby_dataset.mask
 from nilearn.image import index_img
 from nilearn.maskers import NiftiMasker
+
+mask_filename = haxby_dataset.mask
 
 nifti_masker = NiftiMasker(
     smoothing_fwhm=8,
     mask_img=mask_filename,
-    memory="nilearn_cache",
+    memory="nilearn_cache",  # cache options
     memory_level=1,
-)  # cache options
+)
 func_filename = haxby_dataset.func[0]
 func_reduced = index_img(func_filename, condition_mask)
 fmri_masked = nifti_masker.fit_transform(func_reduced)
@@ -76,10 +77,11 @@ fmri_masked = nifti_masker.fit_transform(func_reduced)
 # Otherwise, the observations cannot be exchanged at random because
 # a time dependence exists between observations within a same session.
 n_sessions = np.unique(sessions).size
+conditions_per_session = 2
 grouped_fmri_masked = np.empty(
-    (2 * n_sessions, fmri_masked.shape[1])  # two conditions per session
+    (conditions_per_session * n_sessions, fmri_masked.shape[1])
 )
-grouped_conditions_encoded = np.empty((2 * n_sessions, 1))
+grouped_conditions_encoded = np.empty((conditions_per_session * n_sessions, 1))
 
 for s in range(n_sessions):
     session_mask = sessions[condition_mask] == s
@@ -105,15 +107,15 @@ for s in range(n_sessions):
 # effect sign to add it back at the end and thus observe the signed effect
 from nilearn.mass_univariate import permuted_ols
 
+# Note that an intercept as a covariate is used by default
 neg_log_pvals, t_scores_original_data, _ = permuted_ols(
     grouped_conditions_encoded,
     grouped_fmri_masked,
-    # + intercept as a covariate by default
     n_perm=10000,
     two_sided_test=True,
     verbose=1,  # display progress bar
-    n_jobs=1,
-)  # can be changed to use more CPUs
+    n_jobs=1,  # can be changed to use more CPUs
+)
 signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
 signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     signed_neg_log_pvals
@@ -125,9 +127,10 @@ signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
 # F-test does not allow to observe the effect sign (pure two-sided test)
 from sklearn.feature_selection import f_regression
 
+# f_regression implicitly adds intercept
 _, pvals_bonferroni = f_regression(
     grouped_fmri_masked, grouped_conditions_encoded
-)  # f_regression implicitly adds intercept
+)
 pvals_bonferroni *= fmri_masked.shape[1]
 pvals_bonferroni[np.isnan(pvals_bonferroni)] = 1
 pvals_bonferroni[pvals_bonferroni > 1] = 1
@@ -139,11 +142,10 @@ neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
 ##############################################################################
 # Visualization
 import matplotlib.pyplot as plt
-
-# Use the fmri mean image as a surrogate of anatomical data
 from nilearn.image import get_data
 from nilearn.plotting import plot_stat_map, show
 
+# Use the fmri mean image as a surrogate of anatomical data
 mean_fmri_img = image.mean_img(func_filename)
 
 threshold = -np.log10(0.1)  # 10% corrected
@@ -167,8 +169,8 @@ title = (
     "Negative $\\log_{10}$ p-values"
     "\n(Parametric two-sided F-test"
     "\n+ Bonferroni correction)"
-    "\n%d detections"
-) % n_detections
+    f"\n{n_detections} detections"
+)
 
 display.title(title, y=1.1)
 
@@ -190,8 +192,8 @@ title = (
     "Negative $\\log_{10}$ p-values"
     "\n(Non-parametric two-sided test"
     "\n+ max-type correction)"
-    "\n%d detections"
-) % n_detections
+    f"\n{n_detections} detections"
+)
 
 display.title(title, y=1.1)
 

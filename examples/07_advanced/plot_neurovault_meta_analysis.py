@@ -1,6 +1,6 @@
 """
-NeuroVault meta-analysis of stop-go paradigm studies.
-=====================================================
+NeuroVault meta-analysis of stop-go paradigm studies
+====================================================
 
 This example shows how to download statistical maps from
 NeuroVault
@@ -27,15 +27,14 @@ stop_go_image_ids = (151, 3041, 3042, 2676, 2675, 2818, 2834)
 # These ids were determined by querying neurovault like this:
 
 # from nilearn.datasets import fetch_neurovault, neurovault
-
+#
 # nv_data = fetch_neurovault(
 #     max_images=7,
 #     cognitive_paradigm_cogatlas=neurovault.Contains('stop signal'),
 #     contrast_definition=neurovault.Contains('succ', 'stop', 'go'),
 #     map_type='T map')
-
+#
 # print([meta['id'] for meta in nv_data['images_meta']])
-
 
 nv_data = fetch_neurovault_ids(image_ids=stop_go_image_ids)
 
@@ -71,7 +70,6 @@ current_collection = None
 
 print("\nComputing maps...")
 
-
 # convert t to z for all images
 for this_meta in images_meta:
     if this_meta["collection_id"] != current_collection:
@@ -92,7 +90,6 @@ for this_meta in images_meta:
 
     z_imgs.append(z_img)
 
-
 ######################################################################
 # Plot the combined z maps
 # ------------------------
@@ -109,6 +106,5 @@ plotting.plot_stat_map(
     cut_coords=cut_coords,
     vmax=12,
 )
-
 
 plotting.show()

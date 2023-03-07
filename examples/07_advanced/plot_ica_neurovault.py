@@ -1,6 +1,6 @@
 """
-NeuroVault cross-study ICA maps.
-================================
+NeuroVault cross-study ICA maps
+===============================
 
 This example shows how to download statistical maps from
 NeuroVault, label them with NeuroSynth terms,
@@ -56,7 +56,6 @@ print("\nTop 10 neurosynth terms from downloaded images:\n")
 for term_idx in np.argsort(total_scores)[-10:][::-1]:
     print(vocabulary[term_idx])
 
-
 ######################################################################
 # Reshape and mask images
 # -----------------------
@@ -88,20 +87,15 @@ with warnings.catch_warnings():
         except Exception as e:
             meta = nv_data["images_meta"][index]
             print(
-                "Failed to mask/reshape image: id: {}; "
-                "name: '{}'; collection: {}; error: {}".format(
-                    meta.get("id"),
-                    meta.get("name"),
-                    meta.get("collection_id"),
-                    e,
-                )
+                f"Failed to mask/reshape image: id: {meta.get('id')}; "
+                f"name: '{meta.get('name')}'; "
+                f"collection: {meta.get('collection_id')}; error: {e}"
             )
             is_usable[index] = False
 
 # Now reshape list into 2D matrix, and remove failed images from terms
 X = np.vstack(X)
 term_weights = term_weights[is_usable, :]
-
 
 ######################################################################
 # Run ICA and map components to terms
@@ -117,7 +111,6 @@ ica_maps = fast_ica.fit_transform(X.T).T
 
 term_weights_for_components = np.dot(fast_ica.components_, term_weights)
 print("Done, plotting results.")
-
 
 ######################################################################
 # Generate figures
@@ -142,7 +135,6 @@ with warnings.catch_warnings():
         plotting.plot_stat_map(
             ic_img, threshold=ic_threshold, colorbar=False, title=title
         )
-
 
 ######################################################################
 # As we can see, some of the components capture cognitive or neurological
