@@ -73,6 +73,7 @@ from nilearn import plotting
 matrix = confusion_matrix(
     y_test, 
     y_pred, 
+    normalize=True,
 )
 
 # Plot the confusion matrix
