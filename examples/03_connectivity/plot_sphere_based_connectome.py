@@ -39,9 +39,7 @@ from nilearn import datasets
 dataset = datasets.fetch_development_fmri(n_subjects=10)
 
 # print basic information on the dataset
-print(
-    f"First subject functional nifti image (4D) is at: {dataset.func[0]}"
-)
+print(f"First subject functional nifti image (4D) is at: {dataset.func[0]}")
 
 
 ##########################################################################
@@ -449,4 +447,4 @@ plotting.show()
 #
 #   * :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 #
-#   * :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`
+#   * :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py` # noqa

@@ -26,7 +26,6 @@ observe some significant effects in these areas.
 
 import matplotlib.pyplot as plt
 import pandas as pd
-
 from nilearn import plotting
 from nilearn.datasets import fetch_localizer_contrasts
 

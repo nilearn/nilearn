@@ -78,7 +78,6 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 # Display the correlation matrix
 import numpy as np
-
 from nilearn import plotting
 
 # Mask out the major diagonal

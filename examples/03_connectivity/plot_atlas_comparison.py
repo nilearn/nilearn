@@ -35,7 +35,7 @@ from nilearn import datasets
 yeo = datasets.fetch_atlas_yeo_2011()
 print(
     "Yeo atlas nifti image (3D) with 17 parcels and liberal mask "
-    f" is located at: {yeo['thick_17']}" 
+    f" is located at: {yeo['thick_17']}"
 )
 
 #########################################################################

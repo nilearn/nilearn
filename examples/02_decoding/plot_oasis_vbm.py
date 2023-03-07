@@ -190,7 +190,7 @@ neg_log_pvals, t_scores_original_data, _ = permuted_ols(
     n_perm=2000,  # 1,000 in the interest of time; 10000 would be better
     verbose=1,  # display progress bar
     n_jobs=1,
-)  
+)
 signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
 signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     variance_threshold.inverse_transform(signed_neg_log_pvals)

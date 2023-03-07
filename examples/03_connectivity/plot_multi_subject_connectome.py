@@ -9,7 +9,6 @@ using the group sparse inverse covariance estimate.
 
 """
 import numpy as np
-
 from nilearn import plotting
 
 n_subjects = 4  # subjects to consider for group-sparse covariance (max: 40)

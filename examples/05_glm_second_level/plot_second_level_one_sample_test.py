@@ -116,7 +116,6 @@ plotting.show()
 # Next, we compute the (corrected) p-values with a parametric test to compare
 # them with the results from a nonparametric test.
 import numpy as np
-
 from nilearn.image import get_data, math_img
 
 p_val = second_level_model.compute_contrast(output_type="p_value")
@@ -202,7 +201,9 @@ TITLES = [
 ]
 
 fig, axes = plt.subplots(figsize=(8, 8), nrows=2, ncols=2)
-for img_counter, (i_row, j_col) in enumerate(itertools.product(range(2), range(2))):
+for img_counter, (i_row, j_col) in enumerate(
+    itertools.product(range(2), range(2))
+):
     ax = axes[i_row, j_col]
     plotting.plot_glass_brain(
         IMAGES[img_counter],

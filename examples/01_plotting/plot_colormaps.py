@@ -10,7 +10,6 @@ See :ref:`surface-plotting` for surface plotting details.
 
 import matplotlib.pyplot as plt
 import numpy as np
-
 from nilearn.plotting import show
 from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
 

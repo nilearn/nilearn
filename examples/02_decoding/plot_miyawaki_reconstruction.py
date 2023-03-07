@@ -85,6 +85,7 @@ y_test = np.vstack([y[:-2] for y in y_test]).astype(float)
 
 n_features = X_train.shape[1]
 
+
 def flatten(list_of_2d_array):
     flattened = [array.ravel() for array in list_of_2d_array]
     return flattened
@@ -151,7 +152,9 @@ from sklearn.preprocessing import StandardScaler
 clfs = []
 n_clfs = y_train.shape[1]
 for i in range(y_train.shape[1]):
-    sys.stderr.write(f"Training classifiers {int(i + 1):03}/{int(n_clfs)}... \r")
+    sys.stderr.write(
+        f"Training classifiers {int(i + 1):03}/{int(n_clfs)}... \r"
+    )
 
     clf = Pipeline(
         [
@@ -164,7 +167,8 @@ for i in range(y_train.shape[1]):
     clfs.append(clf)
 
 sys.stderr.write(
-    f"Training classifiers {n_clfs:03d}/{n_clfs:d}... Done ({(time.time() - t0):.2f}s).\n"
+    f"Training classifiers {n_clfs:03d}/{n_clfs:d}... "
+    f"Done ({(time.time() - t0):.2f}s).\n"
 )
 
 

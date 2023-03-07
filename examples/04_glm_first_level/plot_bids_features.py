@@ -118,7 +118,9 @@ design_matrix = get_design_from_fslmat(
 # We identify the columns of the Go and StopSuccess conditions of the
 # design matrix inferred from the FSL file, to use them later for contrast
 # definition.
-design_columns = [f"cond_{int(i):02}" for i in range(len(design_matrix.columns))]
+design_columns = [
+    f"cond_{int(i):02}" for i in range(len(design_matrix.columns))
+]
 design_columns[0] = "Go"
 design_columns[4] = "StopSuccess"
 design_matrix.columns = design_columns

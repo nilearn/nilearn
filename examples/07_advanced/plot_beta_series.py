@@ -58,7 +58,6 @@ LSS beta series.
 """
 # sphinx_gallery_thumbnail_number = -2
 import matplotlib.pyplot as plt
-
 from nilearn import image, plotting
 
 ##############################################################################
@@ -291,7 +290,6 @@ fig.show()
 # which goes into more detail about seed-to-voxel functional connectivity
 # analyses.
 import numpy as np
-
 from nilearn.maskers import NiftiMasker, NiftiSpheresMasker
 
 # Coordinate taken from Neurosynth's 'language' meta-analysis

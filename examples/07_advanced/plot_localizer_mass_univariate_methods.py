@@ -23,7 +23,6 @@ import matplotlib.pyplot as plt
 
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
 import numpy as np
-
 from nilearn import datasets
 from nilearn.maskers import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
