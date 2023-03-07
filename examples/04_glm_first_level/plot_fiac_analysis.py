@@ -65,7 +65,8 @@ design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 #########################################################################
 # GLM estimation
 # ----------------------------------
-# GLM specification. Note that the mask was provided in the dataset. So we use it.
+# GLM specification. Note that the mask was provided in the dataset.
+# So we use it.
 from nilearn.glm.first_level import FirstLevelModel
 
 fmri_glm = FirstLevelModel(mask_img=data['mask'], minimize_memory=True)
@@ -80,9 +81,11 @@ fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices)
 
 n_columns = design_matrices[0].shape[1]
 
+
 def pad_vector(contrast_, n_columns):
-    """A small routine to append zeros in contrast vectors"""
+    """Append zeros in contrast vectors."""
     return np.hstack((contrast_, np.zeros(n_columns - len(contrast_))))
+
 
 #########################################################################
 # Contrast specification

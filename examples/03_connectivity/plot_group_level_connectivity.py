@@ -99,10 +99,11 @@ print(
 mean_correlation_matrix = correlation_measure.mean_
 print(f"Mean correlation has shape {mean_correlation_matrix.shape}.")
 
+from matplotlib import pyplot as plt
+
 ###############################################################################
 # We display the connectome matrices of the first 3 children
 from nilearn import plotting
-from matplotlib import pyplot as plt
 
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
 for i, (matrix, ax) in enumerate(zip(correlation_matrices, axes)):
@@ -188,6 +189,10 @@ for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes)):
 # The average tangent matrix cannot be interpreted, as individual matrices
 # represent deviations from the mean, which is set to 0.
 
+import numpy as np
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import StratifiedShuffleSplit
+
 ###############################################################################
 # What kind of connectivity is most powerful for classification?
 # --------------------------------------------------------------
@@ -198,9 +203,6 @@ for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes)):
 # StratifiedShuffleSplit allows preserving the proportion of children in the
 # test set.
 from sklearn.svm import LinearSVC
-from sklearn.model_selection import StratifiedShuffleSplit
-from sklearn.metrics import accuracy_score
-import numpy as np
 
 kinds = ["correlation", "partial correlation", "tangent"]
 _, classes = np.unique(groups, return_inverse=True)

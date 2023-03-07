@@ -21,14 +21,11 @@ passing both to `vol_to_surf`.
 
 """
 
-import numpy as np
-
 import matplotlib
+import numpy as np
 from matplotlib import pyplot as plt
-
-from nilearn.surface import surface
 from nilearn.plotting import show
-
+from nilearn.surface import surface
 
 ######################################################################
 # Build a mesh (of a cylinder)

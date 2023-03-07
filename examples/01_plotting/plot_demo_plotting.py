@@ -88,7 +88,7 @@ plotting.plot_anat(haxby_anat_filename, title="plot_anat")
 # -------------------------------------------------------
 #
 # Visualizing ventral temporal region image from haxby dataset overlaid on
-# subject specific anatomical image 
+# subject specific anatomical image
 # with coordinates positioned automatically on region of interest (roi)
 plotting.plot_roi(haxby_mask_filename, bg_img=haxby_anat_filename,
                   title="plot_roi")

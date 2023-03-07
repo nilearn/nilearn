@@ -27,12 +27,14 @@ about the plotting data and associated meta-data.
 # Let us first see where the data will be downloaded and stored on our disk:
 #
 from nilearn import datasets
+
 print("Datasets shipped with nilearn are stored "
       f"at: {datasets.get_data_dirs()!r}")
 
 ###############################################################################
-# Let us now retrieve a motor task contrast map
-# corresponding to a group one-sample t-test
+# Let us now retrieve a motor task contrast map corresponding
+# to a group one-sample t-test.
+#
 
 motor_images = datasets.fetch_neurovault_motor_task()
 stat_img = motor_images.images[0]
@@ -272,6 +274,7 @@ display.title(
 # enough so that same value is used for both contours.
 
 import numpy as np
+
 display = plot_glass_brain(None, plot_abs=False, display_mode='lzry')
 display.add_contours(
     stat_img, levels=[-2.8, 3.], colors=['b', 'r'], linewidths=4.

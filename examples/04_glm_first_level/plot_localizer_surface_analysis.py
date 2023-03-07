@@ -10,7 +10,7 @@ More specifically:
 2. fMRI data are projected onto a reference cortical surface (the FreeSurfer
    template, fsaverage).
 3. A design matrix describing all the effects related to the data is computed.
-4. A GLM is applied to the dataset 
+4. A GLM is applied to the dataset
    (effect/covariance, then contrast estimation).
 
 The result of the analysis are statistical maps that are defined on the brain
@@ -146,15 +146,15 @@ basic_contrasts['sentences'] = (basic_contrasts['sentence_listening']
 ###############################################################################
 # Finally, we create a dictionary of more relevant contrasts
 #
-# * 'left - right button press': probes motor activity 
+# * 'left - right button press': probes motor activity
 #   in left versus right button presses.
-# * 'audio - visual': probes the difference of activity between listening 
+# * 'audio - visual': probes the difference of activity between listening
 #   to some content or reading the same type of content
 #   (instructions, stories).
-# * 'computation - sentences': looks at the activity 
+# * 'computation - sentences': looks at the activity
 #   when performing a mental computation task  versus simply reading sentences.
 #
-# Of course, we could define other contrasts, 
+# Of course, we could define other contrasts,
 # but we keep only 3 for simplicity.
 
 contrasts = {
@@ -165,8 +165,9 @@ contrasts = {
         - basic_contrasts['visual_right_hand_button_press']
     ),
     'audio - visual': basic_contrasts['audio'] - basic_contrasts['visual'],
-    'computation - sentences': (basic_contrasts['computation'] -
-                                basic_contrasts['sentences']
+    'computation - sentences': (
+        basic_contrasts['computation']
+        - basic_contrasts['sentences']
     )
 }
 
