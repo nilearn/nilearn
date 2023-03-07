@@ -13,7 +13,7 @@ narrative sentence reading/listening.
 
 #########################################################################
 # Prepare some images for a simple t test
-# ----------------------------------------
+# ---------------------------------------
 # This is a simple manually performed second level analysis.
 from nilearn import datasets
 
@@ -28,7 +28,7 @@ cmap_filenames = localizer_dataset.cmaps
 
 #########################################################################
 # Perform the second level analysis
-# ----------------------------------
+# ---------------------------------
 #
 # First, we define a design matrix for the model. As the model is trivial
 # (one-sample test), the design matrix is just one column with ones.

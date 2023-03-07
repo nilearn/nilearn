@@ -1,5 +1,6 @@
-"""Understanding parameters of the first-level model
-====================================================
+"""
+Understanding parameters of the first-level model
+=================================================
 
 In this tutorial, we study how first-level models are parametrized for fMRI
 data analysis and clarify the impact of these parameters on the results of the
@@ -472,7 +473,7 @@ plt.show()
 
 #########################################################################
 # Volume censoring
-# ------------------
+# ----------------
 #
 # Volume censoring is a common way to remove non-steady state volumes, or
 # high-motion volumes in scrubbing based noise removal strategies. In this

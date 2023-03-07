@@ -39,7 +39,7 @@ in the documentation section :ref:`parcellating_brain`.
 
 ########################################################################
 # Download a brain development fmri dataset and turn it to a data matrix
-# -----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 #
 # We download one subject of the movie watching dataset from Internet
 

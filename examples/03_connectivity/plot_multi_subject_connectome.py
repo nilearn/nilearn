@@ -1,6 +1,6 @@
 """
 Group Sparse inverse covariance for multi-subject connectome
-=============================================================
+============================================================
 
 This example shows how to estimate a connectome on a group of subjects
 using the group sparse inverse covariance estimate.
@@ -59,7 +59,7 @@ print(
 
 ##############################################################################
 # Extracting region signals
-# --------------------------
+# -------------------------
 from nilearn.maskers import NiftiMapsMasker
 
 masker = NiftiMapsMasker(
@@ -91,7 +91,7 @@ for func_filename, confound_filename in zip(
 
 ##############################################################################
 # Computing group-sparse precision matrices
-# ------------------------------------------
+# -----------------------------------------
 from nilearn.connectome import GroupSparseCovarianceCV
 
 gsc = GroupSparseCovarianceCV(verbose=2)
@@ -109,7 +109,7 @@ gl.fit(np.concatenate(subject_time_series))
 
 ##############################################################################
 # Displaying results
-# -------------------
+# ------------------
 atlas_img = msdl_atlas_dataset.maps
 atlas_region_coords = plotting.find_probabilistic_atlas_cut_coords(atlas_img)
 labels = msdl_atlas_dataset.labels

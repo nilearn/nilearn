@@ -1,4 +1,5 @@
-"""Example of explicit fixed effects fMRI model fitting
+"""
+Example of explicit fixed effects fMRI model fitting
 ====================================================
 
 This example illustrates how to run a fixed effects model based on
@@ -22,7 +23,7 @@ after GLM fitting on two sessions.
 
 #########################################################################
 # Prepare data and analysis parameters
-# --------------------------------------
+# ------------------------------------
 #
 # Inspecting 'data', we note that there are two sessions
 
@@ -48,7 +49,7 @@ design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 
 #########################################################################
 # GLM estimation
-# ----------------------------------
+# --------------
 # GLM specification. Note that the mask was provided in the dataset.
 # So we use it.
 

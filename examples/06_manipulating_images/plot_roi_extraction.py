@@ -1,6 +1,6 @@
 """
 Computing a Region of Interest (ROI) mask manually
-===================================================
+==================================================
 
 This example shows manual steps to create and further modify an ROI spatial
 mask. They represent a means for "data folding", i.e., extracting and then

@@ -1,5 +1,6 @@
-"""Example of surface-based first-level analysis
-================================================
+"""
+Example of surface-based first-level analysis
+=============================================
 
 A full step-by-step example of fitting a GLM to experimental data sampled on
 the cortical surface and visualizing the results.
@@ -33,7 +34,7 @@ accurate than using a subject-tailored mesh.
 
 ###############################################################################
 # Prepare data and analysis parameters
-# -------------------------------------
+# ------------------------------------
 # Prepare the timing parameters.
 t_r = 2.4
 slice_time_ref = 0.5

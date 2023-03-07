@@ -1,4 +1,5 @@
-"""Simple example of two-session fMRI model fitting
+"""
+Simple example of two-session fMRI model fitting
 ================================================
 
 Here, we will go through a full step-by-step example of fitting a GLM to
@@ -27,7 +28,6 @@ statistics across the two sessions.
 
 """
 
-
 ###############################################################################
 # Create a write directory to work,
 # it will be a 'results' subdirectory of the current directory.
@@ -39,7 +39,7 @@ if not path.exists(write_dir):
 
 #########################################################################
 # Prepare data and analysis parameters
-# --------------------------------------
+# ------------------------------------
 #
 # Note that there are two sessions.
 from nilearn.datasets import func
@@ -64,7 +64,7 @@ design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 
 #########################################################################
 # GLM estimation
-# ----------------------------------
+# --------------
 # GLM specification. Note that the mask was provided in the dataset.
 # So we use it.
 from nilearn.glm.first_level import FirstLevelModel
@@ -85,7 +85,6 @@ n_columns = design_matrices[0].shape[1]
 def pad_vector(contrast_, n_columns):
     """Append zeros in contrast vectors."""
     return np.hstack((contrast_, np.zeros(n_columns - len(contrast_))))
-
 
 #########################################################################
 # Contrast specification

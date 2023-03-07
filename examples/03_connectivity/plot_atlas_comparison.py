@@ -29,7 +29,7 @@ Mean correlation matrix is displayed on glass brain on extracted coordinates.
 
 ####################################################################
 # Load atlases
-# -------------
+# ------------
 from nilearn import datasets
 
 yeo = datasets.fetch_atlas_yeo_2011()
@@ -99,7 +99,7 @@ plotting.plot_connectome(
 
 ##########################################################################
 # Plot a directed connectome - asymmetric connectivity measure
-# -----------------------------------------------------------------
+# ------------------------------------------------------------
 # In this section, we use the lag-1 correlation as the connectivity
 # measure, which leads to an asymmetric connectivity matrix.
 # The plot_connectome function accepts both symmetric and asymmetric

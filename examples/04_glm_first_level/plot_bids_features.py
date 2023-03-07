@@ -1,6 +1,6 @@
 """
 First level analysis of a complete BIDS dataset from openneuro
-===============================================================
+==============================================================
 
 
 Full step-by-step example of fitting a GLM to perform a first level analysis
@@ -25,7 +25,7 @@ More specifically:
 
 ##############################################################################
 # Fetch openneuro BIDS dataset
-# -----------------------------
+# ----------------------------
 # We download one subject from the stopsignal task
 # in the ds000030 V4 :term:`BIDS` dataset available in openneuro.
 # This dataset contains the necessary information to run a statistical analysis
@@ -62,7 +62,7 @@ data_dir, _ = fetch_openneuro_dataset(urls=urls)
 
 ##############################################################################
 # Obtain FirstLevelModel objects automatically and fit arguments
-# ---------------------------------------------------------------
+# --------------------------------------------------------------
 # From the dataset directory we automatically obtain FirstLevelModel objects
 # with their subject_id filled from the :term:`BIDS` dataset.
 # Moreover we obtain,
@@ -127,7 +127,7 @@ design_matrix.columns = design_columns
 
 ############################################################################
 # First level model estimation (one subject)
-# -------------------------------------------
+# ------------------------------------------
 # We fit the first level model for one subject.
 model.fit(imgs, design_matrices=[design_matrix])
 
@@ -184,7 +184,7 @@ plt.show()
 
 #############################################################################
 # Simple statistical report of thresholded contrast
-# -----------------------------------------------------
+# -------------------------------------------------
 # We display the contrast plot and table with cluster information
 from nilearn.plotting import plot_contrast_matrix
 
