@@ -59,13 +59,11 @@ radius = 3.0
 nn = neighbors.NearestNeighbors(radius=radius)
 adjacency = nn.fit(coords).radius_neighbors_graph(coords).tolil()
 
-
-from nilearn.decoding.searchlight import search_light
-from sklearn.linear_model import RidgeClassifier
-
 #########################################################################
 # Searchlight computation
 # -----------------------
+from nilearn.decoding.searchlight import search_light
+from sklearn.linear_model import RidgeClassifier
 from sklearn.model_selection import KFold
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler

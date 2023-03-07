@@ -189,10 +189,6 @@ for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes)):
 # The average tangent matrix cannot be interpreted, as individual matrices
 # represent deviations from the mean, which is set to 0.
 
-import numpy as np
-from sklearn.metrics import accuracy_score
-from sklearn.model_selection import StratifiedShuffleSplit
-
 ###############################################################################
 # What kind of connectivity is most powerful for classification?
 # --------------------------------------------------------------
@@ -202,6 +198,9 @@ from sklearn.model_selection import StratifiedShuffleSplit
 # We use random splits of the subjects into training/testing sets.
 # StratifiedShuffleSplit allows preserving the proportion of children in the
 # test set.
+import numpy as np
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.svm import LinearSVC
 
 kinds = ["correlation", "partial correlation", "tangent"]
