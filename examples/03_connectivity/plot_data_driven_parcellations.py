@@ -16,7 +16,6 @@ level.
 
 References
 ----------
-
 Which clustering method to use, an empirical comparison can be found in this
 paper:
 
@@ -44,20 +43,22 @@ in the documentation section :ref:`parcellating_brain`.
 #
 # We download one subject of the movie watching dataset from Internet
 
-from matplotlib import patches, ticker
-import matplotlib.pyplot as plt
-from nilearn.image import get_data
-import numpy as np
-from nilearn.image import mean_img, index_img
-from nilearn import plotting
 import time
+
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import patches, ticker
+
+from nilearn import datasets, plotting
+from nilearn.image import get_data, index_img, mean_img
 from nilearn.regions import Parcellations
-from nilearn import datasets
+
 dataset = datasets.fetch_development_fmri(n_subjects=1)
 
 # print basic information on the dataset
-print('First subject functional nifti image (4D) is at: %s' %
-      dataset.func[0])  # 4D data
+print(
+    f"First subject functional nifti image (4D) is at: {dataset.func[0]}"
+)
 
 
 #########################################################################
@@ -77,25 +78,35 @@ start = time.time()
 # We build parameters of our own for this object. Parameters related to
 # masking, caching and defining number of clusters and specific parcellations
 # method.
-ward = Parcellations(method='ward', n_parcels=1000,
-                     standardize=False, smoothing_fwhm=2.,
-                     memory='nilearn_cache', memory_level=1,
-                     verbose=1)
+ward = Parcellations(
+    method="ward",
+    n_parcels=1000,
+    standardize=False,
+    smoothing_fwhm=2.0,
+    memory="nilearn_cache",
+    memory_level=1,
+    verbose=1,
+)
 # Call fit on functional dataset: single subject (less samples).
 ward.fit(dataset.func)
-print("Ward agglomeration 1000 clusters: %.2fs" % (time.time() - start))
+print(f"Ward agglomeration 1000 clusters: {time.time() - start:.2f}s")
 
 # We compute now ward clustering with 2000 clusters and compare
 # time with 1000 clusters. To see the benefits of caching for second time.
 
 # We initialize class again with n_parcels=2000 this time.
 start = time.time()
-ward = Parcellations(method='ward', n_parcels=2000,
-                     standardize=False, smoothing_fwhm=2.,
-                     memory='nilearn_cache', memory_level=1,
-                     verbose=1)
+ward = Parcellations(
+    method="ward",
+    n_parcels=2000,
+    standardize=False,
+    smoothing_fwhm=2.0,
+    memory="nilearn_cache",
+    memory_level=1,
+    verbose=1,
+)
 ward.fit(dataset.func)
-print("Ward agglomeration 2000 clusters: %.2fs" % (time.time() - start))
+print(f"Ward agglomeration 2000 clusters: {time.time() - start:.2f}s")
 
 ###########################################################################
 # Visualize: Brain parcellations (Ward)
@@ -107,11 +118,12 @@ ward_labels_img = ward.labels_img_
 
 # Now, ward_labels_img are Nifti1Image object, it can be saved to file
 # with the following code:
-ward_labels_img.to_filename('ward_parcellation.nii.gz')
+ward_labels_img.to_filename("ward_parcellation.nii.gz")
 
 
-first_plot = plotting.plot_roi(ward_labels_img, title="Ward parcellation",
-                               display_mode='xz')
+first_plot = plotting.plot_roi(
+    ward_labels_img, title="Ward parcellation", display_mode="xz"
+)
 
 # Grab cut coordinates from this plot to use as a common for all plots
 cut_coords = first_plot.cut_coords
@@ -135,9 +147,14 @@ mean_func_img = mean_img(dataset.func[0])
 vmin = np.min(get_data(mean_func_img))
 vmax = np.max(get_data(mean_func_img))
 
-plotting.plot_epi(mean_func_img, cut_coords=cut_coords,
-                  title='Original (%i voxels)' % original_voxels,
-                  vmax=vmax, vmin=vmin, display_mode='xz')
+plotting.plot_epi(
+    mean_func_img,
+    cut_coords=cut_coords,
+    title=f"Original ({int(original_voxels)} voxels)",
+    vmax=vmax,
+    vmin=vmin,
+    display_mode="xz",
+)
 
 # A reduced dataset can be created by taking the parcel-level average:
 # Note that Parcellation objects with any method have the opportunity to
@@ -150,10 +167,14 @@ fmri_reduced = ward.transform(dataset.func)
 # parcels=2000.
 fmri_compressed = ward.inverse_transform(fmri_reduced)
 
-plotting.plot_epi(index_img(fmri_compressed, 0),
-                  cut_coords=cut_coords,
-                  title='Ward compressed representation (2000 parcels)',
-                  vmin=vmin, vmax=vmax, display_mode='xz')
+plotting.plot_epi(
+    index_img(fmri_compressed, 0),
+    cut_coords=cut_coords,
+    title="Ward compressed representation (2000 parcels)",
+    vmin=vmin,
+    vmax=vmax,
+    display_mode="xz",
+)
 # As you can see below, this approximation is almost good, although there
 # are only 2000 parcels, instead of the original 60000 voxels
 
@@ -171,13 +192,18 @@ plotting.plot_epi(index_img(fmri_compressed, 0),
 # This object uses method='kmeans' for KMeans clustering with 10mm smoothing
 # and standardization ON
 start = time.time()
-kmeans = Parcellations(method='kmeans', n_parcels=50,
-                       standardize=True, smoothing_fwhm=10.,
-                       memory='nilearn_cache', memory_level=1,
-                       verbose=1)
+kmeans = Parcellations(
+    method="kmeans",
+    n_parcels=50,
+    standardize=True,
+    smoothing_fwhm=10.0,
+    memory="nilearn_cache",
+    memory_level=1,
+    verbose=1,
+)
 # Call fit on functional dataset: single subject (less samples)
 kmeans.fit(dataset.func)
-print("KMeans clusters: %.2fs" % (time.time() - start))
+print(f"KMeans clusters: {time.time() - start:.2f}s")
 
 ###########################################################################
 # Visualize: Brain parcellations (KMeans)
@@ -186,13 +212,16 @@ print("KMeans clusters: %.2fs" % (time.time() - start))
 # Grab parcellations of brain image stored in attribute `labels_img_`
 kmeans_labels_img = kmeans.labels_img_
 
-display = plotting.plot_roi(kmeans_labels_img, mean_func_img,
-                            title="KMeans parcellation",
-                            display_mode='xz')
+display = plotting.plot_roi(
+    kmeans_labels_img,
+    mean_func_img,
+    title="KMeans parcellation",
+    display_mode="xz",
+)
 
 # kmeans_labels_img is a Nifti1Image object, it can be saved to file with
 # the following code:
-kmeans_labels_img.to_filename('kmeans_parcellation.nii.gz')
+kmeans_labels_img.to_filename("kmeans_parcellation.nii.gz")
 
 #########################################################################
 # Brain parcellations with Hierarchical KMeans Clustering
@@ -212,10 +241,15 @@ kmeans_labels_img.to_filename('kmeans_parcellation.nii.gz')
 # clustering and 10mm smoothing and standardization to compare
 # with the previous method.
 start = time.time()
-hkmeans = Parcellations(method='hierarchical_kmeans', n_parcels=50,
-                        standardize=True, smoothing_fwhm=10,
-                        memory='nilearn_cache', memory_level=1,
-                        verbose=1)
+hkmeans = Parcellations(
+    method="hierarchical_kmeans",
+    n_parcels=50,
+    standardize=True,
+    smoothing_fwhm=10,
+    memory="nilearn_cache",
+    memory_level=1,
+    verbose=1,
+)
 # Call fit on functional dataset: single subject (less samples)
 hkmeans.fit(dataset.func)
 
@@ -226,13 +260,17 @@ hkmeans.fit(dataset.func)
 # Grab parcellations of brain image stored in attribute `labels_img_`
 hkmeans_labels_img = hkmeans.labels_img_
 
-plotting.plot_roi(hkmeans_labels_img, mean_func_img,
-                  title="Hierarchical KMeans parcellation",
-                  display_mode='xz', cut_coords=display.cut_coords)
+plotting.plot_roi(
+    hkmeans_labels_img,
+    mean_func_img,
+    title="Hierarchical KMeans parcellation",
+    display_mode="xz",
+    cut_coords=display.cut_coords,
+)
 
 # kmeans_labels_img is a :class:`nibabel.nifti1.Nifti1Image` object, it can be
 # saved to file with the following code:
-hkmeans_labels_img.to_filename('hierarchical_kmeans_parcellation.nii.gz')
+hkmeans_labels_img.to_filename("hierarchical_kmeans_parcellation.nii.gz")
 
 ###########################################################################
 # Compare Hierarchical Kmeans clusters with those from Kmeans
@@ -245,17 +283,17 @@ hkmeans_labels_img.to_filename('hierarchical_kmeans_parcellation.nii.gz')
 # First count how many voxels have each label (except 0 which is the
 # background).
 
-kmeans_labels, kmeans_counts = np.unique(
-    get_data(kmeans_labels_img), return_counts=True)
+_, kmeans_counts = np.unique(
+    get_data(kmeans_labels_img), return_counts=True
+)
 
-_, hkmeans_counts = np.unique(
-    get_data(hkmeans_labels_img), return_counts=True)
+_, hkmeans_counts = np.unique(get_data(hkmeans_labels_img), return_counts=True)
 
 voxel_ratio = np.round(np.sum(kmeans_counts[1:]) / 50)
 
 # If all voxels not in background were balanced between clusters ...
 
-print("... each cluster should contain {} voxels".format(voxel_ratio))
+print(f"... each cluster should contain {voxel_ratio} voxels")
 
 ###########################################################################
 # Let's plot clusters sizes distributions for both algorithms
@@ -263,24 +301,31 @@ print("... each cluster should contain {} voxels".format(voxel_ratio))
 # You can just skip the plotting code, the important part is the figure
 
 
-bins = np.concatenate([np.linspace(0, 500, 11), np.linspace(
-    600, 2000, 15), np.linspace(3000, 10000, 8)])
-fig, axes = plt.subplots(nrows=2, sharex=True, gridspec_kw={
-                         'height_ratios': [4, 1]})
+bins = np.concatenate(
+    [
+        np.linspace(0, 500, 11),
+        np.linspace(600, 2000, 15),
+        np.linspace(3000, 10000, 8),
+    ]
+)
+fig, axes = plt.subplots(
+    nrows=2, sharex=True, gridspec_kw={"height_ratios": [4, 1]}
+)
 plt.semilogx()
 axes[0].hist(kmeans_counts[1:], bins, color="blue")
 axes[1].hist(hkmeans_counts[1:], bins, color="green")
 axes[0].set_ylim(0, 16)
 axes[1].set_ylim(4, 0)
 axes[1].xaxis.set_major_formatter(ticker.ScalarFormatter())
-axes[1].yaxis.set_label_coords(-.08, 2)
+axes[1].yaxis.set_label_coords(-0.08, 2)
 fig.subplots_adjust(hspace=0)
 plt.xlabel("Number of voxels (log)", fontsize=12)
 plt.ylabel("Number of clusters", fontsize=12)
-handles = [patches.Rectangle((0, 0), 1, 1, color=c, ec="k")
-           for c in ["blue", "green"]]
+handles = [
+    patches.Rectangle((0, 0), 1, 1, color=c, ec="k") for c in ["blue", "green"]
+]
 labels = ["Kmeans", "Hierarchical Kmeans"]
-fig.legend(handles, labels, loc=(.5, .8))
+fig.legend(handles, labels, loc=(0.5, 0.8))
 ###########################################################################
 # As we can see, half of the 50 KMeans clusters contain less than
 # 100 voxels whereas three contain several thousands voxels
@@ -308,12 +353,19 @@ fig.legend(handles, labels, loc=(.5, .8))
 #       Machine Intelligence, vol. 41, no. 3, pp. 669-681, 1 March 2019.
 #       https://hal.archives-ouvertes.fr/hal-01366651/
 start = time.time()
-rena = Parcellations(method='rena', n_parcels=5000, standardize=False,
-                     smoothing_fwhm=2., scaling=True, memory='nilearn_cache',
-                     memory_level=1, verbose=1)
+rena = Parcellations(
+    method="rena",
+    n_parcels=5000,
+    standardize=False,
+    smoothing_fwhm=2.0,
+    scaling=True,
+    memory="nilearn_cache",
+    memory_level=1,
+    verbose=1,
+)
 
 rena.fit_transform(dataset.func)
-print("ReNA 5000 clusters: %.2fs" % (time.time() - start))
+print(f"ReNA 5000 clusters: {time.time() - start:.2f}s")
 
 ###########################################################################
 # Visualize: Brain parcellations (ReNA)
@@ -325,10 +377,14 @@ rena_labels_img = rena.labels_img_
 
 # Now, rena_labels_img are Nifti1Image object, it can be saved to file
 # with the following code:
-rena_labels_img.to_filename('rena_parcellation.nii.gz')
+rena_labels_img.to_filename("rena_parcellation.nii.gz")
 
-plotting.plot_roi(ward_labels_img, title="ReNA parcellation",
-                  display_mode='xz', cut_coords=cut_coords)
+plotting.plot_roi(
+    ward_labels_img,
+    title="ReNA parcellation",
+    display_mode="xz",
+    cut_coords=cut_coords,
+)
 
 ###########################################################################
 # Compressed representation of ReNA clustering
@@ -342,9 +398,14 @@ plotting.plot_roi(ward_labels_img, title="ReNA parcellation",
 # obtained with Ward.
 
 # Display the original data
-plotting.plot_epi(mean_func_img, cut_coords=cut_coords,
-                  title='Original (%i voxels)' % original_voxels,
-                  vmax=vmax, vmin=vmin, display_mode='xz')
+plotting.plot_epi(
+    mean_func_img,
+    cut_coords=cut_coords,
+    title=f"Original ({int(original_voxels)} voxels)",
+    vmax=vmax,
+    vmin=vmin,
+    display_mode="xz",
+)
 
 # A reduced data can be created by taking the parcel-level average:
 # Note that, as many scikit-learn objects, the ReNA object exposes
@@ -357,9 +418,14 @@ fmri_reduced_rena = rena.transform(dataset.func)
 # Display the corresponding data compression using the parcellation
 compressed_img_rena = rena.inverse_transform(fmri_reduced_rena)
 
-plotting.plot_epi(index_img(compressed_img_rena, 0), cut_coords=cut_coords,
-                  title='ReNA compressed representation (5000 parcels)',
-                  vmin=vmin, vmax=vmax, display_mode='xz')
+plotting.plot_epi(
+    index_img(compressed_img_rena, 0),
+    cut_coords=cut_coords,
+    title="ReNA compressed representation (5000 parcels)",
+    vmin=vmin,
+    vmax=vmax,
+    display_mode="xz",
+)
 
 ###########################################################################
 # Even if the compressed signal is relatively close

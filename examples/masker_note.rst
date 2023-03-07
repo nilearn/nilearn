@@ -16,4 +16,3 @@
        .. code-block:: python
 
            from nilearn.input_data import NiftiMasker
-

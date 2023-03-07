@@ -1,12 +1,14 @@
 #! /usr/bin/env python
 
+# noqa: D100
+
 import os
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 
 def load_version():
-    """Executes nilearn/version.py in a globals dictionary and return it.
+    """Execute nilearn/version.py in a globals dictionary and return it.
 
     Note: importing nilearn is not an option because there may be
     dependencies like nibabel which are not installed and

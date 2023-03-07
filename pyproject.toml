@@ -10,6 +10,8 @@ extend-exclude = '''
 
 [tool.isort]
 profile = "black"
+include = "(nilearn/de.*)|(maint_tools/.*)|(setup.py)|(nilearn/image.*py)"
+src_paths = ['nilearn/de.*', 'nilearn/image.*']
 line_length = 79
 skip_gitignore = true
 combine_as_imports = true

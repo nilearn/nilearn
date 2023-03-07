@@ -269,9 +269,9 @@ by running `flake8 <https://flake8.pycqa.org/en/latest/user/invocation.html#invo
 
 Additionally, we recommend using:
 
-- `black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_ 
+- `black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_
   to format your code,
-- `isort <https://pycqa.github.io/isort/index.html#using-isort>`_ 
+- `isort <https://pycqa.github.io/isort/index.html#using-isort>`_
   to organize the import statements.
 
 .. warning::
@@ -281,7 +281,7 @@ Additionally, we recommend using:
       Only certain modules have been formatted so far,
       and running `black` or `isort` may not affect the files you are working on,
       because of how those formatter are currently configured.
-      See `issue #2528 <https://github.com/nilearn/nilearn/issues/2528>`_ 
+      See `issue #2528 <https://github.com/nilearn/nilearn/issues/2528>`_
       for more details.
 
 Each function and class must come with a “docstring” at the top of the function code,

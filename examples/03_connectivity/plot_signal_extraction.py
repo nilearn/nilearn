@@ -30,17 +30,19 @@ documentation <parcellation_time_series>` for more.
 
 """
 
+
 ##############################################################################
 # Retrieve the atlas and the data
 # -------------------------------
 from nilearn import datasets
 
-dataset = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
+dataset = datasets.fetch_atlas_harvard_oxford("cort-maxprob-thr25-2mm")
 atlas_filename = dataset.maps
 labels = dataset.labels
 
-print('Atlas ROIs are located in nifti image (4D) at: %s' %
-      atlas_filename)  # 4D data
+print(
+    f"Atlas ROIs are located in nifti image (4D) at: {atlas_filename}"
+)
 
 # One subject of brain development fmri data
 data = datasets.fetch_development_fmri(n_subjects=1, reduce_confounds=True)
@@ -52,8 +54,13 @@ reduced_confounds = data.confounds[0]  # This is a preselected set of confounds
 # ---------------------------------------------------
 # Using the NiftiLabelsMasker
 from nilearn.maskers import NiftiLabelsMasker
-masker = NiftiLabelsMasker(labels_img=atlas_filename, standardize=True,
-                           memory='nilearn_cache', verbose=5)
+
+masker = NiftiLabelsMasker(
+    labels_img=atlas_filename,
+    standardize=True,
+    memory="nilearn_cache",
+    verbose=5,
+)
 
 # Here we go from nifti files to the signal time series in a numpy
 # array. Note how we give confounds to be regressed out during signal
@@ -64,21 +71,30 @@ time_series = masker.fit_transform(fmri_filenames, confounds=reduced_confounds)
 # Compute and display a correlation matrix
 # ----------------------------------------
 from nilearn.connectome import ConnectivityMeasure
-correlation_measure = ConnectivityMeasure(kind='correlation')
+
+correlation_measure = ConnectivityMeasure(kind="correlation")
 correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 # Plot the correlation matrix
 import numpy as np
+
 from nilearn import plotting
+
 # Make a large figure
 # Mask the main diagonal for visualization:
 np.fill_diagonal(correlation_matrix, 0)
 # The labels we have start with the background (0), hence we skip the
 # first label
 # matrices are ordered for block-like representation
-plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
-                     vmax=0.8, vmin=-0.8, title="Confounds",
-                     reorder=True)
+plotting.plot_matrix(
+    correlation_matrix,
+    figure=(10, 8),
+    labels=labels[1:],
+    vmax=0.8,
+    vmin=-0.8,
+    title="Confounds",
+    reorder=True,
+)
 
 ##############################################################################
 # Extract signals and compute a connectivity matrix without confounds removal
@@ -95,8 +111,15 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 np.fill_diagonal(correlation_matrix, 0)
 
-plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
-                     vmax=0.8, vmin=-0.8, title='No confounds', reorder=True)
+plotting.plot_matrix(
+    correlation_matrix,
+    figure=(10, 8),
+    labels=labels[1:],
+    vmax=0.8,
+    vmin=-0.8,
+    title="No confounds",
+    reorder=True,
+)
 
 ##############################################################################
 # Load confounds from file using a flexible strategy with fmriprep interface
@@ -115,25 +138,34 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 # cerebrospinal fluid signal with high-pass filtering.
 
 from nilearn.interfaces.fmriprep import load_confounds
+
 confounds_simple, sample_mask = load_confounds(
     fmri_filenames,
     strategy=["high_pass", "motion", "wm_csf"],
-    motion="basic", wm_csf="basic")
+    motion="basic",
+    wm_csf="basic",
+)
 
 print("The shape of the confounds matrix is:", confounds_simple.shape)
 print(confounds_simple.columns)
 
-time_series = masker.fit_transform(fmri_filenames,
-                                   confounds=confounds_simple,
-                                   sample_mask=sample_mask)
+time_series = masker.fit_transform(
+    fmri_filenames, confounds=confounds_simple, sample_mask=sample_mask
+)
 
 correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 np.fill_diagonal(correlation_matrix, 0)
 
-plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
-                     vmax=0.8, vmin=-0.8, title='Motion, WM, CSF',
-                     reorder=True)
+plotting.plot_matrix(
+    correlation_matrix,
+    figure=(10, 8),
+    labels=labels[1:],
+    vmax=0.8,
+    vmin=-0.8,
+    title="Motion, WM, CSF",
+    reorder=True,
+)
 
 ##############################################################################
 # Motion-based scrubbing
@@ -151,26 +183,37 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 confounds_scrub, sample_mask = load_confounds(
     fmri_filenames,
     strategy=["high_pass", "motion", "wm_csf", "scrub"],
-    motion="basic", wm_csf="basic",
-    scrub=5, fd_threshold=0.2, std_dvars_threshold=3)
+    motion="basic",
+    wm_csf="basic",
+    scrub=5,
+    fd_threshold=0.2,
+    std_dvars_threshold=3,
+)
 
-print("After scrubbing, {} out of {} volumes remains".format(
-    sample_mask.shape[0], confounds_scrub.shape[0]))
+print(
+    f"After scrubbing, {sample_mask.shape[0]} "
+    f"out of {confounds_scrub.shape[0]} volumes remains"
+)
 print("The shape of the confounds matrix is:", confounds_simple.shape)
 print(confounds_scrub.columns)
 
-time_series = masker.fit_transform(fmri_filenames,
-                                   confounds=confounds_scrub,
-                                   sample_mask=sample_mask)
+time_series = masker.fit_transform(
+    fmri_filenames, confounds=confounds_scrub, sample_mask=sample_mask
+)
 
 correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 np.fill_diagonal(correlation_matrix, 0)
 
-plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
-                     vmax=0.8, vmin=-0.8,
-                     title='Motion, WM, CSF, Scrubbing',
-                     reorder=True)
+plotting.plot_matrix(
+    correlation_matrix,
+    figure=(10, 8),
+    labels=labels[1:],
+    vmax=0.8,
+    vmin=-0.8,
+    title="Motion, WM, CSF, Scrubbing",
+    reorder=True,
+)
 
 ##############################################################################
 # The impact of global signal removal
@@ -184,23 +227,30 @@ plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
 confounds_minimal_no_gsr, sample_mask = load_confounds(
     fmri_filenames,
     strategy=["high_pass", "motion", "wm_csf", "global_signal"],
-    motion="basic", wm_csf="basic", global_signal="basic")
-print("The shape of the confounds matrix is:",
-      confounds_minimal_no_gsr.shape)
+    motion="basic",
+    wm_csf="basic",
+    global_signal="basic",
+)
+print("The shape of the confounds matrix is:", confounds_minimal_no_gsr.shape)
 print(confounds_minimal_no_gsr.columns)
 
-time_series = masker.fit_transform(fmri_filenames,
-                                   confounds=confounds_minimal_no_gsr,
-                                   sample_mask=sample_mask)
+time_series = masker.fit_transform(
+    fmri_filenames, confounds=confounds_minimal_no_gsr, sample_mask=sample_mask
+)
 
 correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 np.fill_diagonal(correlation_matrix, 0)
 
-plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
-                     vmax=0.8, vmin=-0.8,
-                     title='Motion, WM, CSF, GSR',
-                     reorder=True)
+plotting.plot_matrix(
+    correlation_matrix,
+    figure=(10, 8),
+    labels=labels[1:],
+    vmax=0.8,
+    vmin=-0.8,
+    title="Motion, WM, CSF, GSR",
+    reorder=True,
+)
 
 ##############################################################################
 # Using predefined strategies
@@ -220,36 +270,48 @@ from nilearn.interfaces.fmriprep import load_confounds_strategy
 confounds, sample_mask = load_confounds_strategy(
     fmri_filenames, denoise_strategy="simple", motion="basic"
 )
-time_series = masker.fit_transform(fmri_filenames,
-                                   confounds=confounds,
-                                   sample_mask=sample_mask)
+time_series = masker.fit_transform(
+    fmri_filenames, confounds=confounds, sample_mask=sample_mask
+)
 
 correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 np.fill_diagonal(correlation_matrix, 0)
 
-plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
-                     vmax=0.8, vmin=-0.8,
-                     title='simple',
-                     reorder=True)
+plotting.plot_matrix(
+    correlation_matrix,
+    figure=(10, 8),
+    labels=labels[1:],
+    vmax=0.8,
+    vmin=-0.8,
+    title="simple",
+    reorder=True,
+)
 
 # add optional parameter global signal
 confounds, sample_mask = load_confounds_strategy(
-    fmri_filenames, denoise_strategy="simple",
-    motion="basic", global_signal="basic"
+    fmri_filenames,
+    denoise_strategy="simple",
+    motion="basic",
+    global_signal="basic",
 )
-time_series = masker.fit_transform(fmri_filenames,
-                                   confounds=confounds,
-                                   sample_mask=sample_mask)
+time_series = masker.fit_transform(
+    fmri_filenames, confounds=confounds, sample_mask=sample_mask
+)
 
 correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 np.fill_diagonal(correlation_matrix, 0)
 
-plotting.plot_matrix(correlation_matrix, figure=(10, 8), labels=labels[1:],
-                     vmax=0.8, vmin=-0.8,
-                     title='simple with global signal',
-                     reorder=True)
+plotting.plot_matrix(
+    correlation_matrix,
+    figure=(10, 8),
+    labels=labels[1:],
+    vmax=0.8,
+    vmin=-0.8,
+    title="simple with global signal",
+    reorder=True,
+)
 
 plotting.show()
 
