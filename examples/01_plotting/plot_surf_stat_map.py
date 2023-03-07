@@ -79,7 +79,7 @@ print('Fsaverage5 sulcal depth map of left hemisphere is at: '
 
 ###############################################################################
 # Extracting the seed time series
-# --------------------------------
+# -------------------------------
 
 # Load resting state time series from nilearn
 from nilearn import surface

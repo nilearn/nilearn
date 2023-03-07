@@ -1,6 +1,6 @@
 """
 Basic numerics and plotting with Python
-========================================
+=======================================
 
 A simple example of basic Python numerics and how to
 plot it.

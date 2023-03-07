@@ -1,6 +1,6 @@
 """
 Decoding with FREM: face vs house object recognition
-=========================================================
+====================================================
 
 This example uses fast ensembling of regularized models (FREM) to decode
 a face vs house discrimination task from Haxby 2001 study. FREM uses an
@@ -14,7 +14,7 @@ To have more details, see: :ref:`frem`.
 
 ##############################################################################
 # Load the Haxby dataset
-# ------------------------
+# ----------------------
 from nilearn.datasets import fetch_haxby
 
 data_files = fetch_haxby()
@@ -51,7 +51,7 @@ background_img = mean_img(func_filenames)
 
 ##############################################################################
 # Fit FREM
-# --------------------------------------
+# --------
 from nilearn.decoding import FREMClassifier
 
 decoder = FREMClassifier(cv=10)
@@ -63,7 +63,7 @@ print(f"FREM classification accuracy : {accuracy:g}%")
 
 #############################################################################
 # Visualization of FREM weights
-# ------------------------------------
+# -----------------------------
 from nilearn import plotting
 
 plotting.plot_stat_map(

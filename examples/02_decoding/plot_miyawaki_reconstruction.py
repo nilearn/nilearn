@@ -27,7 +27,7 @@ import time
 
 ############################################################################
 # First we load the Miyawaki dataset
-# -----------------------------------
+# ----------------------------------
 from nilearn import datasets
 
 sys.stderr.write("Fetching dataset...")
@@ -51,7 +51,7 @@ sys.stderr.write(f" Done ({time.time() - t0:.2f}s).\n")
 
 ############################################################################
 # Then we prepare and mask the data
-# ----------------------------------
+# ---------------------------------
 import numpy as np
 from nilearn.maskers import MultiNiftiMasker
 
@@ -98,7 +98,6 @@ y_cols = y_shape[1]
 # Original data
 design_matrix = np.eye(100)
 
-
 # Example of matrix used for multiscale (sum pixels vertically)
 #
 # 0.5 *
@@ -139,7 +138,7 @@ sys.stderr.write(f" Done ({time.time() - t0:.2f}s).\n")
 
 ############################################################################
 # We define our prediction function
-# -----------------------------------
+# ---------------------------------
 sys.stderr.write("Training classifiers... \r")
 t0 = time.time()
 
@@ -171,10 +170,9 @@ sys.stderr.write(
     f"Done ({(time.time() - t0):.2f}s).\n"
 )
 
-
 ############################################################################
 # Here we run the prediction: the decoding itself
-# ------------------------------------------------
+# -----------------------------------------------
 sys.stderr.write("Calculating scores and outputs...")
 t0 = time.time()
 
@@ -253,10 +251,9 @@ y_pred = (
 
 sys.stderr.write(f" Done ({time.time() - t0:.2f}s).\n")
 
-
 ############################################################################
 # Let us quantify our prediction error
-# -------------------------------------
+# ------------------------------------
 from sklearn.metrics import (
     accuracy_score,
     f1_score,

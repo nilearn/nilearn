@@ -1,6 +1,6 @@
 """
 Show stimuli of Haxby et al. dataset
-===============================================================================
+====================================
 
 In this script we plot an overview of the stimuli used in "Distributed
 and Overlapping Representations of Faces and Objects in Ventral Temporal

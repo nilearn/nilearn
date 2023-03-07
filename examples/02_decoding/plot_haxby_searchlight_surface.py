@@ -11,7 +11,7 @@ searchlight decoding. NeuroImage 56, 582–592.
 
 #########################################################################
 # Load Haxby dataset
-# -------------------
+# ------------------
 import pandas as pd
 from nilearn import datasets
 
@@ -25,7 +25,7 @@ session = labels["chunks"]
 
 #########################################################################
 # Restrict to faces and houses
-# ------------------------------
+# ----------------------------
 from nilearn.image import index_img
 
 condition_mask = y.isin(["face", "house"])
@@ -35,7 +35,7 @@ y, session = y[condition_mask], session[condition_mask]
 
 #########################################################################
 # Surface bold response
-# ----------------------
+# ---------------------
 from nilearn import datasets, surface
 from sklearn import neighbors
 

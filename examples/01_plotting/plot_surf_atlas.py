@@ -1,6 +1,6 @@
 """
 Loading and plotting of a cortical surface atlas
-=================================================
+================================================
 
 The Destrieux parcellation (Destrieux et al, 2010) in fsaverage5 space as
 distributed with Freesurfer is used as the chosen atlas.

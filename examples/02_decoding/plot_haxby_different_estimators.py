@@ -1,15 +1,14 @@
 """
 Different classifiers in decoding the Haxby dataset
-=====================================================
+===================================================
 
 Here we compare different classifiers on a visual object recognition
 decoding task.
 """
 
-
 #############################################################################
 # Loading the data
-# -----------------
+# ----------------
 
 # We start by loading data using nilearn dataset fetcher
 from nilearn import datasets
@@ -63,7 +62,7 @@ classification_target = stimuli[task_mask]
 
 #############################################################################
 # Training the decoder
-# ---------------------
+# --------------------
 
 # Then we define the various classifiers that we use
 classifiers = [
@@ -108,7 +107,7 @@ for classifier_name in sorted(classifiers):
 
 ###############################################################################
 # Visualization
-# --------------
+# -------------
 
 # Then we make a rudimentary diagram
 import matplotlib.pyplot as plt

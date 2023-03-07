@@ -9,7 +9,6 @@ The :func:`nilearn.plotting.plot_carpet()` function generates a carpet plot
 from a 4D functional image.
 """
 
-
 ###############################################################################
 # Fetching data from ADHD dataset
 # -------------------------------

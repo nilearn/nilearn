@@ -1,7 +1,7 @@
 """
-=================================================
+================================================
 Example of pattern recognition on simulated data
-=================================================
+================================================
 
 This example simulates data according to a very simple sketch of brain
 imaging data and applies machine learning techniques to predict output
@@ -243,7 +243,7 @@ plot_slices(p_values, title="f_regress")
 show()
 
 ###############################################################################
-# An exercice to go further
+# An exercise to go further
 ###############################################################################
 #
 # As an exercice, you can use recursive feature elimination (RFE) with

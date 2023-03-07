@@ -1,4 +1,5 @@
-"""Technical point: Illustration of the volume to surface sampling schemes
+"""
+Technical point: Illustration of the volume to surface sampling schemes
 =======================================================================
 
 In nilearn, :func:`nilearn.surface.vol_to_surf` allows us to measure values of
