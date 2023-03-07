@@ -170,7 +170,7 @@ Showing only one specific network regions before and after region extraction. Th
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # without region extraction (left plot).
-    :end-before: ################################################################################
+    :end-before: ##############################################################################
 
 .. |dmn| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_005.png
    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
