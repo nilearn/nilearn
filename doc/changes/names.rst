@@ -164,6 +164,8 @@
 
 .. _Michael Waskom: https://mwaskom.github.io/
 
+.. _Michelle Wang: https://github.com/michellewang
+
 .. _Moritz Boos: https://github.com/mjboos
 
 .. _Myeong Seop Song: https://github.com/NeuroVR-Song

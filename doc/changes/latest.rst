@@ -15,6 +15,7 @@ Fixes
 
 Enhancements
 ------------
+- Updated example :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py` to include section on plotting a confusion matrix from a decoder family object (:gh:`3483` by `Michelle Wang`_).
 
 Changes
 -------
