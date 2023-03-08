@@ -660,30 +660,10 @@ def _make_stat_img_test_data():
     [
         (2, False, 0, [0, 4, 5]),  # cluster with values>2
         (2, True, 0, [-5, -4, 0, 4, 5]),  # cluster with |values|>2
-        (
-            2,
-            True,
-            5,
-            [-4, 0, 4],
-        ),  # cluster with |values|>2 & size> 5
-        (
-            2,
-            True,
-            5,
-            [-4, 0, 4],
-        ),  # cluster with |values|>2 & size >5
-        (
-            0.5,
-            True,
-            5,
-            [-4, -1, 0, 1, 4],
-        ),  # cluster with |values|>0.5 & size>5
-        (
-            0.5,
-            False,
-            5,
-            [0, 1, 4],
-        ),  # cluster with values>0.5 & size>5
+        (2, True, 5, [-4, 0, 4]),  # cluster: |values|>2 & size> 5
+        (2, True, 5, [-4, 0, 4]),  # cluster: |values|>2 & size >5
+        (0.5, True, 5, [-4, -1, 0, 1, 4]),  # cluster: |values|>0.5 & size>5
+        (0.5, False, 5, [0, 1, 4]),  # cluster: values>0.5 & size>5
     ],
 )
 def test_threshold_img_with_cluster_threshold(
@@ -703,7 +683,7 @@ def test_threshold_img_with_cluster_threshold(
 
 
 def test_threshold_img_threshold_nb_clusters():
-    """With a cluster threshold of 5 we get 4 clusters with |values| > 2 and
+    """With a cluster threshold of 5 we get 8 clusters with |values| > 2 and
     cluster sizes > 5
     """
     stat_img = _make_stat_img_test_data()
