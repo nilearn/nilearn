@@ -830,13 +830,7 @@ def test_clean_img():
     )
 
 
-def test_largest_cc_img():
-    """Check the extraction of the largest connected component, for niftis.
-
-    Similar to smooth_img tests for largest connected_component_img, here also
-    only the added features for largest_connected_component are tested.
-    """
-    # Test whether dimension of 3Dimg and list of 3Dimgs are kept.
+def _make_largest_cc_img_test_data():
     shapes = ((10, 11, 12), (13, 14, 15))
     regions = [1, 3]
 
@@ -846,26 +840,37 @@ def test_largest_cc_img():
     img2 = data_gen.generate_labeled_regions(
         shape=shapes[1], n_regions=regions[1]
     )
+    return img1, img2, shapes
 
-    for create_files in (False, True):
-        with testing.write_tmp_imgs(
-            img1, img2, create_files=create_files
-        ) as imgs:
-            # List of images as input
-            out = largest_connected_component_img(imgs)
-            assert isinstance(out, list)
-            assert len(out) == 2
-            for o, s in zip(out, shapes):
-                assert o.shape == (s)
 
-            # Single image as input
-            out = largest_connected_component_img(imgs[0])
-            assert isinstance(out, Nifti1Image)
-            assert out.shape == (shapes[0])
+@pytest.mark.parametrize("create_files", [True, False])
+def test_largest_cc_img(create_files):
+    """Check the extraction of the largest connected component, for niftis.
 
-        # Test whether 4D Nifti throws the right error.
-        img_4D = data_gen.generate_fake_fmri(shapes[0], length=17)
-        pytest.raises(DimensionError, largest_connected_component_img, img_4D)
+    Similar to smooth_img tests for largest connected_component_img, here also
+    only the added features for largest_connected_component are tested.
+    """
+    # Test whether dimension of 3Dimg and list of 3Dimgs are kept.
+    img1, img2, shapes = _make_largest_cc_img_test_data()
+
+    with testing.write_tmp_imgs(img1, img2, create_files=create_files) as imgs:
+        # List of images as input
+        out = largest_connected_component_img(imgs)
+        assert isinstance(out, list)
+        assert len(out) == 2
+        for o, s in zip(out, shapes):
+            assert o.shape == (s)
+
+        # Single image as input
+        out = largest_connected_component_img(imgs[0])
+        assert isinstance(out, Nifti1Image)
+        assert out.shape == (shapes[0])
+
+
+@pytest.mark.parametrize("create_files", [True, False])
+def test_largest_cc_img_non_native_endian_type(create_files):
+    # Test whether dimension of 3Dimg and list of 3Dimgs are kept.
+    img1, img2, shapes = _make_largest_cc_img_test_data()
 
     # tests adapted to non-native endian data dtype
     img1_change_dtype = nibabel.Nifti1Image(
@@ -875,27 +880,33 @@ def test_largest_cc_img():
         get_data(img2).astype(">f8"), affine=img2.affine
     )
 
-    for create_files in (False, True):
-        with testing.write_tmp_imgs(
-            img1_change_dtype, img2_change_dtype, create_files=create_files
-        ) as imgs:
-            # List of images as input
-            out = largest_connected_component_img(imgs)
-            assert isinstance(out, list)
-            assert len(out) == 2
-            for o, s in zip(out, shapes):
-                assert o.shape == (s)
+    with testing.write_tmp_imgs(
+        img1_change_dtype, img2_change_dtype, create_files=create_files
+    ) as imgs:
+        # List of images as input
+        out = largest_connected_component_img(imgs)
+        assert isinstance(out, list)
+        assert len(out) == 2
+        for o, s in zip(out, shapes):
+            assert o.shape == (s)
 
-            # Single image as input
-            out = largest_connected_component_img(imgs[0])
-            assert isinstance(out, Nifti1Image)
-            assert out.shape == (shapes[0])
+        # Single image as input
+        out = largest_connected_component_img(imgs[0])
+        assert isinstance(out, Nifti1Image)
+        assert out.shape == (shapes[0])
 
     # Test the output with native and without native
     out_native = largest_connected_component_img(img1)
 
     out_non_native = largest_connected_component_img(img1_change_dtype)
     np.testing.assert_equal(get_data(out_native), get_data(out_non_native))
+
+
+def test_largest_cc_img_error():
+    # Test whether 4D Nifti throws the right error.
+    shapes = (10, 11, 12)
+    img_4D = data_gen.generate_fake_fmri(shapes, length=17)
+    pytest.raises(DimensionError, largest_connected_component_img, img_4D)
 
 
 def test_new_img_like_mgh_image():
