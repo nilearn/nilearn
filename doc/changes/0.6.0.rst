@@ -33,11 +33,11 @@ NEW
 - New function :func:`~image.get_data` to replace the deprecated nibabel method ``Nifti1Image.get_data``. Now use ``nilearn.image.get_data(img)`` rather than ``img.get_data()``. This is because Nibabel is removing the ``get_data`` method. You may also consider using the Nibabel method ``nibabel.nifti1.Nifti1Image.get_fdata``, which returns the data cast to floating-point. See `BIAP8 <https://github.com/nipy/nibabel/wiki/BIAP8>`_. As a benefit, the :func:`~image.get_data` function works on niimg-like objects such as filenames (see `input_output <http://nilearn.github.io/manipulating_images/input_output.html>`_) (:gh:`2172` by `Jerome Dockes`_).
 
 - New class :class:`~regions.ReNA` implementing parcellation method :term:`ReNA`: Fast agglomerative clustering based on recursive nearest neighbor grouping. Yields very fast & accurate models, without creation of giant clusters (:gh:`1336` by `Andrés Hoyos Idrobo`_).
- 
+
 - New function ``nilearn.plotting.plot_connectome_strength`` to plot the strength of a connectome on a glass brain.  Strength is absolute sum of the edges at a node (:gh:`2028` by `Guillaume Lemaitre`_).
 
 - Function :func:`~image.resample_img` has been optimized to pad rather than resample images in the special case when there is only a translation between two spaces. This is a common case in class :class:`~maskers.NiftiMasker` when using the ``mask_strategy="template"`` option for brains in :term:`MNI` space (:gh:`2025` by `Greg Kiar`_).
-  
+
 - New brain development :term:`fMRI` dataset fetcher :func:`datasets.fetch_development_fmri` can be used to download movie-watching data in children and adults. A light-weight dataset implemented for teaching and usage in the examples. All the connectivity examples are changed from ADHD to brain development :term:`fMRI` dataset (:gh:`1953` by `Kamalakar Reddy Daddy`_).
 
 ENHANCEMENTS
@@ -62,7 +62,7 @@ FIXES
 - Class :class:`~maskers.NiftiLabelsMasker` no longer truncates region means to their integral part when input images are of integer type (:gh:`2195` by `Kshitij Chawla`_).
 
 - The argument ``version='det'`` in function :func:`~datasets.fetch_atlas_pauli_2017` now works as expected (:gh:`2235` by `Ryan Hammonds`_).
-  
+
 - ``pip install nilearn`` now installs the necessary dependencies (:gh:`2214` by `Kshitij Chawla`_).
 
 **Lots of other fixes in documentation and examples.** More detailed change list follows:
@@ -91,15 +91,15 @@ Fixes
 -----
 
 - Class :class:`~maskers.NiftiLabelsMasker` no longer truncates region means to their integral part when input images are of integer type (:gh:`2195` by `Kshitij Chawla`_).
-  
+
 - Function :func:`~image.smooth_img` no longer fails if ``fwhm`` is a :class:`numpy.ndarray` (:gh:`2107` by `Paula Sanz-Leon`_).
-  
+
 - ``pip install nilearn`` now installs the necessary dependencies (:gh:`2214` by `Kshitij Chawla`_).
-  
+
 - Function :func:`~image.new_img_like` no longer attempts to copy non-iterable headers (:gh:`2212` by `Kshitij Chawla`_).
-  
+
 - Nilearn no longer raises ``ImportError`` for nose when Matplotlib is not installed (:gh:`2231` by `Kshitij Chawla`_).
-  
+
 - The argument ``version='det'`` in function :func:`~datasets.fetch_atlas_pauli_2017` now works as expected (:gh:`2235` by `Ryan Hammonds`_).
 
 - Method :meth:`~maskers.NiftiLabelsMasker.inverse_transform` now works without the need to call ``transform`` first (:gh:`2248` by `Gael Varoquaux`_).
@@ -189,7 +189,7 @@ NEW
 - ``joblib`` is now a dependency (:gh:`2090` by `Jerome Dockes`_).
 
 - New class :class:`~regions.ReNA` implementing parcellation method :term:`ReNA`: Fast agglomerative clustering based on recursive nearest neighbor grouping. Yields very fast & accurate models, without creation of giant clusters (:gh:`1336` by `Andrés Hoyos Idrobo`_).
-  
+
 - New function ``nilearn.plotting.plot_connectome_strength`` to plot the strength of a connectome on a glass brain.  Strength is absolute sum of the edges at a node (:gh:`2028` by `Guillaume Lemaitre`_).
 
 - Function :func:`~image.resample_img` has been optimized to pad rather than resample images in the special case when there is only a translation between two spaces. This is a common case in class :class:`~maskers.NiftiMasker` when using the ``mask_strategy="template"`` option for brains in :term:`MNI` space (:gh:`2025` by `Greg Kiar`_).

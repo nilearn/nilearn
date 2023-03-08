@@ -10,44 +10,43 @@ For example: TV-L1, Graph-Net, etc
 #         THIRION Bertrand
 # License: simplified BSD
 
-import warnings
 import collections
-import time
 import sys
+import time
+import warnings
 from functools import partial
+
 import numpy as np
-from scipy import stats
-from scipy.ndimage import (
-    gaussian_filter,
-    binary_dilation,
-    binary_erosion,
-)
-from sklearn.utils.extmath import safe_sparse_dot
-from sklearn.utils import check_array
-from sklearn.linear_model import LinearRegression
-from sklearn.feature_selection import SelectPercentile, f_regression, f_classif
 from joblib import Memory, Parallel, delayed
-from sklearn.preprocessing import LabelBinarizer
-from sklearn.metrics import accuracy_score
 from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
-from .._utils.param_validation import _adjust_screening_percentile
-from .._utils import fill_doc
-from sklearn.utils import check_X_y
+from scipy import stats
+from scipy.ndimage import binary_dilation, binary_erosion, gaussian_filter
+from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import accuracy_score
 from sklearn.model_selection import check_cv
+from sklearn.preprocessing import LabelBinarizer
+from sklearn.utils import check_array, check_X_y
+from sklearn.utils.extmath import safe_sparse_dot
+
+from .._utils import fill_doc
+from .._utils.param_validation import _adjust_screening_percentile
 
 try:
     from sklearn.linear_model._base import _preprocess_data as center_data
 except ImportError:
     # Sklearn < 0.23
     from sklearn.linear_model.base import _preprocess_data as center_data
-from .._utils.cache_mixin import CacheMixin
+
+from nilearn.image import get_data
 from nilearn.masking import _unmask_from_to_3d_array
+
+from .._utils.cache_mixin import CacheMixin
 from .space_net_solvers import (
-    tvl1_solver,
     _graph_net_logistic,
     _graph_net_squared_loss,
+    tvl1_solver,
 )
-from nilearn.image import get_data
 
 
 def _crop_mask(mask):

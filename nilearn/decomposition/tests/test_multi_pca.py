@@ -1,15 +1,14 @@
 """Test the multi-PCA module."""
 import os
 import tempfile
-import numpy as np
-import pytest
 
 import nibabel
-from numpy.testing import assert_almost_equal
-
+import numpy as np
+import pytest
+from nilearn._utils.testing import write_tmp_imgs
 from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker
-from nilearn._utils.testing import write_tmp_imgs
+from numpy.testing import assert_almost_equal
 
 
 def _tmp_dir():

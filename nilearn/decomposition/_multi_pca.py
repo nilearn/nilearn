@@ -4,10 +4,10 @@ This is a good initialization method for ICA.
 """
 import numpy as np
 from joblib import Memory
+from nilearn._utils import fill_doc
 from sklearn.utils.extmath import randomized_svd
 
 from ._base import _BaseDecomposition
-from nilearn._utils import fill_doc
 
 
 @fill_doc

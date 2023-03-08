@@ -31,23 +31,23 @@ Fixes
 -----
 
 - Fix ``symmetric_split`` behavior in function :func:`~datasets.fetch_atlas_harvard_oxford`.
-   
+
 - Fix casting errors when providing integer data to function :func:`~image.high_variance_confounds`.
-   
+
 - Fix matplotlib ``1.5.0`` compatibility in function :func:`~plotting.plot_prob_atlas`.
-   
+
 - Fix matplotlib backend choice on Mac OS X.
-   
+
 - Function :func:`~plotting.find_xyz_cut_coords` raises a meaningful error when 4D data is provided instead of 3D.
-   
+
 - Class :class:`~maskers.NiftiSpheresMasker` handles radius smaller than the size of a :term:`voxel`.
-   
+
 - Class :class:`~regions.RegionExtractor` handles data containing ``Nans``.
-   
+
 - Confound regression does not force systematically the normalization of the confounds.
-   
+
 - Force time series normalization in :class:`~connectome.ConnectivityMeasure` and check dimensionality of the input.
-   
+
 - Function ``nilearn._utils.numpy_conversions.csv_to_array`` could consider valid CSV files as invalid.
 
 Changes
@@ -73,4 +73,3 @@ Contributors (from ``git shortlog -ns 0.2.1..0.2.2``):
     * `Ben Cipollini`_ (1)
     * `Elvis Dohmatob`_ (1)
     * `Óscar Nájera`_ (1)
-  
