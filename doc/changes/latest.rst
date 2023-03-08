@@ -38,6 +38,7 @@ Fixes
 
 - :bdg-success:`API` :func:`~nilearn.mass_univariate.permuted_ols` now checks if confounding variates contain a intercept and raises an warning when multiple intercepts are defined across target and confounding variates (:gh:`3465` by `Jelle Roelof Dalenberg`_).
 
+- The label of the clusters in the label maps returned by :func:`~nilearn.reporting.get_clusters_table` now matches the Cluster IDs in the clusters table (:gh:`3563` by `Julio A Peraza`_).
 
 Enhancements
 ------------
