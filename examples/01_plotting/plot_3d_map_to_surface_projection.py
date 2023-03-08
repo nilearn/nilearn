@@ -27,10 +27,22 @@ stat_img = motor_images.images[0]
 fsaverage = datasets.fetch_surf_fsaverage()
 
 ##############################################################################
+# Use mesh curvature to display useful anatomical information
+# on inflated meshes
+#
+# Here, we load the curvature map of the hemisphere under study,
+# and define a surface map whose value for a given vertex is
+# 1 if the curvature is positive, -1 if the curvature is negative.
+
+import numpy as np
+from nilearn import surface
+
+curv_right = surface.load_surf_data(fsaverage.curv_right)
+curv_right_sign = np.sign(curv_right)
+
+##############################################################################
 # Sample the 3D data around each node of the mesh
 # -----------------------------------------------
-
-from nilearn import surface
 
 texture = surface.vol_to_surf(stat_img, fsaverage.pial_right)
 
@@ -40,14 +52,14 @@ texture = surface.vol_to_surf(stat_img, fsaverage.pial_right)
 #
 # You can visualize the texture on the surface using the function
 # :func:`~nilearn.plotting.plot_surf_stat_map` which uses ``matplotlib``
-# as the default plotting engine:
+# as the default plotting engine.
 
 from nilearn import plotting
 
 fig = plotting.plot_surf_stat_map(
     fsaverage.infl_right, texture, hemi='right',
     title='Surface right hemisphere', colorbar=True,
-    threshold=1., bg_map=fsaverage.sulc_right
+    threshold=1., bg_map=curv_right_sign,
 )
 fig.show()
 
@@ -72,7 +84,7 @@ print(f"Using plotting engine {engine}.")
 fig = plotting.plot_surf_stat_map(
     fsaverage.infl_right, texture, hemi='right',
     title='Surface right hemisphere', colorbar=True,
-    threshold=1., bg_map=fsaverage.sulc_right,
+    threshold=1., bg_map=curv_right_sign, bg_on_data=True,
     engine=engine  # Specify the plotting engine here
 )
 fig.show()  # Display the figure as with matplotlib figures
@@ -103,8 +115,6 @@ plotting.plot_stat_map(stat_img, display_mode='x', threshold=1.,
 ##############################################################################
 # Use an atlas and choose regions to outline
 # ------------------------------------------
-
-import numpy as np
 
 destrieux_atlas = datasets.fetch_atlas_surf_destrieux()
 parcellation = destrieux_atlas['map_right']

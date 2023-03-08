@@ -16,6 +16,8 @@ Fixes
 Enhancements
 ------------
 
+- Surface plotting methods no longer automatically rescale background maps, which, among other things, allows to use curvature sign as a background map (:gh:`3173` by `Alexis Thual`_).
+
 Changes
 -------
 - The behavior of :func:`~nilearn.datasets.fetch_atlas_craddock_2012`, :func:`~nilearn.datasets.fetch_atlas_smith_2009` and :func:`~nilearn.datasets.fetch_atlas_basc_multiscale_2015` is updated with their new parameters to return one map along with a deprecation cycle (:gh:`3353` by `Ahmad Chamma`_).
