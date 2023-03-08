@@ -655,29 +655,55 @@ def _make_stat_img_test_data():
     return stat_img
 
 
-def test_threshold_img_threshold_2_one_sided():
-    """The standard approach should retain any clusters with values > 2"""
+@pytest.mark.parametrize(
+    "threshold,two_sided,cluster_threshold,expected",
+    [
+        (2, False, 0, [0, 4, 5]),  # clusters with values > 2
+        (2, True, 0, [-5, -4, 0, 4, 5]),  # clusters with |values| > 2
+        (
+            2,
+            True,
+            5,
+            [-4, 0, 4],
+        ),  # clusters with |values| > 2 & size > 5
+        (
+            2,
+            True,
+            5,
+            [-4, 0, 4],
+        ),  # clusters with |values| > 2 & size > 5
+        (
+            0.5,
+            True,
+            5,
+            [-4, -1, 0, 1, 4],
+        ),  # clusters with |values| > 0.5 & size > 5
+        (
+            0.5,
+            False,
+            5,
+            [0, 1, 4],
+        ),  # clusters with values > 0.5 & size > 5
+    ],
+)
+def test_threshold_img_with_cluster_threshold(
+    threshold, two_sided, cluster_threshold, expected
+):
     stat_img = _make_stat_img_test_data()
 
-    thr_img = threshold_img(stat_img, threshold=2, two_sided=False, copy=True)
-
-    assert np.array_equal(np.unique(thr_img.get_fdata()), np.array([0, 4, 5]))
-
-
-def test_threshold_img_threshold_2_two_sided():
-    """With two-sided we get any clusters with |values| > 2"""
-    stat_img = _make_stat_img_test_data()
-
-    thr_img = threshold_img(stat_img, threshold=2, two_sided=True, copy=True)
-
-    assert np.array_equal(
-        np.unique(thr_img.get_fdata()),
-        np.array([-5, -4, 0, 4, 5]),
+    thr_img = threshold_img(
+        stat_img,
+        threshold=threshold,
+        two_sided=two_sided,
+        cluster_threshold=cluster_threshold,
+        copy=True,
     )
 
+    assert np.array_equal(np.unique(thr_img.get_fdata()), np.array(expected))
 
-def test_threshold_img_threshold_2_cluster_threshold_5_two_sided_():
-    """With a cluster threshold of 5 we get clusters with |values| > 2 and
+
+def test_threshold_img_threshold_nb_clusters():
+    """With a cluster threshold of 5 we get 4 clusters with |values| > 2 and
     cluster sizes > 5
     """
     stat_img = _make_stat_img_test_data()
@@ -690,45 +716,7 @@ def test_threshold_img_threshold_2_cluster_threshold_5_two_sided_():
         copy=True,
     )
 
-    assert np.array_equal(np.unique(thr_img.get_fdata()), np.array([-4, 0, 4]))
     assert np.sum(thr_img.get_fdata() == 4) == 8
-
-
-def test_threshold_img_threshold_0pt5_cluster_threshold_5_two_sided_():
-    """With a cluster threshold of 5 we get clusters with |values| > 0.5 and
-    cluster sizes > 5
-    """
-    stat_img = _make_stat_img_test_data()
-
-    thr_img = threshold_img(
-        stat_img,
-        threshold=0.5,
-        two_sided=True,
-        cluster_threshold=5,
-        copy=True,
-    )
-
-    assert np.array_equal(
-        np.unique(thr_img.get_fdata()),
-        np.array([-4, -1, 0, 1, 4]),
-    )
-
-
-def test_threshold_img_threshold_0pt5_cluster_threshold_5_one_sided_():
-    """Disable two_sided again to get clusters with values > 0.5 and
-    cluster sizes > 5
-    """
-    stat_img = _make_stat_img_test_data()
-
-    thr_img = threshold_img(
-        stat_img,
-        threshold=0.5,
-        two_sided=False,
-        cluster_threshold=5,
-        copy=True,
-    )
-
-    assert np.array_equal(np.unique(thr_img.get_fdata()), np.array([0, 1, 4]))
 
 
 def test_threshold_img_copy():
