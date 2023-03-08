@@ -658,32 +658,32 @@ def _make_stat_img_test_data():
 @pytest.mark.parametrize(
     "threshold,two_sided,cluster_threshold,expected",
     [
-        (2, False, 0, [0, 4, 5]),  # clusters with values > 2
-        (2, True, 0, [-5, -4, 0, 4, 5]),  # clusters with |values| > 2
+        (2, False, 0, [0, 4, 5]),  # cluster with values>2
+        (2, True, 0, [-5, -4, 0, 4, 5]),  # cluster with |values|>2
         (
             2,
             True,
             5,
             [-4, 0, 4],
-        ),  # clusters with |values| > 2 & size > 5
+        ),  # cluster with |values|>2 & size> 5
         (
             2,
             True,
             5,
             [-4, 0, 4],
-        ),  # clusters with |values| > 2 & size > 5
+        ),  # cluster with |values|>2 & size >5
         (
             0.5,
             True,
             5,
             [-4, -1, 0, 1, 4],
-        ),  # clusters with |values| > 0.5 & size > 5
+        ),  # cluster with |values|>0.5 & size>5
         (
             0.5,
             False,
             5,
             [0, 1, 4],
-        ),  # clusters with values > 0.5 & size > 5
+        ),  # cluster with values>0.5 & size>5
     ],
 )
 def test_threshold_img_with_cluster_threshold(
