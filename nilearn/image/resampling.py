@@ -385,7 +385,7 @@ def resample_img(
         Use a fill value for points outside of input volume. Default=0.
 
     force_resample : bool, optional
-        Intended for testing, this prevents the use of a padding optimzation.
+        Intended for testing, this prevents the use of a padding optimization.
         Default=False.
 
     Returns
@@ -744,7 +744,7 @@ def resample_to_img(
         Use a fill value for points outside of input volume. Default=0.
 
     force_resample : bool, optional
-        Intended for testing, this prevents the use of a padding optimzation.
+        Intended for testing, this prevents the use of a padding optimization.
         Default=False.
 
     Returns
