@@ -19,24 +19,14 @@ about the plotting data and associated meta-data.
 
 
 ###############################################################################
-# Retrieve the data
+# Load the data
 # ------------------
 #
-# Nilearn comes with set of functions that download public data from Internet
-#
-# Let us first see where the data will be downloaded and stored on our disk:
-#
+# We will use a motor activation contrast map distributed with Nilearn.
+
 from nilearn import datasets
-print("Datasets shipped with nilearn are stored "
-      f"at: {datasets.get_data_dirs()!r}")
-
-###############################################################################
-# Let us now retrieve a motor task contrast map
-# corresponding to a group one-sample t-test
-
-motor_images = datasets.fetch_neurovault_motor_task()
-stat_img = motor_images.images[0]
-# stat_img is just the name of the file that we downloaded
+stat_img = datasets.load_sample_motor_activation_image()
+# stat_img is just the name of the image file
 stat_img
 
 ###############################################################################
