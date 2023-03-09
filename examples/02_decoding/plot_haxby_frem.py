@@ -74,7 +74,7 @@ from sklearn.metrics import confusion_matrix
 matrix = confusion_matrix(
     y_test,
     y_pred,
-    normalize='true',
+    normalize="true",
 )
 
 # Plot the confusion matrix
@@ -82,13 +82,13 @@ im = plotting.plot_matrix(
     matrix,
     labels=sorted(np.unique(y_test)),
     vmin=0,
-    cmap='hot_r',
+    cmap="hot_r",
 )
 
 # Add x/y-axis labels
 ax = im.axes
-ax.set_ylabel('True label')
-ax.set_xlabel('Predicted label')
+ax.set_ylabel("True label")
+ax.set_xlabel("Predicted label")
 
 # Adjust figure to make labels fit
 ax.get_figure().tight_layout()
