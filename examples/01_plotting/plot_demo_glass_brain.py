@@ -7,13 +7,12 @@ See :ref:`plotting` for more plotting functionalities.
 
 
 ###############################################################################
-# Retrieve data from Internet
+# Load data
 # ---------------------------
 
 from nilearn import datasets
 
-motor_images = datasets.fetch_neurovault_motor_task()
-stat_img = motor_images.images[0]
+stat_img = datasets.load_sample_motor_activation_image()
 
 ###############################################################################
 # Glass brain plotting: whole brain sagittal cuts

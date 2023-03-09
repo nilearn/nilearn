@@ -2,25 +2,25 @@
 
 Utilities for masking and dimension reduction of group data
 """
-from math import ceil
-import itertools
 import glob
+import itertools
+from math import ceil
 
-import numpy as np
-
-from scipy import linalg
 import nilearn
-from sklearn.base import BaseEstimator, TransformerMixin
+import numpy as np
 from joblib import Memory, Parallel, delayed
+from nilearn.maskers import NiftiMapsMasker
+from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
+from scipy import linalg
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.linear_model import LinearRegression
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd, svd_flip
+
 from .._utils import fill_doc
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.niimg import _safe_get_data
 from .._utils.niimg_conversions import _resolve_globbing
-from nilearn.maskers import NiftiMapsMasker
-from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
 from ..signal import _row_sum_of_squares
 
 

@@ -175,8 +175,7 @@ def test_parallel_fit():
         screening_percentile=None, mask_img=None, is_classification=False
     )
     for params in svr_params:
-        param_grid = {}
-        param_grid["C"] = np.array(params)
+        param_grid = {"C": np.array(params)}
         outputs.append(
             list(
                 _parallel_fit(
@@ -203,64 +202,7 @@ def test_parallel_fit():
             assert a == b
 
 
-def test_decoder_binary_classification():
-    X, y = make_classification(
-        n_samples=200,
-        n_features=125,
-        scale=3.0,
-        n_informative=5,
-        n_classes=2,
-        random_state=42,
-    )
-    X, mask = to_niimgs(X, [5, 5, 5])
-
-    # check classification with masker object
-    model = Decoder(mask=NiftiMasker())
-    model.fit(X, y)
-    y_pred = model.predict(X)
-    assert model.scoring == "roc_auc"
-    assert model.score(X, y) == 1.0
-    assert accuracy_score(y, y_pred) > 0.95
-
-    # decoder object use predict_proba for scoring with logistic model
-    model = Decoder(estimator="logistic_l2", mask=mask)
-    model.fit(X, y)
-    y_pred = model.predict(X)
-    assert accuracy_score(y, y_pred) > 0.95
-
-    # check different screening_percentile value
-    for screening_percentile in [100, 20, None]:
-        model = Decoder(mask=mask, screening_percentile=screening_percentile)
-        model.fit(X, y)
-        y_pred = model.predict(X)
-        assert accuracy_score(y, y_pred) > 0.95
-
-    for clustering_percentile in [100, 99]:
-        model = FREMClassifier(
-            estimator="logistic_l2",
-            mask=mask,
-            clustering_percentile=clustering_percentile,
-            screening_percentile=90,
-            cv=5,
-        )
-        model.fit(X, y)
-        y_pred = model.predict(X)
-        assert accuracy_score(y, y_pred) > 0.9
-
-    # check cross-validation scheme and fit attribute with groups enabled
-    rand_local = np.random.RandomState(42)
-    for cv in [KFold(n_splits=5), LeaveOneGroupOut()]:
-        model = Decoder(estimator="svc", mask=mask, standardize=True, cv=cv)
-        if isinstance(cv, LeaveOneGroupOut):
-            groups = rand_local.binomial(2, 0.3, size=len(y))
-        else:
-            groups = None
-        model.fit(X, y, groups=groups)
-        assert accuracy_score(y, y_pred) > 0.9
-
-
-def test_decoder_dummy_classifier():
-    n_samples = 400
+def _make_binary_classification_test_data(n_samples):
     X, y = make_classification(
         n_samples=n_samples,
         n_features=125,
@@ -270,6 +212,80 @@ def test_decoder_dummy_classifier():
         random_state=42,
     )
     X, mask = to_niimgs(X, [5, 5, 5])
+    return X, y, mask
+
+
+def test_decoder_binary_classification_with_masker_object():
+    X, y, mask = _make_binary_classification_test_data(n_samples=200)
+
+    model = Decoder(mask=NiftiMasker())
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert model.scoring == "roc_auc"
+    assert model.score(X, y) == 1.0
+    assert accuracy_score(y, y_pred) > 0.95
+
+
+def test_decoder_binary_classification_with_logistic_model():
+    """Check decoder with predict_proba for scoring with logistic model."""
+    X, y, mask = _make_binary_classification_test_data(n_samples=200)
+
+    model = Decoder(estimator="logistic_l2", mask=mask)
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert accuracy_score(y, y_pred) > 0.95
+
+
+@pytest.mark.parametrize("screening_percentile", [100, 20, None])
+def test_decoder_binary_classification_screening(screening_percentile):
+    X, y, mask = _make_binary_classification_test_data(n_samples=200)
+
+    model = Decoder(mask=mask, screening_percentile=screening_percentile)
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert accuracy_score(y, y_pred) > 0.95
+
+
+@pytest.mark.parametrize("clustering_percentile", [100, 99])
+def test_decoder_binary_classification_clustering(clustering_percentile):
+    X, y, mask = _make_binary_classification_test_data(n_samples=200)
+
+    model = FREMClassifier(
+        estimator="logistic_l2",
+        mask=mask,
+        clustering_percentile=clustering_percentile,
+        screening_percentile=90,
+        cv=5,
+    )
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert accuracy_score(y, y_pred) > 0.9
+
+
+@pytest.mark.parametrize("cv", [KFold(n_splits=5), LeaveOneGroupOut()])
+def test_decoder_binary_classification_cross_validation(cv):
+    X, y, mask = _make_binary_classification_test_data(n_samples=200)
+
+    # check cross-validation scheme and fit attribute with groups enabled
+    rand_local = np.random.RandomState(42)
+
+    model = Decoder(estimator="svc", mask=mask, standardize=True, cv=cv)
+    groups = None
+    if isinstance(cv, LeaveOneGroupOut):
+        groups = rand_local.binomial(2, 0.3, size=len(y))
+    model.fit(X, y, groups=groups)
+    y_pred = model.predict(X)
+
+    assert accuracy_score(y, y_pred) > 0.9
+
+
+def test_decoder_dummy_classifier():
+    n_samples = 400
+    X, y, mask = _make_binary_classification_test_data(n_samples=n_samples)
 
     # We make 80% of y to have value of 1.0 to check whether the stratified
     # strategy returns a proportion prediction value of 1.0 of roughly 80%
@@ -280,36 +296,50 @@ def test_decoder_dummy_classifier():
     model = Decoder(estimator="dummy_classifier", mask=mask)
     model.fit(X, y)
     y_pred = model.predict(X)
+
     assert np.sum(y_pred == 1.0) / n_samples - proportion < 0.05
 
-    # Set scoring of decoder with a callable
+
+def test_decoder_dummy_classifier_with_callable():
+    X, y, mask = _make_binary_classification_test_data(n_samples=400)
+
     accuracy_scorer = get_scorer("accuracy")
     model = Decoder(
         estimator="dummy_classifier", mask=mask, scoring=accuracy_scorer
     )
     model.fit(X, y)
     y_pred = model.predict(X)
+
     assert model.scoring == accuracy_scorer
     assert model.score(X, y) == accuracy_score(y, y_pred)
 
-    # An error should be raise when trying to compute the score without having
-    # called fit first.
+
+def test_decoder_error_model_not_fitted():
+    X, y, mask = _make_binary_classification_test_data(n_samples=400)
+
     model = Decoder(estimator="dummy_classifier", mask=mask)
     with pytest.raises(
         NotFittedError, match="This Decoder instance is not fitted yet."
     ):
         model.score(X, y)
 
-    # Decoder object use other strategy for dummy classifier.
+
+def test_decoder_dummy_classifier_strategy_prior():
+    X, y, mask = _make_binary_classification_test_data(n_samples=400)
+
     param = dict(strategy="prior")
     dummy_classifier.set_params(**param)
     model = Decoder(estimator=dummy_classifier, mask=mask)
     model.fit(X, y)
     y_pred = model.predict(X)
+
     assert np.all(y_pred) == 1.0
     assert roc_auc_score(y, y_pred) == 0.5
 
-    # Same purpose with the above but for most_frequent strategy
+
+def test_decoder_dummy_classifier_strategy_most_frequent():
+    X, y, mask = _make_binary_classification_test_data(n_samples=400)
+
     param = dict(strategy="most_frequent")
     dummy_classifier.set_params(**param)
     model = Decoder(estimator=dummy_classifier, mask=mask)
@@ -323,91 +353,47 @@ def test_decoder_dummy_classifier():
     assert model.dummy_output_ is not None
     assert model.cv_scores_ is not None
 
-    # decoder object use other scoring metric for dummy classifier
+
+def test_decoder_dummy_classifier_roc_scoring():
+    X, y, mask = _make_binary_classification_test_data(n_samples=400)
+
     model = Decoder(estimator="dummy_classifier", mask=mask, scoring="roc_auc")
     model.fit(X, y)
+
     assert np.mean(model.cv_scores_[0]) >= 0.45
 
-    # Raises a not implemented error with strategy constant
+
+def test_decoder_error_not_implemented():
+    X, y, mask = _make_binary_classification_test_data(n_samples=400)
+
     param = dict(strategy="constant")
     dummy_classifier.set_params(**param)
     model = Decoder(estimator=dummy_classifier, mask=mask)
+
     pytest.raises(NotImplementedError, model.fit, X, y)
 
-    # Raises an error with unknown scoring metrics
+
+def test_decoder_error_unknown_scoring_metrics():
+    X, y, mask = _make_binary_classification_test_data(n_samples=400)
+
     model = Decoder(estimator=dummy_classifier, mask=mask, scoring="foo")
+
     with pytest.raises(ValueError, match="'foo' is not a valid scoring value"):
         model.fit(X, y)
 
-    # Default scoring
+
+def test_decoder_dummy_classifier_default_scoring():
+    X, y, _ = _make_binary_classification_test_data(n_samples=400)
+
     model = Decoder(estimator="dummy_classifier", scoring=None)
+
     assert model.scoring is None
+
     model.fit(X, y)
+
     assert model.scorer_._score_func == get_scorer("accuracy")._score_func
     assert model.scorer_._sign == get_scorer("accuracy")._sign
     assert model.score(X, y) > 0.5
-
-
-def test_decoder_multiclass_classification():
-    X, y = make_classification(
-        n_samples=200,
-        n_features=125,
-        scale=3.0,
-        n_informative=5,
-        n_classes=4,
-        random_state=42,
-    )
-    X, mask = to_niimgs(X, [5, 5, 5])
-
-    # check classification with masker object
-    model = Decoder(mask=NiftiMasker())
-    model.fit(X, y)
-    y_pred = model.predict(X)
-    assert accuracy_score(y, y_pred) > 0.95
-
-    # check classification with masker object and dummy classifier
-    model = Decoder(
-        estimator="dummy_classifier", mask=NiftiMasker(), scoring="accuracy"
-    )
-    model.fit(X, y)
-    y_pred = model.predict(X)
-    assert model.scoring == "accuracy"
-    # 4-class classification
-    assert accuracy_score(y, y_pred) > 0.2
-    assert model.score(X, y) == accuracy_score(y, y_pred)
-
-    # check different screening_percentile value
-    for screening_percentile in [100, 20, None]:
-        model = Decoder(mask=mask, screening_percentile=screening_percentile)
-        model.fit(X, y)
-        y_pred = model.predict(X)
-        assert accuracy_score(y, y_pred) > 0.95
-
-    # check FREM with clustering or not
-    for clustering_percentile in [100, 99]:
-        for estimator in ["svc_l2", "svc_l1"]:
-            model = FREMClassifier(
-                estimator=estimator,
-                mask=mask,
-                clustering_percentile=clustering_percentile,
-                screening_percentile=90,
-                cv=5,
-            )
-            model.fit(X, y)
-            y_pred = model.predict(X)
-            assert model.scoring == "roc_auc"
-            assert accuracy_score(y, y_pred) > 0.9
-
-    # check cross-validation scheme and fit attribute with groups enabled
-    rand_local = np.random.RandomState(42)
-    for cv in [KFold(n_splits=5), LeaveOneGroupOut()]:
-        model = Decoder(estimator="svc", mask=mask, standardize=True, cv=cv)
-        if isinstance(cv, LeaveOneGroupOut):
-            groups = rand_local.binomial(2, 0.3, size=len(y))
-        else:
-            groups = None
-        model.fit(X, y, groups=groups)
-        assert accuracy_score(y, y_pred) > 0.9
 
 
 def test_decoder_classification_string_label():
@@ -423,10 +409,9 @@ def test_decoder_classification_string_label():
     assert accuracy_score(y_str, y_pred) > 0.95
 
 
-def test_decoder_regression():
-    dim = 30
+def _make_regression_test_data(n_samples, dim):
     X, y = make_regression(
-        n_samples=100,
+        n_samples=n_samples,
         n_features=dim**3,
         n_informative=dim,
         noise=1.5,
@@ -435,30 +420,30 @@ def test_decoder_regression():
     )
     X = StandardScaler().fit_transform(X)
     X, mask = to_niimgs(X, [dim, dim, dim])
+    return X, y, mask
+
+
+@pytest.mark.parametrize("screening_percentile", [100, 20, 1, None])
+def test_decoder_regression_screening(screening_percentile):
+    X, y, mask = _make_regression_test_data(n_samples=100, dim=30)
+
     for reg in regressors:
-        for screening_percentile in [100, 20, 1, None]:
-            model = DecoderRegressor(
-                estimator=reg,
-                mask=mask,
-                screening_percentile=screening_percentile,
-            )
-            model.fit(X, y)
-            y_pred = model.predict(X)
-            assert r2_score(y, y_pred) > 0.95
+        model = DecoderRegressor(
+            estimator=reg,
+            mask=mask,
+            screening_percentile=screening_percentile,
+        )
+        model.fit(X, y)
+        y_pred = model.predict(X)
 
-    dim = 5
-    X, y = make_regression(
-        n_samples=100,
-        n_features=dim**3,
-        n_informative=dim,
-        noise=1.5,
-        bias=1.0,
-        random_state=42,
-    )
-    X = StandardScaler().fit_transform(X)
-    X, mask = to_niimgs(X, [dim, dim, dim])
+        assert r2_score(y, y_pred) > 0.95
 
-    for clustering_percentile in [100, 99]:
+
+@pytest.mark.parametrize("clustering_percentile", [100, 99])
+def test_decoder_regression_clustering(clustering_percentile):
+    X, y, mask = _make_regression_test_data(n_samples=100, dim=5)
+
+    for reg in regressors:
         model = FREMRegressor(
             estimator=reg,
             mask=mask,
@@ -468,23 +453,14 @@ def test_decoder_regression():
         )
         model.fit(X, y)
         y_pred = model.predict(X)
+
         assert model.scoring == "r2"
         assert r2_score(y, y_pred) > 0.95
         assert model.score(X, y) == r2_score(y, y_pred)
 
 
 def test_decoder_dummy_regression():
-    dim = 30
-    X, y = make_regression(
-        n_samples=100,
-        n_features=dim**3,
-        n_informative=dim,
-        noise=1.5,
-        bias=1.0,
-        random_state=42,
-    )
-    X = StandardScaler().fit_transform(X)
-    X, mask = to_niimgs(X, [dim, dim, dim])
+    X, y, mask = _make_regression_test_data(n_samples=100, dim=30)
 
     # Regression with dummy estimator
     model = DecoderRegressor(
@@ -521,6 +497,92 @@ def test_decoder_dummy_regression():
     assert model.cv_scores_ is not None
 
 
+def _make_multiclass_classification_test_data(n_samples=200):
+    X, y = make_classification(
+        n_samples=n_samples,
+        n_features=125,
+        scale=3.0,
+        n_informative=5,
+        n_classes=4,
+        random_state=42,
+    )
+    X, mask = to_niimgs(X, [5, 5, 5])
+    return X, y, mask
+
+
+def test_decoder_multiclass_classification_masker():
+    X, y, _ = _make_multiclass_classification_test_data()
+
+    model = Decoder(mask=NiftiMasker())
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert accuracy_score(y, y_pred) > 0.95
+
+
+def test_decoder_multiclass_classification_masker_dummy_classifier():
+    X, y, _ = _make_multiclass_classification_test_data()
+
+    model = Decoder(
+        estimator="dummy_classifier", mask=NiftiMasker(), scoring="accuracy"
+    )
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert model.scoring == "accuracy"
+    # 4-class classification
+    assert accuracy_score(y, y_pred) > 0.2
+    assert model.score(X, y) == accuracy_score(y, y_pred)
+
+
+@pytest.mark.parametrize("screening_percentile", [100, 20, None])
+def test_decoder_multiclass_classification_screening(screening_percentile):
+    X, y, mask = _make_multiclass_classification_test_data()
+
+    model = Decoder(mask=mask, screening_percentile=screening_percentile)
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert accuracy_score(y, y_pred) > 0.95
+
+
+@pytest.mark.parametrize("clustering_percentile", [100, 99])
+@pytest.mark.parametrize("estimator", ["svc_l2", "svc_l1"])
+def test_decoder_multiclass_classification_clustering(
+    clustering_percentile, estimator
+):
+    X, y, mask = _make_multiclass_classification_test_data()
+
+    model = FREMClassifier(
+        estimator=estimator,
+        mask=mask,
+        clustering_percentile=clustering_percentile,
+        screening_percentile=90,
+        cv=5,
+    )
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert model.scoring == "roc_auc"
+    assert accuracy_score(y, y_pred) > 0.9
+
+
+@pytest.mark.parametrize("cv", [KFold(n_splits=5), LeaveOneGroupOut()])
+def test_decoder_multiclass_classification_cross_validation(cv):
+    X, y, mask = _make_multiclass_classification_test_data()
+
+    # check cross-validation scheme and fit attribute with groups enabled
+    rand_local = np.random.RandomState(42)
+
+    model = Decoder(estimator="svc", mask=mask, standardize=True, cv=cv)
+    groups = None
+    if isinstance(cv, LeaveOneGroupOut):
+        groups = rand_local.binomial(2, 0.3, size=len(y))
+    model.fit(X, y, groups=groups)
+    y_pred = model.predict(X)
+    assert accuracy_score(y, y_pred) > 0.9
+
+
 def test_decoder_apply_mask():
     X_init, y = make_classification(
         n_samples=200,
@@ -531,6 +593,7 @@ def test_decoder_apply_mask():
         random_state=42,
     )
     X, _ = to_niimgs(X_init, [5, 5, 5])
+
     model = Decoder(mask=NiftiMasker())
 
     X_masked = model._apply_mask(X)
@@ -566,15 +629,7 @@ def test_decoder_apply_mask():
 
 
 def test_decoder_split_cv():
-    X, y = make_classification(
-        n_samples=200,
-        n_features=125,
-        scale=3.0,
-        n_informative=5,
-        n_classes=4,
-        random_state=42,
-    )
-    X, mask = to_niimgs(X, [5, 5, 5])
+    X, y, _ = _make_multiclass_classification_test_data()
     rand_local = np.random.RandomState(42)
     groups = rand_local.binomial(2, 0.3, size=len(y))
 

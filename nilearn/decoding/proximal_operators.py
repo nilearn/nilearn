@@ -5,8 +5,10 @@
 # License: simplified BSD
 
 from math import sqrt
+
 import numpy as np
-from .objective_functions import _tv_l1_from_gradient, _div_id, _gradient_id
+
+from .objective_functions import _div_id, _gradient_id, _tv_l1_from_gradient
 
 
 def _prox_l1(y, alpha, copy=True):

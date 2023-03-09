@@ -17,6 +17,7 @@ To have more details, see: :ref:`frem`.
 # Load the data from the Jimura mixed-gamble experiment
 # ---------------------------------------------------------------------------
 from nilearn.datasets import fetch_mixed_gambles
+
 data = fetch_mixed_gambles(n_subjects=16)
 
 zmap_filenames = data.zmaps
@@ -29,7 +30,8 @@ mask_filename = data.mask_img
 # We compare both of these models to a pipeline ensembling many models
 #
 from nilearn.decoding import FREMRegressor
-frem = FREMRegressor('svr', cv=10)
+
+frem = FREMRegressor("svr", cv=10)
 
 frem.fit(zmap_filenames, behavioral_target)
 
@@ -37,8 +39,14 @@ frem.fit(zmap_filenames, behavioral_target)
 # ---------------------------------------------------------------------------
 
 from nilearn.plotting import plot_stat_map
-plot_stat_map(frem.coef_img_['beta'], title="FREM", display_mode="yz",
-              cut_coords=[20, -2], threshold=.2)
+
+plot_stat_map(
+    frem.coef_img_["beta"],
+    title="FREM",
+    display_mode="yz",
+    cut_coords=[20, -2],
+    threshold=0.2,
+)
 
 #############################################################################
 # We can observe that the coefficients map learnt by FREM is structured,
@@ -65,9 +73,12 @@ from nilearn.decoding import SpaceNetRegressor
 # We use the regressor object since the task is to predict a continuous
 # variable (gain of the gamble).
 
-tv_l1 = SpaceNetRegressor(mask=mask_filename, penalty="tv-l1",
-                          eps=1e-1,  # prefer large alphas
-                          memory="nilearn_cache")
+tv_l1 = SpaceNetRegressor(
+    mask=mask_filename,
+    penalty="tv-l1",
+    eps=1e-1,  # prefer large alphas
+    memory="nilearn_cache",
+)
 # tv_l1.fit(zmap_filenames, behavioral_target)
 # plot_stat_map(tv_l1.coef_img_, title="TV-L1", display_mode="yz",
 #               cut_coords=[20, -2])

@@ -27,20 +27,23 @@ after GLM fitting on two sessions.
 # Inspecting 'data', we note that there are two sessions
 
 from nilearn.datasets import func
+
 data = func.fetch_fiac_first_level()
 fmri_img = [data['func1'], data['func2']]
 
 #########################################################################
 # Create a mean image for plotting purpose
 from nilearn.image import mean_img
+
 mean_img_ = mean_img(fmri_img[0])
 
 #########################################################################
 # The design matrices were pre-computed, we simply put them in a list of
 # DataFrames
 design_files = [data['design_matrix1'], data['design_matrix2']]
-import pandas as pd
 import numpy as np
+import pandas as pd
+
 design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 
 #########################################################################
@@ -50,6 +53,7 @@ design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 # So we use it.
 
 from nilearn.glm.first_level import FirstLevelModel
+
 fmri_glm = FirstLevelModel(mask_img=data['mask'], smoothing_fwhm=5,
                            minimize_memory=True)
 
@@ -62,6 +66,7 @@ contrast_val = np.hstack(([-1, -1, 1, 1], np.zeros(n_columns - 4)))
 #########################################################################
 # Statistics for the first session
 from nilearn import plotting
+
 cut_coords = [-129, -126, 49]
 contrast_id = 'DSt_minus_SSt'
 
@@ -71,7 +76,7 @@ summary_statistics_session1 = fmri_glm.compute_contrast(
 plotting.plot_stat_map(
     summary_statistics_session1['z_score'],
     bg_img=mean_img_, threshold=3.0, cut_coords=cut_coords,
-    title='{0}, first session'.format(contrast_id))
+    title=f'{contrast_id}, first session')
 
 #########################################################################
 # Statistics for the second session
@@ -82,7 +87,7 @@ summary_statistics_session2 = fmri_glm.compute_contrast(
 plotting.plot_stat_map(
     summary_statistics_session2['z_score'],
     bg_img=mean_img_, threshold=3.0, cut_coords=cut_coords,
-    title='{0}, second session'.format(contrast_id))
+    title=f'{contrast_id}, second session')
 
 #########################################################################
 # Fixed effects statistics
@@ -97,7 +102,7 @@ fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat = compute_fixed_effects(
     contrast_imgs, variance_imgs, data['mask'])
 plotting.plot_stat_map(
     fixed_fx_stat, bg_img=mean_img_, threshold=3.0, cut_coords=cut_coords,
-    title='{0}, fixed effects'.format(contrast_id))
+    title=f'{contrast_id}, fixed effects')
 
 #########################################################################
 # Not unexpectedly, the fixed effects version displays higher peaks than the
