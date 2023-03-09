@@ -937,7 +937,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     .. footbibliography::
 
     """
-    # People keep getting it wrong and submiting a string instead of a
+    # People keep getting it wrong and submitting a string instead of a
     # list of strings. We'll make their life easy
     if isinstance(derivatives, str):
         derivatives = [derivatives, ]
