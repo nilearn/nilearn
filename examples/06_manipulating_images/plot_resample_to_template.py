@@ -10,15 +10,14 @@ Function :func:`nilearn.image.resample_img` could also be used to achieve this.
 
 ###############################################################################
 # First we load the required datasets using the nilearn datasets module.
-from nilearn.datasets import fetch_neurovault_motor_task, load_mni152_template
+from nilearn.datasets import load_mni152_template, load_sample_motor_activation_image
 
 template = load_mni152_template(resolution=2)
 
-motor_images = fetch_neurovault_motor_task()
-stat_img = motor_images.images[0]
+stat_img = load_sample_motor_activation_image()
 
 ###############################################################################
-# Now, the localizer t-map image can be resampled to the MNI template image.
+# Now, the motor contrast map image can be resampled to the MNI template image.
 from nilearn.image import resample_to_img
 
 resampled_stat_img = resample_to_img(stat_img, template)

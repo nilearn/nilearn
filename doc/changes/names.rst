@@ -122,6 +122,8 @@
 
 .. _Julia Huntenburg: https://github.com/juhuntenburg
 
+.. _Julio A Peraza: https://github.com/JulioAPeraza
+
 .. _Kamalakar Reddy Daddy: https://github.com/KamalakerDadi
 
 .. _Koen Helwegen: https://github.com/koenhelwegen
@@ -161,6 +163,8 @@
 .. _Michael Notter: https://github.com/miykael
 
 .. _Michael Waskom: https://mwaskom.github.io/
+
+.. _Michelle Wang: https://github.com/michellewang
 
 .. _Moritz Boos: https://github.com/mjboos
 

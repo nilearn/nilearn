@@ -25,79 +25,79 @@ HIGHLIGHTS
  | - Joblib -- v1.0.0
 
 
-- New classes :class:`~maskers.MultiNiftiLabelsMasker` and :class:`~maskers.MultiNiftiMapsMasker` create maskers to extract signals from a list of subjects with 4D images using parallelization (:gh:`3237` by `Yasmin Mzayek`_).
+- :bdg-success:`API` New classes :class:`~maskers.MultiNiftiLabelsMasker` and :class:`~maskers.MultiNiftiMapsMasker` create maskers to extract signals from a list of subjects with 4D images using parallelization (:gh:`3237` by `Yasmin Mzayek`_).
 
-- Updated docs with a new theme using `furo <https://github.com/pradyunsg/furo>`_ (:gh:`3125` by `Alexis Thual`_).
+- :bdg-primary:`Doc` Updated docs with a new theme using `furo <https://github.com/pradyunsg/furo>`_ (:gh:`3125` by `Alexis Thual`_).
 
-- :func:`~mass_univariate.permuted_ols` and :func:`~glm.second_level.non_parametric_inference` now support :term:`TFCE` statistic (:gh:`3196` by `Taylor Salo`_).
+- :bdg-success:`API` :func:`~mass_univariate.permuted_ols` and :func:`~glm.second_level.non_parametric_inference` now support :term:`TFCE` statistic (:gh:`3196` by `Taylor Salo`_).
 
-- :func:`~mass_univariate.permuted_ols` and :func:`~glm.second_level.non_parametric_inference` now support cluster-level Family-wise error correction (:gh:`3181` by `Taylor Salo`_).
+- :bdg-success:`API` :func:`~mass_univariate.permuted_ols` and :func:`~glm.second_level.non_parametric_inference` now support cluster-level Family-wise error correction (:gh:`3181` by `Taylor Salo`_).
 
-- :func:`~interfaces.bids.save_glm_to_bids` has been added, which writes model outputs to disk according to BIDS convention (:gh:`2715` by `Taylor Salo`_).
+- :bdg-success:`API` :func:`~interfaces.bids.save_glm_to_bids` has been added, which writes model outputs to disk according to BIDS convention (:gh:`2715` by `Taylor Salo`_).
 
 
 NEW
 ---
 
-- New classes :class:`~maskers.MultiNiftiLabelsMasker` and :class:`~maskers.MultiNiftiMapsMasker` create maskers to extract signals from a list of subjects with 4D images using parallelization (:gh:`3237` by `Yasmin Mzayek`_).
+- :bdg-success:`API` New classes :class:`~maskers.MultiNiftiLabelsMasker` and :class:`~maskers.MultiNiftiMapsMasker` create maskers to extract signals from a list of subjects with 4D images using parallelization (:gh:`3237` by `Yasmin Mzayek`_).
 
 
 Fixes
 -----
 
-- Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
+- :bdg-dark:`Code` Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
 
-- Regressor names can now be invalid identifiers but will raise an error with :meth:`~glm.first_level.FirstLevelModel.compute_contrast` if combined to make an invalid expression (:gh:`3374` by `Yasmin Mzayek`_).
+- :bdg-success:`API` Regressor names can now be invalid identifiers but will raise an error with :meth:`~glm.first_level.FirstLevelModel.compute_contrast` if combined to make an invalid expression (:gh:`3374` by `Yasmin Mzayek`_).
 
-- Fix :func:`~plotting.plot_connectome` which was raising a ``ValueError`` when ``vmax < 0`` (:gh:`3390` by `Paul Bogdan`_).
+- :bdg-info:`Plotting` Fix :func:`~plotting.plot_connectome` which was raising a ``ValueError`` when ``vmax < 0`` (:gh:`3390` by `Paul Bogdan`_).
 
-- Change the order of applying ``sample_masks`` in :func:`~signal.clean` based on different filtering options (:gh:`3385` by `Hao-Ting Wang`_).
+- :bdg-success:`API` Change the order of applying ``sample_masks`` in :func:`~signal.clean` based on different filtering options (:gh:`3385` by `Hao-Ting Wang`_).
 
-- When using cosine filter and ``sample_masks`` is used, :func:`~signal.clean` generates the cosine discrete regressors using the full time series (:gh:`3385` by `Hao-Ting Wang`_).
+- :bdg-success:`API` When using cosine filter and ``sample_masks`` is used, :func:`~signal.clean` generates the cosine discrete regressors using the full time series (:gh:`3385` by `Hao-Ting Wang`_).
 
-- Description of the ``opening`` parameter added to ``compute_multi_epi_mask`` docs (:gh:`3412` by `Natasha Clarke`_).
+- :bdg-primary:`Doc` Description of the ``opening`` parameter added to ``compute_multi_epi_mask`` docs (:gh:`3412` by `Natasha Clarke`_).
 
-- Fix display of colorbar in matrix plots. Colorbar was overlapping in :func:`~matplotlib.pyplot.subplots` due to a hardcoded adjustment value in the subplot (:gh:`3403` by `Raphael Meudec`_).
+- :bdg-info:`Plotting` Fix display of colorbar in matrix plots. Colorbar was overlapping in :func:`~matplotlib.pyplot.subplots` due to a hardcoded adjustment value in the subplot (:gh:`3403` by `Raphael Meudec`_).
 
-- Pass values with correct type to scikit-learn estimator parameters and remove deprecated parameter (:gh:`3430` by `Yasmin Mzayek`_).
+- :bdg-success:`API` Pass values with correct type to scikit-learn estimator parameters and remove deprecated parameter (:gh:`3430` by `Yasmin Mzayek`_).
 
-- Fix cluster labeling for two-sided cluster level permutation tests in :func:`~mass_univariate.permuted_ols` and associated function test ``test_cluster_level_parameters_smoke`` (:gh:`3436` by `Jelle Roelof Dalenberg`_).
+- :bdg-dark:`Code` Fix cluster labeling for two-sided cluster level permutation tests in :func:`~mass_univariate.permuted_ols` and associated function test ``test_cluster_level_parameters_smoke`` (:gh:`3436` by `Jelle Roelof Dalenberg`_).
 
-- Fix failing CanICA test by adding noise to the data creation step (:gh:`3453` by `Yasmin Mzayek`_).
+- :bdg-warning:`Test` Fix failing CanICA test by adding noise to the data creation step (:gh:`3453` by `Yasmin Mzayek`_).
 
 
 Enhancements
 ------------
 
-- :func:`~signal.clean` imputes scrubbed volumes (defined through ``sample_masks``) with cubic spline function before applying butterworth filter (:gh:`3385` by `Hao-Ting Wang`_). 
+- :bdg-success:`API` :func:`~signal.clean` imputes scrubbed volumes (defined through ``sample_masks``) with cubic spline function before applying butterworth filter (:gh:`3385` by `Hao-Ting Wang`_).
 
-- As part of making the User Guide more user-friendly, the introduction was reworked (:gh:`3380` by `Alexis Thual`_)
+- :bdg-primary:`Doc` As part of making the User Guide more user-friendly, the introduction was reworked (:gh:`3380` by `Alexis Thual`_)
 
-- Added instructions for maintainers to make sure LaTeX dependencies are installed before building and deploying the stable docs (:gh:`3426` by `Yasmin Mzayek`_).
+- :bdg-primary:`Doc` Added instructions for maintainers to make sure LaTeX dependencies are installed before building and deploying the stable docs (:gh:`3426` by `Yasmin Mzayek`_).
 
-- Parameter ``sample_masks`` in :func:`~signal.clean` and masker functions accept binary mask (:gh:`3439` by `Hao-Ting Wang`_).
+- :bdg-success:`API` Parameter ``sample_masks`` in :func:`~signal.clean` and masker functions accept binary mask (:gh:`3439` by `Hao-Ting Wang`_).
 
-- Contributing docs were improved by adding clear guidelines for users about changelog/whatsnew entries (:gh:`3446` by `Robert Williamson`_).
+- :bdg-primary:`Doc` Contributing docs were improved by adding clear guidelines for users about changelog/whatsnew entries (:gh:`3446` by `Robert Williamson`_).
 
-- Add parameter ``cut_coords`` in :func:`~reporting.make_glm_report` (:gh:`3452` by `Audrey Duran`_).
+- :bdg-success:`API` Add parameter ``cut_coords`` in :func:`~reporting.make_glm_report` (:gh:`3452` by `Audrey Duran`_).
 
 
 Changes
 -------
 
-- Private functions ``nilearn.regions.rena_clustering.weighted_connectivity_graph`` and ``nilearn.regions.rena_clustering.nearest_neighbor_grouping`` have been renamed with a leading "_", while function :func:`~regions.recursive_neighbor_agglomeration` has been added to the public API (:gh:`3347` by `Ahmad Chamma`_).
+- :bdg-success:`API` Private functions ``nilearn.regions.rena_clustering.weighted_connectivity_graph`` and ``nilearn.regions.rena_clustering.nearest_neighbor_grouping`` have been renamed with a leading "_", while function :func:`~regions.recursive_neighbor_agglomeration` has been added to the public API (:gh:`3347` by `Ahmad Chamma`_).
 
-- Numpy deprecated type aliases are replaced by equivalent builtin types (:gh:`3422` by `Yasmin Mzayek`_).
+- :bdg-danger:`Deprecation` Numpy deprecated type aliases are replaced by equivalent builtin types (:gh:`3422` by `Yasmin Mzayek`_).
 
-- Function ``nilearn.masking.compute_multi_gray_matter_mask`` has been removed since it has been deprecated and replaced by :func:`~masking.compute_multi_brain_mask` (:gh:`3427` by `Yasmin Mzayek`_).
+- :bdg-danger:`Deprecation` Function ``nilearn.masking.compute_multi_gray_matter_mask`` has been removed since it has been deprecated and replaced by :func:`~masking.compute_multi_brain_mask` (:gh:`3427` by `Yasmin Mzayek`_).
 
-- :mod:`~nilearn.glm` will no longer warn that the module is experimental (:gh:`3424` by `Yasmin Mzayek`_).
+- :bdg-primary:`Doc` :mod:`~nilearn.glm` will no longer warn that the module is experimental (:gh:`3424` by `Yasmin Mzayek`_).
 
-- Python ``3.6`` is no longer supported. Support for Python ``3.7`` is deprecated and will be removed in release ``0.12`` (:gh:`3429` by `Yasmin Mzayek`_).
+- :bdg-danger:`Deprecation` Python ``3.6`` is no longer supported. Support for Python ``3.7`` is deprecated and will be removed in release ``0.12`` (:gh:`3429` by `Yasmin Mzayek`_).
 
-- The function ``_safe_cache`` is removed because it was deemed outdated and not necessary anymore (:gh:`3375` by `Yasmin Mzayek`_).
+- :bdg-secondary:`Maint` The function ``_safe_cache`` is removed because it was deemed outdated and not necessary anymore (:gh:`3375` by `Yasmin Mzayek`_).
 
-- Minimum supported versions of packages have been bumped up:
+- :bdg-danger:`Deprecation` Minimum supported versions of packages have been bumped up:
 
     * Numpy -- v1.19.0
     * SciPy -- v1.6.0
@@ -108,6 +108,6 @@ Changes
 
   (:gh:`3440` by `Yasmin Mzayek`_).
 
-- In release ``0.10.0`` the default resolution for loaded MNI152 templates will be 1mm instead of 2mm (:gh:`3433` by `Yasmin Mzayek`_).
+- :bdg-danger:`Deprecation` In release ``0.10.0`` the default resolution for loaded MNI152 templates will be 1mm instead of 2mm (:gh:`3433` by `Yasmin Mzayek`_).
 
-- Remove all docstring mentions of GLM module being experimental and any references to nistats migration. ``doc/nistats_migration.rst`` is also removed (:gh:`3449` by `Yasmin Mzayek`_).
+- :bdg-primary:`Doc` Remove all docstring mentions of GLM module being experimental and any references to nistats migration. ``doc/nistats_migration.rst`` is also removed (:gh:`3449` by `Yasmin Mzayek`_).
