@@ -31,7 +31,7 @@ dataset.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # We use nilearn's datasets downloading utilities
-    :end-before: ################################################################################
+    :end-before: ##############################################################################
 
 .. currentmodule:: nilearn.decomposition
 
@@ -60,7 +60,7 @@ color and colors are random and automatically picked.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # Show networks using plotting utilities
-    :end-before: ################################################################################
+    :end-before: ##############################################################################
 
 .. |dict-maps| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_001.png
     :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
@@ -107,7 +107,7 @@ quite nicely into each hemisphere.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # Visualization of region extraction results
-    :end-before: ################################################################################
+    :end-before: ##############################################################################
 
 .. |dict| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_002.png
     :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
@@ -151,7 +151,7 @@ connectivity relations to brain regions plotted using :func:`plot_connectome`
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # connectome relations.
-    :end-before: ################################################################################
+    :end-before: ##############################################################################
 
 .. |matrix| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_003.png
    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
@@ -169,8 +169,8 @@ Validating results
 Showing only one specific network regions before and after region extraction. The first image displays the regions of one specific functional network without region extraction.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # region extraction (left plot).
-    :end-before: ################################################################################
+    :start-after: # without region extraction (left plot).
+    :end-before: ##############################################################################
 
 .. |dmn| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_005.png
    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
@@ -183,7 +183,7 @@ validate that regions are nicely separated identified by each extracted region i
 color.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # network given as 4.
+    :start-after: # related to original network given as 4.
 
 .. |dmn_reg| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_006.png
    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html

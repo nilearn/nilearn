@@ -261,7 +261,7 @@ def load_confounds(img_files,
     :func:`nilearn.interfaces.fmriprep.load_confounds_strategy`
 
     References
-    -----------
+    ----------
     .. footbibliography::
 
     """

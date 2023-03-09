@@ -189,7 +189,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
     :func:`nilearn.interfaces.fmriprep.load_confounds`
 
     References
-    -----------
+    ----------
     .. footbibliography::
 
     """

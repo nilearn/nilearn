@@ -1,36 +1,34 @@
-"""
-Make sure all models are using thesame low-level API (
-for computing image gradient, loss functions, etc.).
+"""Make sure all models are using the same low-level API.
 
+for computing image gradient, loss functions, etc.
 """
 
-import numpy as np
 import nibabel
-
-from sklearn.datasets import load_iris
-from sklearn.utils import check_random_state
-from nilearn.masking import _unmask_from_to_3d_array
+import numpy as np
 from nilearn.decoding.objective_functions import (
+    _logistic_loss_lipschitz_constant,
     _squared_loss,
     _squared_loss_grad,
-    _logistic_loss_lipschitz_constant,
     spectral_norm_squared,
-)
-from nilearn.decoding.space_net_solvers import (
-    _squared_loss_and_spatial_grad,
-    _logistic_derivative_lipschitz_constant,
-    _squared_loss_derivative_lipschitz_constant,
-    _graph_net_squared_loss,
-    _graph_net_logistic,
-    _squared_loss_and_spatial_grad_derivative,
-    tvl1_solver,
 )
 from nilearn.decoding.space_net import (
     BaseSpaceNet,
     SpaceNetClassifier,
     SpaceNetRegressor,
 )
+from nilearn.decoding.space_net_solvers import (
+    _graph_net_logistic,
+    _graph_net_squared_loss,
+    _logistic_derivative_lipschitz_constant,
+    _squared_loss_and_spatial_grad,
+    _squared_loss_and_spatial_grad_derivative,
+    _squared_loss_derivative_lipschitz_constant,
+    tvl1_solver,
+)
 from nilearn.image import get_data
+from nilearn.masking import _unmask_from_to_3d_array
+from sklearn.datasets import load_iris
+from sklearn.utils import check_random_state
 
 
 def _make_data(rng=None, masked=False, dim=(2, 2, 2)):

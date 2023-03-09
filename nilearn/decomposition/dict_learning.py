@@ -11,13 +11,13 @@ constitutes output maps
 import warnings
 
 import numpy as np
-from sklearn.decomposition import dict_learning_online
 from joblib import Memory
+from nilearn._utils import fill_doc
+from sklearn.decomposition import dict_learning_online
 from sklearn.linear_model import Ridge
 
 from ._base import _BaseDecomposition
 from .canica import CanICA
-from nilearn._utils import fill_doc
 
 # check_input=False is an optimization available in sklearn.
 sparse_encode_args = {"check_input": False}
@@ -271,7 +271,7 @@ class DictLearning(_BaseDecomposition):
         )
 
     def _raw_fit(self, data):
-        """Helper function that directly process unmasked data.
+        """Process unmasked data directly.
 
         Parameters
         ----------

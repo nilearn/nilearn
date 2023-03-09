@@ -122,6 +122,8 @@
 
 .. _Julia Huntenburg: https://github.com/juhuntenburg
 
+.. _Julio A Peraza: https://github.com/JulioAPeraza
+
 .. _Kamalakar Reddy Daddy: https://github.com/KamalakerDadi
 
 .. _Koen Helwegen: https://github.com/koenhelwegen

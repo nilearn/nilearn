@@ -4,17 +4,16 @@
 # License: BSD 3 clause
 
 import warnings as _warnings
-import numpy as np
-
 from operator import itemgetter
 
+import numpy as np
+from joblib import Memory, Parallel, delayed
+from nilearn._utils import fill_doc
 from scipy.stats import scoreatpercentile
 from sklearn.decomposition import fastica
-from joblib import Memory, delayed, Parallel
 from sklearn.utils import check_random_state
 
 from ._multi_pca import _MultiPCA
-from nilearn._utils import fill_doc
 
 
 @fill_doc
@@ -283,7 +282,7 @@ class CanICA(_MultiPCA):
 
     # Overriding _MultiPCA._raw_fit overrides _MultiPCA.fit behavior
     def _raw_fit(self, data):
-        """Helper function that directly process unmasked data.
+        """Process unmasked data directly.
 
         Useful when called by another estimator that has already
         unmasked data.

@@ -56,7 +56,7 @@ def compute_alpha_max(emp_covs, n_samples):
         dense matrix.
 
     References
-    ---------
+    ----------
     .. footbibliography::
 
     """

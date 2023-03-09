@@ -8,22 +8,21 @@ in the neighborhood of each location of a domain."""
 #
 # License: simplified BSD
 
-import time
 import sys
+import time
 import warnings
 
 import numpy as np
-
-from joblib import Parallel, delayed, cpu_count
+from joblib import Parallel, cpu_count, delayed
+from nilearn.maskers.nifti_spheres_masker import _apply_mask_and_get_affinity
 from sklearn import svm
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
+from sklearn.model_selection import cross_val_score
 
 from .. import masking
-from ..image.resampling import coord_transform
-from nilearn.maskers.nifti_spheres_masker import _apply_mask_and_get_affinity
 from .._utils import check_niimg_4d, fill_doc
-from sklearn.model_selection import cross_val_score
+from ..image.resampling import coord_transform
 
 ESTIMATOR_CATALOG = dict(svc=svm.LinearSVC, svr=svm.SVR)
 
@@ -141,7 +140,7 @@ def _group_iter_search_light(
     total,
     verbose=0,
 ):
-    """Function for grouped iterations of search_light.
+    """Perform grouped iterations of search_light.
 
     Parameters
     ----------
@@ -253,7 +252,7 @@ class SearchLight(BaseEstimator):
     %(verbose0)s
 
     Notes
-    ------
+    -----
     The searchlight [Kriegeskorte 06] is a widely used approach for the
     study of the fine-grained patterns of information in fMRI analysis.
     Its principle is relatively simple: a small group of neighboring

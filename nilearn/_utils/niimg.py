@@ -106,11 +106,11 @@ def _get_target_dtype(dtype, target_dtype):
 def load_niimg(niimg, dtype=None):
     """Load a niimg, check if it is a nibabel SpatialImage and cast if needed
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
 
     niimg: Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
+        See :ref:`extracting_data`.
         Image to load.
 
     dtype: {dtype, "auto"}
@@ -118,8 +118,8 @@ def load_niimg(niimg, dtype=None):
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    Returns:
-    --------
+    Returns
+    -------
     img: image
         A loaded image object.
     """
@@ -155,7 +155,7 @@ def _is_binary_niimg(niimg):
     Parameters
     ----------
     niimg: Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
+        See :ref:`extracting_data`.
         Image to test.
 
     Returns
