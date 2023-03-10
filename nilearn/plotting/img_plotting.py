@@ -1,6 +1,6 @@
 """
 Functions to do automatic visualization of Niimg-like objects
-See http://nilearn.github.io/manipulating_images/input_output.html
+See http://nilearn.github.io/stable/manipulating_images/input_output.html
 
 Only matplotlib is required.
 """
@@ -1143,7 +1143,7 @@ def plot_connectome(adjacency_matrix, node_coords,
         Default=False.
 
     See Also
-    ---------
+    --------
     nilearn.plotting.find_parcellation_cut_coords : Extraction of node
         coords on brain parcellations.
     nilearn.plotting.find_probabilistic_atlas_cut_coords : Extraction of

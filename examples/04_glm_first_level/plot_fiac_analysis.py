@@ -31,7 +31,8 @@ statistics across the two sessions.
 ###############################################################################
 # Create a write directory to work,
 # it will be a 'results' subdirectory of the current directory.
-from os import mkdir, path, getcwd
+from os import getcwd, mkdir, path
+
 write_dir = path.join(getcwd(), 'results')
 if not path.exists(write_dir):
     mkdir(write_dir)
@@ -41,30 +42,32 @@ if not path.exists(write_dir):
 # --------------------------------------
 #
 # Note that there are two sessions.
-
 from nilearn.datasets import func
+
 data = func.fetch_fiac_first_level()
 fmri_img = [data['func1'], data['func2']]
 
 #########################################################################
 # Create a mean image for plotting purpose.
 from nilearn.image import mean_img
+
 mean_img_ = mean_img(fmri_img[0])
 
 #########################################################################
 # The design matrices were pre-computed, we simply put them in a list of
 # DataFrames.
-design_files = [data['design_matrix1'], data['design_matrix2']]
-import pandas as pd
 import numpy as np
+import pandas as pd
+
+design_files = [data['design_matrix1'], data['design_matrix2']]
 design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 
 #########################################################################
 # GLM estimation
 # ----------------------------------
 # GLM specification. Note that the mask was provided in the dataset. So we use it.
-
 from nilearn.glm.first_level import FirstLevelModel
+
 fmri_glm = FirstLevelModel(mask_img=data['mask'], minimize_memory=True)
 
 #########################################################################
@@ -74,6 +77,7 @@ fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices)
 #########################################################################
 # Compute fixed effects of the two runs and compute related images.
 # For this, we first define the contrasts as we would do for a single session.
+
 n_columns = design_matrices[0].shape[1]
 
 def pad_vector(contrast_, n_columns):
@@ -94,8 +98,8 @@ contrasts = {'SStSSp_minus_DStDSp': pad_vector([1, 0, 0, -1], n_columns),
 
 #########################################################################
 # Next, we compute and plot the statistics.
-
 from nilearn import plotting
+
 print('Computing contrasts...')
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % 2i out of %i: %s' % (
@@ -106,7 +110,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
         contrast_val, output_type='z_score')
 
     # write the resulting stat images to file
-    z_image_path = path.join(write_dir, '%s_z_map.nii.gz' % contrast_id)
+    z_image_path = path.join(write_dir, f'{contrast_id}_z_map.nii.gz')
     z_map.to_filename(z_image_path)
 
 #########################################################################
@@ -124,7 +128,7 @@ z_map = fmri_glm.compute_contrast(
     contrasts[contrast_id], output_type='z_score')
 plotting.plot_stat_map(
     z_map, bg_img=mean_img_, threshold=3.0,
-    title='%s, first session' % contrast_id)
+    title=f'{contrast_id}, first session')
 
 #########################################################################
 # Compute the statistics for the second session.
@@ -134,7 +138,7 @@ z_map = fmri_glm.compute_contrast(
     contrasts[contrast_id], output_type='z_score')
 plotting.plot_stat_map(
     z_map, bg_img=mean_img_, threshold=3.0,
-    title='%s, second session' % contrast_id)
+    title=f'{contrast_id}, second session')
 
 #########################################################################
 # Compute the Fixed effects statistics.
@@ -144,7 +148,7 @@ z_map = fmri_glm.compute_contrast(
     contrasts[contrast_id], output_type='z_score')
 plotting.plot_stat_map(
     z_map, bg_img=mean_img_, threshold=3.0,
-    title='%s, fixed effects' % contrast_id)
+    title=f'{contrast_id}, fixed effects')
 
 plotting.show()
 

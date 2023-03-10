@@ -41,7 +41,7 @@ NEW
 **Additional dataset downloaders for examples and tutorials.**
 
 - :func:`~datasets.fetch_surf_fsaverage`.
-  
+
 - :func:`~datasets.fetch_atlas_pauli_2017`.
 
 - :func:`~datasets.fetch_neurovault_auditory_computation_task`.

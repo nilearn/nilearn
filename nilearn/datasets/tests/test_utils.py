@@ -33,6 +33,7 @@ from nilearn.datasets.utils import (
     make_fresh_openneuro_dataset_urls_index
 )
 from nilearn.datasets import utils
+from nilearn.image import load_img
 
 
 currdir = os.path.dirname(os.path.abspath(__file__))
@@ -465,3 +466,9 @@ def test_naive_ftp_adapter():
     with pytest.raises(requests.RequestException, match="timeout"):
         resp = sender.send(
             requests.Request("GET", "ftp://example.com").prepare())
+
+
+def test_load_sample_motor_activation_image():
+    path_img = utils.load_sample_motor_activation_image()
+    assert os.path.exists(path_img)
+    assert load_img(path_img)

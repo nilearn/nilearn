@@ -7,6 +7,7 @@ import collections.abc
 import contextlib
 import fnmatch
 import hashlib
+from pathlib import Path
 import pickle
 import shutil
 import time
@@ -819,8 +820,8 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
 def _tree(path, pattern=None, dictionary=False):
     """Return a directory tree under the form of a dictionaries and list
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     path : string
         Path browsed.
 
@@ -950,3 +951,15 @@ def make_fresh_openneuro_dataset_urls_index(
               "to update the file without breaking the fetcher download link."
               .format(urls_path))
     return urls_path, urls
+
+
+def load_sample_motor_activation_image():
+    """Load a single functional image showing motor activations.
+
+    Returns
+    -------
+    str
+        Path to the sample functional image.
+    """
+
+    return str(Path(__file__).parent / "data" / "image_10426.nii.gz")

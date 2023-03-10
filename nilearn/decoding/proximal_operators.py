@@ -5,8 +5,10 @@
 # License: simplified BSD
 
 from math import sqrt
+
 import numpy as np
-from .objective_functions import _tv_l1_from_gradient, _div_id, _gradient_id
+
+from .objective_functions import _div_id, _gradient_id, _tv_l1_from_gradient
 
 
 def _prox_l1(y, alpha, copy=True):
@@ -21,7 +23,7 @@ def _prox_l1(y, alpha, copy=True):
 
 
 def _prox_l1_with_intercept(x, tau):
-    """The same as prox_l1, but just for the n-1 components."""
+    """Return the same as prox_l1, but just for the n-1 components."""
     x[:-1] = _prox_l1(x[:-1], tau)
     return x
 

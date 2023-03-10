@@ -1154,8 +1154,8 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     dictionaries for each image, this function reads it and returns a
     vocabulary list and a term weight matrix.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     word_files : Container
         The paths to the files from which to read word weights (each
         is supposed to contain the Neurosynth response for a
@@ -1168,8 +1168,8 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     Keyword arguments are passed on to
     ``sklearn.feature_extraction.DictVectorizer``.
 
-    Returns:
-    --------
+    Returns
+    -------
     frequencies : numpy.ndarray
         An (n images, vocabulary size) array. Each row corresponds to
         an image, and each column corresponds to a word. The words are
@@ -2636,12 +2636,12 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
             - 'description', a short description of the Neurovault dataset.
 
     Notes
-    ------
+    -----
     The 'left vs right button press' contrast is used:
     https://neurovault.org/images/10426/
 
     See Also
-    ---------
+    --------
     nilearn.datasets.fetch_neurovault_ids
     nilearn.datasets.fetch_neurovault
     nilearn.datasets.fetch_neurovault_auditory_computation_task
@@ -2677,12 +2677,12 @@ def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
             - 'description', a short description of the Neurovault dataset.
 
     Notes
-    ------
+    -----
     The 'auditory_calculation_vs_baseline' contrast is used:
     https://neurovault.org/images/32980/
 
     See Also
-    ---------
+    --------
     nilearn.datasets.fetch_neurovault_ids
     nilearn.datasets.fetch_neurovault
     nilearn.datasets.fetch_neurovault_motor_task
