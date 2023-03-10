@@ -18,9 +18,13 @@ from ..image import new_img_like
 INF = 1000 * np.finfo(np.float32).eps
 
 
-def _check_shape_compatibility(img1, img2, dim=3):
+def _check_shape_compatibility(img1, img2, dim=None):
     """Check that shapes match for dimensions going from 0 to dim-1."""
-    if img1.shape[:dim] != img2.shape[:dim]:
+    if dim is None:
+        img2 = _utils.check_niimg_3d(img2)
+        if img1.shape[:3] != img2.shape:
+            raise ValueError("Images have incompatible shapes.")
+    elif img1.shape[:dim] != img2.shape[:dim]:
         raise ValueError("Images have incompatible shapes.")
 
 
@@ -32,50 +36,18 @@ def _check_affine_equality(img1, img2):
         raise ValueError("Images have different affine matrices.")
 
 
-def _check_shape_affine_label_img(target_img, labels_img=None, dim=None):
-    """Validate shapes and affines of labels.
+def _check_shape_and_affine_compatibility(img1,
+                                        img2=None,
+                                        dim=None):
+    """Validate shapes and affines of 2 images.
 
-    Check that the provided target and labels images:
+    Check that the provided images:
         - have the same shape
         - have the same affine matrix.
 
     Parameters
     ----------
-    target_img : Niimg-like object
-        See :ref:`extracting_data`.
-        Image to extract the data from.
-
-    labels_img : Niimg-like object
-        See :ref:`extracting_data`.
-        Regions definition as labels.
-        Encodes the region labels of the signals.
-
-    """
-    if labels_img is None:
-        return False
-    
-    if dim is None:
-        labels_img = _utils.check_niimg_3d(labels_img)
-        if labels_img.shape != target_img.shape[:3]:
-            raise ValueError("Images have incompatible shapes.")
-    else:
-        _check_shape_compatibility(target_img, labels_img, dim=dim)
-
-    _check_affine_equality(target_img, labels_img)
-
-
-def _check_shape_affine_maps_masks(target_img,
-                                   mask_img=None,
-                                   dim=None):
-    """Validate shapes and affines of maps and masks.
-
-    Check that the provided target and mask images:
-        - have the same shape
-        - have the same affine matrix.
-
-    Parameters
-    ----------
-    target_img : Niimg-like object
+    img1 : Niimg-like object
         See :ref:`extracting_data`.
         Image to extract the data from.
 
@@ -92,17 +64,14 @@ def _check_shape_affine_maps_masks(target_img,
         Is only true for non-empty img.
 
     """
-    if mask_img is None:
+    if img2 is None:
         return False
 
-    if dim is None:
-        mask_img = _utils.check_niimg_3d(mask_img)
-        if mask_img.shape != target_img.shape[:3]:
-            raise ValueError("Images have incompatible shapes.")
-    else:
-        _check_shape_compatibility(target_img, mask_img, dim=dim)
+    _check_shape_compatibility(img1, img2, dim=dim)
 
-    _check_affine_equality(target_img, mask_img)
+    if dim is None:
+        img2 = _utils.check_niimg_3d(img2)
+    _check_affine_equality(img1, img2)
 
     return True
 
@@ -158,7 +127,7 @@ def _get_labels_data(target_img,
     nilearn.regions.img_to_signals_labels
 
     """
-    _check_shape_affine_label_img(target_img, labels_img)
+    _check_shape_and_affine_compatibility(target_img, labels_img)
 
     labels_data = _safe_get_data(labels_img, ensure_finite=True)
 
@@ -167,7 +136,7 @@ def _get_labels_data(target_img,
         labels.remove(background_label)
 
     # Consider only data within the mask
-    use_mask = _check_shape_affine_maps_masks(target_img, mask_img, dim)
+    use_mask = _check_shape_and_affine_compatibility(target_img, mask_img, dim)
     if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
         mask_data = _safe_get_data(mask_img, ensure_finite=True)
@@ -423,13 +392,13 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
     maps_img = _utils.check_niimg_4d(maps_img)
     imgs = _utils.check_niimg_4d(imgs)
 
-    _check_shape_affine_maps_masks(imgs, maps_img, 3)
+    _check_shape_and_affine_compatibility(imgs, maps_img, 3)
 
     maps_data = _safe_get_data(maps_img, ensure_finite=True)
     maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
     labels = np.arange(maps_data.shape[-1], dtype=int)
 
-    use_mask = _check_shape_affine_maps_masks(imgs, mask_img)
+    use_mask = _check_shape_and_affine_compatibility(imgs, mask_img)
     if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
         maps_data, maps_mask, labels = _trim_maps(
@@ -487,7 +456,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
 
     maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
 
-    use_mask = _check_shape_affine_maps_masks(maps_img, mask_img)
+    use_mask = _check_shape_and_affine_compatibility(maps_img, mask_img)
     if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
         maps_data, maps_mask, _ = _trim_maps(

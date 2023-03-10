@@ -27,7 +27,7 @@ _TEST_AFFINE_ERROR_MSG = "Images have different affine matrices."
 INF = 1000 * np.finfo(np.float32).eps
 
 
-def test__check_shape_affine_label_img_smoke():
+def test__check_shape_and_affine_compatibility_smoke():
     """Ensure correct behaviour for valid data."""
     shape = (8, 9, 10)
     affine = np.eye(4)
@@ -37,11 +37,11 @@ def test__check_shape_affine_label_img_smoke():
     target_img = nibabel.Nifti1Image(np.zeros(shape), affine)
 
     with pytest.warns(None):
-        signal_extraction._check_shape_affine_label_img(
+        signal_extraction._check_shape_and_affine_compatibility(
             labels_img, target_img)
 
 
-def test__check_shape_affine_label_img_error_shape():
+def test__check_shape_and_affine_compatibility_error_shape():
 
     shape = (8, 9, 10)
     affine = np.eye(4)
@@ -51,11 +51,11 @@ def test__check_shape_affine_label_img_error_shape():
     target_img = nibabel.Nifti1Image(np.zeros(test_shape), affine)
 
     with pytest.raises(ValueError, match=_TEST_SHAPE_ERROR_MSG):
-        signal_extraction._check_shape_affine_label_img(
+        signal_extraction._check_shape_and_affine_compatibility(
             labels_img, target_img)
 
 
-def test__check_shape_affine_label_img_error_affine():
+def test__check_shape_and_affine_compatibility_error_affine():
 
     shape = (8, 9, 10)
     affine = np.eye(4)
@@ -65,10 +65,10 @@ def test__check_shape_affine_label_img_error_affine():
     target_img = nibabel.Nifti1Image(np.zeros(shape), test_affine)
 
     with pytest.raises(ValueError, match=_TEST_AFFINE_ERROR_MSG):
-        signal_extraction._check_shape_affine_label_img(
+        signal_extraction._check_shape_and_affine_compatibility(
             labels_img, target_img)
 
-def test__check_shape_affine_maps_masks_without_dim():
+def test__check_shape_and_affine_compatibility_without_dim():
     """Ensure correct behaviour for valid data without dim"""
     affine = np.eye(4)
     mask_shape = (2, 3, 4)
@@ -77,12 +77,12 @@ def test__check_shape_affine_maps_masks_without_dim():
     mask_img = nibabel.Nifti1Image(np.zeros(mask_shape), affine)
 
     with pytest.warns(None):
-        signal_extraction._check_shape_affine_maps_masks(
+        signal_extraction._check_shape_and_affine_compatibility(
             target_img,
             mask_img)
 
 
-def test__check_shape_affine_maps_masks_with_dim():
+def test__check_shape_and_affine_compatibility_with_dim():
     """Ensure correct behaviour for valid data without dim"""
     maps_shape = (2, 3, 4, 7)
     affine = np.eye(4)
@@ -92,13 +92,13 @@ def test__check_shape_affine_maps_masks_with_dim():
     mask_img = nibabel.Nifti1Image(np.zeros(mask_shape), affine)
 
     with pytest.warns(None):
-        signal_extraction._check_shape_affine_maps_masks(
+        signal_extraction._check_shape_and_affine_compatibility(
             target_img,
             mask_img,
             dim=3)
 
 
-def test__check_shape_affine_maps_masks_shape_error():
+def test__check_shape_and_affine_compatibility_shape_error():
     mask_shape = (2, 3, 4)
     affine = np.eye(4)
     target_img = nibabel.Nifti1Image(np.zeros(mask_shape), affine)
@@ -107,12 +107,12 @@ def test__check_shape_affine_maps_masks_shape_error():
     mask_img = nibabel.Nifti1Image(np.zeros(test_mask_shape), affine)
 
     with pytest.raises(ValueError, match=_TEST_SHAPE_ERROR_MSG):
-        signal_extraction._check_shape_affine_maps_masks(
+        signal_extraction._check_shape_and_affine_compatibility(
             target_img,
             mask_img)
 
 
-def test__check_shape_affine_maps_masks_affine_error():
+def test__check_shape_and_affine_compatibility_affine_error():
     mask_shape = (2, 3, 4)
     affine = np.eye(4)
     target_img = nibabel.Nifti1Image(np.zeros(mask_shape), affine)
@@ -123,7 +123,7 @@ def test__check_shape_affine_maps_masks_affine_error():
 
     # Smoke test for affine error.
     with pytest.raises(ValueError, match=_TEST_AFFINE_ERROR_MSG):
-        signal_extraction._check_shape_affine_maps_masks(
+        signal_extraction._check_shape_and_affine_compatibility(
             target_img,
             mask_img)
 
