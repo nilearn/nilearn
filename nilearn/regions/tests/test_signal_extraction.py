@@ -26,106 +26,63 @@ _TEST_AFFINE_ERROR_MSG = "Images have different affine matrices."
 
 INF = 1000 * np.finfo(np.float32).eps
 
-
-def test__check_shape_and_affine_compatibility_smoke():
-    """Ensure correct behaviour for valid data."""
-    shape = (8, 9, 10)
-    affine = np.eye(4)
-
-    labels_img = generate_labeled_regions(shape, 7, affine=affine)
-
-    target_img = nibabel.Nifti1Image(np.zeros(shape), affine)
-
-    with pytest.warns(None):
-        signal_extraction._check_shape_and_affine_compatibility(
-            labels_img, target_img)
-
-
-def test__check_shape_and_affine_compatibility_error_shape():
-
-    shape = (8, 9, 10)
-    affine = np.eye(4)
-    labels_img = generate_labeled_regions(shape, 7, affine=affine)
-
-    test_shape = (8, 9, 5)
-    target_img = nibabel.Nifti1Image(np.zeros(test_shape), affine)
-
-    with pytest.raises(ValueError, match=_TEST_SHAPE_ERROR_MSG):
-        signal_extraction._check_shape_and_affine_compatibility(
-            labels_img, target_img)
-
-
-def test__check_shape_and_affine_compatibility_error_affine():
-
-    shape = (8, 9, 10)
-    affine = np.eye(4)
-    labels_img = generate_labeled_regions(shape, 7, affine=affine)
-
-    test_affine = np.eye(4) * 2
-    target_img = nibabel.Nifti1Image(np.zeros(shape), test_affine)
-
-    with pytest.raises(ValueError, match=_TEST_AFFINE_ERROR_MSG):
-        signal_extraction._check_shape_and_affine_compatibility(
-            labels_img, target_img)
-
+        
 def test__check_shape_and_affine_compatibility_without_dim():
     """Ensure correct behaviour for valid data without dim"""
+    shape = (2, 3, 4)
     affine = np.eye(4)
-    mask_shape = (2, 3, 4)
-    target_img = nibabel.Nifti1Image(np.zeros(mask_shape), affine)
+    img1 = nibabel.Nifti1Image(np.zeros(shape), affine)
 
-    mask_img = nibabel.Nifti1Image(np.zeros(mask_shape), affine)
+    img2 = nibabel.Nifti1Image(np.zeros(shape), affine)
 
     with pytest.warns(None):
         signal_extraction._check_shape_and_affine_compatibility(
-            target_img,
-            mask_img)
-
-
+            img1,
+            img2)
+        
+        
 def test__check_shape_and_affine_compatibility_with_dim():
     """Ensure correct behaviour for valid data without dim"""
-    maps_shape = (2, 3, 4, 7)
+    shape = (2, 3, 4, 7)
     affine = np.eye(4)
-    target_img = nibabel.Nifti1Image(np.zeros(maps_shape[:3]), affine)
+    img1 = nibabel.Nifti1Image(np.zeros(shape[:3]), affine)
 
     mask_shape = (2, 3, 4)
-    mask_img = nibabel.Nifti1Image(np.zeros(mask_shape), affine)
+    img2 = nibabel.Nifti1Image(np.zeros(mask_shape), affine)
 
     with pytest.warns(None):
         signal_extraction._check_shape_and_affine_compatibility(
-            target_img,
-            mask_img,
+            img1,
+            img2,
             dim=3)
 
 
-def test__check_shape_and_affine_compatibility_shape_error():
-    mask_shape = (2, 3, 4)
+def test__check_shape_and_affine_compatibility_error_shape():
+    shape = (2, 3, 4)
     affine = np.eye(4)
-    target_img = nibabel.Nifti1Image(np.zeros(mask_shape), affine)
+    img1 = nibabel.Nifti1Image(np.zeros(shape), affine)
 
-    test_mask_shape = (2, 3, 5)
-    mask_img = nibabel.Nifti1Image(np.zeros(test_mask_shape), affine)
+    test_shape = (2, 3, 5)
+    img2 = nibabel.Nifti1Image(np.zeros(test_shape), affine)
 
     with pytest.raises(ValueError, match=_TEST_SHAPE_ERROR_MSG):
         signal_extraction._check_shape_and_affine_compatibility(
-            target_img,
-            mask_img)
+            img1,
+            img2)
 
 
-def test__check_shape_and_affine_compatibility_affine_error():
-    mask_shape = (2, 3, 4)
+def test__check_shape_and_affine_compatibility_error_affine():
+    shape = (2, 3, 4)
     affine = np.eye(4)
-    target_img = nibabel.Nifti1Image(np.zeros(mask_shape), affine)
+    img1 = nibabel.Nifti1Image(np.zeros(shape), affine)
 
     test_affine = 2 * affine
-    mask_img = nibabel.Nifti1Image(np.zeros(mask_shape), test_affine)
+    img2 = nibabel.Nifti1Image(np.zeros(shape), test_affine)
 
-
-    # Smoke test for affine error.
     with pytest.raises(ValueError, match=_TEST_AFFINE_ERROR_MSG):
         signal_extraction._check_shape_and_affine_compatibility(
-            target_img,
-            mask_img)
+            img1,
+            img2)
 
 
 def test_generate_regions_ts():
