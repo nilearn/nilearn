@@ -126,6 +126,8 @@
 
 .. _Kamalakar Reddy Daddy: https://github.com/KamalakerDadi
 
+.. _Kevin Sitek: https://github.com/sitek
+
 .. _Koen Helwegen: https://github.com/koenhelwegen
 
 .. _Konstantin Shmelkov: https://github.com/kshmelkov
