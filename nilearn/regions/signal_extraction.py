@@ -32,7 +32,7 @@ def _check_affine_equality(img1, img2):
         raise ValueError("Images have different affine matrices.")
 
 
-def _check_shape_affine_label_img(target_img, labels_img):
+def _check_shape_affine_label_img(target_img, labels_img=None):
     """Validate shapes and affines of labels.
 
     Check that the provided target and labels images:
@@ -51,6 +51,8 @@ def _check_shape_affine_label_img(target_img, labels_img):
         Encodes the region labels of the signals.
 
     """
+    if labels_img is None:
+        return False
     _check_shape_compatibility(target_img, labels_img, dim=3)
     _check_affine_equality(target_img, labels_img)
 
