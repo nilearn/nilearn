@@ -288,13 +288,9 @@ def test_resampling_error_checks():
 
 
 def test_resampling_noop():
-    rng = np.random.RandomState(42)
-    shape = (3, 2, 5, 2)
-    target_shape = (5, 3, 2)
-    affine = np.eye(4)
-    data = rng.randint(0, 10, shape, dtype="int32")
-    img = Nifti1Image(data, affine)
+    img, affine = _make_resampling_test_data()
 
+    shape = (3, 2, 5, 2)
     target_shape = shape[:3]
 
     img_r = resample_img(img, copy=False)
@@ -323,11 +319,13 @@ def test_resampling_noop():
 def test_resampling_warning_checks():
     rng = np.random.RandomState(42)
     shape = (3, 2, 5, 2)
+    data = rng.randint(0, 10, shape, dtype="int32")
 
     affine = np.eye(4)
-    data = rng.randint(0, 10, shape, dtype="int32")
+
     img_no_sform = Nifti1Image(data, affine)
     img_no_sform.set_sform(None)
+
     with pytest.warns(Warning, match="The provided image has no sform"):
         resample_img(img_no_sform, target_affine=affine)
 
