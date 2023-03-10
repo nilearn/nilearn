@@ -194,7 +194,8 @@ def _check_reduction_strategy(strategy: str):
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
 @_utils.fill_doc
-def img_to_signals_labels(imgs, labels_img,
+def img_to_signals_labels(imgs, 
+                          labels_img,
                           mask_img=None,
                           background_label=0,
                           order="F",
