@@ -29,8 +29,11 @@ development_dataset = datasets.fetch_development_fmri(n_subjects=30)
 msdl_data = datasets.fetch_atlas_msdl()
 msdl_coords = msdl_data.region_coords
 n_regions = len(msdl_coords)
-print('MSDL has {0} ROIs, part of the following networks :\n{1}.'.format(
-    n_regions, msdl_data.networks))
+print(
+    "MSDL has {0} ROIs, part of the following networks :\n{1}.".format(
+        n_regions, msdl_data.networks
+    )
+)
 
 ###############################################################################
 # Region signals extraction
@@ -41,8 +44,15 @@ print('MSDL has {0} ROIs, part of the following networks :\n{1}.'.format(
 from nilearn.maskers import NiftiMapsMasker
 
 masker = NiftiMapsMasker(
-    msdl_data.maps, resampling_target="data", t_r=2, detrend=True,
-    low_pass=.1, high_pass=.01, memory='nilearn_cache', memory_level=1).fit()
+    msdl_data.maps,
+    resampling_target="data",
+    t_r=2,
+    detrend=True,
+    low_pass=0.1,
+    high_pass=0.01,
+    memory="nilearn_cache",
+    memory_level=1,
+).fit()
 
 ###############################################################################
 # Then we compute region signals and extract useful phenotypic information.
@@ -50,16 +60,17 @@ children = []
 pooled_subjects = []
 groups = []  # child or adult
 for func_file, confound_file, phenotypic in zip(
-        development_dataset.func,
-        development_dataset.confounds,
-        development_dataset.phenotypic):
+    development_dataset.func,
+    development_dataset.confounds,
+    development_dataset.phenotypic,
+):
     time_series = masker.transform(func_file, confounds=confound_file)
     pooled_subjects.append(time_series)
-    if phenotypic['Child_Adult'] == 'child':
+    if phenotypic["Child_Adult"] == "child":
         children.append(time_series)
-    groups.append(phenotypic['Child_Adult'])
+    groups.append(phenotypic["Child_Adult"])
 
-print('Data has {0} children.'.format(len(children)))
+print(f"Data has {len(children)} children.")
 
 ###############################################################################
 # ROI-to-ROI correlations of children
@@ -69,7 +80,7 @@ print('Data has {0} children.'.format(len(children)))
 # estimate it using :class:`nilearn.connectome.ConnectivityMeasure`.
 from nilearn.connectome import ConnectivityMeasure
 
-correlation_measure = ConnectivityMeasure(kind='correlation')
+correlation_measure = ConnectivityMeasure(kind="correlation")
 
 ###############################################################################
 # From the list of ROIs time-series for children, the
@@ -77,13 +88,16 @@ correlation_measure = ConnectivityMeasure(kind='correlation')
 correlation_matrices = correlation_measure.fit_transform(children)
 
 # All individual coefficients are stacked in a unique 2D matrix.
-print('Correlations of children are stacked in an array of shape {0}'
-      .format(correlation_matrices.shape))
+print(
+    "Correlations of children are stacked in an array of shape {0}".format(
+        correlation_matrices.shape
+    )
+)
 
 ###############################################################################
 # as well as the average correlation across all fitted subjects.
 mean_correlation_matrix = correlation_measure.mean_
-print('Mean correlation has shape {0}.'.format(mean_correlation_matrix.shape))
+print(f"Mean correlation has shape {mean_correlation_matrix.shape}.")
 
 ###############################################################################
 # We display the connectome matrices of the first 3 children
@@ -92,36 +106,52 @@ from matplotlib import pyplot as plt
 
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
 for i, (matrix, ax) in enumerate(zip(correlation_matrices, axes)):
-    plotting.plot_matrix(matrix, tri='lower', colorbar=False, axes=ax,
-                         title='correlation, child {}'.format(i))
+    plotting.plot_matrix(
+        matrix,
+        tri="lower",
+        colorbar=False,
+        axes=ax,
+        title=f"correlation, child {i}",
+    )
 ###############################################################################
 # The blocks structure that reflect functional networks are visible.
 
 ###############################################################################
 # Now we display as a connectome the mean correlation matrix over all children.
-plotting.plot_connectome(mean_correlation_matrix, msdl_coords,
-                         title='mean correlation over all children')
+plotting.plot_connectome(
+    mean_correlation_matrix,
+    msdl_coords,
+    title="mean correlation over all children",
+)
 
 ###############################################################################
 # Studying partial correlations
 # -----------------------------
 # We can also study **direct connections**, revealed by partial correlation
 # coefficients. We just change the `ConnectivityMeasure` kind
-partial_correlation_measure = ConnectivityMeasure(kind='partial correlation')
+partial_correlation_measure = ConnectivityMeasure(kind="partial correlation")
 partial_correlation_matrices = partial_correlation_measure.fit_transform(
-    children)
+    children
+)
 
 ###############################################################################
 # Most of direct connections are weaker than full connections.
 
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
 for i, (matrix, ax) in enumerate(zip(partial_correlation_matrices, axes)):
-    plotting.plot_matrix(matrix, tri='lower', colorbar=False, axes=ax,
-                         title='partial correlation, child {}'.format(i))
+    plotting.plot_matrix(
+        matrix,
+        tri="lower",
+        colorbar=False,
+        axes=ax,
+        title=f"partial correlation, child {i}",
+    )
 ###############################################################################
 plotting.plot_connectome(
-    partial_correlation_measure.mean_, msdl_coords,
-    title='mean partial correlation over all children')
+    partial_correlation_measure.mean_,
+    msdl_coords,
+    title="mean partial correlation over all children",
+)
 
 ###############################################################################
 # Extract subjects variabilities around a group connectivity
@@ -129,7 +159,7 @@ plotting.plot_connectome(
 # We can use **both** correlations and partial correlations to capture
 # reproducible connectivity patterns at the group-level.
 # This is done by the tangent space embedding.
-tangent_measure = ConnectivityMeasure(kind='tangent')
+tangent_measure = ConnectivityMeasure(kind="tangent")
 
 ###############################################################################
 # We fit our children group and get the group connectivity matrix stored as
@@ -145,8 +175,13 @@ tangent_matrices = tangent_measure.fit_transform(children)
 # coefficients can not be interpreted as anticorrelated regions.
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
 for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes)):
-    plotting.plot_matrix(matrix, tri='lower', colorbar=False, axes=ax,
-                         title='tangent offset, child {}'.format(i))
+    plotting.plot_matrix(
+        matrix,
+        tri="lower",
+        colorbar=False,
+        axes=ax,
+        title=f"tangent offset, child {i}",
+    )
 
 
 ###############################################################################
@@ -167,7 +202,7 @@ from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.metrics import accuracy_score
 import numpy as np
 
-kinds = ['correlation', 'partial correlation', 'tangent']
+kinds = ["correlation", "partial correlation", "tangent"]
 _, classes = np.unique(groups, return_inverse=True)
 cv = StratifiedShuffleSplit(n_splits=15, random_state=0, test_size=5)
 pooled_subjects = np.asarray(pooled_subjects)
@@ -185,7 +220,8 @@ for kind in kinds:
         classifier = LinearSVC().fit(connectomes, classes[train])
         # make predictions for the left-out test subjects
         predictions = classifier.predict(
-            connectivity.transform(pooled_subjects[test]))
+            connectivity.transform(pooled_subjects[test])
+        )
         # store the accuracy for this cross-validation fold
         scores[kind].append(accuracy_score(classes[test], predictions))
 
@@ -197,14 +233,14 @@ mean_scores = [np.mean(scores[kind]) for kind in kinds]
 scores_std = [np.std(scores[kind]) for kind in kinds]
 
 plt.figure(figsize=(6, 4))
-positions = np.arange(len(kinds)) * .1 + .1
-plt.barh(positions, mean_scores, align='center', height=.05, xerr=scores_std)
-yticks = [k.replace(' ', '\n') for k in kinds]
+positions = np.arange(len(kinds)) * 0.1 + 0.1
+plt.barh(positions, mean_scores, align="center", height=0.05, xerr=scores_std)
+yticks = [k.replace(" ", "\n") for k in kinds]
 plt.yticks(positions, yticks)
 plt.gca().grid(True)
 plt.gca().set_axisbelow(True)
-plt.gca().axvline(.8, color='red', linestyle='--')
-plt.xlabel('Classification accuracy\n(red line = chance level)')
+plt.gca().axvline(0.8, color="red", linestyle="--")
+plt.xlabel("Classification accuracy\n(red line = chance level)")
 plt.tight_layout()
 
 

@@ -25,7 +25,7 @@ on:
 
 jobs:
   update_precommit_hooks:
-  
+
     # only run on upstream repo
     if: github.repository_owner == 'nilearn'
 

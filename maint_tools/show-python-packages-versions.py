@@ -1,5 +1,6 @@
 """Print the versions of python and several packages used in the project."""
 import sys
+
 import pkg_resources
 
 DEPENDENCIES = [
