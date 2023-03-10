@@ -19,7 +19,22 @@ INF = 1000 * np.finfo(np.float32).eps
 
 
 def _check_shape_compatibility(img1, img2, dim=None):
-    """Check that shapes match for dimensions going from 0 to dim-1."""
+    """Check that shapes match for dimensions going from 0 to dim-1.
+    
+    Parameters
+    ----------
+    img1 : Niimg-like object
+        See :ref:`extracting_data`.
+        Image to extract the data from.
+
+    img2 : Niimg-like object, optional
+        See :ref:`extracting_data`.
+        Contains map or mask.
+
+    dim : :obj:`int`, optional
+        Integer slices a mask for a specific dimension.
+
+    """
     if dim is None:
         img2 = _utils.check_niimg_3d(img2)
         if img1.shape[:3] != img2.shape:
@@ -29,6 +44,19 @@ def _check_shape_compatibility(img1, img2, dim=None):
 
 
 def _check_affine_equality(img1, img2):
+    """Validate affines of 2 images.
+
+    Parameters
+    ----------
+    img1 : Niimg-like object
+        See :ref:`extracting_data`.
+        Image to extract the data from.
+
+    img2 : Niimg-like object, optional
+        See :ref:`extracting_data`.
+        Contains map or mask.
+
+    """
     if (
         img1.affine.shape != img2.affine.shape
         or abs(img1.affine - img2.affine).max() > INF
@@ -51,7 +79,7 @@ def _check_shape_and_affine_compatibility(img1,
         See :ref:`extracting_data`.
         Image to extract the data from.
 
-    mask_img : Niimg-like object, optional
+    img2 : Niimg-like object, optional
         See :ref:`extracting_data`.
         Contains map or mask.
 
