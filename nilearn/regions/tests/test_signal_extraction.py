@@ -56,30 +56,19 @@ def test__check_shape_and_affine_compatibility_with_dim():
             img2,
             dim=3)
 
-
-def test__check_shape_and_affine_compatibility_error_shape():
+@pytest.mark.parametrize(
+    "test_shape,test_affine,msg", 
+    [((2, 3, 5), np.eye(4), _TEST_SHAPE_ERROR_MSG),
+     ((2, 3, 4), 2*np.eye(4), _TEST_AFFINE_ERROR_MSG)
+     ])
+def test__check_shape_and_affine_compatibility_error(test_shape,test_affine,msg):
     shape = (2, 3, 4)
     affine = np.eye(4)
     img1 = nibabel.Nifti1Image(np.zeros(shape), affine)
 
-    test_shape = (2, 3, 5)
-    img2 = nibabel.Nifti1Image(np.zeros(test_shape), affine)
+    img2 = nibabel.Nifti1Image(np.zeros(test_shape), test_affine)
 
-    with pytest.raises(ValueError, match=_TEST_SHAPE_ERROR_MSG):
-        signal_extraction._check_shape_and_affine_compatibility(
-            img1,
-            img2)
-
-
-def test__check_shape_and_affine_compatibility_error_affine():
-    shape = (2, 3, 4)
-    affine = np.eye(4)
-    img1 = nibabel.Nifti1Image(np.zeros(shape), affine)
-
-    test_affine = 2 * affine
-    img2 = nibabel.Nifti1Image(np.zeros(shape), test_affine)
-
-    with pytest.raises(ValueError, match=_TEST_AFFINE_ERROR_MSG):
+    with pytest.raises(ValueError, match=msg):
         signal_extraction._check_shape_and_affine_compatibility(
             img1,
             img2)
