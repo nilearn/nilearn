@@ -32,7 +32,7 @@ def _check_affine_equality(img1, img2):
         raise ValueError("Images have different affine matrices.")
 
 
-def _check_shape_affine_label_img(target_img, labels_img=None):
+def _check_shape_affine_label_img(target_img, labels_img=None, dim=None):
     """Validate shapes and affines of labels.
 
     Check that the provided target and labels images:
@@ -53,7 +53,14 @@ def _check_shape_affine_label_img(target_img, labels_img=None):
     """
     if labels_img is None:
         return False
-    _check_shape_compatibility(target_img, labels_img, dim=3)
+    
+    if dim is None:
+        labels_img = _utils.check_niimg_3d(labels_img)
+        if labels_img.shape != target_img.shape[:3]:
+            raise ValueError("Images have incompatible shapes.")
+    else:
+        _check_shape_compatibility(target_img, labels_img, dim=dim)
+
     _check_affine_equality(target_img, labels_img)
 
 
