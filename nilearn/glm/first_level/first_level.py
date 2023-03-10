@@ -796,17 +796,30 @@ class FirstLevelModel(BaseGLM):
         return output
 
 
-def first_level_from_bids(dataset_path, task_label, space_label=None,
+def first_level_from_bids(dataset_path,
+                          task_label,
+                          space_label=None,
                           sub_labels=None,
-                          img_filters=None, t_r=None, slice_time_ref=0.,
-                          hrf_model='glover', drift_model='cosine',
-                          high_pass=.01, drift_order=1, fir_delays=[0],
-                          min_onset=-24, mask_img=None,
-                          target_affine=None, target_shape=None,
-                          smoothing_fwhm=None, memory=Memory(None),
-                          memory_level=1, standardize=False,
-                          signal_scaling=0, noise_model='ar1',
-                          verbose=0, n_jobs=1,
+                          img_filters=None,
+                          t_r=None,
+                          slice_time_ref=0.,
+                          hrf_model='glover',
+                          drift_model='cosine',
+                          high_pass=.01,
+                          drift_order=1,
+                          fir_delays=[0],
+                          min_onset=-24,
+                          mask_img=None,
+                          target_affine=None,
+                          target_shape=None,
+                          smoothing_fwhm=None,
+                          memory=Memory(None),
+                          memory_level=1,
+                          standardize=False,
+                          signal_scaling=0,
+                          noise_model='ar1',
+                          verbose=0,
+                          n_jobs=1,
                           minimize_memory=True,
                           derivatives_folder='derivatives'):
     """Create FirstLevelModel objects and fit arguments from a BIDS dataset.
@@ -828,7 +841,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like _space-<space_label>_.
 
-    sub_labels : list of str, optional
+    sub_labels : :obj:`list` of :obj:`str`, optional
         Specifies the subset of subject labels to model.
         If 'None', will model all subjects in the dataset.
         .. versionadded:: 0.9.3.dev
@@ -870,10 +883,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     """
     sub_labels = sub_labels if sub_labels else []
     img_filters = img_filters or []
-
-    if not isinstance(sub_labels, list):
-        raise TypeError('sub_labels must be a list, instead %s was given' %
-                        type(sub_labels))
+    
     derivatives_path = os.path.join(dataset_path, derivatives_folder)
 
     _validate_args_first_level_from_bids(dataset_path=dataset_path,
@@ -1234,6 +1244,7 @@ def _supported_bids_filter() -> dict[str, list[str]]:
 def _validate_args_first_level_from_bids(dataset_path: str,
                                          task_label: str,
                                          space_label: str | None,
+                                         sub_labels: list[str] | None,
                                          img_filters: list[tuple[str, str]],
                                          derivatives_path: str,
                                          ) -> None:
@@ -1257,6 +1268,10 @@ def _validate_args_first_level_from_bids(dataset_path: str,
     space_label : :obj:`str`
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like _space-<space_label>_.
+
+    sub_labels : :obj:`list` of :obj:`str`, optional
+        Specifies the subset of subject labels to model.
+        If 'None', will model all subjects in the dataset.
 
     img_filters : :obj:`list` of :obj:`tuples` (str, str)
         Filters are of the form (field, label).
@@ -1300,6 +1315,10 @@ def _validate_args_first_level_from_bids(dataset_path: str,
                 "'space_label' must be alphanumeric. "
                 f"Got {space_label} instead."
             )      
+
+    if not isinstance(sub_labels, list):
+        raise TypeError('sub_labels must be a list, instead %s was given' %
+                        type(sub_labels))
 
     if not isinstance(img_filters, list):
         raise TypeError(
