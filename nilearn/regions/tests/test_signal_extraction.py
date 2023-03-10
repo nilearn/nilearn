@@ -17,14 +17,65 @@ from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import get_data, new_img_like
 
+
 _TEST_DIM_ERROR_MSG = ("Input data has incompatible dimensionality: "
                        "Expected dimension is 3D and you provided "
                        "a 4D image")
+_TEST_SHAPE_ERROR_MSG = "Images have incompatible shapes."
+_TEST_AFFINE_ERROR_MSG = "Images have different affine matrices."
+
+INF = 1000 * np.finfo(np.float32).eps
+
+        
+def test__check_shape_and_affine_compatibility_without_dim():
+    """Ensure correct behaviour for valid data without dim"""
+    shape = (2, 3, 4)
+    affine = np.eye(4)
+    img1 = nibabel.Nifti1Image(np.zeros(shape), affine)
+
+    img2 = nibabel.Nifti1Image(np.zeros(shape), affine)
+
+    with pytest.warns(None):
+        signal_extraction._check_shape_and_affine_compatibility(
+            img1,
+            img2)
+        
+        
+def test__check_shape_and_affine_compatibility_with_dim():
+    """Ensure correct behaviour for valid data without dim"""
+    shape = (2, 3, 4, 7)
+    affine = np.eye(4)
+    img1 = nibabel.Nifti1Image(np.zeros(shape[:3]), affine)
+
+    mask_shape = (2, 3, 4)
+    img2 = nibabel.Nifti1Image(np.zeros(mask_shape), affine)
+
+    with pytest.warns(None):
+        signal_extraction._check_shape_and_affine_compatibility(
+            img1,
+            img2,
+            dim=3)
+
+@pytest.mark.parametrize(
+    "test_shape,test_affine,msg", 
+    [((2, 3, 5), np.eye(4), _TEST_SHAPE_ERROR_MSG),
+     ((2, 3, 4), 2*np.eye(4), _TEST_AFFINE_ERROR_MSG)
+     ])
+def test__check_shape_and_affine_compatibility_error(test_shape,test_affine,msg):
+    shape = (2, 3, 4)
+    affine = np.eye(4)
+    img1 = nibabel.Nifti1Image(np.zeros(shape), affine)
+
+    img2 = nibabel.Nifti1Image(np.zeros(test_shape), test_affine)
+
+    with pytest.raises(ValueError, match=msg):
+        signal_extraction._check_shape_and_affine_compatibility(
+            img1,
+            img2)
 
 
 def test_generate_regions_ts():
-    """Minimal testing of generate_regions_ts()"""
-
+    """Minimal testing of generate_regions_ts()."""
     # Check that no regions overlap
     n_voxels = 50
     n_regions = 10
@@ -50,15 +101,15 @@ def test_generate_regions_ts():
     # Check that some regions overlap
     regions = generate_regions_ts(n_voxels, n_regions, overlap=1)
     assert regions.shape == (n_regions, n_voxels)
-    assert(np.any((regions > 0).sum(axis=-1) > 1.9))
+    assert (np.any((regions > 0).sum(axis=-1) > 1.9))
 
     regions = generate_regions_ts(n_voxels, n_regions, overlap=1,
                                   window="hamming")
-    assert(np.any((regions > 0).sum(axis=-1) > 1.9))
+    assert (np.any((regions > 0).sum(axis=-1) > 1.9))
 
 
 def test_generate_labeled_regions():
-    """Minimal testing of generate_labeled_regions"""
+    """Minimal testing of generate_labeled_regions."""
     shape = (3, 4, 5)
     n_regions = 10
     regions = generate_labeled_regions(shape, n_regions)
@@ -67,9 +118,8 @@ def test_generate_labeled_regions():
 
 
 def test_signals_extraction_with_labels():
-    """Test conversion between signals and images using regions defined
-    by labels."""
-
+    """Test conversion between signals and images \
+    using regions defined by labels."""
     shape = (8, 9, 10)
     n_instants = 11
     n_regions = 8  # must be 8
@@ -159,8 +209,7 @@ def test_signals_extraction_with_labels():
     data = get_data(data_img)
     assert abs(data).max() > 1e-9
     # Zero outside of the mask
-    assert np.all(data[np.logical_not(get_data(mask_img))
-                            ].std(axis=-1) < eps)
+    assert np.all(data[np.logical_not(get_data(mask_img))].std(axis=-1) < eps)
 
     with write_tmp_imgs(labels_img, mask_img) as filenames:
         data_img = signal_extraction.signals_to_img_labels(
@@ -170,8 +219,8 @@ def test_signals_extraction_with_labels():
         data = get_data(data_img)
         assert abs(data).max() > 1e-9
         # Zero outside of the mask
-        assert np.all(data[np.logical_not(get_data(mask_img))
-                                ].std(axis=-1) < eps)
+        assert np.all(data[np.logical_not(get_data(mask_img))].std(axis=-1)
+                      < eps)
 
     # mask labels before checking
     masked_labels_data = labels_data.copy()
@@ -186,29 +235,6 @@ def test_signals_extraction_with_labels():
         data_img, labels_img, mask_img=mask_img)
     np.testing.assert_almost_equal(signals_r, signals)
     assert labels_r == list(range(1, 9))
-
-    # Test input validation
-    data_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 5)), np.eye(4))
-
-    good_labels_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4))
-    bad_labels1_img = nibabel.Nifti1Image(np.zeros((2, 3, 5)), np.eye(4))
-    bad_labels2_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), 2 * np.eye(4))
-
-    good_mask_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4))
-    bad_mask1_img = nibabel.Nifti1Image(np.zeros((2, 3, 5)), np.eye(4))
-    bad_mask2_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), 2 * np.eye(4))
-    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
-                  data_img, bad_labels1_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
-                  data_img, bad_labels2_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
-                  data_img, bad_labels1_img, mask_img=good_mask_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
-                  data_img, bad_labels2_img, mask_img=good_mask_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
-                  data_img, good_labels_img, mask_img=bad_mask1_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
-                  data_img, good_labels_img, mask_img=bad_mask2_img)
 
 
 def test_signal_extraction_with_maps():
@@ -241,8 +267,9 @@ def test_signal_extraction_with_maps():
         img, maps_img, mask_img=mask_img)
 
     # The output must be identical to the input signals, because every region
-    # is homogeneous: there is the same signal in all voxels of one given
-    # region (and all maps are uniform).
+    # is homogeneous:
+    # there is the same signal in all voxels of one given region
+    # (and all maps are uniform).
     np.testing.assert_almost_equal(signals, signals_r)
 
     # Same thing without mask (in that case)
@@ -256,28 +283,80 @@ def test_signal_extraction_with_maps():
     img_r = signal_extraction.signals_to_img_maps(signals, maps_img)
     np.testing.assert_almost_equal(get_data(img_r), get_data(img))
 
-    # Test input validation
+
+@pytest.mark.parametrize("z_dim,affine_diag", [(5, 1), (4, 2)])
+def test_input_validation_bad_masks(z_dim, affine_diag):
     data_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 5)), np.eye(4))
 
-    good_maps_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 7)), np.eye(4))
-    bad_maps1_img = nibabel.Nifti1Image(np.zeros((2, 3, 5, 7)), np.eye(4))
-    bad_maps2_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 7)), 2 * np.eye(4))
+    bad_mask_img = nibabel.Nifti1Image(np.zeros((2, 3, z_dim)),
+                                       affine_diag * np.eye(4))
+
+    labels_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4))
+    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
+                  data_img,
+                  labels_img,
+                  mask_img=bad_mask_img)
+
+    maps_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 7)), np.eye(4))
+    pytest.raises(ValueError, signal_extraction.img_to_signals_maps,
+                  data_img,
+                  maps_img,
+                  mask_img=bad_mask_img)
+
+
+@pytest.mark.parametrize("z_dim,affine_diag", [(5, 1), (4, 2)])
+def test_input_validation_bad_labels(z_dim, affine_diag):
+    data_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 5)), np.eye(4))
+
+    bad_labels_img = nibabel.Nifti1Image(np.zeros((2, 3, z_dim)),
+                                         affine_diag * np.eye(4))
+
+    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
+                  data_img,
+                  bad_labels_img)
 
     good_mask_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4))
-    bad_mask1_img = nibabel.Nifti1Image(np.zeros((2, 3, 5)), np.eye(4))
-    bad_mask2_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), 2 * np.eye(4))
-    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
-                  bad_maps1_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
-                  bad_maps2_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
-                  bad_maps1_img, mask_img=good_mask_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
-                  bad_maps2_img, mask_img=good_mask_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
-                  good_maps_img, mask_img=bad_mask1_img)
-    pytest.raises(ValueError, signal_extraction.img_to_signals_maps, data_img,
-                  good_maps_img, mask_img=bad_mask2_img)
+    pytest.raises(ValueError, signal_extraction.img_to_signals_labels,
+                  data_img,
+                  bad_labels_img,
+                  mask_img=good_mask_img)
+
+
+@pytest.mark.parametrize("z_dim,affine_diag", [(5, 1), (4, 2)])
+def test_input_validation_bad_maps(z_dim, affine_diag):
+    data_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 5)), np.eye(4))
+
+    bad_maps_img = nibabel.Nifti1Image(np.zeros((2, 3, z_dim, 7)),
+                                       affine_diag * np.eye(4))
+
+    pytest.raises(ValueError, signal_extraction.img_to_signals_maps,
+                  data_img,
+                  bad_maps_img)
+
+    good_mask_img = nibabel.Nifti1Image(np.zeros((2, 3, 4)), np.eye(4))
+    pytest.raises(ValueError, signal_extraction.img_to_signals_maps,
+                  data_img,
+                  bad_maps_img,
+                  mask_img=good_mask_img)
+
+
+def test_signal_extraction_with_labels_error_strategy():
+    shape = (4, 5, 6)
+    n_regions = 7
+    labels = list(range(n_regions + 1))  # 0 is background
+    labels_img = generate_labeled_regions(shape, n_regions, labels=labels)
+
+    length = 8
+    fmri_img, _ = generate_fake_fmri(shape=shape,
+                                     length=length,
+                                     affine=labels_img.affine)
+    
+    with pytest.raises(ValueError, match="Invalid strategy"):
+        signal_extraction.img_to_signals_labels(
+            fmri_img,
+            labels_img,
+            strategy="foo"
+        )
 
 
 def test_signal_extraction_with_maps_and_labels():
@@ -420,12 +499,12 @@ def test_img_to_signals_labels_non_float_type(target_dtype):
         np.random.RandomState(42).uniform(size=(10, 10, 10, 10)) > 0.5
     )
     fake_affine = np.eye(4, 4).astype(np.float64)
-    fake_fmri_img_orig = nibabel.Nifti1Image(
-                                        fake_fmri_data.astype(np.float64),
-                                        fake_affine,
-                                        )
-    fake_fmri_img_target_dtype = new_img_like(fake_fmri_img_orig,
-                                              fake_fmri_data.astype(target_dtype))
+    fake_fmri_img_orig = nibabel.Nifti1Image(fake_fmri_data.astype(np.float64),
+                                             fake_affine)
+    fake_fmri_img_target_dtype = new_img_like(
+        fake_fmri_img_orig,
+        fake_fmri_data.astype(target_dtype)
+    )
     fake_mask_data = np.ones((10, 10, 10), dtype=np.uint8)
     fake_mask = nibabel.Nifti1Image(fake_mask_data, fake_affine)
 

@@ -624,6 +624,24 @@ def test_first_level_contrast_computation():
         del func_img, FUNCFILE, model
 
 
+def test_first_level_from_bids_with_subject_labels():
+    with InTemporaryDirectory():
+        bids_path = create_fake_bids_dataset(n_sub=10, n_ses=2,
+                                             tasks=['localizer', 'main'],
+                                             n_runs=[1, 3])
+        warning_message = ('Subject label foo is not present in'
+                           ' the dataset and cannot be processed')
+        # check that the incorrect label `foo` raises a warning
+        with pytest.warns(UserWarning, match=warning_message):
+            models, m_imgs, m_events, m_confounds = first_level_from_bids(
+                                  bids_path, 'main',
+                                  sub_labels=["foo", "01"],
+                                  space_label='MNI',
+                                  img_filters=[('desc', 'preproc')])
+            # check that the correct label `01` gets a model
+            assert models[0].subject_label == '01'
+
+
 def test_first_level_with_scaling():
     shapes, rk = [(3, 1, 1, 2)], 1
     fmri_data = list()

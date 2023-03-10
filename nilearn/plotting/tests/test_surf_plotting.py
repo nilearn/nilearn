@@ -13,9 +13,10 @@ from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
                                             plot_surf_roi, plot_img_on_surf,
                                             plot_surf_contours,
-                                            _get_ticks_matplotlib)
+                                            _get_ticks_matplotlib,
+                                            _compute_facecolors_matplotlib)
 from nilearn.datasets import fetch_surf_fsaverage
-from nilearn.surface import load_surf_mesh
+from nilearn.surface import load_surf_data, load_surf_mesh
 from nilearn.surface.testing_utils import generate_surf
 from numpy.testing import assert_array_equal
 from nilearn.plotting.surf_plotting import VALID_HEMISPHERES, VALID_VIEWS
@@ -843,3 +844,54 @@ def test_get_ticks_matplotlib(vmin, vmax, cbar_tick_format, expected):
     assert 1 <= len(ticks) <= 5
     assert ticks[0] == vmin and ticks[-1] == vmax
     assert len(ticks) == len(expected) and (ticks == expected).all()
+
+
+def test_compute_facecolors_matplotlib():
+    fsaverage = fetch_surf_fsaverage()
+    mesh = load_surf_mesh(fsaverage['pial_left'])
+    alpha = "auto"
+    # Surface map whose value in each vertex is
+    # 1 if this vertex's curv > 0
+    # 0 if this vertex's curv is 0
+    # -1 if this vertex's curv < 0
+    bg_map = np.sign(load_surf_data(fsaverage['curv_left']))
+    bg_min, bg_max = np.min(bg_map), np.max(bg_map)
+    assert (bg_min < 0 or bg_max > 1)
+    facecolors_auto_normalized = _compute_facecolors_matplotlib(
+        bg_map,
+        mesh[1],
+        len(mesh[0]),
+        None,
+        alpha,
+    )
+    assert len(facecolors_auto_normalized) == len(mesh[1])
+
+    # Manually set values of background map between 0 and 1
+    bg_map_normalized = (bg_map - bg_min) / (bg_max - bg_min)
+    assert np.min(bg_map_normalized) == 0 and np.max(bg_map_normalized) == 1
+    facecolors_manually_normalized = _compute_facecolors_matplotlib(
+        bg_map_normalized,
+        mesh[1],
+        len(mesh[0]),
+        None,
+        alpha,
+    )
+    assert len(facecolors_manually_normalized) == len(mesh[1])
+    assert np.allclose(
+        facecolors_manually_normalized, facecolors_auto_normalized
+    )
+
+    # Scale background map between 0.25 and 0.75
+    bg_map_scaled = bg_map_normalized / 2 + 0.25
+    assert np.min(bg_map_scaled) == 0.25 and np.max(bg_map_scaled) == 0.75
+    facecolors_manually_rescaled = _compute_facecolors_matplotlib(
+        bg_map_scaled,
+        mesh[1],
+        len(mesh[0]),
+        None,
+        alpha,
+    )
+    assert len(facecolors_manually_rescaled) == len(mesh[1])
+    assert not np.allclose(
+        facecolors_manually_rescaled, facecolors_auto_normalized
+    )

@@ -42,6 +42,8 @@
 
 .. _Christian Horea: http://chymera.eu/
 
+.. _Christian Gerloff: https://github.com/ChristianGerloff
+
 .. _Colin Reininger: https://github.com/reiningc
 
 .. _Connor Lane: https://github.com/clane9
@@ -122,7 +124,11 @@
 
 .. _Julia Huntenburg: https://github.com/juhuntenburg
 
+.. _Julio A Peraza: https://github.com/JulioAPeraza
+
 .. _Kamalakar Reddy Daddy: https://github.com/KamalakerDadi
+
+.. _Kevin Sitek: https://github.com/sitek
 
 .. _Koen Helwegen: https://github.com/koenhelwegen
 
@@ -161,6 +167,8 @@
 .. _Michael Notter: https://github.com/miykael
 
 .. _Michael Waskom: https://mwaskom.github.io/
+
+.. _Michelle Wang: https://github.com/michellewang
 
 .. _Moritz Boos: https://github.com/mjboos
 

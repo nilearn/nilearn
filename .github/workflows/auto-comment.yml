@@ -45,7 +45,7 @@ jobs:
 
 
             For bug fixes:
-            
+
             - [ ] There is at least one test that would fail
             under the original bug conditions.
 

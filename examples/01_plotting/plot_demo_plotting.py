@@ -31,9 +31,8 @@ haxby_anat_filename = haxby_dataset.anat[0]
 haxby_mask_filename = haxby_dataset.mask_vt[0]
 haxby_func_filename = haxby_dataset.func[0]
 
-# one motor contrast map from NeuroVault
-motor_images = datasets.fetch_neurovault_motor_task()
-stat_img = motor_images.images[0]
+# one motor activation map
+stat_img = datasets.load_sample_motor_activation_image()
 
 
 ###############################################################################
