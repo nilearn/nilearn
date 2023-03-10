@@ -15,11 +15,197 @@ from .._utils.niimg import _safe_get_data
 from .. import masking
 from ..image import new_img_like
 
+INF = 1000 * np.finfo(np.float32).eps
+
+
+def _check_shape_compatibility(img1, img2, dim=None):
+    """Check that shapes match for dimensions going from 0 to dim-1.
+    
+    Parameters
+    ----------
+    img1 : Niimg-like object
+        See :ref:`extracting_data`.
+        Image to extract the data from.
+
+    img2 : Niimg-like object, optional
+        See :ref:`extracting_data`.
+        Contains map or mask.
+
+    dim : :obj:`int`, optional
+        Integer slices a mask for a specific dimension.
+
+    """
+    if dim is None:
+        img2 = _utils.check_niimg_3d(img2)
+        if img1.shape[:3] != img2.shape:
+            raise ValueError("Images have incompatible shapes.")
+    elif img1.shape[:dim] != img2.shape[:dim]:
+        raise ValueError("Images have incompatible shapes.")
+
+
+def _check_affine_equality(img1, img2):
+    """Validate affines of 2 images.
+
+    Parameters
+    ----------
+    img1 : Niimg-like object
+        See :ref:`extracting_data`.
+        Image to extract the data from.
+
+    img2 : Niimg-like object, optional
+        See :ref:`extracting_data`.
+        Contains map or mask.
+
+    """
+    if (
+        img1.affine.shape != img2.affine.shape
+        or abs(img1.affine - img2.affine).max() > INF
+    ):
+        raise ValueError("Images have different affine matrices.")
+
+
+def _check_shape_and_affine_compatibility(img1,
+                                        img2=None,
+                                        dim=None):
+    """Validate shapes and affines of 2 images.
+
+    Check that the provided images:
+        - have the same shape
+        - have the same affine matrix.
+
+    Parameters
+    ----------
+    img1 : Niimg-like object
+        See :ref:`extracting_data`.
+        Image to extract the data from.
+
+    img2 : Niimg-like object, optional
+        See :ref:`extracting_data`.
+        Contains map or mask.
+
+    dim : :obj:`int`, optional
+        Integer slices a mask for a specific dimension.
+
+    Returns
+    -------
+    non_empty : :obj:`bool`,
+        Is only true for non-empty img.
+
+    """
+    if img2 is None:
+        return False
+
+    _check_shape_compatibility(img1, img2, dim=dim)
+
+    if dim is None:
+        img2 = _utils.check_niimg_3d(img2)
+    _check_affine_equality(img1, img2)
+
+    return True
+
+
+def _get_labels_data(target_img,
+                     labels_img,
+                     mask_img=None,
+                     background_label=0,
+                     dim=None):
+    """Get the label data.
+
+    Ensures that labels, imgs and mask shapes and affines fit,
+    then extracts the data from it.
+
+    Parameters
+    ----------
+    target_img : Niimg-like object
+        See :ref:`extracting_data`.
+        Image to extract the data from.
+
+    labels_img : Niimg-like object
+        See :ref:`extracting_data`.
+        Regions definition as labels.
+        By default, the label zero is used to denote an absence of region.
+        Use background_label to change it.
+
+    mask_img : Niimg-like object, optional
+        See :ref:`extracting_data`.
+        Mask to apply to labels before extracting signals.
+        Every point outside the mask is considered as background
+        (i.e. no region).
+
+    background_label : number, optional
+        Number representing background in labels_img. Default=0.
+
+    dim : :obj:`int`, optional
+        Integer slices mask for a specific dimension.
+
+    Returns
+    -------
+    labels : :obj:`list` or :obj:`tuple`
+        Corresponding labels for each signal.
+        signal[:, n] was extracted from the region with label labels[n].
+
+    labels_data : numpy.ndarray
+        Extracted data for each region within the mask.
+        Data outside the mask are assigned to the background
+        label to restrict signal extraction
+
+    See Also
+    --------
+    nilearn.regions.signals_to_img_labels
+    nilearn.regions.img_to_signals_labels
+
+    """
+    _check_shape_and_affine_compatibility(target_img, labels_img)
+
+    labels_data = _safe_get_data(labels_img, ensure_finite=True)
+
+    labels = list(np.unique(labels_data))
+    if background_label in labels:
+        labels.remove(background_label)
+
+    # Consider only data within the mask
+    use_mask = _check_shape_and_affine_compatibility(target_img, mask_img, dim)
+    if use_mask:
+        mask_img = _utils.check_niimg_3d(mask_img)
+        mask_data = _safe_get_data(mask_img, ensure_finite=True)
+        labels_data = labels_data.copy()
+        labels_data[np.logical_not(mask_data)] = background_label
+
+    return labels, labels_data
+
+def _check_reduction_strategy(strategy: str):
+    """Check that the provided strategy is supported.
+
+    Parameters
+    ----------
+
+    strategy : :obj:`str`
+        The name of a valid function to reduce the region with.
+        Must be one of: sum, mean, median, minimum, maximum, variance,
+        standard_deviation.
+    """
+    available_reduction_strategies = {'mean',
+                                      'median',
+                                      'sum',
+                                      'minimum',
+                                      'maximum',
+                                      'standard_deviation',
+                                      'variance'}
+
+    if strategy not in available_reduction_strategies:
+        raise ValueError(
+            f"Invalid strategy '{strategy}'. "
+            f"Valid strategies are {available_reduction_strategies}.")
+
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
 @_utils.fill_doc
-def img_to_signals_labels(imgs, labels_img, mask_img=None,
-                          background_label=0, order="F", strategy='mean'):
+def img_to_signals_labels(imgs, 
+                          labels_img,
+                          mask_img=None,
+                          background_label=0,
+                          order="F",
+                          strategy='mean'):
     """Extract region signals from image.
 
     This function is applicable to regions defined by labels.
@@ -39,8 +225,9 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
 
     mask_img : Niimg-like object, optional
         See :ref:`extracting_data`.
-        Mask to apply to labels before extracting signals. Every point
-        outside the mask is considered as background (i.e. no region).
+        Mask to apply to labels before extracting signals.
+        Every point outside the mask is considered
+        as background (i.e. no region).
 
     background_label : number, optional
         Number representing background in labels_img. Default=0.
@@ -51,7 +238,7 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     strategy : :obj:`str`, optional
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation. Default='mean'.
+        standard_deviation. Default="mean".
 
     Returns
     -------
@@ -65,7 +252,7 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
         Corresponding labels for each signal. signal[:, n] was extracted from
         the region with label labels[n].
 
-    See also
+    See Also
     --------
     nilearn.regions.signals_to_img_labels
     nilearn.regions.img_to_signals_maps
@@ -75,45 +262,15 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     """
     labels_img = _utils.check_niimg_3d(labels_img)
 
-    # TODO: Make a special case for list of strings (load one image at a
-    # time).
+    _check_reduction_strategy(strategy)
+
+    # TODO: Make a special case for list of strings
+    # (load one image at a time).
     imgs = _utils.check_niimg_4d(imgs)
-    target_affine = imgs.affine
-    target_shape = imgs.shape[:3]
-
-    available_reduction_strategies = {'mean', 'median', 'sum',
-                                      'minimum', 'maximum',
-                                      'standard_deviation', 'variance'}
-    if strategy not in available_reduction_strategies:
-        raise ValueError(str.format(
-            "Invalid strategy '{}'. Valid strategies are {}.",
-            strategy,
-            available_reduction_strategies
-        ))
-
-    # Check shapes and affines.
-    if labels_img.shape != target_shape:
-        raise ValueError("labels_img and imgs shapes must be identical.")
-    if abs(labels_img.affine - target_affine).max() > 1e-9:
-        raise ValueError("labels_img and imgs affines must be identical")
-
-    if mask_img is not None:
-        mask_img = _utils.check_niimg_3d(mask_img)
-        if mask_img.shape != target_shape:
-            raise ValueError("mask_img and imgs shapes must be identical.")
-        if abs(mask_img.affine - target_affine).max() > 1e-9:
-            raise ValueError("mask_img and imgs affines must be identical")
-
-    # Perform computation
-    labels_data = _safe_get_data(labels_img, ensure_finite=True)
-    labels = list(np.unique(labels_data))
-    if background_label in labels:
-        labels.remove(background_label)
-
-    if mask_img is not None:
-        mask_data = _safe_get_data(mask_img, ensure_finite=True)
-        labels_data = labels_data.copy()
-        labels_data[np.logical_not(mask_data)] = background_label
+    labels, labels_data = _get_labels_data(imgs,
+                                           labels_img,
+                                           mask_img,
+                                           background_label)
 
     data = _safe_get_data(imgs, ensure_finite=True)
     target_datatype = np.float32 if data.dtype == np.float32 else np.float64
@@ -128,13 +285,16 @@ def img_to_signals_labels(imgs, labels_img, mask_img=None,
     # Set to zero signals for missing labels. Workaround for Scipy behaviour
     missing_labels = set(labels) - set(np.unique(labels_data))
     labels_index = dict([(l, n) for n, l in enumerate(labels)])
-    for l in missing_labels:
-        signals[:, labels_index[l]] = 0
+    for this_label in missing_labels:
+        signals[:, labels_index[this_label]] = 0
     return signals, labels
 
 
-def signals_to_img_labels(signals, labels_img, mask_img=None,
-                          background_label=0, order="F"):
+def signals_to_img_labels(signals,
+                          labels_img,
+                          mask_img=None,
+                          background_label=0,
+                          order="F"):
     """Create image from region signals defined as labels.
 
     The same region signal is used for each :term:`voxel` of the
@@ -159,6 +319,7 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
         Region definitions using labels.
 
     mask_img : Niimg-like object, optional
+        See :ref:`extracting_data`.
         Boolean array giving voxels to process. integer arrays also accepted,
         In this array, zero means False, non-zero means True.
 
@@ -174,7 +335,7 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
         Reconstructed image. dtype is that of "signals", affine and shape are
         those of labels_img.
 
-    See also
+    See Also
     --------
     nilearn.regions.img_to_signals_labels
     nilearn.regions.signals_to_img_maps
@@ -184,29 +345,14 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
     """
     labels_img = _utils.check_niimg_3d(labels_img)
 
+    labels, labels_data = _get_labels_data(labels_img,
+                                           labels_img,
+                                           mask_img,
+                                           background_label)
+
     signals = np.asarray(signals)
-    target_affine = labels_img.affine
+
     target_shape = labels_img.shape[:3]
-
-    if mask_img is not None:
-        mask_img = _utils.check_niimg_3d(mask_img)
-        if mask_img.shape != target_shape:
-            raise ValueError("mask_img and labels_img shapes "
-                             "must be identical.")
-        if abs(mask_img.affine - target_affine).max() > 1e-9:
-            raise ValueError("mask_img and labels_img affines "
-                             "must be identical")
-
-    labels_data = _safe_get_data(labels_img, ensure_finite=True)
-    labels = list(np.unique(labels_data))
-    if background_label in labels:
-        labels.remove(background_label)
-
-    if mask_img is not None:
-        mask_data = _safe_get_data(mask_img, ensure_finite=True)
-        labels_data = labels_data.copy()
-        labels_data[np.logical_not(mask_data)] = background_label
-
     # nditer is not available in numpy 1.3: using multiple loops.
     # Using these loops still gives a much faster code (6x) than this one:
     # for n, label in enumerate(labels):
@@ -228,7 +374,7 @@ def signals_to_img_labels(signals, labels_img, mask_img=None,
                     else:
                         data[i, j, k] = signals[num]
 
-    return new_img_like(labels_img, data, target_affine)
+    return new_img_like(labels_img, data, labels_img.affine)
 
 
 @_utils.fill_doc
@@ -249,9 +395,9 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
 
     mask_img : Niimg-like object, optional
         See :ref:`extracting_data`.
-        Mask to apply to regions before extracting signals. Every point
-        outside the mask is considered as background (i.e. outside of any
-        region).
+        Mask to apply to regions before extracting signals.
+        Every point outside the mask is considered
+        as background (i.e. outside of any region).
 
     Returns
     -------
@@ -263,7 +409,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
         maps_img[..., labels[n]] is the region that has been used to extract
         signal region_signals[:, n].
 
-    See also
+    See Also
     --------
     nilearn.regions.img_to_signals_labels
     nilearn.regions.signals_to_img_maps
@@ -273,32 +419,22 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
     """
     maps_img = _utils.check_niimg_4d(maps_img)
     imgs = _utils.check_niimg_4d(imgs)
-    affine = imgs.affine
-    shape = imgs.shape[:3]
 
-    # Check shapes and affines.
-    if maps_img.shape[:3] != shape:
-        raise ValueError("maps_img and imgs shapes must be identical.")
-    if abs(maps_img.affine - affine).max() > 1e-9:
-        raise ValueError("maps_img and imgs affines must be identical")
+    _check_shape_and_affine_compatibility(imgs, maps_img, 3)
 
     maps_data = _safe_get_data(maps_img, ensure_finite=True)
+    maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
+    labels = np.arange(maps_data.shape[-1], dtype=int)
 
-    if mask_img is not None:
+    use_mask = _check_shape_and_affine_compatibility(imgs, mask_img)
+    if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
-        if mask_img.shape != shape:
-            raise ValueError("mask_img and imgs shapes must be identical.")
-        if abs(mask_img.affine - affine).max() > 1e-9:
-            raise ValueError("mask_img and imgs affines must be identical")
         maps_data, maps_mask, labels = _trim_maps(
             maps_data,
             _safe_get_data(mask_img, ensure_finite=True),
             keep_empty=True,
         )
         maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
-    else:
-        maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
-        labels = np.arange(maps_data.shape[-1], dtype=int)
 
     data = _safe_get_data(imgs, ensure_finite=True)
     region_signals = linalg.lstsq(maps_data[maps_mask, :],
@@ -336,7 +472,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     img : :class:`nibabel.nifti1.Nifti1Image`
         Reconstructed image. affine and shape are those of maps_img.
 
-    See also
+    See Also
     --------
     nilearn.regions.signals_to_img_labels
     nilearn.regions.img_to_signals_maps
@@ -345,27 +481,22 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     """
     maps_img = _utils.check_niimg_4d(maps_img)
     maps_data = _safe_get_data(maps_img, ensure_finite=True)
-    shape = maps_img.shape[:3]
-    affine = maps_img.affine
 
-    if mask_img is not None:
+    maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
+
+    use_mask = _check_shape_and_affine_compatibility(maps_img, mask_img)
+    if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
-        if mask_img.shape != shape:
-            raise ValueError("mask_img and maps_img shapes must be identical.")
-        if abs(mask_img.affine - affine).max() > 1e-9:
-            raise ValueError("mask_img and maps_img affines must be "
-                             "identical.")
         maps_data, maps_mask, _ = _trim_maps(
             maps_data, _safe_get_data(mask_img, ensure_finite=True),
             keep_empty=True)
         maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
-    else:
-        maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
-
-    assert(maps_mask.shape == maps_data.shape[:3])
+        assert (maps_mask.shape == maps_data.shape[:3])
 
     data = np.dot(region_signals, maps_data[maps_mask, :].T)
-    return masking.unmask(data, new_img_like(maps_img, maps_mask, affine))
+    return masking.unmask(data, new_img_like(maps_img,
+                                             maps_mask,
+                                             maps_img.affine))
 
 
 def _trim_maps(maps, mask, keep_empty=False, order="F"):
@@ -416,10 +547,7 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
     sums = abs(maps[_utils.as_ndarray(mask, dtype=bool),
                     :]).sum(axis=0)
 
-    if keep_empty:
-        n_regions = maps.shape[-1]
-    else:
-        n_regions = (sums > 0).sum()
+    n_regions = maps.shape[-1] if keep_empty else (sums > 0).sum()
     trimmed_maps = np.zeros(maps.shape[:3] + (n_regions, ),
                             dtype=maps.dtype, order=order)
     # use int8 instead of np.bool for Nifti1Image

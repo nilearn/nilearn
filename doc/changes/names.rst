@@ -42,6 +42,8 @@
 
 .. _Christian Horea: http://chymera.eu/
 
+.. _Christian Gerloff: https://github.com/ChristianGerloff
+
 .. _Colin Reininger: https://github.com/reiningc
 
 .. _Connor Lane: https://github.com/clane9

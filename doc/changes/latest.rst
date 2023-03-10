@@ -28,6 +28,8 @@ Changes
 -------
 - The behavior of :func:`~nilearn.datasets.fetch_atlas_craddock_2012`, :func:`~nilearn.datasets.fetch_atlas_smith_2009` and :func:`~nilearn.datasets.fetch_atlas_basc_multiscale_2015` is updated with their new parameters to return one map along with a deprecation cycle (:gh:`3353` by `Ahmad Chamma`_).
 
+- Extract helper-functions for input-image validation from :func:`~regions.img_to_signals_labels`, :func:`~regions.signals_to_img_labels`, :func:`~regions.img_to_signals_maps` :func:`~regions.signals_to_img_maps` (:gh:`3523` by `Rémi Gau`_ and `Christian Gerloff`_).
+
 
 0.10.1rc1
 =========
@@ -63,3 +65,4 @@ Changes
 - :bdg-primary:`Doc` The documentation for :func:`~image.threshold_img` has been improved, with more information about which voxels are set to 0 and which ones keep their original values (:gh:`3485` by `Rémi Gau`_).
 
 - :bdg-secondary:`Maint` Modules :mod:`~nilearn.decomposition` and :mod:`~nilearn.decoding` code and docstrings have been reformatted using black. Changes resulted in improved readability overall and increased consistency (:gh:`3491` and :gh:`3484` by `Rémi Gau`_).
+
