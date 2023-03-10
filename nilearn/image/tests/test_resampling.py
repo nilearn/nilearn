@@ -713,6 +713,34 @@ def test_reorder_img():
         np.testing.assert_array_equal(reordered_img.affine[:3, :3], np.eye(3))
         np.testing.assert_almost_equal(get_data(reordered_img), data)
 
+
+def test_reorder_img_with_resample_arg():
+    shape = (5, 5, 5, 2, 2)
+    rng = np.random.RandomState(42)
+    data = rng.uniform(size=shape)
+    affine = np.eye(4)
+    affine[:3, -1] = 0.5 * np.array(shape[:3])
+    ref_img = Nifti1Image(data, affine)
+
+    interpolation = "nearest"
+    reordered_img = reorder_img(ref_img, resample=interpolation)
+
+    resampled_img = resample_img(
+        ref_img,
+        target_affine=reordered_img.affine,
+        interpolation=interpolation,
+    )
+    np.testing.assert_array_equal(
+        get_data(reordered_img), get_data(resampled_img)
+    )
+
+
+def test_reorder_img_error_reorder_axis():
+    shape = (5, 5, 5, 2, 2)
+    rng = np.random.RandomState(42)
+    data = rng.uniform(size=shape)
+    affine = np.eye(4)
+
     # Create a non-diagonal affine, and check that we raise a sensible
     # exception
     affine[1, 0] = 0.1
@@ -723,44 +751,46 @@ def test_reorder_img():
     # Test that no exception is raised when resample='continuous'
     reorder_img(ref_img, resample="continuous")
 
-    # Test that resample args gets passed to resample_img
-    interpolation = "nearest"
-    reordered_img = reorder_img(ref_img, resample=interpolation)
-    resampled_img = resample_img(
-        ref_img,
-        target_affine=reordered_img.affine,
-        interpolation=interpolation,
-    )
-    np.testing.assert_array_equal(
-        get_data(reordered_img), get_data(resampled_img)
-    )
 
-    # Make sure invalid resample argument is included in the error message
-    interpolation = "an_invalid_interpolation"
-    with pytest.raises(ValueError, match="interpolation must be one of"):
-        reorder_img(ref_img, resample=interpolation)
+def test_reorder_img_flipping_axis():
+    shape = (5, 5, 5, 2, 2)
+    rng = np.random.RandomState(42)
 
-    # Test flipping an axis
     data = rng.uniform(size=shape)
+
     for i in (0, 1, 2):
         # Make a diagonal affine with a negative axis, and check that
         # can be reordered, also vary the shape
         shape = (i + 1, i + 2, 3 - i)
         affine = np.eye(4)
         affine[i, i] *= -1
+
         img = Nifti1Image(data, affine)
         orig_img = copy.copy(img)
-        # x, y, z = img.get_world_coords()
-        # sample = img.values_in_world(x, y, z)
+
         img2 = reorder_img(img)
+
         # Check that img has not been changed
         np.testing.assert_array_equal(img.affine, orig_img.affine)
         np.testing.assert_array_equal(get_data(img), get_data(orig_img))
+
         # Test that the affine is indeed diagonal:
         np.testing.assert_array_equal(
             img2.affine[:3, :3], np.diag(np.diag(img2.affine[:3, :3]))
         )
         assert np.all(np.diag(img2.affine) >= 0)
+
+
+def test_reorder_img_error_interpolation():
+    shape = (5, 5, 5, 2, 2)
+    rng = np.random.RandomState(42)
+    data = rng.uniform(size=shape)
+    affine = np.eye(4)
+    affine[1, 0] = 0.1
+    ref_img = Nifti1Image(data, affine)
+    interpolation = "an_invalid_interpolation"
+    with pytest.raises(ValueError, match="interpolation must be one of"):
+        reorder_img(ref_img, resample=interpolation)
 
 
 def test_reorder_img_non_native_endianness():
