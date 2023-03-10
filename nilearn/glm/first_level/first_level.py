@@ -947,23 +947,7 @@ def first_level_from_bids(dataset_path,
                      'be set manually in the generated list of models' %
                      img_specs[0])
 
-    # Infer subjects in dataset
-    if not sub_labels:
-        sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*/'))
-        sub_labels = [
-            os.path.basename(s[:-1]).split('-')[1] for s in sub_folders
-        ]
-        sub_labels = sorted(list(set(sub_labels)))
-
-    sub_labels_exist = []
-    for this_label in sub_labels:
-        if os.path.exists(os.path.join(derivatives_path, f"sub-{this_label}")):
-            sub_labels_exist.append(this_label)
-        else:
-            warn(f'Subject label {this_label} is not present in the'
-                    ' dataset and cannot be processed.')
-            
-    sub_labels_exist = set(sub_labels_exist)
+    sub_labels = _list_valid_subjects(derivatives_path, sub_labels)
 
     # Build fit_kwargs dictionaries to pass to their respective models fit
     # Events and confounds files must match number of imgs (runs)
@@ -972,7 +956,7 @@ def first_level_from_bids(dataset_path,
     models_events = []
     models_confounds = []
 
-    for sub_label in sub_labels_exist:
+    for sub_label_ in sub_labels:
 
         # Create model
         model = FirstLevelModel(
@@ -985,42 +969,70 @@ def first_level_from_bids(dataset_path,
             memory_level=memory_level, standardize=standardize,
             signal_scaling=signal_scaling, noise_model=noise_model,
             verbose=verbose, n_jobs=n_jobs,
-            minimize_memory=minimize_memory, subject_label=sub_label)
+            minimize_memory=minimize_memory, subject_label=sub_label_)
         models.append(model)
 
         imgs = _get_processed_imgs(derivatives_path=derivatives_path,
-                                   sub_label=sub_label,
+                                   sub_label=sub_label_,
                                    task_label=task_label,
                                    space_label=space_label,
                                    img_filters=img_filters)
         if verbose:
-            _report_found_files(imgs, 'preprocessed BOLD', sub_label, filters)
+            _report_found_files(files=imgs,
+                                text='preprocessed BOLD',
+                                sub_label=sub_label_,
+                                filters=filters)
         models_run_imgs.append(imgs)
 
         events = _get_events_files(dataset_path = dataset_path,
-                                   sub_label=sub_label,
+                                   sub_label=sub_label_,
                                    task_label=task_label,
                                    img_filters=img_filters,
                                    imgs=imgs)
         if verbose:
-            _report_found_files(events, 'events', sub_label, filters) 
+            _report_found_files(files=events,
+                                text='events',
+                                sub_label=sub_label_,
+                                filters=filters) 
         events = [pd.read_csv(event, sep='\t', index_col=None)
                   for event in events]
         models_events.append(events)
 
         confounds = _get_confounds(derivatives_path=derivatives_path,
-                                   sub_label=sub_label,
+                                   sub_label=sub_label_,
                                    task_label=task_label,
                                    img_filters=img_filters,
                                    imgs=imgs)
         if verbose:
-            _report_found_files(confounds, 'confounds', sub_label, filters)     
+            _report_found_files(files=confounds,
+                                text='confounds',
+                                sub_label=sub_label_,
+                                filters=filters)     
         if confounds:
             confounds = [pd.read_csv(c, sep='\t', index_col=None)
                          for c in confounds]
         models_confounds.append(confounds)
 
     return models, models_run_imgs, models_events, models_confounds
+
+def _list_valid_subjects(derivatives_path: str , sub_labels: list[str] | None):
+    # Infer subjects in dataset
+    if not sub_labels:
+        sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*/'))
+        sub_labels = [
+            os.path.basename(s[:-1]).split('-')[1] for s in sub_folders
+        ]
+        sub_labels = sorted(list(set(sub_labels)))
+
+    sub_labels_exist = []
+    for sub_label_ in sub_labels:
+        if os.path.exists(os.path.join(derivatives_path, f"sub-{sub_label_}")):
+            sub_labels_exist.append(sub_label_)
+        else:
+            warn(f'Subject label {sub_label_} is not present in the'
+                    ' dataset and cannot be processed.')
+            
+    return set(sub_labels_exist)
 
 def _report_found_files(files: list[str],
                         text: str,
@@ -1320,8 +1332,16 @@ def _validate_args_first_level_from_bids(dataset_path: str,
             )
 
     if not isinstance(sub_labels, list):
-        raise TypeError('sub_labels must be a list, instead %s was given' %
-                        type(sub_labels))
+        raise TypeError(
+            f'sub_labels must be a list, instead {type(sub_labels)} was given'
+        )
+    for sub_label_ in sub_labels:
+        if (sub_label_ is None or 
+            not all(char.isalnum() for char in sub_label_)):
+            raise ValueError(
+                "subject labels must be alphanumeric. "
+                f"Got {space_label} instead."
+            )
 
     if not isinstance(img_filters, list):
         raise TypeError(
