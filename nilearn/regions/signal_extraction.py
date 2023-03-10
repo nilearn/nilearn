@@ -127,7 +127,7 @@ def _get_labels_data(target_img,
         (i.e. no region).
 
     background_label : number, optional
-        Number representing background in labels_img.
+        Number representing background in labels_img. Default=0.
 
     dim : :obj:`int`, optional
         Integer slices mask for a specific dimension.
@@ -199,15 +199,15 @@ def img_to_signals_labels(imgs, labels_img,
         as background (i.e. no region).
 
     background_label : number, optional
-        Number representing background in labels_img.
+        Number representing background in labels_img. Default=0.
 
     order : :obj:`str`, optional
-        Ordering of output array ("C" or "F").
+        Ordering of output array ("C" or "F"). Default="F".
 
     strategy : :obj:`str`, optional
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation.
+        standard_deviation. Default="mean".
 
     Returns
     -------
