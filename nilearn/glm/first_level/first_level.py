@@ -844,7 +844,7 @@ def first_level_from_bids(dataset_path,
     sub_labels : :obj:`list` of :obj:`str`, optional
         Specifies the subset of subject labels to model.
         If 'None', will model all subjects in the dataset.
-        .. versionadded:: 0.9.3.dev
+        .. versionadded:: 0.10.1.dev
 
     img_filters : :obj:`list` of :obj:`tuples` (str, str), optional
         Filters are of the form (field, label). Only one filter per field
@@ -889,6 +889,7 @@ def first_level_from_bids(dataset_path,
     _validate_args_first_level_from_bids(dataset_path=dataset_path,
                                          task_label=task_label,
                                          space_label=space_label,
+                                         sub_labels=sub_labels,
                                          img_filters=img_filters,
                                          derivatives_path=derivatives_path,)
 
@@ -1097,7 +1098,7 @@ def _get_processed_imgs(derivatives_path: str,
 def _get_events_files(dataset_path: str,
                       sub_label: str,
                       task_label: str,
-                      img_filters: list[tuple[str,str]],
+                      img_filters: list[tuple[str, str]],
                       imgs: list[str]) -> list[str]:
     """Get events.tsv files for a given subject, task and filters.
 
@@ -1143,13 +1144,13 @@ def _get_events_files(dataset_path: str,
                                 sub_label=sub_label,
                                 task_label=task_label,
                                 dataset_path=dataset_path,
-                                events_filters=events_filters)    
-    return events 
+                                events_filters=events_filters)
+    return events
 
 def _get_confounds(derivatives_path: str,
                    sub_label: str,
                    task_label: str,
-                   img_filters: list[tuple[str,str]],
+                   img_filters: list[tuple[str, str]],
                    imgs: list[str]) -> Optional[list[str]]:
     """Get confounds.tsv files for a given subject, task and filters.
 
@@ -1179,7 +1180,7 @@ def _get_confounds(derivatives_path: str,
     confounds : :obj:`list` of :obj:`str` or None
         List of fullpath to the confounds.tsv files
 
-    """    
+    """
     confounds_filters = _supported_bids_filter()["raw"] + \
                         _supported_bids_filter()["derivatives"]
     confounds_filters.remove('desc')
@@ -1195,10 +1196,11 @@ def _get_confounds(derivatives_path: str,
     _check_confounds_list(confounds=confounds, imgs=imgs)
     return confounds or None
 
+
 def _check_confounds_list(confounds: list[str], imgs: list[str]) -> None:
     """Check the number of confounds.tsv files.
-    
-    If no file is found, it will be assumed there are none, 
+
+    If no file is found, it will be assumed there are none,
     but if there are any confounds files, there must be one per run.
 
     Parameters
@@ -1214,7 +1216,8 @@ def _check_confounds_list(confounds: list[str], imgs: list[str]) -> None:
         raise ValueError(f"{len(confounds)} confounds.tsv files found "
                          f"for {len(imgs)} bold files. "
                          "Same number of confound files as "
-                         "the number of runs is expected")    
+                         "the number of runs is expected")
+
 
 def _supported_bids_filter() -> dict[str, list[str]]:
     """Return a dictionary of BIDS entities.
@@ -1302,7 +1305,7 @@ def _validate_args_first_level_from_bids(dataset_path: str,
         raise ValueError(
             "'task_label' must be alphanumeric. "
             f"Got {task_label} instead."
-        )    
+        )
 
     if space_label is not None:
         if not isinstance(space_label, str):
@@ -1314,7 +1317,7 @@ def _validate_args_first_level_from_bids(dataset_path: str,
             raise ValueError(
                 "'space_label' must be alphanumeric. "
                 f"Got {space_label} instead."
-            )      
+            )
 
     if not isinstance(sub_labels, list):
         raise TypeError('sub_labels must be a list, instead %s was given' %
@@ -1337,9 +1340,9 @@ def _validate_args_first_level_from_bids(dataset_path: str,
         if filter_[0] not in supported_filters:
             raise ValueError(
                 f"Entity {filter_[0]} for {filter_} is not a possible filter. "
-                f"Only {supported_filters} are allowed.")        
+                f"Only {supported_filters} are allowed.")
 
-        if (not isinstance(filter_[1], str) 
+        if (not isinstance(filter_[1], str)
             or not all(char.isalnum() for char in filter_[1])):
             raise TypeError('BIDS labels in img_filters must be alphanumeric. '
                             f"Got {type(filter_[1])} for {filter_} instead.")
@@ -1441,10 +1444,10 @@ def _check_bids_image_list(imgs: list[str] | None,
 
         if session and run:
             if (session, run) in set(run_check_list):
-               raise ValueError(
-                   f"{msg_start}"
-                   f"for the same run {run} and session {session}. "
-                   f"{msg_end}")
+                raise ValueError(
+                    f"{msg_start}"
+                    f"for the same run {run} and session {session}. "
+                    f"{msg_end}")
             run_check_list.append((session, run))
 
         elif session:
