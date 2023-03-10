@@ -16,17 +16,16 @@ def _tmp_dir():
     return tempfile.tempdir + os.sep
 
 
-def prepare_multi_pca_data(with_activation=True):
+def _make_multi_pca_test_data(with_activation=True):
+    """Create a multi-subject dataset with or without activation."""
     shape = (6, 8, 10, 5)
     affine = np.eye(4)
     rng = np.random.RandomState(0)
 
-    # Create a "multi-subject" dataset
     data = []
     for _ in range(8):
         this_data = rng.normal(size=shape)
         if with_activation:
-            # Create fake activation to get non empty mask
             this_data[2:4, 2:4, 2:4, :] += 10
         data.append(nibabel.Nifti1Image(this_data, affine))
 
@@ -36,7 +35,9 @@ def prepare_multi_pca_data(with_activation=True):
 
 
 def test_multi_pca():
-    data, mask_img, _, _ = prepare_multi_pca_data()
+    """Test that the components are the same if we put twice the same data, \
+    and that fit output is deterministic"""
+    data, mask_img, _, _ = _make_multi_pca_test_data()
 
     multi_pca = _MultiPCA(mask=mask_img, n_components=3, random_state=0)
     multi_pca.fit(data)
@@ -44,8 +45,6 @@ def test_multi_pca():
     assert multi_pca.mask_img_ == mask_img
     assert multi_pca.mask_img_ == multi_pca.masker_.mask_img_
 
-    # Test that the components are the same if we put twice the same data, and
-    # that fit output is deterministic
     components1 = multi_pca.components_
     components2 = multi_pca.fit(data).components_
     components3 = multi_pca.fit(2 * data).components_
@@ -55,28 +54,23 @@ def test_multi_pca():
 
 
 def test_multi_pca_with_confounds_smoke():
-    data, mask_img, _, _ = prepare_multi_pca_data()
+    data, mask_img, _, _ = _make_multi_pca_test_data()
     confounds = [np.arange(10).reshape(5, 2)] * 8
 
     multi_pca = _MultiPCA(mask=mask_img, n_components=3, random_state=0)
     multi_pca.fit(data, confounds=confounds)
 
 
-def test_multi_pca_single_subject_smoke():
-    data, mask_img, _, _ = prepare_multi_pca_data()
-
-    multi_pca = _MultiPCA(mask=mask_img, n_components=3, random_state=0)
-    multi_pca.fit(data[0])
-
-
 def test_multi_pca_error_too_few_components():
-    data, _, _, _ = prepare_multi_pca_data()
+    """Check that an error is raised if the number of components is too low."""
+    data, _, _, _ = _make_multi_pca_test_data()
     multi_pca = _MultiPCA()
     pytest.raises(ValueError, multi_pca.fit, data[:2])
 
 
 def test_multi_pca_with_masker():
-    data, _, _, _ = prepare_multi_pca_data()
+    """Check that multi-pca can run with a masker."""
+    data, _, _, _ = _make_multi_pca_test_data()
 
     masker = MultiNiftiMasker()
 
@@ -87,7 +81,9 @@ def test_multi_pca_with_masker():
 
 
 def test_multi_pca_with_masker_without_cca_smoke():
-    data, _, _, _ = prepare_multi_pca_data()
+    """Check that multi-pca can run with a masker \
+        and without canonical correlation analysis."""
+    data, _, _, _ = _make_multi_pca_test_data()
 
     multi_pca = _MultiPCA(
         mask=MultiNiftiMasker(mask_args=dict(opening=0)),
@@ -101,7 +97,8 @@ def test_multi_pca_with_masker_without_cca_smoke():
 
 
 def test_multi_pca_errors():
-    data, mask_img, _, _ = prepare_multi_pca_data()
+    """Check that fit and transform fail without the proper arguments."""
+    data, mask_img, _, _ = _make_multi_pca_test_data()
 
     multi_pca = _MultiPCA(mask=mask_img, n_components=3)
 
@@ -125,7 +122,8 @@ def test_multi_pca_errors():
 
 
 def test_multi_pca_pass_masker_arg_to_estimator_smoke():
-    data, _, shape, affine = prepare_multi_pca_data()
+    """Check that the masker arguments are to the estimator without fail."""
+    data, _, shape, affine = _make_multi_pca_test_data()
 
     multi_pca = _MultiPCA(
         target_affine=affine,
@@ -137,9 +135,9 @@ def test_multi_pca_pass_masker_arg_to_estimator_smoke():
 
 
 def test_multi_pca_score_gt_0_lt_1():
-    data, mask_img, _, _ = prepare_multi_pca_data(with_activation=False)
+    """Assert that score is between zero and one"""
+    data, mask_img, _, _ = _make_multi_pca_test_data(with_activation=False)
 
-    # Assert that score is between zero and one
     multi_pca = _MultiPCA(
         mask=mask_img, random_state=0, memory_level=0, n_components=3
     )
@@ -150,7 +148,8 @@ def test_multi_pca_score_gt_0_lt_1():
 
 
 def test_multi_pca_score_single_subject():
-    data, mask_img, _, _ = prepare_multi_pca_data(with_activation=False)
+    """Check that multi-pca can be run on single subject data."""
+    data, mask_img, _, _ = _make_multi_pca_test_data(with_activation=False)
 
     multi_pca = _MultiPCA(
         mask=mask_img, random_state=0, memory_level=0, n_components=3
@@ -162,9 +161,9 @@ def test_multi_pca_score_single_subject():
 
 
 def test_multi_pca_score_single_subject_nb_components():
-    data, mask_img, _, _ = prepare_multi_pca_data(with_activation=False)
-    # Assert that score is one for n_components == n_sample
-    # in single subject configuration
+    """Assert that score is one for n_components == n_sample \
+    in single subject configuration"""
+    data, mask_img, _, _ = _make_multi_pca_test_data(with_activation=False)
     multi_pca = _MultiPCA(
         mask=mask_img, random_state=0, memory_level=0, n_components=5
     )
@@ -185,7 +184,7 @@ def test_multi_pca_score_single_subject_nb_components():
 
 
 def test_components_img():
-    data, mask_img, _, _ = prepare_multi_pca_data()
+    data, mask_img, _, _ = _make_multi_pca_test_data()
 
     n_components = 3
 
