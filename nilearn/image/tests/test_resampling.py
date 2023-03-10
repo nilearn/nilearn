@@ -245,13 +245,18 @@ def test_resampling_continuous_with_affine():
             )
 
 
-def test_resampling_error_checks():
+def _make_resampling_test_data():
     rng = np.random.RandomState(42)
     shape = (3, 2, 5, 2)
-    target_shape = (5, 3, 2)
     affine = np.eye(4)
     data = rng.randint(0, 10, shape, dtype="int32")
     img = Nifti1Image(data, affine)
+    return img, affine
+
+
+def test_resampling_error_checks():
+    img, affine = _make_resampling_test_data()
+    target_shape = (5, 3, 2)
 
     # Correct parameters: no exception
     resample_img(img, target_shape=target_shape, target_affine=affine)
@@ -281,27 +286,15 @@ def test_resampling_error_checks():
             interpolation="an_invalid_interpolation",
         )
 
-    # Resampling a binary image with continuous or
-    # linear interpolation should raise a warning.
-    data_binary = rng.randint(4, size=(1, 4, 4), dtype="int32")
-    data_binary[data_binary > 0] = 1
-    assert sorted(list(np.unique(data_binary))) == [0, 1]
 
-    rot = rotation(0, np.pi / 4)
-    img_binary = Nifti1Image(data_binary, np.eye(4))
-    assert _utils.niimg._is_binary_niimg(img_binary)
+def test_resampling_noop():
+    rng = np.random.RandomState(42)
+    shape = (3, 2, 5, 2)
+    target_shape = (5, 3, 2)
+    affine = np.eye(4)
+    data = rng.randint(0, 10, shape, dtype="int32")
+    img = Nifti1Image(data, affine)
 
-    with pytest.warns(Warning, match="Resampling binary images with"):
-        resample_img(img_binary, target_affine=rot, interpolation="continuous")
-
-    with pytest.warns(Warning, match="Resampling binary images with"):
-        resample_img(img_binary, target_affine=rot, interpolation="linear")
-    img_no_sform = Nifti1Image(data, affine)
-    img_no_sform.set_sform(None)
-    with pytest.warns(Warning, match="The provided image has no sform"):
-        resample_img(img_no_sform, target_affine=affine)
-
-    # Noop
     target_shape = shape[:3]
 
     img_r = resample_img(img, copy=False)
@@ -322,8 +315,37 @@ def test_resampling_error_checks():
         img, target_affine=affine, target_shape=target_shape, copy=True
     )
     assert not np.may_share_memory(get_data(img_r), get_data(img))
+
     np.testing.assert_almost_equal(get_data(img_r), get_data(img))
     np.testing.assert_almost_equal(img_r.affine, img.affine)
+
+
+def test_resampling_warning_checks():
+    rng = np.random.RandomState(42)
+    shape = (3, 2, 5, 2)
+
+    affine = np.eye(4)
+    data = rng.randint(0, 10, shape, dtype="int32")
+    img_no_sform = Nifti1Image(data, affine)
+    img_no_sform.set_sform(None)
+    with pytest.warns(Warning, match="The provided image has no sform"):
+        resample_img(img_no_sform, target_affine=affine)
+
+    # Resampling a binary image with continuous or
+    # linear interpolation should raise a warning.
+    data_binary = rng.randint(4, size=(1, 4, 4), dtype="int32")
+    data_binary[data_binary > 0] = 1
+    assert sorted(list(np.unique(data_binary))) == [0, 1]
+
+    rot = rotation(0, np.pi / 4)
+    img_binary = Nifti1Image(data_binary, np.eye(4))
+    assert _utils.niimg._is_binary_niimg(img_binary)
+
+    with pytest.warns(Warning, match="Resampling binary images with"):
+        resample_img(img_binary, target_affine=rot, interpolation="continuous")
+
+    with pytest.warns(Warning, match="Resampling binary images with"):
+        resample_img(img_binary, target_affine=rot, interpolation="linear")
 
 
 def test_4d_affine_bounding_box_error():
@@ -788,6 +810,7 @@ def test_reorder_img_error_interpolation():
     affine = np.eye(4)
     affine[1, 0] = 0.1
     ref_img = Nifti1Image(data, affine)
+
     interpolation = "an_invalid_interpolation"
     with pytest.raises(ValueError, match="interpolation must be one of"):
         reorder_img(ref_img, resample=interpolation)
