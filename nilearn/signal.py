@@ -43,7 +43,8 @@ def _standardize(signals, detrend=False, standardize='zscore'):
             - 'zscore_sample': The signal is z-scored. Timeseries are shifted
               to zero mean and scaled to unit variance. Uses sample std.
             - 'zscore': The signal is z-scored. Timeseries are shifted
-              to zero mean and scaled to unit variance. Uses population std.
+              to zero mean and scaled to unit variance. Uses population std
+              by calling default :obj:`numpy.std` with N - ``ddof=0``.
             - 'psc':  Timeseries are shifted to zero mean value and scaled
               to percent signal change (as compared to original mean signal).
             - True: The signal is z-scored (same as option `zscore`).
@@ -640,7 +641,8 @@ def clean(signals, runs=None, detrend=True, standardize='zscore',
             - 'zscore_sample': The signal is z-scored. Timeseries are shifted
               to zero mean and scaled to unit variance. Uses sample std.
             - 'zscore': The signal is z-scored. Timeseries are shifted
-              to zero mean and scaled to unit variance. Uses population std.
+              to zero mean and scaled to unit variance. Uses population std
+              by calling default :obj:`numpy.std` with N - ``ddof=0``.
             - 'psc':  Timeseries are shifted to zero mean value and scaled
               to percent signal change (as compared to original mean signal).
             - True: The signal is z-scored (same as option `zscore`).
