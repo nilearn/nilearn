@@ -951,6 +951,8 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         else:
             warn(f'Subject label {this_label} is not present in the'
                     ' dataset and cannot be processed.')
+            
+    sub_labels_exist = set(sub_labels_exist)
 
     # Build fit_kwargs dictionaries to pass to their respective models fit
     # Events and confounds files must match number of imgs (runs)
@@ -960,6 +962,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     models_confounds = []
 
     for sub_label in sub_labels_exist:
+
         # Create model
         model = FirstLevelModel(
             t_r=t_r, slice_time_ref=slice_time_ref, hrf_model=hrf_model,
@@ -1216,7 +1219,8 @@ def _supported_bids_filter() -> dict[str, list[str]]:
     Dictionary of raw and derivatives entities : dict[str, list[str]]
 
     """
-    return {"raw": ['acq',
+    return {"raw": ['ses',
+                    'acq',
                     'ce',
                     'rec',
                     'dir',

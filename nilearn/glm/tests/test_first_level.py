@@ -624,24 +624,6 @@ def test_first_level_contrast_computation():
         del func_img, FUNCFILE, model
 
 
-def test_first_level_from_bids_with_subject_labels():
-    with InTemporaryDirectory():
-        bids_path = create_fake_bids_dataset(n_sub=10, n_ses=2,
-                                             tasks=['localizer', 'main'],
-                                             n_runs=[1, 3])
-        warning_message = ('Subject label foo is not present in'
-                           ' the dataset and cannot be processed')
-        # check that the incorrect label `foo` raises a warning
-        with pytest.warns(UserWarning, match=warning_message):
-            models, m_imgs, m_events, m_confounds = first_level_from_bids(
-                                  bids_path, 'main',
-                                  sub_labels=["foo", "01"],
-                                  space_label='MNI',
-                                  img_filters=[('desc', 'preproc')])
-            # check that the correct label `01` gets a model
-            assert models[0].subject_label == '01'
-
-
 def test_first_level_with_scaling():
     shapes, rk = [(3, 1, 1, 2)], 1
     fmri_data = list()
@@ -852,7 +834,7 @@ def test_glm_sample_mask():
 """Test the first level model on BIDS datasets."""
 
 
-def fake_bids_path():
+def _fake_bids_path():
     return create_fake_bids_dataset(
         n_sub=1,
         n_ses=2,
@@ -913,7 +895,7 @@ def test_first_level_from_bids_validation_input_dataset_path():
 
 def test_first_level_from_bids_validation_task_label():
     with InTemporaryDirectory():
-        bids_path = fake_bids_path()
+        bids_path = _fake_bids_path()
         with pytest.raises(TypeError, match="'task_label' must be a string"):
             first_level_from_bids(dataset_path=bids_path,
                                   task_label=2,
@@ -926,7 +908,7 @@ def test_first_level_from_bids_validation_task_label():
 
 def test_first_level_from_bids_validation_space_label():
     with InTemporaryDirectory():
-        bids_path = fake_bids_path()
+        bids_path = _fake_bids_path()
         with pytest.raises(TypeError, match="'space_label' must be a string"):
             first_level_from_bids(
                 dataset_path=bids_path,
@@ -948,7 +930,7 @@ def test_first_level_from_bids_validation_space_label():
 )
 def test_first_level_from_bids_validation_img_filter_type(img_filters, match):
     with InTemporaryDirectory():
-        bids_path = fake_bids_path()
+        bids_path = _fake_bids_path()
         with pytest.raises(TypeError, match=match):
             first_level_from_bids(
                 dataset_path=bids_path,
@@ -959,7 +941,7 @@ def test_first_level_from_bids_validation_img_filter_type(img_filters, match):
 
 def test_first_level_from_bids_validation_img_filter_value():
     with InTemporaryDirectory():
-        bids_path = fake_bids_path()
+        bids_path = _fake_bids_path()
         with pytest.raises(
             ValueError, match="is not a possible filter"
         ):
@@ -977,7 +959,7 @@ def test_first_level_from_bids_with_missing_files():
     Here there is a desc-preproc and desc-fmriprep image for the space-T1w.
     """
     with InTemporaryDirectory():
-        bids_path = fake_bids_path()
+        bids_path = _fake_bids_path()
         with pytest.raises(ValueError,
                            match="Too many images found"):
             first_level_from_bids(
@@ -987,7 +969,7 @@ def test_first_level_from_bids_with_missing_files():
 def test_first_level_from_bids_no_bold_files():
     with InTemporaryDirectory():
 
-        bids_path = fake_bids_path()
+        bids_path = _fake_bids_path()
         imgs = get_bids_files(main_path=os.path.join(bids_path, "derivatives"), 
                               file_tag="bold",
                               file_type="*gz")
@@ -1004,7 +986,7 @@ def test_first_level_from_bids_with_one_events_missing():
     """Only one events.tsv file is missing, should raise an error."""
     with InTemporaryDirectory():
 
-        bids_path = fake_bids_path()
+        bids_path = _fake_bids_path()
         events_files = get_bids_files(main_path=bids_path, file_tag="events")
         os.remove(events_files[0])
 
@@ -1020,7 +1002,7 @@ def test_first_level_from_bids_with_missing_events():
     """All events.tsv files are missing, should raise an error."""
     with InTemporaryDirectory():
 
-        bids_path = fake_bids_path()
+        bids_path = _fake_bids_path()
         events_files = get_bids_files(main_path=bids_path, file_tag="events")
         for f in events_files[1:]:
             os.remove(f)
@@ -1038,7 +1020,7 @@ def test_first_level_from_bids_one_confound_missing():
     """
     with InTemporaryDirectory():
 
-        bids_path = fake_bids_path()
+        bids_path = _fake_bids_path()
         confound_files = get_bids_files(
             main_path=os.path.join(bids_path, "derivatives"),
             file_tag="desc-confounds_timeseries",
@@ -1054,7 +1036,7 @@ def test_first_level_from_bids_all_confounds_missing():
     """If all confound files are missing, confounds should be an array of None."""
     with InTemporaryDirectory():
 
-        bids_path = fake_bids_path()
+        bids_path = _fake_bids_path()
         confound_files = get_bids_files(
             main_path=os.path.join(bids_path, "derivatives"),
             file_tag="desc-confounds_timeseries",
@@ -1077,6 +1059,7 @@ def test_first_level_from_bids_all_confounds_missing():
             assert condounds_ is None
 
 def test_first_level_from_bids_no_derivatives():
+    """Raise error if the derivative folder does not exist."""
     with InTemporaryDirectory():
         bids_path = create_fake_bids_dataset(
             n_sub=1,
@@ -1114,7 +1097,7 @@ def test_first_level_from_bids_mismatch_run_index():
     """
     with InTemporaryDirectory():
 
-        bids_path = fake_bids_path()
+        bids_path = _fake_bids_path()
         files_to_rename = (
             Path(bids_path)
             .joinpath("derivatives")
@@ -1166,3 +1149,103 @@ def test_first_level_from_bids_several_labels(entity):
         assert len(models) == len(m_events)
         assert len(models) == len(m_confounds)
         assert len(m_imgs[0]) == n_ses * n_runs[0]
+
+
+def test_first_level_from_bids_with_subject_labels():
+    """Test that the subject labels arguments functions \
+    with proper warning for missing subjects."""
+    with InTemporaryDirectory():
+        bids_path = create_fake_bids_dataset(n_sub=2, n_ses=2,
+                                             tasks=['main'],
+                                             n_runs=[2])
+        warning_message = ('Subject label foo is not present in'
+                           ' the dataset and cannot be processed')
+        # check that the incorrect label `foo` raises a warning
+        with pytest.warns(UserWarning, match=warning_message):
+            models, *_ = first_level_from_bids(
+                                  bids_path, 'main',
+                                  sub_labels=["foo", "01"],
+                                  space_label='MNI',
+                                  img_filters=[('desc', 'preproc')])
+            # check that the correct label `01` gets a model
+            assert models[0].subject_label == '01'
+
+
+def test_first_level_no_duplicate_sub_labels():
+    """Make sure that if a subject label is repeated, \
+    only one model is created."""
+    with InTemporaryDirectory():
+        n_sub = 2
+        n_ses = 2
+        tasks = ["main"]
+        n_runs = [2]
+
+        bids_path = create_fake_bids_dataset(
+            n_sub=n_sub,
+            n_ses=n_ses,
+            tasks=tasks,
+            n_runs=n_runs
+        )
+
+        models, *_ = first_level_from_bids(
+                                bids_path, 'main',
+                                sub_labels=["01", "01"],
+                                space_label='MNI',
+                                img_filters=[('desc', 'preproc')])  
+        
+        assert len(models) == 1
+
+
+def test_first_level_select_run():
+    """Select only one run per session."""
+    with InTemporaryDirectory():
+        n_sub = 1
+        n_ses = 2
+        tasks = ["main"]
+        n_runs = [2]
+
+        bids_path = create_fake_bids_dataset(
+            n_sub=n_sub,
+            n_ses=n_ses,
+            tasks=tasks,
+            n_runs=n_runs
+        )
+
+        models, m_imgs, m_events, m_confounds = first_level_from_bids(
+                                bids_path, 'main',
+                                space_label='MNI',
+                                img_filters=[('run', '01'), 
+                                             ('desc', 'preproc')])  
+        
+        assert len(models) == n_sub
+        assert len(models) == len(m_imgs)
+        assert len(models) == len(m_events)
+        assert len(models) == len(m_confounds)
+        assert len(m_imgs[0]) == n_ses
+
+def test_first_level_select_session():
+    """Select only one session."""
+    with InTemporaryDirectory():
+        n_sub = 1
+        n_ses = 2
+        tasks = ["main"]
+        n_runs = [2]
+
+        bids_path = create_fake_bids_dataset(
+            n_sub=n_sub,
+            n_ses=n_ses,
+            tasks=tasks,
+            n_runs=n_runs
+        )
+
+        models, m_imgs, m_events, m_confounds = first_level_from_bids(
+                                bids_path, 'main',
+                                space_label='MNI',
+                                img_filters=[('ses', '01'), 
+                                             ('desc', 'preproc')])  
+        
+        assert len(models) == n_sub
+        assert len(models) == len(m_imgs)
+        assert len(models) == len(m_events)
+        assert len(models) == len(m_confounds)
+        assert len(m_imgs[0]) == n_runs[0]
