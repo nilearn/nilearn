@@ -167,6 +167,30 @@ def _get_labels_data(target_img,
 
     return labels, labels_data
 
+def _check_reduction_strategy(strategy: str):
+    """Check that the provided strategy is supported.
+
+    Parameters
+    ----------
+
+    strategy : :obj:`str`
+        The name of a valid function to reduce the region with.
+        Must be one of: sum, mean, median, minimum, maximum, variance,
+        standard_deviation.
+    """
+    available_reduction_strategies = {'mean',
+                                      'median',
+                                      'sum',
+                                      'minimum',
+                                      'maximum',
+                                      'standard_deviation',
+                                      'variance'}
+
+    if strategy not in available_reduction_strategies:
+        raise ValueError(
+            f"Invalid strategy '{strategy}'. "
+            f"Valid strategies are {available_reduction_strategies}.")
+
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
 @_utils.fill_doc
@@ -231,19 +255,7 @@ def img_to_signals_labels(imgs, labels_img,
     """
     labels_img = _utils.check_niimg_3d(labels_img)
 
-    available_reduction_strategies = {'mean',
-                                      'median',
-                                      'sum',
-                                      'minimum',
-                                      'maximum',
-                                      'standard_deviation',
-                                      'variance'}
-    if strategy not in available_reduction_strategies:
-        raise ValueError(str.format(
-            "Invalid strategy '{}'. Valid strategies are {}.",
-            strategy,
-            available_reduction_strategies
-        ))
+    _check_reduction_strategy(strategy)
 
     # TODO: Make a special case for list of strings
     # (load one image at a time).
