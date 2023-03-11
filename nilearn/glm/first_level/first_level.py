@@ -1348,22 +1348,17 @@ def _validate_args_first_level_from_bids(dataset_path: str,
             f"'img_filters' must be a list. "
             f"Got {type(img_filters)} instead."
         )
-
     supported_filters = _supported_bids_filter()["raw"] +\
                         _supported_bids_filter()["derivatives"]
     for filter_ in img_filters:
-
-        if not isinstance(filter_[0], str):
+        if len(filter_) != 2 or not all(isinstance(x, str) for x in filter_):
             raise TypeError('Filters in img_filters must be (str, str). '
-                            f"Got {type(filter_[0])} for {filter_} instead.")
-
+                            f"Got {filter_} instead.")
         if filter_[0] not in supported_filters:
             raise ValueError(
                 f"Entity {filter_[0]} for {filter_} is not a possible filter. "
                 f"Only {supported_filters} are allowed.")
-
-        if (not isinstance(filter_[1], str)
-            or not all(char.isalnum() for char in filter_[1])):
+        if not all(char.isalnum() for char in filter_[1]):
             raise TypeError('BIDS labels in img_filters must be alphanumeric. '
                             f"Got {type(filter_[1])} for {filter_} instead.")
 

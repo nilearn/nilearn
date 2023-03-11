@@ -1135,7 +1135,7 @@ def test_first_level_from_bids_several_labels(entity):
             n_ses=n_ses,
             tasks=["main"],
             n_runs=n_runs,
-            entities=[entity, ["A", "B"]],
+            entities={entity: ["A", "B"]},
         )
 
         models, m_imgs, m_events, m_confounds = first_level_from_bids(

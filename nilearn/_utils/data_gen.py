@@ -803,7 +803,7 @@ def create_fake_bids_dataset(base_dir='',
                              confounds_tag="desc-confounds_timeseries",
                              no_session=False,
                              random_state=0,
-                             entities=None,) -> str:
+                             entities: dict[str, list[str]] | None = None,) -> str:
     """Create a fake :term:`bids<BIDS>` dataset directory with dummy files.
 
     Returns fake dataset directory name.
@@ -856,11 +856,11 @@ def create_fake_bids_dataset(base_dir='',
                    optional
         Random number generator, or seed.
 
-    entities : :obj:`list`, optional
+    entities : :obj:`dict`, optional
         Extra entity to add to the BIDS filename with a list of values.
         For example, if you want to add an 'echo' entity
         with values 'A' for some files and 'B' for others,
-        you would pass: ``entities=[entity, ['A', 'B']]``.
+        you would pass: ``entities={entity: ['A', 'B']}``.
 
         Note that entities may not be ordered properly (according to BIDS)
         in the generated filenames: for example,
@@ -884,11 +884,7 @@ def create_fake_bids_dataset(base_dir='',
 
     bids_dataset_dir = 'bids_dataset'
 
-    if entities is not None:
-        for label in entities[1]:
-            if not all(char.isalnum() for char in label):
-                raise ValueError(f"Entity label must be alphanumeric. "
-                                f"Got '{label}' instead.")
+    _check_entity_labels(entities)
 
     _mock_bids_dataset(bids_path=Path(base_dir) / bids_dataset_dir,
                        n_sub=n_sub,
@@ -914,6 +910,17 @@ def create_fake_bids_dataset(base_dir='',
                                rand_gen=rand_gen)
 
     return bids_dataset_dir
+
+
+def _check_entity_labels(entities: dict[str, list[str]] | None) -> None:
+    "Validate that all labels are alphanumeric strings."
+    if entities is not None:
+        for key in entities:
+            for label_ in entities[key]:
+                if (not isinstance(label_, str) or 
+                    not all(char.isalnum() for char in label_)):
+                    raise ValueError(f"Entity label must be alphanumeric. "
+                                     f"Got '{label_}' instead.")
 
 
 def _file_id(fields: list[str], n_run: int, run: str) -> str:
@@ -983,7 +990,7 @@ def _write_bids_raw_func(func_path: Path,
     )
 
 
-def _bids_entites() -> dict[str, list[str]]:
+def _bids_entities() -> dict[str, list[str]]:
     """Return a dictionary of BIDS entities.
 
     Note that:
@@ -1013,7 +1020,7 @@ def _mock_bids_dataset(bids_path: Path,
                        tasks: list[str],
                        n_runs: list[int],
                        no_session: bool,
-                       entities,
+                       entities: dict[str, list[str]],
                        n_voxels: int,
                        rand_gen: np.random.RandomState) -> None:
     """Create a fake raw :term:`bids<BIDS>` dataset directory with dummy files.
@@ -1041,8 +1048,8 @@ def _mock_bids_dataset(bids_path: Path,
         Specifying no_sessions will only produce runs and files without the
         optional session field. In this case n_ses will be ignored.
 
-    entities : :obj:`list`
-        Extra entity to add to the BIDS filename with a list of values.
+    entities : :obj:`dict`, optional
+        Extra entities to add to the BIDS filename with a list of values.
 
     n_voxels : :obj:`int`
         Number of voxels along a given axis in the functional image.
@@ -1071,12 +1078,13 @@ def _mock_bids_dataset(bids_path: Path,
         func_path.mkdir(parents=True, exist_ok=True)
 
         for task, n_run in zip(tasks, n_runs):
-            run_labels = _runs_to_create(n_run)
-            for run in run_labels:
-                if (entities is None or
-                    entities[0] in _bids_entites()["derivatives"]
-                   ):
 
+            for run in _runs_to_create(n_run):
+
+                no_extra_raw_entity = entities is None or all(
+                    x not in _bids_entities()["raw"] for x in entities
+                )
+                if no_extra_raw_entity:
                     fields = [subject, session, f"task-{task}"]
                     _write_bids_raw_func(func_path=func_path,
                                          file_id=_file_id(fields,
@@ -1084,21 +1092,22 @@ def _mock_bids_dataset(bids_path: Path,
                                                           run),
                                          n_voxels=n_voxels,
                                          rand_gen=rand_gen)
+                    continue
 
-                else:
-
-                    entity, labels = entities
-                    for i_label in labels:
+                for key in entities:
+                    if key not in _bids_entities()["raw"]:
+                        continue
+                    for i_label in entities[key]:
                         fields = [subject,
-                                  session,
-                                  f"task-{task}",
-                                  f"{entity}-{i_label}"]
+                                    session,
+                                    f"task-{task}",
+                                    f"{key}-{i_label}"]
                         _write_bids_raw_func(func_path=func_path,
-                                             file_id=_file_id(fields,
-                                                              n_run,
-                                                              run),
-                                             n_voxels=n_voxels,
-                                             rand_gen=rand_gen)
+                                            file_id=_file_id(fields,
+                                                            n_run,
+                                                            run),
+                                            n_voxels=n_voxels,
+                                            rand_gen=rand_gen)
 
 
 def _write_bids_derivative_func(func_path: Path,
@@ -1143,8 +1152,11 @@ def _write_bids_derivative_func(func_path: Path,
 
     for space in ('MNI', 'T1w'):
         for desc in ('preproc', 'fmriprep'):
+
+            # Only space 'T1w' include both descriptions.
             if space == 'MNI' and desc == 'fmriprep':
                 continue
+
             file_path = func_path.joinpath(
                 f'{file_id}_space-{space}_desc-{desc}_bold.nii.gz'
             )
@@ -1219,7 +1231,7 @@ def _mock_bids_derivatives(bids_path: Path,
                            no_session: bool,
                            with_confounds: bool,
                            confounds_tag: str,
-                           entities,
+                           entities: dict[str, list[str]],
                            n_voxels: int,
                            rand_gen: np.random.RandomState) -> None:
     """Create a fake raw :term:`bids<BIDS>` dataset directory with dummy files.
@@ -1255,7 +1267,7 @@ def _mock_bids_derivatives(bids_path: Path,
         For example: `desc-confounds_timeseries`
         or "desc-confounds_regressors".
 
-    entities : :obj:`list`
+    entities : :obj:`dict`
         Extra entity to add to the BIDS filename with a list of values.
 
     n_voxels : :obj:`int`
@@ -1276,7 +1288,9 @@ def _mock_bids_derivatives(bids_path: Path,
         func_path.mkdir(parents=True, exist_ok=True)
 
         for task, n_run in zip(tasks, n_runs):
+
             for run in _runs_to_create(n_run):
+
                 if entities is None:
                     fields = [subject, session, 'task-' + task]
                     _write_bids_derivative_func(func_path=func_path,
@@ -1287,24 +1301,25 @@ def _mock_bids_derivatives(bids_path: Path,
                                                 rand_gen=rand_gen,
                                                 with_confounds=with_confounds,
                                                 confounds_tag=confounds_tag)
-                elif (
-                        entities[0] in
-                        _bids_entites()["raw"] + _bids_entites()["derivatives"]
+                elif any(
+                        x in
+                        _bids_entities()["raw"] + _bids_entities()["derivatives"]
+                        for x in entities
                     ):
-                    entity, labels = entities
-                    for i_label in labels:
-                        fields = [subject,
-                                  session,
-                                  'task-' + task,
-                                  f"{entity}-{i_label}"]
-                        _write_bids_derivative_func(func_path=func_path,
-                                                    file_id=_file_id(fields,
-                                                                     n_run,
-                                                                     run),
-                                                    n_voxels=n_voxels,
-                                                    rand_gen=rand_gen,
-                                                    with_confounds=with_confounds,
-                                                    confounds_tag=confounds_tag)
+                    for key in entities:
+                        for label in entities[key]:
+                            fields = [subject,
+                                      session,
+                                      'task-' + task,
+                                      f"{key}-{label}"]
+                            _write_bids_derivative_func(func_path=func_path,
+                                                        file_id=_file_id(fields,
+                                                                        n_run,
+                                                                        run),
+                                                        n_voxels=n_voxels,
+                                                        rand_gen=rand_gen,
+                                                        with_confounds=with_confounds,
+                                                        confounds_tag=confounds_tag)
 
 
 def generate_random_img(
