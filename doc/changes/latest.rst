@@ -21,6 +21,9 @@ Enhancements
 
 - Surface plotting methods no longer automatically rescale background maps, which, among other things, allows to use curvature sign as a background map (:gh:`3173` by `Alexis Thual`_).
 
+- :func:`~glm.first_level.first_level_from_bids` now takes an optional ``sub_labels`` argument and warns users of given subject labels that are not present in the dataset (:gh:`3351` by `Kevin Sitek`_).
+
+
 Changes
 -------
 - The behavior of :func:`~nilearn.datasets.fetch_atlas_craddock_2012`, :func:`~nilearn.datasets.fetch_atlas_smith_2009` and :func:`~nilearn.datasets.fetch_atlas_basc_multiscale_2015` is updated with their new parameters to return one map along with a deprecation cycle (:gh:`3353` by `Ahmad Chamma`_).
@@ -29,6 +32,7 @@ Changes
 
 - Examples have been made PEP8 compliant and reformatted using black. (:gh:`3549`, :gh:`3550`, :gh:`3551`, :gh:`3552`, :gh:`3553`, :gh:`3554`, :gh:`3555`,  by `Rémi Gau`_).
 
+- Extract helper-functions for input-image validation from :func:`~regions.img_to_signals_labels`, :func:`~regions.signals_to_img_labels`, :func:`~regions.img_to_signals_maps` :func:`~regions.signals_to_img_maps` (:gh:`3523` by `Rémi Gau`_ and `Christian Gerloff`_).
 
 
 0.10.1rc1
@@ -55,7 +59,6 @@ Enhancements
 
 - :bdg-primary:`Doc` Addition to docs to note that :meth:`~maskers.BaseMasker.inverse_transform` only performs spatial unmasking (:gh:`3445` by `Robert Williamson`_).
 
-
 - :bdg-success:`API` Give users control over Butterworth filter (:func:`~signal.butterworth`) parameters in :func:`~signal.clean` and Masker objects as kwargs (:gh:`3478` by `Taylor Salo`_).
 
 - :bdg-success:`API` Allow users to output label maps from :func:`~reporting.get_clusters_table` (:gh:`3477` by `Steven Meisler`_).
@@ -66,3 +69,4 @@ Changes
 - :bdg-primary:`Doc` The documentation for :func:`~image.threshold_img` has been improved, with more information about which voxels are set to 0 and which ones keep their original values (:gh:`3485` by `Rémi Gau`_).
 
 - :bdg-secondary:`Maint` Modules :mod:`~nilearn.decomposition` and :mod:`~nilearn.decoding` code and docstrings have been reformatted using black. Changes resulted in improved readability overall and increased consistency (:gh:`3491` and :gh:`3484` by `Rémi Gau`_).
+
