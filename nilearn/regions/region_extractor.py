@@ -535,7 +535,7 @@ def connected_label_regions(
     if min_size is not None and not isinstance(min_size, numbers.Number):
         raise ValueError(
             "Expected 'min_size' to be specified as integer. "
-            "You provided {}".format(min_size)
+            f"You provided {min_size}"
         )
     if not isinstance(connect_diag, bool):
         raise ValueError(

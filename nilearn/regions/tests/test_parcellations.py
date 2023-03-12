@@ -54,10 +54,7 @@ def test_errors_raised_in_check_parameters_fit(method, test_image):
     """
     with pytest.raises(
         ValueError,
-        match=(
-            "The method you have selected "
-            "is not implemented '{}'".format(method)
-        ),
+        match=(f"The method you have selected is not implemented '{method}'"),
     ):
         Parcellations(method=method).fit(test_image)
 

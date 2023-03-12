@@ -371,11 +371,7 @@ class Parcellations(_MultiPCA):
 
         mask_img_ = self.masker_.mask_img_
         if self.verbose:
-            print(
-                "[{}] computing {}".format(
-                    self.__class__.__name__, self.method
-                )
-            )
+            print(f"[{self.__class__.__name__}] computing {self.method}")
 
         if self.method == "kmeans":
             from sklearn.cluster import MiniBatchKMeans
