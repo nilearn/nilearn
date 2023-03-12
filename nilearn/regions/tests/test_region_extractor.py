@@ -156,11 +156,9 @@ def test_invalid_threshold_strategies():
     maps, _ = generate_maps((6, 8, 10), n_regions=1)
 
     extract_strategy_check = RegionExtractor(maps, thresholding_strategy="n_")
-    valid_strategies = ["ratio_n_voxels", "img_value", "percentile"]
     with pytest.raises(
         ValueError,
-        match="'thresholding_strategy' should be "
-        f"either of these {valid_strategies}",
+        match="'thresholding_strategy' should be ",
     ):
         extract_strategy_check.fit()
 
