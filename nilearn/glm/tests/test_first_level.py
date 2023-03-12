@@ -848,7 +848,7 @@ def _fake_bids_path():
 @pytest.mark.parametrize("task_index", [0, 1])
 @pytest.mark.parametrize("space_label", ["MNI", "T1w"])
 def test_first_level_from_bids(n_runs, n_ses, task_index, space_label):
-    """Check several BIDS structure."""
+    """Test several BIDS structure."""
     with InTemporaryDirectory():
 
         n_sub = 2
@@ -873,24 +873,80 @@ def test_first_level_from_bids(n_runs, n_ses, task_index, space_label):
         assert len(models) == len(m_events)
         assert len(models) == len(m_confounds)
 
-        # no run entity in filename
-        # or session level when they take a value of 0
+        n_imgs_expected = n_ses * n_runs[task_index]
+
+        # no run entity in filename or session level
+        # when they take a value of 0 when generating a dataset
         no_run_entity = n_runs[task_index] <= 1
         no_session_level =  n_ses <= 1
 
         if no_session_level:
-            if no_run_entity:
-                assert len(m_imgs[0]) == 1
-            else:
-                assert len(m_imgs[0]) == n_runs[task_index]
+            n_imgs_expected = 1 if no_run_entity else n_runs[task_index]
         elif no_run_entity:
-            assert len(m_imgs[0]) == n_ses
-        else:
-            assert len(m_imgs[0]) == n_ses * n_runs[task_index]
+            n_imgs_expected = n_ses
 
+        assert len(m_imgs[0]) == n_imgs_expected
+
+
+def test_first_level_from_bids_select_one_run_per_session():
+    with InTemporaryDirectory():
+        n_sub = 1
+        n_ses = 2
+        tasks = ["main"]
+        n_runs = [2]
+
+        bids_path = create_fake_bids_dataset(
+            n_sub=n_sub,
+            n_ses=n_ses,
+            tasks=tasks,
+            n_runs=n_runs
+        )
+
+        models, m_imgs, m_events, m_confounds = first_level_from_bids(
+                                bids_path, 'main',
+                                space_label='MNI',
+                                img_filters=[('run', '01'), 
+                                             ('desc', 'preproc')])
+
+        assert len(models) == n_sub
+        assert len(models) == len(m_imgs)
+        assert len(models) == len(m_events)
+        assert len(models) == len(m_confounds)
+
+        n_imgs_expected = n_ses
+        assert len(m_imgs[0]) == n_imgs_expected
+
+
+def test_first_level_from_bids_select_all_runs_of_one_session():
+    with InTemporaryDirectory():
+        n_sub = 1
+        n_ses = 2
+        tasks = ["main"]
+        n_runs = [2]
+
+        bids_path = create_fake_bids_dataset(
+            n_sub=n_sub,
+            n_ses=n_ses,
+            tasks=tasks,
+            n_runs=n_runs
+        )
+
+        models, m_imgs, m_events, m_confounds = first_level_from_bids(
+                                bids_path, 'main',
+                                space_label='MNI',
+                                img_filters=[('ses', '01'), 
+                                             ('desc', 'preproc')])  
+        
+        assert len(models) == n_sub
+        assert len(models) == len(m_imgs)
+        assert len(models) == len(m_events)
+        assert len(models) == len(m_confounds)
+
+        n_imgs_expected = n_runs[0]
+        assert len(m_imgs[0]) == n_imgs_expected
 
 @pytest.mark.parametrize("verbose", [0, 1])
-def test_first_level_from_bids_verbose(verbose):
+def test_first_level_from_bids_smoke_test_for_verbose_argument(verbose):
     with InTemporaryDirectory():
 
         bids_path = _fake_bids_path()
@@ -902,6 +958,90 @@ def test_first_level_from_bids_verbose(verbose):
             img_filters=[("desc", "preproc")],
             verbose=verbose,
         )
+
+
+@pytest.mark.parametrize(
+    "entity", ["acq", "ce", "dir", "rec", "echo", "res", "den"]
+)
+def test_first_level_from_bids_several_labels_per_entity(entity):
+    """Correct files selected when an entity has several possible labels.
+    
+    Regression test for https://github.com/nilearn/nilearn/issues/3524
+    """
+    with InTemporaryDirectory():
+        n_sub = 2
+        n_ses = 2
+        n_runs = [3]
+
+        bids_path = create_fake_bids_dataset(
+            n_sub=n_sub,
+            n_ses=n_ses,
+            tasks=["main"],
+            n_runs=n_runs,
+            entities={entity: ["A", "B"]},
+        )
+
+        models, m_imgs, m_events, m_confounds = first_level_from_bids(
+            dataset_path=bids_path,
+            task_label="main",
+            space_label="MNI",
+            img_filters=[("desc", "preproc"), (entity, "A")],
+        )
+        assert len(models) == n_sub
+        assert len(models) == len(m_imgs)
+        assert len(models) == len(m_events)
+        assert len(models) == len(m_confounds)
+
+        n_imgs_expected = n_ses * n_runs[0]
+        assert len(m_imgs[0]) == n_imgs_expected
+
+
+def test_first_level_from_bids_with_subject_labels():
+    """Test that the subject labels arguments works \
+    with proper warning for missing subjects."""
+    with InTemporaryDirectory():
+        bids_path = create_fake_bids_dataset(n_sub=2, n_ses=2,
+                                             tasks=['main'],
+                                             n_runs=[2])
+        warning_message = ('Subject label foo is not present in'
+                           ' the dataset and cannot be processed')
+        # check that the incorrect label `foo` raises a warning
+        with pytest.warns(UserWarning, match=warning_message):
+            models, *_ = first_level_from_bids(
+                                  bids_path, 'main',
+                                  sub_labels=["foo", "01"],
+                                  space_label='MNI',
+                                  img_filters=[('desc', 'preproc')])
+            # check that the correct label `01` gets a model
+            assert models[0].subject_label == '01'
+
+
+def test_first_level_from_bids_no_duplicate_sub_labels():
+    """Make sure that if a subject label is repeated, \
+    only one model is created.
+    
+    See https://github.com/nilearn/nilearn/issues/3585
+    """
+    with InTemporaryDirectory():
+        n_sub = 2
+        n_ses = 2
+        tasks = ["main"]
+        n_runs = [2]
+
+        bids_path = create_fake_bids_dataset(
+            n_sub=n_sub,
+            n_ses=n_ses,
+            tasks=tasks,
+            n_runs=n_runs
+        )
+
+        models, *_ = first_level_from_bids(
+                                bids_path, 'main',
+                                sub_labels=["01", "01"],
+                                space_label='MNI',
+                                img_filters=[('desc', 'preproc')])  
+        
+        assert len(models) == 1
 
 
 def test_first_level_from_bids_validation_input_dataset_path():
@@ -949,10 +1089,13 @@ def test_first_level_from_bids_validation_space_label(space_label,error_type):
     "img_filters,error_type,match", [
         ("foo", TypeError, "'img_filters' must be a list"),
         ([(1, 2)], TypeError, "Filters in img"),
-        ([("desc", "*/-")], ValueError, "All bids labels must be alphanumeric."),
+        ([("desc", "*/-")], ValueError, "bids labels must be alphanumeric."),
+        ([("foo", "bar")], ValueError, "is not a possible filter."),
     ]
 )
-def test_first_level_from_bids_validation_img_filter_type(img_filters, error_type, match):
+def test_first_level_from_bids_validation_img_filter(img_filters,
+                                                     error_type,
+                                                     match):
     with InTemporaryDirectory():
         bids_path = _fake_bids_path()
         with pytest.raises(error_type, match=match):
@@ -963,20 +1106,7 @@ def test_first_level_from_bids_validation_img_filter_type(img_filters, error_typ
             )
 
 
-def test_first_level_from_bids_validation_img_filter_value():
-    with InTemporaryDirectory():
-        bids_path = _fake_bids_path()
-        with pytest.raises(
-            ValueError, match="is not a possible filter"
-        ):
-            first_level_from_bids(
-                dataset_path=bids_path,
-                task_label="main",
-                img_filters=[("foo", "bar")],
-            )
-
-
-def test_first_level_from_bids_with_missing_files():
+def test_first_level_from_bids_too_many_bold_files():
     """Too many bold files if img_filters is underspecified,
     should raise an error.
 
@@ -991,8 +1121,8 @@ def test_first_level_from_bids_with_missing_files():
             )
 
 
-def test_first_level_from_bids_no_bold_files():
-    with InTemporaryDirectory():
+def test_first_level_from_bids_no_bold_file():
+    with InTemporaryDirectory(): 
 
         bids_path = _fake_bids_path()
         imgs = get_bids_files(main_path=os.path.join(bids_path, "derivatives"), 
@@ -1107,7 +1237,8 @@ def test_first_level_from_bids_no_session():
         bids_path = create_fake_bids_dataset(
             n_sub=3, n_ses=1, tasks=["main"], n_runs=[2], no_session=True
         )
-        # test repeated run tag error when run tag is in filenames and not ses
+        # repeated run entity error 
+        # when run entity is in filenames and not ses
         # can arise when desc or space is present and not specified
         with pytest.raises(ValueError,
                            match="Too many images found"):
@@ -1142,138 +1273,3 @@ def test_first_level_from_bids_mismatch_run_index():
                 img_filters=[("desc", "preproc")]
             )
 
-
-@pytest.mark.parametrize(
-    "entity", ["acq", "ce", "dir", "rec", "echo", "res", "den"]
-)
-def test_first_level_from_bids_several_labels(entity):
-    """Test right files are selected when entities have several labels.
-    
-    Regression test for https://github.com/nilearn/nilearn/issues/3524
-    
-    """
-    with InTemporaryDirectory():
-        n_sub = 2
-        n_ses = 2
-        n_runs = [3]
-
-        bids_path = create_fake_bids_dataset(
-            n_sub=n_sub,
-            n_ses=n_ses,
-            tasks=["main"],
-            n_runs=n_runs,
-            entities={entity: ["A", "B"]},
-        )
-
-        models, m_imgs, m_events, m_confounds = first_level_from_bids(
-            dataset_path=bids_path,
-            task_label="main",
-            space_label="MNI",
-            img_filters=[("desc", "preproc"), (entity, "A")],
-        )
-        assert len(models) == n_sub
-        assert len(models) == len(m_imgs)
-        assert len(models) == len(m_events)
-        assert len(models) == len(m_confounds)
-        assert len(m_imgs[0]) == n_ses * n_runs[0]
-
-
-def test_first_level_from_bids_with_subject_labels():
-    """Test that the subject labels arguments functions \
-    with proper warning for missing subjects."""
-    with InTemporaryDirectory():
-        bids_path = create_fake_bids_dataset(n_sub=2, n_ses=2,
-                                             tasks=['main'],
-                                             n_runs=[2])
-        warning_message = ('Subject label foo is not present in'
-                           ' the dataset and cannot be processed')
-        # check that the incorrect label `foo` raises a warning
-        with pytest.warns(UserWarning, match=warning_message):
-            models, *_ = first_level_from_bids(
-                                  bids_path, 'main',
-                                  sub_labels=["foo", "01"],
-                                  space_label='MNI',
-                                  img_filters=[('desc', 'preproc')])
-            # check that the correct label `01` gets a model
-            assert models[0].subject_label == '01'
-
-
-def test_first_level_no_duplicate_sub_labels():
-    """Make sure that if a subject label is repeated, \
-    only one model is created."""
-    with InTemporaryDirectory():
-        n_sub = 2
-        n_ses = 2
-        tasks = ["main"]
-        n_runs = [2]
-
-        bids_path = create_fake_bids_dataset(
-            n_sub=n_sub,
-            n_ses=n_ses,
-            tasks=tasks,
-            n_runs=n_runs
-        )
-
-        models, *_ = first_level_from_bids(
-                                bids_path, 'main',
-                                sub_labels=["01", "01"],
-                                space_label='MNI',
-                                img_filters=[('desc', 'preproc')])  
-        
-        assert len(models) == 1
-
-
-def test_first_level_select_run():
-    """Select only one run per session."""
-    with InTemporaryDirectory():
-        n_sub = 1
-        n_ses = 2
-        tasks = ["main"]
-        n_runs = [2]
-
-        bids_path = create_fake_bids_dataset(
-            n_sub=n_sub,
-            n_ses=n_ses,
-            tasks=tasks,
-            n_runs=n_runs
-        )
-
-        models, m_imgs, m_events, m_confounds = first_level_from_bids(
-                                bids_path, 'main',
-                                space_label='MNI',
-                                img_filters=[('run', '01'), 
-                                             ('desc', 'preproc')])  
-        
-        assert len(models) == n_sub
-        assert len(models) == len(m_imgs)
-        assert len(models) == len(m_events)
-        assert len(models) == len(m_confounds)
-        assert len(m_imgs[0]) == n_ses
-
-
-def test_first_level_select_session():
-    """Select only one session."""
-    with InTemporaryDirectory():
-        n_sub = 1
-        n_ses = 2
-        tasks = ["main"]
-        n_runs = [2]
-
-        bids_path = create_fake_bids_dataset(
-            n_sub=n_sub,
-            n_ses=n_ses,
-            tasks=tasks,
-            n_runs=n_runs
-        )
-
-        models, m_imgs, m_events, m_confounds = first_level_from_bids(
-                                bids_path, 'main',
-                                space_label='MNI',
-                                img_filters=[('ses', '01'), 
-                                             ('desc', 'preproc')])  
-        
-        assert len(models) == n_sub
-        assert len(models) == len(m_imgs)
-        assert len(models) == len(m_events)
-        assert len(models) == len(m_confounds)
-        assert len(m_imgs[0]) == n_runs[0]

@@ -9,6 +9,7 @@ import json
 import string
 
 from pathlib import Path
+from typing import Any, Union
 
 import numpy as np
 import pandas as pd
@@ -834,15 +835,15 @@ def generate_random_img(
 
 
 def create_fake_bids_dataset(
-    base_dir="",
-    n_sub=10,
-    n_ses=2,
-    tasks=["localizer", "main"],
-    n_runs=[1, 3],
-    with_derivatives=True,
-    with_confounds=True,
-    confounds_tag="desc-confounds_timeseries",
-    no_session=False,
+    base_dir: str = "",
+    n_sub: int = 10,
+    n_ses: int = 2,
+    tasks: list[str] = ["localizer", "main"],
+    n_runs: list[int] = [1, 3],
+    with_derivatives: bool = True,
+    with_confounds: bool = True,
+    confounds_tag: str | None = "desc-confounds_timeseries",
+    no_session: bool = False,
     random_state=0,
     entities: dict[str, list[str]] | None = None,
 ) -> str:
@@ -903,14 +904,8 @@ def create_fake_bids_dataset(
     entities : :obj:`dict`, optional
         Extra entity to add to the BIDS filename with a list of values.
         For example, if you want to add an 'echo' entity
-        with values 'A' for some files and 'B' for others,
-        you would pass: ``entities={entity: ['A', 'B']}``.
-
-        Note that entities may not be ordered properly (according to BIDS)
-        in the generated filenames: for example,
-        `sub-01_ses-01_task-main_echo-B_run-01_bold.nii.gz` (invalid)
-        instead of
-        `sub-01_ses-01_task-main_run-01_echo-B_bold.nii.gz` (valid).
+        with values '1' for some files and '1' for others,
+        you would pass: ``entities={"echo": ['1', '2']}``.
 
     Returns
     -------
@@ -931,7 +926,8 @@ def create_fake_bids_dataset(
     if no_session:
         n_ses = 0
 
-    _check_tasks(tasks)
+    for task_ in tasks:
+        bids.validate_label(task_)
 
     if entities is None:
         entities = {}
@@ -967,15 +963,27 @@ def create_fake_bids_dataset(
     return bids_dataset_dir
 
 
-def _check_tasks(tasks):
-    for task_ in tasks:
-        bids.validate_label(task_)
-
-
 def _check_entities(entities: dict) -> None:
-    """Validate that all labels are alphanumeric strings."""
-    for value in entities.values():
-        for label_ in value:
+    """Validate that all labels are alphanumeric strings.
+    
+    Parameters
+    ----------
+    entities : :obj:`dict`, optional
+        Extra entity to add to the BIDS filename with a list of values.
+        For example, if you want to add an 'echo' entity
+        with values '1' for some files and '1' for others,
+        you would pass: ``entities={"echo": ['1', '2']}``.
+    """
+    if len(entities.keys()) > 1:
+        # Generating dataset with more than one extra entity
+        # becomes too complex.
+        # Won't be implemented until there is a need.
+        raise ValueError("Only a single extra entity is supported for now.")
+
+    for key in entities:
+        if key not in bids.entities()["raw"] + bids.entities()["derivatives"]:
+            raise ValueError(f"Invalid entity: {key}")
+        for label_ in entities[key]:
             bids.validate_label(label_)
 
 
@@ -1033,15 +1041,7 @@ def _mock_bids_dataset(
             subses_dir = subses_dir / f"ses-{session}"
 
         if session in ("01", ""):
-            anat_path = subses_dir / "anat"
-            anat_path.mkdir(parents=True, exist_ok=True)
-            fields = {
-                "suffix": "T1w",
-                "extension": "nii.gz",
-                "entities": {"sub": subject, "ses": session},
-            }
-            anat_file = anat_path / _create_bids_filename(fields)
-            open(anat_file, "w")
+            _write_bids_raw_anat(subses_dir, subject, session)
 
         func_path = subses_dir / "func"
         func_path.mkdir(parents=True, exist_ok=True)
@@ -1136,6 +1136,7 @@ def _mock_bids_derivatives(
         subses_dir = bids_path / f"sub-{subject}"
         if session != "":
             subses_dir = subses_dir / f"ses-{session}"
+
         func_path = subses_dir / "func"
         func_path.mkdir(parents=True, exist_ok=True)
 
@@ -1192,7 +1193,7 @@ def _listify(n: int) -> list[str]:
 
 
 def _create_bids_filename(
-    fields: dict[str], entities_to_include: list[str] | None = None
+    fields: dict[str, Any], entities_to_include: list[str] | None = None
 ) -> str:
     """Create BIDS filename from dictionary of entity-label pairs.
 
@@ -1201,15 +1202,16 @@ def _create_bids_filename(
     fields : :obj:`dict` of :obj:`str`
         Dictionary of entity-label pairs, for example:
 
-        {"suffix": "T1w",
-         "extension": "nii.gzz",
-          "entities": {'acq': 'ap', 'desc': 'preproc'}
+        {
+         "suffix": "T1w",
+         "extension": "nii.gz",
+         "entities": {"acq":  "ap",
+                      "desc": "preproc"}
         }.
 
     Returns
     -------
     BIDS filename : :obj:`str`
-        'filename'.
 
     """
     if entities_to_include is None:
@@ -1227,7 +1229,36 @@ def _create_bids_filename(
     return filename
 
 
-def _init_fields(subject, session, task, run):
+def _init_fields(subject: str,
+                 session: str,
+                 task: str,
+                 run: str) -> dict[str, Any]:
+    """Initialize fields to help create a valid BIDS filename.
+
+    Parameters
+    ----------
+    subject : :obj:`str`
+        Subject label
+
+    session : :obj:`str`
+        Session label
+
+    task : :obj:`str`
+        Task label
+
+    run : :obj:`str`
+        Run label
+
+    Returns
+    -------
+    dict
+        Fields used to create a BIDS filename.
+
+    See Also
+    --------
+    _create_bids_filename
+
+    """
     fields = {
         "suffix": "bold",
         "extension": "nii.gz",
@@ -1241,9 +1272,34 @@ def _init_fields(subject, session, task, run):
     return fields
 
 
+def _write_bids_raw_anat(subses_dir: Path, subject: str, session: str) -> None:
+    """Create a dummy anat T1w file.
+
+    Parameters
+    ----------
+    subses_dir : :obj:`Path`
+        Subject session directory
+
+    subject : :obj:`str`
+        Subject label
+
+    session : :obj:`str`
+        Session label
+    """
+    anat_path = subses_dir / "anat"
+    anat_path.mkdir(parents=True, exist_ok=True)
+    fields = {
+        "suffix": "T1w",
+        "extension": "nii.gz",
+        "entities": {"sub": subject, "ses": session},
+    }
+    anat_file = anat_path / _create_bids_filename(fields)
+    open(anat_file, "w")
+
+
 def _write_bids_raw_func(
     func_path: Path,
-    fields: str,
+    fields: dict[str, Any],
     n_voxels: int,
     rand_gen: np.random.RandomState,
 ) -> None:
@@ -1286,7 +1342,7 @@ def _write_bids_raw_func(
 
 def _write_bids_derivative_func(
     func_path: Path,
-    fields: dict,
+    fields: dict[str, Any],
     n_voxels: int,
     rand_gen: np.random.RandomState,
     confounds_tag: str | None,
@@ -1353,8 +1409,3 @@ def _write_bids_derivative_func(
                 fields=fields, entities_to_include=entities_to_include
             )
             write_fake_bold_img(bold_path, shape=shape, random_state=rand_gen)
-
-
-
-
-

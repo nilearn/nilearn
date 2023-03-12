@@ -903,8 +903,8 @@ def first_level_from_bids(dataset_path,
     else:
         filters = _make_bids_files_filter(
             task_label=task_label,
-            supported_filters=_supported_bids_filter()["raw"]
-            + _supported_bids_filter()["derivatives"],
+            supported_filters=bids.entities()["raw"]
+            + bids.entities()["derivatives"],
             extra_filter=img_filters
         )
         img_specs = get_bids_files(derivatives_path,
@@ -916,7 +916,7 @@ def first_level_from_bids(dataset_path,
         # we try to search in the raw data folder
         filters = _make_bids_files_filter(
             task_label=task_label,
-            supported_filters=_supported_bids_filter()["raw"],
+            supported_filters=bids.entities()["raw"],
             extra_filter=img_filters
         )
         if not img_specs:
@@ -926,9 +926,9 @@ def first_level_from_bids(dataset_path,
                                        file_type='json',
                                        filters=filters)
         if not img_specs:
-            warn('No bold.json found in the derivatives or dataset folder.',
-                 ' t_r can not be inferred ',
-                 ' and will need to be set manually in the list of models',
+            warn('No bold.json found in the derivatives or dataset folder.'
+                 ' t_r can not be inferred '
+                 ' and will need to be set manually in the list of models'
                  ' otherwise their fit will throw an exception.')
         else:
             specs = json.load(open(img_specs[0], 'r'))
@@ -977,24 +977,16 @@ def first_level_from_bids(dataset_path,
                                    sub_label=sub_label_,
                                    task_label=task_label,
                                    space_label=space_label,
-                                   img_filters=img_filters)
-        if verbose:
-            _report_found_files(files=imgs,
-                                text='preprocessed BOLD',
-                                sub_label=sub_label_,
-                                filters=filters)
+                                   img_filters=img_filters,
+                                   verbose=verbose)
         models_run_imgs.append(imgs)
 
-        events = _get_events_files(dataset_path = dataset_path,
+        events = _get_events_files(dataset_path=dataset_path,
                                    sub_label=sub_label_,
                                    task_label=task_label,
                                    img_filters=img_filters,
-                                   imgs=imgs)
-        if verbose:
-            _report_found_files(files=events,
-                                text='events',
-                                sub_label=sub_label_,
-                                filters=filters) 
+                                   imgs=imgs,
+                                   verbose=verbose)
         events = [pd.read_csv(event, sep='\t', index_col=None)
                   for event in events]
         models_events.append(events)
@@ -1003,12 +995,8 @@ def first_level_from_bids(dataset_path,
                                    sub_label=sub_label_,
                                    task_label=task_label,
                                    img_filters=img_filters,
-                                   imgs=imgs)
-        if verbose:
-            _report_found_files(files=confounds,
-                                text='confounds',
-                                sub_label=sub_label_,
-                                filters=filters)     
+                                   imgs=imgs,
+                                   verbose=verbose)
         if confounds:
             confounds = [pd.read_csv(c, sep='\t', index_col=None)
                          for c in confounds]
@@ -1017,8 +1005,28 @@ def first_level_from_bids(dataset_path,
     return models, models_run_imgs, models_events, models_confounds
 
 
+def _list_valid_subjects(derivatives_path: str,
+                         sub_labels: list[str] | None) -> list[str]:
+    """List valid subjects in the dataset.
 
-def _list_valid_subjects(derivatives_path: str, sub_labels: list[str] | None):
+    - Include all subjects if no subject pre-selection is passed.
+    - Exclude subjects that do not exist in the derivatives folder.
+    - Remove duplicate subjects.
+
+    Parameters
+    ----------
+    derivatives_path : :obj:`str`
+        Path to the BIDS derivatives folder.
+
+    sub_labels : :obj:`list` of :obj:`str`, optional
+        List of subject labels to process. 
+        If None, all subjects in the dataset will be processed.
+
+    Returns
+    -------
+    sub_labels : :obj:`list` of :obj:`str`, optional
+        List of subject labels that will be processed.
+    """    
     # Infer subjects in dataset if not provided
     if not sub_labels:
         sub_folders = glob.glob(os.path.join(derivatives_path, "sub-*/"))
@@ -1076,6 +1084,7 @@ def _get_processed_imgs(
     task_label: str,
     space_label: str,
     img_filters: list[tuple[str, str]],
+    verbose: int
 ) -> list[str]:
     """Get images for a given subject, task and filters.
 
@@ -1096,6 +1105,9 @@ def _get_processed_imgs(
         Filters are of the form (field, label).
         Only one filter per field allowed.
 
+    verbose : :obj:`integer`
+        Indicate the level of verbosity.
+
     Returns
     -------
     imgs : :obj:`list` of :obj:`str`
@@ -1105,8 +1117,8 @@ def _get_processed_imgs(
     filters = _make_bids_files_filter(
         task_label=task_label,
         space_label=space_label,
-        supported_filters=_supported_bids_filter()["raw"]
-        + _supported_bids_filter()["derivatives"],
+        supported_filters=bids.entities()["raw"]
+        + bids.entities()["derivatives"],
         extra_filter=img_filters,
     )
     imgs = get_bids_files(
@@ -1117,6 +1129,11 @@ def _get_processed_imgs(
         sub_label=sub_label,
         filters=filters,
     )
+    if verbose:
+        _report_found_files(files=imgs,
+                            text='preprocessed BOLD',
+                            sub_label=sub_label,
+                            filters=filters)
     _check_bids_image_list(imgs, sub_label, filters)
     return imgs
 
@@ -1127,6 +1144,7 @@ def _get_events_files(
     task_label: str,
     img_filters: list[tuple[str, str]],
     imgs: list[str],
+    verbose: int,
 ) -> list[str]:
     """Get events.tsv files for a given subject, task and filters.
 
@@ -1151,6 +1169,9 @@ def _get_events_files(
     imgs : :obj:`list` of :obj:`str`
         List of fullpath to the preprocessed images
 
+    verbose : :obj:`integer`
+        Indicate the level of verbosity.
+
     Returns
     -------
     events : :obj:`list` of :obj:`str`
@@ -1158,7 +1179,7 @@ def _get_events_files(
     """
     events_filters = _make_bids_files_filter(
         task_label=task_label,
-        supported_filters=_supported_bids_filter()["raw"],
+        supported_filters=bids.entities()["raw"],
         extra_filter=img_filters,
     )
     events = get_bids_files(
@@ -1169,6 +1190,11 @@ def _get_events_files(
         sub_label=sub_label,
         filters=events_filters,
     )
+    if verbose:
+        _report_found_files(files=events,
+                            text='events',
+                            sub_label=sub_label,
+                            filters=events_filters)
     _check_bids_events_list(
         events=events,
         imgs=imgs,
@@ -1186,6 +1212,7 @@ def _get_confounds(
     task_label: str,
     img_filters: list[tuple[str, str]],
     imgs: list[str],
+    verbose: int,
 ) -> Optional[list[str]]:
     """Get confounds.tsv files for a given subject, task and filters.
 
@@ -1210,20 +1237,25 @@ def _get_confounds(
     imgs : :obj:`list` of :obj:`str`
         List of fullpath to the preprocessed images
 
+    verbose : :obj:`integer`
+        Indicate the level of verbosity.
+
     Returns
     -------
     confounds : :obj:`list` of :obj:`str` or None
         List of fullpath to the confounds.tsv files
 
     """
-    confounds_filters = (
-        _supported_bids_filter()["raw"]
-        + _supported_bids_filter()["derivatives"]
+    supported_filters = (
+        bids.entities()["raw"]
+        + bids.entities()["derivatives"]
     )
-    confounds_filters.remove("desc")
+    # confounds use a desc-confounds,
+    # so we must remove desc if it was passed as a filter
+    supported_filters.remove("desc")
     filters = _make_bids_files_filter(
         task_label=task_label,
-        supported_filters=confounds_filters,
+        supported_filters=supported_filters,
         extra_filter=img_filters,
     )
     confounds = get_bids_files(
@@ -1234,6 +1266,11 @@ def _get_confounds(
         sub_label=sub_label,
         filters=filters,
     )
+    if verbose:
+        _report_found_files(files=confounds,
+                            text='confounds',
+                            sub_label=sub_label,
+                            filters=filters)
     _check_confounds_list(confounds=confounds, imgs=imgs)
     return confounds or None
 
@@ -1262,25 +1299,6 @@ def _check_confounds_list(confounds: list[str], imgs: list[str]) -> None:
         )
 
 
-def _supported_bids_filter() -> dict[str, list[str]]:
-    """Return a dictionary of BIDS entities.
-
-    Note that:
-
-    - this only contains the entities for functional data
-    - the entities `sub` and `ses` are not included
-
-    Returns
-    -------
-    Dictionary of raw and derivatives entities : dict[str, list[str]]
-
-    """
-    return {
-        "raw": ["ses", "acq", "ce", "rec", "dir", "run", "echo", "part"],
-        "derivatives": ["res", "den", "desc"],
-    }
-
-
 def _validate_args_first_level_from_bids(
     dataset_path: str,
     task_label: str,
@@ -1294,9 +1312,10 @@ def _validate_args_first_level_from_bids(
     Check that:
         - dataset_path is a string and exists
         - derivatives_path exists
-        - task_label and space_label are strings
+        - task_label and space_label are valid bids labels
         - img_filters is a list of tuples of strings
-          and all filters are valid bids entities.
+          and all filters are valid bids entities
+          with valid bids labels
 
     Parameters
     ----------
@@ -1354,8 +1373,8 @@ def _validate_args_first_level_from_bids(
             f"Got {type(img_filters)} instead."
         )
     supported_filters = (
-        _supported_bids_filter()["raw"]
-        + _supported_bids_filter()["derivatives"]
+        bids.entities()["raw"]
+        + bids.entities()["derivatives"]
     )
     for filter_ in img_filters:
         if len(filter_) != 2 or not all(isinstance(x, str) for x in filter_):
@@ -1505,7 +1524,7 @@ def _check_bids_events_list(
     sub_label: str,
     task_label: str,
     dataset_path: str,
-    events_filters: list[str],
+    events_filters: list[tuple[str, str]],
 ) -> None:
     """Check input BIDS events.
 
@@ -1532,7 +1551,7 @@ def _check_bids_events_list(
     dataset_path : str
         Fullpath to the BIDS dataset.
 
-    events_filters : :obj:`list` of :obj:`str`
+    events_filters : :obj:`list` of :obj:`tuple` (str, str)
         Filters of the form (field, label) used to select the files.
         See :func:`get_bids_files`.
 
@@ -1555,7 +1574,7 @@ def _check_bids_events_list(
         "sub",
         "ses",
         "task",
-        *_supported_bids_filter()["raw"],
+        *bids.entities()["raw"],
     ]
     for this_img in imgs:
         parsed_filename = parse_bids_filename(this_img)
