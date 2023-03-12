@@ -13,10 +13,13 @@ NEW
 Fixes
 -----
 
+- fixes several bugs in :func:`~glm.first_level.first_level_from_bids`. Refactors :func:`~glm.first_level.first_level_from_bids` and :func:`~glm._utils.data_gen.create_fake_bids_dataset`. (:gh:`3525` by `Rémi Gau`_).
+
 - :func:`~nilearn.interfaces.fmriprep.load_confounds` can support searching preprocessed data in native space. (:gh:`3531` by `Hao-Ting Wang`_)
 
 Enhancements
 ------------
+
 - Updated example :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py` to include section on plotting a confusion matrix from a decoder family object (:gh:`3483` by `Michelle Wang`_).
 
 - Surface plotting methods no longer automatically rescale background maps, which, among other things, allows to use curvature sign as a background map (:gh:`3173` by `Alexis Thual`_).
