@@ -794,17 +794,58 @@ def basic_confounds(length, random_state=0):
     return confounds
 
 
-def create_fake_bids_dataset(base_dir='',
-                             n_sub=10,
-                             n_ses=2,
-                             tasks=['localizer', 'main'],
-                             n_runs=[1, 3],
-                             with_derivatives=True,
-                             with_confounds=True,
-                             confounds_tag="desc-confounds_timeseries",
-                             no_session=False,
-                             random_state=0,
-                             entities: dict[str, list[str]] | None = None,) -> str:
+def generate_random_img(
+    shape,
+    affine=np.eye(4),
+    random_state=np.random.RandomState(0),
+):
+    """Create a random 3D or 4D image with a given shape and affine.
+
+    Parameters
+    ----------
+    shape : length-3 or length-4 tuple
+        The shape of the image being generated.
+        The number of elements determines the dimensionality of the image.
+
+    affine : 4x4 numpy.ndarray
+        The affine of the image
+
+    random_state : numpy.random.RandomState instance, optional
+        random number generator.
+
+    Returns
+    -------
+    data_img : 3D or 4D niimg
+        The data image.
+
+    mask_img : 3D niimg
+        The mask image.
+    """
+    data = random_state.standard_normal(size=shape)
+    data_img = Nifti1Image(data, affine)
+    if len(shape) == 4:
+        mask_data = as_ndarray(data[..., 0] > 0.2, dtype=np.int8)
+    else:
+        mask_data = as_ndarray(data > 0.2, dtype=np.int8)
+
+    mask_img = Nifti1Image(mask_data, affine)
+
+    return data_img, mask_img
+
+
+def create_fake_bids_dataset(
+    base_dir="",
+    n_sub=10,
+    n_ses=2,
+    tasks=["localizer", "main"],
+    n_runs=[1, 3],
+    with_derivatives=True,
+    with_confounds=True,
+    confounds_tag="desc-confounds_timeseries",
+    no_session=False,
+    random_state=0,
+    entities: dict[str, list[str]] | None = None,
+) -> str:
     """Create a fake :term:`bids<BIDS>` dataset directory with dummy files.
 
     Returns fake dataset directory name.
@@ -831,7 +872,7 @@ def create_fake_bids_dataset(base_dir='',
         number of runs for the corresponding task.
         The length of this list must match the number of items in ``tasks``.
         Each run creates 100 volumes.
-        Files will be generated without run entity 
+        Files will be generated without run entity
         if a value is equal to 0 or less.
 
     with_derivatives : :obj:`bool`, optional
@@ -885,7 +926,7 @@ def create_fake_bids_dataset(base_dir='',
 
     rand_gen = check_random_state(random_state)
 
-    bids_dataset_dir = 'bids_dataset'
+    bids_dataset_dir = "bids_dataset"
 
     if no_session:
         n_ses = 0
@@ -896,29 +937,32 @@ def create_fake_bids_dataset(base_dir='',
         entities = {}
     _check_entities(entities)
 
-    _mock_bids_dataset(bids_path=Path(base_dir) / bids_dataset_dir,
-                       n_sub=n_sub,
-                       n_ses=n_ses,
-                       tasks=tasks,
-                       n_runs=n_runs,
-                       entities=entities,
-                       n_voxels=n_voxels,
-                       rand_gen=rand_gen)
+    _mock_bids_dataset(
+        bids_path=Path(base_dir) / bids_dataset_dir,
+        n_sub=n_sub,
+        n_ses=n_ses,
+        tasks=tasks,
+        n_runs=n_runs,
+        entities=entities,
+        n_voxels=n_voxels,
+        rand_gen=rand_gen,
+    )
 
     if with_derivatives:
-
         if not with_confounds:
             confounds_tag = None
 
-        _mock_bids_derivatives(bids_path=Path(base_dir) / bids_dataset_dir,
-                               n_sub=n_sub,
-                               n_ses=n_ses,
-                               tasks=tasks,
-                               n_runs=n_runs,
-                               confounds_tag=confounds_tag,
-                               entities=entities,
-                               n_voxels=n_voxels,
-                               rand_gen=rand_gen)
+        _mock_bids_derivatives(
+            bids_path=Path(base_dir) / bids_dataset_dir,
+            n_sub=n_sub,
+            n_ses=n_ses,
+            tasks=tasks,
+            n_runs=n_runs,
+            confounds_tag=confounds_tag,
+            entities=entities,
+            n_voxels=n_voxels,
+            rand_gen=rand_gen,
+        )
 
     return bids_dataset_dir
 
@@ -929,98 +973,22 @@ def _check_tasks(tasks):
 
 
 def _check_entities(entities: dict) -> None:
-    "Validate that all labels are alphanumeric strings."
+    """Validate that all labels are alphanumeric strings."""
     for value in entities.values():
         for label_ in value:
             bids.validate_label(label_)
 
 
-def _create_bids_filename(fields: dict[str], 
-                          entities_to_include: list[str] | None = None) -> str:
-    """Create BIDS filename from dictionary of entity-label pairs.
-
-    Parameters
-    ----------
-    fields : :obj:`dict` of :obj:`str`
-        Dictionary of entity-label pairs, for example:
-
-        {"suffix": "T1w",
-         "extension": "nii.gzz", 
-          "entities": {'acq': 'ap', 'desc': 'preproc'}
-        }.
-
-    Returns
-    -------
-    BIDS filename : :obj:`str`
-        'filename'.
-
-    """
-    if entities_to_include is None:
-        entities_to_include = bids.entities()["raw"]
-
-    filename = ""
-
-    for key in entities_to_include:
-        if key in fields["entities"]:
-            value = fields["entities"][key]
-            if value not in (None, ''):
-                filename += f"{key}-{value}_"
-    filename += f"{fields['suffix']}.{fields['extension']}"
-
-    return filename
-    
-
-def _write_bids_raw_func(func_path: Path,
-                         fields: str,
-                         n_voxels: int,
-                         rand_gen: np.random.RandomState) -> None:
-    """Create BIDS functional raw nifti, json sidecar and events files.
-
-    Parameters
-    ----------
-    func_path : :obj:`Path`
-        Path to a subject functional directory.
-
-    file_id : :obj:`str`
-        Root of the BIDS filename:
-        typically basename without the BIDS suffix and extension.
-
-    n_voxels : :obj:`int`
-        Number of voxels along a given axis in the functional image.
-
-    rand_gen : :obj:`numpy.random.RandomState` instance
-        Random number generator.
-
-    """
-    n_time_points = 100
-    bold_path = func_path /  _create_bids_filename(fields)
-    write_fake_bold_img(bold_path,
-                        [n_voxels, n_voxels, n_voxels, n_time_points],
-                        random_state=rand_gen)
-    
-    repetition_time = 1.5
-    fields["extension"] = 'json'
-    param_path = func_path / _create_bids_filename(fields)
-    param_path.write_text(
-        json.dumps({'RepetitionTime': repetition_time})
-    )
-
-    fields["suffix"] = "events"
-    fields["extension"] = 'tsv'
-    events_path = func_path /  _create_bids_filename(fields)
-    basic_paradigm().to_csv(events_path, sep='\t', index=None)
-
-
-
-
-def _mock_bids_dataset(bids_path: Path,
-                       n_sub: int,
-                       n_ses: int,
-                       tasks: list[str],
-                       n_runs: list[int],
-                       entities: dict[str, list[str]],
-                       n_voxels: int,
-                       rand_gen: np.random.RandomState) -> None:
+def _mock_bids_dataset(
+    bids_path: Path,
+    n_sub: int,
+    n_ses: int,
+    tasks: list[str],
+    n_runs: list[int],
+    entities: dict[str, list[str]],
+    n_voxels: int,
+    rand_gen: np.random.RandomState,
+) -> None:
     """Create a fake raw :term:`bids<BIDS>` dataset directory with dummy files.
 
     Parameters
@@ -1055,166 +1023,75 @@ def _mock_bids_dataset(bids_path: Path,
     """
     bids_path.mkdir(parents=True, exist_ok=True)
 
-    bids_path.joinpath('README.txt').write_text('')
+    bids_path.joinpath("README.txt").write_text("")
 
-    for subject, session in itertools.product(_listify(n_sub),
-                                              _listify(n_ses)):
-
-        subses_dir = bids_path / f"sub-{subject}" 
-        if session != '': 
+    for subject, session in itertools.product(
+        _listify(n_sub), _listify(n_ses)
+    ):
+        subses_dir = bids_path / f"sub-{subject}"
+        if session != "":
             subses_dir = subses_dir / f"ses-{session}"
 
-        if session in ('01', ''):
-            anat_path = subses_dir / 'anat'
+        if session in ("01", ""):
+            anat_path = subses_dir / "anat"
             anat_path.mkdir(parents=True, exist_ok=True)
-            fields = {"suffix": "T1w",
-                      "extension": "nii.gz",
-                      "entities": {"sub": subject, "ses": session}}
-            anat_file = anat_path /  _create_bids_filename(fields)
-            open(anat_file, 'w')
+            fields = {
+                "suffix": "T1w",
+                "extension": "nii.gz",
+                "entities": {"sub": subject, "ses": session},
+            }
+            anat_file = anat_path / _create_bids_filename(fields)
+            open(anat_file, "w")
 
-        func_path = subses_dir / 'func'
+        func_path = subses_dir / "func"
         func_path.mkdir(parents=True, exist_ok=True)
 
         for task, n_run in zip(tasks, n_runs):
-
             for run in _listify(n_run):
 
-                if entities: 
+                if entities:
                     for key in entities:
-
                         if key not in bids.entities()["raw"]:
                             continue
 
-                        for i_label in entities[key]:
-                            fields = _init_fields(subject=subject,
-                                                  session=session,
-                                                  task=task,
-                                                  run=run)
-                            fields["entities"][key] = i_label
-                            _write_bids_raw_func(func_path=func_path,
-                                                 fields=fields,
-                                                 n_voxels=n_voxels,
-                                                 rand_gen=rand_gen)
+                        for label in entities[key]:
+                            fields = _init_fields(
+                                subject=subject,
+                                session=session,
+                                task=task,
+                                run=run,
+                            )
+                            fields["entities"][key] = label
+                            _write_bids_raw_func(
+                                func_path=func_path,
+                                fields=fields,
+                                n_voxels=n_voxels,
+                                rand_gen=rand_gen,
+                            )
+
                 else:
-                    fields = _init_fields(subject=subject,
-                                          session=session,
-                                          task=task,
-                                          run=run)
-                    _write_bids_raw_func(func_path=func_path,
-                                         fields=fields,
-                                         n_voxels=n_voxels,
-                                         rand_gen=rand_gen)
-
-def _init_fields(subject, session, task, run):
-    fields = {
-                "suffix": "bold",
-                "extension": "nii.gz",
-                "entities": {
-                    "sub": subject,
-                    "ses": session,
-                    "task": task,
-                    "run": run,
-                }
-             }
-    return fields
+                    fields = _init_fields(
+                        subject=subject, session=session, task=task, run=run
+                    )
+                    _write_bids_raw_func(
+                        func_path=func_path,
+                        fields=fields,
+                        n_voxels=n_voxels,
+                        rand_gen=rand_gen,
+                    )
 
 
-def _write_bids_derivative_func(func_path: Path,
-                                fields: dict,
-                                n_voxels: int,
-                                rand_gen: np.random.RandomState,
-                                confounds_tag: str | None) -> None:
-    """Create BIDS functional derivative and confounds files.
-
-    Files created come with two spaces and descriptions.
-    Spaces are: 'MNI' and 'T1w'.
-    Descriptions are: 'preproc' and :term:`fMRIPrep`.
-    Only space 'T1w' include both descriptions.
-
-    Parameters
-    ----------
-    func_path : :obj:`Path`
-        Path to a subject functional directory.
-
-    file_id : :obj:`str`
-        Root of the BIDS filename:
-        typically basename without the BIDS suffix and extension.
-
-    n_voxels : :obj:`int`
-        Number of voxels along a given axis in the functional image.
-
-    rand_gen : :obj:`numpy.random.RandomState` instance
-        Random number generator.
-
-    confounds_tag : :obj:`str`, optional.
-        Filename "suffix":
-        For example: `desc-confounds_timeseries`
-        or "desc-confounds_regressors".
-
-    """
-    n_time_points = 100
-    
-    if confounds_tag is not None:
-        fields["suffix"] = confounds_tag
-        fields["extension"] = "tsv"
-        confounds_path = func_path / _create_bids_filename(
-                                        fields=fields,
-                                        entities_to_include = bids.entities()["raw"]
-                                        )
-        basic_confounds(length=n_time_points, random_state=rand_gen).to_csv(
-            confounds_path, sep='\t', index=None)
-
-    fields["suffix"] = "bold"
-    fields["extension"] = "nii.gz"
-
-    shape = [n_voxels, n_voxels, n_voxels, n_time_points]
-
-    for space in ('MNI', 'T1w'):
-        for desc in ('preproc', 'fmriprep'):
-
-            # Only space 'T1w' include both descriptions.
-            if space == 'MNI' and desc == 'fmriprep':
-                continue
-
-            fields["entities"]["space"] = space
-            fields["entities"]["desc"] = desc
-
-            entities_to_include = bids.entities()["raw"] + bids.entities()["derivatives"]
-
-            bold_path = func_path /  _create_bids_filename(fields=fields,
-                                                           entities_to_include=entities_to_include)
-            write_fake_bold_img(bold_path,
-                                shape=shape,
-                                random_state=rand_gen)
-
-
-def _listify(n: int) -> list[str]:
-    """Return a list of zero padded BIDS labels.
-
-    If n is 0 or less, return an empty list.
-
-    Parameters
-    ----------
-    n : :obj:`int`
-        Number of labels to create.
-
-    Returns
-    -------
-    List of labels : :obj:`list` of :obj:`str`
-
-    """
-    return [""] if n <= 0 else [f"{label:02}" for label in range(1, n + 1)]
-
-def _mock_bids_derivatives(bids_path: Path,
-                           n_sub: int,
-                           n_ses: int,
-                           tasks: list[str],
-                           n_runs: list[int],
-                           confounds_tag: str | None,
-                           entities: dict[str, list[str]],
-                           n_voxels: int,
-                           rand_gen: np.random.RandomState) -> None:
+def _mock_bids_derivatives(
+    bids_path: Path,
+    n_sub: int,
+    n_ses: int,
+    tasks: list[str],
+    n_runs: list[int],
+    confounds_tag: str | None,
+    entities: dict[str, list[str]],
+    n_voxels: int,
+    rand_gen: np.random.RandomState,
+) -> None:
     """Create a fake raw :term:`bids<BIDS>` dataset directory with dummy files.
 
     Parameters
@@ -1255,80 +1132,231 @@ def _mock_bids_derivatives(bids_path: Path,
     bids_path = bids_path / "derivatives"
     bids_path.mkdir(parents=True, exist_ok=True)
 
-    for subject, session in itertools.product(_listify(n_sub),
-                                              _listify(n_ses)):
-
-        subses_dir = bids_path / f"sub-{subject}" 
-        if session != '': 
+    for subject, session in itertools.product(
+        _listify(n_sub), _listify(n_ses)
+    ):
+        subses_dir = bids_path / f"sub-{subject}"
+        if session != "":
             subses_dir = subses_dir / f"ses-{session}"
-        func_path = subses_dir / 'func'
+        func_path = subses_dir / "func"
         func_path.mkdir(parents=True, exist_ok=True)
 
         for task, n_run in zip(tasks, n_runs):
-
             for run in _listify(n_run):
 
                 if entities:
                     for key in entities:
                         for label in entities[key]:
-                            fields = _init_fields(subject=subject,
-                                                session=session,
-                                                task=task,
-                                                run=run)
+                            fields = _init_fields(
+                                subject=subject,
+                                session=session,
+                                task=task,
+                                run=run,
+                            )
                             fields["entities"][key] = label
-                            _write_bids_derivative_func(func_path=func_path,
-                                                        fields=fields,
-                                                        n_voxels=n_voxels,
-                                                        rand_gen=rand_gen,
-                                                        confounds_tag=confounds_tag)
+                            _write_bids_derivative_func(
+                                func_path=func_path,
+                                fields=fields,
+                                n_voxels=n_voxels,
+                                rand_gen=rand_gen,
+                                confounds_tag=confounds_tag,
+                            )
 
                 else:
-                    fields = _init_fields(subject=subject,
-                                          session=session,
-                                          task=task,
-                                          run=run)
-                    _write_bids_derivative_func(func_path=func_path,
-                                                fields=fields,
-                                                n_voxels=n_voxels,
-                                                rand_gen=rand_gen,
-                                                confounds_tag=confounds_tag)
+                    fields = _init_fields(
+                        subject=subject, session=session, task=task, run=run
+                    )
+                    _write_bids_derivative_func(
+                        func_path=func_path,
+                        fields=fields,
+                        n_voxels=n_voxels,
+                        rand_gen=rand_gen,
+                        confounds_tag=confounds_tag,
+                    )
 
 
+def _listify(n: int) -> list[str]:
+    """Return a list of zero padded BIDS labels.
 
-def generate_random_img(
-    shape,
-    affine=np.eye(4),
-    random_state=np.random.RandomState(0),
-):
-    """Create a random 3D or 4D image with a given shape and affine.
+    If n is 0 or less, return an empty list.
 
     Parameters
     ----------
-    shape : length-3 or length-4 tuple
-        The shape of the image being generated.
-        The number of elements determines the dimensionality of the image.
-
-    affine : 4x4 numpy.ndarray
-        The affine of the image
-
-    random_state : numpy.random.RandomState instance, optional
-        random number generator.
+    n : :obj:`int`
+        Number of labels to create.
 
     Returns
     -------
-    data_img : 3D or 4D niimg
-        The data image.
+    List of labels : :obj:`list` of :obj:`str`
 
-    mask_img : 3D niimg
-        The mask image.
     """
-    data = random_state.standard_normal(size=shape)
-    data_img = Nifti1Image(data, affine)
-    if len(shape) == 4:
-        mask_data = as_ndarray(data[..., 0] > 0.2, dtype=np.int8)
-    else:
-        mask_data = as_ndarray(data > 0.2, dtype=np.int8)
+    return [""] if n <= 0 else [f"{label:02}" for label in range(1, n + 1)]
 
-    mask_img = Nifti1Image(mask_data, affine)
 
-    return data_img, mask_img
+def _create_bids_filename(
+    fields: dict[str], entities_to_include: list[str] | None = None
+) -> str:
+    """Create BIDS filename from dictionary of entity-label pairs.
+
+    Parameters
+    ----------
+    fields : :obj:`dict` of :obj:`str`
+        Dictionary of entity-label pairs, for example:
+
+        {"suffix": "T1w",
+         "extension": "nii.gzz",
+          "entities": {'acq': 'ap', 'desc': 'preproc'}
+        }.
+
+    Returns
+    -------
+    BIDS filename : :obj:`str`
+        'filename'.
+
+    """
+    if entities_to_include is None:
+        entities_to_include = bids.entities()["raw"]
+
+    filename = ""
+
+    for key in entities_to_include:
+        if key in fields["entities"]:
+            value = fields["entities"][key]
+            if value not in (None, ""):
+                filename += f"{key}-{value}_"
+    filename += f"{fields['suffix']}.{fields['extension']}"
+
+    return filename
+
+
+def _init_fields(subject, session, task, run):
+    fields = {
+        "suffix": "bold",
+        "extension": "nii.gz",
+        "entities": {
+            "sub": subject,
+            "ses": session,
+            "task": task,
+            "run": run,
+        },
+    }
+    return fields
+
+
+def _write_bids_raw_func(
+    func_path: Path,
+    fields: str,
+    n_voxels: int,
+    rand_gen: np.random.RandomState,
+) -> None:
+    """Create BIDS functional raw nifti, json sidecar and events files.
+
+    Parameters
+    ----------
+    func_path : :obj:`Path`
+        Path to a subject functional directory.
+
+    file_id : :obj:`str`
+        Root of the BIDS filename:
+        typically basename without the BIDS suffix and extension.
+
+    n_voxels : :obj:`int`
+        Number of voxels along a given axis in the functional image.
+
+    rand_gen : :obj:`numpy.random.RandomState` instance
+        Random number generator.
+
+    """
+    n_time_points = 100
+    bold_path = func_path / _create_bids_filename(fields)
+    write_fake_bold_img(
+        bold_path,
+        [n_voxels, n_voxels, n_voxels, n_time_points],
+        random_state=rand_gen,
+    )
+
+    repetition_time = 1.5
+    fields["extension"] = "json"
+    param_path = func_path / _create_bids_filename(fields)
+    param_path.write_text(json.dumps({"RepetitionTime": repetition_time}))
+
+    fields["suffix"] = "events"
+    fields["extension"] = "tsv"
+    events_path = func_path / _create_bids_filename(fields)
+    basic_paradigm().to_csv(events_path, sep="\t", index=None)
+
+
+def _write_bids_derivative_func(
+    func_path: Path,
+    fields: dict,
+    n_voxels: int,
+    rand_gen: np.random.RandomState,
+    confounds_tag: str | None,
+) -> None:
+    """Create BIDS functional derivative and confounds files.
+
+    Files created come with two spaces and descriptions.
+    Spaces are: 'MNI' and 'T1w'.
+    Descriptions are: 'preproc' and :term:`fMRIPrep`.
+    Only space 'T1w' include both descriptions.
+
+    Parameters
+    ----------
+    func_path : :obj:`Path`
+        Path to a subject functional directory.
+
+    file_id : :obj:`str`
+        Root of the BIDS filename:
+        typically basename without the BIDS suffix and extension.
+
+    n_voxels : :obj:`int`
+        Number of voxels along a given axis in the functional image.
+
+    rand_gen : :obj:`numpy.random.RandomState` instance
+        Random number generator.
+
+    confounds_tag : :obj:`str`, optional.
+        Filename "suffix":
+        For example: `desc-confounds_timeseries`
+        or "desc-confounds_regressors".
+
+    """
+    n_time_points = 100
+
+    if confounds_tag is not None:
+        fields["suffix"] = confounds_tag
+        fields["extension"] = "tsv"
+        confounds_path = func_path / _create_bids_filename(
+            fields=fields, entities_to_include=bids.entities()["raw"]
+        )
+        basic_confounds(length=n_time_points, random_state=rand_gen).to_csv(
+            confounds_path, sep="\t", index=None
+        )
+
+    fields["suffix"] = "bold"
+    fields["extension"] = "nii.gz"
+
+    shape = [n_voxels, n_voxels, n_voxels, n_time_points]
+
+    for space in ("MNI", "T1w"):
+        for desc in ("preproc", "fmriprep"):
+            # Only space 'T1w' include both descriptions.
+            if space == "MNI" and desc == "fmriprep":
+                continue
+
+            fields["entities"]["space"] = space
+            fields["entities"]["desc"] = desc
+
+            entities_to_include = (
+                bids.entities()["raw"] + bids.entities()["derivatives"]
+            )
+
+            bold_path = func_path / _create_bids_filename(
+                fields=fields, entities_to_include=entities_to_include
+            )
+            write_fake_bold_img(bold_path, shape=shape, random_state=rand_gen)
+
+
+
+
+

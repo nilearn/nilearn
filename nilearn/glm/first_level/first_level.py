@@ -1017,13 +1017,13 @@ def first_level_from_bids(dataset_path,
     return models, models_run_imgs, models_events, models_confounds
 
 
-def _list_valid_subjects(derivatives_path: str , sub_labels: list[str] | None):
 
+def _list_valid_subjects(derivatives_path: str, sub_labels: list[str] | None):
     # Infer subjects in dataset if not provided
     if not sub_labels:
-        sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*/'))
+        sub_folders = glob.glob(os.path.join(derivatives_path, "sub-*/"))
         sub_labels = [
-            os.path.basename(s[:-1]).split('-')[1] for s in sub_folders
+            os.path.basename(s[:-1]).split("-")[1] for s in sub_folders
         ]
         sub_labels = sorted(list(set(sub_labels)))
 
@@ -1033,16 +1033,17 @@ def _list_valid_subjects(derivatives_path: str , sub_labels: list[str] | None):
         if os.path.exists(os.path.join(derivatives_path, f"sub-{sub_label_}")):
             sub_labels_exist.append(sub_label_)
         else:
-            warn(f'Subject label {sub_label_} is not present in the'
-                 ' dataset and cannot be processed.')
-            
+            warn(
+                f"Subject label {sub_label_} is not present in the"
+                " dataset and cannot be processed."
+            )
+
     return set(sub_labels_exist)
 
 
-def _report_found_files(files: list[str],
-                        text: str,
-                        sub_label: str,
-                        filters: list[tuple[str,str]]) -> None:
+def _report_found_files(
+    files: list[str], text: str, sub_label: str, filters: list[tuple[str, str]]
+) -> None:
     """Print list of files found for a given subject and filter.
 
     Parameters
@@ -1061,17 +1062,21 @@ def _report_found_files(files: list[str],
         Only one filter per field allowed.
 
     """
-    print(f'Found the following {len(files)} {text} files\n',
-        f'for subject {sub_label}\n',
-        f'for filter: {filters}:\n',
-        f'{files}\n') 
+    print(
+        f"Found the following {len(files)} {text} files\n",
+        f"for subject {sub_label}\n",
+        f"for filter: {filters}:\n",
+        f"{files}\n",
+    )
 
 
-def _get_processed_imgs(derivatives_path: str,
-                        sub_label: str,
-                        task_label: str,
-                        space_label: str,
-                        img_filters: list[tuple[str,str]]) -> list[str]:
+def _get_processed_imgs(
+    derivatives_path: str,
+    sub_label: str,
+    task_label: str,
+    space_label: str,
+    img_filters: list[tuple[str, str]],
+) -> list[str]:
     """Get images for a given subject, task and filters.
 
     Also checks that the number of the number of images.
@@ -1096,29 +1101,33 @@ def _get_processed_imgs(derivatives_path: str,
     imgs : :obj:`list` of :obj:`str`
         List of fullpath to the imgs files
 
-    """    
+    """
     filters = _make_bids_files_filter(
-            task_label=task_label,
-            space_label=space_label,
-            supported_filters=_supported_bids_filter()["raw"]
-            + _supported_bids_filter()["derivatives"],
-            extra_filter=img_filters
-        )
-    imgs = get_bids_files(main_path=derivatives_path,
-                            modality_folder='func',
-                            file_tag='bold',
-                            file_type='nii*',
-                            sub_label=sub_label,
-                            filters=filters)
+        task_label=task_label,
+        space_label=space_label,
+        supported_filters=_supported_bids_filter()["raw"]
+        + _supported_bids_filter()["derivatives"],
+        extra_filter=img_filters,
+    )
+    imgs = get_bids_files(
+        main_path=derivatives_path,
+        modality_folder="func",
+        file_tag="bold",
+        file_type="nii*",
+        sub_label=sub_label,
+        filters=filters,
+    )
     _check_bids_image_list(imgs, sub_label, filters)
     return imgs
 
 
-def _get_events_files(dataset_path: str,
-                      sub_label: str,
-                      task_label: str,
-                      img_filters: list[tuple[str, str]],
-                      imgs: list[str]) -> list[str]:
+def _get_events_files(
+    dataset_path: str,
+    sub_label: str,
+    task_label: str,
+    img_filters: list[tuple[str, str]],
+    imgs: list[str],
+) -> list[str]:
     """Get events.tsv files for a given subject, task and filters.
 
     Also checks that the number of events.tsv files
@@ -1146,32 +1155,38 @@ def _get_events_files(dataset_path: str,
     -------
     events : :obj:`list` of :obj:`str`
         List of fullpath to the events files
-    """    
+    """
     events_filters = _make_bids_files_filter(
         task_label=task_label,
         supported_filters=_supported_bids_filter()["raw"],
-        extra_filter=img_filters
+        extra_filter=img_filters,
     )
-    events = get_bids_files(dataset_path,
-                            modality_folder='func',
-                            file_tag='events',
-                            file_type='tsv',
-                            sub_label=sub_label,
-                            filters=events_filters)
-    _check_bids_events_list(events=events,
-                                imgs=imgs,
-                                sub_label=sub_label,
-                                task_label=task_label,
-                                dataset_path=dataset_path,
-                                events_filters=events_filters)
+    events = get_bids_files(
+        dataset_path,
+        modality_folder="func",
+        file_tag="events",
+        file_type="tsv",
+        sub_label=sub_label,
+        filters=events_filters,
+    )
+    _check_bids_events_list(
+        events=events,
+        imgs=imgs,
+        sub_label=sub_label,
+        task_label=task_label,
+        dataset_path=dataset_path,
+        events_filters=events_filters,
+    )
     return events
 
 
-def _get_confounds(derivatives_path: str,
-                   sub_label: str,
-                   task_label: str,
-                   img_filters: list[tuple[str, str]],
-                   imgs: list[str]) -> Optional[list[str]]:
+def _get_confounds(
+    derivatives_path: str,
+    sub_label: str,
+    task_label: str,
+    img_filters: list[tuple[str, str]],
+    imgs: list[str],
+) -> Optional[list[str]]:
     """Get confounds.tsv files for a given subject, task and filters.
 
     Also checks that the number of confounds.tsv files
@@ -1201,18 +1216,24 @@ def _get_confounds(derivatives_path: str,
         List of fullpath to the confounds.tsv files
 
     """
-    confounds_filters = _supported_bids_filter()["raw"] + \
-                        _supported_bids_filter()["derivatives"]
-    confounds_filters.remove('desc')
-    filters = _make_bids_files_filter(task_label=task_label,
-                                        supported_filters=confounds_filters,
-                                        extra_filter=img_filters)
-    confounds = get_bids_files(derivatives_path,
-                                modality_folder='func',
-                                file_tag='desc-confounds*',
-                                file_type='tsv',
-                                sub_label=sub_label,
-                                filters=filters)
+    confounds_filters = (
+        _supported_bids_filter()["raw"]
+        + _supported_bids_filter()["derivatives"]
+    )
+    confounds_filters.remove("desc")
+    filters = _make_bids_files_filter(
+        task_label=task_label,
+        supported_filters=confounds_filters,
+        extra_filter=img_filters,
+    )
+    confounds = get_bids_files(
+        derivatives_path,
+        modality_folder="func",
+        file_tag="desc-confounds*",
+        file_type="tsv",
+        sub_label=sub_label,
+        filters=filters,
+    )
     _check_confounds_list(confounds=confounds, imgs=imgs)
     return confounds or None
 
@@ -1233,10 +1254,12 @@ def _check_confounds_list(confounds: list[str], imgs: list[str]) -> None:
 
     """
     if confounds and len(confounds) != len(imgs):
-        raise ValueError(f"{len(confounds)} confounds.tsv files found "
-                         f"for {len(imgs)} bold files. "
-                         "Same number of confound files as "
-                         "the number of runs is expected")
+        raise ValueError(
+            f"{len(confounds)} confounds.tsv files found "
+            f"for {len(imgs)} bold files. "
+            "Same number of confound files as "
+            "the number of runs is expected"
+        )
 
 
 def _supported_bids_filter() -> dict[str, list[str]]:
@@ -1252,25 +1275,20 @@ def _supported_bids_filter() -> dict[str, list[str]]:
     Dictionary of raw and derivatives entities : dict[str, list[str]]
 
     """
-    return {"raw": ['ses',
-                    'acq',
-                    'ce',
-                    'rec',
-                    'dir',
-                    'run',
-                    'echo',
-                    'part'],
-            "derivatives": ['res', 'den', 'desc']
-            }
+    return {
+        "raw": ["ses", "acq", "ce", "rec", "dir", "run", "echo", "part"],
+        "derivatives": ["res", "den", "desc"],
+    }
 
 
-def _validate_args_first_level_from_bids(dataset_path: str,
-                                         task_label: str,
-                                         space_label: str | None,
-                                         sub_labels: list[str] | None,
-                                         img_filters: list[tuple[str, str]],
-                                         derivatives_path: str,
-                                         ) -> None:
+def _validate_args_first_level_from_bids(
+    dataset_path: str,
+    task_label: str,
+    space_label: str | None,
+    sub_labels: list[str] | None,
+    img_filters: list[tuple[str, str]],
+    derivatives_path: str,
+) -> None:
     """Check type and value of arguments of first_level_from_bids.
 
     Check that:
@@ -1313,8 +1331,10 @@ def _validate_args_first_level_from_bids(dataset_path: str,
         raise ValueError(f"'dataset_path' does not exist:\n{dataset_path}")
 
     if not os.path.exists(derivatives_path):
-        raise ValueError("derivatives folder not found in given dataset:\n"
-                         f"{derivatives_path}")
+        raise ValueError(
+            "derivatives folder not found in given dataset:\n"
+            f"{derivatives_path}"
+        )
 
     bids.validate_label(task_label)
 
@@ -1323,7 +1343,7 @@ def _validate_args_first_level_from_bids(dataset_path: str,
 
     if not isinstance(sub_labels, list):
         raise TypeError(
-            f'sub_labels must be a list, instead {type(sub_labels)} was given'
+            f"sub_labels must be a list, instead {type(sub_labels)} was given"
         )
     for sub_label_ in sub_labels:
         bids.validate_label(sub_label_)
@@ -1333,24 +1353,30 @@ def _validate_args_first_level_from_bids(dataset_path: str,
             f"'img_filters' must be a list. "
             f"Got {type(img_filters)} instead."
         )
-    supported_filters = _supported_bids_filter()["raw"] +\
-                        _supported_bids_filter()["derivatives"]
+    supported_filters = (
+        _supported_bids_filter()["raw"]
+        + _supported_bids_filter()["derivatives"]
+    )
     for filter_ in img_filters:
         if len(filter_) != 2 or not all(isinstance(x, str) for x in filter_):
-            raise TypeError('Filters in img_filters must be (str, str). '
-                            f"Got {filter_} instead.")
+            raise TypeError(
+                "Filters in img_filters must be (str, str). "
+                f"Got {filter_} instead."
+            )
         if filter_[0] not in supported_filters:
             raise ValueError(
                 f"Entity {filter_[0]} for {filter_} is not a possible filter. "
-                f"Only {supported_filters} are allowed.")
+                f"Only {supported_filters} are allowed."
+            )
         bids.validate_label(filter_[1])
 
 
-def _make_bids_files_filter(task_label: str,
-                           space_label: str | None = None,
-                           supported_filters: list[str] | None = None,
-                           extra_filter: list[tuple[str, str]] | None = None
-                           ) -> list[tuple[str, str]]:
+def _make_bids_files_filter(
+    task_label: str,
+    space_label: str | None = None,
+    supported_filters: list[str] | None = None,
+    extra_filter: list[tuple[str, str]] | None = None,
+) -> list[tuple[str, str]]:
     """Return a filter to specific files from a BIDS dataset.
 
     Parameters
@@ -1375,18 +1401,19 @@ def _make_bids_files_filter(task_label: str,
         filters
 
     """
-    filters = [('task', task_label)]
+    filters = [("task", task_label)]
 
     if space_label is not None:
-        filters.append(('space', space_label))
+        filters.append(("space", space_label))
 
     if extra_filter and supported_filters:
         for filter_ in extra_filter:
-
             if filter_[0] not in supported_filters:
-                warn(f"The filter {filter_} will be skipped. "
-                     f"'{filter_[0]}' is not among the supported filters. "
-                     f"Allowed filters include: {supported_filters}")
+                warn(
+                    f"The filter {filter_} will be skipped. "
+                    f"'{filter_[0]}' is not among the supported filters. "
+                    f"Allowed filters include: {supported_filters}"
+                )
                 continue
 
             filters.append(filter_)
@@ -1394,9 +1421,9 @@ def _make_bids_files_filter(task_label: str,
     return filters
 
 
-def _check_bids_image_list(imgs: list[str] | None,
-                           sub_label: str,
-                           filters: list[tuple[str, str]]) -> None:
+def _check_bids_image_list(
+    imgs: list[str] | None, sub_label: str, filters: list[tuple[str, str]]
+) -> None:
     """Check input BIDS images.
 
     Check that:
@@ -1418,24 +1445,29 @@ def _check_bids_image_list(imgs: list[str] | None,
 
     """
     if not imgs:
-        raise ValueError('No BOLD files found '
-                         f'for subject {sub_label} '
-                         f'for filter: {filters}')
+        raise ValueError(
+            "No BOLD files found "
+            f"for subject {sub_label} "
+            f"for filter: {filters}"
+        )
 
     if len(imgs) <= 1:
         return
 
-    msg_start = ("Too many images found\n "
-                 f"for subject: '{sub_label}'\n"
-                 f"for filters: {filters}\n")
-    msg_end = ("Please specify it further by setting, "
-               "for example, some required task_label, "
-               "space_label or img_filters")
+    msg_start = (
+        "Too many images found\n "
+        f"for subject: '{sub_label}'\n"
+        f"for filters: {filters}\n"
+    )
+    msg_end = (
+        "Please specify it further by setting, "
+        "for example, some required task_label, "
+        "space_label or img_filters"
+    )
 
     run_check_list: list = []
 
     for img_ in imgs:
-
         parsed_filename = parse_bids_filename(img_)
         session = parsed_filename.get("ses", None)
         run = parsed_filename.get("run", None)
@@ -1445,7 +1477,8 @@ def _check_bids_image_list(imgs: list[str] | None,
                 raise ValueError(
                     f"{msg_start}"
                     f"for the same run {run} and session {session}. "
-                    f"{msg_end}")
+                    f"{msg_end}"
+                )
             run_check_list.append((session, run))
 
         elif session:
@@ -1454,24 +1487,26 @@ def _check_bids_image_list(imgs: list[str] | None,
                     f"{msg_start}"
                     f"for the same session {session}, "
                     "while no additional run specification present. "
-                    f"{msg_end}")
+                    f"{msg_end}"
+                )
             run_check_list.append(session)
 
         elif run:
             if run in set(run_check_list):
                 raise ValueError(
-                    f"{msg_start}"
-                    f"for the same run {run}. "
-                    f"{msg_end}")
+                    f"{msg_start}" f"for the same run {run}. " f"{msg_end}"
+                )
             run_check_list.append(run)
 
 
-def _check_bids_events_list(events: list[str] | None,
-                            imgs: list[str],
-                            sub_label: str,
-                            task_label: str,
-                            dataset_path: str,
-                            events_filters: list[str]) -> None:
+def _check_bids_events_list(
+    events: list[str] | None,
+    imgs: list[str],
+    sub_label: str,
+    task_label: str,
+    dataset_path: str,
+    events_filters: list[str],
+) -> None:
     """Check input BIDS events.
 
     Check that:
@@ -1503,44 +1538,63 @@ def _check_bids_events_list(events: list[str] | None,
 
     """
     if not events:
-        raise ValueError('No events.tsv files found '
-                         f'for subject {sub_label} '
-                         f'for filter: {events_filters}.')
+        raise ValueError(
+            "No events.tsv files found "
+            f"for subject {sub_label} "
+            f"for filter: {events_filters}."
+        )
     if len(events) != len(imgs):
-        raise ValueError(f'{len(events)} events.tsv files found'
-                         f' for {len(imgs)} bold files. '
-                         'Same number of event files '
-                         'as the number of runs is expected.')
+        raise ValueError(
+            f"{len(events)} events.tsv files found"
+            f" for {len(imgs)} bold files. "
+            "Same number of event files "
+            "as the number of runs is expected."
+        )
 
-    supported_filters = ["sub",
-                         "ses",
-                         "task",
-                         *_supported_bids_filter()["raw"]]
+    supported_filters = [
+        "sub",
+        "ses",
+        "task",
+        *_supported_bids_filter()["raw"],
+    ]
     for this_img in imgs:
         parsed_filename = parse_bids_filename(this_img)
-        extra_filter = [(key, parsed_filename[key])
-                        for key in parsed_filename
-                        if key in supported_filters]
-        filters = _make_bids_files_filter(task_label=task_label,
-                                         space_label=None,
-                                         supported_filters=supported_filters,
-                                         extra_filter=extra_filter)
-        this_event = get_bids_files(dataset_path,
-                                    modality_folder='func',
-                                    file_tag='events',
-                                    file_type='tsv',
-                                    sub_label=sub_label,
-                                    filters=filters)
-        msg_suffix = (f' bold file:\n{this_img}\nfilter:\n{filters})\n'
-                      'Found all the following events files '
-                      f'for filter:\n{events}\n')
+        extra_filter = [
+            (key, parsed_filename[key])
+            for key in parsed_filename
+            if key in supported_filters
+        ]
+        filters = _make_bids_files_filter(
+            task_label=task_label,
+            space_label=None,
+            supported_filters=supported_filters,
+            extra_filter=extra_filter,
+        )
+        this_event = get_bids_files(
+            dataset_path,
+            modality_folder="func",
+            file_tag="events",
+            file_type="tsv",
+            sub_label=sub_label,
+            filters=filters,
+        )
+        msg_suffix = (
+            f" bold file:\n{this_img}\nfilter:\n{filters})\n"
+            "Found all the following events files "
+            f"for filter:\n{events}\n"
+        )
         if len(this_event) == 0:
-            raise ValueError(f'No events.tsv files '
-                             f'corresponding to {msg_suffix}')
+            raise ValueError(
+                f"No events.tsv files " f"corresponding to {msg_suffix}"
+            )
         if len(this_event) > 1:
-            raise ValueError(f'More than 1 events.tsv files '
-                             f'corresponding to {msg_suffix}')
+            raise ValueError(
+                f"More than 1 events.tsv files "
+                f"corresponding to {msg_suffix}"
+            )
         if this_event[0] not in events:
-            raise ValueError(f'\n{this_event} not in {events}.\n'
-                             'No corresponding events.tsv files found '
-                             f'for {msg_suffix}')
+            raise ValueError(
+                f"\n{this_event} not in {events}.\n"
+                "No corresponding events.tsv files found "
+                f"for {msg_suffix}"
+            )

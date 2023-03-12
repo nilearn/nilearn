@@ -6,9 +6,16 @@ from typing import Any
 def entities() -> dict[str, list[str]]:
     """Return a dictionary of BIDS entities.
 
+    Entities are listed in the order they should appear in a filename.
+
+    https://bids-specification.readthedocs.io/en/stable/appendices/entities.html # noqa
+
     Note that:
 
     - this only contains the entities for functional data
+
+    https://github.com/bids-standard/bids-specification/blob/master/src/schema/rules/files/raw/func.yaml#L13 # noqa
+    https://github.com/bids-standard/bids-specification/blob/master/src/schema/rules/files/deriv/imaging.yaml#L29 # noqa
 
     Returns
     -------
@@ -33,6 +40,16 @@ def entities() -> dict[str, list[str]]:
 
 
 def validate_label(label: Any) -> None:
+    """Validate a BIDS label.
+
+    https://bids-specification.readthedocs.io/en/stable/glossary.html#label-formats # noqa
+
+    Parameters
+    ----------
+    label : Any
+        Label to validate
+
+    """
     if not isinstance(label, str):
         raise TypeError(
             f"All bids labels must be string. "
