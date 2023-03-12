@@ -884,26 +884,32 @@ def create_fake_bids_dataset(base_dir='',
 
     bids_dataset_dir = 'bids_dataset'
 
+    if entities is None:
+        entities = {}
     _check_entity_labels(entities)
+
+    if no_session:
+        n_ses = 0
 
     _mock_bids_dataset(bids_path=Path(base_dir) / bids_dataset_dir,
                        n_sub=n_sub,
                        n_ses=n_ses,
                        tasks=tasks,
                        n_runs=n_runs,
-                       no_session=no_session,
                        entities=entities,
                        n_voxels=n_voxels,
                        rand_gen=rand_gen)
 
     if with_derivatives:
+
+        if not with_confounds:
+            confounds_tag = None
+
         _mock_bids_derivatives(bids_path=Path(base_dir) / bids_dataset_dir,
                                n_sub=n_sub,
                                n_ses=n_ses,
                                tasks=tasks,
                                n_runs=n_runs,
-                               no_session=no_session,
-                               with_confounds=with_confounds,
                                confounds_tag=confounds_tag,
                                entities=entities,
                                n_voxels=n_voxels,
@@ -912,47 +918,55 @@ def create_fake_bids_dataset(base_dir='',
     return bids_dataset_dir
 
 
-def _check_entity_labels(entities: dict[str, list[str]] | None) -> None:
+def _check_entity_labels(entities: dict) -> None:
     "Validate that all labels are alphanumeric strings."
-    if entities is not None:
-        for key in entities:
-            for label_ in entities[key]:
-                if (not isinstance(label_, str) or 
-                    not all(char.isalnum() for char in label_)):
-                    raise ValueError(f"Entity label must be alphanumeric. "
-                                     f"Got '{label_}' instead.")
+    for value in entities.values():
+        for label_ in value:
+            if (not isinstance(label_, str) or 
+                not all(char.isalnum() for char in label_)):
+                raise ValueError(f"Entity label must be alphanumeric. "
+                                    f"Got '{label_}' instead.")
 
 
-def _file_id(fields: list[str], n_run: int, run: str) -> str:
-    """Create BIDS filename from list of entity-label pairs.
+def _create_bids_filename(fields: dict[str], 
+                          entities_to_include: list[str] | None = None) -> str:
+    """Create BIDS filename from dictionary of entity-label pairs.
 
     Parameters
     ----------
-    fields : :obj:`list` of :obj:`str`
-        List of entity-label pairs, for example `['acq-ap', 'desc-preproc']`.
+    fields : :obj:`dict` of :obj:`str`
+        Dictionary of entity-label pairs, for example:
 
-    n_run : :obj:`int`
-        Number of runs.
-
-    run : :obj:`str`
-        Run entity, for example `'run-01'`.
+        {"suffix": "T1w",
+         "extension": "nii.gzz", 
+          "entities": {'acq': 'ap', 'desc': 'preproc'}
+        }.
 
     Returns
     -------
-    Root of the BIDS filename : :obj:`str`
-        'file_id'.
+    BIDS filename : :obj:`str`
+        'filename'.
 
     """
-    if '' in fields:
-        fields.remove('')
-    file_id = '_'.join(fields)
-    if n_run > 1:
-        file_id += f'_{run}'
-    return file_id
+    if entities_to_include is None:
+        entities_to_include = _bids_entities()["raw"]
 
+    filename = ""
+
+    for key in entities_to_include:
+        if key in fields["entities"]:
+            value = fields["entities"][key]
+            if value not in (None, ''):
+                filename += f"{key}-{value}_"
+    filename += f"{fields['suffix']}.{fields['extension']}"
+
+    print(filename)
+
+    return filename
+    
 
 def _write_bids_raw_func(func_path: Path,
-                         file_id: str,
+                         fields: str,
                          n_voxels: int,
                          rand_gen: np.random.RandomState) -> None:
     """Create BIDS functional raw and events files.
@@ -976,18 +990,21 @@ def _write_bids_raw_func(func_path: Path,
     repetition_time = 1.5
     n_time_points = 100
 
-    bold_path = func_path / f'{file_id}_bold.nii.gz'
+    bold_path = func_path /  _create_bids_filename(fields)
     write_fake_bold_img(bold_path,
                         [n_voxels, n_voxels, n_voxels, n_time_points],
                         random_state=rand_gen)
-
-    events_path = func_path / f'{file_id}_events.tsv'
-    basic_paradigm().to_csv(events_path, sep='\t', index=None)
-
-    param_path = func_path / f'{file_id}_bold.json'
+    
+    fields["extension"] = 'json'
+    param_path = func_path / _create_bids_filename(fields)
     param_path.write_text(
         json.dumps({'RepetitionTime': repetition_time})
     )
+
+    fields["suffix"] = "events"
+    fields["extension"] = 'tsv'
+    events_path = func_path /  _create_bids_filename(fields)
+    basic_paradigm().to_csv(events_path, sep='\t', index=None)
 
 
 def _bids_entities() -> dict[str, list[str]]:
@@ -1003,23 +1020,24 @@ def _bids_entities() -> dict[str, list[str]]:
     Dictionary of raw and derivatives entities : dict[str, list[str]]
 
     """
-    return {"raw": ['acq',
+    return {"raw": ["sub",
+                    "ses",
+                    "task",
+                    'acq',
                     'ce',
                     'rec',
                     'dir',
                     'run',
                     'echo',
                     'part'],
-            "derivatives": ['res', 'den', 'desc']
+            "derivatives": ['space', 'res', 'den', 'desc']
             }
-
 
 def _mock_bids_dataset(bids_path: Path,
                        n_sub: int,
                        n_ses: int,
                        tasks: list[str],
                        n_runs: list[int],
-                       no_session: bool,
                        entities: dict[str, list[str]],
                        n_voxels: int,
                        rand_gen: np.random.RandomState) -> None:
@@ -1062,16 +1080,20 @@ def _mock_bids_dataset(bids_path: Path,
 
     bids_path.joinpath('README.txt').write_text('')
 
-    for subject, session in itertools.product(_subjects_to_create(n_sub),
-                                              _sessions_to_create(n_ses,
-                                                                  no_session)):
+    for subject, session in itertools.product(_listify(n_sub),
+                                              _listify(n_ses)):
 
-        subses_dir = bids_path / subject / session
+        subses_dir = bids_path / f"sub-{subject}" 
+        if session != '': 
+            subses_dir = subses_dir / f"ses-{session}"
 
-        if session in ('ses-01', ''):
+        if session in ('01', ''):
             anat_path = subses_dir / 'anat'
             anat_path.mkdir(parents=True, exist_ok=True)
-            anat_file = anat_path.joinpath(subject + '_T1w.nii.gz')
+            fields = {"suffix": "T1w",
+                      "extension": "nii.gz",
+                      "entities": {"sub": subject, "ses": session}}
+            anat_file = anat_path /  _create_bids_filename(fields)
             open(anat_file, 'w')
 
         func_path = subses_dir / 'func'
@@ -1079,43 +1101,51 @@ def _mock_bids_dataset(bids_path: Path,
 
         for task, n_run in zip(tasks, n_runs):
 
-            for run in _runs_to_create(n_run):
+            for run in _listify(n_run):
 
-                no_extra_raw_entity = entities is None or all(
-                    x not in _bids_entities()["raw"] for x in entities
-                )
-                if no_extra_raw_entity:
-                    fields = [subject, session, f"task-{task}"]
+                if entities is {}:
+
+                    fields = {"suffix": "bold",
+                                      "extension": "nii.gz",
+                                    "entities": {}}
+                    fields["entities"]["sub"] = subject
+                    fields["entities"]["ses"] = session
+                    fields["entities"]["task"] = task
+                    fields["entities"]["run"] = run
+
                     _write_bids_raw_func(func_path=func_path,
-                                         file_id=_file_id(fields,
-                                                          n_run,
-                                                          run),
+                                         fields=fields,
                                          n_voxels=n_voxels,
                                          rand_gen=rand_gen)
-                    continue
 
-                for key in entities:
-                    if key not in _bids_entities()["raw"]:
-                        continue
-                    for i_label in entities[key]:
-                        fields = [subject,
-                                    session,
-                                    f"task-{task}",
-                                    f"{key}-{i_label}"]
-                        _write_bids_raw_func(func_path=func_path,
-                                            file_id=_file_id(fields,
-                                                            n_run,
-                                                            run),
-                                            n_voxels=n_voxels,
-                                            rand_gen=rand_gen)
+                else: 
+                    for key in entities:
+
+                        if key not in _bids_entities()["raw"]:
+                            continue
+
+                        for i_label in entities[key]:
+
+                            fields = {"suffix": "bold",
+                                      "extension": "nii.gz",
+                                    "entities": {}}
+                            fields["entities"]["sub"] = subject
+                            fields["entities"]["ses"] = session
+                            fields["entities"]["task"] = task
+                            fields["entities"]["run"] = run
+                            fields["entities"][key] = i_label
+
+                            _write_bids_raw_func(func_path=func_path,
+                                                 fields=fields,
+                                                 n_voxels=n_voxels,
+                                                 rand_gen=rand_gen)
 
 
 def _write_bids_derivative_func(func_path: Path,
-                                file_id: str,
+                                fields: dict,
                                 n_voxels: int,
                                 rand_gen: np.random.RandomState,
-                                with_confounds: bool,
-                                confounds_tag: str) -> None:
+                                confounds_tag: str | None) -> None:
     """Create BIDS functional derivative and confounds files.
 
     Files created come with two spaces and descriptions.
@@ -1138,16 +1168,24 @@ def _write_bids_derivative_func(func_path: Path,
     rand_gen : :obj:`numpy.random.RandomState` instance
         Random number generator.
 
-    with_confounds : :obj:`bool`
-        Whether to generate associated confounds files or not.
-
-    confounds_tag : :obj:`str`
+    confounds_tag : :obj:`str`, optional.
         Filename "suffix":
         For example: `desc-confounds_timeseries`
         or "desc-confounds_regressors".
 
     """
     n_time_points = 100
+    
+    if confounds_tag is not None:
+        fields["suffix"] = confounds_tag
+        fields["extension"] = "tsv"
+        confounds_path = func_path / _create_bids_filename(fields)
+        basic_confounds(length=n_time_points, random_state=rand_gen).to_csv(
+            confounds_path, sep='\t', index=None)
+
+    fields["suffix"] = "bold"
+    fields["extension"] = "nii.gz"
+
     shape = [n_voxels, n_voxels, n_voxels, n_time_points]
 
     for space in ('MNI', 'T1w'):
@@ -1157,80 +1195,40 @@ def _write_bids_derivative_func(func_path: Path,
             if space == 'MNI' and desc == 'fmriprep':
                 continue
 
-            file_path = func_path.joinpath(
-                f'{file_id}_space-{space}_desc-{desc}_bold.nii.gz'
-            )
-            write_fake_bold_img(file_path,
+            fields["entities"]["space"] = space
+            fields["entities"]["desc"] = desc
+
+            entities_to_include = _bids_entities()["raw"] + _bids_entities()["derivatives"]
+
+            bold_path = func_path /  _create_bids_filename(fields,
+                                                           entities_to_include=entities_to_include)
+
+            write_fake_bold_img(bold_path,
                                 shape=shape,
                                 random_state=rand_gen)
 
-    if with_confounds:
-        confounds_path = func_path / f'{file_id}_{confounds_tag}.tsv'
-        basic_confounds(length=n_time_points, random_state=rand_gen).to_csv(
-            confounds_path, sep='\t', index=None)
 
-
-def _subjects_to_create(n_sub: int) -> list[str]:
-    """Return a list of subject entities.
+def _listify(n: int) -> list[str]:
+    """Return a list of zero padded entities.
 
     Parameters
     ----------
-    n_sub : :obj:`int`
-        Number of subjects to create.
-
-    Returns
-    -------
-    List of subjects : :obj:`list` of :obj:`str`
-
-    """
-    return [f"sub-{label:02}" for label in range(1, n_sub + 1)]
-
-
-def _sessions_to_create(n_ses: int, no_session: bool) -> list[str]:
-    """Return a list of session entities.
-
-    Parameters
-    ----------
-    n_ses : :obj:`int`
-        Number of sessions to create.
-
-    no_session : :obj:`bool`
-        Specifying no_sessions will produce files without the session level.
-        In this case `['']` is returned.
+    n : :obj:`int`
+        Number of entity to create.
 
     Returns
     -------
     List of runs : :obj:`list` of :obj:`str`
 
     """
-    return [''] if no_session else ['ses-%02d' % label
-                                    for label in range(1, n_ses + 1)]
-
-
-def _runs_to_create(n_run: int) -> list[str]:
-    """Return a list of run entities.
-
-    Parameters
-    ----------
-    n_run : :obj:`int`
-        Number of runs to create.
-
-    Returns
-    -------
-    List of runs : :obj:`list` of :obj:`str`
-
-    """
-    return [f"run-{label:02}" for label in range(1, n_run + 1)]
-
+    return [""] if n <= 1 else [f"{label:02}" for label in range(1, n + 1)]
 
 def _mock_bids_derivatives(bids_path: Path,
                            n_sub: int,
                            n_ses: int,
                            tasks: list[str],
                            n_runs: list[int],
-                           no_session: bool,
-                           with_confounds: bool,
-                           confounds_tag: str,
+                           confounds_tag: str | None,
                            entities: dict[str, list[str]],
                            n_voxels: int,
                            rand_gen: np.random.RandomState) -> None:
@@ -1259,9 +1257,6 @@ def _mock_bids_derivatives(bids_path: Path,
         Specifying no_sessions will only produce runs and files without the
         optional session field. In this case n_ses will be ignored.
 
-    with_confounds : :obj:`bool`
-        Whether to generate associated confounds files or not.
-
     confounds_tag : :obj:`str`
         Filename "suffix":
         For example: `desc-confounds_timeseries`
@@ -1280,45 +1275,51 @@ def _mock_bids_derivatives(bids_path: Path,
     bids_path = bids_path / "derivatives"
     bids_path.mkdir(parents=True, exist_ok=True)
 
-    for subject, session in itertools.product(_subjects_to_create(n_sub),
-                                              _sessions_to_create(n_ses,
-                                                                  no_session)):
+    for subject, session in itertools.product(_listify(n_sub),
+                                              _listify(n_ses)):
 
-        func_path = bids_path / subject / session / 'func'
+        subses_dir = bids_path / f"sub-{subject}" 
+        if session != '': 
+            subses_dir = subses_dir / f"ses-{session}"
+        func_path = subses_dir / 'func'
         func_path.mkdir(parents=True, exist_ok=True)
 
         for task, n_run in zip(tasks, n_runs):
 
-            for run in _runs_to_create(n_run):
+            for run in _listify(n_run):
 
-                if entities is None:
-                    fields = [subject, session, 'task-' + task]
+                if entities is {}:
+
+                    fields = {"suffix": "bold",
+                                      "extension": "nii.gz",
+                                    "entities": {}}
+                    fields["entities"]["sub"] = subject
+                    fields["entities"]["ses"] = session
+                    fields["entities"]["task"] = task
+                    fields["entities"]["run"] = run
+
                     _write_bids_derivative_func(func_path=func_path,
-                                                file_id=_file_id(fields,
-                                                                 n_run,
-                                                                 run),
+                                                fields=fields,
                                                 n_voxels=n_voxels,
                                                 rand_gen=rand_gen,
-                                                with_confounds=with_confounds,
                                                 confounds_tag=confounds_tag)
-                elif any(
-                        x in
-                        _bids_entities()["raw"] + _bids_entities()["derivatives"]
-                        for x in entities
-                    ):
+                else:
                     for key in entities:
                         for label in entities[key]:
-                            fields = [subject,
-                                      session,
-                                      'task-' + task,
-                                      f"{key}-{label}"]
+
+                            fields = {"suffix": "bold",
+                                      "extension": "nii.gz",
+                                    "entities": {}}
+                            fields["entities"]["sub"] = subject
+                            fields["entities"]["ses"] = session
+                            fields["entities"]["task"] = task
+                            fields["entities"]["run"] = run
+                            fields["entities"][key] = label
+
                             _write_bids_derivative_func(func_path=func_path,
-                                                        file_id=_file_id(fields,
-                                                                        n_run,
-                                                                        run),
+                                                        fields=fields,
                                                         n_voxels=n_voxels,
                                                         rand_gen=rand_gen,
-                                                        with_confounds=with_confounds,
                                                         confounds_tag=confounds_tag)
 
 
