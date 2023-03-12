@@ -1051,9 +1051,6 @@ def _mock_bids_dataset(
 
                 if entities:
                     for key in entities:
-                        if key not in bids.entities()["raw"]:
-                            continue
-
                         for label in entities[key]:
                             fields = _init_fields(
                                 subject=subject,
@@ -1061,7 +1058,8 @@ def _mock_bids_dataset(
                                 task=task,
                                 run=run,
                             )
-                            fields["entities"][key] = label
+                            if key in bids.entities()["raw"]:
+                                fields["entities"][key] = label
                             _write_bids_raw_func(
                                 func_path=func_path,
                                 fields=fields,
