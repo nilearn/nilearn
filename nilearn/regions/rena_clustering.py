@@ -592,10 +592,10 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
         unique_labels = np.unique(self.labels_)
 
-        mean_cluster = []
-        for label in unique_labels:
-            mean_cluster.append(np.mean(X[:, self.labels_ == label], axis=1))
-
+        mean_cluster = [
+            np.mean(X[:, self.labels_ == label], axis=1)
+            for label in unique_labels
+        ]
         X_red = np.array(mean_cluster).T
 
         if self.scaling:

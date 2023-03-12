@@ -54,8 +54,8 @@ def _threshold_maps_ratio(maps_img, threshold):
         raise ValueError(
             "threshold given as ratio to the number of voxels must "
             "be Real number and should be positive and between 0 and "
-            "total number of maps i.e. n_maps={}. "
-            "You provided {}".format(n_maps, threshold)
+            f"total number of maps i.e. n_maps={n_maps}. "
+            f"You provided {threshold}"
         )
     else:
         ratio = threshold
@@ -204,9 +204,10 @@ def connected_regions(
     allowed_extract_types = ["connected_components", "local_regions"]
     if extract_type not in allowed_extract_types:
         message = (
-            "'extract_type' should be given either of these {} "
-            "You provided extract_type='{}'"
-        ).format(allowed_extract_types, extract_type)
+            "'extract_type' should be given "
+            f"either of these {allowed_extract_types} "
+            f"You provided extract_type='{extract_type}'"
+        )
         raise ValueError(message)
 
     if mask_img is not None:
@@ -425,15 +426,16 @@ class RegionExtractor(NiftiMapsMasker):
         list_of_strategies = ["ratio_n_voxels", "img_value", "percentile"]
         if self.thresholding_strategy not in list_of_strategies:
             message = (
-                "'thresholding_strategy' should be " "either of these {}"
-            ).format(list_of_strategies)
+                "'thresholding_strategy' should be "
+                f"either of these {list_of_strategies}"
+            )
             raise ValueError(message)
 
         if self.threshold is None or isinstance(self.threshold, str):
             raise ValueError(
                 "The given input to threshold is not valid. "
                 "Please submit a valid number specific to either of "
-                "the strategy in {}".format(list_of_strategies)
+                f"the strategy in {list_of_strategies}"
             )
         elif isinstance(self.threshold, numbers.Number):
             # foreground extraction
@@ -540,14 +542,14 @@ def connected_label_regions(
     if not isinstance(connect_diag, bool):
         raise ValueError(
             "'connect_diag' must be specified as True or False. "
-            "You provided {}".format(connect_diag)
+            f"You provided {connect_diag}"
         )
     if np.any(check_unique_labels < 0):
         raise ValueError(
             "The 'labels_img' you provided has unknown/negative "
-            "integers as labels {} assigned to regions. "
+            f"integers as labels {check_unique_labels} assigned to regions. "
             "All regions in an image should have positive "
-            "integers assigned as labels.".format(check_unique_labels)
+            "integers assigned as labels."
         )
 
     unique_labels = set(check_unique_labels)
@@ -564,20 +566,15 @@ def connected_label_regions(
             ]
         if len(unique_labels) != len(labels):
             raise ValueError(
-                "The number of labels: {} provided as input "
-                "in labels={} does not match with the number "
-                "of unique labels in labels_img: {}. "
+                f"The number of labels: {len(labels)} provided as input "
+                f"in labels={labels} does not match with the number "
+                f"of unique labels in labels_img: {len(unique_labels)}. "
                 "Please provide appropriate match with unique "
-                "number of labels in labels_img.".format(
-                    len(labels), labels, len(unique_labels)
-                )
+                "number of labels in labels_img."
             )
         new_names = []
 
-    if labels is None:
-        this_labels = [None] * len(unique_labels)
-    else:
-        this_labels = labels
+    this_labels = [None] * len(unique_labels) if labels is None else labels
 
     new_labels_data = np.zeros(labels_data.shape, dtype=int)
     current_max_label = 0
@@ -606,8 +603,7 @@ def connected_label_regions(
             new_names.extend([name] * this_n_labels)
 
     new_labels_img = new_img_like(labels_img, new_labels_data, affine=affine)
-    if labels is not None:
-        new_labels = new_names
-        return new_labels_img, new_labels
 
-    return new_labels_img
+    return (
+        (new_labels_img, new_names) if labels is not None else new_labels_img
+    )

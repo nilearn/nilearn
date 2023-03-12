@@ -78,13 +78,12 @@ def _check_parameters_transform(imgs, confounds):
     if confounds is None and isinstance(imgs, (list, tuple)):
         confounds = [None] * len(imgs)
 
-    if confounds is not None:
-        if not isinstance(confounds, (list, tuple)) or isinstance(
-            confounds, str
-        ):
-            confounds = [
-                confounds,
-            ]
+    if confounds is not None and (
+        not isinstance(confounds, (list, tuple)) or isinstance(confounds, str)
+    ):
+        confounds = [
+            confounds,
+        ]
 
     if len(confounds) != len(imgs):
         raise ValueError(
@@ -344,15 +343,12 @@ class Parcellations(_MultiPCA):
         if self.method is None:
             raise ValueError(
                 "Parcellation method is specified as None. "
-                "Please select one of the method in "
-                "{}".format(valid_methods)
+                f"Please select one of the method in {valid_methods}"
             )
-        if self.method is not None and self.method not in valid_methods:
+        if self.method not in valid_methods:
             raise ValueError(
-                "The method you have selected is not implemented "
-                "'{}'. Valid methods are in {}".format(
-                    self.method, valid_methods
-                )
+                f"The method you have selected is not implemented "
+                f"'{self.method}'. Valid methods are in {valid_methods}"
             )
 
         # we delay importing Ward or AgglomerativeClustering and same
@@ -519,10 +515,7 @@ class Parcellations(_MultiPCA):
             for img, confound in zip(imgs_list, confounds)
         )
 
-        if single_subject:
-            return region_signals[0]
-        else:
-            return region_signals
+        return region_signals[0] if single_subject else region_signals
 
     @fill_doc
     def fit_transform(self, imgs, confounds=None):
@@ -600,7 +593,4 @@ class Parcellations(_MultiPCA):
             for each_signal in signals
         )
 
-        if single_subject:
-            return imgs[0]
-        else:
-            return imgs
+        return imgs[0] if single_subject else imgs
