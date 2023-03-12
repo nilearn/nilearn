@@ -557,7 +557,7 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
     # iterate on maps
     p = 0
     mask = _utils.as_ndarray(mask, dtype=bool, order="C")
-    for n, m in enumerate(np.rollaxis(maps, -1)):
+    for n, _ in enumerate(np.rollaxis(maps, -1)):
         if not keep_empty and sums[n] == 0:
             continue
         trimmed_maps[mask, p] = maps[mask, n]

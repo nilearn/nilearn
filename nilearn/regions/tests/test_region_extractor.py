@@ -222,8 +222,8 @@ def test_region_extractor_fit_and_transform():
     n_regions_extracted = extractor.regions_img_.shape[-1]
     shape = (91, 109, 91, 7)
     expected_signal_shape = (7, n_regions_extracted)
-    for id_ in range(n_subjects):
-        img, data = _make_random_data(shape)
+    for _ in range(n_subjects):
+        img, _ = _make_random_data(shape)
         # smoke test NiftiMapsMasker transform inherited in Region Extractor
         signal = extractor.transform(img)
         assert expected_signal_shape == signal.shape
@@ -356,7 +356,7 @@ def test_connected_label_regions():
     # If labels are provided, first return will contain extracted labels image
     # and second return will contain list of new names generated based on same
     # name with assigned on both hemispheres for example.
-    extracted_reg, new_labels = connected_label_regions(
+    _, new_labels = connected_label_regions(
         labels_img, min_size=100, labels=labels
     )
     # The length of new_labels returned can differ depending upon min_size. If
@@ -370,9 +370,7 @@ def test_connected_label_regions():
 
     # labels given in numpy array
     labels = np.asarray(labels)
-    extracted_reg2, new_labels2 = connected_label_regions(
-        labels_img, labels=labels
-    )
+    _, new_labels2 = connected_label_regions(labels_img, labels=labels)
     assert new_labels != ""
     # By default min_size is less, so newly generated labels can be more.
     assert len(new_labels2) >= len(labels)
@@ -437,7 +435,7 @@ def test_connected_label_regions():
     labels_img_in_str = generate_labeled_regions(
         shape, affine=affine, n_regions=1
     )
-    extract_regions, new_labels = connected_label_regions(
+    _, new_labels = connected_label_regions(
         labels_img_in_str, labels=labels_in_str
     )
     assert isinstance(new_labels, list)
@@ -456,7 +454,5 @@ def test_connected_label_regions():
         "4",
         "region_e",
     ]
-    ext_reg, new_labels = connected_label_regions(
-        labels_img, labels=combined_labels
-    )
+    _, new_labels = connected_label_regions(labels_img, labels=combined_labels)
     assert len(new_labels) >= len(combined_labels)

@@ -230,7 +230,7 @@ def connected_regions(
                 map_3d, affine=affine, fwhm=smoothing_fwhm
             )
             seeds = _peak_local_max(smooth_map)
-            seeds_label, seeds_id = label(seeds)
+            seeds_label, _ = label(seeds)
             # Assign -1 to values which are 0. to indicate to ignore
             seeds_label[map_3d == 0.0] = -1
             rw_maps = _random_walker(map_3d, seeds_label)
