@@ -24,6 +24,7 @@ from sklearn.cluster import KMeans
 
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
 from nilearn._utils import fill_doc
+from nilearn._utils import bids
 from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
                                 _check_run_tables, _check_run_sample_masks)
 from nilearn._utils.niimg_conversions import check_niimg
@@ -1015,8 +1016,10 @@ def first_level_from_bids(dataset_path,
 
     return models, models_run_imgs, models_events, models_confounds
 
+
 def _list_valid_subjects(derivatives_path: str , sub_labels: list[str] | None):
-    # Infer subjects in dataset
+
+    # Infer subjects in dataset if not provided
     if not sub_labels:
         sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*/'))
         sub_labels = [
@@ -1024,15 +1027,17 @@ def _list_valid_subjects(derivatives_path: str , sub_labels: list[str] | None):
         ]
         sub_labels = sorted(list(set(sub_labels)))
 
+    # keep only existing subjects
     sub_labels_exist = []
     for sub_label_ in sub_labels:
         if os.path.exists(os.path.join(derivatives_path, f"sub-{sub_label_}")):
             sub_labels_exist.append(sub_label_)
         else:
             warn(f'Subject label {sub_label_} is not present in the'
-                    ' dataset and cannot be processed.')
+                 ' dataset and cannot be processed.')
             
     return set(sub_labels_exist)
+
 
 def _report_found_files(files: list[str],
                         text: str,
@@ -1060,6 +1065,7 @@ def _report_found_files(files: list[str],
         f'for subject {sub_label}\n',
         f'for filter: {filters}:\n',
         f'{files}\n') 
+
 
 def _get_processed_imgs(derivatives_path: str,
                         sub_label: str,
@@ -1106,6 +1112,7 @@ def _get_processed_imgs(derivatives_path: str,
                             filters=filters)
     _check_bids_image_list(imgs, sub_label, filters)
     return imgs
+
 
 def _get_events_files(dataset_path: str,
                       sub_label: str,
@@ -1158,6 +1165,7 @@ def _get_events_files(dataset_path: str,
                                 dataset_path=dataset_path,
                                 events_filters=events_filters)
     return events
+
 
 def _get_confounds(derivatives_path: str,
                    sub_label: str,
@@ -1308,40 +1316,17 @@ def _validate_args_first_level_from_bids(dataset_path: str,
         raise ValueError("derivatives folder not found in given dataset:\n"
                          f"{derivatives_path}")
 
-    if not isinstance(task_label, str):
-        raise TypeError(
-            "'task_label' must be a string. "
-            f"Got {type(task_label)} instead."
-        )
-    if not all(char.isalnum() for char in task_label):
-        raise ValueError(
-            "'task_label' must be alphanumeric. "
-            f"Got {task_label} instead."
-        )
+    bids.validate_label(task_label)
 
     if space_label is not None:
-        if not isinstance(space_label, str):
-            raise TypeError(
-                "'space_label' must be a string, "
-                f"Got {type(space_label)} instead."
-            )
-        if not all(char.isalnum() for char in space_label):
-            raise ValueError(
-                "'space_label' must be alphanumeric. "
-                f"Got {space_label} instead."
-            )
+        bids.validate_label(space_label)
 
     if not isinstance(sub_labels, list):
         raise TypeError(
             f'sub_labels must be a list, instead {type(sub_labels)} was given'
         )
     for sub_label_ in sub_labels:
-        if (sub_label_ is None or 
-            not all(char.isalnum() for char in sub_label_)):
-            raise ValueError(
-                "subject labels must be alphanumeric. "
-                f"Got {space_label} instead."
-            )
+        bids.validate_label(sub_label_)
 
     if not isinstance(img_filters, list):
         raise TypeError(
@@ -1358,9 +1343,7 @@ def _validate_args_first_level_from_bids(dataset_path: str,
             raise ValueError(
                 f"Entity {filter_[0]} for {filter_} is not a possible filter. "
                 f"Only {supported_filters} are allowed.")
-        if not all(char.isalnum() for char in filter_[1]):
-            raise TypeError('BIDS labels in img_filters must be alphanumeric. '
-                            f"Got {type(filter_[1])} for {filter_} instead.")
+        bids.validate_label(filter_[1])
 
 
 def _make_bids_files_filter(task_label: str,

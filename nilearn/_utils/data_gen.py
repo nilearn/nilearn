@@ -20,6 +20,7 @@ from sklearn.utils import check_random_state
 
 from nilearn import datasets, image, maskers, masking
 from nilearn._utils import as_ndarray, logger
+from nilearn._utils import bids
 
 
 def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
@@ -830,6 +831,8 @@ def create_fake_bids_dataset(base_dir='',
         number of runs for the corresponding task.
         The length of this list must match the number of items in ``tasks``.
         Each run creates 100 volumes.
+        Files will be generated without run entity 
+        if a value is equal to 0 or less.
 
     with_derivatives : :obj:`bool`, optional
         In the case derivatives are included, they come with two spaces and
@@ -884,12 +887,14 @@ def create_fake_bids_dataset(base_dir='',
 
     bids_dataset_dir = 'bids_dataset'
 
-    if entities is None:
-        entities = {}
-    _check_entity_labels(entities)
-
     if no_session:
         n_ses = 0
+
+    _check_tasks(tasks)
+
+    if entities is None:
+        entities = {}
+    _check_entities(entities)
 
     _mock_bids_dataset(bids_path=Path(base_dir) / bids_dataset_dir,
                        n_sub=n_sub,
@@ -918,14 +923,16 @@ def create_fake_bids_dataset(base_dir='',
     return bids_dataset_dir
 
 
-def _check_entity_labels(entities: dict) -> None:
+def _check_tasks(tasks):
+    for task_ in tasks:
+        bids.validate_label(task_)
+
+
+def _check_entities(entities: dict) -> None:
     "Validate that all labels are alphanumeric strings."
     for value in entities.values():
         for label_ in value:
-            if (not isinstance(label_, str) or 
-                not all(char.isalnum() for char in label_)):
-                raise ValueError(f"Entity label must be alphanumeric. "
-                                    f"Got '{label_}' instead.")
+            bids.validate_label(label_)
 
 
 def _create_bids_filename(fields: dict[str], 
@@ -949,7 +956,7 @@ def _create_bids_filename(fields: dict[str],
 
     """
     if entities_to_include is None:
-        entities_to_include = _bids_entities()["raw"]
+        entities_to_include = bids.entities()["raw"]
 
     filename = ""
 
@@ -960,8 +967,6 @@ def _create_bids_filename(fields: dict[str],
                 filename += f"{key}-{value}_"
     filename += f"{fields['suffix']}.{fields['extension']}"
 
-    print(filename)
-
     return filename
     
 
@@ -969,7 +974,7 @@ def _write_bids_raw_func(func_path: Path,
                          fields: str,
                          n_voxels: int,
                          rand_gen: np.random.RandomState) -> None:
-    """Create BIDS functional raw and events files.
+    """Create BIDS functional raw nifti, json sidecar and events files.
 
     Parameters
     ----------
@@ -987,14 +992,13 @@ def _write_bids_raw_func(func_path: Path,
         Random number generator.
 
     """
-    repetition_time = 1.5
     n_time_points = 100
-
     bold_path = func_path /  _create_bids_filename(fields)
     write_fake_bold_img(bold_path,
                         [n_voxels, n_voxels, n_voxels, n_time_points],
                         random_state=rand_gen)
     
+    repetition_time = 1.5
     fields["extension"] = 'json'
     param_path = func_path / _create_bids_filename(fields)
     param_path.write_text(
@@ -1007,31 +1011,7 @@ def _write_bids_raw_func(func_path: Path,
     basic_paradigm().to_csv(events_path, sep='\t', index=None)
 
 
-def _bids_entities() -> dict[str, list[str]]:
-    """Return a dictionary of BIDS entities.
 
-    Note that:
-
-    - this only contains the entities for functional data
-    - the entities `sub` and `ses` are not included
-
-    Returns
-    -------
-    Dictionary of raw and derivatives entities : dict[str, list[str]]
-
-    """
-    return {"raw": ["sub",
-                    "ses",
-                    "task",
-                    'acq',
-                    'ce',
-                    'rec',
-                    'dir',
-                    'run',
-                    'echo',
-                    'part'],
-            "derivatives": ['space', 'res', 'den', 'desc']
-            }
 
 def _mock_bids_dataset(bids_path: Path,
                        n_sub: int,
@@ -1053,7 +1033,7 @@ def _mock_bids_dataset(bids_path: Path,
 
     n_ses : :obj:`int`
         Number of sessions to be simulated in the dataset.
-        Ignored if no_session=True.
+        Ignored if n_ses=0.
 
     tasks : :obj:`list` of :obj:`str`
         List of tasks to be simulated in the dataset.
@@ -1061,10 +1041,7 @@ def _mock_bids_dataset(bids_path: Path,
     n_runs : :obj:`list` of :obj:`int`
         Number of runs to create, where each element indicates the
         number of runs for the corresponding task.
-
-    no_session : :obj:`bool`
-        Specifying no_sessions will only produce runs and files without the
-        optional session field. In this case n_ses will be ignored.
+        No run entity will be used if a value is equal to 1 or less.
 
     entities : :obj:`dict`, optional
         Extra entities to add to the BIDS filename with a list of values.
@@ -1103,42 +1080,44 @@ def _mock_bids_dataset(bids_path: Path,
 
             for run in _listify(n_run):
 
-                if entities is {}:
+                if entities: 
+                    for key in entities:
 
-                    fields = {"suffix": "bold",
-                                      "extension": "nii.gz",
-                                    "entities": {}}
-                    fields["entities"]["sub"] = subject
-                    fields["entities"]["ses"] = session
-                    fields["entities"]["task"] = task
-                    fields["entities"]["run"] = run
+                        if key not in bids.entities()["raw"]:
+                            continue
 
+                        for i_label in entities[key]:
+                            fields = _init_fields(subject=subject,
+                                                  session=session,
+                                                  task=task,
+                                                  run=run)
+                            fields["entities"][key] = i_label
+                            _write_bids_raw_func(func_path=func_path,
+                                                 fields=fields,
+                                                 n_voxels=n_voxels,
+                                                 rand_gen=rand_gen)
+                else:
+                    fields = _init_fields(subject=subject,
+                                          session=session,
+                                          task=task,
+                                          run=run)
                     _write_bids_raw_func(func_path=func_path,
                                          fields=fields,
                                          n_voxels=n_voxels,
                                          rand_gen=rand_gen)
 
-                else: 
-                    for key in entities:
-
-                        if key not in _bids_entities()["raw"]:
-                            continue
-
-                        for i_label in entities[key]:
-
-                            fields = {"suffix": "bold",
-                                      "extension": "nii.gz",
-                                    "entities": {}}
-                            fields["entities"]["sub"] = subject
-                            fields["entities"]["ses"] = session
-                            fields["entities"]["task"] = task
-                            fields["entities"]["run"] = run
-                            fields["entities"][key] = i_label
-
-                            _write_bids_raw_func(func_path=func_path,
-                                                 fields=fields,
-                                                 n_voxels=n_voxels,
-                                                 rand_gen=rand_gen)
+def _init_fields(subject, session, task, run):
+    fields = {
+                "suffix": "bold",
+                "extension": "nii.gz",
+                "entities": {
+                    "sub": subject,
+                    "ses": session,
+                    "task": task,
+                    "run": run,
+                }
+             }
+    return fields
 
 
 def _write_bids_derivative_func(func_path: Path,
@@ -1179,7 +1158,10 @@ def _write_bids_derivative_func(func_path: Path,
     if confounds_tag is not None:
         fields["suffix"] = confounds_tag
         fields["extension"] = "tsv"
-        confounds_path = func_path / _create_bids_filename(fields)
+        confounds_path = func_path / _create_bids_filename(
+                                        fields=fields,
+                                        entities_to_include = bids.entities()["raw"]
+                                        )
         basic_confounds(length=n_time_points, random_state=rand_gen).to_csv(
             confounds_path, sep='\t', index=None)
 
@@ -1198,30 +1180,31 @@ def _write_bids_derivative_func(func_path: Path,
             fields["entities"]["space"] = space
             fields["entities"]["desc"] = desc
 
-            entities_to_include = _bids_entities()["raw"] + _bids_entities()["derivatives"]
+            entities_to_include = bids.entities()["raw"] + bids.entities()["derivatives"]
 
-            bold_path = func_path /  _create_bids_filename(fields,
+            bold_path = func_path /  _create_bids_filename(fields=fields,
                                                            entities_to_include=entities_to_include)
-
             write_fake_bold_img(bold_path,
                                 shape=shape,
                                 random_state=rand_gen)
 
 
 def _listify(n: int) -> list[str]:
-    """Return a list of zero padded entities.
+    """Return a list of zero padded BIDS labels.
+
+    If n is 0 or less, return an empty list.
 
     Parameters
     ----------
     n : :obj:`int`
-        Number of entity to create.
+        Number of labels to create.
 
     Returns
     -------
-    List of runs : :obj:`list` of :obj:`str`
+    List of labels : :obj:`list` of :obj:`str`
 
     """
-    return [""] if n <= 1 else [f"{label:02}" for label in range(1, n + 1)]
+    return [""] if n <= 0 else [f"{label:02}" for label in range(1, n + 1)]
 
 def _mock_bids_derivatives(bids_path: Path,
                            n_sub: int,
@@ -1244,7 +1227,7 @@ def _mock_bids_derivatives(bids_path: Path,
 
     n_ses : :obj:`int`
         Number of sessions to be simulated in the dataset.
-        Ignored if no_session=True.
+        Ignored if n_ses=0.
 
     tasks : :obj:`list` of :obj:`str`
         List of tasks to be simulated in the dataset.
@@ -1252,10 +1235,7 @@ def _mock_bids_derivatives(bids_path: Path,
     n_runs : :obj:`list` of :obj:`int`
         Number of runs to create, where each element indicates the
         number of runs for the corresponding task.
-
-    no_session : :obj:`bool`
-        Specifying no_sessions will only produce runs and files without the
-        optional session field. In this case n_ses will be ignored.
+        No run entity will be used if a value is equal to 1 or less.
 
     confounds_tag : :obj:`str`
         Filename "suffix":
@@ -1288,39 +1268,31 @@ def _mock_bids_derivatives(bids_path: Path,
 
             for run in _listify(n_run):
 
-                if entities is {}:
-
-                    fields = {"suffix": "bold",
-                                      "extension": "nii.gz",
-                                    "entities": {}}
-                    fields["entities"]["sub"] = subject
-                    fields["entities"]["ses"] = session
-                    fields["entities"]["task"] = task
-                    fields["entities"]["run"] = run
-
-                    _write_bids_derivative_func(func_path=func_path,
-                                                fields=fields,
-                                                n_voxels=n_voxels,
-                                                rand_gen=rand_gen,
-                                                confounds_tag=confounds_tag)
-                else:
+                if entities:
                     for key in entities:
                         for label in entities[key]:
-
-                            fields = {"suffix": "bold",
-                                      "extension": "nii.gz",
-                                    "entities": {}}
-                            fields["entities"]["sub"] = subject
-                            fields["entities"]["ses"] = session
-                            fields["entities"]["task"] = task
-                            fields["entities"]["run"] = run
+                            fields = _init_fields(subject=subject,
+                                                session=session,
+                                                task=task,
+                                                run=run)
                             fields["entities"][key] = label
-
                             _write_bids_derivative_func(func_path=func_path,
                                                         fields=fields,
                                                         n_voxels=n_voxels,
                                                         rand_gen=rand_gen,
                                                         confounds_tag=confounds_tag)
+
+                else:
+                    fields = _init_fields(subject=subject,
+                                          session=session,
+                                          task=task,
+                                          run=run)
+                    _write_bids_derivative_func(func_path=func_path,
+                                                fields=fields,
+                                                n_voxels=n_voxels,
+                                                rand_gen=rand_gen,
+                                                confounds_tag=confounds_tag)
+
 
 
 def generate_random_img(

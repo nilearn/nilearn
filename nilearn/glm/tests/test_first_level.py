@@ -843,22 +843,16 @@ def _fake_bids_path():
     )
 
 
-@pytest.mark.parametrize(
-    "task_index", [0, 1]
-)
-@pytest.mark.parametrize(
-    "space_label", ["MNI", "T1w"]
-)
-@pytest.mark.parametrize(
-    "verbose", [0, 1]
-)
-def test_first_level_from_bids(task_index, space_label, verbose):
+@pytest.mark.parametrize("n_runs", ([1, 0], [1, 1], [1, 2]))
+@pytest.mark.parametrize("n_ses", [0, 1, 2])
+@pytest.mark.parametrize("task_index", [0, 1])
+@pytest.mark.parametrize("space_label", ["MNI", "T1w"])
+def test_first_level_from_bids(n_runs, n_ses, task_index, space_label):
+    """Check several BIDS structure."""
     with InTemporaryDirectory():
 
         n_sub = 2
-        n_ses = 2
-        tasks = ["localizer", "main"]
-        n_runs = [1, 2]
+        tasks = ['localizer', 'main']
 
         bids_path = create_fake_bids_dataset(
             n_sub=n_sub,
@@ -871,15 +865,43 @@ def test_first_level_from_bids(task_index, space_label, verbose):
             dataset_path=bids_path,
             task_label=tasks[task_index],
             space_label=space_label,
-            img_filters=[("desc", "preproc")],
-            verbose=verbose,
+            img_filters=[("desc", "preproc")]
         )
 
         assert len(models) == n_sub
         assert len(models) == len(m_imgs)
         assert len(models) == len(m_events)
         assert len(models) == len(m_confounds)
-        assert len(m_imgs[0]) == n_ses * n_runs[task_index]
+
+        # no run entity in filename
+        # or session level when they take a value of 0
+        no_run_entity = n_runs[task_index] <= 1
+        no_session_level =  n_ses <= 1
+
+        if no_session_level:
+            if no_run_entity:
+                assert len(m_imgs[0]) == 1
+            else:
+                assert len(m_imgs[0]) == n_runs[task_index]
+        elif no_run_entity:
+            assert len(m_imgs[0]) == n_ses
+        else:
+            assert len(m_imgs[0]) == n_ses * n_runs[task_index]
+
+
+@pytest.mark.parametrize("verbose", [0, 1])
+def test_first_level_from_bids_verbose(verbose):
+    with InTemporaryDirectory():
+
+        bids_path = _fake_bids_path()
+
+        first_level_from_bids(
+            dataset_path=bids_path,
+            task_label="main",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            verbose=verbose,
+        )
 
 
 def test_first_level_from_bids_validation_input_dataset_path():
@@ -893,45 +915,47 @@ def test_first_level_from_bids_validation_input_dataset_path():
                               space_label="MNI")
 
 
-def test_first_level_from_bids_validation_task_label():
+@pytest.mark.parametrize("task_label,error_type", 
+                         [(42, TypeError), 
+                          ("$$$", ValueError)],
+                         )
+def test_first_level_from_bids_validation_task_label(task_label,error_type):
     with InTemporaryDirectory():
         bids_path = _fake_bids_path()
-        with pytest.raises(TypeError, match="'task_label' must be a string"):
+        with pytest.raises(error_type, 
+                           match="All bids labels must be "):
             first_level_from_bids(dataset_path=bids_path,
-                                  task_label=2,
+                                  task_label=task_label,
                                   space_label="MNI")
-        with pytest.raises(ValueError, match="alphanumeric"):
-            first_level_from_bids(dataset_path=bids_path,
-                                  task_label='$$$',
-                                  space_label="MNI")            
 
 
-def test_first_level_from_bids_validation_space_label():
+@pytest.mark.parametrize("space_label,error_type", 
+                         [(42, TypeError), 
+                          ("$$$", ValueError)],
+                         )
+def test_first_level_from_bids_validation_space_label(space_label,error_type):
     with InTemporaryDirectory():
         bids_path = _fake_bids_path()
-        with pytest.raises(TypeError, match="'space_label' must be a string"):
+        with pytest.raises(error_type, 
+                           match="All bids labels must be "):
             first_level_from_bids(
                 dataset_path=bids_path,
                 task_label="main",
-                space_label=42
-            )
-        with pytest.raises(ValueError, match="alphanumeric"):
-            first_level_from_bids(dataset_path=bids_path,
-                                  task_label='main',
-                                  space_label="$$$")              
+                space_label=space_label
+            )         
 
 
 @pytest.mark.parametrize(
-    "img_filters,match", [
-        ("foo", "'img_filters' must be a list"),
-        ([(1, 2)], "Filters in img"),
-        ([("desc", "*/-")], "must be alphanumeric"),
+    "img_filters,error_type,match", [
+        ("foo", TypeError, "'img_filters' must be a list"),
+        ([(1, 2)], TypeError, "Filters in img"),
+        ([("desc", "*/-")], ValueError, "All bids labels must be alphanumeric."),
     ]
 )
-def test_first_level_from_bids_validation_img_filter_type(img_filters, match):
+def test_first_level_from_bids_validation_img_filter_type(img_filters, error_type, match):
     with InTemporaryDirectory():
         bids_path = _fake_bids_path()
-        with pytest.raises(TypeError, match=match):
+        with pytest.raises(error_type, match=match):
             first_level_from_bids(
                 dataset_path=bids_path,
                 task_label="main",
@@ -965,6 +989,7 @@ def test_first_level_from_bids_with_missing_files():
             first_level_from_bids(
                 dataset_path=bids_path, task_label="main", space_label="T1w"
             )
+
 
 def test_first_level_from_bids_no_bold_files():
     with InTemporaryDirectory():
@@ -1032,6 +1057,7 @@ def test_first_level_from_bids_one_confound_missing():
                 dataset_path=bids_path, task_label="main", space_label="MNI"
             )
 
+
 def test_first_level_from_bids_all_confounds_missing():
     """If all confound files are missing, confounds should be an array of None."""
     with InTemporaryDirectory():
@@ -1057,6 +1083,7 @@ def test_first_level_from_bids_all_confounds_missing():
         assert len(models) == len(m_confounds)
         for condounds_ in m_confounds:
             assert condounds_ is None
+
 
 def test_first_level_from_bids_no_derivatives():
     """Raise error if the derivative folder does not exist."""
@@ -1222,6 +1249,7 @@ def test_first_level_select_run():
         assert len(models) == len(m_events)
         assert len(models) == len(m_confounds)
         assert len(m_imgs[0]) == n_ses
+
 
 def test_first_level_select_session():
     """Select only one session."""
