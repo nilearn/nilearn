@@ -339,17 +339,7 @@ def test_connected_label_regions():
 
     # Test the names of the brain regions given in labels.
     # Test labels for 9 regions in n_regions
-    labels = [
-        "region_a",
-        "region_b",
-        "region_c",
-        "region_d",
-        "region_e",
-        "region_f",
-        "region_g",
-        "region_h",
-        "region_i",
-    ]
+    labels = [f"region_{x}" for x in "abcdefghi"]
 
     # If labels are provided, first return will contain extracted labels image
     # and second return will contain list of new names generated based on same
@@ -381,14 +371,7 @@ def test_connected_label_regions():
     unique_labels.remove(0)
 
     # labels given are less than n_regions=9
-    provided_labels = [
-        "region_a",
-        "region_c",
-        "region_f",
-        "region_g",
-        "region_h",
-        "region_i",
-    ]
+    provided_labels = [f"region_{x}" for x in "acfghi"]
 
     assert len(provided_labels) < len(unique_labels)
 

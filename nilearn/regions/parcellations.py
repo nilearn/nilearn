@@ -573,9 +573,7 @@ class Parcellations(_MultiPCA):
         if not isinstance(signals, (list, tuple)) or isinstance(
             signals, np.ndarray
         ):
-            signals = [
-                signals,
-            ]
+            signals = [signals]
             single_subject = True
         elif isinstance(signals, (list, tuple)) and len(signals) == 1:
             single_subject = True

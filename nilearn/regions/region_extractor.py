@@ -561,9 +561,7 @@ def connected_label_regions(
         if not isinstance(labels, collections.abc.Iterable) or isinstance(
             labels, str
         ):
-            labels = [
-                labels,
-            ]
+            labels = [labels]
         if len(unique_labels) != len(labels):
             raise ValueError(
                 f"The number of labels: {len(labels)} provided as input "
