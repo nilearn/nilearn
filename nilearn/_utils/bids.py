@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 
-def entities() -> dict[str, list[str]]:
+def bids_entities() -> dict[str, list[str]]:
     """Return a dictionary of BIDS entities.
 
     Entities are listed in the order they should appear in a filename.
@@ -41,7 +41,7 @@ def entities() -> dict[str, list[str]]:
     }
 
 
-def validate_label(label: Any) -> None:
+def validate_bids_label(label: Any) -> None:
     """Validate a BIDS label.
 
     https://bids-specification.readthedocs.io/en/stable/glossary.html#label-formats # noqa
