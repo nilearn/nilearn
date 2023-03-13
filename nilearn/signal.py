@@ -85,13 +85,13 @@ def _standardize(signals, detrend=False, standardize='zscore'):
 
         elif (standardize == 'zscore') or (standardize is True):
             std_strategy_default = (
-                'The default strategy for standardize is currently \'zscore\' '
-                'which incorrectly uses population std to calculate sample '
-                'zscores. The new strategy \'zscore_sample\' corrects this '
-                'behavior by using the sample std. In release 0.13, the '
-                'default strategy will be replaced by the new strategy and '
-                'the \'zscore\' option will be removed. Please use '
-                '\'zscore_sample\' instead.'
+                "The default strategy for standardize is currently 'zscore' "
+                "which incorrectly uses population std to calculate sample "
+                "zscores. The new strategy 'zscore_sample' corrects this "
+                "behavior by using the sample std. In release 0.13, the "
+                "default strategy will be replaced by the new strategy and "
+                "the 'zscore' option will be removed. Please use "
+                "'zscore_sample' instead."
             )
             warnings.warn(category=FutureWarning,
                           message=std_strategy_default,
