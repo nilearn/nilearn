@@ -350,15 +350,6 @@ class Parcellations(_MultiPCA):
         # we delay importing Ward or AgglomerativeClustering and same
         # time import plotting module before that.
 
-        # Because sklearn.cluster imports scipy hierarchy and hierarchy imports
-        # matplotlib. So, we force import matplotlib first using our
-        # plotting to avoid backend display error with matplotlib
-        # happening in Travis
-        # try:
-        #     from nilearn import plotting  # noqa
-        # except Exception:
-        #     pass
-
         components = _MultiPCA._raw_fit(self, data)
 
         mask_img_ = self.masker_.mask_img_

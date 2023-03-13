@@ -564,11 +564,10 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
         maps_mask[trimmed_maps[..., p] > 0] = 1
         p += 1
 
-    if keep_empty:
-        return (
-            trimmed_maps,
-            maps_mask,
-            np.arange(trimmed_maps.shape[-1], dtype=int),
-        )
-    else:
-        return trimmed_maps, maps_mask, np.where(sums > 0)[0]
+    indices = (
+        np.arange(trimmed_maps.shape[-1], dtype=int)
+        if keep_empty
+        else np.where(sums > 0)[0]
+    )
+
+    return trimmed_maps, maps_mask, indices

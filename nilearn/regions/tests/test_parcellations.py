@@ -192,7 +192,7 @@ def test_check_parameters_transform(test_image_2):
 @pytest.mark.parametrize("n_parcel", [5])
 def test_parcellations_transform_with_multi_confounds_multi_images(
     method, n_parcel, test_image_2
-):  # noqa: E501
+):
     rng = np.random.RandomState(42)
     fmri_imgs = [test_image_2] * 3
     confounds = rng.standard_normal(size=(10, 3))
