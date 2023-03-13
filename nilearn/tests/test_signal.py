@@ -251,6 +251,10 @@ def test_standardize():
     a = rng.random_sample((n_samples, n_features))
     a += np.linspace(0, 2., n_features)
 
+    # Test raise error when strategy is not valid option
+    with pytest.raises(ValueError, match="no valid standardize strategy"):
+        nisignal._standardize(a, standardize="foo")
+
     # test warning for strategy that will be removed
     with pytest.warns(FutureWarning, match='default strategy for standardize'):
         nisignal._standardize(a, standardize='zscore')
