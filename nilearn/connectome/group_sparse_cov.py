@@ -640,14 +640,14 @@ def empirical_covariances(subjects, assume_centered=False, standardize=False):
     if not hasattr(subjects, "__iter__"):
         raise ValueError(
             "'subjects' input argument must be an iterable. "
-            "You provided {}".format(subjects.__class__)
+            f"You provided {subjects.__class__}"
         )
 
     n_subjects = [s.shape[1] for s in subjects]
     if len(set(n_subjects)) > 1:
         raise ValueError(
             "All subjects must have the same number of "
-            "features.\nYou provided: {}".format(str(n_subjects))
+            f"features.\nYou provided: {n_subjects}"
         )
     n_subjects = len(subjects)
     n_features = subjects[0].shape[1]
@@ -878,10 +878,11 @@ def group_sparse_covariance_path(
         precisions_list.append(precisions)
         precisions_init = precisions
 
-    if test_subjs is not None:
-        return precisions_list, scores
-    else:
-        return precisions_list
+    return (
+        (precisions_list, scores)
+        if test_subjs is not None
+        else precisions_list
+    )
 
 
 class EarlyStopProbe:
