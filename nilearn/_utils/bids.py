@@ -41,7 +41,7 @@ def bids_entities() -> dict[str, list[str]]:
     }
 
 
-def validate_bids_label(label: Any) -> None:
+def validate_bids_label(label) -> None:
     """Validate a BIDS label.
 
     https://bids-specification.readthedocs.io/en/stable/glossary.html#label-formats # noqa
