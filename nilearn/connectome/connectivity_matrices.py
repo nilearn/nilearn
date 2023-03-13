@@ -173,13 +173,13 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
             for matrix in matrices
         ]
         logs = [_map_eigenvalues(np.log, w_mat) for w_mat in whitened_matrices]
-        logs_mean = np.mean(logs, axis=0)  # Covariant derivative is
-        # - gmean.dot(logms_mean)
+        # Covariant derivative is - gmean.dot(logms_mean)
+        logs_mean = np.mean(logs, axis=0)
         if np.any(np.isnan(logs_mean)):
             raise FloatingPointError("Nan value after logarithm operation.")
 
-        norm = np.linalg.norm(logs_mean)  # Norm of the covariant derivative on
-        # the tangent space at point gmean
+        # Norm of the covariant derivative on the tangent space at point gmean
+        norm = np.linalg.norm(logs_mean)
 
         # Update of the minimizer
         vals_log, vecs_log = linalg.eigh(logs_mean)
