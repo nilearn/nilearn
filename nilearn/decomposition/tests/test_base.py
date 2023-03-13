@@ -36,16 +36,19 @@ def test_fast_svd():
 
 
 def _make_mask_reduce_test_data():
+    """Create "multi-subject" dataset with fake activation \
+    to get non empty mask"""
     shape = (6, 8, 10, 5)
     affine = np.eye(4)
     rng = np.random.RandomState(0)
 
-    # Create a "multi-subject" dataset
     imgs = []
     for _ in range(8):
         this_img = rng.normal(size=shape)
-        # Create fake activation to get non empty mask
+
+        # Add activation
         this_img[2:4, 2:4, 2:4, :] += 10
+
         imgs.append(nibabel.Nifti1Image(this_img, affine))
 
     mask_img = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
@@ -55,14 +58,17 @@ def _make_mask_reduce_test_data():
 
 
 @pytest.mark.parametrize(
-    "n_components,reduction_ratio,shape_0",
+    "n_components,reduction_ratio,expected_shape_0",
     [
         (None, "auto", 8 * 5),
         (3, "auto", 8 * 3),
         (None, 0.4, 8 * 2),
     ],
 )
-def test_mask_reducer_multiple_image(n_components, reduction_ratio, shape_0):
+def test_mask_reducer_multiple_image(
+    n_components, reduction_ratio, expected_shape_0
+):
+    """Mask and reduce 4D images with several values of input arguments."""
     masker, imgs = _make_mask_reduce_test_data()
 
     data = _mask_and_reduce(
@@ -72,13 +78,15 @@ def test_mask_reducer_multiple_image(n_components, reduction_ratio, shape_0):
         reduction_ratio=reduction_ratio,
     )
 
-    assert data.shape == (shape_0, 6 * 8 * 10)
+    expected_shape = (expected_shape_0, 6 * 8 * 10)
+    assert data.shape == expected_shape
 
 
-def test_mask_reducer_single_image():
+def test_mask_reducer_single_image_same_with_multiple_jobs():
+    """Mask and reduce a 3D image and check results is the same \
+    when split over several CPUs."""
     masker, imgs = _make_mask_reduce_test_data()
 
-    # Test on single image
     data_single = _mask_and_reduce(masker, imgs[0], n_components=3)
 
     assert data_single.shape == (3, 6 * 8 * 10)
@@ -94,6 +102,7 @@ def test_mask_reducer_single_image():
 
 
 def test_mask_reducer_reduced_data_is_orthogonal():
+    """# Test that the reduced data is orthogonal."""
     masker, imgs = _make_mask_reduce_test_data()
 
     data = _mask_and_reduce(masker, imgs[0], n_components=3, random_state=0)
@@ -107,7 +116,10 @@ def test_mask_reducer_reduced_data_is_orthogonal():
 
     assert_array_almost_equal(cov, cov_diag)
 
-    # Test reproducibility
+
+def test_mask_reducer_reduced_reproducible():
+    masker, imgs = _make_mask_reduce_test_data()
+
     data1 = _mask_and_reduce(masker, imgs[0], n_components=3, random_state=0)
     data2 = _mask_and_reduce(
         masker, [imgs[0]] * 2, n_components=3, random_state=0

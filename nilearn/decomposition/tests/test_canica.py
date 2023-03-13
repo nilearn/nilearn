@@ -123,15 +123,14 @@ def test_canica_square_img():
     pytest.raises(TypeError, canica.fit)
 
 
-def test_canica_single_subject():
-    # Check that canica runs on a single-subject dataset
+def test_canica_single_subject_smoke():
+    """Check that canica runs on a single-subject dataset"""
     data, _, _, rng = _make_canica_test_data(n_subjects=1)
 
-    # We do a large number of inits to be sure to find the good match
     canica = CanICA(
         n_components=4, random_state=rng, smoothing_fwhm=0.0, n_init=1
     )
-    # This is a smoke test: we just check that things run
+
     canica.fit(data[0])
 
 
@@ -202,7 +201,7 @@ def test_masker_attributes_errors():
     with pytest.raises(
         ValueError,
         match="Object has no components_ attribute. "
-        "This is probably because fit has not been called",
+        "This is probably because fit has not been called.",
     ):
         canica.transform(data)
     # Test if raises an error when empty list of provided.

@@ -34,9 +34,7 @@ def _make_multi_pca_test_data(with_activation=True):
     return data, mask_img, shape, affine
 
 
-def test_multi_pca():
-    """Test that the components are the same if we put twice the same data, \
-    and that fit output is deterministic"""
+def test_multi_pca_check_masker_attributes():
     data, mask_img, _, _ = _make_multi_pca_test_data()
 
     multi_pca = _MultiPCA(mask=mask_img, n_components=3, random_state=0)
@@ -44,6 +42,15 @@ def test_multi_pca():
 
     assert multi_pca.mask_img_ == mask_img
     assert multi_pca.mask_img_ == multi_pca.masker_.mask_img_
+
+
+def test_multi_pca():
+    """Test that the components are the same if we put twice the same data, \
+    and that fit output is deterministic"""
+    data, mask_img, _, _ = _make_multi_pca_test_data()
+
+    multi_pca = _MultiPCA(mask=mask_img, n_components=3, random_state=0)
+    multi_pca.fit(data)
 
     components1 = multi_pca.components_
     components2 = multi_pca.fit(data).components_
@@ -85,8 +92,10 @@ def test_multi_pca_with_masker_without_cca_smoke():
         and without canonical correlation analysis."""
     data, _, _, _ = _make_multi_pca_test_data()
 
+    masker = MultiNiftiMasker(mask_args=dict(opening=0))
+
     multi_pca = _MultiPCA(
-        mask=MultiNiftiMasker(mask_args=dict(opening=0)),
+        mask=masker,
         do_cca=False,
         n_components=3,
     )
@@ -105,6 +114,7 @@ def test_multi_pca_errors():
     # Smoke test to fit with no img
     pytest.raises(TypeError, multi_pca.fit)
 
+    # transform before fit raises an error
     with pytest.raises(
         ValueError,
         match="Object has no components_ attribute. This is "
@@ -201,13 +211,13 @@ def test_components_img():
     assert len(components_img.shape) == 4
 
 
-def img_4d():
+def _img_4d():
     data_4d = np.zeros((40, 40, 40, 3))
     data_4d[20, 20, 20] = 1
     return nibabel.Nifti1Image(data_4d, affine=np.eye(4))
 
 
-@pytest.mark.parametrize("imgs", [[img_4d()], [img_4d(), img_4d()]])
+@pytest.mark.parametrize("imgs", [[_img_4d()], [_img_4d(), _img_4d()]])
 def test_with_globbing_patterns_on_one_or_several_images(imgs):
     multi_pca = _MultiPCA(n_components=3)
 
@@ -220,6 +230,6 @@ def test_with_globbing_patterns_on_one_or_several_images(imgs):
         assert isinstance(components_img, nibabel.Nifti1Image)
 
         # n_components = 3
-        check_shape = img_4d().shape[:3] + (3,)
+        check_shape = _img_4d().shape[:3] + (3,)
         assert components_img.shape == check_shape
         assert len(components_img.shape) == 4
