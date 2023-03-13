@@ -1,6 +1,6 @@
 """
 Decoding with ANOVA + SVM: face vs house in the Haxby dataset
-===============================================================
+=============================================================
 
 This example does a simple but efficient decoding on the Haxby dataset:
 using a feature selection, followed by an SVM.
@@ -9,7 +9,7 @@ using a feature selection, followed by an SVM.
 
 #############################################################################
 # Retrieve the files of the Haxby dataset
-# ----------------------------------------
+# ---------------------------------------
 from nilearn import datasets
 
 # By default 2nd subject will be fetched
@@ -21,7 +21,7 @@ print(f"Functional nifti image (4D) is located at: {func_img}")
 
 #############################################################################
 # Load the behavioral data
-# -------------------------
+# ------------------------
 import pandas as pd
 
 # Load target information as string and give a numerical identifier to each
@@ -67,13 +67,13 @@ decoder = Decoder(
 
 #############################################################################
 # Fit the decoder and predict
-# ----------------------------
+# ---------------------------
 decoder.fit(func_img, conditions)
 y_pred = decoder.predict(func_img)
 
 #############################################################################
 # Obtain prediction scores via cross validation
-# -----------------------------------------------
+# ---------------------------------------------
 # Define the cross-validation scheme used for validation. Here we use a
 # LeaveOneGroupOut cross-validation on the session group which corresponds to a
 # leave a session out scheme, then pass the cross-validator object to the cv
@@ -101,7 +101,7 @@ print(decoder.cv_scores_["face"])
 
 #############################################################################
 # Visualize the results
-# ----------------------
+# ---------------------
 # Look at the SVC's discriminating weights using
 # :class:`nilearn.plotting.plot_stat_map`
 weight_img = decoder.coef_img_["face"]

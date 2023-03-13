@@ -1,6 +1,6 @@
 """
 Computing a connectome with sparse inverse covariance
-=======================================================
+=====================================================
 
 This example constructs a functional connectome using the sparse inverse
 covariance.
@@ -25,7 +25,7 @@ represent only the 20% edges with the highest values.
 
 ##############################################################################
 # Retrieve the atlas and the data
-# --------------------------------
+# -------------------------------
 from nilearn import datasets
 
 atlas = datasets.fetch_atlas_msdl()
@@ -38,13 +38,11 @@ labels = atlas["labels"]
 data = datasets.fetch_development_fmri(n_subjects=1)
 
 # print basic information on the dataset
-print(
-    f"First subject functional nifti images (4D) are at: {data.func[0]}"
-)
+print(f"First subject functional nifti images (4D) are at: {data.func[0]}")
 
 ##############################################################################
 # Extract time series
-# --------------------
+# -------------------
 from nilearn.maskers import NiftiMapsMasker
 
 masker = NiftiMapsMasker(
@@ -58,7 +56,7 @@ time_series = masker.fit_transform(data.func[0], confounds=data.confounds)
 
 ##############################################################################
 # Compute the sparse inverse covariance
-# --------------------------------------
+# -------------------------------------
 try:
     from sklearn.covariance import GraphicalLassoCV
 except ImportError:
@@ -70,7 +68,7 @@ estimator.fit(time_series)
 
 ##############################################################################
 # Display the connectome matrix
-# ------------------------------
+# -----------------------------
 from nilearn import plotting
 
 # Display the covariance
@@ -87,7 +85,7 @@ plotting.plot_matrix(
 
 ##############################################################################
 # And now display the corresponding graph
-# ----------------------------------------
+# ---------------------------------------
 coords = atlas.region_coords
 
 plotting.plot_connectome(estimator.covariance_, coords, title="Covariance")
@@ -95,7 +93,7 @@ plotting.plot_connectome(estimator.covariance_, coords, title="Covariance")
 
 ##############################################################################
 # Display the sparse inverse covariance
-# --------------------------------------
+# -------------------------------------
 # we negate it to get partial correlations
 plotting.plot_matrix(
     -estimator.precision_,

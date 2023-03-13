@@ -23,15 +23,16 @@ about the plotting data and associated meta-data.
 # ------------------
 #
 # We will use a motor activation contrast map distributed with Nilearn.
-
 from nilearn import datasets
+
 stat_img = datasets.load_sample_motor_activation_image()
+
 # stat_img is just the name of the image file
 stat_img
 
 ###############################################################################
 # Demo glass brain plotting
-# --------------------------
+# -------------------------
 #
 # By default, :func:`~nilearn.plotting.plot_glass_brain` uses a display mode
 # called 'ortho' which results in three projections. It is equivalent to
@@ -87,7 +88,7 @@ plot_glass_brain(
 
 ###############################################################################
 # Different projections for the left and right hemispheres
-# ---------------------------------------------------------
+# --------------------------------------------------------
 #
 # In the previous section we saw a few projection modes, which are controlled
 # by setting the argument ``display_mode`` of
@@ -205,7 +206,7 @@ display.title('Glass brain with black background and filled in contours')
 
 ##############################################################################
 # Display contour projections in both hemispheres
-# -------------------------------------------------
+# -----------------------------------------------
 #
 # The key argument to vary here is ``display_mode`` for hemispheric plotting.
 # Here, we set ``display_mode='lr'`` for both hemispheric plots. Note that a
@@ -262,6 +263,7 @@ display.title(
 # enough so that same value is used for both contours.
 
 import numpy as np
+
 display = plot_glass_brain(None, plot_abs=False, display_mode='lzry')
 display.add_contours(
     stat_img, levels=[-2.8, 3.], colors=['b', 'r'], linewidths=4.

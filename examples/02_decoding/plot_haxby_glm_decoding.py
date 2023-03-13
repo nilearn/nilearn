@@ -15,7 +15,7 @@ More specifically:
 
 ##############################################################################
 # Fetch example Haxby dataset
-# ----------------------------
+# ---------------------------
 # We download the Haxby dataset
 # This is a study of visual object category representation
 
@@ -31,7 +31,7 @@ TR = 2.5
 
 ##############################################################################
 # Load the behavioral data
-# -------------------------
+# ------------------------
 
 # Load target information as string and give a numerical identifier to each
 behavioral = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
@@ -46,7 +46,7 @@ func_filename = haxby_dataset.func[0]
 
 ##############################################################################
 # Build a proper event structure for each session
-# ------------------------------------------------
+# -----------------------------------------------
 
 events = {}
 # events will take  the form of a dictionary of Dataframes, one per session
@@ -72,7 +72,7 @@ for session in unique_sessions:
 
 ##############################################################################
 # Instantiate and run FirstLevelModel
-# ------------------------------------
+# -----------------------------------
 #
 # We generate a list of z-maps together with their session and condition index
 
@@ -93,7 +93,7 @@ glm = FirstLevelModel(
 
 ##############################################################################
 # Run the glm on data from each session
-# --------------------------------------
+# -------------------------------------
 events[session].trial_type.unique()
 from nilearn.image import index_img
 
@@ -113,7 +113,7 @@ for session in unique_sessions:
 
 ##############################################################################
 # Generating a report
-# --------------------
+# -------------------
 # Since we have already computed the FirstLevelModel
 # and have the contrast, we can quickly create a summary report.
 
@@ -138,7 +138,7 @@ report  # This report can be viewed in a notebook
 
 ##############################################################################
 # Build the decoding pipeline
-# ----------------------------
+# ---------------------------
 # To define the decoding pipeline we use Decoder object, we choose :
 #
 #     * a prediction model, here a Support Vector Classifier, with a linear

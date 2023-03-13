@@ -1,6 +1,6 @@
 """
 Second-level fMRI model: two-sample test, unpaired and paired
-==============================================================
+=============================================================
 
 Full step-by-step example of fitting a GLM to perform a second level analysis
 in experimental data and visualizing the results
@@ -26,13 +26,12 @@ observe some significant effects in these areas.
 
 import matplotlib.pyplot as plt
 import pandas as pd
-
 from nilearn import plotting
 from nilearn.datasets import fetch_localizer_contrasts
 
 ##########################################################################
 # Fetch dataset
-# --------------
+# -------------
 # We download a list of left vs right button press contrasts from a
 # localizer dataset.
 n_subjects = 16
@@ -52,7 +51,7 @@ sample_horizontal = fetch_localizer_contrasts(
 
 ##########################################################################
 # Estimate second level models
-# ------------------------------
+# ----------------------------
 # We define the input maps and the design matrix for the second level model
 # and fit it.
 second_level_input = sample_vertical["cmaps"] + sample_horizontal["cmaps"]
@@ -121,7 +120,7 @@ stat_maps_paired = second_level_model_paired.compute_contrast(
 
 ##########################################################################
 # Plot the results
-# ---------------------------
+# ----------------
 # The two :term:`'effect_size'<Parameter Estimate>` images are essentially
 # identical.
 (

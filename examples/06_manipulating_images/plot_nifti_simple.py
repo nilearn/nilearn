@@ -1,6 +1,6 @@
 """
 Simple example of NiftiMasker use
-==================================
+=================================
 
 Here is a simple example of automatic mask computation using the nifti masker.
 The mask is computed and visualized.

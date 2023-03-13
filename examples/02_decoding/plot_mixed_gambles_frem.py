@@ -1,6 +1,6 @@
 """
-FREM on Jimura et al "mixed gambles" dataset.
-==================================================
+FREM on Jimura et al "mixed gambles" dataset
+============================================
 
 In this example, we use fast ensembling of regularized models (FREM) to
 solve a regression problem, predicting the gain level corresponding to each
@@ -15,7 +15,7 @@ To have more details, see: :ref:`frem`.
 
 #############################################################################
 # Load the data from the Jimura mixed-gamble experiment
-# ---------------------------------------------------------------------------
+# -----------------------------------------------------
 from nilearn.datasets import fetch_mixed_gambles
 
 data = fetch_mixed_gambles(n_subjects=16)
@@ -26,7 +26,7 @@ mask_filename = data.mask_img
 
 #############################################################################
 # Fit FREM
-# ---------------------------------------------------------------------------
+# --------
 # We compare both of these models to a pipeline ensembling many models
 #
 from nilearn.decoding import FREMRegressor
@@ -36,7 +36,7 @@ frem = FREMRegressor("svr", cv=10)
 frem.fit(zmap_filenames, behavioral_target)
 
 # Visualize FREM weights
-# ---------------------------------------------------------------------------
+# ----------------------
 
 from nilearn.plotting import plot_stat_map
 
@@ -59,7 +59,7 @@ plot_stat_map(
 
 #############################################################################
 # Example use of TV-L1 SpaceNet
-# ---------------------------------------------------------------------------
+# -----------------------------
 # :ref:`SpaceNet<space_net>` is another method available in Nilearn to decode
 # with spatially sparse models. Depending on the penalty that is used,
 # it yields either very structured maps (TV-L1) or unstructured maps

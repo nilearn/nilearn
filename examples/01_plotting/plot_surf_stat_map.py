@@ -28,7 +28,6 @@ See :ref:`plotting` for more details on plotting tools.
 
 References
 ----------
-
 Nooner et al, (2012). The NKI-Rockland Sample: A model for accelerating the
 pace of discovery science in psychiatry. Frontiers in neuroscience 6, 152.
 URL http://dx.doi.org/10.3389/fnins.2012.00152
@@ -80,7 +79,7 @@ print('Fsaverage5 sulcal depth map of left hemisphere is at: '
 
 ###############################################################################
 # Extracting the seed time series
-# --------------------------------
+# -------------------------------
 
 # Load resting state time series from nilearn
 from nilearn import surface
@@ -91,6 +90,7 @@ timeseries = surface.load_surf_data(nki_dataset['func_left'][0])
 pcc_region = b'G_cingul-Post-dorsal'
 
 import numpy as np
+
 pcc_labels = np.where(parcellation == labels.index(pcc_region))[0]
 
 # Extract time series from seed region

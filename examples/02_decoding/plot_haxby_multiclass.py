@@ -1,6 +1,6 @@
 """
 The haxby dataset: different multi-class strategies
-=======================================================
+===================================================
 
 We compare one vs all and one vs one multi-class strategies: the overall
 cross-validated accuracy and the confusion matrix.
@@ -11,7 +11,7 @@ cross-validated accuracy and the confusion matrix.
 
 ##############################################################################
 # Load the Haxby data dataset
-# ----------------------------
+# ---------------------------
 
 import numpy as np
 import pandas as pd
@@ -43,7 +43,7 @@ unique_conditions = unique_conditions[np.argsort(order)]
 
 ##############################################################################
 # Prepare the fMRI data
-# ----------------------
+# ---------------------
 from nilearn.maskers import NiftiMasker
 
 # For decoding, standardizing is often very important
@@ -63,7 +63,7 @@ session = session[non_rest]
 
 ##############################################################################
 # Build the decoders, using scikit-learn
-# ----------------------------------------
+# --------------------------------------
 # Here we use a Support Vector Classification, with a linear kernel,
 # and a simple feature selection step
 
@@ -92,7 +92,7 @@ svc_ova = OneVsRestClassifier(
 
 ##############################################################################
 # Now we compute cross-validation scores
-# ----------------------------------------
+# --------------------------------------
 from sklearn.model_selection import cross_val_score
 
 cv_scores_ovo = cross_val_score(svc_ovo, X, y, cv=5, verbose=1)
@@ -104,7 +104,7 @@ print("OvA:", cv_scores_ova.mean())
 
 ##############################################################################
 # Plot barplots of the prediction scores
-# ----------------------------------------
+# --------------------------------------
 from matplotlib import pyplot as plt
 
 plt.figure(figsize=(4, 3))
@@ -114,7 +114,7 @@ plt.title("Prediction: accuracy score")
 
 ##############################################################################
 # Plot a confusion matrix
-# ------------------------
+# -----------------------
 # We fit on the first 10 sessions and plot a confusion matrix on the
 # last 2 sessions
 from nilearn.plotting import plot_matrix, show
