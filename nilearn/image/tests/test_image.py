@@ -178,7 +178,7 @@ def test__smooth_array_nan_do_not_propagate():
     assert np.all(np.isfinite(filtered))
 
 
-def test__smooth_array_fwhm_is_none_or_zero():
+def test__smooth_array_same_result_with_fwhm_none_or_zero():
     data = _make_smooth_array_test_data()
     affine = _affines_to_test()[2]
 
@@ -189,7 +189,7 @@ def test__smooth_array_fwhm_is_none_or_zero():
 
 
 @pytest.mark.parametrize("affine", _affines_to_test())
-def test__smooth_array_fwhm_fast(affine):
+def test__fast_smooth_array_give_same_result_as_smooth_array(affine):
     data = _make_smooth_array_test_data()
     np.testing.assert_equal(
         image._smooth_array(data, affine, fwhm="fast"),
@@ -197,11 +197,8 @@ def test__smooth_array_fwhm_fast(affine):
     )
 
 
-def test__smooth_array_warning_fwhm_is_zero():
-    """Test whether function _smooth_array raises a warning when fwhm=0.
-
-    See #1537
-    """
+def test__smooth_array_raise_warning_if_fwhm_is_zero():
+    """See https://github.com/nilearn/nilearn/issues/1537"""
     data = _make_smooth_array_test_data()
     affine = _affines_to_test()[2]
     with pytest.warns(UserWarning):
@@ -669,6 +666,8 @@ def _make_stat_img_test_data():
 def test_threshold_img_with_cluster_threshold(
     threshold, two_sided, cluster_threshold, expected
 ):
+    """Check that passing specific threshold and cluster threshold values \
+    only gives cluster the right number of voxels with the right values."""
     stat_img = _make_stat_img_test_data()
 
     thr_img = threshold_img(
