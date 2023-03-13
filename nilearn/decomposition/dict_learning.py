@@ -291,7 +291,7 @@ class DictLearning(_BaseDecomposition):
 
         dict_init = self.loadings_init_
 
-        n_iter = ((n_features - 1) // self.batch_size + 1) * self.n_epochs
+        max_iter = ((n_features - 1) // self.batch_size + 1) * self.n_epochs
 
         if self.verbose:
             print("[DictLearning] Learning dictionary")
@@ -299,7 +299,7 @@ class DictLearning(_BaseDecomposition):
             data.T,
             self.n_components,
             alpha=self.alpha,
-            n_iter=n_iter,
+            max_iter=max_iter,
             batch_size=self.batch_size,
             method=self.method,
             dict_init=dict_init,
