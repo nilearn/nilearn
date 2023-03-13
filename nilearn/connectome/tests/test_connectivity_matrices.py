@@ -453,9 +453,7 @@ def test_connectivity_measure_errors():
     pytest.raises(
         ValueError,
         conn_measure.fit_transform,
-        [
-            np.ones((100, 40))
-        ],
+        [np.ones((100, 40))],
     )
 
 
