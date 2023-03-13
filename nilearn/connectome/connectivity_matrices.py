@@ -200,8 +200,7 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
     if tol is not None and norm / gmean.size >= tol:
         warnings.warn(
             f"Maximum number of iterations {max_iter} reached without "
-            "getting to the requested tolerance level "
-            f"{tol}."
+            f"getting to the requested tolerance level {tol}."
         )
 
     return gmean
@@ -552,10 +551,9 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
             if confounds is not None and not self.vectorize:
                 error_message = (
-                    "'confounds' are provided but "
-                    "vectorize=False. Confounds are only "
-                    "cleaned on vectorized matrices as "
-                    "second level connectome regression "
+                    "'confounds' are provided but vectorize=False. "
+                    "Confounds are only cleaned on vectorized matrices "
+                    "as second level connectome regression "
                     "but not on symmetric matrices."
                 )
                 raise ValueError(error_message)
