@@ -253,7 +253,7 @@ def _group_sparse_covariance(
         raise ValueError(
             "Regularization parameter alpha must be a "
             "positive number.\n"
-            "You provided: {}".format(str(alpha))
+            f"You provided: {alpha}"
         )
 
     n_subjects = emp_covs.shape[-1]
@@ -915,7 +915,7 @@ class EarlyStopProbe:
         if iter_n > -1 and self.last_log_lik > log_lik:
             logger.log(
                 "Log-likelihood on test set is decreasing. "
-                "Stopping at iteration %d" % iter_n,
+                f"Stopping at iteration {iter_n}",
                 verbose=self.verbose,
             )
             return True
@@ -1197,7 +1197,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             if n_refinements > 1:
                 logger.log(
                     "[GroupSparseCovarianceCV] Done refinement "
-                    "% 2i out of %i" % (i + 1, n_refinements),
+                    f"{i: 2} out of {n_refinements}",
                     verbose=self.verbose,
                 )
 

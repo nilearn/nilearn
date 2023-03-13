@@ -607,7 +607,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             raise ValueError(
                 "Tangent space parametrization can only "
                 "be applied to a group of subjects, as it returns "
-                "deviations to the mean. You provided %r" % X
+                f"deviations to the mean. You provided {X!r}"
             )
         return self._fit_transform(
             X, do_fit=True, do_transform=True, confounds=confounds
