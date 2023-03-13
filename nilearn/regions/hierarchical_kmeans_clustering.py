@@ -241,14 +241,14 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         if self.n_clusters <= 0:
             raise ValueError(
                 "n_clusters should be an integer greater than 0."
-                " %s was provided." % str(self.n_clusters)
+                f" {self.n_clusters} was provided."
             )
 
         if self.n_clusters > n_features:
             self.n_clusters = n_features
             warnings.warn(
                 "n_clusters should be at most the number of "
-                "features. Taking n_clusters = %s instead." % str(n_features)
+                f"features. Taking n_clusters = {n_features} instead."
             )
         self.labels_ = hierarchical_k_means(
             X,

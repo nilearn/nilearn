@@ -422,8 +422,8 @@ def recursive_neighbor_agglomeration(
 
         if verbose > 0:
             print(
-                "After iteration number %s, features are "
-                " grouped into %s clusters" % (str(i + 1), str(n_components))
+                f"After iteration number {i + 1}, features are "
+                f" grouped into {n_components} clusters"
             )
 
         if n_components <= n_clusters:
@@ -524,8 +524,7 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         if not isinstance(self.mask_img, (str, Nifti1Image)):
             raise ValueError(
                 "The mask image should be a Niimg-like"
-                "object. Instead a %s object was provided."
-                % type(self.mask_img)
+                f"object. Instead a {type(self.mask_img)} object was provided."
             )
 
         if self.memory is None or isinstance(self.memory, str):
@@ -538,20 +537,20 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         if self.n_clusters <= 0:
             raise ValueError(
                 "n_clusters should be an integer greater than 0."
-                " %s was provided." % str(self.n_clusters)
+                f" {self.n_clusters} was provided."
             )
 
         if self.n_iter <= 0:
             raise ValueError(
                 "n_iter should be an integer greater than 0."
-                " %s was provided." % str(self.n_iter)
+                f" {self.n_iter} was provided."
             )
 
         if self.n_clusters > n_features:
             self.n_clusters = n_features
             warnings.warn(
-                "n_clusters should be at most the number of "
-                "features. Taking n_clusters = %s instead." % str(n_features)
+                "n_clusters should be at most the number of features. "
+                f"Taking n_clusters = {n_features} instead."
             )
 
         n_components, labels = self.memory_.cache(

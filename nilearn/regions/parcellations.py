@@ -66,9 +66,7 @@ def _check_parameters_transform(imgs, confounds):
     imgs = stringify_path(imgs)
     confounds = stringify_path(confounds)
     if not isinstance(imgs, (list, tuple)) or isinstance(imgs, str):
-        imgs = [
-            imgs,
-        ]
+        imgs = [imgs]
         single_subject = True
     elif isinstance(imgs, (list, tuple)) and len(imgs) == 1:
         single_subject = True
@@ -81,9 +79,7 @@ def _check_parameters_transform(imgs, confounds):
     if confounds is not None and (
         not isinstance(confounds, (list, tuple)) or isinstance(confounds, str)
     ):
-        confounds = [
-            confounds,
-        ]
+        confounds = [confounds]
 
     if len(confounds) != len(imgs):
         raise ValueError(

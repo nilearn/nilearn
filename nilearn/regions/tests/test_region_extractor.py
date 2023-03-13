@@ -36,8 +36,8 @@ def test_invalid_thresholds_in_threshold_maps_ratio():
             match="threshold given as ratio to the number of voxels must "
             "be Real number and should be positive "
             "and between 0 and total number of maps "
-            "i.e. n_maps={}. "
-            "You provided {}".format(maps.shape[-1], invalid_threshold),
+            f"i.e. n_maps={maps.shape[-1]}. "
+            f"You provided {invalid_threshold}",
         ):
             _threshold_maps_ratio(maps, threshold=invalid_threshold)
 
@@ -83,9 +83,9 @@ def test_invalids_extract_types_in_connected_regions():
 
     # test whether same error raises as expected when invalid inputs
     # are given to extract_type in connected_regions function
-    message = "'extract_type' should be {0}"
+    message = f"'extract_type' should be {valid_names}"
     for invalid_extract_type in ["connect_region", "local_regios"]:
-        with pytest.raises(ValueError, match=message.format(valid_names)):
+        with pytest.raises(ValueError, match=message):
             connected_regions(maps, extract_type=invalid_extract_type)
 
 
