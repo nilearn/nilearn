@@ -983,8 +983,7 @@ def _validate_entities_and_labels(entities: dict) -> None:
     for key in entities:
         if key not in [*bids_entities()["raw"], *bids_entities()["derivatives"]]:
             raise ValueError(f"Invalid entity: {key}")
-        for label_ in entities[key]:
-            validate_bids_label(label_)
+        [validate_bids_label(label_) for label_ in entities[key]]
 
 
 def _mock_bids_dataset(

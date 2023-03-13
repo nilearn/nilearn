@@ -903,7 +903,7 @@ def first_level_from_bids(dataset_path,
     else:
         filters = _make_bids_files_filter(
             task_label=task_label,
-            supported_filters=[*bids.entities()["raw"], *bids.entities()["derivatives"]],
+            supported_filters=[*bids_entities()["raw"], *bids_entities()["derivatives"]],
             extra_filter=img_filters
         )
         img_specs = get_bids_files(derivatives_path,
@@ -915,7 +915,7 @@ def first_level_from_bids(dataset_path,
         # we try to search in the raw data folder
         filters = _make_bids_files_filter(
             task_label=task_label,
-            supported_filters=bids.entities()["raw"],
+            supported_filters=bids_entities()["raw"],
             extra_filter=img_filters
         )
         if not img_specs:
@@ -1116,8 +1116,8 @@ def _get_processed_imgs(
     filters = _make_bids_files_filter(
         task_label=task_label,
         space_label=space_label,
-        supported_filters=bids.entities()["raw"]
-        + bids.entities()["derivatives"],
+        supported_filters=bids_entities()["raw"]
+        + bids_entities()["derivatives"],
         extra_filter=img_filters,
     )
     imgs = get_bids_files(
@@ -1178,7 +1178,7 @@ def _get_events_files(
     """
     events_filters = _make_bids_files_filter(
         task_label=task_label,
-        supported_filters=bids.entities()["raw"],
+        supported_filters=bids_entities()["raw"],
         extra_filter=img_filters,
     )
     events = get_bids_files(
@@ -1246,8 +1246,8 @@ def _get_confounds(
 
     """
     supported_filters = (
-        bids.entities()["raw"]
-        + bids.entities()["derivatives"]
+        bids_entities()["raw"]
+        + bids_entities()["derivatives"]
     )
     # confounds use a desc-confounds,
     # so we must remove desc if it was passed as a filter
@@ -1354,7 +1354,7 @@ def _validate_args_first_level_from_bids(
             f"{derivatives_path}"
         )
 
-    bids.validate_label(task_label)
+    validate_bids_label(task_label)
 
     if space_label is not None:
         validate_bids_label(space_label)
