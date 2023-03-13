@@ -322,17 +322,13 @@ def _group_sparse_covariance(
 
     for n in range(max_iter):
         if max_norm is not None:
-            suffix = " variation (max norm): {max_norm:.3e} ".format(
-                max_norm=max_norm
-            )
+            suffix = f" variation (max norm): {max_norm:.3e} "
         else:
             suffix = ""
         if verbose > 1:
             logger.log(
-                "* iteration {iter_n:d} ({percentage:.0f} %){suffix}"
-                " ...".format(
-                    iter_n=n, percentage=100.0 * n / max_iter, suffix=suffix
-                ),
+                f"* iteration {n:d} "
+                f"({100.0 * n / max_iter:.0f} %){suffix} ...",
                 verbose=verbose,
             )
 
@@ -493,8 +489,8 @@ def _group_sparse_covariance(
 
         if tol is not None and max_norm < tol:
             logger.log(
-                "tolerance reached at iteration number {:d}: {:.3e}"
-                "".format(n + 1, max_norm),
+                f"tolerance reached at iteration number {n + 1:d}: "
+                f"{max_norm:.3e}",
                 verbose=verbose,
             )
             tolerance_reached = True

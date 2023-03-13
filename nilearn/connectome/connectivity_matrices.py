@@ -23,8 +23,7 @@ def _check_square(matrix):
     """
     if matrix.ndim != 2 or (matrix.shape[0] != matrix.shape[-1]):
         raise ValueError(
-            "Expected a square matrix, got array of shape"
-            " {}.".format(matrix.shape)
+            f"Expected a square matrix, got array of shape {matrix.shape}."
         )
 
 
