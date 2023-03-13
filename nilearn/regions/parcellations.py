@@ -354,10 +354,10 @@ class Parcellations(_MultiPCA):
         # matplotlib. So, we force import matplotlib first using our
         # plotting to avoid backend display error with matplotlib
         # happening in Travis
-        try:
-            from nilearn import plotting  # noqa
-        except Exception:
-            pass
+        # try:
+        #     from nilearn import plotting  # noqa
+        # except Exception:
+        #     pass
 
         components = _MultiPCA._raw_fit(self, data)
 
