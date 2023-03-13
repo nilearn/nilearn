@@ -981,7 +981,7 @@ def _check_entities(entities: dict) -> None:
         raise ValueError("Only a single extra entity is supported for now.")
 
     for key in entities:
-        if key not in bids.entities()["raw"] + bids.entities()["derivatives"]:
+        if key not in [*bids.entities()["raw"], *bids.entities()["derivatives"]]:
             raise ValueError(f"Invalid entity: {key}")
         for label_ in entities[key]:
             bids.validate_label(label_)
@@ -1293,8 +1293,7 @@ def _write_bids_raw_anat(subses_dir: Path, subject: str, session: str) -> None:
         "extension": "nii.gz",
         "entities": {"sub": subject, "ses": session},
     }
-    anat_file = anat_path / _create_bids_filename(fields)
-    open(anat_file, "w")
+    (anat_path / _create_bids_filename(fields)).write_text("")
 
 
 def _write_bids_raw_func(

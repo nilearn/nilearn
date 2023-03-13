@@ -903,8 +903,7 @@ def first_level_from_bids(dataset_path,
     else:
         filters = _make_bids_files_filter(
             task_label=task_label,
-            supported_filters=bids.entities()["raw"]
-            + bids.entities()["derivatives"],
+            supported_filters=[*bids.entities()["raw"], *bids.entities()["derivatives"]],
             extra_filter=img_filters
         )
         img_specs = get_bids_files(derivatives_path,
