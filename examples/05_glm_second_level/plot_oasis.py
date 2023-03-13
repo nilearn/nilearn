@@ -1,4 +1,5 @@
-"""Voxel-Based Morphometry on OASIS dataset
+"""
+Voxel-Based Morphometry on OASIS dataset
 ========================================
 
 This example uses voxel-based morphometry (:term:`VBM`) to study the

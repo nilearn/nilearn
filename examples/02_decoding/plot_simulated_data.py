@@ -1,7 +1,7 @@
 """
-=================================================
+================================================
 Example of pattern recognition on simulated data
-=================================================
+================================================
 
 This example simulates data according to a very simple sketch of brain
 imaging data and applies machine learning techniques to predict output
@@ -233,7 +233,7 @@ for name, estimator in estimators:
 
     print(title)
 
-f_values, p_values = f_regression(X_train, y_train)
+_, p_values = f_regression(X_train, y_train)
 p_values = np.reshape(p_values, (size, size, size))
 p_values = -np.log10(p_values)
 p_values[np.isnan(p_values)] = 0
@@ -243,7 +243,7 @@ plot_slices(p_values, title="f_regress")
 show()
 
 ###############################################################################
-# An exercice to go further
+# An exercise to go further
 ###############################################################################
 #
 # As an exercice, you can use recursive feature elimination (RFE) with

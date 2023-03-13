@@ -1,6 +1,6 @@
 """
 Breaking an atlas of labels in separated regions
-=================================================
+================================================
 
 This example shows how to use
 :class:`nilearn.regions.connected_label_regions`
@@ -48,7 +48,7 @@ plotting.plot_roi(
 
 ##############################################################################
 # Relabeling the atlas into separated regions
-# ---------------------------------------------
+# -------------------------------------------
 #
 # Now we use the connected_label_regions to break apart the networks
 # of the Yeo atlas into separated regions
@@ -91,7 +91,7 @@ region_labels.to_filename("relabeled_yeo_atlas.nii.gz")
 
 ##############################################################################
 # Different connectivity modes
-# -----------------------------
+# ----------------------------
 #
 # Using the parameter connect_diag=False we separate in addition two regions
 # that are connected only along the diagonal.
@@ -115,7 +115,7 @@ plotting.plot_roi(
 
 ##############################################################################
 # Parameter min_size
-# -------------------
+# ------------------
 #
 # In the above, we get around 110 regions, but many of these are very
 # small. We can remove them with the min_size parameter, keeping only the

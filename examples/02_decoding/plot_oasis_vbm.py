@@ -13,7 +13,7 @@ It has been run through a standard VBM pipeline (using SPM8 and
 NewSegment) to create VBM maps, which we study here.
 
 Predictive modeling analysis: VBM bio-markers of aging?
---------------------------------------------------------
+-------------------------------------------------------
 
 We run a standard SVM-ANOVA nilearn pipeline to predict age from the VBM
 data. We use only 100 subjects from the OASIS dataset to limit the memory
@@ -31,7 +31,7 @@ number of features selected by the ANOVA step should be set by nested
 cross-validation, as they impact significantly the prediction score.
 
 Brain mapping with mass univariate
------------------------------------
+----------------------------------
 
 SVM weights are very noisy, partly because heavy smoothing is detrimental
 for the prediction here. A standard analysis using mass-univariate GLM
@@ -58,7 +58,7 @@ n_subjects = 100  # more subjects requires more memory
 
 ############################################################################
 # Load Oasis dataset
-# -------------------
+# ------------------
 oasis_dataset = datasets.fetch_oasis_vbm(
     n_subjects=n_subjects, legacy_format=False
 )
@@ -84,7 +84,7 @@ print(
 
 #############################################################################
 # Preprocess data
-# ----------------
+# ---------------
 nifti_masker = NiftiMasker(
     standardize=False, smoothing_fwhm=2, memory="nilearn_cache"
 )  # cache options
@@ -95,7 +95,7 @@ gm_maps_masked = nifti_masker.fit_transform(gm_imgs_train)
 from sklearn.feature_selection import VarianceThreshold
 
 variance_threshold = VarianceThreshold(threshold=0.01)
-gm_maps_thresholded = variance_threshold.fit_transform(gm_maps_masked)
+variance_threshold.fit_transform(gm_maps_masked)
 
 # Then we convert the data back to the mask image in order to use it for
 # decoding process
@@ -140,7 +140,7 @@ print()
 
 ###############################################################################
 # Visualization
-# --------------
+# -------------
 weight_img = decoder.coef_img_["beta"]
 
 # Create the figure
@@ -156,7 +156,7 @@ show()
 
 ###############################################################################
 # Visualize the quality of predictions
-# -------------------------------------
+# ------------------------------------
 plt.figure(figsize=(6, 4.5))
 plt.suptitle(f"Decoder: Mean Absolute Error {prediction_score:.2f} years")
 linewidth = 3
@@ -190,7 +190,7 @@ neg_log_pvals, t_scores_original_data, _ = permuted_ols(
     n_perm=2000,  # 1,000 in the interest of time; 10000 would be better
     verbose=1,  # display progress bar
     n_jobs=1,
-)  
+)
 signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
 signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     variance_threshold.inverse_transform(signed_neg_log_pvals)

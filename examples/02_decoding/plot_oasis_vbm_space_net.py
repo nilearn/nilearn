@@ -12,7 +12,7 @@ See also the documentation: :ref:`space_net`.
 
 ###########################################################################
 # Load the Oasis VBM dataset
-# ---------------------------
+# --------------------------
 import numpy as np
 from nilearn import datasets
 
@@ -42,7 +42,7 @@ gm_imgs_test = gm_imgs_test[perm]
 
 ###########################################################################
 # Fit the SpaceNet and predict with it
-# -------------------------------------
+# ------------------------------------
 # To save time (because these are anat images with many voxels), we include
 # only the 5-percent voxels most correlated with the age variable to fit.
 # Also, we set memory_level=2 so that more of the intermediate computations
@@ -68,7 +68,7 @@ print(f"Mean square error (MSE) on the predicted age: {mse:.2f}")
 
 ###########################################################################
 # Visualize the decoding maps and quality of predictions
-# -------------------------------------------------------
+# ------------------------------------------------------
 # Visualize the resulting maps
 from nilearn.plotting import plot_stat_map, show
 

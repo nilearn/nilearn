@@ -1,6 +1,6 @@
 """
 A introduction tutorial to fMRI decoding
-==========================================
+========================================
 
 Here is a simple tutorial on decoding with nilearn. It reproduces the
 Haxby 2001 study on a face vs cat discrimination task in a mask of the
@@ -20,10 +20,10 @@ meant to be copied to analyze new data: many of the steps are unnecessary.
 
 ###########################################################################
 # Retrieve and load the fMRI data from the Haxby study
-# ------------------------------------------------------
+# ----------------------------------------------------
 #
 # First download the data
-# ........................
+# .......................
 #
 # The :func:`nilearn.datasets.fetch_haxby` function will download the
 # Haxby dataset if not present on the disk, in the nilearn data directory.
@@ -36,13 +36,11 @@ haxby_dataset = datasets.fetch_haxby()
 fmri_filename = haxby_dataset.func[0]
 
 # print basic information on the dataset
-print(
-    f"First subject functional nifti images (4D) are at: {fmri_filename}"
-)
+print(f"First subject functional nifti images (4D) are at: {fmri_filename}")
 
 ###########################################################################
 # Visualizing the fmri volume
-# ............................
+# ...........................
 #
 # One way to visualize a :term:`fmri<fMRI>` volume is
 # using :func:`nilearn.plotting.plot_epi`.
@@ -62,7 +60,7 @@ plotting.view_img(mean_img(fmri_filename), threshold=None)
 
 ###########################################################################
 # Feature extraction: from fMRI volumes to a data matrix
-# .......................................................
+# ......................................................
 #
 # These are some really lovely images, but for machine learning
 # we need matrices to work with the actual data. Fortunately, the
@@ -80,7 +78,7 @@ plotting.plot_roi(mask_filename, bg_img=haxby_dataset.anat[0], cmap="Paired")
 
 ###########################################################################
 # Load the behavioral labels
-# ...........................
+# ..........................
 #
 # Now that the brain images are converted to a data matrix, we can apply
 # machine-learning to them, for instance to predict the task that the subject
@@ -103,7 +101,7 @@ print(conditions)
 
 ###########################################################################
 # Restrict the analysis to cats and faces
-# ........................................
+# .......................................
 #
 # As we can see from the targets above, the experiment contains many
 # conditions. As a consequence, the data is quite big. Not all of this data
@@ -168,13 +166,13 @@ print((prediction == conditions).sum() / float(len(conditions)))
 
 ###########################################################################
 # Measuring prediction scores using cross-validation
-# ---------------------------------------------------
+# --------------------------------------------------
 #
 # The proper way to measure error rates or prediction accuracy is via
 # cross-validation: leaving out some data and testing on it.
 #
 # Manually leaving out data
-# ..........................
+# .........................
 #
 # Let's leave out the 30 last data points during training, and test the
 # prediction on these 30 last points:
@@ -200,7 +198,7 @@ print(
 
 ###########################################################################
 # Implementing a KFold loop
-# ..........................
+# .........................
 #
 # We can manually split the data in train and test set repetitively in a
 # `KFold` strategy by importing scikit-learn's object:
@@ -222,7 +220,7 @@ for fold, (train, test) in enumerate(cv.split(conditions), start=1):
 
 ###########################################################################
 # Cross-validation with the decoder
-# ...................................
+# .................................
 #
 # The decoder also implements a cross-validation loop by default and returns
 # an array of shape (cross-validation parameters, `n_folds`). We can use
@@ -277,12 +275,12 @@ print(decoder.cv_scores_)
 
 ###########################################################################
 # Inspecting the model weights
-# -----------------------------
+# ----------------------------
 #
 # Finally, it may be useful to inspect and display the model weights.
 #
 # Turning the weights into a nifti image
-# .......................................
+# ......................................
 #
 # We retrieve the SVC discriminating weights
 coef_ = decoder.coef_
@@ -304,7 +302,7 @@ decoder.coef_img_["face"].to_filename("haxby_svc_weights.nii.gz")
 
 ###########################################################################
 # Plotting the SVM weights
-# .........................
+# ........................
 #
 # We can plot the weights, using the subject's anatomical as a background
 plotting.view_img(
@@ -336,7 +334,7 @@ print(dummy_decoder.cv_scores_)
 
 ###########################################################################
 # Further reading
-# ----------------
+# ---------------
 #
 # * The :ref:`section of the documentation on decoding <decoding>`
 #

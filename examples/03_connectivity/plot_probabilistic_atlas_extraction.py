@@ -23,7 +23,7 @@ only the 20% edges with the highest values.
 """
 ############################################################################
 # Retrieve the atlas and the data
-# --------------------------------
+# -------------------------------
 from nilearn import datasets
 
 atlas = datasets.fetch_atlas_msdl()
@@ -42,7 +42,7 @@ print(
 
 ############################################################################
 # Extract the time series
-# ------------------------
+# -----------------------
 from nilearn.maskers import NiftiMapsMasker
 
 masker = NiftiMapsMasker(
@@ -70,7 +70,7 @@ print(time_series.shape)
 
 ############################################################################
 # Build and display a correlation matrix
-# ---------------------------------------
+# --------------------------------------
 from nilearn.connectome import ConnectivityMeasure
 
 correlation_measure = ConnectivityMeasure(kind="correlation")
@@ -78,7 +78,6 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 # Display the correlation matrix
 import numpy as np
-
 from nilearn import plotting
 
 # Mask out the major diagonal
@@ -88,7 +87,7 @@ plotting.plot_matrix(
 )
 ############################################################################
 # And now display the corresponding graph
-# ----------------------------------------
+# ---------------------------------------
 from nilearn import plotting
 
 coords = atlas.region_coords

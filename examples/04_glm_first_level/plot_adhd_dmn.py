@@ -1,4 +1,5 @@
-"""Default Mode Network extraction of ADHD dataset
+"""
+Default Mode Network extraction of ADHD dataset
 ===============================================
 
 This example shows a full step-by-step workflow of fitting a GLM to data
@@ -25,7 +26,7 @@ from nilearn.maskers import NiftiSpheresMasker
 
 #########################################################################
 # Prepare data and analysis parameters
-# -------------------------------------
+# ------------------------------------
 # Prepare the data.
 adhd_dataset = datasets.fetch_adhd(n_subjects=1)
 

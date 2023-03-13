@@ -18,7 +18,7 @@ for a careful study.
 
 ###############################################################################
 # Load brain development fMRI dataset and MSDL atlas
-# -------------------------------------------------------------------
+# --------------------------------------------------
 # We study only 30 subjects from the dataset, to save computation time.
 from nilearn import datasets
 
@@ -99,10 +99,11 @@ print(
 mean_correlation_matrix = correlation_measure.mean_
 print(f"Mean correlation has shape {mean_correlation_matrix.shape}.")
 
+from matplotlib import pyplot as plt
+
 ###############################################################################
 # We display the connectome matrices of the first 3 children
 from nilearn import plotting
-from matplotlib import pyplot as plt
 
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
 for i, (matrix, ax) in enumerate(zip(correlation_matrices, axes)):
@@ -197,10 +198,10 @@ for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes)):
 # We use random splits of the subjects into training/testing sets.
 # StratifiedShuffleSplit allows preserving the proportion of children in the
 # test set.
-from sklearn.svm import LinearSVC
-from sklearn.model_selection import StratifiedShuffleSplit
-from sklearn.metrics import accuracy_score
 import numpy as np
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.svm import LinearSVC
 
 kinds = ["correlation", "partial correlation", "tangent"]
 _, classes = np.unique(groups, return_inverse=True)
