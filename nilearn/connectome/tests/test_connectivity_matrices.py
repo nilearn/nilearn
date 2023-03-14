@@ -39,7 +39,7 @@ def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
     mats = np.array(mats)
 
     # Initialization
-    gmean = np.mean(mats, axis=0) if init is None else init
+    gmean = init or np.mean(mats, axis=0)
 
     norm_old = np.inf
     step = 1.0
