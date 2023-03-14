@@ -395,18 +395,14 @@ def test_vec_to_sym_matrix():
         vec_to_sym_matrix(vec, diagonal)
 
     # Check output value is correct
-    vec = np.ones(
-        6,
-    )
+    vec = np.ones(6)
     sym = np.array(
         [[sqrt(2), 1.0, 1.0], [1.0, sqrt(2), 1.0], [1.0, 1.0, sqrt(2)]]
     )
     assert_array_almost_equal(vec_to_sym_matrix(vec), sym)
 
     # Check output value is correct with separate diagonal
-    vec = np.ones(
-        3,
-    )
+    vec = np.ones(3)
     diagonal = np.ones(3)
     assert_array_almost_equal(vec_to_sym_matrix(vec, diagonal=diagonal), sym)
 

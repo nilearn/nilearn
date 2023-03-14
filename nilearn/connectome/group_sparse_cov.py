@@ -461,18 +461,15 @@ def _group_sparse_covariance(
                     assert is_spd(omega[..., k])
 
         if probe_function is not None:
-            if (
-                probe_function(
-                    emp_covs,
-                    n_samples,
-                    alpha,
-                    max_iter,
-                    tol,
-                    n,
-                    omega,
-                    omega_old,
-                )
-                is True
+            if probe_function(
+                emp_covs,
+                n_samples,
+                alpha,
+                max_iter,
+                tol,
+                n,
+                omega,
+                omega_old,
             ):
                 probe_interrupted = True
                 logger.log(
