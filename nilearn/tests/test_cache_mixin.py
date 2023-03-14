@@ -47,15 +47,22 @@ def test_check_memory():
 
 def test_cache_memory_level():
     with tempfile.TemporaryDirectory() as temp_dir:
+
         joblib_dir = Path(
             temp_dir, 'joblib', 'nilearn', 'tests', 'test_cache_mixin', 'f')
-        mem = Memory(location=temp_dir, verbose=0)
-        cache_mixin.cache(f, mem, func_memory_level=2, memory_level=1)(2)
-        assert len(_get_subdirs(joblib_dir)) == 0
+        
         cache_mixin.cache(f, Memory(location=None))(2)
         assert len(_get_subdirs(joblib_dir)) == 0
+        
+        mem = Memory(location=temp_dir, verbose=0)
+
+        cache_mixin.cache(f, mem, func_memory_level=2, memory_level=1)(2)
+        assert len(_get_subdirs(joblib_dir)) == 0
+
         cache_mixin.cache(f, mem, func_memory_level=2, memory_level=3)(2)
+        print(joblib_dir.exists())
         assert len(_get_subdirs(joblib_dir)) == 1
+
         cache_mixin.cache(f, mem)(3)
         assert len(_get_subdirs(joblib_dir)) == 2
 
