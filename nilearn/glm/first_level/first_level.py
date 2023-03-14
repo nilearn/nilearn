@@ -913,12 +913,12 @@ def first_level_from_bids(dataset_path,
                                    filters=filters)
         # If we don't find the parameter information in the derivatives folder
         # we try to search in the raw data folder
-        filters = _make_bids_files_filter(
-            task_label=task_label,
-            supported_filters=bids_entities()["raw"],
-            extra_filter=img_filters
-        )
         if not img_specs:
+            filters = _make_bids_files_filter(
+                task_label=task_label,
+                supported_filters=bids_entities()["raw"],
+                extra_filter=img_filters
+            )
             img_specs = get_bids_files(dataset_path,
                                        modality_folder='func',
                                        file_tag='bold',
@@ -1087,7 +1087,7 @@ def _get_processed_imgs(
 ) -> list[str]:
     """Get images for a given subject, task and filters.
 
-    Also checks that the number of the number of images.
+    Also checks that there is only one images per run / session.
 
     Parameters
     ----------
