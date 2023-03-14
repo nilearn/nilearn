@@ -159,7 +159,7 @@ def mfista(
     """
     # initialization
     if init is None:
-        init = dict()
+        init = {}
     w = init.get("w", np.zeros(w_size))
     z = init.get("z", w.copy())
     t = init.get("t", 1.0)
@@ -217,17 +217,21 @@ def mfista(
                 init=w,
             )
             energy = total_energy(w)
-            if ista_step and prox_info["converged"] and old_energy <= energy:
-                # Even when doing ISTA steps we are not decreasing.
-                # Thus we need a tighter dual_gap on the prox_tv
-                # This corresponds to a line search on the dual_gap
-                # tolerance.
-                dgap_factor *= 0.2
-                if verbose:
-                    print("decreased dgap_tol")
-            else:
+            if (
+                not ista_step
+                or not prox_info["converged"]
+                or old_energy > energy
+            ):
                 break
 
+            # Even when doing ISTA steps we are not decreasing.
+            # Thus we need a tighter dual_gap on the prox_tv
+            # This corresponds to a line search on the dual_gap
+            # tolerance.
+            dgap_factor *= 0.2
+
+            if verbose:
+                print("decreased dgap_tol")
         # energy house-keeping
         energy_delta = old_energy - energy
         old_energy = energy

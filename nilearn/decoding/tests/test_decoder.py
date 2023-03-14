@@ -28,16 +28,16 @@ from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import LogisticRegression, RidgeClassifierCV, RidgeCV
-from sklearn.metrics import accuracy_score, get_scorer, r2_score, roc_auc_score
+from sklearn.metrics import (
+    accuracy_score,
+    check_scoring,
+    get_scorer,
+    r2_score,
+    roc_auc_score,
+)
 from sklearn.model_selection import KFold, LeaveOneGroupOut
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
-
-try:
-    from sklearn.metrics import check_scoring
-except ImportError:
-    # for scikit-learn 0.18 and 0.19
-    from sklearn.metrics.scorer import check_scoring
 
 # Regression
 ridge = RidgeCV()

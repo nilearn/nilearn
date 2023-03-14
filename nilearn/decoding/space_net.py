@@ -18,11 +18,14 @@ from functools import partial
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
+from nilearn.image import get_data
 from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
+from nilearn.masking import _unmask_from_to_3d_array
 from scipy import stats
 from scipy.ndimage import binary_dilation, binary_erosion, gaussian_filter
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 from sklearn.linear_model import LinearRegression
+from sklearn.linear_model._base import _preprocess_data as center_data
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import check_cv
 from sklearn.preprocessing import LabelBinarizer
@@ -30,18 +33,8 @@ from sklearn.utils import check_array, check_X_y
 from sklearn.utils.extmath import safe_sparse_dot
 
 from .._utils import fill_doc
-from .._utils.param_validation import _adjust_screening_percentile
-
-try:
-    from sklearn.linear_model._base import _preprocess_data as center_data
-except ImportError:
-    # Sklearn < 0.23
-    from sklearn.linear_model.base import _preprocess_data as center_data
-
-from nilearn.image import get_data
-from nilearn.masking import _unmask_from_to_3d_array
-
 from .._utils.cache_mixin import CacheMixin
+from .._utils.param_validation import _adjust_screening_percentile
 from .space_net_solvers import (
     _graph_net_logistic,
     _graph_net_squared_loss,
@@ -241,21 +234,23 @@ class _EarlyStoppingCallback:
         score = self.test_score(w)[0]
 
         self.test_scores.append(score)
-        if not (self.counter > 20 and (self.counter % 10) == 2):
+        if self.counter <= 20 or self.counter % 10 != 2:
             return
 
         # check whether score increased on average over last 5 iterations
-        if len(self.test_scores) > 4:
-            if np.mean(np.diff(self.test_scores[-5:][::-1])) >= self.tol:
-                if self.verbose:
-                    if self.verbose > 1:
-                        print(
-                            "Early stopping. "
-                            f"Test score: {score:.8f} {40 * '-'}"
-                        )
-                    else:
-                        sys.stderr.write(".")
-                return True
+        if (
+            len(self.test_scores) > 4
+            and np.mean(np.diff(self.test_scores[-5:][::-1])) >= self.tol
+        ):
+            if self.verbose:
+                if self.verbose > 1:
+                    print(
+                        "Early stopping. "
+                        f"Test score: {score:.8f} {40 * '-'}"
+                    )
+                else:
+                    sys.stderr.write(".")
+            return True
 
         if self.verbose > 1:
             print(f"Test score: {score:.8f}")
@@ -891,9 +886,10 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         if not isinstance(l1_ratios, collections.abc.Iterable):
             l1_ratios = [l1_ratios]
         alphas = self.alphas
-        if alphas is not None:
-            if not isinstance(alphas, collections.abc.Iterable):
-                alphas = [alphas]
+        if alphas is not None and not isinstance(
+            alphas, collections.abc.Iterable
+        ):
+            alphas = [alphas]
         if self.loss is not None:
             loss = self.loss
         elif self.is_classif:
@@ -926,14 +922,11 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         n_folds = len(self.cv_)
 
         # number of problems to solve
-        if self.is_classif:
-            y = self._binarize_y(y)
-        else:
-            y = y[:, np.newaxis]
-        if self.is_classif and self.n_classes_ > 2:
-            n_problems = self.n_classes_
-        else:
-            n_problems = 1
+        y = self._binarize_y(y) if self.is_classif else y[:, np.newaxis]
+
+        n_problems = (
+            self.n_classes_ if self.is_classif and self.n_classes_ > 2 else 1
+        )
 
         # standardize y
         self.ymean_ = np.zeros(y.shape[0])
@@ -941,7 +934,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
             y = y[:, 0]
 
         # scores & mean weights map over all folds
-        self.cv_scores_ = [[] for i in range(n_problems)]
+        self.cv_scores_ = [[] for _ in range(n_problems)]
         w = np.zeros((n_problems, X.shape[1] + 1))
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
 

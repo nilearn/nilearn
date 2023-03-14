@@ -124,8 +124,7 @@ class GroupIterator:
         self.n_jobs = n_jobs
 
     def __iter__(self):
-        split = np.array_split(np.arange(self.n_features), self.n_jobs)
-        yield from split
+        yield from np.array_split(np.arange(self.n_features), self.n_jobs)
 
 
 def _group_iter_search_light(
@@ -187,9 +186,7 @@ def _group_iter_search_light(
     par_scores = np.zeros(len(list_rows))
     t0 = time.time()
     for i, row in enumerate(list_rows):
-        kwargs = dict()
-        kwargs["scoring"] = scoring
-        kwargs["groups"] = groups
+        kwargs = {"scoring": scoring, "groups": groups}
         par_scores[i] = np.mean(
             cross_val_score(estimator, X[:, row], y, cv=cv, n_jobs=1, **kwargs)
         )
@@ -198,10 +195,7 @@ def _group_iter_search_light(
             step = 11 - min(verbose, 10)
             if i % step == 0:
                 # If there is only one job, progress information is fixed
-                if total == len(list_rows):
-                    crlf = "\r"
-                else:
-                    crlf = "\n"
+                crlf = "\r" if total == len(list_rows) else "\n"
                 percent = float(i) / len(list_rows)
                 percent = round(percent * 100, 2)
                 dt = time.time() - t0

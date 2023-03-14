@@ -184,10 +184,7 @@ def _prox_tvl1(
 
     # negated_output is the negated primal variable in the optimization
     # loop
-    if init is None:
-        negated_output = -input_img
-    else:
-        negated_output = -init
+    negated_output = -input_img if init is None else -init
 
     # Clipping values for the inner loop
     negated_val_min = np.inf

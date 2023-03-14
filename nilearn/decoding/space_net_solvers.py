@@ -130,7 +130,7 @@ def _graph_net_data_function(X, w, mask, grad_weight):
     out = np.ndarray(X.shape[0] + mask.ndim * X.shape[1])
     out[: X.shape[0]] = X.dot(w)
     out[X.shape[0] :] = np.concatenate(
-        tuple([w_g[i][mask] for i in range(mask.ndim)])
+        tuple(w_g[i][mask] for i in range(mask.ndim))
     )
     return out
 
