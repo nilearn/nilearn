@@ -208,9 +208,8 @@ def _group_iter_search_light(
                 # We use a max to avoid a division by zero
                 remaining = (100.0 - percent) / max(0.01, percent) * dt
                 sys.stderr.write(
-                    "Job #%d, processed %d/%d voxels "
-                    "(%0.2f%%, %i seconds remaining)%s"
-                    % (thread_id, i, len(list_rows), percent, remaining, crlf)
+                    f"Job #{thread_id}, processed {i}/{len(list_rows)} voxels "
+                    f"({percent:0.2f}%, {remaining} seconds remaining){crlf}"
                 )
     return par_scores
 

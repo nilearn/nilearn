@@ -788,34 +788,25 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
                     )
                 elif l1_ratio in (0.0, 1.0):
                     warnings.warn(
-                        "Specified l1_ratio = %g. It's advised to only "
-                        "specify values of l1_ratio strictly between 0 "
-                        "and 1." % l1_ratio
+                        f"Specified l1_ratio = {l1_ratio:g}. "
+                        "It's advised to only specify values of l1_ratio "
+                        "strictly between 0 and 1."
                     )
         if not (0.0 <= self.screening_percentile <= 100.0):
             raise ValueError(
-                "screening_percentile should be in the interval"
-                " [0, 100], got %g" % self.screening_percentile
+                "screening_percentile should be in the interval [0, 100]. "
+                f"Got {self.screening_percentile:g}."
             )
         if self.penalty not in self.SUPPORTED_PENALTIES:
             raise ValueError(
-                "'penalty' parameter must be one of %s%s or %s; got %s"
-                % (
-                    ",".join(self.SUPPORTED_PENALTIES[:-1]),
-                    "," if len(self.SUPPORTED_PENALTIES) > 2 else "",
-                    self.SUPPORTED_PENALTIES[-1],
-                    self.penalty,
-                )
+                "'penalty' parameter must be one of "
+                f"{self.SUPPORTED_PENALTIES}. "
+                f"Got {self.penalty}."
             )
         if not (self.loss is None or self.loss in self.SUPPORTED_LOSSES):
             raise ValueError(
-                "'loss' parameter must be one of %s%s or %s; got %s"
-                % (
-                    ",".join(self.SUPPORTED_LOSSES[:-1]),
-                    "," if len(self.SUPPORTED_LOSSES) > 2 else "",
-                    self.SUPPORTED_LOSSES[-1],
-                    self.loss,
-                )
+                f"'loss' parameter must be one of {self.SUPPORTED_LOSSES}. "
+                f"Got {self.loss}."
             )
         if (
             self.loss is not None
@@ -1024,8 +1015,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         if self.verbose:
             duration = time.time() - tic
             print(
-                "Time Elapsed: %g seconds, %i minutes."
-                % (duration, duration / 60.0)
+                f"Time Elapsed: {duration} seconds, {duration / 60.0} minutes."
             )
 
         return self
@@ -1056,8 +1046,8 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         n_features = self.coef_.shape[1]
         if X.shape[1] != n_features:
             raise ValueError(
-                "X has %d features per sample; expecting %d"
-                % (X.shape[1], n_features)
+                f"X has {X.shape[1]} features per sample; "
+                f"expecting {n_features}."
             )
 
         scores = (
