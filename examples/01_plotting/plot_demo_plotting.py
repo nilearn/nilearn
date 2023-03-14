@@ -1,6 +1,6 @@
 """
 Plotting tools in nilearn
-==========================
+=========================
 
 Nilearn comes with a set of plotting functions for easy visualization of
 Nifti-like images such as statistical maps mapped onto anatomical images
@@ -12,7 +12,7 @@ See :ref:`plotting` for more details.
 
 ###############################################################################
 # Retrieve data from nilearn provided (general-purpose) datasets
-# ---------------------------------------------------------------
+# --------------------------------------------------------------
 
 from nilearn import datasets
 
@@ -37,7 +37,7 @@ stat_img = datasets.load_sample_motor_activation_image()
 
 ###############################################################################
 # Plotting statistical maps with function `plot_stat_map`
-# --------------------------------------------------------
+# -------------------------------------------------------
 
 from nilearn import plotting
 
@@ -77,24 +77,24 @@ plotting.plot_glass_brain(stat_img, title='plot_glass_brain',
 
 ###############################################################################
 # Plotting anatomical images with function `plot_anat`
-# -----------------------------------------------------
+# ----------------------------------------------------
 #
 # Visualizing anatomical image of haxby dataset
 plotting.plot_anat(haxby_anat_filename, title="plot_anat")
 
 ###############################################################################
 # Plotting ROIs (here the mask) with function `plot_roi`
-# -------------------------------------------------------
+# ------------------------------------------------------
 #
 # Visualizing ventral temporal region image from haxby dataset overlaid on
-# subject specific anatomical image 
+# subject specific anatomical image
 # with coordinates positioned automatically on region of interest (roi)
 plotting.plot_roi(haxby_mask_filename, bg_img=haxby_anat_filename,
                   title="plot_roi")
 
 ###############################################################################
 # Plotting EPI image with function `plot_epi`
-# ---------------------------------------------
+# -------------------------------------------
 
 # Import image processing tool
 from nilearn import image

@@ -33,7 +33,7 @@ plotting.plot_img(MNI152_FILE_PATH)
 
 #########################################################################
 # Simple image manipulation: smoothing
-# -------------------------------------
+# ------------------------------------
 #
 # Let's use an image-smoothing function from nilearn:
 # :func:`nilearn.image.smooth_img`

@@ -10,7 +10,10 @@ Function :func:`nilearn.image.resample_img` could also be used to achieve this.
 
 ###############################################################################
 # First we load the required datasets using the nilearn datasets module.
-from nilearn.datasets import load_mni152_template, load_sample_motor_activation_image
+from nilearn.datasets import (
+    load_mni152_template,
+    load_sample_motor_activation_image,
+)
 
 template = load_mni152_template(resolution=2)
 

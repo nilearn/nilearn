@@ -1,4 +1,5 @@
-"""Analysis of an fMRI dataset with a Finite Impule Response (FIR) model
+"""
+Analysis of an fMRI dataset with a Finite Impule Response (FIR) model
 =====================================================================
 
 :term:`FIR` models are used to estimate

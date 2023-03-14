@@ -1,6 +1,6 @@
 """
 Understanding NiftiMasker and mask computation
-==================================================
+==============================================
 
 In this example, the Nifti masker is used to automatically compute a mask.
 

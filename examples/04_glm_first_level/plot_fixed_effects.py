@@ -1,4 +1,5 @@
-"""Example of explicit fixed effects fMRI model fitting
+"""
+Example of explicit fixed effects fMRI model fitting
 ====================================================
 
 This example illustrates how to run a fixed effects model based on
@@ -22,7 +23,7 @@ after GLM fitting on two sessions.
 
 #########################################################################
 # Prepare data and analysis parameters
-# --------------------------------------
+# ------------------------------------
 #
 # Inspecting 'data', we note that there are two sessions
 
@@ -48,7 +49,7 @@ design_matrices = [pd.DataFrame(np.load(df)['X']) for df in design_files]
 
 #########################################################################
 # GLM estimation
-# ----------------------------------
+# --------------
 # GLM specification. Note that the mask was provided in the dataset.
 # So we use it.
 
@@ -98,11 +99,15 @@ contrast_imgs = [summary_statistics_session1['effect_size'],
 variance_imgs = [summary_statistics_session1['effect_variance'],
                  summary_statistics_session2['effect_variance']]
 
-fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat = compute_fixed_effects(
+_, _, fixed_fx_stat = compute_fixed_effects(
     contrast_imgs, variance_imgs, data['mask'])
 plotting.plot_stat_map(
-    fixed_fx_stat, bg_img=mean_img_, threshold=3.0, cut_coords=cut_coords,
-    title=f'{contrast_id}, fixed effects')
+    fixed_fx_stat,
+    bg_img=mean_img_,
+    threshold=3.0,
+    cut_coords=cut_coords,
+    title=f'{contrast_id}, fixed effects'
+)
 
 #########################################################################
 # Not unexpectedly, the fixed effects version displays higher peaks than the

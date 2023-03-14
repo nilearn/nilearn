@@ -1,6 +1,6 @@
 """
 Loading and plotting of a cortical surface atlas
-=================================================
+================================================
 
 The Destrieux parcellation (Destrieux et al, 2010) in fsaverage5 space as
 distributed with Freesurfer is used as the chosen atlas.
@@ -12,7 +12,6 @@ See :ref:`plotting` for more details.
 
 References
 ----------
-
 Destrieux et al, (2010). Automatic parcellation of human cortical gyri and
 sulci using standard anatomical nomenclature. NeuroImage, 53, 1.
 URL http://dx.doi.org/10.1016/j.neuroimage.2010.06.010.
