@@ -74,9 +74,12 @@ from nilearn import plotting
 # By default the ``colorbar`` argument is set to ``True`` in
 # :func:`~nilearn.plotting.plot_stat_map`.
 
-plotting.plot_stat_map(stat_img, display_mode='ortho',
-                       cut_coords=[36, -27, 60],
-                       title="display_mode='ortho', cut_coords=[36, -27, 60]")
+plotting.plot_stat_map(
+    stat_img,
+    display_mode="ortho",
+    cut_coords=[36, -27, 60],
+    title="display_mode='ortho', cut_coords=[36, -27, 60]",
+)
 
 ###############################################################################
 # Visualizing in - single view 'axial' with number of cuts=5
@@ -90,8 +93,12 @@ plotting.plot_stat_map(stat_img, display_mode='ortho',
 # maximum. Note that the coordinates used to cut the slices are selected
 # automatically.
 
-plotting.plot_stat_map(stat_img, display_mode='z', cut_coords=5,
-                       title="display_mode='z', cut_coords=5")
+plotting.plot_stat_map(
+    stat_img,
+    display_mode="z",
+    cut_coords=5,
+    title="display_mode='z', cut_coords=5",
+)
 
 ###############################################################################
 # Visualizing in - single view 'sagittal' with only two slices
@@ -102,9 +109,12 @@ plotting.plot_stat_map(stat_img, display_mode='z', cut_coords=5,
 # Additionally, we provide the coordinates of the slices as a list of
 # integers.
 
-plotting.plot_stat_map(stat_img, display_mode='x',
-                       cut_coords=[-36, 36],
-                       title="display_mode='x', cut_coords=[-36, 36]")
+plotting.plot_stat_map(
+    stat_img,
+    display_mode="x",
+    cut_coords=[-36, 36],
+    title="display_mode='x', cut_coords=[-36, 36]",
+)
 
 ###############################################################################
 # Visualizing in - 'coronal' view with single cut
@@ -115,8 +125,12 @@ plotting.plot_stat_map(stat_img, display_mode='x',
 # ``cut_coords`` is provided as an integer (1), and the coordinates are,
 # again, selected automatically.
 
-plotting.plot_stat_map(stat_img, display_mode='y', cut_coords=1,
-                       title="display_mode='y', cut_coords=1")
+plotting.plot_stat_map(
+    stat_img,
+    display_mode="y",
+    cut_coords=1,
+    title="display_mode='y', cut_coords=1",
+)
 
 ###############################################################################
 # Visualizing without a colorbar on the right side
@@ -125,9 +139,13 @@ plotting.plot_stat_map(stat_img, display_mode='y', cut_coords=1,
 # The argument ``colorbar`` should be set to ``False`` to show plots without
 # a colorbar on the right side.
 
-plotting.plot_stat_map(stat_img, display_mode='z',
-                       cut_coords=1, colorbar=False,
-                       title="display_mode='z', cut_coords=1, colorbar=False")
+plotting.plot_stat_map(
+    stat_img,
+    display_mode="z",
+    cut_coords=1,
+    colorbar=False,
+    title="display_mode='z', cut_coords=1, colorbar=False",
+)
 
 ###############################################################################
 # Visualize in - two views 'sagittal' and 'axial' with given coordinates
@@ -141,9 +159,12 @@ plotting.plot_stat_map(stat_img, display_mode='z',
 # views (two here). It is provided as a list of integers here to select the
 # slices to be displayed.
 
-plotting.plot_stat_map(stat_img, display_mode='xz',
-                       cut_coords=[36, 60],
-                       title="display_mode='xz', cut_coords=[36, 60]")
+plotting.plot_stat_map(
+    stat_img,
+    display_mode="xz",
+    cut_coords=[36, 60],
+    title="display_mode='xz', cut_coords=[36, 60]",
+)
 
 ###############################################################################
 # Changing the views to 'coronal', 'sagittal' views with coordinates
@@ -154,9 +175,12 @@ plotting.plot_stat_map(stat_img, display_mode='xz',
 # :class:`~nilearn.plotting.displays.YXSlicer` object.
 # The coordinates will be assigned in the order of direction as [x, y, z].
 
-plotting.plot_stat_map(stat_img, display_mode='yx',
-                       cut_coords=[-27, 36],
-                       title="display_mode='yx', cut_coords=[-27, 36]")
+plotting.plot_stat_map(
+    stat_img,
+    display_mode="yx",
+    cut_coords=[-27, 36],
+    title="display_mode='yx', cut_coords=[-27, 36]",
+)
 
 ###############################################################################
 # Now, views are changed to 'coronal' and 'axial' views with coordinates
@@ -166,9 +190,12 @@ plotting.plot_stat_map(stat_img, display_mode='yx',
 # view, which will return a :class:`~nilearn.plotting.displays.YZSlicer`
 # object.
 
-plotting.plot_stat_map(stat_img, display_mode='yz',
-                       cut_coords=[-27, 60],
-                       title="display_mode='yz', cut_coords=[-27, 60]")
+plotting.plot_stat_map(
+    stat_img,
+    display_mode="yz",
+    cut_coords=[-27, 60],
+    title="display_mode='yz', cut_coords=[-27, 60]",
+)
 
 ###############################################################################
 # Visualizing three views in 2x2 fashion
@@ -179,9 +206,12 @@ plotting.plot_stat_map(stat_img, display_mode='yz',
 # views. In this case, :func:`~nilearn.plotting.plot_stat_map` will return
 # a :class:`~nilearn.plotting.displays.TiledSlicer` object.
 
-plotting.plot_stat_map(stat_img, display_mode='tiled',
-                       cut_coords=[36, -27, 60],
-                       title="display_mode='tiled'")
+plotting.plot_stat_map(
+    stat_img,
+    display_mode="tiled",
+    cut_coords=[36, -27, 60],
+    title="display_mode='tiled'",
+)
 
 ###############################################################################
 # Visualizing three views along multiple rows and columns
@@ -193,8 +223,11 @@ plotting.plot_stat_map(stat_img, display_mode='tiled',
 # :class:`~nilearn.plotting.displays.MosaicSlicer` object.
 # In addition, we show here the default option ``cut_coords=None``.
 
-plotting.plot_stat_map(stat_img, display_mode='mosaic',
-                       title="display_mode='mosaic' default cut_coords")
+plotting.plot_stat_map(
+    stat_img,
+    display_mode="mosaic",
+    title="display_mode='mosaic' default cut_coords",
+)
 
 ###############################################################################
 # Now, changing the number of slices along columns
@@ -204,9 +237,12 @@ plotting.plot_stat_map(stat_img, display_mode='mosaic',
 # slices to be the same across views. In this case, we can specify it as
 # an integer, i.e. ``cut_coords=3``.
 
-plotting.plot_stat_map(stat_img, display_mode='mosaic',
-                       cut_coords=3,
-                       title="display_mode='mosaic' with cut_coords=3")
+plotting.plot_stat_map(
+    stat_img,
+    display_mode="mosaic",
+    cut_coords=3,
+    title="display_mode='mosaic' with cut_coords=3",
+)
 
 ###############################################################################
 # Now, another way of limiting the number of slices along rows and columns
@@ -216,9 +252,12 @@ plotting.plot_stat_map(stat_img, display_mode='mosaic',
 # each view. In this situation, we still set ``display_mode='mosaic'``, but
 # we specify the number of slices as a tuple of length 3.
 
-plotting.plot_stat_map(stat_img, display_mode='mosaic',
-                       cut_coords=(5, 4, 10),
-                       title="display_mode='mosaic' with cut_coords as tuple")
+plotting.plot_stat_map(
+    stat_img,
+    display_mode="mosaic",
+    cut_coords=(5, 4, 10),
+    title="display_mode='mosaic' with cut_coords as tuple",
+)
 
 ###############################################################################
 # Demonstrating various display features
@@ -255,7 +294,7 @@ mean_haxby_img = image.mean_img(haxby_func_filename)
 # the ``color`` argument.
 
 display = plotting.plot_anat(mean_haxby_img, title="add_edges")
-display.add_edges(haxby_anat_filename, color='r')
+display.add_edges(haxby_anat_filename, color="r")
 
 ###############################################################################
 # How to use `add_contours`
@@ -279,10 +318,11 @@ display.add_edges(haxby_anat_filename, color='r')
 # We also specify ``colors='r'`` to display edges in red (See function
 # :func:`~matplotlib.pyplot.contour` to use more options).
 
-display = plotting.plot_anat(mean_haxby_img, title="add_contours",
-                             cut_coords=[-34, -39, -9])
+display = plotting.plot_anat(
+    mean_haxby_img, title="add_contours", cut_coords=[-34, -39, -9]
+)
 
-display.add_contours(haxby_mask_filename, levels=[0.5], colors='r')
+display.add_contours(haxby_mask_filename, levels=[0.5], colors="r")
 
 ###############################################################################
 # Here, we plot the outline of the mask (in blue) with color fillings using
@@ -296,12 +336,15 @@ display.add_contours(haxby_mask_filename, levels=[0.5], colors='r')
 # See function :func:`~matplotlib.pyplot.contourf` to use more options (given
 # that ``filled`` should be ``True``).
 
-display = plotting.plot_anat(mean_haxby_img,
-                             title="add_contours with filled=True",
-                             cut_coords=[-34, -39, -9])
+display = plotting.plot_anat(
+    mean_haxby_img,
+    title="add_contours with filled=True",
+    cut_coords=[-34, -39, -9],
+)
 
-display.add_contours(haxby_mask_filename, filled=True, alpha=0.7,
-                     levels=[0.5], colors='b')
+display.add_contours(
+    haxby_mask_filename, filled=True, alpha=0.7, levels=[0.5], colors="b"
+)
 
 ###############################################################################
 # Plotting seeds using `add_markers`
@@ -316,10 +359,11 @@ display.add_contours(haxby_mask_filename, filled=True, alpha=0.7,
 # color of the sphere (in this case yellow 'y'). The third argument
 # ``marker_size`` is used to control the size of the sphere.
 
-display = plotting.plot_anat(mean_haxby_img, title="add_markers",
-                             cut_coords=[-34, -39, -9])
+display = plotting.plot_anat(
+    mean_haxby_img, title="add_markers", cut_coords=[-34, -39, -9]
+)
 coords = [(-34, -39, -9)]
-display.add_markers(coords, marker_color='y', marker_size=100)
+display.add_markers(coords, marker_color="y", marker_size=100)
 
 ###############################################################################
 # Annotating plots
@@ -330,9 +374,9 @@ display.add_markers(coords, marker_color='y', marker_size=100)
 # display objects. For example, we can add a scale bar at the bottom
 # right of each view:
 
-display = plotting.plot_anat(mean_haxby_img,
-                             title="adding a scale bar",
-                             cut_coords=[-34, -39, -9])
+display = plotting.plot_anat(
+    mean_haxby_img, title="adding a scale bar", cut_coords=[-34, -39, -9]
+)
 display.annotate(scalebar=True)
 
 
@@ -341,10 +385,10 @@ display.annotate(scalebar=True)
 # For instance, we can change the ``units`` to ``mm``, or use a different
 # scale bar size.
 
-display = plotting.plot_anat(mean_haxby_img,
-                             title="adding a scale bar",
-                             cut_coords=[-34, -39, -9])
-display.annotate(scalebar=True, scale_size=25, scale_units='mm')
+display = plotting.plot_anat(
+    mean_haxby_img, title="adding a scale bar", cut_coords=[-34, -39, -9]
+)
+display.annotate(scalebar=True, scale_size=25, scale_units="mm")
 
 ###############################################################################
 # Saving plots to file
@@ -357,19 +401,20 @@ display.annotate(scalebar=True, scale_size=25, scale_units='mm')
 # ``output_file``. We provide the filename and the file extension as
 # a string (supported extensions are .png, .pdf, .svg).
 
-plotting.plot_stat_map(stat_img,
-                       title='Using plot_stat_map output_file',
-                       output_file='plot_stat_map.png')
+plotting.plot_stat_map(
+    stat_img,
+    title="Using plot_stat_map output_file",
+    output_file="plot_stat_map.png",
+)
 
 ###############################################################################
 # A second way to save plots is by using the method
 # :meth:`~nilearn.plotting.displays.OrthoSlicer.savefig` of the display
 # object returned.
 
-display = plotting.plot_stat_map(stat_img,
-                                 title='Using display savefig')
+display = plotting.plot_stat_map(stat_img, title="Using display savefig")
 
-display.savefig('plot_stat_map_from_display.png')
+display.savefig("plot_stat_map_from_display.png")
 
 # In non-interactive settings make sure you close your displays
 display.close()
