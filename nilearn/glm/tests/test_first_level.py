@@ -650,6 +650,11 @@ def test_first_level_from_bids():
                                   space_label=42)
 
         with pytest.raises(TypeError,
+                           match="sub_labels must be a list"):
+            first_level_from_bids(bids_path, 'main',
+                                  sub_labels="foo")
+
+        with pytest.raises(TypeError,
                            match="img_filters must be a list"):
             first_level_from_bids(bids_path, 'main',
                                   img_filters="foo")
@@ -666,7 +671,7 @@ def test_first_level_from_bids():
 
         # test output is as expected
         models, m_imgs, m_events, m_confounds = first_level_from_bids(
-            bids_path, 'main', 'MNI', [('desc', 'preproc')])
+            bids_path, 'main', 'MNI', img_filters=[('desc', 'preproc')])
         assert len(models) == len(m_imgs)
         assert len(models) == len(m_events)
         assert len(models) == len(m_confounds)
@@ -719,6 +724,23 @@ def test_first_level_from_bids():
             first_level_from_bids(
                 bids_path, 'main', 'T1w')  # desc not specified
 
+
+def test_first_level_from_bids_with_subject_labels():
+    with InTemporaryDirectory():
+        bids_path = create_fake_bids_dataset(n_sub=10, n_ses=2,
+                                             tasks=['localizer', 'main'],
+                                             n_runs=[1, 3])
+        warning_message = ('Subject label foo is not present in'
+                           ' the dataset and cannot be processed')
+        # check that the incorrect label `foo` raises a warning
+        with pytest.warns(UserWarning, match=warning_message):
+            models, m_imgs, m_events, m_confounds = first_level_from_bids(
+                                  bids_path, 'main',
+                                  sub_labels=["foo", "01"],
+                                  space_label='MNI',
+                                  img_filters=[('desc', 'preproc')])
+            # check that the correct label `01` gets a model
+            assert models[0].subject_label == '01'
 
 def test_first_level_with_scaling():
     shapes, rk = [(3, 1, 1, 2)], 1
@@ -881,8 +903,9 @@ def test_first_level_hrf_model(hrf_model, spaces):
     Ensure that FirstLevelModel runs without raising errors
     for different values of hrf_model. In particular, one checks that it runs
     without raising errors when given a custom response function.
-    Also ensure that it computes contrasts without raising errors,
-    even when event (ie condition) names have spaces.
+    When :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`
+    is used errors should be raised when event (ie condition) names are not
+    valid identifiers.
     """
     shapes, rk = [(10, 10, 10, 25)], 3
     mask, fmri_data, _ =\
@@ -897,7 +920,15 @@ def test_first_level_hrf_model(hrf_model, spaces):
     model.fit(fmri_data, events)
 
     columns = model.design_matrices_[0].columns
-    model.compute_contrast(f"{columns[0]}-{columns[1]}")
+    exp = f"{columns[0]}-{columns[1]}"
+    try:
+        model.compute_contrast(exp)
+    except Exception:
+        with pytest.raises(
+                ValueError,
+                match='invalid python identifiers'
+        ):
+            model.compute_contrast(exp)
 
 
 def test_glm_sample_mask():

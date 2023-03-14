@@ -26,6 +26,8 @@
 
 .. _Arthur Mensch: https://www.amensch.fr/
 
+.. _Audrey Duran: https://github.com/AudreyDuran
+
 .. _Ben Cipollini: https://github.com/bcipolli
 
 .. _Bertrand Thirion: https://pages.saclay.inria.fr/bertrand.thirion/
@@ -41,6 +43,8 @@
 .. _Chris Markiewicz: https://github.com/effigies
 
 .. _Christian Horea: http://chymera.eu/
+
+.. _Christian Gerloff: https://github.com/ChristianGerloff
 
 .. _Colin Reininger: https://github.com/reiningc
 
@@ -104,6 +108,8 @@
 
 .. _Jean-Rémi King: https://github.com/kingjr
 
+.. _Jelle Roelof Dalenberg: https://github.com/jrdalenberg
+
 .. _Jeremy Lefort-Besnard: https://jlefortbesnard.github.io/
 
 .. _Jerome Dockes: https://jeromedockes.github.io/
@@ -120,7 +126,11 @@
 
 .. _Julia Huntenburg: https://github.com/juhuntenburg
 
+.. _Julio A Peraza: https://github.com/JulioAPeraza
+
 .. _Kamalakar Reddy Daddy: https://github.com/KamalakerDadi
+
+.. _Kevin Sitek: https://github.com/sitek
 
 .. _Koen Helwegen: https://github.com/koenhelwegen
 
@@ -140,6 +150,8 @@
 
 .. _Manon Pietrantoni: https://github.com/ManonP38
 
+.. _Mathias Goncalves: https://github.com/mgxd
+
 .. _Matthias Ekman: https://github.com/mekman
 
 .. _Matthieu Joulot: https://github.com/MatthieuJoulot
@@ -158,9 +170,13 @@
 
 .. _Michael Waskom: https://mwaskom.github.io/
 
+.. _Michelle Wang: https://github.com/michellewang
+
 .. _Moritz Boos: https://github.com/mjboos
 
 .. _Myeong Seop Song: https://github.com/NeuroVR-Song
+
+.. _Natasha Clarke: https://github.com/clarkenj
 
 .. _Neelay Shah: https://github.com/NeelayS
 
@@ -169,6 +185,8 @@
 .. _Oscar Esteban: https://github.com/oesteban
 
 .. _Óscar Nájera: https://github.com/Titan-C
+
+.. _Paul Bogdan: https://github.com/paulcbogdan
 
 .. _Paula Sanz-Leon: https://github.com/pausz
 
@@ -186,7 +204,11 @@
 
 .. _Raphael Meudec: https://github.com/RaphaelMeudec
 
+.. _Rémi Gau: https://github.com/Remi-Gau
+
 .. _Robert Luke: https://github.com/rob-luke
+
+.. _Robert Williamson: https://github.com/RobWilliamson15
 
 .. _Roberto Guidotti: https://github.com/robbisg
 
@@ -203,6 +225,8 @@
 .. _Simon Steinkamp: https://github.com/SRSteinkamp
 
 .. _Sourav Singh: https://github.com/souravsingh
+
+.. _Steven Meisler: https://www.stevenmeisler.com
 
 .. _Sylvain Lan: https://github.com/SylvainLan
 

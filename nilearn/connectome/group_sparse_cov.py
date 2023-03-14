@@ -56,7 +56,7 @@ def compute_alpha_max(emp_covs, n_samples):
         dense matrix.
 
     References
-    ---------
+    ----------
     .. footbibliography::
 
     """
@@ -789,7 +789,7 @@ def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
         return precisions_list
 
 
-class EarlyStopProbe(object):
+class EarlyStopProbe:
     """Callable probe for early stopping in GroupSparseCovarianceCV.
 
     Stop optimizing as soon as the score on the test set starts decreasing.

@@ -19,17 +19,17 @@ New features
 ------------
 
 - The new module :mod:`nilearn.connectome` now has class :class:`nilearn.connectome.ConnectivityMeasure` can be useful for computing functional connectivity matrices.
-   
+
 - The function ``nilearn.connectome.sym_to_vec`` in same module :mod:`nilearn.connectome` is also implemented as a helper function to class :class:`nilearn.connectome.ConnectivityMeasure`.
-   
+
 - The class :class:`decomposition.DictLearning` in :mod:`nilearn.decomposition` is a decomposition method similar to :term:`ICA` that imposes sparsity on components instead of independence between them.
-   
+
 - Integrating back references template from ``sphinx-gallery`` of ``0.0.11`` version release.
-   
+
 - Globbing expressions can now be used in all nilearn functions expecting a list of files.
-   
+
 - The new module :mod:`nilearn.regions` now has class :class:`regions.RegionExtractor` which can be used for post processing brain regions of interest extraction.
-   
+
 - The function :func:`~regions.connected_regions` in :mod:`nilearn.regions` is also implemented as a helper function to :class:`regions.RegionExtractor`.
 
 - The function :func:`~image.threshold_img` in :mod:`nilearn.image` is implemented to use it for thresholding statistical maps.

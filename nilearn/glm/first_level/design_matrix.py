@@ -183,8 +183,8 @@ def _convolve_regressors(events, hrf_model, frame_times, fir_delays=[0],
     ----------
     events : DataFrame instance,
         Events data describing the experimental paradigm
-        see nistats.experimental_paradigm to check the specification
-        for these to be valid paradigm descriptors
+        see nilearn.glm.first_level.experimental_paradigm to check the
+        specification for these to be valid paradigm descriptors
 
     hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
         'glover', 'glover + derivative', 'glover + derivative + dispersion',

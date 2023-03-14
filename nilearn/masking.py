@@ -34,7 +34,7 @@ def _load_mask_img(mask_img, allow_empty=False):
     Parameters
     ----------
     mask_img : Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
+        See :ref:`extracting_data`.
         The mask to check.
 
     allow_empty : :obj:`bool`, optional
@@ -337,6 +337,8 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.85,
         Default=0.85.
     %(connected)s
         Default=True.
+    %(opening)s
+        Default=2.
     exclude_zeros : :obj:`bool`, optional
         Consider zeros as missing values for the computation of the
         threshold. This option is useful if the images have been
@@ -577,66 +579,6 @@ def compute_brain_mask(target_img, threshold=.5, connected=True, opening=2,
     return new_img_like(target_img, mask, affine)
 
 
-@deprecated("Function 'compute_multi_gray_matter_mask' has been renamed to "
-            "'compute_multi_brain_mask' and 'compute_multi_gray_matter_mask' "
-            "will be removed in release 0.10.0")
-@_utils.fill_doc
-def compute_multi_gray_matter_mask(target_imgs, threshold=.5,
-                                   connected=True, opening=2,
-                                   memory=None, verbose=0, n_jobs=1, **kwargs):
-    """Compute a mask corresponding to the gray matter part of the brain for
-    a list of images.
-
-    The gray matter part is calculated through the resampling of MNI152
-    template gray matter mask onto the target image
-
-    Parameters
-    ----------
-    target_imgs : :obj:`list` of Niimg-like object
-        See :ref:`extracting_data`.
-        Images used to compute the mask. 3D and 4D images are accepted.
-
-        .. note::
-            The images in this list must be of same shape and affine.
-            The mask is calculated with the first element of the list
-            for only the shape/affine of the image is used for this
-            masking strategy.
-
-    threshold : :obj:`float`, optional
-        The value under which the :term:`MNI` template is cut off.
-        Default=0.5.
-    %(connected)s
-        Default=True.
-    %(opening)s
-        Default=2.
-    %(memory)s
-    %(verbose0)s
-    %(n_jobs)s
-
-        .. note::
-            Argument not used but kept to fit the API.
-
-    **kwargs : optional arguments
-        arguments such as 'target_affine' are used in the call of other
-        masking strategies, which then would raise an error for this function
-        which does not need such arguments.
-
-    Returns
-    -------
-    mask : :class:`nibabel.nifti1.Nifti1Image`
-        The brain mask (3D image).
-
-    See also
-    --------
-    nilearn.masking.compute_brain_mask
-    """
-    return compute_multi_brain_mask(target_imgs=target_imgs,
-                                    threshold=threshold, connected=connected,
-                                    opening=opening, memory=memory,
-                                    verbose=verbose, n_jobs=n_jobs,
-                                    mask_type='whole-brain', **kwargs)
-
-
 @_utils.fill_doc
 def compute_multi_brain_mask(target_imgs, threshold=.5, connected=True,
                              opening=2, memory=None, verbose=0, n_jobs=1,
@@ -716,7 +658,7 @@ def apply_mask(imgs, mask_img, dtype='f',
     Read the time series from the given Niimg-like object, using the mask.
 
     Parameters
-    -----------
+    ----------
     imgs : :obj:`list` of 4D Niimg-like objects
         See :ref:`extracting_data`.
         Images to be masked. list of lists of 3D images are also accepted.
@@ -741,7 +683,7 @@ def apply_mask(imgs, mask_img, dtype='f',
         Default=True.
 
     Returns
-    --------
+    -------
     session_series : :class:`numpy.ndarray`
         2D array of series with shape (image number, :term:`voxel` number)
 
@@ -817,7 +759,7 @@ def _unmask_3d(X, mask, order="C"):
         Masked data. shape: (features,)
 
     mask : Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
+        See :ref:`extracting_data`.
         Mask. mask.ndim must be equal to 3, and dtype *must* be bool.
     """
     if mask.dtype != bool:

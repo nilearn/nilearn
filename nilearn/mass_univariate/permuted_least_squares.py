@@ -365,7 +365,8 @@ def permuted_ols(
 
     model_intercept : :obj:`bool`, optional
         If True, a constant column is added to the confounding variates
-        unless the tested variate is already the intercept.
+        unless the tested variate is already the intercept or when
+        confounding variates already contain an intercept.
         Default=True.
 
     n_perm : :obj:`int`, optional
@@ -445,7 +446,7 @@ def permuted_ols(
             Additionally, if ``tfce`` is True or ``threshold`` is not None,
             ``output_type`` will automatically be set to 'dict'.
 
-        .. deprecated:: 0.9.2.dev
+        .. deprecated:: 0.9.2
 
             The default value for this parameter will change from 'legacy' to
             'dict' in 0.13, and the parameter will be removed completely in
@@ -464,7 +465,7 @@ def permuted_ols(
 
             This is returned if ``output_type`` == 'legacy'.
 
-        .. deprecated:: 0.9.2.dev
+        .. deprecated:: 0.9.2
 
             The 'legacy' option for ``output_type`` is deprecated.
             The default value will change to 'dict' in 0.13,
@@ -480,7 +481,7 @@ def permuted_ols(
 
             This is returned if ``output_type`` == 'legacy'.
 
-        .. deprecated:: 0.9.2.dev
+        .. deprecated:: 0.9.2
 
             The 'legacy' option for ``output_type`` is deprecated.
             The default value will change to 'dict' in 0.13,
@@ -494,7 +495,7 @@ def permuted_ols(
 
             This is returned if ``output_type`` == 'legacy'.
 
-        .. deprecated:: 0.9.2.dev
+        .. deprecated:: 0.9.2
 
             The 'legacy' option for ``output_type`` is deprecated.
             The default value will change to 'dict' in 0.13,
@@ -687,11 +688,42 @@ def permuted_ols(
 
     n_samples, n_regressors = tested_vars.shape
 
-    # check if explanatory variates is intercept (constant) or not
-    if (n_regressors == 1 and np.unique(tested_vars).size == 1):
+    # check if explanatory variates contain an intercept (constant) or not
+    if n_regressors == np.unique(tested_vars).size == 1:
         intercept_test = True
     else:
         intercept_test = False
+
+    # check if confounding vars contains an intercept
+    if confounding_vars is not None:
+        constants = []
+        # Search for all constant columns
+        for column in range(confounding_vars.shape[1]):
+            if np.unique(confounding_vars[:, column]).size == 1:
+                constants.append(column)
+
+        # check if multiple intercepts are defined across all variates
+        if (intercept_test and len(constants) == 1) or len(constants) > 1:
+            # remove all constant columns
+            confounding_vars = np.delete(confounding_vars, constants, axis=1)
+            # warn user if multiple intercepts are found
+            warnings.warn(
+                category=UserWarning,
+                message=(
+                'Multiple columns across "confounding_vars" and/or '
+                '"target_vars" are constant. Only one will be used '
+                'as intercept.'
+                )
+            )
+            model_intercept = True
+
+            # remove confounding vars variable if it is empty
+            if confounding_vars.size == 0:
+                confounding_vars = None
+
+        # intercept is only defined in confounding vars
+        if not intercept_test and len(constants) == 1:
+            intercept_test = True
 
     # optionally add intercept
     if model_intercept and not intercept_test:
@@ -903,15 +935,13 @@ def permuted_ols(
             )
 
             if two_sided_test:
-                # Label positive and negative clusters separately
-                n_positive_clusters = np.max(labeled_arr3d)
+                # Add negative cluster labels
                 temp_labeled_arr3d, _ = label(
                     scores_original_data_3d < -threshold_t,
                     bin_struct,
                 )
-                temp_labeled_arr3d[
-                    temp_labeled_arr3d > threshold_t
-                ] += n_positive_clusters
+                n_negative_clusters = np.max(temp_labeled_arr3d)
+                labeled_arr3d[labeled_arr3d > 0] += n_negative_clusters
                 labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
                 del temp_labeled_arr3d
 

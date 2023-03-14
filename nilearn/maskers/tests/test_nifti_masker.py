@@ -253,7 +253,7 @@ def test_sessions():
     data[..., 0] = 0
     data[20, 20, 20] = 1
     data_img = nibabel.Nifti1Image(data, np.eye(4))
-    masker = NiftiMasker(runs=np.ones(3, dtype=np.int))
+    masker = NiftiMasker(runs=np.ones(3, dtype=int))
     pytest.raises(ValueError, masker.fit_transform, data_img)
 
 
@@ -405,6 +405,7 @@ def test_filter_and_mask():
 
     masker = NiftiMasker()
     params = get_params(NiftiMasker, masker)
+    params["clean_kwargs"] = {}
 
     # Test return_affine = False
     data = _filter_and_mask(data_img, mask_img, params)

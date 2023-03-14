@@ -130,7 +130,7 @@ def test_plot_stat_map_singleton_ax_dim(shape, direction):
 
 def test_outlier_cut_coords():
     """Test to plot a subset of a large set of cuts found for a small area."""
-    bg_img = load_mni152_template()
+    bg_img = load_mni152_template(resolution=2)
     data = np.zeros((79, 95, 79))
     affine = np.array([[-2., 0., 0., 78.],
                        [0., 2., 0., -112.],

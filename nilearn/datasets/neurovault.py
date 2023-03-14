@@ -66,7 +66,7 @@ def _requests_session():
 
 # Helpers for filtering images and collections.
 
-class _SpecialValue(object):
+class _SpecialValue:
     """Base class for special values used to filter terms.
 
     Derived classes should override ``__eq__`` in order to create
@@ -677,7 +677,7 @@ def _empty_filter(arg):
     return True
 
 
-class ResultFilter(object):
+class ResultFilter:
     """Easily create callable (local) filters for ``fetch_neurovault``.
 
     Constructed from a mapping of key-value pairs (optional) and a
@@ -839,7 +839,7 @@ class ResultFilter(object):
 # Utilities for composing queries and interacting with
 # neurovault and neurosynth
 
-class _TemporaryDirectory(object):
+class _TemporaryDirectory:
     """Context manager that provides a temporary directory
 
     A temporary directory is created on __enter__
@@ -1154,8 +1154,8 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     dictionaries for each image, this function reads it and returns a
     vocabulary list and a term weight matrix.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     word_files : Container
         The paths to the files from which to read word weights (each
         is supposed to contain the Neurosynth response for a
@@ -1168,8 +1168,8 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     Keyword arguments are passed on to
     ``sklearn.feature_extraction.DictVectorizer``.
 
-    Returns:
-    --------
+    Returns
+    -------
     frequencies : numpy.ndarray
         An (n images, vocabulary size) array. Each row corresponds to
         an image, and each column corresponds to a word. The words are
@@ -1776,7 +1776,7 @@ def _scroll_collection(collection, download_params):
     _print_if(
         'On neurovault.org: '
         '{0} image{1} matched query in collection {2}'.format(
-            (n_im_in_collection if n_im_in_collection else 'no'),
+            (n_im_in_collection or 'no'),
             ('s' if n_im_in_collection > 1 else ''), collection['id']),
         _INFO, download_params['verbose'])
 
@@ -2636,12 +2636,12 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
             - 'description', a short description of the Neurovault dataset.
 
     Notes
-    ------
+    -----
     The 'left vs right button press' contrast is used:
     https://neurovault.org/images/10426/
 
     See Also
-    ---------
+    --------
     nilearn.datasets.fetch_neurovault_ids
     nilearn.datasets.fetch_neurovault
     nilearn.datasets.fetch_neurovault_auditory_computation_task
@@ -2677,12 +2677,12 @@ def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
             - 'description', a short description of the Neurovault dataset.
 
     Notes
-    ------
+    -----
     The 'auditory_calculation_vs_baseline' contrast is used:
     https://neurovault.org/images/32980/
 
     See Also
-    ---------
+    --------
     nilearn.datasets.fetch_neurovault_ids
     nilearn.datasets.fetch_neurovault
     nilearn.datasets.fetch_neurovault_motor_task

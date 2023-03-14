@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Functions related to the documentation.
 
 docdict contains the standard documentation entries
@@ -284,7 +283,7 @@ random_state : :obj:`int` or RandomState, optional
 memory_level = """
 memory_level : :obj:`int`, optional.
     Rough estimator of the amount of memory used by caching. Higher value
-    means more memory for caching.
+    means more memory for caching. Zero means no caching.
     Default={}."""
 docdict['memory_level'] = memory_level.format(0)
 docdict['memory_level1'] = memory_level.format(1)
@@ -307,6 +306,34 @@ img : Niimg-like object
 docdict['imgs'] = """
 imgs : :obj:`list` of Niimg-like objects
     See :ref:`extracting_data`.
+"""
+
+# confounds
+docdict['confounds'] = """
+confounds : CSV file or array-like, optional
+    This parameter is passed to :func:`nilearn.signal.clean`.
+    Please see the related documentation for details.
+    shape: list of (number of scans, number of confounds)
+"""
+
+# sample_mask
+docdict['sample_mask'] = """
+sample_mask : Any type compatible with numpy-array indexing, optional
+    shape: (number of scans - number of volumes removed, )
+    Masks the niimgs along time/fourth dimension to perform scrubbing
+    (remove volumes with high motion) and/or non-steady-state volumes.
+    This parameter is passed to :func:`nilearn.signal.clean`.
+"""
+
+# kwargs for Maskers
+docdict['masker_kwargs'] = """
+kwargs : dict
+    Keyword arguments to be passed to functions called within the masker.
+    Kwargs prefixed with ``'clean__'`` will be passed to
+    :func:`~nilearn.signal.clean`.
+    Within :func:`~nilearn.signal.clean`, kwargs prefixed with
+    ``'butterworth__'`` will be passed to the Butterworth filter
+    (i.e., ``clean__butterworth__``).
 """
 
 # cut_coords
@@ -549,10 +576,12 @@ view : {'lateral', 'medial', 'dorsal', 'ventral',\
 # bg_on_data
 docdict['bg_on_data'] = """
 bg_on_data : :obj:`bool`, optional
-    If ``True``, and a ``bg_map`` is specified,
+    If ``True`` and a ``bg_map`` is specified,
     the ``surf_data`` data is multiplied by the background
-    image, so that e.g. sulcal depth is visible beneath
-    the ``surf_data``.
+    image, so that e.g. sulcal depth is jointly visible with ``surf_data``.
+    Otherwise, the background image will only be visible where there
+    is no surface data (either because ``surf_data`` contains ``nan``\s
+    or because is was thresholded).
 
         .. note::
             This non-uniformly changes the surf_data values according

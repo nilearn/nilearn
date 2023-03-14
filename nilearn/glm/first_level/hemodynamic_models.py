@@ -435,16 +435,6 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     if len(np.unique(names)) != len(names):
         raise ValueError(f"Computed regressor names are not unique: {names}")
 
-    # Replace spaces with underscores
-    names = [re.sub(" +", "_", str(name)) for name in names]
-    # Remove any non-word character
-    names = [re.sub("[^a-zA-Z0-9_]+", "", str(name)) for name in names]
-
-    # Check that all names look like proper pandas.DataFrame column names
-    if not all([name.isidentifier() for name in names]):
-        raise ValueError("At least one regressor name can't be used "
-                         f"as a column identifier: {names}")
-
     return names
 
 

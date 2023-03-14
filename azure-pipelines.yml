@@ -14,10 +14,10 @@ jobs:
     vmImage: 'windows-latest'
   strategy:
     matrix:
-      Python37:
-        python.version: '3.7'
       Python38:
         python.version: '3.8'
+      Python39:
+        python.version: '3.9'
     maxParallel: 4
 
   steps:
@@ -53,11 +53,11 @@ jobs:
 
 - job: 'test_installing_on_linux'
   pool:
-    vmImage: 'ubuntu-18.04'
+    vmImage: 'ubuntu-20.04'
   strategy:
     matrix:
-      Python37:
-        python.version: '3.7'
+      Python38:
+        python.version: '3.8'
     maxParallel: 4
 
   steps:
@@ -94,8 +94,8 @@ jobs:
     vmImage: 'macOS-latest'
   strategy:
     matrix:
-      Python37:
-        python.version: '3.7'
+      Python38:
+        python.version: '3.8'
     maxParallel: 4
 
   steps:
@@ -132,8 +132,8 @@ jobs:
     vmImage: 'windows-latest'
   strategy:
     matrix:
-      Python37:
-        python.version: '3.7'
+      Python38:
+        python.version: '3.8'
     maxParallel: 4
 
   steps:
@@ -167,7 +167,7 @@ jobs:
 
 - job: 'test_expected_to_fail_installation_on_linux'
   pool:
-    vmImage: 'ubuntu-18.04'
+    vmImage: 'ubuntu-20.04'
   strategy:
     matrix:
       Python27:

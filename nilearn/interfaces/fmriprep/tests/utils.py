@@ -10,6 +10,8 @@ img_file_patterns = {
         "_space-MNI152NLin2009cAsym_desc-smoothAROMAnonaggr_bold.nii.gz",
     "regular":
         "_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
+    "native":
+        "_desc-preproc_bold.nii.gz",
     "cifti":
         "_space-fsLR_den-91k_bold.dtseries.nii",
     "gifti": (
@@ -45,7 +47,7 @@ def get_testdata_path(non_steady_state=True):
 def create_tmp_filepath(
     base_path,
     image_type="regular",
-    suffix="test",
+    suffix="sub-test01_task-test",
     copy_confounds=False,
     copy_json=False,
     old_derivative_suffix=False

@@ -1,6 +1,6 @@
 """
 Seed-based connectivity on the surface
-=======================================
+======================================
 
 The dataset that is a subset of the enhanced NKI Rockland sample
 (http://fcon_1000.projects.nitrc.org/indi/enhanced/, Nooner et al, 2012)
@@ -28,7 +28,6 @@ See :ref:`plotting` for more details on plotting tools.
 
 References
 ----------
-
 Nooner et al, (2012). The NKI-Rockland Sample: A model for accelerating the
 pace of discovery science in psychiatry. Frontiers in neuroscience 6, 152.
 URL http://dx.doi.org/10.3389/fnins.2012.00152
@@ -71,16 +70,16 @@ fsaverage = datasets.fetch_surf_fsaverage()
 
 # The fsaverage dataset contains file names pointing to
 # the file locations
-print('Fsaverage5 pial surface of left hemisphere is at: %s' %
-      fsaverage['pial_left'])
-print('Fsaverage5 inflated surface of left hemisphere is at: %s' %
-      fsaverage['infl_left'])
-print('Fsaverage5 sulcal depth map of left hemisphere is at: %s' %
-      fsaverage['sulc_left'])
+print('Fsaverage5 pial surface of left hemisphere is at: '
+      f"{fsaverage['pial_left']}")
+print('Fsaverage5 inflated surface of left hemisphere is at: '
+      f"{fsaverage['infl_left']}")
+print('Fsaverage5 sulcal depth map of left hemisphere is at: '
+      f"{fsaverage['sulc_left']}")
 
 ###############################################################################
 # Extracting the seed time series
-# --------------------------------
+# -------------------------------
 
 # Load resting state time series from nilearn
 from nilearn import surface
@@ -91,6 +90,7 @@ timeseries = surface.load_surf_data(nki_dataset['func_left'][0])
 pcc_region = b'G_cingul-Post-dorsal'
 
 import numpy as np
+
 pcc_labels = np.where(parcellation == labels.index(pcc_region))[0]
 
 # Extract time series from seed region

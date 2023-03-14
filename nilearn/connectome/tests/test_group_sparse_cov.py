@@ -26,7 +26,7 @@ def test_group_sparse_covariance():
 
     np.testing.assert_almost_equal(omega, omega2, decimal=4)
 
-    class Probe(object):
+    class Probe:
 
         def __init__(self):
             self.objective = []

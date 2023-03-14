@@ -123,18 +123,23 @@ def _filter_and_extract(
         print("[%s] Cleaning extracted signals" % class_name)
     runs = parameters.get('runs', None)
     region_signals = cache(
-        signal.clean, memory=memory, func_memory_level=2,
-        memory_level=memory_level)(
-            region_signals,
-            detrend=parameters['detrend'],
-            standardize=parameters['standardize'],
-            standardize_confounds=parameters['standardize_confounds'],
-            t_r=parameters['t_r'],
-            low_pass=parameters['low_pass'],
-            high_pass=parameters['high_pass'],
-            confounds=confounds,
-            sample_mask=sample_mask,
-            runs=runs)
+        signal.clean,
+        memory=memory,
+        func_memory_level=2,
+        memory_level=memory_level,
+    )(
+        region_signals,
+        detrend=parameters['detrend'],
+        standardize=parameters['standardize'],
+        standardize_confounds=parameters['standardize_confounds'],
+        t_r=parameters['t_r'],
+        low_pass=parameters['low_pass'],
+        high_pass=parameters['high_pass'],
+        confounds=confounds,
+        sample_mask=sample_mask,
+        runs=runs,
+        **parameters['clean_kwargs'],
+    )
 
     return region_signals, aux
 
@@ -307,6 +312,10 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     def inverse_transform(self, X):
         """ Transform the 2D data matrix back to an image in brain space.
+
+        This step only performs spatial unmasking,
+        without inverting any additional processing performed by ``transform``,
+        such as temporal filtering or smoothing.
 
         Parameters
         ----------

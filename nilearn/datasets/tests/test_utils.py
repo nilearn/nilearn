@@ -33,6 +33,7 @@ from nilearn.datasets.utils import (
     make_fresh_openneuro_dataset_urls_index
 )
 from nilearn.datasets import utils
+from nilearn.image import load_img
 
 
 currdir = os.path.dirname(os.path.abspath(__file__))
@@ -316,6 +317,20 @@ def test_uncompress():
             shutil.rmtree(dtemp)
 
 
+def test_safe_extract(tmp_path):
+    # Test vulnerability patch by mimicking path traversal
+    ztemp = os.path.join(tmp_path, 'test.tar')
+    in_archive_file = tmp_path / "something.txt"
+    in_archive_file.write_text("hello")
+    with contextlib.closing(tarfile.open(ztemp, 'w')) as tar:
+        arcname = os.path.normpath('../test.tar')
+        tar.add(in_archive_file, arcname=arcname)
+    with pytest.raises(
+            Exception, match="Attempted Path Traversal in Tar File"
+    ):
+        datasets.utils._uncompress_file(ztemp, verbose=0)
+
+
 @pytest.mark.parametrize("should_cast_path_to_string", [False, True])
 def test_fetch_file_overwrite(should_cast_path_to_string,
                               tmp_path, request_mocker):
@@ -451,3 +466,9 @@ def test_naive_ftp_adapter():
     with pytest.raises(requests.RequestException, match="timeout"):
         resp = sender.send(
             requests.Request("GET", "ftp://example.com").prepare())
+
+
+def test_load_sample_motor_activation_image():
+    path_img = utils.load_sample_motor_activation_image()
+    assert os.path.exists(path_img)
+    assert load_img(path_img)

@@ -27,9 +27,9 @@ Fixes
 -----
 
 - Dealing with ``NaNs`` in function :func:`~plotting.plot_connectome`.
-  
+
 - Fix extreme values in colorbar were sometimes brok.
-  
+
 - Fix confounds removal with single confounds.
 
 - Fix frequency filtering.
