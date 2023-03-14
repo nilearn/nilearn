@@ -885,7 +885,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
             raise ValueError(
                 "The given input y must have at least 2 targets"
                 " to do regression analysis. You provided only"
-                " one target {}".format(np.unique(y))
+                f" one target {np.unique(y)}"
             )
 
         # misc
