@@ -68,7 +68,7 @@ def _check_parameters_transform(imgs, confounds):
     if not isinstance(imgs, (list, tuple)) or isinstance(imgs, str):
         imgs = [imgs]
         single_subject = True
-    elif isinstance(imgs, (list, tuple)) and len(imgs) == 1:
+    elif len(imgs) == 1:
         single_subject = True
     else:
         single_subject = False
@@ -566,7 +566,7 @@ class Parcellations(_MultiPCA):
         ):
             signals = [signals]
             single_subject = True
-        elif isinstance(signals, (list, tuple)) and len(signals) == 1:
+        elif len(signals) == 1:
             single_subject = True
         else:
             single_subject = False

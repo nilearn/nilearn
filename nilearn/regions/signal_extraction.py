@@ -365,7 +365,7 @@ def signals_to_img_labels(
         for j in range(labels_data.shape[1]):
             for i in range(labels_data.shape[0]):
                 label = labels_data[i, j, k]
-                num = labels_dict.get(label, None)
+                num = labels_dict.get(label)
                 if num is not None:
                     if signals.ndim == 2:
                         data[i, j, k, :] = signals[:, num]
