@@ -825,7 +825,7 @@ def first_level_from_bids(dataset_path,
                           derivatives_folder='derivatives'):
     """Create FirstLevelModel objects and fit arguments from a BIDS dataset.
 
-    It t_r is not specified this function will attempt to load it from a
+    If t_r is not specified this function will attempt to load it from a
     bold.json file alongside slice_time_ref.
     Otherwise t_r and slice_time_ref are taken as given.
 
@@ -882,7 +882,7 @@ def first_level_from_bids(dataset_path,
         Items for the FirstLevelModel fit function of their respective model.
 
     """
-    sub_labels = sub_labels if sub_labels else []
+    sub_labels = sub_labels or []
     img_filters = img_filters or []
     
     derivatives_path = os.path.join(dataset_path, derivatives_folder)
@@ -1092,7 +1092,7 @@ def _get_processed_imgs(
     Parameters
     ----------
     derivatives_path : :obj:`str`
-        Directory of the derivatves BIDS dataset.
+        Directory of the derivatives BIDS dataset.
 
     sub_label : :obj:`str`
         Subject label as specified in the file names like sub-<sub_label>_.
@@ -1153,7 +1153,7 @@ def _get_events_files(
     Parameters
     ----------
     dataset_path : :obj:`str`
-        Directory of the derivatves BIDS dataset.
+        Directory of the derivatives BIDS dataset.
 
     sub_label : :obj:`str`
         Subject label as specified in the file names like sub-<sub_label>_.
@@ -1221,7 +1221,7 @@ def _get_confounds(
     Parameters
     ----------
     derivatives_path : :obj:`str`
-        Directory of the derivatves BIDS dataset.
+        Directory of the derivatives BIDS dataset.
 
     sub_label : :obj:`str`
         Subject label as specified in the file names like sub-<sub_label>_.
@@ -1450,7 +1450,7 @@ def _check_bids_image_list(
 
     Parameters
     ----------
-    imgs : list[str] or None
+    imgs : :obj:`list` of :obj:`str` or None
         List of image fullpath filenames.
 
     sub_label : :obj:`str`
@@ -1546,7 +1546,7 @@ def _check_bids_events_list(
     task_label : :obj:`str`
         Task label as specified in the file names like _task-<task_label>_.
 
-    dataset_path : str
+    dataset_path : :obj:`str`
         Fullpath to the BIDS dataset.
 
     events_filters : :obj:`list` of :obj:`tuple` (str, str)
