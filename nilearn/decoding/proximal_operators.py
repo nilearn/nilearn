@@ -193,10 +193,9 @@ def _prox_tvl1(
         negated_val_min = -val_min
     if val_max is not None:
         negated_val_max = -val_max
-    if True or (val_min is not None or val_max is not None):
-        # With bound constraints, the stopping criterion is on the
-        # evolution of the output
-        negated_output_old = negated_output.copy()
+    # With bound constraints, the stopping criterion is on the
+    # evolution of the output
+    negated_output_old = negated_output.copy()
     grad_tmp = None
     old_dgap = np.inf
     dgap = np.inf

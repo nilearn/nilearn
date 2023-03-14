@@ -65,8 +65,6 @@ X = rng.rand(100, 10)
 # Create different targets
 y_regression = rng.rand(100)
 y_classification = np.hstack([[-1] * 50, [1] * 50])
-y_classification_str = np.hstack([["face"] * 50, ["house"] * 50])
-y_multiclass = np.hstack([[0] * 35, [1] * 30, [2] * 35])
 
 
 def test_check_param_grid():
