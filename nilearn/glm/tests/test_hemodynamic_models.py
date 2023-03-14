@@ -322,7 +322,8 @@ def test_calculate_tr():
     true_tr = 0.75
     n_vols = 4
 
-    # create times for four volumes, shifted forward by half a TR (as with fMRIPrep slice timing corrected data)
+    # create times for four volumes, shifted forward by half a TR
+    # (as with fMRIPrep slice timing corrected data)
     frame_times = np.linspace(
         true_tr / 2, (n_vols * true_tr) + (true_tr / 2), n_vols + 1)
 
