@@ -1,5 +1,11 @@
 # GitHub Actions Specification
 
+## Automatically assign issue
+
+### assign.yml
+
+Allows anyone to self-assign an issue automatically by commenting the word `take` on any issue.
+
 ## Auto comment
 
 ### auto-comment.yml
