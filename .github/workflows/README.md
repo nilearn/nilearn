@@ -81,13 +81,13 @@ Checks for spelling errors. Configured in [setup.cfg](/setup.cfg). More informat
 
 ### flake8.yml
 
-Configured in [setup.cfg](/setup.cfg)
+Uses flake8 tool to verify code is PEP8 compliant. Configured in [setup.cfg](/setup.cfg)
 
 ## Sort imports automatically
 
 ### isort.yml
 
-Configured in [pyproject.toml](/pyproject.toml)
+Sorts Python imports alphabetically and by section. Configured in [pyproject.toml](/pyproject.toml)
 
 ## Running unit tests
 
