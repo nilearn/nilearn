@@ -220,6 +220,33 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
         results = {0.0: ols_result}
 
     return labels, results
+  
+def check_trial_type(df):
+  
+    """ Raises warning if the dataframe corresponding to 
+      to events.tsv doesn't contain column named "trial_type".
+      
+    parameters
+    ----------
+    df : pandas dataframe corresponding to a events.tsv file
+
+    """
+    if len(df.columns) != 2 and 'trial_type' not in df.columns:
+        warn(
+            'No column named "trial_type" found. All rows will be treated'
+            'as if they are instances of same experimental condition.'
+            'If there is a column in the dataframe corresponding to trial information,'
+            'consider renaming it to "trial_type".'
+
+    return
+  
+  
+  
+  
+  
+  
+  
+  
 
 
 @fill_doc
@@ -1062,6 +1089,9 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                                  (len(events), len(imgs)))
             events = [pd.read_csv(event, sep='\t', index_col=None)
                       for event in events]
+            for event in events:
+                check_trial_type(event)
+          
             models_events.append(events)
         else:
             raise ValueError('No events.tsv files found')
