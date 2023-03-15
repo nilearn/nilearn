@@ -10,7 +10,7 @@ Automatically comments on a newly open pull request to provide some guidelines, 
 
 ### black.yml
 
-Runs black code formatter on the codebase both in pull requests and on main. Configurations can be found in [pyproject.toml](/pyproject.toml). 
+Runs black code formatter on the codebase both in pull requests and on main. Configurations can be found in [pyproject.toml](/pyproject.toml).
 
 ## Building the development documentation
 
@@ -64,12 +64,6 @@ Runs only if the workflow in `build-docs.yml` completes successfully. Triggers t
 Artifacts hosting and deployment of development docs use CircleCI. See [.circleci/README.md](/.circleci/README.md) for details.
 On a pull request, only the "host" job is run. Then the artifacts can be accessed from the `host_and_deploy_doc` workflow seen under the checks list. Click on "Details" and then on the "host_docs" link on the page that opens. From there you can click on the artifacts tab to see all the html files. If you click on any of them you can then normally navigate the pages from there.
 With a merge on main, both "host" and "deploy" jobs are run.
-
-## Quick link to CircleCI artifacts (BROKEN)
-
-### circle_artifacts.yml
-
-Provides a direct link to quickly access the CircleCI artifacts without having to navigate from the `host_and_deploy_doc` workflow as described above.
 
 ## Check spelling errors
 
