@@ -236,7 +236,7 @@ def check_trial_type(df):
             'No column named "trial_type" found. All rows will be treated'
             'as if they are instances of same experimental condition.'
             'If there is a column in the dataframe corresponding to trial information,'
-            'consider renaming it to "trial_type".'
+            'consider renaming it to "trial_type".')
 
     return
   
