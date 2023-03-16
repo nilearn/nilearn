@@ -1091,7 +1091,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                                  'files. Same number of event files as '
                                  'the number of runs is expected' %
                                  (len(events), len(imgs)))
-            check_trial_type(events)
+            _check_trial_type(events)
             events = [pd.read_csv(event, sep='\t', index_col=None)
                       for event in events]
             
