@@ -242,8 +242,8 @@ def check_trial_type(events):
     
     if len(file_names) > 0:
        warn(
-         'No column named "trial_type" found in ' + file_names +
-        '. All rows in those files will be treated'
+        f'No column named "trial_type" found in {file_names}.'
+        ' All rows in those files will be treated'
         ' as if they are instances of same experimental condition.'
         ' If there is a column in the dataframe corresponding to trial information,'
         ' consider renaming it to "trial_type".')
