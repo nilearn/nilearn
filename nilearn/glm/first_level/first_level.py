@@ -221,7 +221,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
 
     return labels, results
   
-def check_trial_type(events):
+def _check_trial_type(events):
   
     """ Raises warning if the events.tsv file
     doesn't contain column named "trial_type".
