@@ -221,6 +221,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
 
     return labels, results
   
+  
 def _check_trial_type(events):
   
     """ Raises warning if the events.tsv file
