@@ -231,7 +231,7 @@ def check_trial_type(df):
     df : pandas dataframe corresponding to a events.tsv file
 
     """
-    if len(df.columns) != 2 and 'trial_type' not in df.columns:
+    if len(df.columns) > 2 and 'trial_type' not in df.columns:
         warn(
             'No column named "trial_type" found. All rows will be treated'
             ' as if they are instances of same experimental condition.'
