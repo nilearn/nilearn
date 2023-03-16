@@ -241,12 +241,6 @@ def check_trial_type(df):
     return
   
   
-  
-  
-  
-  
-  
-  
 
 
 @fill_doc
