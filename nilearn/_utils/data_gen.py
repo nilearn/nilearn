@@ -929,6 +929,18 @@ def create_fake_bids_dataset(
     for task_ in tasks:
         validate_bids_label(task_)
 
+    if (not isinstance(n_runs, list) 
+        or not all(isinstance(x, int) for x in n_runs)):
+        raise TypeError(
+            "n_runs must be a list of integers."
+        )
+
+    if len(tasks) != len(n_runs):
+        raise ValueError(
+            "The number of tasks and number of runs must be the same."
+            f"Got {len(tasks)} tasks and {len(n_runs)} runs."
+        )
+
     if entities is None:
         entities = {}
     _validate_entities_and_labels(entities)
