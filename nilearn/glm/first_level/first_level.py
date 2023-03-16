@@ -236,7 +236,7 @@ def _check_trial_type(events):
     for event in events:
         df = pd.read_csv(event, sep='\t', index_col=None)
         if len(df.columns) > 2 and 'trial_type' not in df.columns:
-           file_names = file_names + event.split('/')[-1] + ', '
+           file_names += f"{event.split('/')[-1]}, "
             
     file_names =  file_names[0:-2]
     
