@@ -619,7 +619,7 @@ def non_parametric_inference(
 
     Parameters
     ----------
-    %(second_level_contrast)s
+    %(second_level_input)s
 
     confounds : :obj:`pandas.DataFrame` or None, optional
         Must contain a subject_label column. All other columns are
@@ -637,12 +637,7 @@ def non_parametric_inference(
         Ensure that the order of maps given by a ``second_level_input``
         list of Niimgs matches the order of the rows in the design matrix.
 
-    second_level_contrast : :obj:`str` or array of shape (n_col), optional
-        Where ``n_col`` is the number of columns of the design matrix.
-        The default (None) is accepted if the design matrix has a single
-        column, in which case the only possible contrast array((1)) is
-        applied; when the design matrix has multiple columns, an error is
-        raised.
+    %(second_level_contrast)s
 
     first_level_contrast : :obj:`str`, optional
         In case a pandas DataFrame was provided as second_level_input this
