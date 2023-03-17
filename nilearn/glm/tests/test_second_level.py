@@ -65,9 +65,7 @@ def test_non_parametric_inference_with_flm_objects():
             second_level_input=second_level_input,
             design_matrix=design_matrix,
             first_level_contrast="x",
-            n_perm=100,
-            flm_object=True
-        )      
+            n_perm=100)      
 
 
 def test_process_second_level_input_as_dataframe(input_df):

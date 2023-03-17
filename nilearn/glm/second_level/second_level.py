@@ -608,10 +608,9 @@ def non_parametric_inference(
     n_jobs=1,
     verbose=0,
     threshold=None,
-    tfce=False,
-    flm_object=False
+    tfce=False
 ):
-    """Generate p-values corresponding to the contrasts provided
+    """Generate p-values corresponding to the contrasts provided \
     based on permutation testing.
 
     This function is a light wrapper around
@@ -620,19 +619,7 @@ def non_parametric_inference(
 
     Parameters
     ----------
-    second_level_input : :obj:`pandas.DataFrame` or :obj:`list` of Niimg-like \
-            objects
-        If a pandas DataFrame, then they have to contain subject_label,
-        map_name and effects_map_path. It can contain multiple maps that
-        would be selected during contrast estimation with the argument
-        first_level_contrast of the compute_contrast function. The
-        DataFrame will be sorted based on the subject_label column to avoid
-        order inconsistencies when extracting the maps. So the rows of the
-        automatically computed design matrix, if not provided, will
-        correspond to the sorted subject_label column.
-
-        If list of Niimg-like objects then this is taken literally as Y
-        for the model fit and design_matrix must be provided.
+    %(second_level_contrast)s
 
     confounds : :obj:`pandas.DataFrame` or None, optional
         Must contain a subject_label column. All other columns are
@@ -671,7 +658,9 @@ def non_parametric_inference(
         automatically by a :class:`~nilearn.maskers.MultiNiftiMasker` with
         default parameters. Automatic mask computation assumes first level
         imgs have already been masked.
+
     %(smoothing_fwhm)s
+
     model_intercept : :obj:`bool`, optional
         If ``True``, a constant column is added to the confounding variates
         unless the tested variate is already the intercept.
@@ -691,10 +680,13 @@ def non_parametric_inference(
           The null hypothesis is that the effect is zero or negative.
 
         Default=False.
+
     %(random_state)s
         Use this parameter to have the same permutations in each
         computing units.
+
     %(n_jobs)s
+
     %(verbose0)s
 
     threshold : None or :obj:`float`, optional
