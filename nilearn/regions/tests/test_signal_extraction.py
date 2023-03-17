@@ -142,6 +142,15 @@ def _make_label_data(shape):
     return labels_data
 
 
+def _all_voxel_of_each_region_have_same_values(
+    data, labels_data, n_regions, signals
+):
+    for n in range(1, n_regions + 1):
+        sigs = data[labels_data == n, :]
+        np.testing.assert_almost_equal(sigs[0, :], signals[:, n - 1])
+        assert abs(sigs - sigs[0, :]).max() < EPS
+
+
 def test_signals_extraction_with_labels_without_mask():
     """Test conversion between signals and images \
     using regions defined by labels."""
@@ -166,11 +175,9 @@ def test_signals_extraction_with_labels_without_mask():
     # There must be non-zero data (safety net)
     assert abs(data).max() > 1e-9
 
-    # Check that signals in each region are identical in each voxel
-    for n in range(1, n_regions + 1):
-        sigs = data[labels_data == n, :]
-        np.testing.assert_almost_equal(sigs[0, :], signals[:, n - 1])
-        assert abs(sigs - sigs[0, :]).max() < EPS
+    _all_voxel_of_each_region_have_same_values(
+        data, labels_data, n_regions, signals
+    )
 
     # and back
     signals_r, labels_r = signal_extraction.img_to_signals_labels(
@@ -237,10 +244,10 @@ def test_signals_extraction_with_labels_with_mask():
     masked_labels_data = labels_data.copy()
     masked_labels_data[np.logical_not(get_data(mask_img))] = 0
     # Check that signals in each region are identical in each voxel
-    for n in range(1, n_regions + 1):
-        sigs = data[masked_labels_data == n, :]
-        np.testing.assert_almost_equal(sigs[0, :], signals[:, n - 1])
-        assert abs(sigs - sigs[0, :]).max() < EPS
+
+    _all_voxel_of_each_region_have_same_values(
+        data, masked_labels_data, n_regions, signals
+    )
 
     # and back
     signals_r, labels_r = signal_extraction.img_to_signals_labels(
@@ -490,7 +497,6 @@ def test_signal_extraction_with_maps_and_labels():
     labels_signals, labels_labels = signal_extraction.img_to_signals_labels(
         fmri_img, labels_img
     )
-
     np.testing.assert_almost_equal(maps_signals, labels_signals)
 
     # Same thing with a mask, containing only 3 regions.
