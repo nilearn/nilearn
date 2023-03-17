@@ -244,7 +244,7 @@ def _prox_tvl1(
                 )
                 if verbose:
                     print(
-                        "\tProxTVl1: Iteration {i: 2}, dual gap: {dgap: 6.3e}"
+                        f"\tProxTVl1: Iteration {i: 2}, dual gap: {dgap: 6.3e}"
                     )
                 if dgap < dgap_tol:
                     break
