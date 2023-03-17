@@ -1,29 +1,30 @@
+"""Hierarchical k-means clustering."""
+
+import warnings
+
 import numpy as np
+from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 from sklearn.cluster import MiniBatchKMeans
-from sklearn.base import TransformerMixin, ClusterMixin
-from sklearn.base import BaseEstimator
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
-import warnings
 
 
 def _remove_empty_labels(labels):
-    '''Removes empty values label values from labels list.
-    Returns labels mapped to np.arange(n_unique),
-    where n_unique is the number of unique values in labels'''
+    """Remove empty values label values from labels list.
 
+    Returns labels mapped to np.arange(n_unique),
+    where n_unique is the number of unique values in labels
+    """
     vals = np.unique(labels)
-    inverse_vals = - np.ones(labels.max() + 1, dtype=int)
+    inverse_vals = -np.ones(labels.max() + 1, dtype=int)
     inverse_vals[vals] = np.arange(len(vals))
     return inverse_vals[labels]
 
 
 def _adjust_small_clusters(array, n_clusters):
-    '''Takes a ndarray of floats summing to n_clusters and try to round it while
-    enforcing rounded array still sum to n_clusters and every element is at
-    least 1.
-    '''
-
+    """Take a ndarray of floats summing to n_clusters \
+    and try to round it while enforcing rounded array still sum \
+    to n_clusters and every element is at least 1."""
     array_round = np.rint(array).astype(int)
     array_round = np.maximum(array_round, 1)
 
@@ -44,11 +45,20 @@ def _adjust_small_clusters(array, n_clusters):
     return array_round
 
 
-def hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
-                         n_init=10, max_no_improvement=10, verbose=0,
-                         random_state=0):
-    """ Use a recursive k-means to cluster X. First clustering in sqrt(n_clusters)
-    parcels, and Kmeans a second time on each parcel. s
+def hierarchical_k_means(
+    X,
+    n_clusters,
+    init="k-means++",
+    batch_size=1000,
+    n_init=10,
+    max_no_improvement=10,
+    verbose=0,
+    random_state=0,
+):
+    """Use a recursive k-means to cluster X.
+
+    First clustering in sqrt(n_clusters) parcels,
+    and Kmeans a second time on each parcel.
 
     Parameters
     ----------
@@ -91,26 +101,38 @@ def hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
     labels : list of ints (len n_features)
         Parcellation of features in clusters
     """
-
     n_big_clusters = int(np.sqrt(n_clusters))
-    mbk = MiniBatchKMeans(init=init, n_clusters=n_big_clusters,
-                          batch_size=batch_size, n_init=n_init,
-                          max_no_improvement=max_no_improvement,
-                          verbose=verbose, random_state=random_state).fit(X)
+    mbk = MiniBatchKMeans(
+        init=init,
+        n_clusters=n_big_clusters,
+        batch_size=batch_size,
+        n_init=n_init,
+        max_no_improvement=max_no_improvement,
+        verbose=verbose,
+        random_state=random_state,
+    ).fit(X)
     coarse_labels = mbk.labels_
     fine_labels = np.zeros_like(coarse_labels)
     q = 0
     counts = np.bincount(coarse_labels)
-    exact_clusters = np.asarray([n_clusters * counts[i] * 1.
-                                 / X.shape[0] for i in range(n_big_clusters)])
+    exact_clusters = np.asarray(
+        [
+            n_clusters * counts[i] * 1.0 / X.shape[0]
+            for i in range(n_big_clusters)
+        ]
+    )
 
     adjusted_clusters = _adjust_small_clusters(exact_clusters, n_clusters)
     for i, n_small_clusters in enumerate(adjusted_clusters):
-        mbk = MiniBatchKMeans(init=init, n_clusters=n_small_clusters,
-                              batch_size=batch_size, random_state=random_state,
-                              max_no_improvement=max_no_improvement,
-                              verbose=verbose,
-                              n_init=n_init,).fit(X[coarse_labels == i])
+        mbk = MiniBatchKMeans(
+            init=init,
+            n_clusters=n_small_clusters,
+            batch_size=batch_size,
+            random_state=random_state,
+            max_no_improvement=max_no_improvement,
+            verbose=verbose,
+            n_init=n_init,
+        ).fit(X[coarse_labels == i])
         fine_labels[coarse_labels == i] = q + mbk.labels_
         q += n_small_clusters
 
@@ -118,7 +140,8 @@ def hierarchical_k_means(X, n_clusters, init="k-means++", batch_size=1000,
 
 
 class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
-    """Hierarchical KMeans:
+    """Hierarchical KMeans.
+
     First clusterize the samples into big clusters. Then clusterize the samples
     inside these big clusters into smaller ones.
 
@@ -177,9 +200,17 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
 
     """
 
-    def __init__(self, n_clusters, init="k-means++", batch_size=1000,
-                 n_init=10, max_no_improvement=10, verbose=0, random_state=0,
-                 scaling=False):
+    def __init__(
+        self,
+        n_clusters,
+        init="k-means++",
+        batch_size=1000,
+        n_init=10,
+        max_no_improvement=10,
+        verbose=0,
+        random_state=0,
+        scaling=False,
+    ):
         self.n_clusters = n_clusters
         self.init = init
         self.batch_size = batch_size
@@ -202,24 +233,33 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         -------
         self
         """
-
-        X = check_array(X, ensure_min_features=2, ensure_min_samples=2,
-                        estimator=self)
+        X = check_array(
+            X, ensure_min_features=2, ensure_min_samples=2, estimator=self
+        )
         n_features = X.shape[1]
 
         if self.n_clusters <= 0:
-            raise ValueError("n_clusters should be an integer greater than 0."
-                             " %s was provided." % str(self.n_clusters))
+            raise ValueError(
+                "n_clusters should be an integer greater than 0."
+                f" {self.n_clusters} was provided."
+            )
 
         if self.n_clusters > n_features:
             self.n_clusters = n_features
-            warnings.warn("n_clusters should be at most the number of "
-                          "features. Taking n_clusters = %s instead."
-                          % str(n_features))
-        self.labels_ = hierarchical_k_means(X, self.n_clusters, self.init,
-                                            self.batch_size, self.n_init,
-                                            self.max_no_improvement,
-                                            self.verbose, self.random_state)
+            warnings.warn(
+                "n_clusters should be at most the number of "
+                f"features. Taking n_clusters = {n_features} instead."
+            )
+        self.labels_ = hierarchical_k_means(
+            X,
+            self.n_clusters,
+            self.init,
+            self.batch_size,
+            self.n_init,
+            self.max_no_improvement,
+            self.verbose,
+            self.random_state,
+        )
         sizes = np.bincount(self.labels_)
 
         self.sizes_ = sizes
@@ -239,12 +279,12 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         X_red: ndarray, shape = [n_clusters, n_samples]
             Data reduced with agglomerated signal for each cluster
         """
-
         check_is_fitted(self, "labels_")
         unique_labels = np.arange(self.n_clusters)
 
         mean_cluster = np.empty(
-            (len(unique_labels), X.shape[1]), dtype=X.dtype)
+            (len(unique_labels), X.shape[1]), dtype=X.dtype
+        )
         for label in unique_labels:
             mean_cluster[label] = np.mean(X[self.labels_ == label], axis=0)
 
@@ -256,7 +296,7 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         return X_red
 
     def inverse_transform(self, X_red):
-        """Send the reduced 2D data matrix back to the original feature
+        """Send the reduced 2D data matrix back to the original feature \
         space (voxels).
 
         Parameters
@@ -269,7 +309,6 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         X_inv: ndarray, shape = [n_features, n_samples]
             Data reduced expanded to the original feature space
         """
-
         check_is_fitted(self, "labels_")
         inverse = self.labels_
         if self.scaling:
