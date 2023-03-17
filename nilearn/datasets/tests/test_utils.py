@@ -11,17 +11,9 @@ import shutil
 import tarfile
 import zipfile
 import urllib
-import json
 from unittest.mock import MagicMock
 from tempfile import mkdtemp, mkstemp
 
-try:
-    import boto3  # noqa: F401
-
-except ImportError:
-    BOTO_INSTALLED = False
-else:
-    BOTO_INSTALLED = True
 
 import numpy as np
 import pytest
