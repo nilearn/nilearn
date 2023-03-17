@@ -38,6 +38,38 @@ def input_df():
                          'subject_label': ["foo", "bar", "baz"]})
 
 
+def test_non_parametric_inference_with_flm_objects():
+    """see https://github.com/nilearn/nilearn/issues/3579"""
+
+    with InTemporaryDirectory():        
+        shapes, rk = [(7, 8, 9, 15)], 3
+        mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+            shapes, rk
+        )
+
+        masker = NiftiMasker(mask)
+        masker.fit()
+        single_session_model = FirstLevelModel(mask_img=masker).fit(
+            fmri_data[0], design_matrices=design_matrices[0]
+        )
+        single_session_model.compute_contrast("x")
+
+        second_level_input = [single_session_model, single_session_model]
+
+        design_matrix = pd.DataFrame(
+            [1] * len(second_level_input),
+            columns=["intercept"],
+        )
+
+        non_parametric_inference(
+            second_level_input=second_level_input,
+            design_matrix=design_matrix,
+            first_level_contrast="x",
+            n_perm=100,
+            flm_object=True
+        )      
+
+
 def test_process_second_level_input_as_dataframe(input_df):
     """Unit tests for function _process_second_level_input_as_dataframe()."""
     from nilearn.glm.second_level.second_level import _process_second_level_input_as_dataframe  # noqa

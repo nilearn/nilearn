@@ -606,6 +606,7 @@ def non_parametric_inference(
     verbose=0,
     threshold=None,
     tfce=False,
+    flm_object=False
 ):
     """Generate p-values corresponding to the contrasts provided
     based on permutation testing.
