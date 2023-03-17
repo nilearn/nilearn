@@ -510,13 +510,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         self.n_outputs_ = 1 if y.ndim == 1 else y.shape[1]
 
-        # Setup scorer
-        if self.scoring is not None:
-            self.scorer_ = check_scoring(self.estimator, self.scoring)
-        elif self.is_classification:
-            self.scorer_ = get_scorer("accuracy")
-        else:
-            self.scorer_ = get_scorer("r2")
+        self._set_scorer()
 
         # Setup cross-validation object. Default is StratifiedKFold when groups
         # is None. If groups is specified but self.cv is not set to custom CV
@@ -817,6 +811,14 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         self.cv_scores_ = cv_scores
 
         return coefs, intercepts
+
+    def _set_scorer(self):
+        if self.scoring is not None:
+            self.scorer_ = check_scoring(self.estimator, self.scoring)
+        elif self.is_classification:
+            self.scorer_ = get_scorer("accuracy")
+        else:
+            self.scorer_ = get_scorer("r2")
 
     def _output_image(self, classes, coefs, std_coef):
         coef_img = {}

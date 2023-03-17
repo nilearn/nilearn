@@ -214,7 +214,7 @@ def _make_binary_classification_test_data(n_samples):
 
 
 def test_decoder_binary_classification_with_masker_object():
-    X, y, mask = _make_binary_classification_test_data(n_samples=200)
+    X, y, _ = _make_binary_classification_test_data(n_samples=200)
 
     model = Decoder(mask=NiftiMasker())
     model.fit(X, y)
