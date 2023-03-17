@@ -90,41 +90,46 @@ def test_invalids_extract_types_in_connected_regions():
 
 
 def test_connected_regions():
+    """Regions extracted should be equal or more than already present."""
     rng = np.random.RandomState(42)
 
     # 4D maps
     n_regions = 4
-    maps, mask_img = generate_maps((30, 30, 30), n_regions=n_regions)
+    maps, _ = generate_maps((30, 30, 30), n_regions=n_regions)
+
     # 3D maps
     map_img = np.zeros((30, 30, 30)) + 0.1 * rng.standard_normal(
         size=(30, 30, 30)
     )
     map_img = nibabel.Nifti1Image(map_img, affine=np.eye(4))
 
-    # smoke test for function connected_regions and also to check
-    # if the regions extracted should be equal or more than already present.
-    # 4D image case
     for extract_type in ["connected_components", "local_regions"]:
+        # 4D maps
         connected_extraction_img, index = connected_regions(
             maps, min_region_size=10, extract_type=extract_type
         )
         assert connected_extraction_img.shape[-1] >= n_regions
         assert index, np.ndarray
+
         # For 3D images regions extracted should be more than equal to one
         connected_extraction_3d_img, _ = connected_regions(
             map_img, min_region_size=10, extract_type=extract_type
         )
         assert connected_extraction_3d_img.shape[-1] >= 1
 
+
+def test_connected_regions_different_results_with_different_mask_images():
+    # 4D maps
+    n_regions = 4
+    maps, mask_img = generate_maps((30, 30, 30), n_regions=n_regions)
+
     # Test input mask_img
     mask = get_data(mask_img)
     mask[1, 1, 1] = 0
-    extraction_with_mask_img, index = connected_regions(
-        maps, mask_img=mask_img
-    )
+    extraction_with_mask_img, _ = connected_regions(maps, mask_img=mask_img)
     assert extraction_with_mask_img.shape[-1] >= 1
 
-    extraction_without_mask_img, index = connected_regions(maps)
+    extraction_without_mask_img, _ = connected_regions(maps)
     assert np.all(get_data(extraction_with_mask_img)[mask == 0] == 0.0)
     assert not np.all(get_data(extraction_without_mask_img)[mask == 0] == 0.0)
 
