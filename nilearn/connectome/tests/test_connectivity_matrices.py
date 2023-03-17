@@ -692,6 +692,24 @@ def test_confounds_connectome_measure():
     confounds_df = DataFrame(confounds[:10])
     correlation_measure.fit_transform(signals, confounds=confounds_df)
 
+
+def test_confounds_connectome_measure_errors():
+    n_subjects = 10
+    n_features = 49
+
+    # Generate signals and compute covariances and apply confounds while
+    # computing covariances
+    signals = []
+    for k in range(n_subjects):
+        n_samples = 200 + k
+        signal, _, confounds = generate_signals(
+            n_features=n_features,
+            n_confounds=5,
+            length=n_samples,
+            same_variance=False,
+        )
+        signals.append(signal)
+
     # Raising error for input confounds are not iterable
     conn_measure = ConnectivityMeasure(vectorize=True)
     pytest.raises(
@@ -706,6 +724,7 @@ def test_confounds_connectome_measure():
         confounds=1.0,
     )
     pytest.raises(ValueError, conn_measure.fit_transform, signals, None, 1.0)
+
     # Raising error for input confounds are given but not vectorize=True
     conn_measure = ConnectivityMeasure(vectorize=False)
     pytest.raises(
