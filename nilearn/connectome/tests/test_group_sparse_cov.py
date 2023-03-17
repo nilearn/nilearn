@@ -33,6 +33,19 @@ def test_group_sparse_covariance():
 
     np.testing.assert_almost_equal(omega, omega2, decimal=4)
 
+
+def test_group_sparse_covariance_with_probe_function():
+    signals, _, _ = generate_group_sparse_gaussian_graphs(
+        density=0.1,
+        n_subjects=5,
+        n_features=10,
+        min_n_samples=100,
+        max_n_samples=151,
+        random_state=np.random.RandomState(0),
+    )
+
+    alpha = 0.1
+
     class Probe:
         def __init__(self):
             self.objective = []
