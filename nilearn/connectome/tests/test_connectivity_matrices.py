@@ -275,6 +275,16 @@ def test_geometric_mean_properties():
         assert_array_equal(spd, input_spd)
     assert is_spd(gmean, decimal=7)
 
+
+def test_geometric_mean_properties_check_invariance():
+    n_matrices = 40
+    n_features = 15
+    spds = [
+        random_spd(n_features, eig_min=1.0, cond=10.0, random_state=0)
+        for _ in range(n_matrices)
+    ]
+    gmean = _geometric_mean(spds)
+
     # Invariance under reordering
     spds.reverse()
     spds.insert(0, spds[1])
@@ -295,6 +305,14 @@ def test_geometric_mean_properties():
         _geometric_mean(spds_inv, init=init), linalg.inv(gmean)
     )
 
+
+def test_geometric_mean_properties_check_gradient():
+    n_matrices = 40
+    n_features = 15
+    spds = [
+        random_spd(n_features, eig_min=1.0, cond=10.0, random_state=0)
+        for _ in range(n_matrices)
+    ]
     # Gradient norm is decreasing
     grad_norm = grad_geometric_mean(spds, tol=1e-20)
     difference = np.diff(grad_norm)
@@ -306,13 +324,17 @@ def test_geometric_mean_properties():
     tol = 1e-20
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
-        gmean = _geometric_mean(spds, max_iter=max_iter, tol=tol)
+        _geometric_mean(spds, max_iter=max_iter, tol=tol)
         assert len(w) == 1
     grad_norm = grad_geometric_mean(spds, max_iter=max_iter, tol=tol)
     assert len(grad_norm) == max_iter
     assert grad_norm[-1] > tol
 
-    # Evaluate convergence. A warning is printed if tolerance is not reached
+
+def test_geometric_mean_properties_evaluate_convergence():
+    n_matrices = 40
+    n_features = 15
+    # A warning is printed if tolerance is not reached
     for p in [0.5, 1.0]:  # proportion of badly conditioned matrices
         spds = [
             random_spd(n_features, eig_min=1e-2, cond=1e6, random_state=0)
@@ -323,7 +345,7 @@ def test_geometric_mean_properties():
             for _ in range(int(p * n_matrices), n_matrices)
         )
         max_iter = 30 if p < 1 else 60
-        gmean = _geometric_mean(spds, max_iter=max_iter, tol=1e-5)
+        _geometric_mean(spds, max_iter=max_iter, tol=1e-5)
 
 
 def test_geometric_mean_errors():
