@@ -326,7 +326,7 @@ def _normalize_matrix_on_axis(m, axis=0):
     if m.ndim > 2:
         raise ValueError(
             "This function only accepts 2D arrays. "
-            "An array of shape %r was passed." % m.shape
+            f"An array of shape {m.shape:r} was passed."
         )
 
     if axis == 0:
