@@ -463,10 +463,6 @@ def test_fmri_inputs_for_non_parametric_inference():
         _, func_file, _ = write_fake_fmri_data_and_design(shapes)
         func_file = func_file[0]
 
-        # dfcols = ['subject_label', 'map_name', 'effects_map_path']
-        # dfrows = [['01', 'a', func_file], ['02', 'a', func_file],
-        #           ['03', 'a', func_file]]
-        # niidf = pd.DataFrame(dfrows, columns=dfcols)
         niimgs = [func_file, func_file, func_file]
         niimg_4d = concat_imgs(niimgs)
         confounds = pd.DataFrame([['01', 1], ['02', 2], ['03', 3]],
