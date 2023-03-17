@@ -311,11 +311,8 @@ def test_remove_small_regions():
 
 
 def test_connected_label_regions():
-    shape = (13, 11, 12)
-    affine = np.eye(4)
-    n_regions = 9
     labels_img = generate_labeled_regions(
-        shape, affine=affine, n_regions=n_regions
+        shape=(13, 11, 12), affine=np.eye(4), n_regions=9
     )
     labels_data = get_data(labels_img)
     n_labels_wo_reg_ext = len(np.unique(labels_data))
@@ -336,7 +333,14 @@ def test_connected_label_regions():
 
     assert n_labels_wo_min > n_labels_with_min
 
-    # Test connect_diag=False
+
+def test_connected_label_regions_connect_diag_false():
+    labels_img = generate_labeled_regions(
+        shape=(13, 11, 12), affine=np.eye(4), n_regions=9
+    )
+    labels_data = get_data(labels_img)
+    n_labels_wo_reg_ext = len(np.unique(labels_data))
+
     ext_reg_without_connect_diag = connected_label_regions(
         labels_img, connect_diag=False
     )
@@ -344,14 +348,26 @@ def test_connected_label_regions():
     n_labels_wo_connect_diag = len(np.unique(data_wo_connect_diag))
     assert n_labels_wo_connect_diag > n_labels_wo_reg_ext
 
-    # If min_size is large and if all the regions are removed then empty image
-    # will be returned
+
+def test_connected_label_regions_return_empty_for_large_min_size():
+    """If min_size is large and if all the regions are removed \
+    then empty image will be returned."""
+    labels_img = generate_labeled_regions(
+        shape=(13, 11, 12), affine=np.eye(4), n_regions=9
+    )
+
     extract_reg_min_size_large = connected_label_regions(
         labels_img, min_size=500
     )
     assert np.unique(get_data(extract_reg_min_size_large)) == 0
 
-    # Test the names of the brain regions given in labels.
+
+def test_connected_label_regions_check_labels():
+    """Test the names of the brain regions given in labels."""
+    labels_img = generate_labeled_regions(
+        shape=(13, 11, 12), affine=np.eye(4), n_regions=9
+    )
+
     # Test labels for 9 regions in n_regions
     labels = [f"region_{x}" for x in "abcdefghi"]
 
@@ -370,10 +386,18 @@ def test_connected_label_regions():
     assert new_labels != ""
     assert len(new_labels) <= len(labels)
 
+
+def test_connected_label_regions_check_labels_as_numpy_array():
+    """Test the names of the brain regions given in labels."""
+    labels_img = generate_labeled_regions(
+        shape=(13, 11, 12), affine=np.eye(4), n_regions=9
+    )
     # labels given in numpy array
+    # Test labels for 9 regions in n_regions
+    labels = [f"region_{x}" for x in "abcdefghi"]
     labels = np.asarray(labels)
     _, new_labels2 = connected_label_regions(labels_img, labels=labels)
-    assert new_labels != ""
+    assert new_labels2 != ""
     # By default min_size is less, so newly generated labels can be more.
     assert len(new_labels2) >= len(labels)
 
@@ -392,10 +416,23 @@ def test_connected_label_regions():
     with pytest.raises(ValueError):
         connected_label_regions(labels_img, labels=provided_labels)
 
-    # Test if unknown/negative integers are provided as labels in labels_img,
-    # we raise an error and test the same whether error is raised.
-    # Introduce data type of float
-    # see issue: https://github.com/nilearn/nilearn/issues/2580
+
+def test_connected_label_regions_unknonw_labels():
+    """If unknown/negative integers are provided as labels in labels_img, \
+    we raise an error and test the same whether error is raised.
+
+    Introduce data type of float
+
+    See issue: https://github.com/nilearn/nilearn/issues/2580
+    """
+    shape = (13, 11, 12)
+    affine = np.eye(4)
+
+    labels_img = generate_labeled_regions(
+        shape=shape, affine=affine, n_regions=9
+    )
+    labels_data = get_data(labels_img)
+
     labels_data = np.zeros(shape, dtype=np.float32)
     h0 = shape[0] // 2
     h1 = shape[1] // 2
@@ -424,8 +461,15 @@ def test_connected_label_regions():
     with pytest.raises(DimensionError):
         connected_label_regions(labels_img=labels_img_4d)
 
-    # Test if labels (or names to regions) given is a string without a list.
-    # Then, we expect it to be split to regions extracted and returned as list.
+
+def test_connected_label_regions_check_labels_string_without_list():
+    """If labels (or names to regions) given is a string without a list \
+    we expect it to be split to regions extracted and returned as list."""
+    shape = (13, 11, 12)
+    affine = np.eye(4)
+    labels_img = generate_labeled_regions(
+        shape=shape, affine=affine, n_regions=9
+    )
     labels_in_str = "region_a"
     labels_img_in_str = generate_labeled_regions(
         shape, affine=affine, n_regions=1
