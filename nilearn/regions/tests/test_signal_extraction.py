@@ -142,6 +142,34 @@ def _make_label_data(shape):
     return labels_data
 
 
+def _make_label_and_signal_data_and_mask(shape, affine, n_instants, n_regions):
+    # data
+    affine = np.eye(4)
+    signals = generate_timeseries(n_instants, n_regions)
+
+    # labels
+    labels_data = np.zeros(shape, dtype="int32")
+    h0 = shape[0] // 2
+    h1 = shape[1] // 2
+    h2 = shape[2] // 2
+    labels_data[:h0, :h1, :h2] = 1
+    labels_data[:h0, :h1, h2:] = 2
+    labels_data[:h0, h1:, :h2] = 3
+    labels_data[:h0, h1:, h2:] = 4
+    labels_data[h0:, :h1, :h2] = 5
+    labels_data[h0:, :h1, h2:] = 6
+    labels_data[h0:, h1:, :h2] = 7
+    labels_data[h0:, h1:, h2:] = 8
+    labels_img = nibabel.Nifti1Image(labels_data, affine)
+
+    # mask
+    mask_data = np.zeros(shape)
+    mask_data[1:-1, 1:-1, 1:-1] = 1
+    mask_img = nibabel.Nifti1Image(mask_data, affine)
+
+    return labels_data, labels_img, signals, mask_img
+
+
 def _all_voxel_of_each_region_have_same_values(
     data, labels_data, n_regions, signals
 ):
@@ -158,13 +186,12 @@ def test_signals_extraction_with_labels_without_mask():
     n_instants = 11
     n_regions = 8  # must be 8
 
-    # data
-    affine = np.eye(4)
-    signals = generate_timeseries(n_instants, n_regions)
-
-    # labels
-    labels_data = _make_label_data(shape)
-    labels_img = nibabel.Nifti1Image(labels_data, affine)
+    labels_data, labels_img, signals, _ = _make_label_and_signal_data_and_mask(
+        shape=shape,
+        affine=np.eye(4),
+        n_instants=n_instants,
+        n_regions=n_regions,
+    )
 
     # from labels
     data_img = signal_extraction.signals_to_img_labels(signals, labels_img)
@@ -196,23 +223,20 @@ def test_signals_extraction_with_labels_without_mask():
 
 def test_signals_extraction_with_labels_with_mask():
     """Test conversion between signals and images \
-    using regions defined by labels."""
+    using regions defined by labels with a mask."""
     shape = (8, 9, 10)
     n_instants = 11
     n_regions = 8  # must be 8
-
-    # data
     affine = np.eye(4)
-    signals = generate_timeseries(n_instants, n_regions)
 
-    # mask
-    mask_data = np.zeros(shape)
-    mask_data[1:-1, 1:-1, 1:-1] = 1
-    mask_img = nibabel.Nifti1Image(mask_data, affine)
-
-    # labels
-    labels_data = _make_label_data(shape)
-    labels_img = nibabel.Nifti1Image(labels_data, affine)
+    (
+        labels_data,
+        labels_img,
+        signals,
+        mask_img,
+    ) = _make_label_and_signal_data_and_mask(
+        shape, affine, n_instants, n_regions
+    )
 
     data_img = signal_extraction.signals_to_img_labels(
         signals, labels_img, mask_img=mask_img
@@ -243,8 +267,6 @@ def test_signals_extraction_with_labels_with_mask():
     # mask labels before checking
     masked_labels_data = labels_data.copy()
     masked_labels_data[np.logical_not(get_data(mask_img))] = 0
-    # Check that signals in each region are identical in each voxel
-
     _all_voxel_of_each_region_have_same_values(
         data, masked_labels_data, n_regions, signals
     )
@@ -257,41 +279,33 @@ def test_signals_extraction_with_labels_with_mask():
     assert labels_r == list(range(1, 9))
 
 
-def _make_4D_label_img(shape):
-    labels_data = _make_label_data(shape)
+def test_signals_extraction_with_labels_errors():
+    shape = (8, 9, 10)
+    n_instants = 11
+    n_regions = 8
+    affine = np.eye(4)
+
+    (
+        labels_data,
+        labels_img,
+        signals,
+        mask_img,
+    ) = _make_label_and_signal_data_and_mask(
+        shape, affine, n_instants, n_regions
+    )
+
     labels_4d_data = np.zeros((shape) + (2,))
     labels_4d_data[..., 0] = labels_data
     labels_4d_data[..., 1] = labels_data
     labels_4d_img = nibabel.Nifti1Image(labels_4d_data, np.eye(4))
-    return labels_4d_img
 
-
-def test_signals_extraction_with_labels_errors():
-    shape = (8, 9, 10)
-    n_instants = 11
-    n_regions = 8  # must be 8
-
-    # data
-    affine = np.eye(4)
-    signals = generate_timeseries(n_instants, n_regions)
-
-    # labels
-    labels_data = _make_label_data(shape)
-    labels_img = nibabel.Nifti1Image(labels_data, affine)
-
-    labels_4d_img = _make_4D_label_img(shape)
+    mask_4d_img = nibabel.Nifti1Image(np.ones(shape + (2,)), affine)
 
     data_img = signal_extraction.signals_to_img_labels(signals, labels_img)
 
     # verify that 4D label images are refused
     with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG):
         signal_extraction.img_to_signals_labels(data_img, labels_4d_img)
-
-    # mask
-    mask_data = np.zeros(shape)
-    mask_data[1:-1, 1:-1, 1:-1] = 1
-    mask_img = nibabel.Nifti1Image(mask_data, affine)
-    mask_4d_img = nibabel.Nifti1Image(np.ones(shape + (2,)), affine)
 
     with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG):
         signal_extraction.img_to_signals_labels(
