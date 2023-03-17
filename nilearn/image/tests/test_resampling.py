@@ -287,28 +287,18 @@ def test_resampling_error_checks():
         )
 
 
-def test_resampling_noop():
+@pytest.mark.parametrize("target_shape", [None, (3, 2, 5)])
+def test_resampling_copy_has_no_shared_memory(target_shape):
     img, affine = _make_resampling_test_data()
-
-    shape = (3, 2, 5, 2)
-    target_shape = shape[:3]
-
-    img_r = resample_img(img, copy=False)
-    assert img_r == img
-
-    img_r = resample_img(img, copy=True)
-    assert not np.may_share_memory(get_data(img_r), get_data(img))
-
-    np.testing.assert_almost_equal(get_data(img_r), get_data(img))
-    np.testing.assert_almost_equal(img_r.affine, img.affine)
+    target_affine = None if target_shape is None else affine
 
     img_r = resample_img(
-        img, target_affine=affine, target_shape=target_shape, copy=False
+        img, target_affine=target_affine, target_shape=target_shape, copy=False
     )
     assert img_r == img
 
     img_r = resample_img(
-        img, target_affine=affine, target_shape=target_shape, copy=True
+        img, target_affine=target_affine, target_shape=target_shape, copy=True
     )
     assert not np.may_share_memory(get_data(img_r), get_data(img))
 
