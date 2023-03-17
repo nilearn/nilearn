@@ -1,5 +1,4 @@
 import os
-import shutil
 import unittest.mock
 from pathlib import Path
 

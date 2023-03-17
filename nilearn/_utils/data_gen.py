@@ -9,7 +9,7 @@ import json
 import string
 
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 import numpy as np
 import pandas as pd

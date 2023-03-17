@@ -1,5 +1,7 @@
 """Tests for the data generation utilities."""
 
+from __future__ import annotations
+
 from pathlib import Path
 
 import pytest
@@ -8,14 +10,26 @@ from nilearn._utils.data_gen import create_fake_bids_dataset
 
 
 def _bids_path_template(
-    task, suffix, n_runs=None, space=None, desc=None, extra_entity=None
+    task: str,
+    suffix: str,
+    n_runs: int | None = None,
+    space: int | None = None,
+    desc: int | None = None,
+    extra_entity: int | dict[str, str] = None,
 ):
+    """Create a BIDS filepath from a template.
+
+    File path is relative to the BIDS root folder.
+
+    File path contains a session level folder.
+
+    """
     task = f"task-{task}_*"
     run = "run-*_*" if n_runs is not None else "*"
     space = f"space-{space}_*" if space is not None else "*"
     desc = f"desc-{desc}_*" if desc is not None else "*"
 
-    # only testing with res and acq (for now)
+    # only using with resolution and acquisition entities (for now)
     acq = "*"
     res = "*"
     if extra_entity is not None:
@@ -39,7 +53,7 @@ def _bids_path_template(
     [(["main"], [1]), (["main"], [2]), (["main", "localizer"], [2, 1])],
 )
 def test_fake_bids_raw_with_session_and_runs(n_sub, n_ses, tasks, n_runs):
-    """Check number of each file created in raw and derivatives."""
+    """Check number of each file 'type' created in raw."""
     with InTemporaryDirectory():
         bids_path = create_fake_bids_dataset(
             n_sub=n_sub, n_ses=n_ses, tasks=tasks, n_runs=n_runs
@@ -67,11 +81,20 @@ def test_fake_bids_raw_with_session_and_runs(n_sub, n_ses, tasks, n_runs):
 
 
 def _check_nb_files_derivatives_for_task(
-    bids_path, n_sub, n_ses, task, n_run, extra_entity=None
+    bids_path: Path,
+    n_sub: int,
+    n_ses: int,
+    task: str,
+    n_run: int,
+    extra_entity: dict[str, str | None] = None,
 ):
+    """helper function to check number of each file 'type' \
+    in derivatives for a given task.
+    
+    """
     for suffix in ["timeseries.tsv"]:
         # 1 confound per raw file
-        # so we do not use the extra entity for derivatives entities
+        # so we do not use the extra entity for derivatives entities like res
         if extra_entity is None or "res" in extra_entity:
             file_pattern = _bids_path_template(
                 task=task,
@@ -135,7 +158,7 @@ def _check_nb_files_derivatives_for_task(
 def test_fake_bids_derivatives_with_session_and_runs(
     n_sub, n_ses, tasks, n_runs
 ):
-    """Check number of each file created in derivatives."""
+    """Check number of each file 'type' created in derivatives."""
     with InTemporaryDirectory():
         bids_path = create_fake_bids_dataset(
             n_sub=n_sub, n_ses=n_ses, tasks=tasks, n_runs=n_runs
@@ -160,7 +183,7 @@ def test_fake_bids_derivatives_with_session_and_runs(
 
 
 def test_bids_dataset_no_run_entity():
-    """n_runs==0 produces files without the run entity."""
+    """n_runs = 0 produces files without the run entity."""
     with InTemporaryDirectory():
         bids_path = create_fake_bids_dataset(
             n_sub=1,
@@ -186,7 +209,7 @@ def test_bids_dataset_no_run_entity():
 
 @pytest.mark.parametrize("n_ses,no_session", [(1, True), (0, False)])
 def test_bids_dataset_no_session(n_ses, no_session):
-    """n_ses =0 and no_session prevent the creation of a session folder."""
+    """n_ses = 0 & no_session = True prevent creation of a session folder."""
     with InTemporaryDirectory():
         bids_path = create_fake_bids_dataset(
             n_sub=1,
