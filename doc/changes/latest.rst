@@ -16,6 +16,8 @@ Fixes
 - Change calculation of TR in :func:`~.glm.first_level.compute_regressor` to be more precise (:gh:`3362` by `Anne-Sophie Kieslinger`_)
 
 - :func:`~nilearn.interfaces.fmriprep.load_confounds` can support searching preprocessed data in native space. (:gh:`3531` by `Hao-Ting Wang`_)
+ 
+- :func:`~nilearn.second_level.non_parametric_inference` can accept fist level model as input without failing. (:gh:`3600` by `Rémi Gau`_)
 
 
 Enhancements
