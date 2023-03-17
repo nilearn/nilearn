@@ -10,9 +10,8 @@ or as weights in one image per region (maps).
 import numpy as np
 from scipy import linalg, ndimage
 
-from .. import _utils
+from .. import _utils, masking
 from .._utils.niimg import _safe_get_data
-from .. import masking
 from ..image import new_img_like
 
 INF = 1000 * np.finfo(np.float32).eps
@@ -20,7 +19,7 @@ INF = 1000 * np.finfo(np.float32).eps
 
 def _check_shape_compatibility(img1, img2, dim=None):
     """Check that shapes match for dimensions going from 0 to dim-1.
-    
+
     Parameters
     ----------
     img1 : Niimg-like object
@@ -64,9 +63,7 @@ def _check_affine_equality(img1, img2):
         raise ValueError("Images have different affine matrices.")
 
 
-def _check_shape_and_affine_compatibility(img1,
-                                        img2=None,
-                                        dim=None):
+def _check_shape_and_affine_compatibility(img1, img2=None, dim=None):
     """Validate shapes and affines of 2 images.
 
     Check that the provided images:
@@ -104,11 +101,9 @@ def _check_shape_and_affine_compatibility(img1,
     return True
 
 
-def _get_labels_data(target_img,
-                     labels_img,
-                     mask_img=None,
-                     background_label=0,
-                     dim=None):
+def _get_labels_data(
+    target_img, labels_img, mask_img=None, background_label=0, dim=None
+):
     """Get the label data.
 
     Ensures that labels, imgs and mask shapes and affines fit,
@@ -173,39 +168,45 @@ def _get_labels_data(target_img,
 
     return labels, labels_data
 
+
 def _check_reduction_strategy(strategy: str):
     """Check that the provided strategy is supported.
 
     Parameters
     ----------
-
     strategy : :obj:`str`
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, minimum, maximum, variance,
         standard_deviation.
+
     """
-    available_reduction_strategies = {'mean',
-                                      'median',
-                                      'sum',
-                                      'minimum',
-                                      'maximum',
-                                      'standard_deviation',
-                                      'variance'}
+    available_reduction_strategies = {
+        "mean",
+        "median",
+        "sum",
+        "minimum",
+        "maximum",
+        "standard_deviation",
+        "variance",
+    }
 
     if strategy not in available_reduction_strategies:
         raise ValueError(
             f"Invalid strategy '{strategy}'. "
-            f"Valid strategies are {available_reduction_strategies}.")
+            f"Valid strategies are {available_reduction_strategies}."
+        )
 
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
 @_utils.fill_doc
-def img_to_signals_labels(imgs, 
-                          labels_img,
-                          mask_img=None,
-                          background_label=0,
-                          order="F",
-                          strategy='mean'):
+def img_to_signals_labels(
+    imgs,
+    labels_img,
+    mask_img=None,
+    background_label=0,
+    order="F",
+    strategy="mean",
+):
     """Extract region signals from image.
 
     This function is applicable to regions defined by labels.
@@ -267,34 +268,32 @@ def img_to_signals_labels(imgs,
     # TODO: Make a special case for list of strings
     # (load one image at a time).
     imgs = _utils.check_niimg_4d(imgs)
-    labels, labels_data = _get_labels_data(imgs,
-                                           labels_img,
-                                           mask_img,
-                                           background_label)
+    labels, labels_data = _get_labels_data(
+        imgs, labels_img, mask_img, background_label
+    )
 
     data = _safe_get_data(imgs, ensure_finite=True)
     target_datatype = np.float32 if data.dtype == np.float32 else np.float64
     # Nilearn issue: 2135, PR: 2195 for why this is necessary.
-    signals = np.ndarray((data.shape[-1], len(labels)), order=order,
-                         dtype=target_datatype)
+    signals = np.ndarray(
+        (data.shape[-1], len(labels)), order=order, dtype=target_datatype
+    )
     reduction_function = getattr(ndimage, strategy)
     for n, img in enumerate(np.rollaxis(data, -1)):
-        signals[n] = np.asarray(reduction_function(img,
-                                                   labels=labels_data,
-                                                   index=labels))
+        signals[n] = np.asarray(
+            reduction_function(img, labels=labels_data, index=labels)
+        )
     # Set to zero signals for missing labels. Workaround for Scipy behaviour
     missing_labels = set(labels) - set(np.unique(labels_data))
-    labels_index = dict([(l, n) for n, l in enumerate(labels)])
+    labels_index = {l: n for n, l in enumerate(labels)}
     for this_label in missing_labels:
         signals[:, labels_index[this_label]] = 0
     return signals, labels
 
 
-def signals_to_img_labels(signals,
-                          labels_img,
-                          mask_img=None,
-                          background_label=0,
-                          order="F"):
+def signals_to_img_labels(
+    signals, labels_img, mask_img=None, background_label=0, order="F"
+):
     """Create image from region signals defined as labels.
 
     The same region signal is used for each :term:`voxel` of the
@@ -345,10 +344,9 @@ def signals_to_img_labels(signals,
     """
     labels_img = _utils.check_niimg_3d(labels_img)
 
-    labels, labels_data = _get_labels_data(labels_img,
-                                           labels_img,
-                                           mask_img,
-                                           background_label)
+    labels, labels_data = _get_labels_data(
+        labels_img, labels_img, mask_img, background_label
+    )
 
     signals = np.asarray(signals)
 
@@ -361,13 +359,13 @@ def signals_to_img_labels(signals,
         target_shape = target_shape + (signals.shape[0],)
 
     data = np.zeros(target_shape, dtype=signals.dtype, order=order)
-    labels_dict = dict([(label, n) for n, label in enumerate(labels)])
+    labels_dict = {label: n for n, label in enumerate(labels)}
     # optimized for "data" in F order.
     for k in range(labels_data.shape[2]):
         for j in range(labels_data.shape[1]):
             for i in range(labels_data.shape[0]):
                 label = labels_data[i, j, k]
-                num = labels_dict.get(label, None)
+                num = labels_dict.get(label)
                 if num is not None:
                     if signals.ndim == 2:
                         data[i, j, k, :] = signals[:, num]
@@ -437,8 +435,9 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
         maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
 
     data = _safe_get_data(imgs, ensure_finite=True)
-    region_signals = linalg.lstsq(maps_data[maps_mask, :],
-                                  data[maps_mask, :])[0].T
+    region_signals = linalg.lstsq(maps_data[maps_mask, :], data[maps_mask, :])[
+        0
+    ].T
 
     return region_signals, list(labels)
 
@@ -488,15 +487,17 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
         maps_data, maps_mask, _ = _trim_maps(
-            maps_data, _safe_get_data(mask_img, ensure_finite=True),
-            keep_empty=True)
+            maps_data,
+            _safe_get_data(mask_img, ensure_finite=True),
+            keep_empty=True,
+        )
         maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
-        assert (maps_mask.shape == maps_data.shape[:3])
+        assert maps_mask.shape == maps_data.shape[:3]
 
     data = np.dot(region_signals, maps_data[maps_mask, :].T)
-    return masking.unmask(data, new_img_like(maps_img,
-                                             maps_mask,
-                                             maps_img.affine))
+    return masking.unmask(
+        data, new_img_like(maps_img, maps_mask, maps_img.affine)
+    )
 
 
 def _trim_maps(maps, mask, keep_empty=False, order="F"):
@@ -544,27 +545,29 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
 
     """
     maps = maps.copy()
-    sums = abs(maps[_utils.as_ndarray(mask, dtype=bool),
-                    :]).sum(axis=0)
+    sums = abs(maps[_utils.as_ndarray(mask, dtype=bool), :]).sum(axis=0)
 
     n_regions = maps.shape[-1] if keep_empty else (sums > 0).sum()
-    trimmed_maps = np.zeros(maps.shape[:3] + (n_regions, ),
-                            dtype=maps.dtype, order=order)
+    trimmed_maps = np.zeros(
+        maps.shape[:3] + (n_regions,), dtype=maps.dtype, order=order
+    )
     # use int8 instead of np.bool for Nifti1Image
     maps_mask = np.zeros(mask.shape, dtype=np.int8)
 
     # iterate on maps
     p = 0
     mask = _utils.as_ndarray(mask, dtype=bool, order="C")
-    for n, m in enumerate(np.rollaxis(maps, -1)):
+    for n, _ in enumerate(np.rollaxis(maps, -1)):
         if not keep_empty and sums[n] == 0:
             continue
         trimmed_maps[mask, p] = maps[mask, n]
         maps_mask[trimmed_maps[..., p] > 0] = 1
         p += 1
 
-    if keep_empty:
-        return trimmed_maps, maps_mask, np.arange(trimmed_maps.shape[-1],
-                                                  dtype=int)
-    else:
-        return trimmed_maps, maps_mask, np.where(sums > 0)[0]
+    indices = (
+        np.arange(trimmed_maps.shape[-1], dtype=int)
+        if keep_empty
+        else np.where(sums > 0)[0]
+    )
+
+    return trimmed_maps, maps_mask, indices

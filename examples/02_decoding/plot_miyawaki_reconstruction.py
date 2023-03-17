@@ -27,7 +27,7 @@ import time
 
 ############################################################################
 # First we load the Miyawaki dataset
-# -----------------------------------
+# ----------------------------------
 from nilearn import datasets
 
 sys.stderr.write("Fetching dataset...")
@@ -51,7 +51,7 @@ sys.stderr.write(f" Done ({time.time() - t0:.2f}s).\n")
 
 ############################################################################
 # Then we prepare and mask the data
-# ----------------------------------
+# ---------------------------------
 import numpy as np
 from nilearn.maskers import MultiNiftiMasker
 
@@ -83,7 +83,6 @@ y_train = np.vstack([y[:-2] for y in y_train]).astype(float)
 X_test = np.vstack([x[2:] for x in X_test])
 y_test = np.vstack([y[:-2] for y in y_test]).astype(float)
 
-n_pixels = y_train.shape[1]
 n_features = X_train.shape[1]
 
 
@@ -98,7 +97,6 @@ y_cols = y_shape[1]
 
 # Original data
 design_matrix = np.eye(100)
-
 
 # Example of matrix used for multiscale (sum pixels vertically)
 #
@@ -140,7 +138,7 @@ sys.stderr.write(f" Done ({time.time() - t0:.2f}s).\n")
 
 ############################################################################
 # We define our prediction function
-# -----------------------------------
+# ---------------------------------
 sys.stderr.write("Training classifiers... \r")
 t0 = time.time()
 
@@ -153,7 +151,9 @@ from sklearn.preprocessing import StandardScaler
 clfs = []
 n_clfs = y_train.shape[1]
 for i in range(y_train.shape[1]):
-    sys.stderr.write(f"Training classifiers {int(i + 1):03}/{int(n_clfs)}... \r")
+    sys.stderr.write(
+        f"Training classifiers {int(i + 1):03}/{int(n_clfs)}... \r"
+    )
 
     clf = Pipeline(
         [
@@ -166,13 +166,13 @@ for i in range(y_train.shape[1]):
     clfs.append(clf)
 
 sys.stderr.write(
-    f"Training classifiers {n_clfs:03d}/{n_clfs:d}... Done ({(time.time() - t0):.2f}s).\n"
+    f"Training classifiers {n_clfs:03d}/{n_clfs:d}... "
+    f"Done ({(time.time() - t0):.2f}s).\n"
 )
-
 
 ############################################################################
 # Here we run the prediction: the decoding itself
-# ------------------------------------------------
+# -----------------------------------------------
 sys.stderr.write("Calculating scores and outputs...")
 t0 = time.time()
 
@@ -251,10 +251,9 @@ y_pred = (
 
 sys.stderr.write(f" Done ({time.time() - t0:.2f}s).\n")
 
-
 ############################################################################
 # Let us quantify our prediction error
-# -------------------------------------
+# ------------------------------------
 from sklearn.metrics import (
     accuracy_score,
     f1_score,

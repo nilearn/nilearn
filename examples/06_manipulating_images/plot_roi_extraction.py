@@ -1,6 +1,6 @@
 """
 Computing a Region of Interest (ROI) mask manually
-===================================================
+==================================================
 
 This example shows manual steps to create and further modify an ROI spatial
 mask. They represent a means for "data folding", i.e., extracting and then
@@ -301,7 +301,7 @@ plot_roi(
 # integer label to each one of them.
 from scipy.ndimage import label
 
-labels, n_labels = label(dil_bin_p_values_and_vt)
+labels, _ = label(dil_bin_p_values_and_vt)
 # we take first roi data with labels assigned as integer 1
 first_roi_data = (labels == 5).astype(int)
 # Similarly, second roi data is assigned as integer 2

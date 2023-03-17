@@ -1,20 +1,21 @@
 """
 Decoding with FREM: face vs house vs chair object recognition
-===============================================================
+=============================================================
 
 This example uses fast ensembling of regularized models (FREM) to decode
-a face vs house vs chair discrimination task from Haxby 2001 study. FREM uses an
-implicit spatial regularization through fast clustering and aggregates a
-high number of estimators trained on various splits of the training set,
-thus returning a very robust decoder at a lower computational cost than
-other spatially regularized methods.
+a face vs house vs chair discrimination task from Haxby 2001 study.
+FREM uses an implicit spatial regularization
+through fast clustering and aggregates a high number of estimators
+trained on various splits of the training set,
+thus returning a very robust decoder
+at a lower computational cost than other spatially regularized methods.
 
 To have more details, see: :ref:`frem`.
 """
 
 ##############################################################################
 # Load the Haxby dataset
-# ------------------------
+# ----------------------
 from nilearn.datasets import fetch_haxby
 
 data_files = fetch_haxby()
@@ -51,7 +52,7 @@ background_img = mean_img(func_filenames)
 
 ##############################################################################
 # Fit FREM
-# --------------------------------------
+# --------
 from nilearn.decoding import FREMClassifier
 
 decoder = FREMClassifier(cv=10)
@@ -66,14 +67,14 @@ print(f"FREM classification accuracy : {accuracy:g}%")
 # ------------------------------------
 
 import numpy as np
-from sklearn.metrics import confusion_matrix
 from nilearn import plotting
+from sklearn.metrics import confusion_matrix
 
 # Calculate the confusion matrix
 matrix = confusion_matrix(
-    y_test, 
-    y_pred, 
-    normalize='true',
+    y_test,
+    y_pred,
+    normalize="true",
 )
 
 # Plot the confusion matrix
@@ -81,13 +82,13 @@ im = plotting.plot_matrix(
     matrix,
     labels=sorted(np.unique(y_test)),
     vmin=0,
-    cmap='hot_r',
+    cmap="hot_r",
 )
 
 # Add x/y-axis labels
 ax = im.axes
-ax.set_ylabel('True label')
-ax.set_xlabel('Predicted label')
+ax.set_ylabel("True label")
+ax.set_xlabel("Predicted label")
 
 # Adjust figure to make labels fit
 ax.get_figure().tight_layout()
@@ -96,9 +97,8 @@ plotting.show()
 
 #############################################################################
 # Visualization of FREM weights
-# ------------------------------------
+# -----------------------------
 from nilearn import plotting
-
 
 plotting.plot_stat_map(
     decoder.coef_img_["face"],

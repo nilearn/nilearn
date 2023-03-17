@@ -20,6 +20,8 @@
 
 .. _Andrés Hoyos Idrobo: https://github.com/ahoyosid
 
+.. _Anne-Sophie Kieslinger: https://github.com/askieslinger
+
 .. _Ariel Rokem: http://arokem.org/
 
 .. _Arthur Mensch: https://www.amensch.fr/

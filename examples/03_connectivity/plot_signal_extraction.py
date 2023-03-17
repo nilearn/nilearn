@@ -40,9 +40,7 @@ dataset = datasets.fetch_atlas_harvard_oxford("cort-maxprob-thr25-2mm")
 atlas_filename = dataset.maps
 labels = dataset.labels
 
-print(
-    f"Atlas ROIs are located in nifti image (4D) at: {atlas_filename}"
-)
+print(f"Atlas ROIs are located in nifti image (4D) at: {atlas_filename}")
 
 # One subject of brain development fmri data
 data = datasets.fetch_development_fmri(n_subjects=1, reduce_confounds=True)
@@ -77,7 +75,6 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 # Plot the correlation matrix
 import numpy as np
-
 from nilearn import plotting
 
 # Make a large figure

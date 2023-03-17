@@ -1,5 +1,5 @@
 """Setting a parameter by cross-validation
-=======================================================
+==========================================
 
 Here we set the number of features selected in an Anova-SVC approach to
 maximize the cross-validation score.
@@ -34,7 +34,7 @@ manually.
 
 ###########################################################################
 # Load the Haxby dataset
-# -----------------------
+# ----------------------
 from nilearn import datasets
 
 # by default 2nd subject data will be fetched on which we run our analysis
@@ -87,7 +87,7 @@ decoder = Decoder(
 
 ###########################################################################
 # Fit the Decoder and predict the responses
-# -------------------------------------------------
+# -----------------------------------------
 # As a complete pipeline by itself, decoder will perform cross-validation
 # for the estimator, in this case Support Vector Machine. We can output the
 # best parameters selected for each cross-validation fold. See
@@ -167,7 +167,7 @@ print(f"Nested CV score: {np.mean(nested_cv_scores):.4f}")
 
 ###########################################################################
 # Plot the prediction scores using matplotlib
-# ---------------------------------------------
+# -------------------------------------------
 from matplotlib import pyplot as plt
 from nilearn.plotting import show
 

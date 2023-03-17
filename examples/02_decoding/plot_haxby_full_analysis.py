@@ -1,6 +1,6 @@
 """
 ROI-based decoding analysis in Haxby et al. dataset
-=====================================================
+===================================================
 
 In this script we reproduce the data analysis conducted by
 Haxby et al. in "Distributed and Overlapping Representations of Faces and
@@ -17,7 +17,7 @@ that have been defined via a standard GLM-based analysis.
 
 ##########################################################################
 # Load and prepare the data
-# -----------------------------------
+# -------------------------
 
 # Fetch data using nilearn dataset fetcher
 from nilearn import datasets
@@ -60,7 +60,7 @@ task_data = index_img(func_filename, task_mask)
 
 ##########################################################################
 # Decoding on the different masks
-# --------------------------------
+# -------------------------------
 #
 # The classifier used here is a support vector classifier (svc). We use
 # class:`nilearn.decoding.Decoder` and specify the classifier.
@@ -116,7 +116,7 @@ for mask_name in mask_names:
 
 ##########################################################################
 # We make a simple bar plot to summarize the results
-# ---------------------------------------------------
+# --------------------------------------------------
 import matplotlib.pyplot as plt
 from nilearn.plotting import show
 

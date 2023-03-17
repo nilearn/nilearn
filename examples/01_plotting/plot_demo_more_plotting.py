@@ -41,7 +41,7 @@ See :ref:`plotting` for more details.
 
 ###############################################################################
 # First, we retrieve data from nilearn provided (general-purpose) datasets
-# -------------------------------------------------------------------------
+# ------------------------------------------------------------------------
 
 from nilearn import datasets
 
@@ -80,7 +80,7 @@ plotting.plot_stat_map(stat_img, display_mode='ortho',
 
 ###############################################################################
 # Visualizing in - single view 'axial' with number of cuts=5
-# -----------------------------------------------------------
+# ----------------------------------------------------------
 #
 # For axial visualization, we set ``display_mode='z'``. As a
 # consequence :func:`~nilearn.plotting.plot_stat_map` returns a
@@ -95,7 +95,7 @@ plotting.plot_stat_map(stat_img, display_mode='z', cut_coords=5,
 
 ###############################################################################
 # Visualizing in - single view 'sagittal' with only two slices
-# -------------------------------------------------------------
+# ------------------------------------------------------------
 #
 # For sagittal visualization, we set ``display_mode='x'`` which returns a
 # :class:`~nilearn.plotting.displays.XSlicer` object.
@@ -108,7 +108,7 @@ plotting.plot_stat_map(stat_img, display_mode='x',
 
 ###############################################################################
 # Visualizing in - 'coronal' view with single cut
-# ------------------------------------------------
+# -----------------------------------------------
 #
 # For coronal view, we set ``display_mode='y'`` which returns a
 # :class:`~nilearn.plotting.displays.YSlicer` object.
@@ -120,7 +120,7 @@ plotting.plot_stat_map(stat_img, display_mode='y', cut_coords=1,
 
 ###############################################################################
 # Visualizing without a colorbar on the right side
-# -------------------------------------------------
+# ------------------------------------------------
 #
 # The argument ``colorbar`` should be set to ``False`` to show plots without
 # a colorbar on the right side.
@@ -131,7 +131,7 @@ plotting.plot_stat_map(stat_img, display_mode='z',
 
 ###############################################################################
 # Visualize in - two views 'sagittal' and 'axial' with given coordinates
-# -------------------------------------------------------------------------
+# ----------------------------------------------------------------------
 #
 # In order to visualize both sagittal and axial views, we set
 # ``display_mode='xz'``, where 'x' stands for sagittal and 'z' for axial view.
@@ -147,7 +147,7 @@ plotting.plot_stat_map(stat_img, display_mode='xz',
 
 ###############################################################################
 # Changing the views to 'coronal', 'sagittal' views with coordinates
-# -------------------------------------------------------------------
+# ------------------------------------------------------------------
 #
 # Similarly, we can set ``display_mode='yx'`` for combining a coronal with a
 # sagittal view, which will return a
@@ -160,7 +160,7 @@ plotting.plot_stat_map(stat_img, display_mode='yx',
 
 ###############################################################################
 # Now, views are changed to 'coronal' and 'axial' views with coordinates
-# -----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 #
 # We can set ``display_mode='yz'`` to combine a coronal with an axial
 # view, which will return a :class:`~nilearn.plotting.displays.YZSlicer`
@@ -172,7 +172,7 @@ plotting.plot_stat_map(stat_img, display_mode='yz',
 
 ###############################################################################
 # Visualizing three views in 2x2 fashion
-# -------------------------------------------------------------------------
+# --------------------------------------
 #
 # If we want to combine three views in a 2x2 way, we can set
 # ``display_mode='tiled'``, which will combine sagittal, coronal, and axial
@@ -185,7 +185,7 @@ plotting.plot_stat_map(stat_img, display_mode='tiled',
 
 ###############################################################################
 # Visualizing three views along multiple rows and columns
-# -------------------------------------------------------------------------
+# -------------------------------------------------------
 #
 # If we set ``display_mode='mosaic'``, we can easily combine sagittal,
 # coronal, and axial views with different rows and columns. In this
@@ -198,7 +198,7 @@ plotting.plot_stat_map(stat_img, display_mode='mosaic',
 
 ###############################################################################
 # Now, changing the number of slices along columns
-# -------------------------------------------------------------------------
+# ------------------------------------------------
 #
 # Here, we still set ``display_mode='mosaic'``, but we set the number of
 # slices to be the same across views. In this case, we can specify it as
@@ -210,7 +210,7 @@ plotting.plot_stat_map(stat_img, display_mode='mosaic',
 
 ###############################################################################
 # Now, another way of limiting the number of slices along rows and columns
-# -------------------------------------------------------------------------
+# ------------------------------------------------------------------------
 #
 # It can be the case that we want to display a different number of cuts in
 # each view. In this situation, we still set ``display_mode='mosaic'``, but
@@ -222,7 +222,7 @@ plotting.plot_stat_map(stat_img, display_mode='mosaic',
 
 ###############################################################################
 # Demonstrating various display features
-# ---------------------------------------
+# --------------------------------------
 #
 # In this second part, we demonstrate how to interact with the obtained
 # figures. More precisely, we will show how to use specific methods of the
