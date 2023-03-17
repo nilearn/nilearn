@@ -802,7 +802,7 @@ def non_parametric_inference(
     .. footbibliography::
     """
     _check_second_level_input(second_level_input, design_matrix,
-                              flm_object=False, df_object=True)
+                              flm_object=flm_object, df_object=True)
     _check_confounds(confounds)
     _check_design_matrix(design_matrix)
 
