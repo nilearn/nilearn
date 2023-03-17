@@ -1,26 +1,23 @@
-"""
-Implementation of algorithm for sparse multi-subjects learning of Gaussian
-graphical models.
-"""
+"""Implementation of algorithm for sparse multi-subjects learning of Gaussian \
+graphical models."""
+
 # Authors: Philippe Gervais
 # License: simplified BSD
 
-import warnings
 import collections.abc
-import operator
 import itertools
+import operator
+import warnings
 
 import numpy as np
 import scipy.linalg
-
-from joblib import Memory, delayed, Parallel
+from joblib import Memory, Parallel, delayed
 from sklearn.base import BaseEstimator
 from sklearn.covariance import empirical_covariance
 from sklearn.model_selection import check_cv
 from sklearn.utils.extmath import fast_logdet
 
-from .._utils import CacheMixin
-from .._utils import logger
+from .._utils import CacheMixin, logger
 from .._utils.extmath import is_spd
 
 
@@ -66,10 +63,10 @@ def compute_alpha_max(emp_covs, n_samples):
 
     for k in range(emp_covs.shape[-1]):
         # Set diagonal to zero
-        A[..., k].flat[::A.shape[0] + 1] = 0
+        A[..., k].flat[:: A.shape[0] + 1] = 0
         A[..., k] *= n_samples[k]
 
-    norms = np.sqrt((A ** 2).sum(axis=-1))
+    norms = np.sqrt((A**2).sum(axis=-1))
 
     return np.max(norms), np.min(norms[norms > 0])
 
@@ -88,51 +85,60 @@ def _update_submatrix(full, sub, sub_inv, p, h, v):
 
     """
     n = p - 1
-    v[:n + 1] = full[:n + 1, n]
-    v[n + 1:] = full[n + 2:, n]
-    h[:n + 1] = full[n, :n + 1]
-    h[n + 1:] = full[n, n + 2:]
+    v[: n + 1] = full[: n + 1, n]
+    v[n + 1 :] = full[n + 2 :, n]
+    h[: n + 1] = full[n, : n + 1]
+    h[n + 1 :] = full[n, n + 2 :]
 
     # change row: first usage of SWM identity
-    coln = sub_inv[:, n:n + 1]  # 2d array, useful for sub_inv below
+    coln = sub_inv[:, n : n + 1]  # 2d array, useful for sub_inv below
     V = h - sub[n, :]
-    coln = coln / (1. + np.dot(V, coln))
+    coln = coln / (1.0 + np.dot(V, coln))
     # The following line is equivalent to
     # sub_inv -= np.outer(coln, np.dot(V, sub_inv))
     sub_inv -= np.dot(coln, np.dot(V, sub_inv)[np.newaxis, :])
     sub[n, :] = h
 
     # change column: second usage of SWM identity
-    rown = sub_inv[n:n + 1, :]  # 2d array, useful for sub_inv below
+    rown = sub_inv[n : n + 1, :]  # 2d array, useful for sub_inv below
     U = v - sub[:, n]
-    rown = rown / (1. + np.dot(rown, U))
+    rown = rown / (1.0 + np.dot(rown, U))
     # The following line is equivalent to (but faster)
     # sub_inv -= np.outer(np.dot(sub_inv, U), rown)
     sub_inv -= np.dot(np.dot(sub_inv, U)[:, np.newaxis], rown)
-    sub[:, n] = v   # equivalent to sub[n, :] += U
+    sub[:, n] = v  # equivalent to sub[n, :] += U
 
     # Make sub_inv symmetric (overcome some numerical limitations)
     sub_inv += sub_inv.T.copy()
-    sub_inv /= 2.
+    sub_inv /= 2.0
 
 
 def _assert_submatrix(full, sub, n):
-    """Check that "sub" is the matrix obtained by removing the p-th col and row
-    in "full". Used only for debugging.
+    """Check that "sub" is the matrix obtained \
+    by removing the p-th col and row in "full".
+
+    Used only for debugging.
 
     """
     true_sub = np.empty_like(sub)
     true_sub[:n, :n] = full[:n, :n]
-    true_sub[n:, n:] = full[n + 1:, n + 1:]
-    true_sub[:n, n:] = full[:n, n + 1:]
-    true_sub[n:, :n] = full[n + 1:, :n]
+    true_sub[n:, n:] = full[n + 1 :, n + 1 :]
+    true_sub[:n, n:] = full[:n, n + 1 :]
+    true_sub[n:, :n] = full[n + 1 :, :n]
 
     np.testing.assert_almost_equal(true_sub, sub)
 
 
-def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3, verbose=0,
-                            probe_function=None, precisions_init=None,
-                            debug=False):
+def group_sparse_covariance(
+    subjects,
+    alpha,
+    max_iter=50,
+    tol=1e-3,
+    verbose=0,
+    probe_function=None,
+    precisions_init=None,
+    debug=False,
+):
     """Compute sparse precision matrices and covariance matrices.
 
     The precision matrices returned by this function are sparse, and share a
@@ -206,31 +212,49 @@ def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3, verbose=0,
     .. footbibliography::
 
     """
-
     emp_covs, n_samples = empirical_covariances(
-        subjects, assume_centered=False)
+        subjects, assume_centered=False
+    )
 
     precisions = _group_sparse_covariance(
-        emp_covs, n_samples, alpha, max_iter=max_iter, tol=tol,
-        verbose=verbose, precisions_init=precisions_init,
-        probe_function=probe_function, debug=debug)
+        emp_covs,
+        n_samples,
+        alpha,
+        max_iter=max_iter,
+        tol=tol,
+        verbose=verbose,
+        precisions_init=precisions_init,
+        probe_function=probe_function,
+        debug=debug,
+    )
 
     return emp_covs, precisions
 
 
-def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
-                             precisions_init=None, probe_function=None,
-                             verbose=0, debug=False):
-    """Internal version of group_sparse_covariance.
+def _group_sparse_covariance(
+    emp_covs,
+    n_samples,
+    alpha,
+    max_iter=10,
+    tol=1e-3,
+    precisions_init=None,
+    probe_function=None,
+    verbose=0,
+    debug=False,
+):
+    """Implement an internal version of group_sparse_covariance.
+
     See its docstring for details.
 
     """
     if tol == -1:
         tol = None
     if not isinstance(alpha, (int, float)) or alpha < 0:
-        raise ValueError("Regularization parameter alpha must be a "
-                         "positive number.\n"
-                         "You provided: {0}".format(str(alpha)))
+        raise ValueError(
+            "Regularization parameter alpha must be a "
+            "positive number.\n"
+            f"You provided: {alpha}"
+        )
 
     n_subjects = emp_covs.shape[-1]
     n_features = emp_covs[0].shape[0]
@@ -240,20 +264,22 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
     # Check diagonal normalization.
     ones = np.ones(emp_covs.shape[0])
     for k in range(n_subjects):
-        if (abs(emp_covs[..., k].flat[::emp_covs.shape[0] + 1] - ones)
-                > 0.1).any():
-            warnings.warn("input signals do not all have unit variance. This "
-                          "can lead to numerical instability.")
+        if (
+            abs(emp_covs[..., k].flat[:: emp_covs.shape[0] + 1] - ones) > 0.1
+        ).any():
+            warnings.warn(
+                "input signals do not all have unit variance. This "
+                "can lead to numerical instability."
+            )
             break
 
     if precisions_init is None:
         # Fortran order make omega[..., k] contiguous, which is often useful.
-        omega = np.ndarray(shape=emp_covs.shape, dtype=np.float64,
-                           order="F")
+        omega = np.ndarray(shape=emp_covs.shape, dtype=np.float64, order="F")
         for k in range(n_subjects):
             # Values on main diagonals are far from zero, because they
             # are timeseries energy.
-            omega[..., k] = np.diag(1. / np.diag(emp_covs[..., k]))
+            omega[..., k] = np.diag(1.0 / np.diag(emp_covs[..., k]))
     else:
         omega = precisions_init.copy()
 
@@ -265,9 +291,11 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
     q = np.ndarray(shape=(n_subjects,), dtype=np.float64)
     aq = np.ndarray(shape=(n_subjects,), dtype=np.float64)  # temp. array
     c = np.ndarray(shape=(n_subjects,), dtype=np.float64)
-    W = np.ndarray(shape=(omega.shape[0] - 1, omega.shape[1] - 1,
-                          omega.shape[2]),
-                   dtype=np.float64, order="F")
+    W = np.ndarray(
+        shape=(omega.shape[0] - 1, omega.shape[1] - 1, omega.shape[2]),
+        dtype=np.float64,
+        order="F",
+    )
     W_inv = np.ndarray(shape=W.shape, dtype=np.float64, order="F")
 
     # Auxiliary arrays.
@@ -281,33 +309,34 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
     omega_old = np.empty_like(omega)
     if probe_function is not None:
         # iteration number -1 means called before iteration loop.
-        probe_function(emp_covs, n_samples, alpha, max_iter, tol,
-                       -1, omega, None)
+        probe_function(
+            emp_covs, n_samples, alpha, max_iter, tol, -1, omega, None
+        )
     probe_interrupted = False
 
     # Start optimization loop. Variables are named following (mostly) the
     # Honorio-Samaras paper notations.
 
     # Used in the innermost loop. Computed here to save some computation.
-    alpha2 = alpha ** 2
+    alpha2 = alpha**2
 
     for n in range(max_iter):
         if max_norm is not None:
-            suffix = (" variation (max norm): {max_norm:.3e} ".format(
-                max_norm=max_norm))
+            suffix = f" variation (max norm): {max_norm:.3e} "
         else:
             suffix = ""
         if verbose > 1:
-            logger.log("* iteration {iter_n:d} ({percentage:.0f} %){suffix}"
-                    " ...".format(iter_n=n, percentage=100. * n / max_iter,
-                                  suffix=suffix), verbose=verbose)
+            logger.log(
+                f"* iteration {n:d} "
+                f"({100.0 * n / max_iter:.0f} %){suffix} ...",
+                verbose=verbose,
+            )
 
         omega_old[...] = omega
         for p in range(n_features):
-
             if p == 0:
                 # Initial state: remove first col/row
-                W = omega[1:, 1:, :].copy()   # stack of W(k)
+                W = omega[1:, 1:, :].copy()  # stack of W(k)
                 W_inv = np.ndarray(shape=W.shape, dtype=np.float64)
                 for k in range(W.shape[2]):
                     # stack of W^-1(k)
@@ -315,24 +344,29 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
                     if debug:
                         np.testing.assert_almost_equal(
                             np.dot(W_inv[..., k], W[..., k]),
-                            np.eye(W_inv[..., k].shape[0]), decimal=10)
+                            np.eye(W_inv[..., k].shape[0]),
+                            decimal=10,
+                        )
                         _assert_submatrix(omega[..., k], W[..., k], p)
-                        assert(is_spd(W_inv[..., k]))
+                        assert is_spd(W_inv[..., k])
             else:
                 # Update W and W_inv
                 if debug:
                     omega_orig = omega.copy()
 
                 for k in range(n_subjects):
-                    _update_submatrix(omega[..., k],
-                                      W[..., k], W_inv[..., k], p, h, v)
+                    _update_submatrix(
+                        omega[..., k], W[..., k], W_inv[..., k], p, h, v
+                    )
 
                     if debug:
                         _assert_submatrix(omega[..., k], W[..., k], p)
-                        assert(is_spd(W_inv[..., k], decimal=14))
+                        assert is_spd(W_inv[..., k], decimal=14)
                         np.testing.assert_almost_equal(
                             np.dot(W[..., k], W_inv[..., k]),
-                            np.eye(W_inv[..., k].shape[0]), decimal=10)
+                            np.eye(W_inv[..., k].shape[0]),
+                            decimal=10,
+                        )
                 if debug:
                     # Check that omega has not been modified.
                     np.testing.assert_almost_equal(omega_orig, omega)
@@ -340,10 +374,10 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
             # In the following lines, implicit loop on k (subjects)
             # Extract y and u
             y[:, :p] = omega[:p, p, :].T
-            y[:, p:] = omega[p + 1:, p, :].T
+            y[:, p:] = omega[p + 1 :, p, :].T
 
             u[:, :p] = emp_covs[:p, p, :].T
-            u[:, p:] = emp_covs[p + 1:, p, :].T
+            u[:, p:] = emp_covs[p + 1 :, p, :].T
 
             for m in range(n_features - 1):
                 # Coordinate descent on y
@@ -355,13 +389,13 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
                 # y_1(k) -> y[k, :m], y[k, m+1:]
                 # u_2(k) -> u[k, m]
                 h_12[:, :m] = W_inv[:m, m, :].T
-                h_12[:, m:] = W_inv[m + 1:, m, :].T
+                h_12[:, m:] = W_inv[m + 1 :, m, :].T
                 y_1[:, :m] = y[:, :m]
-                y_1[:, m:] = y[:, m + 1:]
+                y_1[:, m:] = y[:, m + 1 :]
 
-                c[:] = - n_samples * (
+                c[:] = -n_samples * (
                     emp_covs[p, p, :] * (h_12 * y_1).sum(axis=1) + u[:, m]
-                    )
+                )
                 c2 = np.sqrt(np.dot(c, c))
 
                 # x -> y[:][m]
@@ -372,7 +406,7 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
                     # \lambda -> gamma   (lambda is a Python keyword)
                     q[:] = n_samples * emp_covs[p, p, :] * W_inv[m, m, :]
                     if debug:
-                        assert(np.all(q > 0))
+                        assert np.all(q > 0)
                     # x* = \lambda* diag(1 + \lambda q)^{-1} c
 
                     # Newton-Raphson loop. Loosely based on Scipy's.
@@ -380,15 +414,15 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
                     # stability (tolerance of 1e-2 works) but has an effect on
                     # overall convergence rate (the tighter the better.)
 
-                    gamma = 0.  # initial value
+                    gamma = 0.0  # initial value
                     # Precompute some quantities
                     cc = c * c
-                    two_ccq = 2. * cc * q
+                    two_ccq = 2.0 * cc * q
                     for _ in itertools.repeat(None, 100):
                         # Function whose zero must be determined (fval) and
                         # its derivative (fder).
                         # Written inplace to save some function calls.
-                        aq = 1. + gamma * q
+                        aq = 1.0 + gamma * q
                         aq2 = aq * aq
                         fder = (two_ccq / (aq2 * aq)).sum()
 
@@ -396,39 +430,53 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
                             msg = "derivative was zero."
                             warnings.warn(msg, RuntimeWarning)
                             break
-                        fval = - (alpha2 - (cc / aq2).sum()) / fder
+                        fval = -(alpha2 - (cc / aq2).sum()) / fder
                         gamma = fval + gamma
                         if abs(fval) < 1.5e-8:
                             break
 
                     if abs(fval) > 0.1:
-                        warnings.warn("Newton-Raphson step did not converge.\n"
-                                      "This may indicate a badly conditioned "
-                                      "system.")
+                        warnings.warn(
+                            "Newton-Raphson step did not converge.\n"
+                            "This may indicate a badly conditioned "
+                            "system."
+                        )
 
                     if debug:
-                        assert gamma >= 0., gamma
+                        assert gamma >= 0.0, gamma
                     y[:, m] = (gamma * c) / aq  # x*
 
             # Copy back y in omega (column and row)
             omega[:p, p, :] = y[:, :p].T
-            omega[p + 1:, p, :] = y[:, p:].T
+            omega[p + 1 :, p, :] = y[:, p:].T
             omega[p, :p, :] = y[:, :p].T
-            omega[p, p + 1:, :] = y[:, p:].T
+            omega[p, p + 1 :, :] = y[:, p:].T
 
             for k in range(n_subjects):
-                omega[p, p, k] = 1. / emp_covs[p, p, k] + np.dot(
-                    np.dot(y[k, :], W_inv[..., k]), y[k, :])
+                omega[p, p, k] = 1.0 / emp_covs[p, p, k] + np.dot(
+                    np.dot(y[k, :], W_inv[..., k]), y[k, :]
+                )
 
                 if debug:
-                    assert(is_spd(omega[..., k]))
+                    assert is_spd(omega[..., k])
 
         if probe_function is not None:
-            if probe_function(emp_covs, n_samples, alpha, max_iter, tol,
-                              n, omega, omega_old) is True:
+            if probe_function(
+                emp_covs,
+                n_samples,
+                alpha,
+                max_iter,
+                tol,
+                n,
+                omega,
+                omega_old,
+            ):
                 probe_interrupted = True
-                logger.log("probe_function interrupted loop", verbose=verbose,
-                           msg_level=2)
+                logger.log(
+                    "probe_function interrupted loop",
+                    verbose=verbose,
+                    msg_level=2,
+                )
                 break
 
         # Compute max of variation
@@ -437,14 +485,19 @@ def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
         max_norm = omega_old.max()
 
         if tol is not None and max_norm < tol:
-            logger.log("tolerance reached at iteration number {0:d}: {1:.3e}"
-                       "".format(n + 1, max_norm), verbose=verbose)
+            logger.log(
+                f"tolerance reached at iteration number {n + 1:d}: "
+                f"{max_norm:.3e}",
+                verbose=verbose,
+            )
             tolerance_reached = True
             break
 
     if tol is not None and not tolerance_reached and not probe_interrupted:
-        warnings.warn("Maximum number of iterations reached without getting "
-                      "to the requested tolerance level.")
+        warnings.warn(
+            "Maximum number of iterations reached without getting "
+            "to the requested tolerance level."
+        )
 
     return omega
 
@@ -497,8 +550,15 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
 
     """
 
-    def __init__(self, alpha=0.1, tol=1e-3, max_iter=10, verbose=0,
-                 memory=Memory(location=None), memory_level=0):
+    def __init__(
+        self,
+        alpha=0.1,
+        tol=1e-3,
+        max_iter=10,
+        verbose=0,
+        memory=Memory(location=None),
+        memory_level=0,
+    ):
         self.alpha = alpha
         self.tol = tol
         self.max_iter = max_iter
@@ -508,8 +568,8 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
         self.verbose = verbose
 
     def fit(self, subjects, y=None):
-        """Fits the group sparse precision model according to the given
-        training data and parameters.
+        """Fits the group sparse precision model according \
+        to the given training data and parameters.
 
         Parameters
         ----------
@@ -526,13 +586,19 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
         """
         logger.log("Computing covariance matrices", verbose=self.verbose)
         self.covariances_, n_samples = empirical_covariances(
-            subjects, assume_centered=False)
+            subjects, assume_centered=False
+        )
 
         logger.log("Computing precision matrices", verbose=self.verbose)
         ret = self._cache(_group_sparse_covariance)(
-                self.covariances_, n_samples, self.alpha,
-                tol=self.tol, max_iter=self.max_iter,
-                verbose=max(0, self.verbose - 1), debug=False)
+            self.covariances_,
+            n_samples,
+            self.alpha,
+            tol=self.tol,
+            max_iter=self.max_iter,
+            verbose=max(0, self.verbose - 1),
+            debug=False,
+        )
 
         self.precisions_ = ret
         return self
@@ -560,7 +626,8 @@ def empirical_covariances(subjects, assume_centered=False, standardize=False):
 
     Returns
     -------
-    emp_covs : numpy.ndarray, shape : (feature number, feature number, subject number)
+    emp_covs : numpy.ndarray, \
+        shape : (feature number, feature number, subject number)
         empirical covariances.
 
     n_samples : numpy.ndarray, shape: (subject number,)
@@ -568,14 +635,17 @@ def empirical_covariances(subjects, assume_centered=False, standardize=False):
 
     """
     if not hasattr(subjects, "__iter__"):
-        raise ValueError("'subjects' input argument must be an iterable. "
-                         "You provided {0}".format(subjects.__class__))
+        raise ValueError(
+            "'subjects' input argument must be an iterable. "
+            f"You provided {subjects.__class__}"
+        )
 
     n_subjects = [s.shape[1] for s in subjects]
     if len(set(n_subjects)) > 1:
-        raise ValueError("All subjects must have the same number of "
-                         "features.\nYou provided: {0}".format(str(n_subjects))
-                         )
+        raise ValueError(
+            "All subjects must have the same number of "
+            f"features.\nYou provided: {n_subjects}"
+        )
     n_subjects = len(subjects)
     n_features = subjects[0].shape[1]
 
@@ -597,8 +667,9 @@ def empirical_covariances(subjects, assume_centered=False, standardize=False):
     return emp_covs, n_samples
 
 
-def group_sparse_scores(precisions, n_samples, emp_covs, alpha,
-                        duality_gap=False, debug=False):
+def group_sparse_scores(
+    precisions, n_samples, emp_covs, alpha, duality_gap=False, debug=False
+):
     """Compute scores used by group_sparse_covariance.
 
     The log-likelihood of a given list of empirical covariances /
@@ -645,11 +716,11 @@ def group_sparse_scores(precisions, n_samples, emp_covs, alpha,
 
     log_lik = 0
     for k in range(n_subjects):
-        log_lik_k = - np.sum(emp_covs[...,  k] * precisions[..., k])
+        log_lik_k = -np.sum(emp_covs[..., k] * precisions[..., k])
         log_lik_k += fast_logdet(precisions[..., k])
         log_lik += n_samples[k] * log_lik_k
 
-    l2 = np.sqrt((precisions ** 2).sum(axis=-1))
+    l2 = np.sqrt((precisions**2).sum(axis=-1))
     l12 = l2.sum() - np.diag(l2).sum()  # Do not count diagonal terms
     objective = alpha * l12 - log_lik
     ret = (log_lik, objective)
@@ -672,13 +743,13 @@ def group_sparse_scores(precisions, n_samples, emp_covs, alpha,
                 np.testing.assert_almost_equal(A[..., k], A[..., k].T)
 
         # Project A on the set of feasible points
-        alpha_max = np.sqrt((A ** 2).sum(axis=-1))
+        alpha_max = np.sqrt((A**2).sum(axis=-1))
         mask = alpha_max > alpha
         for k in range(A.shape[-1]):
             A[mask, k] *= alpha / alpha_max[mask]
             # Set zeros on diagonals. Essential to get an always positive
             # duality gap.
-            A[..., k].flat[::A.shape[0] + 1] = 0
+            A[..., k].flat[:: A.shape[0] + 1] = 0
 
         dual_obj = 0  # dual objective
         for k in range(n_subjects):
@@ -692,16 +763,17 @@ def group_sparse_scores(precisions, n_samples, emp_covs, alpha,
         # following, but is smaller than infinity, which is better in any case.
         if not np.isfinite(dual_obj):
             for k in range(n_subjects):
-                A[..., k] = - n_samples[k] * emp_covs[..., k]
-                A[..., k].flat[::A.shape[0] + 1] = 0
-            alpha_max = np.sqrt((A ** 2).sum(axis=-1)).max()
+                A[..., k] = -n_samples[k] * emp_covs[..., k]
+                A[..., k].flat[:: A.shape[0] + 1] = 0
+            alpha_max = np.sqrt((A**2).sum(axis=-1)).max()
             # the second value (0.05 is arbitrary: positive in ]0,1[)
             gamma = min((alpha / alpha_max, 0.05))
             dual_obj = 0
             for k in range(n_subjects):
                 # add gamma on the diagonal
-                B = ((1. - gamma) * emp_covs[..., k]
-                     + gamma * np.eye(emp_covs.shape[0]))
+                B = (1.0 - gamma) * emp_covs[..., k] + gamma * np.eye(
+                    emp_covs.shape[0]
+                )
                 dual_obj += n_samples[k] * (n_features + fast_logdet(B))
 
         gap = objective - dual_obj
@@ -709,9 +781,17 @@ def group_sparse_scores(precisions, n_samples, emp_covs, alpha,
     return ret
 
 
-def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
-                                 tol=1e-3, max_iter=10, precisions_init=None,
-                                 verbose=0, debug=False, probe_function=None):
+def group_sparse_covariance_path(
+    train_subjs,
+    alphas,
+    test_subjs=None,
+    tol=1e-3,
+    max_iter=10,
+    precisions_init=None,
+    verbose=0,
+    debug=False,
+    probe_function=None,
+):
     """Get estimated precision matrices for different values of alpha.
 
     Calling this function is faster than calling group_sparse_covariance()
@@ -764,29 +844,42 @@ def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
 
     """
     train_covs, train_n_samples = empirical_covariances(
-        train_subjs, assume_centered=False, standardize=True)
+        train_subjs, assume_centered=False, standardize=True
+    )
 
     scores = []
     precisions_list = []
     for alpha in alphas:
         precisions = _group_sparse_covariance(
-            train_covs, train_n_samples, alpha, tol=tol, max_iter=max_iter,
-            precisions_init=precisions_init, verbose=max(0, verbose - 1),
-            debug=debug, probe_function=probe_function)
+            train_covs,
+            train_n_samples,
+            alpha,
+            tol=tol,
+            max_iter=max_iter,
+            precisions_init=precisions_init,
+            verbose=max(0, verbose - 1),
+            debug=debug,
+            probe_function=probe_function,
+        )
 
         # Compute log-likelihood
         if test_subjs is not None:
             test_covs, _ = empirical_covariances(
-                test_subjs, assume_centered=False, standardize=True)
-            scores.append(group_sparse_scores(precisions, train_n_samples,
-                                              test_covs, 0)[0])
+                test_subjs, assume_centered=False, standardize=True
+            )
+            scores.append(
+                group_sparse_scores(precisions, train_n_samples, test_covs, 0)[
+                    0
+                ]
+            )
         precisions_list.append(precisions)
         precisions_init = precisions
 
-    if test_subjs is not None:
-        return precisions_list, scores
-    else:
-        return precisions_list
+    return (
+        (precisions_list, scores)
+        if test_subjs is not None
+        else precisions_list
+    )
 
 
 class EarlyStopProbe:
@@ -797,18 +890,31 @@ class EarlyStopProbe:
     argument of group_sparse_covariance().
 
     """
+
     def __init__(self, test_subjs, verbose=0):
         self.test_emp_covs, _ = empirical_covariances(test_subjs)
         self.verbose = verbose
 
-    def __call__(self, emp_covs, n_samples, alpha, max_iter, tol,
-                 iter_n, omega, prev_omega):
+    def __call__(  # noqa: D102
+        self,
+        emp_covs,
+        n_samples,
+        alpha,
+        max_iter,
+        tol,
+        iter_n,
+        omega,
+        prev_omega,
+    ):
         log_lik, _ = group_sparse_scores(
-            omega, n_samples, self.test_emp_covs, alpha)
+            omega, n_samples, self.test_emp_covs, alpha
+        )
         if iter_n > -1 and self.last_log_lik > log_lik:
-            logger.log("Log-likelihood on test set is decreasing. "
-                       "Stopping at iteration %d"
-                       % iter_n, verbose=self.verbose)
+            logger.log(
+                "Log-likelihood on test set is decreasing. "
+                f"Stopping at iteration {iter_n}",
+                verbose=self.verbose,
+            )
             return True
         self.last_log_lik = log_lik
 
@@ -891,7 +997,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         scores obtained on test set for each value of the penalization
         parameter explored.
 
-    See also
+    See Also
     --------
     GroupSparseCovariance,
     sklearn.covariance.GraphicalLassoCV
@@ -904,10 +1010,21 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
     on.
 
     """
-    def __init__(self, alphas=4, n_refinements=4, cv=None,
-                 tol_cv=1e-2, max_iter_cv=50,
-                 tol=1e-3, max_iter=100, verbose=0,
-                 n_jobs=1, debug=False, early_stopping=True):
+
+    def __init__(
+        self,
+        alphas=4,
+        n_refinements=4,
+        cv=None,
+        tol_cv=1e-2,
+        max_iter_cv=50,
+        tol=1e-3,
+        max_iter=100,
+        verbose=0,
+        n_jobs=1,
+        debug=False,
+        early_stopping=True,
+    ):
         self.alphas = alphas
         self.n_refinements = n_refinements
         self.tol_cv = tol_cv
@@ -938,19 +1055,20 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
 
         """
         # Empirical covariances
-        emp_covs, n_samples = \
-                  empirical_covariances(subjects, assume_centered=False)
+        emp_covs, n_samples = empirical_covariances(
+            subjects, assume_centered=False
+        )
         n_subjects = emp_covs.shape[2]
 
         # One cv generator per subject must be created, because each subject
         # can have a different number of samples from the others.
         cv = []
         for k in range(n_subjects):
-            cv.append(check_cv(
-                    self.cv, np.ones(subjects[k].shape[0]),
-                    classifier=False
-                    ).split(subjects[k])
-                      )
+            cv.append(
+                check_cv(
+                    self.cv, np.ones(subjects[k].shape[0]), classifier=False
+                ).split(subjects[k])
+            )
         path = list()  # List of (alpha, scores, covs)
         n_alphas = self.alphas
 
@@ -961,8 +1079,9 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             n_refinements = self.n_refinements
             alpha_1, _ = compute_alpha_max(emp_covs, n_samples)
             alpha_0 = 1e-2 * alpha_1
-            alphas = np.logspace(np.log10(alpha_0), np.log10(alpha_1),
-                                 n_alphas)[::-1]
+            alphas = np.logspace(
+                np.log10(alpha_0), np.log10(alpha_1), n_alphas
+            )[::-1]
 
         covs_init = itertools.repeat(None)
 
@@ -973,29 +1092,46 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             # Compute the cross-validated loss on the current grid
             train_test_subjs = []
             for train_test in this_cv:
-                assert(len(train_test) == n_subjects)
-                train_test_subjs.append(list(zip(*[(subject[train, :],
-                                                    subject[test, :])
-                                             for subject, (train, test)
-                                             in zip(subjects, train_test)])))
+                assert len(train_test) == n_subjects
+                train_test_subjs.append(
+                    list(
+                        zip(
+                            *[
+                                (subject[train, :], subject[test, :])
+                                for subject, (train, test) in zip(
+                                    subjects, train_test
+                                )
+                            ]
+                        )
+                    )
+                )
             if self.early_stopping:
-                probes = [EarlyStopProbe(test_subjs,
-                                         verbose=max(0, self.verbose - 1))
-                          for _, test_subjs in train_test_subjs]
+                probes = [
+                    EarlyStopProbe(
+                        test_subjs, verbose=max(0, self.verbose - 1)
+                    )
+                    for _, test_subjs in train_test_subjs
+                ]
             else:
                 probes = itertools.repeat(None)
 
-            this_path = Parallel(n_jobs=self.n_jobs,
-                                 verbose=self.verbose)(
+            this_path = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
                 delayed(group_sparse_covariance_path)(
-                    train_subjs, alphas, test_subjs=test_subjs,
-                    max_iter=self.max_iter_cv, tol=self.tol_cv,
-                    verbose=max(0, self.verbose - 1), debug=self.debug,
+                    train_subjs,
+                    alphas,
+                    test_subjs=test_subjs,
+                    max_iter=self.max_iter_cv,
+                    tol=self.tol_cv,
+                    verbose=max(0, self.verbose - 1),
+                    debug=self.debug,
                     # Warm restart is useless with early stopping.
                     precisions_init=None if self.early_stopping else prec_init,
-                    probe_function=probe)
-                for (train_subjs, test_subjs), prec_init, probe
-                in zip(train_test_subjs, covs_init, probes))
+                    probe_function=probe,
+                )
+                for (train_subjs, test_subjs), prec_init, probe in zip(
+                    train_test_subjs, covs_init, probes
+                )
+            )
 
             # this_path[i] is a tuple (precisions_list, scores)
             # - scores: scores obtained with the i-th folding, for each value
@@ -1018,7 +1154,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             best_score = -np.inf
             last_finite_idx = 0
             for index, (alpha, this_score, _) in enumerate(path):
-                if this_score >= .1 / np.finfo(np.float64).eps:
+                if this_score >= 0.1 / np.finfo(np.float64).eps:
                     this_score = np.nan
                 if np.isfinite(this_score):
                     last_finite_idx = index
@@ -1034,8 +1170,10 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
                 alpha_1 = path[0][0]
                 alpha_0 = path[1][0]
                 covs_init = path[0][2]
-            elif (best_index == last_finite_idx
-                    and not best_index == len(path) - 1):
+            elif (
+                best_index == last_finite_idx
+                and not best_index == len(path) - 1
+            ):
                 # We have non-converged models on the upper bound of the
                 # grid, we need to refine the grid there
                 alpha_1 = path[best_index][0]
@@ -1049,13 +1187,16 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
                 alpha_1 = path[best_index - 1][0]
                 alpha_0 = path[best_index + 1][0]
                 covs_init = path[best_index - 1][2]
-            alphas = np.logspace(np.log10(alpha_1), np.log10(alpha_0),
-                                 len(alphas) + 2)
+            alphas = np.logspace(
+                np.log10(alpha_1), np.log10(alpha_0), len(alphas) + 2
+            )
             alphas = alphas[1:-1]
             if n_refinements > 1:
-                logger.log("[GroupSparseCovarianceCV] Done refinement "
-                           "% 2i out of %i" % (i + 1, n_refinements),
-                           verbose=self.verbose)
+                logger.log(
+                    "[GroupSparseCovarianceCV] Done refinement "
+                    f"{i: 2} out of {n_refinements}",
+                    verbose=self.verbose,
+                )
 
         path = list(zip(*path))
         cv_scores_ = list(path[1])
@@ -1069,7 +1210,12 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         logger.log("Final optimization", verbose=self.verbose)
         self.covariances_ = emp_covs
         self.precisions_ = _group_sparse_covariance(
-            emp_covs, n_samples, self.alpha_, tol=self.tol,
+            emp_covs,
+            n_samples,
+            self.alpha_,
+            tol=self.tol,
             max_iter=self.max_iter,
-            verbose=max(0, self.verbose - 1), debug=self.debug)
+            verbose=max(0, self.verbose - 1),
+            debug=self.debug,
+        )
         return self

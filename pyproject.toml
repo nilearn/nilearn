@@ -1,6 +1,6 @@
 [tool.black]
 line-length = 79
-include = "(maint_tools/.*py)|(setup.py)|(nilearn/dec.*)|(nilearn/image/.*py)|(nilearn/regions/.*py)|(examples/.*py)"
+include = "(maint_tools/.*py)|(setup.py)|(nilearn/dec.*)|(nilearn/image/.*py)|(nilearn/connectome/.*py)|(nilearn/regions/.*py)|(examples/.*py)"
 # 'extend-exclude' excludes files or directories in addition to the defaults
 extend-exclude = '''
 (

@@ -36,4 +36,5 @@ jobs:
 
       - name: "Run Flake8 on whole file"
         shell: bash {0}
-        run: flake8 --config=setup.cfg --verbose nilearn/de* nilearn/image nilearn/regions maint_tools setup.py examples/0[0234567]*
+        run: flake8 --config=setup.cfg --verbose nilearn/de* nilearn/image nilearn/connectome nilearn/regions maint_tools setup.py examples/0[0234567]*
+
