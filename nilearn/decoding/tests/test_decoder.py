@@ -28,16 +28,16 @@ from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import LogisticRegression, RidgeClassifierCV, RidgeCV
-from sklearn.metrics import accuracy_score, get_scorer, r2_score, roc_auc_score
+from sklearn.metrics import (
+    accuracy_score,
+    check_scoring,
+    get_scorer,
+    r2_score,
+    roc_auc_score,
+)
 from sklearn.model_selection import KFold, LeaveOneGroupOut
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
-
-try:
-    from sklearn.metrics import check_scoring
-except ImportError:
-    # for scikit-learn 0.18 and 0.19
-    from sklearn.metrics.scorer import check_scoring
 
 # Regression
 ridge = RidgeCV()
@@ -65,8 +65,6 @@ X = rng.rand(100, 10)
 # Create different targets
 y_regression = rng.rand(100)
 y_classification = np.hstack([[-1] * 50, [1] * 50])
-y_classification_str = np.hstack([["face"] * 50, ["house"] * 50])
-y_multiclass = np.hstack([[0] * 35, [1] * 30, [2] * 35])
 
 
 def test_check_param_grid():
@@ -216,7 +214,7 @@ def _make_binary_classification_test_data(n_samples):
 
 
 def test_decoder_binary_classification_with_masker_object():
-    X, y, mask = _make_binary_classification_test_data(n_samples=200)
+    X, y, _ = _make_binary_classification_test_data(n_samples=200)
 
     model = Decoder(mask=NiftiMasker())
     model.fit(X, y)
