@@ -77,10 +77,7 @@ def _calculate_tfce(
             signs = [1]
             max_score = np.max(arr3d)
 
-        if dh == "auto":
-            step = max_score / 100
-        else:
-            step = dh
+        step = max_score / 100 if dh == "auto" else dh
 
         # Set based on determined step size
         score_threshs = np.arange(step, max_score + step, step)
@@ -286,10 +283,9 @@ def _calculate_cluster_measures(
             max_mass = np.maximum(max_mass, np.sum(ss_vals))
 
         # Cluster size-based inference
+        max_size = 0
         if clust_sizes.size:
             max_size = np.max(clust_sizes)
-        else:
-            max_size = 0
 
         max_sizes[i_regressor], max_masses[i_regressor] = max_size, max_mass
 

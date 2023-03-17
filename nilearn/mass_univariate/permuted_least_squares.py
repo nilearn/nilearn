@@ -273,10 +273,9 @@ def _permuted_ols_on_chunk(
             step = 11 - min(verbose, 10)
             if i_perm % step == 0:
                 # If there is only one job, progress information is fixed
+                crlf = "\n"
                 if n_perm == n_perm_chunk:
                     crlf = "\r"
-                else:
-                    crlf = "\n"
 
                 percent = float(i_perm) / n_perm_chunk
                 percent = round(percent * 100, 2)
@@ -687,18 +686,18 @@ def permuted_ols(
     n_samples, n_regressors = tested_vars.shape
 
     # check if explanatory variates contain an intercept (constant) or not
+    intercept_test = False
     if n_regressors == np.unique(tested_vars).size == 1:
         intercept_test = True
-    else:
-        intercept_test = False
 
     # check if confounding vars contains an intercept
     if confounding_vars is not None:
-        constants = []
         # Search for all constant columns
-        for column in range(confounding_vars.shape[1]):
-            if np.unique(confounding_vars[:, column]).size == 1:
-                constants.append(column)
+        constants = [
+            x
+            for x in range(confounding_vars.shape[1])
+            if np.unique(confounding_vars[:, x]).size == 1
+        ]
 
         # check if multiple intercepts are defined across all variates
         if (intercept_test and len(constants) == 1) or len(constants) > 1:
@@ -855,12 +854,12 @@ def permuted_ols(
     else:  # 0 or negative number of permutations => original data scores only
         if output_type == "legacy":
             return np.asarray([]), scores_original_data.T, np.asarray([])
-        else:
-            out = {"t": scores_original_data.T}
-            if tfce:
-                out["tfce"] = tfce_original_data.T
 
-            return out
+        out = {"t": scores_original_data.T}
+        if tfce:
+            out["tfce"] = tfce_original_data.T
+
+        return out
 
     # actual permutations, seeded from a random integer between 0 and maximum
     # value represented by np.int32 (to have a large entropy).
@@ -915,15 +914,15 @@ def permuted_ols(
 
     if threshold is not None:
         # Cluster-size and cluster-mass FWE
-        cluster_dict = {}  # a dictionary to collect mass/size measures
-
-        cluster_dict["size_h0"] = np.hstack(csfwe_h0_parts)
-        cluster_dict["mass_h0"] = np.hstack(cmfwe_h0_parts)
-
-        cluster_dict["size"] = np.zeros_like(vfwe_pvals).astype(int)
-        cluster_dict["mass"] = np.zeros_like(vfwe_pvals)
-        cluster_dict["size_pvals"] = np.zeros_like(vfwe_pvals)
-        cluster_dict["mass_pvals"] = np.zeros_like(vfwe_pvals)
+        # a dictionary to collect mass/size measures
+        cluster_dict = {
+            "size_h0": np.hstack(csfwe_h0_parts),
+            "mass_h0": np.hstack(cmfwe_h0_parts),
+            "size": np.zeros_like(vfwe_pvals).astype(int),
+            "mass": np.zeros_like(vfwe_pvals),
+            "size_pvals": np.zeros_like(vfwe_pvals),
+            "mass_pvals": np.zeros_like(vfwe_pvals),
+        }
 
         scores_original_data_4d = masker.inverse_transform(
             scores_original_data.T
