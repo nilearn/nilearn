@@ -339,7 +339,7 @@ def _normalize_matrix_on_axis(m, axis=0):
     elif axis == 1:
         ret = _normalize_matrix_on_axis(m.T).T
     else:
-        raise ValueError("axis(=%d) out of bounds" % axis)
+        raise ValueError(f"axis(={int(axis)}) out of bounds")
     return ret
 
 
