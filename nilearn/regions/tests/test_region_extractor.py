@@ -185,7 +185,6 @@ def test_threshold_as_none_and_string_cases():
 
 def test_region_extractor_fit_and_transform():
     n_regions = 9
-    n_subjects = 5
     maps, mask_img = generate_maps((40, 40, 40), n_regions=n_regions)
 
     # Test maps are zero in the mask
@@ -202,7 +201,13 @@ def test_region_extractor_fit_and_transform():
         get_data(extractor_with_mask.regions_img_)[mask_data == 0] == 0.0
     )
 
-    # smoke test to RegionExtractor with thresholding_strategy='ratio_n_voxels'
+
+def test_region_extractor_strategies():
+    n_regions = 9
+    n_subjects = 5
+    maps, mask_img = generate_maps((40, 40, 40), n_regions=n_regions)
+
+    # thresholding_strategy='ratio_n_voxels'
     extract_ratio = RegionExtractor(
         maps, threshold=0.2, thresholding_strategy="ratio_n_voxels"
     )
@@ -210,7 +215,7 @@ def test_region_extractor_fit_and_transform():
     assert extract_ratio.regions_img_ != ""
     assert extract_ratio.regions_img_.shape[-1] >= 9
 
-    # smoke test with threshold=string and strategy=percentile
+    # thresholding_strategy=percentile
     extractor = RegionExtractor(
         maps,
         threshold=30,
@@ -231,8 +236,11 @@ def test_region_extractor_fit_and_transform():
         signal = extractor.transform(img)
         assert expected_signal_shape == signal.shape
 
-    # smoke test with high resolution image
-    maps, mask_img = generate_maps(
+
+def test_region_extractor_high_resolution_image():
+    n_regions = 9
+
+    maps, _ = generate_maps(
         (20, 20, 20), n_regions=n_regions, affine=0.2 * np.eye(4)
     )
 
@@ -246,12 +254,13 @@ def test_region_extractor_fit_and_transform():
     assert extract_ratio.regions_img_ != ""
     assert extract_ratio.regions_img_.shape[-1] >= 9
 
-    # smoke test with zeros on the diagonal of the affine
+
+def test_region_extractor_zeros_affine_diagonal():
+    n_regions = 9
+
     affine = np.eye(4)
     affine[[0, 1]] = affine[[1, 0]]  # permutes first and second lines
-    maps, mask_img = generate_maps(
-        (40, 40, 40), n_regions=n_regions, affine=affine
-    )
+    maps, _ = generate_maps((40, 40, 40), n_regions=n_regions, affine=affine)
 
     extract_ratio = RegionExtractor(
         maps, threshold=0.2, thresholding_strategy="ratio_n_voxels"
@@ -311,7 +320,7 @@ def test_connected_label_regions():
     labels_data = get_data(labels_img)
     n_labels_wo_reg_ext = len(np.unique(labels_data))
 
-    # region extraction without specifying min_size
+    # extract region without specifying min_size
     extracted_regions_on_labels_img = connected_label_regions(labels_img)
     extracted_regions_labels_data = get_data(extracted_regions_on_labels_img)
     n_labels_wo_min = len(np.unique(extracted_regions_labels_data))
