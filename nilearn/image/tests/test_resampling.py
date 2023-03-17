@@ -289,6 +289,7 @@ def test_resampling_error_checks():
 
 @pytest.mark.parametrize("target_shape", [None, (3, 2, 5)])
 def test_resampling_copy_has_no_shared_memory(target_shape):
+    """copy=true guarantees output array shares no memory with input array."""
     img, affine = _make_resampling_test_data()
     target_affine = None if target_shape is None else affine
 
