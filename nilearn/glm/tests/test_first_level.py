@@ -1,10 +1,13 @@
 """
 Test the first level model.
 """
+import json
 import os
 import shutil
 import unittest.mock
 import warnings
+
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -657,7 +660,92 @@ def test_first_level_from_bids_set_slice_timing_ref():
                 task_label='main',
                 space_label='MNI',
                 img_filters=[('desc', 'preproc')],
-                slice_time_ref=2)                            
+                slice_time_ref=2)
+
+
+def test_first_level_from_bids_get_metadata_from_derivatives():
+    """Create a bold.json file in derivatives dataset.
+
+    No warning should be thrown given derivatives have metadata
+    """
+    with InTemporaryDirectory():
+        bids_path = create_fake_bids_dataset(n_sub=10,
+                                             n_ses=2,
+                                             tasks=['main'],
+                                             n_runs=[3])
+        
+        RepetitionTime = 6.0
+        StartTime = 2.0
+        json_file = (Path(bids_path) / 'derivatives' / 'sub-01' / 'ses-01' / 
+                     'func' / 'sub-01_ses-01_task-main_run-01_bold.json')
+        with open(json_file, 'w') as f:
+            json.dump({'RepetitionTime': RepetitionTime, 
+                       "StartTime": StartTime}, f)
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            models, *_ = first_level_from_bids(
+                dataset_path=bids_path,
+                task_label='main',
+                space_label='MNI',
+                img_filters=[('desc', 'preproc')])
+            assert models[0].t_r == RepetitionTime                     
+            assert models[0].slice_time_ref == StartTime / RepetitionTime
+
+
+def test_first_level_from_bids_get_RepetitionTime_from_derivatives():
+    """Only RepetitionTime is provided in derivatives.
+    
+    Warning about missing StarTime time in derivatives.
+    slice_time_ref cannot be inferred: defaults to 0.
+    """
+    with InTemporaryDirectory():
+        bids_path = create_fake_bids_dataset(n_sub=10,
+                                             n_ses=2,
+                                             tasks=['main'],
+                                             n_runs=[3])
+        RepetitionTime = 6.0
+        json_file = (Path(bids_path) / 'derivatives' / 'sub-01' / 'ses-01' / 
+                     'func' / 'sub-01_ses-01_task-main_run-01_bold.json')
+        with open(json_file, 'w') as f:
+            json.dump({'RepetitionTime': RepetitionTime}, f)    
+
+        with pytest.warns(UserWarning,
+                          match = "StartTime' not found in file"):
+            models, *_ = first_level_from_bids(
+                dataset_path=bids_path,
+                task_label='main',
+                space_label='MNI',
+                img_filters=[('desc', 'preproc')])
+            assert models[0].t_r == 6.0                   
+            assert models[0].slice_time_ref == 0.0                           
+
+
+def test_first_level_from_bids_get_StartTime_from_derivatives():
+    """Only StartTime is provided in derivatives.
+    
+    Warning about missing repetition time in derivatives,
+    but RepetitionTime is still read from raw dataset.
+    """
+    with InTemporaryDirectory():
+        bids_path = create_fake_bids_dataset(n_sub=10,
+                                             n_ses=2,
+                                             tasks=['main'],
+                                             n_runs=[3])
+        StartTime = 1.0
+        json_file = (Path(bids_path) / 'derivatives' / 'sub-01' / 'ses-01' / 
+                     'func' / 'sub-01_ses-01_task-main_run-01_bold.json')
+        with open(json_file, 'w') as f:
+            json.dump({"StartTime": StartTime}, f)      
+
+        with pytest.warns(UserWarning,
+                          match = "RepetitionTime' not found in file"):
+            models, *_ = first_level_from_bids(
+                dataset_path=bids_path,
+                task_label='main',
+                space_label='MNI',
+                img_filters=[('desc', 'preproc')])
+            assert models[0].t_r == 1.5                     
+            assert models[0].slice_time_ref == StartTime / 1.5   
 
 
 def test_first_level_contrast_computation():

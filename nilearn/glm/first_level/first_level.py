@@ -816,12 +816,13 @@ def _validate_slice_time_ref(slice_time_ref):
 def _get_from_metadata(field, img_specs, dataset_type):
 
     if img_specs:
-        specs = json.load(open(img_specs[0], 'r'))
+        with open(img_specs[0], 'r') as f:
+            specs = json.load(f)
         value = specs.get(field)
         if value is not None:
             return float(value)
         else:
-            warn(f"{field} not found in file {img_specs[0]}.")
+            warn(f"'{field}' not found in file {img_specs[0]}.")
     else:
         warn(f'No bold.json found in BIDS {dataset_type} folder.')
     
@@ -1003,6 +1004,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     else:
         StartTime = _infer_slice_timing_start_time_from_dataset(derivatives_path, filters)
         if StartTime is not None and t_r is not None:
+            assert(StartTime < t_r)
             slice_time_ref = StartTime / t_r
         else:
             warn(f"'slice_time_ref' not provided "
