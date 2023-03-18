@@ -12,6 +12,8 @@ import json
 import os
 import sys
 import time
+
+from pathlib import Path
 from typing import Optional
 from warnings import warn
 
@@ -797,11 +799,11 @@ class FirstLevelModel(BaseGLM):
         return output
 
 
-def first_level_from_bids(dataset_path,
-                          task_label,
-                          space_label=None,
-                          sub_labels=None,
-                          img_filters=None,
+def first_level_from_bids(dataset_path: str | Path,
+                          task_label: str,
+                          space_label: str | None = None,
+                          sub_labels: str | None = None,
+                          img_filters: list[tuple[str, str]] | None =None,
                           t_r=None,
                           slice_time_ref=0.,
                           hrf_model='glover',
@@ -822,7 +824,7 @@ def first_level_from_bids(dataset_path,
                           verbose=0,
                           n_jobs=1,
                           minimize_memory=True,
-                          derivatives_folder='derivatives'):
+                          derivatives_folder: str ='derivatives'):
     """Create FirstLevelModel objects and fit arguments from a BIDS dataset.
 
     If t_r is not specified this function will attempt to load it from a
@@ -831,7 +833,7 @@ def first_level_from_bids(dataset_path,
 
     Parameters
     ----------
-    dataset_path : :obj:`str`
+    dataset_path : :obj:`str` or :obj:`pathlib.Path`
         Directory of the highest level folder of the BIDS dataset.
         Should contain subject folders and a derivatives folder.
 
@@ -885,14 +887,14 @@ def first_level_from_bids(dataset_path,
     sub_labels = sub_labels or []
     img_filters = img_filters or []
     
-    derivatives_path = os.path.join(dataset_path, derivatives_folder)
-
     _validate_args_first_level_from_bids(dataset_path=dataset_path,
                                          task_label=task_label,
                                          space_label=space_label,
                                          sub_labels=sub_labels,
                                          img_filters=img_filters,
-                                         derivatives_path=derivatives_path,)
+                                         derivatives_folder=derivatives_folder)
+
+    derivatives_path = Path(dataset_path) / derivatives_folder
 
     # Get acq specs for models. RepetitionTime and SliceTimingReference.
     # Throw warning if no bold.json is found
@@ -1299,12 +1301,12 @@ def _check_confounds_list(confounds: list[str], imgs: list[str]) -> None:
 
 
 def _validate_args_first_level_from_bids(
-    dataset_path: str,
+    dataset_path: str | Path,
     task_label: str,
     space_label: str | None,
     sub_labels: list[str] | None,
     img_filters: list[tuple[str, str]],
-    derivatives_path: str,
+    derivatives_folder: str,
 ) -> None:
     """Check type and value of arguments of first_level_from_bids.
 
@@ -1340,18 +1342,25 @@ def _validate_args_first_level_from_bids(
         Fullpath of the BIDS dataset derivative folder.
 
     """
-    if not isinstance(dataset_path, str):
+    if not isinstance(dataset_path, (str, Path)):
         raise TypeError(
-            "'dataset_path' must be a string. "
+            "'dataset_path' must be a string or pathlike. "
             f"Got {type(dataset_path)} instead."
         )
-    if not os.path.exists(dataset_path):
+    dataset_path = Path(dataset_path)
+    if not dataset_path.exists():
         raise ValueError(f"'dataset_path' does not exist:\n{dataset_path}")
 
-    if not os.path.exists(derivatives_path):
+    if not isinstance(derivatives_folder, str):
+        raise TypeError(
+            "'derivatives_folder' must be a string or pathlike. "
+            f"Got {type(derivatives_folder)} instead."
+        )
+    derivatives_folder = dataset_path / derivatives_folder
+    if not derivatives_folder.exists():
         raise ValueError(
             "derivatives folder not found in given dataset:\n"
-            f"{derivatives_path}"
+            f"{derivatives_folder}"
         )
 
     validate_bids_label(task_label)

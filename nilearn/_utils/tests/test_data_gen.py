@@ -5,7 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from nibabel.tmpdirs import InTemporaryDirectory
 from nilearn._utils.data_gen import create_fake_bids_dataset
 
 
