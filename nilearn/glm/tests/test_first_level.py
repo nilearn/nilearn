@@ -567,6 +567,92 @@ def test_first_level_glm_computation_with_memory_caching():
         del mask, func_img, FUNCFILE, model
 
 
+def test_first_level_from_bids_set_repetition_time():
+    with InTemporaryDirectory():
+        bids_path = create_fake_bids_dataset(n_sub=10,
+                                             n_ses=2,
+                                             tasks=['main'],
+                                             n_runs=[ 3])
+
+        with pytest.warns(None):
+            models, *_ = first_level_from_bids(
+                dataset_path=bids_path,
+                task_label='main',
+                space_label='MNI',
+                img_filters=[('desc', 'preproc')])
+            assert models[0].t_r == 1.5
+
+        with pytest.warns(UserWarning,
+                          match = 'RepetitionTime given in model_init'):
+            models, *_ = first_level_from_bids(
+                dataset_path=bids_path,
+                task_label='main',
+                space_label='MNI',
+                img_filters=[('desc', 'preproc')],
+                t_r=3)
+            assert models[0].t_r == 3
+
+        with pytest.raises(TypeError,
+                          match = "must be a float"):
+            models, *_ = first_level_from_bids(
+                dataset_path=bids_path,
+                task_label='main',
+                space_label='MNI',
+                img_filters=[('desc', 'preproc')],
+                t_r='not a number')
+            
+        with pytest.raises(ValueError,
+                          match = "positive"):
+            models, *_ = first_level_from_bids(
+                dataset_path=bids_path,
+                task_label='main',
+                space_label='MNI',
+                img_filters=[('desc', 'preproc')],
+                t_r=-1)            
+
+def test_first_level_from_bids_set_slice_timing_ref():
+    with InTemporaryDirectory():
+        bids_path = create_fake_bids_dataset(n_sub=10,
+                                             n_ses=2,
+                                             tasks=['main'],
+                                             n_runs=[3])
+
+        with pytest.warns(None):
+            models, *_ = first_level_from_bids(
+                dataset_path=bids_path,
+                task_label='main',
+                space_label='MNI',
+                img_filters=[('desc', 'preproc')])
+            assert models[0].slice_time_ref == 0
+
+        with pytest.warns(UserWarning,
+                          match = 'slice_time_ref given in model_init'):
+            models, *_ = first_level_from_bids(
+                dataset_path=bids_path,
+                task_label='main',
+                space_label='MNI',
+                img_filters=[('desc', 'preproc')],
+                slice_time_ref=0.5)
+            assert models[0].slice_time_ref == 0.5
+
+        with pytest.raises(TypeError,
+                          match = "must be a float"):
+            models, *_ = first_level_from_bids(
+                dataset_path=bids_path,
+                task_label='main',
+                space_label='MNI',
+                img_filters=[('desc', 'preproc')],
+                slice_time_ref='not a number')     
+
+        with pytest.raises(ValueError,
+                          match = "between 0 and 1"):
+            models, *_ = first_level_from_bids(
+                dataset_path=bids_path,
+                task_label='main',
+                space_label='MNI',
+                img_filters=[('desc', 'preproc')],
+                slice_time_ref=2)                            
+
 def test_first_level_contrast_computation():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 10),)

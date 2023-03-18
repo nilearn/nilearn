@@ -355,7 +355,9 @@ class FirstLevelModel(BaseGLM):
                  signal_scaling=0, noise_model='ar1', verbose=0, n_jobs=1,
                  minimize_memory=True, subject_label=None, random_state=None):
         # design matrix parameters
+        _validate_repetition_time(t_r)
         self.t_r = t_r
+        _validate_slice_time_ref(slice_time_ref)        
         self.slice_time_ref = slice_time_ref
         self.hrf_model = hrf_model
         self.drift_model = drift_model
@@ -793,9 +795,25 @@ class FirstLevelModel(BaseGLM):
         return output
 
 
+def _validate_repetition_time(t_r):
+    if not isinstance(t_r, (float, int)):
+        raise TypeError("'t_r' must be a float or an integer. "
+                        f"Got {type(t_r)} instead.")   
+    if t_r <= 0:
+        raise ValueError("'t_r' must be positive. "
+                        f"Got {t_r} instead.")        
+
+def _validate_slice_time_ref(slice_time_ref):
+    if not isinstance(slice_time_ref, (float, int)):
+        raise TypeError("'slice_time_ref' must be a float or an integer. "
+                        f"Got {type(slice_time_ref)} instead.")   
+    if slice_time_ref < 0 or slice_time_ref > 1:
+        raise ValueError("'slice_time_ref' must be between 0 and 1. "
+                        f"Got {slice_time_ref} instead.")  
+
 def first_level_from_bids(dataset_path, task_label, space_label=None,
                           sub_labels=None,
-                          img_filters=None, t_r=None, slice_time_ref=0.,
+                          img_filters=None, t_r=None, slice_time_ref=None,
                           hrf_model='glover', drift_model='cosine',
                           high_pass=.01, drift_order=1, fir_delays=[0],
                           min_onset=-24, mask_img=None,
@@ -903,10 +921,14 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 
     # Get acq specs for models. RepetitionTime and SliceTimingReference.
     # Throw warning if no bold.json is found
-    if t_r is not None:
-        warn('RepetitionTime given in model_init as %d' % t_r)
+    if slice_time_ref is not None:
+        _validate_slice_time_ref(slice_time_ref)
+        warn('slice_time_ref given in model_init as %d' % slice_time_ref)
         warn('slice_time_ref is %d percent of the repetition '
              'time' % slice_time_ref)
+    if t_r is not None:
+        _validate_repetition_time(t_r)
+        warn('RepetitionTime given in model_init as %d' % t_r)
     else:
         filters = [('task', task_label)]
         for img_filter in img_filters:
@@ -944,6 +966,8 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                      'repetition time. If it is not the case it will need to '
                      'be set manually in the generated list of models' %
                      img_specs[0])
+    if slice_time_ref is None:
+        slice_time_ref = 0.0
 
     # Infer subjects in dataset
     if not sub_labels:
