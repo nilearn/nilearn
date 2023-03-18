@@ -973,13 +973,13 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     if not os.path.exists(derivatives_path):
         raise ValueError('derivatives folder does not exist in given dataset')
 
+
+    # Get acq specs for models. RepetitionTime and SliceTimingReference.
+    # Throw warning if no bold.json is found
     filters = [('task', task_label)]
     for img_filter in img_filters:
         if img_filter[0] in ['acq', 'rec', 'run']:
             filters.append(img_filter)
-
-    # Get acq specs for models. RepetitionTime and SliceTimingReference.
-    # Throw warning if no bold.json is found
     if t_r is not None:
         _validate_repetition_time(t_r)
         warn('RepetitionTime given in model_init as %d' % t_r)

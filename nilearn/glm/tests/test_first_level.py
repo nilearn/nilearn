@@ -4,6 +4,7 @@ Test the first level model.
 import os
 import shutil
 import unittest.mock
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -618,7 +619,8 @@ def test_first_level_from_bids_set_slice_timing_ref():
                                              tasks=['main'],
                                              n_runs=[3])
 
-        with pytest.warns(None):
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")            
             models, *_ = first_level_from_bids(
                 dataset_path=bids_path,
                 task_label='main',
