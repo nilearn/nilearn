@@ -570,69 +570,76 @@ def test_first_level_glm_computation_with_memory_caching():
 
 
 @pytest.mark.parametrize('t_r, warning_msg', 
-                         [(None, "No bold.json .* BIDS derivatives"), 
+                         [(None, "No bold.json .* BIDS"), 
                           (3, "'RepetitionTime' given in model_init")])
-def test_first_level_from_bids_set_repetition_time_warnings(t_r, warning_msg):
-    with InTemporaryDirectory():
-        bids_path = create_fake_bids_dataset(n_sub=10,
-                                             n_ses=1,
-                                             tasks=['main'],
-                                             n_runs=[1])
+def test_first_level_from_bids_set_repetition_time_warnings(tmp_path, t_r, warning_msg):
 
-        with pytest.warns(UserWarning, match = warning_msg):
-            models, *_ = first_level_from_bids(
-                dataset_path=bids_path,
-                task_label='main',
-                space_label='MNI',
-                img_filters=[('desc', 'preproc')],
-                t_r=t_r)
-            
-            # If no t_r is provided it is inferred from the raw dataset
-            if t_r is None:
-                t_r = 1.5
+    bids_path = create_fake_bids_dataset(base_dir=tmp_path,
+                                         n_sub=10,
+                                         n_ses=1,
+                                         tasks=['main'],
+                                         n_runs=[1])
 
-            assert models[0].t_r == t_r
+    with pytest.warns(UserWarning, match = warning_msg):
+        models, *_ = first_level_from_bids(
+            dataset_path= str(tmp_path / bids_path),
+            task_label='main',
+            space_label='MNI',
+            img_filters=[('desc', 'preproc')],
+            t_r=t_r
+        )
+        
+        # If no t_r is provided it is inferred from the raw dataset
+        if t_r is None:
+            t_r = 1.5
+
+        assert models[0].t_r == t_r
 
 
 @pytest.mark.parametrize('t_r, error_type, error_msg', 
                          [('not a number', TypeError, "must be a float"), 
                           (-1, ValueError, "positive")])
-def test_first_level_from_bids_set_repetition_time_errors(t_r,
+def test_first_level_from_bids_set_repetition_time_errors(tmp_path,
+                                                          t_r,
                                                           error_type,
                                                           error_msg):
-    with InTemporaryDirectory():
-        bids_path = create_fake_bids_dataset(n_sub=1,
-                                             n_ses=1,
-                                             tasks=['main'],
-                                             n_runs=[1])
+    bids_path = create_fake_bids_dataset(base_dir=tmp_path,
+                                         n_sub=1,
+                                         n_ses=1,
+                                         tasks=['main'],
+                                         n_runs=[1])
 
-        with pytest.raises(error_type, match = error_msg):
-            first_level_from_bids(
-                dataset_path=bids_path,
-                task_label='main',
-                space_label='MNI',
-                img_filters=[('desc', 'preproc')],
-                t_r=t_r)
+    with pytest.raises(error_type, match = error_msg):
+        first_level_from_bids(
+            dataset_path= str(tmp_path / bids_path),
+            task_label='main',
+            space_label='MNI',
+            img_filters=[('desc', 'preproc')],
+            t_r=t_r
+        )
 
 
 @pytest.mark.parametrize('slice_time_ref, warning_msg', 
                          [(None, "not provided and cannot be inferred"), 
                           (0.5, "given in model_init")])
-def test_first_level_from_bids_set_slice_timing_ref_warnings(slice_time_ref,
+def test_first_level_from_bids_set_slice_timing_ref_warnings(tmp_path,
+                                                             slice_time_ref,
                                                              warning_msg):
-    with InTemporaryDirectory():
-        bids_path = create_fake_bids_dataset(n_sub=10,
+
+        bids_path = create_fake_bids_dataset(base_dir=tmp_path,
+                                             n_sub=10,
                                              n_ses=1,
                                              tasks=['main'],
                                              n_runs=[1])
 
         with pytest.warns(UserWarning,match = warning_msg):
             models, *_ = first_level_from_bids(
-                dataset_path=bids_path,
+                dataset_path= str(tmp_path / bids_path),
                 task_label='main',
                 space_label='MNI',
                 img_filters=[('desc', 'preproc')],
-                slice_time_ref=slice_time_ref)
+                slice_time_ref=slice_time_ref
+            )
             
             #  default to 0 when none is provided
             if slice_time_ref is None:
@@ -644,102 +651,110 @@ def test_first_level_from_bids_set_slice_timing_ref_warnings(slice_time_ref,
 @pytest.mark.parametrize('slice_time_ref, error_type, error_msg', 
                          [('not a number', TypeError, "must be a float"), 
                           (2, ValueError, "between 0 and 1")])
-def test_first_level_from_bids_set_slice_timing_ref_errors(slice_time_ref,
+def test_first_level_from_bids_set_slice_timing_ref_errors(
+                                                    tmp_path,
+                                                    slice_time_ref,
                                                     error_type,
                                                     error_msg):
-    with InTemporaryDirectory():
-        bids_path = create_fake_bids_dataset(n_sub=1,
-                                             n_ses=1,
-                                             tasks=['main'],
-                                             n_runs=[1])
-   
 
-        with pytest.raises(error_type, match = error_msg):
-            first_level_from_bids(
-                dataset_path=bids_path,
-                task_label='main',
-                space_label='MNI',
-                img_filters=[('desc', 'preproc')],
-                slice_time_ref=slice_time_ref)     
+    bids_path = create_fake_bids_dataset(base_dir=tmp_path,
+                                            n_sub=1,
+                                            n_ses=1,
+                                            tasks=['main'],
+                                            n_runs=[1])
+
+    with pytest.raises(error_type, match = error_msg):
+        first_level_from_bids(
+            dataset_path= str(tmp_path / bids_path),
+            task_label='main',
+            space_label='MNI',
+            img_filters=[('desc', 'preproc')],
+            slice_time_ref=slice_time_ref)     
 
 
-def test_first_level_from_bids_get_metadata_from_derivatives():
+def test_first_level_from_bids_get_metadata_from_derivatives(tmp_path):
     """Create a bold.json file in derivatives dataset.
 
     No warning should be thrown given derivatives have metadata
     """
-    with InTemporaryDirectory():
-        bids_path = create_fake_bids_dataset(n_sub=10,
-                                             n_ses=1,
-                                             tasks=['main'],
-                                             n_runs=[1])
-        
-        RepetitionTime = 6.0
-        StartTime = 2.0
-        add_metadata_to_bids_derivatives(bids_path, 
-                                    {"RepetitionTime": RepetitionTime, 
-                                     "StartTime": StartTime})
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-            models, *_ = first_level_from_bids(
-                dataset_path=bids_path,
-                task_label='main',
-                space_label='MNI',
-                img_filters=[('desc', 'preproc')])
-            assert models[0].t_r == RepetitionTime                     
-            assert models[0].slice_time_ref == StartTime / RepetitionTime
+
+    bids_path = create_fake_bids_dataset(base_dir=tmp_path,
+                                         n_sub=10,
+                                         n_ses=1,
+                                         tasks=['main'],
+                                         n_runs=[1])
+    
+    RepetitionTime = 6.0
+    StartTime = 2.0
+    add_metadata_to_bids_derivatives(
+        bids_path = tmp_path / bids_path, 
+        metadata = {"RepetitionTime": RepetitionTime, 
+                    "StartTime": StartTime})
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        models, *_ = first_level_from_bids(
+            dataset_path=str(tmp_path / bids_path),
+            task_label='main',
+            space_label='MNI',
+            img_filters=[('desc', 'preproc')])
+        assert models[0].t_r == RepetitionTime                     
+        assert models[0].slice_time_ref == StartTime / RepetitionTime
 
 
-def test_first_level_from_bids_get_RepetitionTime_from_derivatives():
+def test_first_level_from_bids_get_RepetitionTime_from_derivatives(tmp_path):
     """Only RepetitionTime is provided in derivatives.
     
     Warning about missing StarTime time in derivatives.
     slice_time_ref cannot be inferred: defaults to 0.
     """
-    with InTemporaryDirectory():
-        bids_path = create_fake_bids_dataset(n_sub=10,
-                                             n_ses=1,
-                                             tasks=['main'],
-                                             n_runs=[1])
-        RepetitionTime = 6.0
-        add_metadata_to_bids_derivatives(bids_path, 
-                                    {"RepetitionTime": RepetitionTime})  
 
-        with pytest.warns(UserWarning,
-                          match = "StartTime' not found in file"):
-            models, *_ = first_level_from_bids(
-                dataset_path=bids_path,
-                task_label='main',
-                space_label='MNI',
-                img_filters=[('desc', 'preproc')])
-            assert models[0].t_r == 6.0                   
-            assert models[0].slice_time_ref == 0.0                           
+    bids_path = create_fake_bids_dataset(base_dir=tmp_path,
+                                         n_sub=10,
+                                         n_ses=1,
+                                         tasks=['main'],
+                                         n_runs=[1])
+    RepetitionTime = 6.0
+    add_metadata_to_bids_derivatives(
+        bids_path = tmp_path / bids_path, 
+        metadata = {"RepetitionTime": RepetitionTime})  
+
+    with pytest.warns(UserWarning,
+                        match = "StartTime' not found in file"):
+        models, *_ = first_level_from_bids(
+            dataset_path=str(tmp_path / bids_path),
+            task_label='main',
+            space_label='MNI',
+            img_filters=[('desc', 'preproc')])
+        assert models[0].t_r == 6.0                   
+        assert models[0].slice_time_ref == 0.0                           
 
 
-def test_first_level_from_bids_get_StartTime_from_derivatives():
+def test_first_level_from_bids_get_StartTime_from_derivatives(tmp_path):
     """Only StartTime is provided in derivatives.
     
     Warning about missing repetition time in derivatives,
     but RepetitionTime is still read from raw dataset.
     """
-    with InTemporaryDirectory():
-        bids_path = create_fake_bids_dataset(n_sub=10,
-                                             n_ses=1,
-                                             tasks=['main'],
-                                             n_runs=[1])
-        StartTime = 1.0
-        add_metadata_to_bids_derivatives(bids_path, 
-                                    {"StartTime": StartTime})               
 
-        with pytest.warns(UserWarning,
-                          match = "RepetitionTime' not found in file"):
-            models, *_ = first_level_from_bids(
-                dataset_path=bids_path,
-                task_label='main',
-                space_label='MNI',
-                img_filters=[('desc', 'preproc')])
-            assert models[0].t_r == 1.5                     
-            assert models[0].slice_time_ref == StartTime / 1.5   
+    bids_path = create_fake_bids_dataset(base_dir=tmp_path,
+                                         n_sub=10,
+                                         n_ses=1,
+                                         tasks=['main'],
+                                         n_runs=[1])
+    StartTime = 1.0
+    add_metadata_to_bids_derivatives(
+        bids_path = tmp_path / bids_path, 
+        metadata = {"StartTime": StartTime})               
+
+    with pytest.warns(UserWarning,
+                        match = "RepetitionTime' not found in file"):
+        models, *_ = first_level_from_bids(
+            dataset_path=str(tmp_path / bids_path),
+            task_label='main',
+            space_label='MNI',
+            img_filters=[('desc', 'preproc')])
+        assert models[0].t_r == 1.5                     
+        assert models[0].slice_time_ref == StartTime / 1.5   
 
 
 def test_first_level_contrast_computation():

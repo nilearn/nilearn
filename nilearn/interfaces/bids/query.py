@@ -127,7 +127,7 @@ def _infer_repetition_time_from_dataset(
                                file_tag='bold',
                                file_type='json',
                                filters=filters)
-    print(img_specs)
+
     return _get_metadata_from_bids(field="RepetitionTime",
                              json_files=img_specs,)
 
