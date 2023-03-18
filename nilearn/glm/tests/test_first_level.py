@@ -622,7 +622,7 @@ def test_first_level_from_bids_set_slice_timing_ref():
    
         with pytest.warns(
             UserWarning,
-            match = "'slice_time_ref' .*not provided .*not inferred"
+            match = "slice_time_ref' not provided and cannot be inferred"
         ):
             models, *_ = first_level_from_bids(
                 dataset_path=bids_path,
