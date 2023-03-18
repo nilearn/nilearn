@@ -941,12 +941,12 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         t_r = _infer_repetition_time_from_dataset(
             bids_path=derivatives_path,
             filters=filters)
-    # If the parameter information is not found in the derivatives folder,
-    # a search is done in the raw data folder.         
-    if t_r is None:
-        t_r = _infer_repetition_time_from_dataset(
-        bids_path=dataset_path,
-        filters=filters)
+        # If the parameter information is not found in the derivatives folder,
+        # a search is done in the raw data folder.         
+        if t_r is None:
+            t_r = _infer_repetition_time_from_dataset(
+            bids_path=dataset_path,
+            filters=filters)
     if t_r is not None:        
         _check_repetition_time(t_r)
     else:
