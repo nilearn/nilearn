@@ -6,7 +6,6 @@ Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 
 """
 import glob
-import json
 import os
 import sys
 import time
@@ -19,7 +18,11 @@ from nibabel import Nifti1Image
 from sklearn.base import clone
 from sklearn.cluster import KMeans
 
-from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
+from nilearn.interfaces.bids import (get_bids_files,
+                                     parse_bids_filename)
+from nilearn.interfaces.bids.query import \
+    (_infer_slice_timing_start_time_from_dataset,
+     _infer_repetition_time_from_dataset)
 from nilearn._utils import fill_doc
 from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
                                 _check_run_tables, _check_run_sample_masks)
@@ -356,10 +359,10 @@ class FirstLevelModel(BaseGLM):
                  minimize_memory=True, subject_label=None, random_state=None):
         # design matrix parameters
         if t_r is not None:
-            _validate_repetition_time(t_r)
+            _check_repetition_time(t_r)
         self.t_r = t_r
         if slice_time_ref is not None:
-            _validate_slice_time_ref(slice_time_ref)        
+            _check_slice_time_ref(slice_time_ref)        
         self.slice_time_ref = slice_time_ref
         self.hrf_model = hrf_model
         self.drift_model = drift_model
@@ -797,7 +800,7 @@ class FirstLevelModel(BaseGLM):
         return output
 
 
-def _validate_repetition_time(t_r):
+def _check_repetition_time(t_r):
     if not isinstance(t_r, (float, int)):
         raise TypeError("'t_r' must be a float or an integer. "
                         f"Got {type(t_r)} instead.")   
@@ -806,66 +809,13 @@ def _validate_repetition_time(t_r):
                         f"Got {t_r} instead.")        
 
 
-def _validate_slice_time_ref(slice_time_ref):
+def _check_slice_time_ref(slice_time_ref):
     if not isinstance(slice_time_ref, (float, int)):
         raise TypeError("'slice_time_ref' must be a float or an integer. "
                         f"Got {type(slice_time_ref)} instead.")   
     if slice_time_ref < 0 or slice_time_ref > 1:
         raise ValueError("'slice_time_ref' must be between 0 and 1. "
                         f"Got {slice_time_ref} instead.")  
-
-
-def _get_from_metadata(field, img_specs, dataset_type):
-
-    if img_specs:
-        with open(img_specs[0], 'r') as f:
-            specs = json.load(f)
-        value = specs.get(field)
-        if value is not None:
-            return float(value)
-        else:
-            warn(f"'{field}' not found in file {img_specs[0]}.")
-    else:
-        warn(f'No bold.json found in BIDS {dataset_type} folder.')
-    
-    return None
-
-def _infer_slice_timing_start_time_from_dataset(derivatives_path, filters):
-    # slice timing metadata can only be found in derivatives
-    img_specs = get_bids_files(derivatives_path,
-                               modality_folder='func',
-                               file_tag='bold',
-                               file_type='json',
-                               filters=filters)
-    
-    return _get_from_metadata(field="StartTime",
-                             img_specs=img_specs,
-                             dataset_type="derivatives")  
-
-def _infer_repetition_time_from_dataset(dataset_path, derivatives_path, filters):
-    # If we don't find the parameter information in the derivatives folder
-    # we try to search in the raw data folder
-
-    img_specs = get_bids_files(derivatives_path,
-                               modality_folder='func',
-                                file_tag='bold',
-                                file_type='json',
-                                filters=filters)
-    t_r = _get_from_metadata(field="RepetitionTime",
-                             img_specs=img_specs,
-                             dataset_type="derivatives")
-    if t_r is not None:
-        return t_r
-
-    img_specs = get_bids_files(dataset_path,
-                               modality_folder='func',
-                                file_tag='bold',
-                                file_type='json',
-                                filters=filters)
-    t_r = _get_from_metadata(field="RepetitionTime",
-                             img_specs=img_specs,
-                             dataset_type="raw")             
-    return t_r
 
 
 def first_level_from_bids(dataset_path, task_label, space_label=None,
@@ -976,35 +926,43 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     if not os.path.exists(derivatives_path):
         raise ValueError('derivatives folder does not exist in given dataset')
 
-
-    # Get acq specs for models. RepetitionTime and SliceTimingReference.
+    # Get acq specs for models.
+    # RepetitionTime and StartTime for slice timing.
     # Throw warning if no bold.json is found
     filters = [('task', task_label)]
     for img_filter in img_filters:
         if img_filter[0] in ['acq', 'rec', 'run']:
             filters.append(img_filter)
+
     if t_r is not None:
-        _validate_repetition_time(t_r)
+        _check_repetition_time(t_r)
         warn("'RepetitionTime' given in model_init as {t_r}")
     else:
         t_r = _infer_repetition_time_from_dataset(
-            dataset_path=dataset_path,
-            derivatives_path=derivatives_path,
+            bids_path=derivatives_path,
             filters=filters)
+    # If the parameter information is not found in the derivatives folder,
+    # a search is done in the raw data folder.         
+    if t_r is None:
+        t_r = _infer_repetition_time_from_dataset(
+        bids_path=dataset_path,
+        filters=filters)
     if t_r is not None:        
-        _validate_repetition_time(t_r)
+        _check_repetition_time(t_r)
     else:
         warn("'t_r' not provided and cannot be inferred from metadata. " 
              "It will need to be set manually in the list of models, "
              "otherwise their fit will throw an exception.")
 
     if slice_time_ref is not None:
-        _validate_slice_time_ref(slice_time_ref)
+        _check_slice_time_ref(slice_time_ref)
         warn("'slice_time_ref' given in model_init as {slice_time_ref}")
         warn("'slice_time_ref' is {slice_time_ref} percent of the repetition "
              'time')
     else:
-        StartTime = _infer_slice_timing_start_time_from_dataset(derivatives_path, filters)
+        StartTime = _infer_slice_timing_start_time_from_dataset(
+            bids_path=derivatives_path, 
+            filters=filters)
         if StartTime is not None and t_r is not None:
             assert(StartTime < t_r)
             slice_time_ref = StartTime / t_r
@@ -1016,7 +974,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                  "If it is not the case it will need to "
                  "be set manually in the generated list of models.")            
             slice_time_ref = 0.0
-    _validate_slice_time_ref(slice_time_ref)
+    _check_slice_time_ref(slice_time_ref)
 
     # Infer subjects in dataset
     if not sub_labels:

@@ -1,6 +1,135 @@
 """Functions for working with BIDS datasets."""
+
+from __future__ import annotations
+
 import glob
+import json
 import os
+from typing import Any
+
+from pathlib import Path
+from warnings import warn
+
+def _get_metadata_from_bids(field: str,
+                            json_files: list[str] | list[Path]) -> Any:
+    """Get a metadata field from a BIDS json sidecar files.
+
+    This assumes that all the json files in the list have the same value
+    for that field,
+    hence the metadata is read only from the first json file in the list.
+
+    Parameters
+    ----------
+    field : :obj:`str`
+        Name of the field to be read. For example 'RepetitionTime'.
+
+    json_files : :obj:`list` of :obj:`str`
+        List of path to json files, for example returned by get_bids_files.
+
+    dataset_type : :obj:`str`
+        String to describe the type of dataset, 
+        for example either 'raw' or 'derivatives'.
+
+    Returns
+    -------
+    float or None
+        value of the field or None if the field is not found.
+    """
+    if json_files:
+        assert (
+                isinstance(json_files, list) 
+                and isinstance(json_files[0], (Path, str))
+                )
+        with open(json_files[0], 'r') as f:
+            specs = json.load(f)
+        value = specs.get(field)
+        if value is not None:
+            return value
+        else:
+            warn(f"'{field}' not found in file {json_files[0]}.")
+    else:
+        warn('No bold.json found in BIDS folder.')
+    
+    return None
+
+
+def _infer_slice_timing_start_time_from_dataset(
+        bids_path: str | Path,
+        filters: list[tuple[str,str]]) -> int | float | None:
+    """Return the StartTime metadata field from a BIDS derivatives dataset.
+
+    This corresponds to the reference time (in seconds) used for the slice
+    timing correction.
+
+    See https://github.com/bids-standard/bids-specification/issues/836
+
+    Parameters
+    ----------
+    bids_path : :obj:`str` or :obj:`pathlib.Path`
+        Fullpath to the derivatives folder of the BIDS dataset.
+
+    filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), optional
+        Filters are of the form (field, label). Only one filter per field
+        allowed. A file that does not match a filter will be discarded.
+        Filter examples would be ('ses', '01'), ('dir', 'ap') and
+        ('task', 'localizer').
+
+    Returns
+    -------
+    Any
+        Value of the field or None if the field is not found.
+
+    """
+    # slice timing metadata can only be found in derivatives
+
+    if not Path(bids_path).exists():
+        warn(f"derivatives_path {bids_path} does not exist.")
+        return None
+    
+    img_specs = get_bids_files(bids_path,
+                               modality_folder='func',
+                               file_tag='bold',
+                               file_type='json',
+                               filters=filters)
+    
+    return _get_metadata_from_bids(field="StartTime",
+                                   json_files=img_specs)  
+
+
+def _infer_repetition_time_from_dataset(
+        bids_path: str | Path, 
+        filters: list[tuple[str,str]]) ->  int | float | None:
+    """Return the RepetitionTime metadata field from a BIDS dataset. 
+
+    Parameters
+    ----------
+    bids_path : :obj:`str` or :obj:`pathlib.Path`
+        Fullpath to the raw folder of the BIDS dataset.
+
+    filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), optional
+        Filters are of the form (field, label). Only one filter per field
+        allowed. A file that does not match a filter will be discarded.
+        Filter examples would be ('ses', '01'), ('dir', 'ap') and
+        ('task', 'localizer').
+
+    Returns
+    -------
+    Any
+        Value of the field or None if the field is not found.
+
+    """
+    if not Path(bids_path).exists():
+        warn(f"dataset_path {bids_path} does not exist.")
+        return None
+    
+    img_specs = get_bids_files(main_path=bids_path,
+                               modality_folder='func',
+                               file_tag='bold',
+                               file_type='json',
+                               filters=filters)
+    print(img_specs)
+    return _get_metadata_from_bids(field="RepetitionTime",
+                             json_files=img_specs,)
 
 
 def get_bids_files(

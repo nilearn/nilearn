@@ -1,13 +1,10 @@
 """
 Test the first level model.
 """
-import json
 import os
 import shutil
 import unittest.mock
 import warnings
-
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -21,7 +18,8 @@ from sklearn.cluster import KMeans
 from nilearn._utils.data_gen import (create_fake_bids_dataset,
                                      generate_fake_fmri_data_and_design,
                                      write_fake_fmri_data_and_design,
-                                     basic_paradigm)
+                                     basic_paradigm,
+                                     add_metadata_to_bids_derivatives)
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (FirstLevelModel, first_level_from_bids,
                                      mean_scaling, run_glm)
@@ -665,13 +663,6 @@ def test_first_level_from_bids_set_slice_timing_ref_errors(slice_time_ref,
                 slice_time_ref=slice_time_ref)     
 
 
-def _add_metadata_to_derivatrives(bids_path, metadata):
-    json_file = (Path(bids_path) / 'derivatives' / 'sub-01' / 'ses-01' / 
-                    'func' / 'sub-01_ses-01_task-main_run-01_bold.json')
-    with open(json_file, 'w') as f:
-        json.dump(metadata, f)
-
-
 def test_first_level_from_bids_get_metadata_from_derivatives():
     """Create a bold.json file in derivatives dataset.
 
@@ -685,7 +676,7 @@ def test_first_level_from_bids_get_metadata_from_derivatives():
         
         RepetitionTime = 6.0
         StartTime = 2.0
-        _add_metadata_to_derivatrives(bids_path, 
+        add_metadata_to_bids_derivatives(bids_path, 
                                     {"RepetitionTime": RepetitionTime, 
                                      "StartTime": StartTime})
         with warnings.catch_warnings():
@@ -711,7 +702,7 @@ def test_first_level_from_bids_get_RepetitionTime_from_derivatives():
                                              tasks=['main'],
                                              n_runs=[1])
         RepetitionTime = 6.0
-        _add_metadata_to_derivatrives(bids_path, 
+        add_metadata_to_bids_derivatives(bids_path, 
                                     {"RepetitionTime": RepetitionTime})  
 
         with pytest.warns(UserWarning,
@@ -737,7 +728,7 @@ def test_first_level_from_bids_get_StartTime_from_derivatives():
                                              tasks=['main'],
                                              n_runs=[1])
         StartTime = 1.0
-        _add_metadata_to_derivatrives(bids_path, 
+        add_metadata_to_bids_derivatives(bids_path, 
                                     {"StartTime": StartTime})               
 
         with pytest.warns(UserWarning,

@@ -1,4 +1,5 @@
 """Tests for the nilearn.interfaces.bids submodule."""
+import json
 import os
 
 import numpy as np
@@ -12,12 +13,89 @@ from nilearn.glm.second_level import SecondLevelModel
 from nilearn._utils.data_gen import (
     create_fake_bids_dataset,
     generate_fake_fmri_data_and_design,
+    add_metadata_to_bids_derivatives
 )
 from nilearn.interfaces.bids import (
     get_bids_files,
     parse_bids_filename,
     save_glm_to_bids,
 )
+
+from nilearn.interfaces.bids.query import \
+    (_get_metadata_from_bids,
+     _infer_repetition_time_from_dataset,
+     _infer_slice_timing_start_time_from_dataset)
+
+
+def test_get_metadata_from_bids(tmp_path):
+
+        json_file = tmp_path / "sub-01_task-main_bold.json"
+        json_files=[json_file]
+
+        with open(json_file, "w") as f:
+            json.dump({"RepetitionTime": 2.0}, f)
+        value = _get_metadata_from_bids(field="RepetitionTime",
+                                json_files=json_files)
+        assert value == 2.0
+
+        with open(json_file, "w") as f:
+            json.dump({"foo": 2.0}, f)
+        with pytest.warns(UserWarning, match="'RepetitionTime' not found"):                
+            value = _get_metadata_from_bids(field="RepetitionTime",
+                                    json_files=json_files)           
+
+        json_files = []
+        with pytest.warns(UserWarning, match="No .*json found in BIDS"):
+            value = _get_metadata_from_bids(field="RepetitionTime",
+                                    json_files=json_files)
+            assert value is None
+
+
+def test_infer_repetition_time_from_dataset(tmp_path):
+
+    bids_path = create_fake_bids_dataset(base_dir=tmp_path,
+                                            n_sub=1,
+                                            n_ses=1,
+                                            tasks=['main'],
+                                            n_runs=[1])
+
+    t_r = _infer_repetition_time_from_dataset(
+        bids_path = tmp_path / bids_path,
+        filters=[('task', 'main')]
+        )
+    assert t_r == 1.5
+
+    add_metadata_to_bids_derivatives(
+        bids_path = tmp_path / bids_path,
+        metadata = {"RepetitionTime": 2.0})
+    t_r = _infer_repetition_time_from_dataset(
+        bids_path = tmp_path / bids_path / 'derivatives',
+        filters=[('task', 'main'), ('run', '01')])
+    assert t_r == 2.0        
+
+
+def test_infer_slice_timing_start_time_from_dataset(tmp_path):
+
+    bids_path = create_fake_bids_dataset(base_dir=tmp_path,
+                                            n_sub=1,
+                                            n_ses=1,
+                                            tasks=['main'],
+                                            n_runs=[1])
+
+    StartTime = _infer_slice_timing_start_time_from_dataset(
+        bids_path = tmp_path / bids_path / "derivatives",
+        filters=[('task', 'main')]
+        )
+    assert StartTime is None
+
+    add_metadata_to_bids_derivatives(
+        bids_path = tmp_path / bids_path,
+        metadata = {"StartTime": 1.0})
+    StartTime = _infer_slice_timing_start_time_from_dataset(
+        bids_path = tmp_path / bids_path / "derivatives",
+        filters=[('task', 'main')]
+        )
+    assert StartTime == 1.0    
 
 
 def test_get_bids_files():

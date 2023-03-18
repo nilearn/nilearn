@@ -1,9 +1,13 @@
 """
 Data generation utilities
 """
+from __future__ import annotations
+
 import json
 import os
 import string
+
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -786,6 +790,21 @@ def basic_confounds(length, random_state=0):
     data = rand_gen.rand(length, 6)
     confounds = pd.DataFrame(data, columns=columns)
     return confounds
+
+
+def add_metadata_to_bids_derivatives(bids_path: str | Path,
+                                      metadata: dict,
+                                      json_file: str = None) -> Path:
+    if json_file is None:
+        json_file = (Path(bids_path) / 'derivatives' / 'sub-01' / 'ses-01' / 
+                        'func' / 'sub-01_ses-01_task-main_run-01_bold.json')
+    else:
+        json_file = Path(bids_path) / json_file
+
+    with open(json_file, 'w') as f:
+        json.dump(metadata, f)
+
+    return json_file
 
 
 def create_fake_bids_dataset(base_dir='',
