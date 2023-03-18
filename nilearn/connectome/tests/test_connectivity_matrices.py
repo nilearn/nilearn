@@ -482,7 +482,7 @@ def _generate_signals_and_compute_covariances(n_subjects, n_features):
     ledoit_estimator = LedoitWolf()
     for k in range(n_subjects):
         n_samples = 200 + k
-        signal, _, _ = generate_signals(
+        signal, *_ = generate_signals(
             n_features=n_features,
             n_confounds=5,
             length=n_samples,
@@ -497,6 +497,9 @@ def _generate_signals_and_compute_covariances(n_subjects, n_features):
 
 
 @pytest.mark.parametrize(
+    "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
+)
+@pytest.mark.parametrize(
     "kind",
     [
         "covariance",
@@ -506,68 +509,140 @@ def _generate_signals_and_compute_covariances(n_subjects, n_features):
         "partial correlation",
     ],
 )
-def test_connectivity_measure(kind):
-    n_subjects = 10
-    n_features = 49
-
+def test_connectivity_measure(kind, cov_estimator):
     signals, emp_covs, ledoit_covs = _generate_signals_and_compute_covariances(
-        n_subjects, n_features
+        n_subjects=5, n_features=49
     )
 
+    if isinstance(cov_estimator, LedoitWolf):
+        covs = ledoit_covs
+    elif isinstance(cov_estimator, EmpiricalCovariance):
+        covs = emp_covs
+
     # Check outputs properties
-    for cov_estimator, covs in zip(
-        [EmpiricalCovariance(), LedoitWolf()], [emp_covs, ledoit_covs]
-    ):
-        input_covs = copy.copy(covs)
-        conn_measure = ConnectivityMeasure(
-            kind=kind, cov_estimator=cov_estimator
+    input_covs = copy.copy(covs)
+    conn_measure = ConnectivityMeasure(kind=kind, cov_estimator=cov_estimator)
+    connectivities = conn_measure.fit_transform(signals)
+
+    # Generic
+    assert isinstance(connectivities, np.ndarray)
+    assert len(connectivities) == len(covs)
+
+    for k, _ in enumerate(connectivities):
+        assert_array_equal(input_covs[k], covs[k])
+        assert is_spd(covs[k], decimal=7)
+
+
+@pytest.mark.parametrize(
+    "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
+)
+def test_connectivity_measure_tangent(cov_estimator):
+    n_features = 49
+    kind = "tangent"
+    signals, emp_covs, ledoit_covs = _generate_signals_and_compute_covariances(
+        n_subjects=5, n_features=n_features
+    )
+
+    conn_measure = ConnectivityMeasure(kind=kind, cov_estimator=cov_estimator)
+    connectivities = conn_measure.fit_transform(signals)
+
+    if isinstance(cov_estimator, LedoitWolf):
+        covs = ledoit_covs
+    elif isinstance(cov_estimator, EmpiricalCovariance):
+        covs = emp_covs
+
+    for k, cov_new in enumerate(connectivities):
+        # Positive definiteness if expected and output value checks
+
+        assert_array_almost_equal(cov_new, cov_new.T)
+        gmean_sqrt = _map_eigenvalues(np.sqrt, conn_measure.mean_)
+        assert is_spd(gmean_sqrt, decimal=7)
+        assert is_spd(conn_measure.whitening_, decimal=7)
+        assert_array_almost_equal(
+            conn_measure.whitening_.dot(gmean_sqrt),
+            np.eye(n_features),
         )
-        connectivities = conn_measure.fit_transform(signals)
+        assert_array_almost_equal(
+            gmean_sqrt.dot(_map_eigenvalues(np.exp, cov_new)).dot(gmean_sqrt),
+            covs[k],
+        )
 
-        # Generic
-        assert isinstance(connectivities, np.ndarray)
-        assert len(connectivities) == len(covs)
 
-        for k, cov_new in enumerate(connectivities):
-            assert_array_equal(input_covs[k], covs[k])
-            assert is_spd(covs[k], decimal=7)
+@pytest.mark.parametrize(
+    "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
+)
+def test_connectivity_measure_precision(cov_estimator):
+    n_features = 49
+    kind = "precision"
 
-            # Positive definiteness if expected and output value checks
-            if kind == "tangent":
-                assert_array_almost_equal(cov_new, cov_new.T)
-                gmean_sqrt = _map_eigenvalues(np.sqrt, conn_measure.mean_)
-                assert is_spd(gmean_sqrt, decimal=7)
-                assert is_spd(conn_measure.whitening_, decimal=7)
-                assert_array_almost_equal(
-                    conn_measure.whitening_.dot(gmean_sqrt),
-                    np.eye(n_features),
-                )
-                assert_array_almost_equal(
-                    gmean_sqrt.dot(_map_eigenvalues(np.exp, cov_new)).dot(
-                        gmean_sqrt
-                    ),
-                    covs[k],
-                )
-            elif kind == "precision":
-                assert is_spd(cov_new, decimal=7)
-                assert_array_almost_equal(
-                    cov_new.dot(covs[k]), np.eye(n_features)
-                )
-            elif kind == "correlation":
-                assert is_spd(cov_new, decimal=7)
-                d = np.sqrt(np.diag(np.diag(covs[k])))
-                if cov_estimator == EmpiricalCovariance():
-                    assert_array_almost_equal(d.dot(cov_new).dot(d), covs[k])
-                assert_array_almost_equal(
-                    np.diag(cov_new), np.ones(n_features)
-                )
-            elif kind == "partial correlation":
-                prec = linalg.inv(covs[k])
-                d = np.sqrt(np.diag(np.diag(prec)))
-                assert_array_almost_equal(
-                    d.dot(cov_new).dot(d),
-                    -prec + 2 * np.diag(np.diag(prec)),
-                )
+    signals, emp_covs, ledoit_covs = _generate_signals_and_compute_covariances(
+        n_subjects=5, n_features=n_features
+    )
+
+    conn_measure = ConnectivityMeasure(kind=kind, cov_estimator=cov_estimator)
+    connectivities = conn_measure.fit_transform(signals)
+
+    if isinstance(cov_estimator, LedoitWolf):
+        covs = ledoit_covs
+    elif isinstance(cov_estimator, EmpiricalCovariance):
+        covs = emp_covs
+
+    for k, cov_new in enumerate(connectivities):
+        assert is_spd(cov_new, decimal=7)
+        assert_array_almost_equal(cov_new.dot(covs[k]), np.eye(n_features))
+
+
+@pytest.mark.parametrize(
+    "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
+)
+def test_connectivity_measure_correlation(cov_estimator):
+    n_features = 49
+    kind = "correlation"
+    signals, emp_covs, ledoit_covs = _generate_signals_and_compute_covariances(
+        n_subjects=5, n_features=n_features
+    )
+
+    conn_measure = ConnectivityMeasure(kind=kind, cov_estimator=cov_estimator)
+    connectivities = conn_measure.fit_transform(signals)
+
+    if isinstance(cov_estimator, LedoitWolf):
+        covs = ledoit_covs
+    elif isinstance(cov_estimator, EmpiricalCovariance):
+        covs = emp_covs
+
+    for k, cov_new in enumerate(connectivities):
+        assert is_spd(cov_new, decimal=7)
+        d = np.sqrt(np.diag(np.diag(covs[k])))
+        if cov_estimator == EmpiricalCovariance():
+            assert_array_almost_equal(d.dot(cov_new).dot(d), covs[k])
+        assert_array_almost_equal(np.diag(cov_new), np.ones(n_features))
+
+
+@pytest.mark.parametrize(
+    "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
+)
+def test_connectivity_measure_partial_correlation(cov_estimator):
+    n_features = 49
+    kind = "partial correlation"
+    signals, emp_covs, ledoit_covs = _generate_signals_and_compute_covariances(
+        n_subjects=5, n_features=n_features
+    )
+
+    conn_measure = ConnectivityMeasure(kind=kind, cov_estimator=cov_estimator)
+    connectivities = conn_measure.fit_transform(signals)
+
+    if isinstance(cov_estimator, LedoitWolf):
+        covs = ledoit_covs
+    elif isinstance(cov_estimator, EmpiricalCovariance):
+        covs = emp_covs
+
+    for k, cov_new in enumerate(connectivities):
+        prec = linalg.inv(covs[k])
+        d = np.sqrt(np.diag(np.diag(prec)))
+        assert_array_almost_equal(
+            d.dot(cov_new).dot(d),
+            -prec + 2 * np.diag(np.diag(prec)),
+        )
 
 
 @pytest.mark.parametrize(
@@ -581,11 +656,9 @@ def test_connectivity_measure(kind):
     ],
 )
 def test_connectivity_measure_check_mean(kind):
-    n_subjects = 10
     n_features = 49
-
     signals, *_ = _generate_signals_and_compute_covariances(
-        n_subjects, n_features
+        n_subjects=5, n_features=n_features
     )
 
     conn_measure = ConnectivityMeasure(kind=kind)
@@ -616,11 +689,8 @@ def test_connectivity_measure_check_mean(kind):
     ],
 )
 def test_connectivity_measure_check_vectorization_option(kind):
-    n_subjects = 10
-    n_features = 49
-
     signals, *_ = _generate_signals_and_compute_covariances(
-        n_subjects, n_features
+        n_subjects=5, n_features=49
     )
 
     conn_measure = ConnectivityMeasure(kind=kind)
@@ -646,11 +716,8 @@ def test_connectivity_measure_check_vectorization_option(kind):
     ],
 )
 def test_connectivity_measure_check_inverse_transformation(kind):
-    n_subjects = 10
-    n_features = 49
-
     signals, *_ = _generate_signals_and_compute_covariances(
-        n_subjects, n_features
+        n_subjects=5, n_features=49
     )
 
     # without vectorization: input matrices are returned with no change
@@ -680,11 +747,9 @@ def test_connectivity_measure_check_inverse_transformation(kind):
     ],
 )
 def test_connectivity_measure_check_inverse_transformation_discard_diag(kind):
-    n_subjects = 10
-    n_features = 49
-
+    # with vectorization
     signals, *_ = _generate_signals_and_compute_covariances(
-        n_subjects, n_features
+        n_subjects=5, n_features=49
     )
 
     connectivities = ConnectivityMeasure(kind=kind).fit_transform(signals)
@@ -712,14 +777,11 @@ def test_connectivity_measure_check_inverse_transformation_discard_diag(kind):
             conn_measure.inverse_transform(vectorized_connectivities)
 
 
-def test_connectivity_measure_tangent():
+def test_connectivity_measure_inverse_transform_tangent():
     """For 'tangent' kind, covariance matrices are reconstructed \
     without vectorization."""
-    n_subjects = 10
-    n_features = 49
-
     signals, *_ = _generate_signals_and_compute_covariances(
-        n_subjects, n_features
+        n_subjects=5, n_features=49
     )
     tangent_measure = ConnectivityMeasure(kind="tangent")
     displacements = tangent_measure.fit_transform(signals)
@@ -757,15 +819,13 @@ def test_connectivity_measure_tangent():
 
 def test_confounds_connectome_measure():
     n_subjects = 10
-    n_features = 49
-
     # Generate signals and compute covariances and apply confounds while
     # computing covariances
     signals = []
     for k in range(n_subjects):
         n_samples = 200 + k
         signal, _, confounds = generate_signals(
-            n_features=n_features,
+            n_features=49,
             n_confounds=5,
             length=n_samples,
             same_variance=False,
@@ -791,16 +851,14 @@ def test_confounds_connectome_measure():
 
 
 def test_confounds_connectome_measure_errors():
-    n_subjects = 10
-    n_features = 49
-
+    n_subjects = 5
     # Generate signals and compute covariances and apply confounds while
     # computing covariances
     signals = []
     for k in range(n_subjects):
         n_samples = 200 + k
         signal, _, confounds = generate_signals(
-            n_features=n_features,
+            n_features=49,
             n_confounds=5,
             length=n_samples,
             same_variance=False,
