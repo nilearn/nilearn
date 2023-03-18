@@ -571,7 +571,7 @@ def test_first_level_glm_computation_with_memory_caching():
         del mask, func_img, FUNCFILE, model
 
 
-@pytest.mark.parametrize('t_r,warning_msg', 
+@pytest.mark.parametrize('t_r, warning_msg', 
                          [(None, "No bold.json .* BIDS derivatives"), 
                           (3, "'RepetitionTime' given in model_init")])
 def test_first_level_from_bids_set_repetition_time_warnings(t_r, warning_msg):
@@ -596,7 +596,7 @@ def test_first_level_from_bids_set_repetition_time_warnings(t_r, warning_msg):
             assert models[0].t_r == t_r
 
 
-@pytest.mark.parametrize('t_r,error_type,error_msg', 
+@pytest.mark.parametrize('t_r, error_type, error_msg', 
                          [('not a number', TypeError, "must be a float"), 
                           (-1, ValueError, "positive")])
 def test_first_level_from_bids_set_repetition_time_errors(t_r,
@@ -617,7 +617,7 @@ def test_first_level_from_bids_set_repetition_time_errors(t_r,
                 t_r=t_r)
 
 
-@pytest.mark.parametrize('slice_time_ref,warning_msg', 
+@pytest.mark.parametrize('slice_time_ref, warning_msg', 
                          [(None, "not provided and cannot be inferred"), 
                           (0.5, "given in model_init")])
 def test_first_level_from_bids_set_slice_timing_ref_warnings(slice_time_ref,
@@ -643,7 +643,7 @@ def test_first_level_from_bids_set_slice_timing_ref_warnings(slice_time_ref,
             assert models[0].slice_time_ref == slice_time_ref
 
 
-@pytest.mark.parametrize('slice_time_ref,error_type,error_msg', 
+@pytest.mark.parametrize('slice_time_ref, error_type, error_msg', 
                          [('not a number', TypeError, "must be a float"), 
                           (2, ValueError, "between 0 and 1")])
 def test_first_level_from_bids_set_slice_timing_ref_errors(slice_time_ref,
@@ -665,6 +665,13 @@ def test_first_level_from_bids_set_slice_timing_ref_errors(slice_time_ref,
                 slice_time_ref=slice_time_ref)     
 
 
+def _add_metadata_to_derivatrives(bids_path, metadata):
+    json_file = (Path(bids_path) / 'derivatives' / 'sub-01' / 'ses-01' / 
+                    'func' / 'sub-01_ses-01_task-main_run-01_bold.json')
+    with open(json_file, 'w') as f:
+        json.dump(metadata, f)
+
+
 def test_first_level_from_bids_get_metadata_from_derivatives():
     """Create a bold.json file in derivatives dataset.
 
@@ -678,11 +685,9 @@ def test_first_level_from_bids_get_metadata_from_derivatives():
         
         RepetitionTime = 6.0
         StartTime = 2.0
-        json_file = (Path(bids_path) / 'derivatives' / 'sub-01' / 'ses-01' / 
-                     'func' / 'sub-01_ses-01_task-main_run-01_bold.json')
-        with open(json_file, 'w') as f:
-            json.dump({'RepetitionTime': RepetitionTime, 
-                       "StartTime": StartTime}, f)
+        _add_metadata_to_derivatrives(bids_path, 
+                                    {"RepetitionTime": RepetitionTime, 
+                                     "StartTime": StartTime})
         with warnings.catch_warnings():
             warnings.simplefilter("error")
             models, *_ = first_level_from_bids(
@@ -706,10 +711,8 @@ def test_first_level_from_bids_get_RepetitionTime_from_derivatives():
                                              tasks=['main'],
                                              n_runs=[1])
         RepetitionTime = 6.0
-        json_file = (Path(bids_path) / 'derivatives' / 'sub-01' / 'ses-01' / 
-                     'func' / 'sub-01_ses-01_task-main_run-01_bold.json')
-        with open(json_file, 'w') as f:
-            json.dump({'RepetitionTime': RepetitionTime}, f)    
+        _add_metadata_to_derivatrives(bids_path, 
+                                    {"RepetitionTime": RepetitionTime})  
 
         with pytest.warns(UserWarning,
                           match = "StartTime' not found in file"):
@@ -734,10 +737,8 @@ def test_first_level_from_bids_get_StartTime_from_derivatives():
                                              tasks=['main'],
                                              n_runs=[1])
         StartTime = 1.0
-        json_file = (Path(bids_path) / 'derivatives' / 'sub-01' / 'ses-01' / 
-                     'func' / 'sub-01_ses-01_task-main_run-01_bold.json')
-        with open(json_file, 'w') as f:
-            json.dump({"StartTime": StartTime}, f)      
+        _add_metadata_to_derivatrives(bids_path, 
+                                    {"StartTime": StartTime})               
 
         with pytest.warns(UserWarning,
                           match = "RepetitionTime' not found in file"):
