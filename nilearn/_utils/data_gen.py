@@ -835,7 +835,7 @@ def generate_random_img(
 
 
 def create_fake_bids_dataset(
-    base_dir: str = "",
+    base_dir: str | Path = Path(),
     n_sub: int = 10,
     n_ses: int = 2,
     tasks: list[str] = ["localizer", "main"],
@@ -846,7 +846,7 @@ def create_fake_bids_dataset(
     no_session: bool = False,
     random_state=0,
     entities: dict[str, list[str]] | None = None,
-) -> str:
+) -> Path:
     """Create a fake :term:`bids<BIDS>` dataset directory with dummy files.
 
     Returns fake dataset directory name.
@@ -909,7 +909,7 @@ def create_fake_bids_dataset(
 
     Returns
     -------
-    dataset directory name : :obj:`str`
+    dataset directory name : :obj:`pathlib.Path`
         'bids_dataset'.
 
     Notes
@@ -922,6 +922,7 @@ def create_fake_bids_dataset(
     rand_gen = check_random_state(random_state)
 
     bids_dataset_dir = "bids_dataset"
+    bids_path = Path(base_dir) / bids_dataset_dir
 
     if no_session:
         n_ses = 0
@@ -946,7 +947,7 @@ def create_fake_bids_dataset(
     _validate_entities_and_labels(entities)
 
     _mock_bids_dataset(
-        bids_path=Path(base_dir) / bids_dataset_dir,
+        bids_path=bids_path,
         n_sub=n_sub,
         n_ses=n_ses,
         tasks=tasks,
@@ -961,7 +962,7 @@ def create_fake_bids_dataset(
             confounds_tag = None
 
         _mock_bids_derivatives(
-            bids_path=Path(base_dir) / bids_dataset_dir,
+            bids_path=bids_path,
             n_sub=n_sub,
             n_ses=n_ses,
             tasks=tasks,
@@ -972,7 +973,7 @@ def create_fake_bids_dataset(
             rand_gen=rand_gen,
         )
 
-    return bids_dataset_dir
+    return bids_path
 
 
 def _validate_entities_and_labels(entities: dict) -> None:
