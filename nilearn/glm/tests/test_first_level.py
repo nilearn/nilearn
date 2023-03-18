@@ -575,7 +575,8 @@ def test_first_level_from_bids_set_repetition_time():
                                              tasks=['main'],
                                              n_runs=[ 3])
 
-        with pytest.warns(None):
+        with pytest.warns(UserWarning,
+                          match = "No bold.json .* BIDS derivatives"):            
             models, *_ = first_level_from_bids(
                 dataset_path=bids_path,
                 task_label='main',
@@ -584,7 +585,7 @@ def test_first_level_from_bids_set_repetition_time():
             assert models[0].t_r == 1.5
 
         with pytest.warns(UserWarning,
-                          match = 'RepetitionTime given in model_init'):
+                          match = "'RepetitionTime' given in model_init"):
             models, *_ = first_level_from_bids(
                 dataset_path=bids_path,
                 task_label='main',
@@ -618,9 +619,11 @@ def test_first_level_from_bids_set_slice_timing_ref():
                                              n_ses=2,
                                              tasks=['main'],
                                              n_runs=[3])
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")            
+   
+        with pytest.warns(
+            UserWarning,
+            match = "'slice_time_ref' .*not provided .*not inferred"
+        ):
             models, *_ = first_level_from_bids(
                 dataset_path=bids_path,
                 task_label='main',
@@ -629,7 +632,7 @@ def test_first_level_from_bids_set_slice_timing_ref():
             assert models[0].slice_time_ref == 0
 
         with pytest.warns(UserWarning,
-                          match = 'slice_time_ref given in model_init'):
+                          match = "'slice_time_ref' given in model_init"):
             models, *_ = first_level_from_bids(
                 dataset_path=bids_path,
                 task_label='main',

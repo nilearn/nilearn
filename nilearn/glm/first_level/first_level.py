@@ -982,7 +982,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
             filters.append(img_filter)
     if t_r is not None:
         _validate_repetition_time(t_r)
-        warn('RepetitionTime given in model_init as %d' % t_r)
+        warn("'RepetitionTime' given in model_init as {t_r}")
     else:
         t_r = _infer_repetition_time_from_dataset(
             dataset_path=dataset_path,
@@ -997,9 +997,9 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
 
     if slice_time_ref is not None:
         _validate_slice_time_ref(slice_time_ref)
-        warn('slice_time_ref given in model_init as %d' % slice_time_ref)
-        warn('slice_time_ref is %d percent of the repetition '
-             'time' % slice_time_ref)
+        warn("'slice_time_ref' given in model_init as {slice_time_ref}")
+        warn("'slice_time_ref' is {slice_time_ref} percent of the repetition "
+             'time')
     else:
         StartTime = _infer_slice_timing_start_time_from_dataset(derivatives_path, filters)
         if StartTime is not None and t_r is not None:
