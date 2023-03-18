@@ -610,6 +610,7 @@ def test_first_level_from_bids_set_repetition_time():
                 img_filters=[('desc', 'preproc')],
                 t_r=-1)            
 
+
 def test_first_level_from_bids_set_slice_timing_ref():
     with InTemporaryDirectory():
         bids_path = create_fake_bids_dataset(n_sub=10,
@@ -652,6 +653,7 @@ def test_first_level_from_bids_set_slice_timing_ref():
                 space_label='MNI',
                 img_filters=[('desc', 'preproc')],
                 slice_time_ref=2)                            
+
 
 def test_first_level_contrast_computation():
     with InTemporaryDirectory():

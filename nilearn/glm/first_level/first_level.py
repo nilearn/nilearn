@@ -803,6 +803,7 @@ def _validate_repetition_time(t_r):
         raise ValueError("'t_r' must be positive. "
                         f"Got {t_r} instead.")        
 
+
 def _validate_slice_time_ref(slice_time_ref):
     if not isinstance(slice_time_ref, (float, int)):
         raise TypeError("'slice_time_ref' must be a float or an integer. "
@@ -810,6 +811,7 @@ def _validate_slice_time_ref(slice_time_ref):
     if slice_time_ref < 0 or slice_time_ref > 1:
         raise ValueError("'slice_time_ref' must be between 0 and 1. "
                         f"Got {slice_time_ref} instead.")  
+
 
 def first_level_from_bids(dataset_path, task_label, space_label=None,
                           sub_labels=None,
@@ -926,48 +928,72 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         warn('slice_time_ref given in model_init as %d' % slice_time_ref)
         warn('slice_time_ref is %d percent of the repetition '
              'time' % slice_time_ref)
+        
     if t_r is not None:
         _validate_repetition_time(t_r)
         warn('RepetitionTime given in model_init as %d' % t_r)
-    else:
-        filters = [('task', task_label)]
-        for img_filter in img_filters:
-            if img_filter[0] in ['acq', 'rec', 'run']:
-                filters.append(img_filter)
 
+    filters = [('task', task_label)]
+    for img_filter in img_filters:
+        if img_filter[0] in ['acq', 'rec', 'run']:
+            filters.append(img_filter)
+
+    # check for metadata in derivatives
+    StartTime = None
+    if t_r is None or slice_time_ref is None:
         img_specs = get_bids_files(derivatives_path, modality_folder='func',
                                    file_tag='bold', file_type='json',
                                    filters=filters)
-        # If we don't find the parameter information in the derivatives folder
-        # we try to search in the raw data folder
-        if not img_specs:
-            img_specs = get_bids_files(dataset_path, modality_folder='func',
-                                       file_tag='bold', file_type='json',
-                                       filters=filters)
+
+        if img_specs:
+
+            specs = json.load(open(img_specs[0], 'r'))
+
+            # slice timing meatadata can only be found in derivatives
+            if slice_time_ref is None:
+                StartTime = specs.get('StartTime')
+                if StartTime is None:
+                    warn(f"StartTime not found in file {img_specs[0]}. "
+                         "It will be assumed that the slice timing reference "
+                         "is 0.0 percent of the repetition time. "
+                         "If it is not the case it will need to "
+                         "be set manually in the generated list of models.")
+                else:
+                    StartTime = float(StartTime)
+                    slice_time_ref = StartTime / t_r
+
+            if t_r is None:
+                RepetitionTime = specs.get('RepetitionTime')
+                if RepetitionTime is not None:
+                    t_r = float(RepetitionTime)
+
+    # If we don't find the parameter information in the derivatives folder
+    # we try to search in the raw data folder
+    if t_r is None:
+        img_specs = get_bids_files(dataset_path, modality_folder='func',
+                                    file_tag='bold', file_type='json',
+                                    filters=filters)
         if not img_specs:
             warn('No bold.json found in derivatives folder or '
-                 'in dataset folder. t_r can not be inferred and will need to'
-                 ' be set manually in the list of models, otherwise their fit'
-                 ' will throw an exception')
+                 'in dataset folder.')
         else:
             specs = json.load(open(img_specs[0], 'r'))
-            if 'RepetitionTime' in specs:
-                t_r = float(specs['RepetitionTime'])
+            RepetitionTime = specs.get('RepetitionTime')
+            if RepetitionTime is not None:
+                t_r = float(RepetitionTime)
             else:
-                warn('RepetitionTime not found in file %s. t_r can not be '
-                     'inferred and will need to be set manually in the '
-                     'list of models. Otherwise their fit will throw an '
-                     ' exception' % img_specs[0])
-            if 'SliceTimingRef' in specs:
-                slice_time_ref = float(specs['SliceTimingRef'])
-            else:
-                warn('SliceTimingRef not found in file %s. It will be assumed'
-                     ' that the slice timing reference is 0.0 percent of the '
-                     'repetition time. If it is not the case it will need to '
-                     'be set manually in the generated list of models' %
-                     img_specs[0])
+                warn(f"RepetitionTime not found in file {img_specs[0]}.")
+
+    if t_r is None:
+        warn("'t_r' not provided and cannot be inferred from metadata. " 
+             "It will need to be set manually in the list of models, "
+             "otherwise their fit will throw an exception.")        
+
     if slice_time_ref is None:
-        slice_time_ref = 0.0
+        if StartTime is not None and t_r is not None:
+            slice_time_ref = StartTime / t_r
+        else:
+            slice_time_ref = 0.0
 
     # Infer subjects in dataset
     if not sub_labels:
