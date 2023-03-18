@@ -52,11 +52,12 @@ def _bids_path_template(
     "tasks,n_runs",
     [(["main"], [1]), (["main"], [2]), (["main", "localizer"], [2, 1])],
 )
-def test_fake_bids_raw_with_session_and_runs(tmpdir, n_sub, n_ses, tasks, n_runs):
+def test_fake_bids_raw_with_session_and_runs(
+    tmpdir, n_sub, n_ses, tasks, n_runs
+):
     """Check number of each file 'type' created in raw."""
     bids_path = create_fake_bids_dataset(
-        base_dir = tmpdir,
-        n_sub=n_sub, n_ses=n_ses, tasks=tasks, n_runs=n_runs
+        base_dir=tmpdir, n_sub=n_sub, n_ses=n_ses, tasks=tasks, n_runs=n_runs
     )
 
     # raw
@@ -158,8 +159,7 @@ def test_fake_bids_derivatives_with_session_and_runs(
 ):
     """Check number of each file 'type' created in derivatives."""
     bids_path = create_fake_bids_dataset(
-        base_dir = tmpdir,
-        n_sub=n_sub, n_ses=n_ses, tasks=tasks, n_runs=n_runs
+        base_dir=tmpdir, n_sub=n_sub, n_ses=n_ses, tasks=tasks, n_runs=n_runs
     )
 
     # derivatives
@@ -203,7 +203,7 @@ def test_bids_dataset_no_run_entity(tmpdir):
 
 
 @pytest.mark.parametrize("n_ses,no_session", [(1, True), (0, False)])
-def test_bids_dataset_no_session(tmpdir,n_ses, no_session):
+def test_bids_dataset_no_session(tmpdir, n_ses, no_session):
     """n_ses = 0 & no_session = True prevent creation of a session folder."""
     bids_path = create_fake_bids_dataset(
         base_dir=tmpdir,
@@ -245,7 +245,9 @@ def test_create_fake_bids_dataset_no_derivatives(tmpdir):
 @pytest.mark.parametrize(
     "confounds_tag,with_confounds", [(None, True), ("_timeseries", False)]
 )
-def test_create_fake_bids_dataset_no_confounds(tmpdir, confounds_tag, with_confounds):
+def test_create_fake_bids_dataset_no_confounds(
+    tmpdir, confounds_tag, with_confounds
+):
     """Check that files are created in the derivatives but no confounds."""
     bids_path = create_fake_bids_dataset(
         base_dir=tmpdir,
@@ -264,13 +266,12 @@ def test_create_fake_bids_dataset_no_confounds(tmpdir, confounds_tag, with_confo
 def test_fake_bids_errors(tmpdir):
     with pytest.raises(ValueError, match="labels.*alphanumeric"):
         create_fake_bids_dataset(
-            base_dir=tmpdir,
-            n_sub=1, n_ses=1, tasks=["foo_bar"], n_runs=[1]
+            base_dir=tmpdir, n_sub=1, n_ses=1, tasks=["foo_bar"], n_runs=[1]
         )
 
     with pytest.raises(ValueError, match="labels.*alphanumeric"):
         create_fake_bids_dataset(
-                            base_dir=tmpdir,
+            base_dir=tmpdir,
             n_sub=1,
             n_ses=1,
             tasks=["main"],
@@ -280,7 +281,7 @@ def test_fake_bids_errors(tmpdir):
 
     with pytest.raises(ValueError, match="number.*tasks.*runs.*same"):
         create_fake_bids_dataset(
-                            base_dir=tmpdir,
+            base_dir=tmpdir,
             n_sub=1,
             n_ses=1,
             tasks=["main"],
@@ -296,7 +297,7 @@ def test_fake_bids_extra_raw_entity(tmpdir):
     n_runs = [2]
     entities = {"acq": ["foo", "bar"]}
     bids_path = create_fake_bids_dataset(
-                        base_dir=tmpdir,
+        base_dir=tmpdir,
         n_sub=n_sub,
         n_ses=n_ses,
         tasks=tasks,
