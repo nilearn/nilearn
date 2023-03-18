@@ -355,9 +355,11 @@ class FirstLevelModel(BaseGLM):
                  signal_scaling=0, noise_model='ar1', verbose=0, n_jobs=1,
                  minimize_memory=True, subject_label=None, random_state=None):
         # design matrix parameters
-        _validate_repetition_time(t_r)
+        if t_r is not None:
+            _validate_repetition_time(t_r)
         self.t_r = t_r
-        _validate_slice_time_ref(slice_time_ref)        
+        if slice_time_ref is not None:
+            _validate_slice_time_ref(slice_time_ref)        
         self.slice_time_ref = slice_time_ref
         self.hrf_model = hrf_model
         self.drift_model = drift_model
