@@ -3,6 +3,7 @@ import os
 import platform
 import sys
 import tempfile
+from pathlib import Path
 
 import nibabel
 import numpy as np
@@ -33,9 +34,6 @@ except Exception:
     pass
 
 X64 = platform.architecture()[0] == "64bit"
-
-currdir = os.path.dirname(os.path.abspath(__file__))
-datadir = os.path.join(currdir, "data")
 
 
 def test_get_data():
@@ -104,7 +102,15 @@ def test__fast_smooth_array():
     np.testing.assert_allclose(smooth_data, expected)
 
 
-def _make_smooth_array_test_data():
+@pytest.fixture(scope="session")
+def data_for_smooth_array():
+    # Impulse in 3D
+    data = np.zeros((40, 41, 42))
+    data[20, 20, 20] = 1
+    return data
+
+
+def _new_data_for_smooth_array():
     # Impulse in 3D
     data = np.zeros((40, 41, 42))
     data[20, 20, 20] = 1
@@ -122,7 +128,7 @@ def test__smooth_array_fwhm_is_odd_with_copy(affine):
     Otherwise assertion below will fail.
     ( 9 / 0.6 = 15 is fine)
     """
-    data = _make_smooth_array_test_data()
+    data = _new_data_for_smooth_array()
     fwhm = 9
 
     filtered = image._smooth_array(data, affine, fwhm=fwhm, copy=True)
@@ -148,7 +154,7 @@ def test__smooth_array_fwhm_is_odd_no_copy(affine):
     Otherwise assertion below will fail.
     ( 9 / 0.6 = 15 is fine)
     """
-    data = _make_smooth_array_test_data()
+    data = _new_data_for_smooth_array()
     fwhm = 9
 
     image._smooth_array(data, affine, fwhm=fwhm, copy=False)
@@ -166,7 +172,7 @@ def test__smooth_array_fwhm_is_odd_no_copy(affine):
 
 
 def test__smooth_array_nan_do_not_propagate():
-    data = _make_smooth_array_test_data()
+    data = _new_data_for_smooth_array()
     data[10, 10, 10] = np.NaN
     fwhm = 9
     affine = _affines_to_test()[2]
@@ -178,31 +184,36 @@ def test__smooth_array_nan_do_not_propagate():
     assert np.all(np.isfinite(filtered))
 
 
-def test__smooth_array_same_result_with_fwhm_none_or_zero():
-    data = _make_smooth_array_test_data()
+def test__smooth_array_same_result_with_fwhm_none_or_zero(
+    data_for_smooth_array,
+):
     affine = _affines_to_test()[2]
 
-    out_fwhm_none = image._smooth_array(data, affine, fwhm=None)
-    out_fwhm_zero = image._smooth_array(data, affine, fwhm=0.0)
+    out_fwhm_none = image._smooth_array(
+        data_for_smooth_array, affine, fwhm=None
+    )
+    out_fwhm_zero = image._smooth_array(
+        data_for_smooth_array, affine, fwhm=0.0
+    )
 
     assert_array_equal(out_fwhm_none, out_fwhm_zero)
 
 
 @pytest.mark.parametrize("affine", _affines_to_test())
-def test__fast_smooth_array_give_same_result_as_smooth_array(affine):
-    data = _make_smooth_array_test_data()
+def test__fast_smooth_array_give_same_result_as_smooth_array(
+    data_for_smooth_array, affine
+):
     np.testing.assert_equal(
-        image._smooth_array(data, affine, fwhm="fast"),
-        image._fast_smooth_array(data),
+        image._smooth_array(data_for_smooth_array, affine, fwhm="fast"),
+        image._fast_smooth_array(data_for_smooth_array),
     )
 
 
-def test__smooth_array_raise_warning_if_fwhm_is_zero():
+def test__smooth_array_raise_warning_if_fwhm_is_zero(data_for_smooth_array):
     """See https://github.com/nilearn/nilearn/issues/1537"""
-    data = _make_smooth_array_test_data()
     affine = _affines_to_test()[2]
     with pytest.warns(UserWarning):
-        image._smooth_array(data, affine, fwhm=0.0)
+        image._smooth_array(data_for_smooth_array, affine, fwhm=0.0)
 
 
 def test_smooth_img():
@@ -312,6 +323,16 @@ def test_crop_threshold_tolerance():
     assert cropped_img.shape == active_shape
 
 
+def _mean_ground_truth(imgs):
+    arrays = []
+    for img in imgs:
+        img = get_data(img)
+        if img.ndim == 4:
+            img = np.mean(img, axis=-1)
+        arrays.append(img)
+    return np.mean(arrays, axis=0)
+
+
 def test_mean_img():
     rng = np.random.RandomState(42)
     data1 = np.zeros((5, 6, 7))
@@ -327,14 +348,7 @@ def test_mean_img():
         [img2, img1, img2],
         [img3, img1, img2],  # Mixture of 4D and 3D images
     ):
-        arrays = []
-        # Ground-truth:
-        for img in imgs:
-            img = get_data(img)
-            if img.ndim == 4:
-                img = np.mean(img, axis=-1)
-            arrays.append(img)
-        truth = np.mean(arrays, axis=0)
+        truth = _mean_ground_truth(imgs)
 
         mean_img = image.mean_img(imgs)
         assert_array_equal(mean_img.affine, affine)
@@ -532,7 +546,8 @@ def test_new_img_like_mgz():
     This is usually when computing masks using MGZ inputs, e.g.
     when using plot_stap_map
     """
-    ref_img = nibabel.load(os.path.join(datadir, "test.mgz"))
+    img_filename = Path(__file__).parent / "data" / "test.mgz"
+    ref_img = nibabel.load(img_filename)
     data = np.ones(get_data(ref_img).shape, dtype=bool)
     affine = ref_img.affine
     new_img_like(ref_img, data, affine, copy_header=False)
@@ -636,7 +651,8 @@ def test_threshold_img():
         threshold_img(img, threshold="2%")
 
 
-def _make_stat_img_test_data():
+@pytest.fixture(scope="session")
+def stat_img_test_data():
     shape = (20, 20, 30)
     affine = np.eye(4)
     data = np.zeros(shape, dtype="int32")
@@ -664,14 +680,12 @@ def _make_stat_img_test_data():
     ],
 )
 def test_threshold_img_with_cluster_threshold(
-    threshold, two_sided, cluster_threshold, expected
+    stat_img_test_data, threshold, two_sided, cluster_threshold, expected
 ):
     """Check that passing specific threshold and cluster threshold values \
     only gives cluster the right number of voxels with the right values."""
-    stat_img = _make_stat_img_test_data()
-
     thr_img = threshold_img(
-        stat_img,
+        img=stat_img_test_data,
         threshold=threshold,
         two_sided=two_sided,
         cluster_threshold=cluster_threshold,
@@ -681,14 +695,12 @@ def test_threshold_img_with_cluster_threshold(
     assert np.array_equal(np.unique(thr_img.get_fdata()), np.array(expected))
 
 
-def test_threshold_img_threshold_nb_clusters():
+def test_threshold_img_threshold_nb_clusters(stat_img_test_data):
     """With a cluster threshold of 5 we get 8 clusters with |values| > 2 and
     cluster sizes > 5
     """
-    stat_img = _make_stat_img_test_data()
-
     thr_img = threshold_img(
-        stat_img,
+        img=stat_img_test_data,
         threshold=2,
         two_sided=True,
         cluster_threshold=5,
