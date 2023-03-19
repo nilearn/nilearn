@@ -29,53 +29,6 @@ INF = 1000 * np.finfo(np.float32).eps
 EPS = np.finfo(np.float64).eps
 
 
-def test_check_shape_and_affine_compatibility_without_dim():
-    """Ensure correct behaviour for valid data without dim"""
-    shape = (2, 3, 4)
-    affine = np.eye(4)
-    img1 = nibabel.Nifti1Image(np.zeros(shape), affine)
-
-    img2 = nibabel.Nifti1Image(np.zeros(shape), affine)
-
-    with pytest.warns(None):
-        signal_extraction._check_shape_and_affine_compatibility(img1, img2)
-
-
-def test_check_shape_and_affine_compatibility_with_dim():
-    """Ensure correct behaviour for valid data without dim"""
-    shape = (2, 3, 4, 7)
-    affine = np.eye(4)
-    img1 = nibabel.Nifti1Image(np.zeros(shape[:3]), affine)
-
-    mask_shape = (2, 3, 4)
-    img2 = nibabel.Nifti1Image(np.zeros(mask_shape), affine)
-
-    with pytest.warns(None):
-        signal_extraction._check_shape_and_affine_compatibility(
-            img1, img2, dim=3
-        )
-
-
-@pytest.mark.parametrize(
-    "test_shape,test_affine,msg",
-    [
-        ((2, 3, 5), np.eye(4), _TEST_SHAPE_ERROR_MSG),
-        ((2, 3, 4), 2 * np.eye(4), _TEST_AFFINE_ERROR_MSG),
-    ],
-)
-def test_check_shape_and_affine_compatibility_error(
-    test_shape, test_affine, msg
-):
-    shape = (2, 3, 4)
-    affine = np.eye(4)
-    img1 = nibabel.Nifti1Image(np.zeros(shape), affine)
-
-    img2 = nibabel.Nifti1Image(np.zeros(test_shape), test_affine)
-
-    with pytest.raises(ValueError, match=msg):
-        signal_extraction._check_shape_and_affine_compatibility(img1, img2)
-
-
 def _make_label_data(shape):
     labels_data = np.zeros(shape, dtype="int32")
     h0 = shape[0] // 2
@@ -109,6 +62,29 @@ def _make_label_and_signal_data_and_mask(shape, affine, n_instants, n_regions):
     return labels_data, labels_img, signals, mask_img
 
 
+def _make_signal_extraction_test_data(shape, n_regions, length):
+    # Generate labels
+    labels = list(range(n_regions + 1))  # 0 is background
+    labels_img = generate_labeled_regions(shape, n_regions, labels=labels)
+    labels_data = get_data(labels_img)
+    # Convert to maps
+    maps_data = np.zeros(shape + (n_regions,))
+    for n, l in enumerate(labels):
+        if n == 0:
+            continue
+
+        maps_data[labels_data == l, n - 1] = 1
+
+    maps_img = nibabel.Nifti1Image(maps_data, labels_img.affine)
+
+    # Generate fake data
+    fmri_img, _ = generate_fake_fmri(
+        shape=shape, length=length, affine=labels_img.affine
+    )
+
+    return fmri_img, labels, labels_data, labels_img, maps_img
+
+
 def _all_voxel_of_each_region_have_same_values(
     data, labels_data, n_regions, signals
 ):
@@ -116,6 +92,53 @@ def _all_voxel_of_each_region_have_same_values(
         sigs = data[labels_data == n, :]
         np.testing.assert_almost_equal(sigs[0, :], signals[:, n - 1])
         assert abs(sigs - sigs[0, :]).max() < EPS
+
+
+def test_check_shape_and_affine_compatibility_without_dim():
+    """Ensure correct behaviour for valid data without dim"""
+    shape = (2, 3, 4)
+    affine = np.eye(4)
+    img1 = nibabel.Nifti1Image(np.zeros(shape), affine)
+
+    img2 = nibabel.Nifti1Image(np.zeros(shape), affine)
+
+    with pytest.warns(None):
+        signal_extraction._check_shape_and_affine_compatibility(img1, img2)
+
+
+def test_check_shape_and_affine_compatibility_with_dim():
+    """Ensure correct behaviour for valid data without dim"""
+    shape = (2, 3, 4, 7)
+    affine = np.eye(4)
+    img1 = nibabel.Nifti1Image(np.zeros(shape[:3]), affine)
+
+    mask_shape = (2, 3, 4)
+    img2 = nibabel.Nifti1Image(np.zeros(mask_shape), affine)
+
+    with pytest.warns(None):
+        signal_extraction._check_shape_and_affine_compatibility(
+            img1, img2, dim=3
+        )
+
+
+@pytest.mark.parametrize(
+    "test_shape, test_affine,msg",
+    [
+        ((2, 3, 5), np.eye(4), _TEST_SHAPE_ERROR_MSG),
+        ((2, 3, 4), 2 * np.eye(4), _TEST_AFFINE_ERROR_MSG),
+    ],
+)
+def test_check_shape_and_affine_compatibility_error(
+    test_shape, test_affine, msg
+):
+    shape = (2, 3, 4)
+    affine = np.eye(4)
+    img1 = nibabel.Nifti1Image(np.zeros(shape), affine)
+
+    img2 = nibabel.Nifti1Image(np.zeros(test_shape), test_affine)
+
+    with pytest.raises(ValueError, match=msg):
+        signal_extraction._check_shape_and_affine_compatibility(img1, img2)
 
 
 def test_signals_extraction_with_labels_without_mask():
@@ -313,7 +336,7 @@ def test_signal_extraction_with_maps():
     np.testing.assert_almost_equal(get_data(img_r), get_data(img))
 
 
-@pytest.mark.parametrize("z_dim,affine_diag", [(5, 1), (4, 2)])
+@pytest.mark.parametrize("z_dim, affine_diag", [(5, 1), (4, 2)])
 def test_input_validation_bad_masks(z_dim, affine_diag):
     data_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 5)), np.eye(4))
 
@@ -340,7 +363,7 @@ def test_input_validation_bad_masks(z_dim, affine_diag):
     )
 
 
-@pytest.mark.parametrize("z_dim,affine_diag", [(5, 1), (4, 2)])
+@pytest.mark.parametrize("z_dim, affine_diag", [(5, 1), (4, 2)])
 def test_input_validation_bad_labels(z_dim, affine_diag):
     data_img = nibabel.Nifti1Image(np.zeros((2, 3, 4, 5)), np.eye(4))
 
@@ -405,29 +428,6 @@ def test_signal_extraction_with_labels_error_strategy():
         signal_extraction.img_to_signals_labels(
             fmri_img, labels_img, strategy="foo"
         )
-
-
-def _make_signal_extraction_test_data(shape, n_regions, length):
-    # Generate labels
-    labels = list(range(n_regions + 1))  # 0 is background
-    labels_img = generate_labeled_regions(shape, n_regions, labels=labels)
-    labels_data = get_data(labels_img)
-    # Convert to maps
-    maps_data = np.zeros(shape + (n_regions,))
-    for n, l in enumerate(labels):
-        if n == 0:
-            continue
-
-        maps_data[labels_data == l, n - 1] = 1
-
-    maps_img = nibabel.Nifti1Image(maps_data, labels_img.affine)
-
-    # Generate fake data
-    fmri_img, _ = generate_fake_fmri(
-        shape=shape, length=length, affine=labels_img.affine
-    )
-
-    return fmri_img, labels, labels_data, labels_img, maps_img
 
 
 def test_signal_extraction_with_maps_and_labels():
