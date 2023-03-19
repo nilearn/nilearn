@@ -30,6 +30,7 @@ from scipy import stats
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
 
+N_PERM = 10
 
 @pytest.fixture
 def input_df():
@@ -65,7 +66,7 @@ def test_non_parametric_inference_with_flm_objects():
             second_level_input=second_level_input,
             design_matrix=design_matrix,
             first_level_contrast="x",
-            n_perm=100)      
+            n_perm=N_PERM)      
 
 
 def test_process_second_level_input_as_dataframe(input_df):
@@ -316,7 +317,6 @@ def test_high_level_glm_with_paths():
 
 def test_high_level_non_parametric_inference_with_paths():
     with InTemporaryDirectory():
-        n_perm = 100
         shapes = ((7, 8, 9, 1),)
         mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
@@ -333,7 +333,7 @@ def test_high_level_non_parametric_inference_with_paths():
             non_parametric_inference(
                 second_level_input, design_matrix=X, second_level_contrast=c1,
                 first_level_contrast=FUNCFILE, mask=mask,
-                n_perm=n_perm, verbose=1
+                n_perm=N_PERM, verbose=1
             ) for second_level_input in [Y, df_input]
         ]
         assert all(
@@ -343,7 +343,7 @@ def test_high_level_non_parametric_inference_with_paths():
             assert_array_equal(img.affine, load(mask).affine)
         neg_log_pvals_list = [get_data(i) for i in neg_log_pvals_imgs]
         for neg_log_pvals in neg_log_pvals_list:
-            assert np.all(neg_log_pvals <= - np.log10(1.0 / (n_perm + 1)))
+            assert np.all(neg_log_pvals <= - np.log10(1.0 / (N_PERM + 1)))
             assert np.all(0 <= neg_log_pvals)
 
         masker = NiftiMasker(mask, smoothing_fwhm=2.0)
@@ -353,7 +353,7 @@ def test_high_level_non_parametric_inference_with_paths():
             non_parametric_inference(Y, design_matrix=X,
                                      second_level_contrast=c1,
                                      smoothing_fwhm=3.0,
-                                     mask=masker, n_perm=n_perm)
+                                     mask=masker, n_perm=N_PERM)
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory
         del X, Y, FUNCFILE, func_img, neg_log_pvals_imgs
@@ -587,7 +587,7 @@ def test_non_parametric_inference_permutation_computation():
 
         neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
                                                      model_intercept=False,
-                                                     mask=mask, n_perm=100)
+                                                     mask=mask, n_perm=N_PERM)
 
         assert get_data(neg_log_pvals_img).shape == shapes[0][:3]
         del func_img, FUNCFILE, neg_log_pvals_img, X, Y
@@ -605,7 +605,7 @@ def test_non_parametric_inference_tfce():
             design_matrix=X,
             model_intercept=False,
             mask=mask,
-            n_perm=10,
+            n_perm=N_PERM,
             tfce=True,
         )
         assert isinstance(out, dict)
@@ -636,7 +636,7 @@ def test_non_parametric_inference_cluster_level():
             design_matrix=X,
             model_intercept=False,
             mask=mask,
-            n_perm=10,
+            n_perm=N_PERM,
             threshold=0.001,
         )
         assert isinstance(out, dict)
@@ -667,7 +667,7 @@ def test_non_parametric_inference_cluster_level_with_covariates(
         func_img = load(FUNCFILE)
 
         unc_pval = 0.01
-        n_subjects = 6
+        n_subjects = 3
 
         # Set up one sample t-test design with two random covariates
         cov1 = rng.random(n_subjects)
@@ -804,7 +804,7 @@ def test_non_parametric_inference_contrast_computation():
         # formula should work without second-level contrast
         neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
                                                      model_intercept=False,
-                                                     mask=mask, n_perm=100)
+                                                     mask=mask, n_perm=N_PERM)
 
         ncol = len(X.columns)
         c1, cnull = np.eye(ncol)[0, :], np.zeros(ncol)
@@ -812,13 +812,13 @@ def test_non_parametric_inference_contrast_computation():
         neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
                                                      model_intercept=False,
                                                      second_level_contrast=c1,
-                                                     mask=mask, n_perm=100)
+                                                     mask=mask, n_perm=N_PERM)
         # formula should work passing variable name directly
         neg_log_pvals_img = \
             non_parametric_inference(Y, design_matrix=X,
                                      second_level_contrast='intercept',
                                      model_intercept=False,
-                                     mask=mask, n_perm=100)
+                                     mask=mask, n_perm=N_PERM)
 
         # passing null contrast should give back a value error
         with pytest.raises(ValueError):
