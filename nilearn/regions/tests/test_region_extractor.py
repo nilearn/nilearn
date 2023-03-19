@@ -17,9 +17,12 @@ from nilearn.regions.region_extractor import (
 )
 from scipy.ndimage import label
 
+MAP_SHAPE = (30, 30, 30)
+N_REGIONS = 2
+
 
 def _shape_and_affine_labeled_regions():
-    shape = (13, 11, 12)
+    shape = (10, 10, 10)
     affine = np.eye(4)
     return shape, affine
 
@@ -39,23 +42,27 @@ def dummy_map():
 
     Use for error testing
     """
-    maps, _ = generate_maps((6, 6, 6), n_regions=2)
+    maps, _ = generate_maps(shape=(6, 6, 6), n_regions=N_REGIONS)
     return maps
 
 
 @pytest.fixture
 def labels_img():
     shape, affine = _shape_and_affine_labeled_regions()
-    n_regions = 9
+    n_regions = 9  # DO NOT CHANGE (some tests expect this value)
     return generate_labeled_regions(shape, affine=affine, n_regions=n_regions)
+
+
+@pytest.fixture
+def maps():
+    maps, _ = generate_maps(shape=MAP_SHAPE, n_regions=N_REGIONS)
+    return maps
 
 
 @pytest.fixture
 def map_img_3D():
     rng = np.random.RandomState(42)
-    map_img = np.zeros((30, 30, 30)) + 0.1 * rng.standard_normal(
-        size=(30, 30, 30)
-    )
+    map_img = np.zeros(MAP_SHAPE) + 0.1 * rng.standard_normal(size=MAP_SHAPE)
     return nibabel.Nifti1Image(map_img, affine=np.eye(4))
 
 
@@ -74,8 +81,7 @@ def test_invalid_thresholds_in_threshold_maps_ratio(
         _threshold_maps_ratio(maps_img=dummy_map, threshold=invalid_threshold)
 
 
-def test_nans_threshold_maps_ratio():
-    maps, _ = generate_maps((10, 10, 10), n_regions=2)
+def test_nans_threshold_maps_ratio(maps):
     data = get_data(maps)
     data[:, :, 0] = np.nan
 
@@ -83,10 +89,9 @@ def test_nans_threshold_maps_ratio():
     _threshold_maps_ratio(maps_img, threshold=0.8)
 
 
-def test_threshold_maps_ratio(map_img_3D):
+def test_threshold_maps_ratio(maps, map_img_3D):
     # smoke test for function _threshold_maps_ratio with randomly
     # generated maps
-    maps, _ = generate_maps((6, 8, 10), n_regions=3)
 
     # test that there is no side effect
     get_data(maps)[:3] = 100
@@ -117,15 +122,12 @@ def test_invalids_extract_types_in_connected_regions(
 @pytest.mark.parametrize(
     "extract_type", ["connected_components", "local_regions"]
 )
-def test_connected_regions_4D(extract_type):
+def test_connected_regions_4D(maps, extract_type):
     """Regions extracted should be equal or more than already present."""
-    n_regions = 4
-    maps, _ = generate_maps((30, 30, 30), n_regions=n_regions)
-
     connected_extraction_img, index = connected_regions(
         maps, min_region_size=10, extract_type=extract_type
     )
-    assert connected_extraction_img.shape[-1] >= n_regions
+    assert connected_extraction_img.shape[-1] >= N_REGIONS
     assert index, np.ndarray
 
 
@@ -142,7 +144,7 @@ def test_connected_regions_3D(map_img_3D, extract_type):
 
 def test_connected_regions_different_results_with_different_mask_images():
     n_regions = 4
-    maps, mask_img = generate_maps((30, 30, 30), n_regions=n_regions)
+    maps, mask_img = generate_maps(shape=MAP_SHAPE, n_regions=n_regions)
 
     # Test input mask_img
     mask = get_data(mask_img)
@@ -200,7 +202,7 @@ def test_threshold_as_none_and_string_cases(dummy_map, threshold):
 
 def test_region_extractor_fit_and_transform():
     n_regions = 3
-    maps, mask_img = generate_maps((30, 30, 30), n_regions=n_regions)
+    maps, mask_img = generate_maps(shape=MAP_SHAPE, n_regions=n_regions)
 
     # Test maps are zero in the mask
     mask_data = get_data(mask_img)
@@ -219,7 +221,7 @@ def test_region_extractor_fit_and_transform():
 
 def test_region_extractor_strategies():
     n_regions = 3
-    maps, mask_img = generate_maps((30, 30, 30), n_regions=n_regions)
+    maps, mask_img = generate_maps(shape=MAP_SHAPE, n_regions=n_regions)
 
     # thresholding_strategy='ratio_n_voxels'
     extract_ratio = RegionExtractor(
@@ -256,7 +258,7 @@ def test_region_extractor_high_resolution_image():
     n_regions = 9
 
     maps, _ = generate_maps(
-        (20, 20, 20), n_regions=n_regions, affine=0.2 * np.eye(4)
+        shape=MAP_SHAPE, n_regions=n_regions, affine=0.2 * np.eye(4)
     )
 
     extract_ratio = RegionExtractor(
@@ -272,17 +274,19 @@ def test_region_extractor_high_resolution_image():
 
 def test_region_extractor_zeros_affine_diagonal():
     n_regions = 9
-
     affine = np.eye(4)
     affine[[0, 1]] = affine[[1, 0]]  # permutes first and second lines
-    maps, _ = generate_maps((40, 40, 40), n_regions=n_regions, affine=affine)
+    maps, _ = generate_maps(
+        shape=[40, 40, 40], n_regions=n_regions, affine=affine
+    )
 
     extract_ratio = RegionExtractor(
         maps, threshold=0.2, thresholding_strategy="ratio_n_voxels"
     )
     extract_ratio.fit()
+
     assert extract_ratio.regions_img_ != ""
-    assert extract_ratio.regions_img_.shape[-1] >= 9
+    assert extract_ratio.regions_img_.shape[-1] >= n_regions
 
 
 def test_error_messages_connected_label_regions(labels_img):
