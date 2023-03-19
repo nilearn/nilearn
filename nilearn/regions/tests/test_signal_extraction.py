@@ -185,10 +185,10 @@ def test_signals_extraction_with_labels_without_mask(
 
     # from labels
     data_img = signals_to_img_labels(signals, labels_img)
-    data = get_data(data_img)
-    assert data_img.shape == (shape + (n_timepoints,))
-    assert np.all(data.std(axis=-1) > 0)
 
+    assert data_img.shape == (shape + (n_timepoints,))
+    data = get_data(data_img)
+    assert np.all(data.std(axis=-1) > 0)
     # There must be non-zero data (safety net)
     assert abs(data).max() > 1e-9
 
@@ -198,11 +198,13 @@ def test_signals_extraction_with_labels_without_mask(
 
     # and back
     signals_r, labels_r = img_to_signals_labels(data_img, labels_img)
+
     np.testing.assert_almost_equal(signals_r, signals)
     assert labels_r == list(range(1, 9))
 
     with write_tmp_imgs(data_img) as fname_img:
         signals_r, labels_r = img_to_signals_labels(fname_img, labels_img)
+
         np.testing.assert_almost_equal(signals_r, signals)
         assert labels_r == list(range(1, 9))
 
@@ -217,11 +219,10 @@ def test_signals_extraction_with_labels_with_mask(
     n_regions = N_REGIONS  # must be 8
 
     data_img = signals_to_img_labels(signals, labels_img, mask_img=mask_img)
+
     assert data_img.shape == (shape + (n_timepoints,))
-
-    data = get_data(data_img)
-
     # There must be non-zero data (safety net)
+    data = get_data(data_img)
     assert abs(data).max() > 1e-9
 
     # Zero outside of the mask
@@ -231,8 +232,8 @@ def test_signals_extraction_with_labels_with_mask(
         data_img = signals_to_img_labels(
             signals, filenames[0], mask_img=filenames[1]
         )
-        assert data_img.shape == (shape + (n_timepoints,))
 
+        assert data_img.shape == (shape + (n_timepoints,))
         data = get_data(data_img)
         assert abs(data).max() > 1e-9
         # Zero outside of the mask
@@ -251,6 +252,7 @@ def test_signals_extraction_with_labels_with_mask(
     signals_r, labels_r = img_to_signals_labels(
         data_img, labels_img, mask_img=mask_img
     )
+
     np.testing.assert_almost_equal(signals_r, signals)
     assert labels_r == list(range(1, 9))
 
@@ -261,23 +263,23 @@ def test_signals_extraction_with_labels_errors(
     shape = SHAPE
     affine = AFFINE
 
+    data_img = signals_to_img_labels(signals, labels_img)
+
+    # verify that 4D label images are refused
     labels_4d_data = np.zeros((shape) + (2,))
     labels_4d_data[..., 0] = labels_data
     labels_4d_data[..., 1] = labels_data
     labels_4d_img = nibabel.Nifti1Image(labels_4d_data, np.eye(4))
-
-    mask_4d_img = nibabel.Nifti1Image(np.ones(shape + (2,)), affine)
-
-    data_img = signals_to_img_labels(signals, labels_img)
-
-    # verify that 4D label images are refused
     with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG):
         img_to_signals_labels(data_img, labels_4d_img)
 
+    mask_4d_img = nibabel.Nifti1Image(np.ones(shape + (2,)), affine)
     with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG):
         img_to_signals_labels(data_img, labels_img, mask_img=mask_4d_img)
+
     with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG):
         signals_to_img_labels(data_img, labels_img, mask_img=mask_4d_img)
+
     data_img = signals_to_img_labels(signals, labels_img, mask_img=mask_img)
     with pytest.raises(TypeError):
         signals_to_img_labels(data_img, labels_4d_img, mask_img=mask_img)
