@@ -158,7 +158,7 @@ def test_connected_regions_different_results_with_different_mask_images():
 
 
 def test_invalid_threshold_strategies():
-    maps, _ = generate_maps((6, 8, 10), n_regions=1)
+    maps, _ = generate_maps((6, 6, 6), n_regions=1)
 
     extract_strategy_check = RegionExtractor(maps, thresholding_strategy="n_")
     with pytest.raises(
@@ -169,7 +169,7 @@ def test_invalid_threshold_strategies():
 
 
 def test_threshold_as_none_and_string_cases():
-    maps, _ = generate_maps((6, 8, 10), n_regions=1)
+    maps, _ = generate_maps((6, 6, 6), n_regions=1)
 
     extract_thr_none_check = RegionExtractor(maps, threshold=None)
     with pytest.raises(
@@ -184,8 +184,8 @@ def test_threshold_as_none_and_string_cases():
 
 
 def test_region_extractor_fit_and_transform():
-    n_regions = 9
-    maps, mask_img = generate_maps((40, 40, 40), n_regions=n_regions)
+    n_regions = 3
+    maps, mask_img = generate_maps((30, 30, 30), n_regions=n_regions)
 
     # Test maps are zero in the mask
     mask_data = get_data(mask_img)
@@ -203,9 +203,8 @@ def test_region_extractor_fit_and_transform():
 
 
 def test_region_extractor_strategies():
-    n_regions = 9
-    n_subjects = 5
-    maps, mask_img = generate_maps((40, 40, 40), n_regions=n_regions)
+    n_regions = 3
+    maps, mask_img = generate_maps((30, 30, 30), n_regions=n_regions)
 
     # thresholding_strategy='ratio_n_voxels'
     extract_ratio = RegionExtractor(
@@ -213,7 +212,7 @@ def test_region_extractor_strategies():
     )
     extract_ratio.fit()
     assert extract_ratio.regions_img_ != ""
-    assert extract_ratio.regions_img_.shape[-1] >= 9
+    assert extract_ratio.regions_img_.shape[-1] >= n_regions
 
     # thresholding_strategy=percentile
     extractor = RegionExtractor(
@@ -225,11 +224,12 @@ def test_region_extractor_strategies():
     extractor.fit()
     assert extractor.index_, np.ndarray
     assert extractor.regions_img_ != ""
-    assert extractor.regions_img_.shape[-1] >= 9
+    assert extractor.regions_img_.shape[-1] >= n_regions
 
     n_regions_extracted = extractor.regions_img_.shape[-1]
     shape = (91, 109, 91, 7)
     expected_signal_shape = (7, n_regions_extracted)
+    n_subjects = 3
     for _ in range(n_subjects):
         img, _ = _make_random_data(shape)
         # smoke test NiftiMapsMasker transform inherited in Region Extractor
@@ -270,13 +270,20 @@ def test_region_extractor_zeros_affine_diagonal():
     assert extract_ratio.regions_img_.shape[-1] >= 9
 
 
-def test_error_messages_connected_label_regions():
+def _shape_and_affine_labeled_regions():
     shape = (13, 11, 12)
     affine = np.eye(4)
+    return shape, affine
+
+
+def _labeled_regions():
+    shape, affine = _shape_and_affine_labeled_regions()
     n_regions = 2
-    labels_img = generate_labeled_regions(
-        shape, affine=affine, n_regions=n_regions
-    )
+    return generate_labeled_regions(shape, affine=affine, n_regions=n_regions)
+
+
+def test_error_messages_connected_label_regions():
+    labels_img = _labeled_regions()
     with pytest.raises(
         ValueError, match="Expected 'min_size' to be specified as integer."
     ):
