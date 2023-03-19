@@ -3,29 +3,37 @@ import numpy as np
 import pytest
 from nilearn._utils.testing import write_tmp_imgs
 from nilearn.decomposition.dict_learning import DictLearning
-from nilearn.decomposition.tests.test_canica import _make_canica_test_data
+from nilearn.decomposition.tests.test_canica import (
+    _make_canica_test_data,
+    _shape_and_affine_canica_test_data,
+)
 from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
 from nilearn.image import get_data, iter_img
 from nilearn.maskers import NiftiMasker
 
 
-def _make_dict_learning_test_data():
-    data, mask_img, components, _ = _make_canica_test_data(n_subjects=4)
-
-    masker = NiftiMasker(mask_img=mask_img).fit()
-    mask = get_data(mask_img) != 0
-
-    flat_mask = mask.ravel()
-
-    dict_init = masker.inverse_transform(components[:, flat_mask])
-
-    return data, mask_img, dict_init, components, flat_mask, mask
+@pytest.fixture(scope="module")
+def mask_img():
+    shape, affine = _shape_and_affine_canica_test_data()
+    mask = np.ones(shape)
+    mask[:5] = 0
+    mask[-5:] = 0
+    mask[:, :5] = 0
+    mask[:, -5:] = 0
+    mask[..., -2:] = 0
+    mask[..., :2] = 0
+    return nibabel.Nifti1Image(mask, affine)
 
 
 @pytest.mark.parametrize("n_epochs", [1, 2, 10])
-def test_dict_learning_check_values_epoch_argument_smoke(n_epochs):
+def test_dict_learning_check_values_epoch_argument_smoke(mask_img, n_epochs):
     """Smoke test to check different values of the epoch argument."""
-    data, mask_img, dict_init, *_ = _make_dict_learning_test_data()
+    data, components, _ = _make_canica_test_data()
+
+    masker = NiftiMasker(mask_img=mask_img).fit()
+    mask = get_data(mask_img) != 0
+    flat_mask = mask.ravel()
+    dict_init = masker.inverse_transform(components[:, flat_mask])
 
     dict_learning = DictLearning(
         n_components=4,
@@ -39,15 +47,14 @@ def test_dict_learning_check_values_epoch_argument_smoke(n_epochs):
     dict_learning.fit(data)
 
 
-def test_dict_learning():
-    (
-        data,
-        mask_img,
-        dict_init,
-        components,
-        flat_mask,
-        mask,
-    ) = _make_dict_learning_test_data()
+def test_dict_learning(mask_img):
+    data, components, _ = _make_canica_test_data()
+
+    masker = NiftiMasker(mask_img=mask_img).fit()
+    mask = get_data(mask_img) != 0
+    flat_mask = mask.ravel()
+    masked_components = components[:, flat_mask]
+    dict_init = masker.inverse_transform(masked_components)
 
     dict_learning = DictLearning(
         n_components=4,
@@ -74,7 +81,6 @@ def test_dict_learning():
             np.rollaxis(maps[estimator], 3, 0)[:, mask], (4, flat_mask.sum())
         )
 
-    masked_components = components[:, flat_mask]
     for this_dict_learning in [dict_learning]:
         these_maps = maps[this_dict_learning]
         S = np.sqrt(np.sum(masked_components**2, axis=1))
@@ -91,15 +97,13 @@ def test_dict_learning():
         assert recovered_maps >= 2
 
 
-def test_component_sign():
+def test_component_sign(mask_img):
     # Regression test
     # We should have a heuristic that flips the sign of components in
     # DictLearning to have more positive values than negative values, for
     # instance by making sure that the largest value is positive.
 
-    data, mask_img, components, rng = _make_canica_test_data(
-        n_subjects=2, noisy=True
-    )
+    data, components, rng = _make_canica_test_data(n_subjects=2, noisy=True)
     for mp in components:
         assert -mp.min() <= mp.max()
 
@@ -116,9 +120,9 @@ def test_component_sign():
         assert np.sum(mp[mp <= 0]) <= np.sum(mp[mp > 0])
 
 
-def test_masker_attributes_with_fit():
+def test_masker_attributes_with_fit(mask_img):
     # Test base module at sub-class
-    data, mask_img, *_ = _make_canica_test_data(n_subjects=3)
+    data, *_ = _make_canica_test_data()
 
     # Passing mask_img
     dict_learning = DictLearning(n_components=3, mask=mask_img, random_state=0)
@@ -135,8 +139,8 @@ def test_masker_attributes_with_fit():
     assert dict_learning.mask_img_ == dict_learning.masker_.mask_img_
 
 
-def test_transform_before_fit_error():
-    data, mask_img, *_ = _make_canica_test_data(n_subjects=3)
+def test_transform_before_fit_error(mask_img):
+    data, *_ = _make_canica_test_data()
 
     dict_learning = DictLearning(mask=mask_img, n_components=3)
 
@@ -149,10 +153,8 @@ def test_transform_before_fit_error():
         dict_learning.transform(data)
 
 
-def test_empty_data_to_fit_error():
+def test_empty_data_to_fit_error(mask_img):
     """Test if raises an error when empty list of provided."""
-    _, mask_img, *_ = _make_canica_test_data(n_subjects=3)
-
     dict_learning = DictLearning(mask=mask_img, n_components=3)
 
     with pytest.raises(
@@ -164,7 +166,7 @@ def test_empty_data_to_fit_error():
 
 
 def test_passing_masker_arguments_to_estimator():
-    data, *_ = _make_canica_test_data(n_subjects=3)
+    data, *_ = _make_canica_test_data()
 
     dict_learning = DictLearning(
         n_components=3,
@@ -175,8 +177,8 @@ def test_passing_masker_arguments_to_estimator():
     dict_learning.fit(data)
 
 
-def test_components_img():
-    data, mask_img, *_ = _make_canica_test_data(n_subjects=3)
+def test_components_img(mask_img):
+    data, *_ = _make_canica_test_data()
 
     n_components = 3
     dict_learning = DictLearning(n_components=n_components, mask=mask_img)
@@ -191,8 +193,8 @@ def test_components_img():
 
 
 @pytest.mark.parametrize("n_subjects", [1, 3])
-def test_with_globbing_patterns(n_subjects):
-    data, mask_img, *_ = _make_canica_test_data(n_subjects=n_subjects)
+def test_with_globbing_patterns(mask_img, n_subjects):
+    data, *_ = _make_canica_test_data(n_subjects=n_subjects)
 
     n_components = 3
     dict_learning = DictLearning(n_components=n_components, mask=mask_img)
@@ -215,9 +217,9 @@ def test_with_globbing_patterns(n_subjects):
         assert components_img.shape, check_shape
 
 
-def test_dictlearning_score():
+def test_dictlearning_score(mask_img):
     # Multi subjects
-    imgs, mask_img, *_ = _make_canica_test_data(n_subjects=3)
+    imgs, *_ = _make_canica_test_data()
 
     n_components = 10
     dict_learning = DictLearning(
@@ -238,8 +240,8 @@ def test_dictlearning_score():
     assert np.all(scores >= 0)
 
 
-def test_dictlearning_score_before_object_fit_error():
-    imgs, mask_img, *_ = _make_canica_test_data(n_subjects=3)
+def test_dictlearning_score_before_object_fit_error(mask_img):
+    imgs, *_ = _make_canica_test_data()
 
     dict_learning = DictLearning(
         n_components=10, mask=mask_img, random_state=0

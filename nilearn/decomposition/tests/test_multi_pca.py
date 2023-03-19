@@ -21,9 +21,10 @@ def _make_multi_pca_test_data(with_activation=True):
     shape = (6, 8, 10, 5)
     affine = np.eye(4)
     rng = np.random.RandomState(0)
+    n_sub = 4
 
     data = []
-    for _ in range(8):
+    for _ in range(n_sub):
         this_data = rng.normal(size=shape)
         if with_activation:
             this_data[2:4, 2:4, 2:4, :] += 10

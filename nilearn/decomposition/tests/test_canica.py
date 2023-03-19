@@ -14,7 +14,7 @@ from numpy.testing import assert_array_almost_equal
 
 
 def _make_data_from_components(
-    components, affine, shape, rng=None, n_subjects=8
+    components, affine, shape, rng=None, n_subjects=2
 ):
     data = []
     if rng is None:
@@ -64,11 +64,16 @@ def _make_canica_components(shape):
     )
 
 
-def _make_canica_test_data(rng=None, n_subjects=8, noisy=True):
-    if rng is None:
-        rng = np.random.RandomState(0)
+def _shape_and_affine_canica_test_data():
     shape = (30, 30, 5)
     affine = np.eye(4)
+    return shape, affine
+
+
+def _make_canica_test_data(rng=None, n_subjects=2, noisy=True):
+    if rng is None:
+        rng = np.random.RandomState(0)
+    shape, affine = _shape_and_affine_canica_test_data()
     components = _make_canica_components(shape)
     if noisy:  # Creating noisy non positive data
         components[rng.randn(*components.shape) > 0.8] *= -2.0
@@ -80,6 +85,13 @@ def _make_canica_test_data(rng=None, n_subjects=8, noisy=True):
     data = _make_data_from_components(
         components, affine, shape, rng=rng, n_subjects=n_subjects
     )
+
+    return data, components, rng
+
+
+@pytest.fixture(scope="module")
+def mask_img():
+    shape, affine = _shape_and_affine_canica_test_data()
     mask = np.ones(shape)
     mask[:5] = 0
     mask[-5:] = 0
@@ -87,13 +99,11 @@ def _make_canica_test_data(rng=None, n_subjects=8, noisy=True):
     mask[:, -5:] = 0
     mask[..., -2:] = 0
     mask[..., :2] = 0
-
-    mask_img = nibabel.Nifti1Image(mask, affine)
-    return data, mask_img, components, rng
+    return nibabel.Nifti1Image(mask, affine)
 
 
-def test_canica_square_img():
-    data, mask_img, components, rng = _make_canica_test_data()
+def test_canica_square_img(mask_img):
+    data, components, rng = _make_canica_test_data(n_subjects=8)
 
     # We do a large number of inits to be sure to find the good match
     canica = CanICA(
@@ -125,7 +135,7 @@ def test_canica_square_img():
 
 def test_canica_single_subject_smoke():
     """Check that canica runs on a single-subject dataset"""
-    data, _, _, rng = _make_canica_test_data(n_subjects=1)
+    data, _, rng = _make_canica_test_data(n_subjects=1)
 
     canica = CanICA(
         n_components=4, random_state=rng, smoothing_fwhm=0.0, n_init=1
@@ -134,12 +144,12 @@ def test_canica_single_subject_smoke():
     canica.fit(data[0])
 
 
-def test_component_sign():
+def test_component_sign(mask_img):
     # We should have a heuristic that flips the sign of components in
     # CanICA to have more positive values than negative values, for
     # instance by making sure that the largest value is positive.
 
-    data, mask_img, _, rng = _make_canica_test_data(n_subjects=2, noisy=True)
+    data, _, rng = _make_canica_test_data(noisy=True)
 
     # run CanICA many times (this is known to produce different results)
     canica = CanICA(n_components=4, random_state=rng, mask=mask_img)
@@ -176,9 +186,9 @@ def test_percentile_range():
         assert sum(warning_messages) == 1
 
 
-def test_masker_attributes_with_fit():
+def test_masker_attributes_with_fit(mask_img):
     # Test base module at sub-class
-    data, mask_img, *_ = _make_canica_test_data(n_subjects=3)
+    data, *_ = _make_canica_test_data()
 
     # Passing mask_img
     canica = CanICA(n_components=3, mask=mask_img, random_state=0)
@@ -195,8 +205,8 @@ def test_masker_attributes_with_fit():
     assert canica.mask_img_ == canica.masker_.mask_img_
 
 
-def test_masker_attributes_errors():
-    data, mask_img, *_ = _make_canica_test_data(n_subjects=3)
+def test_masker_attributes_errors(mask_img):
+    data, *_ = _make_canica_test_data()
     canica = CanICA(mask=mask_img, n_components=3)
     with pytest.raises(
         ValueError,
@@ -214,7 +224,7 @@ def test_masker_attributes_errors():
 
 
 def test_masker_attributes_passing_masker_arguments_to_estimator():
-    data, *_ = _make_canica_test_data(n_subjects=3)
+    data, *_ = _make_canica_test_data()
     canica = CanICA(
         n_components=3,
         target_affine=np.eye(4),
@@ -224,8 +234,8 @@ def test_masker_attributes_passing_masker_arguments_to_estimator():
     canica.fit(data)
 
 
-def test_components_img():
-    data, mask_img, *_ = _make_canica_test_data(n_subjects=3)
+def test_components_img(mask_img):
+    data, *_ = _make_canica_test_data()
     n_components = 3
     canica = CanICA(n_components=n_components, mask=mask_img)
     canica.fit(data)
@@ -235,9 +245,9 @@ def test_components_img():
     assert components_img.shape, check_shape
 
 
-def test_with_globbing_patterns_with_single_subject():
+def test_with_globbing_patterns_with_single_subject(mask_img):
     # single subject
-    data, mask_img, *_ = _make_canica_test_data(n_subjects=1)
+    data, *_ = _make_canica_test_data(n_subjects=1)
     n_components = 3
     canica = CanICA(n_components=n_components, mask=mask_img)
     with write_tmp_imgs(data[0], create_files=True, use_wildcards=True) as img:
@@ -250,14 +260,12 @@ def test_with_globbing_patterns_with_single_subject():
         assert components_img.shape, check_shape
 
 
-def test_with_globbing_patterns_with_multi_subjects():
+def test_with_globbing_patterns_with_multi_subjects(mask_img):
     # Multi subjects
-    data, mask_img, *_ = _make_canica_test_data(n_subjects=3)
+    data, *_ = _make_canica_test_data()
     n_components = 3
     canica = CanICA(n_components=n_components, mask=mask_img)
-    with write_tmp_imgs(
-        data[0], data[1], data[2], create_files=True, use_wildcards=True
-    ) as img:
+    with write_tmp_imgs(*data, create_files=True, use_wildcards=True) as img:
         input_image = _tmp_dir() + img
         canica.fit(input_image)
         components_img = canica.components_img_
@@ -267,9 +275,9 @@ def test_with_globbing_patterns_with_multi_subjects():
         assert components_img.shape, check_shape
 
 
-def test_canica_score():
+def test_canica_score(mask_img):
     # Multi subjects
-    imgs, mask_img, *_ = _make_canica_test_data(n_subjects=3)
+    imgs, *_ = _make_canica_test_data()
     n_components = 10
     canica = CanICA(n_components=10, mask=mask_img, random_state=0)
     canica.fit(imgs)
