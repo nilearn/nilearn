@@ -28,8 +28,10 @@ _TEST_AFFINE_ERROR_MSG = "Images have different affine matrices."
 INF = 1000 * np.finfo(np.float32).eps
 EPS = np.finfo(np.float64).eps
 
+SHAPE = (8, 9, 10)
 
-def _make_label_data(shape):
+
+def _make_label_data(shape=SHAPE):
     labels_data = np.zeros(shape, dtype="int32")
     h0 = shape[0] // 2
     h1 = shape[1] // 2
@@ -45,21 +47,24 @@ def _make_label_data(shape):
     return labels_data
 
 
-def _make_label_and_signal_data_and_mask(shape, affine, n_instants, n_regions):
-    # data
+@pytest.fixture
+def labels_data():
+    return _make_label_data()
+
+
+@pytest.fixture
+def labels_img():
     affine = np.eye(4)
-    signals = generate_timeseries(n_instants, n_regions)
+    labels_data = _make_label_data(SHAPE)
+    return nibabel.Nifti1Image(labels_data, affine)
 
-    # labels
-    labels_data = _make_label_data(shape)
-    labels_img = nibabel.Nifti1Image(labels_data, affine)
 
-    # mask
-    mask_data = np.zeros(shape)
+@pytest.fixture
+def mask_img():
+    affine = np.eye(4)
+    mask_data = np.zeros(SHAPE)
     mask_data[1:-1, 1:-1, 1:-1] = 1
-    mask_img = nibabel.Nifti1Image(mask_data, affine)
-
-    return labels_data, labels_img, signals, mask_img
+    return nibabel.Nifti1Image(mask_data, affine)
 
 
 def _make_signal_extraction_test_data(shape, n_regions, length):
@@ -122,7 +127,7 @@ def test_check_shape_and_affine_compatibility_with_dim():
 
 
 @pytest.mark.parametrize(
-    "test_shape, test_affine,msg",
+    "test_shape, test_affine, msg",
     [
         ((2, 3, 5), np.eye(4), _TEST_SHAPE_ERROR_MSG),
         ((2, 3, 4), 2 * np.eye(4), _TEST_AFFINE_ERROR_MSG),
@@ -141,18 +146,15 @@ def test_check_shape_and_affine_compatibility_error(
         signal_extraction._check_shape_and_affine_compatibility(img1, img2)
 
 
-def test_signals_extraction_with_labels_without_mask():
+def test_signals_extraction_with_labels_without_mask(labels_data, labels_img):
     """Test conversion between signals and images \
     using regions defined by labels."""
-    shape = (8, 9, 10)
+    shape = SHAPE
     n_instants = 11
     n_regions = 8  # must be 8
 
-    labels_data, labels_img, signals, _ = _make_label_and_signal_data_and_mask(
-        shape=shape,
-        affine=np.eye(4),
-        n_instants=n_instants,
-        n_regions=n_regions,
+    signals = generate_timeseries(
+        n_timepoints=n_instants, n_features=n_regions
     )
 
     # from labels
@@ -183,21 +185,17 @@ def test_signals_extraction_with_labels_without_mask():
         assert labels_r == list(range(1, 9))
 
 
-def test_signals_extraction_with_labels_with_mask():
+def test_signals_extraction_with_labels_with_mask(
+    labels_img, labels_data, mask_img
+):
     """Test conversion between signals and images \
     using regions defined by labels with a mask."""
-    shape = (8, 9, 10)
+    shape = SHAPE
     n_instants = 11
     n_regions = 8  # must be 8
-    affine = np.eye(4)
 
-    (
-        labels_data,
-        labels_img,
-        signals,
-        mask_img,
-    ) = _make_label_and_signal_data_and_mask(
-        shape, affine, n_instants, n_regions
+    signals = generate_timeseries(
+        n_timepoints=n_instants, n_features=n_regions
     )
 
     data_img = signal_extraction.signals_to_img_labels(
@@ -241,19 +239,16 @@ def test_signals_extraction_with_labels_with_mask():
     assert labels_r == list(range(1, 9))
 
 
-def test_signals_extraction_with_labels_errors():
-    shape = (8, 9, 10)
+def test_signals_extraction_with_labels_errors(
+    labels_img, labels_data, mask_img
+):
+    shape = SHAPE
     n_instants = 11
     n_regions = 8
     affine = np.eye(4)
 
-    (
-        labels_data,
-        labels_img,
-        signals,
-        mask_img,
-    ) = _make_label_and_signal_data_and_mask(
-        shape, affine, n_instants, n_regions
+    signals = generate_timeseries(
+        n_timepoints=n_instants, n_features=n_regions
     )
 
     labels_4d_data = np.zeros((shape) + (2,))
@@ -287,7 +282,7 @@ def test_signals_extraction_with_labels_errors():
 
 
 def test_signal_extraction_with_maps():
-    shape = (10, 11, 12)
+    shape = SHAPE
     n_regions = 9
     n_instants = 13
 
@@ -414,7 +409,7 @@ def test_input_validation_bad_maps(z_dim, affine_diag):
 
 
 def test_signal_extraction_with_labels_error_strategy():
-    shape = (4, 5, 6)
+    shape = SHAPE
     n_regions = 7
     labels = list(range(n_regions + 1))  # 0 is background
     labels_img = generate_labeled_regions(shape, n_regions, labels=labels)
@@ -431,7 +426,7 @@ def test_signal_extraction_with_labels_error_strategy():
 
 
 def test_signal_extraction_with_maps_and_labels():
-    shape = (4, 5, 6)
+    shape = SHAPE
     n_regions = 7
     length = 8
 
@@ -512,8 +507,8 @@ def test_signal_extraction_nans_in_regions_are_replaced_with_zeros():
     assert np.all(labels_signals[:, labels_labels.index(2)] == 0.0)
 
 
-def test__trim_maps():
-    shape = (7, 9, 10)
+def test_trim_maps():
+    shape = SHAPE
     n_regions = 8
 
     # maps
