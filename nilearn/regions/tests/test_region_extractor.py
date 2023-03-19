@@ -276,14 +276,14 @@ def _shape_and_affine_labeled_regions():
     return shape, affine
 
 
-def _labeled_regions():
+@pytest.fixture
+def labels_img():
     shape, affine = _shape_and_affine_labeled_regions()
-    n_regions = 2
+    n_regions = 9
     return generate_labeled_regions(shape, affine=affine, n_regions=n_regions)
 
 
-def test_error_messages_connected_label_regions():
-    labels_img = _labeled_regions()
+def test_error_messages_connected_label_regions(labels_img):
     with pytest.raises(
         ValueError, match="Expected 'min_size' to be specified as integer."
     ):
@@ -317,10 +317,7 @@ def test_remove_small_regions():
     assert sum_removed_data < sum_label_data
 
 
-def test_connected_label_regions():
-    labels_img = generate_labeled_regions(
-        shape=(13, 11, 12), affine=np.eye(4), n_regions=9
-    )
+def test_connected_label_regions(labels_img):
     labels_data = get_data(labels_img)
     n_labels_wo_reg_ext = len(np.unique(labels_data))
 
@@ -341,10 +338,7 @@ def test_connected_label_regions():
     assert n_labels_wo_min > n_labels_with_min
 
 
-def test_connected_label_regions_connect_diag_false():
-    labels_img = generate_labeled_regions(
-        shape=(13, 11, 12), affine=np.eye(4), n_regions=9
-    )
+def test_connected_label_regions_connect_diag_false(labels_img):
     labels_data = get_data(labels_img)
     n_labels_wo_reg_ext = len(np.unique(labels_data))
 
@@ -356,25 +350,17 @@ def test_connected_label_regions_connect_diag_false():
     assert n_labels_wo_connect_diag > n_labels_wo_reg_ext
 
 
-def test_connected_label_regions_return_empty_for_large_min_size():
+def test_connected_label_regions_return_empty_for_large_min_size(labels_img):
     """If min_size is large and if all the regions are removed \
     then empty image will be returned."""
-    labels_img = generate_labeled_regions(
-        shape=(13, 11, 12), affine=np.eye(4), n_regions=9
-    )
-
     extract_reg_min_size_large = connected_label_regions(
         labels_img, min_size=500
     )
     assert np.unique(get_data(extract_reg_min_size_large)) == 0
 
 
-def test_connected_label_regions_check_labels():
+def test_connected_label_regions_check_labels(labels_img):
     """Test the names of the brain regions given in labels."""
-    labels_img = generate_labeled_regions(
-        shape=(13, 11, 12), affine=np.eye(4), n_regions=9
-    )
-
     # Test labels for 9 regions in n_regions
     labels = [f"region_{x}" for x in "abcdefghi"]
 
@@ -394,11 +380,8 @@ def test_connected_label_regions_check_labels():
     assert len(new_labels) <= len(labels)
 
 
-def test_connected_label_regions_check_labels_as_numpy_array():
+def test_connected_label_regions_check_labels_as_numpy_array(labels_img):
     """Test the names of the brain regions given in labels."""
-    labels_img = generate_labeled_regions(
-        shape=(13, 11, 12), affine=np.eye(4), n_regions=9
-    )
     # labels given in numpy array
     # Test labels for 9 regions in n_regions
     labels = [f"region_{x}" for x in "abcdefghi"]
@@ -424,7 +407,7 @@ def test_connected_label_regions_check_labels_as_numpy_array():
         connected_label_regions(labels_img, labels=provided_labels)
 
 
-def test_connected_label_regions_unknonw_labels():
+def test_connected_label_regions_unknonw_labels(labels_img):
     """If unknown/negative integers are provided as labels in labels_img, \
     we raise an error and test the same whether error is raised.
 
@@ -432,12 +415,8 @@ def test_connected_label_regions_unknonw_labels():
 
     See issue: https://github.com/nilearn/nilearn/issues/2580
     """
-    shape = (13, 11, 12)
-    affine = np.eye(4)
+    shape, affine = _shape_and_affine_labeled_regions()
 
-    labels_img = generate_labeled_regions(
-        shape=shape, affine=affine, n_regions=9
-    )
     labels_data = get_data(labels_img)
 
     labels_data = np.zeros(shape, dtype=np.float32)
@@ -469,14 +448,10 @@ def test_connected_label_regions_unknonw_labels():
         connected_label_regions(labels_img=labels_img_4d)
 
 
-def test_connected_label_regions_check_labels_string_without_list():
+def test_connected_label_regions_check_labels_string_without_list(labels_img):
     """If labels (or names to regions) given is a string without a list \
     we expect it to be split to regions extracted and returned as list."""
-    shape = (13, 11, 12)
-    affine = np.eye(4)
-    labels_img = generate_labeled_regions(
-        shape=shape, affine=affine, n_regions=9
-    )
+    shape, affine = _shape_and_affine_labeled_regions()
     labels_in_str = "region_a"
     labels_img_in_str = generate_labeled_regions(
         shape, affine=affine, n_regions=1
