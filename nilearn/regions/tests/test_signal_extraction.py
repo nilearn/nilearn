@@ -413,6 +413,12 @@ def test_signal_extraction_with_maps():
     np.testing.assert_almost_equal(get_data(img_r), get_data(imgs))
 
 
+def _create_mask_with_3_regions_from_labels_data(labels_data, affine):
+    # Create a mask containing only 3 regions.
+    mask_data = (labels_data == 1) + (labels_data == 2) + (labels_data == 5)
+    return nibabel.Nifti1Image(mask_data.astype(np.int8), affine)
+
+
 def test_signal_extraction_with_maps_and_labels(labeled_regions, fmri_img):
     labels = list(range(N_REGIONS + 1))
     labels_data = get_data(labeled_regions)
@@ -433,14 +439,12 @@ def test_signal_extraction_with_maps_and_labels(labeled_regions, fmri_img):
     np.testing.assert_almost_equal(maps_signals, labels_signals)
 
     # Same thing with a mask, containing only 3 regions.
-    mask_data = (labels_data == 1) + (labels_data == 2) + (labels_data == 5)
-    mask_img = nibabel.Nifti1Image(
-        mask_data.astype(np.int8), labeled_regions.affine
+    mask_img = _create_mask_with_3_regions_from_labels_data(
+        labels_data, labeled_regions.affine
     )
     labels_signals, labels_labels = img_to_signals_labels(
         imgs=fmri_img, labels_img=labeled_regions, mask_img=mask_img
     )
-
     maps_signals, maps_labels = img_to_signals_maps(
         fmri_img, maps_img, mask_img=mask_img
     )
@@ -470,9 +474,8 @@ def test_signal_extraction_nans_in_regions_are_replaced_with_zeros():
         shape=shape, affine=labels_img.affine, length=N_TIMEPOINTS
     )
 
-    mask_data = (labels_data == 1) + (labels_data == 2) + (labels_data == 5)
-    mask_img = nibabel.Nifti1Image(
-        mask_data.astype(np.int8), labels_img.affine
+    mask_img = _create_mask_with_3_regions_from_labels_data(
+        labels_data, labels_img.affine
     )
 
     region1 = labels_data == 2

@@ -18,7 +18,7 @@ from nilearn.regions.region_extractor import (
 from scipy.ndimage import label
 
 MAP_SHAPE = (30, 30, 30)
-N_REGIONS = 2
+N_REGIONS = 3
 
 
 def _shape_and_affine_labeled_regions():
@@ -60,6 +60,12 @@ def maps():
 
 
 @pytest.fixture
+def maps_and_mask():
+    maps, mask_img = generate_maps(shape=MAP_SHAPE, n_regions=N_REGIONS)
+    return maps, mask_img
+
+
+@pytest.fixture
 def map_img_3D():
     rng = np.random.RandomState(42)
     map_img = np.zeros(MAP_SHAPE) + 0.1 * rng.standard_normal(size=MAP_SHAPE)
@@ -89,7 +95,7 @@ def test_nans_threshold_maps_ratio(maps):
     _threshold_maps_ratio(maps_img, threshold=0.8)
 
 
-def test_threshold_maps_ratio(maps, map_img_3D):
+def test_threshold_maps_ratio(maps):
     # smoke test for function _threshold_maps_ratio with randomly
     # generated maps
 
@@ -103,6 +109,8 @@ def test_threshold_maps_ratio(maps, map_img_3D):
     # in thresholded image
     assert thr_maps.shape[-1] == maps.shape[-1]
 
+
+def test_threshold_maps_ratio_3D(map_img_3D):
     # check that the size should be same for 3D image
     # before and after thresholding
     thr_maps_3d = _threshold_maps_ratio(map_img_3D, threshold=0.5)
@@ -142,9 +150,10 @@ def test_connected_regions_3D(map_img_3D, extract_type):
     assert connected_extraction_3d_img.shape[-1] >= 1
 
 
-def test_connected_regions_different_results_with_different_mask_images():
-    n_regions = 4
-    maps, mask_img = generate_maps(shape=MAP_SHAPE, n_regions=n_regions)
+def test_connected_regions_different_results_with_different_mask_images(
+    maps_and_mask,
+):
+    maps, mask_img = maps_and_mask
 
     # Test input mask_img
     mask = get_data(mask_img)
@@ -200,9 +209,8 @@ def test_threshold_as_none_and_string_cases(dummy_map, threshold):
         to_check.fit()
 
 
-def test_region_extractor_fit_and_transform():
-    n_regions = 3
-    maps, mask_img = generate_maps(shape=MAP_SHAPE, n_regions=n_regions)
+def test_region_extractor_fit_and_transform(maps_and_mask):
+    maps, mask_img = maps_and_mask
 
     # Test maps are zero in the mask
     mask_data = get_data(mask_img)
@@ -219,9 +227,8 @@ def test_region_extractor_fit_and_transform():
     )
 
 
-def test_region_extractor_strategies():
-    n_regions = 3
-    maps, mask_img = generate_maps(shape=MAP_SHAPE, n_regions=n_regions)
+def test_region_extractor_strategies(maps_and_mask):
+    maps, mask_img = maps_and_mask
 
     # thresholding_strategy='ratio_n_voxels'
     extract_ratio = RegionExtractor(
@@ -229,7 +236,7 @@ def test_region_extractor_strategies():
     )
     extract_ratio.fit()
     assert extract_ratio.regions_img_ != ""
-    assert extract_ratio.regions_img_.shape[-1] >= n_regions
+    assert extract_ratio.regions_img_.shape[-1] >= N_REGIONS
 
     # thresholding_strategy=percentile
     extractor = RegionExtractor(
@@ -241,7 +248,7 @@ def test_region_extractor_strategies():
     extractor.fit()
     assert extractor.index_, np.ndarray
     assert extractor.regions_img_ != ""
-    assert extractor.regions_img_.shape[-1] >= n_regions
+    assert extractor.regions_img_.shape[-1] >= N_REGIONS
 
     n_regions_extracted = extractor.regions_img_.shape[-1]
     shape = (91, 109, 91, 7)
