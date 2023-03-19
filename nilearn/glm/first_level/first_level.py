@@ -26,7 +26,7 @@ from sklearn.cluster import KMeans
 
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
 from nilearn._utils import fill_doc
-from nilearn._utils.bids import bids_entities, validate_bids_label
+from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
 from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
                                 _check_run_tables, _check_run_sample_masks)
 from nilearn._utils.niimg_conversions import check_niimg
@@ -905,7 +905,7 @@ def first_level_from_bids(dataset_path: str | Path,
     else:
         filters = _make_bids_files_filter(
             task_label=task_label,
-            supported_filters=[*bids_entities()["raw"], *bids_entities()["derivatives"]],
+            supported_filters=[*_bids_entities()["raw"], *_bids_entities()["derivatives"]],
             extra_filter=img_filters
         )
         img_specs = get_bids_files(derivatives_path,
@@ -918,7 +918,7 @@ def first_level_from_bids(dataset_path: str | Path,
         if not img_specs:
             filters = _make_bids_files_filter(
                 task_label=task_label,
-                supported_filters=bids_entities()["raw"],
+                supported_filters=_bids_entities()["raw"],
                 extra_filter=img_filters
             )
             img_specs = get_bids_files(dataset_path,
@@ -1118,8 +1118,8 @@ def _get_processed_imgs(
     filters = _make_bids_files_filter(
         task_label=task_label,
         space_label=space_label,
-        supported_filters=bids_entities()["raw"]
-        + bids_entities()["derivatives"],
+        supported_filters=_bids_entities()["raw"]
+        + _bids_entities()["derivatives"],
         extra_filter=img_filters,
     )
     imgs = get_bids_files(
@@ -1180,7 +1180,7 @@ def _get_events_files(
     """
     events_filters = _make_bids_files_filter(
         task_label=task_label,
-        supported_filters=bids_entities()["raw"],
+        supported_filters=_bids_entities()["raw"],
         extra_filter=img_filters,
     )
     events = get_bids_files(
@@ -1248,8 +1248,8 @@ def _get_confounds(
 
     """
     supported_filters = (
-        bids_entities()["raw"]
-        + bids_entities()["derivatives"]
+        _bids_entities()["raw"]
+        + _bids_entities()["derivatives"]
     )
     # confounds use a desc-confounds,
     # so we must remove desc if it was passed as a filter
@@ -1363,17 +1363,17 @@ def _validate_args_first_level_from_bids(
             f"{derivatives_folder}"
         )
 
-    validate_bids_label(task_label)
+    _check_bids_label(task_label)
 
     if space_label is not None:
-        validate_bids_label(space_label)
+        _check_bids_label(space_label)
 
     if not isinstance(sub_labels, list):
         raise TypeError(
             f"sub_labels must be a list, instead {type(sub_labels)} was given"
         )
     for sub_label_ in sub_labels:
-        validate_bids_label(sub_label_)
+        _check_bids_label(sub_label_)
 
     if not isinstance(img_filters, list):
         raise TypeError(
@@ -1381,7 +1381,7 @@ def _validate_args_first_level_from_bids(
             f"Got {type(img_filters)} instead."
         )
     supported_filters = [
-        *bids_entities()["raw"], *bids_entities()["derivatives"]
+        *_bids_entities()["raw"], *_bids_entities()["derivatives"]
     ]
     for filter_ in img_filters:
         if len(filter_) != 2 or not all(isinstance(x, str) for x in filter_):
@@ -1394,7 +1394,7 @@ def _validate_args_first_level_from_bids(
                 f"Entity {filter_[0]} for {filter_} is not a possible filter. "
                 f"Only {supported_filters} are allowed."
             )
-        validate_bids_label(filter_[1])
+        _check_bids_label(filter_[1])
 
 
 def _make_bids_files_filter(
@@ -1581,7 +1581,7 @@ def _check_bids_events_list(
         "sub",
         "ses",
         "task",
-        *bids_entities()["raw"],
+        *_bids_entities()["raw"],
     ]
     for this_img in imgs:
         parsed_filename = parse_bids_filename(this_img)
