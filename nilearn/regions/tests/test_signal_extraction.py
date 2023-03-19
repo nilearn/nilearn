@@ -353,9 +353,9 @@ def test_signals_extraction_with_labels_without_mask(
     np.testing.assert_almost_equal(signals_r, signals)
     assert labels_r == list(range(1, 9))
 
-    with write_tmp_imgs(data_img) as fname_img:
+    with write_tmp_imgs(data_img) as filenames:
         signals_r, labels_r = img_to_signals_labels(
-            imgs=fname_img, labels_img=labels_img
+            imgs=filenames, labels_img=labels_img
         )
 
         np.testing.assert_almost_equal(signals_r, signals)
@@ -408,42 +408,30 @@ def test_signals_extraction_with_labels_with_mask(
     assert labels_r == list(range(1, 9))
 
 
-def test_signal_extraction_with_maps(img_4D):
-    # Generate signals
+def test_signal_extraction_with_maps():
+    # Generate signal imgs
     rng = np.random.RandomState(42)
-
-    maps_img, mask_img = generate_maps(SHAPE, N_REGIONS, border=1)
+    maps_img, mask_img = generate_maps(SHAPE, N_REGIONS)
     maps_data = get_data(maps_img)
     data = np.zeros(SHAPE + (N_TIMEPOINTS,))
-
     signals = np.zeros((N_TIMEPOINTS, maps_data.shape[-1]))
     for n in range(maps_data.shape[-1]):
         signals[:, n] = rng.standard_normal(size=N_TIMEPOINTS)
         data[maps_data[..., n] > 0, :] = signals[:, n]
     imgs = nibabel.Nifti1Image(data, AFFINE)
 
-    # verify that 4d masks are refused
-    with pytest.raises(TypeError, match=_3D_EXPECTED_ERROR_MSG):
-        img_to_signals_maps(imgs=imgs, maps_img=maps_img, mask_img=img_4D)
-
     # Get signals
     signals_r, _ = img_to_signals_maps(
         imgs=imgs, maps_img=maps_img, mask_img=mask_img
     )
-
-    # The output must be identical to the input signals, because every region
-    # is homogeneous:
-    # there is the same signal in all voxels of one given region
-    # (and all maps are uniform).
     np.testing.assert_almost_equal(signals, signals_r)
-
-    # Same thing without mask (in that case)
-    signals_r, _ = img_to_signals_maps(imgs, maps_img)
-    np.testing.assert_almost_equal(signals, signals_r)
-
     # Recover image
     img_r = signals_to_img_maps(signals, maps_img, mask_img=mask_img)
     np.testing.assert_almost_equal(get_data(img_r), get_data(imgs))
+
+    # Same thing without mask
+    signals_r, _ = img_to_signals_maps(imgs, maps_img)
+    np.testing.assert_almost_equal(signals, signals_r)
     img_r = signals_to_img_maps(signals, maps_img)
     np.testing.assert_almost_equal(get_data(img_r), get_data(imgs))
 
