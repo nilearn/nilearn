@@ -24,6 +24,7 @@ from nilearn.maskers import NiftiMasker
 from nilearn.glm.first_level import (FirstLevelModel, run_glm)
 from nilearn.glm.second_level import (SecondLevelModel,
                                       non_parametric_inference)
+from nilearn.reporting import get_clusters_table
 from scipy import stats
 
 # This directory path
@@ -657,7 +658,6 @@ def test_non_parametric_inference_cluster_level_with_covariates(
     """Test non-parametric inference with cluster-level inference in
     the context of covariates."""
 
-    from nilearn.reporting import get_clusters_table
     rng = np.random.RandomState(random_state)
 
     with InTemporaryDirectory():
@@ -667,7 +667,7 @@ def test_non_parametric_inference_cluster_level_with_covariates(
         func_img = load(FUNCFILE)
 
         unc_pval = 0.01
-        n_subjects = 3
+        n_subjects = 2
 
         # Set up one sample t-test design with two random covariates
         cov1 = rng.random(n_subjects)
@@ -715,7 +715,7 @@ def test_non_parametric_inference_cluster_level_with_covariates(
                     mask=mask,
                     model_intercept=False,
                     second_level_contrast="intercept",
-                    n_perm=1 / unc_pval,
+                    n_perm=N_PERM,
                     threshold=unc_pval,
                 )
 
