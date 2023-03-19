@@ -75,51 +75,46 @@ def test_generate_maps():
     assert np.all(maps[:, :, 0, :] == 0)
 
 
-def test_generate_fake_fmri():
-    shapes = [(6, 6, 7), (10, 11, 12)]
-    lengths = [16, 20]
-    kinds = ["noise", "step"]
-    n_blocks = [None, 1, 4]
-    block_size = [None, 4]
-    block_type = ["classification", "regression"]
-
+@pytest.mark.parametrize("shape", [(10, 11, 12), (6, 6, 7)])
+@pytest.mark.parametrize("length", [16, 20])
+@pytest.mark.parametrize("kind", ["noise", "step"])
+@pytest.mark.parametrize("n_block", [None, 1, 4])
+@pytest.mark.parametrize("block_size", [None, 4])
+@pytest.mark.parametrize("block_type", ["classification", "regression"])
+def test_generate_fake_fmri(shape, length, kind, n_block, block_size, block_type):
     rand_gen = np.random.RandomState(3)
 
-    for shape, length, kind, n_block, bsize, btype in itertools.product(
-        shapes, lengths, kinds, n_blocks, block_size, block_type
-    ):
-        if n_block is None:
-            fmri, mask = generate_fake_fmri(
-                shape=shape,
-                length=length,
-                kind=kind,
-                n_blocks=n_block,
-                block_size=bsize,
-                block_type=btype,
-                random_state=rand_gen,
-            )
-        else:
-            fmri, mask, target = generate_fake_fmri(
-                shape=shape,
-                length=length,
-                kind=kind,
-                n_blocks=n_block,
-                block_size=bsize,
-                block_type=btype,
-                random_state=rand_gen,
-            )
+    if n_block is None:
+        fmri, _ = generate_fake_fmri(
+            shape=shape,
+            length=length,
+            kind=kind,
+            n_blocks=n_block,
+            block_size=block_size,
+            block_type=block_type,
+            random_state=rand_gen,
+        )
+    else:
+        fmri, _, target = generate_fake_fmri(
+            shape=shape,
+            length=length,
+            kind=kind,
+            n_blocks=n_block,
+            block_size=block_size,
+            block_type=block_type,
+            random_state=rand_gen,
+        )
+        assert target.size == length
 
-        assert fmri.shape[:-1] == shape
-        assert fmri.shape[-1] == length
+    assert fmri.shape[:-1] == shape
+    assert fmri.shape[-1] == length
 
-        if n_block is not None:
-            assert target.size == length
-
+def test_generate_fake_fmri_error():
     pytest.raises(
         ValueError,
         generate_fake_fmri,
         length=10,
         n_blocks=10,
         block_size=None,
-        random_state=rand_gen,
+        random_state=np.random.RandomState(3),
     )
