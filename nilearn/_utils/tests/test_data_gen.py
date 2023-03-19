@@ -1,5 +1,3 @@
-import itertools
-
 import numpy as np
 import pytest
 from nilearn._utils.data_gen import (
@@ -11,14 +9,19 @@ from nilearn._utils.data_gen import (
 from nilearn.image import get_data
 
 
-def test_generate_regions_ts():
+@pytest.mark.parametrize("window", ["boxcar", "hamming"])
+def test_generate_regions_ts(window):
     """Minimal testing of generate_regions_ts()."""
-    # Check that no regions overlap
     n_voxels = 50
     n_regions = 10
-    regions = generate_regions_ts(n_voxels, n_regions, overlap=0)
+
+    # no overlap
+    regions = generate_regions_ts(
+        n_voxels, n_regions, overlap=0, window=window
+    )
+
     assert regions.shape == (n_regions, n_voxels)
-    # check: no overlap
+    # check no overlap
     np.testing.assert_array_less(
         (regions > 0).sum(axis=0) - 0.1, np.ones(regions.shape[1])
     )
@@ -27,28 +30,18 @@ def test_generate_regions_ts():
         np.zeros(regions.shape[1]), (regions > 0).sum(axis=0)
     )
 
+    # some regions overlap
     regions = generate_regions_ts(
-        n_voxels, n_regions, overlap=0, window="hamming"
+        n_voxels, n_regions, overlap=1, window=window
     )
+
     assert regions.shape == (n_regions, n_voxels)
-    # check: no overlap
-    np.testing.assert_array_less(
-        (regions > 0).sum(axis=0) - 0.1, np.ones(regions.shape[1])
-    )
+    # check overlap
+    assert np.any((regions > 0).sum(axis=-1) > 1.9)
     # check: a region everywhere
     np.testing.assert_array_less(
         np.zeros(regions.shape[1]), (regions > 0).sum(axis=0)
     )
-
-    # Check that some regions overlap
-    regions = generate_regions_ts(n_voxels, n_regions, overlap=1)
-    assert regions.shape == (n_regions, n_voxels)
-    assert np.any((regions > 0).sum(axis=-1) > 1.9)
-
-    regions = generate_regions_ts(
-        n_voxels, n_regions, overlap=1, window="hamming"
-    )
-    assert np.any((regions > 0).sum(axis=-1) > 1.9)
 
 
 def test_generate_labeled_regions():
