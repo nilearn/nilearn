@@ -9,7 +9,6 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri,
     generate_labeled_regions,
     generate_maps,
-    generate_regions_ts,
     generate_timeseries,
 )
 from nilearn._utils.exceptions import DimensionError
@@ -30,7 +29,7 @@ INF = 1000 * np.finfo(np.float32).eps
 EPS = np.finfo(np.float64).eps
 
 
-def test__check_shape_and_affine_compatibility_without_dim():
+def test_check_shape_and_affine_compatibility_without_dim():
     """Ensure correct behaviour for valid data without dim"""
     shape = (2, 3, 4)
     affine = np.eye(4)
@@ -42,7 +41,7 @@ def test__check_shape_and_affine_compatibility_without_dim():
         signal_extraction._check_shape_and_affine_compatibility(img1, img2)
 
 
-def test__check_shape_and_affine_compatibility_with_dim():
+def test_check_shape_and_affine_compatibility_with_dim():
     """Ensure correct behaviour for valid data without dim"""
     shape = (2, 3, 4, 7)
     affine = np.eye(4)
@@ -64,7 +63,7 @@ def test__check_shape_and_affine_compatibility_with_dim():
         ((2, 3, 4), 2 * np.eye(4), _TEST_AFFINE_ERROR_MSG),
     ],
 )
-def test__check_shape_and_affine_compatibility_error(
+def test_check_shape_and_affine_compatibility_error(
     test_shape, test_affine, msg
 ):
     shape = (2, 3, 4)
@@ -75,55 +74,6 @@ def test__check_shape_and_affine_compatibility_error(
 
     with pytest.raises(ValueError, match=msg):
         signal_extraction._check_shape_and_affine_compatibility(img1, img2)
-
-
-def test_generate_regions_ts():
-    """Minimal testing of generate_regions_ts()."""
-    # Check that no regions overlap
-    n_voxels = 50
-    n_regions = 10
-    regions = generate_regions_ts(n_voxels, n_regions, overlap=0)
-    assert regions.shape == (n_regions, n_voxels)
-    # check: no overlap
-    np.testing.assert_array_less(
-        (regions > 0).sum(axis=0) - 0.1, np.ones(regions.shape[1])
-    )
-    # check: a region everywhere
-    np.testing.assert_array_less(
-        np.zeros(regions.shape[1]), (regions > 0).sum(axis=0)
-    )
-
-    regions = generate_regions_ts(
-        n_voxels, n_regions, overlap=0, window="hamming"
-    )
-    assert regions.shape == (n_regions, n_voxels)
-    # check: no overlap
-    np.testing.assert_array_less(
-        (regions > 0).sum(axis=0) - 0.1, np.ones(regions.shape[1])
-    )
-    # check: a region everywhere
-    np.testing.assert_array_less(
-        np.zeros(regions.shape[1]), (regions > 0).sum(axis=0)
-    )
-
-    # Check that some regions overlap
-    regions = generate_regions_ts(n_voxels, n_regions, overlap=1)
-    assert regions.shape == (n_regions, n_voxels)
-    assert np.any((regions > 0).sum(axis=-1) > 1.9)
-
-    regions = generate_regions_ts(
-        n_voxels, n_regions, overlap=1, window="hamming"
-    )
-    assert np.any((regions > 0).sum(axis=-1) > 1.9)
-
-
-def test_generate_labeled_regions():
-    """Minimal testing of generate_labeled_regions."""
-    shape = (3, 4, 5)
-    n_regions = 10
-    regions = generate_labeled_regions(shape, n_regions)
-    assert regions.shape == shape
-    assert len(np.unique(get_data(regions))) == n_regions + 1
 
 
 def _make_label_data(shape):
@@ -148,18 +98,7 @@ def _make_label_and_signal_data_and_mask(shape, affine, n_instants, n_regions):
     signals = generate_timeseries(n_instants, n_regions)
 
     # labels
-    labels_data = np.zeros(shape, dtype="int32")
-    h0 = shape[0] // 2
-    h1 = shape[1] // 2
-    h2 = shape[2] // 2
-    labels_data[:h0, :h1, :h2] = 1
-    labels_data[:h0, :h1, h2:] = 2
-    labels_data[:h0, h1:, :h2] = 3
-    labels_data[:h0, h1:, h2:] = 4
-    labels_data[h0:, :h1, :h2] = 5
-    labels_data[h0:, :h1, h2:] = 6
-    labels_data[h0:, h1:, :h2] = 7
-    labels_data[h0:, h1:, h2:] = 8
+    labels_data = _make_label_data(shape)
     labels_img = nibabel.Nifti1Image(labels_data, affine)
 
     # mask
@@ -571,21 +510,6 @@ def test_signal_extraction_nans_in_regions_are_replaced_with_zeros():
     )
 
     assert np.all(labels_signals[:, labels_labels.index(2)] == 0.0)
-
-
-def test_generate_maps():
-    # Basic testing of generate_maps()
-    shape = (10, 11, 12)
-    n_regions = 9
-    maps_img, _ = generate_maps(shape, n_regions, border=1)
-    maps = get_data(maps_img)
-    assert maps.shape == shape + (n_regions,)
-    # no empty map
-    assert np.all(abs(maps).sum(axis=0).sum(axis=0).sum(axis=0) > 0)
-    # check border
-    assert np.all(maps[0, ...] == 0)
-    assert np.all(maps[:, 0, ...] == 0)
-    assert np.all(maps[:, :, 0, :] == 0)
 
 
 def test__trim_maps():

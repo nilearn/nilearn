@@ -256,7 +256,6 @@ def test_region_extractor_strategies():
 
 def test_region_extractor_high_resolution_image():
     n_regions = 9
-
     maps, _ = generate_maps(
         shape=MAP_SHAPE, n_regions=n_regions, affine=0.2 * np.eye(4)
     )
