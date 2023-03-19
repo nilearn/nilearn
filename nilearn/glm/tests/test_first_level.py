@@ -877,13 +877,13 @@ def _new_bids_dataset(base_dir=Path()):
 @pytest.mark.parametrize("n_ses", [0, 1, 2])
 @pytest.mark.parametrize("task_index", [0, 1])
 @pytest.mark.parametrize("space_label", ["MNI", "T1w"])
-def test_first_level_from_bids(tmpdir, n_runs, n_ses, task_index, space_label):
+def test_first_level_from_bids(tmp_path, n_runs, n_ses, task_index, space_label):
     """Test several BIDS structure."""
     n_sub = 2
     tasks = ['localizer', 'main']
 
     bids_path = create_fake_bids_dataset(
-        base_dir=tmpdir,
+        base_dir=tmp_path,
         n_sub=n_sub,
         n_ses=n_ses,
         tasks=tasks,
@@ -968,15 +968,18 @@ def test_first_level_from_bids_smoke_test_for_verbose_argument(bids_dataset, ver
 @pytest.mark.parametrize(
     "entity", ["acq", "ce", "dir", "rec", "echo", "res", "den"]
 )
-def test_first_level_from_bids_several_labels_per_entity(tmpdir, entity):
+def test_first_level_from_bids_several_labels_per_entity(tmp_path, entity):
     """Correct files selected when an entity has several possible labels.
     
     Regression test for https://github.com/nilearn/nilearn/issues/3524
     """
-    n_sub, n_ses, tasks, n_runs = _inputs_for_new_bids_dataset()
+    n_sub = 1
+    n_ses = 1
+    tasks = ["main"]
+    n_runs = [1]
 
     bids_path = create_fake_bids_dataset(
-        base_dir=tmpdir,
+        base_dir=tmp_path,
         n_sub=n_sub,
         n_ses=n_ses,
         tasks=tasks,
@@ -999,14 +1002,13 @@ def test_first_level_from_bids_several_labels_per_entity(tmpdir, entity):
     assert len(m_imgs[0]) == n_imgs_expected
 
 
-def test_first_level_from_bids_with_subject_labels(tmp_path):
+def test_first_level_from_bids_with_subject_labels(bids_dataset):
     """Test that the subject labels arguments works \
     with proper warning for missing subjects.
     
     Check that the incorrect label `foo` raises a warning,
     but that we still get a model for existing subject.        
     """
-    bids_dataset = _new_bids_dataset(tmp_path)
     warning_message = ('Subject label foo is not present in'
                         ' the dataset and cannot be processed')
     with pytest.warns(UserWarning, match=warning_message):
@@ -1109,8 +1111,21 @@ def test_first_level_from_bids_too_many_bold_files(bids_dataset):
         )
 
 
-def test_first_level_from_bids_no_bold_file(tmp_path):
+def test_first_level_from_bids_with_missing_events(tmp_path):
+    """All events.tsv files are missing, should raise an error."""
     bids_dataset = _new_bids_dataset(tmp_path)
+    events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
+    for f in events_files[1:]:
+        os.remove(f)
+
+    with pytest.raises(ValueError, match="No events.tsv files found"):
+        first_level_from_bids(
+            dataset_path=bids_dataset, task_label="main", space_label="MNI"
+        )        
+
+
+def test_first_level_from_bids_no_bold_file(tmp_path_factory):
+    bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("no_bold"))
     imgs = get_bids_files(main_path=bids_dataset / "derivatives", 
                             file_tag="bold",
                             file_type="*gz")
@@ -1123,9 +1138,9 @@ def test_first_level_from_bids_no_bold_file(tmp_path):
         )            
 
 
-def test_first_level_from_bids_with_one_events_missing(tmp_path):
+def test_first_level_from_bids_with_one_events_missing(tmp_path_factory):
     """Only one events.tsv file is missing, should raise an error."""
-    bids_dataset = _new_bids_dataset(tmp_path)
+    bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("one_event_missing"))
     events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
     os.remove(events_files[0])
 
@@ -1137,25 +1152,12 @@ def test_first_level_from_bids_with_one_events_missing(tmp_path):
         )
 
 
-def test_first_level_from_bids_with_missing_events(tmp_path):
-    """All events.tsv files are missing, should raise an error."""
-    bids_dataset = _new_bids_dataset(tmp_path)
-    events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
-    for f in events_files[1:]:
-        os.remove(f)
-
-    with pytest.raises(ValueError, match="Same number of event files "):
-        first_level_from_bids(
-            dataset_path=bids_dataset, task_label="main", space_label="MNI"
-        )
-
-
-def test_first_level_from_bids_one_confound_missing(tmp_path):
+def test_first_level_from_bids_one_confound_missing(tmp_path_factory):
     """There must be only one confound file per image or none
 
     If only one is missing, it should raise an error.
     """
-    bids_dataset = _new_bids_dataset(tmp_path)    
+    bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("one_confound_missing"))  
     confound_files = get_bids_files(
         main_path=bids_dataset / "derivatives",
         file_tag="desc-confounds_timeseries",
@@ -1168,9 +1170,9 @@ def test_first_level_from_bids_one_confound_missing(tmp_path):
         )
 
 
-def test_first_level_from_bids_all_confounds_missing(tmp_path):
+def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
     """If all confound files are missing, confounds should be an array of None."""
-    bids_dataset = _new_bids_dataset(tmp_path)     
+    bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("no_confounds"))    
     confound_files = get_bids_files(
         main_path=bids_dataset / "derivatives",
         file_tag="desc-confounds_timeseries",
@@ -1193,10 +1195,10 @@ def test_first_level_from_bids_all_confounds_missing(tmp_path):
         assert condounds_ is None
 
 
-def test_first_level_from_bids_no_derivatives(tmpdir):
+def test_first_level_from_bids_no_derivatives(tmp_path):
     """Raise error if the derivative folder does not exist."""
     bids_path = create_fake_bids_dataset(
-        base_dir=tmpdir,
+        base_dir=tmp_path,
         n_sub=1,
         n_ses=1,
         tasks=["main"],
@@ -1209,10 +1211,10 @@ def test_first_level_from_bids_no_derivatives(tmpdir):
         )
 
 
-def test_first_level_from_bids_no_session(tmpdir):
+def test_first_level_from_bids_no_session(tmp_path):
     """Check runs are not repeated when ses field is not used."""
     bids_path = create_fake_bids_dataset(
-        base_dir=tmpdir,
+        base_dir=tmp_path,
         n_sub=3,
         n_ses=1,
         tasks=["main"],
@@ -1229,13 +1231,13 @@ def test_first_level_from_bids_no_session(tmpdir):
         )
 
 
-def test_first_level_from_bids_mismatch_run_index(tmp_path):
+def test_first_level_from_bids_mismatch_run_index(tmp_path_factory):
     """Test error when run index is zero padded in raw but not in derivatives.
     
     Regression test for https://github.com/nilearn/nilearn/issues/3029
     
     """
-    bids_dataset = _new_bids_dataset(tmp_path)
+    bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("renamed_runs")) 
     files_to_rename = (bids_dataset / "derivatives").glob("**/func/*_task-main_*desc-*")
     for file_ in files_to_rename:
         new_file = file_.parent / file_.name.replace("run-0", "run-")
