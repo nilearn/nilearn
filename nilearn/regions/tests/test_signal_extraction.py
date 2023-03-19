@@ -124,7 +124,6 @@ def _make_signal_extraction_test_data(shape, n_regions, n_timepoints):
     for n, l in enumerate(labels):
         if n == 0:
             continue
-
         maps_data[labels_data == l, n - 1] = 1
 
     maps_img = nibabel.Nifti1Image(maps_data, labels_img.affine)
@@ -437,13 +436,16 @@ def test_signal_extraction_with_maps():
 
 
 def test_signal_extraction_with_maps_and_labels(labeled_regions, fmri_img):
-    (
-        _,
-        labels,
-        labels_data,
-        _,
-        maps_img,
-    ) = _make_signal_extraction_test_data(SHAPE, N_REGIONS, N_TIMEPOINTS)
+    labels = list(range(N_REGIONS + 1))
+    labels_data = get_data(labeled_regions)
+    # Convert to maps
+    maps_data = np.zeros(SHAPE + (N_REGIONS,))
+    for n, l in enumerate(labels):
+        if n == 0:
+            continue
+        maps_data[labels_data == l, n - 1] = 1
+
+    maps_img = nibabel.Nifti1Image(maps_data, labeled_regions.affine)
 
     # Extract signals from maps and labels: results must be identical.
     maps_signals, maps_labels = img_to_signals_maps(fmri_img, maps_img)
