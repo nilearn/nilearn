@@ -81,7 +81,9 @@ def test_generate_maps():
 @pytest.mark.parametrize("n_block", [None, 1, 4])
 @pytest.mark.parametrize("block_size", [None, 4])
 @pytest.mark.parametrize("block_type", ["classification", "regression"])
-def test_generate_fake_fmri(shape, length, kind, n_block, block_size, block_type):
+def test_generate_fake_fmri(
+    shape, length, kind, n_block, block_size, block_type
+):
     rand_gen = np.random.RandomState(3)
 
     if n_block is None:
@@ -108,6 +110,7 @@ def test_generate_fake_fmri(shape, length, kind, n_block, block_size, block_type
 
     assert fmri.shape[:-1] == shape
     assert fmri.shape[-1] == length
+
 
 def test_generate_fake_fmri_error():
     pytest.raises(
