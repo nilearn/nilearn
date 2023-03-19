@@ -114,28 +114,6 @@ def labeled_regions():
     )
 
 
-def _make_signal_extraction_test_data(shape, n_regions, n_timepoints):
-    # Generate labels
-    labels = list(range(n_regions + 1))  # 0 is background
-    labels_img = generate_labeled_regions(shape, n_regions, labels=labels)
-    labels_data = get_data(labels_img)
-    # Convert to maps
-    maps_data = np.zeros(shape + (n_regions,))
-    for n, l in enumerate(labels):
-        if n == 0:
-            continue
-        maps_data[labels_data == l, n - 1] = 1
-
-    maps_img = nibabel.Nifti1Image(maps_data, labels_img.affine)
-
-    # Generate fake data
-    fmri_img, _ = generate_fake_fmri(
-        shape=shape, affine=labels_img.affine, length=n_timepoints
-    )
-
-    return fmri_img, labels, labels_data, labels_img, maps_img
-
-
 def _all_voxel_of_each_region_have_same_values(
     data, labels_data, n_regions, signals
 ):
@@ -485,13 +463,12 @@ def test_signal_extraction_with_maps_and_labels(labeled_regions, fmri_img):
 
 def test_signal_extraction_nans_in_regions_are_replaced_with_zeros():
     shape = (4, 5, 6)
-    (
-        fmri_img,
-        _,
-        labels_data,
-        labels_img,
-        _,
-    ) = _make_signal_extraction_test_data(shape, N_REGIONS, N_TIMEPOINTS)
+    labels = list(range(N_REGIONS + 1))  # 0 is background
+    labels_img = generate_labeled_regions(shape, N_REGIONS, labels=labels)
+    labels_data = get_data(labels_img)
+    fmri_img, _ = generate_fake_fmri(
+        shape=shape, affine=labels_img.affine, length=N_TIMEPOINTS
+    )
 
     mask_data = (labels_data == 1) + (labels_data == 2) + (labels_data == 5)
     mask_img = nibabel.Nifti1Image(
