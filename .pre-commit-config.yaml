@@ -1,7 +1,7 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 
-files: "(nilearn/de.*)|(.*binder/)|(.*circleci/)|(.*github/)|(maint_tools/.*)|(setup.*)|(.*coverage)|(.*toml$)|(.*in$)|(.*yml)|(.*yaml)|(CONTRIBUTING.rst)|(AUTHORS.rst)|(LICENSE)|(Makefile)|(.*gitignore)|(doc/.*)|(nilearn/connectome/.*py)|(nilearn/image|regions/.*py)|(examples/.*py)"
+files: "(nilearn/de.*)|(.*binder/)|(.*circleci/)|(.*github/)|(maint_tools/.*)|(setup.*)|(.*coverage)|(.*toml$)|(.*in$)|(.*yml)|(.*yaml)|(CONTRIBUTING.rst)|(AUTHORS.rst)|(LICENSE)|(Makefile)|(.*gitignore)|(doc/.*)|(nilearn/connectome/.*py)|(nilearn/image|regions|mass_univariate/.*py)|(examples/.*py)"
 exclude: "^(doc/whats_new.rst)|(doc/changes/(names|latest|0\\.9\\.[0-2]|0\\.10\\.0).rst)|(doc/(glm/first_level_model\\.rst|introduction\\.rst|maintenance\\.rst|manipulating_images/input_output\\.rst|modules/datasets\\.rst|modules/reference\\.rst|references\\.bib|themes/nilearn/static/nature\\.css_t))|(nilearn/externals/tempita)|(examples/.*/.*(3d_map_to_surface_projection|demo_glass_brain|demo_glass_brain_extensive|demo_more_plotting|demo_plotting|surf_atlas|surf_stat_map|surface_projection_strategies|fiac_analysis|fixed_effects|localizer_surface_analysis|two_session_model|searchlight_surface|compare_shrunk_connectome|group_level_connectivity|negate_image|resample_to_template|surface_bids_analysis).py)"
 
 repos:
