@@ -42,8 +42,7 @@ def dummy_map():
 
     Use for error testing
     """
-    maps, _ = generate_maps(shape=(6, 6, 6), n_regions=N_REGIONS)
-    return maps
+    return generate_maps(shape=(6, 6, 6), n_regions=N_REGIONS)[0]
 
 
 @pytest.fixture
@@ -55,14 +54,12 @@ def labels_img():
 
 @pytest.fixture
 def maps():
-    maps, _ = generate_maps(shape=MAP_SHAPE, n_regions=N_REGIONS)
-    return maps
+    return generate_maps(shape=MAP_SHAPE, n_regions=N_REGIONS)[0]
 
 
 @pytest.fixture
 def maps_and_mask():
-    maps, mask_img = generate_maps(shape=MAP_SHAPE, n_regions=N_REGIONS)
-    return maps, mask_img
+    return generate_maps(shape=MAP_SHAPE, n_regions=N_REGIONS)
 
 
 @pytest.fixture

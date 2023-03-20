@@ -52,9 +52,7 @@ N_REGIONS = 8
 
 def _make_label_data(shape=SHAPE):
     labels_data = np.zeros(shape, dtype="int32")
-    h0 = shape[0] // 2
-    h1 = shape[1] // 2
-    h2 = shape[2] // 2
+    h0, h1, h2 = (s // 2 for s in shape)
     labels_data[:h0, :h1, :h2] = 1
     labels_data[:h0, :h1, h2:] = 2
     labels_data[:h0, h1:, :h2] = 3
@@ -102,8 +100,7 @@ def img_4D():
 
 @pytest.fixture
 def fmri_img():
-    fmri_img, _ = generate_fake_fmri(shape=SHAPE, affine=AFFINE)
-    return fmri_img
+    return generate_fake_fmri(shape=SHAPE, affine=AFFINE)[0]
 
 
 @pytest.fixture
