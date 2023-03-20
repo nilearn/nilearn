@@ -840,16 +840,16 @@ def first_level_from_bids(dataset_path: str | Path,
     task_label : :obj:`str`
         Task_label as specified in the file names like _task-<task_label>_.
 
-    space_label : :obj:`str`, optional
+    space_label : :obj:`str`. Defaults to None.
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like _space-<space_label>_.
 
-    sub_labels : :obj:`list` of :obj:`str`, optional
+    sub_labels : :obj:`list` of :obj:`str`. Defaults to None.
         Specifies the subset of subject labels to model.
         If 'None', will model all subjects in the dataset.
         .. versionadded:: 0.10.1.dev
 
-    img_filters : :obj:`list` of :obj:`tuples` (str, str), optional
+    img_filters : :obj:`list` of :obj:`tuples` (str, str). Defaults to None.
         Filters are of the form (field, label). Only one filter per field
         allowed.
         A file that does not match a filter will be discarded.
@@ -858,9 +858,9 @@ def first_level_from_bids(dataset_path: str | Path,
         Filter examples would be ('desc', 'preproc'), ('dir', 'pa')
         and ('run', '10').
 
-    derivatives_folder : :obj:`str`, optional
+    derivatives_folder : :obj:`str`. Defaults to "derivatives".
         derivatives and app folder path containing preprocessed files.
-        Like "derivatives/FMRIPREP". Default="derivatives".
+        Like "derivatives/FMRIPREP".
 
     All other parameters correspond to a `FirstLevelModel` object, which
     contains their documentation.
