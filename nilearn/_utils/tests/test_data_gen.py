@@ -44,7 +44,7 @@ def test_generate_regions_ts_with_overlap(window):
     # check: a region everywhere
     np.testing.assert_array_less(
         np.zeros(regions.shape[1]), (regions > 0).sum(axis=0)
-    )    
+    )
 
 
 def test_generate_labeled_regions():
@@ -83,15 +83,15 @@ def test_generate_fake_fmri(
     rand_gen = np.random.RandomState(3)
 
     fake_fmri = generate_fake_fmri(
-            shape=shape,
-            length=length,
-            kind=kind,
-            n_blocks=n_block,
-            block_size=block_size,
-            block_type=block_type,
-            random_state=rand_gen,
-        )
-    
+        shape=shape,
+        length=length,
+        kind=kind,
+        n_blocks=n_block,
+        block_size=block_size,
+        block_type=block_type,
+        random_state=rand_gen,
+    )
+
     assert fake_fmri[0].shape[:-1] == shape
     assert fake_fmri[0].shape[-1] == length
     if n_block is not None:
@@ -99,9 +99,10 @@ def test_generate_fake_fmri(
 
 
 def test_generate_fake_fmri_error():
-    with pytest.raises(ValueError, match = '10 is too small'):
-        generate_fake_fmri(length=10,
-                           n_blocks=10,
-                           block_size=None,
-                           random_state=np.random.RandomState(3))
-
+    with pytest.raises(ValueError, match="10 is too small"):
+        generate_fake_fmri(
+            length=10,
+            n_blocks=10,
+            block_size=None,
+            random_state=np.random.RandomState(3),
+        )
