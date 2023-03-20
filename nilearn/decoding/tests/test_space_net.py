@@ -28,20 +28,10 @@ logistic_path_scores = partial(path_scores, is_classif=True)
 squared_loss_path_scores = partial(path_scores, is_classif=False)
 
 from .simulate_graph_net_data import create_graph_net_simulation_data
-
-# Data used in almost all tests
 from .test_same_api import to_niimgs
 
 IS_CLASSIF = [True, False]
 PENALTY = ["graph-net", "tv-l1"]
-
-
-size = 4
-
-X_, y, w, mask = create_graph_net_simulation_data(
-    snr=1.0, n_samples=10, size=size, n_points=5, random_state=42
-)
-X, mask = to_niimgs(X_, [size] * 3)
 
 
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
@@ -157,6 +147,12 @@ def test_params_correctly_propagated_in_constructors_biz(
 
 
 def test_screening_space_net():
+    size = 4
+    X_, *_ = create_graph_net_simulation_data(
+        snr=1.0, n_samples=10, size=size, n_points=5, random_state=42
+    )
+    _, mask = to_niimgs(X_, [size] * 3)
+
     for verbose in [0, 2]:
         with pytest.warns(UserWarning):
             screening_percentile = _adjust_screening_percentile(
@@ -289,10 +285,13 @@ def test_graph_net_classifier_score():
 def test_log_reg_vs_graph_net_two_classes_iris(
     C=0.01, tol=1e-10, zero_thr=1e-4
 ):
-    # Test for one of the extreme cases of Graph-Net: That is, with
-    # l1_ratio = 1 (pure Lasso), we compare Graph-Net's coefficients'
-    # performance with the coefficients obtained from Scikit-Learn's
-    # LogisticRegression, with L1 penalty, in a 2 classes classification task
+    """Test for one of the extreme cases of Graph-Net.
+
+    That is, with l1_ratio = 1 (pure Lasso),
+    we compare Graph-Net's coefficients'
+    performance with the coefficients obtained from Scikit-Learn's
+    LogisticRegression, with L1 penalty, in a 2 classes classification task.
+    """
     iris = load_iris()
     X, y = iris.data, iris.target
     y = 2 * (y > 0) - 1
@@ -322,9 +321,17 @@ def test_log_reg_vs_graph_net_two_classes_iris(
 
 
 def test_lasso_vs_graph_net():
-    # Test for one of the extreme cases of Graph-Net: That is, with
-    # l1_ratio = 1 (pure Lasso), we compare Graph-Net's performance with
-    # Scikit-Learn lasso
+    """Test for one of the extreme cases of Graph-Net.
+
+    That is, with l1_ratio = 1 (pure Lasso),
+    we compare Graph-Net's performance with Scikit-Learn lasso
+    """
+    size = 4
+    X_, y, _, mask = create_graph_net_simulation_data(
+        snr=1.0, n_samples=10, size=size, n_points=5, random_state=42
+    )
+    X, mask = to_niimgs(X_, [size] * 3)
+
     lasso = Lasso(max_iter=100, tol=1e-8)
     graph_net = BaseSpaceNet(
         mask=mask,
@@ -489,8 +496,7 @@ def test_checking_inputs_length(model):
 
 
 def test_targets_in_y_space_net_regressor():
-    # This tests whether raises an error when unique targets given in y
-    # are single.
+    """Raise an error when unique targets given in y are single."""
     iris = load_iris()
     X, _ = iris.data, iris.target
     y = np.ones(iris.target.shape)
