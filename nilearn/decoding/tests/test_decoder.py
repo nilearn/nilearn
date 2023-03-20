@@ -39,25 +39,29 @@ from sklearn.model_selection import KFold, LeaveOneGroupOut
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
 
+N_SAMPLES = 100
+
+ESTIMATOR_REGRESSION = ["ridge", "svr"]
+
 # Regression
-ridge = RidgeCV()
-svr = SVR(kernel="linear")
+# ridge = RidgeCV()
+# svr = SVR(kernel="linear")
 # Classification
-svc = LinearSVC()
-logistic_l1 = LogisticRegression(penalty="l1")
-logistic_l2 = LogisticRegression(penalty="l2")
-ridge_classifier = RidgeClassifierCV()
-random_forest = RandomForestClassifier()
+# svc = LinearSVC()
+# logistic_l1 = LogisticRegression(penalty="l1")
+# logistic_l2 = LogisticRegression(penalty="l2")
+# ridge_classifier = RidgeClassifierCV()
+# random_forest = RandomForestClassifier()
 
-dummy_classifier = DummyClassifier(random_state=0)
-dummy_regressor = DummyRegressor()
+# dummy_classifier = DummyClassifier(random_state=0)
 
-regressors = {"ridge": (ridge, []), "svr": (svr, "C")}
+
+regressors = {"ridge": (RidgeCV(), []), "svr": (SVR(kernel="linear"), "C")}
 classifiers = {
-    "svc": (svc, "C"),
-    "logistic_l1": (logistic_l1, "C"),
-    "logistic_l2": (logistic_l2, "C"),
-    "ridge_classifier": (ridge_classifier, []),
+    "svc": (LinearSVC(), "C"),
+    "logistic_l1": (LogisticRegression(penalty="l1"), "C"),
+    "logistic_l2": (LogisticRegression(penalty="l2"), "C"),
+    "ridge_classifier": (RidgeClassifierCV(), []),
 }
 # Create a test dataset
 rng = np.random.RandomState(0)
@@ -82,17 +86,21 @@ def test_check_param_grid():
         assert list(param_grid.keys()) == list(param)
 
     # Using a non-linear estimator to raise the error
-    for estimator in ["log_l1", random_forest]:
+    for estimator in ["log_l1", RandomForestClassifier()]:
         pytest.raises(
             ValueError, _check_param_grid, estimator, X, y_classification, None
         )
 
     # Test return parameter grid is empty
+    dummy_classifier = DummyClassifier(random_state=0)
     param_grid = _check_param_grid(dummy_classifier, X, y_classification, None)
     assert param_grid == {}
 
 
-def test_check_inputs_length():
+@pytest.mark.parametrize(
+    "model", [DecoderRegressor, Decoder, FREMRegressor, FREMClassifier]
+)
+def test_check_inputs_length(model):
     iris = load_iris()
     X, y = iris.data, iris.target
     y = 2 * (y > 0) - 1
@@ -101,18 +109,13 @@ def test_check_inputs_length():
     # Remove ten samples from y
     y = y[:-10]
 
-    for model in [DecoderRegressor, Decoder, FREMRegressor, FREMClassifier]:
-        pytest.raises(
-            ValueError, model(mask=mask, screening_percentile=100.0).fit, X_, y
-        )
+    with pytest.raises(ValueError, match="inconsistent numbers of samples"):
+        model(mask=mask, screening_percentile=100.0).fit(X_, y)
 
 
-def test_check_estimator():
-    """Check if the estimator is one of the supported estimators.
-
-    If not, if it is a string, and if not, then raise the error.
-    """
-    supported_estimators = [
+@pytest.mark.parametrize(
+    "estimator",
+    [
         "svc",
         "svc_l2",
         "svc_l1",
@@ -125,31 +128,38 @@ def test_check_estimator():
         "svr",
         "dummy_classifier",
         "dummy_regressor",
-    ]
-    unsupported_estimators = ["ridgo", "svb"]
+    ],
+)
+def test_check_supported_estimator(estimator):
+    """Check if the estimator is one of the supported estimators."""
     expected_warning = (
         "Use a custom estimator at your own risk "
         "of the process not working as intended."
     )
 
     with warnings.catch_warnings(record=True) as raised_warnings:
-        for estimator in supported_estimators:
-            _check_estimator(_BaseDecoder(estimator=estimator).estimator)
+        _check_estimator(_BaseDecoder(estimator=estimator).estimator)
     warning_messages = [str(warning.message) for warning in raised_warnings]
     assert expected_warning not in warning_messages
 
-    for estimator in unsupported_estimators:
-        pytest.raises(
-            ValueError,
-            _check_estimator,
-            _BaseDecoder(estimator=estimator).estimator,
-        )
-    custom_estimator = random_forest
-    pytest.warns(
-        UserWarning,
-        _check_estimator,
-        _BaseDecoder(estimator=custom_estimator).estimator,
+
+@pytest.mark.parametrize("estimator", ["ridgo", "svb"])
+def test_check_unsupported_estimator(estimator):
+    """Check if the estimator is one of the supported estimators.
+
+    If not, if it is a string and if not in supported ones,
+    then raise the error.
+    """
+    with pytest.raises(ValueError, match="Invalid estimator"):
+        _check_estimator(_BaseDecoder(estimator=estimator).estimator)
+
+    expected_warning = (
+        "Use a custom estimator at your own risk "
+        "of the process not working as intended."
     )
+    custom_estimator = RandomForestClassifier()
+    with pytest.warns(UserWarning, match=expected_warning):
+        _check_estimator(_BaseDecoder(estimator=custom_estimator).estimator)
 
 
 def test_parallel_fit():
@@ -165,7 +175,7 @@ def test_parallel_fit():
     train = range(80)
     test = range(80, len(y_classification))
     outputs = []
-    estimator = svr
+    estimator = SVR(kernel="linear")
     svr_params = [[1e-1, 1e0, 1e1], [1e-1, 1e0, 5e0, 1e1]]
     scorer = check_scoring(estimator, "r2")  # define a scorer
     # Define a screening selector
@@ -213,8 +223,22 @@ def _make_binary_classification_test_data(n_samples):
     return X, y, mask
 
 
-def test_decoder_binary_classification_with_masker_object():
-    X, y, _ = _make_binary_classification_test_data(n_samples=200)
+@pytest.fixture(scope="session")
+def dummy_binary_classification_data():
+    """Use for testting errors."""
+    return _make_binary_classification_test_data(n_samples=20)
+
+
+@pytest.fixture
+def binary_classification_data():
+    """Use for testting errors."""
+    return _make_binary_classification_test_data(n_samples=N_SAMPLES)
+
+
+def test_decoder_binary_classification_with_masker_object(
+    binary_classification_data,
+):
+    X, y, _ = binary_classification_data
 
     model = Decoder(mask=NiftiMasker())
     model.fit(X, y)
@@ -225,9 +249,11 @@ def test_decoder_binary_classification_with_masker_object():
     assert accuracy_score(y, y_pred) > 0.95
 
 
-def test_decoder_binary_classification_with_logistic_model():
+def test_decoder_binary_classification_with_logistic_model(
+    binary_classification_data,
+):
     """Check decoder with predict_proba for scoring with logistic model."""
-    X, y, mask = _make_binary_classification_test_data(n_samples=200)
+    X, y, mask = binary_classification_data
 
     model = Decoder(estimator="logistic_l2", mask=mask)
     model.fit(X, y)
@@ -237,8 +263,10 @@ def test_decoder_binary_classification_with_logistic_model():
 
 
 @pytest.mark.parametrize("screening_percentile", [100, 20, None])
-def test_decoder_binary_classification_screening(screening_percentile):
-    X, y, mask = _make_binary_classification_test_data(n_samples=200)
+def test_decoder_binary_classification_screening(
+    binary_classification_data, screening_percentile
+):
+    X, y, mask = binary_classification_data
 
     model = Decoder(mask=mask, screening_percentile=screening_percentile)
     model.fit(X, y)
@@ -248,8 +276,10 @@ def test_decoder_binary_classification_screening(screening_percentile):
 
 
 @pytest.mark.parametrize("clustering_percentile", [100, 99])
-def test_decoder_binary_classification_clustering(clustering_percentile):
-    X, y, mask = _make_binary_classification_test_data(n_samples=200)
+def test_decoder_binary_classification_clustering(
+    binary_classification_data, clustering_percentile
+):
+    X, y, mask = binary_classification_data
 
     model = FREMClassifier(
         estimator="logistic_l2",
@@ -265,8 +295,10 @@ def test_decoder_binary_classification_clustering(clustering_percentile):
 
 
 @pytest.mark.parametrize("cv", [KFold(n_splits=5), LeaveOneGroupOut()])
-def test_decoder_binary_classification_cross_validation(cv):
-    X, y, mask = _make_binary_classification_test_data(n_samples=200)
+def test_decoder_binary_classification_cross_validation(
+    binary_classification_data, cv
+):
+    X, y, mask = binary_classification_data
 
     # check cross-validation scheme and fit attribute with groups enabled
     rand_local = np.random.RandomState(42)
@@ -281,9 +313,9 @@ def test_decoder_binary_classification_cross_validation(cv):
     assert accuracy_score(y, y_pred) > 0.9
 
 
-def test_decoder_dummy_classifier():
-    n_samples = 400
-    X, y, mask = _make_binary_classification_test_data(n_samples=n_samples)
+def test_decoder_dummy_classifier(binary_classification_data):
+    n_samples = N_SAMPLES
+    X, y, mask = binary_classification_data
 
     # We make 80% of y to have value of 1.0 to check whether the stratified
     # strategy returns a proportion prediction value of 1.0 of roughly 80%
@@ -298,8 +330,8 @@ def test_decoder_dummy_classifier():
     assert np.sum(y_pred == 1.0) / n_samples - proportion < 0.05
 
 
-def test_decoder_dummy_classifier_with_callable():
-    X, y, mask = _make_binary_classification_test_data(n_samples=400)
+def test_decoder_dummy_classifier_with_callable(binary_classification_data):
+    X, y, mask = binary_classification_data
 
     accuracy_scorer = get_scorer("accuracy")
     model = Decoder(
@@ -312,8 +344,8 @@ def test_decoder_dummy_classifier_with_callable():
     assert model.score(X, y) == accuracy_score(y, y_pred)
 
 
-def test_decoder_error_model_not_fitted():
-    X, y, mask = _make_binary_classification_test_data(n_samples=400)
+def test_decoder_error_model_not_fitted(dummy_binary_classification_data):
+    X, y, mask = dummy_binary_classification_data
 
     model = Decoder(estimator="dummy_classifier", mask=mask)
     with pytest.raises(
@@ -326,6 +358,7 @@ def test_decoder_dummy_classifier_strategy_prior():
     X, y, mask = _make_binary_classification_test_data(n_samples=400)
 
     param = dict(strategy="prior")
+    dummy_classifier = DummyClassifier(random_state=0)
     dummy_classifier.set_params(**param)
     model = Decoder(estimator=dummy_classifier, mask=mask)
     model.fit(X, y)
@@ -339,6 +372,7 @@ def test_decoder_dummy_classifier_strategy_most_frequent():
     X, y, mask = _make_binary_classification_test_data(n_samples=400)
 
     param = dict(strategy="most_frequent")
+    dummy_classifier = DummyClassifier(random_state=0)
     dummy_classifier.set_params(**param)
     model = Decoder(estimator=dummy_classifier, mask=mask)
     model.fit(X, y)
@@ -352,8 +386,8 @@ def test_decoder_dummy_classifier_strategy_most_frequent():
     assert model.cv_scores_ is not None
 
 
-def test_decoder_dummy_classifier_roc_scoring():
-    X, y, mask = _make_binary_classification_test_data(n_samples=400)
+def test_decoder_dummy_classifier_roc_scoring(binary_classification_data):
+    X, y, mask = binary_classification_data
 
     model = Decoder(estimator="dummy_classifier", mask=mask, scoring="roc_auc")
     model.fit(X, y)
@@ -361,19 +395,23 @@ def test_decoder_dummy_classifier_roc_scoring():
     assert np.mean(model.cv_scores_[0]) >= 0.45
 
 
-def test_decoder_error_not_implemented():
-    X, y, mask = _make_binary_classification_test_data(n_samples=400)
+def test_decoder_error_not_implemented(dummy_binary_classification_data):
+    X, y, mask = dummy_binary_classification_data
 
     param = dict(strategy="constant")
+    dummy_classifier = DummyClassifier(random_state=0)
     dummy_classifier.set_params(**param)
     model = Decoder(estimator=dummy_classifier, mask=mask)
 
-    pytest.raises(NotImplementedError, model.fit, X, y)
+    with pytest.raises(NotImplementedError):
+        model.fit(X, y)
 
 
-def test_decoder_error_unknown_scoring_metrics():
-    X, y, mask = _make_binary_classification_test_data(n_samples=400)
-
+def test_decoder_error_unknown_scoring_metrics(
+    dummy_binary_classification_data,
+):
+    X, y, mask = dummy_binary_classification_data
+    dummy_classifier = DummyClassifier(random_state=0)
     model = Decoder(estimator=dummy_classifier, mask=mask, scoring="foo")
 
     with pytest.raises(ValueError, match="'foo' is not a valid scoring value"):
@@ -381,7 +419,7 @@ def test_decoder_error_unknown_scoring_metrics():
 
 
 def test_decoder_dummy_classifier_default_scoring():
-    X, y, _ = _make_binary_classification_test_data(n_samples=400)
+    X, y, _ = _make_binary_classification_test_data(n_samples=150)
 
     model = Decoder(estimator="dummy_classifier", scoring=None)
 
@@ -421,44 +459,53 @@ def _make_regression_test_data(n_samples, dim):
     return X, y, mask
 
 
+@pytest.fixture
+def regression_data():
+    return _make_regression_test_data(n_samples=N_SAMPLES, dim=30)
+
+
 @pytest.mark.parametrize("screening_percentile", [100, 20, 1, None])
-def test_decoder_regression_screening(screening_percentile):
-    X, y, mask = _make_regression_test_data(n_samples=100, dim=30)
+@pytest.mark.parametrize("estimator", ESTIMATOR_REGRESSION)
+def test_decoder_regression_screening(
+    regression_data, screening_percentile, estimator
+):
+    X, y, mask = regression_data
 
-    for reg in regressors:
-        model = DecoderRegressor(
-            estimator=reg,
-            mask=mask,
-            screening_percentile=screening_percentile,
-        )
-        model.fit(X, y)
-        y_pred = model.predict(X)
+    model = DecoderRegressor(
+        estimator=estimator,
+        mask=mask,
+        screening_percentile=screening_percentile,
+    )
+    model.fit(X, y)
+    y_pred = model.predict(X)
 
-        assert r2_score(y, y_pred) > 0.95
+    assert r2_score(y, y_pred) > 0.95
 
 
 @pytest.mark.parametrize("clustering_percentile", [100, 99])
-def test_decoder_regression_clustering(clustering_percentile):
-    X, y, mask = _make_regression_test_data(n_samples=100, dim=5)
+@pytest.mark.parametrize("estimator", ESTIMATOR_REGRESSION)
+def test_decoder_regression_clustering(
+    regression_data, clustering_percentile, estimator
+):
+    X, y, mask = regression_data
 
-    for reg in regressors:
-        model = FREMRegressor(
-            estimator=reg,
-            mask=mask,
-            clustering_percentile=clustering_percentile,
-            screening_percentile=90,
-            cv=10,
-        )
-        model.fit(X, y)
-        y_pred = model.predict(X)
+    model = FREMRegressor(
+        estimator=estimator,
+        mask=mask,
+        clustering_percentile=clustering_percentile,
+        screening_percentile=90,
+        cv=10,
+    )
+    model.fit(X, y)
+    y_pred = model.predict(X)
 
-        assert model.scoring == "r2"
-        assert r2_score(y, y_pred) > 0.95
-        assert model.score(X, y) == r2_score(y, y_pred)
+    assert model.scoring == "r2"
+    assert r2_score(y, y_pred) > 0.95
+    assert model.score(X, y) == r2_score(y, y_pred)
 
 
-def test_decoder_dummy_regression():
-    X, y, mask = _make_regression_test_data(n_samples=100, dim=30)
+def test_decoder_dummy_regression(regression_data):
+    X, y, mask = regression_data
 
     # Regression with dummy estimator
     model = DecoderRegressor(
@@ -482,6 +529,7 @@ def test_decoder_dummy_regression():
     assert model.score(X, y) == r2_score(y, y_pred)
 
     # decoder object use other strategy for dummy regressor
+    dummy_regressor = DummyRegressor()
     param = dict(strategy="median")
     dummy_regressor.set_params(**param)
     model = DecoderRegressor(estimator=dummy_regressor, mask=mask)
