@@ -37,9 +37,6 @@ def _make_data(task="regression", size=4):
     return X, y, w, mask, mask_, X_
 
 
-X, y, w, mask, mask_, X_ = _make_data()
-
-
 def get_gradient_matrix(w_size, mask):
     """Return gradient matrix.
 
@@ -63,6 +60,7 @@ def get_gradient_matrix(w_size, mask):
 
 def test_grad_matrix():
     """Test for matricial form of gradient."""
+    _, _, w, mask, *_ = _make_data()
     rng = check_random_state(42)
     G = get_gradient_matrix(w.size, mask)
     image_buffer = np.zeros(mask.shape)
@@ -156,8 +154,10 @@ def test__squared_loss_gradient_at_simple_points():
 
 
 def test_logistic_gradient_at_simple_points():
-    # Tests gradient of logistic data loss function in points near to zero.
-    # This is a not so hard test, just for detecting big errors
+    """Test gradient of logistic data loss function in points near to zero.
+
+    This is a not so hard test, just for detecting big errors.
+    """
     X, y, w, mask = create_graph_net_simulation_data(n_samples=10, size=4)
     grad_weight = 1
     # Add the intercept
@@ -180,8 +180,9 @@ def test_logistic_gradient_at_simple_points():
 
 
 def test__squared_loss_derivative_lipschitz_constant():
-    # Tests Lipschitz-continuity of the derivative of _squared_loss loss
-    # function
+    """Test Lipschitz-continuity of the derivative of _squared_loss loss \
+    function."""
+    X, y, w, mask, *_ = _make_data()
     rng = check_random_state(42)
     grad_weight = 2.08e-1
     lipschitz_constant = _squared_loss_derivative_lipschitz_constant(
@@ -203,7 +204,8 @@ def test__squared_loss_derivative_lipschitz_constant():
 
 
 def test_logistic_derivative_lipschitz_constant():
-    # Tests Lipschitz-continuity of the derivative of logistic loss
+    """Test Lipschitz-continuity of the derivative of logistic loss."""
+    X, y, w, mask, *_ = _make_data()
     rng = check_random_state(42)
     grad_weight = 2.08e-1
     lipschitz_constant = _logistic_derivative_lipschitz_constant(
@@ -227,9 +229,14 @@ def test_logistic_derivative_lipschitz_constant():
 def test_max_alpha__squared_loss():
     """Tests that models with L1 regularization over the theoretical bound \
     are full of zeros, for logistic regression."""
+    X, y, _, _, mask_, X_ = _make_data()
     l1_ratios = np.linspace(0.1, 1, 3)
     reg = BaseSpaceNet(
-        mask=mask_, max_iter=10, penalty="graph-net", is_classif=False
+        mask=mask_,
+        max_iter=10,
+        penalty="graph-net",
+        is_classif=False,
+        verbose=0,
     )
     for l1_ratio in l1_ratios:
         reg.l1_ratios = l1_ratio
@@ -239,9 +246,13 @@ def test_max_alpha__squared_loss():
 
 
 def test_tikhonov_regularization_vs_graph_net():
-    # Test for one of the extreme cases of Graph-Net: That is, with
-    # l1_ratio = 0 (pure Smooth), we compare Graph-Net's performance
-    # with the analytical solution for Tikhonov Regularization
+    """Test one of the extreme cases of Graph-Net.
+
+    That is, with l1_ratio = 0 (pure Smooth),
+    we compare Graph-Net's performance
+    with the analytical solution for Tikhonov Regularization.
+    """
+    X, y, w, mask, mask_, X_ = _make_data()
 
     # XXX A small dataset here (this test is very lengthy)
     G = get_gradient_matrix(w.size, mask)
@@ -257,6 +268,7 @@ def test_tikhonov_regularization_vs_graph_net():
         fit_intercept=False,
         screening_percentile=100.0,
         standardize=False,
+        verbose=0,
     )
     graph_net.fit(X_, y.copy())
     coef_ = graph_net.coef_[0]
@@ -289,7 +301,7 @@ def test_mfista_solver_graph_net_no_l1_term():
         X, (np.eye(2) == 1).astype(bool), 1
     )
     estimate_solution, _, _ = mfista(
-        f1_grad, f2_prox, f1, lipschitz_constant, w.size, tol=1e-8
+        f1_grad, f2_prox, f1, lipschitz_constant, w.size, tol=1e-8, verbose=0
     )
 
     solution = np.array([-10, 5])
