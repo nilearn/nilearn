@@ -12,7 +12,23 @@ from scipy.ndimage import generate_binary_structure
 from sklearn.utils import check_random_state
 
 
-def test__calculate_tfce():
+@pytest.mark.parametrize(
+    "two_sided_test, dh, true_max_tfce",
+    [
+        (
+            False,
+            "auto",
+            5050,
+        ),  # One-sided where positive cluster has highest TFCE
+        (
+            True,
+            "auto",
+            5555,
+        ),  # Two-sided where negative cluster has highest TFCE
+        (False, 1, 550),  # One-sided with preset dh
+    ],
+)
+def test__calculate_tfce(two_sided_test, dh, true_max_tfce):
     """Test _calculate_tfce."""
     test_arr4d = np.zeros((10, 10, 10, 1))
     bin_struct = generate_binary_structure(3, 1)
@@ -27,99 +43,100 @@ def test__calculate_tfce():
     test_arr4d[3, 5, 3, 0] = -11
     test_arr4d[5, 3, 3, 0] = -11
 
-    # One-sided test where positive cluster has the highest TFCE
-    true_max_tfce = 5050
     test_tfce_arr4d = _utils._calculate_tfce(
         test_arr4d,
         bin_struct=bin_struct,
         E=1,
         H=1,
-        dh="auto",
-        two_sided_test=False,
+        dh=dh,
+        two_sided_test=two_sided_test,
     )
-    assert test_tfce_arr4d.shape == test_arr4d.shape
-    assert np.max(np.abs(test_tfce_arr4d)) == true_max_tfce
 
-    # Two-sided test where negative cluster has the highest TFCE
-    true_max_tfce = 5555
-    test_tfce_arr4d = _utils._calculate_tfce(
-        test_arr4d,
-        bin_struct=bin_struct,
-        E=1,
-        H=1,
-        dh="auto",
-        two_sided_test=True,
-    )
-    assert test_tfce_arr4d.shape == test_arr4d.shape
-    assert np.max(np.abs(test_tfce_arr4d)) == true_max_tfce
-
-    # One-sided test with preset dh
-    true_max_tfce = 550
-    test_tfce_arr4d = _utils._calculate_tfce(
-        test_arr4d,
-        bin_struct=bin_struct,
-        E=1,
-        H=1,
-        dh=1,
-        two_sided_test=False,
-    )
     assert test_tfce_arr4d.shape == test_arr4d.shape
     assert np.max(np.abs(test_tfce_arr4d)) == true_max_tfce
 
 
-def test_null_to_p_float():
-    """Test _null_to_p with single float input."""
-    null = [-10, -9, -9, -3, -2, -1, -1, 0, 1, 1, 1, 2, 3, 3, 4, 4, 7, 8, 8, 9]
+@pytest.fixture
+def null():
+    return [-10, -9, -9, -3, -2, -1, -1, 0, 1, 1, 1, 2, 3, 3, 4, 4, 7, 8, 8, 9]
 
-    # Left/lower-tailed
+
+def test_null_to_p_float_1_tailed_lower_tailed(null):
+    """Test _null_to_p with single float input lower-tailed ."""
+    alternative = "smaller"
+
     assert math.isclose(
-        _utils._null_to_p(9, null, alternative="smaller"),
+        _utils._null_to_p(9, null, alternative=alternative),
         0.95,
     )
     assert math.isclose(
-        _utils._null_to_p(-9, null, alternative="smaller"),
+        _utils._null_to_p(-9, null, alternative=alternative),
         0.15,
     )
-    assert math.isclose(_utils._null_to_p(0, null, alternative="smaller"), 0.4)
-
-    # Right/upper-tailed
-    assert math.isclose(_utils._null_to_p(9, null, alternative="larger"), 0.05)
     assert math.isclose(
-        _utils._null_to_p(-9, null, alternative="larger"),
+        _utils._null_to_p(0, null, alternative=alternative), 0.4
+    )
+
+
+def test_null_to_p_float_1_tailed_uppper_tailed(null):
+    """Test _null_to_p with single float input upper-tailed."""
+    alternative = "larger"
+
+    assert math.isclose(
+        _utils._null_to_p(9, null, alternative=alternative), 0.05
+    )
+    assert math.isclose(
+        _utils._null_to_p(-9, null, alternative=alternative),
         0.95,
     )
-    assert math.isclose(_utils._null_to_p(0, null, alternative="larger"), 0.65)
-
-    # Test that 1/n(null) is preserved with extreme values
-    nulldist = np.random.normal(size=10000)
     assert math.isclose(
-        _utils._null_to_p(20, nulldist, alternative="two-sided"),
-        1 / 10000,
-    )
-    assert math.isclose(
-        _utils._null_to_p(20, nulldist, alternative="smaller"),
-        1 - 1 / 10000,
+        _utils._null_to_p(0, null, alternative=alternative), 0.65
     )
 
-    # Two-tailed
+
+def test_null_to_p_float_2_tailed(null):
+    """Test _null_to_p with single float input two-sided."""
+    alternative = "two-sided"
+
     assert math.isclose(
-        _utils._null_to_p(0, null, alternative="two-sided"),
+        _utils._null_to_p(0, null, alternative=alternative),
         0.95,
     )
-    result = _utils._null_to_p(9, null, alternative="two-sided")
-    assert result == _utils._null_to_p(-9, null, alternative="two-sided")
+
+    result = _utils._null_to_p(9, null, alternative=alternative)
+    assert result == _utils._null_to_p(-9, null, alternative=alternative)
     assert math.isclose(result, 0.2)
-    result = _utils._null_to_p(10, null, alternative="two-sided")
-    assert result == _utils._null_to_p(-10, null, alternative="two-sided")
+
+    result = _utils._null_to_p(10, null, alternative=alternative)
+    assert result == _utils._null_to_p(-10, null, alternative=alternative)
     assert math.isclose(result, 0.05)
 
     # Still 0.05 because minimum valid p-value is 1 / len(null)
-    result = _utils._null_to_p(20, null, alternative="two-sided")
-    assert result == _utils._null_to_p(-20, null, alternative="two-sided")
+    result = _utils._null_to_p(20, null, alternative=alternative)
+    assert result == _utils._null_to_p(-20, null, alternative=alternative)
     assert math.isclose(result, 0.05)
 
+
+def test_null_to_p_float_error(null):
     with pytest.raises(ValueError):
         _utils._null_to_p(9, null, alternative="raise")
+
+
+def test_null_to_p_float_with_extreme_values():
+    """Test that 1/n(null) is preserved with extreme values"""
+    nulldist = np.random.normal(size=10000)
+
+    value = _utils._null_to_p(20, nulldist, alternative="two-sided")
+    assert math.isclose(
+        value,
+        1 / 10000,
+    )
+
+    value = _utils._null_to_p(20, nulldist, alternative="smaller")
+    assert math.isclose(
+        value,
+        1 - 1 / 10000,
+    )
 
 
 def test_null_to_p_array():
@@ -158,13 +175,13 @@ def test_arr4d():
             False,
             27,
             39.992,
-        ),  # One-sided test: largest cluster doesn't have the highest mass
+        ),  # One-sided test: largest cluster doesn't have highest mass
         (
             generate_binary_structure(3, 1),
             True,
             27,
             79.992,
-        ),  # Two-sided test where negative cluster has the higher mass
+        ),  # Two-sided test where negative cluster has higher mass
         (
             generate_binary_structure(3, 2),
             True,
