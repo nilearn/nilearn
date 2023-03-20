@@ -686,9 +686,7 @@ def test_sided_test2(random_state=RANDOM_STATE):
     )
 
 
-def test_tfce_smoke(random_state=RANDOM_STATE):
-    """Test combinations of parameters related to TFCE inference."""
-    # create design
+def _tfce_design():
     target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
     target_var = np.hstack(
         (  # corresponds to 3 x 3 x 3 x 10 niimg
@@ -702,23 +700,32 @@ def test_tfce_smoke(random_state=RANDOM_STATE):
     mask_img = nib.Nifti1Image(np.ones((3, 3, 3)), np.eye(4))
     masker = NiftiMasker(mask_img)
     masker.fit(mask_img)
+
     n_descriptors = np.prod(mask_img.shape)
     n_regressors = 1  # tested_var is 1D
 
-    # tfce is True, indicating TFCE inference should be done,
-    # but masker is not defined.
-    with pytest.raises(ValueError):
+    return target_var, tested_var, masker, n_descriptors, n_regressors
+
+
+def test_tfce_no_masker_error(random_state=RANDOM_STATE):
+    target_var, tested_var, *_ = _tfce_design()
+
+    with pytest.raises(ValueError, match="masker must be provided"):
         permuted_ols(
             tested_var,
             target_var,
             model_intercept=False,
             two_sided_test=False,
-            n_perm=100,
+            n_perm=10,
             random_state=random_state,
             threshold=None,
             masker=None,
             tfce=True,
         )
+
+
+def test_tfce_smoke_legacy_warnings(random_state=RANDOM_STATE):
+    target_var, tested_var, masker, *_ = _tfce_design()
 
     # tfce is True, but output_type is "legacy".
     # raise a warning, and get a dictionary.
@@ -755,6 +762,16 @@ def test_tfce_smoke(random_state=RANDOM_STATE):
         )
 
     assert isinstance(out, tuple)
+
+
+def test_tfce_smoke_legacy_smoke(random_state=RANDOM_STATE):
+    (
+        target_var,
+        tested_var,
+        masker,
+        n_descriptors,
+        n_regressors,
+    ) = _tfce_design()
 
     # no permutations and output_type is "dict", so check for "t" and
     # "tfce" maps
@@ -816,8 +833,8 @@ def masker():
     return masker
 
 
-def test_cluster_level_parameters_smoke(masker, random_state=RANDOM_STATE):
-    """Test combinations of parameters related to cluster-level inference."""
+@pytest.fixture(scope="module")
+def cluster_level_design(random_state=RANDOM_STATE):
     rng = np.random.RandomState(random_state)
 
     # create design
@@ -837,6 +854,15 @@ def test_cluster_level_parameters_smoke(masker, random_state=RANDOM_STATE):
     target_var = voxel_vars[:, chosen_columns]
     tested_var = np.arange(0, 20, 2)
 
+    return target_var, tested_var
+
+
+def test_cluster_level_parameters_error_no_masker(
+    cluster_level_design, random_state=RANDOM_STATE
+):
+    """Test combinations of parameters related to cluster-level inference."""
+    target_var, tested_var = cluster_level_design
+
     # threshold is defined, indicating cluster-level inference should be done,
     # but masker is not defined.
     with pytest.raises(ValueError):
@@ -851,6 +877,13 @@ def test_cluster_level_parameters_smoke(masker, random_state=RANDOM_STATE):
             masker=None,
             tfce=False,
         )
+
+
+def test_cluster_level_parameters_warnings(
+    cluster_level_design, masker, random_state=RANDOM_STATE
+):
+    """Test combinations of parameters related to cluster-level inference."""
+    target_var, tested_var = cluster_level_design
 
     # masker is defined, but threshold is not.
     # no cluster-level inference is performed, but there's a warning.
@@ -905,6 +938,13 @@ def test_cluster_level_parameters_smoke(masker, random_state=RANDOM_STATE):
         )
 
     assert isinstance(out, tuple)
+
+
+def test_cluster_level_parameters_smoke(
+    cluster_level_design, masker, random_state=RANDOM_STATE
+):
+    """Test combinations of parameters related to cluster-level inference."""
+    target_var, tested_var = cluster_level_design
 
     # no permutations and output_type is "dict", so check for "t" map
     out = permuted_ols(
