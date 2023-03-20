@@ -86,10 +86,7 @@ def _check_nb_files_derivatives_for_task(
     n_run: int,
     extra_entity: dict[str, str | None] = None,
 ):
-    """helper function to check number of each file 'type' \
-    in derivatives for a given task.
-    
-    """
+    """Check number of each file 'type' in derivatives for a given task."""
     for suffix in ["timeseries.tsv"]:
         # 1 confound per raw file
         # so we do not use the extra entity for derivatives entities like res
@@ -388,10 +385,8 @@ def test_fake_bids_extra_derivative_entity(tmpdir):
     assert len(all_files) == n_derivatives_files_expected
 
 
-
 def test_fake_bids_extra_entity_not_bids_entity(tmpdir):
     """Check files with extra entity are created appropriately."""
-
     with pytest.raises(ValueError, match="Invalid entity"):
         create_fake_bids_dataset(
             base_dir=tmpdir,
