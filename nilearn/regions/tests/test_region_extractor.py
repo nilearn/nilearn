@@ -93,9 +93,7 @@ def test_nans_threshold_maps_ratio(maps):
 
 
 def test_threshold_maps_ratio(maps):
-    # smoke test for function _threshold_maps_ratio with randomly
-    # generated maps
-
+    """Check _threshold_maps_ratio with randomly generated maps."""
     # test that there is no side effect
     get_data(maps)[:3] = 100
     maps_data = get_data(maps).copy()
@@ -108,8 +106,7 @@ def test_threshold_maps_ratio(maps):
 
 
 def test_threshold_maps_ratio_3D(map_img_3D):
-    # check that the size should be same for 3D image
-    # before and after thresholding
+    """Check size is the same for 3D image before and after thresholding."""
     thr_maps_3d = _threshold_maps_ratio(map_img_3D, threshold=0.5)
     assert map_img_3D.shape == thr_maps_3d.shape
 
@@ -224,9 +221,7 @@ def test_region_extractor_fit_and_transform(maps_and_mask):
     )
 
 
-def test_region_extractor_strategies(maps_and_mask):
-    maps, mask_img = maps_and_mask
-
+def test_region_extractor_strategy_ratio_n_voxels(maps):
     # thresholding_strategy='ratio_n_voxels'
     extract_ratio = RegionExtractor(
         maps, threshold=0.2, thresholding_strategy="ratio_n_voxels"
@@ -234,6 +229,10 @@ def test_region_extractor_strategies(maps_and_mask):
     extract_ratio.fit()
     assert extract_ratio.regions_img_ != ""
     assert extract_ratio.regions_img_.shape[-1] >= N_REGIONS
+
+
+def test_region_extractor_strategy_percentile(maps_and_mask):
+    maps, mask_img = maps_and_mask
 
     # thresholding_strategy=percentile
     extractor = RegionExtractor(
@@ -328,14 +327,14 @@ def test_remove_small_regions():
 
 def test_connected_label_regions(labels_img):
     labels_data = get_data(labels_img)
-    n_labels_wo_reg_ext = len(np.unique(labels_data))
+    n_labels_without_region_extraction = len(np.unique(labels_data))
 
     # extract region without specifying min_size
     extracted_regions_on_labels_img = connected_label_regions(labels_img)
     extracted_regions_labels_data = get_data(extracted_regions_on_labels_img)
-    n_labels_wo_min = len(np.unique(extracted_regions_labels_data))
+    n_labels_without_min = len(np.unique(extracted_regions_labels_data))
 
-    assert n_labels_wo_reg_ext < n_labels_wo_min
+    assert n_labels_without_region_extraction < n_labels_without_min
 
     # with specifying min_size
     extracted_regions_with_min = connected_label_regions(
@@ -344,19 +343,19 @@ def test_connected_label_regions(labels_img):
     extracted_regions_with_min_data = get_data(extracted_regions_with_min)
     n_labels_with_min = len(np.unique(extracted_regions_with_min_data))
 
-    assert n_labels_wo_min > n_labels_with_min
+    assert n_labels_without_min > n_labels_with_min
 
 
 def test_connected_label_regions_connect_diag_false(labels_img):
     labels_data = get_data(labels_img)
-    n_labels_wo_reg_ext = len(np.unique(labels_data))
+    n_labels_without_region_extraction = len(np.unique(labels_data))
 
     ext_reg_without_connect_diag = connected_label_regions(
         labels_img, connect_diag=False
     )
     data_wo_connect_diag = get_data(ext_reg_without_connect_diag)
     n_labels_wo_connect_diag = len(np.unique(data_wo_connect_diag))
-    assert n_labels_wo_connect_diag > n_labels_wo_reg_ext
+    assert n_labels_wo_connect_diag > n_labels_without_region_extraction
 
 
 def test_connected_label_regions_return_empty_for_large_min_size(labels_img):
@@ -429,9 +428,7 @@ def test_connected_label_regions_unknonw_labels(labels_img):
     labels_data = get_data(labels_img)
 
     labels_data = np.zeros(shape, dtype=np.float32)
-    h0 = shape[0] // 2
-    h1 = shape[1] // 2
-    h2 = shape[2] // 2
+    h0, h1, h2 = (x // 2 for x in shape)
     labels_data[:h0, :h1, :h2] = 1
     labels_data[:h0, :h1, h2:] = 2
     labels_data[:h0, h1:, :h2] = 3
