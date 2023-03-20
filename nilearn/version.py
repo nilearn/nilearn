@@ -148,7 +148,7 @@ def _compare_version(version_a, operator, version_b):
     try:
         from pkg_resources import parse_version as parse  # noqa:F401
     except ImportError:
-        from distutils.version import LooseVersion as parse  # noqa:F401
+        from packaging.version import Version as parse  # noqa:F401
     if operator not in VERSION_OPERATORS:
         raise ValueError(
             "'_compare_version' received an unexpected "
