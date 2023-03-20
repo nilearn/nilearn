@@ -138,14 +138,8 @@ def test_params_correctly_propagated_in_constructors(
     assert cvobj.screening_percentile == perc
 
 
-@pytest.mark.parametrize(
-    "penalty",
-    PENALTY,
-)
-@pytest.mark.parametrize(
-    "is_classif",
-    IS_CLASSIF,
-)
+@pytest.mark.parametrize("penalty", PENALTY)
+@pytest.mark.parametrize("is_classif", IS_CLASSIF)
 @pytest.mark.parametrize("alpha", [0.4, 0.01])
 @pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
 def test_params_correctly_propagated_in_constructors_biz(
@@ -315,11 +309,7 @@ def test_log_reg_vs_graph_net_two_classes_iris(
         screening_percentile=100.0,
     ).fit(X_, y)
     sklogreg = LogisticRegression(
-        penalty="l1",
-        fit_intercept=True,
-        solver="liblinear",
-        tol=tol,
-        C=C,
+        penalty="l1", fit_intercept=True, solver="liblinear", tol=tol, C=C
     ).fit(X, y)
 
     # compare supports
@@ -366,10 +356,7 @@ def test_crop_mask():
     assert np.prod(tight_mask.shape) <= np.prod(box.shape)
 
 
-@pytest.mark.parametrize(
-    "is_classif",
-    IS_CLASSIF,
-)
+@pytest.mark.parametrize("is_classif", IS_CLASSIF)
 def test_univariate_feature_screening(
     is_classif, dim=(11, 12, 13), n_samples=10
 ):
@@ -395,18 +382,9 @@ def test_univariate_feature_screening(
 
 
 @pytest.mark.parametrize("penalty", PENALTY)
-@pytest.mark.parametrize(
-    "alpha",
-    [0.4, 0.01],
-)
-@pytest.mark.parametrize(
-    "l1_ratio",
-    [0.5, 1.0],
-)
-@pytest.mark.parametrize(
-    "verbose",
-    [True, False],
-)
+@pytest.mark.parametrize("alpha", [0.4, 0.01])
+@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("verbose", [True, False])
 def test_space_net_classifier_subclass(penalty, alpha, l1_ratio, verbose):
     cvobj = SpaceNetClassifier(
         mask="dummy",
@@ -420,18 +398,9 @@ def test_space_net_classifier_subclass(penalty, alpha, l1_ratio, verbose):
 
 
 @pytest.mark.parametrize("penalty", PENALTY)
-@pytest.mark.parametrize(
-    "alpha",
-    [0.4, 0.01],
-)
-@pytest.mark.parametrize(
-    "l1_ratio",
-    [0.5, 1.0],
-)
-@pytest.mark.parametrize(
-    "verbose",
-    [True, False],
-)
+@pytest.mark.parametrize("alpha", [0.4, 0.01])
+@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("verbose", [True, False])
 def test_space_net_regressor_subclass(penalty, alpha, l1_ratio, verbose):
     cvobj = SpaceNetRegressor(
         mask="dummy",
@@ -444,10 +413,7 @@ def test_space_net_regressor_subclass(penalty, alpha, l1_ratio, verbose):
     assert cvobj.l1_ratios == l1_ratio
 
 
-@pytest.mark.parametrize(
-    "is_classif",
-    IS_CLASSIF,
-)
+@pytest.mark.parametrize("is_classif", IS_CLASSIF)
 def test_space_net_alpha_grid_pure_spatial(is_classif):
     rng = check_random_state(42)
     X = rng.randn(10, 100)
