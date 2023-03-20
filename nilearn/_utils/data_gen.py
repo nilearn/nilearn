@@ -944,7 +944,7 @@ def create_fake_bids_dataset(
 
     if entities is None:
         entities = {}
-    _validate_entities_and_labels(entities)
+    _check_entities_and_labels(entities)
 
     _mock_bids_dataset(
         bids_path=bids_path,
@@ -976,7 +976,7 @@ def create_fake_bids_dataset(
     return bids_path
 
 
-def _validate_entities_and_labels(entities: dict) -> None:
+def _check_entities_and_labels(entities: dict) -> None:
     """Check entities and labels are BIDS compliant.
     
     Parameters

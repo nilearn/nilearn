@@ -887,7 +887,7 @@ def first_level_from_bids(dataset_path: str | Path,
     sub_labels = sub_labels or []
     img_filters = img_filters or []
     
-    _validate_args_first_level_from_bids(dataset_path=dataset_path,
+    _check_args_first_level_from_bids(dataset_path=dataset_path,
                                          task_label=task_label,
                                          space_label=space_label,
                                          sub_labels=sub_labels,
@@ -1300,7 +1300,7 @@ def _check_confounds_list(confounds: list[str], imgs: list[str]) -> None:
         )
 
 
-def _validate_args_first_level_from_bids(
+def _check_args_first_level_from_bids(
     dataset_path: str | Path,
     task_label: str,
     space_label: str | None,
