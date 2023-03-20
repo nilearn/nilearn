@@ -184,10 +184,7 @@ def _prox_tvl1(
 
     # negated_output is the negated primal variable in the optimization
     # loop
-    if init is None:
-        negated_output = -input_img
-    else:
-        negated_output = -init
+    negated_output = -input_img if init is None else -init
 
     # Clipping values for the inner loop
     negated_val_min = np.inf
@@ -196,10 +193,9 @@ def _prox_tvl1(
         negated_val_min = -val_min
     if val_max is not None:
         negated_val_max = -val_max
-    if True or (val_min is not None or val_max is not None):
-        # With bound constraints, the stopping criterion is on the
-        # evolution of the output
-        negated_output_old = negated_output.copy()
+    # With bound constraints, the stopping criterion is on the
+    # evolution of the output
+    negated_output_old = negated_output.copy()
     grad_tmp = None
     old_dgap = np.inf
     dgap = np.inf
@@ -248,8 +244,7 @@ def _prox_tvl1(
                 )
                 if verbose:
                     print(
-                        "\tProxTVl1: Iteration % 2i, dual gap: % 6.3e"
-                        % (i, dgap)
+                        f"\tProxTVl1: Iteration {i: 2}, dual gap: {dgap: 6.3e}"
                     )
                 if dgap < dgap_tol:
                     break
@@ -269,8 +264,9 @@ def _prox_tvl1(
                         input_img, -negated_output, gid, weight
                     )
                     print(
-                        "\tProxTVl1 iteration % 2i, relative difference:"
-                        " % 6.3e, energy: % 6.3e" % (i, diff, energy)
+                        f"\tProxTVl1 iteration {i: 2}, "
+                        f"relative difference: {diff: 6.3e}, "
+                        f"energy: {energy: 6.3e}"
                     )
                 if diff < x_tol:
                     break

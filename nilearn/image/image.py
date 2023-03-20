@@ -426,7 +426,7 @@ def _pad_array(array, pad_sizes):
     if len(pad_sizes) % 2 != 0:
         raise ValueError(
             "Please specify as many max paddings as min"
-            " paddings. You have specified %d arguments" % len(pad_sizes)
+            f" paddings. You have specified {len(pad_sizes)} arguments"
         )
 
     all_paddings = np.zeros([array.ndim, 2], dtype=np.int64)
@@ -461,9 +461,8 @@ def _compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
     del imgs
     if mean_data.ndim not in (3, 4):
         raise ValueError(
-            "Computation expects 3D or 4D "
-            "images, but %i dimensions were given (%s)"
-            % (mean_data.ndim, input_repr)
+            "Computation expects 3D or 4D images, "
+            f"but {mean_data.ndim} dimensions were given ({input_repr})"
         )
     if mean_data.ndim == 4:
         mean_data = mean_data.mean(axis=-1)
