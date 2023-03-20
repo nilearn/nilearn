@@ -1132,11 +1132,11 @@ def test_first_level_from_bids_too_many_bold_files(bids_dataset):
         )
 
 
-def test_first_level_from_bids_with_missing_events(tmp_path):
+def test_first_level_from_bids_with_missing_events(tmp_path_factory):
     """All events.tsv files are missing, should raise an error."""
-    bids_dataset = _new_bids_dataset(tmp_path)
+    bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("no_events"))
     events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
-    for f in events_files[1:]:
+    for f in events_files:
         os.remove(f)
 
     with pytest.raises(ValueError, match="No events.tsv files found"):
