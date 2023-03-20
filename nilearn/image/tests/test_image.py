@@ -3,11 +3,11 @@ import os
 import platform
 import sys
 import tempfile
+import warnings
 
 import nibabel
 import numpy as np
 import pytest
-import warnings
 from nibabel import AnalyzeImage, Nifti1Image
 from nibabel.freesurfer import MGHImage
 from nilearn import signal
