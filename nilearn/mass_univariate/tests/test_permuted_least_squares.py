@@ -1,7 +1,9 @@
 """Tests for the permuted_ols function."""
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
+import nibabel as nib
 import numpy as np
 import pytest
+from nilearn.maskers import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
 from nilearn.mass_univariate.tests.utils import (
     get_tvalue_with_alternative_library,
@@ -515,10 +517,6 @@ def test_permuted_ols_intercept_nocovar(random_state=RANDOM_STATE):
     tested_var = np.ones((n_samples, n_regressors))
     target_var = rng.randn(n_samples, n_descriptors)
 
-    # compute t-scores with linalg or statmodels
-    t_val_ref = get_tvalue_with_alternative_library(tested_var, target_var)
-    assert t_val_ref.shape == (n_regressors, n_descriptors)
-
     # permuted OLS
     neg_log_pvals, orig_scores, _ = permuted_ols(
         tested_var,
@@ -527,10 +525,12 @@ def test_permuted_ols_intercept_nocovar(random_state=RANDOM_STATE):
         n_perm=10,
         random_state=random_state,
     )
+
+    ref_score = compare_to_ref_score(orig_scores, tested_var, target_var)
+    assert ref_score.shape == (n_regressors, n_descriptors)
     assert neg_log_pvals.shape == (n_regressors, n_descriptors)
     assert orig_scores.shape == (n_regressors, n_descriptors)
     assert_array_less(neg_log_pvals, 1.0)  # ensure sign swap is correctly done
-    assert_array_almost_equal(t_val_ref, orig_scores, decimal=6)
 
     # same thing but with model_intercept=True to check it has no effect
     _, orig_scores_addintercept, _ = permuted_ols(
@@ -542,7 +542,7 @@ def test_permuted_ols_intercept_nocovar(random_state=RANDOM_STATE):
         random_state=random_state,
     )
     assert orig_scores_addintercept.shape == (n_regressors, n_descriptors)
-    assert_array_almost_equal(t_val_ref, orig_scores_addintercept, decimal=6)
+    compare_to_ref_score(orig_scores_addintercept, tested_var, target_var)
 
 
 def test_permuted_ols_intercept_statsmodels_withcovar(
@@ -551,23 +551,15 @@ def test_permuted_ols_intercept_statsmodels_withcovar(
     rng = check_random_state(random_state)
 
     # design parameters
-    n_samples = N_SAMPLES
     n_descriptors = 10
     n_regressors = 1
     n_covars = 2
 
     # create design
-    tested_var = np.ones((n_samples, n_regressors))
-    target_var = rng.randn(n_samples, n_descriptors)
-    confounding_vars = rng.randn(n_samples, n_covars)
+    tested_var = np.ones((N_SAMPLES, n_regressors))
+    target_var = rng.randn(N_SAMPLES, n_descriptors)
+    confounding_vars = rng.randn(N_SAMPLES, n_covars)
 
-    # compute t-scores with linalg or statmodels
-    ref_scores = get_tvalue_with_alternative_library(
-        tested_var, target_var, confounding_vars
-    )
-    assert ref_scores.shape == (n_regressors, n_descriptors)
-
-    # permuted OLS
     _, own_scores, _ = permuted_ols(
         tested_var,
         target_var,
@@ -575,8 +567,11 @@ def test_permuted_ols_intercept_statsmodels_withcovar(
         n_perm=0,
         random_state=random_state,
     )
+    ref_score = compare_to_ref_score(
+        own_scores, tested_var, target_var, confounding_vars
+    )
+    assert ref_score.shape == (n_regressors, n_descriptors)
     assert own_scores.shape == (n_regressors, n_descriptors)
-    assert_array_almost_equal(ref_scores, own_scores, decimal=6)
 
     # same thing but with model_intercept=True to check it has no effect
     _, own_scores_intercept, _ = permuted_ols(
@@ -587,8 +582,10 @@ def test_permuted_ols_intercept_statsmodels_withcovar(
         n_perm=0,
         random_state=random_state,
     )
+    compare_to_ref_score(
+        own_scores_intercept, tested_var, target_var, confounding_vars
+    )
     assert own_scores_intercept.shape == (n_regressors, n_descriptors)
-    assert_array_almost_equal(ref_scores, own_scores_intercept, decimal=6)
 
 
 # Test one-sided versus two-sided
@@ -691,9 +688,6 @@ def test_sided_test2(random_state=RANDOM_STATE):
 
 def test_tfce_smoke(random_state=RANDOM_STATE):
     """Test combinations of parameters related to TFCE inference."""
-    import nibabel as nib
-    from nilearn.maskers import NiftiMasker
-
     # create design
     target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
     target_var = np.hstack(
@@ -816,9 +810,6 @@ def test_tfce_smoke(random_state=RANDOM_STATE):
 
 @pytest.fixture(scope="module")
 def masker():
-    import nibabel as nib
-    from nilearn.maskers import NiftiMasker
-
     mask_img = nib.Nifti1Image(np.ones((5, 5, 5)), np.eye(4))
     masker = NiftiMasker(mask_img)
     masker.fit(mask_img)
