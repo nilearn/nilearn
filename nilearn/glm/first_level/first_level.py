@@ -1353,7 +1353,7 @@ def _check_args_first_level_from_bids(
 
     if not isinstance(derivatives_folder, str):
         raise TypeError(
-            "'derivatives_folder' must be a string or pathlike. "
+            "'derivatives_folder' must be a string. "
             f"Got {type(derivatives_folder)} instead."
         )
     derivatives_folder = dataset_path / derivatives_folder

@@ -1046,9 +1046,14 @@ def test_first_level_from_bids_validation_input_dataset_path():
         first_level_from_bids(dataset_path="lolo",
                               task_label="main",
                               space_label="MNI")
+    with pytest.raises(TypeError, match="derivatives_.* must be a string"):
+        first_level_from_bids(dataset_path=Path(),
+                              task_label="main",
+                              space_label="MNI",
+                              derivatives_folder=1)        
 
 
-@pytest.mark.parametrize("task_label,error_type", 
+@pytest.mark.parametrize("task_label, error_type", 
                          [(42, TypeError), 
                           ("$$$", ValueError)],
                          )
@@ -1062,7 +1067,23 @@ def test_first_level_from_bids_validation_task_label(bids_dataset,
                                 space_label="MNI")
 
 
-@pytest.mark.parametrize("space_label,error_type", 
+@pytest.mark.parametrize("sub_labels, error_type, error_msg", 
+                         [("42", TypeError, 'must be a list'), 
+                          (["1", 1], TypeError, 'must be string'),
+                          ([1], TypeError, 'must be string')],
+                         )
+def test_first_level_from_bids_validation_sub_labels(bids_dataset,
+                                                      sub_labels,
+                                                      error_type,
+                                                      error_msg):
+    with pytest.raises(error_type, match =  error_msg):
+        first_level_from_bids(
+            dataset_path=bids_dataset,
+            task_label="main",
+            sub_labels=sub_labels
+        )        
+
+@pytest.mark.parametrize("space_label, error_type", 
                          [(42, TypeError), 
                           ("$$$", ValueError)],
                          )
@@ -1075,11 +1096,11 @@ def test_first_level_from_bids_validation_space_label(bids_dataset,
             dataset_path=bids_dataset,
             task_label="main",
             space_label=space_label
-        )         
+        )           
 
 
 @pytest.mark.parametrize(
-    "img_filters,error_type,match", [
+    "img_filters, error_type,match", [
         ("foo", TypeError, "'img_filters' must be a list"),
         ([(1, 2)], TypeError, "Filters in img"),
         ([("desc", "*/-")], ValueError, "bids labels must be alphanumeric."),
