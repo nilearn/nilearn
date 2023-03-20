@@ -2,6 +2,7 @@ from functools import partial
 
 import numpy as np
 import pytest
+from nilearn._utils.data_gen import create_graph_net_simulation_data
 from nilearn._utils.param_validation import _adjust_screening_percentile
 from nilearn.decoding.space_net import (
     BaseSpaceNet,
@@ -27,7 +28,6 @@ from sklearn.utils import check_random_state
 logistic_path_scores = partial(path_scores, is_classif=True)
 squared_loss_path_scores = partial(path_scores, is_classif=False)
 
-from .simulate_graph_net_data import create_graph_net_simulation_data
 from .test_same_api import to_niimgs
 
 IS_CLASSIF = [True, False]

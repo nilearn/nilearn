@@ -2,6 +2,7 @@
 import nibabel
 import numpy as np
 import scipy as sp
+from nilearn._utils.data_gen import create_graph_net_simulation_data
 from nilearn.decoding.objective_functions import _div, _gradient
 from nilearn.decoding.space_net import BaseSpaceNet
 from nilearn.decoding.space_net_solvers import (
@@ -19,7 +20,6 @@ from numpy.testing import assert_almost_equal
 from scipy import linalg
 from sklearn.utils import check_random_state
 
-from .simulate_graph_net_data import create_graph_net_simulation_data
 from .test_same_api import to_niimgs
 
 
