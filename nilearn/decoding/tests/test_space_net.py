@@ -27,11 +27,16 @@ from sklearn.utils import check_random_state
 logistic_path_scores = partial(path_scores, is_classif=True)
 squared_loss_path_scores = partial(path_scores, is_classif=False)
 
+from .simulate_graph_net_data import create_graph_net_simulation_data
+
 # Data used in almost all tests
 from .test_same_api import to_niimgs
 
+IS_CLASSIF = [True, False]
+PENALTY = ["graph-net", "tv-l1"]
+
+
 size = 4
-from .simulate_graph_net_data import create_graph_net_simulation_data
 
 X_, y, w, mask = create_graph_net_simulation_data(
     snr=1.0, n_samples=10, size=size, n_points=5, random_state=42
@@ -39,7 +44,7 @@ X_, y, w, mask = create_graph_net_simulation_data(
 X, mask = to_niimgs(X_, [size] * 3)
 
 
-@pytest.mark.parametrize("is_classif", [True, False])
+@pytest.mark.parametrize("is_classif", IS_CLASSIF)
 @pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
 @pytest.mark.parametrize("n_alphas", range(1, 10))
 def test_space_net_alpha_grid(
@@ -67,6 +72,7 @@ def test_space_net_alpha_grid(
 
 
 def test_space_net_alpha_grid_same_as_sk():
+    # for old sklearn versions ???
     try:
         from sklearn.linear_model.coordinate_descent import _alpha_grid
 
@@ -105,8 +111,8 @@ def test_early_stopping_callback_object(n_samples=10, n_features=30):
             w *= 0.0
 
 
-@pytest.mark.parametrize("penalty", ["graph-net", "tv-l1"])
-@pytest.mark.parametrize("is_classif", [True, False])
+@pytest.mark.parametrize("penalty", PENALTY)
+@pytest.mark.parametrize("is_classif", IS_CLASSIF)
 @pytest.mark.parametrize("n_alphas", [0.1, 0.01])
 @pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
 @pytest.mark.parametrize("n_jobs", [1, -1])
@@ -134,11 +140,11 @@ def test_params_correctly_propagated_in_constructors(
 
 @pytest.mark.parametrize(
     "penalty",
-    ["graph-net", "tv-l1"],
+    PENALTY,
 )
 @pytest.mark.parametrize(
     "is_classif",
-    [True, False],
+    IS_CLASSIF,
 )
 @pytest.mark.parametrize("alpha", [0.4, 0.01])
 @pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
@@ -362,7 +368,7 @@ def test_crop_mask():
 
 @pytest.mark.parametrize(
     "is_classif",
-    [True, False],
+    IS_CLASSIF,
 )
 def test_univariate_feature_screening(
     is_classif, dim=(11, 12, 13), n_samples=10
@@ -388,7 +394,7 @@ def test_univariate_feature_screening(
     assert n_features_ <= n_features
 
 
-@pytest.mark.parametrize("penalty", ["graph-net", "tv-l1"])
+@pytest.mark.parametrize("penalty", PENALTY)
 @pytest.mark.parametrize(
     "alpha",
     [0.4, 0.01],
@@ -413,7 +419,7 @@ def test_space_net_classifier_subclass(penalty, alpha, l1_ratio, verbose):
     assert cvobj.l1_ratios == l1_ratio
 
 
-@pytest.mark.parametrize("penalty", ["graph-net", "tv-l1"])
+@pytest.mark.parametrize("penalty", PENALTY)
 @pytest.mark.parametrize(
     "alpha",
     [0.4, 0.01],
@@ -440,7 +446,7 @@ def test_space_net_regressor_subclass(penalty, alpha, l1_ratio, verbose):
 
 @pytest.mark.parametrize(
     "is_classif",
-    [True, False],
+    IS_CLASSIF,
 )
 def test_space_net_alpha_grid_pure_spatial(is_classif):
     rng = check_random_state(42)
