@@ -10,12 +10,10 @@ from nilearn.image import get_data
 
 
 @pytest.mark.parametrize("window", ["boxcar", "hamming"])
-def test_generate_regions_ts(window):
-    """Minimal testing of generate_regions_ts()."""
+def test_generate_regions_ts_no_overlap(window):
     n_voxels = 50
     n_regions = 10
 
-    # no overlap
     regions = generate_regions_ts(
         n_voxels, n_regions, overlap=0, window=window
     )
@@ -30,7 +28,12 @@ def test_generate_regions_ts(window):
         np.zeros(regions.shape[1]), (regions > 0).sum(axis=0)
     )
 
-    # some regions overlap
+
+@pytest.mark.parametrize("window", ["boxcar", "hamming"])
+def test_generate_regions_ts_with_overlap(window):
+    n_voxels = 50
+    n_regions = 10
+
     regions = generate_regions_ts(
         n_voxels, n_regions, overlap=1, window=window
     )
@@ -41,7 +44,7 @@ def test_generate_regions_ts(window):
     # check: a region everywhere
     np.testing.assert_array_less(
         np.zeros(regions.shape[1]), (regions > 0).sum(axis=0)
-    )
+    )    
 
 
 def test_generate_labeled_regions():
@@ -79,8 +82,7 @@ def test_generate_fake_fmri(
 ):
     rand_gen = np.random.RandomState(3)
 
-    if n_block is None:
-        fmri, _ = generate_fake_fmri(
+    fake_fmri = generate_fake_fmri(
             shape=shape,
             length=length,
             kind=kind,
@@ -89,20 +91,11 @@ def test_generate_fake_fmri(
             block_type=block_type,
             random_state=rand_gen,
         )
-    else:
-        fmri, _, target = generate_fake_fmri(
-            shape=shape,
-            length=length,
-            kind=kind,
-            n_blocks=n_block,
-            block_size=block_size,
-            block_type=block_type,
-            random_state=rand_gen,
-        )
-        assert target.size == length
-
-    assert fmri.shape[:-1] == shape
-    assert fmri.shape[-1] == length
+    
+    assert fake_fmri[0].shape[:-1] == shape
+    assert fake_fmri[0].shape[-1] == length
+    if n_block is not None:
+        assert fake_fmri[2].size == length
 
 
 def test_generate_fake_fmri_error():
