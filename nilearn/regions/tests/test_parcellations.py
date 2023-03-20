@@ -140,9 +140,10 @@ def test_parcellations_transform_single_nifti_image(
     assert signals.shape == (test_image_2.shape[3], n_parcel)
 
 
-def test_parcellations_transform_verbose(test_image_2):
+@pytest.mark.parametrize("verbose", [True, False, -1, 0, 1, 2])
+def test_parcellations_transform_verbose(test_image_2, verbose):
     """Test verbose mostly for coverage purpose."""
-    parcellator = Parcellations(method="kmeans", n_parcels=5, verbose=1)
+    parcellator = Parcellations(method="kmeans", n_parcels=5, verbose=verbose)
     parcellator.fit(test_image_2)
     parcellator.transform(test_image_2)
 
