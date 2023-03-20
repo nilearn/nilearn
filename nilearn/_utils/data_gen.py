@@ -995,7 +995,10 @@ def _check_entities_and_labels(entities: dict) -> None:
 
     for key in entities:
         if key not in [*_bids_entities()["raw"], *_bids_entities()["derivatives"]]:
-            raise ValueError(f"Invalid entity: {key}")
+            raise ValueError(
+                f"Invalid entity: {key}. Allowed entities are: "
+                f"{[*_bids_entities()['raw'], *_bids_entities()['derivatives']]}"
+            )
         [_check_bids_label(label_) for label_ in entities[key]]
 
 

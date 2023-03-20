@@ -386,3 +386,14 @@ def test_fake_bids_extra_derivative_entity(tmpdir):
         + 3 * sum(n_runs) * n_ses * len(entities["res"])
     )
     assert len(all_files) == n_derivatives_files_expected
+
+
+
+def test_fake_bids_extra_entity_not_bids_entity(tmpdir):
+    """Check files with extra entity are created appropriately."""
+
+    with pytest.raises(ValueError, match="Invalid entity"):
+        create_fake_bids_dataset(
+            base_dir=tmpdir,
+            entities={"egg": ["spam"]},
+        )
