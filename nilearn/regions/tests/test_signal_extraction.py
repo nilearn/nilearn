@@ -162,9 +162,8 @@ def test_errors_3D(img_3D):
         img_to_signals_maps(imgs=img_4D, maps_img=wrong_dim_image)
 
 
-def test_errors_4D(img_3D, img_4D):
+def test_errors_4D_labels(img_4D):
     """Verify that 4D images are refused."""
-    # 4D labels
     wrong_dim_label_img = img_4D
 
     with pytest.raises(DimensionError, match=_3D_EXPECTED_ERROR_MSG):
@@ -173,7 +172,9 @@ def test_errors_4D(img_3D, img_4D):
     with pytest.raises(DimensionError, match=_3D_EXPECTED_ERROR_MSG):
         signals_to_img_labels(signals=img_4D, labels_img=wrong_dim_label_img)
 
-    # 4D mask
+
+def test_errors_4D_masks(img_3D, img_4D):
+    """Verify that 4D images are refused."""
     wrong_dim_mask_img = img_4D
 
     with pytest.raises(DimensionError, match=_3D_EXPECTED_ERROR_MSG):
@@ -192,7 +193,20 @@ def test_errors_4D(img_3D, img_4D):
         )
 
 
-"""errors img_to_signals_labels"""
+@pytest.mark.parametrize(
+    "shape, affine, error_msg",
+    [
+        ((8, 9, 11), AFFINE, _TEST_SHAPE_ERROR_MSG),
+        (SHAPE, 2 * AFFINE, _TEST_AFFINE_ERROR_MSG),
+    ],
+)
+def test_img_to_signals_labels_bad_labels_input(
+    img_4D, shape, affine, error_msg
+):
+    bad_img = nibabel.Nifti1Image(np.zeros(shape), affine)
+
+    with pytest.raises(ValueError, match=error_msg):
+        img_to_signals_labels(imgs=img_4D, labels_img=bad_img)
 
 
 @pytest.mark.parametrize(
@@ -202,25 +216,13 @@ def test_errors_4D(img_3D, img_4D):
         (SHAPE, 2 * AFFINE, _TEST_AFFINE_ERROR_MSG),
     ],
 )
-def test_img_to_signals_labels_bad_inputs(
+def test_img_to_signals_labels_bad_mask_input(
     img_4D, img_3D, shape, affine, error_msg
 ):
-    bad_labels_img = nibabel.Nifti1Image(np.zeros(shape), affine)
+    bad_img = nibabel.Nifti1Image(np.zeros(shape), affine)
 
     with pytest.raises(ValueError, match=error_msg):
-        img_to_signals_labels(imgs=img_4D, labels_img=bad_labels_img)
-
-    with pytest.raises(ValueError, match=error_msg):
-        img_to_signals_labels(
-            imgs=img_4D, labels_img=bad_labels_img, mask_img=img_3D
-        )
-
-    bad_mask_img = nibabel.Nifti1Image(np.zeros(shape), affine)
-
-    with pytest.raises(ValueError, match=error_msg):
-        img_to_signals_labels(
-            imgs=img_4D, labels_img=img_3D, mask_img=bad_mask_img
-        )
+        img_to_signals_labels(imgs=img_4D, labels_img=img_3D, mask_img=bad_img)
 
 
 def test_img_to_signals_labels_error_strategy(img_4D, img_3D):
@@ -228,7 +230,22 @@ def test_img_to_signals_labels_error_strategy(img_4D, img_3D):
         img_to_signals_labels(imgs=img_4D, labels_img=img_3D, strategy="foo")
 
 
-"""errors signals_to_img_labels"""
+@pytest.mark.parametrize(
+    "shape, affine, error_msg",
+    [
+        ((8, 9, 11), AFFINE, _TEST_SHAPE_ERROR_MSG),
+        (SHAPE, 2 * AFFINE, _TEST_AFFINE_ERROR_MSG),
+    ],
+)
+def test_signals_to_img_labels_bad_label_input(
+    img_4D, img_3D, shape, affine, error_msg
+):
+    bad_img = nibabel.Nifti1Image(np.zeros(shape), affine)
+
+    with pytest.raises(ValueError, match=error_msg):
+        signals_to_img_labels(
+            signals=img_4D, labels_img=bad_img, mask_img=img_3D
+        )
 
 
 @pytest.mark.parametrize(
@@ -238,25 +255,15 @@ def test_img_to_signals_labels_error_strategy(img_4D, img_3D):
         (SHAPE, 2 * AFFINE, _TEST_AFFINE_ERROR_MSG),
     ],
 )
-def test_signals_to_img_labels_bad_inputs(
+def test_signals_to_img_labels_bad_mask_input(
     img_4D, img_3D, shape, affine, error_msg
 ):
-    bad_labels_img = nibabel.Nifti1Image(np.zeros(shape), affine)
+    bad_img = nibabel.Nifti1Image(np.zeros(shape), affine)
 
     with pytest.raises(ValueError, match=error_msg):
         signals_to_img_labels(
-            signals=img_4D, labels_img=bad_labels_img, mask_img=img_3D
+            signals=img_4D, labels_img=img_3D, mask_img=bad_img
         )
-
-    bad_mask_img = nibabel.Nifti1Image(np.zeros(shape), affine)
-
-    with pytest.raises(ValueError, match=error_msg):
-        signals_to_img_labels(
-            signals=img_4D, labels_img=img_3D, mask_img=bad_mask_img
-        )
-
-
-"""errors img_to_signals_maps"""
 
 
 @pytest.mark.parametrize(
@@ -266,20 +273,13 @@ def test_signals_to_img_labels_bad_inputs(
         (SHAPE + (7,), 2 * AFFINE, _TEST_AFFINE_ERROR_MSG),
     ],
 )
-def test_img_to_signals_maps_bad_maps(
-    img_4D, img_3D, shape, affine, error_msg
-):
-    bad_maps_img = nibabel.Nifti1Image(np.zeros(shape), affine)
+def test_img_to_signals_maps_bad_maps(img_4D, shape, affine, error_msg):
+    bad_img = nibabel.Nifti1Image(np.zeros(shape), affine)
 
     with pytest.raises(ValueError, match=error_msg):
         img_to_signals_maps(
             imgs=img_4D,
-            maps_img=bad_maps_img,
-        )
-
-    with pytest.raises(ValueError, match=error_msg):
-        img_to_signals_maps(
-            imgs=img_4D, maps_img=bad_maps_img, mask_img=img_3D
+            maps_img=bad_img,
         )
 
 
@@ -291,15 +291,10 @@ def test_img_to_signals_maps_bad_maps(
     ],
 )
 def test_img_to_signals_maps_bad_masks(img_4D, shape, affine, error_msg):
-    bad_mask_img = nibabel.Nifti1Image(np.zeros(shape), affine)
+    bad_img = nibabel.Nifti1Image(np.zeros(shape), affine)
 
     with pytest.raises(ValueError, match=error_msg):
-        img_to_signals_maps(
-            imgs=img_4D, maps_img=img_4D, mask_img=bad_mask_img
-        )
-
-
-""""""
+        img_to_signals_maps(imgs=img_4D, maps_img=img_4D, mask_img=bad_img)
 
 
 def test_signals_extraction_with_labels_without_mask(
