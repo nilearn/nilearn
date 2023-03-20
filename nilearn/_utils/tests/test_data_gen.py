@@ -99,11 +99,9 @@ def test_generate_fake_fmri(
 
 
 def test_generate_fake_fmri_error():
-    pytest.raises(
-        ValueError,
-        generate_fake_fmri,
-        length=10,
-        n_blocks=10,
-        block_size=None,
-        random_state=np.random.RandomState(3),
-    )
+    with pytest.raises(ValueError, match = '10 is too small'):
+        generate_fake_fmri(length=10,
+                           n_blocks=10,
+                           block_size=None,
+                           random_state=np.random.RandomState(3))
+
