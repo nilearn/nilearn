@@ -1,4 +1,14 @@
-"""Test the decoder module."""
+"""Test the decoder module.
+
+Order of tests from top to bottom:
+
+- helper functions
+- fixtures
+- classification
+- regression
+- multiclass
+
+"""
 
 # Author: Andres Hoyos-Idrobo
 #         Binh Nguyen
@@ -43,57 +53,128 @@ N_SAMPLES = 100
 
 ESTIMATOR_REGRESSION = ["ridge", "svr"]
 
-# Regression
-# ridge = RidgeCV()
-# svr = SVR(kernel="linear")
-# Classification
-# svc = LinearSVC()
-# logistic_l1 = LogisticRegression(penalty="l1")
-# logistic_l2 = LogisticRegression(penalty="l2")
-# ridge_classifier = RidgeClassifierCV()
-# random_forest = RandomForestClassifier()
 
-# dummy_classifier = DummyClassifier(random_state=0)
-
-
-regressors = {"ridge": (RidgeCV(), []), "svr": (SVR(kernel="linear"), "C")}
-classifiers = {
-    "svc": (LinearSVC(), "C"),
-    "logistic_l1": (LogisticRegression(penalty="l1"), "C"),
-    "logistic_l2": (LogisticRegression(penalty="l2"), "C"),
-    "ridge_classifier": (RidgeClassifierCV(), []),
-}
-# Create a test dataset
-rng = np.random.RandomState(0)
-X = rng.rand(100, 10)
-# Create different targets
-y_regression = rng.rand(100)
-y_classification = np.hstack([[-1] * 50, [1] * 50])
+def _make_binary_classification_test_data(n_samples=N_SAMPLES):
+    X, y = make_classification(
+        n_samples=n_samples,
+        n_features=125,
+        scale=3.0,
+        n_informative=5,
+        n_classes=2,
+        random_state=42,
+    )
+    X, mask = to_niimgs(X, [5, 5, 5])
+    return X, y, mask
 
 
-def test_check_param_grid():
+def _make_regression_test_data(n_samples=N_SAMPLES, dim=30):
+    X, y = make_regression(
+        n_samples=n_samples,
+        n_features=dim**3,
+        n_informative=dim,
+        noise=1.5,
+        bias=1.0,
+        random_state=42,
+    )
+    X = StandardScaler().fit_transform(X)
+    X, mask = to_niimgs(X, [dim, dim, dim])
+    return X, y, mask
+
+
+def _make_multiclass_classification_test_data(n_samples=200):
+    X, y = make_classification(
+        n_samples=n_samples,
+        n_features=125,
+        scale=3.0,
+        n_informative=5,
+        n_classes=4,
+        random_state=42,
+    )
+    X, mask = to_niimgs(X, [5, 5, 5])
+    return X, y, mask
+
+
+@pytest.fixture(scope="session")
+def rand_X_Y():
+    rng = np.random.RandomState(0)
+    X = rng.rand(N_SAMPLES, 10)
+    Y = np.hstack([[-1] * 50, [1] * 50])
+    return X, Y
+
+
+@pytest.fixture(scope="session")
+def dummy_binary_classification_data():
+    """Use for testting errors."""
+    return _make_binary_classification_test_data(n_samples=20)
+
+
+@pytest.fixture
+def binary_classification_data():
+    """Use for testting errors."""
+    return _make_binary_classification_test_data(n_samples=N_SAMPLES)
+
+
+@pytest.fixture
+def regression_data():
+    return _make_regression_test_data(n_samples=N_SAMPLES, dim=30)
+
+
+@pytest.fixture
+def multiclass_data():
+    return _make_multiclass_classification_test_data(n_samples=N_SAMPLES)
+
+
+@pytest.mark.parametrize(
+    "regressor, param", [(RidgeCV(), []), (SVR(kernel="linear"), "C")]
+)
+def test_check_param_grid_regression(regressor, param):
     """Test several estimators.
 
     Each one with its specific regularization parameter.
     """
-    # Regression
-    for _, (regressor, param) in regressors.items():
-        param_grid = _check_param_grid(regressor, X, y_regression, None)
-        assert list(param_grid.keys()) == list(param)
-    # Classification
-    for _, (classifier, param) in classifiers.items():
-        param_grid = _check_param_grid(classifier, X, y_classification, None)
-        assert list(param_grid.keys()) == list(param)
+    rng = np.random.RandomState(0)
+    X = rng.rand(N_SAMPLES, 10)
+    Y = rng.rand(N_SAMPLES)
 
-    # Using a non-linear estimator to raise the error
-    for estimator in ["log_l1", RandomForestClassifier()]:
-        pytest.raises(
-            ValueError, _check_param_grid, estimator, X, y_classification, None
-        )
+    param_grid = _check_param_grid(regressor, X, Y, None)
 
-    # Test return parameter grid is empty
+    assert list(param_grid.keys()) == list(param)
+
+
+@pytest.mark.parametrize(
+    "classifier, param",
+    [
+        (LogisticRegression(penalty="l1"), "C"),
+        (LogisticRegression(penalty="l2"), "C"),
+        (RidgeClassifierCV(), []),
+    ],
+)
+def test_check_param_grid_classification(rand_X_Y, classifier, param):
+    """Test several estimators.
+
+    Each one with its specific regularization parameter.
+    """
+    X, Y = rand_X_Y
+
+    param_grid = _check_param_grid(classifier, X, Y, None)
+
+    assert list(param_grid.keys()) == list(param)
+
+
+@pytest.mark.parametrize("estimator", ["log_l1", RandomForestClassifier()])
+def test_check_param_grid_error(rand_X_Y, estimator):
+    """Raise the error when using a non-linear estimator."""
+    X, Y = rand_X_Y
+    with pytest.raises(ValueError):
+        _check_param_grid(estimator, X, Y, None)
+
+
+def test_check_parameter_grid_is_empty(rand_X_Y):
+    X, Y = rand_X_Y
     dummy_classifier = DummyClassifier(random_state=0)
-    param_grid = _check_param_grid(dummy_classifier, X, y_classification, None)
+
+    param_grid = _check_param_grid(dummy_classifier, X, Y, None)
+
     assert param_grid == {}
 
 
@@ -140,6 +221,7 @@ def test_check_supported_estimator(estimator):
     with warnings.catch_warnings(record=True) as raised_warnings:
         _check_estimator(_BaseDecoder(estimator=estimator).estimator)
     warning_messages = [str(warning.message) for warning in raised_warnings]
+
     assert expected_warning not in warning_messages
 
 
@@ -162,32 +244,38 @@ def test_check_unsupported_estimator(estimator):
         _check_estimator(_BaseDecoder(estimator=custom_estimator).estimator)
 
 
-def test_parallel_fit():
+def test_parallel_fit(rand_X_Y):
     """Check that results of _parallel_fit is the same \
     for different controlled param_grid."""
     X, y = make_regression(
-        n_samples=100,
+        n_samples=N_SAMPLES,
         n_features=20,
         n_informative=5,
         noise=0.2,
         random_state=42,
     )
     train = range(80)
+
+    _, y_classification = rand_X_Y
     test = range(80, len(y_classification))
-    outputs = []
+
     estimator = SVR(kernel="linear")
-    svr_params = [[1e-1, 1e0, 1e1], [1e-1, 1e0, 5e0, 1e1]]
-    scorer = check_scoring(estimator, "r2")  # define a scorer
+
+    # define a scorer
+    scorer = check_scoring(estimator, "r2")
+
     # Define a screening selector
     selector = check_feature_screening(
         screening_percentile=None, mask_img=None, is_classification=False
     )
-    for params in svr_params:
+
+    outputs = []
+    for params in [[1e-1, 1e0, 1e1], [1e-1, 1e0, 5e0, 1e1]]:
         param_grid = {"C": np.array(params)}
         outputs.append(
             list(
                 _parallel_fit(
-                    estimator=estimator,
+                    estimator=SVR(kernel="linear"),
                     X=X,
                     y=y,
                     train=train,
@@ -202,37 +290,13 @@ def test_parallel_fit():
                 )
             )
         )
+
     # check that every element of the output tuple is the same for both tries
     for a, b in zip(outputs[0], outputs[1]):
         if isinstance(a, np.ndarray):
             np.testing.assert_array_almost_equal(a, b)
         else:
             assert a == b
-
-
-def _make_binary_classification_test_data(n_samples):
-    X, y = make_classification(
-        n_samples=n_samples,
-        n_features=125,
-        scale=3.0,
-        n_informative=5,
-        n_classes=2,
-        random_state=42,
-    )
-    X, mask = to_niimgs(X, [5, 5, 5])
-    return X, y, mask
-
-
-@pytest.fixture(scope="session")
-def dummy_binary_classification_data():
-    """Use for testting errors."""
-    return _make_binary_classification_test_data(n_samples=20)
-
-
-@pytest.fixture
-def binary_classification_data():
-    """Use for testting errors."""
-    return _make_binary_classification_test_data(n_samples=N_SAMPLES)
 
 
 def test_decoder_binary_classification_with_masker_object(
@@ -348,6 +412,7 @@ def test_decoder_error_model_not_fitted(dummy_binary_classification_data):
     X, y, mask = dummy_binary_classification_data
 
     model = Decoder(estimator="dummy_classifier", mask=mask)
+
     with pytest.raises(
         NotFittedError, match="This Decoder instance is not fitted yet."
     ):
@@ -377,6 +442,7 @@ def test_decoder_dummy_classifier_strategy_most_frequent():
     model = Decoder(estimator=dummy_classifier, mask=mask)
     model.fit(X, y)
     y_pred = model.predict(X)
+
     assert np.all(y_pred) == 1.0
 
     # Returns model coefficients for dummy estimators as None
@@ -442,26 +508,8 @@ def test_decoder_classification_string_label():
     model = Decoder(mask=mask)
     model.fit(X, y_str)
     y_pred = model.predict(X)
+
     assert accuracy_score(y_str, y_pred) > 0.95
-
-
-def _make_regression_test_data(n_samples, dim):
-    X, y = make_regression(
-        n_samples=n_samples,
-        n_features=dim**3,
-        n_informative=dim,
-        noise=1.5,
-        bias=1.0,
-        random_state=42,
-    )
-    X = StandardScaler().fit_transform(X)
-    X, mask = to_niimgs(X, [dim, dim, dim])
-    return X, y, mask
-
-
-@pytest.fixture
-def regression_data():
-    return _make_regression_test_data(n_samples=N_SAMPLES, dim=30)
 
 
 @pytest.mark.parametrize("screening_percentile", [100, 20, 1, None])
@@ -516,6 +564,7 @@ def test_decoder_dummy_regression(regression_data):
     )
     model.fit(X, y)
     y_pred = model.predict(X)
+
     assert model.scoring == "r2"
     assert r2_score(y, y_pred) <= 0.0
     assert model.score(X, y) == r2_score(y, y_pred)
@@ -526,6 +575,7 @@ def test_decoder_dummy_regression(regression_data):
     )
     model.fit(X, y)
     y_pred = model.predict(X)
+
     assert model.score(X, y) == r2_score(y, y_pred)
 
     # decoder object use other strategy for dummy regressor
@@ -535,6 +585,7 @@ def test_decoder_dummy_regression(regression_data):
     model = DecoderRegressor(estimator=dummy_regressor, mask=mask)
     model.fit(X, y)
     y_pred = model.predict(X)
+
     assert r2_score(y, y_pred) <= 0.0
     # Returns model coefficients for dummy estimators as None
     assert model.coef_ is None
@@ -543,21 +594,8 @@ def test_decoder_dummy_regression(regression_data):
     assert model.cv_scores_ is not None
 
 
-def _make_multiclass_classification_test_data(n_samples=200):
-    X, y = make_classification(
-        n_samples=n_samples,
-        n_features=125,
-        scale=3.0,
-        n_informative=5,
-        n_classes=4,
-        random_state=42,
-    )
-    X, mask = to_niimgs(X, [5, 5, 5])
-    return X, y, mask
-
-
-def test_decoder_multiclass_classification_masker():
-    X, y, _ = _make_multiclass_classification_test_data()
+def test_decoder_multiclass_classification_masker(multiclass_data):
+    X, y, _ = multiclass_data
 
     model = Decoder(mask=NiftiMasker())
     model.fit(X, y)
@@ -566,8 +604,10 @@ def test_decoder_multiclass_classification_masker():
     assert accuracy_score(y, y_pred) > 0.95
 
 
-def test_decoder_multiclass_classification_masker_dummy_classifier():
-    X, y, _ = _make_multiclass_classification_test_data()
+def test_decoder_multiclass_classification_masker_dummy_classifier(
+    multiclass_data,
+):
+    X, y, _ = multiclass_data
 
     model = Decoder(
         estimator="dummy_classifier", mask=NiftiMasker(), scoring="accuracy"
@@ -582,8 +622,10 @@ def test_decoder_multiclass_classification_masker_dummy_classifier():
 
 
 @pytest.mark.parametrize("screening_percentile", [100, 20, None])
-def test_decoder_multiclass_classification_screening(screening_percentile):
-    X, y, mask = _make_multiclass_classification_test_data()
+def test_decoder_multiclass_classification_screening(
+    multiclass_data, screening_percentile
+):
+    X, y, mask = multiclass_data
 
     model = Decoder(mask=mask, screening_percentile=screening_percentile)
     model.fit(X, y)
@@ -595,9 +637,9 @@ def test_decoder_multiclass_classification_screening(screening_percentile):
 @pytest.mark.parametrize("clustering_percentile", [100, 99])
 @pytest.mark.parametrize("estimator", ["svc_l2", "svc_l1"])
 def test_decoder_multiclass_classification_clustering(
-    clustering_percentile, estimator
+    multiclass_data, clustering_percentile, estimator
 ):
-    X, y, mask = _make_multiclass_classification_test_data()
+    X, y, mask = multiclass_data
 
     model = FREMClassifier(
         estimator=estimator,
@@ -614,8 +656,10 @@ def test_decoder_multiclass_classification_clustering(
 
 
 @pytest.mark.parametrize("cv", [KFold(n_splits=5), LeaveOneGroupOut()])
-def test_decoder_multiclass_classification_cross_validation(cv):
-    X, y, mask = _make_multiclass_classification_test_data()
+def test_decoder_multiclass_classification_cross_validation(
+    multiclass_data, cv
+):
+    X, y, mask = multiclass_data
 
     # check cross-validation scheme and fit attribute with groups enabled
     rand_local = np.random.RandomState(42)
@@ -626,11 +670,12 @@ def test_decoder_multiclass_classification_cross_validation(cv):
         groups = rand_local.binomial(2, 0.3, size=len(y))
     model.fit(X, y, groups=groups)
     y_pred = model.predict(X)
+
     assert accuracy_score(y, y_pred) > 0.9
 
 
-def test_decoder_apply_mask():
-    X_init, y = make_classification(
+def test_decoder_multiclass_classification_apply_mask():
+    X_init, _ = make_classification(
         n_samples=200,
         n_features=125,
         scale=3.0,
@@ -674,8 +719,8 @@ def test_decoder_apply_mask():
     assert model.masker_.smoothing_fwhm == smoothing_fwhm
 
 
-def test_decoder_split_cv():
-    X, y, _ = _make_multiclass_classification_test_data()
+def test_decoder_multiclass_classification_split_cv(multiclass_data):
+    X, y, _ = multiclass_data
     rand_local = np.random.RandomState(42)
     groups = rand_local.binomial(2, 0.3, size=len(y))
 
