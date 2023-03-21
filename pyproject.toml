@@ -17,7 +17,6 @@ extend-exclude =  '''
 (
   nilearn/externals
   | examples/.*/.*3d_map_to_surface_projection.py
-  | examples/.*/.*compare_shrunk_connectome.py
   | examples/.*/.*demo_glass_brain.py
   | examples/.*/.*demo_glass_brain_extensive.py
   | examples/.*/.*demo_more_plotting.py
@@ -34,7 +33,6 @@ extend-exclude =  '''
   | examples/.*/.*surf_stat_map.py
   | examples/.*/.*surface_bids_analysis.py
   | examples/.*/.*surface_projection_strategies.py
-  | examples/.*/.*two_session_model.py
 )
 '''
 
