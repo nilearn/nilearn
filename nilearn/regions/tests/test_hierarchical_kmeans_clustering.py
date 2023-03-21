@@ -21,8 +21,11 @@ from numpy.testing import assert_array_almost_equal
 )
 def test_adjust_small_clusters(test_list, n_clusters):
     test_list = np.asarray(test_list)
+
     assert np.sum(test_list) == n_clusters
+
     list_round = _adjust_small_clusters(test_list, n_clusters)
+
     assert np.all(list_round != 0)
     assert np.sum(list_round) == n_clusters
     for a in list_round:
