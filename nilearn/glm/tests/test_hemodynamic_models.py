@@ -10,7 +10,7 @@ from numpy.testing import (assert_almost_equal,
 
 from nilearn.glm.first_level.hemodynamic_models import \
     (_hrf_kernel, _orthogonalize, _regressor_names, _resample_regressor,
-     _sample_condition, compute_regressor, spm_dispersion_derivative,
+     _sample_condition, compute_regressor, _calculate_tr, spm_dispersion_derivative,
      spm_hrf, spm_time_derivative, glover_dispersion_derivative,
      glover_hrf, glover_time_derivative)
 
@@ -310,6 +310,21 @@ def test_make_regressor_3():
                                          fir_delays=np.arange(4),
                                          oversampling=50.)
     assert_array_equal(reg, reg_)
+
+
+def test_calculate_tr():
+    """ test the TR calculation
+    """
+    true_tr = 0.75
+    n_vols = 4
+
+    # create times for four volumes, shifted forward by half a TR
+    # (as with fMRIPrep slice timing corrected data)
+    frame_times = np.linspace(
+        true_tr / 2, (n_vols * true_tr) + (true_tr / 2), n_vols + 1)
+
+    estimated_tr = _calculate_tr(frame_times)
+    assert_almost_equal(estimated_tr, true_tr, 2)
 
 
 def test__regressor_names():

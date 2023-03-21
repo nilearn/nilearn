@@ -53,7 +53,7 @@ jobs:
 
 - job: 'test_installing_on_linux'
   pool:
-    vmImage: 'ubuntu-18.04'
+    vmImage: 'ubuntu-20.04'
   strategy:
     matrix:
       Python38:
@@ -167,7 +167,7 @@ jobs:
 
 - job: 'test_expected_to_fail_installation_on_linux'
   pool:
-    vmImage: 'ubuntu-18.04'
+    vmImage: 'ubuntu-20.04'
   strategy:
     matrix:
       Python27:

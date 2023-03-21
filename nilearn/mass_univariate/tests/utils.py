@@ -37,7 +37,7 @@ def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):
         design_matrix = tested_vars
     mask_covars = np.ones(n_regressors + n_covars, dtype=bool)
     mask_covars[:n_regressors] = False
-    test_matrix = np.array([[1.] + [0.] * n_covars])
+    test_matrix = np.array([[1.0] + [0.0] * n_covars])
 
     # t-values computation
     try:  # try with statsmodels if available (more concise)
@@ -65,18 +65,22 @@ def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):
             invcov = linalg.pinv(current_design_matrix)
             normalized_cov = np.dot(invcov, invcov.T)
             t_val_denom_aux = np.diag(
-                np.dot(test_matrix, np.dot(normalized_cov, test_matrix.T)))
+                np.dot(test_matrix, np.dot(normalized_cov, test_matrix.T))
+            )
             t_val_denom_aux = t_val_denom_aux.reshape((-1, 1))
 
             for j in range(n_descriptors):
                 current_target = target_vars[:, j].reshape((-1, 1))
                 res_lstsq = linalg.lstsq(current_design_matrix, current_target)
-                residuals = (current_target
-                             - np.dot(current_design_matrix, res_lstsq[0]))
+                residuals = current_target - np.dot(
+                    current_design_matrix, res_lstsq[0]
+                )
                 t_val_num = np.dot(test_matrix, res_lstsq[0])
                 t_val_denom = np.sqrt(
-                    np.sum(residuals ** 2, 0) / float(n_samples - lost_dof)
-                    * t_val_denom_aux)
+                    np.sum(residuals**2, 0)
+                    / float(n_samples - lost_dof)
+                    * t_val_denom_aux
+                )
                 t_values[j, i] = np.ravel(t_val_num / t_val_denom)
 
     t_values = t_values.T

@@ -167,15 +167,79 @@ def test_butterworth():
     sampling = 1
     low_pass = 2
     high_pass = 1
-    with pytest.warns(UserWarning,
-                      match='Signals are returned unfiltered because '
-                      'band-pass critical frequencies are equal. '
-                      'Please check that inputs for sampling_rate, '
-                      'low_pass, and high_pass are valid.'):
-        out = nisignal.butterworth(data, sampling,
-                                   low_pass=low_pass, high_pass=high_pass,
-                                   copy=True)
+    with pytest.warns(
+        UserWarning,
+        match=(
+            'Signals are returned unfiltered because '
+            'band-pass critical frequencies are equal. '
+            'Please check that inputs for sampling_rate, '
+            'low_pass, and high_pass are valid.'
+        ),
+    ):
+        out = nisignal.butterworth(
+            data,
+            sampling,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            copy=True,
+        )
     assert (out == data).all()
+
+    # Test check for frequency higher than allowed (>=Nyquist).
+    # The frequency should be modified and the filter should be run.
+    sampling = 1
+    high_pass = 0.01
+    low_pass = 0.5
+    with pytest.warns(
+        UserWarning,
+        match='The frequency specified for the low pass filter is too high',
+    ):
+        out = nisignal.butterworth(
+            data,
+            sampling,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            copy=True,
+        )
+    assert not np.array_equal(data, out)
+
+    # Test check for frequency lower than allowed (<0).
+    # The frequency should be modified and the filter should be run.
+    sampling = 1
+    high_pass = -1
+    low_pass = 0.4
+    with pytest.warns(
+        UserWarning,
+        match='The frequency specified for the high pass filter is too low',
+    ):
+        out = nisignal.butterworth(
+            data,
+            sampling,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            copy=True,
+        )
+    assert not np.array_equal(data, out)
+
+    # Test check for high-pass frequency higher than low-pass frequency.
+    # An error should be raised.
+    sampling = 1
+    high_pass = 0.2
+    low_pass = 0.1
+    with pytest.raises(
+        ValueError,
+        match=(
+            'High pass cutoff frequency \([0-9.]+\) is greater than or '
+            'equal to low pass filter frequency \([0-9.]+\)\.'
+        ),
+    ):
+        nisignal.butterworth(
+            data,
+            sampling,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            copy=True,
+        )
 
 
 def test_standardize():
@@ -187,6 +251,14 @@ def test_standardize():
     a = rng.random_sample((n_samples, n_features))
     a += np.linspace(0, 2., n_features)
 
+    # Test raise error when strategy is not valid option
+    with pytest.raises(ValueError, match="no valid standardize strategy"):
+        nisignal._standardize(a, standardize="foo")
+
+    # test warning for strategy that will be removed
+    with pytest.warns(FutureWarning, match="default strategy for standardize"):
+        nisignal._standardize(a, standardize="zscore")
+
     # transpose array to fit _standardize input.
     # Without trend removal
     b = nisignal._standardize(a, standardize='zscore')
@@ -194,15 +266,31 @@ def test_standardize():
     np.testing.assert_almost_equal(stds, np.ones(n_features))
     np.testing.assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
 
+    # Repeating test above but for new correct strategy
+    b = nisignal._standardize(a, standardize='zscore_sample')
+    stds = np.std(b)
+    np.testing.assert_almost_equal(stds, np.ones(n_features), decimal=1)
+    np.testing.assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
+
     # With trend removal
     a = np.atleast_2d(np.linspace(0, 2., n_features)).T
     b = nisignal._standardize(a, detrend=True, standardize=False)
+    np.testing.assert_almost_equal(b, np.zeros(b.shape))
+
+    b = nisignal._standardize(a, detrend=True, standardize="zscore_sample")
     np.testing.assert_almost_equal(b, np.zeros(b.shape))
 
     length_1_signal = np.atleast_2d(np.linspace(0, 2., n_features))
     np.testing.assert_array_equal(length_1_signal,
                                   nisignal._standardize(length_1_signal,
                                                         standardize='zscore'))
+
+    # Repeating test above but for new correct strategy
+    length_1_signal = np.atleast_2d(np.linspace(0, 2., n_features))
+    np.testing.assert_array_equal(
+        length_1_signal,
+        nisignal._standardize(length_1_signal, standardize="zscore_sample")
+    )
 
 
 def test_detrend():
@@ -357,6 +445,49 @@ def test_clean_t_r():
                                                        det_diff_tr)),
                                    msg)
                 del det_one_tr, det_diff_tr
+
+
+def test_clean_kwargs():
+    """Providing kwargs to clean should change the filtered results."""
+    n_samples = 34
+    n_features = 501
+    x_orig = generate_signals_plus_trends(
+        n_features=n_features, n_samples=n_samples
+    )
+    kwargs = [
+        {
+            "butterworth__padtype": "even",
+            "butterworth__padlen": 10,
+            "butterworth__order": 3,
+        },
+        {
+            "butterworth__padtype": None,
+            "butterworth__padlen": None,
+            "butterworth__order": 1,
+        },
+        {
+            "butterworth__padtype": "constant",
+            "butterworth__padlen": 20,
+            "butterworth__order": 10,
+        },
+    ]
+    # Base result
+    t_r, high_pass, low_pass = 0.8, 0.01, 0.08
+    base_filtered = nisignal.clean(
+        x_orig, t_r=t_r, low_pass=low_pass, high_pass=high_pass
+    )
+    for kwarg_set in kwargs:
+        test_filtered = nisignal.clean(
+            x_orig,
+            t_r=t_r,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            **kwarg_set,
+        )
+        # Check that results are **not** the same.
+        np.testing.assert_(np.any(np.not_equal(
+            base_filtered, test_filtered
+        )))
 
 
 def test_clean_frequencies():
@@ -720,9 +851,18 @@ def test_clean_zscore():
                                      length=n_samples)
 
     signals += rng.standard_normal(size=(1, n_features))
-    cleaned_signals = clean(signals, standardize='zscore')
+    cleaned_signals_ = clean(signals, standardize='zscore')
+    np.testing.assert_almost_equal(cleaned_signals_.mean(0), 0)
+    np.testing.assert_almost_equal(cleaned_signals_.std(0), 1)
+
+    # Repeating test above but for new correct strategy
+    cleaned_signals = clean(signals, standardize='zscore_sample')
     np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
-    np.testing.assert_almost_equal(cleaned_signals.std(0), 1)
+    np.testing.assert_almost_equal(cleaned_signals.std(0), 1, decimal=3)
+
+    # Show outcome from two zscore strategies is not equal
+    with pytest.raises(AssertionError):
+        np.testing.assert_array_equal(cleaned_signals_, cleaned_signals)
 
 
 def test_create_cosine_drift_terms():

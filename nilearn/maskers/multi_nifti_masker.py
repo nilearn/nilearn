@@ -147,6 +147,8 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         Indicate the level of verbosity. By default, nothing is printed.
         Default=0.
 
+    %(masker_kwargs)s
+
     Attributes
     ----------
     mask_img_ : :obj:`nibabel.nifti1.Nifti1Image`
@@ -189,6 +191,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         memory_level=0,
         n_jobs=1,
         verbose=0,
+        **kwargs,
     ):
         # Mask is provided or computed
         self.mask_img = mask_img
@@ -206,6 +209,9 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
         self.mask_strategy = mask_strategy
         self.mask_args = mask_args
         self.dtype = dtype
+        self.clean_kwargs = {
+            k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
+        }
 
         self.memory = memory
         self.memory_level = memory_level
@@ -386,6 +392,7 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
                 'copy',
             ],
         )
+        params['clean_kwargs'] = self.clean_kwargs
 
         func = self._cache(
             _filter_and_mask,

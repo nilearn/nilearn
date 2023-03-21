@@ -50,10 +50,7 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
 
     """
     rand_gen = check_random_state(random_state)
-    mni = datasets.load_mni152_brain_mask()
-    target_affine = np.eye(3) * res
-    mask_img = image.resample_img(
-        mni, target_affine=target_affine, interpolation="nearest")
+    mask_img = datasets.load_mni152_brain_mask(resolution=res)
     masker = maskers.NiftiMasker(mask_img).fit()
     n_voxels = image.get_data(mask_img).sum()
     data = rand_gen.randn(n_scans, n_voxels)
@@ -264,50 +261,6 @@ def generate_labeled_regions(shape,
         row[row > 0] = n
     data = np.zeros(shape, dtype=dtype)
     data[np.ones(shape, dtype=bool)] = regions.sum(axis=0).T
-    return Nifti1Image(data, affine)
-
-
-def generate_labeled_regions_large(shape,
-                                   n_regions,
-                                   random_state=0,
-                                   affine=np.eye(4),
-                                   dtype="int32"):
-    """Similar to generate_labeled_regions, but suitable for a large number of
-    regions.
-
-    See generate_labeled_regions for details.
-
-    Parameters
-    ----------
-    shape : :obj:`tuple` of :obj:`int`
-        Shape of returned array.
-
-    n_regions : :obj:`int`
-        Number of regions to generate.
-
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
-        Random number generator, or seed.
-        Default=0.
-
-    affine : :obj:`numpy.ndarray`, optional
-        Affine of returned image.
-        Default=np.eye(4).
-
-    dtype : :obj:`type`, optional
-        Data type of image.
-        Default='int32'.
-
-    Returns
-    -------
-    Niimg-like object
-        Data has shape "shape", containing region labels.
-
-    """
-    rand_gen = check_random_state(random_state)
-    data = rand_gen.randint(n_regions + 1, size=shape, dtype=dtype)
-    if len(np.unique(data)) != n_regions + 1:
-        raise ValueError("Some labels are missing. Maybe shape is too small.")
     return Nifti1Image(data, affine)
 
 
@@ -533,7 +486,7 @@ def write_fake_fmri_data_and_design(shapes,
         A list of paths to the generated design matrix files.
 
     See Also
-    ------
+    --------
     nilearn._utils.data_gen.generate_fake_fmri_data_and_design
 
     """

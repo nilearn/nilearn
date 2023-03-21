@@ -36,7 +36,6 @@ signal                  --- Set of preprocessing functions for time series
 import gzip
 import os
 import sys
-import pkg_resources
 import warnings
 
 from .version import (

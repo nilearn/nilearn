@@ -1,25 +1,23 @@
-"""Parcellation tools such as KMeans or Ward for fMRI images
-"""
+"""Parcellation tools such as KMeans or Ward for fMRI images."""
 
 import warnings
-import numpy as np
 
+import numpy as np
+from joblib import Memory, Parallel, delayed
+from nilearn.maskers import NiftiLabelsMasker
 from sklearn.base import clone
 from sklearn.feature_extraction import image
-from joblib import Memory, delayed, Parallel
 
-from .rena_clustering import ReNA
-from .hierarchical_kmeans_clustering import HierarchicalKMeans
-from ..decomposition._multi_pca import _MultiPCA
-from nilearn.maskers import NiftiLabelsMasker
+from .._utils import fill_doc, stringify_path
 from .._utils.niimg import _safe_get_data
 from .._utils.niimg_conversions import _iter_check_niimg
-from .._utils import fill_doc
-from .._utils import stringify_path
+from ..decomposition._multi_pca import _MultiPCA
+from .hierarchical_kmeans_clustering import HierarchicalKMeans
+from .rena_clustering import ReNA
 
 
 def _estimator_fit(data, estimator, method=None):
-    """Estimator to fit on the data matrix
+    """Estimator to fit on the data matrix.
 
     Parameters
     ----------
@@ -41,15 +39,17 @@ def _estimator_fit(data, estimator, method=None):
         labels_ estimated from estimator.
 
     """
-    if method == 'rena':
-        rena = ReNA(mask_img=estimator.mask_img,
-                    n_clusters=estimator.n_clusters,
-                    scaling=estimator.scaling,
-                    n_iter=estimator.n_iter,
-                    threshold=estimator.threshold,
-                    memory=estimator.memory,
-                    memory_level=estimator.memory_level,
-                    verbose=estimator.verbose)
+    if method == "rena":
+        rena = ReNA(
+            mask_img=estimator.mask_img,
+            n_clusters=estimator.n_clusters,
+            scaling=estimator.scaling,
+            n_iter=estimator.n_iter,
+            threshold=estimator.threshold,
+            memory=estimator.memory,
+            memory_level=estimator.memory_level,
+            verbose=estimator.verbose,
+        )
         rena.fit(data)
         labels_ = rena.labels_
 
@@ -62,17 +62,13 @@ def _estimator_fit(data, estimator, method=None):
 
 
 def _check_parameters_transform(imgs, confounds):
-    """A helper function to check the parameters and prepare for processing
-    as a list.
-
-    """
+    """Check the parameters and prepare for processing as a list."""
     imgs = stringify_path(imgs)
     confounds = stringify_path(confounds)
-    if not isinstance(imgs, (list, tuple)) or \
-            isinstance(imgs, str):
-        imgs = [imgs, ]
+    if not isinstance(imgs, (list, tuple)) or isinstance(imgs, str):
+        imgs = [imgs]
         single_subject = True
-    elif isinstance(imgs, (list, tuple)) and len(imgs) == 1:
+    elif len(imgs) == 1:
         single_subject = True
     else:
         single_subject = False
@@ -80,20 +76,21 @@ def _check_parameters_transform(imgs, confounds):
     if confounds is None and isinstance(imgs, (list, tuple)):
         confounds = [None] * len(imgs)
 
-    if confounds is not None:
-        if not isinstance(confounds, (list, tuple)) or \
-                isinstance(confounds, str):
-            confounds = [confounds, ]
+    if confounds is not None and (
+        not isinstance(confounds, (list, tuple)) or isinstance(confounds, str)
+    ):
+        confounds = [confounds]
 
     if len(confounds) != len(imgs):
-        raise ValueError("Number of confounds given does not match with "
-                         "the given number of images.")
+        raise ValueError(
+            "Number of confounds given does not match with "
+            "the given number of images."
+        )
     return imgs, confounds, single_subject
 
 
 def _labels_masker_extraction(img, masker, confound):
-    """Helper function for parallelizing NiftiLabelsMasker extractor
-    on list of Nifti images.
+    """Parallelize NiftiLabelsMasker extractor on list of Nifti images.
 
     Parameters
     ----------
@@ -120,7 +117,7 @@ def _labels_masker_extraction(img, masker, confound):
 
 @fill_doc
 class Parcellations(_MultiPCA):
-    """Learn :term:`parcellations<parcellation>`
+    """Learn :term:`parcellations<parcellation>` \
     on :term:`fMRI` images.
 
     Five different types of clustering methods can be used:
@@ -256,37 +253,64 @@ class Parcellations(_MultiPCA):
       giving the matrix.
 
     """
-    VALID_METHODS = ['kmeans', 'ward', 'complete',
-                     'average', 'rena', 'hierarchical_kmeans']
 
-    def __init__(self, method, n_parcels=50,
-                 random_state=0, mask=None, smoothing_fwhm=4.,
-                 standardize=False, detrend=False,
-                 low_pass=None, high_pass=None, t_r=None,
-                 target_affine=None, target_shape=None,
-                 mask_strategy='epi', mask_args=None,
-                 scaling=False, n_iter=10,
-                 memory=Memory(location=None),
-                 memory_level=0, n_jobs=1, verbose=1):
+    VALID_METHODS = [
+        "kmeans",
+        "ward",
+        "complete",
+        "average",
+        "rena",
+        "hierarchical_kmeans",
+    ]
 
+    def __init__(
+        self,
+        method,
+        n_parcels=50,
+        random_state=0,
+        mask=None,
+        smoothing_fwhm=4.0,
+        standardize=False,
+        detrend=False,
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        target_affine=None,
+        target_shape=None,
+        mask_strategy="epi",
+        mask_args=None,
+        scaling=False,
+        n_iter=10,
+        memory=Memory(location=None),
+        memory_level=0,
+        n_jobs=1,
+        verbose=1,
+    ):
         self.method = method
         self.n_parcels = n_parcels
         self.scaling = scaling
         self.n_iter = n_iter
 
-        _MultiPCA.__init__(self, n_components=200,
-                           random_state=random_state,
-                           mask=mask, memory=memory,
-                           smoothing_fwhm=smoothing_fwhm,
-                           standardize=standardize, detrend=detrend,
-                           low_pass=low_pass, high_pass=high_pass,
-                           t_r=t_r, target_affine=target_affine,
-                           target_shape=target_shape,
-                           mask_strategy=mask_strategy,
-                           mask_args=mask_args,
-                           memory_level=memory_level,
-                           n_jobs=n_jobs,
-                           verbose=verbose)
+        _MultiPCA.__init__(
+            self,
+            n_components=200,
+            random_state=random_state,
+            mask=mask,
+            memory=memory,
+            smoothing_fwhm=smoothing_fwhm,
+            standardize=standardize,
+            detrend=detrend,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            t_r=t_r,
+            target_affine=target_affine,
+            target_shape=target_shape,
+            mask_strategy=mask_strategy,
+            mask_args=mask_args,
+            memory_level=memory_level,
+            n_jobs=n_jobs,
+            verbose=verbose,
+        )
 
     def _raw_fit(self, data):
         """Fits the parcellation method on this reduced data.
@@ -313,76 +337,86 @@ class Parcellations(_MultiPCA):
         """
         valid_methods = self.VALID_METHODS
         if self.method is None:
-            raise ValueError("Parcellation method is specified as None. "
-                             "Please select one of the method in "
-                             "{0}".format(valid_methods))
-        if self.method is not None and self.method not in valid_methods:
-            raise ValueError("The method you have selected is not implemented "
-                             "'{0}'. Valid methods are in {1}"
-                             .format(self.method, valid_methods))
+            raise ValueError(
+                "Parcellation method is specified as None. "
+                f"Please select one of the method in {valid_methods}"
+            )
+        if self.method not in valid_methods:
+            raise ValueError(
+                f"The method you have selected is not implemented "
+                f"'{self.method}'. Valid methods are in {valid_methods}"
+            )
 
         # we delay importing Ward or AgglomerativeClustering and same
         # time import plotting module before that.
-
-        # Because sklearn.cluster imports scipy hierarchy and hierarchy imports
-        # matplotlib. So, we force import matplotlib first using our
-        # plotting to avoid backend display error with matplotlib
-        # happening in Travis
-        try:
-            from nilearn import plotting
-        except Exception:
-            pass
 
         components = _MultiPCA._raw_fit(self, data)
 
         mask_img_ = self.masker_.mask_img_
         if self.verbose:
-            print("[{0}] computing {1}".format(self.__class__.__name__,
-                                               self.method))
+            print(f"[{self.__class__.__name__}] computing {self.method}")
 
-        if self.method == 'kmeans':
+        if self.method == "kmeans":
             from sklearn.cluster import MiniBatchKMeans
-            kmeans = MiniBatchKMeans(n_clusters=self.n_parcels,
-                                     init='k-means++',
-                                     random_state=self.random_state,
-                                     verbose=max(0, self.verbose - 1))
-            labels = self._cache(_estimator_fit,
-                                 func_memory_level=1)(components.T, kmeans)
-        elif self.method == 'hierarchical_kmeans':
-            hkmeans = HierarchicalKMeans(self.n_parcels, init="k-means++",
-                                         batch_size=1000, n_init=10,
-                                         max_no_improvement=10,
-                                         random_state=self.random_state,
-                                         verbose=max(0, self.verbose - 1))
-            # data ou data.T
-            labels = self._cache(_estimator_fit,
-                                 func_memory_level=1)(components.T, hkmeans)
 
-        elif self.method == 'rena':
-            rena = ReNA(mask_img_, n_clusters=self.n_parcels,
-                        scaling=self.scaling, n_iter=self.n_iter,
-                        memory=self.memory, memory_level=self.memory_level,
-                        verbose=max(0, self.verbose - 1))
-            method = 'rena'
-            labels = \
-                self._cache(_estimator_fit, func_memory_level=1)(components.T,
-                                                                 rena, method)
+            kmeans = MiniBatchKMeans(
+                n_clusters=self.n_parcels,
+                init="k-means++",
+                random_state=self.random_state,
+                verbose=max(0, self.verbose - 1),
+            )
+            labels = self._cache(_estimator_fit, func_memory_level=1)(
+                components.T, kmeans
+            )
+        elif self.method == "hierarchical_kmeans":
+            hkmeans = HierarchicalKMeans(
+                self.n_parcels,
+                init="k-means++",
+                batch_size=1000,
+                n_init=10,
+                max_no_improvement=10,
+                random_state=self.random_state,
+                verbose=max(0, self.verbose - 1),
+            )
+            # data ou data.T
+            labels = self._cache(_estimator_fit, func_memory_level=1)(
+                components.T, hkmeans
+            )
+
+        elif self.method == "rena":
+            rena = ReNA(
+                mask_img_,
+                n_clusters=self.n_parcels,
+                scaling=self.scaling,
+                n_iter=self.n_iter,
+                memory=self.memory,
+                memory_level=self.memory_level,
+                verbose=max(0, self.verbose - 1),
+            )
+            method = "rena"
+            labels = self._cache(_estimator_fit, func_memory_level=1)(
+                components.T, rena, method
+            )
 
         else:
             mask_ = _safe_get_data(mask_img_).astype(bool)
             shape = mask_.shape
-            connectivity = image.grid_to_graph(n_x=shape[0], n_y=shape[1],
-                                               n_z=shape[2], mask=mask_)
+            connectivity = image.grid_to_graph(
+                n_x=shape[0], n_y=shape[1], n_z=shape[2], mask=mask_
+            )
 
             from sklearn.cluster import AgglomerativeClustering
 
             agglomerative = AgglomerativeClustering(
-                n_clusters=self.n_parcels, connectivity=connectivity,
-                linkage=self.method, memory=self.memory)
+                n_clusters=self.n_parcels,
+                connectivity=connectivity,
+                linkage=self.method,
+                memory=self.memory,
+            )
 
-            labels = self._cache(_estimator_fit,
-                                 func_memory_level=1)(components.T,
-                                                      agglomerative)
+            labels = self._cache(_estimator_fit, func_memory_level=1)(
+                components.T, agglomerative
+            )
 
             self.connectivity_ = connectivity
         # Avoid 0 label
@@ -391,24 +425,28 @@ class Parcellations(_MultiPCA):
 
         # Check that appropriate number of labels were created
         if len(unique_labels) != self.n_parcels:
-            n_parcels_warning = ('The number of generated labels does not '
-                                 'match the requested number of parcels.')
-            warnings.warn(message=n_parcels_warning, category=UserWarning,
-                          stacklevel=3)
+            n_parcels_warning = (
+                "The number of generated labels does not "
+                "match the requested number of parcels."
+            )
+            warnings.warn(
+                message=n_parcels_warning, category=UserWarning, stacklevel=3
+            )
         self.labels_img_ = self.masker_.inverse_transform(labels)
 
         return self
 
     def _check_fitted(self):
-        """Helper function to check whether fit is called or not.
-        """
-        if not hasattr(self, 'labels_img_'):
-            raise ValueError("Object has no labels_img_ attribute. "
-                             "Ensure that fit() is called before transform.")
+        """Check whether fit is called or not."""
+        if not hasattr(self, "labels_img_"):
+            raise ValueError(
+                "Object has no labels_img_ attribute. "
+                "Ensure that fit() is called before transform."
+            )
 
     @fill_doc
     def transform(self, imgs, confounds=None):
-        """Extract signals from :term:`parcellations<parcellation>` learned
+        """Extract signals from :term:`parcellations<parcellation>` learned \
         on :term:`fMRI` images.
 
         Parameters
@@ -436,37 +474,39 @@ class Parcellations(_MultiPCA):
         """
         self._check_fitted()
         imgs, confounds, single_subject = _check_parameters_transform(
-            imgs, confounds)
+            imgs, confounds
+        )
         # Requires for special cases like extracting signals on list of
         # 3D images
         imgs_list = _iter_check_niimg(imgs, atleast_4d=True)
 
-        masker = NiftiLabelsMasker(self.labels_img_,
-                                   mask_img=self.masker_.mask_img_,
-                                   smoothing_fwhm=self.smoothing_fwhm,
-                                   standardize=self.standardize,
-                                   detrend=self.detrend,
-                                   low_pass=self.low_pass,
-                                   high_pass=self.high_pass, t_r=self.t_r,
-                                   resampling_target='data',
-                                   memory=self.memory,
-                                   memory_level=self.memory_level,
-                                   verbose=self.verbose)
+        masker = NiftiLabelsMasker(
+            self.labels_img_,
+            mask_img=self.masker_.mask_img_,
+            smoothing_fwhm=self.smoothing_fwhm,
+            standardize=self.standardize,
+            detrend=self.detrend,
+            low_pass=self.low_pass,
+            high_pass=self.high_pass,
+            t_r=self.t_r,
+            resampling_target="data",
+            memory=self.memory,
+            memory_level=self.memory_level,
+            verbose=self.verbose,
+        )
 
         region_signals = Parallel(n_jobs=self.n_jobs)(
-            delayed(self._cache(_labels_masker_extraction,
-                                func_memory_level=2))
-            (img, masker, confound)
-            for img, confound in zip(imgs_list, confounds))
+            delayed(
+                self._cache(_labels_masker_extraction, func_memory_level=2)
+            )(img, masker, confound)
+            for img, confound in zip(imgs_list, confounds)
+        )
 
-        if single_subject:
-            return region_signals[0]
-        else:
-            return region_signals
+        return region_signals[0] if single_subject else region_signals
 
     @fill_doc
     def fit_transform(self, imgs, confounds=None):
-        """Fit the images to :term:`parcellations<parcellation>` and
+        """Fit the images to :term:`parcellations<parcellation>` and \
         then transform them.
 
         Parameters
@@ -501,8 +541,8 @@ class Parcellations(_MultiPCA):
 
     @fill_doc
     def inverse_transform(self, signals):
-        """Transform signals extracted from :term:`parcellations<parcellation>`
-        back to brain images.
+        """Transform signals extracted \
+        from :term:`parcellations<parcellation>` back to brain images.
 
         Uses `labels_img_` (parcellations) built at fit() level.
 
@@ -521,21 +561,21 @@ class Parcellations(_MultiPCA):
 
         self._check_fitted()
 
-        if not isinstance(signals, (list, tuple)) or\
-                isinstance(signals, np.ndarray):
-            signals = [signals, ]
+        if not isinstance(signals, (list, tuple)) or isinstance(
+            signals, np.ndarray
+        ):
+            signals = [signals]
             single_subject = True
-        elif isinstance(signals, (list, tuple)) and len(signals) == 1:
+        elif len(signals) == 1:
             single_subject = True
         else:
             single_subject = False
 
         imgs = Parallel(n_jobs=self.n_jobs)(
-            delayed(self._cache(signals_to_img_labels, func_memory_level=2))
-            (each_signal, self.labels_img_, self.mask_img_)
-            for each_signal in signals)
+            delayed(self._cache(signals_to_img_labels, func_memory_level=2))(
+                each_signal, self.labels_img_, self.mask_img_
+            )
+            for each_signal in signals
+        )
 
-        if single_subject:
-            return imgs[0]
-        else:
-            return imgs
+        return imgs[0] if single_subject else imgs

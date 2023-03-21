@@ -16,8 +16,7 @@ different plotting engines, and add contours of regions of interest using
 
 from nilearn import datasets
 
-motor_images = datasets.fetch_neurovault_motor_task()
-stat_img = motor_images.images[0]
+stat_img = datasets.load_sample_motor_activation_image()
 
 
 ##############################################################################
@@ -52,7 +51,7 @@ texture = surface.vol_to_surf(stat_img, fsaverage.pial_right)
 #
 # You can visualize the texture on the surface using the function
 # :func:`~nilearn.plotting.plot_surf_stat_map` which uses ``matplotlib``
-# as the default plotting engine:.
+# as the default plotting engine.
 
 from nilearn import plotting
 
@@ -124,8 +123,10 @@ regions_dict = {b'G_postcentral': 'Postcentral gyrus',
                 b'G_precentral': 'Precentral gyrus'}
 
 # get indices in atlas for these labels
-regions_indices = [np.where(np.array(destrieux_atlas['labels']) == region)[0][0]
-                   for region in regions_dict]
+regions_indices = [
+    np.where(np.array(destrieux_atlas['labels']) == region)[0][0]
+    for region in regions_dict
+]
 
 labels = list(regions_dict.values())
 
@@ -133,13 +134,15 @@ labels = list(regions_dict.values())
 # Display outlines of the regions of interest on top of a statistical map
 # -----------------------------------------------------------------------
 
-figure = plotting.plot_surf_stat_map(fsaverage.infl_right, texture, hemi='right',
+figure = plotting.plot_surf_stat_map(fsaverage.infl_right,
+                                     texture, hemi='right',
                                      title='Surface right hemisphere',
                                      colorbar=True, threshold=1.,
                                      bg_map=fsaverage.sulc_right)
 
 plotting.plot_surf_contours(fsaverage.infl_right, parcellation, labels=labels,
-                            levels=regions_indices, figure=figure, legend=True,
+                            levels=regions_indices, figure=figure,
+                            legend=True,
                             colors=['g', 'k'])
 plotting.show()
 
@@ -214,7 +217,8 @@ view
 #
 # You can specify arguments to be passed on to the function
 # :func:`nilearn.surface.vol_to_surf` using `vol_to_surf_kwargs`. This allows
-# fine-grained control of how the input 3D image is resampled and interpolated -
+# fine-grained control of how the input 3D image is resampled
+# and interpolated -
 # for example if you are viewing a volumetric atlas, you would want to avoid
 # averaging the labels between neighboring regions. Using nearest-neighbor
 # interpolation with zero radius will achieve this.
@@ -224,7 +228,8 @@ destrieux = datasets.fetch_atlas_destrieux_2009(legacy_format=False)
 view = plotting.view_img_on_surf(
     destrieux.maps,
     surf_mesh="fsaverage",
-    vol_to_surf_kwargs={"n_samples": 1, "radius": 0.0, "interpolation": "nearest"},
+    vol_to_surf_kwargs={"n_samples": 1, "radius": 0.0,
+                        "interpolation": "nearest"},
     symmetric_cmap=False,
 )
 

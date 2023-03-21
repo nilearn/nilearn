@@ -2,56 +2,76 @@
 
 .. include:: names.rst
 
-0.9.3.dev
-=========
+0.10.1.dev
+==========
 
 NEW
 ---
 
-- New classes :class:`~maskers.MultiNiftiLabelsMasker` and :class:`~maskers.MultiNiftiMapsMasker` create maskers to extract signals from a list of subjects with 4D images using parallelization (:gh:`3237` by `Yasmin Mzayek`_).
+- New function :func:`~datasets.load_sample_motor_activation_image` to load example contrast map (:gh:`3498` by `Michelle Wang`_).
 
 Fixes
 -----
 
-- Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
-- Regressor names can now be invalid identifiers but will raise an error with :meth:`~glm.first_level.FirstLevelModel.compute_contrast` if combined to make an invalid expression (:gh:`3374` by `Yasmin Mzayek`_).
-- Fix :func:`~plotting.plot_connectome` which was raising a ``ValueError`` when ``vmax < 0`` (:gh:`3390` by `Paul Bogdan`_).
-- Change the order of applying ``sample_masks`` in :func:`~signal.clean` based on different filtering options (:gh:`3385` by `Hao-Ting Wang`_).
-- When using cosine filter and ``sample_masks`` is used, :func:`~signal.clean` generates the cosine discrete regressors using the full time series (:gh:`3385` by `Hao-Ting Wang`_).
-- Description of the ``opening`` parameter added to ``compute_multi_epi_mask`` docs (:gh:`3412` by `Natasha Clarke`_).
-- Fix display of colorbar in matrix plots. Colorbar was overlapping in :func:`~matplotlib.pyplot.subplots` due to a hardcoded adjustment value in the subplot (:gh:`3403` by `Raphael Meudec`_).
-- Pass values with correct type to scikit-learn estimator parameters and remove deprecated parameter (:gh:`3430` by `Yasmin Mzayek`_).
-- Fix cluster labeling for two-sided cluster level permutation tests in :func:`~mass_univariate.permuted_ols` and associated function test ``test_cluster_level_parameters_smoke`` (:gh:`3436` by `Jelle Roelof Dalenberg`_).
+- Change calculation of TR in :func:`~.glm.first_level.compute_regressor` to be more precise (:gh:`3362` by `Anne-Sophie Kieslinger`_)
+
+- :func:`~nilearn.interfaces.fmriprep.load_confounds` can support searching preprocessed data in native space. (:gh:`3531` by `Hao-Ting Wang`_)
+
+- Add correct "zscore_sample" strategy to ``signal._standardize`` which will replace the default "zscore" strategy in release 0.13  (:gh:`3474` by `Yasmin Mzayek`_).
 
 Enhancements
 ------------
 
-- :func:`~signal.clean` imputes scrubbed volumes (defined through ``sample_masks``) with cubic spline function before applying butterworth filter (:gh:`3385` by `Hao-Ting Wang`_). 
-- Surface plotting methods now accept the ``bg_map_rescale`` parameter, which, among other things, allows to use curvature sign as a background map (:gh:`3173` by `Alexis Thual`_).
-- Fetcher :func:`nilearn.datasets.fetch_surf_fsaverage` now provides attributes `flat_{left, right}` for all fsaverage resolutions, which can prove useful for plotting maps (:gh:`3450` by `Alexis Thual_`).
-- As part of making the User Guide more user-friendly, the introduction was reworked (:gh:`3380` by `Alexis Thual`_)
-- Added instructions for maintainers to make sure LaTeX dependencies are installed before building and deploying the stable docs (:gh:`3426` by `Yasmin Mzayek`_).
-- Parameter ``sample_masks`` in :func:`~signal.clean` and masker functions accept binary mask (:gh:`3439` by `Hao-Ting Wang`_). 
-- Contributing docs were improved by adding clear guidelines for users about changelog/whatsnew entries (:gh:`3446` by `Robert Williamson`_).
+- Updated example :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py` to include section on plotting a confusion matrix from a decoder family object (:gh:`3483` by `Michelle Wang`_).
+
+- Surface plotting methods no longer automatically rescale background maps, which, among other things, allows to use curvature sign as a background map (:gh:`3173` by `Alexis Thual`_).
+
+- :func:`~glm.first_level.first_level_from_bids` now takes an optional ``sub_labels`` argument and warns users of given subject labels that are not present in the dataset (:gh:`3351` by `Kevin Sitek`_).
+
+
+Changes
+-------
+- The behavior of :func:`~nilearn.datasets.fetch_atlas_craddock_2012`, :func:`~nilearn.datasets.fetch_atlas_smith_2009` and :func:`~nilearn.datasets.fetch_atlas_basc_multiscale_2015` is updated with their new parameters to return one map along with a deprecation cycle (:gh:`3353` by `Ahmad Chamma`_).
+
+- Modules :mod:`~nilearn.image` code and docstrings have been reformatted using black. Changes resulted in improved readability overall and increased consistency (:gh:`3548` by `Rémi Gau`_).
+
+- Examples have been made PEP8 compliant and reformatted using black. (:gh:`3549`, :gh:`3550`, :gh:`3551`, :gh:`3552`, :gh:`3553`, :gh:`3554`, :gh:`3555`,  by `Rémi Gau`_).
+
+- Extract helper-functions for input-image validation from :func:`~regions.img_to_signals_labels`, :func:`~regions.signals_to_img_labels`, :func:`~regions.img_to_signals_maps` :func:`~regions.signals_to_img_maps` (:gh:`3523` by `Rémi Gau`_ and `Christian Gerloff`_).
+
+
+0.10.1rc1
+=========
+
+**Released February 2023**
+
+This is a pre-release.
+
+
+Fixes
+-----
+
+- :bdg-dark:`Code` Restore :func:`~image.resample_img` compatibility with all :class:`nibabel.spatialimages.SpatialImage` objects (:gh:`3462` by `Mathias Goncalves`_).
+
+- :bdg-success:`API` :func:`~nilearn.glm.second_level.non_parametric_inference` now supports confounding variates when they are available in the input design matrix :func:`~nilearn.mass_univariate.permuted_ols` (:gh:`3465` by `Jelle Roelof Dalenberg`_).
+
+- :bdg-success:`API` :func:`~nilearn.mass_univariate.permuted_ols` now checks if confounding variates contain a intercept and raises an warning when multiple intercepts are defined across target and confounding variates (:gh:`3465` by `Jelle Roelof Dalenberg`_).
+
+- The label of the clusters in the label maps returned by :func:`~nilearn.reporting.get_clusters_table` now matches the Cluster IDs in the clusters table (:gh:`3563` by `Julio A Peraza`_).
+
+Enhancements
+------------
+
+- :bdg-primary:`Doc` Addition to docs to note that :meth:`~maskers.BaseMasker.inverse_transform` only performs spatial unmasking (:gh:`3445` by `Robert Williamson`_).
+
+- :bdg-success:`API` Give users control over Butterworth filter (:func:`~signal.butterworth`) parameters in :func:`~signal.clean` and Masker objects as kwargs (:gh:`3478` by `Taylor Salo`_).
+
+- :bdg-success:`API` Allow users to output label maps from :func:`~reporting.get_clusters_table` (:gh:`3477` by `Steven Meisler`_).
 
 Changes
 -------
 
-- Private functions ``nilearn.regions.rena_clustering.weighted_connectivity_graph`` and ``nilearn.regions.rena_clustering.nearest_neighbor_grouping`` have been renamed with a leading "_", while function :func:`~regions.recursive_neighbor_agglomeration` has been added to the public API (:gh:`3347` by `Ahmad Chamma`_).
-- Numpy deprecated type aliases are replaced by equivalent builtin types (:gh:`3422` by `Yasmin Mzayek`_).
-- Function ``nilearn.masking.compute_multi_gray_matter_mask`` has been removed
-  since it has been deprecated and replaced by :func:`~masking.compute_multi_brain_mask` (:gh:`3427` by `Yasmin Mzayek`_).
-- :mod:`~nilearn.glm` will no longer warn that the module is experimental (:gh:`3424` by `Yasmin Mzayek`_).
-- Python ``3.6`` is no longer supported. Support for Python ``3.7`` is deprecated and will be removed in release ``0.12`` (:gh:`3429` by `Yasmin Mzayek`_).
-- The function ``_safe_cache`` is removed because it was deemed outdated and not necessary anymore (:gh:`3375` by `Yasmin Mzayek`_).
-- Minimum supported versions of packages have been bumped up:
+- :bdg-primary:`Doc` The documentation for :func:`~image.threshold_img` has been improved, with more information about which voxels are set to 0 and which ones keep their original values (:gh:`3485` by `Rémi Gau`_).
 
-    * Numpy -- v1.19.0
-    * SciPy -- v1.6.0
-    * Scikit-learn -- v1.0.0
-    * Nibabel -- v3.2.0
-    * Pandas -- v1.1.5
-    * Joblib -- v1.0.0
+- :bdg-secondary:`Maint` Modules :mod:`~nilearn.decomposition` and :mod:`~nilearn.decoding` code and docstrings have been reformatted using black. Changes resulted in improved readability overall and increased consistency (:gh:`3491` and :gh:`3484` by `Rémi Gau`_).
 
-  (:gh:`3440` by `Yasmin Mzayek`_).
-- In release ``0.10.0`` the default resolution for loaded MNI152 templates will be 1mm instead of 2mm (:gh:`3433` by `Yasmin Mzayek`_).

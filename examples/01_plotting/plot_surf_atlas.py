@@ -1,6 +1,6 @@
 """
 Loading and plotting of a cortical surface atlas
-=================================================
+================================================
 
 The Destrieux parcellation (Destrieux et al, 2010) in fsaverage5 space as
 distributed with Freesurfer is used as the chosen atlas.
@@ -12,7 +12,6 @@ See :ref:`plotting` for more details.
 
 References
 ----------
-
 Destrieux et al, (2010). Automatic parcellation of human cortical gyri and
 sulci using standard anatomical nomenclature. NeuroImage, 53, 1.
 URL http://dx.doi.org/10.1016/j.neuroimage.2010.06.010.
@@ -92,8 +91,8 @@ atlas = destrieux_atlas
 coordinates = []
 labels = destrieux_atlas['labels']
 for hemi in ['left', 'right']:
-    vert = destrieux_atlas['map_%s' % hemi]
-    rr, _ = surface.load_surf_mesh(fsaverage['pial_%s' % hemi])
+    vert = destrieux_atlas[f'map_{hemi}']
+    rr, _ = surface.load_surf_mesh(fsaverage[f'pial_{hemi}'])
     for k, label in enumerate(labels):
         if "Unknown" not in str(label):  # Omit the Unknown label.
             # Compute mean location of vertices in label of index k

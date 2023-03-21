@@ -1,27 +1,34 @@
-from nilearn.input_data import NiftiMasker
 import numpy as np
-from numpy.testing import assert_array_almost_equal
-from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn.regions.hierarchical_kmeans_clustering import (
-    hierarchical_k_means, _adjust_small_clusters,
-    HierarchicalKMeans)
 import pytest
+from nilearn._utils.data_gen import generate_fake_fmri
+from nilearn.input_data import NiftiMasker
+from nilearn.regions.hierarchical_kmeans_clustering import (
+    HierarchicalKMeans,
+    _adjust_small_clusters,
+    hierarchical_k_means,
+)
+from numpy.testing import assert_array_almost_equal
+
 525.25 / 2
 
 
 def test_adjust_small_clusters():
-    test_lists = [[2.4, 2.6], [2.7, 3.0, 3.3], [
-        10 / 3, 10 / 3, 10 / 3], [1 / 3, 11 / 3, 11 / 3, 10 / 3]]
+    test_lists = [
+        [2.4, 2.6],
+        [2.7, 3.0, 3.3],
+        [10 / 3, 10 / 3, 10 / 3],
+        [1 / 3, 11 / 3, 11 / 3, 10 / 3],
+    ]
     n_clusters_list = [5, 9, 10, 11]
 
-    for list, n_clusters in zip(test_lists, n_clusters_list):
-        list = np.asarray(list)
-        assert(np.sum(list) == n_clusters)
-        list_round = _adjust_small_clusters(list, n_clusters)
-        assert(np.all(list_round != 0))
-        assert(np.sum(list_round) == n_clusters)
+    for test_list_, n_clusters in zip(test_lists, n_clusters_list):
+        test_list_ = np.asarray(test_list_)
+        assert np.sum(test_list_) == n_clusters
+        list_round = _adjust_small_clusters(test_list_, n_clusters)
+        assert np.all(list_round != 0)
+        assert np.sum(list_round) == n_clusters
         for a in list_round:
-            assert(isinstance(a, (int, np.integer)))
+            assert isinstance(a, (int, np.integer))
 
 
 def test_hierarchical_k_means():
@@ -38,9 +45,11 @@ def test_hierarchical_k_means_clustering():
     masker = NiftiMasker(mask_img=mask_img).fit()
     X = masker.transform(data_img).T
 
-    with pytest.raises(ValueError,
-                       match="n_clusters should be an integer greater than 0."
-                       " -2 was provided."):
+    with pytest.raises(
+        ValueError,
+        match="n_clusters should be an integer greater than 0."
+        " -2 was provided.",
+    ):
         HierarchicalKMeans(n_clusters=-2).fit(X)
 
     hkmeans = HierarchicalKMeans(n_clusters=8)
@@ -54,8 +63,10 @@ def test_hierarchical_k_means_clustering():
     sizes = hkmeans_scaled.sizes_
     X_compress_scaled = hkmeans_scaled.inverse_transform(X_red_scaled)
 
-    assert_array_almost_equal(np.asarray(
-        [np.sqrt(s) * a for s, a in zip(sizes, X_red)]), X_red_scaled)
+    assert_array_almost_equal(
+        np.asarray([np.sqrt(s) * a for s, a in zip(sizes, X_red)]),
+        X_red_scaled,
+    )
     assert_array_almost_equal(X_compress, X_compress_scaled)
 
     del X_red, X_compress, X_red_scaled, X_compress_scaled

@@ -11,9 +11,9 @@ How to get help?
 
 If you have issues when using Nilearn, or if you have questions on how to use it, please don't hesitate to reach out!
 
-There are currently three ways to interact with the Nilearn team: through the :neurostars:`neurostars <>` forum, our :nilearn-gh:`github <>` issues, and through our weekly :nilearn-gh:`office hours <issues/2882>`, usually **every Friday from 4pm to 5pm UTC**.
+There are currently three ways to interact with the Nilearn team: through the :neurostars:`neurostars <>` forum, our :nilearn-gh:`github <>` issues, and through our weekly :nilearn-gh:`drop-in hours <issues/2882>`, usually **every Wednesday from 4pm to 5pm UTC**.
 
-If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn, we would appreciate it if you either ask it during office hours or create a topic on :neurostars:`neurostars <>` with the "nilearn" tag.
+If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn, we would appreciate it if you either ask it during the drop-in hours or create a topic on :neurostars:`neurostars <>` with the "nilearn" tag.
 Asking questions or reporting issues is always valuable because it will help other users having the same problem. So, please don't hold onto a burning question!
 
 We ask that you *don't* open an issue on :nilearn-gh:`GitHub <>` for usage questions. We use our :nilearn-gh:`GitHub <>` issue board for bug reports, feature requests, and documentation changes only.
@@ -213,7 +213,7 @@ with the tools we use for development and deployment.
 .. _numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
 
 PR Structure
--------------
+------------
 
 A new pull request must have a clear scope, conveyed through its name, a
 reference to the issue it targets (through the exact mention "Closes #XXXX"),
@@ -233,7 +233,10 @@ Other tags can describe the PR content : [FIX] for a bugfix, [DOC] for a
 change in documentation or examples, [ENH] for a new feature and [MAINT] for
 maintenance changes.
 
-Changelog entries in doc/changes/latest.rst should adhere to the following conventions:
+Changelog
+---------
+
+Changelog entries in ``doc/changes/latest.rst`` should adhere to the following conventions:
 
 - Entry in the appropriate category
 - Single line per entry
@@ -245,9 +248,9 @@ Example entry:
 .. code-block:: rst
 
     - Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
-  
+
 Coding Style
--------------
+------------
 
 The nilearn codebase follows PEP8_ styling.
 The main conventions we enforce are :
@@ -261,6 +264,26 @@ The main conventions we enforce are :
 - classes in CamelCase
 - 2 empty lines between functions or classes
 
+You can check that any code you may have edited follows these conventions
+by running `flake8 <https://flake8.pycqa.org/en/latest/user/invocation.html#invoking-flake8>`__.
+
+Additionally, we recommend using:
+
+- `black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_
+  to format your code,
+- `isort <https://pycqa.github.io/isort/index.html#using-isort>`_
+  to organize the import statements.
+
+.. warning::
+
+      We are gradually transitioning to use `isort` and `black`
+      to format the codebase.
+      Only certain modules have been formatted so far,
+      and running `black` or `isort` may not affect the files you are working on,
+      because of how those formatter are currently configured.
+      See `issue #2528 <https://github.com/nilearn/nilearn/issues/2528>`_
+      for more details.
+
 Each function and class must come with a “docstring” at the top of the function code,
 using numpydoc_ formatting.
 The docstring must summarize what the function does and document every parameter.
@@ -271,6 +294,27 @@ This is also useful for writing unit tests.
 
 Writing small functions is not always possible, and we do not recommend trying to reorganize larger,
 but well-tested, older functions in the codebase, unless there is a strong reason to do so (e.g., when adding a new feature).
+
+Pre-commit
+----------
+
+We use `pre-commit <https://pre-commit.com/>`__
+to run a set of linters and autoformatters on the codebase.
+
+To install pre-commit, run:
+
+.. code-block:: bash
+
+      pip install pre-commit
+
+Then run the following to install the pre-commit hooks:
+
+.. code-block:: bash
+
+      pre-commit install
+
+Pre-commit will then run all those hooks on the files you have staged for commit.
+Note that if some of those hooks fail you may have to edit some files and stage them again.
 
 Tests
 ------
@@ -342,7 +386,12 @@ Here are the key steps you need to go through to copy the repo before contributi
 
       git clone git@github.com:<your_username>/nilearn.git
 
-2. (optional but highly recommended) set up a conda environment to work on and activate it::
+2. (optional but highly recommended) set up a virtual environment to work in using whichever environment management tool you're used to and activate it. For example::
+
+      python3 -m venv nilearn
+      source nilearn/bin/activate
+
+   or::
 
       conda create -n nilearn
       conda activate nilearn
@@ -359,6 +408,11 @@ The installed version will also reflect any changes you make to your code.
 
       pytest nilearn
 
+5. (optional) install `pre-commit <https://pre-commit.com/#usage>`__ hooks
+   to run the linter and other checks before each commit::
+
+      pre-commit install
+
 
 Contributing
 ------------
@@ -371,21 +425,28 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
 
       git checkout -b your_branch
 
-3. implement changes and (optional but highly recommended) lint:
+3. implement changes, lint and format
 
 .. admonition:: Recommendation
 
     To lint your code and verify PEP8 compliance, you can run
-    `flake8 <https://flake8.pycqa.org/en/latest/>`_ locally on the
-    changes you have made in your branch compared to the main branch.
-    To do this, find the latest common ancestor (commit) of your branch with
-    main and then get the diff between your working directory and this commit
-    and pipe it to flake8 by running:
+    `flake8 <https://flake8.pycqa.org/en/latest/>`__ locally on the
+    changes you have made.
 
     .. code-block:: bash
 
-        COMMIT=$(git merge-base main @)
-        git diff $COMMIT | flake8 --diff
+        flake8 <path_to_edited_file>
+
+    To automatically format your code, you can run
+    `Black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_
+    locally on the changes you have made.
+
+    .. code-block:: bash
+
+        black <path_to_edited_file>
+
+    Note that if you installed pre-commit and the pre-commit hooks,
+    those 2 commands will be run automatically before each commit.
 
 4. commit your changes on this branch (don't forget to write tests!)
 

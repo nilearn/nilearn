@@ -51,7 +51,7 @@ div[class^="highlight-"].sphx-glr-script-out {
 
 .sphx-glr-script-out .highlight {
   border-radius: 0px;
-  border-left: 4px solid var(--sd-color-primary);
+  border-left: 4px solid var(--color-background-border);
 }
 
 .sphx-glr-script-out .highlight pre {
@@ -74,16 +74,11 @@ button.copybtn {
 }
 
 .highlight-default .highlight {
-  border-left: 4px solid var(--color-background-border);
-}
-
-.highlight-primary .highlight {
   border-left: 4px solid var(--sd-color-primary);
 }
 
-/* Inline code */
-code.literal {
-  font-size: var(--font-size--normal);
+.highlight-primary .highlight {
+  border-left: 4px solid var(--color-background-border);
 }
 
 table.plotting-table {
@@ -106,4 +101,10 @@ table.plotting-table img {
 
 .announcement-content {
   white-space: normal;
+}
+
+/* Wrap code blocks */
+pre {
+  white-space: pre-wrap !important;
+  word-break: break-all;
 }

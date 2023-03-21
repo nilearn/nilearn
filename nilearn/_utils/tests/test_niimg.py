@@ -5,7 +5,7 @@ from pathlib import Path
 import joblib
 import nibabel as nb
 import pytest
-from nibabel import Nifti1Image
+from nibabel import Nifti1Image, Nifti1Header
 from nibabel.tmpdirs import InTemporaryDirectory
 
 from nilearn.image import new_img_like
@@ -49,9 +49,13 @@ def test_get_target_dtype():
     dtype_kind_float = niimg._get_target_dtype(get_data(img).dtype,
                                                target_dtype='auto')
     assert dtype_kind_float == np.float32
-
-    img2 = Nifti1Image(np.ones((2, 2, 2), dtype=np.int64), affine=np.eye(4))
-    assert get_data(img2).dtype.kind == 'i'
+    # Passing dtype or header is required when using int64
+    # https://nipy.org/nibabel/changelog.html#api-changes-and-deprecations
+    hdr = Nifti1Header()
+    hdr.set_data_dtype(np.int64)
+    data = np.ones((2, 2, 2), dtype=np.int64)
+    img2 = Nifti1Image(data, affine=np.eye(4), header=hdr)
+    assert get_data(img2).dtype.kind == img2.get_data_dtype().kind == 'i'
     dtype_kind_int = niimg._get_target_dtype(get_data(img2).dtype,
                                              target_dtype='auto')
     assert dtype_kind_int == np.int32
@@ -65,13 +69,16 @@ def test_img_data_dtype():
         np.int8, np.int16, np.int32,
         np.float32, np.float64)
     dtype_matches = []
+    # Passing dtype or header is required when using int64
+    # https://nipy.org/nibabel/changelog.html#api-changes-and-deprecations
+    hdr = Nifti1Header()
     with InTemporaryDirectory():
         rng = np.random.RandomState(42)
         for logical_dtype in nifti1_dtypes:
             dataobj = rng.uniform(0, 255, (2, 2, 2)).astype(logical_dtype)
             for on_disk_dtype in nifti1_dtypes:
-                img = Nifti1Image(dataobj, np.eye(4))
-                img.set_data_dtype(on_disk_dtype)
+                hdr.set_data_dtype(on_disk_dtype)
+                img = Nifti1Image(dataobj, np.eye(4), header=hdr)
                 img.to_filename('test.nii')
                 loaded = nb.load('test.nii')
                 # To verify later that sometimes these differ meaningfully

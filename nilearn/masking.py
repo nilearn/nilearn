@@ -34,7 +34,7 @@ def _load_mask_img(mask_img, allow_empty=False):
     Parameters
     ----------
     mask_img : Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
+        See :ref:`extracting_data`.
         The mask to check.
 
     allow_empty : :obj:`bool`, optional
@@ -658,7 +658,7 @@ def apply_mask(imgs, mask_img, dtype='f',
     Read the time series from the given Niimg-like object, using the mask.
 
     Parameters
-    -----------
+    ----------
     imgs : :obj:`list` of 4D Niimg-like objects
         See :ref:`extracting_data`.
         Images to be masked. list of lists of 3D images are also accepted.
@@ -683,7 +683,7 @@ def apply_mask(imgs, mask_img, dtype='f',
         Default=True.
 
     Returns
-    --------
+    -------
     session_series : :class:`numpy.ndarray`
         2D array of series with shape (image number, :term:`voxel` number)
 
@@ -759,7 +759,7 @@ def _unmask_3d(X, mask, order="C"):
         Masked data. shape: (features,)
 
     mask : Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
+        See :ref:`extracting_data`.
         Mask. mask.ndim must be equal to 3, and dtype *must* be bool.
     """
     if mask.dtype != bool:
