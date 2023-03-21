@@ -121,11 +121,11 @@ def test_group_sparse_covariance_errors():
     alpha = 0.1
 
     # Test input argument checking
-    pytest.raises(ValueError, group_sparse_covariance, signals, "")
-    pytest.raises(ValueError, group_sparse_covariance, 1, alpha)
-    pytest.raises(
-        ValueError,
-        group_sparse_covariance,
-        [np.ones((2, 2)), np.ones((2, 3))],
-        alpha,
-    )
+    with pytest.raises(ValueError, match="must be a positive number"):
+        group_sparse_covariance(signals, "")
+    with pytest.raises(ValueError, match="subjects' .* must be .* iterable"):
+        group_sparse_covariance(1, alpha)
+    with pytest.raises(
+        ValueError, match="All subjects must have the same number of features."
+    ):
+        group_sparse_covariance([np.ones((2, 2)), np.ones((2, 3))], alpha)
