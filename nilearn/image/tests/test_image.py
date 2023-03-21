@@ -35,8 +35,9 @@ except Exception:
 
 X64 = platform.architecture()[0] == "64bit"
 
+AFINE = np.eye(4)
 
-AFFINE_TO_TEST = [np.eye(4), np.diag((1, 1, -1, 1)), np.diag((0.6, 1, 0.6, 1))]
+AFFINE_TO_TEST = [AFINE, np.diag((1, 1, -1, 1)), np.diag((0.6, 1, 0.6, 1))]
 
 
 def _new_data_for_smooth_array():
@@ -75,23 +76,23 @@ def smooth_array_data():
 
 @pytest.fixture
 def img_4D_ones():
-    return Nifti1Image(np.ones((10, 10, 10, 10)), np.eye(4))
+    return Nifti1Image(np.ones((10, 10, 10, 10)), AFINE)
 
 
 @pytest.fixture
 def img_4D_zeros():
-    return Nifti1Image(np.zeros((10, 10, 10, 10)), np.eye(4))
+    return Nifti1Image(np.zeros((10, 10, 10, 10)), AFINE)
 
 
 @pytest.fixture
 def img_4D_rand():
-    return Nifti1Image(np.random.rand(10, 10, 10, 10), np.eye(4))
+    return Nifti1Image(np.random.rand(10, 10, 10, 10), AFINE)
 
 
 @pytest.fixture(scope="session")
 def stat_img_test_data():
     shape = (20, 20, 30)
-    affine = np.eye(4)
+    affine = AFINE
     data = np.zeros(shape, dtype="int32")
     data[:2, :2, :2] = 4  # 8-voxel positive cluster
     data[4:6, :2, :2] = -4  # 8-voxel negative cluster
@@ -292,8 +293,8 @@ def test_smooth_img():
     data1[2:4, 1:5, 3:6] = 1
     data2 = np.zeros((13, 14, 15))
     data2[2:4, 1:5, 3:6] = 9
-    img1_nifti2 = nibabel.Nifti2Image(data1, affine=np.eye(4))
-    img2_nifti2 = nibabel.Nifti2Image(data2, affine=np.eye(4))
+    img1_nifti2 = nibabel.Nifti2Image(data1, affine=AFINE)
+    img2_nifti2 = nibabel.Nifti2Image(data2, affine=AFINE)
     out = image.smooth_img([img1_nifti2, img2_nifti2], fwhm=1.0)
 
 
@@ -352,7 +353,7 @@ def test_crop_threshold_tolerance():
 
     # add an infinitesimal outside this block
     data[3, 3, 3] = 1e-12
-    affine = np.eye(4)
+    affine = AFINE
     img = nibabel.Nifti1Image(data, affine=affine)
 
     cropped_img = image.crop_img(img)
@@ -428,7 +429,7 @@ def test_swap_img_hemispheres():
 
     # make sure input image data is not overwritten inside function
     data = rng.standard_normal(size=(4, 5, 7))
-    data_img = nibabel.Nifti1Image(data, np.eye(4))
+    data_img = nibabel.Nifti1Image(data, AFINE)
 
     image.swap_img_hemispheres(data_img)
 
@@ -450,7 +451,7 @@ def test_concat_imgs():
 
 
 def test_index_img():
-    img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
+    img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), AFINE)
     expected_error_msg = (
         "Input data has incompatible dimensionality: "
         "Expected dimension is 4D and you provided "
@@ -522,7 +523,7 @@ def test_pd_index_img():
 
 
 def test_iter_img():
-    img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), np.eye(4))
+    img_3d = nibabel.Nifti1Image(np.ones((3, 4, 5)), AFINE)
     expected_error_msg = (
         "Input data has incompatible dimensionality: "
         "Expected dimension is 4D and you provided "
@@ -678,7 +679,7 @@ def test_threshold_img():
     """Smoke test for threshold_img with valid threshold inputs."""
     shape = (10, 20, 30)
     maps, _ = data_gen.generate_maps(shape, n_regions=4)
-    affine = np.eye(4)
+    affine = AFINE
     mask_img = nibabel.Nifti1Image(np.ones((shape), dtype=np.int8), affine)
 
     for img in iter_img(maps):
@@ -762,16 +763,16 @@ def test_isnan_threshold_img_data():
     data = get_data(maps)
     data[:, :, 0] = np.nan
 
-    maps_img = nibabel.Nifti1Image(data, np.eye(4))
+    maps_img = nibabel.Nifti1Image(data, AFINE)
 
     threshold_img(maps_img, threshold=0.8)
 
 
 def test_math_img_exceptions(img_4D_ones):
     img1 = img_4D_ones
-    img2 = Nifti1Image(np.zeros((10, 20, 10, 10)), np.eye(4))
+    img2 = Nifti1Image(np.zeros((10, 20, 10, 10)), AFINE)
     img3 = img_4D_ones
-    img4 = Nifti1Image(np.ones((10, 10, 10, 10)), np.eye(4) * 2)
+    img4 = Nifti1Image(np.ones((10, 10, 10, 10)), AFINE * 2)
 
     formula = "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)"
     # Images with different shapes should raise a ValueError exception.
@@ -792,7 +793,7 @@ def test_math_img_exceptions(img_4D_ones):
 def test_math_img(img_4D_ones, img_4D_zeros):
     img1 = img_4D_ones
     img2 = img_4D_zeros
-    expected_result = Nifti1Image(np.ones((10, 10, 10)), np.eye(4))
+    expected_result = Nifti1Image(np.ones((10, 10, 10)), AFINE)
 
     formula = "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)"
     for create_files in (True, False):
@@ -828,7 +829,7 @@ def test_clean_img():
     rng = np.random.RandomState(42)
     data = rng.standard_normal(size=(10, 10, 10, 100)) + 0.5
     data_flat = data.T.reshape(100, -1)
-    data_img = nibabel.Nifti1Image(data, np.eye(4))
+    data_img = nibabel.Nifti1Image(data, AFINE)
 
     pytest.raises(
         ValueError, image.clean_img, data_img, t_r=None, low_pass=0.1
@@ -848,14 +849,14 @@ def test_clean_img():
     data[:, 9, 9] = np.nan
     # if infinity
     data[:, 5, 5] = np.inf
-    nan_img = nibabel.Nifti1Image(data, np.eye(4))
+    nan_img = nibabel.Nifti1Image(data, AFINE)
 
     clean_im = image.clean_img(nan_img, ensure_finite=True)
 
     assert np.any(np.isfinite(get_data(clean_im))), True
 
     # test_clean_img_passing_nifti2image
-    data_img_nifti2 = nibabel.Nifti2Image(data, np.eye(4))
+    data_img_nifti2 = nibabel.Nifti2Image(data, AFINE)
 
     image.clean_img(
         data_img_nifti2, detrend=True, standardize=False, low_pass=0.1, t_r=1.0
@@ -956,7 +957,7 @@ def test_largest_cc_img_error():
 
 def test_new_img_like_mgh_image():
     data = np.zeros((5, 5, 5), dtype=np.uint8)
-    niimg = nibabel.freesurfer.MGHImage(dataobj=data, affine=np.eye(4))
+    niimg = nibabel.freesurfer.MGHImage(dataobj=data, affine=AFINE)
 
     new_img_like(niimg, data.astype(float), niimg.affine, copy_header=True)
 
@@ -967,7 +968,7 @@ def test_new_img_like_boolean_data(image):
     encoding with nibabel image classes MGHImage and AnalyzeImage.
     """
     data = np.random.randn(5, 5, 5).astype("uint8")
-    in_img = image(dataobj=data, affine=np.eye(4))
+    in_img = image(dataobj=data, affine=AFINE)
 
     out_img = new_img_like(in_img, data=in_img.get_fdata() > 0.5)
 
