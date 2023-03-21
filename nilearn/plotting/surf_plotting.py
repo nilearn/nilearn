@@ -387,7 +387,7 @@ def _get_cmap_matplotlib(cmap, vmin, vmax, threshold=None):
 
 
 def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
-                                   darkness, alpha, bg_map_rescale):
+                                   darkness, alpha):
     """Helper function for plot_surf with matplotlib engine.
 
     This function computes the facecolors.
@@ -1486,7 +1486,6 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                         cmap=cmap, symmetric_cmap=False,
                         cbar_tick_format=cbar_tick_format,
                         alpha=alpha, bg_on_data=bg_on_data,
-                        bg_map_rescale=bg_map_rescale,
                         darkness=darkness, vmin=vmin, vmax=vmax,
                         title=title, title_font_size=title_font_size,
                         output_file=output_file, axes=axes,
