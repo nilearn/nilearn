@@ -36,11 +36,9 @@ def _make_resampling_test_data():
     affine = AFFINE_EYE
     data = rng.randint(0, 10, shape, dtype="int32")
     img = Nifti1Image(data, affine)
-    return img, affine
+    return img, affine, data
 
 
-###############################################################################
-# Helper function
 def rotation(theta, phi):
     """Returns a rotation 3x3 matrix."""
     cos = np.cos
@@ -54,8 +52,6 @@ def rotation(theta, phi):
     return np.dot(a1, a2)
 
 
-###############################################################################
-# Tests
 def test_identity_resample():
     """Test resampling with an identity affine."""
     rng = np.random.RandomState(42)
@@ -73,13 +69,6 @@ def test_identity_resample():
 
     np.testing.assert_almost_equal(data, get_data(rot_img))
 
-    # Smoke-test with a list affine
-    rot_img = resample_img(
-        Nifti1Image(data, affine),
-        target_affine=affine.tolist(),
-        interpolation="nearest",
-    )
-
     # Test with a 3x3 affine
     rot_img = resample_img(
         Nifti1Image(data, affine),
@@ -89,25 +78,35 @@ def test_identity_resample():
 
     np.testing.assert_almost_equal(data, get_data(rot_img))
 
-    # Test with non native endian data
+    # Smoke-test with a list affine
+    rot_img = resample_img(
+        Nifti1Image(data, affine),
+        target_affine=affine.tolist(),
+        interpolation="nearest",
+    )
 
-    # Test with big endian data ('>f8')
-    for interpolation in ["nearest", "linear", "continuous"]:
-        rot_img = resample_img(
-            Nifti1Image(data.astype(">f8"), affine),
-            target_affine=affine.tolist(),
-            interpolation=interpolation,
-        )
-        np.testing.assert_almost_equal(data, get_data(rot_img))
 
-    # Test with little endian data ('<f8')
-    for interpolation in ["nearest", "linear", "continuous"]:
-        rot_img = resample_img(
-            Nifti1Image(data.astype("<f8"), affine),
-            target_affine=affine.tolist(),
-            interpolation=interpolation,
-        )
-        np.testing.assert_almost_equal(data, get_data(rot_img))
+@pytest.mark.parametrize("endian_type", [">f8", "<f8"])
+@pytest.mark.parametrize("interpolation", ["nearest", "linear", "continuous"])
+def test_identity_resample_non_native_endians(endian_type, interpolation):
+    """Test resampling with an identity affine with non native endians
+
+    with big endian data ('>f8')
+    with little endian data ('<f8')
+    """
+    rng = np.random.RandomState(42)
+    shape = (3, 2, 5, 2)
+    data = rng.randint(0, 10, shape, dtype="int32")
+
+    affine = AFFINE_EYE
+    affine[:3, -1] = 0.5 * np.array(shape[:3])
+
+    rot_img = resample_img(
+        Nifti1Image(data.astype(endian_type), affine),
+        target_affine=affine.tolist(),
+        interpolation=interpolation,
+    )
+    np.testing.assert_almost_equal(data, get_data(rot_img))
 
 
 def test_downsample():
@@ -116,13 +115,16 @@ def test_downsample():
     shape = (6, 3, 6, 2)
     data = rng.random_sample(shape)
     affine = AFFINE_EYE
+
     rot_img = resample_img(
         Nifti1Image(data, affine),
         target_affine=2 * affine,
         interpolation="nearest",
     )
+
     downsampled = data[::2, ::2, ::2, ...]
     x, y, z = downsampled.shape[:3]
+
     np.testing.assert_almost_equal(
         downsampled, get_data(rot_img)[:x, :y, :z, ...]
     )
@@ -134,136 +136,150 @@ def test_downsample():
         force_resample=True,
     )
     np.testing.assert_almost_equal(get_data(rot_img_2), get_data(rot_img))
-    # Test with non native endian data
-
-    # Test to check that if giving non native endian data as input should
-    # work as normal and expected to return the same output as above tests.
-
-    # Big endian data ('>f8')
-    for copy_data in [True, False]:
-        rot_img = resample_img(
-            Nifti1Image(data.astype(">f8"), affine),
-            target_affine=2 * affine,
-            interpolation="nearest",
-            copy=copy_data,
-        )
-        np.testing.assert_almost_equal(
-            downsampled, get_data(rot_img)[:x, :y, :z, ...]
-        )
-
-    # Little endian data
-    for copy_data in [True, False]:
-        rot_img = resample_img(
-            Nifti1Image(data.astype("<f8"), affine),
-            target_affine=2 * affine,
-            interpolation="nearest",
-            copy=copy_data,
-        )
-        np.testing.assert_almost_equal(
-            downsampled, get_data(rot_img)[:x, :y, :z, ...]
-        )
 
 
-def test_resampling_fill_value():
-    """Test resampling with a non-zero fill value"""
+@pytest.mark.parametrize("endian_type", [">f8", "<f8"])
+@pytest.mark.parametrize("copy_data", [True, False])
+def test_downsample_non_native_endian_data(endian_type, copy_data):
+    """Test resampling with a 1/2 down-sampling affine with non native endians.
+
+    Test to check that if giving non native endian data as input should
+    work as normal and expected to return the same output as above tests.
+
+    Big endian data ">f8"
+    Little endian data "<f8"
+    """
+    rng = np.random.RandomState(42)
+    shape = (6, 3, 6, 2)
+    data = rng.random_sample(shape)
+    affine = AFFINE_EYE
+
+    rot_img = resample_img(
+        Nifti1Image(data, affine),
+        target_affine=2 * affine,
+        interpolation="nearest",
+    )
+
+    downsampled = data[::2, ::2, ::2, ...]
+    x, y, z = downsampled.shape[:3]
+    np.testing.assert_almost_equal(
+        downsampled, get_data(rot_img)[:x, :y, :z, ...]
+    )
+
+    rot_img = resample_img(
+        Nifti1Image(data.astype(endian_type), affine),
+        target_affine=2 * affine,
+        interpolation="nearest",
+        copy=copy_data,
+    )
+    np.testing.assert_almost_equal(
+        downsampled, get_data(rot_img)[:x, :y, :z, ...]
+    )
+
+
+@pytest.mark.parametrize("shape", [(1, 4, 4), (1, 4, 4, 3)])
+@pytest.mark.parametrize("value", [-3.75, 0])
+def test_resampling_fill_value(shape, value):
+    """Test resampling with a non-zero fill value
+
+    Check on 3D and 4D data.
+    """
     rng = np.random.RandomState(42)
 
-    data_3d = rng.uniform(size=(1, 4, 4))
-    data_4d = rng.uniform(size=(1, 4, 4, 3))
+    data = rng.uniform(size=shape)
 
     angle = np.pi / 4
     rot = rotation(0, angle)
 
-    # Try a few different fill values
-    for data in [data_3d, data_4d]:
-        for val in (-3.75, 0):
-            if val:
-                rot_img = resample_img(
-                    Nifti1Image(data, AFFINE_EYE),
-                    target_affine=rot,
-                    interpolation="nearest",
-                    fill_value=val,
-                    clip=False,
-                )
-            else:
-                rot_img = resample_img(
-                    Nifti1Image(data, AFFINE_EYE),
-                    target_affine=rot,
-                    interpolation="nearest",
-                    clip=False,
-                )
-            assert get_data(rot_img).flatten()[0] == val
+    if value:
+        rot_img = resample_img(
+            Nifti1Image(data, AFFINE_EYE),
+            target_affine=rot,
+            interpolation="nearest",
+            fill_value=value,
+            clip=False,
+        )
+    else:
+        rot_img = resample_img(
+            Nifti1Image(data, AFFINE_EYE),
+            target_affine=rot,
+            interpolation="nearest",
+            clip=False,
+        )
 
-            rot_img2 = resample_to_img(
-                Nifti1Image(data, AFFINE_EYE),
-                rot_img,
-                interpolation="nearest",
-                fill_value=val,
-            )
-            assert get_data(rot_img2).flatten()[0] == val
+    assert get_data(rot_img).flatten()[0] == value
+
+    rot_img2 = resample_to_img(
+        Nifti1Image(data, AFFINE_EYE),
+        rot_img,
+        interpolation="nearest",
+        fill_value=value,
+    )
+
+    assert get_data(rot_img2).flatten()[0] == value
 
 
-def test_resampling_with_affine():
-    """Test resampling with a given rotation part of the affine."""
+ANGLES_TO_TEST = (0, np.pi, np.pi / 2.0, np.pi / 4.0, np.pi / 3.0)
+
+
+@pytest.mark.parametrize("shape", [(1, 4, 4), (1, 4, 4, 3)])
+@pytest.mark.parametrize("angle", ANGLES_TO_TEST)
+def test_resampling_with_affine(shape, angle):
+    """Test resampling with a given rotation part of the affine.
+
+    Check on 3D and 4D data.
+    """
     rng = np.random.RandomState(42)
 
-    data_4d = rng.randint(4, size=(1, 4, 4, 3), dtype="int32")
-    data_3d = rng.randint(4, size=(1, 4, 4), dtype="int32")
+    data = rng.randint(4, size=shape, dtype="int32")
 
-    for data in [data_3d, data_4d]:
-        for angle in (0, np.pi, np.pi / 2.0, np.pi / 4.0, np.pi / 3.0):
-            rot = rotation(0, angle)
-            rot_img = resample_img(
-                Nifti1Image(data, AFFINE_EYE),
-                target_affine=rot,
-                interpolation="nearest",
-            )
-            assert np.max(data) == np.max(get_data(rot_img))
-            assert get_data(rot_img).dtype == data.dtype
+    rot = rotation(0, angle)
+
+    rot_img = resample_img(
+        Nifti1Image(data, AFFINE_EYE),
+        target_affine=rot,
+        interpolation="nearest",
+    )
+
+    assert np.max(data) == np.max(get_data(rot_img))
+    assert get_data(rot_img).dtype == data.dtype
 
     # We take the same rotation logic as above and test with nonnative endian
     # data as input
-    for data in [data_3d, data_4d]:
-        img = Nifti1Image(data.astype(">f8"), AFFINE_EYE)
-        for angle in (0, np.pi, np.pi / 2.0, np.pi / 4.0, np.pi / 3.0):
-            rot = rotation(0, angle)
-            rot_img = resample_img(
-                img, target_affine=rot, interpolation="nearest"
-            )
-            assert np.max(data) == np.max(get_data(rot_img))
+    img = Nifti1Image(data.astype(">f8"), AFFINE_EYE)
+    rot = rotation(0, angle)
+
+    rot_img = resample_img(img, target_affine=rot, interpolation="nearest")
+
+    assert np.max(data) == np.max(get_data(rot_img))
 
 
-def test_resampling_continuous_with_affine():
+@pytest.mark.parametrize("shape", [(1, 10, 10), (1, 10, 10, 3)])
+@pytest.mark.parametrize("angle", (0, np.pi / 2.0, np.pi, 3 * np.pi / 2.0))
+def test_resampling_continuous_with_affine(shape, angle):
     rng = np.random.RandomState(42)
+    data = rng.randint(1, 4, size=shape, dtype="int32")
+    rot = rotation(0, angle)
+    img = Nifti1Image(data, AFFINE_EYE)
 
-    data_3d = rng.randint(1, 4, size=(1, 10, 10), dtype="int32")
-    data_4d = rng.randint(1, 4, size=(1, 10, 10, 3), dtype="int32")
+    rot_img = resample_img(img, target_affine=rot, interpolation="continuous")
+    rot_img_back = resample_img(
+        rot_img, target_affine=AFFINE_EYE, interpolation="continuous"
+    )
 
-    for data in [data_3d, data_4d]:
-        for angle in (0, np.pi / 2.0, np.pi, 3 * np.pi / 2.0):
-            rot = rotation(0, angle)
-
-            img = Nifti1Image(data, AFFINE_EYE)
-            rot_img = resample_img(
-                img, target_affine=rot, interpolation="continuous"
-            )
-            rot_img_back = resample_img(
-                rot_img, target_affine=AFFINE_EYE, interpolation="continuous"
-            )
-
-            center = slice(1, 9)
-            # values on the edges are wrong for some reason
-            mask = (0, center, center)
-            np.testing.assert_allclose(
-                get_data(img)[mask], get_data(rot_img_back)[mask]
-            )
-            assert get_data(rot_img).dtype == np.dtype(
-                data.dtype.name.replace("int", "float")
-            )
+    center = slice(1, 9)
+    # values on the edges are wrong for some reason
+    mask = (0, center, center)
+    np.testing.assert_allclose(
+        get_data(img)[mask], get_data(rot_img_back)[mask]
+    )
+    assert get_data(rot_img).dtype == np.dtype(
+        data.dtype.name.replace("int", "float")
+    )
 
 
 def test_resampling_error_checks():
-    img, affine = _make_resampling_test_data()
+    img, affine, _ = _make_resampling_test_data()
     target_shape = (5, 3, 2)
 
     # Correct parameters: no exception
@@ -298,19 +314,20 @@ def test_resampling_error_checks():
 @pytest.mark.parametrize("target_shape", [None, (3, 2, 5)])
 def test_resampling_copy_has_no_shared_memory(target_shape):
     """copy=true guarantees output array shares no memory with input array."""
-    img, affine = _make_resampling_test_data()
+    img, affine, _ = _make_resampling_test_data()
     target_affine = None if target_shape is None else affine
 
     img_r = resample_img(
         img, target_affine=target_affine, target_shape=target_shape, copy=False
     )
+
     assert img_r == img
 
     img_r = resample_img(
         img, target_affine=target_affine, target_shape=target_shape, copy=True
     )
-    assert not np.may_share_memory(get_data(img_r), get_data(img))
 
+    assert not np.may_share_memory(get_data(img_r), get_data(img))
     np.testing.assert_almost_equal(get_data(img_r), get_data(img))
     np.testing.assert_almost_equal(img_r.affine, img.affine)
 
@@ -416,11 +433,13 @@ def test_raises_upon_3x3_affine_and_no_shape():
 
 
 def test_3x3_affine_bbox():
-    # Test that the bounding-box is properly computed when
-    # transforming with a negative affine component
-    # This is specifically to test for a change in behavior between
-    # scipy < 0.18 and scipy >= 0.18, which is an interaction between
-    # offset and a diagonal affine
+    """Test that the bounding-box is properly computed when \
+    transforming with a negative affine component.
+
+    This is specifically to test for a change in behavior between
+    scipy < 0.18 and scipy >= 0.18, which is an interaction between
+    offset and a diagonal affine
+    """
     image = np.ones((20, 30))
     source_affine = AFFINE_EYE
     # Give the affine an offset
@@ -441,8 +460,7 @@ def test_3x3_affine_bbox():
 
 
 def test_raises_bbox_error_if_data_outside_box():
-    # Make some cases which should raise exceptions
-
+    """Make some cases which should raise exceptions"""
     # original image
     data = np.zeros([8, 9, 10])
     affine = AFFINE_EYE
@@ -491,11 +509,16 @@ def test_raises_bbox_error_if_data_outside_box():
             resample_img(img, target_affine=new_affine)
 
 
-def test_resampling_result_axis_permutation():
-    # Transform real data using easily checkable transformations
-    # For now: axis permutations
-    # create a cuboid full of deterministic data, padded with one
-    # voxel thickness of zeros
+@pytest.mark.parametrize(
+    "axis_permutation", [[0, 1, 2], [1, 0, 2], [2, 1, 0], [0, 2, 1]]
+)
+def test_resampling_result_axis_permutation(axis_permutation):
+    """Transform real data using easily checkable transformations.
+
+    For now: axis permutations
+    create a cuboid full of deterministic data, padded with one
+    voxel thickness of zeros
+    """
     core_shape = (3, 5, 4)
     core_data = np.arange(np.prod(core_shape)).reshape(core_shape)
     full_data_shape = np.array(core_shape) + 2
@@ -504,47 +527,40 @@ def test_resampling_result_axis_permutation():
 
     source_img = Nifti1Image(full_data, np.eye(4))
 
-    axis_permutations = [[0, 1, 2], [1, 0, 2], [2, 1, 0], [0, 2, 1]]
-
     # check 3x3 transformation matrix
-    for ap in axis_permutations:
-        target_affine = np.eye(3)[ap]
-        resampled_img = resample_img(source_img, target_affine=target_affine)
+    target_affine = np.eye(3)[axis_permutation]
 
-        resampled_data = get_data(resampled_img)
-        what_resampled_data_should_be = full_data.transpose(ap)
-        assert_array_almost_equal(
-            resampled_data, what_resampled_data_should_be
-        )
+    resampled_img = resample_img(source_img, target_affine=target_affine)
+
+    resampled_data = get_data(resampled_img)
+    expected_data = full_data.transpose(axis_permutation)
+    assert_array_almost_equal(resampled_data, expected_data)
 
     # check 4x4 transformation matrix
     offset = np.array([-2, 1, -3])
-    for ap in axis_permutations:
-        target_affine = np.eye(4)
-        target_affine[:3, :3] = np.eye(3)[ap]
-        target_affine[:3, 3] = offset
 
-        resampled_img = resample_img(source_img, target_affine=target_affine)
-        resampled_data = get_data(resampled_img)
-        offset_cropping = (
-            np.vstack([-offset[ap][np.newaxis, :], np.zeros([1, 3])])
-            .T.ravel()
-            .astype(int)
-        )
-        what_resampled_data_should_be = _pad_array(
-            full_data.transpose(ap), list(offset_cropping)
-        )
+    target_affine = np.eye(4)
+    target_affine[:3, :3] = np.eye(3)[axis_permutation]
+    target_affine[:3, 3] = offset
 
-        assert_array_almost_equal(
-            resampled_data, what_resampled_data_should_be
-        )
+    resampled_img = resample_img(source_img, target_affine=target_affine)
+
+    resampled_data = get_data(resampled_img)
+    offset_cropping = (
+        np.vstack([-offset[axis_permutation][np.newaxis, :], np.zeros([1, 3])])
+        .T.ravel()
+        .astype(int)
+    )
+    expected_data = _pad_array(
+        full_data.transpose(axis_permutation), list(offset_cropping)
+    )
+    assert_array_almost_equal(resampled_data, expected_data)
 
 
 @pytest.mark.parametrize("core_shape", [(3, 5, 4), (3, 5, 4, 2)])
 def test_resampling_nan(core_shape):
-    """Test that when the data has NaNs they do not propagate to the
-    whole image
-    """
+    """Test that when the data has NaNs they do not propagate to the \
+    whole image."""
     # create deterministic data, padded with one
     # voxel thickness of zeros
     core_data = (
@@ -570,26 +586,26 @@ def test_resampling_nan(core_shape):
     resampled_data = get_data(resampled_img)
     if full_data.ndim == 4:
         axis_permutation.append(3)
-    what_resampled_data_should_be = full_data.transpose(axis_permutation)
-    non_nan = np.isfinite(what_resampled_data_should_be)
+    expected_data = full_data.transpose(axis_permutation)
+    non_nan = np.isfinite(expected_data)
 
     # Check that the input data hasn't been modified:
     assert not np.all(non_nan)
 
     # Check that for finite value resampling works without problems
-    assert_array_almost_equal(
-        resampled_data[non_nan], what_resampled_data_should_be[non_nan]
-    )
+    assert_array_almost_equal(resampled_data[non_nan], expected_data[non_nan])
 
     # Check that what was not finite is still not finite
     assert not np.any(np.isfinite(resampled_data[np.logical_not(non_nan)]))
 
 
 def test_resampling_nan_big():
-    # Test with an actual resampling, in the case of a bigish hole
-    # This checks the extrapolation mechanism: if we don't do any
-    # extrapolation before resampling, the hole creates big
-    # artefacts
+    """Test with an actual resampling, in the case of a bigish hole.
+
+    This checks the extrapolation mechanism: if we don't do any
+    extrapolation before resampling, the hole creates big
+    artefacts
+    """
     data = 10 * np.ones((10, 10, 10))
     data[4:6, 4:6, 4:6] = np.nan
     source_img = Nifti1Image(data, 2 * AFFINE_EYE)
@@ -968,7 +984,7 @@ def test_resample_input():
     rng = np.random.RandomState(42)
     shape = (3, 2, 5, 2)
     data = rng.randint(0, 10, shape, dtype="int32")
-    affine = np.eye(4)
+    affine = AFFINE_EYE
     affine[:3, -1] = 0.5 * np.array(shape[:3])
     img = Nifti1Image(data, affine)
 
