@@ -1,13 +1,14 @@
-import nibabel
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
 from nilearn.decomposition._base import _fast_svd, _mask_and_reduce
 from nilearn.maskers import MultiNiftiMasker
 from numpy.testing import assert_array_almost_equal
 from scipy import linalg
 
+AFFINE_EYE = np.eye(4)
+
 SHAPE = (6, 8, 10)
-AFFINE = np.eye(4)
 
 
 @pytest.fixture
@@ -23,14 +24,14 @@ def data_for_mask_and_reduce():
         # Add activation
         this_img[2:4, 2:4, 2:4, :] += 10
 
-        imgs.append(nibabel.Nifti1Image(this_img, AFFINE))
+        imgs.append(Nifti1Image(this_img, AFFINE_EYE))
 
     return imgs
 
 
 @pytest.fixture
 def masker():
-    mask_img = nibabel.Nifti1Image(np.ones(SHAPE, dtype=np.int8), AFFINE)
+    mask_img = Nifti1Image(np.ones(SHAPE, dtype=np.int8), AFFINE_EYE)
     return MultiNiftiMasker(mask_img=mask_img).fit()
 
 
@@ -87,6 +88,7 @@ def test_mask_reducer_multiple_image(
     )
 
     expected_shape = (expected_shape_0, 6 * 8 * 10)
+
     assert data.shape == expected_shape
 
 

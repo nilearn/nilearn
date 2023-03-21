@@ -1,6 +1,6 @@
-import nibabel
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
 from nilearn._utils.testing import write_tmp_imgs
 from nilearn.decomposition.dict_learning import DictLearning
 from nilearn.decomposition.tests.test_canica import _make_canica_test_data
@@ -8,8 +8,9 @@ from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
 from nilearn.image import get_data, iter_img
 from nilearn.maskers import NiftiMasker
 
+AFFINE_EYE = np.eye(4)
+
 SHAPE = (30, 30, 5)
-AFFINE = np.eye(4)
 
 
 @pytest.fixture(scope="module")
@@ -21,7 +22,7 @@ def mask_img():
     mask[:, -5:] = 0
     mask[..., -2:] = 0
     mask[..., :2] = 0
-    return nibabel.Nifti1Image(mask, AFFINE)
+    return Nifti1Image(mask, AFFINE_EYE)
 
 
 @pytest.fixture(scope="module")
@@ -171,7 +172,7 @@ def test_empty_data_to_fit_error(mask_img):
 def test_passing_masker_arguments_to_estimator(canica_data):
     dict_learning = DictLearning(
         n_components=3,
-        target_affine=np.eye(4),
+        target_AFFINE_EYE=np.eye(4),
         target_shape=(6, 8, 10),
         mask_strategy="background",
     )
@@ -183,11 +184,12 @@ def test_components_img(canica_data, mask_img):
     dict_learning = DictLearning(n_components=n_components, mask=mask_img)
 
     dict_learning.fit(canica_data)
-
     components_img = dict_learning.components_img_
-    assert isinstance(components_img, nibabel.Nifti1Image)
+
+    assert isinstance(components_img, Nifti1Image)
 
     check_shape = canica_data[0].shape[:3] + (n_components,)
+
     assert components_img.shape, check_shape
 
 
@@ -208,11 +210,12 @@ def test_with_globbing_patterns(mask_img, n_subjects):
         input_image = _tmp_dir() + img
 
         dict_learning.fit(input_image)
-
         components_img = dict_learning.components_img_
-        assert isinstance(components_img, nibabel.Nifti1Image)
+
+        assert isinstance(components_img, Nifti1Image)
 
         check_shape = data[0].shape[:3] + (n_components,)
+
         assert components_img.shape, check_shape
 
 
@@ -227,11 +230,13 @@ def test_dictlearning_score(canica_data, mask_img):
 
     # One score for all components
     scores = dict_learning.score(canica_data, per_component=False)
+
     assert scores <= 1
     assert 0 <= scores
 
     # Per component score
     scores = dict_learning.score(canica_data, per_component=True)
+
     assert scores.shape, (n_components,)
     assert np.all(scores <= 1)
     assert np.all(scores >= 0)

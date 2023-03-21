@@ -2,9 +2,9 @@
 
 import warnings
 
-import nibabel
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
 from nilearn._utils.testing import write_tmp_imgs
 from nilearn.decomposition.canica import CanICA
 from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
@@ -12,13 +12,19 @@ from nilearn.image import get_data, iter_img
 from nilearn.maskers import MultiNiftiMasker
 from numpy.testing import assert_array_almost_equal
 
+AFFINE_EYE = np.eye(4)
+
 SHAPE = (30, 30, 5)
-AFFINE = np.eye(4)
+
 N_SUBJECTS = 2
 
 
 def _make_data_from_components(
-    components, affine=AFFINE, shape=SHAPE, rng=None, n_subjects=N_SUBJECTS
+    components,
+    AFFINE_EYE=AFFINE_EYE,
+    shape=SHAPE,
+    rng=None,
+    n_subjects=N_SUBJECTS,
 ):
     data = []
     if rng is None:
@@ -36,7 +42,7 @@ def _make_data_from_components(
         this_data[-5:] = background[-5:]
         this_data[:, :5] = background[:, :5]
         this_data[:, -5:] = background[:, -5:]
-        data.append(nibabel.Nifti1Image(this_data, affine))
+        data.append(Nifti1Image(this_data, AFFINE_EYE))
     return data
 
 
@@ -80,7 +86,7 @@ def _make_canica_test_data(rng=None, n_subjects=N_SUBJECTS, noisy=True):
 
     # Create a "multi-subject" dataset
     data = _make_data_from_components(
-        components, AFFINE, SHAPE, rng=rng, n_subjects=n_subjects
+        components, AFFINE_EYE, SHAPE, rng=rng, n_subjects=n_subjects
     )
 
     return data, components, rng
@@ -95,7 +101,7 @@ def mask_img():
     mask[:, -5:] = 0
     mask[..., -2:] = 0
     mask[..., :2] = 0
-    return nibabel.Nifti1Image(mask, AFFINE)
+    return Nifti1Image(mask, AFFINE_EYE)
 
 
 @pytest.fixture(scope="module")
@@ -239,7 +245,7 @@ def test_masker_attributes_with_fit(canica_data, mask_img):
 def test_masker_attributes_passing_masker_arguments_to_estimator(canica_data):
     canica = CanICA(
         n_components=3,
-        target_affine=np.eye(4),
+        target_AFFINE_EYE=np.eye(4),
         target_shape=(6, 8, 10),
         mask_strategy="background",
     )
@@ -253,7 +259,7 @@ def test_components_img(canica_data, mask_img):
     canica.fit(canica_data)
     components_img = canica.components_img_
 
-    assert isinstance(components_img, nibabel.Nifti1Image)
+    assert isinstance(components_img, Nifti1Image)
 
     check_shape = canica_data[0].shape[:3] + (n_components,)
 
@@ -272,7 +278,7 @@ def test_with_globbing_patterns_with_single_subject(mask_img):
         canica.fit(input_image)
         components_img = canica.components_img_
 
-        assert isinstance(components_img, nibabel.Nifti1Image)
+        assert isinstance(components_img, Nifti1Image)
 
         # n_components = 3
         check_shape = data[0].shape[:3] + (3,)
@@ -292,7 +298,7 @@ def test_with_globbing_patterns_with_multi_subjects(canica_data, mask_img):
         canica.fit(input_image)
         components_img = canica.components_img_
 
-        assert isinstance(components_img, nibabel.Nifti1Image)
+        assert isinstance(components_img, Nifti1Image)
 
         # n_components = 3
         check_shape = canica_data[0].shape[:3] + (3,)

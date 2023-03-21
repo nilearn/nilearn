@@ -2,16 +2,17 @@
 import os
 import tempfile
 
-import nibabel
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
 from nilearn._utils.testing import write_tmp_imgs
 from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 from numpy.testing import assert_almost_equal
 
+AFFINE_EYE = np.eye(4)
+
 SHAPE = (6, 8, 10)
-AFFINE = np.eye(4)
 
 
 def _tmp_dir():
@@ -19,10 +20,16 @@ def _tmp_dir():
     return tempfile.tempdir + os.sep
 
 
+def img_4D():
+    data_4d = np.zeros((40, 40, 40, 3))
+    data_4d[20, 20, 20] = 1
+    return Nifti1Image(data_4d, AFFINE_EYE=np.eye(4))
+
+
 def _make_multi_pca_test_data(with_activation=True):
     """Create a multi-subject dataset with or without activation."""
     shape = (6, 8, 10, 5)
-    affine = AFFINE
+    affine = AFFINE_EYE
     rng = np.random.RandomState(0)
     n_sub = 4
 
@@ -31,16 +38,16 @@ def _make_multi_pca_test_data(with_activation=True):
         this_data = rng.normal(size=shape)
         if with_activation:
             this_data[2:4, 2:4, 2:4, :] += 10
-        data.append(nibabel.Nifti1Image(this_data, affine))
+        data.append(Nifti1Image(this_data, affine))
 
-    mask_img = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
+    mask_img = Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
 
     return data, mask_img, shape, affine
 
 
 @pytest.fixture(scope="module")
 def mask_img():
-    return nibabel.Nifti1Image(np.ones(SHAPE, dtype=np.int8), AFFINE)
+    return Nifti1Image(np.ones(SHAPE, dtype=np.int8), AFFINE_EYE)
 
 
 @pytest.fixture(scope="module")
@@ -145,10 +152,10 @@ def test_multi_pca_with_masker_without_cca_smoke(multi_pca_data):
 
 def test_multi_pca_pass_masker_arg_to_estimator_smoke():
     """Masker arguments are passed to the estimator without fail."""
-    data, _, shape, affine = _make_multi_pca_test_data()
+    data, _, shape, AFFINE_EYE = _make_multi_pca_test_data()
 
     multi_pca = _MultiPCA(
-        target_affine=affine,
+        target_AFFINE_EYE=AFFINE_EYE,
         target_shape=shape[:3],
         n_components=3,
         mask_strategy="background",
@@ -165,6 +172,7 @@ def test_multi_pca_score_gt_0_lt_1(mask_img):
     )
     multi_pca.fit(data)
     s = multi_pca.score(data)
+
     assert np.all(s <= 1)
     assert np.all(s >= 0)
 
@@ -178,6 +186,7 @@ def test_multi_pca_score_single_subject(mask_img):
     )
     multi_pca.fit(data[0])
     s = multi_pca.score(data[0])
+
     assert isinstance(s, float)
     assert 0.0 <= s <= 1.0
 
@@ -191,6 +200,7 @@ def test_multi_pca_score_single_subject_nb_components(mask_img):
     )
     multi_pca.fit(data[0])
     s = multi_pca.score(data[0])
+
     assert_almost_equal(s, 1.0, 1)
 
     # Per component score
@@ -200,6 +210,7 @@ def test_multi_pca_score_single_subject_nb_components(mask_img):
     multi_pca.fit(data[0])
     masker = NiftiMasker(mask_img).fit()
     s = multi_pca._raw_score(masker.transform(data[0]), per_component=True)
+
     assert s.shape == (5,)
     assert np.all(s <= 1)
     assert np.all(s >= 0)
@@ -212,22 +223,17 @@ def test_components_img(multi_pca_data, mask_img):
         mask=mask_img, n_components=n_components, random_state=0
     )
     multi_pca.fit(multi_pca_data)
-
     components_img = multi_pca.components_img_
-    assert isinstance(components_img, nibabel.Nifti1Image)
+
+    assert isinstance(components_img, Nifti1Image)
 
     check_shape = multi_pca_data[0].shape[:3] + (n_components,)
+
     assert components_img.shape == check_shape
     assert len(components_img.shape) == 4
 
 
-def _img_4d():
-    data_4d = np.zeros((40, 40, 40, 3))
-    data_4d[20, 20, 20] = 1
-    return nibabel.Nifti1Image(data_4d, affine=np.eye(4))
-
-
-@pytest.mark.parametrize("imgs", [[_img_4d()], [_img_4d(), _img_4d()]])
+@pytest.mark.parametrize("imgs", [[img_4D()], [img_4D(), img_4D()]])
 def test_with_globbing_patterns_on_one_or_several_images(imgs):
     multi_pca = _MultiPCA(n_components=3)
 
@@ -237,9 +243,9 @@ def test_with_globbing_patterns_on_one_or_several_images(imgs):
         multi_pca.fit(input_image)
 
         components_img = multi_pca.components_img_
-        assert isinstance(components_img, nibabel.Nifti1Image)
+        assert isinstance(components_img, Nifti1Image)
 
         # n_components = 3
-        check_shape = _img_4d().shape[:3] + (3,)
+        check_shape = img_4D().shape[:3] + (3,)
         assert components_img.shape == check_shape
         assert len(components_img.shape) == 4
