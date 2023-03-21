@@ -842,7 +842,8 @@ def test_clean_img():
     data_flat = data.T.reshape(100, -1)
     data_img = Nifti1Image(data, AFFINE)
 
-    pytest.raises(ValueError, clean_img, data_img, t_r=None, low_pass=0.1)
+    with pytest.raises(ValueError, match="t_r.*must be specified"):
+        clean_img(data_img, t_r=None, low_pass=0.1)
 
     data_img_ = clean_img(
         data_img, detrend=True, standardize=False, low_pass=0.1, t_r=1.0
