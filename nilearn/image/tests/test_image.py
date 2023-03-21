@@ -20,6 +20,7 @@ from nilearn._utils.data_gen import (
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import (
     binarize_img,
+    clean_img,
     concat_imgs,
     crop_img,
     get_data,
@@ -536,7 +537,7 @@ def test_iter_img():
         "a 3D image."
     )
     with pytest.raises(TypeError, match=expected_error_msg):
-        image.iter_img(img_3d)
+        iter_img(img_3d)
 
     affine = np.array(
         [
@@ -548,27 +549,27 @@ def test_iter_img():
     )
     img_4d, _ = generate_fake_fmri(affine=affine)
 
-    for i, img in enumerate(image.iter_img(img_4d)):
+    for i, img in enumerate(iter_img(img_4d)):
         expected_data_3d = get_data(img_4d)[..., i]
         assert_array_equal(get_data(img), expected_data_3d)
         assert_array_equal(img.affine, img_4d.affine)
 
     with testing.write_tmp_imgs(img_4d) as img_4d_filename:
-        for i, img in enumerate(image.iter_img(img_4d_filename)):
+        for i, img in enumerate(iter_img(img_4d_filename)):
             expected_data_3d = get_data(img_4d)[..., i]
             assert_array_equal(get_data(img), expected_data_3d)
             assert_array_equal(img.affine, img_4d.affine)
         # enables to delete "img_4d_filename" on windows
         del img
 
-    img_3d_list = list(image.iter_img(img_4d))
-    for i, img in enumerate(image.iter_img(img_3d_list)):
+    img_3d_list = list(iter_img(img_4d))
+    for i, img in enumerate(iter_img(img_3d_list)):
         expected_data_3d = get_data(img_4d)[..., i]
         assert_array_equal(get_data(img), expected_data_3d)
         assert_array_equal(img.affine, img_4d.affine)
 
     with testing.write_tmp_imgs(*img_3d_list) as img_3d_filenames:
-        for i, img in enumerate(image.iter_img(img_3d_filenames)):
+        for i, img in enumerate(iter_img(img_3d_filenames)):
             expected_data_3d = get_data(img_4d)[..., i]
             assert_array_equal(get_data(img), expected_data_3d)
             assert_array_equal(img.affine, img_4d.affine)
@@ -636,25 +637,25 @@ def test_new_img_like_non_iterable_header():
 def test_new_img_like_int64():
     img = generate_labeled_regions((3, 3, 3), 2)
 
-    data = image.get_data(img).astype("int32")
+    data = get_data(img).astype("int32")
 
     with pytest.warns(None) as record:
         new_img = new_img_like(img, data)
 
     assert not record
-    assert image.get_data(new_img).dtype == "int32"
+    assert get_data(new_img).dtype == "int32"
 
     data = data.astype("int64")
 
     with pytest.warns(UserWarning, match=r".*array.*contains.*64.*"):
         new_img = new_img_like(img, data)
-    assert image.get_data(new_img).dtype == "int32"
+    assert get_data(new_img).dtype == "int32"
 
     data[:] = 2**40
 
     with pytest.warns(UserWarning, match=r".*64.*too large.*"):
         new_img = new_img_like(img, data, copy_header=True)
-    assert image.get_data(new_img).dtype == "int64"
+    assert get_data(new_img).dtype == "int64"
 
 
 def test_validity_threshold_value_in_threshold_img():
@@ -837,11 +838,9 @@ def test_clean_img():
     data_flat = data.T.reshape(100, -1)
     data_img = nibabel.Nifti1Image(data, AFINE)
 
-    pytest.raises(
-        ValueError, image.clean_img, data_img, t_r=None, low_pass=0.1
-    )
+    pytest.raises(ValueError, clean_img, data_img, t_r=None, low_pass=0.1)
 
-    data_img_ = image.clean_img(
+    data_img_ = clean_img(
         data_img, detrend=True, standardize=False, low_pass=0.1, t_r=1.0
     )
     data_flat_ = signal.clean(
@@ -857,24 +856,24 @@ def test_clean_img():
     data[:, 5, 5] = np.inf
     nan_img = nibabel.Nifti1Image(data, AFINE)
 
-    clean_im = image.clean_img(nan_img, ensure_finite=True)
+    clean_im = clean_img(nan_img, ensure_finite=True)
 
     assert np.any(np.isfinite(get_data(clean_im))), True
 
     # test_clean_img_passing_nifti2image
     data_img_nifti2 = nibabel.Nifti2Image(data, AFINE)
 
-    image.clean_img(
+    clean_img(
         data_img_nifti2, detrend=True, standardize=False, low_pass=0.1, t_r=1.0
     )
 
     # if mask_img
     img, mask_img = generate_fake_fmri(shape=(10, 10, 10), length=10)
 
-    data_img_mask_ = image.clean_img(img, mask_img=mask_img)
+    data_img_mask_ = clean_img(img, mask_img=mask_img)
 
     # Checks that output with full mask and without is equal
-    data_img_ = image.clean_img(img)
+    data_img_ = clean_img(img)
 
     np.testing.assert_almost_equal(
         get_data(data_img_), get_data(data_img_mask_)
