@@ -23,8 +23,17 @@ from scipy import linalg
 from sklearn.covariance import EmpiricalCovariance, LedoitWolf
 from sklearn.utils import check_random_state
 
-N_SUBJECTS = 5
+CONNECTIVITY_KINDS = [
+    "covariance",
+    "correlation",
+    "tangent",
+    "precision",
+    "partial correlation",
+]
+
 N_FEATURES = 49
+
+N_SUBJECTS = 5
 
 
 def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
@@ -617,16 +626,7 @@ def test_connectivity_measure_errors():
 @pytest.mark.parametrize(
     "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
 )
-@pytest.mark.parametrize(
-    "kind",
-    [
-        "covariance",
-        "correlation",
-        "tangent",
-        "precision",
-        "partial correlation",
-    ],
-)
+@pytest.mark.parametrize("kind", CONNECTIVITY_KINDS)
 def test_connectivity_measure_generic(
     kind, cov_estimator, signals_and_covariances
 ):
@@ -672,16 +672,7 @@ def test_connectivity_measure_specific_for_each_kind(
         _assert_connectivity_partial_correlation(connectivities, covs)
 
 
-@pytest.mark.parametrize(
-    "kind",
-    [
-        "covariance",
-        "correlation",
-        "tangent",
-        "precision",
-        "partial correlation",
-    ],
-)
+@pytest.mark.parametrize("kind", CONNECTIVITY_KINDS)
 def test_connectivity_measure_check_mean(kind, signals):
     conn_measure = ConnectivityMeasure(kind=kind)
     conn_measure.fit_transform(signals)
@@ -703,16 +694,7 @@ def test_connectivity_measure_check_mean(kind, signals):
     assert_array_equal(mean, conn_measure.mean_)
 
 
-@pytest.mark.parametrize(
-    "kind",
-    [
-        "covariance",
-        "correlation",
-        "tangent",
-        "precision",
-        "partial correlation",
-    ],
-)
+@pytest.mark.parametrize("kind", CONNECTIVITY_KINDS)
 def test_connectivity_measure_check_vectorization_option(kind, signals):
     conn_measure = ConnectivityMeasure(kind=kind)
     connectivities = conn_measure.fit_transform(signals)
