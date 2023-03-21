@@ -23,7 +23,7 @@ def _tmp_dir():
 def img_4D():
     data_4d = np.zeros((40, 40, 40, 3))
     data_4d[20, 20, 20] = 1
-    return Nifti1Image(data_4d, AFFINE_EYE=np.eye(4))
+    return Nifti1Image(data_4d, affine=np.eye(4))
 
 
 def _make_multi_pca_test_data(with_activation=True):
@@ -152,10 +152,10 @@ def test_multi_pca_with_masker_without_cca_smoke(multi_pca_data):
 
 def test_multi_pca_pass_masker_arg_to_estimator_smoke():
     """Masker arguments are passed to the estimator without fail."""
-    data, _, shape, AFFINE_EYE = _make_multi_pca_test_data()
+    data, _, shape, affine = _make_multi_pca_test_data()
 
     multi_pca = _MultiPCA(
-        target_AFFINE_EYE=AFFINE_EYE,
+        target_affine=affine,
         target_shape=shape[:3],
         n_components=3,
         mask_strategy="background",

@@ -172,7 +172,7 @@ def test_empty_data_to_fit_error(mask_img):
 def test_passing_masker_arguments_to_estimator(canica_data):
     dict_learning = DictLearning(
         n_components=3,
-        target_AFFINE_EYE=np.eye(4),
+        target_affine=np.eye(4),
         target_shape=(6, 8, 10),
         mask_strategy="background",
     )

@@ -21,7 +21,7 @@ N_SUBJECTS = 2
 
 def _make_data_from_components(
     components,
-    AFFINE_EYE=AFFINE_EYE,
+    affine=AFFINE_EYE,
     shape=SHAPE,
     rng=None,
     n_subjects=N_SUBJECTS,
@@ -42,7 +42,7 @@ def _make_data_from_components(
         this_data[-5:] = background[-5:]
         this_data[:, :5] = background[:, :5]
         this_data[:, -5:] = background[:, -5:]
-        data.append(Nifti1Image(this_data, AFFINE_EYE))
+        data.append(Nifti1Image(this_data, affine))
     return data
 
 
@@ -245,7 +245,7 @@ def test_masker_attributes_with_fit(canica_data, mask_img):
 def test_masker_attributes_passing_masker_arguments_to_estimator(canica_data):
     canica = CanICA(
         n_components=3,
-        target_AFFINE_EYE=np.eye(4),
+        target_affine=np.eye(4),
         target_shape=(6, 8, 10),
         mask_strategy="background",
     )
