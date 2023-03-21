@@ -75,6 +75,29 @@ def _make_largest_cc_img_test_data():
     return img1, img2, shapes
 
 
+def _images_to_mean():
+    """Return a mixture of 4D and 3D images"""
+    rng = np.random.RandomState(42)
+
+    data1 = np.zeros((5, 6, 7))
+    data2 = rng.uniform(size=(5, 6, 7))
+    data3 = rng.uniform(size=(5, 6, 7, 3))
+
+    affine = np.diag((4, 3, 2, 1))
+
+    img1 = Nifti1Image(data1, affine=affine)
+    img2 = Nifti1Image(data2, affine=affine)
+    img3 = Nifti1Image(data3, affine=affine)
+
+    imgs = (
+        [img1],
+        [img1, img2],
+        [img2, img1, img2],
+        [img3, img1, img2],
+    )
+    return imgs
+
+
 def _check_fwhm(data, affine, fwhm):
     """Expect a full-width at half maximum of fwhm / voxel_size"""
     vmax = data.max()
@@ -384,29 +407,6 @@ def test_crop_threshold_tolerance():
 
     cropped_img = crop_img(img)
     assert cropped_img.shape == active_shape
-
-
-def _images_to_mean():
-    """Return a mixture of 4D and 3D images"""
-    rng = np.random.RandomState(42)
-
-    data1 = np.zeros((5, 6, 7))
-    data2 = rng.uniform(size=(5, 6, 7))
-    data3 = rng.uniform(size=(5, 6, 7, 3))
-
-    affine = np.diag((4, 3, 2, 1))
-
-    img1 = Nifti1Image(data1, affine=affine)
-    img2 = Nifti1Image(data2, affine=affine)
-    img3 = Nifti1Image(data3, affine=affine)
-
-    imgs = (
-        [img1],
-        [img1, img2],
-        [img2, img1, img2],
-        [img3, img1, img2],
-    )
-    return imgs
 
 
 @pytest.mark.parametrize("images_to_mean", _images_to_mean())
