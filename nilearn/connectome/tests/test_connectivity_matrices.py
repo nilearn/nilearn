@@ -554,7 +554,9 @@ def test_connectivity_measure(kind, cov_estimator, signals_and_covariances):
 def test_connectivity_measure_tangent(cov_estimator, signals_and_covariances):
     signals, covs = signals_and_covariances
 
-    conn_measure = ConnectivityMeasure(kind="tangent", cov_estimator=cov_estimator)
+    conn_measure = ConnectivityMeasure(
+        kind="tangent", cov_estimator=cov_estimator
+    )
     connectivities = conn_measure.fit_transform(signals)
 
     for k, cov_new in enumerate(connectivities):
@@ -582,7 +584,9 @@ def test_connectivity_measure_precision(
 ):
     signals, covs = signals_and_covariances
 
-    conn_measure = ConnectivityMeasure(kind="precision", cov_estimator=cov_estimator)
+    conn_measure = ConnectivityMeasure(
+        kind="precision", cov_estimator=cov_estimator
+    )
     connectivities = conn_measure.fit_transform(signals)
 
     for k, cov_new in enumerate(connectivities):
@@ -598,7 +602,9 @@ def test_connectivity_measure_correlation(
 ):
     signals, covs = signals_and_covariances
 
-    conn_measure = ConnectivityMeasure(kind="correlation", cov_estimator=cov_estimator)
+    conn_measure = ConnectivityMeasure(
+        kind="correlation", cov_estimator=cov_estimator
+    )
     connectivities = conn_measure.fit_transform(signals)
 
     for k, cov_new in enumerate(connectivities):
@@ -617,7 +623,9 @@ def test_connectivity_measure_partial_correlation(
 ):
     signals, covs = signals_and_covariances
 
-    conn_measure = ConnectivityMeasure(kind="partial_correlation", cov_estimator=cov_estimator)
+    conn_measure = ConnectivityMeasure(
+        kind="partial correlation", cov_estimator=cov_estimator
+    )
     connectivities = conn_measure.fit_transform(signals)
 
     for k, cov_new in enumerate(connectivities):
