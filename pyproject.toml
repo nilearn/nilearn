@@ -2,8 +2,8 @@
 line-length = 79
 include = """
 (
-  maint_tools/.*py
-  | examples/.*py
+  examples/.*py
+  | maint_tools/.*py
   | setup.py
   | nilearn/connectome/.*py
   | nilearn/dec.*
@@ -41,7 +41,15 @@ extend-exclude =  '''
 
 [tool.isort]
 profile = "black"
-src_paths = ['nilearn/de.*', 'nilearn/image.*', 'nilearn/regions.*', 'nilearn/mass_univariate.*','maint_tools', 'setup.py']
+src_paths = [
+  'maint_tools',
+  'setup.py',
+  'nilearn/connectome/.*py',
+  'nilearn/dec.*',
+  'nilearn/image/.*py',
+  'nilearn/mass_univariate/.*py',
+  'nilearn/regions/.*py',
+]
 line_length = 79
 skip_gitignore = true
 combine_as_imports = true
