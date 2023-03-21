@@ -36,22 +36,46 @@ except Exception:
 X64 = platform.architecture()[0] == "64bit"
 
 
+AFFINE_TO_TEST = [np.eye(4), np.diag((1, 1, -1, 1)), np.diag((0.6, 1, 0.6, 1))]
+
+
+@pytest.fixture(scope="session")
+def smooth_array_data():
+    return _new_data_for_smooth_array()
+
+
+def _new_data_for_smooth_array():
+    # Impulse in 3D
+    data = np.zeros((40, 41, 42))
+    data[20, 20, 20] = 1
+    return data
+
+
 def test_get_data():
     img, *_ = data_gen.generate_fake_fmri(shape=(10, 11, 12))
+
     data = get_data(img)
+
     assert data.shape == img.shape
     assert data is img._data_cache
+
     mask_img = new_img_like(img, data > 0)
     data = get_data(mask_img)
+
     assert data.dtype == np.dtype("uint8")
+
     img_3d = index_img(img, 0)
     with tempfile.TemporaryDirectory() as tempdir:
         filename = os.path.join(tempdir, "img_{}.nii.gz")
         img_3d.to_filename(filename.format("a"))
         img_3d.to_filename(filename.format("b"))
+
         data = get_data(filename.format("a"))
+
         assert len(data.shape) == 3
+
         data = get_data(filename.format("*"))
+
         assert len(data.shape) == 4
 
 
@@ -78,7 +102,7 @@ def test_high_variance_confounds():
     assert confounds2.shape == (length, n_confounds)
 
 
-def test__fast_smooth_array():
+def test_fast_smooth_array():
     N = 4
     shape = (N, N, N)
     # hardcoded in _fast_smooth_array
@@ -102,44 +126,11 @@ def test__fast_smooth_array():
     np.testing.assert_allclose(smooth_data, expected)
 
 
-@pytest.fixture(scope="session")
-def data_for_smooth_array():
-    # Impulse in 3D
-    data = np.zeros((40, 41, 42))
-    data[20, 20, 20] = 1
-    return data
-
-
-def _new_data_for_smooth_array():
-    # Impulse in 3D
-    data = np.zeros((40, 41, 42))
-    data[20, 20, 20] = 1
-    return data
-
-
-def _affines_to_test():
-    return [np.eye(4), np.diag((1, 1, -1, 1)), np.diag((0.6, 1, 0.6, 1))]
-
-
-@pytest.mark.parametrize("affine", _affines_to_test())
-def test__smooth_array_fwhm_is_odd_with_copy(affine):
-    """Test that fwhm divided by any affine is odd.
-
-    Otherwise assertion below will fail.
-    ( 9 / 0.6 = 15 is fine)
-    """
-    data = _new_data_for_smooth_array()
-    fwhm = 9
-
-    filtered = image._smooth_array(data, affine, fwhm=fwhm, copy=True)
-
-    assert not np.may_share_memory(filtered, data)
-
-    # We are expecting a full-width at half maximum of
-    # fwhm / voxel_size:
-    vmax = filtered.max()
-    above_half_max = filtered > 0.5 * vmax
-    for axis in (0, 1, 2):
+def _check_fwhm(data, affine, fwhm):
+    """Expect a full-width at half maximum of fwhm / voxel_size"""
+    vmax = data.max()
+    above_half_max = data > 0.5 * vmax
+    for axis in [0, 1, 2]:
         proj = np.any(
             np.any(np.rollaxis(above_half_max, axis=axis), axis=-1),
             axis=-1,
@@ -147,8 +138,25 @@ def test__smooth_array_fwhm_is_odd_with_copy(affine):
         np.testing.assert_equal(proj.sum(), fwhm / np.abs(affine[axis, axis]))
 
 
-@pytest.mark.parametrize("affine", _affines_to_test())
-def test__smooth_array_fwhm_is_odd_no_copy(affine):
+@pytest.mark.parametrize("affine", AFFINE_TO_TEST)
+def test_smooth_array_fwhm_is_odd_with_copy(smooth_array_data, affine):
+    """Test that fwhm divided by any affine is odd.
+
+    Otherwise assertion below will fail.
+    ( 9 / 0.6 = 15 is fine)
+    """
+    data = smooth_array_data
+    fwhm = 9
+
+    filtered = image._smooth_array(data, affine, fwhm=fwhm, copy=True)
+
+    assert not np.may_share_memory(filtered, data)
+
+    _check_fwhm(filtered, affine, fwhm)
+
+
+@pytest.mark.parametrize("affine", AFFINE_TO_TEST)
+def test_smooth_array_fwhm_is_odd_no_copy(affine):
     """Test that fwhm divided by any affine is odd.
 
     Otherwise assertion below will fail.
@@ -159,23 +167,14 @@ def test__smooth_array_fwhm_is_odd_no_copy(affine):
 
     image._smooth_array(data, affine, fwhm=fwhm, copy=False)
 
-    # We are expecting a full-width at half maximum of
-    # fwhm / voxel_size:
-    vmax = data.max()
-    above_half_max = data > 0.5 * vmax
-    for axis in (0, 1, 2):
-        proj = np.any(
-            np.any(np.rollaxis(above_half_max, axis=axis), axis=-1),
-            axis=-1,
-        )
-        np.testing.assert_equal(proj.sum(), fwhm / np.abs(affine[axis, axis]))
+    _check_fwhm(data, affine, fwhm)
 
 
 def test__smooth_array_nan_do_not_propagate():
     data = _new_data_for_smooth_array()
     data[10, 10, 10] = np.NaN
     fwhm = 9
-    affine = _affines_to_test()[2]
+    affine = AFFINE_TO_TEST[2]
 
     filtered = image._smooth_array(
         data, affine, fwhm=fwhm, ensure_finite=True, copy=True
@@ -184,41 +183,36 @@ def test__smooth_array_nan_do_not_propagate():
     assert np.all(np.isfinite(filtered))
 
 
-def test__smooth_array_same_result_with_fwhm_none_or_zero(
-    data_for_smooth_array,
+def test_smooth_array_same_result_with_fwhm_none_or_zero(
+    smooth_array_data,
 ):
-    affine = _affines_to_test()[2]
+    affine = AFFINE_TO_TEST[2]
 
-    out_fwhm_none = image._smooth_array(
-        data_for_smooth_array, affine, fwhm=None
-    )
-    out_fwhm_zero = image._smooth_array(
-        data_for_smooth_array, affine, fwhm=0.0
-    )
+    out_fwhm_none = image._smooth_array(smooth_array_data, affine, fwhm=None)
+    out_fwhm_zero = image._smooth_array(smooth_array_data, affine, fwhm=0.0)
 
     assert_array_equal(out_fwhm_none, out_fwhm_zero)
 
 
-@pytest.mark.parametrize("affine", _affines_to_test())
-def test__fast_smooth_array_give_same_result_as_smooth_array(
-    data_for_smooth_array, affine
+@pytest.mark.parametrize("affine", AFFINE_TO_TEST)
+def test_fast_smooth_array_give_same_result_as_smooth_array(
+    smooth_array_data, affine
 ):
     np.testing.assert_equal(
-        image._smooth_array(data_for_smooth_array, affine, fwhm="fast"),
-        image._fast_smooth_array(data_for_smooth_array),
+        image._smooth_array(smooth_array_data, affine, fwhm="fast"),
+        image._fast_smooth_array(smooth_array_data),
     )
 
 
-def test__smooth_array_raise_warning_if_fwhm_is_zero(data_for_smooth_array):
+def test_smooth_array_raise_warning_if_fwhm_is_zero(smooth_array_data):
     """See https://github.com/nilearn/nilearn/issues/1537"""
-    affine = _affines_to_test()[2]
+    affine = AFFINE_TO_TEST[2]
     with pytest.warns(UserWarning):
-        image._smooth_array(data_for_smooth_array, affine, fwhm=0.0)
+        image._smooth_array(smooth_array_data, affine, fwhm=0.0)
 
 
 def test_smooth_img():
-    # This function only checks added functionalities compared
-    # to _smooth_array()
+    """Checks added functionalities compared to _smooth_array()"""
     shapes = ((10, 11, 12), (13, 14, 15))
     lengths = (17, 18)
     fwhm = (1.0, 2.0, 3.0)
