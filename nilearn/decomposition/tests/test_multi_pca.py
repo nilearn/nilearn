@@ -169,7 +169,7 @@ def test_multi_pca_score_gt_0_lt_1(mask_img):
     assert np.all(s >= 0)
 
 
-def test_multi_pca_score_single_subject():
+def test_multi_pca_score_single_subject(mask_img):
     """Multi-pca can run on single subject data."""
     data, _, _, _ = _make_multi_pca_test_data(with_activation=False)
 
@@ -205,7 +205,7 @@ def test_multi_pca_score_single_subject_nb_components(mask_img):
     assert np.all(s >= 0)
 
 
-def test_components_img(multi_pca_data):
+def test_components_img(multi_pca_data, mask_img):
     n_components = 3
 
     multi_pca = _MultiPCA(
