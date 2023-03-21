@@ -553,9 +553,8 @@ def test_connectivity_measure(kind, cov_estimator, signals_and_covariances):
 )
 def test_connectivity_measure_tangent(cov_estimator, signals_and_covariances):
     signals, covs = signals_and_covariances
-    kind = "tangent"
 
-    conn_measure = ConnectivityMeasure(kind=kind, cov_estimator=cov_estimator)
+    conn_measure = ConnectivityMeasure(kind="tangent", cov_estimator=cov_estimator)
     connectivities = conn_measure.fit_transform(signals)
 
     for k, cov_new in enumerate(connectivities):
@@ -582,9 +581,8 @@ def test_connectivity_measure_precision(
     cov_estimator, signals_and_covariances
 ):
     signals, covs = signals_and_covariances
-    kind = "precision"
 
-    conn_measure = ConnectivityMeasure(kind=kind, cov_estimator=cov_estimator)
+    conn_measure = ConnectivityMeasure(kind="precision", cov_estimator=cov_estimator)
     connectivities = conn_measure.fit_transform(signals)
 
     for k, cov_new in enumerate(connectivities):
@@ -599,9 +597,8 @@ def test_connectivity_measure_correlation(
     cov_estimator, signals_and_covariances
 ):
     signals, covs = signals_and_covariances
-    kind = "correlation"
 
-    conn_measure = ConnectivityMeasure(kind=kind, cov_estimator=cov_estimator)
+    conn_measure = ConnectivityMeasure(kind="correlation", cov_estimator=cov_estimator)
     connectivities = conn_measure.fit_transform(signals)
 
     for k, cov_new in enumerate(connectivities):
@@ -619,9 +616,8 @@ def test_connectivity_measure_partial_correlation(
     cov_estimator, signals_and_covariances
 ):
     signals, covs = signals_and_covariances
-    kind = "partial correlation"
 
-    conn_measure = ConnectivityMeasure(kind=kind, cov_estimator=cov_estimator)
+    conn_measure = ConnectivityMeasure(kind="partial_correlation", cov_estimator=cov_estimator)
     connectivities = conn_measure.fit_transform(signals)
 
     for k, cov_new in enumerate(connectivities):
@@ -823,11 +819,10 @@ def test_confounds_connectome_measure():
 
 
 def test_confounds_connectome_measure_errors():
-    n_subjects = N_SUBJECTS
     # Generate signals and compute covariances and apply confounds while
     # computing covariances
     signals = []
-    for k in range(n_subjects):
+    for k in range(N_SUBJECTS):
         n_samples = 200 + k
         signal, _, confounds = generate_signals(
             n_features=N_FEATURES,
