@@ -11,12 +11,19 @@ import pytest
 from nibabel import AnalyzeImage, Nifti1Image
 from nibabel.freesurfer import MGHImage
 from nilearn import signal
-from nilearn._utils import data_gen, niimg_conversions, testing
+from nilearn._utils import niimg_conversions, testing
+from nilearn._utils.data_gen import (
+    generate_fake_fmri,
+    generate_labeled_regions,
+    generate_maps,
+)
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import (
     binarize_img,
     concat_imgs,
+    crop_img,
     get_data,
+    high_variance_confounds,
     image,
     index_img,
     iter_img,
@@ -24,6 +31,8 @@ from nilearn.image import (
     math_img,
     new_img_like,
     resampling,
+    smooth_img,
+    swap_img_hemispheres,
     threshold_img,
 )
 from numpy.testing import assert_allclose, assert_array_equal
@@ -107,7 +116,7 @@ def stat_img_test_data():
 
 
 def test_get_data():
-    img, *_ = data_gen.generate_fake_fmri(shape=(10, 11, 12))
+    img, *_ = generate_fake_fmri(shape=(10, 11, 12))
 
     data = get_data(img)
 
@@ -136,22 +145,22 @@ def test_get_data():
 
 def test_high_variance_confounds():
     # See also test_signals.test_high_variance_confounds()
-    # There is only tests on what is added by image.high_variance_confounds()
+    # There is only tests on what is added by high_variance_confounds()
     # compared to signal.high_variance_confounds()
 
     shape = (40, 41, 42)
     length = 17
     n_confounds = 10
 
-    img, mask_img = data_gen.generate_fake_fmri(shape=shape, length=length)
+    img, mask_img = generate_fake_fmri(shape=shape, length=length)
 
-    confounds1 = image.high_variance_confounds(
+    confounds1 = high_variance_confounds(
         img, mask_img=mask_img, percentile=10.0, n_confounds=n_confounds
     )
     assert confounds1.shape == (length, n_confounds)
 
     # No mask.
-    confounds2 = image.high_variance_confounds(
+    confounds2 = high_variance_confounds(
         img, percentile=10.0, n_confounds=n_confounds
     )
     assert confounds2.shape == (length, n_confounds)
@@ -255,38 +264,38 @@ def test_smooth_array_raise_warning_if_fwhm_is_zero(smooth_array_data):
 
 
 def test_smooth_img():
-    """Checks added functionalities compared to _smooth_array()"""
+    """Checks added functionalities compared to image._smooth_array()"""
     shapes = ((10, 11, 12), (13, 14, 15))
     lengths = (17, 18)
     fwhm = (1.0, 2.0, 3.0)
 
-    img1, _ = data_gen.generate_fake_fmri(shape=shapes[0], length=lengths[0])
-    img2, _ = data_gen.generate_fake_fmri(shape=shapes[1], length=lengths[1])
+    img1, _ = generate_fake_fmri(shape=shapes[0], length=lengths[0])
+    img2, _ = generate_fake_fmri(shape=shapes[1], length=lengths[1])
 
     for create_files in (False, True):
         with testing.write_tmp_imgs(
             img1, img2, create_files=create_files
         ) as imgs:
             # List of images as input
-            out = image.smooth_img(imgs, fwhm)
+            out = smooth_img(imgs, fwhm)
             assert isinstance(out, list)
             assert len(out) == 2
             for o, s, l in zip(out, shapes, lengths):
                 assert o.shape == (s + (l,))
 
             # Single image as input
-            out = image.smooth_img(imgs[0], fwhm)
+            out = smooth_img(imgs[0], fwhm)
             assert isinstance(out, nibabel.Nifti1Image)
             assert out.shape == (shapes[0] + (lengths[0],))
 
     # Check corner case situations when fwhm=0, See issue #1537
     # Test whether function smooth_img raises a warning when fwhm=0.
     with pytest.warns(UserWarning):
-        image.smooth_img(img1, fwhm=0.0)
+        smooth_img(img1, fwhm=0.0)
 
     # Test output equal when fwhm=None and fwhm=0
-    out_fwhm_none = image.smooth_img(img1, fwhm=None)
-    out_fwhm_zero = image.smooth_img(img1, fwhm=0.0)
+    out_fwhm_none = smooth_img(img1, fwhm=None)
+    out_fwhm_zero = smooth_img(img1, fwhm=0.0)
     assert_array_equal(get_data(out_fwhm_none), get_data(out_fwhm_zero))
 
     data1 = np.zeros((10, 11, 12))
@@ -295,7 +304,7 @@ def test_smooth_img():
     data2[2:4, 1:5, 3:6] = 9
     img1_nifti2 = nibabel.Nifti2Image(data1, affine=AFINE)
     img2_nifti2 = nibabel.Nifti2Image(data2, affine=AFINE)
-    out = image.smooth_img([img1_nifti2, img2_nifti2], fwhm=1.0)
+    out = smooth_img([img1_nifti2, img2_nifti2], fwhm=1.0)
 
 
 def test_crop_img_to():
@@ -332,10 +341,9 @@ def test_crop_img():
     affine = np.diag((4, 3, 2, 1))
     img = nibabel.Nifti1Image(data, affine=affine)
 
-    cropped_img = image.crop_img(img)
+    cropped_img = crop_img(img)
 
     # correction for padding with "-1"
-
     # check that correct part was extracted:
     # This also corrects for padding
     assert (get_data(cropped_img)[1:-1, 1:-1, 1:-1] == 1).all()
@@ -356,7 +364,7 @@ def test_crop_threshold_tolerance():
     affine = AFINE
     img = nibabel.Nifti1Image(data, affine=affine)
 
-    cropped_img = image.crop_img(img)
+    cropped_img = crop_img(img)
     assert cropped_img.shape == active_shape
 
 
@@ -428,20 +436,18 @@ def test_swap_img_hemispheres():
     rng = np.random.RandomState(42)
 
     # make sure input image data is not overwritten inside function
-    data = rng.standard_normal(size=(4, 5, 7))
+    data = rng.standard_normal(size=(10, 10, 10))
     data_img = nibabel.Nifti1Image(data, AFINE)
 
-    image.swap_img_hemispheres(data_img)
+    swap_img_hemispheres(data_img)
 
     np.testing.assert_array_equal(get_data(data_img), data)
     # swapping operations work
     np.testing.assert_array_equal(  # one turn
-        get_data(image.swap_img_hemispheres(data_img)), data[::-1]
+        get_data(swap_img_hemispheres(data_img)), data[::-1]
     )
     np.testing.assert_array_equal(  # two turns -> back to original data
-        get_data(
-            image.swap_img_hemispheres(image.swap_img_hemispheres(data_img))
-        ),
+        get_data(swap_img_hemispheres(swap_img_hemispheres(data_img))),
         data,
     )
 
@@ -458,7 +464,7 @@ def test_index_img():
         "a 3D image."
     )
     with pytest.raises(TypeError, match=expected_error_msg):
-        image.index_img(img_3d, 0)
+        index_img(img_3d, 0)
 
     affine = np.array(
         [
@@ -468,7 +474,7 @@ def test_index_img():
             [0.0, 0.0, 0.0, 1.0],
         ]
     )
-    img_4d, _ = data_gen.generate_fake_fmri(affine=affine)
+    img_4d, _ = generate_fake_fmri(affine=affine)
 
     fourth_dim_size = img_4d.shape[3]
     tested_indices = list(range(fourth_dim_size)) + [
@@ -478,7 +484,7 @@ def test_index_img():
         (np.arange(fourth_dim_size) % 3) == 1,
     ]
     for i in tested_indices:
-        this_img = image.index_img(img_4d, i)
+        this_img = index_img(img_4d, i)
         expected_data_3d = get_data(img_4d)[..., i]
         assert_array_equal(get_data(this_img), expected_data_3d)
         assert_array_equal(this_img.affine, img_4d.affine)
@@ -493,7 +499,7 @@ def test_index_img():
             IndexError,
             match="out of bounds|invalid index|out of range|" "boolean index",
         ):
-            image.index_img(img_4d, i)
+            index_img(img_4d, i)
 
 
 def test_pd_index_img():
@@ -509,7 +515,7 @@ def test_pd_index_img():
             [0.0, 0.0, 0.0, 1.0],
         ]
     )
-    img_4d, _ = data_gen.generate_fake_fmri(affine=affine)
+    img_4d, _ = generate_fake_fmri(affine=affine)
 
     fourth_dim_size = img_4d.shape[3]
 
@@ -517,8 +523,8 @@ def test_pd_index_img():
     arr = rng.uniform(size=fourth_dim_size) > 0.5
     df = pd.DataFrame({"arr": arr})
 
-    np_index_img = image.index_img(img_4d, arr)
-    pd_index_img = image.index_img(img_4d, df)
+    np_index_img = index_img(img_4d, arr)
+    pd_index_img = index_img(img_4d, df)
     assert_array_equal(get_data(np_index_img), get_data(pd_index_img))
 
 
@@ -540,7 +546,7 @@ def test_iter_img():
             [0.0, 0.0, 0.0, 1.0],
         ]
     )
-    img_4d, _ = data_gen.generate_fake_fmri(affine=affine)
+    img_4d, _ = generate_fake_fmri(affine=affine)
 
     for i, img in enumerate(image.iter_img(img_4d)):
         expected_data_3d = get_data(img_4d)[..., i]
@@ -628,7 +634,7 @@ def test_new_img_like_non_iterable_header():
 
 @pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
 def test_new_img_like_int64():
-    img = data_gen.generate_labeled_regions((3, 3, 3), 2)
+    img = generate_labeled_regions((3, 3, 3), 2)
 
     data = image.get_data(img).astype("int32")
 
@@ -656,7 +662,7 @@ def test_validity_threshold_value_in_threshold_img():
     Exceptions.
     """
     shape = (6, 8, 10)
-    maps, _ = data_gen.generate_maps(shape, n_regions=2)
+    maps, _ = generate_maps(shape, n_regions=2)
 
     # testing to raise same error when threshold=None case
     with pytest.raises(
@@ -678,7 +684,7 @@ def test_validity_threshold_value_in_threshold_img():
 def test_threshold_img():
     """Smoke test for threshold_img with valid threshold inputs."""
     shape = (10, 20, 30)
-    maps, _ = data_gen.generate_maps(shape, n_regions=4)
+    maps, _ = generate_maps(shape, n_regions=4)
     affine = AFINE
     mask_img = nibabel.Nifti1Image(np.ones((shape), dtype=np.int8), affine)
 
@@ -759,7 +765,7 @@ def test_threshold_img_copy(img_4D_ones):
 def test_isnan_threshold_img_data():
     """Check threshold_img converges properly when input image has nans."""
     shape = (10, 10, 10)
-    maps, _ = data_gen.generate_maps(shape, n_regions=2)
+    maps, _ = generate_maps(shape, n_regions=2)
     data = get_data(maps)
     data[:, :, 0] = np.nan
 
@@ -863,7 +869,7 @@ def test_clean_img():
     )
 
     # if mask_img
-    img, mask_img = data_gen.generate_fake_fmri(shape=(10, 10, 10), length=10)
+    img, mask_img = generate_fake_fmri(shape=(10, 10, 10), length=10)
 
     data_img_mask_ = image.clean_img(img, mask_img=mask_img)
 
@@ -879,12 +885,8 @@ def _make_largest_cc_img_test_data():
     shapes = ((10, 11, 12), (13, 14, 15))
     regions = [1, 3]
 
-    img1 = data_gen.generate_labeled_regions(
-        shape=shapes[0], n_regions=regions[0]
-    )
-    img2 = data_gen.generate_labeled_regions(
-        shape=shapes[1], n_regions=regions[1]
-    )
+    img1 = generate_labeled_regions(shape=shapes[0], n_regions=regions[0])
+    img2 = generate_labeled_regions(shape=shapes[1], n_regions=regions[1])
     return img1, img2, shapes
 
 
@@ -950,7 +952,7 @@ def test_largest_cc_img_non_native_endian_type(create_files):
 def test_largest_cc_img_error():
     # Test whether 4D Nifti throws the right error.
     shapes = (10, 11, 12)
-    img_4D = data_gen.generate_fake_fmri(shapes, length=17)
+    img_4D = generate_fake_fmri(shapes, length=17)
 
     pytest.raises(DimensionError, largest_connected_component_img, img_4D)
 
