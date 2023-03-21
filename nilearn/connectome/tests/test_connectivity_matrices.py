@@ -178,6 +178,54 @@ def random_non_singular(p, sing_min=1.0, sing_max=2.0, random_state=0):
     return unitary1.dot(diag).dot(unitary2.T)
 
 
+def _assert_connectivity_tangent(connectivities, conn_measure, covs):
+    for k, cov_new in enumerate(connectivities):
+        # Positive definiteness if expected and output value checks
+
+        assert_array_almost_equal(cov_new, cov_new.T)
+
+        gmean_sqrt = _map_eigenvalues(np.sqrt, conn_measure.mean_)
+
+        assert is_spd(gmean_sqrt, decimal=7)
+        assert is_spd(conn_measure.whitening_, decimal=7)
+        assert_array_almost_equal(
+            conn_measure.whitening_.dot(gmean_sqrt),
+            np.eye(N_FEATURES),
+        )
+        assert_array_almost_equal(
+            gmean_sqrt.dot(_map_eigenvalues(np.exp, cov_new)).dot(gmean_sqrt),
+            covs[k],
+        )
+
+
+def _assert_connectivity_precision(connectivities, covs):
+    for k, cov_new in enumerate(connectivities):
+        assert is_spd(cov_new, decimal=7)
+        assert_array_almost_equal(cov_new.dot(covs[k]), np.eye(N_FEATURES))
+
+
+def _assert_connectivity_correlation(connectivities, cov_estimator, covs):
+    for k, cov_new in enumerate(connectivities):
+        assert is_spd(cov_new, decimal=7)
+
+        d = np.sqrt(np.diag(np.diag(covs[k])))
+
+        if cov_estimator == EmpiricalCovariance():
+            assert_array_almost_equal(d.dot(cov_new).dot(d), covs[k])
+        assert_array_almost_equal(np.diag(cov_new), np.ones(N_FEATURES))
+
+
+def _assert_connectivity_partial_correlation(connectivities, covs):
+    for k, cov_new in enumerate(connectivities):
+        prec = linalg.inv(covs[k])
+        d = np.sqrt(np.diag(np.diag(prec)))
+
+        assert_array_almost_equal(
+            d.dot(cov_new).dot(d),
+            -prec + 2 * np.diag(np.diag(prec)),
+        )
+
+
 def _signals(n_subjects=N_SUBJECTS):
     """Generate signals and compute covariances \
     and apply confounds while computing covariances."""
@@ -579,7 +627,9 @@ def test_connectivity_measure_errors():
         "partial correlation",
     ],
 )
-def test_connectivity_measure(kind, cov_estimator, signals_and_covariances):
+def test_connectivity_measure_generic(
+    kind, cov_estimator, signals_and_covariances
+):
     signals, covs = signals_and_covariances
 
     # Check outputs properties
@@ -598,97 +648,28 @@ def test_connectivity_measure(kind, cov_estimator, signals_and_covariances):
 
 
 @pytest.mark.parametrize(
-    "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
+    "kind",
+    ["tangent", "precision", "correlation", "partial correlation"],
 )
-def test_connectivity_measure_tangent(cov_estimator, signals_and_covariances):
-    signals, covs = signals_and_covariances
-
-    conn_measure = ConnectivityMeasure(
-        kind="tangent", cov_estimator=cov_estimator
-    )
-    connectivities = conn_measure.fit_transform(signals)
-
-    for k, cov_new in enumerate(connectivities):
-        # Positive definiteness if expected and output value checks
-
-        assert_array_almost_equal(cov_new, cov_new.T)
-
-        gmean_sqrt = _map_eigenvalues(np.sqrt, conn_measure.mean_)
-
-        assert is_spd(gmean_sqrt, decimal=7)
-        assert is_spd(conn_measure.whitening_, decimal=7)
-        assert_array_almost_equal(
-            conn_measure.whitening_.dot(gmean_sqrt),
-            np.eye(N_FEATURES),
-        )
-        assert_array_almost_equal(
-            gmean_sqrt.dot(_map_eigenvalues(np.exp, cov_new)).dot(gmean_sqrt),
-            covs[k],
-        )
-
-
 @pytest.mark.parametrize(
     "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
 )
-def test_connectivity_measure_precision(
-    cov_estimator, signals_and_covariances
+def test_connectivity_measure_specific_for_each_kind(
+    kind, cov_estimator, signals_and_covariances
 ):
     signals, covs = signals_and_covariances
 
-    conn_measure = ConnectivityMeasure(
-        kind="precision", cov_estimator=cov_estimator
-    )
+    conn_measure = ConnectivityMeasure(kind=kind, cov_estimator=cov_estimator)
     connectivities = conn_measure.fit_transform(signals)
 
-    for k, cov_new in enumerate(connectivities):
-        assert is_spd(cov_new, decimal=7)
-        assert_array_almost_equal(cov_new.dot(covs[k]), np.eye(N_FEATURES))
-
-
-@pytest.mark.parametrize(
-    "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
-)
-def test_connectivity_measure_correlation(
-    cov_estimator, signals_and_covariances
-):
-    signals, covs = signals_and_covariances
-
-    conn_measure = ConnectivityMeasure(
-        kind="correlation", cov_estimator=cov_estimator
-    )
-    connectivities = conn_measure.fit_transform(signals)
-
-    for k, cov_new in enumerate(connectivities):
-        assert is_spd(cov_new, decimal=7)
-
-        d = np.sqrt(np.diag(np.diag(covs[k])))
-
-        if cov_estimator == EmpiricalCovariance():
-            assert_array_almost_equal(d.dot(cov_new).dot(d), covs[k])
-        assert_array_almost_equal(np.diag(cov_new), np.ones(N_FEATURES))
-
-
-@pytest.mark.parametrize(
-    "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
-)
-def test_connectivity_measure_partial_correlation(
-    cov_estimator, signals_and_covariances
-):
-    signals, covs = signals_and_covariances
-
-    conn_measure = ConnectivityMeasure(
-        kind="partial correlation", cov_estimator=cov_estimator
-    )
-    connectivities = conn_measure.fit_transform(signals)
-
-    for k, cov_new in enumerate(connectivities):
-        prec = linalg.inv(covs[k])
-        d = np.sqrt(np.diag(np.diag(prec)))
-
-        assert_array_almost_equal(
-            d.dot(cov_new).dot(d),
-            -prec + 2 * np.diag(np.diag(prec)),
-        )
+    if kind == "tangent":
+        _assert_connectivity_tangent(connectivities, conn_measure, covs)
+    elif kind == "precision":
+        _assert_connectivity_precision(connectivities, covs)
+    elif kind == "correlation":
+        _assert_connectivity_correlation(connectivities, cov_estimator, covs)
+    elif kind == "partial correlation":
+        _assert_connectivity_partial_correlation(connectivities, covs)
 
 
 @pytest.mark.parametrize(
@@ -749,12 +730,7 @@ def test_connectivity_measure_check_vectorization_option(kind, signals):
 
 @pytest.mark.parametrize(
     "kind",
-    [
-        "covariance",
-        "correlation",
-        "precision",
-        "partial correlation",
-    ],
+    ["covariance", "correlation", "precision", "partial correlation"],
 )
 def test_connectivity_measure_check_inverse_transformation(kind, signals):
     # without vectorization: input matrices are returned with no change
@@ -778,12 +754,7 @@ def test_connectivity_measure_check_inverse_transformation(kind, signals):
 
 @pytest.mark.parametrize(
     "kind",
-    [
-        "covariance",
-        "correlation",
-        "precision",
-        "partial correlation",
-    ],
+    ["covariance", "correlation", "precision", "partial correlation"],
 )
 def test_connectivity_measure_check_inverse_transformation_discard_diag(
     kind, signals
@@ -843,6 +814,7 @@ def test_connectivity_measure_inverse_transform_tangent(
         kind="tangent", vectorize=True, discard_diagonal=True
     )
     vectorized_displacements = tangent_measure.fit_transform(signals)
+
     diagonal = np.array(
         [np.diagonal(matrix) / sqrt(2) for matrix in displacements]
     )
