@@ -20,6 +20,7 @@ Fixes
 
 - :func:`~nilearn.interfaces.fmriprep.load_confounds` can support searching preprocessed data in native space. (:gh:`3531` by `Hao-Ting Wang`_)
 
+- Add correct "zscore_sample" strategy to ``signal._standardize`` which will replace the default "zscore" strategy in release 0.13  (:gh:`3474` by `Yasmin Mzayek`_).
 
 Enhancements
 ------------
