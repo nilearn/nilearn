@@ -168,7 +168,6 @@ def _mean_of_squares(signals, n_batches=20):
     return var
 
 
-# UNUSED AND UNTESTED
 def _row_sum_of_squares(signals, n_batches=20):
     """Compute sum of squares for each signal.
 
