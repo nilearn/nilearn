@@ -336,15 +336,21 @@ def test_resampling_copy_has_no_shared_memory(target_shape):
     assert_almost_equal(img_r.affine, img.affine)
 
 
-def test_resampling_warning_checks(shape):
+def test_resampling_warning_s_form(shape):
     rng = np.random.RandomState(42)
 
+    affine = np.eye(4)
+
     data = rng.randint(0, 10, shape, dtype="int32")
-    img_no_sform = Nifti1Image(data, AFFINE_EYE)
+    img_no_sform = Nifti1Image(data, affine)
     img_no_sform.set_sform(None)
 
     with pytest.warns(Warning, match="The provided image has no sform"):
-        resample_img(img_no_sform, target_affine=AFFINE_EYE)
+        resample_img(img_no_sform, target_affine=affine)
+
+
+def test_resampling_warning_binary_image(affine):
+    rng = np.random.RandomState(42)
 
     # Resampling a binary image with continuous or
     # linear interpolation should raise a warning.
@@ -354,7 +360,7 @@ def test_resampling_warning_checks(shape):
     assert sorted(list(np.unique(data_binary))) == [0, 1]
 
     rot = rotation(0, np.pi / 4)
-    img_binary = Nifti1Image(data_binary, AFFINE_EYE)
+    img_binary = Nifti1Image(data_binary, affine)
 
     assert _utils.niimg._is_binary_niimg(img_binary)
 
