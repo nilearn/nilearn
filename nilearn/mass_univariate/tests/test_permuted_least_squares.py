@@ -16,11 +16,11 @@ from numpy.testing import (
 from scipy import stats
 from sklearn.utils import check_random_state
 
-RANDOM_STATE = 0
+N_COVARS = 2
 
 N_SAMPLES = 50
 
-N_COVARS = 2
+RANDOM_STATE = 0
 
 
 def mean_squared_error(df, h0_intercept):
