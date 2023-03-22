@@ -29,4 +29,4 @@ jobs:
           python -m pip install --upgrade pip isort
 
       - name: "Run isort"
-        run: isort --diff --check --settings-path pyproject.toml nilearn/de* nilearn/image nilearn/connectome nilearn/regions maint_tools setup.py examples/0[0234567]*
+        run: isort --diff --check --settings-path pyproject.toml nilearn/de* nilearn/image nilearn/connectome nilearn/mass_univariate nilearn/regions maint_tools setup.py examples/0[0234567]*

@@ -3,14 +3,13 @@ import math
 
 import numpy as np
 import pytest
-from numpy.testing import assert_array_almost_equal
-from sklearn.utils import check_random_state
-from scipy.ndimage import generate_binary_structure
-
 from nilearn.mass_univariate import _utils
 from nilearn.mass_univariate.tests.utils import (
     get_tvalue_with_alternative_library,
 )
+from numpy.testing import assert_array_almost_equal
+from scipy.ndimage import generate_binary_structure
+from sklearn.utils import check_random_state
 
 
 def test__calculate_tfce():
@@ -35,7 +34,7 @@ def test__calculate_tfce():
         bin_struct=bin_struct,
         E=1,
         H=1,
-        dh='auto',
+        dh="auto",
         two_sided_test=False,
     )
     assert test_tfce_arr4d.shape == test_arr4d.shape
@@ -48,7 +47,7 @@ def test__calculate_tfce():
         bin_struct=bin_struct,
         E=1,
         H=1,
-        dh='auto',
+        dh="auto",
         two_sided_test=True,
     )
     assert test_tfce_arr4d.shape == test_arr4d.shape
@@ -74,53 +73,53 @@ def test_null_to_p_float():
 
     # Left/lower-tailed
     assert math.isclose(
-        _utils._null_to_p(9, null, alternative='smaller'),
+        _utils._null_to_p(9, null, alternative="smaller"),
         0.95,
     )
     assert math.isclose(
-        _utils._null_to_p(-9, null, alternative='smaller'),
+        _utils._null_to_p(-9, null, alternative="smaller"),
         0.15,
     )
-    assert math.isclose(_utils._null_to_p(0, null, alternative='smaller'), 0.4)
+    assert math.isclose(_utils._null_to_p(0, null, alternative="smaller"), 0.4)
 
     # Right/upper-tailed
-    assert math.isclose(_utils._null_to_p(9, null, alternative='larger'), 0.05)
+    assert math.isclose(_utils._null_to_p(9, null, alternative="larger"), 0.05)
     assert math.isclose(
-        _utils._null_to_p(-9, null, alternative='larger'),
+        _utils._null_to_p(-9, null, alternative="larger"),
         0.95,
     )
-    assert math.isclose(_utils._null_to_p(0, null, alternative='larger'), 0.65)
+    assert math.isclose(_utils._null_to_p(0, null, alternative="larger"), 0.65)
 
     # Test that 1/n(null) is preserved with extreme values
     nulldist = np.random.normal(size=10000)
     assert math.isclose(
-        _utils._null_to_p(20, nulldist, alternative='two-sided'),
+        _utils._null_to_p(20, nulldist, alternative="two-sided"),
         1 / 10000,
     )
     assert math.isclose(
-        _utils._null_to_p(20, nulldist, alternative='smaller'),
+        _utils._null_to_p(20, nulldist, alternative="smaller"),
         1 - 1 / 10000,
     )
 
     # Two-tailed
     assert math.isclose(
-        _utils._null_to_p(0, null, alternative='two-sided'),
+        _utils._null_to_p(0, null, alternative="two-sided"),
         0.95,
     )
-    result = _utils._null_to_p(9, null, alternative='two-sided')
-    assert result == _utils._null_to_p(-9, null, alternative='two-sided')
+    result = _utils._null_to_p(9, null, alternative="two-sided")
+    assert result == _utils._null_to_p(-9, null, alternative="two-sided")
     assert math.isclose(result, 0.2)
-    result = _utils._null_to_p(10, null, alternative='two-sided')
-    assert result == _utils._null_to_p(-10, null, alternative='two-sided')
+    result = _utils._null_to_p(10, null, alternative="two-sided")
+    assert result == _utils._null_to_p(-10, null, alternative="two-sided")
     assert math.isclose(result, 0.05)
 
     # Still 0.05 because minimum valid p-value is 1 / len(null)
-    result = _utils._null_to_p(20, null, alternative='two-sided')
-    assert result == _utils._null_to_p(-20, null, alternative='two-sided')
+    result = _utils._null_to_p(20, null, alternative="two-sided")
+    assert result == _utils._null_to_p(-20, null, alternative="two-sided")
     assert math.isclose(result, 0.05)
 
     with pytest.raises(ValueError):
-        _utils._null_to_p(9, null, alternative='raise')
+        _utils._null_to_p(9, null, alternative="raise")
 
 
 def test_null_to_p_array():
@@ -226,7 +225,7 @@ def test_t_score_with_covars_and_normalized_design_nocovar(random_state=0):
     # generate data
     var1 = np.ones((n_samples, 1)) / np.sqrt(n_samples)
     var2 = rng.randn(n_samples, 1)
-    var2 = var2 / np.sqrt(np.sum(var2 ** 2, 0))  # normalize
+    var2 = var2 / np.sqrt(np.sum(var2**2, 0))  # normalize
 
     # compute t-scores with nilearn routine
     t_val_own = _utils._t_score_with_covars_and_normalized_design(var1, var2)
@@ -246,7 +245,7 @@ def test_t_score_with_covars_and_normalized_design_withcovar(random_state=0):
     # generate data
     var1 = np.ones((n_samples, 1)) / np.sqrt(n_samples)  # normalized
     var2 = rng.randn(n_samples, 1)
-    var2 = var2 / np.sqrt(np.sum(var2 ** 2, 0))  # normalize
+    var2 = var2 / np.sqrt(np.sum(var2**2, 0))  # normalize
     covars = np.eye(n_samples, 3)  # covars is orthogonal
     covars[3] = -1  # covars is orthogonal to var1
     covars = _utils._orthonormalize_matrix(covars)

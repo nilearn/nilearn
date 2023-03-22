@@ -251,6 +251,14 @@ def test_standardize():
     a = rng.random_sample((n_samples, n_features))
     a += np.linspace(0, 2., n_features)
 
+    # Test raise error when strategy is not valid option
+    with pytest.raises(ValueError, match="no valid standardize strategy"):
+        nisignal._standardize(a, standardize="foo")
+
+    # test warning for strategy that will be removed
+    with pytest.warns(FutureWarning, match="default strategy for standardize"):
+        nisignal._standardize(a, standardize="zscore")
+
     # transpose array to fit _standardize input.
     # Without trend removal
     b = nisignal._standardize(a, standardize='zscore')
@@ -258,15 +266,31 @@ def test_standardize():
     np.testing.assert_almost_equal(stds, np.ones(n_features))
     np.testing.assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
 
+    # Repeating test above but for new correct strategy
+    b = nisignal._standardize(a, standardize='zscore_sample')
+    stds = np.std(b)
+    np.testing.assert_almost_equal(stds, np.ones(n_features), decimal=1)
+    np.testing.assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
+
     # With trend removal
     a = np.atleast_2d(np.linspace(0, 2., n_features)).T
     b = nisignal._standardize(a, detrend=True, standardize=False)
+    np.testing.assert_almost_equal(b, np.zeros(b.shape))
+
+    b = nisignal._standardize(a, detrend=True, standardize="zscore_sample")
     np.testing.assert_almost_equal(b, np.zeros(b.shape))
 
     length_1_signal = np.atleast_2d(np.linspace(0, 2., n_features))
     np.testing.assert_array_equal(length_1_signal,
                                   nisignal._standardize(length_1_signal,
                                                         standardize='zscore'))
+
+    # Repeating test above but for new correct strategy
+    length_1_signal = np.atleast_2d(np.linspace(0, 2., n_features))
+    np.testing.assert_array_equal(
+        length_1_signal,
+        nisignal._standardize(length_1_signal, standardize="zscore_sample")
+    )
 
 
 def test_detrend():
@@ -827,9 +851,18 @@ def test_clean_zscore():
                                      length=n_samples)
 
     signals += rng.standard_normal(size=(1, n_features))
-    cleaned_signals = clean(signals, standardize='zscore')
+    cleaned_signals_ = clean(signals, standardize='zscore')
+    np.testing.assert_almost_equal(cleaned_signals_.mean(0), 0)
+    np.testing.assert_almost_equal(cleaned_signals_.std(0), 1)
+
+    # Repeating test above but for new correct strategy
+    cleaned_signals = clean(signals, standardize='zscore_sample')
     np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
-    np.testing.assert_almost_equal(cleaned_signals.std(0), 1)
+    np.testing.assert_almost_equal(cleaned_signals.std(0), 1, decimal=3)
+
+    # Show outcome from two zscore strategies is not equal
+    with pytest.raises(AssertionError):
+        np.testing.assert_array_equal(cleaned_signals_, cleaned_signals)
 
 
 def test_create_cosine_drift_terms():

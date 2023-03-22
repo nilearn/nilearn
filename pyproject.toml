@@ -1,6 +1,6 @@
 [tool.black]
 line-length = 79
-include = "(maint_tools/.*py)|(setup.py)|(nilearn/dec.*)|(nilearn/image/.*py)|(nilearn/connectome/.*py)|(nilearn/regions/.*py)|(examples/.*py)"
+include = "(maint_tools/.*py)|(setup.py)|(nilearn/dec.*)|(nilearn/image/.*py)|(nilearn/connectome/.*py)|(nilearn/regions/.*py)|(nilearn/mass_univariate/.*py)|(examples/.*py)"
 # 'extend-exclude' excludes files or directories in addition to the defaults
 extend-exclude = '''
 (
@@ -10,7 +10,7 @@ extend-exclude = '''
 
 [tool.isort]
 profile = "black"
-src_paths = ['nilearn/de.*', 'nilearn/image.*', 'nilearn/regions.*', 'maint_tools', 'setup.py']
+src_paths = ['nilearn/de.*', 'nilearn/image.*', 'nilearn/regions.*', 'nilearn/mass_univariate.*','maint_tools', 'setup.py']
 line_length = 79
 skip_gitignore = true
 combine_as_imports = true
