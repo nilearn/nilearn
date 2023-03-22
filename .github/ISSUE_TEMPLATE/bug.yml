@@ -97,8 +97,6 @@ body:
 
     value: |
       This is what I got:
-
-
       ```bash
       # Paste the error message here
 
@@ -116,7 +114,6 @@ body:
       https://stackoverflow.com/help/minimal-reproducible-example
 
     value: |
-
       ```python
       # Paste your code here
 

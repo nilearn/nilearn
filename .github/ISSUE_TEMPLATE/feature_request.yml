@@ -37,7 +37,6 @@ body:
   attributes:
     label: Pseudocode for the new behavior, if applicable
     value: |
-
       ```python
       # insert your code below
 
