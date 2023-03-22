@@ -34,11 +34,14 @@ def _standardize(signals, detrend=False, standardize="zscore"):
         If detrending of timeseries is requested.
         Default=False.
 
-    standardize : {'zscore', 'psc', True, False}, optional
+    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, optional
         Strategy to standardize the signal:
 
+            - 'zscore_sample': The signal is z-scored. Timeseries are shifted
+              to zero mean and scaled to unit variance. Uses sample std.
             - 'zscore': The signal is z-scored. Timeseries are shifted
-              to zero mean and scaled to unit variance.
+              to zero mean and scaled to unit variance. Uses population std
+              by calling default :obj:`numpy.std` with N - ``ddof=0``.
             - 'psc':  Timeseries are shifted to zero mean value and scaled
               to percent signal change (as compared to original mean signal).
             - True: The signal is z-scored (same as option `zscore`).
@@ -52,8 +55,10 @@ def _standardize(signals, detrend=False, standardize="zscore"):
     std_signals : :class:`numpy.ndarray`
         Copy of signals, standardized.
     """
-    if standardize not in [True, False, "psc", "zscore"]:
-        raise ValueError(f"{standardize} is no valid standardize strategy.")
+
+    if standardize not in [True, False, 'psc', 'zscore', 'zscore_sample']:
+        raise ValueError('{} is no valid standardize strategy.'
+                         .format(standardize))
 
     signals = _detrend(signals, inplace=False) if detrend else signals.copy()
 
@@ -65,15 +70,38 @@ def _standardize(signals, detrend=False, standardize="zscore"):
             )
             return signals
 
-        elif (standardize == "zscore") or (standardize is True):
+        elif (standardize == 'zscore_sample'):
+            if not detrend:
+                # remove mean if not already detrended
+                signals = signals - signals.mean(axis=0)
+
+            std = signals.std(axis=0, ddof=1)
+            # avoid numerical problems
+            std[std < np.finfo(np.float64).eps] = 1.
+            signals /= std
+
+        elif (standardize == 'zscore') or (standardize is True):
+            std_strategy_default = (
+                "The default strategy for standardize is currently 'zscore' "
+                "which incorrectly uses population std to calculate sample "
+                "zscores. The new strategy 'zscore_sample' corrects this "
+                "behavior by using the sample std. In release 0.13, the "
+                "default strategy will be replaced by the new strategy and "
+                "the 'zscore' option will be removed. Please use "
+                "'zscore_sample' instead."
+            )
+            warnings.warn(category=FutureWarning,
+                          message=std_strategy_default,
+                          stacklevel=3)
+            
             if not detrend:
                 # remove mean if not already detrended
                 signals = signals - signals.mean(axis=0)
 
             std = signals.std(axis=0)
-            std[
-                std < np.finfo(np.float64).eps
-            ] = 1.0  # avoid numerical problems
+            # avoid numerical problems
+            std[std < np.finfo(np.float64).eps] = 1.
+
             signals /= std
 
         elif standardize == "psc":
@@ -620,11 +648,14 @@ def clean(
 
     %(high_pass)s
     %(detrend)s
-    standardize : {'zscore', 'psc', False}, optional
+    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, optional
         Strategy to standardize the signal:
 
+            - 'zscore_sample': The signal is z-scored. Timeseries are shifted
+              to zero mean and scaled to unit variance. Uses sample std.
             - 'zscore': The signal is z-scored. Timeseries are shifted
-              to zero mean and scaled to unit variance.
+              to zero mean and scaled to unit variance. Uses population std
+              by calling default :obj:`numpy.std` with N - ``ddof=0``.
             - 'psc':  Timeseries are shifted to zero mean value and scaled
               to percent signal change (as compared to original mean signal).
             - True: The signal is z-scored (same as option `zscore`).
