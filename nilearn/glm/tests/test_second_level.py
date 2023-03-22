@@ -17,6 +17,9 @@ from numpy.testing import (assert_almost_equal,
                            assert_array_almost_equal,
                            )
 
+# Set backend to avoid DISPLAY problems
+from nilearn.plotting import _set_mpl_backend
+
 from nilearn._utils.data_gen import (write_fake_fmri_data_and_design,
                                      generate_fake_fmri_data_and_design)
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
@@ -24,8 +27,22 @@ from nilearn.maskers import NiftiMasker
 from nilearn.glm.first_level import (FirstLevelModel, run_glm)
 from nilearn.glm.second_level import (SecondLevelModel,
                                       non_parametric_inference)
-from nilearn.reporting import get_clusters_table
+
 from scipy import stats
+
+# Avoid making pyflakes unhappy
+_set_mpl_backend
+try:
+    import matplotlib.pyplot
+    matplotlib.pyplot
+except ImportError:
+    have_mpl = False
+else:
+    have_mpl = True
+
+if have_mpl:
+    from nilearn.reporting import get_clusters_table
+
 
 # This directory path
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
@@ -652,6 +669,9 @@ def test_non_parametric_inference_cluster_level():
         del func_img, FUNCFILE, out, X, Y
 
 
+@pytest.mark.skipif(
+    not have_mpl, reason="Matplotlib not installed; required for this test"
+)
 def test_non_parametric_inference_cluster_level_with_covariates(
         random_state=0
 ):
