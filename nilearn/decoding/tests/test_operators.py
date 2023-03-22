@@ -3,6 +3,7 @@ import itertools
 import numpy as np
 import pytest
 from nilearn.decoding.proximal_operators import _prox_l1, _prox_tvl1
+from numpy.testing import assert_almost_equal
 
 
 def test_prox_l1_nonexpansiveness(n_features=10):
@@ -45,4 +46,4 @@ def test_prox_tvl1_approximates_prox_l1_for_lasso(
     b = _prox_l1(z.copy(), weight)[-1].ravel()
 
     # results should be close in l-infinity norm
-    np.testing.assert_almost_equal(np.abs(a - b).max(), 0.0, decimal=decimal)
+    assert_almost_equal(np.abs(a - b).max(), 0.0, decimal=decimal)

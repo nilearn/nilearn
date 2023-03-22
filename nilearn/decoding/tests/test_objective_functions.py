@@ -9,6 +9,7 @@ from nilearn.decoding.objective_functions import (
     _logistic_loss_grad,
 )
 from nilearn.decoding.space_net import BaseSpaceNet
+from numpy.testing import assert_almost_equal, assert_array_equal
 from scipy.optimize import check_grad
 from sklearn.utils import check_random_state
 
@@ -26,7 +27,7 @@ def test_grad_div_adjoint_arbitrary_ndim(ndim, l1_ratio, size):
     x = rng.normal(size=shape)
     y = rng.normal(size=[ndim + 1] + list(shape))
 
-    np.testing.assert_almost_equal(
+    assert_almost_equal(
         np.sum(_gradient_id(x, l1_ratio=l1_ratio) * y),
         -np.sum(x * _div_id(y, l1_ratio=l1_ratio)),
     )
@@ -36,29 +37,32 @@ def test_grad_div_adjoint_arbitrary_ndim(ndim, l1_ratio, size):
 @pytest.mark.parametrize("size", [1, 2, 10])
 def test_1D__gradient_id(l1_ratio, size):
     img = np.arange(size)
+
     gid = _gradient_id(img, l1_ratio=l1_ratio)
 
-    np.testing.assert_array_equal(gid.shape, [img.ndim + 1] + list(img.shape))
+    assert_array_equal(gid.shape, [img.ndim + 1] + list(img.shape))
 
-    np.testing.assert_array_equal(l1_ratio * img, gid[-1])
+    assert_array_equal(l1_ratio * img, gid[-1])
 
 
 @pytest.mark.parametrize("l1_ratio", L1_RATIO)
 def test_2D__gradient_id(l1_ratio):
     img = np.array([[1, 3], [4, 2]])
+
     gid = _gradient_id(img, l1_ratio)
 
-    np.testing.assert_array_equal(gid.shape, [img.ndim + 1] + list(img.shape))
+    assert_array_equal(gid.shape, [img.ndim + 1] + list(img.shape))
 
-    np.testing.assert_array_equal(l1_ratio * img, gid[-1])
+    assert_array_equal(l1_ratio * img, gid[-1])
 
 
 @pytest.mark.parametrize("l1_ratio", L1_RATIO)
 def test_3D__gradient_id(l1_ratio):
     img = np.array([[1, 3], [4, 2], [1, 0]])
+
     gid = _gradient_id(img, l1_ratio)
 
-    np.testing.assert_array_equal(gid.shape, [img.ndim + 1] + list(img.shape))
+    assert_array_equal(gid.shape, [img.ndim + 1] + list(img.shape))
 
 
 def test_logistic_loss_derivative(n_samples=4, n_features=10, decimal=5):
@@ -67,7 +71,7 @@ def test_logistic_loss_derivative(n_samples=4, n_features=10, decimal=5):
     y = rng.randn(n_samples)
     n_features = X.shape[1]
     w = rng.randn(n_features + 1)
-    np.testing.assert_almost_equal(
+    assert_almost_equal(
         check_grad(
             lambda w: _logistic(X, y, w),
             lambda w: _logistic_loss_grad(X, y, w),
@@ -77,7 +81,7 @@ def test_logistic_loss_derivative(n_samples=4, n_features=10, decimal=5):
         decimal=decimal,
     )
 
-    np.testing.assert_almost_equal(
+    assert_almost_equal(
         check_grad(
             lambda w: _logistic(X, y, w),
             lambda w: _logistic_loss_grad(X, y, w),

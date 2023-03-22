@@ -33,6 +33,7 @@ from nilearn.decoding.decoder import (
 )
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.maskers import NiftiMasker
+from numpy.testing import assert_array_almost_equal
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
@@ -294,7 +295,7 @@ def test_parallel_fit(rand_X_Y):
     # check that every element of the output tuple is the same for both tries
     for a, b in zip(outputs[0], outputs[1]):
         if isinstance(a, np.ndarray):
-            np.testing.assert_array_almost_equal(a, b)
+            assert_array_almost_equal(a, b)
         else:
             assert a == b
 
@@ -439,6 +440,7 @@ def test_decoder_dummy_classifier_strategy_most_frequent():
     param = dict(strategy="most_frequent")
     dummy_classifier = DummyClassifier(random_state=0)
     dummy_classifier.set_params(**param)
+
     model = Decoder(estimator=dummy_classifier, mask=mask)
     model.fit(X, y)
     y_pred = model.predict(X)
@@ -467,6 +469,7 @@ def test_decoder_error_not_implemented(dummy_binary_classification_data):
     param = dict(strategy="constant")
     dummy_classifier = DummyClassifier(random_state=0)
     dummy_classifier.set_params(**param)
+
     model = Decoder(estimator=dummy_classifier, mask=mask)
 
     with pytest.raises(NotImplementedError):
@@ -477,7 +480,9 @@ def test_decoder_error_unknown_scoring_metrics(
     dummy_binary_classification_data,
 ):
     X, y, mask = dummy_binary_classification_data
+
     dummy_classifier = DummyClassifier(random_state=0)
+
     model = Decoder(estimator=dummy_classifier, mask=mask, scoring="foo")
 
     with pytest.raises(ValueError, match="'foo' is not a valid scoring value"):
@@ -582,6 +587,7 @@ def test_decoder_dummy_regression(regression_data):
     dummy_regressor = DummyRegressor()
     param = dict(strategy="median")
     dummy_regressor.set_params(**param)
+
     model = DecoderRegressor(estimator=dummy_regressor, mask=mask)
     model.fit(X, y)
     y_pred = model.predict(X)
@@ -700,6 +706,7 @@ def test_decoder_multiclass_classification_apply_mask():
     high_pass = 1
     low_pass = 2
     smoothing_fwhm = 0.5
+
     model = Decoder(
         target_affine=target_affine,
         target_shape=target_shape,

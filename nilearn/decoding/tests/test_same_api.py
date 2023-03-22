@@ -3,9 +3,9 @@
 for computing image gradient, loss functions, etc.
 """
 
-import nibabel
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
 from nilearn.decoding.objective_functions import (
     _logistic_loss_lipschitz_constant,
     _squared_loss,
@@ -28,6 +28,11 @@ from nilearn.decoding.space_net_solvers import (
 )
 from nilearn.image import get_data
 from nilearn.masking import _unmask_from_to_3d_array
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
 from sklearn.datasets import load_iris
 from sklearn.utils import check_random_state
 
@@ -54,19 +59,22 @@ def _make_data(rng=None, masked=False, dim=(2, 2, 2)):
 
 def to_niimgs(X, dim):
     p = np.prod(dim)
+
     assert len(dim) == 3
     assert X.shape[-1] <= p
+
     mask = np.zeros(p).astype(bool)
     mask[: X.shape[-1]] = 1
+
     assert mask.sum() == X.shape[1]
+
     mask = mask.reshape(dim)
     X = np.rollaxis(
         np.array([_unmask_from_to_3d_array(x, mask) for x in X]), 0, start=4
     )
     affine = np.eye(4)
-    return nibabel.Nifti1Image(X, affine), nibabel.Nifti1Image(
-        mask.astype(np.float64), affine
-    )
+
+    return Nifti1Image(X, affine), Nifti1Image(mask.astype(np.float64), affine)
 
 
 def test_same_energy_calculus_pure_lasso():
@@ -76,12 +84,14 @@ def test_same_energy_calculus_pure_lasso():
     # check funcvals
     f1 = _squared_loss(X, y, w)
     f2 = _squared_loss_and_spatial_grad(X, y, w.ravel(), mask, 0.0)
+
     assert f1 == f2
 
     # check derivatives
     g1 = _squared_loss_grad(X, y, w)
     g2 = _squared_loss_and_spatial_grad_derivative(X, y, w.ravel(), mask, 0.0)
-    np.testing.assert_array_equal(g1, g2)
+
+    assert_array_equal(g1, g2)
 
 
 def test_lipschitz_constant_loss_mse():
@@ -91,9 +101,11 @@ def test_lipschitz_constant_loss_mse():
     alpha = 0.1
     mask = np.ones(X.shape[1]).astype(bool)
     grad_weight = alpha * X.shape[0] * (1.0 - l1_ratio)
+
     a = _squared_loss_derivative_lipschitz_constant(X, mask, grad_weight)
     b = spectral_norm_squared(X)
-    np.testing.assert_almost_equal(a, b)
+
+    assert_almost_equal(a, b)
 
 
 def test_lipschitz_constant_loss_logreg():
@@ -102,8 +114,10 @@ def test_lipschitz_constant_loss_logreg():
     l1_ratio = 1.0
     alpha = 0.1
     grad_weight = alpha * X.shape[0] * (1.0 - l1_ratio)
+
     a = _logistic_derivative_lipschitz_constant(X, mask, grad_weight)
     b = _logistic_loss_lipschitz_constant(X)
+
     assert a == b
 
 
@@ -140,10 +154,10 @@ def test_graph_net_and_tvl1_same_for_pure_l1(
     # Should be exactly the same (except for numerical errors).
     # However because of the TV-L1 prox approx, results might be 'slightly'
     # different.
-    np.testing.assert_array_almost_equal(a, b, decimal=decimal)
+    assert_array_almost_equal(a, b, decimal=decimal)
 
-    mask = nibabel.Nifti1Image(mask.astype(np.float64), np.eye(4))
-    X = nibabel.Nifti1Image(X.astype(np.float64), np.eye(4))
+    mask = Nifti1Image(mask.astype(np.float64), np.eye(4))
+    X = Nifti1Image(X.astype(np.float64), np.eye(4))
 
     sl = BaseSpaceNet(
         alphas=alpha,
@@ -167,7 +181,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1(
     # Should be exactly the same (except for numerical errors).
     # However because of the TV-L1 prox approx, results might be 'slightly'
     # different.
-    np.testing.assert_array_almost_equal(sl.coef_, tvl1.coef_, decimal=decimal)
+    assert_array_almost_equal(sl.coef_, tvl1.coef_, decimal=decimal)
 
 
 @pytest.mark.parametrize("standardize", [True, False])
@@ -202,7 +216,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(
     )[0]
 
     # should be exactly the same (except for numerical errors)
-    np.testing.assert_array_almost_equal(a, b, decimal=decimal)
+    assert_array_almost_equal(a, b, decimal=decimal)
 
     sl = SpaceNetClassifier(
         alphas=alpha,
@@ -224,9 +238,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(
     ).fit(X_, y)
 
     # should be exactly the same (except for numerical errors)
-    np.testing.assert_array_almost_equal(
-        sl.coef_[0], tvl1.coef_[0], decimal=decimal
-    )
+    assert_array_almost_equal(sl.coef_[0], tvl1.coef_[0], decimal=decimal)
 
 
 @pytest.mark.parametrize("standardize", [True, False])
@@ -267,7 +279,7 @@ def test_graph_net_and_tv_same_for_pure_l1_another_test(
     ).fit(X, y)
 
     # should be exactly the same (except for numerical errors)
-    np.testing.assert_array_almost_equal(sl.coef_, tvl1.coef_, decimal=decimal)
+    assert_array_almost_equal(sl.coef_, tvl1.coef_, decimal=decimal)
 
 
 @pytest.mark.parametrize("penalty", ["graph-net", "tv-l1"])

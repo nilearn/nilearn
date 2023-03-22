@@ -1,7 +1,8 @@
 # Data used in almost all tests
-import nibabel
 import numpy as np
+import pytest
 import scipy as sp
+from nibabel import Nifti1Image
 from nilearn._utils.data_gen import create_graph_net_simulation_data
 from nilearn.decoding.objective_functions import _div, _gradient
 from nilearn.decoding.space_net import BaseSpaceNet
@@ -33,7 +34,7 @@ def _make_data(task="regression", size=4):
         task=task,
     )
     X_, _ = to_niimgs(X, [size] * 3)
-    mask_ = nibabel.Nifti1Image(mask.astype(float), X_.affine)
+    mask_ = Nifti1Image(mask.astype(float), X_.affine)
     return X, y, w, mask, mask_, X_
 
 
@@ -62,7 +63,9 @@ def test_grad_matrix():
     """Test for matricial form of gradient."""
     _, _, w, mask, *_ = _make_data()
     rng = check_random_state(42)
+
     G = get_gradient_matrix(w.size, mask)
+
     image_buffer = np.zeros(mask.shape)
     grad_mask = np.array([mask for _ in range(mask.ndim)])
     for _ in range(10):
@@ -79,6 +82,7 @@ def test_adjointness(size=4):
         image_2 = rng.rand(3, size, size, size)
         Axdoty = np.dot((_gradient(image_1).ravel()), image_2.ravel())
         xdotAty = np.dot((_div(image_2).ravel()), image_1.ravel())
+
         assert_almost_equal(Axdoty, -xdotAty)
 
 
@@ -103,6 +107,7 @@ def test_identity_adjointness(size=4):
         xdotAty = np.dot(
             _graph_net_adjoint_data_function(X, y, adjoint_mask, l1_ratio), x
         )
+
         assert_almost_equal(Axdoty, xdotAty)
 
 
@@ -126,10 +131,11 @@ def test_operators_adjointness(size=4):
         xdotAty = np.dot(
             _graph_net_adjoint_data_function(X, y, adjoint_mask, l1_ratio), x
         )
-        np.testing.assert_almost_equal(Axdoty, xdotAty)
+
+        assert_almost_equal(Axdoty, xdotAty)
 
 
-def test__squared_loss_gradient_at_simple_points():
+def test_squared_loss_gradient_at_simple_points():
     """Test gradient of data loss function in points near to zero.
 
     This is a not so hard test, just for detecting big errors.
@@ -179,15 +185,17 @@ def test_logistic_gradient_at_simple_points():
         )
 
 
-def test__squared_loss_derivative_lipschitz_constant():
+def test_squared_loss_derivative_lipschitz_constant():
     """Test Lipschitz-continuity of the derivative of _squared_loss loss \
     function."""
     X, y, w, mask, *_ = _make_data()
     rng = check_random_state(42)
     grad_weight = 2.08e-1
+
     lipschitz_constant = _squared_loss_derivative_lipschitz_constant(
         X, mask, grad_weight
     )
+
     for _ in range(20):
         x_1 = rng.rand(*w.shape) * rng.randint(1000)
         x_2 = rng.rand(*w.shape) * rng.randint(1000)
@@ -200,6 +208,7 @@ def test__squared_loss_derivative_lipschitz_constant():
             )
         )
         point_difference = linalg.norm(x_1 - x_2)
+
         assert gradient_difference <= lipschitz_constant * point_difference
 
 
@@ -208,9 +217,11 @@ def test_logistic_derivative_lipschitz_constant():
     X, y, w, mask, *_ = _make_data()
     rng = check_random_state(42)
     grad_weight = 2.08e-1
+
     lipschitz_constant = _logistic_derivative_lipschitz_constant(
         X, mask, grad_weight
     )
+
     for _ in range(20):
         x_1 = rng.rand(w.shape[0] + 1) * rng.randint(1000)
         x_2 = rng.rand(w.shape[0] + 1) * rng.randint(1000)
@@ -226,11 +237,12 @@ def test_logistic_derivative_lipschitz_constant():
         assert gradient_difference <= lipschitz_constant * point_difference
 
 
-def test_max_alpha__squared_loss():
+@pytest.mark.parametrize("l1_ratio", np.linspace(0.1, 1, 3))
+def test_max_alpha_squared_loss(l1_ratio):
     """Tests that models with L1 regularization over the theoretical bound \
     are full of zeros, for logistic regression."""
     X, y, _, _, mask_, X_ = _make_data()
-    l1_ratios = np.linspace(0.1, 1, 3)
+
     reg = BaseSpaceNet(
         mask=mask_,
         max_iter=10,
@@ -238,11 +250,11 @@ def test_max_alpha__squared_loss():
         is_classif=False,
         verbose=0,
     )
-    for l1_ratio in l1_ratios:
-        reg.l1_ratios = l1_ratio
-        reg.alphas = np.max(np.dot(X.T, y)) / l1_ratio
-        reg.fit(X_, y)
-        assert_almost_equal(reg.coef_, 0.0)
+
+    reg.l1_ratios = l1_ratio
+    reg.alphas = np.max(np.dot(X.T, y)) / l1_ratio
+    reg.fit(X_, y)
+    assert_almost_equal(reg.coef_, 0.0)
 
 
 def test_tikhonov_regularization_vs_graph_net():
@@ -271,6 +283,7 @@ def test_tikhonov_regularization_vs_graph_net():
         verbose=0,
     )
     graph_net.fit(X_, y.copy())
+
     coef_ = graph_net.coef_[0]
     graph_net_perf = (
         0.5 / y.size * linalg.norm(np.dot(X, coef_) - y) ** 2

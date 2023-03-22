@@ -19,6 +19,7 @@ from nilearn.decoding.space_net_solvers import (
     _graph_net_squared_loss,
 )
 from nilearn.image import get_data
+from numpy.testing import assert_almost_equal, assert_array_equal
 from scipy import linalg
 from sklearn.datasets import load_iris
 from sklearn.linear_model import Lasso, LogisticRegression
@@ -31,6 +32,7 @@ squared_loss_path_scores = partial(path_scores, is_classif=False)
 from .test_same_api import to_niimgs
 
 IS_CLASSIF = [True, False]
+
 PENALTY = ["graph-net", "tv-l1"]
 
 
@@ -47,7 +49,7 @@ def test_space_net_alpha_grid(
     alpha_max = np.max(np.abs(np.dot(X.T, y))) / l1_ratio
 
     if n_alphas == 1:
-        np.testing.assert_almost_equal(
+        assert_almost_equal(
             _space_net_alpha_grid(
                 X, y, n_alphas=n_alphas, l1_ratio=l1_ratio, logistic=is_classif
             ),
@@ -57,8 +59,9 @@ def test_space_net_alpha_grid(
     alphas = _space_net_alpha_grid(
         X, y, n_alphas=n_alphas, l1_ratio=l1_ratio, logistic=is_classif
     )
-    np.testing.assert_almost_equal(alphas.max(), alpha_max)
-    np.testing.assert_almost_equal(n_alphas, len(alphas))
+
+    assert_almost_equal(alphas.max(), alpha_max)
+    assert_almost_equal(n_alphas, len(alphas))
 
 
 def test_space_net_alpha_grid_same_as_sk():
@@ -69,7 +72,8 @@ def test_space_net_alpha_grid_same_as_sk():
         iris = load_iris()
         X = iris.data
         y = iris.target
-        np.testing.assert_almost_equal(
+
+        assert_almost_equal(
             _space_net_alpha_grid(X, y, n_alphas=5),
             X.shape[0] * _alpha_grid(X, y, n_alphas=5, fit_intercept=False),
         )
@@ -121,6 +125,7 @@ def test_params_correctly_propagated_in_constructors(
         penalty=penalty,
         is_classif=is_classif,
     )
+
     assert cvobj.n_alphas == n_alphas
     assert cvobj.l1_ratios == l1_ratio
     assert cvobj.n_jobs == n_jobs
@@ -142,6 +147,7 @@ def test_params_correctly_propagated_in_constructors_biz(
         alphas=alpha,
         l1_ratios=l1_ratio,
     )
+
     assert cvobj.alphas == alpha
     assert cvobj.l1_ratios == l1_ratio
 
@@ -172,6 +178,7 @@ def test_logistic_path_scores():
     _, mask = to_niimgs(X, [2, 2, 2])
     mask = get_data(mask).astype(bool)
     alphas = [1.0, 0.1, 0.01]
+
     test_scores, best_w = logistic_path_scores(
         _graph_net_logistic,
         X,
@@ -184,6 +191,7 @@ def test_logistic_path_scores():
         {},
     )[:2]
     test_scores = test_scores[0]
+
     assert len(test_scores) == len(alphas)
     assert X.shape[1] + 1 == len(best_w)
 
@@ -194,6 +202,7 @@ def test_squared_loss_path_scores():
     _, mask = to_niimgs(X, [2, 2, 2])
     mask = get_data(mask).astype(bool)
     alphas = [1.0, 0.1, 0.01]
+
     test_scores, best_w = squared_loss_path_scores(
         _graph_net_squared_loss,
         X,
@@ -205,6 +214,7 @@ def test_squared_loss_path_scores():
         np.arange(len(X)),
         {},
     )[:2]
+
     test_scores = test_scores[0]
     assert len(test_scores) == len(alphas)
     assert X.shape[1] + 1 == len(best_w)
@@ -269,6 +279,7 @@ def test_graph_net_classifier_score():
     X, y = iris.data, iris.target
     y = 2 * (y > 0) - 1
     X_, mask = to_niimgs(X, (2, 2, 2))
+
     gnc = SpaceNetClassifier(
         mask=mask,
         alphas=1.0 / 0.01 / X.shape[0],
@@ -278,6 +289,7 @@ def test_graph_net_classifier_score():
         verbose=0,
         screening_percentile=100.0,
     ).fit(X_, y)
+
     accuracy = gnc.score(X_, y)
     assert accuracy == accuracy_score(y, gnc.predict(X_))
 
@@ -296,6 +308,7 @@ def test_log_reg_vs_graph_net_two_classes_iris(
     X, y = iris.data, iris.target
     y = 2 * (y > 0) - 1
     X_, mask = to_niimgs(X, (2, 2, 2))
+
     tvl1 = SpaceNetClassifier(
         mask=mask,
         alphas=1.0 / C / X.shape[0],
@@ -307,17 +320,18 @@ def test_log_reg_vs_graph_net_two_classes_iris(
         standardize=False,
         screening_percentile=100.0,
     ).fit(X_, y)
+
     sklogreg = LogisticRegression(
         penalty="l1", fit_intercept=True, solver="liblinear", tol=tol, C=C
     ).fit(X, y)
 
     # compare supports
-    np.testing.assert_array_equal(
+    assert_array_equal(
         (np.abs(tvl1.coef_) < zero_thr), (np.abs(sklogreg.coef_) < zero_thr)
     )
 
     # compare predictions
-    np.testing.assert_array_equal(tvl1.predict(X_), sklogreg.predict(X))
+    assert_array_equal(tvl1.predict(X_), sklogreg.predict(X))
 
 
 def test_lasso_vs_graph_net():
@@ -344,11 +358,12 @@ def test_lasso_vs_graph_net():
     )
     lasso.fit(X_, y)
     graph_net.fit(X, y)
+
     lasso_perf = 0.5 / y.size * linalg.norm(
         np.dot(X_, lasso.coef_) - y
     ) ** 2 + np.sum(np.abs(lasso.coef_))
     graph_net_perf = 0.5 * ((graph_net.predict(X) - y) ** 2).mean()
-    np.testing.assert_almost_equal(graph_net_perf, lasso_perf, decimal=3)
+    assert_almost_equal(graph_net_perf, lasso_perf, decimal=3)
 
 
 def test_crop_mask():
@@ -357,6 +372,7 @@ def test_crop_mask():
     box = mask[:2, :3, :4]
     box[rng.rand(*box.shape) < 3.0] = 1  # mask covers 30% of brain
     idx = np.where(mask)
+
     assert idx[1].max() < 3
     tight_mask = _crop_mask(mask)
     assert mask.sum() == tight_mask.sum()
@@ -369,7 +385,9 @@ def test_univariate_feature_screening(
 ):
     rng = np.random.RandomState(42)
     mask = rng.rand(*dim) > 100.0 / np.prod(dim)
+
     assert mask.sum() >= 100.0
+
     mask[
         dim[0] // 2, dim[1] // 3 :, -dim[2] // 2 :
     ] = 1  # put spatial structure
@@ -383,6 +401,7 @@ def test_univariate_feature_screening(
         X, y, mask, is_classif, 20.0
     )
     n_features_ = support_.sum()
+
     assert X_.shape[1] == n_features_
     assert mask_.sum() == n_features_
     assert n_features_ <= n_features
@@ -400,6 +419,7 @@ def test_space_net_classifier_subclass(penalty, alpha, l1_ratio, verbose):
         l1_ratios=l1_ratio,
         verbose=verbose,
     )
+
     assert cvobj.alphas == alpha
     assert cvobj.l1_ratios == l1_ratio
 
@@ -416,6 +436,7 @@ def test_space_net_regressor_subclass(penalty, alpha, l1_ratio, verbose):
         l1_ratios=l1_ratio,
         verbose=verbose,
     )
+
     assert cvobj.alphas == alpha
     assert cvobj.l1_ratios == l1_ratio
 
@@ -425,6 +446,7 @@ def test_space_net_alpha_grid_pure_spatial(is_classif):
     rng = check_random_state(42)
     X = rng.randn(10, 100)
     y = np.arange(X.shape[0])
+
     assert not np.any(
         np.isnan(
             _space_net_alpha_grid(X, y, l1_ratio=0.0, logistic=is_classif)
@@ -503,6 +525,7 @@ def test_targets_in_y_space_net_regressor():
 
     imgs, mask = to_niimgs(X, (2, 2, 2))
     regressor = SpaceNetRegressor(mask=mask, verbose=0)
+
     with pytest.raises(
         ValueError, match="The given input y must have at least 2 targets"
     ):

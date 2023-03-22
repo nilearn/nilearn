@@ -86,6 +86,7 @@ def test_input_args_and_kwargs(cb_retval, verbose, dgap_factor):
         verbose=verbose,
         max_iter=100,
     )
+
     assert best_w.shape == mask.shape
     assert isinstance(objective, list)
     assert isinstance(init, dict)
