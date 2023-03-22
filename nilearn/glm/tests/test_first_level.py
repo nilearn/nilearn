@@ -1237,10 +1237,9 @@ def test_first_level_from_bids_no_session(tmp_path):
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path,
         n_sub=3,
-        n_ses=1,
+        n_ses=0,
         tasks=["main"],
-        n_runs=[2],
-        no_session=True
+        n_runs=[2]
     )
     # repeated run entity error 
     # when run entity is in filenames and not ses

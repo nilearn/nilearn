@@ -1400,7 +1400,7 @@ def _check_args_first_level_from_bids(
 
 def _make_bids_files_filter(
     task_label,
-    space_label,
+    space_label=None,
     supported_filters= None,
     extra_filter= None,
 ) :
