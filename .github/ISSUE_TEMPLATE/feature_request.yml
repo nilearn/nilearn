@@ -15,23 +15,34 @@ body:
 
 - type: markdown
   attributes:
-    value: "### Provide a brief description what you would like changes and why."
+    value: |
+      "### Provide a brief description what you would like changes and why.
 
+      Please fill in the following information, to the best of your ability.
+      "
 
 - type: textarea
   attributes:
     label: Describe your proposed enhancement in detail.
-    description: |
-      Please fill in the following information, to the best of your ability.
+  validations:
+    required: true
 
+
+- type: textarea
+  attributes:
+    label: Benefits to the change
+  validations:
+    required: true
+
+
+- type: textarea
+  attributes:
+    label: Pseudocode for the new behavior, if applicable
     value: |
-      ### Benefits to the change
-
-
-      ### Pseudocode for the new behavior, if applicable
 
       ```python
+      # insert your code below
 
       ```
   validations:
-    required: true
+    required: false

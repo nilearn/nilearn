@@ -15,19 +15,19 @@ body:
 
 - type: markdown
   attributes:
-    value: "### Describe your proposed enhancement in detail."
+    value: "### Describe what improvement you would like to see in the documentation."
 
 
 - type: textarea
   attributes:
-    label: Describe your proposed enhancement in detail.
-    placeholder: Describe your proposed enhancement in detail.
+    label: " "
+    placeholder: Describe your proposed suggestion in detail.
   validations:
     required: true
 
 
 - type: textarea
   attributes:
-    label: List any pages that would be impacted by the enhancement.
+    label: List any pages that would be impacted.
   validations:
     required: false
