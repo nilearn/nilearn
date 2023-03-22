@@ -2,7 +2,6 @@ from functools import partial
 
 import numpy as np
 import pytest
-from nilearn._utils.data_gen import create_graph_net_simulation_data
 from nilearn._utils.param_validation import _adjust_screening_percentile
 from nilearn.decoding.space_net import (
     BaseSpaceNet,
@@ -18,6 +17,7 @@ from nilearn.decoding.space_net_solvers import (
     _graph_net_logistic,
     _graph_net_squared_loss,
 )
+from nilearn.decoding.tests._utils import create_graph_net_simulation_data
 from nilearn.image import get_data
 from numpy.testing import assert_almost_equal, assert_array_equal
 from scipy import linalg
