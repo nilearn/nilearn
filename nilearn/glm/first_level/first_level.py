@@ -800,7 +800,7 @@ class FirstLevelModel(BaseGLM):
         return output
 
 
-def first_level_from_bids(dataset_path: str | pathlib.Path,
+def first_level_from_bids(dataset_path,
                           task_label,
                           space_label=None,
                           sub_labels=None,
@@ -1007,8 +1007,8 @@ def first_level_from_bids(dataset_path: str | pathlib.Path,
     return models, models_run_imgs, models_events, models_confounds
 
 
-def _list_valid_subjects(derivatives_path: str,
-                         sub_labels: list[str] | None) -> list[str]:
+def _list_valid_subjects(derivatives_path,
+                         sub_labels):
     """List valid subjects in the dataset.
 
     - Include all subjects if no subject pre-selection is passed.
@@ -1052,8 +1052,8 @@ def _list_valid_subjects(derivatives_path: str,
 
 
 def _report_found_files(
-    files: list[str], text: str, sub_label: str, filters: list[tuple[str, str]]
-) -> None:
+    files, text, sub_label, filters
+):
     """Print list of files found for a given subject and filter.
 
     Parameters
@@ -1081,13 +1081,13 @@ def _report_found_files(
 
 
 def _get_processed_imgs(
-    derivatives_path: str,
-    sub_label: str,
-    task_label: str,
-    space_label: str,
-    img_filters: list[tuple[str, str]],
-    verbose: int
-) -> list[str]:
+    derivatives_path,
+    sub_label,
+    task_label,
+    space_label,
+    img_filters,
+    verbose
+) :
     """Get images for a given subject, task and filters.
 
     Also checks that there is only one images per run / session.
@@ -1141,13 +1141,13 @@ def _get_processed_imgs(
 
 
 def _get_events_files(
-    dataset_path: str,
-    sub_label: str,
-    task_label: str,
-    img_filters: list[tuple[str, str]],
-    imgs: list[str],
-    verbose: int,
-) -> list[str]:
+    dataset_path,
+    sub_label,
+    task_label,
+    img_filters,
+    imgs,
+    verbose,
+):
     """Get events.tsv files for a given subject, task and filters.
 
     Also checks that the number of events.tsv files
@@ -1209,13 +1209,13 @@ def _get_events_files(
 
 
 def _get_confounds(
-    derivatives_path: str,
-    sub_label: str,
-    task_label: str,
-    img_filters: list[tuple[str, str]],
-    imgs: list[str],
-    verbose: int,
-) -> Optional[list[str]]:
+    derivatives_path,
+    sub_label,
+    task_label,
+    img_filters,
+    imgs,
+    verbose,
+):
     """Get confounds.tsv files for a given subject, task and filters.
 
     Also checks that the number of confounds.tsv files
@@ -1277,7 +1277,7 @@ def _get_confounds(
     return confounds or None
 
 
-def _check_confounds_list(confounds: list[str], imgs: list[str]) -> None:
+def _check_confounds_list(confounds, imgs):
     """Check the number of confounds.tsv files.
 
     If no file is found, it will be assumed there are none,
@@ -1302,13 +1302,13 @@ def _check_confounds_list(confounds: list[str], imgs: list[str]) -> None:
 
 
 def _check_args_first_level_from_bids(
-    dataset_path: str | Path,
-    task_label: str,
-    space_label: str | None,
-    sub_labels: list[str] | None,
-    img_filters: list[tuple[str, str]],
-    derivatives_folder: str,
-) -> None:
+    dataset_path,
+    task_label,
+    space_label,
+    sub_labels,
+    img_filters,
+    derivatives_folder,
+):
     """Check type and value of arguments of first_level_from_bids.
 
     Check that:
@@ -1399,11 +1399,11 @@ def _check_args_first_level_from_bids(
 
 
 def _make_bids_files_filter(
-    task_label: str,
-    space_label: str | None = None,
-    supported_filters: list[str] | None = None,
-    extra_filter: list[tuple[str, str]] | None = None,
-) -> list[tuple[str, str]]:
+    task_label,
+    space_label,
+    supported_filters= None,
+    extra_filter= None,
+) :
     """Return a filter to specific files from a BIDS dataset.
 
     Parameters
@@ -1449,8 +1449,8 @@ def _make_bids_files_filter(
 
 
 def _check_bids_image_list(
-    imgs: list[str] | None, sub_label: str, filters: list[tuple[str, str]]
-) -> None:
+    imgs, sub_label, filters
+):
     """Check input BIDS images.
 
     Check that:
@@ -1527,13 +1527,13 @@ def _check_bids_image_list(
 
 
 def _check_bids_events_list(
-    events: list[str] | None,
-    imgs: list[str],
-    sub_label: str,
-    task_label: str,
-    dataset_path: str,
-    events_filters: list[tuple[str, str]],
-) -> None:
+    events,
+    imgs,
+    sub_label,
+    task_label,
+    dataset_path,
+    events_filters,
+):
     """Check input BIDS events.
 
     Check that:
