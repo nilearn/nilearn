@@ -24,6 +24,7 @@ module = [
     "boto3",
     "botocore.handlers",
     "joblib",
+    "joblib.memory",
     "kaleido",
     # "lxml.*",
     "matplotlib.*",

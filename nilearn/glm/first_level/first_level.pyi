@@ -1,5 +1,6 @@
 import pathlib
-from typing import Union, Optional
+from typing import Optional, Union
+
 from _typeshed import Incomplete
 from nilearn._utils import (
     fill_doc as fill_doc,
@@ -135,14 +136,10 @@ def first_level_from_bids(
 ): ...
 def _list_valid_subjects(
     derivatives_path: str, sub_labels: list[str] | None
-) -> list[str]:
-    ...
-
+) -> list[str]: ...
 def _report_found_files(
     files: list[str], text: str, sub_label: str, filters: list[tuple[str, str]]
-) -> None:
-    ...
-
+) -> None: ...
 def _get_processed_imgs(
     derivatives_path: str,
     sub_label: str,
@@ -150,9 +147,7 @@ def _get_processed_imgs(
     space_label: str,
     img_filters: list[tuple[str, str]],
     verbose: int,
-) -> list[str]:
-    ...
-
+) -> list[str]: ...
 def _get_events_files(
     dataset_path: str,
     sub_label: str,
@@ -160,9 +155,7 @@ def _get_events_files(
     img_filters: list[tuple[str, str]],
     imgs: list[str],
     verbose: int,
-) -> list[str]:
-    ...
-
+) -> list[str]: ...
 def _get_confounds(
     derivatives_path: str,
     sub_label: str,
@@ -170,12 +163,8 @@ def _get_confounds(
     img_filters: list[tuple[str, str]],
     imgs: list[str],
     verbose: int,
-) -> Optional[list[str]]:
-    ...
-
-def _check_confounds_list(confounds: list[str], imgs: list[str]) -> None:
-    ...
-
+) -> Optional[list[str]]: ...
+def _check_confounds_list(confounds: list[str], imgs: list[str]) -> None: ...
 def _check_args_first_level_from_bids(
     dataset_path: str | pathlib.Path,
     task_label: str,
@@ -191,14 +180,10 @@ def _make_bids_files_filter(
     space_label: str | None = None,
     supported_filters: list[str] | None = None,
     extra_filter: list[tuple[str, str]] | None = None,
-) -> list[tuple[str, str]]:
-    ...
-
+) -> list[tuple[str, str]]: ...
 def _check_bids_image_list(
     imgs: list[str] | None, sub_label: str, filters: list[tuple[str, str]]
-) -> None:
-    ...
-
+) -> None: ...
 def _check_bids_events_list(
     events: list[str] | None,
     imgs: list[str],
@@ -206,5 +191,4 @@ def _check_bids_events_list(
     task_label: str,
     dataset_path: str,
     events_filters: list[tuple[str, str]],
-) -> None:
-    ...
+) -> None: ...
