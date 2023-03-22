@@ -17,7 +17,6 @@ body:
   attributes:
     value: "### Please fill in the following information to the best of your ability."
 
-
 - type: checkboxes
   attributes:
     label: Is there an existing issue for this?
@@ -27,7 +26,6 @@ body:
     - label: I have searched the existing issues
       required: true
 
-
 - type: checkboxes
   attributes:
     label: Operating system
@@ -36,7 +34,6 @@ body:
     - label: Linux
     - label: Mac
     - label: Windows
-
 
 - type: textarea
   attributes:
@@ -49,7 +46,6 @@ body:
   validations:
     required: false
 
-
 - type: checkboxes
   attributes:
     label: Python version
@@ -60,7 +56,6 @@ body:
     - label: '3.9'
     - label: '3.8'
     - label: '3.7'
-
 
 - type: dropdown
   attributes:
@@ -82,14 +77,12 @@ body:
   validations:
     required: true
 
-
 - type: textarea
   attributes:
     label: Expected behavior
     placeholder: Describe what outcome you expected.
   validations:
     required: true
-
 
 - type: textarea
   attributes:
@@ -129,6 +122,5 @@ body:
 
 
       ```
-
   validations:
     required: false

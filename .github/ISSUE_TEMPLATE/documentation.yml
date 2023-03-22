@@ -17,14 +17,12 @@ body:
   attributes:
     value: "### Describe what improvement you would like to see in the documentation."
 
-
 - type: textarea
   attributes:
     label: " "
     placeholder: Describe your proposed suggestion in detail.
   validations:
     required: true
-
 
 - type: textarea
   attributes:

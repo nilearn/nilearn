@@ -15,11 +15,11 @@ body:
 
 - type: markdown
   attributes:
-    value: |
-      "### Provide a brief description what you would like changes and why.
+    value: "### Provide a brief description what you would like changes and why."
 
-      Please fill in the following information, to the best of your ability.
-      "
+- type: markdown
+  attributes:
+    value: Please fill in the following information, to the best of your ability.
 
 - type: textarea
   attributes:
@@ -27,13 +27,11 @@ body:
   validations:
     required: true
 
-
 - type: textarea
   attributes:
     label: Benefits to the change
   validations:
     required: true
-
 
 - type: textarea
   attributes:
