@@ -1,10 +1,10 @@
 """Test the parcellations tools module"""
+import warnings
+
 import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image
-import warnings
-
 from nilearn.regions.parcellations import (
     Parcellations,
     _check_parameters_transform,
@@ -95,7 +95,7 @@ def test_parcellations_warnings(empty_image):
 def test_parcellations_no_warnings(empty_image):
     parcellator = Parcellations(method="kmeans", n_parcels=1, verbose=0)
     with warnings.catch_warnings(record=True) as record:
-        parcellator.fit(test_empty_image)
+        parcellator.fit(empty_image)
     assert all([r.category is not UserWarning for r in record])
 
 

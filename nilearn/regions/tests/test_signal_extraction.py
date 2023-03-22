@@ -2,11 +2,11 @@
 # Author: Ph. Gervais
 # License: simplified BSD
 
+import warnings
+
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
-import warnings
-
 from nilearn._utils.data_gen import (
     generate_fake_fmri,
     generate_labeled_regions,
