@@ -55,10 +55,8 @@ def _standardize(signals, detrend=False, standardize="zscore"):
     std_signals : :class:`numpy.ndarray`
         Copy of signals, standardized.
     """
-
-    if standardize not in [True, False, 'psc', 'zscore', 'zscore_sample']:
-        raise ValueError('{} is no valid standardize strategy.'
-                         .format(standardize))
+    if standardize not in [True, False, "psc", "zscore", "zscore_sample"]:
+        raise ValueError(f"{standardize} is no valid standardize strategy.")
 
     signals = _detrend(signals, inplace=False) if detrend else signals.copy()
 
@@ -70,17 +68,17 @@ def _standardize(signals, detrend=False, standardize="zscore"):
             )
             return signals
 
-        elif (standardize == 'zscore_sample'):
+        elif standardize == "zscore_sample":
             if not detrend:
                 # remove mean if not already detrended
                 signals = signals - signals.mean(axis=0)
 
             std = signals.std(axis=0, ddof=1)
             # avoid numerical problems
-            std[std < np.finfo(np.float64).eps] = 1.
+            std[std < np.finfo(np.float64).eps] = 1.0
             signals /= std
 
-        elif (standardize == 'zscore') or (standardize is True):
+        elif (standardize == "zscore") or (standardize is True):
             std_strategy_default = (
                 "The default strategy for standardize is currently 'zscore' "
                 "which incorrectly uses population std to calculate sample "
@@ -90,17 +88,19 @@ def _standardize(signals, detrend=False, standardize="zscore"):
                 "the 'zscore' option will be removed. Please use "
                 "'zscore_sample' instead."
             )
-            warnings.warn(category=FutureWarning,
-                          message=std_strategy_default,
-                          stacklevel=3)
-            
+            warnings.warn(
+                category=FutureWarning,
+                message=std_strategy_default,
+                stacklevel=3,
+            )
+
             if not detrend:
                 # remove mean if not already detrended
                 signals = signals - signals.mean(axis=0)
 
             std = signals.std(axis=0)
             # avoid numerical problems
-            std[std < np.finfo(np.float64).eps] = 1.
+            std[std < np.finfo(np.float64).eps] = 1.0
 
             signals /= std
 
