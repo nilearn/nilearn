@@ -482,7 +482,7 @@ def test_swap_img_hemispheres():
     rng = np.random.RandomState(42)
 
     # make sure input image data is not overwritten inside function
-    data = rng.standard_normal(size=(10, 10, 10))
+    data = rng.standard_normal(size=SHAPE_3D)
     data_img = Nifti1Image(data, AFFINE)
 
     swap_img_hemispheres(data_img)
