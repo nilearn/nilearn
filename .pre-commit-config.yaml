@@ -20,6 +20,10 @@ files: |
         | examples
         | maint_tools
         | setup.*
+        | nilearn/__init__.py
+        | nilearn/signal.py
+        | nilearn/masking.py
+        | nilearn/conftest.py
         | nilearn/de.*
         | nilearn/connectome/.*py
         | nilearn/image/.*py
@@ -29,32 +33,24 @@ files: |
 
 exclude: |
     (?x)^(
-        doc/changes/(names|latest|0\\.9\\.[0-2]|0\\.10\\.0).rst
+        doc/changes/(names|latest).rst
         | doc/glm/first_level_model\\.rst
         | introduction\\.rst
         | maintenance\\.rst
         | manipulating_images/input_output\\.rst
         | modules/datasets\\.rst
         | references\\.bib
-        | themes/nilearn/static/nature\\.css_t
         | examples/.*/.*3d_map_to_surface_projection.py
-        | examples/.*/.*demo_glass_brain.py
-        | examples/.*/.*demo_glass_brain_extensive.py
-        | examples/.*/.*demo_more_plotting.py
         | examples/.*/.*demo_plotting.py
         | examples/.*/.*fiac_analysis.py
         | examples/.*/.*fixed_effects.py
-        | examples/.*/.*frem.py
         | examples/.*/.*group_level_connectivity.py
-        | examples/.*/.*negate_image.py
         | examples/.*/.*localizer_surface_analysis.py
         | examples/.*/.*searchlight_surface.py
-        | examples/.*/.*resample_to_template.py
         | examples/.*/.*surf_atlas.py
         | examples/.*/.*surf_stat_map.py
         | examples/.*/.*surface_bids_analysis.py
         | examples/.*/.*surface_projection_strategies.py
-        | examples/.*/.*two_session_model.py
         | nilearn/externals/tempita
     )$
 
@@ -76,18 +72,22 @@ repos:
       - id: isort
         args: ["--profile", "black"]
 
+  - repo: https://github.com/ikamensh/flynt/
+    rev: "0.77"
+    hooks:
+    -   id: flynt
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.3.1
+    hooks:
+      - id: pyupgrade
+        args: [--py36-plus]
+
   - repo: https://github.com/psf/black
     rev: 23.1.0
     hooks:
       - id: black
         args: [--config=pyproject.toml, --verbose]
-
-  - repo: https://github.com/pyCQA/flake8
-    rev: 6.0.0
-    hooks:
-      - id: flake8
-        args: [--config=setup.cfg, --verbose]
-        additional_dependencies: [flake8-docstrings]
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.4
@@ -95,8 +95,9 @@ repos:
       - id: codespell
         args: [--config=setup.cfg]
 
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v3.3.1
+  - repo: https://github.com/pyCQA/flake8
+    rev: 6.0.0
     hooks:
-      - id: pyupgrade
-        args: [--py36-plus]
+      - id: flake8
+        args: [--config=setup.cfg, --verbose]
+        additional_dependencies: [flake8-docstrings]
