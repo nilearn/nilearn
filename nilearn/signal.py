@@ -871,11 +871,8 @@ def _process_runs(
     """Process each run independently."""
     if len(runs) != len(signals):
         raise ValueError(
-            (
-                "The length of the run vector (%i) "
-                "does not match the length of the signals (%i)"
-            )
-            % (len(runs), len(signals))
+            f"The length of the run vector ({len(runs)}) "
+            f"does not match the length of the signals ({len(signals)})"
         )
     cleaned_signals = []
     for i, run in enumerate(np.unique(runs)):
@@ -978,11 +975,8 @@ def _sanitize_runs(n_time, runs):
     and detect the number of unique runs."""
     if runs is not None and len(runs) != n_time:
         raise ValueError(
-            (
-                "The length of the run vector (%i) "
-                "does not match the length of the signals (%i)"
-            )
-            % (len(runs), n_time)
+            f"The length of the run vector ({len(runs)}) "
+            f"does not match the length of the signals ({n_time})"
         )
     n_runs = 1 if runs is None else len(np.unique(runs))
     return n_runs, runs
@@ -1010,7 +1004,7 @@ def _sanitize_confound_dtype(n_signal, confound):
         elif confound.ndim != 2:
             raise ValueError(
                 "confound array has an incorrect number "
-                "of dimensions: %d" % confound.ndim
+                f"of dimensions: {confound.ndim}"
             )
         if confound.shape[0] != n_signal:
             raise ValueError(

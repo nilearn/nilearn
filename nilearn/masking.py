@@ -403,8 +403,8 @@ def compute_multi_epi_mask(
     """
     if len(epi_imgs) == 0:
         raise TypeError(
-            "An empty object - %r - was passed instead of an "
-            "image or a list of images" % epi_imgs
+            f"An empty object - {epi_imgs:r} - was passed instead of an "
+            "image or a list of images"
         )
     masks = Parallel(n_jobs=n_jobs, verbose=verbose)(
         delayed(compute_epi_mask)(
@@ -730,8 +730,8 @@ def compute_multi_brain_mask(
     """
     if len(target_imgs) == 0:
         raise TypeError(
-            "An empty object - %r - was passed instead of an "
-            "image or a list of images" % target_imgs
+            f"An empty object - {target_imgs:r} - was passed instead of an "
+            "image or a list of images"
         )
 
     # Check images in the list have the same FOV without loading them in memory
@@ -833,8 +833,8 @@ def _apply_mask_fmri(
 
     if not np.allclose(mask_affine, imgs_img.affine):
         raise ValueError(
-            "Mask affine: \n%s\n is different from img affine:"
-            "\n%s" % (str(mask_affine), str(imgs_img.affine))
+            f"Mask affine: \n{mask_affine}\n is different from img affine:"
+            "\n{imgs_img.affine}"
         )
 
     if mask_data.shape != imgs_img.shape[:3]:
@@ -885,7 +885,7 @@ def _unmask_3d(X, mask, order="C"):
         raise TypeError("X must be a 1-dimensional array")
     n_features = mask.sum()
     if X.shape[0] != n_features:
-        raise TypeError("X must be of shape (samples, %d)." % n_features)
+        raise TypeError(f"X must be of shape (samples, {n_features}).")
 
     data = np.zeros(
         (mask.shape[0], mask.shape[1], mask.shape[2]),
@@ -919,7 +919,7 @@ def _unmask_4d(X, mask, order="C"):
         raise TypeError("X must be a 2-dimensional array")
     n_features = mask.sum()
     if X.shape[1] != n_features:
-        raise TypeError("X must be of shape (samples, %d)." % n_features)
+        raise TypeError("X must be of shape (samples, {n_features}).")
 
     data = np.zeros(mask.shape + (X.shape[0],), dtype=X.dtype, order=order)
     data[mask, :] = X.T
