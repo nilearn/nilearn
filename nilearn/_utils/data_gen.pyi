@@ -12,7 +12,7 @@ from nilearn.interfaces.bids._utils import (
     _check_bids_label as _check_bids_label,
 )
 from pathlib import Path
-from typing import Any
+from typing import Any, Union
 
 def generate_mni_space_img(
     n_scans: int = ...,
