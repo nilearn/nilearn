@@ -228,7 +228,6 @@ def test_region_extractor_fit_and_transform(maps_and_mask):
 
 
 def test_region_extractor_strategy_ratio_n_voxels(maps):
-    # thresholding_strategy='ratio_n_voxels'
     extract_ratio = RegionExtractor(
         maps, threshold=0.2, thresholding_strategy="ratio_n_voxels"
     )
@@ -239,7 +238,6 @@ def test_region_extractor_strategy_ratio_n_voxels(maps):
 
 
 def test_region_extractor_strategy_percentile(maps_and_mask):
-    # thresholding_strategy=percentile
     maps, mask_img = maps_and_mask
 
     extractor = RegionExtractor(

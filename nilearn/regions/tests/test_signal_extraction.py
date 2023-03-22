@@ -69,7 +69,7 @@ def _make_label_data(shape=SHAPE):
 
 
 def _create_mask_with_3_regions_from_labels_data(labels_data, affine):
-    # Create a mask containing only 3 regions.
+    """Create a mask containing only 3 regions."""
     mask_data = (labels_data == 1) + (labels_data == 2) + (labels_data == 5)
     return Nifti1Image(mask_data.astype(np.int8), affine)
 
@@ -81,8 +81,7 @@ def labels_data():
 
 @pytest.fixture
 def labels_img():
-    labels_data = _make_label_data(SHAPE)
-    return Nifti1Image(labels_data, AFFINE_EYE)
+    return Nifti1Image(_make_label_data(SHAPE), AFFINE_EYE)
 
 
 @pytest.fixture
@@ -486,9 +485,7 @@ def test_signal_extraction_nans_in_regions_are_replaced_with_zeros():
 def test_trim_maps():
     # maps
     maps_data = np.zeros(SHAPE + (N_REGIONS,), dtype=np.float32)
-    h0 = SHAPE[0] // 2
-    h1 = SHAPE[1] // 2
-    h2 = SHAPE[2] // 2
+    h0, h1, h2 = (s // 2 for s in SHAPE)
     maps_data[:h0, :h1, :h2, 0] = 1
     maps_data[:h0, :h1, h2:, 1] = 1.1
     maps_data[:h0, h1:, :h2, 2] = 1
