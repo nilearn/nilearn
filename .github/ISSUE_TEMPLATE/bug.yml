@@ -15,7 +15,7 @@ body:
 
 - type: markdown
   attributes:
-    value: "# Please fill in the following information, to the best of your ability."
+    value: "### Please fill in the following information to the best of your ability."
 
 
 - type: checkboxes
@@ -125,7 +125,7 @@ body:
     value: |
 
       ```python
-      # Paste ytour code here
+      # Paste your code here
 
 
       ```
