@@ -10,6 +10,7 @@ from __future__ import annotations
 import glob
 import json
 import os
+import pathlib
 import sys
 import time
 
@@ -799,11 +800,11 @@ class FirstLevelModel(BaseGLM):
         return output
 
 
-def first_level_from_bids(dataset_path: str | Path,
-                          task_label: str,
-                          space_label: str | None = None,
-                          sub_labels: str | None = None,
-                          img_filters: list[tuple[str, str]] | None =None,
+def first_level_from_bids(dataset_path: str | pathlib.Path,
+                          task_label,
+                          space_label=None,
+                          sub_labels=None,
+                          img_filters=None,
                           t_r=None,
                           slice_time_ref=0.,
                           hrf_model='glover',
