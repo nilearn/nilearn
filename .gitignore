@@ -10,6 +10,9 @@
 *.zip
 *#
 
+# ignore python type annotation stubs for now
+*.pyi
+
 nilearn_cache
 nilearn_data
 
