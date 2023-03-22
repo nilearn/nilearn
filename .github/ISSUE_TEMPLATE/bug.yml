@@ -15,17 +15,17 @@ body:
 
 - type: markdown
   attributes:
-    value: |
-      Provide a brief description of the bug.
+    value: "# Please fill in the following information, to the best of your ability."
 
-      Please fill in the following information, to the best of your ability.
 
 - type: checkboxes
   attributes:
     label: Is there an existing issue for this?
-    description: Please search to see if an issue already exists for the bug you encountered.
+    description: |
+      Please search the [issue tracker](https://github.com/nilearn/nilearn/issues?q=is%3Aissue) to see if an issue already exists for the bug you encountered.
     options:
     - label: I have searched the existing issues
+      required: true
 
 
 - type: checkboxes
@@ -42,7 +42,8 @@ body:
   attributes:
     label: Operating system version
     value: |
-      - Linux Ubuntu 18.04 "bionic beaver"
+      For example one of the following:
+      - Linux Ubuntu 22.04
       - Mac OS Version 12 "monterey"
       - Windows 11
   validations:
@@ -51,8 +52,8 @@ body:
 
 - type: checkboxes
   attributes:
-    label: python version
-    description: "What python version are you using?"
+    label: Python version
+    description: What python version are you using?
     options:
     - label: '3.11'
     - label: '3.10'
@@ -64,8 +65,8 @@ body:
 - type: dropdown
   attributes:
     label: nilearn version
-    description: |
-      What version of Nilearn are you using?
+    # only list the 10 latest versions
+    description: What version of Nilearn are you using?
     options:
       - 0.9.2
       - 0.9.1
@@ -84,8 +85,7 @@ body:
 
 - type: textarea
   attributes:
-    label: Expected Behavior
-    description: Describe what outcome you expected.
+    label: Expected behavior
     placeholder: Describe what outcome you expected.
   validations:
     required: true
@@ -93,19 +93,16 @@ body:
 
 - type: textarea
   attributes:
-    label: Current Behavior & Error message
+    label: Current behavior & error messages
     description: |
-      Describe what you got instead.
+      Describe what you happened.
 
-      If possible paste below any eventual warning or error message
-      with the stack trace.
+      If possible paste below any eventual warning or error message with the stack trace.
 
-      If this is plot related bug, make sure to include an image.
-
+      If this is a plot related bug, make sure to include an image.
       You can attach images clicking this area to highlight it and then dragging files in.
 
     value: |
-
       This is what I got:
 
 
@@ -121,10 +118,7 @@ body:
   attributes:
     label: Steps and code to reproduce bug
     description: |
-      Steps and code to reproduce bug
-
-      Please ensure the code is a minimal runnable example
-      using Nilearn data to showcase it.
+      Please ensure the code is a minimal runnable example using Nilearn data to showcase it.
 
       https://stackoverflow.com/help/minimal-reproducible-example
 
