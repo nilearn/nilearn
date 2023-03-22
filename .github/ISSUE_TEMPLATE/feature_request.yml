@@ -17,6 +17,15 @@ body:
   attributes:
     value: "### Provide a brief description what you would like changes and why."
 
+- type: checkboxes
+  attributes:
+    label: Is there an existing issue for this?
+    description: |
+      Please search the [issue tracker](https://github.com/nilearn/nilearn/issues?q=is%3Aissue) to see if an issue already exists for the feature you want.
+    options:
+    - label: I have searched the existing issues
+      required: true
+
 - type: markdown
   attributes:
     value: Please fill in the following information, to the best of your ability.
