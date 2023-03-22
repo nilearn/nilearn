@@ -1,0 +1,33 @@
+
+---
+name: Documentation
+
+# See the json schema to help you create / update this form
+# https://json.schemastore.org/github-issue-forms.json
+
+description: Request an improvement to the existing documentation.
+
+title: '[DOC] '
+
+labels: ['Documentation']
+
+body:
+
+- type: markdown
+  attributes:
+    value: "### Describe your proposed enhancement in detail."
+
+
+- type: textarea
+  attributes:
+    label: Describe your proposed enhancement in detail.
+    placeholder: Describe your proposed enhancement in detail.
+  validations:
+    required: true
+
+
+- type: textarea
+  attributes:
+    label: List any pages that would be impacted by the enhancement.
+  validations:
+    required: false
