@@ -33,10 +33,12 @@ AFFINE_EYE = np.eye(4)
 
 ANGLES_TO_TEST = (0, np.pi, np.pi / 2.0, np.pi / 4.0, np.pi / 3.0)
 
+SHAPE = (3, 2, 5, 2)
+
 
 def _make_resampling_test_data():
     rng = np.random.RandomState(42)
-    shape = (3, 2, 5, 2)
+    shape = SHAPE
     affine = AFFINE_EYE
     data = rng.randint(0, 10, shape, dtype="int32")
     img = Nifti1Image(data, affine)
@@ -59,7 +61,7 @@ def rotation(theta, phi):
 def test_identity_resample():
     """Test resampling with an identity affine."""
     rng = np.random.RandomState(42)
-    shape = (3, 2, 5, 2)
+    shape = SHAPE
     data = rng.randint(0, 10, shape, dtype="int32")
 
     affine = AFFINE_EYE
@@ -99,7 +101,7 @@ def test_identity_resample_non_native_endians(endian_type, interpolation):
     with little endian data ('<f8')
     """
     rng = np.random.RandomState(42)
-    shape = (3, 2, 5, 2)
+    shape = SHAPE
     data = rng.randint(0, 10, shape, dtype="int32")
 
     affine = AFFINE_EYE
@@ -117,7 +119,7 @@ def test_identity_resample_non_native_endians(endian_type, interpolation):
 def test_downsample():
     """Test resampling with a 1/2 down-sampling affine."""
     rng = np.random.RandomState(42)
-    shape = (6, 3, 6, 2)
+    shape = SHAPE
     data = rng.random_sample(shape)
     affine = AFFINE_EYE
 
@@ -154,7 +156,7 @@ def test_downsample_non_native_endian_data(endian_type, copy_data):
     Little endian data "<f8"
     """
     rng = np.random.RandomState(42)
-    shape = (6, 3, 6, 2)
+    shape = SHAPE
     data = rng.random_sample(shape)
     affine = AFFINE_EYE
 
@@ -332,7 +334,7 @@ def test_resampling_copy_has_no_shared_memory(target_shape):
 
 def test_resampling_warning_checks():
     rng = np.random.RandomState(42)
-    shape = (3, 2, 5, 2)
+    shape = SHAPE
     data = rng.randint(0, 10, shape, dtype="int32")
 
     affine = np.eye(4)
@@ -619,7 +621,7 @@ def test_resampling_nan_big():
 def test_resample_to_img():
     # Testing resample to img function
     rng = np.random.RandomState(42)
-    shape = (6, 3, 6, 3)
+    shape = SHAPE
     data = rng.random_sample(shape)
 
     source_affine = AFFINE_EYE
@@ -977,7 +979,7 @@ def test_resampling_with_int64_types_no_crash(dtype):
 
 def test_resample_input():
     rng = np.random.RandomState(42)
-    shape = (3, 2, 5, 2)
+    shape = SHAPE
     data = rng.randint(0, 10, shape, dtype="int32")
     affine = AFFINE_EYE
     affine[:3, -1] = 0.5 * np.array(shape[:3])
@@ -990,7 +992,7 @@ def test_resample_input():
 
 def test_smoke_resampling_non_nifti():
     rng = np.random.RandomState(42)
-    shape = (3, 2, 5, 2)
+    shape = SHAPE
     affine = AFFINE_EYE
     target_affine = 2 * affine
     data = rng.randint(0, 10, shape, dtype="int32")

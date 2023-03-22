@@ -7,6 +7,7 @@ from pathlib import Path
 
 import nibabel
 import numpy as np
+import pandas as pd
 import pytest
 from nibabel import AnalyzeImage, Nifti1Image, Nifti2Image
 from nibabel.freesurfer import MGHImage
@@ -42,11 +43,6 @@ from numpy.testing import (
     assert_array_equal,
     assert_equal,
 )
-
-try:
-    import pandas as pd
-except Exception:
-    pass
 
 X64 = platform.architecture()[0] == "64bit"
 SHAPE_3D = (10, 10, 10)
