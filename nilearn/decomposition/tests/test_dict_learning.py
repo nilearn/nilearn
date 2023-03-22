@@ -28,8 +28,7 @@ def mask_img():
 @pytest.fixture(scope="module")
 def canica_data():
     """Create a canonical ICA data for testing purposes."""
-    data, *_ = _make_canica_test_data()
-    return data
+    return _make_canica_test_data()[0]
 
 
 @pytest.mark.parametrize("n_epochs", [1, 2, 10])

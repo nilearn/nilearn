@@ -106,12 +106,11 @@ def mask_img():
 
 @pytest.fixture(scope="module")
 def canica_data():
-    data, *_ = _make_canica_test_data()
-    return data
+    return _make_canica_test_data()[0]
 
 
 def test_threshold_bound_error():
-    # error is raised when threshold is higher than number of components
+    """Test that an error is raised when the threshold is higher than the number of components."""
     with pytest.raises(ValueError, match="Threshold must not be higher"):
         CanICA(n_components=4, threshold=5.0)
 
@@ -143,7 +142,7 @@ def test_transform_and_fit_errors(canica_data, mask_img):
 
 
 def test_percentile_range(canica_data):
-    # Smoke test to test warning in case ignored thresholds
+    """Test that a warning is given when thresholds are stressed."""
     rng = np.random.RandomState(0)
     edge_case = rng.randint(low=1, high=10)
 

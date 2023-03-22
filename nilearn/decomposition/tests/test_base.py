@@ -119,7 +119,7 @@ def test_mask_reducer_single_image_same_with_multiple_jobs(
 def test_mask_reducer_reduced_data_is_orthogonal(
     data_for_mask_and_reduce, masker
 ):
-    """# Test that the reduced data is orthogonal."""
+    """Test that the reduced data is orthogonal."""
     data = _mask_and_reduce(
         masker, data_for_mask_and_reduce[0], n_components=3, random_state=0
     )
