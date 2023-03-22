@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 from nilearn._utils.data_gen import (
-    create_fake_bids_dataset
+    create_fake_bids_dataset,
     generate_fake_fmri,
     generate_labeled_regions,
     generate_maps,
@@ -206,13 +206,12 @@ def test_bids_dataset_no_run_entity(tmpdir):
         assert len(files) == 1
 
 
-@pytest.mark.parametrize("n_ses", [1, 0])
-def test_bids_dataset_no_session(tmpdir, n_ses):
+def test_bids_dataset_no_session(tmpdir):
     """n_ses = 0 prevent creation of a session folder."""
     bids_path = create_fake_bids_dataset(
         base_dir=tmpdir,
         n_sub=1,
-        n_ses=n_ses,
+        n_ses=0,
         tasks=["main"],
         n_runs=[1],
         with_derivatives=True,
@@ -397,7 +396,7 @@ def test_fake_bids_extra_entity_not_bids_entity(tmpdir):
     with pytest.raises(ValueError, match="Invalid entity"):
         create_fake_bids_dataset(
             base_dir=tmpdir,
-            entities={"egg": ["spam"]},
+            entities={"egg": ["spam"]},)
 
 
 @pytest.mark.parametrize("window", ["boxcar", "hamming"])
