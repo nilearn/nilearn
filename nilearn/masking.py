@@ -918,7 +918,7 @@ def _unmask_4d(X, mask, order="C"):
         raise TypeError("X must be a 2-dimensional array")
     n_features = mask.sum()
     if X.shape[1] != n_features:
-        raise TypeError("X must be of shape (samples, {n_features}).")
+        raise TypeError(f"X must be of shape (samples, {n_features}).")
 
     data = np.zeros(mask.shape + (X.shape[0],), dtype=X.dtype, order=order)
     data[mask, :] = X.T
