@@ -34,7 +34,7 @@ from sklearn.linear_model import (
     RidgeClassifierCV,
     RidgeCV,
 )
-from sklearn.metrics import get_scorer
+from sklearn.metrics import check_scoring, get_scorer
 from sklearn.model_selection import (
     LeaveOneGroupOut,
     ParameterGrid,
@@ -47,13 +47,6 @@ from sklearn.svm import SVR, LinearSVC, l1_min_c
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
-
-try:
-    from sklearn.metrics import check_scoring
-except ImportError:
-    # for scikit-learn 0.18 and 0.19
-    from sklearn.metrics.scorer import check_scoring
-
 
 SUPPORTED_ESTIMATORS = dict(
     svc_l1=LinearSVC(penalty="l1", dual=False, max_iter=10000),
@@ -515,19 +508,9 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         X = self._apply_mask(X)
         X, y = check_X_y(X, y, dtype=np.float64, multi_output=True)
 
-        if y.ndim == 1:
-            self.n_outputs_ = 1
-        else:
-            self.n_outputs_ = y.shape[1]
+        self.n_outputs_ = 1 if y.ndim == 1 else y.shape[1]
 
-        # Setup scorer
-        if self.scoring is not None:
-            self.scorer_ = check_scoring(self.estimator, self.scoring)
-        else:
-            if self.is_classification:
-                self.scorer_ = get_scorer("accuracy")
-            else:
-                self.scorer_ = get_scorer("r2")
+        self._set_scorer()
 
         # Setup cross-validation object. Default is StratifiedKFold when groups
         # is None. If groups is specified but self.cv is not set to custom CV
@@ -548,10 +531,8 @@ class _BaseDecoder(LinearRegression, CacheMixin):
 
         # Define the number problems to solve. In case of classification this
         # number corresponds to the number of binary problems to solve
-        if self.is_classification:
-            y = self._binarize_y(y)
-        else:
-            y = y[:, np.newaxis]
+        y = self._binarize_y(y) if self.is_classification else y[:, np.newaxis]
+
         if self.is_classification and self.n_classes_ > 2:
             n_problems = self.n_classes_
         else:
@@ -830,6 +811,14 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         self.cv_scores_ = cv_scores
 
         return coefs, intercepts
+
+    def _set_scorer(self):
+        if self.scoring is not None:
+            self.scorer_ = check_scoring(self.estimator, self.scoring)
+        elif self.is_classification:
+            self.scorer_ = get_scorer("accuracy")
+        else:
+            self.scorer_ = get_scorer("r2")
 
     def _output_image(self, classes, coefs, std_coef):
         coef_img = {}

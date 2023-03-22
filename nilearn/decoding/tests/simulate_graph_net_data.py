@@ -44,7 +44,7 @@ def create_graph_net_simulation_data(
         y = generator.randn(n_samples)
     elif task == "classification":
         y = np.ones(n_samples)
-        y[0::2] = -1
+        y[::2] = -1
     X = np.dot(y[:, np.newaxis], w[np.newaxis])
     norm_noise = linalg.norm(X, 2) / np.exp(snr / 20.0)
     noise_coef = norm_noise / linalg.norm(noise, 2)
