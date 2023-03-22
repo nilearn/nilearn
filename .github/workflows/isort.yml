@@ -38,4 +38,7 @@ jobs:
             nilearn/de* \
             nilearn/image \
             nilearn/mass_univariate \
-            nilearn/regions
+            nilearn/regions \
+            nilearn/signal.py \
+            nilearn/masking.py \
+            nilearn/conftest.py

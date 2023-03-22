@@ -10,6 +10,9 @@ include = """
   | nilearn/image/.*py
   | nilearn/mass_univariate/.*py
   | nilearn/regions/.*py
+  | nilearn/signal.py
+  | nilearn/masking.py
+  | nilearn/conftest.py
 )
 """
 # 'extend-exclude' excludes files or directories in addition to the defaults
