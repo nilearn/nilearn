@@ -43,11 +43,13 @@ from .atlas import (fetch_atlas_craddock_2012, fetch_atlas_destrieux_2009,
                     fetch_atlas_schaefer_2018,
                     fetch_atlas_difumo)
 
-from .utils import get_data_dirs
+from .utils import (get_data_dirs,
+                    load_sample_motor_activation_image,
+)
 from .neurovault import (fetch_neurovault,
                          fetch_neurovault_ids,
                          fetch_neurovault_motor_task,
-                         fetch_neurovault_auditory_computation_task
+                         fetch_neurovault_auditory_computation_task,
 )
 
 __all__ = ['MNI152_FILE_PATH', 'GM_MNI152_FILE_PATH', 'WM_MNI152_FILE_PATH',
@@ -78,6 +80,7 @@ __all__ = ['MNI152_FILE_PATH', 'GM_MNI152_FILE_PATH', 'WM_MNI152_FILE_PATH',
            'load_mni152_wm_mask', 'fetch_icbm152_brain_gm_mask',
            'fetch_atlas_surf_destrieux', 'fetch_atlas_talairach',
            'get_data_dirs',
+           'load_sample_motor_activation_image',
            'fetch_language_localizer_demo_dataset',
            'fetch_bids_langloc_dataset',
            'fetch_openneuro_dataset_index',

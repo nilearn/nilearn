@@ -78,9 +78,9 @@ regions_value_img, index = connected_regions(
 images = [regions_percentile_img, regions_value_img]
 for image, strategy in zip(images, ["percentile", "image intensity"]):
     title = (
-         f"ROIs using {strategy} thresholding. "
-         "\n Each ROI in same color is an extracted region"
-     )
+        f"ROIs using {strategy} thresholding. "
+        "\n Each ROI in same color is an extracted region"
+    )
     plotting.plot_prob_atlas(
         image,
         bg_img=tmap_filename,
@@ -90,5 +90,3 @@ for image, strategy in zip(images, ["percentile", "image intensity"]):
         title=title,
     )
 plotting.show()
-
-

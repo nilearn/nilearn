@@ -1,5 +1,6 @@
-"""Intro to GLM Analysis: a single-session, single-subject fMRI dataset
-=====================================================================
+"""
+Intro to GLM Analysis: a single-session, single-subject fMRI dataset
+====================================================================
 
 In this tutorial, we use a General Linear Model (:term:`GLM`) to compare the
 :term:`fMRI` signal during periods of auditory stimulation
@@ -11,7 +12,7 @@ original :term:`EPI` scans without any spatial or temporal preprocessing.
 spatially normalized and smoothed images).
 
 The data
----------
+--------
 
 The dataset comes from an experiment conducted at the FIL by Geraint Rees
 under the direction of Karl Friston. It is provided by FIL methods
@@ -206,7 +207,7 @@ z_map = fmri_glm.compute_contrast(active_minus_rest, output_type="z_score")
 
 ###############################################################################
 # Plot thresholded z scores map
-# ------------------------------
+# -----------------------------
 #
 # We display it on top of the average
 # functional image of the series (could be the anatomical image of the
@@ -335,7 +336,7 @@ table.to_csv(join(outdir, "table.csv"))
 
 ###############################################################################
 # Performing an F-test
-# ---------------------
+# --------------------
 #
 # "active vs rest" is a typical t test: condition versus
 # baseline. Another popular type of test is an F test in which one

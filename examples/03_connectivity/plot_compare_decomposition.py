@@ -34,14 +34,12 @@ rest_dataset = datasets.fetch_development_fmri(n_subjects=30)
 func_filenames = rest_dataset.func  # list of 4D nifti files for each subject
 
 # print basic information on the dataset
-print(
-    f"First functional nifti image (4D) is at: {rest_dataset.func[0]}"
-)
+print(f"First functional nifti image (4D) is at: {rest_dataset.func[0]}")
 
 
 ####################################################################
 # Apply CanICA on the data
-# ---------------------------------
+# ------------------------
 # We use "whole-brain-template" as a strategy to compute the mask,
 # as this leads to slightly faster and more reproducible results.
 # However, the images need to be in :term:`MNI` template space.

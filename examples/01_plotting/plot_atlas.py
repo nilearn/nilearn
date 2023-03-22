@@ -1,6 +1,6 @@
 """
 Basic Atlas plotting
-=======================
+====================
 
 Plot the regions of a reference atlas (Harvard-Oxford and Juelich atlases).
 """
@@ -30,7 +30,7 @@ plotting.plot_roi(atlas_ho_filename, title="Harvard Oxford atlas")
 
 ###########################################################################
 # Visualizing the Juelich atlas
-# ------------------------------------
+# -----------------------------
 
 plotting.plot_roi(atlas_ju_filename, title="Juelich atlas")
 
@@ -46,7 +46,7 @@ plotting.show()
 
 ###########################################################################
 # Visualizing the Juelich atlas with contours
-# --------------------------------------------------
+# -------------------------------------------
 plotting.plot_roi(
     atlas_ju_filename, view_type="contours", title="Juelich atlas in contours"
 )

@@ -39,7 +39,7 @@ in the documentation section :ref:`parcellating_brain`.
 
 ########################################################################
 # Download a brain development fmri dataset and turn it to a data matrix
-# -----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 #
 # We download one subject of the movie watching dataset from Internet
 
@@ -48,7 +48,6 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import patches, ticker
-
 from nilearn import datasets, plotting
 from nilearn.image import get_data, index_img, mean_img
 from nilearn.regions import Parcellations
@@ -56,9 +55,7 @@ from nilearn.regions import Parcellations
 dataset = datasets.fetch_development_fmri(n_subjects=1)
 
 # print basic information on the dataset
-print(
-    f"First subject functional nifti image (4D) is at: {dataset.func[0]}"
-)
+print(f"First subject functional nifti image (4D) is at: {dataset.func[0]}")
 
 
 #########################################################################
@@ -283,9 +280,7 @@ hkmeans_labels_img.to_filename("hierarchical_kmeans_parcellation.nii.gz")
 # First count how many voxels have each label (except 0 which is the
 # background).
 
-_, kmeans_counts = np.unique(
-    get_data(kmeans_labels_img), return_counts=True
-)
+_, kmeans_counts = np.unique(get_data(kmeans_labels_img), return_counts=True)
 
 _, hkmeans_counts = np.unique(get_data(hkmeans_labels_img), return_counts=True)
 

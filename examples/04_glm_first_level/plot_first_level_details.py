@@ -1,5 +1,6 @@
-"""Understanding parameters of the first-level model
-====================================================
+"""
+Understanding parameters of the first-level model
+=================================================
 
 In this tutorial, we study how first-level models are parametrized for fMRI
 data analysis and clarify the impact of these parameters on the results of the
@@ -191,9 +192,8 @@ from nilearn import plotting
 
 
 def plot_contrast(first_level_model):
-    """Specify, estimate and plot the main contrasts for given a first model.
-
-    """
+    """Specify, estimate and plot the main contrasts \
+        for given a first model."""
     design_matrix = first_level_model.design_matrices_[0]
     # Call the contrast specification within the function
     contrasts = make_localizer_contrasts(design_matrix)
@@ -473,7 +473,7 @@ plt.show()
 
 #########################################################################
 # Volume censoring
-# ------------------
+# ----------------
 #
 # Volume censoring is a common way to remove non-steady state volumes, or
 # high-motion volumes in scrubbing based noise removal strategies. In this

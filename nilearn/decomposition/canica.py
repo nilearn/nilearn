@@ -209,8 +209,8 @@ class CanICA(_MultiPCA):
             raise ValueError(
                 "Threshold must not be higher than number "
                 "of maps. "
-                "Number of maps is %s and you provided "
-                "threshold=%s" % (str(n_components), str(threshold))
+                f"Number of maps is {n_components} and you provided "
+                f"threshold={threshold}"
             )
         self.threshold = threshold
         self.n_init = n_init
@@ -248,7 +248,7 @@ class CanICA(_MultiPCA):
         elif self.threshold is not None:
             raise ValueError(
                 "Threshold must be None, "
-                "'auto' or float. You provided %s." % str(self.threshold)
+                f"'auto' or float. You provided {self.threshold}."
             )
         if ratio is not None:
             abs_ica_maps = np.abs(ica_maps)
@@ -257,11 +257,10 @@ class CanICA(_MultiPCA):
                 _warnings.warn(
                     "Nilearn's decomposition module "
                     "obtained a critical threshold "
-                    "(= %s percentile).\n"
+                    f"(= {percentile} percentile).\n"
                     "No threshold will be applied. "
                     "Threshold should be decreased or "
-                    "number of components should be adjusted."
-                    % str(percentile),
+                    "number of components should be adjusted.",
                     UserWarning,
                     stacklevel=4,
                 )

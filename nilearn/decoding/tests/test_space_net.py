@@ -25,9 +25,6 @@ from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.utils import check_random_state
 
-mni152_brain_mask = (
-    "/usr/share/fsl/data/standard/MNI152_T1_1mm_brain_mask.nii.gz"
-)
 logistic_path_scores = partial(path_scores, is_classif=True)
 squared_loss_path_scores = partial(path_scores, is_classif=False)
 

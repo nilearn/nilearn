@@ -123,3 +123,4 @@ General functions
    get_data_dirs
    patch_openneuro_dataset
    select_from_index
+   load_sample_motor_activation_image

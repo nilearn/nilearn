@@ -1,6 +1,6 @@
 """
 Searchlight analysis of face vs house recognition
-==================================================
+=================================================
 
 Searchlight analysis requires fitting a classifier a large amount of
 times. As a result, it is an intrinsically slow method. In order to speed
@@ -13,7 +13,7 @@ the :term:`fMRI` (see the generated figures).
 
 #########################################################################
 # Load Haxby dataset
-# -------------------
+# ------------------
 import pandas as pd
 from nilearn import datasets
 from nilearn.image import get_data, load_img, new_img_like
@@ -32,7 +32,7 @@ session = labels["chunks"]
 
 #########################################################################
 # Restrict to faces and houses
-# ------------------------------
+# ----------------------------
 from nilearn.image import index_img
 
 condition_mask = y.isin(["face", "house"])
@@ -42,7 +42,7 @@ y, session = y[condition_mask], session[condition_mask]
 
 #########################################################################
 # Prepare masks
-# --------------
+# -------------
 # - mask_img is the original mask
 # - process_mask_img is a subset of mask_img, it contains the voxels that
 #   should be processed (we only keep the slice z = 26 and the back of the
@@ -61,7 +61,7 @@ process_mask_img = new_img_like(mask_img, process_mask)
 
 #########################################################################
 # Searchlight computation
-# -------------------------
+# -----------------------
 
 # Make processing parallel
 # /!\ As each thread will print its progress, n_jobs > 1 could mess up the
@@ -91,7 +91,7 @@ searchlight.fit(fmri_img, y)
 
 #########################################################################
 # F-scores computation
-# ----------------------
+# --------------------
 from nilearn.maskers import NiftiMasker
 
 # For decoding, standardizing is often very important
@@ -106,14 +106,14 @@ fmri_masked = nifti_masker.fit_transform(fmri_img)
 
 from sklearn.feature_selection import f_classif
 
-f_values, p_values = f_classif(fmri_masked, y)
+_, p_values = f_classif(fmri_masked, y)
 p_values = -np.log10(p_values)
 p_values[p_values > 10] = 10
 p_unmasked = get_data(nifti_masker.inverse_transform(p_values))
 
 #########################################################################
 # Visualization
-# --------------
+# -------------
 # Use the fmri mean image as a surrogate of anatomical data
 from nilearn import image
 
