@@ -825,7 +825,7 @@ def first_level_from_bids(dataset_path,
                           verbose=0,
                           n_jobs=1,
                           minimize_memory=True,
-                          derivatives_folder: str ='derivatives'):
+                          derivatives_folder='derivatives'):
     """Create FirstLevelModel objects and fit arguments from a BIDS dataset.
 
     If t_r is not specified this function will attempt to load it from a
@@ -841,16 +841,16 @@ def first_level_from_bids(dataset_path,
     task_label : :obj:`str`
         Task_label as specified in the file names like _task-<task_label>_.
 
-    space_label : :obj:`str`. Defaults to None.
+    space_label : :obj:`str`, optional
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like _space-<space_label>_.
 
-    sub_labels : :obj:`list` of :obj:`str`. Defaults to None.
+    sub_labels : :obj:`list` of :obj:`str`, optional
         Specifies the subset of subject labels to model.
         If 'None', will model all subjects in the dataset.
         .. versionadded:: 0.10.1.dev
 
-    img_filters : :obj:`list` of :obj:`tuples` (str, str). Defaults to None.
+    img_filters : :obj:`list` of :obj:`tuples` (str, str), optional
         Filters are of the form (field, label). Only one filter per field
         allowed.
         A file that does not match a filter will be discarded.
@@ -859,7 +859,7 @@ def first_level_from_bids(dataset_path,
         Filter examples would be ('desc', 'preproc'), ('dir', 'pa')
         and ('run', '10').
 
-    derivatives_folder : :obj:`str`. Defaults to "derivatives".
+    derivatives_folder : :obj:`str`, Defaults="derivatives".
         derivatives and app folder path containing preprocessed files.
         Like "derivatives/FMRIPREP".
 

@@ -799,7 +799,6 @@ def create_fake_bids_dataset(
     with_derivatives: bool = True,
     with_confounds: bool = True,
     confounds_tag: str | None = "desc-confounds_timeseries",
-    no_session: bool = False,
     random_state=0,
     entities: dict[str, list[str]] | None = None,
 ) -> Path:
@@ -810,21 +809,23 @@ def create_fake_bids_dataset(
     Parameters
     ----------
     base_dir : :obj:`str` or :obj:`pathlib.Path` (Absolute path). \
-        Default to Path()
+        Default=pathlib.Path()
         Absolute directory path in which to create the fake :term:`BIDS`
         dataset dir.
 
-    n_sub : :obj:`int`. Defaults to 10.
+    n_sub : :obj:`int`, Defaults=10
         Number of subjects to be simulated in the dataset.
 
-    n_ses : :obj:`int`. Defaults to 2.
+    n_ses : :obj:`int`, Defaults=2
         Number of sessions to be simulated in the dataset.
-        Ignored if no_session=True.
 
-    tasks : :obj:`list` of :obj:`str`. Defaults to ["localizer", "main"].
+        Specifying n_ses=0 will only produce runs and files without the
+        optional session field.
+
+    tasks : :obj:`list` of :obj:`str`, Defaults=["localizer", "main"]
         List of tasks to be simulated in the dataset.
 
-    n_runs : :obj:`list` of :obj:`int`Defaults to [1, 3].
+    n_runs : :obj:`list` of :obj:`int`, Defaults=[1, 3]
         Number of runs to create, where each element indicates the
         number of runs for the corresponding task.
         The length of this list must match the number of items in ``tasks``.
@@ -832,32 +833,28 @@ def create_fake_bids_dataset(
         Files will be generated without run entity
         if a value is equal to 0 or less.
 
-    with_derivatives : :obj:`bool`. Defaults to True.
+    with_derivatives : :obj:`bool`, Defaults=True
         In the case derivatives are included, they come with two spaces and
         descriptions.
         Spaces are 'MNI' and 'T1w'.
         Descriptions are 'preproc' and :term:`fMRIPrep`.
         Only space 'T1w' include both descriptions.
 
-    with_confounds : :obj:`bool`. Defaults to True.
+    with_confounds : :obj:`bool`, Defaults=True
         Whether to generate associated confounds files or not.
 
-    confounds_tag : :obj:`str`. Defaults to "desc-confounds_timeseries".
+    confounds_tag : :obj:`str`, Defaults="desc-confounds_timeseries"
         Filename "suffix":
         If generating confounds, what path should they have?
         Defaults to `desc-confounds_timeseries` as in :term:`fMRIPrep` >= 20.2
         but can be other values (e.g. "desc-confounds_regressors" as
         in :term:`fMRIPrep` < 20.2).
 
-    no_session : :obj:`bool`. Defaults to False.
-        Specifying no_sessions will only produce runs and files without the
-        optional session field. In this case n_ses will be ignored.
-
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance. \
-                    Defaults to 0.
+                    Defaults=0
         Random number generator, or seed.
 
-    entities : :obj:`dict`. Defaults to None.
+    entities : :obj:`dict`, optional
         Extra entity to add to the BIDS filename with a list of values.
         For example, if you want to add an 'echo' entity
         with values '1' for some files and '1' for others,
@@ -879,9 +876,6 @@ def create_fake_bids_dataset(
 
     bids_dataset_dir = "bids_dataset"
     bids_path = Path(base_dir) / bids_dataset_dir
-
-    if no_session:
-        n_ses = 0
 
     for task_ in tasks:
         _check_bids_label(task_)
