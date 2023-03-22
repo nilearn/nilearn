@@ -1,0 +1,37 @@
+
+---
+name: Feature request
+
+# See the json schema to help you create / update this form
+# https://json.schemastore.org/github-issue-forms.json
+
+description: Got an idea for a new feature, or changing an existing one? This is the place.
+
+title: '[ENH] '
+
+labels: ['Enhancement']
+
+body:
+
+- type: markdown
+  attributes:
+    value: "### Provide a brief description what you would like changes and why."
+
+
+- type: textarea
+  attributes:
+    label: Describe your proposed enhancement in detail.
+    description: |
+      Please fill in the following information, to the best of your ability.
+
+    value: |
+      ### Benefits to the change
+
+
+      ### Pseudocode for the new behavior, if applicable
+
+      ```python
+
+      ```
+  validations:
+    required: true
