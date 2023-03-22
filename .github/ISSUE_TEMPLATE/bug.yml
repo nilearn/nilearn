@@ -18,6 +18,8 @@ body:
     value: |
       Provide a brief description of the bug.
 
+      Please fill in the following information, to the best of your ability.
+
 - type: checkboxes
   attributes:
     label: Is there an existing issue for this?
@@ -42,8 +44,10 @@ body:
     value: |
       - Linux Ubuntu 18.04 "bionic beaver"
       - Mac OS Version 12 "monterey"
+      - Windows 11
   validations:
     required: false
+
 
 - type: checkboxes
   attributes:
@@ -61,12 +65,22 @@ body:
   attributes:
     label: nilearn version
     description: |
-      lorem ipsum
+      What version of Nilearn are you using?
     options:
-    - v3.0.0
-    - v2.3.0
+      - 0.9.2
+      - 0.9.1
+      - 0.9.0
+      - 0.8.1
+      - 0.8.0
+      - 0.7.1
+      - 0.7.0
+      - 0.6.2
+      - 0.6.1
+      - 0.6.0
+      - older than 0.6.0
   validations:
     required: true
+
 
 - type: textarea
   attributes:
@@ -74,18 +88,30 @@ body:
     description: Describe what outcome you expected.
     placeholder: Describe what outcome you expected.
   validations:
-    required: false
+    required: true
+
 
 - type: textarea
   attributes:
     label: Current Behavior & Error message
     description: |
       Describe what you got instead.
-      If possible paste below the error message you encountered.
-      Also add the error.log that might have been generated.
+
+      If possible paste below any eventual warning or error message
+      with the stack trace.
+
+      If this is plot related bug, make sure to include an image.
+
+      You can attach images clicking this area to highlight it and then dragging files in.
+
     value: |
-      ```matlab
-      % this is the error I got
+
+      This is what I got:
+
+
+      ```bash
+      # Paste the error message here
+
 
       ```
   validations:
@@ -93,28 +119,22 @@ body:
 
 - type: textarea
   attributes:
-    label: Anything else?
+    label: Steps and code to reproduce bug
     description: |
-      Links? References? Anything that will give us more context about the issue you are encountering!
+      Steps and code to reproduce bug
 
-      Tip: You can attach images or log files by clicking this area to highlight it and then dragging files in.
+      Please ensure the code is a minimal runnable example
+      using Nilearn data to showcase it.
+
+      https://stackoverflow.com/help/minimal-reproducible-example
+
+    value: |
+
+      ```python
+      # Paste ytour code here
+
+
+      ```
+
   validations:
     required: false
-
-
-
-# <!--Provide a brief description of the bug.-->
-
-
-# <!--Please fill in the following information, to the best of your ability.-->
-# Nilearn version:
-
-
-# ### Steps and code to reproduce bug
-
-# <!-- Please ensure the code is a minimal runnable example using Nilearn data to showcase it. -->
-# <!-- https://stackoverflow.com/help/minimal-reproducible-example -->
-
-# ```python
-
-# ```
