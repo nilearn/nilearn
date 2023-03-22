@@ -55,10 +55,7 @@ def _standardize(signals, detrend=False, standardize="zscore"):
     if standardize not in [True, False, "psc", "zscore"]:
         raise ValueError(f"{standardize} is no valid standardize strategy.")
 
-    if detrend:
-        signals = _detrend(signals, inplace=False)
-    else:
-        signals = signals.copy()
+    signals = _detrend(signals, inplace=False) if detrend else signals.copy()
 
     if standardize:
         if signals.shape[0] == 1:
@@ -345,10 +342,7 @@ def butterworth(
         Signals filtered according to the given parameters.
     """
     if low_pass is None and high_pass is None:
-        if copy:
-            return signals.copy()
-        else:
-            return signals
+        return signals.copy() if copy else signals
 
     if (
         low_pass is not None
@@ -385,10 +379,7 @@ def butterworth(
                 "frequencies are equal. Please check that inputs for "
                 "sampling_rate, low_pass, and high_pass are valid."
             )
-            if copy:
-                return signals.copy()
-            else:
-                return signals
+            return signals.copy() if copy else signals
     else:
         critical_freq = critical_freq[0]
 
@@ -412,30 +403,29 @@ def butterworth(
             signals = output
         else:
             signals[...] = output
+    elif copy:
+        # No way to save memory when a copy has been requested,
+        # because filtfilt does out-of-place processing
+        signals = sp_signal.filtfilt(
+            b,
+            a,
+            signals,
+            axis=0,
+            padtype=padtype,
+            padlen=padlen,
+        )
     else:
-        if copy:
-            # No way to save memory when a copy has been requested,
-            # because filtfilt does out-of-place processing
-            signals = sp_signal.filtfilt(
+        # Lesser memory consumption, slower.
+        for timeseries in signals.T:
+            timeseries[:] = sp_signal.filtfilt(
                 b,
                 a,
-                signals,
-                axis=0,
+                timeseries,
                 padtype=padtype,
                 padlen=padlen,
             )
-        else:
-            # Lesser memory consumption, slower.
-            for timeseries in signals.T:
-                timeseries[:] = sp_signal.filtfilt(
-                    b,
-                    a,
-                    timeseries,
-                    padtype=padtype,
-                    padlen=padlen,
-                )
 
-            # results returned in-place
+        # results returned in-place
 
     return signals
 
@@ -509,7 +499,7 @@ def high_variance_confounds(
 
 def _ensure_float(data):
     """Make sure that data is a float type."""
-    if not data.dtype.kind == "f":
+    if data.dtype.kind != "f":
         if data.dtype.itemsize == "8":
             data = data.astype(np.float64)
         else:
@@ -969,18 +959,17 @@ def _check_sample_mask_index(i, n_runs, runs, current_mask):
     # sample_mask longer than signal
     if len_current_mask > len_run:
         raise IndexError(
-            "sample_mask {} of {} is has more timepoints than the current "
-            "run ;sample_mask contains {} index but the run has {} "
-            "timepoints.".format((i + 1), n_runs, len_current_mask, len_run)
+            f"sample_mask {i + 1} of {n_runs} is has more timepoints "
+            f"than the current run ;sample_mask contains {len_current_mask} "
+            f"index but the run has {len_run} timepoints."
         )
     # sample_mask index exceed signal timepoints
     invalid_index = current_mask[current_mask > len_run]
     if invalid_index.size > 0:
         raise IndexError(
-            "sample_mask {} of {} contains invalid index {}; "
-            "The signal contains {} time points.".format(
-                (i + 1), n_runs, invalid_index, len_run
-            )
+            f"sample_mask {i + 1} of {n_runs} contains "
+            f"invalid index {invalid_index}. "
+            f"The signal contains {len_run} time points."
         )
 
 
@@ -1011,10 +1000,9 @@ def _sanitize_confound_dtype(n_signal, confound):
             confound = csv_to_array(filename, skip_header=1)
         if confound.shape[0] != n_signal:
             raise ValueError(
-                "Confound signal has an incorrect length"
-                "Signal length: {}; confound length: {}".format(
-                    n_signal, confound.shape[0]
-                )
+                "Confound signal has an incorrect "
+                f"lengthSignal length: {n_signal}; "
+                f"confound length: {confound.shape[0]}"
             )
     elif isinstance(confound, np.ndarray):
         if confound.ndim == 1:
@@ -1026,10 +1014,9 @@ def _sanitize_confound_dtype(n_signal, confound):
             )
         if confound.shape[0] != n_signal:
             raise ValueError(
-                "Confound signal has an incorrect length"
-                "Signal length: {}; confound length: {}".format(
-                    n_signal, confound.shape[0]
-                )
+                "Confound signal has an incorrect "
+                f"lengthSignal length: {n_signal}; "
+                f"confound length: {confound.shape[0]}."
             )
 
     else:
@@ -1053,9 +1040,9 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
             isinstance(item, float) for item in [t_r, high_pass]
         ):
             raise ValueError(
-                "Repetition time (t_r) and low cutoff frequency "
-                "(high_pass) must be specified for cosine filtering."
-                "t_r='{}', high_pass='{}'".format(t_r, high_pass)
+                "Repetition time (t_r) and low cutoff frequency (high_pass) "
+                "must be specified for cosine "
+                f"filtering.t_r='{t_r}', high_pass='{high_pass}'"
             )
         if filter == "butterworth":
             if all(item is None for item in [low_pass, high_pass, t_r]):
@@ -1070,7 +1057,7 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
             if any(isinstance(item, bool) for item in [low_pass, high_pass]):
                 raise TypeError(
                     "high/low pass must be float or None but you provided "
-                    "high_pass='{}', low_pass='{}'".format(high_pass, low_pass)
+                    f"high_pass='{high_pass}', low_pass='{low_pass}'"
                 )
         return filter
     else:
@@ -1082,7 +1069,7 @@ def _sanitize_signals(signals, ensure_finite):
     if not isinstance(ensure_finite, bool):
         raise ValueError(
             "'ensure_finite' must be boolean type True or False "
-            "but you provided ensure_finite={}".format(ensure_finite)
+            f"but you provided ensure_finite={ensure_finite}"
         )
     signals = signals.copy()
     if not isinstance(signals, np.ndarray):
@@ -1099,9 +1086,10 @@ def _check_signal_parameters(detrend, standardize_confounds):
     if not detrend and not standardize_confounds:
         warnings.warn(
             "When confounds are provided, one must perform detrend "
-            "and/or standardize confounds. You provided "
-            "detrend={}, standardize_confounds={}. If confounds "
-            "were not standardized or demeaned before passing to "
-            "signal.clean signal will not be correctly "
-            "cleaned. ".format(detrend, standardize_confounds)
+            "and/or standardize confounds. "
+            f"You provided detrend={detrend}, "
+            f"standardize_confounds={standardize_confounds}. "
+            "If confounds were not standardized or demeaned "
+            "before passing to signal.clean signal "
+            "will not be correctly cleaned. "
         )
