@@ -3,10 +3,12 @@ Test the second level model.
 """
 import os
 
+import pytest
+
 import numpy as np
 import pandas as pd
 
-import pytest
+from scipy import stats
 
 from nibabel import (load,
                      Nifti1Image,
@@ -17,9 +19,6 @@ from numpy.testing import (assert_almost_equal,
                            assert_array_almost_equal,
                            )
 
-# Set backend to avoid DISPLAY problems
-from nilearn.plotting import _set_mpl_backend
-
 from nilearn._utils.data_gen import (write_fake_fmri_data_and_design,
                                      generate_fake_fmri_data_and_design)
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
@@ -28,27 +27,19 @@ from nilearn.glm.first_level import (FirstLevelModel, run_glm)
 from nilearn.glm.second_level import (SecondLevelModel,
                                       non_parametric_inference)
 
-from scipy import stats
-
-# Avoid making pyflakes unhappy
-_set_mpl_backend
 try:
-    import matplotlib.pyplot
-    matplotlib.pyplot
+    from nilearn.reporting import get_clusters_table
 except ImportError:
     have_mpl = False
 else:
     have_mpl = True
-
-if have_mpl:
-    from nilearn.reporting import get_clusters_table
-
 
 # This directory path
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
 
 N_PERM = 10
+
 
 @pytest.fixture
 def input_df():
