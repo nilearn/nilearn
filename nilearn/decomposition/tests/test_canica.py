@@ -110,7 +110,8 @@ def canica_data():
 
 
 def test_threshold_bound_error():
-    """Test that an error is raised when the threshold is higher than the number of components."""
+    """Test that an error is raised when the threshold is higher \
+    than the number of components."""
     with pytest.raises(ValueError, match="Threshold must not be higher"):
         CanICA(n_components=4, threshold=5.0)
 
