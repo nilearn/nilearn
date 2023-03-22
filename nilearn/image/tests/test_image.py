@@ -45,10 +45,18 @@ from numpy.testing import (
 )
 
 X64 = platform.architecture()[0] == "64bit"
+
 SHAPE_3D = (10, 10, 10)
+
 SHAPE_4D = (10, 10, 10, 10)
-AFFINE = np.eye(4)
-AFFINE_TO_TEST = [AFFINE, np.diag((1, 1, -1, 1)), np.diag((0.6, 1, 0.6, 1))]
+
+AFFINE_EYE = np.eye(4)
+
+AFFINE_TO_TEST = [
+    AFFINE_EYE,
+    np.diag((1, 1, -1, 1)),
+    np.diag((0.6, 1, 0.6, 1)),
+]
 
 NON_EYE_AFFINE = np.array(
     [
@@ -122,29 +130,34 @@ def _mean_ground_truth(imgs):
 
 
 @pytest.fixture(scope="session")
+def affine():
+    return AFFINE_EYE
+
+
+@pytest.fixture(scope="session")
 def smooth_array_data():
     return _new_data_for_smooth_array()
 
 
 @pytest.fixture
 def img_4D_ones():
-    return Nifti1Image(np.ones(SHAPE_4D), AFFINE)
+    return Nifti1Image(np.ones(SHAPE_4D), AFFINE_EYE)
 
 
 @pytest.fixture
 def img_4D_zeros():
-    return Nifti1Image(np.zeros(SHAPE_4D), AFFINE)
+    return Nifti1Image(np.zeros(SHAPE_4D), AFFINE_EYE)
 
 
 @pytest.fixture
 def img_4D_rand():
-    return Nifti1Image(np.random.rand(*SHAPE_4D), AFFINE)
+    return Nifti1Image(np.random.rand(*SHAPE_4D), AFFINE_EYE)
 
 
 @pytest.fixture(scope="session")
 def stat_img_test_data():
     shape = (20, 20, 30)
-    affine = AFFINE
+    affine = AFFINE_EYE
     data = np.zeros(shape, dtype="int32")
     data[:2, :2, :2] = 4  # 8-voxel positive cluster
     data[4:6, :2, :2] = -4  # 8-voxel negative cluster
@@ -307,7 +320,7 @@ def test_smooth_array_raise_warning_if_fwhm_is_zero(smooth_array_data):
         image._smooth_array(smooth_array_data, affine, fwhm=0.0)
 
 
-def test_smooth_img():
+def test_smooth_img(affine):
     """Checks added functionalities compared to image._smooth_array()"""
     shapes = ((10, 11, 12), (13, 14, 15))
     lengths = (17, 18)
@@ -349,8 +362,8 @@ def test_smooth_img():
     data1[2:4, 1:5, 3:6] = 1
     data2 = np.zeros((13, 14, 15))
     data2[2:4, 1:5, 3:6] = 9
-    img1_nifti2 = Nifti2Image(data1, affine=AFFINE)
-    img2_nifti2 = Nifti2Image(data2, affine=AFFINE)
+    img1_nifti2 = Nifti2Image(data1, affine=affine)
+    img2_nifti2 = Nifti2Image(data2, affine=affine)
     out = smooth_img([img1_nifti2, img2_nifti2], fwhm=1.0)
 
 
@@ -399,7 +412,7 @@ def test_crop_img():
     assert cropped_img.shape == (2 + 2, 4 + 2, 3 + 2)
 
 
-def test_crop_threshold_tolerance():
+def test_crop_threshold_tolerance(affine):
     """Check if crop can skip values that are extremely close to zero.
 
     In a relative sense and will crop them away
@@ -410,7 +423,6 @@ def test_crop_threshold_tolerance():
 
     # add an infinitesimal outside this block
     data[3, 3, 3] = 1e-12
-    affine = AFFINE
     img = Nifti1Image(data, affine=affine)
 
     cropped_img = crop_img(img)
@@ -474,12 +486,12 @@ def test_mean_img_resample():
     assert_array_equal(mean_img_with_resampling.affine, target_affine)
 
 
-def test_swap_img_hemispheres():
+def test_swap_img_hemispheres(affine):
     rng = np.random.RandomState(42)
 
     # make sure input image data is not overwritten inside function
     data = rng.standard_normal(size=SHAPE_3D)
-    data_img = Nifti1Image(data, AFFINE)
+    data_img = Nifti1Image(data, affine)
 
     swap_img_hemispheres(data_img)
 
@@ -498,8 +510,8 @@ def test_concat_imgs():
     assert concat_imgs is niimg_conversions.concat_niimgs
 
 
-def test_index_img_error_3D():
-    img_3d = Nifti1Image(np.ones((3, 4, 5)), AFFINE)
+def test_index_img_error_3D(affine):
+    img_3d = Nifti1Image(np.ones((3, 4, 5)), affine)
     expected_error_msg = (
         "Input data has incompatible dimensionality: "
         "Expected dimension is 4D and you provided "
@@ -527,8 +539,8 @@ def test_index_img():
         assert_array_equal(this_img.affine, img_4d.affine)
 
 
-def test_index_img_error_4D():
-    img_4d, _ = generate_fake_fmri(affine=AFFINE)
+def test_index_img_error_4D(affine):
+    img_4d, _ = generate_fake_fmri(affine=affine)
     fourth_dim_size = img_4d.shape[3]
     for i in [
         fourth_dim_size,
@@ -562,8 +574,8 @@ def test_pd_index_img():
     assert_array_equal(get_data(np_index_img), get_data(pd_index_img))
 
 
-def test_iter_img_3D_imag_error():
-    img_3d = Nifti1Image(np.ones((3, 4, 5)), AFFINE)
+def test_iter_img_3D_imag_error(affine):
+    img_3d = Nifti1Image(np.ones((3, 4, 5)), affine)
     expected_error_msg = (
         "Input data has incompatible dimensionality: "
         "Expected dimension is 4D and you provided "
@@ -707,11 +719,11 @@ def test_validity_threshold_value_in_threshold_img():
             threshold_img(maps, threshold=thr)
 
 
-def test_threshold_img():
+def test_threshold_img(affine):
     """Smoke test for threshold_img with valid threshold inputs."""
     shape = (10, 20, 30)
     maps, _ = generate_maps(shape, n_regions=4)
-    mask_img = Nifti1Image(np.ones((shape), dtype=np.int8), AFFINE)
+    mask_img = Nifti1Image(np.ones((shape), dtype=np.int8), affine)
 
     for img in iter_img(maps):
         # when threshold is a float value
@@ -787,22 +799,22 @@ def test_threshold_img_copy(img_4D_ones):
     assert_array_equal(get_data(img_to_mutate), get_data(thresholded))
 
 
-def test_isnan_threshold_img_data():
+def test_isnan_threshold_img_data(affine):
     """Check threshold_img converges properly when input image has nans."""
     maps, _ = generate_maps(SHAPE_3D, n_regions=2)
     data = get_data(maps)
     data[:, :, 0] = np.nan
 
-    maps_img = Nifti1Image(data, AFFINE)
+    maps_img = Nifti1Image(data, affine)
 
     threshold_img(maps_img, threshold=0.8)
 
 
-def test_math_img_exceptions(img_4D_ones):
+def test_math_img_exceptions(affine, img_4D_ones):
     img1 = img_4D_ones
-    img2 = Nifti1Image(np.zeros((10, 20, 10, 10)), AFFINE)
+    img2 = Nifti1Image(np.zeros((10, 20, 10, 10)), affine)
     img3 = img_4D_ones
-    img4 = Nifti1Image(np.ones(SHAPE_4D), AFFINE * 2)
+    img4 = Nifti1Image(np.ones(SHAPE_4D), affine * 2)
 
     formula = "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)"
     # Images with different shapes should raise a ValueError exception.
@@ -820,10 +832,10 @@ def test_math_img_exceptions(img_4D_ones):
         math_img(bad_formula, img1=img1, img3=img3)
 
 
-def test_math_img(img_4D_ones, img_4D_zeros):
+def test_math_img(affine, img_4D_ones, img_4D_zeros):
     img1 = img_4D_ones
     img2 = img_4D_zeros
-    expected_result = Nifti1Image(np.ones(SHAPE_3D), AFFINE)
+    expected_result = Nifti1Image(np.ones(SHAPE_3D), affine)
 
     formula = "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)"
     for create_files in (True, False):
@@ -856,11 +868,11 @@ def test_binarize_img(img_4D_rand):
     assert_array_equal(img2.dataobj, img3.dataobj)
 
 
-def test_clean_img():
+def test_clean_img(affine):
     rng = np.random.RandomState(42)
     data = rng.standard_normal(size=(10, 10, 10, 100)) + 0.5
     data_flat = data.T.reshape(100, -1)
-    data_img = Nifti1Image(data, AFFINE)
+    data_img = Nifti1Image(data, affine)
 
     with pytest.raises(ValueError, match="t_r.*must be specified"):
         clean_img(data_img, t_r=None, low_pass=0.1)
@@ -877,14 +889,14 @@ def test_clean_img():
     data[:, 9, 9] = np.nan
     # if infinity
     data[:, 5, 5] = np.inf
-    nan_img = Nifti1Image(data, AFFINE)
+    nan_img = Nifti1Image(data, affine)
 
     clean_im = clean_img(nan_img, ensure_finite=True)
 
     assert np.any(np.isfinite(get_data(clean_im))), True
 
     # test_clean_img_passing_nifti2image
-    data_img_nifti2 = Nifti2Image(data, AFFINE)
+    data_img_nifti2 = Nifti2Image(data, affine)
 
     clean_img(
         data_img_nifti2, detrend=True, standardize=False, low_pass=0.1, t_r=1.0
@@ -972,20 +984,20 @@ def test_largest_cc_img_error():
         largest_connected_component_img(img_4D)
 
 
-def test_new_img_like_mgh_image():
+def test_new_img_like_mgh_image(affine):
     data = np.zeros(SHAPE_3D, dtype=np.uint8)
-    niimg = MGHImage(dataobj=data, affine=AFFINE)
+    niimg = MGHImage(dataobj=data, affine=affine)
 
     new_img_like(niimg, data.astype(float), niimg.affine, copy_header=True)
 
 
 @pytest.mark.parametrize("image", [MGHImage, AnalyzeImage])
-def test_new_img_like_boolean_data(image):
+def test_new_img_like_boolean_data(affine, image):
     """Check defaulting boolean input data to np.uint8 dtype is valid for
     encoding with nibabel image classes MGHImage and AnalyzeImage.
     """
     data = np.random.randn(*SHAPE_3D).astype("uint8")
-    in_img = image(dataobj=data, affine=AFFINE)
+    in_img = image(dataobj=data, affine=affine)
 
     out_img = new_img_like(in_img, data=in_img.get_fdata() > 0.5)
 
