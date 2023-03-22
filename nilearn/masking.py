@@ -1,8 +1,7 @@
 """Utilities to compute and operate on brain masks."""
-import numbers
-
 # Authors: Gael Varoquaux, Alexandre Abraham, Philippe Gervais, Ana Luisa Pinho
 # License: simplified BSD
+import numbers
 import warnings
 
 import numpy as np
