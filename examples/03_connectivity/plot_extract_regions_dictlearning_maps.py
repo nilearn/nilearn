@@ -11,17 +11,19 @@ We used 20 movie-watching functional datasets from
 :func:`nilearn.datasets.fetch_development_fmri` and
 :class:`nilearn.decomposition.DictLearning` for set of brain atlas maps.
 
-This example can also be inspired to apply the same steps to even regions extraction
-using :term:`ICA` maps. In that case, idea would be to replace
+This example can also be inspired to apply the same steps
+to even regions extraction
+using :term:`ICA` maps.
+In that case, idea would be to replace
 :term:`Dictionary learning` to canonical :term:`ICA` decomposition
 using :class:`nilearn.decomposition.CanICA`
 
-Please see the related documentation of :class:`nilearn.regions.RegionExtractor`
-for more details.
+Please see the related documentation
+of :class:`nilearn.regions.RegionExtractor` for more details.
 
 """
 
-################################################################################
+##############################################################################
 # Fetch brain development functional datasets
 # -------------------------------------------
 #
@@ -32,7 +34,7 @@ rest_dataset = datasets.fetch_development_fmri(n_subjects=20)
 func_filenames = rest_dataset.func
 confounds = rest_dataset.confounds
 
-################################################################################
+##############################################################################
 # Extract functional networks with :term:`Dictionary learning`
 # ------------------------------------------------------------
 #
@@ -43,9 +45,13 @@ confounds = rest_dataset.confounds
 from nilearn.decomposition import DictLearning
 
 # Initialize DictLearning object
-dict_learn = DictLearning(n_components=8, smoothing_fwhm=6.,
-                          memory="nilearn_cache", memory_level=2,
-                          random_state=0)
+dict_learn = DictLearning(
+    n_components=8,
+    smoothing_fwhm=6.0,
+    memory="nilearn_cache",
+    memory_level=2,
+    random_state=0,
+)
 # Fit to the data
 dict_learn.fit(func_filenames)
 # Resting state networks/maps in attribute `components_img_`
@@ -55,10 +61,13 @@ components_img = dict_learn.components_img_
 # Show networks using plotting utilities
 from nilearn import plotting
 
-plotting.plot_prob_atlas(components_img, view_type='filled_contours',
-                         title='Dictionary Learning maps')
+plotting.plot_prob_atlas(
+    components_img,
+    view_type="filled_contours",
+    title="Dictionary Learning maps",
+)
 
-################################################################################
+##############################################################################
 # Extract regions from networks
 # -----------------------------
 #
@@ -69,10 +78,14 @@ plotting.plot_prob_atlas(components_img, view_type='filled_contours',
 # more intense non-voxels will be survived.
 from nilearn.regions import RegionExtractor
 
-extractor = RegionExtractor(components_img, threshold=0.5,
-                            thresholding_strategy='ratio_n_voxels',
-                            extractor='local_regions',
-                            standardize=True, min_region_size=1350)
+extractor = RegionExtractor(
+    components_img,
+    threshold=0.5,
+    thresholding_strategy="ratio_n_voxels",
+    extractor="local_regions",
+    standardize=True,
+    min_region_size=1350,
+)
 # Just call fit() to process for regions extraction
 extractor.fit()
 # Extracted regions are stored in regions_img_
@@ -83,18 +96,21 @@ regions_index = extractor.index_
 n_regions_extracted = regions_extracted_img.shape[-1]
 
 # Visualization of region extraction results
-title = ('%d regions are extracted from %d components.'
-         '\nEach separate color of region indicates extracted region'
-         % (n_regions_extracted, 8))
-plotting.plot_prob_atlas(regions_extracted_img, view_type='filled_contours',
-                         title=title)
+title = (
+    "%d regions are extracted from %d components."
+    "\nEach separate color of region indicates extracted region"
+    % (n_regions_extracted, 8)
+)
+plotting.plot_prob_atlas(
+    regions_extracted_img, view_type="filled_contours", title=title
+)
 
-################################################################################
+##############################################################################
 # Compute correlation coefficients
 # --------------------------------
 #
-# First we need to do subjects timeseries signals extraction and then estimating
-# correlation matrices on those signals.
+# First we need to do subjects timeseries signals extraction
+# and then estimating correlation matrices on those signals.
 # To extract timeseries signals, we call
 # :meth:`~nilearn.regions.RegionExtractor.transform` onto each subject
 # functional data stored in ``func_filenames``.
@@ -103,7 +119,7 @@ from nilearn.connectome import ConnectivityMeasure
 
 correlations = []
 # Initializing ConnectivityMeasure object with kind='correlation'
-connectome_measure = ConnectivityMeasure(kind='correlation')
+connectome_measure = ConnectivityMeasure(kind="correlation")
 for filename, confound in zip(func_filenames, confounds):
     # call transform from RegionExtractor object to extract timeseries signals
     timeseries_each_subject = extractor.transform(filename, confounds=confound)
@@ -114,8 +130,10 @@ for filename, confound in zip(func_filenames, confounds):
 
 # Mean of all correlations
 import numpy as np
-mean_correlations = np.mean(correlations, axis=0).reshape(n_regions_extracted,
-                                                          n_regions_extracted)
+
+mean_correlations = np.mean(correlations, axis=0).reshape(
+    n_regions_extracted, n_regions_extracted
+)
 
 ###############################################################################
 # Plot resulting connectomes
@@ -126,48 +144,57 @@ mean_correlations = np.mean(correlations, axis=0).reshape(n_regions_extracted,
 # :func:`~nilearn.plotting.plot_connectome` to plot the
 # connectome relations.
 
-title = 'Correlation between %d regions' % n_regions_extracted
+title = f"Correlation between {int(n_regions_extracted)} regions"
 
 # First plot the matrix
-display = plotting.plot_matrix(mean_correlations, vmax=1, vmin=-1,
-                               colorbar=True, title=title)
+display = plotting.plot_matrix(
+    mean_correlations, vmax=1, vmin=-1, colorbar=True, title=title
+)
 
 # Then find the center of the regions and plot a connectome
 regions_img = regions_extracted_img
 coords_connectome = plotting.find_probabilistic_atlas_cut_coords(regions_img)
 
-plotting.plot_connectome(mean_correlations, coords_connectome,
-                         edge_threshold='90%', title=title)
+plotting.plot_connectome(
+    mean_correlations, coords_connectome, edge_threshold="90%", title=title
+)
 
-################################################################################
+##############################################################################
 # Plot regions extracted for only one specific network
 # ----------------------------------------------------
 #
-# First, we plot a network of ``index=4`` without
-# region extraction (left plot).
+# First, we plot a network of ``index=4``
+# without region extraction (left plot).
 from nilearn import image
 
 img = image.index_img(components_img, 4)
 coords = plotting.find_xyz_cut_coords(img)
-display = plotting.plot_stat_map(img, cut_coords=coords, colorbar=False,
-                                 title='Showing one specific network')
+display = plotting.plot_stat_map(
+    img,
+    cut_coords=coords,
+    colorbar=False,
+    title="Showing one specific network",
+)
 
-################################################################################
+##############################################################################
 # Now, we plot (right side) same network after region extraction to show that
 # connected regions are nicely separated.
 # Each brain extracted region is identified as separate color.
 #
-# For this, we take the indices of the all regions extracted related to original
-# network given as 4.
+# For this, we take the indices of the all regions extracted
+# related to original network given as 4.
 regions_indices_of_map3 = np.where(np.array(regions_index) == 4)
 
-display = plotting.plot_anat(cut_coords=coords,
-                             title='Regions from this network')
+display = plotting.plot_anat(
+    cut_coords=coords, title="Regions from this network"
+)
 
 # Add as an overlay all the regions of index 4
-colors = 'rgbcmyk'
+colors = "rgbcmyk"
 for each_index_of_map3, color in zip(regions_indices_of_map3[0], colors):
-    display.add_overlay(image.index_img(regions_extracted_img, each_index_of_map3),
-                        cmap=plotting.cm.alpha_cmap(color))
+    display.add_overlay(
+        image.index_img(regions_extracted_img, each_index_of_map3),
+        cmap=plotting.cm.alpha_cmap(color),
+    )
 
 plotting.show()

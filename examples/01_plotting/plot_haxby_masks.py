@@ -1,13 +1,12 @@
 """
 Plot Haxby masks
-=================
+================
 
 Small script to plot the masks of the Haxby dataset.
 """
 
 
 import matplotlib.pyplot as plt
-
 from nilearn import datasets
 
 haxby_dataset = datasets.fetch_haxby()

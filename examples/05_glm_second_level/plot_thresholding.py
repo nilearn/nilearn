@@ -13,7 +13,7 @@ narrative sentence reading/listening.
 
 #########################################################################
 # Prepare some images for a simple t test
-# ----------------------------------------
+# ---------------------------------------
 # This is a simple manually performed second level analysis.
 from nilearn import datasets
 
@@ -28,7 +28,7 @@ cmap_filenames = localizer_dataset.cmaps
 
 #########################################################################
 # Perform the second level analysis
-# ----------------------------------
+# ---------------------------------
 #
 # First, we define a design matrix for the model. As the model is trivial
 # (one-sample test), the design matrix is just one column with ones.
@@ -54,7 +54,7 @@ z_map = second_level_model.compute_contrast(output_type="z_score")
 # abs(z) > 3.29 (equivalent to p < 0.001), cluster size > 10 voxels.
 from nilearn.image import threshold_img
 
-thresholded_map = threshold_img(
+threshold_img(
     z_map,
     threshold=3.29,
     cluster_threshold=10,

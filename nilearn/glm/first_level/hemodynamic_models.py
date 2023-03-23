@@ -555,9 +555,8 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
         fir_delays = [int(x) for x in fir_delays]
     oversampling = int(oversampling)
 
-    # this is the average tr in this session, not necessarily the true tr
-    tr = float(frame_times.max()) / (np.size(frame_times) - 1)
-
+    # this is the minimal tr in this session, not necessarily the true tr
+    tr = _calculate_tr(frame_times)
     # 1. create the high temporal resolution regressor
     hr_regressor, hr_frame_times = _sample_condition(
         exp_condition, frame_times, oversampling, min_onset)
@@ -586,3 +585,18 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
     # 6 generate regressor names
     reg_names = _regressor_names(con_id, hrf_model, fir_delays=fir_delays)
     return computed_regressors, reg_names
+
+
+def _calculate_tr(frame_times):
+    """Calculate TR from differences in frame_times.
+
+    Parameters
+    ----------
+    frame_times : array of shape (n_scans)
+        the desired sampling times
+    Returns
+    -------
+    float
+        repetition time
+    """
+    return np.min(np.diff(frame_times))

@@ -16,7 +16,7 @@ except ImportError:
 
 #########################################################################
 # Define parameters
-# ----------------------------------
+# -----------------
 # At first, we define parameters related to the images acquisition.
 import numpy as np
 
@@ -40,7 +40,7 @@ add_reg_names = ["tx", "ty", "tz", "rx", "ry", "rz"]
 
 #########################################################################
 # Create design matrices
-# -------------------------------------
+# ----------------------
 # The same parameters allow us to obtain a variety of design matrices.
 # We first create an events object.
 import pandas as pd

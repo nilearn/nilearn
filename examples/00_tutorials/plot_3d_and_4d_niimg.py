@@ -7,7 +7,7 @@ Here we discover how to work with 3D and 4D niimgs.
 
 ###############################################################################
 # Downloading tutorial datasets from Internet
-# --------------------------------------------
+# -------------------------------------------
 #
 # Nilearn comes with functions that download public data from Internet
 #
@@ -28,7 +28,7 @@ tmap_filename = motor_images.images[0]
 
 ###############################################################################
 # Visualizing a 3D file
-# ----------------------
+# ---------------------
 #
 # The file contains a 3D volume, we can easily visualize it as a
 # statistical map:

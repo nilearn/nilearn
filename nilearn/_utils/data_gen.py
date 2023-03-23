@@ -264,50 +264,6 @@ def generate_labeled_regions(shape,
     return Nifti1Image(data, affine)
 
 
-def generate_labeled_regions_large(shape,
-                                   n_regions,
-                                   random_state=0,
-                                   affine=np.eye(4),
-                                   dtype="int32"):
-    """Similar to generate_labeled_regions, but suitable for a large number of
-    regions.
-
-    See generate_labeled_regions for details.
-
-    Parameters
-    ----------
-    shape : :obj:`tuple` of :obj:`int`
-        Shape of returned array.
-
-    n_regions : :obj:`int`
-        Number of regions to generate.
-
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
-        Random number generator, or seed.
-        Default=0.
-
-    affine : :obj:`numpy.ndarray`, optional
-        Affine of returned image.
-        Default=np.eye(4).
-
-    dtype : :obj:`type`, optional
-        Data type of image.
-        Default='int32'.
-
-    Returns
-    -------
-    Niimg-like object
-        Data has shape "shape", containing region labels.
-
-    """
-    rand_gen = check_random_state(random_state)
-    data = rand_gen.randint(n_regions + 1, size=shape, dtype=dtype)
-    if len(np.unique(data)) != n_regions + 1:
-        raise ValueError("Some labels are missing. Maybe shape is too small.")
-    return Nifti1Image(data, affine)
-
-
 def generate_fake_fmri(shape=(10, 11, 12),
                        length=17,
                        kind="noise",
