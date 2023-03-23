@@ -235,7 +235,7 @@ def multiple_fast_inverse(a):
             a[i], piv, info = getrf(a[i], overwrite_a=True)
         if info == 0:
             if getri.module_name[:7] == "flapack":
-                lwork, info_ = getri_lwork(a1.shape[0])
+                lwork, _ = getri_lwork(a1.shape[0])
                 # XXX: the following line fixes curious SEGFAULT when
                 # benchmarking 500x500 matrix inverse. This seems to
                 # be a bug in LAPACK ?getri routine because if lwork is

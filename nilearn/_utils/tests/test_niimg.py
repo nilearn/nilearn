@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import joblib
@@ -9,8 +8,6 @@ from nibabel import Nifti1Header, Nifti1Image
 from nibabel.tmpdirs import InTemporaryDirectory
 from nilearn._utils import load_niimg, niimg, testing
 from nilearn.image import get_data, new_img_like
-
-currdir = os.path.dirname(os.path.abspath(__file__))
 
 
 @pytest.fixture
