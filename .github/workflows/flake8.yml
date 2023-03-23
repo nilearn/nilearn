@@ -41,6 +41,7 @@ jobs:
             examples/0[0234567]* \
             maint_tools \
             setup.py \
+            nilerarn/_utils \
             nilearn/connectome \
             nilearn/de* \
             nilearn/image \
