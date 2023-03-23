@@ -3,6 +3,7 @@ import os
 import platform
 import sys
 import tempfile
+import warnings
 from pathlib import Path
 
 import nibabel
@@ -677,10 +678,9 @@ def test_new_img_like_int64():
 
     data = get_data(img).astype("int32")
 
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         new_img = new_img_like(img, data)
-
-    assert not record
     assert get_data(new_img).dtype == "int32"
 
     data = data.astype("int64")
