@@ -1,9 +1,10 @@
+import nibabel
 import numpy as np
 import pytest
-import nibabel
-
-from nilearn._utils.testing import with_memory_profiler
-from nilearn._utils.testing import assert_memory_less_than
+from nilearn._utils.testing import (
+    assert_memory_less_than,
+    with_memory_profiler,
+)
 
 
 def create_object(size):
@@ -29,6 +30,7 @@ def test_memory_usage():
     # limit.
     with pytest.raises(ValueError, match="Memory consumption measured"):
         assert_memory_less_than(100, 0.1, create_object, 200 * 1024**2)
+
 
 def test_int64_niftis(tmp_path):
     data = np.ones((3, 3, 3), dtype=bool)

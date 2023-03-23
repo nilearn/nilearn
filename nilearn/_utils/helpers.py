@@ -7,8 +7,8 @@ def rename_parameters(replacement_params,
                       end_version='future',
                       lib_name='Nilearn',
                       ):
-    """Decorator to deprecate & replace specified parameters
-    in the decorated functions and methods without changing
+    """Use this decorator to deprecate & replace specified parameters \
+    in the decorated functions and methods without changing \
     function definition or signature.
 
     Parameters
@@ -45,8 +45,8 @@ def rename_parameters(replacement_params,
 
 
 def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
-    """For the decorator replace_parameters(), raises warnings about
-    deprecated parameters.
+    """Raise warnings about deprecated parameters, \
+    for the decorator replace_parameters().
 
     Parameters
     ----------
@@ -82,8 +82,9 @@ def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
 
 
 def _transfer_deprecated_param_vals(replacement_params, kwargs):
-    """For the decorator replace_parameters(), reassigns new parameters
-    the values passed to their corresponding deprecated parameters.
+    """Reassigns new parameters \
+    the values passed to their corresponding deprecated parameters \
+    for the decorator replace_parameters().
 
     Parameters
     ----------
@@ -113,8 +114,8 @@ def _transfer_deprecated_param_vals(replacement_params, kwargs):
 def remove_parameters(removed_params,
                       reason,
                       end_version='future'):
-    """Decorator to deprecate but not renamed parameters in the decorated
-    functions and methods.
+    """Use this decorator to deprecate \
+    but not renamed parameters in the decorated functions and methods.
 
     Parameters
     ----------
@@ -149,7 +150,7 @@ def remove_parameters(removed_params,
 
 
 def stringify_path(path):
-    """Converts path-like objects to string.
+    """Convert path-like objects to string.
 
     This is used to allow functions expecting string filesystem paths to accept
     objects using `__fspath__` protocol.

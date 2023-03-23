@@ -1,6 +1,4 @@
-"""
-Data generation utilities
-"""
+"""Data generation utilities."""
 import json
 import os
 import string
@@ -399,8 +397,8 @@ def generate_fake_fmri_data_and_design(shapes,
                                        rk=3,
                                        affine=np.eye(4),
                                        random_state=0):
-    """Generate random :term:`fMRI` time series and design matrices of given
-    shapes.
+    """Generate random :term:`fMRI` time series \
+    and design matrices of given shapes.
 
     Parameters
     ----------
@@ -453,8 +451,8 @@ def write_fake_fmri_data_and_design(shapes,
                                     rk=3,
                                     affine=np.eye(4),
                                     random_state=0):
-    """Generate random :term:`fMRI` data and design matrices and write them to
-    disk.
+    """Generate random :term:`fMRI` data \
+    and design matrices and write them to disk.
 
     Parameters
     ----------
@@ -687,7 +685,7 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
 
 
 def basic_paradigm(condition_names_have_spaces=False):
-    """Generate basic paradigm
+    """Generate basic paradigm.
 
     Parameters
     ----------
@@ -716,8 +714,8 @@ def basic_paradigm(condition_names_have_spaces=False):
 
 
 def basic_confounds(length, random_state=0):
-    """Generate random motion parameters (3 translation directions, 3 rotation
-    directions).
+    """Generate random motion parameters \
+    (3 translation directions, 3 rotation directions).
 
     Parameters
     ----------
@@ -754,7 +752,7 @@ def create_fake_bids_dataset(base_dir='',
                              confounds_tag="desc-confounds_timeseries",
                              no_session=False,
                              random_state=0):
-    """Creates a fake :term:`bids<BIDS>` dataset directory with dummy files.
+    """Create a fake :term:`bids<BIDS>` dataset directory with dummy files.
 
     Returns fake dataset directory name.
 
