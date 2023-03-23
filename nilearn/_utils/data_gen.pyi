@@ -1,3 +1,6 @@
+from pathlib import Path
+from typing import Any, Union
+
 import numpy as np
 from _typeshed import Incomplete
 from nilearn import (
@@ -11,8 +14,6 @@ from nilearn.interfaces.bids._utils import (
     _bids_entities as _bids_entities,
     _check_bids_label as _check_bids_label,
 )
-from pathlib import Path
-from typing import Any, Union
 
 def generate_mni_space_img(
     n_scans: int = ...,
