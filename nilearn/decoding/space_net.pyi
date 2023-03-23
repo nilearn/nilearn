@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from functools import partial
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 from joblib.memory import Memory
 from nibabel.nifti1 import Nifti1Image

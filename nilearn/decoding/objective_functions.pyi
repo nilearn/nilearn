@@ -1,5 +1,3 @@
-from typing import Union
-
 from numpy import float64, ndarray
 
 def _div(v: ndarray) -> ndarray: ...

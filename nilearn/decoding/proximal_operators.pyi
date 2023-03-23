@@ -1,5 +1,3 @@
-from typing import Dict, Optional, Tuple, Union
-
 from numpy import float64, ndarray
 
 def _dual_gap_prox_tvl1(

@@ -1,5 +1,4 @@
 from collections.abc import Callable
-from typing import Dict, List, Optional, Tuple, Union
 
 from nilearn.decoding.space_net import _EarlyStoppingCallback
 from numpy import float64, ndarray

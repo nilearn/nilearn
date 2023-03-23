@@ -1,5 +1,3 @@
-from typing import List, Optional, Union
-
 from nibabel.nifti1 import Nifti1Image
 from numpy import ndarray
 from scipy.sparse._lil import lil_matrix

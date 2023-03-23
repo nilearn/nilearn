@@ -1,5 +1,4 @@
 import pathlib
-from typing import Optional, Union
 
 from _typeshed import Incomplete
 from nilearn._utils import (
@@ -107,7 +106,7 @@ class FirstLevelModel(BaseGLM):
     ): ...
 
 def first_level_from_bids(
-    dataset_path: Union[str, pathlib.Path],
+    dataset_path: str | pathlib.Path,
     task_label,
     space_label: Incomplete | None = ...,
     sub_labels: Incomplete | None = ...,
@@ -163,7 +162,7 @@ def _get_confounds(
     img_filters: list[tuple[str, str]],
     imgs: list[str],
     verbose: int,
-) -> Optional[list[str]]: ...
+) -> list[str] | None: ...
 def _check_confounds_list(confounds: list[str], imgs: list[str]) -> None: ...
 def _check_args_first_level_from_bids(
     dataset_path: str | pathlib.Path,

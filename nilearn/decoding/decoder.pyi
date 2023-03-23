@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 from nibabel.nifti1 import Nifti1Image
 from nilearn.maskers.nifti_masker import NiftiMasker

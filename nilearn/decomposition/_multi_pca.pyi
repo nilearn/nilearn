@@ -1,5 +1,3 @@
-from typing import Optional, Tuple, Union
-
 from joblib.memory import Memory
 from nibabel.nifti1 import Nifti1Image
 from nilearn.maskers.multi_nifti_masker import MultiNiftiMasker
