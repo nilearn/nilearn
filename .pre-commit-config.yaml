@@ -21,6 +21,7 @@ files: |
         | maint_tools
         | setup.*
         | nilearn/__init__.py
+        | nilearn/utils
         | nilearn/signal.py
         | nilearn/masking.py
         | nilearn/conftest.py
@@ -52,6 +53,11 @@ exclude: |
         | examples/.*/.*surface_bids_analysis.py
         | examples/.*/.*surface_projection_strategies.py
         | nilearn/externals/tempita
+        | nilearn/_utils/__init__.py
+        | nilearn/_utils/data_gen.py
+        | nilearn/_utils/docs.py
+        | nilearn/_utils/helpers.py
+        | nilearn/_utils/tests/test_data_gen.py
     )$
 
 repos:
