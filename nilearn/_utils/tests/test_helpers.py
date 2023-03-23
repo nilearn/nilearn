@@ -32,13 +32,13 @@ def test_rename_parameters():
     expected_warnings = [
         (
             'The parameter "deprecated_param_0" will be removed in 0.6.1rc '
-            'release of other_lib. .* use the parameter "replacement_param_0"'
-            " instead."
+            "release of other_lib. "
+            'Please use the parameter "replacement_param_0" instead.'
         ),
         (
             'The parameter "deprecated_param_1" will be removed in 0.6.1rc '
-            'release of other_lib. .* use the parameter "replacement_param_1"'
-            " instead."
+            "release of other_lib. "
+            'Please use the parameter "replacement_param_1" instead.'
         ),
     ]
 
@@ -103,13 +103,13 @@ def test_future_warn_deprecated_params():
     expected_warnings = [
         (
             'The parameter "deprecated_param_0" will be removed in sometime '
-            'release of somelib .* use the parameter "replacement_param_0" '
-            "instead."
+            "release of somelib. "
+            'Please use the parameter "replacement_param_0" instead.'
         ),
         (
             'The parameter "deprecated_param_1" will be removed in sometime '
-            'release of somelib .* use the parameter "replacement_param_1" '
-            "instead."
+            "release of somelib. "
+            'Please use the parameter "replacement_param_1" instead.'
         ),
     ]
     with warnings.catch_warnings(record=True) as raised_warnings:

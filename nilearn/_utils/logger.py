@@ -80,7 +80,7 @@ def log(
 
 
 def _compose_err_msg(msg, **kwargs):
-    """Append key-value pairs to msg, for display.
+    """Append key-value pairs to msg, for display. # noqa: D301.
 
     Parameters
     ----------
@@ -97,11 +97,10 @@ def _compose_err_msg(msg, **kwargs):
 
     Example
     -------
-
-        >>> _compose_err_msg('Error message with arguments...', arg_num=123, \
-            arg_str='filename.nii', arg_bool=True)
-        'Error message with arguments... arg_str: filename.nii'
-        >>>
+    >>> _compose_err_msg('Error message with arguments...', arg_num=123, \
+        arg_str='filename.nii', arg_bool=True)
+    'Error message with arguments...\\narg_str: filename.nii'
+    >>>
 
     """
     updated_msg = msg
