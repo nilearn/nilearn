@@ -121,7 +121,7 @@ def _check_events_file_uses_tab_separators(events_files):
             pass
         except UnicodeDecodeError:  # py3:if binary file
             raise ValueError(
-                "The file does not seem to be " "a valid unicode text file."
+                "The file does not seem to be a valid unicode text file."
             )
         except OSError:  # if invalid filepath.
             pass
