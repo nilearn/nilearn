@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from functools import partial
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from joblib.memory import Memory
 from nibabel.nifti1 import Nifti1Image
@@ -21,21 +22,21 @@ def _univariate_feature_screening(
     is_classif: bool,
     screening_percentile: float,
     smoothing_fwhm: float = ...,
-) -> Tuple[ndarray, ndarray, ndarray]: ...
+) -> tuple[ndarray, ndarray, ndarray]: ...
 def path_scores(
-    solver: Union[Callable, partial],
+    solver: Callable | partial,
     X: ndarray,
     y: ndarray,
     mask: ndarray,
-    alphas: Optional[Union[List[float], List[float64]]],
-    l1_ratios: Union[List[int], List[float], float, List[float64]],
+    alphas: list[float] | list[float64] | None,
+    l1_ratios: list[int] | list[float] | float | list[float64],
     train: ndarray,
     test: ndarray,
-    solver_params: Dict[str, Union[float, int]],
+    solver_params: dict[str, float | int],
     is_classif: bool = ...,
     n_alphas: int = ...,
     eps: float = ...,
-    key: Optional[Tuple[int, int]] = ...,
+    key: tuple[int, int] | None = ...,
     debias: bool = ...,
     Xmean: None = ...,
     screening_percentile: float = ...,
@@ -47,11 +48,11 @@ class BaseSpaceNet:
         self,
         penalty: str = ...,
         is_classif: bool = ...,
-        loss: Optional[str] = ...,
-        l1_ratios: Union[int, float] = ...,
-        alphas: Optional[Union[List[float], float]] = ...,
-        n_alphas: Union[int, float] = ...,
-        mask: Optional[Union[str, Nifti1Image]] = ...,
+        loss: str | None = ...,
+        l1_ratios: int | float = ...,
+        alphas: list[float] | float | None = ...,
+        n_alphas: int | float = ...,
+        mask: str | Nifti1Image | None = ...,
         target_affine: None = ...,
         target_shape: None = ...,
         low_pass: None = ...,
@@ -59,16 +60,16 @@ class BaseSpaceNet:
         t_r: None = ...,
         max_iter: int = ...,
         tol: float = ...,
-        memory: Optional[Memory] = ...,
+        memory: Memory | None = ...,
         memory_level: int = ...,
         standardize: bool = ...,
-        verbose: Union[int, bool] = ...,
+        verbose: int | bool = ...,
         mask_args: None = ...,
         n_jobs: int = ...,
         eps: float = ...,
         cv: int = ...,
         fit_intercept: bool = ...,
-        screening_percentile: Union[int, float] = ...,
+        screening_percentile: int | float = ...,
         debias: bool = ...,
     ) -> None: ...
     def _set_coef_and_intercept(self, w: ndarray) -> None: ...
@@ -76,7 +77,7 @@ class BaseSpaceNet:
     def decision_function(self, X: ndarray) -> ndarray: ...
     def fit(
         self, X: Nifti1Image, y: ndarray
-    ) -> Union[BaseSpaceNet, SpaceNetRegressor, SpaceNetClassifier]: ...
+    ) -> BaseSpaceNet | SpaceNetRegressor | SpaceNetClassifier: ...
     def predict(self, X: Nifti1Image) -> ndarray: ...
 
 class SpaceNetClassifier:
@@ -85,9 +86,9 @@ class SpaceNetClassifier:
         penalty: str = ...,
         loss: str = ...,
         l1_ratios: float = ...,
-        alphas: Optional[float] = ...,
+        alphas: float | None = ...,
         n_alphas: int = ...,
-        mask: Optional[Union[str, Nifti1Image]] = ...,
+        mask: str | Nifti1Image | None = ...,
         target_affine: None = ...,
         target_shape: None = ...,
         low_pass: None = ...,
@@ -98,7 +99,7 @@ class SpaceNetClassifier:
         memory: Memory = ...,
         memory_level: int = ...,
         standardize: bool = ...,
-        verbose: Union[int, bool] = ...,
+        verbose: int | bool = ...,
         n_jobs: int = ...,
         eps: float = ...,
         cv: int = ...,
@@ -114,9 +115,9 @@ class SpaceNetRegressor:
         self,
         penalty: str = ...,
         l1_ratios: float = ...,
-        alphas: Optional[float] = ...,
+        alphas: float | None = ...,
         n_alphas: int = ...,
-        mask: Optional[Union[str, Nifti1Image]] = ...,
+        mask: str | Nifti1Image | None = ...,
         target_affine: None = ...,
         target_shape: None = ...,
         low_pass: None = ...,
@@ -127,7 +128,7 @@ class SpaceNetRegressor:
         memory: Memory = ...,
         memory_level: int = ...,
         standardize: bool = ...,
-        verbose: Union[int, bool] = ...,
+        verbose: int | bool = ...,
         n_jobs: int = ...,
         eps: float = ...,
         cv: int = ...,
@@ -137,7 +138,7 @@ class SpaceNetRegressor:
     ) -> None: ...
 
 class _EarlyStoppingCallback:
-    def __call__(self, variables: Dict[str, Any]) -> Optional[bool]: ...
+    def __call__(self, variables: dict[str, Any]) -> bool | None: ...
     def __init__(
         self,
         X_test: ndarray,
@@ -149,6 +150,6 @@ class _EarlyStoppingCallback:
     def _debias(self, w: ndarray) -> ndarray: ...
     def test_score(
         self, w: ndarray
-    ) -> Union[
-        Tuple[float64, float64], Tuple[float, float], Tuple[float64, float]
-    ]: ...
+    ) -> (
+        tuple[float64, float64] | tuple[float, float] | tuple[float64, float]
+    ): ...

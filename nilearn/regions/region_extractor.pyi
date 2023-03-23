@@ -8,32 +8,32 @@ def _remove_small_regions(
     input_data: ndarray, index: ndarray, affine: ndarray, min_size: int
 ) -> ndarray: ...
 def _threshold_maps_ratio(
-    maps_img: Nifti1Image, threshold: Union[str, float]
+    maps_img: Nifti1Image, threshold: str | float
 ) -> Nifti1Image: ...
 def connected_label_regions(
     labels_img: Nifti1Image,
-    min_size: Optional[Union[int, str]] = ...,
-    connect_diag: Optional[bool] = ...,
-    labels: Optional[Union[str, ndarray, List[str]]] = ...,
+    min_size: int | str | None = ...,
+    connect_diag: bool | None = ...,
+    labels: str | ndarray | list[str] | None = ...,
 ) -> Nifti1Image: ...
 def connected_regions(
     maps_img: Nifti1Image,
-    min_region_size: Union[int, float] = ...,
-    extract_type: Union[str, int] = ...,
-    smoothing_fwhm: Union[int, float] = ...,
-    mask_img: Optional[Nifti1Image] = ...,
-) -> Tuple[Nifti1Image, List[int]]: ...
+    min_region_size: int | float = ...,
+    extract_type: str | int = ...,
+    smoothing_fwhm: int | float = ...,
+    mask_img: Nifti1Image | None = ...,
+) -> tuple[Nifti1Image, list[int]]: ...
 
 class RegionExtractor:
     def __init__(
         self,
         maps_img: Nifti1Image,
-        mask_img: Optional[Nifti1Image] = ...,
-        min_region_size: Union[int, float] = ...,
-        threshold: Optional[Union[int, float, str]] = ...,
+        mask_img: Nifti1Image | None = ...,
+        min_region_size: int | float = ...,
+        threshold: int | float | str | None = ...,
         thresholding_strategy: str = ...,
         extractor: str = ...,
-        smoothing_fwhm: Union[int, float] = ...,
+        smoothing_fwhm: int | float = ...,
         standardize: bool = ...,
         detrend: bool = ...,
         low_pass: None = ...,

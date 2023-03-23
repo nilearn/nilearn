@@ -11,30 +11,30 @@ def _dual_gap_prox_tvl1(
 ) -> float64: ...
 def _projector_on_tvl1_dual(grad: ndarray, l1_ratio: float) -> ndarray: ...
 def _prox_l1(
-    y: ndarray, alpha: Union[float64, float], copy: bool = ...
+    y: ndarray, alpha: float64 | float, copy: bool = ...
 ) -> ndarray: ...
 def _prox_l1_with_intercept(x: ndarray, tau: float64) -> ndarray: ...
 def _prox_tvl1(
     input_img: ndarray,
     l1_ratio: float = ...,
     weight: float64 = ...,
-    dgap_tol: Union[float64, float] = ...,
+    dgap_tol: float64 | float = ...,
     x_tol: None = ...,
     max_iter: int = ...,
     check_gap_frequency: int = ...,
     val_min: None = ...,
     val_max: None = ...,
-    verbose: Union[bool, int] = ...,
+    verbose: bool | int = ...,
     fista: bool = ...,
-    init: Optional[ndarray] = ...,
-) -> Tuple[ndarray, Dict[str, bool]]: ...
+    init: ndarray | None = ...,
+) -> tuple[ndarray, dict[str, bool]]: ...
 def _prox_tvl1_with_intercept(
     w: ndarray,
-    shape: Union[Tuple[int, int, int], Tuple[int]],
+    shape: tuple[int, int, int] | tuple[int],
     l1_ratio: float,
     weight: float64,
-    dgap_tol: Union[float64, float],
+    dgap_tol: float64 | float,
     max_iter: int = ...,
-    init: Optional[ndarray] = ...,
+    init: ndarray | None = ...,
     verbose: int = ...,
-) -> Tuple[ndarray, Dict[str, bool]]: ...
+) -> tuple[ndarray, dict[str, bool]]: ...

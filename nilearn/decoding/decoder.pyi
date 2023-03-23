@@ -12,52 +12,52 @@ from sklearn.model_selection._split import KFold, LeaveOneGroupOut
 from sklearn.svm._classes import LinearSVC
 
 def _check_estimator(
-    estimator: Union[
-        str, DummyRegressor, DummyClassifier, RandomForestClassifier
-    ]
+    estimator: (
+        str | DummyRegressor | DummyClassifier | RandomForestClassifier
+    ),
 ) -> BaseEstimator: ...
 def _check_param_grid(
     estimator: Any,
     X: ndarray,
     y: ndarray,
-    param_grid: Optional[Dict[str, ndarray]] = ...,
-) -> Dict[str, ndarray]: ...
+    param_grid: dict[str, ndarray] | None = ...,
+) -> dict[str, ndarray]: ...
 def _parallel_fit(
     estimator: BaseEstimator,
     X: ndarray,
     y: ndarray,
-    train: Union[ndarray, range],
-    test: Union[ndarray, range],
-    param_grid: Optional[Dict[str, ndarray]],
+    train: ndarray | range,
+    test: ndarray | range,
+    param_grid: dict[str, ndarray] | None,
     is_classification: bool,
-    selector: Optional[SelectPercentile],
-    scorer: Union[_PredictScorer, _ThresholdScorer],
-    mask_img: Optional[Nifti1Image],
+    selector: SelectPercentile | None,
+    scorer: _PredictScorer | _ThresholdScorer,
+    mask_img: Nifti1Image | None,
     class_index: int,
     clustering_percentile: int,
-) -> Union[
-    Tuple[int, ndarray, float64, Dict[Any, Any], float64, None],
-    Tuple[int, None, None, Dict[Any, Any], float64, ndarray],
-    Tuple[int, ndarray, ndarray, Dict[str, float64], float64, None],
-]: ...
+) -> (
+    tuple[int, ndarray, float64, dict[Any, Any], float64, None]
+    | tuple[int, None, None, dict[Any, Any], float64, ndarray]
+    | tuple[int, ndarray, ndarray, dict[str, float64], float64, None]
+): ...
 
 class Decoder:
     def __init__(
         self,
-        estimator: Union[str, DummyClassifier] = ...,
-        mask: Optional[Union[Nifti1Image, NiftiMasker]] = ...,
-        cv: Union[LinearSVC, LeaveOneGroupOut, int, str, KFold] = ...,
+        estimator: str | DummyClassifier = ...,
+        mask: Nifti1Image | NiftiMasker | None = ...,
+        cv: LinearSVC | LeaveOneGroupOut | int | str | KFold = ...,
         param_grid: None = ...,
-        screening_percentile: Optional[Union[int, float]] = ...,
-        scoring: Optional[Union[str, _PredictScorer]] = ...,
-        smoothing_fwhm: Optional[float] = ...,
+        screening_percentile: int | float | None = ...,
+        scoring: str | _PredictScorer | None = ...,
+        smoothing_fwhm: float | None = ...,
         standardize: bool = ...,
-        target_affine: Optional[ndarray] = ...,
-        target_shape: Optional[Tuple[int, int, int]] = ...,
+        target_affine: ndarray | None = ...,
+        target_shape: tuple[int, int, int] | None = ...,
         mask_strategy: str = ...,
-        low_pass: Optional[int] = ...,
-        high_pass: Optional[int] = ...,
-        t_r: Optional[int] = ...,
+        low_pass: int | None = ...,
+        high_pass: int | None = ...,
+        t_r: int | None = ...,
         memory: None = ...,
         memory_level: int = ...,
         n_jobs: int = ...,
@@ -67,12 +67,12 @@ class Decoder:
 class DecoderRegressor:
     def __init__(
         self,
-        estimator: Union[str, DummyRegressor] = ...,
-        mask: Optional[Nifti1Image] = ...,
+        estimator: str | DummyRegressor = ...,
+        mask: Nifti1Image | None = ...,
         cv: int = ...,
         param_grid: None = ...,
-        screening_percentile: Optional[Union[int, float]] = ...,
-        scoring: Optional[str] = ...,
+        screening_percentile: int | float | None = ...,
+        scoring: str | None = ...,
         smoothing_fwhm: None = ...,
         standardize: bool = ...,
         target_affine: None = ...,
@@ -91,11 +91,11 @@ class FREMClassifier:
     def __init__(
         self,
         estimator: str = ...,
-        mask: Optional[Union[Nifti1Image, NiftiMasker]] = ...,
+        mask: Nifti1Image | NiftiMasker | None = ...,
         cv: int = ...,
         param_grid: None = ...,
         clustering_percentile: int = ...,
-        screening_percentile: Union[int, float] = ...,
+        screening_percentile: int | float = ...,
         scoring: str = ...,
         smoothing_fwhm: None = ...,
         standardize: bool = ...,
@@ -115,11 +115,11 @@ class FREMRegressor:
     def __init__(
         self,
         estimator: str = ...,
-        mask: Optional[Nifti1Image] = ...,
+        mask: Nifti1Image | None = ...,
         cv: int = ...,
         param_grid: None = ...,
         clustering_percentile: int = ...,
-        screening_percentile: Union[int, float] = ...,
+        screening_percentile: int | float = ...,
         scoring: str = ...,
         smoothing_fwhm: None = ...,
         standardize: bool = ...,
@@ -138,22 +138,22 @@ class FREMRegressor:
 class _BaseDecoder:
     def __init__(
         self,
-        estimator: Union[
-            str, DummyRegressor, DummyClassifier, RandomForestClassifier
-        ] = ...,
-        mask: Optional[Union[Nifti1Image, NiftiMasker]] = ...,
+        estimator: (
+            str | DummyRegressor | DummyClassifier | RandomForestClassifier
+        ) = ...,
+        mask: Nifti1Image | NiftiMasker | None = ...,
         cv: Any = ...,
         param_grid: None = ...,
         clustering_percentile: int = ...,
-        screening_percentile: Optional[Union[int, float]] = ...,
-        scoring: Optional[Union[str, _PredictScorer]] = ...,
-        smoothing_fwhm: Optional[float] = ...,
+        screening_percentile: int | float | None = ...,
+        scoring: str | _PredictScorer | None = ...,
+        smoothing_fwhm: float | None = ...,
         standardize: bool = ...,
-        target_affine: Optional[ndarray] = ...,
-        target_shape: Optional[Tuple[int, int, int]] = ...,
-        low_pass: Optional[int] = ...,
-        high_pass: Optional[int] = ...,
-        t_r: Optional[int] = ...,
+        target_affine: ndarray | None = ...,
+        target_shape: tuple[int, int, int] | None = ...,
+        low_pass: int | None = ...,
+        high_pass: int | None = ...,
+        t_r: int | None = ...,
         mask_strategy: str = ...,
         is_classification: bool = ...,
         memory: None = ...,
@@ -165,36 +165,34 @@ class _BaseDecoder:
     def _binarize_y(self, y: ndarray) -> ndarray: ...
     def _fetch_parallel_fit_outputs(
         self,
-        parallel_fit_outputs: List[
-            Union[
-                Tuple[
-                    int, ndarray, ndarray, Dict[str, float64], float64, None
-                ],
-                Tuple[int, None, None, Dict[Any, Any], float64, ndarray],
-                Tuple[int, ndarray, float64, Dict[Any, Any], float64, None],
-            ]
+        parallel_fit_outputs: list[
+            (
+                tuple[int, ndarray, ndarray, dict[str, float64], float64, None]
+                | tuple[int, None, None, dict[Any, Any], float64, ndarray]
+                | tuple[int, ndarray, float64, dict[Any, Any], float64, None]
+            )
         ],
         y: ndarray,
         n_problems: int,
     ) -> Any: ...
     def _output_image(
         self,
-        classes: Union[ndarray, List[str]],
+        classes: ndarray | list[str],
         coefs: ndarray,
         std_coef: ndarray,
-    ) -> Union[
-        Tuple[Dict[int64, Nifti1Image], Dict[int64, Nifti1Image]],
-        Tuple[Dict[str, Nifti1Image], Dict[str, Nifti1Image]],
-        Tuple[Dict[str_, Nifti1Image], Dict[str_, Nifti1Image]],
-    ]: ...
+    ) -> (
+        tuple[dict[int64, Nifti1Image], dict[int64, Nifti1Image]]
+        | tuple[dict[str, Nifti1Image], dict[str, Nifti1Image]]
+        | tuple[dict[str_, Nifti1Image], dict[str_, Nifti1Image]]
+    ): ...
     def _predict_dummy(self, n_samples: int) -> ndarray: ...
     def _set_scorer(self) -> None: ...
     def decision_function(self, X: ndarray) -> ndarray: ...
     def fit(
         self,
         X: Nifti1Image,
-        y: Union[ndarray, List[str]],
-        groups: Optional[ndarray] = ...,
+        y: ndarray | list[str],
+        groups: ndarray | None = ...,
     ) -> None: ...
     def predict(self, X: Nifti1Image) -> ndarray: ...
     def score(self, X: Nifti1Image, y: ndarray, *args) -> float64: ...

@@ -84,17 +84,17 @@ def basic_paradigm(condition_names_have_spaces: bool = ...): ...
 def basic_confounds(length, random_state: int = ...): ...
 def generate_random_img(shape, affine=..., random_state=...): ...
 def create_fake_bids_dataset(
-    base_dir: Union[str, Path] = ...,
+    base_dir: str | Path = ...,
     n_sub: int = ...,
     n_ses: int = ...,
     tasks: list[str] = ...,
     n_runs: list[int] = ...,
     with_derivatives: bool = ...,
     with_confounds: bool = ...,
-    confounds_tag: Union[str, None] = ...,
+    confounds_tag: str | None = ...,
     no_session: bool = ...,
     random_state: int = ...,
-    entities: Union[dict[str, list[str]], None] = ...,
+    entities: dict[str, list[str]] | None = ...,
 ) -> Path: ...
 def _check_entities_and_labels(entities: dict) -> None: ...
 def _mock_bids_dataset(
@@ -113,14 +113,14 @@ def _mock_bids_derivatives(
     n_ses: int,
     tasks: list[str],
     n_runs: list[int],
-    confounds_tag: Union[str, None],
+    confounds_tag: str | None,
     entities: dict[str, list[str]],
     n_voxels: int,
     rand_gen: np.random.RandomState,
 ) -> None: ...
 def _listify(n: int) -> list[str]: ...
 def _create_bids_filename(
-    fields: dict[str, Any], entities_to_include: Union[list[str], None] = ...
+    fields: dict[str, Any], entities_to_include: list[str] | None = ...
 ) -> str: ...
 def _init_fields(
     subject: str, session: str, task: str, run: str
@@ -139,5 +139,5 @@ def _write_bids_derivative_func(
     fields: dict[str, Any],
     n_voxels: int,
     rand_gen: np.random.RandomState,
-    confounds_tag: Union[str, None],
+    confounds_tag: str | None,
 ) -> None: ...

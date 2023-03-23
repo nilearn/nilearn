@@ -11,31 +11,31 @@ from sklearn.cluster._agglomerative import AgglomerativeClustering
 from sklearn.cluster._kmeans import MiniBatchKMeans
 
 def _check_parameters_transform(
-    imgs: Union[List[Nifti1Image], Nifti1Image], confounds: Any
-) -> Union[
-    Tuple[List[Nifti1Image], List[List[DataFrame]], bool],
-    Tuple[List[Nifti1Image], List[DataFrame], bool],
-    Tuple[List[Nifti1Image], List[None], bool],
-    Tuple[List[Nifti1Image], List[ndarray], bool],
-]: ...
+    imgs: list[Nifti1Image] | Nifti1Image, confounds: Any
+) -> (
+    tuple[list[Nifti1Image], list[list[DataFrame]], bool]
+    | tuple[list[Nifti1Image], list[DataFrame], bool]
+    | tuple[list[Nifti1Image], list[None], bool]
+    | tuple[list[Nifti1Image], list[ndarray], bool]
+): ...
 def _estimator_fit(
     data: ndarray,
-    estimator: Union[
-        HierarchicalKMeans, ReNA, MiniBatchKMeans, AgglomerativeClustering
-    ],
-    method: Optional[str] = ...,
+    estimator: (
+        HierarchicalKMeans | ReNA | MiniBatchKMeans | AgglomerativeClustering
+    ),
+    method: str | None = ...,
 ) -> ndarray: ...
 def _labels_masker_extraction(
-    img: Nifti1Image, masker: NiftiLabelsMasker, confound: Optional[ndarray]
+    img: Nifti1Image, masker: NiftiLabelsMasker, confound: ndarray | None
 ) -> ndarray: ...
 
 class Parcellations:
     def __init__(
         self,
-        method: Optional[str],
+        method: str | None,
         n_parcels: int = ...,
         random_state: int = ...,
-        mask: Optional[Nifti1Image] = ...,
+        mask: Nifti1Image | None = ...,
         smoothing_fwhm: float = ...,
         standardize: bool = ...,
         detrend: bool = ...,
@@ -51,20 +51,20 @@ class Parcellations:
         memory: Memory = ...,
         memory_level: int = ...,
         n_jobs: int = ...,
-        verbose: Union[bool, int] = ...,
+        verbose: bool | int = ...,
     ) -> None: ...
     def _check_fitted(self) -> None: ...
     def _raw_fit(self, data: ndarray) -> Parcellations: ...
     def fit_transform(
         self,
-        imgs: Union[List[Nifti1Image], Nifti1Image],
-        confounds: Optional[List[ndarray]] = ...,
-    ) -> Union[ndarray, List[ndarray]]: ...
+        imgs: list[Nifti1Image] | Nifti1Image,
+        confounds: list[ndarray] | None = ...,
+    ) -> ndarray | list[ndarray]: ...
     def inverse_transform(
-        self, signals: Union[ndarray, List[ndarray]]
-    ) -> Union[List[Nifti1Image], Nifti1Image]: ...
+        self, signals: ndarray | list[ndarray]
+    ) -> list[Nifti1Image] | Nifti1Image: ...
     def transform(
         self,
-        imgs: Union[List[Nifti1Image], Nifti1Image],
-        confounds: Optional[List[ndarray]] = ...,
-    ) -> Union[ndarray, List[ndarray]]: ...
+        imgs: list[Nifti1Image] | Nifti1Image,
+        confounds: list[ndarray] | None = ...,
+    ) -> ndarray | list[ndarray]: ...
