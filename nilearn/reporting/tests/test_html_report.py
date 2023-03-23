@@ -226,8 +226,7 @@ def test_nifti_labels_masker_report(data_img_3d, mask):
     shape = (13, 11, 12)
     affine = np.diag([2, 2, 2, 1])
     n_regions = 9
-    labels = ['background'] + ['region_{}'.format(i)
-                               for i in range(1, n_regions + 1)]
+    labels = (['background'] + [f'region_{i}' for i in range(1, n_regions + 1)])
     EXPECTED_COLUMNS = ['label value',
                         'region name',
                         'size (in mm^3)',

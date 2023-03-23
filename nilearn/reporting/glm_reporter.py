@@ -179,8 +179,8 @@ def make_glm_report(
     """
     if bg_img == "MNI152TEMPLATE":
         bg_img = MNI152TEMPLATE
-    display_mode_selector = {"slice": "z", "glass": "lzry"}
     if not display_mode:
+        display_mode_selector = {"slice": "z", "glass": "lzry"}
         display_mode = display_mode_selector[plot_type]
 
     try:
@@ -329,9 +329,10 @@ def _coerce_to_dict(input_arg):
 
     """
     if not isinstance(input_arg, dict):
-        if isinstance(input_arg, Iterable):
-            if not isinstance(input_arg[0], Iterable):
-                input_arg = [input_arg]
+        if isinstance(input_arg, Iterable) and not isinstance(
+            input_arg[0], Iterable
+        ):
+            input_arg = [input_arg]
         input_arg = [input_arg] if isinstance(input_arg, str) else input_arg
         input_arg = {str(contrast_): contrast_ for contrast_ in input_arg}
     return input_arg

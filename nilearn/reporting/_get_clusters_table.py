@@ -336,10 +336,9 @@ def get_clusters_table(
         # If the stat threshold is too high simply return an empty dataframe
         if np.sum(binarized) == 0:
             warnings.warn(
-                "Attention: No clusters with stat {} than {}".format(
-                    "higher" if sign == 1 else "lower",
-                    stat_threshold * sign,
-                )
+                "Attention: No clusters "
+                f'with stat {"higher" if sign == 1 else "lower"} '
+                f"than {stat_threshold * sign}"
             )
             continue
 
