@@ -114,10 +114,6 @@ VERSION_OPERATORS = {
 def _compare_version(version_a, operator, version_b):
     """Compare two version strings via a user-specified operator.
 
-    ``distutils`` has been deprecated since Python 3.10 and is scheduled
-    for removal from the standard library with the release of Python 3.12.
-    For version comparisons, we use setuptools's `parse_version` if available.
-
     Note: This function is inspired from MNE-Python.
     See https://github.com/mne-tools/mne-python/blob/main/mne/fixes.py
 
@@ -139,16 +135,7 @@ def _compare_version(version_a, operator, version_b):
         The result of the version comparison.
 
     """
-    # TODO:
-    # The setuptools doc encourages the use of importlib.metadata instead
-    # of pkg_resources. However, importlib.metadata is only part of the stdlib
-    # for Python >= 3.8. When Nilearn will only support Python >= 3.8,
-    # please consider changing the following line to:
-    # from importlib.metadata import version as parse
-    try:
-        from pkg_resources import parse_version as parse  # noqa:F401
-    except ImportError:
-        from distutils.version import LooseVersion as parse  # noqa:F401
+    from packaging.version import parse
     if operator not in VERSION_OPERATORS:
         raise ValueError(
             "'_compare_version' received an unexpected "
