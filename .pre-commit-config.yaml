@@ -26,11 +26,11 @@ files: |
         | nilearn/conftest.py
         | nilearn/version.py
         | nilearn/de.*
-        | nilearn/connectome
-        | nilearn/image
-        | nilearn/regions
-        | nilearn/reporting
-        | nilearn/mass_univariate
+        | nilearn/connectome/.*
+        | nilearn/image/.*
+        | nilearn/regions/.*
+        | nilearn/reporting/.*
+        | nilearn/mass_univariate/.*
     )$
 
 exclude: |
