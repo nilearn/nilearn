@@ -17,7 +17,7 @@ import nibabel
 
 import pandas as pd
 import pytest
-from nibabel.tmpdirs import TemporaryDirectory
+import tempfile
 from sklearn.utils import check_random_state
 
 from nilearn.datasets import func
@@ -689,7 +689,7 @@ def test_select_from_index(request_mocker):
 
 
 def test_fetch_ds000030_urls(request_mocker):
-    with TemporaryDirectory() as tmpdir:
+    with tempfile.TemporaryDirectory() as tmpdir:
         dataset_version = 'ds000030_R1.0.4'
         subdir_names = ['ds000030', 'ds000030_R1.0.4', 'uncompressed']
         tmp_list = []
