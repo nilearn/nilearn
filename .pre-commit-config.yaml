@@ -26,10 +26,11 @@ files: |
         | nilearn/conftest.py
         | nilearn/version.py
         | nilearn/de.*
-        | nilearn/connectome/.*py
-        | nilearn/image/.*py
-        | nilearn/regions.*py
-        | nilearn/mass_univariate/.*py
+        | nilearn/connectome
+        | nilearn/image
+        | nilearn/regions
+        | nilearn/reporting
+        | nilearn/mass_univariate
     )$
 
 exclude: |
@@ -52,6 +53,9 @@ exclude: |
         | examples/.*/.*surf_stat_map.py
         | examples/.*/.*surface_bids_analysis.py
         | examples/.*/.*surface_projection_strategies.py
+        | nilearn/reporting/data/html/report_body_template_niftispheresmasker.html
+        | nilearn/reporting/html_report.py
+        | nilearn/reporting/tests/test_html_report.py
         | nilearn/externals/tempita
     )$
 

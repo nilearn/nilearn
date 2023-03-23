@@ -10,6 +10,7 @@ include = """
   | nilearn/image/.*py
   | nilearn/mass_univariate/.*py
   | nilearn/regions/.*py
+  | nilearn/reporting/.*py
   | nilearn/signal.py
   | nilearn/masking.py
   | nilearn/conftest.py
@@ -36,6 +37,9 @@ extend-exclude =  '''
   | examples/.*/.*surf_stat_map.py
   | examples/.*/.*surface_bids_analysis.py
   | examples/.*/.*surface_projection_strategies.py
+  | nilearn/reporting/data/html/report_body_template_niftispheresmasker.html
+  | nilearn/reporting/html_report.py
+  | nilearn/reporting/tests/test_html_report.py
 )
 '''
 
@@ -50,6 +54,7 @@ src_paths = [
   'nilearn/image/.*py',
   'nilearn/mass_univariate/.*py',
   'nilearn/regions/.*py',
+  'nilearn/reporting/.*py'
 ]
 line_length = 79
 skip_gitignore = true
