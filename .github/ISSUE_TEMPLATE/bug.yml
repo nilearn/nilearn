@@ -87,7 +87,7 @@ body:
   attributes:
     label: Current behavior & error messages
     description: |
-      Describe what you happened.
+      Describe what happened.
 
       If possible paste below any eventual warning or error message with the stack trace.
 

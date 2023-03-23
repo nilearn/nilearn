@@ -14,7 +14,7 @@ body:
 
 - type: markdown
   attributes:
-    value: "### Provide a brief description what you would like changes and why."
+    value: "### Provide a brief description what you would like to change and why."
 
 - type: checkboxes
   attributes:
