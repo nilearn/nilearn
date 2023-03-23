@@ -15,10 +15,9 @@ ESTIMATOR_TEMPLATES = {
 
 
 def _get_estimator_template(estimator):
-    """Returns the HTML template to use for a given
-    estimator if a specific template was defined in
-    ESTIMATOR_TEMPLATES. Otherwise, return the default
-    template.
+    """Return the HTML template to use for a given estimator \
+    if a specific template was defined in ESTIMATOR_TEMPLATES, \
+    otherwise return the default template.
 
     Parameters
     ----------
@@ -36,8 +35,10 @@ def _get_estimator_template(estimator):
     else:
         return ESTIMATOR_TEMPLATES['default']
 
+
 def _embed_img(display):
-    """
+    """Embed an image or just return its instance if already embedded.
+
     Parameters
     ----------
     display : obj
@@ -58,8 +59,7 @@ def _embed_img(display):
 
 
 def _str_params(params):
-    """Convert NoneType values to the string 'None'
-    for display.
+    """Convert NoneType values to the string 'None' for display.
 
     Parameters
     ----------
@@ -148,10 +148,8 @@ def _update_template(title, docstring, content, overlay,
 
 
 def _define_overlay(estimator):
-    """Determine whether an overlay was provided and
-    update the report text as appropriate.
-
-    """
+    """Determine whether an overlay was provided and \
+    update the report text as appropriate."""
     displays = estimator._reporting()
 
     if len(displays) == 1:  # set overlay to None
@@ -238,8 +236,9 @@ class HTMLReport(HTMLDocument):
     are inherited from class ``nilearn.plotting.html_document.HTMLDocument``.
 
     """
+
     def __init__(self, head_tpl, body, head_values={}):
-        """Constructor the ``HTMLReport`` class.
+        """Construct the ``HTMLReport`` class.
 
         Parameters
         ----------
@@ -272,8 +271,9 @@ class HTMLReport(HTMLDocument):
         self.body = body
 
     def _repr_html_(self):
-        """Method used by the Jupyter notebook.
-
+        """Return bdoy of the report.
+        
+        Method used by the Jupyter notebook.
         Users normally won't call this method explicitly.
         """
         return self.body
