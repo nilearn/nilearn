@@ -25,6 +25,7 @@ files: |
         | nilearn/signal.py
         | nilearn/masking.py
         | nilearn/conftest.py
+        | nilearn/version.py
         | nilearn/de.*
         | nilearn/connectome/.*py
         | nilearn/image/.*py

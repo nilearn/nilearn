@@ -504,7 +504,7 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
                                   color='white')
 
     # reduce viewing distance to remove space around mesh
-    axes.dist = 8
+    axes.set_box_aspect(None, zoom=1.3)
 
     bg_face_colors = _compute_facecolors_matplotlib(
         bg_map, faces, coords.shape[0], darkness, alpha
@@ -1302,7 +1302,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         # ax.set_facecolor("#e0e0e0")
         # We increase this value to better position the camera of the
         # 3D projection plot. The default value makes meshes look too small.
-        ax.dist = 7
+        ax.set_box_aspect(None, zoom=1.3)
 
     if colorbar:
         sm = _colorbar_from_array(image.get_data(stat_map),
