@@ -78,7 +78,7 @@ def test_flm_reporting(use_method):
 def test_slm_reporting(use_method):
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 1),)
-        mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
+        _, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         model = SecondLevelModel()
@@ -132,24 +132,15 @@ def test_coerce_to_dict_with_list_of_strings():
 
 
 def test_coerce_to_dict_with_dict():
-    test_input = {
-        "contrast_0": [0, 0, 1],
-        "contrast_1": [0, 1, 1],
-    }
-    expected_output = {
-        "contrast_0": [0, 0, 1],
-        "contrast_1": [0, 1, 1],
-    }
+    test_input = {"contrast_0": [0, 0, 1], "contrast_1": [0, 1, 1]}
+    expected_output = {"contrast_0": [0, 0, 1], "contrast_1": [0, 1, 1]}
     actual_output = glmr._coerce_to_dict(test_input)
     assert actual_output == expected_output
 
 
 def test_coerce_to_dict_with_list_of_lists():
     test_input = [[0, 0, 1], [0, 1, 0]]
-    expected_output = {
-        "[0, 0, 1]": [0, 0, 1],
-        "[0, 1, 0]": [0, 1, 0],
-    }
+    expected_output = {"[0, 0, 1]": [0, 0, 1], "[0, 1, 0]": [0, 1, 0]}
     actual_output = glmr._coerce_to_dict(test_input)
     assert actual_output == expected_output
 
@@ -163,10 +154,7 @@ def test_coerce_to_dict_with_list_of_arrays():
     actual_output = glmr._coerce_to_dict(test_input)
     assert actual_output.keys() == expected_output.keys()
     for key in actual_output:
-        assert np.array_equal(
-            actual_output[key],
-            expected_output[key],
-        )
+        assert np.array_equal(actual_output[key], expected_output[key])
 
 
 def test_coerce_to_dict_with_list_of_ints():
@@ -174,8 +162,7 @@ def test_coerce_to_dict_with_list_of_ints():
     expected_output = {"[1, 0, 1]": [1, 0, 1]}
     actual_output = glmr._coerce_to_dict(test_input)
     assert np.array_equal(
-        actual_output["[1, 0, 1]"],
-        expected_output["[1, 0, 1]"],
+        actual_output["[1, 0, 1]"], expected_output["[1, 0, 1]"]
     )
 
 
@@ -184,19 +171,13 @@ def test_coerce_to_dict_with_array_of_ints():
     expected_output = {"[1 0 1]": np.array([1, 0, 1])}
     actual_output = glmr._coerce_to_dict(test_input)
     assert expected_output.keys() == actual_output.keys()
-    assert np.array_equal(
-        actual_output["[1 0 1]"],
-        expected_output["[1 0 1]"],
-    )
+    assert np.array_equal(actual_output["[1 0 1]"], expected_output["[1 0 1]"])
 
 
 def test_make_headings_with_contrasts_title_none():
     model = SecondLevelModel()
     test_input = (
-        {
-            "contrast_0": [0, 0, 1],
-            "contrast_1": [0, 1, 1],
-        },
+        {"contrast_0": [0, 0, 1], "contrast_1": [0, 1, 1]},
         None,
         model,
     )
@@ -212,10 +193,7 @@ def test_make_headings_with_contrasts_title_none():
 def test_make_headings_with_contrasts_title_custom():
     model = SecondLevelModel()
     test_input = (
-        {
-            "contrast_0": [0, 0, 1],
-            "contrast_1": [0, 1, 1],
-        },
+        {"contrast_0": [0, 0, 1], "contrast_1": [0, 1, 1]},
         "Custom Title for report",
         model,
     )
@@ -230,11 +208,7 @@ def test_make_headings_with_contrasts_title_custom():
 
 def test_make_headings_with_contrasts_none_title_custom():
     model = FirstLevelModel()
-    test_input = (
-        None,
-        "Custom Title for report",
-        model,
-    )
+    test_input = (None, "Custom Title for report", model)
     expected_output = (
         "Custom Title for report",
         "Custom Title for report",
@@ -267,7 +241,7 @@ def test_stat_map_to_svg_slice_z(cut_coords):
     with InTemporaryDirectory():
         img = _generate_img()
         table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
-        stat_map_html_code = glmr._stat_map_to_svg(  # noqa: F841
+        glmr._stat_map_to_svg(  # noqa: F841
             stat_img=img,
             bg_img=None,
             cut_coords=cut_coords,
@@ -282,7 +256,7 @@ def test_stat_map_to_svg_glass_z(cut_coords):
     with InTemporaryDirectory():
         img = _generate_img()
         table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
-        stat_map_html_code = glmr._stat_map_to_svg(  # noqa: F841
+        glmr._stat_map_to_svg(  # noqa: F841
             stat_img=img,
             bg_img=None,
             cut_coords=cut_coords,
@@ -301,7 +275,7 @@ def test_stat_map_to_svg_invalid_plot_type(cut_coords):
             "'slice' or 'glass'."
         )
         try:
-            stat_map_html_code = glmr._stat_map_to_svg(  # noqa: F841
+            glmr._stat_map_to_svg(  # noqa: F841
                 stat_img=img,
                 bg_img=None,
                 cut_coords=cut_coords,

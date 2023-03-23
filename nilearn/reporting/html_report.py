@@ -214,12 +214,10 @@ def generate_report(estimator):
             data=data,
         )
 
-    # We can create a report
-    return _extracted_from_generate_report_47(estimator, data)
+    return _create_report(estimator, data)
 
 
-# TODO Rename this here and in `generate_report`
-def _extracted_from_generate_report_47(estimator, data):
+def _create_report(estimator, data):
     html_template = _get_estimator_template(estimator)
     overlay, image = _define_overlay(estimator)
     embeded_images = (

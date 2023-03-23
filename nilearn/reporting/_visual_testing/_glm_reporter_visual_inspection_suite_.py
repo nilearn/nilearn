@@ -182,7 +182,7 @@ def report_flm_bids_features():  # pragma: no cover # noqa
 
 
 def _pad_vector(contrast_, n_columns):  # pragma: no cover
-    """Aappend zeros in contrast vectors."""
+    """Append zeros in contrast vectors."""
     return np.hstack((contrast_, np.zeros(n_columns - len(contrast_))))
 
 
