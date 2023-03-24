@@ -809,7 +809,7 @@ def test_first_level_residuals():
         generate_fake_fmri_data_and_design(shapes, rk)
 
     for i in range(len(design_matrices)):
-        design_matrices[i].iloc[:, 0] = 1
+        design_matrices[i][design_matrices[i].columns[0]] = 1
 
     # Check that voxelwise model attributes cannot be
     # accessed if minimize_memory is set to True
@@ -850,7 +850,7 @@ def test_get_voxelwise_attributes_should_return_as_many_as_design_matrices(shape
         generate_fake_fmri_data_and_design(shapes)
 
     for i in range(len(design_matrices)):
-        design_matrices[i].iloc[:, 0] = 1
+        design_matrices[i][design_matrices[i].columns[0]] = 1
 
     model = FirstLevelModel(mask_img=mask, minimize_memory=False,
                             noise_model='ols')
@@ -867,7 +867,7 @@ def test_first_level_predictions_r_square():
         generate_fake_fmri_data_and_design(shapes, rk)
 
     for i in range(len(design_matrices)):
-        design_matrices[i].iloc[:, 0] = 1
+        design_matrices[i][design_matrices[i].columns[0]] = 1
 
     model = FirstLevelModel(mask_img=mask,
                             signal_scaling=False,

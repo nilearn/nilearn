@@ -1,0 +1,120 @@
+
+name: Bug report
+
+# See the json schema to help you create / update this form
+# https://json.schemastore.org/github-issue-forms.json
+
+description: Fill in this template to report a bug
+
+title: '[BUG] '
+
+labels: ['bug']
+
+body:
+
+- type: markdown
+  attributes:
+    value: "### Please fill in the following information to the best of your ability."
+
+- type: checkboxes
+  attributes:
+    label: Is there an existing issue for this?
+    description: |
+      Please search the [issue tracker](https://github.com/nilearn/nilearn/issues?q=is%3Aissue) to see if an issue already exists for the bug you encountered.
+    options:
+    - label: I have searched the existing issues
+      required: true
+
+- type: checkboxes
+  attributes:
+    label: Operating system
+    description: What operating system are you using?
+    options:
+    - label: Linux
+    - label: Mac
+    - label: Windows
+
+- type: textarea
+  attributes:
+    label: Operating system version
+    value: |
+      For example one of the following:
+      - Linux Ubuntu 22.04
+      - Mac OS Version 12 "monterey"
+      - Windows 11
+  validations:
+    required: false
+
+- type: checkboxes
+  attributes:
+    label: Python version
+    description: What python version are you using?
+    options:
+    - label: '3.11'
+    - label: '3.10'
+    - label: '3.9'
+    - label: '3.8'
+    - label: '3.7'
+
+- type: dropdown
+  attributes:
+    label: nilearn version
+    # only list the 10 latest versions
+    description: What version of Nilearn are you using?
+    options:
+      - 0.9.2
+      - 0.9.1
+      - 0.9.0
+      - 0.8.1
+      - 0.8.0
+      - older than 0.8.0
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Expected behavior
+    placeholder: Describe what outcome you expected.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Current behavior & error messages
+    description: |
+      Describe what happened.
+
+      If possible paste below any eventual warning or error message with the stack trace.
+
+      If this is a plot related bug, make sure to include an image.
+      You can attach images clicking this area to highlight it and then dragging files in.
+
+    value: |
+      This is what I got:
+
+
+
+      ```bash
+      # Paste the error message here
+
+
+      ```
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Steps and code to reproduce bug
+    description: |
+      Please ensure the code is a minimal runnable example using Nilearn data to showcase it.
+
+      https://stackoverflow.com/help/minimal-reproducible-example
+
+    value: |
+      ```python
+      # Paste your code here
+
+
+      ```
+  validations:
+    required: false
