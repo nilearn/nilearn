@@ -225,8 +225,8 @@ def _assert_connectivity_correlation(connectivities, cov_estimator, covs):
 
 
 def _assert_connectivity_partial_correlation(connectivities, covs):
-    for k, cov_new in enumerate(connectivities):
-        prec = linalg.inv(covs[k])
+    for cov, cov_new in zip(covs, connectivities):
+        prec = linalg.inv(cov)
         d = np.sqrt(np.diag(np.diag(prec)))
 
         assert_array_almost_equal(
@@ -255,8 +255,7 @@ def _signals(n_subjects=N_SUBJECTS):
 
 @pytest.fixture
 def signals():
-    signals, _ = _signals(N_SUBJECTS)
-    return signals
+    return _signals(N_SUBJECTS)[0]
 
 
 @pytest.fixture
