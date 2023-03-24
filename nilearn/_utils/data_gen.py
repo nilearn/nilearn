@@ -541,6 +541,71 @@ def write_fake_bold_img(file_path,
     return file_path
 
 
+def generate_signals(
+    n_features=17, n_confounds=5, length=41, same_variance=True, order="C"
+):
+    """Generate test signals.
+
+    All returned signals have no trends at all (to machine precision).
+
+    Parameters
+    ----------
+    n_features, n_confounds : int, optional
+        respectively number of features to generate, and number of confounds
+        to use for generating noise signals.
+
+    length : int, optional
+        number of samples for every signal.
+
+    same_variance : bool, optional
+        if True, every column of "signals" have a unit variance. Otherwise,
+        a random amplitude is applied.
+
+    order : "C" or "F"
+        gives the contiguousness of the output arrays.
+
+    Returns
+    -------
+    signals : numpy.ndarray, shape (length, n_features)
+        unperturbed signals.
+
+    noises : numpy.ndarray, shape (length, n_features)
+        confound-based noises. Each column is a signal obtained by linear
+        combination of all confounds signals (below). The coefficients in
+        the linear combination are also random.
+
+    confounds : numpy.ndarray, shape (length, n_confounds)
+        random signals used as confounds.
+    """
+    rng = np.random.RandomState(42)
+
+    # Generate random confounds
+    confounds_shape = (length, n_confounds)
+    confounds = np.ndarray(confounds_shape, order=order)
+    confounds[...] = rng.standard_normal(size=confounds_shape)
+    confounds[...] = scipy.signal.detrend(confounds, axis=0)
+
+    # Compute noise based on confounds, with random factors
+    factors = rng.standard_normal(size=(n_confounds, n_features))
+    noises_shape = (length, n_features)
+    noises = np.ndarray(noises_shape, order=order)
+    noises[...] = np.dot(confounds, factors)
+    noises[...] = scipy.signal.detrend(noises, axis=0)
+
+    # Generate random signals with random amplitudes
+    signals_shape = noises_shape
+    signals = np.ndarray(signals_shape, order=order)
+    if same_variance:
+        signals[...] = rng.standard_normal(size=signals_shape)
+    else:
+        signals[...] = (
+            4.0 * abs(rng.standard_normal(size=signals_shape[1])) + 0.5
+        ) * rng.standard_normal(size=signals_shape)
+
+    signals[...] = scipy.signal.detrend(signals, axis=0)
+    return signals, noises, confounds
+
+
 def generate_signals_from_precisions(precisions,
                                      min_n_samples=50,
                                      max_n_samples=100,
