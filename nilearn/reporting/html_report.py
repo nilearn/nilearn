@@ -190,7 +190,7 @@ def generate_report(estimator):
         return _update_template(
             title='Empty Report',
             docstring=(
-                'This report was not ' 'generated. Please `fit` the ' 'object.'
+                "This report was not generated. Please `fit` the object."
             ),
             content=_embed_img(None),
             overlay=None,
@@ -281,7 +281,7 @@ class HTMLReport(HTMLDocument):
         self.body = body
 
     def _repr_html_(self):
-        """Return bdoy of the report.
+        """Return body of the report.
         
         Method used by the Jupyter notebook.
         Users normally won't call this method explicitly.

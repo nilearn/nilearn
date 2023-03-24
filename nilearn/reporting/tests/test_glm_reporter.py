@@ -103,7 +103,7 @@ def test_check_report_dims():
     test_input = (1200, "a")
     expected_output = (1600, 800)
     expected_warning_text = (
-        "Report size has invalid values. " "Using default 1600x800"
+        "Report size has invalid values. Using default 1600x800"
     )
     with warnings.catch_warnings(record=True) as raised_warnings:
         actual_output = glmr._check_report_dims(test_input)
@@ -275,7 +275,7 @@ def test_stat_map_to_svg_invalid_plot_type(cut_coords):
             "'slice' or 'glass'."
         )
         try:
-            glmr._stat_map_to_svg(  # noqa: F841
+            glmr._stat_map_to_svg(
                 stat_img=img,
                 bg_img=None,
                 cut_coords=cut_coords,
@@ -301,7 +301,7 @@ def _make_dummy_contrasts_dmtx():
 def test_plot_contrasts():
     contrast, dmtx = _make_dummy_contrasts_dmtx()
     glmr._plot_contrasts(
-        contrast,  # noqa: F841
+        contrast,
         [dmtx],
     )
 

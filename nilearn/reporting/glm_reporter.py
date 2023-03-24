@@ -297,7 +297,7 @@ def _check_report_dims(report_size):
         height = int(height)
     except ValueError:
         warnings.warn(
-            "Report size has invalid values. " "Using default 1600x800"
+            "Report size has invalid values. Using default 1600x800"
         )
         width, height = (1600, 800)
     return width, height
