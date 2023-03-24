@@ -1,4 +1,6 @@
 """Test the parcellations tools module"""
+import warnings
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -92,9 +94,9 @@ def test_parcellations_warnings(empty_image):
 
 def test_parcellations_no_warnings(empty_image):
     parcellator = Parcellations(method="kmeans", n_parcels=1, verbose=0)
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings(record=True) as record:
         parcellator.fit(empty_image)
-    assert all(r.category is not UserWarning for r in record.list)
+    assert all([r.category is not UserWarning for r in record])
 
 
 @pytest.mark.parametrize("method", METHODS)

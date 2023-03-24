@@ -3,6 +3,7 @@ import os
 import platform
 import sys
 import tempfile
+import warnings
 
 import nibabel
 import numpy as np
@@ -554,9 +555,9 @@ def test_new_img_like_non_iterable_header():
 def test_new_img_like_int64():
     img = data_gen.generate_labeled_regions((3, 3, 3), 2)
     data = image.get_data(img).astype("int32")
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         new_img = new_img_like(img, data)
-    assert not record
     assert image.get_data(new_img).dtype == "int32"
     data = data.astype("int64")
     with pytest.warns(UserWarning, match=r".*array.*contains.*64.*"):

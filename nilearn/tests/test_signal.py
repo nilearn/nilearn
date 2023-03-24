@@ -229,8 +229,8 @@ def test_butterworth():
     with pytest.raises(
         ValueError,
         match=(
-            'High pass cutoff frequency \([0-9.]+\) is greater than or '
-            'equal to low pass filter frequency \([0-9.]+\)\.'
+            r'High pass cutoff frequency \([0-9.]+\) is greater than or '
+            r'equal to low pass filter frequency \([0-9.]+\)\.'
         ),
     ):
         nisignal.butterworth(
