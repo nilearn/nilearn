@@ -23,71 +23,17 @@ from scipy import linalg
 from sklearn.covariance import EmpiricalCovariance, LedoitWolf
 from sklearn.utils import check_random_state
 
-CONNECTIVITY_KINDS = [
+CONNECTIVITY_KINDS = (
     "covariance",
     "correlation",
     "tangent",
     "precision",
     "partial correlation",
-]
+)
 
 N_FEATURES = 49
 
 N_SUBJECTS = 5
-
-
-def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
-    """Return the norm of the covariant derivative at each iteration step of
-    geometric_mean. See its docstring for details.
-
-    Norm is intrinsic norm on the tangent space of the manifold of symmetric
-    positive definite matrices.
-
-    Returns
-    -------
-    grad_norm : list of float
-        Norm of the covariant derivative in the tangent space at each step.
-    """
-    mats = np.array(mats)
-
-    # Initialization
-    gmean = init or np.mean(mats, axis=0)
-
-    norm_old = np.inf
-    step = 1.0
-    grad_norm = []
-    for _ in range(max_iter):
-        # Computation of the gradient
-        vals_gmean, vecs_gmean = linalg.eigh(gmean)
-        gmean_inv_sqrt = _form_symmetric(np.sqrt, 1.0 / vals_gmean, vecs_gmean)
-        whitened_mats = [
-            gmean_inv_sqrt.dot(mat).dot(gmean_inv_sqrt) for mat in mats
-        ]
-        logs = [_map_eigenvalues(np.log, w_mat) for w_mat in whitened_mats]
-        logs_mean = np.mean(logs, axis=0)  # Covariant derivative is
-        # - gmean.dot(logms_mean)
-        norm = np.linalg.norm(logs_mean)  # Norm of the covariant derivative on
-        # the tangent space at point gmean
-
-        # Update of the minimizer
-        vals_log, vecs_log = linalg.eigh(logs_mean)
-        gmean_sqrt = _form_symmetric(np.sqrt, vals_gmean, vecs_gmean)
-        gmean = gmean_sqrt.dot(
-            _form_symmetric(np.exp, vals_log * step, vecs_log)
-        ).dot(gmean_sqrt)
-
-        # Update the norm and the step size
-        if norm < norm_old:
-            norm_old = norm
-        if norm > norm_old:
-            step = step / 2.0
-            norm = norm_old
-
-        grad_norm.append(norm / gmean.size)
-        if tol is not None and norm / gmean.size < tol:
-            break
-
-    return grad_norm
 
 
 def random_diagonal(p, v_min=1.0, v_max=2.0, random_state=0):
@@ -153,88 +99,6 @@ def random_spd(p, eig_min, cond, random_state=0):
     return unitary.dot(diag).dot(unitary.T)
 
 
-def random_non_singular(p, sing_min=1.0, sing_max=2.0, random_state=0):
-    """Generate a random nonsingular matrix.
-
-    Parameters
-    ----------
-    p : int
-        The first dimension of the array.
-
-    sing_min : float, optional (default to 1.)
-        Minimal singular value.
-
-    sing_max : float, optional (default to 2.)
-        Maximal singular value.
-
-    random_state : int or numpy.random.RandomState instance, optional
-        random number generator, or seed.
-
-    Returns
-    -------
-    output : numpy.ndarray, shape (p, p)
-        A nonsingular matrix with the given minimal and maximal singular
-        values.
-    """
-    random_state = check_random_state(random_state)
-    diag = random_diagonal(
-        p, v_min=sing_min, v_max=sing_max, random_state=random_state
-    )
-    mat1 = random_state.randn(p, p)
-    mat2 = random_state.randn(p, p)
-    unitary1, _ = linalg.qr(mat1)
-    unitary2, _ = linalg.qr(mat2)
-    return unitary1.dot(diag).dot(unitary2.T)
-
-
-def _assert_connectivity_tangent(connectivities, conn_measure, covs):
-    for k, cov_new in enumerate(connectivities):
-        # Positive definiteness if expected and output value checks
-
-        assert_array_almost_equal(cov_new, cov_new.T)
-
-        gmean_sqrt = _map_eigenvalues(np.sqrt, conn_measure.mean_)
-
-        assert is_spd(gmean_sqrt, decimal=7)
-        assert is_spd(conn_measure.whitening_, decimal=7)
-        assert_array_almost_equal(
-            conn_measure.whitening_.dot(gmean_sqrt),
-            np.eye(N_FEATURES),
-        )
-        assert_array_almost_equal(
-            gmean_sqrt.dot(_map_eigenvalues(np.exp, cov_new)).dot(gmean_sqrt),
-            covs[k],
-        )
-
-
-def _assert_connectivity_precision(connectivities, covs):
-    for k, cov_new in enumerate(connectivities):
-        assert is_spd(cov_new, decimal=7)
-        assert_array_almost_equal(cov_new.dot(covs[k]), np.eye(N_FEATURES))
-
-
-def _assert_connectivity_correlation(connectivities, cov_estimator, covs):
-    for k, cov_new in enumerate(connectivities):
-        assert is_spd(cov_new, decimal=7)
-
-        d = np.sqrt(np.diag(np.diag(covs[k])))
-
-        if cov_estimator == EmpiricalCovariance():
-            assert_array_almost_equal(d.dot(cov_new).dot(d), covs[k])
-        assert_array_almost_equal(np.diag(cov_new), np.ones(N_FEATURES))
-
-
-def _assert_connectivity_partial_correlation(connectivities, covs):
-    for cov, cov_new in zip(covs, connectivities):
-        prec = linalg.inv(cov)
-        d = np.sqrt(np.diag(np.diag(prec)))
-
-        assert_array_almost_equal(
-            d.dot(cov_new).dot(d),
-            -prec + 2 * np.diag(np.diag(prec)),
-        )
-
-
 def _signals(n_subjects=N_SUBJECTS):
     """Generate signals and compute covariances \
     and apply confounds while computing covariances."""
@@ -278,43 +142,38 @@ def signals_and_covariances(cov_estimator):
 
 def test_check_square():
     non_square = np.ones((2, 3))
-
     with pytest.raises(ValueError, match="Expected a square matrix"):
         _check_square(non_square)
 
 
-def test_check_spd():
-    non_sym = np.array([[0, 1], [0, 0]])
-
+@pytest.mark.parametrize(
+    "invalid_input",
+    [np.array([[0, 1], [0, 0]]), np.ones((3, 3))],  # non symmetric
+)  # non SPD
+def test_check_spd(invalid_input):
     with pytest.raises(
         ValueError, match="Expected a symmetric positive definite matrix."
     ):
-        _check_spd(non_sym)
-
-    non_spd = np.ones((3, 3))
-
-    with pytest.raises(
-        ValueError, match="Expected a symmetric positive definite matrix."
-    ):
-        _check_spd(non_spd)
+        _check_spd(invalid_input)
 
 
-def test_map_eigenvalues():
-    # Test on exp map
+def test_map_eigenvalues_on_exp_map():
     sym = np.ones((2, 2))
     sym_exp = exp(1.0) * np.array(
         [[cosh(1.0), sinh(1.0)], [sinh(1.0), cosh(1.0)]]
     )
     assert_array_almost_equal(_map_eigenvalues(np.exp, sym), sym_exp)
 
-    # Test on sqrt map
+
+def test_map_eigenvalues_on_sqrt_map():
     spd_sqrt = np.array(
         [[2.0, -1.0, 0.0], [-1.0, 2.0, -1.0], [0.0, -1.0, 2.0]]
     )
     spd = spd_sqrt.dot(spd_sqrt)
     assert_array_almost_equal(_map_eigenvalues(np.sqrt, spd), spd_sqrt)
 
-    # Test on log map
+
+def test_map_eigenvalues_on_log_map():
     spd = np.array([[1.25, 0.75], [0.75, 1.25]])
     spd_log = np.array([[0.0, log(2.0)], [log(2.0), 0.0]])
     assert_array_almost_equal(_map_eigenvalues(np.log, spd), spd_log)
@@ -390,6 +249,40 @@ def test_geometric_mean_properties():
     assert is_spd(gmean, decimal=7)
 
 
+def random_non_singular(p, sing_min=1.0, sing_max=2.0, random_state=0):
+    """Generate a random nonsingular matrix.
+
+    Parameters
+    ----------
+    p : int
+        The first dimension of the array.
+
+    sing_min : float, optional (default to 1.)
+        Minimal singular value.
+
+    sing_max : float, optional (default to 2.)
+        Maximal singular value.
+
+    random_state : int or numpy.random.RandomState instance, optional
+        random number generator, or seed.
+
+    Returns
+    -------
+    output : numpy.ndarray, shape (p, p)
+        A nonsingular matrix with the given minimal and maximal singular
+        values.
+    """
+    random_state = check_random_state(random_state)
+    diag = random_diagonal(
+        p, v_min=sing_min, v_max=sing_max, random_state=random_state
+    )
+    mat1 = random_state.randn(p, p)
+    mat2 = random_state.randn(p, p)
+    unitary1, _ = linalg.qr(mat1)
+    unitary2, _ = linalg.qr(mat2)
+    return unitary1.dot(diag).dot(unitary2.T)
+
+
 def test_geometric_mean_properties_check_invariance():
     n_matrices = 40
     n_features = 15
@@ -419,6 +312,60 @@ def test_geometric_mean_properties_check_invariance():
     assert_array_almost_equal(
         _geometric_mean(spds_inv, init=init), linalg.inv(gmean)
     )
+
+
+def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
+    """Return the norm of the covariant derivative at each iteration step of
+    geometric_mean. See its docstring for details.
+
+    Norm is intrinsic norm on the tangent space of the manifold of symmetric
+    positive definite matrices.
+
+    Returns
+    -------
+    grad_norm : list of float
+        Norm of the covariant derivative in the tangent space at each step.
+    """
+    mats = np.array(mats)
+
+    # Initialization
+    gmean = init or np.mean(mats, axis=0)
+
+    norm_old = np.inf
+    step = 1.0
+    grad_norm = []
+    for _ in range(max_iter):
+        # Computation of the gradient
+        vals_gmean, vecs_gmean = linalg.eigh(gmean)
+        gmean_inv_sqrt = _form_symmetric(np.sqrt, 1.0 / vals_gmean, vecs_gmean)
+        whitened_mats = [
+            gmean_inv_sqrt.dot(mat).dot(gmean_inv_sqrt) for mat in mats
+        ]
+        logs = [_map_eigenvalues(np.log, w_mat) for w_mat in whitened_mats]
+        logs_mean = np.mean(logs, axis=0)  # Covariant derivative is
+        # - gmean.dot(logms_mean)
+        norm = np.linalg.norm(logs_mean)  # Norm of the covariant derivative on
+        # the tangent space at point gmean
+
+        # Update of the minimizer
+        vals_log, vecs_log = linalg.eigh(logs_mean)
+        gmean_sqrt = _form_symmetric(np.sqrt, vals_gmean, vecs_gmean)
+        gmean = gmean_sqrt.dot(
+            _form_symmetric(np.exp, vals_log * step, vecs_log)
+        ).dot(gmean_sqrt)
+
+        # Update the norm and the step size
+        if norm < norm_old:
+            norm_old = norm
+        if norm > norm_old:
+            step = step / 2.0
+            norm = norm_old
+
+        grad_norm.append(norm / gmean.size)
+        if tol is not None and norm / gmean.size < tol:
+            break
+
+    return grad_norm
 
 
 def test_geometric_mean_properties_check_gradient():
@@ -540,19 +487,6 @@ def test_sym_matrix_to_vec():
 
 
 def test_vec_to_sym_matrix():
-    # Check error if unsuitable size
-    vec = np.ones(31)
-
-    with pytest.raises(ValueError, match="Vector of unsuitable shape"):
-        vec_to_sym_matrix(vec)
-
-    # Check error if given diagonal shape incompatible with vec
-    vec = np.ones(3)
-    diagonal = np.zeros(4)
-
-    with pytest.raises(ValueError, match="incompatible with vector"):
-        vec_to_sym_matrix(vec, diagonal)
-
     # Check output value is correct
     vec = np.ones(6)
     sym = np.array(
@@ -577,6 +511,21 @@ def test_vec_to_sym_matrix():
     assert_array_almost_equal(vec_to_sym_matrix(vec, diagonal=diagonal), sym)
 
 
+def test_vec_to_sym_matrix_errors():
+    # Check error if unsuitable size
+    vec = np.ones(31)
+
+    with pytest.raises(ValueError, match="Vector of unsuitable shape"):
+        vec_to_sym_matrix(vec)
+
+    # Check error if given diagonal shape incompatible with vec
+    vec = np.ones(3)
+    diagonal = np.zeros(4)
+
+    with pytest.raises(ValueError, match="incompatible with vector"):
+        vec_to_sym_matrix(vec, diagonal)
+
+
 def test_prec_to_partial():
     prec = np.array([[2.0, -1.0, 1.0], [-1.0, 2.0, -1.0], [1.0, -1.0, 1.0]])
     partial = np.array(
@@ -599,20 +548,19 @@ def test_connectivity_measure_errors():
     ):
         conn_measure.fit(1.0)
 
-    # Raising error for input subjects not 2D numpy.ndarrays
+    # input subjects not 2D numpy.ndarrays
     with pytest.raises(
         ValueError, match="Each subject must be 2D numpy.ndarray."
     ):
         conn_measure.fit([np.ones((100, 40)), np.ones((10,))])
 
-    # Raising error for input subjects with different number of features
+    # input subjects with different number of features
     with pytest.raises(
         ValueError, match="All subjects must have the same number of features."
     ):
         conn_measure.fit([np.ones((100, 40)), np.ones((100, 41))])
 
-    # Raising an error for fit_transform with a single subject and
-    # kind=tangent
+    # fit_transform with a single subject and kind=tangent
     conn_measure = ConnectivityMeasure(kind="tangent")
 
     with pytest.raises(
@@ -644,6 +592,54 @@ def test_connectivity_measure_generic(
         assert_array_equal(input_covs[k], covs[k])
 
         assert is_spd(covs[k], decimal=7)
+
+
+def _assert_connectivity_tangent(connectivities, conn_measure, covs):
+    for cov_, cov_new in zip(covs, connectivities):
+        # Positive definiteness if expected and output value checks
+
+        assert_array_almost_equal(cov_new, cov_new.T)
+
+        gmean_sqrt = _map_eigenvalues(np.sqrt, conn_measure.mean_)
+
+        assert is_spd(gmean_sqrt, decimal=7)
+        assert is_spd(conn_measure.whitening_, decimal=7)
+        assert_array_almost_equal(
+            conn_measure.whitening_.dot(gmean_sqrt),
+            np.eye(N_FEATURES),
+        )
+        assert_array_almost_equal(
+            gmean_sqrt.dot(_map_eigenvalues(np.exp, cov_new)).dot(gmean_sqrt),
+            cov_,
+        )
+
+
+def _assert_connectivity_precision(connectivities, covs):
+    for cov_, cov_new in zip(covs, connectivities):
+        assert is_spd(cov_new, decimal=7)
+        assert_array_almost_equal(cov_new.dot(cov_), np.eye(N_FEATURES))
+
+
+def _assert_connectivity_correlation(connectivities, cov_estimator, covs):
+    for cov_, cov_new in zip(covs, connectivities):
+        assert is_spd(cov_new, decimal=7)
+
+        d = np.sqrt(np.diag(np.diag(cov_)))
+
+        if cov_estimator == EmpiricalCovariance():
+            assert_array_almost_equal(d.dot(cov_new).dot(d), cov_)
+        assert_array_almost_equal(np.diag(cov_new), np.ones(N_FEATURES))
+
+
+def _assert_connectivity_partial_correlation(connectivities, covs):
+    for cov_, cov_new in zip(covs, connectivities):
+        prec = linalg.inv(cov_)
+        d = np.sqrt(np.diag(np.diag(prec)))
+
+        assert_array_almost_equal(
+            d.dot(cov_new).dot(d),
+            -prec + 2 * np.diag(np.diag(prec)),
+        )
 
 
 @pytest.mark.parametrize(
