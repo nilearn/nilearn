@@ -581,6 +581,8 @@ def test_clean_confounds():
         cleaned_signals.var(axis=0), np.ones(cleaned_signals.shape[1])
     )
 
+
+def test_clean_confounds_from_file():
     # Test with confounds read from a file. Smoke test only (result has
     # no meaning).
     current_dir = os.path.split(__file__)[0]
@@ -625,6 +627,39 @@ def test_clean_confounds():
         confounds=[filename1, confounds[:, 0:2], filename2, confounds[:, 2]],
     )
 
+
+def test_clean_confounds_check_confounders_are_removed():
+    """Check that confounders effects are effectively removed from \
+    the signals when having a detrending and filtering operation together.
+
+    This did not happen originally due to a different order in which
+    these operations were being applied to the data and confounders
+
+    Thus solves issue # 2730
+    """
+    eps = np.finfo(np.float64).eps
+
+    signals, _, confounds = generate_signals(
+        n_features=41, n_confounds=3, length=20
+    )
+
+    signals_clean = nisignal.clean(
+        signals,
+        detrend=True,
+        high_pass=0.01,
+        standardize_confounds=True,
+        standardize=True,
+        confounds=confounds,
+    )
+    confounds_clean = nisignal.clean(
+        confounds, detrend=True, high_pass=0.01, standardize=True
+    )
+    assert abs(np.dot(confounds_clean.T, signals_clean)).max() < 1000.0 * eps
+
+
+def test_clean_confounds_errors():
+    signals, *_ = generate_signals(n_features=41, n_confounds=3, length=20)
+
     # Test error handling
     pytest.raises(TypeError, nisignal.clean, signals, confounds=1)
     pytest.raises(ValueError, nisignal.clean, signals, confounds=np.zeros(2))
@@ -633,9 +668,6 @@ def test_clean_confounds():
     )
     pytest.raises(
         ValueError, nisignal.clean, signals, confounds=np.zeros((2, 3, 4))
-    )
-    pytest.raises(
-        ValueError, nisignal.clean, signals[:-1, :], confounds=filename1
     )
     pytest.raises(TypeError, nisignal.clean, signals, confounds=[None])
     error_msg = pytest.raises(
@@ -654,6 +686,16 @@ def test_clean_confounds():
         ValueError, nisignal.clean, signals, filter="not_implemented"
     )
     pytest.raises(ValueError, nisignal.clean, signals, ensure_finite=None)
+
+    current_dir = os.path.split(__file__)[0]
+    filename1 = os.path.join(current_dir, "data", "spm_confounds.txt")
+    pytest.raises(
+        ValueError, nisignal.clean, signals[:-1, :], confounds=filename1
+    )
+
+
+def test_clean_confounds_warnings():
+    signals, *_ = generate_signals(n_features=41, n_confounds=3, length=20)
     # Check warning message when no confound methods were specified,
     # but cutoff frequency provided.
     pytest.warns(
@@ -681,24 +723,6 @@ def test_clean_confounds():
             ).mean(),
             np.zeros((20, 2)),
         )
-
-    # Test to check that confounders effects are effectively removed from
-    # the signals when having a detrending and filtering operation together.
-    # This did not happen originally due to a different order in which
-    # these operations were being applied to the data and confounders
-    # (it thus solves issue # 2730).
-    signals_clean = nisignal.clean(
-        signals,
-        detrend=True,
-        high_pass=0.01,
-        standardize_confounds=True,
-        standardize=True,
-        confounds=confounds,
-    )
-    confounds_clean = nisignal.clean(
-        confounds, detrend=True, high_pass=0.01, standardize=True
-    )
-    assert abs(np.dot(confounds_clean.T, signals_clean)).max() < 1000.0 * eps
 
 
 def test_clean_frequencies_using_power_spectrum_density():
