@@ -62,13 +62,16 @@ def test_butterworth():
     # single timeseries
     data = rng.standard_normal(size=n_samples)
     data_original = data.copy()
+
     out_single = nisignal.butterworth(
         data, sampling, low_pass=low_pass, high_pass=high_pass, copy=True
     )
     assert_almost_equal(data, data_original)
+
     nisignal.butterworth(
         data, sampling, low_pass=low_pass, high_pass=high_pass, copy=False
     )
+
     assert_almost_equal(out_single, data)
     assert_(id(out_single) != id(data))
 
@@ -80,43 +83,51 @@ def test_butterworth():
     out1 = nisignal.butterworth(
         data, sampling, low_pass=low_pass, high_pass=high_pass, copy=True
     )
+
     assert_almost_equal(data, data_original)
     assert_(id(out1) != id(data_original))
 
     # check that multiple- and single-timeseries filtering do the same thing.
     assert_almost_equal(out1[:, 0], out_single)
+
     nisignal.butterworth(
         data, sampling, low_pass=low_pass, high_pass=high_pass, copy=False
     )
+
     assert_almost_equal(out1, data)
 
 
-def test_butterworth_single_timeseries_nyquist_frequency_clipping():
+def test_butterworth_nyquist_frequency_clipping():
     """Test nyquist frequency clipping.
 
-    issue #482
+    issue https://github.com/nilearn/nilearn/issues/482
     """
     rng = np.random.RandomState(42)
-    n_samples = 100
 
+    n_samples = 100
     sampling = 100
-    low_pass = 30
-    high_pass = 10
+    data = rng.standard_normal(size=n_samples)
+
+    out1 = nisignal.butterworth(data, sampling, low_pass=50.0, copy=True)
+    # Greater than nyq frequency
+    out2 = nisignal.butterworth(data, sampling, low_pass=80.0, copy=True)
+
+    assert_almost_equal(out1, out2)
+    assert_(id(out1) != id(out2))
+
+
+def test_butterworth_single_errors_warnings():
+    rng = np.random.RandomState(42)
+
+    n_samples = 100
+    sampling = 1
+    low_pass = 2
+    high_pass = 1
 
     # Compare output for different options.
     # single timeseries
     data = rng.standard_normal(size=n_samples)
-    out1 = nisignal.butterworth(data, sampling, low_pass=50.0, copy=True)
-    out2 = nisignal.butterworth(
-        data, sampling, low_pass=80.0, copy=True  # Greater than nyq frequency
-    )
-    assert_almost_equal(out1, out2)
-    assert_(id(out1) != id(out2))
 
-    # Test check for equal values in critical frequencies
-    sampling = 1
-    low_pass = 2
-    high_pass = 1
     with pytest.warns(
         UserWarning,
         match=(
