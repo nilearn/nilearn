@@ -90,7 +90,22 @@ def test_butterworth():
     )
     assert_almost_equal(out1, data)
 
-    # Test nyquist frequency clipping, issue #482
+
+def test_butterworth_single_timeseries_nyquist_frequency_clipping():
+    """Test nyquist frequency clipping.
+
+    issue #482
+    """
+    rng = np.random.RandomState(42)
+    n_samples = 100
+
+    sampling = 100
+    low_pass = 30
+    high_pass = 10
+
+    # Compare output for different options.
+    # single timeseries
+    data = rng.standard_normal(size=n_samples)
     out1 = nisignal.butterworth(data, sampling, low_pass=50.0, copy=True)
     out2 = nisignal.butterworth(
         data, sampling, low_pass=80.0, copy=True  # Greater than nyq frequency
@@ -177,7 +192,7 @@ def test_butterworth():
         )
 
 
-def test_standardize():
+def test_standardize_errors_warnings():
     rng = np.random.RandomState(42)
     n_features = 10
     n_samples = 17
@@ -193,6 +208,16 @@ def test_standardize():
     # test warning for strategy that will be removed
     with pytest.warns(FutureWarning, match="default strategy for standardize"):
         nisignal._standardize(a, standardize="zscore")
+
+
+def test_standardize():
+    rng = np.random.RandomState(42)
+    n_features = 10
+    n_samples = 17
+
+    # Create random signals with offsets
+    a = rng.random_sample((n_samples, n_features))
+    a += np.linspace(0, 2.0, n_features)
 
     # transpose array to fit _standardize input.
     # Without trend removal
@@ -323,6 +348,7 @@ def test_clean_detrending():
     y_orig = y.copy()
 
     y_clean = nisignal.clean(y, ensure_finite=True)
+
     assert np.any(np.isfinite(y_clean)), True
     # clean should not modify inputs
     # using assert_almost_equal instead of array_equal due to NaNs
@@ -386,14 +412,9 @@ def test_clean_t_r():
                 del det_one_tr, det_diff_tr
 
 
-def test_clean_kwargs():
-    """Providing kwargs to clean should change the filtered results."""
-    n_samples = 34
-    n_features = 501
-    x_orig = generate_signals_plus_trends(
-        n_features=n_features, n_samples=n_samples
-    )
-    kwargs = [
+@pytest.mark.parametrize(
+    "kwargs",
+    [
         {
             "butterworth__padtype": "even",
             "butterworth__padlen": 10,
@@ -409,22 +430,31 @@ def test_clean_kwargs():
             "butterworth__padlen": 20,
             "butterworth__order": 10,
         },
-    ]
+    ],
+)
+def test_clean_kwargs(kwargs):
+    """Providing kwargs to clean should change the filtered results."""
+    n_samples = 34
+    n_features = 501
+    x_orig = generate_signals_plus_trends(
+        n_features=n_features, n_samples=n_samples
+    )
     # Base result
     t_r, high_pass, low_pass = 0.8, 0.01, 0.08
     base_filtered = nisignal.clean(
         x_orig, t_r=t_r, low_pass=low_pass, high_pass=high_pass
     )
-    for kwarg_set in kwargs:
-        test_filtered = nisignal.clean(
-            x_orig,
-            t_r=t_r,
-            low_pass=low_pass,
-            high_pass=high_pass,
-            **kwarg_set,
-        )
-        # Check that results are **not** the same.
-        assert_(np.any(np.not_equal(base_filtered, test_filtered)))
+
+    test_filtered = nisignal.clean(
+        x_orig,
+        t_r=t_r,
+        low_pass=low_pass,
+        high_pass=high_pass,
+        **kwargs,
+    )
+
+    # Check that results are **not** the same.
+    assert_(np.any(np.not_equal(base_filtered, test_filtered)))
 
 
 def test_clean_frequencies():
