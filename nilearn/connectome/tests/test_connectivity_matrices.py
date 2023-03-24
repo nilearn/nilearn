@@ -416,16 +416,16 @@ def test_geometric_mean_properties_evaluate_convergence(p):
     _geometric_mean(spds, max_iter=max_iter, tol=1e-5)
 
 
-def test_geometric_mean_errors():
+def test_geometric_mean_error_non_square_matrix():
     n_features = 5
-
-    # Non square input matrix
     mat1 = np.ones((n_features, n_features + 1))
 
     with pytest.raises(ValueError, match="Expected a square matrix"):
         _geometric_mean([mat1])
 
-    # Input matrices of different shapes
+
+def test_geometric_mean_error_input_matrices_have_different_shapes():
+    n_features = 5
     mat1 = np.eye(n_features)
     mat2 = np.ones((n_features + 1, n_features + 1))
 
@@ -434,7 +434,11 @@ def test_geometric_mean_errors():
     ):
         _geometric_mean([mat1, mat2])
 
-    # Non spd input matrix
+
+def test_geometric_mean_error_non_spd_input_matrix():
+    n_features = 5
+    mat2 = np.ones((n_features + 1, n_features + 1))
+
     with pytest.raises(
         ValueError, match="Expected a symmetric positive definite matrix."
     ):
@@ -445,14 +449,17 @@ def test_sym_matrix_to_vec():
     sym = np.ones((3, 3))
     sqrt2 = 1.0 / sqrt(2.0)
     vec = np.array([sqrt2, 1.0, sqrt2, 1.0, 1.0, sqrt2])
+
     assert_array_almost_equal(sym_matrix_to_vec(sym), vec)
 
     vec = np.array([1.0, 1.0, 1.0])
+
     assert_array_almost_equal(
         sym_matrix_to_vec(sym, discard_diagonal=True), vec
     )
 
-    # Check sym_matrix_to_vec is the inverse function of vec_to_sym_matrix
+
+def test_sym_matrix_to_vec_is_the_inverse_of_vec_to_sym_matrix():
     n = 5
     p = n * (n + 1) // 2
     rand_gen = np.random.RandomState(0)
@@ -527,7 +534,13 @@ def test_vec_to_sym_matrix_errors():
 
 
 def test_prec_to_partial():
-    prec = np.array([[2.0, -1.0, 1.0], [-1.0, 2.0, -1.0], [1.0, -1.0, 1.0]])
+    prec = np.array(
+        [
+            [2.0, -1.0, 1.0],
+            [-1.0, 2.0, -1.0],
+            [1.0, -1.0, 1.0],
+        ]
+    )
     partial = np.array(
         [
             [1.0, 0.5, -sqrt(2.0) / 2.0],
