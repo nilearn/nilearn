@@ -20,7 +20,6 @@ include = """
 extend-exclude =  '''
 (
   nilearn/externals
-  | nilearn/tests/test_common.py
   | nilearn/tests/test_masking.py
   | examples/.*/.*3d_map_to_surface_projection.py
   | examples/.*/.*demo_glass_brain.py
