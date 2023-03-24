@@ -29,6 +29,7 @@ files: |
         | nilearn/connectome/.*py
         | nilearn/image/.*py
         | nilearn/regions.*py
+        | nilearn/tests/.*py
         | nilearn/mass_univariate/.*py
     )$
 
