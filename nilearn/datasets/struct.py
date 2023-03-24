@@ -123,7 +123,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
         # The URL can be retrieved from the nilearn account on OSF (Open
         # Science Framework), https://osf.io/4r3jt/quickfiles/
         # Clicking on the "share" button gives the root of the URL.
-        url = "https://osf.io/a8tp5/download"
+        url = "https://osf.io/7pj92/download"
     opts = {'uncompress': True}
 
     keys = ("csf", "gm", "wm",
