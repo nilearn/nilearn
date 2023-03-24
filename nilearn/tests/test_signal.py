@@ -696,6 +696,7 @@ def test_clean_confounds_errors():
 
 def test_clean_confounds_warnings():
     signals, *_ = generate_signals(n_features=41, n_confounds=3, length=20)
+
     # Check warning message when no confound methods were specified,
     # but cutoff frequency provided.
     pytest.warns(
@@ -734,11 +735,6 @@ def test_clean_frequencies_using_power_spectrum_density():
             np.sin(np.linspace(0, 100, 100) / 8.0),
         ]
     ).T
-
-    # Create confound
-    _, _, confounds = generate_signals(
-        n_features=10, n_confounds=10, length=100
-    )
 
     # Apply low- and high-pass filter with butterworth (separately)
     t_r = 1.0
@@ -786,9 +782,9 @@ def test_clean_frequencies_using_power_spectrum_density():
 
 
 def test_clean_finite_no_inplace_mod():
-    """
-    Test for verifying that the passed in signal array is not modified.
-    For PR #2125 . This test is failing on main, passing in this PR.
+    """Verify that the passed in signal array is not modified.
+
+    See PR https://github.com/nilearn/nilearn/pull/2125
     """
     n_samples = 2
     # n_features  Must be higher than 500
@@ -814,6 +810,7 @@ def test_high_variance_confounds():
     n_features = 1001
     length = 20
     n_confounds = 5
+
     seriesC, _, _ = generate_signals(
         n_features=n_features, length=length, order="C"
     )
@@ -822,12 +819,14 @@ def test_high_variance_confounds():
     )
 
     assert_almost_equal(seriesC, seriesF, decimal=13)
+
     outC = nisignal.high_variance_confounds(
         seriesC, n_confounds=n_confounds, detrend=False
     )
     outF = nisignal.high_variance_confounds(
         seriesF, n_confounds=n_confounds, detrend=False
     )
+
     assert_almost_equal(outC, outF, decimal=13)
 
     # Result must not be influenced by global scaling
@@ -835,6 +834,7 @@ def test_high_variance_confounds():
     outG = nisignal.high_variance_confounds(
         seriesG, n_confounds=n_confounds, detrend=False
     )
+
     assert_almost_equal(outC, outG, decimal=13)
     assert outG.shape == (length, n_confounds)
 
@@ -956,7 +956,6 @@ def test_create_cosine_drift_terms():
     # Not passing confounds it will return drift terms only
     frame_times = np.arange(signals.shape[0]) * t_r
     cosine_drift = _cosine_drift(high_pass, frame_times)[:, :-1]
-    confounds_with_drift = np.hstack((confounds, cosine_drift))
 
     cosine_confounds = nisignal._create_cosine_drift_terms(
         signals, confounds, high_pass, t_r
@@ -968,6 +967,22 @@ def test_create_cosine_drift_terms():
         signals, None, high_pass, t_r
     )
     assert_almost_equal(drift_terms_only, cosine_drift)
+
+
+def test_create_cosine_drift_terms_warnings():
+    """Testing cosine filter interface and output."""
+    from nilearn.glm.first_level.design_matrix import _cosine_drift
+
+    # fmriprep high pass cutoff is 128s, it's around 0.008 hz
+    t_r, high_pass = 2.5, 0.008
+    signals, _, confounds = generate_signals(
+        n_features=41, n_confounds=5, length=45
+    )
+
+    # Not passing confounds it will return drift terms only
+    frame_times = np.arange(signals.shape[0]) * t_r
+    cosine_drift = _cosine_drift(high_pass, frame_times)[:, :-1]
+    confounds_with_drift = np.hstack((confounds, cosine_drift))
 
     # drift terms in confounds will create warning and no change to confounds
     with pytest.warns(UserWarning, match="user supplied confounds"):
@@ -991,9 +1006,11 @@ def test_sample_mask():
         n_features=11, n_confounds=5, length=40
     )
 
-    sample_mask = np.arange(signals.shape[0])
     scrub_index = [2, 3, 6, 7, 8, 30, 31, 32]
+
+    sample_mask = np.arange(signals.shape[0])
     sample_mask = np.delete(sample_mask, scrub_index)
+
     sample_mask_binary = np.full(signals.shape[0], True)
     sample_mask_binary[scrub_index] = False
 
@@ -1005,6 +1022,20 @@ def test_sample_mask():
         signals, confounds=confounds, sample_mask=sample_mask_binary
     )
     assert_equal(scrub_clean_bin, scrub_clean)
+
+
+def test_sample_mask_per_run():
+    signals, _, confounds = generate_signals(
+        n_features=11, n_confounds=5, length=40
+    )
+
+    scrub_index = [2, 3, 6, 7, 8, 30, 31, 32]
+
+    sample_mask = np.arange(signals.shape[0])
+    sample_mask = np.delete(sample_mask, scrub_index)
+
+    sample_mask_binary = np.full(signals.shape[0], True)
+    sample_mask_binary[scrub_index] = False
 
     # list of sample_mask for each run
     runs = np.ones(signals.shape[0])
@@ -1034,6 +1065,22 @@ def test_sample_mask():
     )
     assert scrub_sep_mask.shape[0] == signals.shape[0] - 6
 
+
+def test_sample_mask_errors():
+    signals, _, _ = generate_signals(n_features=11, n_confounds=5, length=40)
+
+    scrub_index = [2, 3, 6, 7, 8, 30, 31, 32]
+
+    sample_mask = np.arange(signals.shape[0])
+    sample_mask = np.delete(sample_mask, scrub_index)
+
+    sample_mask_binary = np.full(signals.shape[0], True)
+    sample_mask_binary[scrub_index] = False
+
+    # list of sample_mask for each run
+    runs = np.ones(signals.shape[0])
+    runs[: signals.shape[0] // 2] = 0
+
     # 1D sample mask with runs labels
     with pytest.raises(
         ValueError, match=r"Number of sample_mask \(\d\) not matching"
@@ -1058,7 +1105,14 @@ def test_sample_mask():
         clean(signals, sample_mask=invalid_sample_mask_sep, runs=runs)
 
     # list of sample_mask  with invalid indexing in one
+    scrub_index = [[6, 7, 8], [10, 11, 12]]
+
+    sample_mask_sep = [np.arange(20), np.arange(20)]
+    sample_mask_sep = [
+        np.delete(sm, si) for sm, si in zip(sample_mask_sep, scrub_index)
+    ]
     sample_mask_sep[-1][-1] = 100
+
     with pytest.raises(IndexError, match="invalid index"):
         clean(signals, sample_mask=sample_mask_sep, runs=runs)
 
@@ -1073,9 +1127,9 @@ def test_handle_scrubbed_volumes():
     signals, _, confounds = generate_signals(
         n_features=11, n_confounds=5, length=40
     )
+    scrub_index = np.array([2, 3, 6, 7, 8, 30, 31, 32])
 
     sample_mask = np.arange(signals.shape[0])
-    scrub_index = np.array([2, 3, 6, 7, 8, 30, 31, 32])
     sample_mask = np.delete(sample_mask, scrub_index)
 
     (
@@ -1084,6 +1138,7 @@ def test_handle_scrubbed_volumes():
     ) = nisignal._handle_scrubbed_volumes(
         signals, confounds, sample_mask, "butterworth", 2.5
     )
+
     assert_equal(interpolated_signals[sample_mask, :], signals[sample_mask, :])
     assert_equal(
         interpolated_confounds[sample_mask, :], confounds[sample_mask, :]
@@ -1092,5 +1147,6 @@ def test_handle_scrubbed_volumes():
     scrubbed_signals, scrubbed_confounds = nisignal._handle_scrubbed_volumes(
         signals, confounds, sample_mask, "cosine", 2.5
     )
+
     assert_equal(scrubbed_signals, signals[sample_mask, :])
     assert_equal(scrubbed_confounds, confounds[sample_mask, :])
