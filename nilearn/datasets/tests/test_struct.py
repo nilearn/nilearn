@@ -232,7 +232,7 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
     mesh_attributes = {
         "{}_{}".format(part, side)
         for part in [
-            "area", "curv", "infl", "pial",
+            "area", "curv", "flat", "infl", "pial",
             "sphere", "sulc", "thick", "white"
         ]
         for side in ["left", "right"]
