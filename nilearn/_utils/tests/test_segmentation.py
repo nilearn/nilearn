@@ -120,9 +120,8 @@ def test_bad_inputs():
 
 
 def test_reorder_labels():
-    """When labels have non-consecutive integers, \
-    we make them consecutive
-    by reordering them to make no gaps/differences between integers.
+    """When labels have non-consecutive integers, make them consecutive by \
+    reordering them to make no gaps/differences between integers.
 
     We expect labels to be of same shape even if they are reordered.
 

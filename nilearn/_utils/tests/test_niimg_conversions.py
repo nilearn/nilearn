@@ -502,7 +502,7 @@ def test_repr_niimgs(tmp_path):
         "this-is-again-another-super-very-long-name-for-a-nifti-file.nii"
     ]
     shortened_rep_long_list_long_names = (
-        "[this-is-a-very-lon...,\n" "         ...\n" " this-is-again-anot...]"
+        "[this-is-a-very-lon...,\n         ...\n this-is-again-anot...]"
     )
 
     assert (

@@ -42,8 +42,8 @@ def largest_connected_component(volume):
         or isinstance(volume, str)
     ):
         raise ValueError(
-            "Please enter a valid numpy array. For images use\
-                         largest_connected_component_img"
+            "Please enter a valid numpy array. For images use "
+            "largest_connected_component_img."
         )
     # Get the new byteorder to handle issues like "Big-endian buffer not
     # supported on little-endian compiler" with scipy ndimage label.
