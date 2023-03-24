@@ -123,7 +123,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
         # The URL can be retrieved from the nilearn account on OSF (Open
         # Science Framework), https://osf.io/4r3jt/quickfiles/
         # Clicking on the "share" button gives the root of the URL.
-        url = "https://osf.io/7pj92/download"
+        url = "https://osf.io/a8tp5/download"
     opts = {'uncompress': True}
 
     keys = ("csf", "gm", "wm",
@@ -850,10 +850,10 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
     opts = {'uncompress': True}
 
     url = {
-        "fsaverage3": "https://osf.io/asvjk/download",
-        "fsaverage4": "https://osf.io/x2j49/download",
-        "fsaverage6": "https://osf.io/um5ag/download",
-        "fsaverage": "https://osf.io/q7a5k/download",  # fsaverage7
+        "fsaverage3": "https://osf.io/azhdf/download",
+        "fsaverage4": "https://osf.io/28uma/download",
+        "fsaverage6": "https://osf.io/jzxyr/download",
+        "fsaverage": "https://osf.io/svf8k/download",  # fsaverage7
     }[dataset_name]
 
     # List of attributes exposed by the dataset
