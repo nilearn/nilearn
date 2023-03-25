@@ -534,7 +534,7 @@ def test_vec_to_sym_matrix_errors():
 
 
 def test_prec_to_partial():
-    prec = np.array(
+    precision = np.array(
         [
             [2.0, -1.0, 1.0],
             [-1.0, 2.0, -1.0],
@@ -549,7 +549,7 @@ def test_prec_to_partial():
         ]
     )
 
-    assert_array_almost_equal(prec_to_partial(prec), partial)
+    assert_array_almost_equal(prec_to_partial(precision), partial)
 
 
 def test_connectivity_measure_errors():
@@ -608,50 +608,110 @@ def test_connectivity_measure_generic(
 
 
 def _assert_connectivity_tangent(connectivities, conn_measure, covs):
-    for cov_, cov_new in zip(covs, connectivities):
-        # Positive definiteness if expected and output value checks
+    for true_covariance_matrix, estimated_covariance_matrix in zip(
+        covs, connectivities
+    ):
+        """Check output value properties for tangent connectivity measure \
+        that they have the expected relationship \
+        to the input covariance matrices.
 
-        assert_array_almost_equal(cov_new, cov_new.T)
+        - the geometric mean of the eigenvalues
+          of the mean covariance matrix is positive-definite
+        - the whitening matrix (used to transform the data \
+          also produces a positive-definite matrix
+        """
+        # Positive definiteness if expected and output value checks
+        assert_array_almost_equal(
+            estimated_covariance_matrix, estimated_covariance_matrix.T
+        )
+
+        assert is_spd(conn_measure.whitening_, decimal=7)
 
         gmean_sqrt = _map_eigenvalues(np.sqrt, conn_measure.mean_)
-
         assert is_spd(gmean_sqrt, decimal=7)
-        assert is_spd(conn_measure.whitening_, decimal=7)
         assert_array_almost_equal(
             conn_measure.whitening_.dot(gmean_sqrt),
             np.eye(N_FEATURES),
         )
         assert_array_almost_equal(
-            gmean_sqrt.dot(_map_eigenvalues(np.exp, cov_new)).dot(gmean_sqrt),
-            cov_,
+            gmean_sqrt.dot(
+                _map_eigenvalues(np.exp, estimated_covariance_matrix)
+            ).dot(gmean_sqrt),
+            true_covariance_matrix,
         )
 
 
 def _assert_connectivity_precision(connectivities, covs):
-    for cov_, cov_new in zip(covs, connectivities):
-        assert is_spd(cov_new, decimal=7)
-        assert_array_almost_equal(cov_new.dot(cov_), np.eye(N_FEATURES))
+    """Estimated precision matrix: \
+    - is positive definite, \
+    - its product with the true covariance matrix \
+      is close to the identity matrix."""
+    for true_covariance_matrix, estimated_covariance_matrix in zip(
+        covs, connectivities
+    ):
+        assert is_spd(estimated_covariance_matrix, decimal=7)
+        assert_array_almost_equal(
+            estimated_covariance_matrix.dot(true_covariance_matrix),
+            np.eye(N_FEATURES),
+        )
 
 
 def _assert_connectivity_correlation(connectivities, cov_estimator, covs):
-    for cov_, cov_new in zip(covs, connectivities):
-        assert is_spd(cov_new, decimal=7)
+    """Verify that the estimated covariance matrix: \
+        - is symmetric and positive definite
+        - values on its diagonal should almost 1
 
-        d = np.sqrt(np.diag(np.diag(cov_)))
+    If the covariance estimator is EmpiricalCovariance,
+    the product of:
+        - the square root of the diagonal of the true covariance matrix,
+        - the estimated covariance matrix,
+        - the square root of the diagonal of the true covariance matrix,
+
+    should be close to the true covariance matrix.
+    """
+    for true_covariance_matrix, estimated_covariance_matrix in zip(
+        covs, connectivities
+    ):
+        assert is_spd(estimated_covariance_matrix, decimal=7)
+
+        assert_array_almost_equal(
+            np.diag(estimated_covariance_matrix), np.ones(N_FEATURES)
+        )
 
         if cov_estimator == EmpiricalCovariance():
-            assert_array_almost_equal(d.dot(cov_new).dot(d), cov_)
-        assert_array_almost_equal(np.diag(cov_new), np.ones(N_FEATURES))
+            # square root of the diagonal of the true covariance matrix
+            d = np.sqrt(np.diag(np.diag(true_covariance_matrix)))
+
+            assert_array_almost_equal(
+                d.dot(estimated_covariance_matrix).dot(d),
+                true_covariance_matrix,
+            )
 
 
 def _assert_connectivity_partial_correlation(connectivities, covs):
-    for cov_, cov_new in zip(covs, connectivities):
-        prec = linalg.inv(cov_)
-        d = np.sqrt(np.diag(np.diag(prec)))
+    for true_covariance_matrix, estimated_covariance_matrix in zip(
+        covs, connectivities
+    ):
+        precision_matrix = linalg.inv(true_covariance_matrix)
+
+        # square root of the diagonal elements of the precision matrix
+        d = np.sqrt(np.diag(np.diag(precision_matrix)))
+
+        # normalize the computed partial correlation matrix
+        # necessary to ensure that the diagonal elements
+        # of the partial correlation matrix are equal to 1
+        normalized_partial_correlation_matrix = d.dot(
+            estimated_covariance_matrix
+        ).dot(d)
+
+        # expected value
+        partial_corrlelation_matrix = -precision_matrix + 2 * np.diag(
+            np.diag(precision_matrix)
+        )
 
         assert_array_almost_equal(
-            d.dot(cov_new).dot(d),
-            -prec + 2 * np.diag(np.diag(prec)),
+            normalized_partial_correlation_matrix,
+            partial_corrlelation_matrix,
         )
 
 
