@@ -54,7 +54,7 @@ def test_check_threshold():
         threshold, matrix, fast_abs_percentile
     ) == check_threshold(threshold_numpy_scalar, matrix, fast_abs_percentile)
 
-    # Test for threshold provided as a percentile of the data \
+    # Test for threshold provided as a percentile of the data
     # (str ending with a %)
     assert (
         1.0

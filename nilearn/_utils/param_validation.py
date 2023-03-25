@@ -36,15 +36,15 @@ def check_threshold(threshold, data, percentile_func, name="threshold"):
         to calculate the score on the data.
 
     name : str, optional
-        A string just used for representing \
+        A string just used for representing
         the name of the threshold for a precise
         error message. Default='threshold'.
 
     Returns
     -------
     threshold : number
-        Returns the score of the percentile on the data or \
-        returns threshold as it is \
+        Returns the score of the percentile on the data or
+        returns threshold as it is
         if given threshold is not a string percentile.
 
     """

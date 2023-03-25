@@ -160,7 +160,7 @@ def z_score(pvalue, one_minus_pvalue=None):
 
     one_minus_pvalue : float or 1-d array shape=(n_one_minus_pvalues,), \
         optional
-        It shall take the value returned\
+        It shall take the value returned
         by /nilearn/glm/contrasts.py::one_minus_pvalue
         which computes the p_value using the cumulative distribution function,
         with n_one_minus_pvalues = n_pvalues.
