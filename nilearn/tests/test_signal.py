@@ -3,7 +3,7 @@
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
-import os.path
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -272,10 +272,7 @@ def test_standardize_length_1_signal_with_trend_removal(strategy):
 
     b = _standardize(length_1_signal, standardize=strategy)
 
-    assert_array_equal(
-        b,
-        length_1_signal,
-    )
+    assert_array_equal(b, length_1_signal)
 
 
 def test_detrend():
@@ -291,12 +288,13 @@ def test_detrend():
 
     # Mean removal only (out-of-place)
     detrended = _detrend(x, inplace=False, type="constant")
+
     assert abs(detrended.mean(axis=0)).max() < 15.0 * np.finfo(np.float64).eps
 
     # out-of-place detrending. Use scipy as a reference implementation
     detrended = _detrend(x, inplace=False)
-    detrended_scipy = scipy.signal.detrend(x, axis=0)
 
+    detrended_scipy = scipy.signal.detrend(x, axis=0)
     # "x" must be left untouched
     assert_almost_equal(x, original, decimal=14)
     assert abs(detrended.mean(axis=0)).max() < 15.0 * np.finfo(np.float64).eps
@@ -306,6 +304,7 @@ def test_detrend():
 
     # inplace detrending
     _detrend(x, inplace=True)
+
     assert abs(x.mean(axis=0)).max() < 15.0 * np.finfo(np.float64).eps
     # for this to work, there must be no trends at all in "signals"
     assert_almost_equal(detrended, detrended_scipy, decimal=14)
@@ -313,11 +312,14 @@ def test_detrend():
 
     length_1_signal = x[0]
     length_1_signal = length_1_signal[np.newaxis, :]
-    detrended_scipy = _detrend(length_1_signal)
-    assert_array_equal(length_1_signal, detrended_scipy)
+
+    detrended = _detrend(length_1_signal)
+
+    assert_array_equal(detrended, length_1_signal)
 
     # Mean removal on integers
     detrended = _detrend(x.astype(np.int64), inplace=True, type="constant")
+
     assert abs(detrended.mean(axis=0)).max() < 20.0 * np.finfo(np.float64).eps
 
 
@@ -368,7 +370,7 @@ def test_clean_detrending():
     y[15, 14] = np.inf
     y_orig = y.copy()
 
-    y_clean = clean(y, ensure_finite=True)
+    y_clean = clean(y, standardize="zscore_sample", ensure_finite=True)
 
     assert np.any(np.isfinite(y_clean)), True
     # clean should not modify inputs
@@ -423,10 +425,18 @@ def test_clean_t_r():
             low_pass_freq_list, high_pass_freq_list
         ):
             det_one_tr = clean(
-                x_orig, t_r=tr1, low_pass=low_cutoff, high_pass=high_cutoff
+                x_orig,
+                t_r=tr1,
+                low_pass=low_cutoff,
+                high_pass=high_cutoff,
+                standardize="zscore_sample",
             )
             det_diff_tr = clean(
-                x_orig, t_r=tr2, low_pass=low_cutoff, high_pass=high_cutoff
+                x_orig,
+                t_r=tr2,
+                low_pass=low_cutoff,
+                high_pass=high_cutoff,
+                standardize="zscore_sample",
             )
 
             if not np.isclose(tr1, tr2, atol=0.3):
@@ -471,7 +481,11 @@ def test_clean_kwargs(kwargs):
     # Base result
     t_r, high_pass, low_pass = 0.8, 0.01, 0.08
     base_filtered = clean(
-        x_orig, t_r=t_r, low_pass=low_pass, high_pass=high_pass
+        x_orig,
+        t_r=t_r,
+        low_pass=low_pass,
+        high_pass=high_pass,
+        standardize="zscore_sample",
     )
 
     test_filtered = clean(
@@ -479,6 +493,7 @@ def test_clean_kwargs(kwargs):
         t_r=t_r,
         low_pass=low_pass,
         high_pass=high_pass,
+        standardize="zscore_sample",
         **kwargs,
     )
 
@@ -509,7 +524,10 @@ def test_clean_frequencies():
 
     assert result.max() > 0.9
 
-    pytest.raises(ValueError, clean, sx, low_pass=0.4, high_pass=0.5, t_r=2.5)
+    with pytest.raises(
+        ValueError, match="High pass .* greater than .* low pass"
+    ):
+        clean(sx, low_pass=0.4, high_pass=0.5, t_r=2.5)
 
     # clean should not modify inputs
     clean(sx, standardize=False, detrend=False, low_pass=0.2, t_r=2.5)
@@ -623,42 +641,90 @@ def test_clean_confounds():
 
 
 def test_clean_confounds_from_file():
-    # Test with confounds read from a file. Smoke test only (result has
-    # no meaning).
-    current_dir = os.path.split(__file__)[0]
-
+    # Test with confounds read from a file.
+    #
+    # Smoke test only (result has no meaning).
     length = 20
     signals, _, confounds = generate_signals(
         n_features=41, n_confounds=3, length=length
     )
-    filename1 = os.path.join(current_dir, "data", "spm_confounds.txt")
-    filename2 = os.path.join(current_dir, "data", "confounds_with_header.csv")
 
-    clean(signals, detrend=False, standardize=False, confounds=filename1)
-    clean(signals, detrend=False, standardize=False, confounds=filename2)
-    clean(signals, detrend=False, standardize=False, confounds=confounds[:, 1])
+    data_dir = Path(__file__).parent / "data"
 
-    # test with confounds as a pandas DataFrame
-    confounds_df = read_csv(filename2, sep="\t")
+    filename1 = data_dir / "spm_confounds.txt"
+
     clean(
         signals,
         detrend=False,
         standardize=False,
-        confounds=confounds_df.values,
+        confounds=str(filename1),
+        standardize_confounds="zscore_sample",
     )
-    clean(signals, detrend=False, standardize=False, confounds=confounds_df)
 
-    # test array-like signals
-    list_signal = signals.tolist()
-    clean(list_signal)
+    filename2 = data_dir / "confounds_with_header.csv"
+
+    clean(
+        signals,
+        detrend=False,
+        standardize=False,
+        confounds=str(filename2),
+        standardize_confounds="zscore_sample",
+    )
+
+    clean(
+        signals,
+        detrend=False,
+        standardize=False,
+        confounds=confounds[:, 1],
+        standardize_confounds="zscore_sample",
+    )
 
     # Use a list containing two filenames, a 2D array and a 1D array
     clean(
         signals,
         detrend=False,
         standardize=False,
-        confounds=[filename1, confounds[:, 0:2], filename2, confounds[:, 2]],
+        confounds=[
+            str(filename1),
+            confounds[:, 0:2],
+            str(filename2),
+            confounds[:, 2],
+        ],
+        standardize_confounds="zscore_sample",
     )
+
+
+def test_clean_confounds_from_file_with_confounds_as_pandas_DataFrame():
+    # test with confounds as a pandas DataFrame
+    data_dir = Path(__file__).parent / "data"
+
+    filename2 = data_dir / "confounds_with_header.csv"
+    confounds_df = read_csv(filename2, sep="\t")
+
+    length = 20
+    signals, _, _ = generate_signals(
+        n_features=41, n_confounds=3, length=length
+    )
+
+    clean(
+        signals,
+        detrend=False,
+        standardize=False,
+        confounds=confounds_df.values,
+        standardize_confounds="zscore_sample",
+    )
+
+    clean(
+        signals,
+        detrend=False,
+        standardize=False,
+        confounds=confounds_df,
+        standardize_confounds="zscore_sample",
+    )
+
+    # test array-like signals
+    list_signal = signals.tolist()
+    clean(list_signal)
 
 
 def test_clean_confounds_check_confounders_are_removed(signals_and_confounds):
@@ -676,13 +742,17 @@ def test_clean_confounds_check_confounders_are_removed(signals_and_confounds):
     signals_clean = clean(
         signals,
         detrend=True,
+        standardize="zscore_sample",
         high_pass=0.01,
-        standardize_confounds=True,
-        standardize=True,
         confounds=confounds,
+        standardize_confounds="zscore_sample",
     )
     confounds_clean = clean(
-        confounds, detrend=True, high_pass=0.01, standardize=True
+        confounds,
+        detrend=True,
+        standardize="zscore_sample",
+        high_pass=0.01,
+        standardize_confounds=False,
     )
     assert abs(np.dot(confounds_clean.T, signals_clean)).max() < 1000.0 * eps
 
@@ -709,9 +779,9 @@ def test_clean_confounds_errors(signals):
     pytest.raises(ValueError, clean, signals, filter="not_implemented")
     pytest.raises(ValueError, clean, signals, ensure_finite=None)
 
-    current_dir = os.path.split(__file__)[0]
-    filename1 = os.path.join(current_dir, "data", "spm_confounds.txt")
-    pytest.raises(ValueError, clean, signals[:-1, :], confounds=filename1)
+    current_dir = Path(__file__).parent
+    filename1 = current_dir / "data" / "spm_confounds.txt"
+    pytest.raises(ValueError, clean, signals[:-1, :], confounds=str(filename1))
 
 
 def test_clean_confounds_warnings(signals):
@@ -751,9 +821,9 @@ def test_clean_frequencies_using_power_spectrum_density(
     # Create signal
     sx = np.array(
         [
-            np.sin(np.linspace(0, 100, 100) * 1.5),
-            np.sin(np.linspace(0, 100, 100) * 3.0),
-            np.sin(np.linspace(0, 100, 100) / 8.0),
+            np.sin(np.linspace(0, 256, 256) * 1.5),
+            np.sin(np.linspace(0, 256, 256) * 3.0),
+            np.sin(np.linspace(0, 256, 256) / 8.0),
         ]
     ).T
 
@@ -767,6 +837,7 @@ def test_clean_frequencies_using_power_spectrum_density(
         filter=filter,
         low_pass=low_pass,
         high_pass=high_pass,
+        standardize_confounds="zscore_sample",  # avoid wrong strategy warnings
         t_r=t_r,
     )
 
@@ -797,10 +868,10 @@ def test_clean_finite_no_inplace_mod():
     signals_with_nans[0, 0] = np.nan
     signals_with_nans_initial_copy = signals_with_nans.copy()
 
-    clean(signals)
+    clean(signals, standardize="zscore_sample")
     assert np.array_equal(signals, signals_inital_copy)
 
-    clean(signals_with_nans, ensure_finite=True)
+    clean(signals_with_nans, ensure_finite=True, standardize="zscore_sample")
     assert np.isnan(signals_with_nans_initial_copy[0, 0])
     assert np.isnan(signals_with_nans[0, 0])
 
@@ -928,11 +999,13 @@ def test_clean_zscore():
 
     signals += rng.standard_normal(size=(1, n_features))
     cleaned_signals_ = clean(signals, standardize="zscore")
+
     assert_almost_equal(cleaned_signals_.mean(0), 0)
     assert_almost_equal(cleaned_signals_.std(0), 1)
 
     # Repeating test above but for new correct strategy
     cleaned_signals = clean(signals, standardize="zscore_sample")
+
     assert_almost_equal(cleaned_signals.mean(0), 0)
     assert_almost_equal(cleaned_signals.std(0), 1, decimal=3)
 
@@ -953,12 +1026,22 @@ def test_sample_mask(signals_and_confounds):
     sample_mask_binary = np.full(signals.shape[0], True)
     sample_mask_binary[scrub_index] = False
 
-    scrub_clean = clean(signals, confounds=confounds, sample_mask=sample_mask)
+    scrub_clean = clean(
+        signals,
+        confounds=confounds,
+        sample_mask=sample_mask,
+        standardize="zscore_sample",
+        standardize_confounds="zscore_sample",
+    )
     assert scrub_clean.shape[0] == sample_mask.shape[0]
 
     # test the binary mask
     scrub_clean_bin = clean(
-        signals, confounds=confounds, sample_mask=sample_mask_binary
+        signals,
+        confounds=confounds,
+        sample_mask=sample_mask_binary,
+        standardize="zscore_sample",
+        standardize_confounds="zscore_sample",
     )
     assert_equal(scrub_clean_bin, scrub_clean)
 
@@ -981,7 +1064,12 @@ def test_sample_mask_per_run():
     ]
 
     scrub_sep_mask = clean(
-        signals, confounds=confounds, sample_mask=sample_mask_sep, runs=runs
+        signals,
+        confounds=confounds,
+        sample_mask=sample_mask_sep,
+        runs=runs,
+        standardize="zscore_sample",
+        standardize_confounds="zscore_sample",
     )
 
     assert scrub_sep_mask.shape[0] == signals.shape[0] - 6
@@ -999,6 +1087,8 @@ def test_sample_mask_per_run():
         confounds=confounds,
         sample_mask=sample_mask_sep_binary,
         runs=runs,
+        standardize="zscore_sample",
+        standardize_confounds="zscore_sample",
     )
 
     assert scrub_sep_mask.shape[0] == signals.shape[0] - 6
