@@ -57,6 +57,19 @@ def generate_signals_plus_trends(n_features=17, n_samples=41):
     return signals + trends
 
 
+@pytest.fixture
+def signals():
+    return generate_signals(n_features=17, n_confounds=5, length=41)[0]
+
+
+@pytest.fixture
+def signals_and_confounds():
+    signals, _, confounds = generate_signals(
+        n_features=17, n_confounds=5, length=41
+    )
+    return signals, confounds
+
+
 def test_butterworth():
     rng = np.random.RandomState(42)
     n_features = 20000
@@ -216,46 +229,51 @@ def test_standardize_errors_warnings():
         _standardize(a, standardize="zscore")
 
 
-def test_standardize():
+@pytest.mark.parametrize(
+    "strategy, decimal", [("zscore", 7), ("zscore_sample", 1)]
+)
+def test_standardize_without_trend_removal(strategy, decimal):
     rng = np.random.RandomState(42)
 
     # Create random signals with offsets
     n_features = 10
     n_samples = 17
+
     a = rng.random_sample((n_samples, n_features))
     a += np.linspace(0, 2.0, n_features)
 
+    b = _standardize(a, standardize=strategy)
+
+    stds = np.std(b)
+    assert_almost_equal(stds, np.ones(n_features), decimal=decimal)
+    assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
+
+
+def test_standardize_with_trend_removal():
+    n_features = 10
+
     # transpose array to fit _standardize input.
-    # Without trend removal
-    b = _standardize(a, standardize="zscore")
-    stds = np.std(b)
-    assert_almost_equal(stds, np.ones(n_features))
-    assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
-
-    # Repeating test above but for new correct strategy
-    b = _standardize(a, standardize="zscore_sample")
-    stds = np.std(b)
-    assert_almost_equal(stds, np.ones(n_features), decimal=1)
-    assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
-
-    # With trend removal
     a = np.atleast_2d(np.linspace(0, 2.0, n_features)).T
+
     b = _standardize(a, detrend=True, standardize=False)
+
     assert_almost_equal(b, np.zeros(b.shape))
 
     b = _standardize(a, detrend=True, standardize="zscore_sample")
+
     assert_almost_equal(b, np.zeros(b.shape))
 
-    length_1_signal = np.atleast_2d(np.linspace(0, 2.0, n_features))
-    assert_array_equal(
-        _standardize(length_1_signal, standardize="zscore"),
-        length_1_signal,
-    )
 
-    # Repeating test above but for new correct strategy
+@pytest.mark.parametrize("strategy", ["zscore", "zscore_sample"])
+def test_standardize_length_1_signal_with_trend_removal(strategy):
+    n_features = 10
+
     length_1_signal = np.atleast_2d(np.linspace(0, 2.0, n_features))
+
+    b = _standardize(length_1_signal, standardize=strategy)
+
     assert_array_equal(
-        _standardize(length_1_signal, standardize="zscore_sample"),
+        b,
         length_1_signal,
     )
 
@@ -609,8 +627,9 @@ def test_clean_confounds_from_file():
     # no meaning).
     current_dir = os.path.split(__file__)[0]
 
+    length = 20
     signals, _, confounds = generate_signals(
-        n_features=41, n_confounds=3, length=20
+        n_features=41, n_confounds=3, length=length
     )
     filename1 = os.path.join(current_dir, "data", "spm_confounds.txt")
     filename2 = os.path.join(current_dir, "data", "confounds_with_header.csv")
@@ -642,7 +661,7 @@ def test_clean_confounds_from_file():
     )
 
 
-def test_clean_confounds_check_confounders_are_removed():
+def test_clean_confounds_check_confounders_are_removed(signals_and_confounds):
     """Check that confounders effects are effectively removed from \
     the signals when having a detrending and filtering operation together.
 
@@ -652,10 +671,7 @@ def test_clean_confounds_check_confounders_are_removed():
     Thus solves issue # 2730
     """
     eps = np.finfo(np.float64).eps
-
-    signals, _, confounds = generate_signals(
-        n_features=11, n_confounds=5, length=40
-    )
+    signals, confounds = signals_and_confounds
 
     signals_clean = clean(
         signals,
@@ -671,9 +687,7 @@ def test_clean_confounds_check_confounders_are_removed():
     assert abs(np.dot(confounds_clean.T, signals_clean)).max() < 1000.0 * eps
 
 
-def test_clean_confounds_errors():
-    signals, *_ = generate_signals(n_features=41, n_confounds=3, length=20)
-
+def test_clean_confounds_errors(signals):
     # Test error handling
     pytest.raises(TypeError, clean, signals, confounds=1)
     pytest.raises(ValueError, clean, signals, confounds=np.zeros(2))
@@ -700,9 +714,7 @@ def test_clean_confounds_errors():
     pytest.raises(ValueError, clean, signals[:-1, :], confounds=filename1)
 
 
-def test_clean_confounds_warnings():
-    signals, *_ = generate_signals(n_features=11, n_confounds=5, length=40)
-
+def test_clean_confounds_warnings(signals):
     # Check warning message when no confound methods were specified,
     # but cutoff frequency provided.
     with pytest.warns(UserWarning, match="not perform filtering"):
@@ -778,19 +790,19 @@ def test_clean_finite_no_inplace_mod():
     n_samples = 2
     # n_features  Must be higher than 500
     n_features = 501
-    x_orig, *_ = generate_signals(n_features=n_features, length=n_samples)
-    x_orig_inital_copy = x_orig.copy()
+    signals, *_ = generate_signals(n_features=n_features, length=n_samples)
+    signals_inital_copy = signals.copy()
 
-    x_orig_with_nans = x_orig.copy()
-    x_orig_with_nans[0, 0] = np.nan
-    x_orig_with_nans_initial_copy = x_orig_with_nans.copy()
+    signals_with_nans = signals.copy()
+    signals_with_nans[0, 0] = np.nan
+    signals_with_nans_initial_copy = signals_with_nans.copy()
 
-    clean(x_orig)
-    assert np.array_equal(x_orig, x_orig_inital_copy)
+    clean(signals)
+    assert np.array_equal(signals, signals_inital_copy)
 
-    clean(x_orig_with_nans, ensure_finite=True)
-    assert np.isnan(x_orig_with_nans_initial_copy[0, 0])
-    assert np.isnan(x_orig_with_nans[0, 0])
+    clean(signals_with_nans, ensure_finite=True)
+    assert np.isnan(signals_with_nans_initial_copy[0, 0])
+    assert np.isnan(signals_with_nans[0, 0])
 
 
 def test_high_variance_confounds():
@@ -929,11 +941,9 @@ def test_clean_zscore():
         assert_array_equal(cleaned_signals_, cleaned_signals)
 
 
-def test_sample_mask():
+def test_sample_mask(signals_and_confounds):
     """Test sample_mask related feature."""
-    signals, _, confounds = generate_signals(
-        n_features=11, n_confounds=5, length=40
-    )
+    signals, confounds = signals_and_confounds
 
     scrub_index = [2, 3, 6, 7, 8, 30, 31, 32]
 
@@ -954,29 +964,26 @@ def test_sample_mask():
 
 
 def test_sample_mask_per_run():
+    n_samples = 40
     signals, _, confounds = generate_signals(
-        n_features=11, n_confounds=5, length=40
+        n_features=11, n_confounds=5, length=n_samples
     )
-
-    scrub_index = [2, 3, 6, 7, 8, 30, 31, 32]
-
-    sample_mask = np.arange(signals.shape[0])
-    sample_mask = np.delete(sample_mask, scrub_index)
-
-    sample_mask_binary = np.full(signals.shape[0], True)
-    sample_mask_binary[scrub_index] = False
 
     # list of sample_mask for each run
     runs = np.ones(signals.shape[0])
     runs[: signals.shape[0] // 2] = 0
-    sample_mask_sep = [np.arange(20), np.arange(20)]
+
     scrub_index = [[6, 7, 8], [10, 11, 12]]
+
+    sample_mask_sep = [np.arange(20), np.arange(20)]
     sample_mask_sep = [
         np.delete(sm, si) for sm, si in zip(sample_mask_sep, scrub_index)
     ]
+
     scrub_sep_mask = clean(
         signals, confounds=confounds, sample_mask=sample_mask_sep, runs=runs
     )
+
     assert scrub_sep_mask.shape[0] == signals.shape[0] - 6
 
     # test for binary mask per run
@@ -986,18 +993,18 @@ def test_sample_mask_per_run():
     ]
     sample_mask_sep_binary[0][scrub_index[0]] = False
     sample_mask_sep_binary[1][scrub_index[1]] = False
+
     scrub_sep_mask = clean(
         signals,
         confounds=confounds,
         sample_mask=sample_mask_sep_binary,
         runs=runs,
     )
+
     assert scrub_sep_mask.shape[0] == signals.shape[0] - 6
 
 
-def test_sample_mask_errors():
-    signals, *_ = generate_signals(n_features=11, n_confounds=5, length=40)
-
+def test_sample_mask_errors(signals):
     scrub_index = [2, 3, 6, 7, 8, 30, 31, 32]
 
     sample_mask = np.arange(signals.shape[0])
@@ -1051,11 +1058,9 @@ def test_sample_mask_errors():
         clean(signals, sample_mask=sample_mask)
 
 
-def test_handle_scrubbed_volumes():
+def test_handle_scrubbed_volumes(signals_and_confounds):
     """Check interpolation/censoring of signals based on filter type."""
-    signals, _, confounds = generate_signals(
-        n_features=11, n_confounds=5, length=40
-    )
+    signals, confounds = signals_and_confounds
     scrub_index = np.array([2, 3, 6, 7, 8, 30, 31, 32])
 
     sample_mask = np.arange(signals.shape[0])
