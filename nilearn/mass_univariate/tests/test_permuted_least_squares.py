@@ -754,8 +754,6 @@ def test_tfce_no_masker_error(random_state=RANDOM_STATE):
             two_sided_test=False,
             n_perm=N_PERM,
             random_state=random_state,
-            threshold=None,
-            masker=None,
             tfce=True,
         )
 
@@ -773,7 +771,6 @@ def test_tfce_smoke_legacy_warnings(random_state=RANDOM_STATE):
             two_sided_test=False,
             n_perm=0,
             random_state=random_state,
-            threshold=None,
             masker=masker,
             tfce=True,
             output_type="legacy",
@@ -791,9 +788,6 @@ def test_tfce_smoke_legacy_warnings(random_state=RANDOM_STATE):
             two_sided_test=False,
             n_perm=N_PERM,
             random_state=random_state,
-            threshold=None,
-            masker=None,
-            tfce=False,
             output_type="legacy",
         )
 
@@ -818,7 +812,6 @@ def test_tfce_smoke_legacy_smoke(random_state=RANDOM_STATE):
         two_sided_test=False,
         n_perm=0,
         random_state=random_state,
-        threshold=None,
         masker=masker,
         tfce=True,
         output_type="dict",
@@ -840,7 +833,6 @@ def test_tfce_smoke_legacy_smoke(random_state=RANDOM_STATE):
         two_sided_test=False,
         n_perm=n_perm,
         random_state=random_state,
-        threshold=None,
         masker=masker,
         tfce=True,
         output_type="dict",
@@ -878,7 +870,6 @@ def test_cluster_level_parameters_error_no_masker(
             n_perm=N_PERM,
             random_state=random_state,
             threshold=0.001,
-            masker=None,
             tfce=False,
         )
 
@@ -899,9 +890,7 @@ def test_cluster_level_parameters_warnings(
             two_sided_test=False,
             n_perm=N_PERM,
             random_state=random_state,
-            threshold=None,
             masker=masker,
-            tfce=False,
             output_type="legacy",
         )
 
@@ -919,7 +908,6 @@ def test_cluster_level_parameters_warnings(
             random_state=random_state,
             threshold=0.001,
             masker=masker,
-            tfce=False,
             output_type="legacy",
         )
 
@@ -935,9 +923,6 @@ def test_cluster_level_parameters_warnings(
             two_sided_test=False,
             n_perm=N_PERM,
             random_state=random_state,
-            threshold=None,
-            masker=None,
-            tfce=False,
             output_type="legacy",
         )
 
@@ -958,9 +943,6 @@ def test_cluster_level_parameters_smoke(
         two_sided_test=False,
         n_perm=0,
         random_state=random_state,
-        threshold=None,
-        masker=None,
-        tfce=False,
         output_type="dict",
     )
 
