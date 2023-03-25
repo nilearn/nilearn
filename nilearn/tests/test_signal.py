@@ -52,7 +52,7 @@ def generate_trends(n_features=17, length=41):
 
 
 def generate_signals_plus_trends(n_features=17, n_samples=41):
-    signals, _, _ = generate_signals(n_features=n_features, length=n_samples)
+    signals, *_ = generate_signals(n_features=n_features, length=n_samples)
     trends = generate_trends(n_features=n_features, length=n_samples)
     return signals + trends
 
@@ -248,15 +248,15 @@ def test_standardize():
 
     length_1_signal = np.atleast_2d(np.linspace(0, 2.0, n_features))
     assert_array_equal(
-        length_1_signal,
         _standardize(length_1_signal, standardize="zscore"),
+        length_1_signal,
     )
 
     # Repeating test above but for new correct strategy
     length_1_signal = np.atleast_2d(np.linspace(0, 2.0, n_features))
     assert_array_equal(
-        length_1_signal,
         _standardize(length_1_signal, standardize="zscore_sample"),
+        length_1_signal,
     )
 
 
@@ -264,7 +264,7 @@ def test_detrend():
     """Test custom detrend implementation."""
     point_number = 703
     features = 17
-    signals, _, _ = generate_signals(
+    signals, *_ = generate_signals(
         n_features=features, length=point_number, same_variance=True
     )
     trends = generate_trends(n_features=features, length=point_number)
@@ -280,7 +280,7 @@ def test_detrend():
     detrended_scipy = scipy.signal.detrend(x, axis=0)
 
     # "x" must be left untouched
-    assert_almost_equal(original, x, decimal=14)
+    assert_almost_equal(x, original, decimal=14)
     assert abs(detrended.mean(axis=0)).max() < 15.0 * np.finfo(np.float64).eps
     assert_almost_equal(detrended, detrended_scipy, decimal=14)
     # for this to work, there must be no trends at all in "signals"
@@ -291,7 +291,7 @@ def test_detrend():
     assert abs(x.mean(axis=0)).max() < 15.0 * np.finfo(np.float64).eps
     # for this to work, there must be no trends at all in "signals"
     assert_almost_equal(detrended, detrended_scipy, decimal=14)
-    assert_almost_equal(x, signals, decimal=14)
+    assert_almost_equal(signals, x, decimal=14)
 
     length_1_signal = x[0]
     length_1_signal = length_1_signal[np.newaxis, :]
@@ -307,7 +307,7 @@ def test_mean_of_squares():
     """Test _mean_of_squares."""
     n_samples = 11
     n_features = 501  # Higher than 500 required
-    signals, _, _ = generate_signals(
+    signals, *_ = generate_signals(
         n_features=n_features, length=n_samples, same_variance=True
     )
     var = nisignal._mean_of_squares(signals)
@@ -323,7 +323,7 @@ def test_row_sum_of_squares():
     """Test _row_sum_of_squares."""
     n_samples = 11
     n_features = 501  # Higher than 500 required
-    signals, _, _ = generate_signals(
+    signals, *_ = generate_signals(
         n_features=n_features, length=n_samples, same_variance=True
     )
     var = _row_sum_of_squares(signals)
@@ -338,7 +338,7 @@ def test_row_sum_of_squares():
 def test_clean_detrending():
     n_samples = 21
     n_features = 501  # Must be higher than 500
-    signals, _, _ = generate_signals(n_features=n_features, length=n_samples)
+    signals, *_ = generate_signals(n_features=n_features, length=n_samples)
     trends = generate_trends(n_features=n_features, length=n_samples)
     x = signals + trends
     x_orig = x.copy()
@@ -357,17 +357,13 @@ def test_clean_detrending():
     # using assert_almost_equal instead of array_equal due to NaNs
     assert_almost_equal(y, y_orig, decimal=13)
 
-    # test boolean is not given to signal.clean
-    pytest.raises(TypeError, clean, x, low_pass=False)
-    pytest.raises(TypeError, clean, x, high_pass=False)
-
     # This should remove trends
     x_detrended = clean(
         x, standardize=False, detrend=True, low_pass=None, high_pass=None
     )
     assert_almost_equal(x_detrended, signals, decimal=13)
     # clean should not modify inputs
-    assert np.array_equal(x_orig, x)
+    assert np.array_equal(x, x_orig)
 
     # This should do nothing
     x_undetrended = clean(
@@ -375,7 +371,19 @@ def test_clean_detrending():
     )
     assert abs(x_undetrended - signals).max() >= 0.06
     # clean should not modify inputs
-    assert np.array_equal(x_orig, x)
+    assert np.array_equal(x, x_orig)
+
+
+def test_clean_errors():
+    signals, *_ = generate_signals()
+    trends = generate_trends()
+    x = signals + trends
+
+    # test boolean is not given to signal.clean
+    with pytest.raises(TypeError, match="high/low pass must be float or None"):
+        clean(x, low_pass=False)
+    with pytest.raises(TypeError, match="high/low pass must be float or None"):
+        clean(x, high_pass=False)
 
 
 def test_clean_t_r():
@@ -466,19 +474,23 @@ def test_clean_frequencies():
     sx2 = np.sin(np.linspace(0, 100, 2000))
     sx = np.vstack((sx1, sx2)).T
     sx_orig = sx.copy()
-    assert (
-        clean(
-            sx, standardize=False, high_pass=0.002, low_pass=None, t_r=2.5
-        ).max()
-        > 0.1
+
+    result = clean(
+        sx, standardize=False, high_pass=0.002, low_pass=None, t_r=2.5
     )
-    assert (
-        clean(
-            sx, standardize=False, high_pass=0.2, low_pass=None, t_r=2.5
-        ).max()
-        < 0.01
+
+    assert result.max() > 0.1
+
+    result = clean(
+        sx, standardize=False, high_pass=0.2, low_pass=None, t_r=2.5
     )
-    assert clean(sx, standardize=False, low_pass=0.01, t_r=2.5).max() > 0.9
+
+    assert result.max() < 0.01
+
+    result = clean(sx, standardize=False, low_pass=0.01, t_r=2.5)
+
+    assert result.max() > 0.9
+
     pytest.raises(ValueError, clean, sx, low_pass=0.4, high_pass=0.5, t_r=2.5)
 
     # clean should not modify inputs
@@ -529,9 +541,11 @@ def test_clean_confounds():
     # No signal: output must be zero.
     eps = np.finfo(np.float64).eps
     noises1 = noises.copy()
+
     cleaned_signals = clean(
         noises, confounds=confounds, detrend=True, standardize=False
     )
+
     assert abs(cleaned_signals).max() < 100.0 * eps
     # clean should not modify inputs
     assert np.array_equal(noises, noises1)
@@ -540,13 +554,16 @@ def test_clean_confounds():
     cleaned_signals = clean(
         signals + noises, confounds=confounds, detrend=False, standardize=True
     )
+
     assert abs(np.dot(confounds.T, cleaned_signals)).max() < 1000.0 * eps
 
     # Same output when a constant confound is added
     confounds1 = np.hstack((np.ones((45, 1)), confounds))
+
     cleaned_signals1 = clean(
         signals + noises, confounds=confounds1, detrend=False, standardize=True
     )
+
     assert_almost_equal(cleaned_signals1, cleaned_signals)
 
     # Test detrending. No trend should exist in the output.
@@ -557,6 +574,7 @@ def test_clean_confounds():
     cleaned_signals = clean(
         signals + noises, confounds=confounds, detrend=False, standardize=False
     )
+
     coeffs = np.polyfit(
         np.arange(cleaned_signals.shape[0]), cleaned_signals, 1
     )
@@ -565,6 +583,7 @@ def test_clean_confounds():
     cleaned_signals = clean(
         signals + noises, confounds=confounds, detrend=True, standardize=False
     )
+
     coeffs = np.polyfit(
         np.arange(cleaned_signals.shape[0]), cleaned_signals, 1
     )
@@ -572,10 +591,13 @@ def test_clean_confounds():
 
     # Test no-op
     input_signals = 10 * signals
+
     cleaned_signals = clean(input_signals, detrend=False, standardize=False)
+
     assert_almost_equal(cleaned_signals, input_signals)
 
     cleaned_signals = clean(input_signals, detrend=False, standardize=True)
+
     assert_almost_equal(
         cleaned_signals.var(axis=0), np.ones(cleaned_signals.shape[1])
     )
@@ -682,15 +704,8 @@ def test_clean_confounds_warnings():
 
     # Check warning message when no confound methods were specified,
     # but cutoff frequency provided.
-    pytest.warns(
-        UserWarning,
-        clean,
-        signals,
-        t_r=2.5,
-        filter=False,
-        low_pass=0.01,
-        match="not perform filtering",
-    )
+    with pytest.warns(UserWarning, match="not perform filtering"):
+        clean(signals, t_r=2.5, filter=False, low_pass=0.01)
 
     # Test without standardizing that constant parts of confounds are
     # accounted for
@@ -709,7 +724,17 @@ def test_clean_confounds_warnings():
         )
 
 
-def test_clean_frequencies_using_power_spectrum_density():
+@pytest.mark.parametrize(
+    "low_pass, high_pass, filter",
+    [
+        (0.1, None, "butterworth"),
+        (None, 0.4, "butterworth"),
+        (None, 0.4, "cosine"),
+    ],
+)
+def test_clean_frequencies_using_power_spectrum_density(
+    low_pass, high_pass, filter
+):
     # Create signal
     sx = np.array(
         [
@@ -721,47 +746,27 @@ def test_clean_frequencies_using_power_spectrum_density():
 
     # Apply low- and high-pass filter with butterworth (separately)
     t_r = 1.0
-    low_pass = 0.1
-    high_pass = 0.4
-    res_low = clean(
-        sx,
-        detrend=False,
-        standardize=False,
-        filter="butterworth",
-        low_pass=low_pass,
-        high_pass=None,
-        t_r=t_r,
-    )
-    res_high = clean(
-        sx,
-        detrend=False,
-        standardize=False,
-        filter="butterworth",
-        low_pass=None,
-        high_pass=high_pass,
-        t_r=t_r,
-    )
 
-    # cosine high pass filter
-    res_cos = clean(
+    results = clean(
         sx,
         detrend=False,
         standardize=False,
-        filter="cosine",
-        low_pass=None,
+        filter=filter,
+        low_pass=low_pass,
         high_pass=high_pass,
         t_r=t_r,
     )
 
     # Compute power spectrum density for both test
-    f, Pxx_den_low = scipy.signal.welch(np.mean(res_low.T, axis=0), fs=t_r)
-    f, Pxx_den_high = scipy.signal.welch(np.mean(res_high.T, axis=0), fs=t_r)
-    f, Pxx_den_cos = scipy.signal.welch(np.mean(res_cos.T, axis=0), fs=t_r)
+    sample_freq, spectral_density = scipy.signal.welch(
+        np.mean(results.T, axis=0), fs=t_r
+    )
 
     # Verify that the filtered frequencies are removed
-    assert np.sum(Pxx_den_low[f >= low_pass * 2.0]) <= 1e-4
-    assert np.sum(Pxx_den_high[f <= high_pass / 2.0]) <= 1e-4
-    assert np.sum(Pxx_den_cos[f <= high_pass / 2.0]) <= 1e-4
+    if low_pass:
+        assert np.sum(spectral_density[sample_freq >= low_pass * 2.0]) <= 1e-4
+    else:
+        assert np.sum(spectral_density[sample_freq <= high_pass / 2.0]) <= 1e-4
 
 
 def test_clean_finite_no_inplace_mod():
@@ -772,7 +777,7 @@ def test_clean_finite_no_inplace_mod():
     n_samples = 2
     # n_features  Must be higher than 500
     n_features = 501
-    x_orig, _, _ = generate_signals(n_features=n_features, length=n_samples)
+    x_orig, *_ = generate_signals(n_features=n_features, length=n_samples)
     x_orig_inital_copy = x_orig.copy()
 
     x_orig_with_nans = x_orig.copy()
@@ -794,10 +799,10 @@ def test_high_variance_confounds():
     length = 20
     n_confounds = 5
 
-    seriesC, _, _ = generate_signals(
+    seriesC, *_ = generate_signals(
         n_features=n_features, length=length, order="C"
     )
-    seriesF, _, _ = generate_signals(
+    seriesF, *_ = generate_signals(
         n_features=n_features, length=length, order="F"
     )
 
@@ -869,7 +874,7 @@ def test_clean_psc():
     n_samples = 500
     n_features = 5
 
-    signals, _, _ = generate_signals(n_features=n_features, length=n_samples)
+    signals, *_ = generate_signals(n_features=n_features, length=n_samples)
 
     # positive mean signal
     means = rng.randn(1, n_features)
@@ -907,7 +912,7 @@ def test_clean_zscore():
     n_samples = 500
     n_features = 5
 
-    signals, _, _ = generate_signals(n_features=n_features, length=n_samples)
+    signals, *_ = generate_signals(n_features=n_features, length=n_samples)
 
     signals += rng.standard_normal(size=(1, n_features))
     cleaned_signals_ = clean(signals, standardize="zscore")
@@ -991,7 +996,7 @@ def test_sample_mask_per_run():
 
 
 def test_sample_mask_errors():
-    signals, _, _ = generate_signals(n_features=11, n_confounds=5, length=40)
+    signals, *_ = generate_signals(n_features=11, n_confounds=5, length=40)
 
     scrub_index = [2, 3, 6, 7, 8, 30, 31, 32]
 
