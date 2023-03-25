@@ -12,6 +12,40 @@ from scipy.ndimage import generate_binary_structure
 from sklearn.utils import check_random_state
 
 
+@pytest.fixture
+def null():
+    return [-10, -9, -9, -3, -2, -1, -1, 0, 1, 1, 1, 2, 3, 3, 4, 4, 7, 8, 8, 9]
+
+
+@pytest.fixture
+def test_arr4d():
+    test_arr4d = np.zeros((10, 10, 10, 1))
+    test_arr4d[:2, :2, :2, 0] = 5  # 8-voxel cluster, high intensity
+    test_arr4d[7:, 7:, 7:, 0] = 1  # 27-voxel cluster, low intensity
+    test_arr4d[6, 6, 6, 0] = 1  # corner touching second cluster
+    test_arr4d[6, 6, 8, 0] = 1  # edge touching second cluster
+    test_arr4d[3:5, 3:5, 3:5, 0] = -10  # negative cluster, very high intensity
+    test_arr4d[5:6, 3:5, 3:5, 0] = 1  # cluster touching negative one
+    return test_arr4d
+
+
+def test_null_to_p_float_1_tailed_lower_tailed(null):
+    """Test _null_to_p with single float input lower-tailed ."""
+    alternative = "smaller"
+
+    assert math.isclose(
+        _utils._null_to_p(9, null, alternative=alternative),
+        0.95,
+    )
+    assert math.isclose(
+        _utils._null_to_p(-9, null, alternative=alternative),
+        0.15,
+    )
+    assert math.isclose(
+        _utils._null_to_p(0, null, alternative=alternative), 0.4
+    )
+
+
 @pytest.mark.parametrize(
     "two_sided_test, dh, true_max_tfce",
     [
@@ -28,7 +62,7 @@ from sklearn.utils import check_random_state
         (False, 1, 550),  # One-sided with preset dh
     ],
 )
-def test__calculate_tfce(two_sided_test, dh, true_max_tfce):
+def test_calculate_tfce(two_sided_test, dh, true_max_tfce):
     """Test _calculate_tfce."""
     test_arr4d = np.zeros((10, 10, 10, 1))
     bin_struct = generate_binary_structure(3, 1)
@@ -56,65 +90,38 @@ def test__calculate_tfce(two_sided_test, dh, true_max_tfce):
     assert np.max(np.abs(test_tfce_arr4d)) == true_max_tfce
 
 
-@pytest.fixture
-def null():
-    return [-10, -9, -9, -3, -2, -1, -1, 0, 1, 1, 1, 2, 3, 3, 4, 4, 7, 8, 8, 9]
-
-
-def test_null_to_p_float_1_tailed_lower_tailed(null):
-    """Test _null_to_p with single float input lower-tailed ."""
-    alternative = "smaller"
-
-    assert math.isclose(
-        _utils._null_to_p(9, null, alternative=alternative),
-        0.95,
-    )
-    assert math.isclose(
-        _utils._null_to_p(-9, null, alternative=alternative),
-        0.15,
-    )
-    assert math.isclose(
-        _utils._null_to_p(0, null, alternative=alternative), 0.4
-    )
-
-
-def test_null_to_p_float_1_tailed_uppper_tailed(null):
+@pytest.mark.parametrize(
+    "test_values, expected_p_value", [(9, 0.05), (-9, 0.95), (0, 0.65)]
+)
+def test_null_to_p_float_1_tailed_uppper_tailed(
+    test_values, expected_p_value, null
+):
     """Test _null_to_p with single float input upper-tailed."""
-    alternative = "larger"
-
     assert math.isclose(
-        _utils._null_to_p(9, null, alternative=alternative), 0.05
-    )
-    assert math.isclose(
-        _utils._null_to_p(-9, null, alternative=alternative),
-        0.95,
-    )
-    assert math.isclose(
-        _utils._null_to_p(0, null, alternative=alternative), 0.65
+        _utils._null_to_p(test_values, null, alternative="larger"),
+        expected_p_value,
     )
 
 
-def test_null_to_p_float_2_tailed(null):
+@pytest.mark.parametrize(
+    "test_values, expected_p_value",
+    [
+        (0, 0.95),
+        (9, 0.2),
+        (10, 0.05),
+        (
+            20,
+            0.05,
+        ),  # Still 0.05 because minimum valid p-value is 1 / len(null)
+    ],
+)
+def test_null_to_p_float_2_tailed(test_values, expected_p_value, null):
     """Test _null_to_p with single float input two-sided."""
-    alternative = "two-sided"
-
-    assert math.isclose(
-        _utils._null_to_p(0, null, alternative=alternative),
-        0.95,
+    result = _utils._null_to_p(test_values, null, alternative="two-sided")
+    assert result == _utils._null_to_p(
+        test_values * -1, null, alternative="two-sided"
     )
-
-    result = _utils._null_to_p(9, null, alternative=alternative)
-    assert result == _utils._null_to_p(-9, null, alternative=alternative)
-    assert math.isclose(result, 0.2)
-
-    result = _utils._null_to_p(10, null, alternative=alternative)
-    assert result == _utils._null_to_p(-10, null, alternative=alternative)
-    assert math.isclose(result, 0.05)
-
-    # Still 0.05 because minimum valid p-value is 1 / len(null)
-    result = _utils._null_to_p(20, null, alternative=alternative)
-    assert result == _utils._null_to_p(-20, null, alternative=alternative)
-    assert math.isclose(result, 0.05)
+    assert math.isclose(result, expected_p_value)
 
 
 def test_null_to_p_float_error(null):
@@ -122,20 +129,18 @@ def test_null_to_p_float_error(null):
         _utils._null_to_p(9, null, alternative="raise")
 
 
-def test_null_to_p_float_with_extreme_values():
+@pytest.mark.parametrize(
+    "alternative, expected_p_value",
+    [("two-sided", 1 / 10000), ("smaller", 1 - 1 / 10000)],
+)
+def test_null_to_p_float_with_extreme_values(alternative, expected_p_value):
     """Test that 1/n(null) is preserved with extreme values"""
-    nulldist = np.random.normal(size=10000)
+    null = np.random.normal(size=10000)
 
-    value = _utils._null_to_p(20, nulldist, alternative="two-sided")
+    result = _utils._null_to_p(20, null, alternative=alternative)
     assert math.isclose(
-        value,
-        1 / 10000,
-    )
-
-    value = _utils._null_to_p(20, nulldist, alternative="smaller")
-    assert math.isclose(
-        value,
-        1 - 1 / 10000,
+        result,
+        expected_p_value,
     )
 
 
@@ -153,18 +158,6 @@ def test_null_to_p_array():
     # Resulting distribution should be roughly uniform
     assert np.abs(p.mean() - 0.5) < 0.02
     assert np.abs(p.var() - 1 / 12) < 0.02
-
-
-@pytest.fixture
-def test_arr4d():
-    test_arr4d = np.zeros((10, 10, 10, 1))
-    test_arr4d[:2, :2, :2, 0] = 5  # 8-voxel cluster, high intensity
-    test_arr4d[7:, 7:, 7:, 0] = 1  # 27-voxel cluster, low intensity
-    test_arr4d[6, 6, 6, 0] = 1  # corner touching second cluster
-    test_arr4d[6, 6, 8, 0] = 1  # edge touching second cluster
-    test_arr4d[3:5, 3:5, 3:5, 0] = -10  # negative cluster, very high intensity
-    test_arr4d[5:6, 3:5, 3:5, 0] = 1  # cluster touching negative one
-    return test_arr4d
 
 
 @pytest.mark.parametrize(
