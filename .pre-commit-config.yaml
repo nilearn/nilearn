@@ -18,19 +18,19 @@ files: |
         | Makefile
         | doc
         | examples
-        | maint_tools
+        | maint_tools/.*
         | setup.*
         | nilearn/__init__.py
-        | nilearn/_utils/.*py
+        | nilearn/_utils/.*
+        | nilearn/de.*
+        | nilearn/connectome/.*
+        | nilearn/image/.*
+        | nilearn/regions/.*
+        | nilearn/mass_univariate/.*
         | nilearn/signal.py
         | nilearn/masking.py
         | nilearn/conftest.py
         | nilearn/version.py
-        | nilearn/de.*
-        | nilearn/connectome/.*py
-        | nilearn/image/.*py
-        | nilearn/regions.*py
-        | nilearn/mass_univariate/.*py
     )$
 
 exclude: |

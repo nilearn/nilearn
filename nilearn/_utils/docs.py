@@ -9,7 +9,6 @@ https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py
 
 import sys
 
-
 ###################################
 # Standard documentation entries
 #

@@ -1,6 +1,6 @@
 import functools
-import warnings
 import os
+import warnings
 
 
 def rename_parameters(replacement_params,

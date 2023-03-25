@@ -8,11 +8,10 @@ import pandas as pd
 import scipy.linalg
 import scipy.signal
 from nibabel import Nifti1Image
-from scipy.ndimage import binary_dilation
-from sklearn.utils import check_random_state
-
 from nilearn import datasets, image, maskers, masking
 from nilearn._utils import as_ndarray, logger
+from scipy.ndimage import binary_dilation
+from sklearn.utils import check_random_state
 
 
 def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):

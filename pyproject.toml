@@ -7,7 +7,7 @@ include = """
   | setup.py
   | nilearn/connectome/.*py
   | nilearn/dec.*
-  | nilearn/_utils/.*py
+  | nilearn/_utils/.*py$
   | nilearn/image/.*py
   | nilearn/mass_univariate/.*py
   | nilearn/regions/.*py
