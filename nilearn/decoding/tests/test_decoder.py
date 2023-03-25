@@ -68,18 +68,12 @@ def _make_binary_classification_test_data(n_samples=N_SAMPLES):
     return X, y, mask
 
 
-def _make_regression_test_data(n_samples=N_SAMPLES, dim=30):
-    X, y = make_regression(
-        n_samples=n_samples,
-        n_features=dim**3,
-        n_informative=dim,
-        noise=1.5,
-        bias=1.0,
-        random_state=42,
-    )
-    X = StandardScaler().fit_transform(X)
-    X, mask = to_niimgs(X, [dim, dim, dim])
-    return X, y, mask
+@pytest.fixture(scope="session")
+def rand_X_Y():
+    rng = np.random.RandomState(0)
+    X = rng.rand(N_SAMPLES, 10)
+    Y = np.hstack([[-1] * 50, [1] * 50])
+    return X, Y
 
 
 def _make_multiclass_classification_test_data(n_samples=200):
@@ -96,14 +90,6 @@ def _make_multiclass_classification_test_data(n_samples=200):
 
 
 @pytest.fixture(scope="session")
-def rand_X_Y():
-    rng = np.random.RandomState(0)
-    X = rng.rand(N_SAMPLES, 10)
-    Y = np.hstack([[-1] * 50, [1] * 50])
-    return X, Y
-
-
-@pytest.fixture(scope="session")
 def dummy_binary_classification_data():
     """Use for testting errors."""
     return _make_binary_classification_test_data(n_samples=20)
@@ -113,6 +99,20 @@ def dummy_binary_classification_data():
 def binary_classification_data():
     """Use for testting errors."""
     return _make_binary_classification_test_data(n_samples=N_SAMPLES)
+
+
+def _make_regression_test_data(n_samples=N_SAMPLES, dim=30):
+    X, y = make_regression(
+        n_samples=n_samples,
+        n_features=dim**3,
+        n_informative=dim,
+        noise=1.5,
+        bias=1.0,
+        random_state=42,
+    )
+    X = StandardScaler().fit_transform(X)
+    X, mask = to_niimgs(X, [dim, dim, dim])
+    return X, y, mask
 
 
 @pytest.fixture
@@ -166,6 +166,7 @@ def test_check_param_grid_classification(rand_X_Y, classifier, param):
 def test_check_param_grid_error(rand_X_Y, estimator):
     """Raise the error when using a non-linear estimator."""
     X, Y = rand_X_Y
+
     with pytest.raises(ValueError):
         _check_param_grid(estimator, X, Y, None)
 
