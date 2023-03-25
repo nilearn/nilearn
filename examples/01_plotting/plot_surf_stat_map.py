@@ -138,9 +138,10 @@ plotting.plot_surf_roi(
 # Using a flat mesh can be useful in order to easily locate your area
 # of interest on the cortex. To make this plot easier to read,
 # we use the mesh curvature as a background map.
-# Rescaling the background map yields nicer plots.
 
 bg_map = np.sign(surface.load_surf_data(fsaverage['curv_left']))
+# np.sign yields values in [-1, 1]. We rescale the background map
+# such that values are in [0.25, 0.75], resulting in a nicer looking plot.
 bg_map_rescaled = (bg_map + 1) / 4 + 0.25
 
 plotting.plot_surf_roi(
