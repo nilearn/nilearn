@@ -535,8 +535,9 @@ def test_clean_runs():
 
 
 def test_clean_confounds():
+    length = 45
     signals, noises, confounds = generate_signals(
-        n_features=41, n_confounds=5, length=45
+        n_features=41, n_confounds=5, length=length
     )
     # No signal: output must be zero.
     eps = np.finfo(np.float64).eps
@@ -558,7 +559,7 @@ def test_clean_confounds():
     assert abs(np.dot(confounds.T, cleaned_signals)).max() < 1000.0 * eps
 
     # Same output when a constant confound is added
-    confounds1 = np.hstack((np.ones((45, 1)), confounds))
+    confounds1 = np.hstack((np.ones((length, 1)), confounds))
 
     cleaned_signals1 = clean(
         signals + noises, confounds=confounds1, detrend=False, standardize=True
@@ -653,7 +654,7 @@ def test_clean_confounds_check_confounders_are_removed():
     eps = np.finfo(np.float64).eps
 
     signals, _, confounds = generate_signals(
-        n_features=41, n_confounds=3, length=20
+        n_features=11, n_confounds=5, length=40
     )
 
     signals_clean = clean(
@@ -700,7 +701,7 @@ def test_clean_confounds_errors():
 
 
 def test_clean_confounds_warnings():
-    signals, *_ = generate_signals(n_features=41, n_confounds=3, length=20)
+    signals, *_ = generate_signals(n_features=11, n_confounds=5, length=40)
 
     # Check warning message when no confound methods were specified,
     # but cutoff frequency provided.
@@ -805,7 +806,6 @@ def test_high_variance_confounds():
     seriesF, *_ = generate_signals(
         n_features=n_features, length=length, order="F"
     )
-
     assert_almost_equal(seriesC, seriesF, decimal=13)
 
     outC = high_variance_confounds(
