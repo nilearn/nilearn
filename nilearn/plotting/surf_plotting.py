@@ -2,7 +2,8 @@
 Functions for surface visualization.
 """
 import itertools
-import collections
+
+from collections.abc import Sequence
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -109,16 +110,13 @@ def _set_view_plot_surf_plotly(hemi, view):
     This function checks the selected hemisphere and view, and
     returns the cameras view.
     """
-    if hemi not in VALID_HEMISPHERES:
-        raise ValueError(f"hemi must be one of {VALID_HEMISPHERES}")
-    if view == 'lateral':
-        view = hemi
-    elif view == 'medial':
-        view = (VALID_HEMISPHERES[0]
-                if hemi == VALID_HEMISPHERES[1]
-                else VALID_HEMISPHERES[1])
-    if view not in CAMERAS:
-        raise ValueError(f"view must be one of {VALID_VIEWS}")
+    if _check_views([view]) and _check_hemispheres([hemi]):
+        if view == 'lateral':
+            view = hemi
+        elif view == 'medial':
+            view = (VALID_HEMISPHERES[0]
+                    if hemi == VALID_HEMISPHERES[1]
+                    else VALID_HEMISPHERES[1])
     return view
 
 
@@ -253,17 +251,19 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
     return plotly_figure
 
 
-def _set_view_plot_surf_matplotlib(hemi, view):
+def _get_view_plot_surf_matplotlib(hemi, view):
     """Helper function for plot_surf with matplotlib engine.
 
     This function checks the selected hemisphere and view, and
     returns elev and azim.
     """
-    if hemi not in VALID_HEMISPHERES:
-        raise ValueError(f"hemi must be one of {VALID_HEMISPHERES}")
-    if view not in MATPLOTLIB_VIEWS[hemi]:
-        raise ValueError(f"view must be one of {VALID_VIEWS}")
-    return MATPLOTLIB_VIEWS[hemi][view]
+    if _check_views([view]) and _check_hemispheres([hemi]):
+        if isinstance(view, str):
+            elev, azim = MATPLOTLIB_VIEWS[hemi][view]
+        elif isinstance(view, Sequence):
+            elev, azim = view
+
+    return elev, azim
 
 
 def _check_surf_map(surf_map, n_vertices):
@@ -446,14 +446,8 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
     _default_figsize = [4, 4]
     limits = [coords.min(), coords.max()]
 
-    # set view
-    if isinstance(view, str):
-        elev, azim = _set_view_plot_surf_matplotlib(hemi, view)
-    elif isinstance(view, collections.Sequence) and len(view) == 2:
-        elev, azim = view
-    else:
-        raise TypeError(f"view must be a string of a sequence of "
-                        f"length 2. Got {view} instead")
+    # Get elevation and azimut from view
+    elev, azim = _get_view_plot_surf_matplotlib(hemi, view)
 
     # if no cmap is given, set to matplotlib default
     if cmap is None:
@@ -1046,6 +1040,11 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     return display
 
 
+def _check_hemisphere_is_valid(hemi):
+    valid = hemi in VALID_HEMISPHERES
+    return valid
+
+
 def _check_hemispheres(hemispheres):
     """Checks whether the hemispheres passed to in plot_img_on_surf are
     correct.
@@ -1054,10 +1053,17 @@ def _check_hemispheres(hemispheres):
         Any combination of 'left' and 'right'.
 
     """
-    invalid_hemi = any([hemi not in VALID_HEMISPHERES for hemi in hemispheres])
-    if invalid_hemi:
-        supported = "Supported hemispheres:\n" + str(VALID_HEMISPHERES)
-        raise ValueError("Invalid hemispheres definition!\n" + supported)
+    invalid_hemis = [
+        not _check_hemisphere_is_valid(hemi) for hemi in hemispheres
+    ]
+    if any(invalid_hemis):
+        raise ValueError(
+            "Invalid hemispheres definition!\n"
+            + "Got: "
+            + str(np.array(hemispheres)[invalid_hemis])
+            + "\nSupported values are:"
+            + str(VALID_HEMISPHERES)
+        )
     return hemispheres
 
 
@@ -1073,7 +1079,7 @@ def _check_view_is_valid(view) -> bool:
     valid = False
     if isinstance(view, str) and (view in VALID_VIEWS):
         valid = True
-    elif isinstance(view, collections.Sequence) and len(view) == 2:
+    elif isinstance(view, Sequence) and len(view) == 2:
         valid = True
     return valid
 

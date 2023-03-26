@@ -88,9 +88,9 @@ def expected_view_matplotlib(hemi, view):
 
 @pytest.mark.parametrize("hemi", VALID_HEMISPHERES)
 @pytest.mark.parametrize("view", VALID_VIEWS)
-def test_set_view_plot_surf_matplotlib(hemi, view, expected_view_matplotlib):
-    from nilearn.plotting.surf_plotting import _set_view_plot_surf_matplotlib
-    assert(_set_view_plot_surf_matplotlib(hemi, view)
+def test_get_view_plot_surf_matplotlib(hemi, view, expected_view_matplotlib):
+    from nilearn.plotting.surf_plotting import _get_view_plot_surf_matplotlib
+    assert(_get_view_plot_surf_matplotlib(hemi, view)
            == expected_view_matplotlib)
 
 
@@ -180,16 +180,16 @@ def test_instantiation_error_plotly_surface_figure(input_obj):
 
 
 def test_set_view_plot_surf_errors():
-    from nilearn.plotting.surf_plotting import (_set_view_plot_surf_matplotlib,
+    from nilearn.plotting.surf_plotting import (_get_view_plot_surf_matplotlib,
                                                 _set_view_plot_surf_plotly)
     with pytest.raises(ValueError,
-                       match="hemi must be one of"):
-        _set_view_plot_surf_matplotlib("foo", "medial")
+                       match="Invalid hemispheres definition"):
+        _get_view_plot_surf_matplotlib("foo", "medial")
         _set_view_plot_surf_plotly("bar", "anterior")
     with pytest.raises(ValueError,
-                       match="view must be one of"):
-        _set_view_plot_surf_matplotlib("left", "foo")
-        _set_view_plot_surf_matplotlib("right", "bar")
+                       match="Invalid view definition"):
+        _get_view_plot_surf_matplotlib("left", "foo")
+        _get_view_plot_surf_matplotlib("right", "bar")
         _set_view_plot_surf_plotly("left", "foo")
         _set_view_plot_surf_plotly("right", "bar")
 
@@ -314,9 +314,9 @@ def test_plot_surf_error(engine):
     rng = np.random.RandomState(42)
 
     # Wrong inputs for view or hemi
-    with pytest.raises(ValueError, match='view must be one of'):
+    with pytest.raises(ValueError, match='Invalid view definition'):
         plot_surf(mesh, view='middle', engine=engine)
-    with pytest.raises(ValueError, match='hemi must be one of'):
+    with pytest.raises(ValueError, match='Invalid hemispheres definition'):
         plot_surf(mesh, hemi='lft', engine=engine)
 
     # Wrong size of background image

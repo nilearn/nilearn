@@ -511,10 +511,11 @@ view : either a string or pair of floats, optional.
         angles in degrees that will manually set a custom view.
         E.g., view=[270.0, 90.0] or view=(0.0, -180.0). Note that this
         manual option is only available when the plotting engine is matplotlib.
-        Otherwise, the view can only be specified via one of the pre-set strings.
+        Otherwise, the view can only be specified via one of the pre-set
+        strings.
     View of the surface that is rendered.
     Default='lateral'.
-    
+
 """
 
 # bg_on_data
