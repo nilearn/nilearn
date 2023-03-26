@@ -12,10 +12,6 @@ Connectome extraction: inverse covariance for direct connections
    covariance to extract functional connectomes focussing only on direct
    interactions between regions.
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
 .. topic:: **References**
 
    * `Smith et al, Network modelling methods for FMRI,

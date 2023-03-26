@@ -8,7 +8,8 @@ import pytest
 from nibabel import Nifti1Image
 from nilearn.maskers import NiftiMasker
 from nilearn.interfaces.fmriprep import load_confounds
-from nilearn.interfaces.fmriprep.load_confounds import _check_strategy
+from nilearn.interfaces.fmriprep.load_confounds import _check_strategy, \
+    _load_single_confounds_file
 
 from nilearn._utils.fmriprep_confounds import _to_camel_case
 
@@ -242,6 +243,28 @@ def test_confounds2df(tmp_path):
     assert "trans_x" in confounds.columns
 
 
+def test_load_single_confounds_file(tmp_path):
+    """Check that the load_confounds function returns the same confounds as
+    _load_single_confounds_file."""
+    nii_file, confounds_file = create_tmp_filepath(tmp_path,
+                                                   copy_confounds=True)
+
+    # get defaults from load_confounds
+    import inspect
+    _defaults = {key: value.default for key, value
+                 in inspect.signature(load_confounds).parameters.items()}
+    _defaults.pop("img_files")
+    _default_strategy = _defaults.pop("strategy")
+
+    _, confounds = _load_single_confounds_file(str(confounds_file),
+                                               strategy=_default_strategy,
+                                               **_defaults)
+    confounds_nii, _ = load_confounds(nii_file,
+                                      strategy=_default_strategy,
+                                      **_defaults)
+    pd.testing.assert_frame_equal(confounds, confounds_nii)
+
+
 @pytest.mark.parametrize("strategy,message",
                          [(["string", ], "not a supported type of confounds."),
                           ("error", "tuple or list of strings"),
@@ -423,12 +446,14 @@ def test_load_non_nifti(tmp_path):
 
 def test_invalid_filetype(tmp_path):
     """Invalid file types/associated files for load method."""
-    bad_nii, bad_conf = create_tmp_filepath(tmp_path, copy_confounds=True,
+    bad_nii, bad_conf = create_tmp_filepath(tmp_path,
+                                            suffix="sub-test01_task-test",
+                                            copy_confounds=True,
                                             old_derivative_suffix=False)
     conf, _ = load_confounds(bad_nii)
 
     # more than one legal filename for confounds
-    add_conf = "test_desc-confounds_regressors.tsv"
+    add_conf = "sub-test01_task-test_desc-confounds_regressors.tsv"
     leagal_confounds, _ = get_leagal_confound()
     leagal_confounds.to_csv(tmp_path / add_conf, sep="\t", index=False)
     with pytest.raises(ValueError) as info:
@@ -528,7 +553,7 @@ def test_sample_mask(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "image_type", ["regular", "ica_aroma", "gifti", "cifti"]
+    "image_type", ["regular", "native", "ica_aroma", "gifti", "cifti"]
 )
 def test_inputs(tmp_path, image_type):
     """Test multiple images as input."""
@@ -537,7 +562,7 @@ def test_inputs(tmp_path, image_type):
     for i in range(2):  # gifti edge case
         nii, _ = create_tmp_filepath(
             tmp_path,
-            suffix=f"img{i+1}",
+            suffix=f"sub-test{i+1}_ses-test_task-testimg_run-01",
             image_type=image_type,
             copy_confounds=True,
             copy_json=True,

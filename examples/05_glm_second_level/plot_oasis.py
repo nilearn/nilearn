@@ -1,4 +1,5 @@
-"""Voxel-Based Morphometry on OASIS dataset
+"""
+Voxel-Based Morphometry on OASIS dataset
 ========================================
 
 This example uses voxel-based morphometry (:term:`VBM`) to study the
@@ -37,22 +38,22 @@ oasis_dataset = datasets.fetch_oasis_vbm(
     legacy_format=False,
 )
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
-age = oasis_dataset.ext_vars['age'].astype(float)
+age = oasis_dataset.ext_vars["age"].astype(float)
 
 ###############################################################################
 # Sex is encoded as 'M' or 'F'. Hence, we make it a binary variable.
-sex = oasis_dataset.ext_vars['mf'] == 'F'
+sex = oasis_dataset.ext_vars["mf"] == "F"
 
 ###############################################################################
 # Print basic information on the dataset.
 print(
-    'First gray-matter anatomy image (3D) is located at: '
-    f'{oasis_dataset.gray_matter_maps[0]}'
-)  # 3D data
+    "First gray-matter anatomy image (3D) is located at: "
+    f"{oasis_dataset.gray_matter_maps[0]}"
+)
 print(
-    'First white-matter anatomy image (3D) is located at: '
-    f'{oasis_dataset.white_matter_maps[0]}'
-)  # 3D data
+    "First white-matter anatomy image (3D) is located at: "
+    f"{oasis_dataset.white_matter_maps[0]}"
+)
 
 ###############################################################################
 # Get a mask image: A mask of the cortex of the ICBM template.
@@ -65,7 +66,7 @@ from nilearn.image import resample_to_img
 mask_img = resample_to_img(
     gm_mask,
     gray_matter_map_filenames[0],
-    interpolation='nearest',
+    interpolation="nearest",
 )
 
 ###############################################################################
@@ -79,7 +80,7 @@ import pandas as pd
 intercept = np.ones(n_subjects)
 design_matrix = pd.DataFrame(
     np.vstack((age, sex, intercept)).T,
-    columns=['age', 'sex', 'intercept'],
+    columns=["age", "sex", "intercept"],
 )
 
 ###############################################################################
@@ -87,8 +88,8 @@ design_matrix = pd.DataFrame(
 from nilearn import plotting
 
 ax = plotting.plot_design_matrix(design_matrix)
-ax.set_title('Second level design matrix', fontsize=12)
-ax.set_ylabel('maps')
+ax.set_title("Second level design matrix", fontsize=12)
+ax.set_ylabel("maps")
 
 ###############################################################################
 # Next, we specify and fit the second-level model when loading the data and
@@ -106,23 +107,23 @@ second_level_model.fit(
 # of the design matrix.
 z_map = second_level_model.compute_contrast(
     second_level_contrast=[1, 0, 0],
-    output_type='z_score',
+    output_type="z_score",
 )
 
 ###############################################################################
 # We threshold the second level contrast at FDR-corrected p < 0.05 and plot it.
 from nilearn.glm import threshold_stats_img
 
-_, threshold = threshold_stats_img(z_map, alpha=.05, height_control='fdr')
-print(f'The FDR=.05-corrected threshold is: {threshold:03g}')
+_, threshold = threshold_stats_img(z_map, alpha=0.05, height_control="fdr")
+print(f"The FDR=.05-corrected threshold is: {threshold:03g}")
 
 display = plotting.plot_stat_map(
     z_map,
     threshold=threshold,
     colorbar=True,
-    display_mode='z',
+    display_mode="z",
     cut_coords=[-4, 26],
-    title='age effect on gray matter density (FDR = .05)',
+    title="age effect on gray matter density (FDR = .05)",
 )
 plotting.show()
 
@@ -130,15 +131,15 @@ plotting.show()
 # We can also study the effect of sex by computing the contrast, thresholding
 # it and plot the resulting map.
 z_map = second_level_model.compute_contrast(
-    second_level_contrast='sex',
-    output_type='z_score',
+    second_level_contrast="sex",
+    output_type="z_score",
 )
-_, threshold = threshold_stats_img(z_map, alpha=.05, height_control='fdr')
+_, threshold = threshold_stats_img(z_map, alpha=0.05, height_control="fdr")
 plotting.plot_stat_map(
     z_map,
     threshold=threshold,
     colorbar=True,
-    title='sex effect on gray matter density (FDR = .05)',
+    title="sex effect on gray matter density (FDR = .05)",
 )
 
 ###############################################################################
@@ -157,8 +158,8 @@ from nilearn.reporting import make_glm_report
 icbm152_2009 = datasets.fetch_icbm152_2009()
 report = make_glm_report(
     model=second_level_model,
-    contrasts=['age', 'sex'],
-    bg_img=icbm152_2009['t1'],
+    contrasts=["age", "sex"],
+    bg_img=icbm152_2009["t1"],
 )
 
 ###############################################################################

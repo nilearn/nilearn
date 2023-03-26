@@ -10,25 +10,24 @@ from .load_confounds_scrub import _extract_outlier_regressors
 from nilearn._utils.fmriprep_confounds import (
     _flag_single_gifti, _is_camel_case
 )
+from nilearn.interfaces.bids import parse_bids_filename
 
 
 img_file_patterns = {
     "aroma": "_desc-smoothAROMAnonaggr_bold",
-    "nii.gz": "_space-.*_desc-preproc_bold.nii.gz",
-    "dtseries.nii": "_space-.*_bold.dtseries.nii",
-    "func.gii": "_space-.*_hemi-[LR]_bold.func.gii",
+    "nii.gz": "(_space-.*)?_desc-preproc_bold.nii.gz",
+    "dtseries.nii": "(_space-.*)?_bold.dtseries.nii",
+    "func.gii": "(_space-.*)?_hemi-[LR]_bold.func.gii",
 }
 
 img_file_error = {
     "aroma": (
-        "Input must be ~desc-smoothAROMAnonaggr_bold for full ICA-AROMA"
+        "Input must be desc-smoothAROMAnonaggr_bold for full ICA-AROMA"
         " strategy."
-    ),
-    "nii.gz": "Invalid file type for the selected method.",
+    ),    "nii.gz": "Invalid file type for the selected method.",
     "dtseries.nii": "Invalid file type for the selected method.",
     "func.gii": "need fMRIprep output with extension func.gii",
 }
-
 
 def _check_params(confounds_raw, params):
     """Check that specified parameters can be found in the confounds."""
@@ -89,15 +88,28 @@ def _get_file_name(nii_file):
     """Construct the raw confound file name from processed functional data."""
     if isinstance(nii_file, list):  # catch gifti
         nii_file = nii_file[0]
-    suffix = "_space-" + nii_file.split("space-")[1]
+    entities = parse_bids_filename(nii_file)
+    subject_label = f"sub-{entities['sub']}"
+    if "ses" in entities:
+        subject_label = f"{subject_label}_ses-{entities['ses']}"
+    specifiers = f"task-{entities['task']}"
+    if "run" in entities:
+        specifiers = f"{specifiers}_run-{entities['run']}"
+    img_filename = nii_file.split(os.sep)[-1]
     # fmriprep has changed the file suffix between v20.1.1 and v20.2.0 with
     # respect to BEP 012.
     # cf. https://neurostars.org/t/naming-change-confounds-regressors-to-confounds-timeseries/17637 # noqa
     # Check file with new naming scheme exists or replace,
     # for backward compatibility.
     confounds_raw_candidates = [
-        nii_file.replace(suffix, "_desc-confounds_timeseries.tsv"),
-        nii_file.replace(suffix, "_desc-confounds_regressors.tsv"),
+        nii_file.replace(
+            img_filename,
+            f"{subject_label}_{specifiers}_desc-confounds_timeseries.tsv"
+        ),
+        nii_file.replace(
+            img_filename,
+            f"{subject_label}_{specifiers}_desc-confounds_regressors.tsv"
+        ),
     ]
 
     confounds_raw = [
@@ -117,10 +129,20 @@ def _get_file_name(nii_file):
         return confounds_raw[0]
 
 
-def _get_json(confounds_raw_path, flag_acompcor):
-    """Load json data companion to the confounds tsv file."""
+def _get_confounds_file(image_file, flag_full_aroma):
+    _check_images(image_file, flag_full_aroma)
+    confounds_raw_path = _get_file_name(image_file)
+    return confounds_raw_path
+
+
+def _get_json(confounds_raw_path):
+    """return json data companion file to the confounds tsv file."""
     # Load JSON file
-    confounds_json = confounds_raw_path.replace("tsv", "json")
+    return confounds_raw_path.replace("tsv", "json")
+
+
+def _load_confounds_json(confounds_json, flag_acompcor):
+    """Load json data companion to the confounds tsv file."""
     try:
         with open(confounds_json, "rb") as f:
             confounds_json = json.load(f)
@@ -137,7 +159,7 @@ def _get_json(confounds_raw_path, flag_acompcor):
     return confounds_json
 
 
-def _get_file_raw(confounds_raw_path):
+def _load_confounds_file_as_dataframe(confounds_raw_path):
     """Load raw confounds as a pandas DataFrame."""
     confounds_raw = pd.read_csv(
         confounds_raw_path, delimiter="\t", encoding="utf-8"
@@ -195,15 +217,6 @@ def _check_images(image_file, flag_full_aroma):
         valid_img, error_message = _ext_validator([image_file], ext)
     if not valid_img:
         raise ValueError(error_message)
-
-
-def _confounds_to_df(image_file, flag_acompcor, flag_full_aroma):
-    """Load raw confounds and associated metadata."""
-    _check_images(image_file, flag_full_aroma)
-    confounds_raw_path = _get_file_name(image_file)
-    confounds_json = _get_json(confounds_raw_path, flag_acompcor)
-    confounds_raw = _get_file_raw(confounds_raw_path)
-    return confounds_raw, confounds_json
 
 
 def _prepare_output(confounds, demean):

@@ -14,6 +14,8 @@ import nibabel
 
 from pathlib import Path
 
+from .helpers import stringify_path
+
 
 def _get_data(img):
     # copy-pasted from https://github.com/nipy/nibabel/blob/de44a105c1267b07ef9e28f6c35b31f851d5a005/nibabel/dataobj_images.py#L204
@@ -104,11 +106,11 @@ def _get_target_dtype(dtype, target_dtype):
 def load_niimg(niimg, dtype=None):
     """Load a niimg, check if it is a nibabel SpatialImage and cast if needed
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
 
     niimg: Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
+        See :ref:`extracting_data`.
         Image to load.
 
     dtype: {dtype, "auto"}
@@ -116,13 +118,14 @@ def load_niimg(niimg, dtype=None):
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    Returns:
-    --------
+    Returns
+    -------
     img: image
         A loaded image object.
     """
     from ..image import new_img_like  # avoid circular imports
 
+    niimg = stringify_path(niimg)
     if isinstance(niimg, str):
         # data is a filename, we load it
         niimg = nibabel.load(niimg)
@@ -152,7 +155,7 @@ def _is_binary_niimg(niimg):
     Parameters
     ----------
     niimg: Niimg-like object
-        See https://nilearn.github.io/stable/manipulating_images/input_output.html  # noqa:E501
+        See :ref:`extracting_data`.
         Image to test.
 
     Returns

@@ -17,7 +17,7 @@ from scipy.ndimage import (
     center_of_mass,
     generate_binary_structure,
 )
-from nilearn.image import threshold_img
+from nilearn.image import threshold_img, new_img_like
 from nilearn.image.resampling import coord_transform
 from nilearn._utils import check_niimg_3d
 from nilearn._utils.niimg import _safe_get_data
@@ -25,6 +25,7 @@ from nilearn._utils.niimg import _safe_get_data
 
 def _local_max(data, affine, min_distance):
     """Find all local maxima of the array, separated by at least min_distance.
+
     Adapted from https://stackoverflow.com/a/22631583/2589328
 
     Parameters
@@ -73,38 +74,74 @@ def _identify_subpeaks(data):
     -----
     When a cluster's local maximum corresponds to contiguous voxels with the
     same values (as in a binary cluster), this function determines the center
-    of mass for those voxels.
+    of mass for those voxels. If the center of mass falls outside the cluster,
+    we instead report the nearest cluster voxel.
     """
-    # Initial identification of subpeaks with minimal minimum distance
     data_max = maximum_filter(data, 3)
     maxima = data == data_max
-    data_min = minimum_filter(data, 3)
-    diff = (data_max - data_min) > 0
-    maxima[diff == 0] = 0
+    zero_mask = data == 0
+    maxima[zero_mask] = 0
+
+    # Don't treat constant patches as maxima unless the entire cluster is
+    # constant (as in a binary cluster).
+    is_constant = np.isclose(data[~zero_mask].max(), data[~zero_mask].min())
+    if not is_constant:
+        data_min = minimum_filter(data, 3)
+        diff = (data_max - data_min) > 0
+        maxima[diff == 0] = 0
 
     labeled, n_subpeaks = label(maxima)
-    labels_index = range(1, n_subpeaks + 1)
+    labels_index = np.arange(1, n_subpeaks + 1)
     ijk = np.array(center_of_mass(data, labeled, labels_index))
     ijk = np.round(ijk).astype(int)
-    vals = np.apply_along_axis(
-        arr=ijk, axis=1, func1d=_get_val, input_arr=data
-    )
     # Determine if all subpeaks are within the cluster
     # They may not be if the cluster is binary and has a shape where the COM is
     # outside the cluster, like a donut.
-    cluster_idx = np.vstack(np.where(labeled)).T.tolist()
-    subpeaks_outside_cluster = [
-        i
-        for i, peak_idx in enumerate(ijk.tolist())
-        if peak_idx not in cluster_idx
-    ]
-    vals[subpeaks_outside_cluster] = np.nan
-    if subpeaks_outside_cluster:
+    subpeaks_outside_cluster = (
+        labeled[ijk[:, 0], ijk[:, 1], ijk[:, 2]] != labels_index
+    )
+    if np.any(subpeaks_outside_cluster):
         warnings.warn(
             "Attention: At least one of the (sub)peaks falls outside of the "
-            "cluster body."
+            "cluster body. Identifying the nearest in-cluster voxel."
         )
+        # Replace centers of mass with their nearest neighbor points in the
+        # corresponding clusters. Note this is also equivalent to computing the
+        # centers of mass constrained to points within the cluster.
+        ijk[subpeaks_outside_cluster] = _cluster_nearest_neighbor(
+            ijk[subpeaks_outside_cluster],
+            labels_index[subpeaks_outside_cluster],
+            labeled,
+        )
+    vals = data[ijk[:, 0], ijk[:, 1], ijk[:, 2]]
     return ijk, vals
+
+
+def _cluster_nearest_neighbor(ijk, labels_index, labeled):
+    """Find the nearest neighbor for given points in the corresponding cluster.
+
+    Parameters
+    ----------
+    ijk : :obj:`numpy.ndarray`
+        (n_pts, 3) array of query points.
+    labels_index : :obj:`numpy.ndarray`
+        (n_pts,) array of corresponding cluster indices.
+    labeled : :obj:`numpy.ndarray`
+        3D array with voxels labeled according to cluster index.
+
+    Returns
+    -------
+    nbrs : :obj:`numpy.ndarray`
+        (n_pts, 3) nearest neighbor points.
+    """
+    labels = labeled[labeled > 0]
+    clusters_ijk = np.array(labeled.nonzero()).T
+    nbrs = np.zeros_like(ijk)
+    for ii, (lab, point) in enumerate(zip(labels_index, ijk)):
+        lab_ijk = clusters_ijk[labels == lab]
+        dist = np.linalg.norm(lab_ijk - point, axis=1)
+        nbrs[ii] = lab_ijk[np.argmin(dist)]
+    return nbrs
 
 
 def _sort_subpeaks(ijk, vals, affine):
@@ -169,27 +206,14 @@ def _pare_subpeaks(xyz, ijk, vals, min_distance):
     return ijk, vals
 
 
-def _get_val(row, input_arr):
-    """Extract values from array based on index.
-
-    Parameters
-    ----------
-    row : :obj:`tuple` of length 3
-        3-length index into ``input_arr``.
-    input_arr : 3D :obj:`numpy.ndarray`
-        Array from which to extract value.
-
-    Returns
-    -------
-    :obj:`float` or :obj:`int`
-        The value from ``input_arr`` at the row index.
-    """
-    i, j, k = row
-    return input_arr[i, j, k]
-
-
-def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
-                       two_sided=False, min_distance=8.):
+def get_clusters_table(
+    stat_img,
+    stat_threshold,
+    cluster_threshold=None,
+    two_sided=False,
+    min_distance=8.0,
+    return_label_maps=False,
+):
     """Creates pandas dataframe with img cluster statistics.
 
     This function should work on any statistical maps where more extreme values
@@ -204,6 +228,10 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         rather than any peaks/subpeaks.
 
         This center of mass may, in some cases, appear outside of the cluster.
+
+        .. versionchanged:: 0.9.2
+            In this case, the cluster voxel nearest to the center of mass is
+            reported.
 
     Parameters
     ----------
@@ -229,6 +257,12 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
             If two different clusters are closer than ``min_distance``, it can
             result in peaks closer than ``min_distance``.
 
+    return_label_maps : :obj:`bool`, optional
+        Whether or not to additionally output cluster label map images.
+        Default=False.
+
+        .. versionadded:: 0.10.1.dev
+
     Returns
     -------
     df : :obj:`pandas.DataFrame`
@@ -246,13 +280,24 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
                            Rows corresponding to subpeaks will not have a value
                            in this column.
         ================== ====================================================
+
+    label_maps : :obj:`list`
+        Returned if return_label_maps=True
+        List of Niimg-like objects of cluster label maps.
+        If two_sided==True, first and second maps correspond
+        to positive and negative tails.
+
+        .. versionadded:: 0.10.1.dev
+
     """
-    cols = ['Cluster ID', 'X', 'Y', 'Z', 'Peak Stat', 'Cluster Size (mm3)']
+    cols = ["Cluster ID", "X", "Y", "Z", "Peak Stat", "Cluster Size (mm3)"]
     # Replace None with 0
     cluster_threshold = 0 if cluster_threshold is None else cluster_threshold
 
     # check that stat_img is niimg-like object and 3D
     stat_img = check_niimg_3d(stat_img)
+    affine = stat_img.affine
+    shape = stat_img.shape
 
     # Apply threshold(s) to image
     stat_img = threshold_img(
@@ -266,8 +311,11 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
 
     # If cluster threshold is used, there is chance that stat_map will be
     # modified, therefore copy is needed
-    stat_map = _safe_get_data(stat_img, ensure_finite=True,
-                              copy_data=(cluster_threshold is not None))
+    stat_map = _safe_get_data(
+        stat_img,
+        ensure_finite=True,
+        copy_data=(cluster_threshold is not None),
+    )
 
     # Define array for 6-connectivity, aka NN1 or "faces"
     bin_struct = generate_binary_structure(rank=3, connectivity=1)
@@ -277,6 +325,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     signs = [1, -1] if two_sided else [1]
     no_clusters_found = True
     rows = []
+    label_maps = []
     for sign in signs:
         # Flip map if necessary
         temp_stat_map = stat_map * sign
@@ -288,8 +337,8 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         # If the stat threshold is too high simply return an empty dataframe
         if np.sum(binarized) == 0:
             warnings.warn(
-                'Attention: No clusters with stat {0} than {1}'.format(
-                    'higher' if sign == 1 else 'lower',
+                "Attention: No clusters with stat {0} than {1}".format(
+                    "higher" if sign == 1 else "lower",
                     stat_threshold * sign,
                 )
             )
@@ -299,9 +348,19 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         label_map = label(binarized, bin_struct)[0]
         clust_ids = sorted(list(np.unique(label_map)[1:]))
         peak_vals = np.array(
-            [np.max(temp_stat_map * (label_map == c)) for c in clust_ids])
+            [np.max(temp_stat_map * (label_map == c)) for c in clust_ids]
+        )
         # Sort by descending max value
         clust_ids = [clust_ids[c] for c in (-peak_vals).argsort()]
+
+        if return_label_maps:
+            # Relabel label_map based on sorted ids
+            relabel_idx = np.insert(clust_ids, 0, 0).argsort().astype(np.int32)
+            relabel_map = relabel_idx[label_map.flatten()].reshape(shape)
+            # Save label maps as nifti objects
+            label_maps.append(
+                new_img_like(stat_img, relabel_map, affine=affine)
+            )
 
         for c_id, c_val in enumerate(clust_ids):
             cluster_mask = label_map == c_val
@@ -341,7 +400,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
                 else:
                     # Subpeak naming convention is cluster num+letter:
                     # 1a, 1b, etc
-                    sp_id = '{0}{1}'.format(
+                    sp_id = "{0}{1}".format(
                         c_id + 1,
                         ascii_lowercase[subpeak - 1],
                     )
@@ -351,7 +410,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
                         subpeak_xyz[subpeak, 1],
                         subpeak_xyz[subpeak, 2],
                         subpeak_vals[subpeak],
-                        '',
+                        "",
                     ]
                 rows += [row]
 
@@ -363,4 +422,4 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     else:
         df = pd.DataFrame(columns=cols, data=rows)
 
-    return df
+    return (df, label_maps) if return_label_maps else df

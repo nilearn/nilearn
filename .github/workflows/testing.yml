@@ -9,35 +9,19 @@ on:
       - '*'
 
 jobs:
-  check_skip:
-    runs-on: ubuntu-latest
-    outputs:
-      skip: ${{ steps.result_step.outputs.ci-skip }}
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - id: result_step
-        uses: mstachniuk/ci-skip@master
-        with:
-          commit-filter: '[skip ci];[ci skip];[skip github]'
-          commit-filter-separator: ';'
-
   min_requirements:
-    needs: check_skip
-    if: ${{ needs.check_skip.outputs.skip == 'false' }}
-    runs-on: "ubuntu-latest"
-    name: Python 3.6, minimal requirements without Matplotlib
+    runs-on: "ubuntu-20.04"
+    name: Python 3.7, minimal requirements without Matplotlib
     defaults:
       run:
         shell: bash
     env:
         MIN_REQUIREMENTS: true
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
-          python-version: 3.6
+          python-version: "3.7"
         name: 'Setup python'
       - shell: bash -l {0}
         name: 'Display Python version'
@@ -51,15 +35,13 @@ jobs:
       - shell: bash -l {0}
         run: ./build_tools/github/test.sh
         name: 'Run tests'
-      - uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@v3
         if: success()
         name: 'Upload coverage to CodeCov'
 
   min_requirements_matplotlib:
-    needs: check_skip
-    if: ${{ needs.check_skip.outputs.skip == 'false' }}
-    runs-on: "ubuntu-latest"
-    name: Python 3.6, minimal requirements with Matplotlib
+    runs-on: "ubuntu-20.04"
+    name: Python 3.7, minimal requirements with Matplotlib
     defaults:
       run:
         shell: bash
@@ -67,10 +49,10 @@ jobs:
         MIN_REQUIREMENTS: true
         MATPLOTLIB: true
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
-          python-version: 3.6
+          python-version: "3.7"
         name: 'Setup python'
       - shell: bash -l {0}
         name: 'Display Python version'
@@ -86,21 +68,19 @@ jobs:
         name: 'Run tests'
 
   latest:
-    needs: check_skip
-    if: ${{ needs.check_skip.outputs.skip == 'false' }}
     runs-on: ${{ matrix.os }}
     strategy:
         fail-fast: false
         matrix:
             os: ["ubuntu-latest", "macos-latest"]
-            python-version: ["3.7", "3.8", "3.9", "3.10"]
+            python-version: ["3.8", "3.9", "3.10", "3.11"]
     name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and latest package versions
     defaults:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
             python-version: ${{ matrix.python-version }}
         name: 'Setup python'
@@ -119,6 +99,44 @@ jobs:
       - shell: bash {0}
         run: ./build_tools/github/test.sh
         name: 'Run tests'
-      - uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@v3
+        if: success()
+        name: 'Upload coverage to CodeCov'
+
+  prerelease:
+    runs-on: ${{ matrix.os }}
+    strategy:
+        fail-fast: false
+        matrix:
+            os: ["ubuntu-latest"]
+            python-version: ["3.11"]
+    env:
+        PIP_FLAGS: "--pre"
+    name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and pre-release dependencies
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+            python-version: ${{ matrix.python-version }}
+        name: 'Setup python'
+      - shell: bash {0}
+        name: 'Display Python version'
+        run: python -c "import sys; print(sys.version)"
+      - shell: bash {0}
+        run: ./build_tools/github/dependencies.sh
+        name: 'Install dependencies'
+      - shell: bash {0}
+        run: ./build_tools/github/install.sh
+        name: 'Install nilearn'
+      - shell: bash {0}
+        run: ./build_tools/github/test_docs.sh
+        name: 'Run doctests'
+      - shell: bash {0}
+        run: ./build_tools/github/test.sh
+        name: 'Run tests'
+      - uses: codecov/codecov-action@v3
         if: success()
         name: 'Upload coverage to CodeCov'

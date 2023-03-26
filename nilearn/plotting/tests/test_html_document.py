@@ -1,6 +1,7 @@
 import os
 import time
 import pytest
+import warnings
 import tempfile
 import webbrowser
 from nilearn.plotting import html_document
@@ -23,13 +24,13 @@ def test_temp_file_removing():
     fd, tmpfile = tempfile.mkstemp()
     try:
         os.close(fd)
-        with pytest.warns(None) as record:
+        with warnings.catch_warnings(record=True) as record:
             html.open_in_browser(file_name=tmpfile, temp_file_lifetime=None)
         for warning in record:
             assert "Saved HTML in temporary file" not in str(warning.message)
         html.open_in_browser(temp_file_lifetime=0.5)
         assert os.path.isfile(html._temp_file)
-        time.sleep(1.5)
+        html._temp_file_removing_proc.wait()
         assert not os.path.isfile(html._temp_file)
         with pytest.warns(UserWarning, match="Saved HTML in temporary file"):
             html.open_in_browser(temp_file_lifetime=None)

@@ -7,6 +7,7 @@ import collections.abc
 import contextlib
 import fnmatch
 import hashlib
+from pathlib import Path
 import pickle
 import shutil
 import time
@@ -178,8 +179,6 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
         else:
             break
 
-    return
-
 
 @fill_doc
 def get_data_dirs(data_dir=None):
@@ -310,6 +309,27 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
                   'directories, but:' + ''.join(errors))
 
 
+# The functions _is_within_directory and _safe_extract were implemented in
+# https://github.com/nilearn/nilearn/pull/3391 to address a directory
+# traversal vulnerability https://github.com/advisories/GHSA-gw9q-c7gh-j9vm
+def _is_within_directory(directory, target):
+    abs_directory = os.path.abspath(directory)
+    abs_target = os.path.abspath(target)
+
+    prefix = os.path.commonprefix([abs_directory, abs_target])
+
+    return prefix == abs_directory
+
+
+def _safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+    for member in tar.getmembers():
+        member_path = os.path.join(path, member.name)
+        if not _is_within_directory(path, member_path):
+            raise Exception("Attempted Path Traversal in Tar File")
+
+    tar.extractall(path, members, numeric_owner=numeric_owner)
+
+
 @fill_doc
 def _uncompress_file(file_, delete_archive=True, verbose=1):
     """Uncompress files contained in a data_set.
@@ -364,7 +384,7 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
             processed = True
         if os.path.isfile(file_) and tarfile.is_tarfile(file_):
             with contextlib.closing(tarfile.open(file_, "r")) as tar:
-                tar.extractall(path=data_dir)
+                _safe_extract(tar, path=data_dir)
             if delete_archive:
                 os.remove(file_)
             processed = True
@@ -800,8 +820,8 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
 def _tree(path, pattern=None, dictionary=False):
     """Return a directory tree under the form of a dictionaries and list
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     path : string
         Path browsed.
 
@@ -835,99 +855,13 @@ def _tree(path, pattern=None, dictionary=False):
     return dirs
 
 
-@fill_doc
-def make_fresh_openneuro_dataset_urls_index(
-        data_dir=None,
-        dataset_version='ds000030_R1.0.4',
-        verbose=1,
-        ):
-    """ONLY intended for Nilearn developers, not general users.
-    Creates a fresh, updated OpenNeuro :term:`BIDS` dataset index from AWS,
-    ready for upload to osf.io .
-
-    Crawls the server where OpenNeuro dataset is stored
-    and makes a JSON file `nistats_fetcher_openneuro_dataset_urls.json'
-    containing a fresh list of dataset file URLs.
-
-    Notes
-    -----
-    Needs Python package `Boto3`.
-
-    Do NOT rename this file.
-
-    This file can now be uploaded to Quick-Files section
-    of the Nilearn account on osf.io .
-
-    Then this file can be downloaded by
-    :func:`datasets.fetch_openneuro_dataset_index`
-
-    Run this function and upload the new file if the URL index downloaded by
-    :func:`datasets.fetch_openneuro_dataset_index` becomes outdated.
-
-    This approach is faster than crawling the servers anew every time
-    the OpenNeuro dataset is downloaded,
-    and circumvents `boto3` as a dependency for everyday use.
-
-    Parameters
-    ----------
-    %(data_dir)s
-    dataset_version : string, optional
-        Dataset version name. Assumes it is of the form [name]_[version].
-        Default is `ds000030_R1.0.4`.
-    %(verbose)s
+def load_sample_motor_activation_image():
+    """Load a single functional image showing motor activations.
 
     Returns
     -------
-    urls_path : string
-        Path to downloaded dataset index.
-
-    urls : list of string
-        Sorted list of dataset directories.
-
+    str
+        Path to the sample functional image.
     """
-    import boto3
-    from botocore.handlers import disable_signing
-    if not data_dir:
-        data_dir = os.path.expanduser('~/Desktop')
-    data_prefix = '{}/{}/uncompressed'.format(
-        dataset_version.split('_')[0], dataset_version)
 
-    data_dir = _get_dataset_dir(data_prefix, data_dir=data_dir,
-                                verbose=verbose)
-
-    # First we download the url list from the uncompressed dataset version
-    urls_path = os.path.join(data_dir,
-                             'nistats_fetcher_openneuro_dataset_urls.json',
-                             )
-    urls = []
-    if os.path.exists(urls_path):
-        with open(urls_path, 'r') as json_file:
-            urls = json.load(json_file)
-        existing_index_msg = ("There is an existing url index at `{}`. "
-                              "Aborting download of fresh index."
-                              .format(urls_path)
-                              )
-        print(existing_index_msg)
-    else:
-        resource = boto3.resource('s3')
-        resource.meta.client.meta.events.register('choose-signer.s3.*',
-                                                  disable_signing)
-        bucket = resource.Bucket('openneuro')
-
-        for obj in bucket.objects.filter(Prefix=data_prefix):
-            # get url of files (keys of directories end with '/')
-            if obj.key[-1] != '/':
-                url = '{}/{}/{}'.format(bucket.meta.client.meta.endpoint_url,
-                                        bucket.name,
-                                        obj.key,
-                                        )
-                urls.append(url)
-        urls = sorted(urls)
-
-        with open(urls_path, 'w') as json_file:
-            json.dump(urls, json_file)
-        print("Saved updated url index to {}.\nUpload it with the same name "
-              "to the quick-files section of osf.io using the Nilearn account "
-              "to update the file without breaking the fetcher download link."
-              .format(urls_path))
-    return urls_path, urls
+    return str(Path(__file__).parent / "data" / "image_10426.nii.gz")

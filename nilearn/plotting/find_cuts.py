@@ -35,7 +35,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     """ Find the center of the largest activation connected component.
 
     Parameters
-    -----------
+    ----------
     img : 3D Nifti1Image
         The brain map.
 
@@ -111,13 +111,13 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
             x_map, y_map, z_map = cut_coords
             return np.asarray(coord_transform(x_map, y_map, z_map,
                                               img.affine)).tolist()
-        slice_x, slice_y, slice_z = find_objects(mask)[0]
+        slice_x, slice_y, slice_z = find_objects(mask.astype(int))[0]
         my_map = my_map[slice_x, slice_y, slice_z]
         mask = mask[slice_x, slice_y, slice_z]
         my_map *= mask
         offset += [slice_x.start, slice_y.start, slice_z.start]
     # Testing min and max is faster than np.all(my_map == 0)
-    if (my_map.max() == 0) and (my_map.min() == 0):
+    if my_map.max() == my_map.min() == 0:
         warnings.warn(
             "Could not determine cut coords: "
             "All values were masked. "
@@ -150,7 +150,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
                                           img.affine)).tolist()
 
     mask = largest_connected_component(mask)
-    slice_x, slice_y, slice_z = find_objects(mask)[0]
+    slice_x, slice_y, slice_z = find_objects(mask.astype(int))[0]
     my_map = my_map[slice_x, slice_y, slice_z]
     mask = mask[slice_x, slice_y, slice_z]
     my_map *= mask
@@ -233,8 +233,8 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
     Parameters
     ----------
     img : 3D Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
-        the brain map.
+        See :ref:`extracting_data`.
+        The brain map.
 
     direction : string, optional
         Sectional direction; possible values are "x", "y", or "z".
@@ -481,7 +481,7 @@ def find_probabilistic_atlas_cut_coords(maps_img):
 
     Parameters
     ----------
-    label_img : 4D Nifti1Image
+    maps_img : 4D Nifti1Image
         A probabilistic brain atlas with probabilistic masks in the fourth
         dimension.
 

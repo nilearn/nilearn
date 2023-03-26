@@ -34,7 +34,7 @@ def test_optimize_scrub(original_motion_outliers_index, expected_optimal):
 
 
 def test_get_outlier_cols():
-    """Check the non-steady state columns are deteched."""
+    """Check the non-steady state columns are detached."""
     col_names = ["confound_regressor"]
     non_steady_state = [f"non_steady_state_outlier{i:02d}" for i in range(3)]
     col_names += non_steady_state

@@ -527,18 +527,6 @@ def test_compute_multi_brain_mask():
     assert_array_equal(get_data(mask1), get_data(mask2))
 
 
-def test_deprecation_warning_compute_multi_gray_matter_mask():
-    imgs = [Nifti1Image(np.ones((9, 9, 9)), np.eye(4)),
-            Nifti1Image(np.ones((9, 9, 9)), np.eye(4))]
-    if _compare_version(sklearn.__version__, '<', '0.22'):
-        with pytest.deprecated_call():
-            masking.compute_multi_gray_matter_mask(imgs)
-    else:
-        with pytest.warns(FutureWarning,
-                          match="renamed to 'compute_multi_brain_mask'"):
-            masking.compute_multi_gray_matter_mask(imgs)
-
-
 def test_error_shape(random_state=42, shape=(3, 5, 7, 11)):
     # open-ended `if .. elif` in masking.unmask
 

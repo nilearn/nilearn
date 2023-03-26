@@ -65,11 +65,21 @@ def _gamma_difference_hrf(tr, oversampling=50, time_length=32., onset=0.,
     time_stamps = np.linspace(0, time_length,
                               np.rint(float(time_length) / dt).astype(int))
     time_stamps -= onset
-    hrf = (
-        gamma.pdf(time_stamps, delay / dispersion, dt / dispersion)
-        - ratio * gamma.pdf(time_stamps,
-                            undershoot / u_dispersion, dt / u_dispersion)
-    )
+
+    # define peak and undershoot gamma functions
+    peak_gamma = gamma.pdf(
+        time_stamps,
+        delay / dispersion,
+        loc=dt,
+        scale=dispersion)
+    undershoot_gamma = gamma.pdf(
+        time_stamps,
+        undershoot / u_dispersion,
+        loc=dt,
+        scale=u_dispersion)
+
+    # calculate the hrf
+    hrf = peak_gamma - ratio * undershoot_gamma
     hrf /= hrf.sum()
     return hrf
 
@@ -425,16 +435,6 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     if len(np.unique(names)) != len(names):
         raise ValueError(f"Computed regressor names are not unique: {names}")
 
-    # Replace spaces with underscores
-    names = [re.sub(" +", "_", str(name)) for name in names]
-    # Remove any non-word character
-    names = [re.sub("[^a-zA-Z0-9_]+", "", str(name)) for name in names]
-
-    # Check that all names look like proper pandas.DataFrame column names
-    if not all([name.isidentifier() for name in names]):
-        raise ValueError("At least one regressor name can't be used "
-                         f"as a column identifier: {names}")
-
     return names
 
 
@@ -555,9 +555,8 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
         fir_delays = [int(x) for x in fir_delays]
     oversampling = int(oversampling)
 
-    # this is the average tr in this session, not necessarily the true tr
-    tr = float(frame_times.max()) / (np.size(frame_times) - 1)
-
+    # this is the minimal tr in this session, not necessarily the true tr
+    tr = _calculate_tr(frame_times)
     # 1. create the high temporal resolution regressor
     hr_regressor, hr_frame_times = _sample_condition(
         exp_condition, frame_times, oversampling, min_onset)
@@ -586,3 +585,18 @@ def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
     # 6 generate regressor names
     reg_names = _regressor_names(con_id, hrf_model, fir_delays=fir_delays)
     return computed_regressors, reg_names
+
+
+def _calculate_tr(frame_times):
+    """Calculate TR from differences in frame_times.
+
+    Parameters
+    ----------
+    frame_times : array of shape (n_scans)
+        the desired sampling times
+    Returns
+    -------
+    float
+        repetition time
+    """
+    return np.min(np.diff(frame_times))

@@ -10,7 +10,7 @@ from string import Template
 
 import matplotlib as mpl
 import numpy as np
-from matplotlib import cm as mpl_cm
+import matplotlib.pyplot as plt
 
 # included here for backward compatibility
 from nilearn.plotting.html_document import (
@@ -70,7 +70,7 @@ def get_html_template(template_name):
 def colorscale(cmap, values, threshold=None, symmetric_cmap=True,
                vmax=None, vmin=None):
     """Normalize a cmap, put it in plotly format, get threshold and range."""
-    cmap = mpl_cm.get_cmap(cmap)
+    cmap = plt.get_cmap(cmap)
     abs_values = np.abs(values)
     if not symmetric_cmap and (values.min() < 0):
         warnings.warn('you have specified symmetric_cmap=False '

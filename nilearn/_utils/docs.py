@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Functions related to the documentation.
 
 docdict contains the standard documentation entries
@@ -15,12 +14,6 @@ import sys
 # Standard documentation entries
 #
 docdict = dict()
-
-NILEARN_LINKS = {"landing_page": "http://nilearn.github.io"}
-NILEARN_LINKS["input_output"] = (
-    "{}/manipulating_images/input_output.html".format(
-        NILEARN_LINKS["landing_page"])
-)
 
 # Verbose
 verbose = """
@@ -68,6 +61,47 @@ smoothing_fwhm : :obj:`float`, optional.
     If ``smoothing_fwhm`` is not ``None``, it gives
     the :term:`full-width at half maximum<FWHM>` in millimeters
     of the spatial smoothing to apply to the signal."""
+
+# Second_level_input
+docdict['second_level_input'] = """
+second_level_input : :obj:`list` of \
+:class:`~nilearn.glm.first_level.FirstLevelModel` objects \
+or :class:`pandas.DataFrame` or :obj:`list` of Niimg-like objects.
+
+    - Giving :class:`~nilearn.glm.first_level.FirstLevelModel` objects
+      will allow to easily compute the second level contrast of arbitrary first
+      level contrasts thanks to the ``first_level_contrast`` argument of
+      :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`.
+      Effect size images will be computed for each model to contrast at
+      the second level.
+    - If a :class:`~pandas.DataFrame`, then it has to contain
+      ``subject_label``, ``map_name`` and ``effects_map_path``. It can
+      contain multiple maps that would be selected during contrast estimation
+      with the argument ``first_level_contrast`` of
+      :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`.
+      The :class:`~pandas.DataFrame` will be sorted based on
+      the ``subject_label`` column to avoid order inconsistencies when
+      extracting the maps. So the rows of the automatically computed
+      design matrix, if not provided, will correspond to the sorted
+      ``subject_label`` column.
+    - If a :obj:`list` of Niimg-like objects then this is taken
+      literally as Y for the model fit and ``design_matrix`` must be
+      provided.
+
+"""
+
+# Second_level_contrast
+docdict['second_level_contrast'] = """
+second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\
+(n_col), optional
+    Where ``n_col`` is the number of columns of the design matrix.
+    The string can be a formula compatible with :meth:`pandas.DataFrame.eval`.
+    Basically one can use the name of the conditions as they appear in the
+    design matrix of the fitted model combined with operators +- and combined
+    with numbers with operators +-`*`/. The default (None) is accepted if the
+    design matrix has a single column, in which case the only possible
+    contrast array((1)) is applied; when the design matrix has multiple
+    columns, an error is raised."""
 
 # fwhm
 docdict['fwhm'] = """
@@ -228,7 +262,8 @@ mask_img : Niimg-like object
 
 # Memory
 docdict['memory'] = """
-memory : instance of :class:`joblib.Memory` or :obj:`str`
+memory : instance of :class:`joblib.Memory`, :obj:`str`, or \
+:class:`pathlib.Path`
     Used to cache the masking process.
     By default, no caching is done. If a :obj:`str` is given, it is the
     path to the caching directory."""
@@ -248,7 +283,7 @@ random_state : :obj:`int` or RandomState, optional
 memory_level = """
 memory_level : :obj:`int`, optional.
     Rough estimator of the amount of memory used by caching. Higher value
-    means more memory for caching.
+    means more memory for caching. Zero means no caching.
     Default={}."""
 docdict['memory_level'] = memory_level.format(0)
 docdict['memory_level1'] = memory_level.format(1)
@@ -264,14 +299,42 @@ docdict['n_jobs_all'] = n_jobs.format("-1")
 # img
 docdict['img'] = """
 img : Niimg-like object
-    See `input-output <%(input_output)s>`_.
-""" % NILEARN_LINKS
+    See :ref:`extracting_data`.
+"""
 
 # imgs
 docdict['imgs'] = """
 imgs : :obj:`list` of Niimg-like objects
-    See `input-output <%(input_output)s>`_.
-""" % NILEARN_LINKS
+    See :ref:`extracting_data`.
+"""
+
+# confounds
+docdict['confounds'] = """
+confounds : CSV file or array-like, optional
+    This parameter is passed to :func:`nilearn.signal.clean`.
+    Please see the related documentation for details.
+    shape: list of (number of scans, number of confounds)
+"""
+
+# sample_mask
+docdict['sample_mask'] = """
+sample_mask : Any type compatible with numpy-array indexing, optional
+    shape: (number of scans - number of volumes removed, )
+    Masks the niimgs along time/fourth dimension to perform scrubbing
+    (remove volumes with high motion) and/or non-steady-state volumes.
+    This parameter is passed to :func:`nilearn.signal.clean`.
+"""
+
+# kwargs for Maskers
+docdict['masker_kwargs'] = """
+kwargs : dict
+    Keyword arguments to be passed to functions called within the masker.
+    Kwargs prefixed with ``'clean__'`` will be passed to
+    :func:`~nilearn.signal.clean`.
+    Within :func:`~nilearn.signal.clean`, kwargs prefixed with
+    ``'butterworth__'`` will be passed to the Butterworth filter
+    (i.e., ``clean__butterworth__``).
+"""
 
 # cut_coords
 docdict['cut_coords'] = """
@@ -326,7 +389,7 @@ display_mode : {'ortho', 'tiled', 'mosaic','x',\
 'y', 'z', 'yx', 'xz', 'yz'}, optional
     Choose the direction of the cuts:
 
-        - 'x': sagital
+        - 'x': sagittal
         - 'y': coronal
         - 'z': axial
         - 'ortho': three cuts are performed in orthogonal
@@ -415,9 +478,9 @@ cbar_tick_format : :obj:`str`, optional
 # bg_img
 docdict['bg_img'] = """
 bg_img : Niimg-like object, optional
-    See `input_output <%(input_output)s>`_.
+    See :ref:`extracting_data`.
     The background image to plot on top of.
-""" % NILEARN_LINKS
+"""
 
 # vmin
 docdict['vmin'] = """
@@ -519,12 +582,14 @@ view : either a string or pair of floats, optional.
 """
 
 # bg_on_data
-docdict['bg_on_data'] = """
+docdict['bg_on_data'] = r"""
 bg_on_data : :obj:`bool`, optional
-    If ``True``, and a ``bg_map`` is specified,
+    If ``True`` and a ``bg_map`` is specified,
     the ``surf_data`` data is multiplied by the background
-    image, so that e.g. sulcal depth is visible beneath
-    the ``surf_data``.
+    image, so that e.g. sulcal depth is jointly visible with ``surf_data``.
+    Otherwise, the background image will only be visible where there
+    is no surface data (either because ``surf_data`` contains ``nan``\s
+    or because is was thresholded).
 
         .. note::
             This non-uniformly changes the surf_data values according

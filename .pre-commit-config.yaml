@@ -1,0 +1,104 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+files: |
+    (?x)^(
+        .*binder
+        | .*circleci
+        | .*coverage
+        | .*github
+        | .*gitignore
+        | .*in
+        | .*toml
+        | .*yaml
+        | .*yml
+        | AUTHORS.rst
+        | CONTRIBUTING.rst
+        | LICENSE
+        | Makefile
+        | doc
+        | examples
+        | maint_tools
+        | setup.*
+        | nilearn/__init__.py
+        | nilearn/signal.py
+        | nilearn/masking.py
+        | nilearn/conftest.py
+        | nilearn/version.py
+        | nilearn/de.*
+        | nilearn/connectome/.*py
+        | nilearn/image/.*py
+        | nilearn/regions.*py
+        | nilearn/mass_univariate/.*py
+    )$
+
+exclude: |
+    (?x)^(
+        doc/changes/(names|latest).rst
+        | doc/glm/first_level_model\\.rst
+        | introduction\\.rst
+        | maintenance\\.rst
+        | manipulating_images/input_output\\.rst
+        | modules/datasets\\.rst
+        | references\\.bib
+        | examples/.*/.*3d_map_to_surface_projection.py
+        | examples/.*/.*demo_plotting.py
+        | examples/.*/.*fiac_analysis.py
+        | examples/.*/.*fixed_effects.py
+        | examples/.*/.*group_level_connectivity.py
+        | examples/.*/.*localizer_surface_analysis.py
+        | examples/.*/.*searchlight_surface.py
+        | examples/.*/.*surf_atlas.py
+        | examples/.*/.*surf_stat_map.py
+        | examples/.*/.*surface_bids_analysis.py
+        | examples/.*/.*surface_projection_strategies.py
+        | nilearn/externals/tempita
+    )$
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-ast
+      - id: check-case-conflict
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+
+  - repo: https://github.com/ikamensh/flynt/
+    rev: "0.77"
+    hooks:
+    -   id: flynt
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.3.1
+    hooks:
+      - id: pyupgrade
+        args: [--py36-plus]
+
+  - repo: https://github.com/psf/black
+    rev: 23.1.0
+    hooks:
+      - id: black
+        args: [--config=pyproject.toml, --verbose]
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.4
+    hooks:
+      - id: codespell
+        args: [--config=setup.cfg]
+
+  - repo: https://github.com/pyCQA/flake8
+    rev: 6.0.0
+    hooks:
+      - id: flake8
+        args: [--config=setup.cfg, --verbose]
+        additional_dependencies: [flake8-docstrings]

@@ -53,7 +53,8 @@ from scipy.stats import gamma
 
 
 def mion_response_function(tr, oversampling=16, onset=0.0):
-    """Implementation of the MION response function model.
+    """Implement the MION response function model.
+
     Parameters
     ----------
     tr: float
@@ -70,7 +71,7 @@ def mion_response_function(tr, oversampling=16, onset=0.0):
     """
     dt = tr / oversampling
     time_stamps = np.linspace(
-        0, time_length, np.rint(float(time_length) / dt).astype(int)
+        0, time_length, np.rint(time_length / dt).astype(int)
     )
     time_stamps -= onset
 
@@ -86,7 +87,8 @@ def mion_response_function(tr, oversampling=16, onset=0.0):
 
 
 def mion_time_derivative(tr, oversampling=16.0):
-    """Implementation of the MION time derivative response function model.
+    """Implement the MION time derivative response function model.
+
     Parameters
     ----------
     tr: float

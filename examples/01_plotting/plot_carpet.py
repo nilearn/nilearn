@@ -18,11 +18,12 @@ adhd_dataset = datasets.fetch_adhd(n_subjects=1)
 
 # plot_carpet can infer TR from the image header, but preprocessing can often
 # overwrite that particular header field, so we will be explicit.
-t_r = 2.
+t_r = 2.0
 
 # Print basic information on the dataset
-print('First subject functional nifti image (4D) is at: %s' %
-      adhd_dataset.func[0])  # 4D data
+print(
+    f"First subject functional nifti image (4D) is at: {adhd_dataset.func[0]}"
+)
 
 ###############################################################################
 # Deriving a mask
@@ -36,7 +37,6 @@ mask_img = masking.compute_epi_mask(adhd_dataset.func[0])
 # Visualizing global patterns over time
 # -------------------------------------
 import matplotlib.pyplot as plt
-
 from nilearn.plotting import plot_carpet
 
 display = plot_carpet(adhd_dataset.func[0], mask_img, t_r=t_r)
@@ -64,8 +64,6 @@ discrete_atlas_img = image.new_img_like(atlas_img, discrete_version)
 ###############################################################################
 # Visualizing global patterns, separated by tissue type
 # -----------------------------------------------------
-import matplotlib.pyplot as plt
-
 from nilearn.plotting import plot_carpet
 
 fig, ax = plt.subplots(figsize=(10, 10))
@@ -76,6 +74,7 @@ display = plot_carpet(
     t_r=t_r,
     mask_labels=map_labels,
     axes=ax,
+    cmap="gray",
 )
 
 fig.show()

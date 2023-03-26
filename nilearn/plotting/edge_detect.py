@@ -50,7 +50,7 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
         Default=0.4.
 
     Returns
-    --------
+    -------
     grad_mag : 2D array of floats
         The magnitude of the gradient.
 
@@ -125,7 +125,7 @@ def _edge_map(image):
         The image that the edges are extracted from.
 
     Returns
-    --------
+    -------
     edge_mask : 2D masked array
         A mask of the edge as a masked array with parts without
         edges masked and the large extents detected with lower

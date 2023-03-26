@@ -10,20 +10,21 @@ from sklearn import neighbors
 from joblib import Memory
 from scipy import sparse
 
-from ..image.resampling import coord_transform
-from .._utils.niimg_conversions import _safe_get_data
-from .._utils import CacheMixin, logger, fill_doc
-from .._utils.niimg import img_data_dtype
-from .._utils.niimg_conversions import check_niimg_4d, check_niimg_3d
-from .._utils.class_inspect import get_params
-from .. import image
-from .. import masking
-from .base_masker import _filter_and_extract, BaseMasker
+from nilearn import image, masking
+from nilearn._utils import CacheMixin, logger, fill_doc
+from nilearn.maskers.base_masker import _filter_and_extract, BaseMasker
+from nilearn._utils.class_inspect import get_params
+from nilearn._utils.niimg import img_data_dtype
+from nilearn._utils.niimg_conversions import (
+    _safe_get_data,
+    check_niimg_4d,
+    check_niimg_3d,
+)
 
 
 def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
                                  mask_img=None):
-    '''Utility function to get only the rows which are occupied by sphere at
+    """Utility function to get only the rows which are occupied by sphere at
     given seed locations and the provided radius. Rows are in target_affine and
     target_shape space.
 
@@ -34,14 +35,15 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
         as target_affine.
 
     niimg : 3D/4D Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
-        Images to process. It must boil down to a 4D image with scans
-        number as last dimension.
+        See :ref:`extracting_data`.
+        Images to process.
+        If a 3D niimg is provided, a singleton dimension will be added to
+        the output to represent the single scan in the niimg.
 
     radius : float
         Indicates, in millimeters, the radius for the sphere around the seed.
 
-    allow_overlap: boolean
+    allow_overlap : boolean
         If False, a ValueError is raised if VOIs overlap
 
     mask_img : Niimg-like object, optional
@@ -59,7 +61,7 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
         Contains the boolean indices for each sphere.
         shape: (number of seeds, number of voxels)
 
-    '''
+    """
     seeds = list(seeds)
 
     # Compute world coordinates of all in-mask voxels.
@@ -72,29 +74,39 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
     elif mask_img is not None:
         affine = niimg.affine
         mask_img = check_niimg_3d(mask_img)
-        mask_img = image.resample_img(mask_img, target_affine=affine,
-                                      target_shape=niimg.shape[:3],
-                                      interpolation='nearest')
+        mask_img = image.resample_img(
+            mask_img,
+            target_affine=affine,
+            target_shape=niimg.shape[:3],
+            interpolation='nearest',
+        )
         mask, _ = masking._load_mask_img(mask_img)
         mask_coords = list(zip(*np.where(mask != 0)))
 
         X = masking._apply_mask_fmri(niimg, mask_img)
+
     elif niimg is not None:
         affine = niimg.affine
         if np.isnan(np.sum(_safe_get_data(niimg))):
-            warnings.warn('The imgs you have fed into fit_transform() contains'
-                          ' NaN values which will be converted to zeroes ')
+            warnings.warn(
+                'The imgs you have fed into fit_transform() contains NaN '
+                'values which will be converted to zeroes.'
+            )
             X = _safe_get_data(niimg, True).reshape([-1, niimg.shape[3]]).T
         else:
             X = _safe_get_data(niimg).reshape([-1, niimg.shape[3]]).T
+
         mask_coords = list(np.ndindex(niimg.shape[:3]))
+
     else:
         raise ValueError("Either a niimg or a mask_img must be provided.")
 
     # For each seed, get coordinates of nearest voxel
     nearests = []
     for sx, sy, sz in seeds:
-        nearest = np.round(coord_transform(sx, sy, sz, np.linalg.inv(affine)))
+        nearest = np.round(image.resampling.coord_transform(
+            sx, sy, sz, np.linalg.inv(affine)
+        ))
         nearest = nearest.astype(int)
         nearest = (nearest[0], nearest[1], nearest[2])
         try:
@@ -103,8 +115,9 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
             nearests.append(None)
 
     mask_coords = np.asarray(list(zip(*mask_coords)))
-    mask_coords = coord_transform(mask_coords[0], mask_coords[1],
-                                  mask_coords[2], affine)
+    mask_coords = image.resampling.coord_transform(
+        mask_coords[0], mask_coords[1], mask_coords[2], affine
+    )
     mask_coords = np.asarray(mask_coords).T
 
     clf = neighbors.NearestNeighbors(radius=radius)
@@ -113,6 +126,7 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
     for i, nearest in enumerate(nearests):
         if nearest is None:
             continue
+
         A[i, nearest] = True
 
     # Include the voxel containing the seed itself if not masked
@@ -127,11 +141,10 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
     sphere_sizes = np.asarray(A.tocsr().sum(axis=1)).ravel()
     empty_spheres = np.nonzero(sphere_sizes == 0)[0]
     if len(empty_spheres) != 0:
-        raise ValueError("These spheres are empty: {}".format(empty_spheres))
+        raise ValueError(f'These spheres are empty: {empty_spheres}')
 
-    if not allow_overlap:
-        if np.any(A.sum(axis=0) >= 2):
-            raise ValueError('Overlap detected between spheres')
+    if (not allow_overlap) and np.any(A.sum(axis=0) >= 2):
+        raise ValueError('Overlap detected between spheres')
 
     return X, A
 
@@ -142,14 +155,15 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
 
     Parameters
     ----------
-    seeds : List of triplets of coordinates in native space
+    seeds : :obj:`list` of triplets of coordinates in native space
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
 
     niimg : 3D/4D Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
-        Images to process. It must boil down to a 4D image with scans
-        number as last dimension.
+        See :ref:`extracting_data`.
+        Images to process.
+        If a 3D niimg is provided, a singleton dimension will be added to
+        the output to represent the single scan in the niimg.
 
     radius: float
         Indicates, in millimeters, the radius for the sphere around the seed.
@@ -159,7 +173,7 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
         maps have a non-zero value for the same voxel).
 
     mask_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 
     """
@@ -170,7 +184,7 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
         yield X[:, row]
 
 
-class _ExtractionFunctor(object):
+class _ExtractionFunctor:
 
     func_name = 'nifti_spheres_masker_extractor'
 
@@ -206,19 +220,19 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
     Parameters
     ----------
-    seeds : List of triplet of coordinates in native space
+    seeds : :obj:`list` of triplet of coordinates in native space
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
 
-    radius : float, optional
+    radius : :obj:`float`, optional
         Indicates, in millimeters, the radius for the sphere around the seed.
         Default is None (signal is extracted on a single voxel).
 
     mask_img : Niimg-like object, optional
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
 
-    allow_overlap : boolean, optional
+    allow_overlap : :obj:`bool`, optional
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel). Default=False.
     %(smoothing_fwhm)s
@@ -233,29 +247,29 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         False : Do not standardize the data.
         Default=False.
 
-    standardize_confounds : boolean, optional
+    standardize_confounds : :obj:`bool`, optional
         If standardize_confounds is True, the confounds are z-scored:
         their mean is put to 0 and their variance to 1 in the time dimension.
         Default=True.
 
-    high_variance_confounds : boolean, optional
+    high_variance_confounds : :obj:`bool`, optional
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out. Default=False.
 
-    detrend : boolean, optional
+    detrend : :obj:`bool`, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details. Default=False.
 
-    low_pass : None or float, optional
+    low_pass : None or :obj:`float`, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
-    high_pass : None or float, optional
+    high_pass : None or :obj:`float`, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
-    t_r : float, optional
+    t_r : :obj:`float`, optional
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
@@ -264,19 +278,31 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
-    memory : joblib.Memory or str, optional
+    memory : :obj:`joblib.Memory` or :obj:`str`, optional
         Used to cache the region extraction process.
         By default, no caching is done. If a string is given, it is the
         path to the caching directory.
 
-    memory_level : int, optional
+    memory_level : :obj:`int`, optional
         Aggressiveness of memory caching. The higher the number, the higher
         the number of functions that will be cached. Zero means no caching.
         Default=1.
 
-    verbose : integer, optional
+    verbose : :obj:`int`, optional
         Indicate the level of verbosity. By default, nothing is printed.
         Default=0.
+
+    %(masker_kwargs)s
+
+    Attributes
+    ----------
+    n_elements_ : :obj:`int`
+        The number of seeds in the masker.
+
+        .. versionadded:: 0.9.2
+
+    seeds_ : :obj:`list` of :obj:`list`
+        The coordinates of the seeds in the masker.
 
     See also
     --------
@@ -285,12 +311,26 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     """
     # memory and memory_level are used by CacheMixin.
 
-    def __init__(self, seeds, radius=None, mask_img=None, allow_overlap=False,
-                 smoothing_fwhm=None, standardize=False,
-                 standardize_confounds=True, high_variance_confounds=False,
-                 detrend=False, low_pass=None, high_pass=None, t_r=None,
-                 dtype=None, memory=Memory(location=None, verbose=0),
-                 memory_level=1, verbose=0):
+    def __init__(
+        self,
+        seeds,
+        radius=None,
+        mask_img=None,
+        allow_overlap=False,
+        smoothing_fwhm=None,
+        standardize=False,
+        standardize_confounds=True,
+        high_variance_confounds=False,
+        detrend=False,
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        dtype=None,
+        memory=Memory(location=None, verbose=0),
+        memory_level=1,
+        verbose=0,
+        **kwargs,
+    ):
         self.seeds = seeds
         self.mask_img = mask_img
         self.radius = radius
@@ -308,6 +348,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         self.high_pass = high_pass
         self.t_r = t_r
         self.dtype = dtype
+        self.clean_kwargs = {
+            k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
+        }
 
         # Parameters for joblib
         self.memory = memory
@@ -318,27 +361,31 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     def fit(self, X=None, y=None):
         """Prepare signal extraction from regions.
 
-        All parameters are unused, they are for scikit-learn compatibility.
+        All parameters are unused; they are for scikit-learn compatibility.
 
         """
         if hasattr(self, 'seeds_'):
             return self
 
-        error = ("Seeds must be a list of triplets of coordinates in "
-                 "native space.\n")
+        error = (
+            'Seeds must be a list of triplets of coordinates in '
+            'native space.\n'
+        )
 
         if not hasattr(self.seeds, '__iter__'):
             raise ValueError(
-                error + "Given seed list is of type: " + type(self.seeds)
+                error + 'Given seed list is of type: ' + type(self.seeds)
             )
+
         self.seeds_ = []
         # Check seeds and convert them to lists if needed
         for i, seed in enumerate(self.seeds):
             # Check the type first
             if not hasattr(seed, '__len__'):
-                raise ValueError(error + "Seed #%i is not a valid triplet "
-                                 "of coordinates. It is of type %s."
-                                 % (i, type(seed)))
+                raise ValueError(
+                    error + f'Seed #{i} is not a valid triplet '
+                    f'of coordinates. It is of type {type(seed)}.'
+                )
             # Convert to list because it is easier to process
             if isinstance(seed, np.ndarray):
                 seed = seed.tolist()
@@ -348,15 +395,48 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
             # Check the length
             if len(seed) != 3:
-                raise ValueError(error + "Seed #%i is of length %i "
-                                 "instead of 3." % (i, len(seed)))
+                raise ValueError(
+                    error + f'Seed #{i} is of length %{len(seed)} '
+                    'instead of 3.'
+                )
 
             self.seeds_.append(seed)
+
+        self.n_elements_ = len(self.seeds_)
 
         return self
 
     def fit_transform(self, imgs, confounds=None, sample_mask=None):
-        """Prepare and perform signal extraction"""
+        """Prepare and perform signal extraction.
+
+        Parameters
+        ----------
+        imgs : 3D/4D Niimg-like object
+            See :ref:`extracting_data`.
+            Images to process.
+            If a 3D niimg is provided, a singleton dimension will be added to
+            the output to represent the single scan in the niimg.
+
+        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, optional
+            This parameter is passed to signal.clean. Please see the related
+            documentation for details.
+            shape: (number of scans, number of confounds)
+
+        sample_mask : Any type compatible with numpy-array indexing, optional
+            Masks the niimgs along time/fourth dimension to perform scrubbing
+            (remove volumes with high motion) and/or non-steady-state volumes.
+            This parameter is passed to signal.clean.
+            shape: (number of scans - number of volumes removed, )
+
+                .. versionadded:: 0.8.0
+
+        Returns
+        -------
+        region_signals : 2D :obj:`numpy.ndarray`
+            Signal for each sphere.
+            shape: (number of scans, number of spheres)
+
+        """
         return self.fit().transform(imgs, confounds=confounds,
                                     sample_mask=sample_mask)
 
@@ -372,11 +452,12 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         Parameters
         ----------
         imgs : 3D/4D Niimg-like object
-            See http://nilearn.github.io/manipulating_images/input_output.html
-            Images to process. It must boil down to a 4D image with scans
-            number as last dimension.
+            See :ref:`extracting_data`.
+            Images to process.
+            If a 3D niimg is provided, a singleton dimension will be added to
+            the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like or pandas DataFrame, optional
+        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, optional
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
@@ -391,14 +472,23 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
         Returns
         -------
-        region_signals : 2D numpy.ndarray
+        region_signals : 2D :obj:`numpy.ndarray`
             Signal for each sphere.
             shape: (number of scans, number of spheres)
+
+        Warns
+        -----
+        DeprecationWarning
+            If a 3D niimg input is provided, the current behavior
+            (adding a singleton dimension to produce a 2D array) is deprecated.
+            Starting in version 0.12, a 1D array will be returned for 3D
+            inputs.
 
         """
         self._check_fitted()
 
         params = get_params(NiftiSpheresMasker, self)
+        params['clean_kwargs'] = self.clean_kwargs
 
         signals, _ = self._cache(
             _filter_and_extract,
@@ -429,13 +519,17 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
         Parameters
         ----------
-        region_signals : 2D numpy.ndarray
+        region_signals : 1D/2D :obj:`numpy.ndarray`
             Signal for each region.
-            shape: (number of scans, number of spheres)
+            If a 1D array is provided, then the shape should be
+            (number of elements,), and a 3D img will be returned.
+            If a 2D array is provided, then the shape should be
+            (number of scans, number of elements), and a 4D img will be
+            returned.
 
         Returns
         -------
-        voxel_signals : nibabel.Nifti1Image
+        voxel_signals : :obj:`nibabel.nifti1.Nifti1Image`
             Signal for each sphere.
             shape: (mask_img, number of scans).
 
@@ -447,10 +541,14 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         if self.mask_img is not None:
             mask = check_niimg_3d(self.mask_img)
         else:
-            raise ValueError('Please provide mask_img at initialization to'
-                             ' provide a reference for the inverse_transform.')
+            raise ValueError(
+                'Please provide mask_img at initialization to '
+                'provide a reference for the inverse_transform.'
+            )
+
         _, adjacency = _apply_mask_and_get_affinity(
-            self.seeds_, None, self.radius, self.allow_overlap, mask_img=mask)
+            self.seeds_, None, self.radius, self.allow_overlap, mask_img=mask
+        )
         adjacency = adjacency.tocsr()
         # Compute overlap scaling for mean signal:
         if self.allow_overlap:
