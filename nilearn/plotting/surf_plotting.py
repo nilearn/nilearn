@@ -1136,17 +1136,19 @@ def _check_views(views) -> list:
         "lateral", "dorsal", "ventral"} and / or pair of floats (elev, azim).
 
     """
-    invalid_view = any([not _check_view_is_valid(view) for view in views])
+    invalid_views = [not _check_view_is_valid(view) for view in views]
 
-    if invalid_view:
+    if any(invalid_views):
+        raise ValueError(
+            "Invalid view definition!\n"
+            + "Got: "
+            + str(np.array(views)[invalid_views])
+            + "\nSupported values are:"
+            + str(VALID_VIEWS)
+            + " or a sequence of length 2"
+            + " setting the elevation and azimut of the camera"
+        )
 
-        supported = "Supported string views:\n" + str(VALID_VIEWS)
-        if isinstance(views[0], str):
-            raise ValueError("Invalid view definition!\n" + supported)
-        else:
-            raise TypeError(f"Invalid view format: each view must"
-                            f" be a string or else a sequence of "
-                            f"length 2. Got {views} instead")
     return views
 
 
