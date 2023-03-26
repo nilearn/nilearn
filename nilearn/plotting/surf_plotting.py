@@ -4,12 +4,9 @@ Functions for surface visualization.
 import itertools
 import warnings
 
-<<<<<<< HEAD
 from collections.abc import Sequence
 
-=======
 import matplotlib as mpl
->>>>>>> 00bee346cafdd9ae04ced1f1ffbc968a474080dc
 import matplotlib.pyplot as plt
 import numpy as np
 
