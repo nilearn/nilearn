@@ -78,9 +78,9 @@ def expected_cameras_plotly(hemi, view):
 
 @pytest.mark.parametrize("hemi", VALID_HEMISPHERES)
 @pytest.mark.parametrize("view", VALID_VIEWS)
-def test_set_view_plot_surf_plotly(hemi, view, expected_cameras_plotly):
-    from nilearn.plotting.surf_plotting import _set_view_plot_surf_plotly
-    assert _set_view_plot_surf_plotly(hemi, view) == expected_cameras_plotly
+def test_get_view_plot_surf_plotly(hemi, view, expected_cameras_plotly):
+    from nilearn.plotting.surf_plotting import _get_view_plot_surf_plotly
+    assert _get_view_plot_surf_plotly(hemi, view) == expected_cameras_plotly
 
 
 @pytest.fixture
@@ -181,19 +181,35 @@ def test_instantiation_error_plotly_surface_figure(input_obj):
         PlotlySurfaceFigure(input_obj)
 
 
-def test_set_view_plot_surf_errors():
+def test_check_view_is_valid():
+    from nilearn.plotting.surf_plotting import _check_view_is_valid
+    assert _check_view_is_valid("lateral") is True
+    assert _check_view_is_valid("medial") is True
+    assert _check_view_is_valid("latreal") is False
+    assert _check_view_is_valid((100, 100)) is True
+    assert _check_view_is_valid((100, 100, 1)) is False
+
+
+def test_check_hemisphere_is_valid():
+    from nilearn.plotting.surf_plotting import _check_hemisphere_is_valid
+    assert _check_hemisphere_is_valid("left") is True
+    assert _check_hemisphere_is_valid("right") is True
+    assert _check_hemisphere_is_valid("lft") is False
+
+
+def test_get_view_plot_surf_errors():
     from nilearn.plotting.surf_plotting import (_get_view_plot_surf_matplotlib,
-                                                _set_view_plot_surf_plotly)
+                                                _get_view_plot_surf_plotly)
     with pytest.raises(ValueError,
                        match="Invalid hemispheres definition"):
         _get_view_plot_surf_matplotlib("foo", "medial")
-        _set_view_plot_surf_plotly("bar", "anterior")
+        _get_view_plot_surf_plotly("bar", "anterior")
     with pytest.raises(ValueError,
                        match="Invalid view definition"):
         _get_view_plot_surf_matplotlib("left", "foo")
         _get_view_plot_surf_matplotlib("right", "bar")
-        _set_view_plot_surf_plotly("left", "foo")
-        _set_view_plot_surf_plotly("right", "bar")
+        _get_view_plot_surf_plotly("left", "foo")
+        _get_view_plot_surf_plotly("right", "bar")
 
 
 def test_configure_title_plotly():

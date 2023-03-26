@@ -109,7 +109,7 @@ LAYOUT = {
 }
 
 
-def _set_view_plot_surf_plotly(hemi, view):
+def _get_view_plot_surf_plotly(hemi, view):
     """Helper function for plot_surf with plotly engine.
 
     This function checks the selected hemisphere and view, and
@@ -248,7 +248,7 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
         fig_data.append(dummy)
 
     # instantiate plotly figure
-    cameras_view = _set_view_plot_surf_plotly(hemi, view)
+    cameras_view = _get_view_plot_surf_plotly(hemi, view)
     fig = go.Figure(data=fig_data)
     fig.update_layout(scene_camera=CAMERAS[cameras_view],
                       title=_configure_title_plotly(title, title_font_size),
