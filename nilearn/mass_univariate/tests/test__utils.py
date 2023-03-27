@@ -14,6 +14,7 @@ from sklearn.utils import check_random_state
 
 @pytest.fixture
 def null():
+    """Return  a dummy null distribution that can reused across tests."""
     return [-10, -9, -9, -3, -2, -1, -1, 0, 1, 1, 1, 2, 3, 3, 4, 4, 7, 8, 8, 9]
 
 
@@ -27,23 +28,6 @@ def test_arr4d():
     test_arr4d[3:5, 3:5, 3:5, 0] = -10  # negative cluster, very high intensity
     test_arr4d[5:6, 3:5, 3:5, 0] = 1  # cluster touching negative one
     return test_arr4d
-
-
-def test_null_to_p_float_1_tailed_lower_tailed(null):
-    """Test _null_to_p with single float input lower-tailed ."""
-    alternative = "smaller"
-
-    assert math.isclose(
-        _utils._null_to_p(9, null, alternative=alternative),
-        0.95,
-    )
-    assert math.isclose(
-        _utils._null_to_p(-9, null, alternative=alternative),
-        0.15,
-    )
-    assert math.isclose(
-        _utils._null_to_p(0, null, alternative=alternative), 0.4
-    )
 
 
 @pytest.mark.parametrize(
@@ -88,6 +72,19 @@ def test_calculate_tfce(two_sided_test, dh, true_max_tfce):
 
     assert test_tfce_arr4d.shape == test_arr4d.shape
     assert np.max(np.abs(test_tfce_arr4d)) == true_max_tfce
+
+
+@pytest.mark.parametrize(
+    "test_values, expected_p_value", [(9, 0.95), (-9, 0.15), (0, 0.4)]
+)
+def test_null_to_p_float_1_tailed_lower_tailed(
+    null, test_values, expected_p_value
+):
+    """Test _null_to_p with single float input lower-tailed ."""
+    assert math.isclose(
+        _utils._null_to_p(test_values, null, alternative="smaller"),
+        expected_p_value,
+    )
 
 
 @pytest.mark.parametrize(

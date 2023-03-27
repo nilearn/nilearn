@@ -35,12 +35,19 @@ def mean_squared_error(df, h0_intercept):
     )
 
 
-def ks_stat_and_mse(df, h0_intercept, kstest_pvals_list, mse_list):
+def ks_stat_and_mse_new(df, h0_intercept):
     """Run Kolmogorov-Smirnov test and compute Mean Squared Error"""
     kstest_pval = stats.kstest(h0_intercept, stats.t(df).cdf)[1]
-    kstest_pvals_list.append(kstest_pval)
     mse = mean_squared_error(df=df, h0_intercept=h0_intercept)
-    mse_list.append(mse)
+    return kstest_pval, mse
+
+
+# def ks_stat_and_mse(df, h0_intercept, kstest_pvals_list, mse_list):
+#     """Run Kolmogorov-Smirnov test and compute Mean Squared Error"""
+#     kstest_pval = stats.kstest(h0_intercept, stats.t(df).cdf)[1]
+#     kstest_pvals_list.append(kstest_pval)
+#     mse = mean_squared_error(df=df, h0_intercept=h0_intercept)
+#     mse_list.append(mse)
 
 
 def _tfce_design():
@@ -202,15 +209,21 @@ def test_permuted_ols_check_h0_noeffect_labelswap(random_state=RANDOM_STATE):
         h0 = permuted_ols_no_intercept(tested_var, target_var, n_perm, i)
         df = n_samples - 1
         h0_intercept = h0[0, :]
-        ks_stat_and_mse(df, h0_intercept, all_kstest_pvals, all_mse)
+        # ks_stat_and_mse(df, h0_intercept, all_kstest_pvals, all_mse)
+        kstest_pval, mse = ks_stat_and_mse_new(df, h0_intercept)
+        all_kstest_pvals.append(kstest_pval)
+        all_mse.append(mse)
 
         # Case no. 2: intercept in the model
         h0 = permuted_ols_with_intercept(tested_var, target_var, n_perm, i)
         df = n_samples - 2
         h0_intercept = h0[0, :]
-        ks_stat_and_mse(
-            df, h0_intercept, all_kstest_pvals_intercept, all_mse_intercept
-        )
+        # ks_stat_and_mse(
+        #     df, h0_intercept, all_kstest_pvals_intercept, all_mse_intercept
+        # )
+        kstest_pval, mse = ks_stat_and_mse_new(df, h0_intercept)
+        all_kstest_pvals_intercept.append(kstest_pval)
+        all_mse_intercept.append(mse)
 
         # Case no. 3: intercept in the model, no centering of tested vars
         permuted_ols_with_intercept(
@@ -221,9 +234,12 @@ def test_permuted_ols_check_h0_noeffect_labelswap(random_state=RANDOM_STATE):
         )
         df = n_samples - 2
         h0_intercept = h0[0, :]
-        ks_stat_and_mse(
-            df, h0_intercept, all_kstest_pvals_intercept2, all_mse_intercept2
-        )
+        # ks_stat_and_mse(
+        #     df, h0_intercept, all_kstest_pvals_intercept2, all_mse_intercept2
+        # )
+        kstest_pval, mse = ks_stat_and_mse_new(df, h0_intercept)
+        all_kstest_pvals_intercept2.append(kstest_pval)
+        all_mse_intercept2.append(mse)
 
     all_kstest_pvals = np.array(all_kstest_pvals).reshape(
         (len(perm_ranges), -1)
@@ -276,12 +292,12 @@ def test_permuted_ols_check_h0_noeffect_signswap(random_state=RANDOM_STATE):
     all_kstest_pvals = []
     for i, n_perm in enumerate(np.repeat(perm_ranges, 10)):
         h0 = permuted_ols_no_intercept(tested_var, target_var, n_perm, i)
-        ############################
-        # CHECK if the original value of DoF was correct
         df = n_samples
-        ############################
         h0_intercept = h0[0, :]
-        ks_stat_and_mse(df, h0_intercept, all_kstest_pvals, all_mse)
+        # ks_stat_and_mse(df, h0_intercept, all_kstest_pvals, all_mse)
+        kstest_pval, mse = ks_stat_and_mse_new(df, h0_intercept)
+        all_kstest_pvals.append(kstest_pval)
+        all_mse.append(mse)
 
     all_kstest_pvals = np.array(all_kstest_pvals).reshape(
         (len(perm_ranges), -1)
