@@ -17,8 +17,8 @@ ensembling to achieve state of the art performance
 # License: simplified BSD
 
 import itertools
-from typing import Iterable
 import warnings
+from typing import Iterable
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -139,7 +139,7 @@ def _check_param_grid(estimator, X, y, param_grid=None):
             param_grid["C"] = np.array([2, 20, 200]) * min_c
         else:
             param_grid = {}
-    
+
     else:
         if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
             param_grid = _wrap_param_grid(param_grid, "alphas")
@@ -148,9 +148,11 @@ def _check_param_grid(estimator, X, y, param_grid=None):
 
 
 def _wrap_param_grid(param_grid, param_name):
-    """Wrap a parameter's sequence of values with an outer list. This can be 
+    """Wrap a parameter's sequence of values with an outer list.
+
+    This can be
     desirable for models featuring built-in cross-validation, as it would leave
-    it to the model's internal (optimized) cross-validation to loop over 
+    it to the model's internal (optimized) cross-validation to loop over
     hyperparameter values. Does nothing if the parameter is already wrapped.
 
     Parameters
@@ -166,7 +168,6 @@ def _wrap_param_grid(param_grid, param_name):
     param_grid_wrapped: dict of str to sequence, or sequence of such
         The updated parameter grid
     """
-
     if param_grid is None:
         return param_grid
 
@@ -177,17 +178,17 @@ def _wrap_param_grid(param_grid, param_name):
         param_grids = [param_grid]
     else:
         param_grids = param_grid
-    
+
     # update each dict
     for i_param_grid in range(len(param_grids)):
-        param_grid_ = param_grids[i_param_grid].copy() # shallow copy
+        param_grid_ = param_grids[i_param_grid].copy()  # shallow copy
         try:
             if not isinstance(param_grid_[param_name][0], Iterable):
                 param_grid_[param_name] = [param_grid_[param_name]]
         except KeyError:
             continue
         param_grids[i_param_grid] = param_grid_
-    
+
     # return a dict if the original input was a dict
     if input_is_dict:
         param_grids = param_grids[0]

@@ -93,17 +93,20 @@ def test_check_param_grid():
     assert param_grid == {}
 
 
-@pytest.mark.parametrize("param_grid", [
-    {"alphas": [1, 10, 100, 1000]},
-    {"alphas": [1, 10, 100, 1000], "fit_intercept": [True, False]},
-    {"alphas": [[1, 10, 100, 1000]]},
-    {"alphas": (1, 10, 100, 1000)},
-    {"alphas": [(1, 10, 100, 1000)]},
-    {"alphas": ((1, 10, 100, 1000))},
-    {"alphas": np.array([1, 10, 100, 1000])},
-    {"alphas": [np.array([1, 10, 100, 1000])]},
-    [{"alphas": [1, 10]}, {"alphas": [[100, 1000]]}],
-])
+@pytest.mark.parametrize(
+    "param_grid",
+    [
+        {"alphas": [1, 10, 100, 1000]},
+        {"alphas": [1, 10, 100, 1000], "fit_intercept": [True, False]},
+        {"alphas": [[1, 10, 100, 1000]]},
+        {"alphas": (1, 10, 100, 1000)},
+        {"alphas": [(1, 10, 100, 1000)]},
+        {"alphas": ((1, 10, 100, 1000))},
+        {"alphas": np.array([1, 10, 100, 1000])},
+        {"alphas": [np.array([1, 10, 100, 1000])]},
+        [{"alphas": [1, 10]}, {"alphas": [[100, 1000]]}],
+    ],
+)
 def test_wrap_param_grid(param_grid):
     param_name = "alphas"
     for param in ParameterGrid(_wrap_param_grid(param_grid, param_name)):
@@ -219,21 +222,24 @@ def test_parallel_fit():
             assert a == b
 
 
-@pytest.mark.parametrize("estimator,param_name,is_classification", [
-    (ridge, "alphas", False),
-    (ridge_classifier, "alphas", True),
-])
+@pytest.mark.parametrize(
+    "estimator,param_name,is_classification",
+    [
+        (ridge, "alphas", False),
+        (ridge_classifier, "alphas", True),
+    ],
+)
 def test_parallel_fit_builtin_cv(estimator, param_name, is_classification):
-    """Check that the best_param output of _parallel_fit is a single value even 
-    if param_grid is wrapped in a list for models with built-in CV."""
-
+    """Check that the best_param output of _parallel_fit is a single value even
+    if param_grid is wrapped in a list for models with built-in CV.
+    """
     param_values = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
     n_samples = 100
     n_samples_test = int(0.8 * n_samples)
     n_features = 20
     n_informative = 5
     random_state = 42
-    noise = 0.2 # for regression only
+    noise = 0.2  # for regression only
 
     # train/test indices
     train = range(n_samples_test)
@@ -263,7 +269,7 @@ def test_parallel_fit_builtin_cv(estimator, param_name, is_classification):
         )
         scorer = check_scoring(estimator, "r2")
 
-    for params in [param_values, [param_values]]: # test unwrapped and wrapped
+    for params in [param_values, [param_values]]:  # test unwrapped and wrapped
         param_grid = {param_name: params}
         _, _, _, best_param, _, _ = _parallel_fit(
             estimator=estimator,
