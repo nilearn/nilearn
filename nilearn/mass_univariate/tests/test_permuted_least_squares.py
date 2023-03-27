@@ -26,14 +26,13 @@ RANDOM_STATE = 0
 
 
 def mean_squared_error(df, h0_intercept):
-    mse = np.mean(
+    return np.mean(
         (
             stats.t(df).cdf(np.sort(h0_intercept))
             - np.linspace(0, 1, h0_intercept.size + 1)[1:]
         )
         ** 2
     )
-    return mse
 
 
 def ks_stat_and_mse(df, h0_intercept, kstest_pvals_list, mse_list):
@@ -110,7 +109,6 @@ def _create_design(n_samples, n_descriptors, n_regressors):
     random_state = RANDOM_STATE
     rng = check_random_state(random_state)
 
-    # create design
     target_var = rng.randn(n_samples, n_descriptors)
     tested_var = rng.randn(n_samples, n_regressors)
 
@@ -130,8 +128,7 @@ def dummy_design():
 
 @pytest.fixture
 def confounding_vars():
-    random_state = RANDOM_STATE
-    rng = check_random_state(random_state)
+    rng = check_random_state(RANDOM_STATE)
     return rng.randn(N_SAMPLES, N_COVARS)
 
 
@@ -691,7 +688,7 @@ def test_one_sided_versus_two_test(random_state=RANDOM_STATE):
     )
 
 
-def test_sided_test2(random_state=RANDOM_STATE):
+def test_two_sided_recover_positive_and_negative_effects(random_state=RANDOM_STATE):
     """Check that two-sided can actually recover \
     positive and negative effects."""
     target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
