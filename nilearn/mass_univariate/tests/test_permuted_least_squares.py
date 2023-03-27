@@ -181,12 +181,9 @@ def test_permuted_ols_check_h0_noeffect_labelswap(random_state=RANDOM_STATE):
     """
     rng = check_random_state(random_state)
 
-    # design parameters
-    n_samples = N_SAMPLES
-
     # create dummy design with no effect
-    target_var = rng.randn(n_samples, 1)
-    tested_var = np.arange(n_samples, dtype="f8").reshape((-1, 1))
+    target_var = rng.randn(N_SAMPLES, 1)
+    tested_var = np.arange(N_SAMPLES, dtype="f8").reshape((-1, 1))
     tested_var_not_centered = tested_var.copy()
     tested_var -= tested_var.mean(0)  # centered
 
@@ -207,7 +204,7 @@ def test_permuted_ols_check_h0_noeffect_labelswap(random_state=RANDOM_STATE):
     for i, n_perm in enumerate(np.repeat(perm_ranges, 10)):
         # Case no. 1: no intercept in the model
         h0 = permuted_ols_no_intercept(tested_var, target_var, n_perm, i)
-        df = n_samples - 1
+        df = N_SAMPLES - 1
         h0_intercept = h0[0, :]
         # ks_stat_and_mse(df, h0_intercept, all_kstest_pvals, all_mse)
         kstest_pval, mse = ks_stat_and_mse_new(df, h0_intercept)
@@ -216,7 +213,7 @@ def test_permuted_ols_check_h0_noeffect_labelswap(random_state=RANDOM_STATE):
 
         # Case no. 2: intercept in the model
         h0 = permuted_ols_with_intercept(tested_var, target_var, n_perm, i)
-        df = n_samples - 2
+        df = N_SAMPLES - 2
         h0_intercept = h0[0, :]
         # ks_stat_and_mse(
         #     df, h0_intercept, all_kstest_pvals_intercept, all_mse_intercept
@@ -232,7 +229,7 @@ def test_permuted_ols_check_h0_noeffect_labelswap(random_state=RANDOM_STATE):
             n_perm,
             i,
         )
-        df = n_samples - 2
+        df = N_SAMPLES - 2
         h0_intercept = h0[0, :]
         # ks_stat_and_mse(
         #     df, h0_intercept, all_kstest_pvals_intercept2, all_mse_intercept2
@@ -275,13 +272,10 @@ def test_permuted_ols_check_h0_noeffect_signswap(random_state=RANDOM_STATE):
     """
     rng = check_random_state(random_state)
 
-    # design parameters
-    n_samples = N_SAMPLES
-    n_regressors = 1
-
     # create dummy design with no effect
-    target_var = rng.randn(n_samples, 1)
-    tested_var = np.ones((n_samples, n_regressors))
+    target_var = rng.randn(N_SAMPLES, 1)
+    n_regressors = 1
+    tested_var = np.ones((N_SAMPLES, n_regressors))
 
     # we compute the Mean Squared Error between cumulative Density Function
     # as a proof of consistency of the permutation algorithm
@@ -292,7 +286,7 @@ def test_permuted_ols_check_h0_noeffect_signswap(random_state=RANDOM_STATE):
     all_kstest_pvals = []
     for i, n_perm in enumerate(np.repeat(perm_ranges, 10)):
         h0 = permuted_ols_no_intercept(tested_var, target_var, n_perm, i)
-        df = n_samples
+        df = N_SAMPLES
         h0_intercept = h0[0, :]
         # ks_stat_and_mse(df, h0_intercept, all_kstest_pvals, all_mse)
         kstest_pval, mse = ks_stat_and_mse_new(df, h0_intercept)
@@ -579,11 +573,10 @@ def test_permuted_ols_nocovar_multivariate(random_state=RANDOM_STATE):
 def test_permuted_ols_intercept_nocovar(random_state=RANDOM_STATE):
     rng = check_random_state(random_state)
 
-    n_samples = N_SAMPLES
     n_descriptors = 10
     n_regressors = 1
-    tested_var = np.ones((n_samples, n_regressors))
-    target_var = rng.randn(n_samples, n_descriptors)
+    tested_var = np.ones((N_SAMPLES, n_regressors))
+    target_var = rng.randn(N_SAMPLES, n_descriptors)
 
     output = permuted_ols(
         tested_var,
@@ -663,11 +656,10 @@ def test_one_sided_versus_two_test(random_state=RANDOM_STATE):
     recovered with one-sided."""
     rng = check_random_state(random_state)
 
-    n_samples = N_SAMPLES
     n_descriptors = 100
     n_regressors = 1
-    target_var = rng.randn(n_samples, n_descriptors)
-    tested_var = rng.randn(n_samples, n_regressors)
+    target_var = rng.randn(N_SAMPLES, n_descriptors)
+    tested_var = rng.randn(N_SAMPLES, n_regressors)
 
     # one-sided
     output_1_sided = permuted_ols(
