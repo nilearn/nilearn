@@ -20,6 +20,7 @@ from nilearn.decoding.decoder import (
     _check_estimator,
     _check_param_grid,
     _parallel_fit,
+    _wrap_param_grid,
 )
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.maskers import NiftiMasker
@@ -29,7 +30,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import LogisticRegression, RidgeClassifierCV, RidgeCV
 from sklearn.metrics import accuracy_score, get_scorer, r2_score, roc_auc_score
-from sklearn.model_selection import KFold, LeaveOneGroupOut
+from sklearn.model_selection import KFold, LeaveOneGroupOut, ParameterGrid
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
 
@@ -52,12 +53,12 @@ random_forest = RandomForestClassifier()
 dummy_classifier = DummyClassifier(random_state=0)
 dummy_regressor = DummyRegressor()
 
-regressors = {"ridge": (ridge, []), "svr": (svr, "C")}
+regressors = {"ridge": (ridge, ["alphas"]), "svr": (svr, "C")}
 classifiers = {
     "svc": (svc, "C"),
     "logistic_l1": (logistic_l1, "C"),
     "logistic_l2": (logistic_l2, "C"),
-    "ridge_classifier": (ridge_classifier, []),
+    "ridge_classifier": (ridge_classifier, ["alphas"]),
 }
 # Create a test dataset
 rng = np.random.RandomState(0)
@@ -92,6 +93,24 @@ def test_check_param_grid():
     # Test return parameter grid is empty
     param_grid = _check_param_grid(dummy_classifier, X, y_classification, None)
     assert param_grid == {}
+
+
+@pytest.mark.parametrize("param_grid", [
+    {"alphas": [1, 10, 100, 1000]},
+    {"alphas": [1, 10, 100, 1000], "fit_intercept": [True, False]},
+    {"alphas": [[1, 10, 100, 1000]]},
+    {"alphas": (1, 10, 100, 1000)},
+    {"alphas": [(1, 10, 100, 1000)]},
+    {"alphas": ((1, 10, 100, 1000))},
+    {"alphas": np.array([1, 10, 100, 1000])},
+    {"alphas": [np.array([1, 10, 100, 1000])]},
+    [{"alphas": [1, 10]}, {"alphas": [[100, 1000]]}],
+])
+def test_wrap_param_grid(param_grid):
+    param_name = "alphas"
+    for param in ParameterGrid(_wrap_param_grid(param_grid, param_name)):
+        for param_value in param[param_name]:
+            assert param_value in (1, 10, 100, 1000)
 
 
 def test_check_inputs_length():
