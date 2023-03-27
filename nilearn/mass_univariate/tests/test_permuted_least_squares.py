@@ -117,6 +117,13 @@ def cluster_level_design(random_state=RANDOM_STATE):
 
 
 # General tests for permuted_ols function
+#
+# Check that h0 is close to the theoretical distribution
+# for permuted OLS with label swap.
+#
+# Theoretical distribution is known for this simple design
+#     (= t(n_samples - dof)).
+
 
 PERM_RANGES = [10, 100, 1000]
 
@@ -169,8 +176,8 @@ def permuted_ols_with_intercept(tested_var, target_var, n_perm, i):
 
 
 def run_permutations(tested_var, target_var, model_intercept):
-    # we compute the Mean Squared Error between cumulative Density Function
-    # as a proof of consistency of the permutation algorithm
+    """Compute the Mean Squared Error between cumulative Density Function \
+    as a proof of consistency of the permutation algorithm."""
     all_mse = []
     all_kstest_pvals = []
 
@@ -206,21 +213,15 @@ def check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse):
 def test_permuted_ols_check_h0_noeffect_labelswap_centered_var_no_intercept(
     random_state=RANDOM_STATE,
 ):
-    """Check that h0 is close to the theoretical distribution \
-    for permuted OLS with label swap.
-
-    Theoretical distribution is known for this simple design \
-        (= t(n_samples - dof)).
-    """
-    rng = check_random_state(random_state)
-
     # create dummy design with no effect
+    rng = check_random_state(random_state)
     target_var = rng.randn(N_SAMPLES, 1)
-    tested_var = np.arange(N_SAMPLES, dtype="f8").reshape((-1, 1))
-    tested_var -= tested_var.mean(0)  # centered
+
+    centered_var = np.arange(N_SAMPLES, dtype="f8").reshape((-1, 1))
+    centered_var -= centered_var.mean(0)
 
     all_kstest_pvals, all_mse = run_permutations(
-        tested_var, target_var, model_intercept=False
+        centered_var, target_var, model_intercept=False
     )
 
     check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse)
@@ -229,21 +230,15 @@ def test_permuted_ols_check_h0_noeffect_labelswap_centered_var_no_intercept(
 def test_permuted_ols_check_h0_noeffect_labelswap_centered_var_and_intercept(
     random_state=RANDOM_STATE,
 ):
-    """Check that h0 is close to the theoretical distribution \
-    for permuted OLS with label swap.
-
-    Theoretical distribution is known for this simple design \
-        (= t(n_samples - dof)).
-    """
-    rng = check_random_state(random_state)
-
     # create dummy design with no effect
+    rng = check_random_state(random_state)
     target_var = rng.randn(N_SAMPLES, 1)
-    tested_var = np.arange(N_SAMPLES, dtype="f8").reshape((-1, 1))
-    tested_var -= tested_var.mean(0)  # centered
+
+    centered_var = np.arange(N_SAMPLES, dtype="f8").reshape((-1, 1))
+    centered_var -= centered_var.mean(0)
 
     all_kstest_pvals, all_mse = run_permutations(
-        tested_var, target_var, model_intercept=True
+        centered_var, target_var, model_intercept=True
     )
 
     check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse)
@@ -252,21 +247,14 @@ def test_permuted_ols_check_h0_noeffect_labelswap_centered_var_and_intercept(
 def test_permuted_ols_check_h0_noeffect_labelswap_uncentered_var_and_intercept(
     random_state=RANDOM_STATE,
 ):
-    """Check that h0 is close to the theoretical distribution \
-    for permuted OLS with label swap.
-
-    Theoretical distribution is known for this simple design \
-        (= t(n_samples - dof)).
-    """
-    rng = check_random_state(random_state)
-
     # create dummy design with no effect
+    rng = check_random_state(random_state)
     target_var = rng.randn(N_SAMPLES, 1)
-    tested_var = np.arange(N_SAMPLES, dtype="f8").reshape((-1, 1))
-    tested_var_not_centered = tested_var.copy()
+
+    uncentered_var = np.arange(N_SAMPLES, dtype="f8").reshape((-1, 1))
 
     all_kstest_pvals, all_mse = run_permutations(
-        tested_var_not_centered, target_var, model_intercept=True
+        uncentered_var, target_var, model_intercept=True
     )
 
     check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse)
