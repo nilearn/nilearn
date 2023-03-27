@@ -661,7 +661,7 @@ def _assert_connectivity_precision(connectivities, covs):
 def _assert_connectivity_correlation(connectivities, cov_estimator, covs):
     """Verify that the estimated covariance matrix: \
         - is symmetric and positive definite
-        - values on its diagonal should almost 1
+        - has values close to 1 on its diagonal
 
     If the covariance estimator is EmpiricalCovariance,
     the product of:
