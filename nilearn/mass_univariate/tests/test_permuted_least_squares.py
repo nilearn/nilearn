@@ -704,7 +704,9 @@ def test_one_sided_versus_two_test(random_state=RANDOM_STATE):
     )
 
 
-def test_two_sided_recover_positive_and_negative_effects(random_state=RANDOM_STATE):
+def test_two_sided_recover_positive_and_negative_effects(
+    random_state=RANDOM_STATE,
+):
     """Check that two-sided can actually recover \
     positive and negative effects."""
     target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
