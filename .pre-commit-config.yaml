@@ -74,7 +74,7 @@ repos:
         args: ["--profile", "black"]
 
   - repo: https://github.com/ikamensh/flynt/
-    rev: "0.77"
+    rev: "0.78"
     hooks:
     -   id: flynt
 
