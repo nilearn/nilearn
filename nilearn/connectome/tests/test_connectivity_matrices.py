@@ -342,10 +342,13 @@ def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
             gmean_inv_sqrt.dot(mat).dot(gmean_inv_sqrt) for mat in mats
         ]
         logs = [_map_eigenvalues(np.log, w_mat) for w_mat in whitened_mats]
-        logs_mean = np.mean(logs, axis=0)  # Covariant derivative is
-        # - gmean.dot(logms_mean)
-        norm = np.linalg.norm(logs_mean)  # Norm of the covariant derivative on
+
+        # Covariant derivative is - gmean.dot(logs_mean)
+        logs_mean = np.mean(logs, axis=0)
+
+        # Norm of the covariant derivative on
         # the tangent space at point gmean
+        norm = np.linalg.norm(logs_mean)
 
         # Update of the minimizer
         vals_log, vecs_log = linalg.eigh(logs_mean)
@@ -608,19 +611,18 @@ def test_connectivity_measure_generic(
 
 
 def _assert_connectivity_tangent(connectivities, conn_measure, covs):
+    """Check output value properties for tangent connectivity measure \
+    that they have the expected relationship \
+    to the input covariance matrices.
+
+    - the geometric mean of the eigenvalues
+        of the mean covariance matrix is positive-definite
+    - the whitening matrix (used to transform the data \
+        also produces a positive-definite matrix
+    """
     for true_covariance_matrix, estimated_covariance_matrix in zip(
         covs, connectivities
     ):
-        """Check output value properties for tangent connectivity measure \
-        that they have the expected relationship \
-        to the input covariance matrices.
-
-        - the geometric mean of the eigenvalues
-          of the mean covariance matrix is positive-definite
-        - the whitening matrix (used to transform the data \
-          also produces a positive-definite matrix
-        """
-        # Positive definiteness if expected and output value checks
         assert_array_almost_equal(
             estimated_covariance_matrix, estimated_covariance_matrix.T
         )
