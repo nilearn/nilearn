@@ -17,6 +17,7 @@ ensembling to achieve state of the art performance
 # License: simplified BSD
 
 import itertools
+from typing import Iterable
 import warnings
 
 import numpy as np
@@ -139,15 +140,66 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         else:
             min_c = 0.5
 
-        if not isinstance(
-            estimator,
-            (RidgeCV, RidgeClassifierCV, DummyClassifier, DummyRegressor),
-        ):
+        if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
+            param_grid["alphas"] = [np.geomspace(1e-4, 100, num=20)]
+        elif not isinstance(estimator, (DummyClassifier, DummyRegressor)):
             param_grid["C"] = np.array([2, 20, 200]) * min_c
         else:
             param_grid = {}
+    
+    else:
+        if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
+            param_grid = _wrap_param_grid(param_grid, "alphas")
 
     return param_grid
+
+
+def _wrap_param_grid(param_grid, param_name):
+    """Wrap a parameter's sequence of values with an outer list. This can be 
+    desirable for models featuring built-in cross-validation, as it would leave
+    it to the model's internal (optimized) cross-validation to loop over 
+    hyperparameter values. Does nothing if the parameter is already wrapped.
+
+    Parameters
+    ----------
+    param_grid : dict of str to sequence, or sequence of such
+        The parameter grid to wrap, as a dictionary mapping estimator
+        parameters to sequences of allowed values.
+    param_name : str
+        Name of parameter whose sequence of values should be wrapped
+
+    Returns
+    -------
+    param_grid_wrapped: dict of str to sequence, or sequence of such
+        The updated parameter grid
+    """
+
+    if param_grid is None:
+        return param_grid
+
+    # param_grid can be either a dict or a sequence of dicts
+    # we make sure that it is a sequence we can loop over
+    input_is_dict = isinstance(param_grid, dict)
+    if input_is_dict:
+        param_grids = [param_grid]
+    else:
+        param_grids = param_grid
+    
+    # update each dict
+    for i_param_grid in range(len(param_grids)):
+        param_grid_ = param_grids[i_param_grid].copy() # shallow copy
+        try:
+            if not isinstance(param_grid_[param_name][0], Iterable):
+                param_grid_[param_name] = [param_grid_[param_name]]
+        except KeyError:
+            continue
+        param_grids[i_param_grid] = param_grid_
+    
+    # return a dict if the original input was a dict
+    if input_is_dict:
+        param_grids = param_grids[0]
+
+    return param_grids
 
 
 def _check_estimator(estimator):
@@ -241,6 +293,9 @@ def _parallel_fit(
                     dummy_output = estimator.class_prior_
                 elif isinstance(estimator, DummyRegressor):
                     dummy_output = estimator.constant_
+
+            if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
+                param["alphas"] = estimator.alpha_
             best_param = param
 
     if best_coef is not None:
