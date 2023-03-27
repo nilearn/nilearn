@@ -14,7 +14,7 @@ from sklearn.utils import check_random_state
 
 @pytest.fixture
 def null():
-    """Return  a dummy null distribution that can reused across tests."""
+    """Return a dummy null distribution that can be reused across tests."""
     return [-10, -9, -9, -3, -2, -1, -1, 0, 1, 1, 1, 2, 3, 3, 4, 4, 7, 8, 8, 9]
 
 
