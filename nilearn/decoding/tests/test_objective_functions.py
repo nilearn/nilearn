@@ -41,7 +41,6 @@ def test_1D__gradient_id(l1_ratio, size):
     gid = _gradient_id(img, l1_ratio=l1_ratio)
 
     assert_array_equal(gid.shape, [img.ndim + 1] + list(img.shape))
-
     assert_array_equal(l1_ratio * img, gid[-1])
 
 
@@ -52,7 +51,6 @@ def test_2D__gradient_id(l1_ratio):
     gid = _gradient_id(img, l1_ratio)
 
     assert_array_equal(gid.shape, [img.ndim + 1] + list(img.shape))
-
     assert_array_equal(l1_ratio * img, gid[-1])
 
 
@@ -61,7 +59,6 @@ def test_3D__gradient_id(l1_ratio):
     img = np.array([[1, 3], [4, 2], [1, 0]])
 
     gid = _gradient_id(img, l1_ratio)
-
     assert_array_equal(gid.shape, [img.ndim + 1] + list(img.shape))
 
 

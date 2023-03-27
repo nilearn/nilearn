@@ -81,6 +81,7 @@ def test_adjointness(size=4):
         image_1 = rng.rand(size, size, size)
         image_2 = rng.rand(3, size, size, size)
         Axdoty = np.dot((_gradient(image_1).ravel()), image_2.ravel())
+
         xdotAty = np.dot((_div(image_2).ravel()), image_1.ravel())
 
         assert_almost_equal(Axdoty, -xdotAty)
@@ -154,6 +155,7 @@ def test_squared_loss_gradient_at_simple_points():
     for i in range(0, w.size, 2):
         point = np.zeros(*w.shape)
         point[i] = 1
+
         assert_almost_equal(
             sp.optimize.check_grad(func, func_grad, point), 0, decimal=3
         )
@@ -180,6 +182,7 @@ def test_logistic_gradient_at_simple_points():
     for i in range(0, w.size, 7):
         point = np.zeros(*w.shape)
         point[i] = 1
+
         assert_almost_equal(
             sp.optimize.check_grad(func, func_grad, point), 0, decimal=3
         )
@@ -318,4 +321,5 @@ def test_mfista_solver_graph_net_no_l1_term():
     )
 
     solution = np.array([-10, 5])
+
     assert_almost_equal(estimate_solution, solution, decimal=4)
