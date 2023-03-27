@@ -25,31 +25,6 @@ N_SAMPLES = 50
 RANDOM_STATE = 0
 
 
-def mean_squared_error(df, h0_intercept):
-    return np.mean(
-        (
-            stats.t(df).cdf(np.sort(h0_intercept))
-            - np.linspace(0, 1, h0_intercept.size + 1)[1:]
-        )
-        ** 2
-    )
-
-
-def ks_stat_and_mse_new(df, h0_intercept):
-    """Run Kolmogorov-Smirnov test and compute Mean Squared Error"""
-    kstest_pval = stats.kstest(h0_intercept, stats.t(df).cdf)[1]
-    mse = mean_squared_error(df=df, h0_intercept=h0_intercept)
-    return kstest_pval, mse
-
-
-# def ks_stat_and_mse(df, h0_intercept, kstest_pvals_list, mse_list):
-#     """Run Kolmogorov-Smirnov test and compute Mean Squared Error"""
-#     kstest_pval = stats.kstest(h0_intercept, stats.t(df).cdf)[1]
-#     kstest_pvals_list.append(kstest_pval)
-#     mse = mean_squared_error(df=df, h0_intercept=h0_intercept)
-#     mse_list.append(mse)
-
-
 def _tfce_design():
     target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
     target_var = np.hstack(
@@ -69,36 +44,6 @@ def _tfce_design():
     n_regressors = 1  # tested_var is 1D
 
     return target_var, tested_var, masker, n_descriptors, n_regressors
-
-
-def permuted_ols_no_intercept(tested_var, target_var, n_perm, i):
-    n_regressors = 1
-    output = permuted_ols(
-        tested_var,
-        target_var,
-        model_intercept=False,
-        n_perm=n_perm,
-        two_sided_test=False,
-        random_state=i,
-        output_type="dict",
-    )
-    assert_equal(output["h0_max_t"].shape, (n_regressors, n_perm))
-    return output["h0_max_t"]
-
-
-def permuted_ols_with_intercept(tested_var, target_var, n_perm, i):
-    output = permuted_ols(
-        tested_var,
-        target_var,
-        model_intercept=True,
-        n_perm=n_perm,
-        two_sided_test=False,
-        random_state=i,
-        output_type="dict",
-    )
-    # pval should not be significant
-    assert_array_less(output["logp_max_t"], 1.0)
-    return output["h0_max_t"]
 
 
 def ref_score(tested_var, target_var, covars=None):
@@ -172,7 +117,141 @@ def cluster_level_design(random_state=RANDOM_STATE):
 
 
 # General tests for permuted_ols function
-def test_permuted_ols_check_h0_noeffect_labelswap(random_state=RANDOM_STATE):
+
+PERM_RANGES = [10, 100, 1000]
+
+
+def mean_squared_error(df, h0_intercept):
+    return np.mean(
+        (
+            stats.t(df).cdf(np.sort(h0_intercept))
+            - np.linspace(0, 1, h0_intercept.size + 1)[1:]
+        )
+        ** 2
+    )
+
+
+def ks_stat_and_mse(df, h0_intercept):
+    """Run Kolmogorov-Smirnov test and compute Mean Squared Error"""
+    kstest_pval = stats.kstest(h0_intercept, stats.t(df).cdf)[1]
+    mse = mean_squared_error(df=df, h0_intercept=h0_intercept)
+    return kstest_pval, mse
+
+
+def permuted_ols_no_intercept(tested_var, target_var, n_perm, i):
+    n_regressors = 1
+    output = permuted_ols(
+        tested_var,
+        target_var,
+        model_intercept=False,
+        n_perm=n_perm,
+        two_sided_test=False,
+        random_state=i,
+        output_type="dict",
+    )
+    assert_equal(output["h0_max_t"].shape, (n_regressors, n_perm))
+    return output["h0_max_t"]
+
+
+def permuted_ols_with_intercept(tested_var, target_var, n_perm, i):
+    output = permuted_ols(
+        tested_var,
+        target_var,
+        model_intercept=True,
+        n_perm=n_perm,
+        two_sided_test=False,
+        random_state=i,
+        output_type="dict",
+    )
+    # pval should not be significant
+    assert_array_less(output["logp_max_t"], 1.0)
+    return output["h0_max_t"]
+
+
+def run_permutations(tested_var, target_var, model_intercept):
+    # we compute the Mean Squared Error between cumulative Density Function
+    # as a proof of consistency of the permutation algorithm
+    all_mse = []
+    all_kstest_pvals = []
+
+    for i, n_perm in enumerate(np.repeat(PERM_RANGES, 10)):
+        if model_intercept:
+            h0 = permuted_ols_with_intercept(tested_var, target_var, n_perm, i)
+            df = N_SAMPLES - 2
+        else:
+            h0 = permuted_ols_no_intercept(tested_var, target_var, n_perm, i)
+            df = N_SAMPLES - 1
+
+        h0_intercept = h0[0, :]
+        kstest_pval, mse = ks_stat_and_mse(df, h0_intercept)
+
+        all_kstest_pvals.append(kstest_pval)
+        all_mse.append(mse)
+
+    return all_kstest_pvals, all_mse
+
+
+def check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse):
+    # check that a difference between distributions is not rejected by KS test
+    all_kstest_pvals = np.array(all_kstest_pvals).reshape(
+        (len(PERM_RANGES), -1)
+    )
+    assert_array_less(0.01, all_kstest_pvals)
+
+    # consistency of the algorithm: the more permutations, the less the MSE
+    all_mse = np.array(all_mse).reshape((len(PERM_RANGES), -1))
+    assert_array_less(np.diff(all_mse.mean(1)), 0)
+
+
+def test_permuted_ols_check_h0_noeffect_labelswap_centered_var_no_intercept(
+    random_state=RANDOM_STATE,
+):
+    """Check that h0 is close to the theoretical distribution \
+    for permuted OLS with label swap.
+
+    Theoretical distribution is known for this simple design \
+        (= t(n_samples - dof)).
+    """
+    rng = check_random_state(random_state)
+
+    # create dummy design with no effect
+    target_var = rng.randn(N_SAMPLES, 1)
+    tested_var = np.arange(N_SAMPLES, dtype="f8").reshape((-1, 1))
+    tested_var -= tested_var.mean(0)  # centered
+
+    all_kstest_pvals, all_mse = run_permutations(
+        tested_var, target_var, model_intercept=False
+    )
+
+    check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse)
+
+
+def test_permuted_ols_check_h0_noeffect_labelswap_centered_var_and_intercept(
+    random_state=RANDOM_STATE,
+):
+    """Check that h0 is close to the theoretical distribution \
+    for permuted OLS with label swap.
+
+    Theoretical distribution is known for this simple design \
+        (= t(n_samples - dof)).
+    """
+    rng = check_random_state(random_state)
+
+    # create dummy design with no effect
+    target_var = rng.randn(N_SAMPLES, 1)
+    tested_var = np.arange(N_SAMPLES, dtype="f8").reshape((-1, 1))
+    tested_var -= tested_var.mean(0)  # centered
+
+    all_kstest_pvals, all_mse = run_permutations(
+        tested_var, target_var, model_intercept=True
+    )
+
+    check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse)
+
+
+def test_permuted_ols_check_h0_noeffect_labelswap_uncentered_var_and_intercept(
+    random_state=RANDOM_STATE,
+):
     """Check that h0 is close to the theoretical distribution \
     for permuted OLS with label swap.
 
@@ -185,82 +264,12 @@ def test_permuted_ols_check_h0_noeffect_labelswap(random_state=RANDOM_STATE):
     target_var = rng.randn(N_SAMPLES, 1)
     tested_var = np.arange(N_SAMPLES, dtype="f8").reshape((-1, 1))
     tested_var_not_centered = tested_var.copy()
-    tested_var -= tested_var.mean(0)  # centered
 
-    # we use two models (with and without intercept modelling)
-    all_kstest_pvals = []
-    all_kstest_pvals_intercept = []
-    all_kstest_pvals_intercept2 = []
-
-    # we compute the Mean Squared Error between cumulative Density Function
-    # as a proof of consistency of the permutation algorithm
-    all_mse = []
-    all_mse_intercept = []
-    all_mse_intercept2 = []
-
-    # test various number of permutations
-    perm_ranges = [10, 100, 1000]
-
-    for i, n_perm in enumerate(np.repeat(perm_ranges, 10)):
-        # Case no. 1: no intercept in the model
-        h0 = permuted_ols_no_intercept(tested_var, target_var, n_perm, i)
-        df = N_SAMPLES - 1
-        h0_intercept = h0[0, :]
-        # ks_stat_and_mse(df, h0_intercept, all_kstest_pvals, all_mse)
-        kstest_pval, mse = ks_stat_and_mse_new(df, h0_intercept)
-        all_kstest_pvals.append(kstest_pval)
-        all_mse.append(mse)
-
-        # Case no. 2: intercept in the model
-        h0 = permuted_ols_with_intercept(tested_var, target_var, n_perm, i)
-        df = N_SAMPLES - 2
-        h0_intercept = h0[0, :]
-        # ks_stat_and_mse(
-        #     df, h0_intercept, all_kstest_pvals_intercept, all_mse_intercept
-        # )
-        kstest_pval, mse = ks_stat_and_mse_new(df, h0_intercept)
-        all_kstest_pvals_intercept.append(kstest_pval)
-        all_mse_intercept.append(mse)
-
-        # Case no. 3: intercept in the model, no centering of tested vars
-        permuted_ols_with_intercept(
-            tested_var_not_centered,
-            target_var,
-            n_perm,
-            i,
-        )
-        df = N_SAMPLES - 2
-        h0_intercept = h0[0, :]
-        # ks_stat_and_mse(
-        #     df, h0_intercept, all_kstest_pvals_intercept2, all_mse_intercept2
-        # )
-        kstest_pval, mse = ks_stat_and_mse_new(df, h0_intercept)
-        all_kstest_pvals_intercept2.append(kstest_pval)
-        all_mse_intercept2.append(mse)
-
-    all_kstest_pvals = np.array(all_kstest_pvals).reshape(
-        (len(perm_ranges), -1)
-    )
-    all_kstest_pvals_intercept = np.array(all_kstest_pvals_intercept).reshape(
-        (len(perm_ranges), -1)
-    )
-    all_mse = np.array(all_mse).reshape((len(perm_ranges), -1))
-    all_mse_intercept = np.array(all_mse_intercept).reshape(
-        (len(perm_ranges), -1)
-    )
-    all_mse_intercept2 = np.array(all_mse_intercept2).reshape(
-        (len(perm_ranges), -1)
+    all_kstest_pvals, all_mse = run_permutations(
+        tested_var_not_centered, target_var, model_intercept=True
     )
 
-    # check that a difference between distributions is not rejected by KS test
-    assert_array_less(0.01, all_kstest_pvals)
-    assert_array_less(0.01, all_kstest_pvals_intercept)
-    assert_array_less(0.01, all_kstest_pvals_intercept2)
-
-    # consistency of the algorithm: the more permutations, the less the MSE
-    assert_array_less(np.diff(all_mse.mean(1)), 0)
-    assert_array_less(np.diff(all_mse_intercept.mean(1)), 0)
-    assert_array_less(np.diff(all_mse_intercept2.mean(1)), 0)
+    check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse)
 
 
 def test_permuted_ols_check_h0_noeffect_signswap(random_state=RANDOM_STATE):
@@ -277,35 +286,24 @@ def test_permuted_ols_check_h0_noeffect_signswap(random_state=RANDOM_STATE):
     n_regressors = 1
     tested_var = np.ones((N_SAMPLES, n_regressors))
 
-    # we compute the Mean Squared Error between cumulative Density Function
-    # as a proof of consistency of the permutation algorithm
-    all_mse = []
-
-    # test various number of permutations
-    perm_ranges = [10, 100, 1000]
-    all_kstest_pvals = []
-    for i, n_perm in enumerate(np.repeat(perm_ranges, 10)):
-        h0 = permuted_ols_no_intercept(tested_var, target_var, n_perm, i)
-        df = N_SAMPLES
-        h0_intercept = h0[0, :]
-        # ks_stat_and_mse(df, h0_intercept, all_kstest_pvals, all_mse)
-        kstest_pval, mse = ks_stat_and_mse_new(df, h0_intercept)
-        all_kstest_pvals.append(kstest_pval)
-        all_mse.append(mse)
+    all_kstest_pvals, all_mse = run_permutations(
+        tested_var, target_var, model_intercept=False
+    )
 
     all_kstest_pvals = np.array(all_kstest_pvals).reshape(
-        (len(perm_ranges), -1)
+        (len(PERM_RANGES), -1)
     )
-    all_mse = np.array(all_mse).reshape((len(perm_ranges), -1))
+    all_mse = np.array(all_mse).reshape((len(PERM_RANGES), -1))
 
     # check that a difference between distributions is not rejected by KS test
-    assert_array_less(0.01 / (len(perm_ranges) * 10.0), all_kstest_pvals)
-
+    assert_array_less(0.01 / (len(PERM_RANGES) * 10.0), all_kstest_pvals)
     # consistency of the algorithm: the more permutations, the less the MSE
     assert_array_less(np.diff(all_mse.mean(1)), 0)
 
 
 # Tests for labels swapping permutation scheme
+
+
 def test_permuted_ols_no_covar(design, random_state=RANDOM_STATE):
     target_var, tested_var, *_ = design
     output = permuted_ols(
