@@ -25,6 +25,7 @@ files: |
         | nilearn/masking.py
         | nilearn/conftest.py
         | nilearn/version.py
+        | nilearn/datasets
         | nilearn/de.*
         | nilearn/connectome/.*py
         | nilearn/image/.*py
@@ -52,6 +53,8 @@ exclude: |
         | examples/.*/.*surf_stat_map.py
         | examples/.*/.*surface_bids_analysis.py
         | examples/.*/.*surface_projection_strategies.py
+        | nilearn/datasets/description/fsaverage\.rst
+        | nilearn/datasets/description/fsaverage[3-6]\.rst
         | nilearn/externals/tempita
     )$
 

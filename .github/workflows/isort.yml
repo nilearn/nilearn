@@ -35,6 +35,7 @@ jobs:
             maint_tools \
             setup.py \
             nilearn/connectome \
+            nilearn/datasets \
             nilearn/de* \
             nilearn/image \
             nilearn/mass_univariate \
