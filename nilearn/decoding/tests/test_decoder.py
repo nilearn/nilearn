@@ -98,6 +98,7 @@ def test_check_param_grid():
     [
         {"alphas": [1, 10, 100, 1000]},
         {"alphas": [1, 10, 100, 1000], "fit_intercept": [True, False]},
+        {"fit_intercept": [True, False]},
         {"alphas": [[1, 10, 100, 1000]]},
         {"alphas": (1, 10, 100, 1000)},
         {"alphas": [(1, 10, 100, 1000)]},
@@ -105,13 +106,29 @@ def test_check_param_grid():
         {"alphas": np.array([1, 10, 100, 1000])},
         {"alphas": [np.array([1, 10, 100, 1000])]},
         [{"alphas": [1, 10]}, {"alphas": [[100, 1000]]}],
+        [{"alphas": [1, 10]}, {"fit_intercept": [True, False]}],
+        None,
     ],
 )
 def test_wrap_param_grid(param_grid):
     param_name = "alphas"
-    for param in ParameterGrid(_wrap_param_grid(param_grid, param_name)):
-        for param_value in param[param_name]:
-            assert param_value in (1, 10, 100, 1000)
+    param_grid_wrapped = _wrap_param_grid(param_grid, param_name)
+
+    if param_grid is None:
+        assert param_grid_wrapped is None
+
+    else:
+        for param in ParameterGrid(param_grid_wrapped):
+            try:
+                for param_value in param[param_name]:
+                    assert param_value in (1, 10, 100, 1000)
+
+            # if param_name is not in param_grid_wrapped,
+            # make sure that no other change was made
+            except KeyError:
+                assert any(
+                    [param == param_ for param_ in ParameterGrid(param_grid)]
+                )
 
 
 def test_check_inputs_length():
