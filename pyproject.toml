@@ -6,7 +6,7 @@ include = """
   | maint_tools/.*py
   | setup.py
   | nilearn/connectome/.*py
-  | nilearn/datasets/
+  | nilearn/datasets/.*py
   | nilearn/dec.*
   | nilearn/image/.*py
   | nilearn/mass_univariate/.*py
