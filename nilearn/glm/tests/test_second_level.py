@@ -642,14 +642,21 @@ def test_non_parametric_inference_cluster_level():
         assert get_data(out["logp_max_t"]).shape == shapes[0][:3]
         del func_img, FUNCFILE, out, X, Y
 
+try:
+    from nilearn.reporting import get_clusters_table
+except ImportError:
+    have_mpl = False
+else:
+    have_mpl = True
 
+@pytest.mark.skipif(
+    not have_mpl, reason="Matplotlib not installed; required for this test"
+)
 def test_non_parametric_inference_cluster_level_with_covariates(
         random_state=0
 ):
     """Test non-parametric inference with cluster-level inference in
     the context of covariates."""
-
-    from nilearn.reporting import get_clusters_table
     rng = np.random.RandomState(random_state)
 
     with InTemporaryDirectory():
