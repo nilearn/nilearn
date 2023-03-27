@@ -1,13 +1,12 @@
 """Tests for the permuted_ols function."""
+
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
+
 import nibabel as nib
 import numpy as np
 import pytest
 from nilearn.maskers import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
-from nilearn.mass_univariate.tests.utils import (
-    get_tvalue_with_alternative_library,
-)
 from numpy.testing import (
     assert_array_almost_equal,
     assert_array_less,
@@ -46,15 +45,19 @@ def _tfce_design():
     return target_var, tested_var, masker, n_descriptors, n_regressors
 
 
-def ref_score(tested_var, target_var, covars=None):
-    """Compute t-scores with linalg or statsmodels."""
-    return get_tvalue_with_alternative_library(tested_var, target_var, covars)
-
-
 def compare_to_ref_score(own_score, tested_var, target_var, covars=None):
     reference = ref_score(tested_var, target_var, covars)
     assert_array_almost_equal(own_score, reference, decimal=6)
     return reference
+
+
+def ref_score(tested_var, target_var, covars=None):
+    """Compute t-scores with linalg or statsmodels."""
+    from nilearn.mass_univariate.tests.utils import (
+        get_tvalue_with_alternative_library,
+    )
+
+    return get_tvalue_with_alternative_library(tested_var, target_var, covars)
 
 
 def _create_design(n_samples, n_descriptors, n_regressors):
@@ -121,28 +124,33 @@ def cluster_level_design(random_state=RANDOM_STATE):
 # Check that h0 is close to the theoretical distribution
 # for permuted OLS with label swap.
 #
-# Theoretical distribution is known for this simple design
-#     (= t(n_samples - dof)).
+# Theoretical distribution is known for this simple design t(n_samples - dof).
 
 
 PERM_RANGES = [10, 100, 1000]
 
 
-def mean_squared_error(df, h0_intercept):
-    return np.mean(
-        (
-            stats.t(df).cdf(np.sort(h0_intercept))
-            - np.linspace(0, 1, h0_intercept.size + 1)[1:]
-        )
-        ** 2
-    )
+def run_permutations(tested_var, target_var, model_intercept):
+    """Compute the Mean Squared Error between cumulative Density Function \
+    as a proof of consistency of the permutation algorithm."""
+    all_mse = []
+    all_kstest_pvals = []
 
+    for i, n_perm in enumerate(np.repeat(PERM_RANGES, 10)):
+        if model_intercept:
+            h0 = permuted_ols_with_intercept(tested_var, target_var, n_perm, i)
+            df = N_SAMPLES - 2
+        else:
+            h0 = permuted_ols_no_intercept(tested_var, target_var, n_perm, i)
+            df = N_SAMPLES - 1
 
-def ks_stat_and_mse(df, h0_intercept):
-    """Run Kolmogorov-Smirnov test and compute Mean Squared Error"""
-    kstest_pval = stats.kstest(h0_intercept, stats.t(df).cdf)[1]
-    mse = mean_squared_error(df=df, h0_intercept=h0_intercept)
-    return kstest_pval, mse
+        h0_intercept = h0[0, :]
+        kstest_pval, mse = ks_stat_and_mse(df, h0_intercept)
+
+        all_kstest_pvals.append(kstest_pval)
+        all_mse.append(mse)
+
+    return all_kstest_pvals, all_mse
 
 
 def permuted_ols_no_intercept(tested_var, target_var, n_perm, i):
@@ -175,27 +183,21 @@ def permuted_ols_with_intercept(tested_var, target_var, n_perm, i):
     return output["h0_max_t"]
 
 
-def run_permutations(tested_var, target_var, model_intercept):
-    """Compute the Mean Squared Error between cumulative Density Function \
-    as a proof of consistency of the permutation algorithm."""
-    all_mse = []
-    all_kstest_pvals = []
+def ks_stat_and_mse(df, h0_intercept):
+    """Run Kolmogorov-Smirnov test and compute Mean Squared Error"""
+    kstest_pval = stats.kstest(h0_intercept, stats.t(df).cdf)[1]
+    mse = mean_squared_error(df=df, h0_intercept=h0_intercept)
+    return kstest_pval, mse
 
-    for i, n_perm in enumerate(np.repeat(PERM_RANGES, 10)):
-        if model_intercept:
-            h0 = permuted_ols_with_intercept(tested_var, target_var, n_perm, i)
-            df = N_SAMPLES - 2
-        else:
-            h0 = permuted_ols_no_intercept(tested_var, target_var, n_perm, i)
-            df = N_SAMPLES - 1
 
-        h0_intercept = h0[0, :]
-        kstest_pval, mse = ks_stat_and_mse(df, h0_intercept)
-
-        all_kstest_pvals.append(kstest_pval)
-        all_mse.append(mse)
-
-    return all_kstest_pvals, all_mse
+def mean_squared_error(df, h0_intercept):
+    return np.mean(
+        (
+            stats.t(df).cdf(np.sort(h0_intercept))
+            - np.linspace(0, 1, h0_intercept.size + 1)[1:]
+        )
+        ** 2
+    )
 
 
 def check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse):
