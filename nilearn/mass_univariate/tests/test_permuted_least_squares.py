@@ -61,8 +61,7 @@ def ref_score(tested_var, target_var, covars=None):
 
 
 def _create_design(n_samples, n_descriptors, n_regressors):
-    random_state = RANDOM_STATE
-    rng = check_random_state(random_state)
+    rng = check_random_state(RANDOM_STATE)
 
     target_var = rng.randn(n_samples, n_descriptors)
     tested_var = rng.randn(n_samples, n_regressors)
@@ -212,8 +211,9 @@ def check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse):
     assert_array_less(np.diff(all_mse.mean(1)), 0)
 
 
-def test_permuted_ols_check_h0_noeffect_labelswap_centered_var_no_intercept(
-    random_state=RANDOM_STATE,
+@pytest.mark.parametrize("model_intercept", [True, False])
+def test_permuted_ols_check_h0_noeffect_labelswap_centered(
+    model_intercept, random_state=RANDOM_STATE
 ):
     # create dummy design with no effect
     rng = check_random_state(random_state)
@@ -223,24 +223,7 @@ def test_permuted_ols_check_h0_noeffect_labelswap_centered_var_no_intercept(
     centered_var -= centered_var.mean(0)
 
     all_kstest_pvals, all_mse = run_permutations(
-        centered_var, target_var, model_intercept=False
-    )
-
-    check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse)
-
-
-def test_permuted_ols_check_h0_noeffect_labelswap_centered_var_and_intercept(
-    random_state=RANDOM_STATE,
-):
-    # create dummy design with no effect
-    rng = check_random_state(random_state)
-    target_var = rng.randn(N_SAMPLES, 1)
-
-    centered_var = np.arange(N_SAMPLES, dtype="f8").reshape((-1, 1))
-    centered_var -= centered_var.mean(0)
-
-    all_kstest_pvals, all_mse = run_permutations(
-        centered_var, target_var, model_intercept=True
+        centered_var, target_var, model_intercept=model_intercept
     )
 
     check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse)

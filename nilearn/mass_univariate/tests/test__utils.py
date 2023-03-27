@@ -195,11 +195,9 @@ def test_calculate_cluster_measures(
 
     true_mass : (8 vox * 5 intensity) - (8 vox * 0.001 thresh)
     """
-    threshold = 0.001
-
     test_size, test_mass = _utils._calculate_cluster_measures(
         test_arr4d,
-        threshold=threshold,
+        threshold=0.001,
         bin_struct=bin_struct,
         two_sided_test=two_sided_test,
     )
@@ -209,14 +207,10 @@ def test_calculate_cluster_measures(
 
 
 def test_calculate_cluster_measures_on_empty_array():
-    test_arr4d = np.zeros((10, 10, 10, 1))
-    threshold = 0.001
-    bin_struct = generate_binary_structure(3, 1)
-
     test_size, test_mass = _utils._calculate_cluster_measures(
-        test_arr4d,
-        threshold=threshold,
-        bin_struct=bin_struct,
+        np.zeros((10, 10, 10, 1)),
+        threshold=0.001,
+        bin_struct=generate_binary_structure(3, 1),
         two_sided_test=True,
     )
 
