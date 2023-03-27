@@ -44,10 +44,12 @@ Destrieux et al, (2010). Automatic parcellation of human cortical gyri and
 sulci using standard anatomical nomenclature. NeuroImage, 53, 1.
 URL http://dx.doi.org/10.1016/j.neuroimage.2010.06.010.
 
-Retrieving the data
--------------------
 """
-# sphinx_gallery_thumbnail_number = 2
+
+###############################################################################
+# Retrieving the data
+# -------------------
+
 # NKI resting state data from nilearn
 from nilearn import datasets
 
@@ -134,7 +136,7 @@ plotting.plot_surf_roi(
 )
 
 ###############################################################################
-# Using a flat mesh can be useful in order to easily locate your area
+# Using a flat mesh can be useful in order to easily locate the area
 # of interest on the cortex. To make this plot easier to read,
 # we use the mesh curvature as a background map.
 
@@ -189,3 +191,5 @@ plotting.plot_surf_stat_map(fsaverage['infl_left'], stat_map=stat_map,
                             output_file='plot_surf_stat_map.png')
 
 plotting.show()
+
+# sphinx_gallery_thumbnail_number = 2
