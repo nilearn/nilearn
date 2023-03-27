@@ -572,7 +572,7 @@ def test_neurosynth_words_vectorized():
             }
             with open(file_name, "wb") as words_file:
                 words_file.write(json.dumps(words_dict).encode("utf-8"))
-        freq, voc = neurovault.neurosynth_words_vectorized(words_files)
+        freq, _ = neurovault.neurosynth_words_vectorized(words_files)
         assert freq.shape == (n_im, n_im)
         assert (freq.sum(axis=0) == np.ones(n_im)).all()
         with pytest.warns(UserWarning):

@@ -784,7 +784,7 @@ def fetch_localizer_contrasts(
 
     for subject_id in subject_ids:
         for data_type in data_types:
-            for contrast_id, contrast in enumerate(contrasts_wrapped):
+            for _, contrast in enumerate(contrasts_wrapped):
                 name_aux = str.replace(
                     str.join("_", [data_type, contrast]), " ", "_"
                 )
