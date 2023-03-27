@@ -43,12 +43,11 @@ http://dx.doi.org/10.1006/nimg.1998.0396
 Destrieux et al, (2010). Automatic parcellation of human cortical gyri and
 sulci using standard anatomical nomenclature. NeuroImage, 53, 1.
 URL http://dx.doi.org/10.1016/j.neuroimage.2010.06.010.
+
+Retrieving the data
+-------------------
 """
 # sphinx_gallery_thumbnail_number = 2
-###############################################################################
-# Retrieving the data
-# -------------------
-
 # NKI resting state data from nilearn
 from nilearn import datasets
 
