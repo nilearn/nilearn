@@ -25,12 +25,13 @@ RANDOM_STATE = 0
 
 
 def _tfce_design():
+    rng = check_random_state(RANDOM_STATE)
     target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
     target_var = np.hstack(
         (  # corresponds to 3 x 3 x 3 x 10 niimg
             target_var1,  # voxel 1 has positive effect
             -target_var1,  # voxel 2 has negative effect
-            np.random.random((10, 25)),  # 25 remaining voxels
+            rng.random((10, 25)),  # 25 remaining voxels
         )
     )
     tested_var = np.arange(0, 20, 2)
@@ -96,7 +97,7 @@ def masker():
 
 @pytest.fixture(scope="module")
 def cluster_level_design(random_state=RANDOM_STATE):
-    rng = np.random.RandomState(random_state)
+    rng = check_random_state(random_state)
 
     # create design
     target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect

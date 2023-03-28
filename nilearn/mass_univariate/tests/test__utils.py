@@ -130,9 +130,12 @@ def test_null_to_p_float_error(null):
     "alternative, expected_p_value",
     [("two-sided", 1 / 10000), ("smaller", 1 - 1 / 10000)],
 )
-def test_null_to_p_float_with_extreme_values(alternative, expected_p_value):
+def test_null_to_p_float_with_extreme_values(
+    alternative, expected_p_value, random_state=0
+):
     """Test that 1/n(null) is preserved with extreme values"""
-    null = np.random.normal(size=10000)
+    rng = check_random_state(random_state)
+    null = rng.normal(size=10000)
 
     result = _utils._null_to_p(20, null, alternative=alternative)
     assert math.isclose(
@@ -141,11 +144,12 @@ def test_null_to_p_float_with_extreme_values(alternative, expected_p_value):
     )
 
 
-def test_null_to_p_array():
+def test_null_to_p_array(random_state=0):
     """Test _null_to_p with 1d array input."""
+    rng = check_random_state(random_state)
     N = 10000
-    nulldist = np.random.normal(size=N)
-    t = np.sort(np.random.normal(size=N))
+    nulldist = rng.normal(size=N)
+    t = np.sort(rng.normal(size=N))
     p = np.sort(_utils._null_to_p(t, nulldist))
 
     assert p.shape == (N,)
