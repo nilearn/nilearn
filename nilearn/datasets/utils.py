@@ -243,7 +243,7 @@ def get_data_dirs(data_dir=None):
 def _get_dataset_dir(
     dataset_name, data_dir=None, default_paths=None, verbose=1
 ):
-    """Create if necessary and returns data directory of given dataset.
+    """Create if necessary and return data directory of given dataset.
 
     Parameters
     ----------
@@ -894,7 +894,7 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
 
 
 def _tree(path, pattern=None, dictionary=False):
-    """Return a directory tree under the form of a dictionaries and list.
+    """Return a directory tree under the form of a dictionary or list.
 
     Parameters
     ----------
