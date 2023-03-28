@@ -791,7 +791,7 @@ def generate_random_img(
 
 
 def create_fake_bids_dataset(
-    base_dir,
+    base_dir = Path(),
     n_sub = 10,
     n_ses = 2,
     tasks = ["localizer", "main"],
