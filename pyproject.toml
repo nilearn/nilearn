@@ -1,56 +1,108 @@
-[tool.black]
-line-length = 79
-include = """
-(
-  examples/.*py
-  | maint_tools/.*py
-  | setup.py
-  | nilearn/connectome/.*py
-  | nilearn/dec.*
-  | nilearn/image/.*py
-  | nilearn/mass_univariate/.*py
-  | nilearn/regions/.*py
-  | nilearn/signal.py
-  | nilearn/masking.py
-  | nilearn/conftest.py
-)
-"""
-# 'extend-exclude' excludes files or directories in addition to the defaults
-extend-exclude =  '''
-(
-  nilearn/externals
-  | examples/.*/.*3d_map_to_surface_projection.py
-  | examples/.*/.*demo_glass_brain.py
-  | examples/.*/.*demo_glass_brain_extensive.py
-  | examples/.*/.*demo_more_plotting.py
-  | examples/.*/.*demo_plotting.py
-  | examples/.*/.*fiac_analysis.py
-  | examples/.*/.*fixed_effects.py
-  | examples/.*/.*frem.py
-  | examples/.*/.*group_level_connectivity.py
-  | examples/.*/.*negate_image.py
-  | examples/.*/.*localizer_surface_analysis.py
-  | examples/.*/.*searchlight_surface.py
-  | examples/.*/.*resample_to_template.py
-  | examples/.*/.*surf_atlas.py
-  | examples/.*/.*surf_stat_map.py
-  | examples/.*/.*surface_bids_analysis.py
-  | examples/.*/.*surface_projection_strategies.py
-)
-'''
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
 
-
-[tool.isort]
-profile = "black"
-src_paths = [
-  'maint_tools',
-  'setup.py',
-  'nilearn/connectome/.*py',
-  'nilearn/dec.*',
-  'nilearn/image/.*py',
-  'nilearn/mass_univariate/.*py',
-  'nilearn/regions/.*py',
+[project]
+name = "nilearn"
+description = "Statistical learning for neuroimaging in Python"
+authors = [{ name = "Nilearn developers"}]
+maintainers = [{ name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr" }]
+readme = "README.rst"
+license = { text = "new BSD" }
+requires-python = ">=3.7"
+dependencies = [
+  "joblib>=1.0.0",
+  "lxml",
+  "nibabel>=3.2.0",
+  "numpy>=1.19.0",
+  "pandas>=1.1.5",
+  "requests>=2.25.0",
+  "scikit-learn>=1.0.0",
+  "scipy>=1.6.0",
+  "packaging"
 ]
-line_length = 79
-skip_gitignore = true
-combine_as_imports = true
+classifiers = [
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved",
+  "Programming Language :: C",
+  "Programming Language :: Python",
+  "Topic :: Software Development",
+  "Topic :: Scientific/Engineering",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: POSIX",
+  "Operating System :: Unix",
+  "Operating System :: MacOS",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+]
+# Version from setuptools_scm
+dynamic = ["version"]
+
+[project.urls]
+"Homepage" = "https://nilearn.github.io"
+"Development" = "https://github.com/nilearn/nilearn"
+
+[project.optional-dependencies]
+# Necessary req to use nilearn's plotting module
+plotting = ["matplotlib>=3.3.0"]
+# For surface plotting mostly
+plotly = ["kaleido", "plotly"]
+# Requirements necessary for building the documentation
+doc = [
+	"nilearn[plotly]",
+	"coverage",
+	"flake8",
+	"flake8-docstrings",
+	"black",
+	"furo",
+	"memory_profiler",  # measuring memory during docs building
+	"mkl",
+	"myst-parser",
+	"numpydoc",
+	"sphinx",
+	"sphinx-copybutton",
+	"sphinx-design",
+	"sphinx-gallery",
+	"sphinxcontrib-bibtex",
+	"sphinxext-opengraph",
+]
+# For testing of oldest usable versions of dependencies.
+min = [
+	"joblib==1.0.0",
+	"nibabel==3.2.0",
+	"numpy==1.19.0",
+	"pandas==1.1.5",
+	"scikit-learn==1.0.0",
+	"scipy==1.6.0",
+]
+# For running unit and docstring tests
+test = [
+	"codecov",
+	"coverage",
+	"pytest>=6.0.0",
+	"pytest-cov",
+]
+# A combination of dependencies useful for developers
+dev = ["nilearn[plotting,plotly,soc,test]"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+
+]
+
+[tool.hatch.build.targets.wheel]
+packages = []
+exclude = [
+
+]
+
+[tool.hatch.version]
+source = "vcs"
+raw-options = { version_scheme = "release-branch-semver" }
+
+[tool.hatch.build.hooks.vcs]
+version-file = "nilearn/version.py"
