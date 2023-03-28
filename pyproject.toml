@@ -37,9 +37,6 @@ extend-exclude =  '''
   | examples/.*/.*surf_stat_map.py
   | examples/.*/.*surface_bids_analysis.py
   | examples/.*/.*surface_projection_strategies.py
-  | nilearn/datasets/neurovault.py
-  | nilearn/datasets/struct.py
-  | nilearn/datasets/tests/test_struct.py
 )
 '''
 
