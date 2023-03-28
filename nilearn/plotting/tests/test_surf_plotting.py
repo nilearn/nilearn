@@ -43,18 +43,71 @@ except ImportError:
 else:
     IPYTHON_INSTALLED = True
 
-EXPECTED_CAMERAS_PLOTLY = {"left": {"anterior": "anterior",
-                                    "posterior": "posterior",
-                                    "medial": "right",
-                                    "lateral": "left",
-                                    "dorsal": "dorsal",
-                                    "ventral": "ventral"},
-                           "right": {"anterior": "anterior",
-                                     "posterior": "posterior",
-                                     "medial": "left",
-                                     "lateral": "right",
-                                     "dorsal": "dorsal",
-                                     "ventral": "ventral"}}
+EXPECTED_CAMERAS_PLOTLY = {
+    "left": {
+        "lateral": {
+            "eye": {"x": -1.5, "y": 0, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+        "medial": {
+            "eye": {"x": 1.5, "y": 0, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+        "dorsal": {
+            "eye": {"x": 0, "y": 0, "z": 1.5},
+            "up": {"x": 0, "y": 1, "z": 0},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+        "ventral": {
+            "eye": {"x": 0, "y": 0, "z": -1.5},
+            "up": {"x": 0, "y": 1, "z": 0},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+        "anterior": {
+            "eye": {"x": 0, "y": 1.5, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+        "posterior": {
+            "eye": {"x": 0, "y": -1.5, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    },
+    "right": {
+        "medial": {
+            "eye": {"x": -1.5, "y": 0, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+        "lateral": {
+            "eye": {"x": 1.5, "y": 0, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+        "dorsal": {
+            "eye": {"x": 0, "y": 0, "z": 1.5},
+            "up": {"x": 0, "y": 1, "z": 0},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+        "ventral": {
+            "eye": {"x": 0, "y": 0, "z": -1.5},
+            "up": {"x": 0, "y": 1, "z": 0},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+        "anterior": {
+            "eye": {"x": 0, "y": 1.5, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+        "posterior": {
+            "eye": {"x": 0, "y": -1.5, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    }}
 
 
 EXPECTED_VIEW_MATPLOTLIB = {"left": {"anterior": (0, 90),
