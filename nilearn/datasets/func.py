@@ -1092,9 +1092,7 @@ def fetch_abide_pcp(
     # People keep getting it wrong and submitting a string instead of a
     # list of strings. We'll make their life easy
     if isinstance(derivatives, str):
-        derivatives = [
-            derivatives,
-        ]
+        derivatives = [derivatives]
 
     # Parameter check
     for derivative in derivatives:

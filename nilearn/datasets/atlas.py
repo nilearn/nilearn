@@ -660,7 +660,8 @@ def _get_atlas_data_and_labels(
     resume=True,
     verbose=1,
 ):
-    """Help for both fetch_atlas_juelich and fetch_atlas_harvard_oxford.
+    """Implement fetching logic common to \
+    both fetch_atlas_juelich and fetch_atlas_harvard_oxford.
 
     This function downloads the atlas image and labels.
     """
@@ -1404,10 +1405,9 @@ def fetch_atlas_basc_multiscale_2015(
             % (version, str(versions))
         )
 
-    if version == "sym":
-        url = "https://ndownloader.figshare.com/files/1861819"
-    elif version == "asym":
-        url = "https://ndownloader.figshare.com/files/1861820"
+    file_number = "1861819" if version == "sym" else "1861820"
+    url = f"https://ndownloader.figshare.com/files/{file_number}"
+
     opts = {"uncompress": True}
 
     keys = [
