@@ -950,8 +950,15 @@ def _fetch_surf_fsaverage5():
     data = {
         f"{part}_{hemi}": str(data_dir / f"{part}_{hemi}.gii.gz")
         for part in [
-            "area", "curv", "flat", "infl", "pial",
-            "sphere", "sulc", "thick", "white"
+            "area",
+            "curv",
+            "flat",
+            "infl",
+            "pial",
+            "sphere",
+            "sulc",
+            "thick",
+            "white",
         ]
         for hemi in ["left", "right"]
     }
@@ -982,8 +989,15 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
     dataset_attributes = [
         f"{part}_{hemi}"
         for part in [
-            "area", "curv", "flat", "infl", "pial",
-            "sphere", "sulc", "thick", "white"
+            "area",
+            "curv",
+            "flat",
+            "infl",
+            "pial",
+            "sphere",
+            "sulc",
+            "thick",
+            "white",
         ]
         for hemi in ["left", "right"]
     ]
