@@ -764,6 +764,8 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
          - 'area_right': Gifti file, right hemisphere area data
          - 'curv_left': Gifti file, left hemisphere curvature data
          - 'curv_right': Gifti file, right hemisphere curvature data
+         - 'flat_left': Gifti file, left hemisphere flat surface mesh
+         - 'flat_right': Gifti file, right hemisphere flat surface mesh
          - 'pial_left': Gifti file, left hemisphere pial surface mesh
          - 'pial_right': Gifti file, right hemisphere pial surface mesh
          - 'infl_left': Gifti file, left hemisphere inflated pial surface mesh
@@ -826,7 +828,7 @@ def _fetch_surf_fsaverage5():
             data_dir / "{}_{}.gii.gz".format(part, hemi)
         )
         for part in [
-            "area", "curv", "infl", "pial",
+            "area", "curv", "flat", "infl", "pial",
             "sphere", "sulc", "thick", "white"
         ]
         for hemi in ["left", "right"]
@@ -848,17 +850,17 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
     opts = {'uncompress': True}
 
     url = {
-        "fsaverage3": "https://osf.io/asvjk/download",
-        "fsaverage4": "https://osf.io/x2j49/download",
-        "fsaverage6": "https://osf.io/um5ag/download",
-        "fsaverage": "https://osf.io/q7a5k/download",  # fsaverage7
+        "fsaverage3": "https://osf.io/azhdf/download",
+        "fsaverage4": "https://osf.io/28uma/download",
+        "fsaverage6": "https://osf.io/jzxyr/download",
+        "fsaverage": "https://osf.io/svf8k/download",  # fsaverage7
     }[dataset_name]
 
     # List of attributes exposed by the dataset
     dataset_attributes = [
         "{}_{}".format(part, hemi)
         for part in [
-            "area", "curv", "infl", "pial",
+            "area", "curv", "flat", "infl", "pial",
             "sphere", "sulc", "thick", "white"
         ]
         for hemi in ["left", "right"]
