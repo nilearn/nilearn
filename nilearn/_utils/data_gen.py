@@ -791,17 +791,17 @@ def generate_random_img(
 
 
 def create_fake_bids_dataset(
-    base_dir: str | Path = Path(),
-    n_sub: int = 10,
-    n_ses: int = 2,
-    tasks: list[str] = ["localizer", "main"],
-    n_runs: list[int] = [1, 3],
-    with_derivatives: bool = True,
-    with_confounds: bool = True,
-    confounds_tag: str | None = "desc-confounds_timeseries",
+    base_dir,
+    n_sub = 10,
+    n_ses = 2,
+    tasks = ["localizer", "main"],
+    n_runs = [1, 3],
+    with_derivatives = True,
+    with_confounds = True,
+    confounds_tag = "desc-confounds_timeseries",
     random_state=0,
-    entities: dict[str, list[str]] | None = None,
-) -> Path:
+    entities = None,
+):
     """Create a fake :term:`bids<BIDS>` dataset directory with dummy files.
 
     Returns fake dataset directory name.
@@ -926,7 +926,7 @@ def create_fake_bids_dataset(
     return bids_path
 
 
-def _check_entities_and_labels(entities: dict) -> None:
+def _check_entities_and_labels(entities):
     """Check entities and labels are BIDS compliant.
     
     Parameters
@@ -953,15 +953,15 @@ def _check_entities_and_labels(entities: dict) -> None:
 
 
 def _mock_bids_dataset(
-    bids_path: Path,
-    n_sub: int,
-    n_ses: int,
-    tasks: list[str],
-    n_runs: list[int],
-    entities: dict[str, list[str]],
-    n_voxels: int,
-    rand_gen: np.random.RandomState,
-) -> None:
+    bids_path,
+    n_sub,
+    n_ses,
+    tasks,
+    n_runs,
+    entities,
+    n_voxels,
+    rand_gen,
+):
     """Create a fake raw :term:`bids<BIDS>` dataset directory with dummy files.
 
     Parameters
@@ -1045,16 +1045,16 @@ def _mock_bids_dataset(
 
 
 def _mock_bids_derivatives(
-    bids_path: Path,
-    n_sub: int,
-    n_ses: int,
-    tasks: list[str],
-    n_runs: list[int],
-    confounds_tag: str | None,
-    entities: dict[str, list[str]],
-    n_voxels: int,
-    rand_gen: np.random.RandomState,
-) -> None:
+    bids_path,
+    n_sub,
+    n_ses,
+    tasks,
+    n_runs,
+    confounds_tag,
+    entities,
+    n_voxels,
+    rand_gen,
+):
     """Create a fake raw :term:`bids<BIDS>` dataset directory with dummy files.
 
     Parameters
@@ -1139,7 +1139,7 @@ def _mock_bids_derivatives(
                     )
 
 
-def _listify(n: int) -> list[str]:
+def _listify(n):
     """Return a list of zero padded BIDS labels.
 
     If n is 0 or less, return an empty list.
@@ -1158,8 +1158,8 @@ def _listify(n: int) -> list[str]:
 
 
 def _create_bids_filename(
-    fields: dict[str, Any], entities_to_include: list[str] | None = None
-) -> str:
+    fields, entities_to_include = None
+):
     """Create BIDS filename from dictionary of entity-label pairs.
 
     Parameters
@@ -1194,10 +1194,10 @@ def _create_bids_filename(
     return filename
 
 
-def _init_fields(subject: str,
-                 session: str,
-                 task: str,
-                 run: str) -> dict[str, Any]:
+def _init_fields(subject,
+                 session,
+                 task,
+                 run):
     """Initialize fields to help create a valid BIDS filename.
 
     Parameters
@@ -1237,7 +1237,7 @@ def _init_fields(subject: str,
     return fields
 
 
-def _write_bids_raw_anat(subses_dir: Path, subject: str, session: str) -> None:
+def _write_bids_raw_anat(subses_dir, subject, session) -> None:
     """Create a dummy anat T1w file.
 
     Parameters
@@ -1262,11 +1262,11 @@ def _write_bids_raw_anat(subses_dir: Path, subject: str, session: str) -> None:
 
 
 def _write_bids_raw_func(
-    func_path: Path,
-    fields: dict[str, Any],
-    n_voxels: int,
-    rand_gen: np.random.RandomState,
-) -> None:
+    func_path,
+    fields,
+    n_voxels,
+    rand_gen,
+):
     """Create BIDS functional raw nifti, json sidecar and events files.
 
     Parameters
@@ -1305,12 +1305,12 @@ def _write_bids_raw_func(
 
 
 def _write_bids_derivative_func(
-    func_path: Path,
-    fields: dict[str, Any],
-    n_voxels: int,
-    rand_gen: np.random.RandomState,
-    confounds_tag: str | None,
-) -> None:
+    func_path,
+    fields,
+    n_voxels,
+    rand_gen,
+    confounds_tag,
+):
     """Create BIDS functional derivative and confounds files.
 
     Files created come with two spaces and descriptions.

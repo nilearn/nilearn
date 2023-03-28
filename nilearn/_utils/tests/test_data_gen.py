@@ -17,12 +17,12 @@ from nilearn.image import get_data
 
 
 def _bids_path_template(
-    task: str,
-    suffix: str,
-    n_runs: int | None = None,
-    space: int | None = None,
-    desc: int | None = None,
-    extra_entity: int | dict[str, str] = None,
+    task,
+    suffix,
+    n_runs = None,
+    space = None,
+    desc = None,
+    extra_entity = None,
 ):
     """Create a BIDS filepath from a template.
 
@@ -87,12 +87,12 @@ def test_fake_bids_raw_with_session_and_runs(
 
 
 def _check_nb_files_derivatives_for_task(
-    bids_path: Path,
-    n_sub: int,
-    n_ses: int,
-    task: str,
-    n_run: int,
-    extra_entity: dict[str, str | None] = None,
+    bids_path,
+    n_sub,
+    n_ses,
+    task,
+    n_run,
+    extra_entity = None,
 ):
     """Check number of each file 'type' in derivatives for a given task."""
     for suffix in ["timeseries.tsv"]:
