@@ -8,6 +8,7 @@ except ImportError:
 else:
     MATPLOTLIB_INSTALLED = True
 import pytest
+import warnings
 
 from nilearn.plotting import _set_mpl_backend
 
@@ -29,7 +30,8 @@ def test_should_raise_warning_if_backend_changes(*_):
 def test_should_not_raise_warning_if_backend_is_not_changed(*_):
     # The backend values returned by matplotlib.get_backend are identical.
     # Warning should not be raised.
-    with pytest.warns(None):
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         _set_mpl_backend()
 
 

@@ -71,7 +71,9 @@ def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):
 
             for j in range(n_descriptors):
                 current_target = target_vars[:, j].reshape((-1, 1))
-                res_lstsq = linalg.lstsq(current_design_matrix, current_target)
+                res_lstsq = linalg.lstsq(
+                    current_design_matrix, current_target, rcond=-1
+                )
                 residuals = current_target - np.dot(
                     current_design_matrix, res_lstsq[0]
                 )
