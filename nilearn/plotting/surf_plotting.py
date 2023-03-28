@@ -2,6 +2,7 @@
 Functions for surface visualization.
 """
 import itertools
+import math
 import warnings
 
 from collections.abc import Sequence
@@ -37,34 +38,24 @@ VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
 VALID_HEMISPHERES = "left", "right"
 
 
-AXIS_CONFIG = {
-    "showgrid": False,
-    "showline": False,
-    "ticks": "",
-    "title": "",
-    "showticklabels": False,
-    "zeroline": False,
-    "showspikes": False,
-    "spikesides": False,
-    "showbackground": False,
+MATPLOTLIB_VIEWS = {
+    "left": {
+        "lateral": (0, 180),
+        "medial": (0, 0),
+        "dorsal": (90, 0),
+        "ventral": (270, 0),
+        "anterior": (0, 90),
+        "posterior": (0, 270)
+    },
+    "right": {
+        "lateral": (0, 0),
+        "medial": (0, 180),
+        "dorsal": (90, 0),
+        "ventral": (270, 0),
+        "anterior": (0, 90),
+        "posterior": (0, 270)
+    }
 }
-
-
-MATPLOTLIB_VIEWS = {"right": {"lateral": (0, 0),
-                              "medial": (0, 180),
-                              "dorsal": (90, 0),
-                              "ventral": (270, 0),
-                              "anterior": (0, 90),
-                              "posterior": (0, 270)
-                              },
-                    "left": {"medial": (0, 0),
-                             "lateral": (0, 180),
-                             "dorsal": (90, 0),
-                             "ventral": (270, 0),
-                             "anterior": (0, 90),
-                             "posterior": (0, 270)
-                             }
-                    }
 
 
 CAMERAS = {
@@ -101,8 +92,24 @@ CAMERAS = {
 }
 
 
+AXIS_CONFIG = {
+    "showgrid": False,
+    "showline": False,
+    "ticks": "",
+    "title": "",
+    "showticklabels": False,
+    "zeroline": False,
+    "showspikes": False,
+    "spikesides": False,
+    "showbackground": False,
+}
+
+
 LAYOUT = {
-    "scene": {f"{dim}axis": AXIS_CONFIG for dim in ("x", "y", "z")},
+    "scene": {
+        "dragmode": "orbit",
+        **{f"{dim}axis": AXIS_CONFIG for dim in ("x", "y", "z")}
+    },
     "paper_bgcolor": "#fff",
     "hovermode": False,
     "margin": {"l": 0, "r": 0, "b": 0, "t": 0, "pad": 0},
@@ -110,19 +117,68 @@ LAYOUT = {
 
 
 def _get_view_plot_surf_plotly(hemi, view):
-    """Helper function for plot_surf with plotly engine.
+    """
+    Get camera parameters from hemi and view for the plotly engine.
 
     This function checks the selected hemisphere and view, and
     returns the cameras view.
     """
+    camera_view = None
     if _check_views([view]) and _check_hemispheres([hemi]):
-        if view == 'lateral':
-            view = hemi
-        elif view == 'medial':
-            view = (VALID_HEMISPHERES[0]
+        if isinstance(view, str):
+            if view == 'lateral':
+                camera_view = CAMERAS[hemi]
+            elif view == 'medial':
+                camera_view = CAMERAS[
+                    VALID_HEMISPHERES[0]
                     if hemi == VALID_HEMISPHERES[1]
-                    else VALID_HEMISPHERES[1])
-    return view
+                    else VALID_HEMISPHERES[1]
+                ]
+            else:
+                camera_view = CAMERAS[view]
+        else:
+            elev, azim = view
+            # The radius is useful only when using a "perspective" projection,
+            # otherwise, if projection is "orthographic",
+            # one should tweak the "aspectratio" to emulate zoom
+            r = 1.5
+            # The camera position and orientation is set by three 3d vectors,
+            # whose coordinates are independent of the plotted data.
+            camera_view = {
+                # Where the camera should look at
+                # (it should always be looking at the center of the scene)
+                "center": {"x": 0, "y": 0, "z": 0},
+                # Where the camera should be located
+                "eye": {
+                    "x": (
+                        r
+                        * math.cos(azim / 360 * 2 * math.pi)
+                        * math.cos(elev / 360 * 2 * math.pi)
+                    ),
+                    "y": (
+                        r
+                        * math.sin(azim / 360 * 2 * math.pi)
+                        * math.cos(elev / 360 * 2 * math.pi)
+                    ),
+                    "z": r * math.sin(elev / 360 * 2 * math.pi),
+                },
+                # How the camera should be rotated.
+                # It is determined by a 3d vector indicating which direction
+                # should look up in the generated plot
+                "up": {
+                    "x": math.sin(elev / 360 * 2 * math.pi) * math.cos(
+                        azim / 360 * 2 * math.pi + math.pi
+                    ),
+                    "y": math.sin(elev / 360 * 2 * math.pi) * math.sin(
+                        azim / 360 * 2 * math.pi + math.pi
+                    ),
+                    "z": math.cos(elev / 360 * 2 * math.pi),
+                },
+                # "projection": {"type": "perspective"},
+                "projection": {"type": "orthographic"},
+            }
+
+    return camera_view
 
 
 def _configure_title_plotly(title, font_size, color="black"):
@@ -248,9 +304,9 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
         fig_data.append(dummy)
 
     # instantiate plotly figure
-    cameras_view = _get_view_plot_surf_plotly(hemi, view)
+    camera_view = _get_view_plot_surf_plotly(hemi, view)
     fig = go.Figure(data=fig_data)
-    fig.update_layout(scene_camera=CAMERAS[cameras_view],
+    fig.update_layout(scene_camera=camera_view,
                       title=_configure_title_plotly(title, title_font_size),
                       **LAYOUT)
 
