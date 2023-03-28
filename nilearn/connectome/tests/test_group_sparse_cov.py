@@ -24,14 +24,27 @@ def test_group_sparse_covariance():
     alpha = 0.1
 
     # These executions must hit the tolerance limit
-    emp_covs, omega = group_sparse_covariance(
+    _, omega = group_sparse_covariance(
         signals, alpha, max_iter=20, tol=1e-2, debug=True, verbose=0
     )
-    emp_covs, omega2 = group_sparse_covariance(
+    _, omega2 = group_sparse_covariance(
         signals, alpha, max_iter=20, tol=1e-2, debug=True, verbose=0
     )
 
     np.testing.assert_almost_equal(omega, omega2, decimal=4)
+
+
+def test_group_sparse_covariance_with_probe_function():
+    signals, _, _ = generate_group_sparse_gaussian_graphs(
+        density=0.1,
+        n_subjects=5,
+        n_features=10,
+        min_n_samples=100,
+        max_n_samples=151,
+        random_state=np.random.RandomState(0),
+    )
+
+    alpha = 0.1
 
     class Probe:
         def __init__(self):
@@ -56,7 +69,7 @@ def test_group_sparse_covariance():
 
     # Use a probe to test for number of iterations and decreasing objective.
     probe = Probe()
-    emp_covs, omega = group_sparse_covariance(
+    _, omega = group_sparse_covariance(
         signals, alpha, max_iter=4, tol=None, verbose=0, probe_function=probe
     )
     objective = probe.objective
@@ -68,14 +81,15 @@ def test_group_sparse_covariance():
     assert np.all(np.diff(objective) <= 0)
     assert omega.shape == (10, 10, 5)
 
-    # Test input argument checking
-    pytest.raises(ValueError, group_sparse_covariance, signals, "")
-    pytest.raises(ValueError, group_sparse_covariance, 1, alpha)
-    pytest.raises(
-        ValueError,
-        group_sparse_covariance,
-        [np.ones((2, 2)), np.ones((2, 3))],
-        alpha,
+
+def test_group_sparse_covariance_check_consistency_between_classes():
+    signals, _, _ = generate_group_sparse_gaussian_graphs(
+        density=0.1,
+        n_subjects=5,
+        n_features=10,
+        min_n_samples=100,
+        max_n_samples=151,
+        random_state=np.random.RandomState(0),
     )
 
     # Check consistency between classes
@@ -92,3 +106,26 @@ def test_group_sparse_covariance():
     np.testing.assert_almost_equal(
         gsc1.precisions_, gsc2.precisions_, decimal=4
     )
+
+
+def test_group_sparse_covariance_errors():
+    signals, _, _ = generate_group_sparse_gaussian_graphs(
+        density=0.1,
+        n_subjects=5,
+        n_features=10,
+        min_n_samples=100,
+        max_n_samples=151,
+        random_state=np.random.RandomState(0),
+    )
+
+    alpha = 0.1
+
+    # Test input argument checking
+    with pytest.raises(ValueError, match="must be a positive number"):
+        group_sparse_covariance(signals, "")
+    with pytest.raises(ValueError, match="subjects' .* must be .* iterable"):
+        group_sparse_covariance(1, alpha)
+    with pytest.raises(
+        ValueError, match="All subjects must have the same number of features."
+    ):
+        group_sparse_covariance([np.ones((2, 2)), np.ones((2, 3))], alpha)
