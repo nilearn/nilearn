@@ -938,7 +938,8 @@ def first_level_from_bids(dataset_path,
         )
         t_r = _infer_repetition_time_from_dataset(
             bids_path=derivatives_path,
-            filters=filters)
+            filters=filters,
+            verbose=verbose)
         # If the parameter information is not found in the derivatives folder,
         # a search is done in the raw data folder.         
         if t_r is None:
@@ -950,7 +951,8 @@ def first_level_from_bids(dataset_path,
             )
             t_r = _infer_repetition_time_from_dataset(
             bids_path=dataset_path,
-            filters=filters)
+            filters=filters,
+            verbose=verbose)
     if t_r is not None:        
         _check_repetition_time(t_r)
     else:
@@ -969,11 +971,12 @@ def first_level_from_bids(dataset_path,
             space_label=space_label,
             supported_filters=[*_bids_entities()["raw"], *_bids_entities()["derivatives"]],
             extra_filter=img_filters,
-                        verbose=verbose
+            verbose=verbose
         )
         StartTime = _infer_slice_timing_start_time_from_dataset(
             bids_path=derivatives_path, 
-            filters=filters)
+            filters=filters,
+            verbose=verbose)
         if StartTime is not None and t_r is not None:
             assert(StartTime < t_r)
             slice_time_ref = StartTime / t_r

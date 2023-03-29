@@ -582,7 +582,8 @@ def test_first_level_from_bids_set_repetition_time_warnings(tmp_path, t_r, warni
             task_label='main',
             space_label='MNI',
             img_filters=[('desc', 'preproc')],
-            t_r=t_r
+            t_r=t_r,
+            verbose=1
         )
         
         # If no t_r is provided it is inferred from the raw dataset
