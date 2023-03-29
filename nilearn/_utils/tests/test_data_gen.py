@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import numpy as np
 import pytest
 from nilearn._utils.data_gen import (
@@ -19,10 +17,10 @@ from nilearn.image import get_data
 def _bids_path_template(
     task,
     suffix,
-    n_runs = None,
-    space = None,
-    desc = None,
-    extra_entity = None,
+    n_runs=None,
+    space=None,
+    desc=None,
+    extra_entity=None,
 ):
     """Create a BIDS filepath from a template.
 
@@ -92,7 +90,7 @@ def _check_nb_files_derivatives_for_task(
     n_ses,
     task,
     n_run,
-    extra_entity = None,
+    extra_entity=None,
 ):
     """Check number of each file 'type' in derivatives for a given task."""
     for suffix in ["timeseries.tsv"]:
