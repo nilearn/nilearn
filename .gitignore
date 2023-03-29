@@ -10,6 +10,9 @@
 *.zip
 *#
 
+# ignore python type annotation stubs for now
+*.pyi
+
 nilearn_cache
 nilearn_data
 
@@ -56,3 +59,6 @@ doc/themes/nilearn/static/jquery.js
 examples/**/*.pdf
 examples/**/results/
 examples/results/
+
+# created during testing
+bids_dataset

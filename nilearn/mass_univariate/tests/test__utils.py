@@ -12,7 +12,41 @@ from scipy.ndimage import generate_binary_structure
 from sklearn.utils import check_random_state
 
 
-def test__calculate_tfce():
+@pytest.fixture
+def null():
+    """Return a dummy null distribution that can be reused across tests."""
+    return [-10, -9, -9, -3, -2, -1, -1, 0, 1, 1, 1, 2, 3, 3, 4, 4, 7, 8, 8, 9]
+
+
+@pytest.fixture
+def test_arr4d():
+    test_arr4d = np.zeros((10, 10, 10, 1))
+    test_arr4d[:2, :2, :2, 0] = 5  # 8-voxel cluster, high intensity
+    test_arr4d[7:, 7:, 7:, 0] = 1  # 27-voxel cluster, low intensity
+    test_arr4d[6, 6, 6, 0] = 1  # corner touching second cluster
+    test_arr4d[6, 6, 8, 0] = 1  # edge touching second cluster
+    test_arr4d[3:5, 3:5, 3:5, 0] = -10  # negative cluster, very high intensity
+    test_arr4d[5:6, 3:5, 3:5, 0] = 1  # cluster touching negative one
+    return test_arr4d
+
+
+@pytest.mark.parametrize(
+    "two_sided_test, dh, true_max_tfce",
+    [
+        (
+            False,
+            "auto",
+            5050,
+        ),  # One-sided where positive cluster has highest TFCE
+        (
+            True,
+            "auto",
+            5555,
+        ),  # Two-sided where negative cluster has highest TFCE
+        (False, 1, 550),  # One-sided with preset dh
+    ],
+)
+def test_calculate_tfce(two_sided_test, dh, true_max_tfce):
     """Test _calculate_tfce."""
     test_arr4d = np.zeros((10, 10, 10, 1))
     bin_struct = generate_binary_structure(3, 1)
@@ -27,190 +61,165 @@ def test__calculate_tfce():
     test_arr4d[3, 5, 3, 0] = -11
     test_arr4d[5, 3, 3, 0] = -11
 
-    # One-sided test where positive cluster has the highest TFCE
-    true_max_tfce = 5050
     test_tfce_arr4d = _utils._calculate_tfce(
         test_arr4d,
         bin_struct=bin_struct,
         E=1,
         H=1,
-        dh="auto",
-        two_sided_test=False,
+        dh=dh,
+        two_sided_test=two_sided_test,
     )
-    assert test_tfce_arr4d.shape == test_arr4d.shape
-    assert np.max(np.abs(test_tfce_arr4d)) == true_max_tfce
 
-    # Two-sided test where negative cluster has the highest TFCE
-    true_max_tfce = 5555
-    test_tfce_arr4d = _utils._calculate_tfce(
-        test_arr4d,
-        bin_struct=bin_struct,
-        E=1,
-        H=1,
-        dh="auto",
-        two_sided_test=True,
-    )
-    assert test_tfce_arr4d.shape == test_arr4d.shape
-    assert np.max(np.abs(test_tfce_arr4d)) == true_max_tfce
-
-    # One-sided test with preset dh
-    true_max_tfce = 550
-    test_tfce_arr4d = _utils._calculate_tfce(
-        test_arr4d,
-        bin_struct=bin_struct,
-        E=1,
-        H=1,
-        dh=1,
-        two_sided_test=False,
-    )
     assert test_tfce_arr4d.shape == test_arr4d.shape
     assert np.max(np.abs(test_tfce_arr4d)) == true_max_tfce
 
 
-def test_null_to_p_float():
-    """Test _null_to_p with single float input."""
-    null = [-10, -9, -9, -3, -2, -1, -1, 0, 1, 1, 1, 2, 3, 3, 4, 4, 7, 8, 8, 9]
-
-    # Left/lower-tailed
+@pytest.mark.parametrize(
+    "test_values, expected_p_value", [(9, 0.95), (-9, 0.15), (0, 0.4)]
+)
+def test_null_to_p_float_1_tailed_lower_tailed(
+    null, test_values, expected_p_value
+):
+    """Test _null_to_p with single float input lower-tailed ."""
     assert math.isclose(
-        _utils._null_to_p(9, null, alternative="smaller"),
-        0.95,
-    )
-    assert math.isclose(
-        _utils._null_to_p(-9, null, alternative="smaller"),
-        0.15,
-    )
-    assert math.isclose(_utils._null_to_p(0, null, alternative="smaller"), 0.4)
-
-    # Right/upper-tailed
-    assert math.isclose(_utils._null_to_p(9, null, alternative="larger"), 0.05)
-    assert math.isclose(
-        _utils._null_to_p(-9, null, alternative="larger"),
-        0.95,
-    )
-    assert math.isclose(_utils._null_to_p(0, null, alternative="larger"), 0.65)
-
-    # Test that 1/n(null) is preserved with extreme values
-    nulldist = np.random.normal(size=10000)
-    assert math.isclose(
-        _utils._null_to_p(20, nulldist, alternative="two-sided"),
-        1 / 10000,
-    )
-    assert math.isclose(
-        _utils._null_to_p(20, nulldist, alternative="smaller"),
-        1 - 1 / 10000,
+        _utils._null_to_p(test_values, null, alternative="smaller"),
+        expected_p_value,
     )
 
-    # Two-tailed
+
+@pytest.mark.parametrize(
+    "test_values, expected_p_value", [(9, 0.05), (-9, 0.95), (0, 0.65)]
+)
+def test_null_to_p_float_1_tailed_uppper_tailed(
+    test_values, expected_p_value, null
+):
+    """Test _null_to_p with single float input upper-tailed."""
     assert math.isclose(
-        _utils._null_to_p(0, null, alternative="two-sided"),
-        0.95,
+        _utils._null_to_p(test_values, null, alternative="larger"),
+        expected_p_value,
     )
-    result = _utils._null_to_p(9, null, alternative="two-sided")
-    assert result == _utils._null_to_p(-9, null, alternative="two-sided")
-    assert math.isclose(result, 0.2)
-    result = _utils._null_to_p(10, null, alternative="two-sided")
-    assert result == _utils._null_to_p(-10, null, alternative="two-sided")
-    assert math.isclose(result, 0.05)
 
-    # Still 0.05 because minimum valid p-value is 1 / len(null)
-    result = _utils._null_to_p(20, null, alternative="two-sided")
-    assert result == _utils._null_to_p(-20, null, alternative="two-sided")
-    assert math.isclose(result, 0.05)
 
+@pytest.mark.parametrize(
+    "test_values, expected_p_value",
+    [
+        (0, 0.95),
+        (9, 0.2),
+        (10, 0.05),
+        (
+            20,
+            0.05,
+        ),  # Still 0.05 because minimum valid p-value is 1 / len(null)
+    ],
+)
+def test_null_to_p_float_2_tailed(test_values, expected_p_value, null):
+    """Test _null_to_p with single float input two-sided."""
+    result = _utils._null_to_p(test_values, null, alternative="two-sided")
+    assert result == _utils._null_to_p(
+        test_values * -1, null, alternative="two-sided"
+    )
+    assert math.isclose(result, expected_p_value)
+
+
+def test_null_to_p_float_error(null):
     with pytest.raises(ValueError):
         _utils._null_to_p(9, null, alternative="raise")
 
 
-def test_null_to_p_array():
+@pytest.mark.parametrize(
+    "alternative, expected_p_value",
+    [("two-sided", 1 / 10000), ("smaller", 1 - 1 / 10000)],
+)
+def test_null_to_p_float_with_extreme_values(
+    alternative, expected_p_value, random_state=0
+):
+    """Test that 1/n(null) is preserved with extreme values"""
+    rng = check_random_state(random_state)
+    null = rng.normal(size=10000)
+
+    result = _utils._null_to_p(20, null, alternative=alternative)
+    assert math.isclose(
+        result,
+        expected_p_value,
+    )
+
+
+def test_null_to_p_array(random_state=0):
     """Test _null_to_p with 1d array input."""
+    rng = check_random_state(random_state)
     N = 10000
-    nulldist = np.random.normal(size=N)
-    t = np.sort(np.random.normal(size=N))
+    nulldist = rng.normal(size=N)
+    t = np.sort(rng.normal(size=N))
     p = np.sort(_utils._null_to_p(t, nulldist))
+
     assert p.shape == (N,)
     assert (p < 1).all()
     assert (p > 0).all()
+
     # Resulting distribution should be roughly uniform
     assert np.abs(p.mean() - 0.5) < 0.02
     assert np.abs(p.var() - 1 / 12) < 0.02
 
 
-def test_calculate_cluster_measures():
-    """Test _calculate_cluster_measures."""
-    threshold = 0.001
-    bin_struct = generate_binary_structure(3, 1)
+@pytest.mark.parametrize(
+    "bin_struct, two_sided_test, true_size, true_mass",
+    [
+        (
+            generate_binary_structure(3, 1),
+            False,
+            27,
+            39.992,
+        ),  # One-sided test: largest cluster doesn't have highest mass
+        (
+            generate_binary_structure(3, 1),
+            True,
+            27,
+            79.992,
+        ),  # Two-sided test where negative cluster has higher mass
+        (
+            generate_binary_structure(3, 2),
+            True,
+            28,
+            79.992,
+        ),  # Two-sided test with edge connectivity
+        # should include edge-connected single voxel cluster
+        (
+            generate_binary_structure(3, 3),
+            True,
+            29,
+            79.992,
+        ),  # Two-sided test with corner connectivity
+        # should include corner-connected single voxel cluster
+    ],
+)
+def test_calculate_cluster_measures(
+    test_arr4d, bin_struct, two_sided_test, true_size, true_mass
+):
+    """Test _calculate_cluster_measures.
 
-    test_arr4d = np.zeros((10, 10, 10, 1))
-    test_arr4d[:2, :2, :2, 0] = 5  # 8-voxel cluster, high intensity
-    test_arr4d[7:, 7:, 7:, 0] = 1  # 27-voxel cluster, low intensity
-    test_arr4d[6, 6, 6, 0] = 1  # corner touching second cluster
-    test_arr4d[6, 6, 8, 0] = 1  # edge touching second cluster
-    test_arr4d[3:5, 3:5, 3:5, 0] = -10  # negative cluster, very high intensity
-    test_arr4d[5:6, 3:5, 3:5, 0] = 1  # cluster touching negative one
-
-    # One-sided test where largest cluster doesn't have the highest mass
-    true_size = 27
-    true_mass = 39.992  # (8 vox * 5 intensity) - (8 vox * 0.001 thresh)
+    true_mass : (8 vox * 5 intensity) - (8 vox * 0.001 thresh)
+    """
     test_size, test_mass = _utils._calculate_cluster_measures(
         test_arr4d,
-        threshold=threshold,
+        threshold=0.001,
         bin_struct=bin_struct,
-        two_sided_test=False,
+        two_sided_test=two_sided_test,
     )
+
     assert test_size[0] == true_size
     assert test_mass[0] == true_mass
 
-    # Two-sided test where negative cluster has the higher mass
-    true_size = 27
-    true_mass = 79.992  # (8 vox * 5 intensity) - (8 vox * 0.001 thresh)
+
+def test_calculate_cluster_measures_on_empty_array():
     test_size, test_mass = _utils._calculate_cluster_measures(
-        test_arr4d,
-        threshold=threshold,
-        bin_struct=bin_struct,
+        np.zeros((10, 10, 10, 1)),
+        threshold=0.001,
+        bin_struct=generate_binary_structure(3, 1),
         two_sided_test=True,
     )
-    assert test_size[0] == true_size
-    assert test_mass[0] == true_mass
 
-    # Two-sided test with edge connectivity
-    bin_struct = generate_binary_structure(3, 2)
-
-    true_size = 28  # should include edge-connected single voxel cluster
-    true_mass = 79.992  # (8 vox * 5 intensity) - (8 vox * 0.001 thresh)
-    test_size, test_mass = _utils._calculate_cluster_measures(
-        test_arr4d,
-        threshold=threshold,
-        bin_struct=bin_struct,
-        two_sided_test=True,
-    )
-    assert test_size[0] == true_size
-    assert test_mass[0] == true_mass
-
-    # Two-sided test with corner connectivity
-    bin_struct = generate_binary_structure(3, 3)
-
-    true_size = 29  # should include corner-connected single voxel cluster
-    true_mass = 79.992  # (8 vox * 5 intensity) - (8 vox * 0.001 thresh)
-    test_size, test_mass = _utils._calculate_cluster_measures(
-        test_arr4d,
-        threshold=threshold,
-        bin_struct=bin_struct,
-        two_sided_test=True,
-    )
-    assert test_size[0] == true_size
-    assert test_mass[0] == true_mass
-
-    # Test on empty array
-    test_arr4d = np.zeros((10, 10, 10, 1))
     true_size = 0
     true_mass = 0
-    test_size, test_mass = _utils._calculate_cluster_measures(
-        test_arr4d,
-        threshold=threshold,
-        bin_struct=bin_struct,
-        two_sided_test=True,
-    )
     assert test_size[0] == true_size
     assert test_mass[0] == true_mass
 

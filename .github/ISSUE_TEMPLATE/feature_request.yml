@@ -1,0 +1,53 @@
+
+name: Feature request
+
+# See the json schema to help you create / update this form
+# https://json.schemastore.org/github-issue-forms.json
+
+description: Got an idea for a new feature, or changing an existing one? This is the place.
+
+title: '[ENH] '
+
+labels: ['Enhancement']
+
+body:
+
+- type: markdown
+  attributes:
+    value: "### Provide a brief description what you would like to change and why."
+
+- type: checkboxes
+  attributes:
+    label: Is there an existing issue for this?
+    description: |
+      Please search the [issue tracker](https://github.com/nilearn/nilearn/issues?q=is%3Aissue) to see if an issue already exists for the feature you want.
+    options:
+    - label: I have searched the existing issues
+      required: true
+
+- type: markdown
+  attributes:
+    value: Please fill in the following information, to the best of your ability.
+
+- type: textarea
+  attributes:
+    label: Describe your proposed enhancement in detail.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Benefits to the change
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Pseudocode for the new behavior, if applicable
+    value: |
+      ```python
+      # insert your code below
+
+      ```
+  validations:
+    required: false
