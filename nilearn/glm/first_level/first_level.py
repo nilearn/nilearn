@@ -999,8 +999,6 @@ def first_level_from_bids(dataset_path,
     models_events = []
     models_confounds = []
 
-    print(t_r)
-
     for sub_label_ in sub_labels:
 
         # Create model

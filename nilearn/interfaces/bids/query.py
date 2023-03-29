@@ -5,14 +5,13 @@ from __future__ import annotations
 import glob
 import json
 import os
-from typing import Any
 
 from pathlib import Path
 from warnings import warn
 
-def _get_metadata_from_bids(field: str,
-                            json_files: list[str] | list[Path],
-                            bids_path=None,) -> Any:
+def _get_metadata_from_bids(field,
+                            json_files,
+                            bids_path=None,):
     """Get a metadata field from a BIDS json sidecar files.
 
     This assumes that all the json files in the list have the same value
@@ -56,9 +55,9 @@ def _get_metadata_from_bids(field: str,
 
 
 def _infer_slice_timing_start_time_from_dataset(
-        bids_path: str | Path,
-        filters: list[tuple[str,str]],
-        verbose=0) -> int | float | None:
+        bids_path,
+        filters,
+        verbose=0):
     """Return the StartTime metadata field from a BIDS derivatives dataset.
 
     This corresponds to the reference time (in seconds) used for the slice
@@ -106,9 +105,9 @@ def _infer_slice_timing_start_time_from_dataset(
 
 
 def _infer_repetition_time_from_dataset(
-        bids_path: str | Path, 
-        filters: list[tuple[str,str]],
-        verbose=0) ->  int | float | None:
+        bids_path, 
+        filters,
+        verbose=0):
     """Return the RepetitionTime metadata field from a BIDS dataset. 
 
     Parameters
