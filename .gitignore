@@ -10,6 +10,9 @@
 *.zip
 *#
 
+# ignore python type annotation stubs for now
+*.pyi
+
 nilearn_cache
 nilearn_data
 
@@ -57,9 +60,12 @@ examples/**/*.pdf
 examples/**/results/
 examples/results/
 
-# test related
+
+# created during testing
 fmri_run0.nii
 fmri_run1.nii
 dmtx_0.csv
 dmtx_1.csv
 mask.nii
+bids_dataset
+

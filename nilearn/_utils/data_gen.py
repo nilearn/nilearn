@@ -1,9 +1,15 @@
 """
 Data generation utilities
 """
+
+from __future__ import annotations
+
+import itertools
 import json
-import os
 import string
+
+from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -15,6 +21,7 @@ from sklearn.utils import check_random_state
 
 from nilearn import datasets, image, maskers, masking
 from nilearn._utils import as_ndarray, logger
+from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
 
 
 def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
@@ -687,7 +694,7 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
 
 
 def basic_paradigm(condition_names_have_spaces=False):
-    """Generate basic paradigm
+    """Generate basic paradigm.
 
     Parameters
     ----------
@@ -744,171 +751,6 @@ def basic_confounds(length, random_state=0):
     return confounds
 
 
-def create_fake_bids_dataset(base_dir='',
-                             n_sub=10,
-                             n_ses=2,
-                             tasks=['localizer', 'main'],
-                             n_runs=[1, 3],
-                             with_derivatives=True,
-                             with_confounds=True,
-                             confounds_tag="desc-confounds_timeseries",
-                             no_session=False,
-                             random_state=0):
-    """Creates a fake :term:`bids<BIDS>` dataset directory with dummy files.
-
-    Returns fake dataset directory name.
-
-    Parameters
-    ----------
-    base_dir : :obj:`str` (Absolute path), optional
-        Absolute directory path in which to create the fake :term:`BIDS`
-        dataset dir.
-        Default: Current directory.
-
-    n_sub : :obj:`int`, optional
-        Number of subjects to be simulated in the dataset.
-        Default=10.
-
-    n_ses : :obj:`int`, optional
-        Number of sessions to be simulated in the dataset.
-        Ignored if no_session=True.
-        Default=2.
-
-    tasks : :obj:`list` of :obj:`str`, optional
-        List of tasks to be simulated in the dataset.
-        Default=["localizer", "main"].
-
-    n_runs : :obj:`list` of :obj:`int`, optional
-        Number of runs to create, where each element indicates the
-        number of runs for the corresponding task.
-        The length of this list must match the number of items in ``tasks``.
-        Each run creates 100 volumes.
-        Default=[1, 3].
-
-    with_derivatives : :obj:`bool`, optional
-        In the case derivatives are included, they come with two spaces and
-        descriptions. Spaces are 'MNI' and 'T1w'. Descriptions are 'preproc'
-        and :term:`fMRIPrep`. Only space 'T1w' include both descriptions.
-        Default=True.
-
-    with_confounds : :obj:`bool`, optional
-        Whether to generate associated confounds files or not.
-        Default=True.
-
-    confounds_tag : :obj:`str` (filename suffix), optional
-        If generating confounds, what path should they have? Defaults to
-        `desc-confounds_timeseries` as in :term:`fMRIPrep` >= 20.2
-        but can be other values (e.g. "desc-confounds_regressors" as
-        in :term:`fMRIPrep` < 20.2).
-        Default="desc-confounds_timeseries".
-
-    no_session : :obj:`bool`, optional
-        Specifying no_sessions will only produce runs and files without the
-        optional session field. In this case n_ses will be ignored.
-        Default=False.
-
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
-        Random number generator, or seed.
-        Default=0.
-
-    Returns
-    -------
-    dataset directory name : :obj:`str`
-        'bids_dataset'.
-
-    Notes
-    -----
-        Creates a directory with dummy files.
-
-    """
-    bids_path = os.path.join(base_dir, 'bids_dataset')
-    os.makedirs(bids_path)
-    rand_gen = check_random_state(random_state)
-    # Create surface bids dataset
-    open(os.path.join(bids_path, 'README.txt'), 'w')
-    vox = 4
-    created_sessions = ['ses-%02d' % label for label in range(1, n_ses + 1)]
-    if no_session:
-        created_sessions = ['']
-    for subject in ['sub-%02d' % label for label in range(1, n_sub + 1)]:
-        for session in created_sessions:
-            subses_dir = os.path.join(bids_path, subject, session)
-            if session in ('ses-01', ''):
-                anat_path = os.path.join(subses_dir, 'anat')
-                os.makedirs(anat_path)
-                anat_file = os.path.join(anat_path, subject + '_T1w.nii.gz')
-                open(anat_file, 'w')
-            func_path = os.path.join(subses_dir, 'func')
-            os.makedirs(func_path)
-            for task, n_run in zip(tasks, n_runs):
-                run_labels = [
-                    'run-%02d' % label for label in range(1, n_run + 1)
-                ]
-                for run in run_labels:
-                    fields = [subject, session, 'task-' + task]
-                    if '' in fields:
-                        fields.remove('')
-                    file_id = '_'.join(fields)
-                    if n_run > 1:
-                        file_id += '_' + run
-                    bold_path = os.path.join(func_path,
-                                             file_id + '_bold.nii.gz')
-                    write_fake_bold_img(bold_path, [vox, vox, vox, 100],
-                                        random_state=rand_gen)
-                    events_path = os.path.join(func_path,
-                                               file_id + '_events.tsv')
-                    basic_paradigm().to_csv(events_path, sep='\t', index=None)
-                    param_path = os.path.join(func_path,
-                                              file_id + '_bold.json')
-                    with open(param_path, 'w') as param_file:
-                        json.dump({'RepetitionTime': 1.5}, param_file)
-
-    # Create derivatives files
-    if with_derivatives:
-        bids_path = os.path.join(base_dir, 'bids_dataset', 'derivatives')
-        os.makedirs(bids_path)
-        for subject in ['sub-%02d' % label for label in range(1, 11)]:
-            for session in created_sessions:
-                subses_dir = os.path.join(bids_path, subject, session)
-                func_path = os.path.join(subses_dir, 'func')
-                os.makedirs(func_path)
-                for task, n_run in zip(tasks, n_runs):
-                    for run in [
-                            'run-%02d' % label
-                            for label in range(1, n_run + 1)
-                    ]:
-                        fields = [subject, session, 'task-' + task]
-                        if '' in fields:
-                            fields.remove('')
-                        file_id = '_'.join(fields)
-                        if n_run > 1:
-                            file_id += '_' + run
-                        preproc = (
-                            file_id + '_space-MNI_desc-preproc_bold.nii.gz')
-                        preproc_path = os.path.join(func_path, preproc)
-                        write_fake_bold_img(preproc_path, [vox, vox, vox, 100],
-                                            random_state=rand_gen)
-                        preproc = (
-                            file_id + '_space-T1w_desc-preproc_bold.nii.gz')
-                        preproc_path = os.path.join(func_path, preproc)
-                        write_fake_bold_img(preproc_path, [vox, vox, vox, 100],
-                                            random_state=rand_gen)
-                        preproc = (
-                            file_id + '_space-T1w_desc-fmriprep_bold.nii.gz')
-                        preproc_path = os.path.join(func_path, preproc)
-                        write_fake_bold_img(preproc_path, [vox, vox, vox, 100],
-                                            random_state=rand_gen)
-                        if with_confounds:
-                            confounds_path = os.path.join(
-                                func_path,
-                                file_id + '_' + confounds_tag + '.tsv',
-                            )
-                            basic_confounds(100, random_state=rand_gen).to_csv(
-                                confounds_path, sep='\t', index=None)
-    return 'bids_dataset'
-
-
 def generate_random_img(
     shape,
     affine=np.eye(4),
@@ -921,8 +763,10 @@ def generate_random_img(
     shape : length-3 or length-4 tuple
         The shape of the image being generated.
         The number of elements determines the dimensionality of the image.
+
     affine : 4x4 numpy.ndarray
         The affine of the image
+
     random_state : numpy.random.RandomState instance, optional
         random number generator.
 
@@ -930,6 +774,7 @@ def generate_random_img(
     -------
     data_img : 3D or 4D niimg
         The data image.
+
     mask_img : 3D niimg
         The mask image.
     """
@@ -943,3 +788,588 @@ def generate_random_img(
     mask_img = Nifti1Image(mask_data, affine)
 
     return data_img, mask_img
+
+
+def create_fake_bids_dataset(
+    base_dir = Path(),
+    n_sub = 10,
+    n_ses = 2,
+    tasks = ["localizer", "main"],
+    n_runs = [1, 3],
+    with_derivatives = True,
+    with_confounds = True,
+    confounds_tag = "desc-confounds_timeseries",
+    random_state=0,
+    entities = None,
+):
+    """Create a fake :term:`bids<BIDS>` dataset directory with dummy files.
+
+    Returns fake dataset directory name.
+
+    Parameters
+    ----------
+    base_dir : :obj:`str` or :obj:`pathlib.Path` (Absolute path). \
+        Default=pathlib.Path()
+        Absolute directory path in which to create the fake :term:`BIDS`
+        dataset dir.
+
+    n_sub : :obj:`int`, Defaults=10
+        Number of subjects to be simulated in the dataset.
+
+    n_ses : :obj:`int`, Defaults=2
+        Number of sessions to be simulated in the dataset.
+
+        Specifying n_ses=0 will only produce runs and files without the
+        optional session field.
+
+    tasks : :obj:`list` of :obj:`str`, Defaults=["localizer", "main"]
+        List of tasks to be simulated in the dataset.
+
+    n_runs : :obj:`list` of :obj:`int`, Defaults=[1, 3]
+        Number of runs to create, where each element indicates the
+        number of runs for the corresponding task.
+        The length of this list must match the number of items in ``tasks``.
+        Each run creates 100 volumes.
+        Files will be generated without run entity
+        if a value is equal to 0 or less.
+
+    with_derivatives : :obj:`bool`, Defaults=True
+        In the case derivatives are included, they come with two spaces and
+        descriptions.
+        Spaces are 'MNI' and 'T1w'.
+        Descriptions are 'preproc' and :term:`fMRIPrep`.
+        Only space 'T1w' include both descriptions.
+
+    with_confounds : :obj:`bool`, Defaults=True
+        Whether to generate associated confounds files or not.
+
+    confounds_tag : :obj:`str`, Defaults="desc-confounds_timeseries"
+        Filename "suffix":
+        If generating confounds, what path should they have?
+        Defaults to `desc-confounds_timeseries` as in :term:`fMRIPrep` >= 20.2
+        but can be other values (e.g. "desc-confounds_regressors" as
+        in :term:`fMRIPrep` < 20.2).
+
+    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance. \
+                    Defaults=0
+        Random number generator, or seed.
+
+    entities : :obj:`dict`, optional
+        Extra entity to add to the BIDS filename with a list of values.
+        For example, if you want to add an 'echo' entity
+        with values '1' for some files and '1' for others,
+        you would pass: ``entities={"echo": ['1', '2']}``.
+
+    Returns
+    -------
+    dataset directory name : :obj:`pathlib.Path`
+        'bids_dataset'.
+
+    Notes
+    -----
+        Creates a directory with dummy files.
+
+    """
+    n_voxels = 4
+
+    rand_gen = check_random_state(random_state)
+
+    bids_dataset_dir = "bids_dataset"
+    bids_path = Path(base_dir) / bids_dataset_dir
+
+    for task_ in tasks:
+        _check_bids_label(task_)
+
+    if (not isinstance(n_runs, list) 
+        or not all(isinstance(x, int) for x in n_runs)):
+        raise TypeError(
+            "n_runs must be a list of integers."
+        )
+
+    if len(tasks) != len(n_runs):
+        raise ValueError(
+            "The number of tasks and number of runs must be the same."
+            f"Got {len(tasks)} tasks and {len(n_runs)} runs."
+        )
+
+    if entities is None:
+        entities = {}
+    _check_entities_and_labels(entities)
+
+    _mock_bids_dataset(
+        bids_path=bids_path,
+        n_sub=n_sub,
+        n_ses=n_ses,
+        tasks=tasks,
+        n_runs=n_runs,
+        entities=entities,
+        n_voxels=n_voxels,
+        rand_gen=rand_gen,
+    )
+
+    if with_derivatives:
+        if not with_confounds:
+            confounds_tag = None
+
+        _mock_bids_derivatives(
+            bids_path=bids_path,
+            n_sub=n_sub,
+            n_ses=n_ses,
+            tasks=tasks,
+            n_runs=n_runs,
+            confounds_tag=confounds_tag,
+            entities=entities,
+            n_voxels=n_voxels,
+            rand_gen=rand_gen,
+        )
+
+    return bids_path
+
+
+def _check_entities_and_labels(entities):
+    """Check entities and labels are BIDS compliant.
+    
+    Parameters
+    ----------
+    entities : :obj:`dict`, optional
+        Extra entity to add to the BIDS filename with a list of values.
+        For example, if you want to add an 'echo' entity
+        with values '1' for some files and '1' for others,
+        you would pass: ``entities={"echo": ['1', '2']}``.
+    """
+    if len(entities.keys()) > 1:
+        # Generating dataset with more than one extra entity
+        # becomes too complex.
+        # Won't be implemented until there is a need.
+        raise ValueError("Only a single extra entity is supported for now.")
+
+    for key in entities:
+        if key not in [*_bids_entities()["raw"], *_bids_entities()["derivatives"]]:
+            raise ValueError(
+                f"Invalid entity: {key}. Allowed entities are: "
+                f"{[*_bids_entities()['raw'], *_bids_entities()['derivatives']]}"
+            )
+        [_check_bids_label(label_) for label_ in entities[key]]
+
+
+def _mock_bids_dataset(
+    bids_path,
+    n_sub,
+    n_ses,
+    tasks,
+    n_runs,
+    entities,
+    n_voxels,
+    rand_gen,
+):
+    """Create a fake raw :term:`bids<BIDS>` dataset directory with dummy files.
+
+    Parameters
+    ----------
+    base_dir : :obj:`Path`
+        Path where to create the fake :term:`BIDS` dataset.
+
+    n_sub : :obj:`int`
+        Number of subjects to be simulated in the dataset.
+
+    n_ses : :obj:`int`
+        Number of sessions to be simulated in the dataset.
+        Ignored if n_ses=0.
+
+    tasks : :obj:`list` of :obj:`str`
+        List of tasks to be simulated in the dataset.
+
+    n_runs : :obj:`list` of :obj:`int`
+        Number of runs to create, where each element indicates the
+        number of runs for the corresponding task.
+        No run entity will be used if a value is equal to 1 or less.
+
+    entities : :obj:`dict`, optional
+        Extra entities to add to the BIDS filename with a list of values.
+
+    n_voxels : :obj:`int`
+        Number of voxels along a given axis in the functional image.
+
+    rand_gen : :obj:`numpy.random.RandomState` instance
+        Random number generator.
+
+    """
+    bids_path.mkdir(parents=True, exist_ok=True)
+
+    bids_path.joinpath("README.txt").write_text("")
+
+    for subject, session in itertools.product(
+        _listify(n_sub), _listify(n_ses)
+    ):
+        subses_dir = bids_path / f"sub-{subject}"
+        if session != "":
+            subses_dir = subses_dir / f"ses-{session}"
+
+        if session in ("01", ""):
+            _write_bids_raw_anat(subses_dir, subject, session)
+
+        func_path = subses_dir / "func"
+        func_path.mkdir(parents=True, exist_ok=True)
+
+        for task, n_run in zip(tasks, n_runs):
+            for run in _listify(n_run):
+
+                if entities:
+                    for key in entities:
+                        for label in entities[key]:
+                            fields = _init_fields(
+                                subject=subject,
+                                session=session,
+                                task=task,
+                                run=run,
+                            )
+                            if key in _bids_entities()["raw"]:
+                                fields["entities"][key] = label
+                            _write_bids_raw_func(
+                                func_path=func_path,
+                                fields=fields,
+                                n_voxels=n_voxels,
+                                rand_gen=rand_gen,
+                            )
+
+                else:
+                    fields = _init_fields(
+                        subject=subject, session=session, task=task, run=run
+                    )
+                    _write_bids_raw_func(
+                        func_path=func_path,
+                        fields=fields,
+                        n_voxels=n_voxels,
+                        rand_gen=rand_gen,
+                    )
+
+
+def _mock_bids_derivatives(
+    bids_path,
+    n_sub,
+    n_ses,
+    tasks,
+    n_runs,
+    confounds_tag,
+    entities,
+    n_voxels,
+    rand_gen,
+):
+    """Create a fake raw :term:`bids<BIDS>` dataset directory with dummy files.
+
+    Parameters
+    ----------
+    base_dir : :obj:`Path`
+        Path where to create the fake :term:`BIDS` dataset.
+
+    n_sub : :obj:`int`
+        Number of subjects to be simulated in the dataset.
+
+    n_ses : :obj:`int`
+        Number of sessions to be simulated in the dataset.
+        Ignored if n_ses=0.
+
+    tasks : :obj:`list` of :obj:`str`
+        List of tasks to be simulated in the dataset.
+
+    n_runs : :obj:`list` of :obj:`int`
+        Number of runs to create, where each element indicates the
+        number of runs for the corresponding task.
+        No run entity will be used if a value is equal to 1 or less.
+
+    confounds_tag : :obj:`str`
+        Filename "suffix":
+        For example: `desc-confounds_timeseries`
+        or "desc-confounds_regressors".
+
+    entities : :obj:`dict`
+        Extra entity to add to the BIDS filename with a list of values.
+
+    n_voxels : :obj:`int`
+        Number of voxels along a given axis in the functional image.
+
+    rand_gen : :obj:`numpy.random.RandomState` instance
+        Random number generator.
+
+    """
+    bids_path = bids_path / "derivatives"
+    bids_path.mkdir(parents=True, exist_ok=True)
+
+    for subject, session in itertools.product(
+        _listify(n_sub), _listify(n_ses)
+    ):
+        subses_dir = bids_path / f"sub-{subject}"
+        if session != "":
+            subses_dir = subses_dir / f"ses-{session}"
+
+        func_path = subses_dir / "func"
+        func_path.mkdir(parents=True, exist_ok=True)
+
+        for task, n_run in zip(tasks, n_runs):
+            for run in _listify(n_run):
+
+                if entities:
+                    for key in entities:
+                        for label in entities[key]:
+                            fields = _init_fields(
+                                subject=subject,
+                                session=session,
+                                task=task,
+                                run=run,
+                            )
+                            fields["entities"][key] = label
+                            _write_bids_derivative_func(
+                                func_path=func_path,
+                                fields=fields,
+                                n_voxels=n_voxels,
+                                rand_gen=rand_gen,
+                                confounds_tag=confounds_tag,
+                            )
+
+                else:
+                    fields = _init_fields(
+                        subject=subject, session=session, task=task, run=run
+                    )
+                    _write_bids_derivative_func(
+                        func_path=func_path,
+                        fields=fields,
+                        n_voxels=n_voxels,
+                        rand_gen=rand_gen,
+                        confounds_tag=confounds_tag,
+                    )
+
+
+def _listify(n):
+    """Return a list of zero padded BIDS labels.
+
+    If n is 0 or less, return an empty list.
+
+    Parameters
+    ----------
+    n : :obj:`int`
+        Number of labels to create.
+
+    Returns
+    -------
+    List of labels : :obj:`list` of :obj:`str`
+
+    """
+    return [""] if n <= 0 else [f"{label:02}" for label in range(1, n + 1)]
+
+
+def _create_bids_filename(
+    fields, entities_to_include = None
+):
+    """Create BIDS filename from dictionary of entity-label pairs.
+
+    Parameters
+    ----------
+    fields : :obj:`dict` of :obj:`str`
+        Dictionary of entity-label pairs, for example:
+
+        {
+         "suffix": "T1w",
+         "extension": "nii.gz",
+         "entities": {"acq":  "ap",
+                      "desc": "preproc"}
+        }.
+
+    Returns
+    -------
+    BIDS filename : :obj:`str`
+
+    """
+    if entities_to_include is None:
+        entities_to_include = _bids_entities()["raw"]
+
+    filename = ""
+
+    for key in entities_to_include:
+        if key in fields["entities"]:
+            value = fields["entities"][key]
+            if value not in (None, ""):
+                filename += f"{key}-{value}_"
+    filename += f"{fields['suffix']}.{fields['extension']}"
+
+    return filename
+
+
+def _init_fields(subject,
+                 session,
+                 task,
+                 run):
+    """Initialize fields to help create a valid BIDS filename.
+
+    Parameters
+    ----------
+    subject : :obj:`str`
+        Subject label
+
+    session : :obj:`str`
+        Session label
+
+    task : :obj:`str`
+        Task label
+
+    run : :obj:`str`
+        Run label
+
+    Returns
+    -------
+    dict
+        Fields used to create a BIDS filename.
+
+    See Also
+    --------
+    _create_bids_filename
+
+    """
+    fields = {
+        "suffix": "bold",
+        "extension": "nii.gz",
+        "entities": {
+            "sub": subject,
+            "ses": session,
+            "task": task,
+            "run": run,
+        },
+    }
+    return fields
+
+
+def _write_bids_raw_anat(subses_dir, subject, session) -> None:
+    """Create a dummy anat T1w file.
+
+    Parameters
+    ----------
+    subses_dir : :obj:`Path`
+        Subject session directory
+
+    subject : :obj:`str`
+        Subject label
+
+    session : :obj:`str`
+        Session label
+    """
+    anat_path = subses_dir / "anat"
+    anat_path.mkdir(parents=True, exist_ok=True)
+    fields = {
+        "suffix": "T1w",
+        "extension": "nii.gz",
+        "entities": {"sub": subject, "ses": session},
+    }
+    (anat_path / _create_bids_filename(fields)).write_text("")
+
+
+def _write_bids_raw_func(
+    func_path,
+    fields,
+    n_voxels,
+    rand_gen,
+):
+    """Create BIDS functional raw nifti, json sidecar and events files.
+
+    Parameters
+    ----------
+    func_path : :obj:`Path`
+        Path to a subject functional directory.
+
+    file_id : :obj:`str`
+        Root of the BIDS filename:
+        typically basename without the BIDS suffix and extension.
+
+    n_voxels : :obj:`int`
+        Number of voxels along a given axis in the functional image.
+
+    rand_gen : :obj:`numpy.random.RandomState` instance
+        Random number generator.
+
+    """
+    n_time_points = 100
+    bold_path = func_path / _create_bids_filename(fields)
+    write_fake_bold_img(
+        bold_path,
+        [n_voxels, n_voxels, n_voxels, n_time_points],
+        random_state=rand_gen,
+    )
+
+    repetition_time = 1.5
+    fields["extension"] = "json"
+    param_path = func_path / _create_bids_filename(fields)
+    param_path.write_text(json.dumps({"RepetitionTime": repetition_time}))
+
+    fields["suffix"] = "events"
+    fields["extension"] = "tsv"
+    events_path = func_path / _create_bids_filename(fields)
+    basic_paradigm().to_csv(events_path, sep="\t", index=None)
+
+
+def _write_bids_derivative_func(
+    func_path,
+    fields,
+    n_voxels,
+    rand_gen,
+    confounds_tag,
+):
+    """Create BIDS functional derivative and confounds files.
+
+    Files created come with two spaces and descriptions.
+    Spaces are: 'MNI' and 'T1w'.
+    Descriptions are: 'preproc' and :term:`fMRIPrep`.
+    Only space 'T1w' include both descriptions.
+
+    Parameters
+    ----------
+    func_path : :obj:`Path`
+        Path to a subject functional directory.
+
+    file_id : :obj:`str`
+        Root of the BIDS filename:
+        typically basename without the BIDS suffix and extension.
+
+    n_voxels : :obj:`int`
+        Number of voxels along a given axis in the functional image.
+
+    rand_gen : :obj:`numpy.random.RandomState` instance
+        Random number generator.
+
+    confounds_tag : :obj:`str`, optional.
+        Filename "suffix":
+        For example: `desc-confounds_timeseries`
+        or "desc-confounds_regressors".
+
+    """
+    n_time_points = 100
+
+    if confounds_tag is not None:
+        fields["suffix"] = confounds_tag
+        fields["extension"] = "tsv"
+        confounds_path = func_path / _create_bids_filename(
+            fields=fields, entities_to_include=_bids_entities()["raw"]
+        )
+        basic_confounds(length=n_time_points, random_state=rand_gen).to_csv(
+            confounds_path, sep="\t", index=None
+        )
+
+    fields["suffix"] = "bold"
+    fields["extension"] = "nii.gz"
+
+    shape = [n_voxels, n_voxels, n_voxels, n_time_points]
+
+    for space in ("MNI", "T1w"):
+        for desc in ("preproc", "fmriprep"):
+            # Only space 'T1w' include both descriptions.
+            if space == "MNI" and desc == "fmriprep":
+                continue
+
+            fields["entities"]["space"] = space
+            fields["entities"]["desc"] = desc
+
+            entities_to_include = [
+                *_bids_entities()["raw"], *_bids_entities()["derivatives"]
+            ]
+
+            bold_path = func_path / _create_bids_filename(
+                fields=fields, entities_to_include=entities_to_include
+            )
+            write_fake_bold_img(bold_path, shape=shape, random_state=rand_gen)

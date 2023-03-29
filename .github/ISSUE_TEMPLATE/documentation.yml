@@ -1,0 +1,38 @@
+name: Documentation
+
+# See the json schema to help you create / update this form
+# https://json.schemastore.org/github-issue-forms.json
+
+description: Request an improvement to the existing documentation.
+
+title: '[DOC] '
+
+labels: ['Documentation']
+
+body:
+
+- type: markdown
+  attributes:
+    value: "### Describe what improvement you would like to see in the documentation."
+
+- type: checkboxes
+  attributes:
+    label: Is there an existing issue for this?
+    description: |
+      Please search the [issue tracker](https://github.com/nilearn/nilearn/issues?q=is%3Aissue) to see if an issue already exists for the documentation enhancement you want.
+    options:
+    - label: I have searched the existing issues
+      required: true
+
+- type: textarea
+  attributes:
+    label: Describe your proposed suggestion in detail.
+    placeholder: Describe your proposed suggestion in detail.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: List any pages that would be impacted.
+  validations:
+    required: false

@@ -574,7 +574,7 @@ view : {'lateral', 'medial', 'dorsal', 'ventral',\
 """
 
 # bg_on_data
-docdict['bg_on_data'] = """
+docdict['bg_on_data'] = r"""
 bg_on_data : :obj:`bool`, optional
     If ``True`` and a ``bg_map`` is specified,
     the ``surf_data`` data is multiplied by the background

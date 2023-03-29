@@ -1,15 +1,14 @@
-import numpy as np
+"""Configuration and extra fixtures for pytest."""
 import nibabel
+import numpy as np
 import pytest
-
 from _pytest.doctest import DoctestItem
+from nilearn import image
 
 # we need to import these fixtures even if not used in this module
 from nilearn.datasets._testing import request_mocker  # noqa: F401
 from nilearn.datasets._testing import temp_nilearn_data_dir  # noqa: F401
-from nilearn import image
 from nilearn.version import _compare_version
-
 
 collect_ignore = ["datasets/data/convert_templates.py"]
 
@@ -17,14 +16,14 @@ collect_ignore = ["datasets/data/convert_templates.py"]
 try:
     import matplotlib  # noqa: F401
 except ImportError:
-    collect_ignore.extend(['plotting', 'reporting'])
+    collect_ignore.extend(["plotting", "reporting"])
     matplotlib = None
 
 
 def pytest_configure(config):
     """Use Agg so that no figures pop up."""
     if matplotlib is not None:
-        matplotlib.use('Agg', force=True)
+        matplotlib.use("Agg", force=True)
 
 
 @pytest.fixture(autouse=True)
@@ -47,8 +46,9 @@ def no_int64_nifti(monkeypatch):
 
     """
     forbidden_types = (np.int64, np.uint64)
-    error_msg = ("Creating or saving an image "
-                 "containing 64-bit ints is forbidden.")
+    error_msg = (
+        "Creating or saving an image " "containing 64-bit ints is forbidden."
+    )
 
     to_filename = nibabel.nifti1.Nifti1Image.to_filename
 
@@ -56,8 +56,9 @@ def no_int64_nifti(monkeypatch):
         assert image.get_data(img).dtype not in forbidden_types, error_msg
         return to_filename(img, filename)
 
-    monkeypatch.setattr("nibabel.nifti1.Nifti1Image.to_filename",
-                        checked_to_filename)
+    monkeypatch.setattr(
+        "nibabel.nifti1.Nifti1Image.to_filename", checked_to_filename
+    )
 
     init = nibabel.nifti1.Nifti1Image.__init__
 
@@ -74,14 +75,17 @@ def close_all():
     yield
     if matplotlib is not None:
         import matplotlib.pyplot as plt
-        plt.close('all')  # takes < 1 us so just always do it
+
+        plt.close("all")  # takes < 1 us so just always do it
 
 
 def pytest_collection_modifyitems(items):
-    # numpy changed the str/repr formatting of numpy arrays in 1.14.
-    # We want to run doctests only for numpy >= 1.14.Adapted from scikit-learn
-    if _compare_version(np.__version__, '<', '1.14'):
-        reason = 'doctests are only run for numpy >= 1.14'
+    """Run doctests only for numpy >= 1.14.Adapted from scikit-learn.
+
+    numpy changed the str/repr formatting of numpy arrays in 1.14.
+    """
+    if _compare_version(np.__version__, "<", "1.14"):
+        reason = "doctests are only run for numpy >= 1.14"
         skip_doctests = True
     else:
         skip_doctests = False
