@@ -101,4 +101,4 @@ repos:
     hooks:
       - id: flake8
         args: [--config=setup.cfg, --verbose]
-        additional_dependencies: [flake8-docstrings]
+        additional_dependencies: [flake8-docstrings, Flake8-pyproject]

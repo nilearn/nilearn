@@ -4,8 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nilearn"
+version = [{ attr = "nilearn.__version__" }]
 description = "Statistical learning for neuroimaging in Python"
-authors = [{ name = "Nilearn developers"}]
+long_description = [{ file = "README.rst" }]
+authors = [{ name = "Nilearn developers" }]
 maintainers = [{ name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr" }]
 readme = "README.rst"
 license = { text = "new BSD" }
@@ -57,6 +59,7 @@ doc = [
 	"coverage",
 	"flake8",
 	"flake8-docstrings",
+    "Flake8-pyproject",  # flake8 plugin to support pyproject.toml config
 	"black",
 	"furo",
 	"memory_profiler",  # measuring memory during docs building
@@ -106,3 +109,120 @@ raw-options = { version_scheme = "release-branch-semver" }
 
 [tool.hatch.build.hooks.vcs]
 version-file = "nilearn/version.py"
+
+[tool.black]
+line-length = 79
+include = """
+(
+  examples/.*py
+  | maint_tools/.*py
+  | setup.py
+  | nilearn/connectome/.*py
+  | nilearn/dec.*
+  | nilearn/image/.*py
+  | nilearn/mass_univariate/.*py
+  | nilearn/regions/.*py
+  | nilearn/signal.py
+  | nilearn/masking.py
+  | nilearn/conftest.py
+)
+"""
+# 'extend-exclude' excludes files or directories in addition to the defaults
+extend-exclude =  """
+(
+  nilearn/externals
+  | examples/.*/.*3d_map_to_surface_projection.py
+  | examples/.*/.*demo_glass_brain.py
+  | examples/.*/.*demo_glass_brain_extensive.py
+  | examples/.*/.*demo_more_plotting.py
+  | examples/.*/.*demo_plotting.py
+  | examples/.*/.*fiac_analysis.py
+  | examples/.*/.*fixed_effects.py
+  | examples/.*/.*frem.py
+  | examples/.*/.*group_level_connectivity.py
+  | examples/.*/.*negate_image.py
+  | examples/.*/.*localizer_surface_analysis.py
+  | examples/.*/.*searchlight_surface.py
+  | examples/.*/.*resample_to_template.py
+  | examples/.*/.*surf_atlas.py
+  | examples/.*/.*surf_stat_map.py
+  | examples/.*/.*surface_bids_analysis.py
+  | examples/.*/.*surface_projection_strategies.py
+)
+"""
+
+[tool.isort]
+profile = "black"
+src_paths = [
+  'maint_tools',
+  'setup.py',
+  'nilearn/connectome/.*py',
+  'nilearn/dec.*',
+  'nilearn/image/.*py',
+  'nilearn/mass_univariate/.*py',
+  'nilearn/regions/.*py',
+]
+line_length = 79
+skip_gitignore = true
+combine_as_imports = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--doctest-modules -s -vv --durations=0"
+doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
+junit_family = "xunit2"
+
+# Requires pyproject-flake8, otherwise use .flake8 file
+[tool.flake8]
+exclude = [
+    ".git",
+    "__pycache__",
+	"env",
+	"venv",
+    "build",
+    "dist",
+	"nilearn/externals/tempita"
+]
+--select = ["D","E","F","W","C90"]
+docstring-convention = ["numpy"]
+max-line-length = 79
+max_complexity = 43
+max_function_length = 150
+# For PEP8 error codes see
+# http://pep8.readthedocs.org/en/latest/intro.html#error-codes
+	# D100, D103, D104: missing docstring
+	# D105: missing docstring in magic method
+	# D107: missing docstring in __init__
+	# D205: 1 blank line required between summary line and description
+	# D400: first line should end with a period
+	# E203: whitespace before ':'
+	# E402: module level import not at top of file
+	# F401: module imported but unused
+	# W503: line break before binary operator
+	# W504: line break after binary operator
+per-file-ignores = """
+	setup.py: D100
+    # - docstrings rules that should not be applied to tests
+	*/tests/*: D100, D103, D104, D205, D400, D401
+	*/*/tests/*: D100, D103, D104, D205, D400, D401
+    # - docstrings rules that should not be applied to examples
+	examples/*/*: D103, D205, D301, D400
+    # - docstrings rules that should not be applied to doc
+	doc/*: D100, D103, F401
+"""
+ignore = ["D105", "D107", "E402", "W503", "W504", "W605"]
+# for compatibility with black
+# https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html#flake8
+extend-ignore = "E203"
+
+[tool.codespell]
+skip = [
+    "./.git",
+    "plotly-gl3d-latest.min.js",
+    "jquery.min.js",
+    "localizer_behavioural.tsv",
+    ".mypy_cache",
+    "env",
+    "venv",
+]
+ignore-words = ".github/codespell_ignore_words.txt"
