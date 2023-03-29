@@ -92,16 +92,10 @@ test = [
 # A combination of dependencies useful for developers
 dev = ["nilearn[plotting,plotly,soc,test]"]
 
-[tool.hatch.build.targets.sdist]
-exclude = [
-
-]
-
 [tool.hatch.build.targets.wheel]
-packages = []
-exclude = [
-
-]
+packages = ["nilearn"]
+# Copy of what is in MANIFEST.in
+include = ["AUTHORS.rst", "LICENSE", "README.rst"]
 
 [tool.hatch.version]
 source = "vcs"
