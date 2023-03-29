@@ -875,13 +875,10 @@ def create_fake_bids_dataset(
     for task_ in tasks:
         _check_bids_label(task_)
 
-    if (
-            not isinstance(n_runs, list) or
-            not all(isinstance(x, int) for x in n_runs)
-        ):
-        raise TypeError(
-            "n_runs must be a list of integers."
-        )
+    if not isinstance(n_runs, list) or not all(
+        isinstance(x, int) for x in n_runs
+    ):
+        raise TypeError("n_runs must be a list of integers.")
 
     if len(tasks) != len(n_runs):
         raise ValueError(
