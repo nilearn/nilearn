@@ -1,4 +1,6 @@
+# https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository#configuring-the-template-chooser
+blank_issues_enabled: true
 contact_links:
-    - name: Usage question
-      url: https://neurostars.org/tag/nilearn
-      about: Please ask question about using Nilearn here.
+  - name: Usage question
+    url: https://neurostars.org/tag/nilearn
+    about: Please ask question about using Nilearn here.

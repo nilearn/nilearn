@@ -10,11 +10,18 @@ NEW
 
 - New function :func:`~datasets.load_sample_motor_activation_image` to load example contrast map (:gh:`3498` by `Michelle Wang`_).
 
+- ``fsaverage`` meshes accessed through :func:`~datasets.fetch_surf_fsaverage` now come with flat maps for all resolutions (:gh:`3444` by `Alexis Thual`_).
+
 Fixes
 -----
+
 - Change calculation of TR in :func:`~.glm.first_level.compute_regressor` to be more precise (:gh:`3362` by `Anne-Sophie Kieslinger`_)
 
 - Improve how :func:`~.glm.first_level.first_level_from_bids` handles fetching slice timing metadata and add additional input validation (:gh:`3605` by `Rémi Gau`_).
+
+- Fixes several bugs in :func:`~glm.first_level.first_level_from_bids`. Refactors :func:`~glm.first_level.first_level_from_bids` and ``nilearn._utils.data_gen.create_fake_bids_dataset``. (:gh:`3525` by `Rémi Gau`_).
+
+- Change calculation of TR in :func:`~.glm.first_level.compute_regressor` to be more precise (:gh:`3362` by `Anne-Sophie Kieslinger`_)
 
 - :func:`~nilearn.interfaces.fmriprep.load_confounds` can support searching preprocessed data in native space. (:gh:`3531` by `Hao-Ting Wang`_)
 
