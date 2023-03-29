@@ -100,6 +100,8 @@ def _filter_and_mask(
     # as small as possible in order to speed up the process
 
     if not _utils.niimg_conversions._check_same_fov(imgs, mask_img_):
+        warnings.warn('imgs are being upsampled to the mask_img resolution, '
+            'you might want to provide a target_affine to save memory and computation time.')
         parameters = copy_object(parameters)
         # now we can crop
         mask_img_ = image.crop_img(mask_img_, copy=False)
