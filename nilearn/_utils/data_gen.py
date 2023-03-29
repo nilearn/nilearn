@@ -754,8 +754,12 @@ def add_metadata_to_bids_derivatives(bids_path: str | Path,
                                      metadata: dict,
                                      json_file: str = None) -> Path:
     if json_file is None:
-        json_file = (Path(bids_path) / 'derivatives' / 'sub-01' / 'ses-01' / 
-                        'func' / 'sub-01_ses-01_task-main_run-01_bold.json')
+        json_file = (Path(bids_path) / 
+                        'derivatives' / 
+                        'sub-01' / 
+                        'ses-01' / 
+                        'func' / 
+                        'sub-01_ses-01_task-main_run-01_space-MNI_desc-preproc_bold.json')
     else:
         json_file = Path(bids_path) / json_file
 

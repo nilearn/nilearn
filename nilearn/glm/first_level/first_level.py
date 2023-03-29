@@ -831,7 +831,7 @@ def first_level_from_bids(dataset_path,
                           sub_labels=None,
                           img_filters=None,
                           t_r=None,
-                          slice_time_ref=0.,
+                          slice_time_ref=None,
                           hrf_model='glover',
                           drift_model='cosine',
                           high_pass=.01,
@@ -925,22 +925,29 @@ def first_level_from_bids(dataset_path,
     # Get acq specs for models.
     # RepetitionTime and StartTime for slice timing.
     # Throw warning if no bold.json is found
-    filters = _make_bids_files_filter(
-        task_label=task_label,
-        supported_filters=[*_bids_entities()["raw"], *_bids_entities()["derivatives"]],
-        extra_filter=img_filters
-    )
-
     if t_r is not None:
         _check_repetition_time(t_r)
         warn("'RepetitionTime' given in model_init as {t_r}")
     else:
+        filters = _make_bids_files_filter(
+            task_label=task_label,
+            space_label=space_label,
+            supported_filters=[*_bids_entities()["raw"], *_bids_entities()["derivatives"]],
+            extra_filter=img_filters,
+            verbose=verbose
+        )
         t_r = _infer_repetition_time_from_dataset(
             bids_path=derivatives_path,
             filters=filters)
         # If the parameter information is not found in the derivatives folder,
         # a search is done in the raw data folder.         
         if t_r is None:
+            filters = _make_bids_files_filter(
+                task_label=task_label,
+                supported_filters=[*_bids_entities()["raw"]],
+                extra_filter=img_filters,
+                            verbose=verbose
+            )
             t_r = _infer_repetition_time_from_dataset(
             bids_path=dataset_path,
             filters=filters)
@@ -957,6 +964,13 @@ def first_level_from_bids(dataset_path,
         warn("'slice_time_ref' is {slice_time_ref} percent of the repetition "
              'time')
     else:
+        filters = _make_bids_files_filter(
+            task_label=task_label,
+            space_label=space_label,
+            supported_filters=[*_bids_entities()["raw"], *_bids_entities()["derivatives"]],
+            extra_filter=img_filters,
+                        verbose=verbose
+        )
         StartTime = _infer_slice_timing_start_time_from_dataset(
             bids_path=derivatives_path, 
             filters=filters)
@@ -964,7 +978,7 @@ def first_level_from_bids(dataset_path,
             assert(StartTime < t_r)
             slice_time_ref = StartTime / t_r
         else:
-            warn(f"'slice_time_ref' not provided "
+            warn("'slice_time_ref' not provided "
                  "and cannot be inferred from metadata."
                  "It will be assumed that the slice timing reference "
                  "is 0.0 percent of the repetition time. "
@@ -981,6 +995,8 @@ def first_level_from_bids(dataset_path,
     models_run_imgs = []
     models_events = []
     models_confounds = []
+
+    print(t_r)
 
     for sub_label_ in sub_labels:
 
@@ -1145,6 +1161,7 @@ def _get_processed_imgs(
         supported_filters=_bids_entities()["raw"]
         + _bids_entities()["derivatives"],
         extra_filter=img_filters,
+        verbose=verbose,
     )
     imgs = get_bids_files(
         main_path=derivatives_path,
@@ -1206,6 +1223,7 @@ def _get_events_files(
         task_label=task_label,
         supported_filters=_bids_entities()["raw"],
         extra_filter=img_filters,
+        verbose=verbose,
     )
     events = get_bids_files(
         dataset_path,
@@ -1227,6 +1245,7 @@ def _get_events_files(
         task_label=task_label,
         dataset_path=dataset_path,
         events_filters=events_filters,
+        verbose=verbose,
     )
     return events
 
@@ -1282,6 +1301,7 @@ def _get_confounds(
         task_label=task_label,
         supported_filters=supported_filters,
         extra_filter=img_filters,
+        verbose=verbose,
     )
     confounds = get_bids_files(
         derivatives_path,
@@ -1426,6 +1446,7 @@ def _make_bids_files_filter(
     space_label=None,
     supported_filters= None,
     extra_filter= None,
+    verbose=0
 ) :
     """Return a filter to specific files from a BIDS dataset.
 
@@ -1459,11 +1480,12 @@ def _make_bids_files_filter(
     if extra_filter and supported_filters:
         for filter_ in extra_filter:
             if filter_[0] not in supported_filters:
-                warn(
-                    f"The filter {filter_} will be skipped. "
-                    f"'{filter_[0]}' is not among the supported filters. "
-                    f"Allowed filters include: {supported_filters}"
-                )
+                if verbose:
+                    warn(
+                        f"The filter {filter_} will be skipped. "
+                        f"'{filter_[0]}' is not among the supported filters. "
+                        f"Allowed filters include: {supported_filters}"
+                    )
                 continue
 
             filters.append(filter_)
@@ -1556,6 +1578,7 @@ def _check_bids_events_list(
     task_label,
     dataset_path,
     events_filters,
+    verbose
 ):
     """Check input BIDS events.
 
@@ -1619,6 +1642,7 @@ def _check_bids_events_list(
             space_label=None,
             supported_filters=supported_filters,
             extra_filter=extra_filter,
+            verbose=verbose
         )
         this_event = get_bids_files(
             dataset_path,

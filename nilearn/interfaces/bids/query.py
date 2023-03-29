@@ -11,7 +11,8 @@ from pathlib import Path
 from warnings import warn
 
 def _get_metadata_from_bids(field: str,
-                            json_files: list[str] | list[Path]) -> Any:
+                            json_files: list[str] | list[Path],
+                            bids_path=None,) -> Any:
     """Get a metadata field from a BIDS json sidecar files.
 
     This assumes that all the json files in the list have the same value
@@ -48,7 +49,8 @@ def _get_metadata_from_bids(field: str,
         else:
             warn(f"'{field}' not found in file {json_files[0]}.")
     else:
-        warn('No bold.json found in BIDS folder.')
+        msg_suffix = f" in {bids_path}" if bids_path else ""
+        warn(f'No bold.json found in BIDS folder{msg_suffix}.')
     
     return None
 
@@ -91,9 +93,13 @@ def _infer_slice_timing_start_time_from_dataset(
                                file_tag='bold',
                                file_type='json',
                                filters=filters)
+    if not img_specs:
+        msg_suffix = f" in {bids_path}"
+        warn(f'No bold.json found in BIDS folder{msg_suffix}.')
     
     return _get_metadata_from_bids(field="StartTime",
-                                   json_files=img_specs)  
+                                   json_files=img_specs,
+                                   bids_path=bids_path,)  
 
 
 def _infer_repetition_time_from_dataset(
@@ -127,9 +133,14 @@ def _infer_repetition_time_from_dataset(
                                file_tag='bold',
                                file_type='json',
                                filters=filters)
+    
+    if not img_specs:
+        msg_suffix = f" in {bids_path}"
+        warn(f'No bold.json found in BIDS folder{msg_suffix}.')
 
-    return _get_metadata_from_bids(field="RepetitionTime",
-                             json_files=img_specs,)
+    return _get_metadata_from_bids(  field="RepetitionTime",
+                             json_files=img_specs,
+                             bids_path=bids_path,)
 
 
 def get_bids_files(
