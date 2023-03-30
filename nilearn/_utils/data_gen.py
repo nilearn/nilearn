@@ -750,7 +750,7 @@ def basic_confounds(length, random_state=0):
     return confounds
 
 
-def add_metadata_to_bids_derivatives(bids_path,
+def add_metadata_to_bids_dataset(bids_path,
                                      metadata,
                                      json_file=None):
     if json_file is None:

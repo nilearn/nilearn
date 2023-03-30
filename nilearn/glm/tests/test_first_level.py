@@ -18,7 +18,7 @@ from nilearn._utils.data_gen import (basic_paradigm,
                                      create_fake_bids_dataset,
                                      generate_fake_fmri_data_and_design,
                                      write_fake_fmri_data_and_design,
-                                     add_metadata_to_bids_derivatives)
+                                     add_metadata_to_bids_dataset)
 
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (FirstLevelModel,
@@ -685,7 +685,7 @@ def test_first_level_from_bids_get_metadata_from_derivatives(tmp_path):
     
     RepetitionTime = 6.0
     StartTime = 2.0
-    add_metadata_to_bids_derivatives(
+    add_metadata_to_bids_dataset(
         bids_path = tmp_path / bids_path, 
         metadata = {"RepetitionTime": RepetitionTime, 
                     "StartTime": StartTime})
@@ -713,7 +713,7 @@ def test_first_level_from_bids_get_RepetitionTime_from_derivatives(tmp_path):
                                          tasks=['main'],
                                          n_runs=[1])
     RepetitionTime = 6.0
-    add_metadata_to_bids_derivatives(
+    add_metadata_to_bids_dataset(
         bids_path = tmp_path / bids_path, 
         metadata = {"RepetitionTime": RepetitionTime})  
 
@@ -741,7 +741,7 @@ def test_first_level_from_bids_get_StartTime_from_derivatives(tmp_path):
                                          tasks=['main'],
                                          n_runs=[1])
     StartTime = 1.0
-    add_metadata_to_bids_derivatives(
+    add_metadata_to_bids_dataset(
         bids_path = tmp_path / bids_path, 
         metadata = {"StartTime": StartTime})               
 

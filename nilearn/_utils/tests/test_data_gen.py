@@ -14,14 +14,14 @@ from nilearn._utils.data_gen import (
 )
 from nilearn.image import get_data
 
-from nilearn._utils.data_gen import add_metadata_to_bids_derivatives
+from nilearn._utils.data_gen import add_metadata_to_bids_dataset
 
 
 def test_add_metadata_to_bids_derivatives(tmp_path):
     # bare bone smoke test
     target_dir = tmp_path / 'derivatives' / 'sub-01' / 'ses-01' / 'func'
     target_dir.mkdir(parents=True)
-    json_file = add_metadata_to_bids_derivatives(bids_path=tmp_path,
+    json_file = add_metadata_to_bids_dataset(bids_path=tmp_path,
                                                   metadata={"foo": "bar"})
     assert json_file.exists()
     assert (json_file.name == 
@@ -30,12 +30,13 @@ def test_add_metadata_to_bids_derivatives(tmp_path):
         metadata = json.load(f)
         assert metadata == {"foo": "bar"}
 
+
 def test_add_metadata_to_bids_derivatives_with_json_path(tmp_path):
     # bare bone smoke test
     target_dir = tmp_path / 'derivatives' / 'sub-02' 
     target_dir.mkdir(parents=True)
     json_file='derivatives/sub-02/sub-02_task-main_bold.json'
-    json_file = add_metadata_to_bids_derivatives(bids_path=tmp_path,
+    json_file = add_metadata_to_bids_dataset(bids_path=tmp_path,
                                                   metadata={"foo": "bar"},
                                                   json_file=json_file)
     assert json_file.exists()
