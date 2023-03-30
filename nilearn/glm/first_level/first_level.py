@@ -914,11 +914,11 @@ def first_level_from_bids(dataset_path,
     img_filters = img_filters or []
     
     _check_args_first_level_from_bids(dataset_path=dataset_path,
-                                         task_label=task_label,
-                                         space_label=space_label,
-                                         sub_labels=sub_labels,
-                                         img_filters=img_filters,
-                                         derivatives_folder=derivatives_folder)
+                                      task_label=task_label,
+                                      space_label=space_label,
+                                      sub_labels=sub_labels,
+                                      img_filters=img_filters,
+                                      derivatives_folder=derivatives_folder)
 
     derivatives_path = Path(dataset_path) / derivatives_folder
 
@@ -931,7 +931,6 @@ def first_level_from_bids(dataset_path,
     # Throw warning if no bold.json is found
     if t_r is not None:
         _check_repetition_time(t_r)
-        warn("'RepetitionTime' given in model_init as {t_r}")
     else:
         filters = _make_bids_files_filter(
             task_label=task_label,
@@ -966,9 +965,6 @@ def first_level_from_bids(dataset_path,
 
     if slice_time_ref is not None:
         _check_slice_time_ref(slice_time_ref)
-        warn("'slice_time_ref' given in model_init as {slice_time_ref}")
-        warn("'slice_time_ref' is {slice_time_ref} percent of the repetition "
-             'time')
     else:
         filters = _make_bids_files_filter(
             task_label=task_label,

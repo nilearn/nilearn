@@ -26,9 +26,8 @@ def _get_metadata_from_bids(field,
     json_files : :obj:`list` of :obj:`str`
         List of path to json files, for example returned by get_bids_files.
 
-    dataset_type : :obj:`str`
-        String to describe the type of dataset, 
-        for example either 'raw' or 'derivatives'.
+    bids_path : :obj:`str` or :obj:`pathlib.Path`, optional
+        Fullpath to the BIDS dataset.
 
     Returns
     -------
@@ -76,18 +75,16 @@ def _infer_slice_timing_start_time_from_dataset(
         Filter examples would be ('ses', '01'), ('dir', 'ap') and
         ('task', 'localizer').
 
+    verbose : :obj:`int`, optional
+        Indicate the level of verbosity. By default, nothing is printed.
+        If 0 prints nothing. If 1 prints warnings.         
+
     Returns
     -------
-    Any
+    float or None
         Value of the field or None if the field is not found.
 
     """
-    # slice timing metadata can only be found in derivatives
-
-    if not Path(bids_path).exists():
-        warn(f"derivatives_path {bids_path} does not exist.")
-        return None
-    
     img_specs = get_bids_files(bids_path,
                                modality_folder='func',
                                file_tag='bold',
@@ -121,16 +118,16 @@ def _infer_repetition_time_from_dataset(
         Filter examples would be ('ses', '01'), ('dir', 'ap') and
         ('task', 'localizer').
 
+    verbose : :obj:`int`, optional
+        Indicate the level of verbosity. By default, nothing is printed.
+        If 0 prints nothing. If 1 prints warnings.          
+
     Returns
     -------
-    Any
+    float or None
         Value of the field or None if the field is not found.
 
     """
-    if not Path(bids_path).exists():
-        warn(f"dataset_path {bids_path} does not exist.")
-        return None
-    
     img_specs = get_bids_files(main_path=bids_path,
                                modality_folder='func',
                                file_tag='bold',
@@ -143,9 +140,9 @@ def _infer_repetition_time_from_dataset(
             warn(f'No bold.json found in BIDS folder{msg_suffix}.')
         return None
 
-    return _get_metadata_from_bids(  field="RepetitionTime",
-                             json_files=img_specs,
-                             bids_path=bids_path,)
+    return _get_metadata_from_bids(field="RepetitionTime",
+                                   json_files=img_specs,
+                                   bids_path=bids_path,)
 
 
 def get_bids_files(

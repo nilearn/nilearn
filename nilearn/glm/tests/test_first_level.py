@@ -8,19 +8,23 @@ import pandas as pd
 import pytest
 from nibabel import Nifti1Image, load
 from nibabel.tmpdirs import InTemporaryDirectory
-from numpy.testing import (assert_almost_equal, assert_array_almost_equal,
-                           assert_array_equal, assert_array_less)
+from numpy.testing import (assert_almost_equal,
+                           assert_array_almost_equal,
+                           assert_array_equal,
+                           assert_array_less)
 from sklearn.cluster import KMeans
 
-from nilearn._utils.data_gen import (basic_paradigm, create_fake_bids_dataset,
+from nilearn._utils.data_gen import (basic_paradigm, 
+                                     create_fake_bids_dataset,
                                      generate_fake_fmri_data_and_design,
                                      write_fake_fmri_data_and_design,
-                                     basic_paradigm,
                                      add_metadata_to_bids_derivatives)
 
 from nilearn.glm.contrasts import compute_fixed_effects
-from nilearn.glm.first_level import (FirstLevelModel, first_level_from_bids,
-                                     mean_scaling, run_glm)
+from nilearn.glm.first_level import (FirstLevelModel,
+                                     first_level_from_bids,
+                                     mean_scaling,
+                                     run_glm)
 from nilearn.glm.first_level.design_matrix import (
     check_design_matrix, make_first_level_design_matrix)
 from nilearn.glm.first_level.first_level import _yule_walker
@@ -566,8 +570,7 @@ def test_first_level_glm_computation_with_memory_caching():
 
 
 @pytest.mark.parametrize('t_r, warning_msg', 
-                         [(None, "No bold.json .* BIDS"), 
-                          (3, "'RepetitionTime' given in model_init")])
+                         [(None, "No bold.json .* BIDS")])
 def test_first_level_from_bids_set_repetition_time_warnings(tmp_path, t_r, warning_msg):
 
     bids_path = create_fake_bids_dataset(base_dir=tmp_path,
@@ -617,8 +620,7 @@ def test_first_level_from_bids_set_repetition_time_errors(tmp_path,
 
 
 @pytest.mark.parametrize('slice_time_ref, warning_msg', 
-                         [(None, "not provided and cannot be inferred"), 
-                          (0.5, "given in model_init")])
+                         [(None, "not provided and cannot be inferred")])
 def test_first_level_from_bids_set_slice_timing_ref_warnings(tmp_path,
                                                              slice_time_ref,
                                                              warning_msg):
