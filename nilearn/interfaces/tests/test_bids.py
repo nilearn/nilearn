@@ -150,7 +150,7 @@ def test_get_bids_files_inheritance_principle_root_folder(tmp_path):
 
 @pytest.mark.xfail(
         reason=("get_bids_files does not find json files"
-                " that are directly in the subject folder of a dataset.")
+                " that are directly in the subject folder of a dataset."),
         strict=True
         )
 @pytest.mark.parametrize("json_file", 
