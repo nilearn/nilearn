@@ -101,4 +101,4 @@ repos:
     hooks:
       - id: flake8
         args: [--config=pyproject.toml, --verbose]
-        additional_dependencies: [flake8-docstrings, pyproject-flake8]
+        additional_dependencies: [flake8-docstrings, Flake8-pyproject] # or pyproject-flake8?
