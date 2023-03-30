@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nilearn"
-version = [{ attr = "nilearn.__version__" }]
+#version = [{ attr = "nilearn.__version__" }]
 description = "Statistical learning for neuroimaging in Python"
 long_description = [{ file = "README.rst" }]
 authors = [{ name = "Nilearn developers" }]
@@ -99,10 +99,9 @@ include = ["AUTHORS.rst", "LICENSE", "README.rst"]
 
 [tool.hatch.version]
 source = "vcs"
-raw-options = { version_scheme = "release-branch-semver" }
 
 [tool.hatch.build.hooks.vcs]
-version-file = "nilearn/version.py"
+version-file = "nilearn/_version.py"
 
 [tool.black]
 line-length = 79
