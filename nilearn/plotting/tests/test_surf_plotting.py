@@ -43,77 +43,11 @@ except ImportError:
 else:
     IPYTHON_INSTALLED = True
 
-EXPECTED_CAMERAS_PLOTLY = {
-    "left": {
-        "lateral": {
-            "eye": {"x": -1.5, "y": 0, "z": 0},
-            "up": {"x": 0, "y": 0, "z": 1},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-        "medial": {
-            "eye": {"x": 1.5, "y": 0, "z": 0},
-            "up": {"x": 0, "y": 0, "z": 1},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-        "dorsal": {
-            "eye": {"x": 0, "y": 0, "z": 1.5},
-            "up": {"x": -1, "y": 0, "z": 0},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-        "ventral": {
-            "eye": {"x": 0, "y": 0, "z": -1.5},
-            "up": {"x": 1, "y": 0, "z": 0},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-        "anterior": {
-            "eye": {"x": 0, "y": 1.5, "z": 0},
-            "up": {"x": 0, "y": 0, "z": 1},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-        "posterior": {
-            "eye": {"x": 0, "y": -1.5, "z": 0},
-            "up": {"x": 0, "y": 0, "z": 1},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-    },
-    "right": {
-        "lateral": {
-            "eye": {"x": 1.5, "y": 0, "z": 0},
-            "up": {"x": 0, "y": 0, "z": 1},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-        "medial": {
-            "eye": {"x": -1.5, "y": 0, "z": 0},
-            "up": {"x": 0, "y": 0, "z": 1},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-        "dorsal": {
-            "eye": {"x": 0, "y": 0, "z": 1.5},
-            "up": {"x": -1, "y": 0, "z": 0},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-        "ventral": {
-            "eye": {"x": 0, "y": 0, "z": -1.5},
-            "up": {"x": 1, "y": 0, "z": 0},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-        "anterior": {
-            "eye": {"x": 0, "y": 1.5, "z": 0},
-            "up": {"x": 0, "y": 0, "z": 1},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-        "posterior": {
-            "eye": {"x": 0, "y": -1.5, "z": 0},
-            "up": {"x": 0, "y": 0, "z": 1},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-    }
-}
 
-EXPECTED_CUSTOM_CAMERAS_PLOTLY = [
-    # Lateral left
+EXPECTED_CAMERAS_PLOTLY = [
     (
         "left",
+        "lateral",
         (0, 180),
         {
             "eye": {"x": -1.5, "y": 0, "z": 0},
@@ -121,9 +55,9 @@ EXPECTED_CUSTOM_CAMERAS_PLOTLY = [
             "center": {"x": 0, "y": 0, "z": 0},
         },
     ),
-    # Medial left
     (
         "left",
+        "medial",
         (0, 0),
         {
             "eye": {"x": 1.5, "y": 0, "z": 0},
@@ -134,6 +68,7 @@ EXPECTED_CUSTOM_CAMERAS_PLOTLY = [
     # Dorsal left
     (
         "left",
+        "dorsal",
         (90, 0),
         {
             "eye": {"x": 0, "y": 0, "z": 1.5},
@@ -144,6 +79,7 @@ EXPECTED_CUSTOM_CAMERAS_PLOTLY = [
     # Ventral left
     (
         "left",
+        "ventral",
         (270, 0),
         {
             "eye": {"x": 0, "y": 0, "z": -1.5},
@@ -154,6 +90,7 @@ EXPECTED_CUSTOM_CAMERAS_PLOTLY = [
     # Anterior left
     (
         "left",
+        "anterior",
         (0, 90),
         {
             "eye": {"x": 0, "y": 1.5, "z": 0},
@@ -164,6 +101,7 @@ EXPECTED_CUSTOM_CAMERAS_PLOTLY = [
     # Posterior left
     (
         "left",
+        "posterior",
         (0, 270),
         {
             "eye": {"x": 0, "y": -1.5, "z": 0},
@@ -174,6 +112,7 @@ EXPECTED_CUSTOM_CAMERAS_PLOTLY = [
     # Lateral right
     (
         "right",
+        "lateral",
         (0, 0),
         {
             "eye": {"x": 1.5, "y": 0, "z": 0},
@@ -184,6 +123,7 @@ EXPECTED_CUSTOM_CAMERAS_PLOTLY = [
     # Medial right
     (
         "right",
+        "medial",
         (0, 180),
         {
             "eye": {"x": -1.5, "y": 0, "z": 0},
@@ -194,6 +134,7 @@ EXPECTED_CUSTOM_CAMERAS_PLOTLY = [
     # Dorsal right
     (
         "right",
+        "dorsal",
         (90, 0),
         {
             "eye": {"x": 0, "y": 0, "z": 1.5},
@@ -204,6 +145,7 @@ EXPECTED_CUSTOM_CAMERAS_PLOTLY = [
     # Ventral right
     (
         "right",
+        "ventral",
         (270, 0),
         {
             "eye": {"x": 0, "y": 0, "z": -1.5},
@@ -214,6 +156,7 @@ EXPECTED_CUSTOM_CAMERAS_PLOTLY = [
     # Anterior right
     (
         "right",
+        "anterior",
         (0, 90),
         {
             "eye": {"x": 0, "y": 1.5, "z": 0},
@@ -224,6 +167,7 @@ EXPECTED_CUSTOM_CAMERAS_PLOTLY = [
     # Posterior right
     (
         "right",
+        "posterior",
         (0, 270),
         {
             "eye": {"x": 0, "y": -1.5, "z": 0},
@@ -248,26 +192,23 @@ EXPECTED_VIEW_MATPLOTLIB = {"left": {"anterior": (0, 90),
                                       "ventral": (270, 0)}}
 
 
-@pytest.fixture
-def expected_cameras_plotly(hemi, view):
-    return EXPECTED_CAMERAS_PLOTLY[hemi][view]
 
-
-@pytest.mark.parametrize("hemi", VALID_HEMISPHERES)
-@pytest.mark.parametrize("view", VALID_VIEWS)
-def test_get_view_plot_surf_plotly(hemi, view, expected_cameras_plotly):
+@pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
+def test_get_view_plot_surf_plotly(full_view):
     from nilearn.plotting.surf_plotting import _get_view_plot_surf_plotly
-    assert _get_view_plot_surf_plotly(hemi, view) == expected_cameras_plotly
-
-
-@pytest.mark.parametrize("custom_view", EXPECTED_CUSTOM_CAMERAS_PLOTLY)
-def test_get_view_plot_surf_plotly_custom_view(custom_view):
-    hemi, (elev, azim), expected_camera_view = custom_view
-    from nilearn.plotting.surf_plotting import _get_view_plot_surf_plotly
-    camera_view = _get_view_plot_surf_plotly(hemi, (elev, azim))
+    hemi, view_name, (elev, azim), expected_camera_view = full_view
+    camera_view = _get_view_plot_surf_plotly(hemi, view_name)
+    # Check camera view
     for k in ["center", "eye", "up"]:
         assert np.allclose(
             list(camera_view[k].values()),
+            list(expected_camera_view[k].values())
+        )
+    # Check camera custom view
+    camera_custom_view = _get_view_plot_surf_plotly(hemi, (elev, azim))
+    for k in ["center", "eye", "up"]:
+        assert np.allclose(
+            list(camera_custom_view[k].values()),
             list(expected_camera_view[k].values())
         )
 
