@@ -57,12 +57,12 @@ EXPECTED_CAMERAS_PLOTLY = {
         },
         "dorsal": {
             "eye": {"x": 0, "y": 0, "z": 1.5},
-            "up": {"x": 0, "y": 1, "z": 0},
+            "up": {"x": -1, "y": 0, "z": 0},
             "center": {"x": 0, "y": 0, "z": 0},
         },
         "ventral": {
             "eye": {"x": 0, "y": 0, "z": -1.5},
-            "up": {"x": 0, "y": 1, "z": 0},
+            "up": {"x": 1, "y": 0, "z": 0},
             "center": {"x": 0, "y": 0, "z": 0},
         },
         "anterior": {
@@ -77,24 +77,24 @@ EXPECTED_CAMERAS_PLOTLY = {
         },
     },
     "right": {
-        "medial": {
-            "eye": {"x": -1.5, "y": 0, "z": 0},
-            "up": {"x": 0, "y": 0, "z": 1},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
         "lateral": {
             "eye": {"x": 1.5, "y": 0, "z": 0},
             "up": {"x": 0, "y": 0, "z": 1},
             "center": {"x": 0, "y": 0, "z": 0},
         },
+        "medial": {
+            "eye": {"x": -1.5, "y": 0, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
         "dorsal": {
             "eye": {"x": 0, "y": 0, "z": 1.5},
-            "up": {"x": 0, "y": 1, "z": 0},
+            "up": {"x": -1, "y": 0, "z": 0},
             "center": {"x": 0, "y": 0, "z": 0},
         },
         "ventral": {
             "eye": {"x": 0, "y": 0, "z": -1.5},
-            "up": {"x": 0, "y": 1, "z": 0},
+            "up": {"x": 1, "y": 0, "z": 0},
             "center": {"x": 0, "y": 0, "z": 0},
         },
         "anterior": {
@@ -107,7 +107,131 @@ EXPECTED_CAMERAS_PLOTLY = {
             "up": {"x": 0, "y": 0, "z": 1},
             "center": {"x": 0, "y": 0, "z": 0},
         },
-    }}
+    }
+}
+
+EXPECTED_CUSTOM_CAMERAS_PLOTLY = [
+    # Lateral left
+    (
+        "left",
+        (0, 180),
+        {
+            "eye": {"x": -1.5, "y": 0, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Medial left
+    (
+        "left",
+        (0, 0),
+        {
+            "eye": {"x": 1.5, "y": 0, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Dorsal left
+    (
+        "left",
+        (90, 0),
+        {
+            "eye": {"x": 0, "y": 0, "z": 1.5},
+            "up": {"x": -1, "y": 0, "z": 0},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Ventral left
+    (
+        "left",
+        (270, 0),
+        {
+            "eye": {"x": 0, "y": 0, "z": -1.5},
+            "up": {"x": 1, "y": 0, "z": 0},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Anterior left
+    (
+        "left",
+        (0, 90),
+        {
+            "eye": {"x": 0, "y": 1.5, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Posterior left
+    (
+        "left",
+        (0, 270),
+        {
+            "eye": {"x": 0, "y": -1.5, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Lateral right
+    (
+        "right",
+        (0, 0),
+        {
+            "eye": {"x": 1.5, "y": 0, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Medial right
+    (
+        "right",
+        (0, 180),
+        {
+            "eye": {"x": -1.5, "y": 0, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Dorsal right
+    (
+        "right",
+        (90, 0),
+        {
+            "eye": {"x": 0, "y": 0, "z": 1.5},
+            "up": {"x": -1, "y": 0, "z": 0},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Ventral right
+    (
+        "right",
+        (270, 0),
+        {
+            "eye": {"x": 0, "y": 0, "z": -1.5},
+            "up": {"x": 1, "y": 0, "z": 0},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Anterior right
+    (
+        "right",
+        (0, 90),
+        {
+            "eye": {"x": 0, "y": 1.5, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Posterior right
+    (
+        "right",
+        (0, 270),
+        {
+            "eye": {"x": 0, "y": -1.5, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+]
 
 
 EXPECTED_VIEW_MATPLOTLIB = {"left": {"anterior": (0, 90),
@@ -134,6 +258,18 @@ def expected_cameras_plotly(hemi, view):
 def test_get_view_plot_surf_plotly(hemi, view, expected_cameras_plotly):
     from nilearn.plotting.surf_plotting import _get_view_plot_surf_plotly
     assert _get_view_plot_surf_plotly(hemi, view) == expected_cameras_plotly
+
+
+@pytest.mark.parametrize("custom_view", EXPECTED_CUSTOM_CAMERAS_PLOTLY)
+def test_get_view_plot_surf_plotly_custom_view(custom_view):
+    hemi, (elev, azim), expected_camera_view = custom_view
+    from nilearn.plotting.surf_plotting import _get_view_plot_surf_plotly
+    camera_view = _get_view_plot_surf_plotly(hemi, (elev, azim))
+    for k in ["center", "eye", "up"]:
+        assert np.allclose(
+            list(camera_view[k].values()),
+            list(expected_camera_view[k].values())
+        )
 
 
 @pytest.fixture
