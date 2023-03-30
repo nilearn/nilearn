@@ -255,7 +255,7 @@ def test_compute_brain_mask():
 
     mask_img1 = compute_brain_mask(img1, verbose=1, threshold=0.2)
 
-    assert (brain_data == get_data(mask_img1)).all()
+    assert (get_data(mask_img1) == brain_data).all()
 
 
 def test_compute_brain_mask_errors_warnings():
@@ -474,81 +474,64 @@ def test_unmask_errors():
         unmask(transposed_vector, mask_img)
 
 
-def test_intersect_masks_filename():
-    # Create dummy masks
+def make_mask_a():
+    # +---+---+---+---+
+    # |   |   |   |   |
+    # +---+---+---+---+
+    # |   |   |   |   |
+    # +---+---+---+---+
+    # |   |   | X | X |
+    # +---+---+---+---+
+    # |   |   | X | X |
+    # +---+---+---+---+
     mask_a = np.zeros((4, 4, 1), dtype=bool)
     mask_a[2:4, 2:4] = 1
-    mask_a_img = Nifti1Image(mask_a.astype("int32"), AFFINE_EYE)
+    return mask_a
 
+
+@pytest.fixture
+def mask_a():
+    return make_mask_a()
+
+
+@pytest.fixture
+def mask_a_img():
+    return Nifti1Image(make_mask_a().astype("int32"), AFFINE_EYE)
+
+
+def make_mask_b():
     # +---+---+---+---+
     # |   |   |   |   |
     # +---+---+---+---+
+    # |   | X | X |   |
+    # +---+---+---+---+
+    # |   | X | X |   |
+    # +---+---+---+---+
     # |   |   |   |   |
     # +---+---+---+---+
-    # |   |   | X | X |
-    # +---+---+---+---+
-    # |   |   | X | X |
-    # +---+---+---+---+
-
     mask_b = np.zeros((4, 4, 1), dtype=bool)
     mask_b[1:3, 1:3] = 1
-    mask_b_img = Nifti1Image(mask_b.astype("int32"), AFFINE_EYE)
-
-    # +---+---+---+---+
-    # |   |   |   |   |
-    # +---+---+---+---+
-    # |   | X | X |   |
-    # +---+---+---+---+
-    # |   | X | X |   |
-    # +---+---+---+---+
-    # |   |   |   |   |
-    # +---+---+---+---+
-
-    with write_tmp_imgs(
-        mask_a_img, mask_b_img, create_files=True
-    ) as filenames:
-        mask_ab = np.zeros((4, 4, 1), dtype=bool)
-        mask_ab[2, 2] = 1
-        mask_ab_ = intersect_masks(filenames, threshold=1.0)
-        assert_array_equal(mask_ab, get_data(mask_ab_))
+    return mask_b
 
 
-def test_intersect_masks():
-    """Test the intersect_masks function"""
-    # Create dummy masks
-    mask_a = np.zeros((4, 4, 1), dtype=bool)
-    mask_a[2:4, 2:4] = 1
-    mask_a_img = Nifti1Image(mask_a.astype("int32"), AFFINE_EYE)
+@pytest.fixture
+def mask_b():
+    return make_mask_b()
 
-    # +---+---+---+---+
-    # |   |   |   |   |
-    # +---+---+---+---+
-    # |   |   |   |   |
-    # +---+---+---+---+
-    # |   |   | X | X |
-    # +---+---+---+---+
-    # |   |   | X | X |
-    # +---+---+---+---+
 
-    mask_b = np.zeros((4, 4, 1), dtype=bool)
-    mask_b[1:3, 1:3] = 1
-    mask_b_img = Nifti1Image(mask_b.astype("int32"), AFFINE_EYE)
+@pytest.fixture
+def mask_b_img():
+    return Nifti1Image(make_mask_b().astype("int32"), AFFINE_EYE)
 
-    # +---+---+---+---+
-    # |   |   |   |   |
-    # +---+---+---+---+
-    # |   | X | X |   |
-    # +---+---+---+---+
-    # |   | X | X |   |
-    # +---+---+---+---+
-    # |   |   |   |   |
-    # +---+---+---+---+
 
-    mask_c = np.zeros((4, 4, 1), dtype=bool)
-    mask_c[:, 2] = 1
-    mask_c[0, 0] = 1
-    mask_c_img = Nifti1Image(mask_c.astype("int32"), AFFINE_EYE)
+@pytest.fixture
+def expected_mask_ab():
+    expected_mask_ab = np.zeros((4, 4, 1), dtype=bool)
+    expected_mask_ab[2, 2] = 1
+    return expected_mask_ab
 
+
+def make_mask_c():
     # +---+---+---+---+
     # | X |   | X |   |
     # +---+---+---+---+
@@ -558,15 +541,102 @@ def test_intersect_masks():
     # +---+---+---+---+
     # |   |   | X |   |
     # +---+---+---+---+
+    mask_c = np.zeros((4, 4, 1), dtype=bool)
+    mask_c[:, 2] = 1
+    mask_c[0, 0] = 1
+    return mask_c
 
-    mask_ab = np.zeros((4, 4, 1), dtype=bool)
-    mask_ab[2, 2] = 1
-    mask_ab_ = intersect_masks([mask_a_img, mask_b_img], threshold=1.0)
-    assert_array_equal(mask_ab, get_data(mask_ab_))
 
-    # Test intersect mask images with '>f8'. This function uses
-    # largest_connected_component to check if intersect_masks passes with
-    # connected=True (which is by default)
+@pytest.fixture
+def mask_c():
+    return make_mask_c()
+
+
+@pytest.fixture
+def mask_c_img():
+    return Nifti1Image(make_mask_c().astype("int32"), AFFINE_EYE)
+
+
+def make_mask_d():
+    mask_d = np.zeros((8, 8, 1), dtype=bool)
+    mask_d[2:6, 2:6] = 1
+    return mask_d
+
+
+@pytest.fixture
+def mask_d():
+    return make_mask_c()
+
+
+@pytest.fixture
+def mask_d_img():
+    return Nifti1Image(make_mask_d().astype("uint8"), AFFINE_EYE / 2.0)
+
+
+def test_intersect_masks_filename(mask_a_img, mask_b_img):
+    with write_tmp_imgs(
+        mask_a_img, mask_b_img, create_files=True
+    ) as filenames:
+        mask_ab = intersect_masks(filenames, threshold=1.0)
+
+        expected_mask_ab = np.zeros((4, 4, 1), dtype=bool)
+        expected_mask_ab[2, 2] = 1
+        assert_array_equal(get_data(mask_ab), expected_mask_ab)
+
+
+def test_intersect_masks(
+    mask_a,
+    mask_a_img,
+    mask_b,
+    mask_b_img,
+    mask_c,
+    mask_c_img,
+    expected_mask_ab,
+):
+    """Test the intersect_masks function"""
+    mask_ab = intersect_masks([mask_a_img, mask_b_img], threshold=1.0)
+
+    assert_array_equal(get_data(mask_ab), expected_mask_ab)
+
+    expected_mask_abc = mask_a + mask_b + mask_c
+
+    mask_abc_ = intersect_masks(
+        [mask_a_img, mask_b_img, mask_c_img], threshold=0.0, connected=False
+    )
+
+    assert_array_equal(get_data(mask_abc_), expected_mask_abc)
+
+    expected_mask_abc[0, 0] = 0
+
+    mask_abc_ = intersect_masks(
+        [mask_a_img, mask_b_img, mask_c_img], threshold=0.0
+    )
+
+    assert_array_equal(get_data(mask_abc_), expected_mask_abc)
+
+    expected_mask_abc = expected_mask_ab
+
+    mask_abc_ = intersect_masks(
+        [mask_a_img, mask_b_img, mask_c_img], threshold=1.0
+    )
+
+    assert_array_equal(get_data(mask_abc_), expected_mask_abc)
+
+    expected_mask_abc[1, 2] = 1
+    expected_mask_abc[3, 2] = 1
+
+    mask_abc_ = intersect_masks([mask_a_img, mask_b_img, mask_c_img])
+
+    assert_array_equal(get_data(mask_abc_), expected_mask_abc)
+
+
+def test_intersect_masks_with_f8(mask_a_img, mask_b_img, expected_mask_ab):
+    """Test intersect mask images with '>f8'.
+
+    This function uses
+    largest_connected_component to check if intersect_masks passes with
+    connected=True (which is by default)
+    """
     mask_a_img_change_dtype = Nifti1Image(
         get_data(mask_a_img).astype(">f8"), affine=mask_a_img.affine
     )
@@ -576,77 +646,32 @@ def test_intersect_masks():
     mask_ab_change_type = intersect_masks(
         [mask_a_img_change_dtype, mask_b_img_change_dtype], threshold=1.0
     )
-    assert_array_equal(mask_ab, get_data(mask_ab_change_type))
 
-    mask_abc = mask_a + mask_b + mask_c
-    mask_abc_ = intersect_masks(
-        [mask_a_img, mask_b_img, mask_c_img], threshold=0.0, connected=False
-    )
-    assert_array_equal(mask_abc, get_data(mask_abc_))
-
-    mask_abc[0, 0] = 0
-    mask_abc_ = intersect_masks(
-        [mask_a_img, mask_b_img, mask_c_img], threshold=0.0
-    )
-    assert_array_equal(mask_abc, get_data(mask_abc_))
-
-    mask_abc = mask_ab
-    mask_abc_ = intersect_masks(
-        [mask_a_img, mask_b_img, mask_c_img], threshold=1.0
-    )
-    assert_array_equal(mask_abc, get_data(mask_abc_))
-
-    mask_abc[1, 2] = 1
-    mask_abc[3, 2] = 1
-    mask_abc_ = intersect_masks([mask_a_img, mask_b_img, mask_c_img])
-    assert_array_equal(mask_abc, get_data(mask_abc_))
+    assert_array_equal(get_data(mask_ab_change_type), expected_mask_ab)
 
 
-def test_compute_multi_epi_mask_errors():
+def test_compute_multi_epi_mask_errors(mask_a_img, mask_d_img):
     # Check that an empty list of images creates a meaningful error
     pytest.raises(TypeError, compute_multi_epi_mask, [])
-
-    # As it calls intersect_masks, we only test resampling here.
-    # Same masks as test_intersect_masks
-    mask_a = np.zeros((4, 4, 1), dtype=bool)
-    mask_a[2:4, 2:4] = 1
-    mask_a_img = Nifti1Image(mask_a.astype("uint8"), AFFINE_EYE)
-
-    mask_b = np.zeros((8, 8, 1), dtype=bool)
-    mask_b[2:6, 2:6] = 1
-    mask_b_img = Nifti1Image(mask_b.astype("uint8"), AFFINE_EYE / 2.0)
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", MaskWarning)
         with pytest.raises(
             ValueError, match="cannot convert float NaN to integer"
         ):
-            compute_multi_epi_mask([mask_a_img, mask_b_img])
+            compute_multi_epi_mask([mask_a_img, mask_d_img])
 
 
-def test_compute_multi_epi_mask():
-    # As it calls intersect_masks, we only test resampling here.
-    # Same masks as test_intersect_masks
-    mask_a = np.zeros((4, 4, 1), dtype=bool)
-    mask_a[2:4, 2:4] = 1
-    mask_a_img = Nifti1Image(mask_a.astype("uint8"), AFFINE_EYE)
-
-    mask_b = np.zeros((8, 8, 1), dtype=bool)
-    mask_b[2:6, 2:6] = 1
-    mask_b_img = Nifti1Image(mask_b.astype("uint8"), AFFINE_EYE / 2.0)
-
-    mask_ab = np.zeros((4, 4, 1), dtype=bool)
-    mask_ab[2, 2] = 1
-
-    mask_ab_ = compute_multi_epi_mask(
-        [mask_a_img, mask_b_img],
+def test_compute_multi_epi_mask(mask_a_img, mask_d_img, expected_mask_ab):
+    mask_ab = compute_multi_epi_mask(
+        [mask_a_img, mask_d_img],
         threshold=1.0,
         opening=0,
         target_affine=AFFINE_EYE,
         target_shape=(4, 4, 1),
     )
 
-    assert_array_equal(mask_ab, get_data(mask_ab_))
+    assert_array_equal(get_data(mask_ab), expected_mask_ab)
 
 
 def test_compute_multi_brain_mask():
