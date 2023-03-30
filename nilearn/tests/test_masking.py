@@ -123,6 +123,7 @@ def test_high_variance_confounds():
     img, mask, conf = _simu_img()
 
     hv_confounds = high_variance_confounds(img)
+
     masker1 = NiftiMasker(
         standardize=True,
         detrend=False,
@@ -130,13 +131,13 @@ def test_high_variance_confounds():
         mask_img=mask,
     ).fit()
     tseries1 = masker1.transform(img, confounds=[hv_confounds, conf])
+
     masker2 = NiftiMasker(
         standardize=True,
         detrend=False,
         high_variance_confounds=True,
         mask_img=mask,
     ).fit()
-
     tseries2 = masker2.transform(img, confounds=conf)
 
     assert_array_equal(tseries1, tseries2)
@@ -147,7 +148,9 @@ def test_compute_epi_mask():
     mean_image[3:-2, 3:-2, :] = 10
     mean_image[5, 5, :] = 11
     mean_image = Nifti1Image(mean_image, np.eye(4))
+
     mask1 = compute_epi_mask(mean_image, opening=False)
+
     mask2 = compute_epi_mask(mean_image, exclude_zeros=True, opening=False)
 
     # With an array with no zeros, exclude_zeros should not make
@@ -158,6 +161,7 @@ def test_compute_epi_mask():
     mean_image2 = np.zeros((30, 30, 3))
     mean_image2[3:12, 3:12, :] = get_data(mean_image)
     mean_image2 = Nifti1Image(mean_image2, np.eye(4))
+
     mask3 = compute_epi_mask(mean_image2, exclude_zeros=True, opening=False)
 
     assert_array_equal(get_data(mask1), get_data(mask3)[3:12, 3:12])
@@ -167,13 +171,18 @@ def test_compute_epi_mask():
 
     assert not np.allclose(get_data(mask1), get_data(mask3)[3:12, 3:12])
 
+
+def test_compute_epi_mask_errors_warnings():
     # Check that we get a ValueError for incorrect shape
     mean_image = np.ones((9, 9))
     mean_image[3:-3, 3:-3] = 10
     mean_image[5, 5] = 100
     mean_image = Nifti1Image(mean_image, np.eye(4))
 
-    pytest.raises(ValueError, compute_epi_mask, mean_image)
+    with pytest.raises(
+        ValueError, match="Computation expects 3D or 4D images"
+    ):
+        compute_epi_mask(mean_image)
 
     # Check that we get a useful warning for empty masks
     mean_image = np.zeros((9, 9, 9))
@@ -186,23 +195,29 @@ def test_compute_epi_mask():
         compute_epi_mask(mean_image, exclude_zeros=True)
 
 
-def test_compute_background_mask():
-    for value in (0, np.nan):
-        mean_image = value * np.ones((9, 9, 9))
-        mean_image[3:-3, 3:-3, 3:-3] = 1
-        mask = mean_image == 1
-        mean_image = Nifti1Image(mean_image, np.eye(4))
-        mask1 = compute_background_mask(mean_image, opening=False)
+@pytest.mark.parametrize("value", [0, np.nan])
+def test_compute_background_mask(value):
+    mean_image = value * np.ones((9, 9, 9))
+    mean_image[3:-3, 3:-3, 3:-3] = 1
+    mask = mean_image == 1
+    mean_image = Nifti1Image(mean_image, np.eye(4))
 
-        assert_array_equal(get_data(mask1), mask.astype(np.int8))
+    mask1 = compute_background_mask(mean_image, opening=False)
 
+    assert_array_equal(get_data(mask1), mask.astype(np.int8))
+
+
+def test_compute_background_mask_errors_warnings():
     # Check that we get a ValueError for incorrect shape
     mean_image = np.ones((9, 9))
     mean_image[3:-3, 3:-3] = 10
     mean_image[5, 5] = 100
     mean_image = Nifti1Image(mean_image, np.eye(4))
 
-    pytest.raises(ValueError, compute_background_mask, mean_image)
+    with pytest.raises(
+        ValueError, match="Computation expects 3D or 4D images"
+    ):
+        compute_background_mask(mean_image)
 
     # Check that we get a useful warning for empty masks
     mean_image = np.zeros((9, 9, 9))
@@ -216,15 +231,21 @@ def test_compute_background_mask():
 
 def test_compute_brain_mask():
     img, _ = data_gen.generate_mni_space_img(res=8, random_state=0)
+
     brain_mask = compute_brain_mask(img, threshold=0.2)
+
     gm_mask = compute_brain_mask(img, threshold=0.2, mask_type="gm")
+
     wm_mask = compute_brain_mask(img, threshold=0.2, mask_type="wm")
+
     brain_data, gm_data, wm_data = map(
         get_data, (brain_mask, gm_mask, wm_mask)
     )
 
     # Check that whole-brain mask is non-empty
     assert (brain_data != 0).any()
+    # Test that gm and wm masks have empty intersection
+    assert (np.logical_and(gm_data, wm_data) == 0).all()
     for subset in gm_data, wm_data:
         # Test that gm and wm masks are included in the whole-brain mask
         assert (
@@ -232,18 +253,21 @@ def test_compute_brain_mask():
         ).all()
         # Test that gm and wm masks are non-empty
         assert (subset != 0).any()
-    # Test that gm and wm masks have empty intersection
-    assert (np.logical_and(gm_data, wm_data) == 0).all()
-
-    # Check that we get a useful warning for empty masks
-    with pytest.warns(MaskWarning):
-        compute_brain_mask(img, threshold=1)
 
     # Check that masks obtained from same FOV are the same
     img1, _ = data_gen.generate_mni_space_img(res=8, random_state=1)
     mask_img1 = compute_brain_mask(img1, verbose=1, threshold=0.2)
 
     assert (brain_data == get_data(mask_img1)).all()
+
+
+def test_compute_brain_mask_errors_warnings():
+    img, _ = data_gen.generate_mni_space_img(res=8, random_state=0)
+
+    # Check that we get a useful warning for empty masks
+    with pytest.warns(MaskWarning):
+        compute_brain_mask(img, threshold=1)
+
     # Check that error is raised if mask type is unknown
     with pytest.raises(ValueError, match="Unknown mask type foo."):
         compute_brain_mask(img, verbose=1, mask_type="foo")
