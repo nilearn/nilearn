@@ -6,12 +6,14 @@
 import json
 import os
 import re
+import shutil
 import tempfile
 import uuid
 from collections import OrderedDict
 from pathlib import Path
 
 import nibabel
+import nibabel as nib
 import numpy as np
 import pandas as pd
 import pytest
@@ -168,13 +170,8 @@ def _adhd_metadata():
         3624598,
     ]
     subs = pd.DataFrame({"Subject": sub1 + sub2 + sub3 + sub4})
-    return dict_to_archive(
-        {
-            "ADHD200_40subs_motion_parameters_and_phenotypics.csv": subs.to_csv(  # noqa E501 line too long and black will not fix it
-                index=False
-            )
-        }
-    )
+    tmp = "ADHD200_40subs_motion_parameters_and_phenotypics.csv"
+    return dict_to_archive({tmp: subs.to_csv(index=False)})
 
 
 def test_fetch_adhd(tmp_path, request_mocker):
@@ -912,10 +909,6 @@ def test_make_spm_auditory_events_file(request_mocker):
 
 
 def test_fetch_spm_auditory(request_mocker, tmp_path):
-    import shutil
-
-    import nibabel as nib
-
     saf = ["fM00223/fM00223_%03i.img" % index for index in range(4, 100)]
     saf_ = ["fM00223/fM00223_%03i.hdr" % index for index in range(4, 100)]
 

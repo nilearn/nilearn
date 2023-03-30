@@ -33,8 +33,7 @@ def md5_hash(string):
 def _format_time(t):
     if t > 60:
         return f"{t / 60.0:4.1f}min"
-    else:
-        return f" {t:5.1f}s"
+    return f" {t:5.1f}s"
 
 
 def _md5_sum_file(path):
