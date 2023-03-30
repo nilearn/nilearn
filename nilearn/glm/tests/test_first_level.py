@@ -606,7 +606,7 @@ def test_first_level_from_bids_set_repetition_time_errors(tmp_path,
                                          tasks=['main'],
                                          n_runs=[1])
 
-    with pytest.raises(error_type, match = error_msg):
+    with pytest.raises(error_type, match=error_msg):
         first_level_from_bids(
             dataset_path= str(tmp_path / bids_path),
             task_label='main',

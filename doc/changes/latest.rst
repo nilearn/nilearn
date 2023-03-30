@@ -15,8 +15,6 @@ NEW
 Fixes
 -----
 
-- Change calculation of TR in :func:`~.glm.first_level.compute_regressor` to be more precise (:gh:`3362` by `Anne-Sophie Kieslinger`_)
-
 - Improve how :func:`~.glm.first_level.first_level_from_bids` handles fetching slice timing metadata and add additional input validation (:gh:`3605` by `Rémi Gau`_).
 
 - Fixes several bugs in :func:`~glm.first_level.first_level_from_bids`. Refactors :func:`~glm.first_level.first_level_from_bids` and ``nilearn._utils.data_gen.create_fake_bids_dataset``. (:gh:`3525` by `Rémi Gau`_).
