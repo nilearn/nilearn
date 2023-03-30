@@ -19,7 +19,10 @@
 # Dev branch marker is: 'X.Y.dev' or 'X.Y.devN' where N is an integer.
 # 'X.Y.dev0' is the canonical version of 'X.Y.dev'
 #
-__version__ = "0.10.1.dev"
+try:
+    from ._version import __version__
+except ImportError:
+    pass
 
 _NILEARN_INSTALL_MSG = "See %s for installation information." % (
     "https://nilearn.github.io/stable/introduction.html#installation"

@@ -4,7 +4,6 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nilearn"
-#version = [{ attr = "nilearn.__version__" }]
 description = "Statistical learning for neuroimaging in Python"
 long_description = [{ file = "README.rst" }]
 authors = [{ name = "Nilearn developers" }]
@@ -167,17 +166,17 @@ junit_family = "xunit2"
 
 # Requires pyproject-flake8, otherwise use .flake8 file
 [tool.flake8]
-exclude = [
-    ".git",
-    "__pycache__",
-	"env",
-	"venv",
-    "build",
-    "dist",
-	"nilearn/externals/tempita"
-]
---select = ["D","E","F","W","C90"]
-docstring-convention = ["numpy"]
+exclude = """
+    .git,
+    __pycache__,
+	env,
+	venv,
+    build,
+    dist,
+	nilearn/externals/tempita
+"""
+--select = "D,E,F,W,C90"
+docstring-convention = "numpy"
 max-line-length = 79
 max_complexity = 43
 max_function_length = 150
@@ -194,7 +193,6 @@ max_function_length = 150
 	# W503: line break before binary operator
 	# W504: line break after binary operator
 per-file-ignores = """
-	setup.py: D100
     # - docstrings rules that should not be applied to tests
 	*/tests/*: D100, D103, D104, D205, D400, D401
 	*/*/tests/*: D100, D103, D104, D205, D400, D401
@@ -203,7 +201,7 @@ per-file-ignores = """
     # - docstrings rules that should not be applied to doc
 	doc/*: D100, D103, F401
 """
-ignore = ["D105", "D107", "E402", "W503", "W504", "W605"]
+ignore = "D105, D107, E402, W503, W504, W605"
 # for compatibility with black
 # https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html#flake8
 extend-ignore = "E203"

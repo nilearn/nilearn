@@ -37,7 +37,7 @@ jobs:
       - name: "Run Flake8 on whole file"
         shell: bash {0}
         run: |
-          flake8 --config=setup.cfg --verbose \
+          flake8 --config=pyproject.toml --verbose \
             examples/0[0234567]* \
             maint_tools \
             setup.py \
