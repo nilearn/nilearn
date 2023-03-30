@@ -831,31 +831,48 @@ def test_clean_confounds_check_confounders_are_removed(signals_and_confounds):
     assert abs(np.dot(confounds_clean.T, signals_clean)).max() < 1000.0 * eps
 
 
+@pytest.mark.parametrize(
+    "confounds, error_type, error_msg",
+    [
+        (1, TypeError, "unhandled type"),
+        (np.zeros(2), ValueError, "incorrect length"),
+        (np.zeros((2, 2)), ValueError, "incorrect length"),
+        (np.zeros((2, 3, 4)), ValueError, "incorrect number of dimensions"),
+        ([None], TypeError, "unhandled type"),
+    ],
+)
+def test_clean_confounds_errors_wrong_type(
+    signals, confounds, error_type, error_msg
+):
+    with pytest.raises(error_type, match=error_msg):
+        clean(signals, confounds=confounds)
+
+
 def test_clean_confounds_errors(signals):
-    # Test error handling
-    pytest.raises(TypeError, clean, signals, confounds=1)
-    pytest.raises(ValueError, clean, signals, confounds=np.zeros(2))
-    pytest.raises(ValueError, clean, signals, confounds=np.zeros((2, 2)))
-    pytest.raises(ValueError, clean, signals, confounds=np.zeros((2, 3, 4)))
-    pytest.raises(TypeError, clean, signals, confounds=[None])
-    error_msg = pytest.raises(
-        ValueError,
-        clean,
-        signals,
-        filter="cosine",
-        t_r=None,
-        high_pass=0.008,
-    )
-    assert "t_r='None'" in str(error_msg.value)
-    pytest.raises(
-        ValueError, clean, signals, t_r=None, low_pass=0.01
-    )  # using butterworth filter here
-    pytest.raises(ValueError, clean, signals, filter="not_implemented")
-    pytest.raises(ValueError, clean, signals, ensure_finite=None)
+    with pytest.raises(ValueError, match="t_r='None'"):
+        clean(
+            signals,
+            filter="cosine",
+            t_r=None,
+            high_pass=0.008,
+        )
+
+    with pytest.raises(
+        ValueError, match="Repetition time .* must be specified"
+    ):
+        # using butterworth filter here
+        clean(signals, t_r=None, low_pass=0.01)
+
+    with pytest.raises(ValueError, match="not implemented"):
+        clean(signals, filter="an unimplemented filter")
+
+    with pytest.raises(ValueError, match="must be boolean"):
+        clean(signals, ensure_finite=None)
 
     current_dir = Path(__file__).parent
     filename1 = current_dir / "data" / "spm_confounds.txt"
-    pytest.raises(ValueError, clean, signals[:-1, :], confounds=str(filename1))
+    with pytest.raises(ValueError, match="incorrect length"):
+        clean(signals[:-1, :], confounds=str(filename1))
 
 
 def test_clean_confounds_warnings(signals):

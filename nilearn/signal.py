@@ -1024,8 +1024,8 @@ def _sanitize_confound_dtype(n_signal, confound):
             confound = csv_to_array(filename, skip_header=1)
         if confound.shape[0] != n_signal:
             raise ValueError(
-                "Confound signal has an incorrect "
-                f"lengthSignal length: {n_signal}; "
+                "Confound signal has an incorrect length.\n"
+                f"Signal length: {n_signal}; "
                 f"confound length: {confound.shape[0]}"
             )
     elif isinstance(confound, np.ndarray):
@@ -1038,9 +1038,9 @@ def _sanitize_confound_dtype(n_signal, confound):
             )
         if confound.shape[0] != n_signal:
             raise ValueError(
-                "Confound signal has an incorrect "
-                f"lengthSignal length: {n_signal}; "
-                f"confound length: {confound.shape[0]}."
+                "Confound signal has an incorrect length.\n"
+                f"Signal length: {n_signal}; "
+                f"Confound length: {confound.shape[0]}."
             )
 
     else:
