@@ -750,9 +750,9 @@ def basic_confounds(length, random_state=0):
     return confounds
 
 
-def add_metadata_to_bids_derivatives(bids_path: str | Path,
-                                     metadata: dict,
-                                     json_file: str = None) -> Path:
+def add_metadata_to_bids_derivatives(bids_path,
+                                     metadata,
+                                     json_file):
     if json_file is None:
         json_file = (Path(bids_path) / 
                         'derivatives' / 
