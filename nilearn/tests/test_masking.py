@@ -221,10 +221,8 @@ def test_compute_background_mask_errors_warnings():
     mean_image = np.zeros(SHAPE_3D)
     mean_image = Nifti1Image(mean_image, AFFINE_EYE)
 
-    with warnings.catch_warnings(record=True) as w:
+    with pytest.warns(MaskWarning, match="Computed an empty mask"):
         compute_background_mask(mean_image)
-    assert len(w) == 1
-    assert isinstance(w[0].message, MaskWarning)
 
 
 def test_compute_brain_mask():
@@ -310,14 +308,12 @@ def test_apply_mask(create_files, affine):
 
 
 def test_apply_mask_NaNs_do_not_propagate():
-    shape = (40, 40, 40)
-
-    data = np.zeros((40, 40, 40, 2))
-    data[20, 20, 20] = 1
-    data[10, 10, 10] = np.NaN
+    data = np.zeros(SHAPE_4D)
+    data[5, 5, 5] = 1
+    data[6, 6, 6] = np.NaN
     data_img = Nifti1Image(data, AFFINE_EYE)
 
-    mask = np.ones(shape)
+    mask = np.ones(SHAPE_3D)
     mask_img = Nifti1Image(mask, AFFINE_EYE)
 
     series = apply_mask(data_img, mask_img, smoothing_fwhm=9)
@@ -342,11 +338,7 @@ def test_apply_mask_3D_data_is_accepted():
 
 
 def test_apply_mask_errors():
-    shape = (40, 40, 40)
-
-    data = np.zeros((40, 40, 40, 2))
-    data[20, 20, 20] = 1
-    data[10, 10, 10] = np.NaN
+    data = np.zeros(SHAPE_4D)
     data_img = Nifti1Image(data, AFFINE_EYE)
 
     # veriy that 4D masks are rejected
@@ -356,34 +348,33 @@ def test_apply_mask_errors():
         apply_mask(data_img, mask_img_4d)
 
     # Check data shape and affine
-    mask = np.ones(shape)
-
+    mask = np.ones(SHAPE_3D)
     with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG % "2D"):
-        apply_mask(data_img, Nifti1Image(mask[20, ...], AFFINE_EYE))
+        apply_mask(data_img, Nifti1Image(mask[5, ...], AFFINE_EYE))
 
-    pytest.raises(
-        ValueError,
-        apply_mask,
-        data_img,
-        Nifti1Image(mask, AFFINE_EYE / 2.0),
-    )
+    with pytest.raises(ValueError, match="Mask affine"):
+        apply_mask(
+            data_img,
+            Nifti1Image(mask, AFFINE_EYE / 2.0),
+        )
 
     # Check that full masking raises error
-    full_mask = np.zeros(shape)
+    full_mask = np.zeros(SHAPE_3D)
     full_mask_img = Nifti1Image(full_mask, AFFINE_EYE)
-    pytest.raises(ValueError, apply_mask, data_img, full_mask_img)
+    with pytest.raises(ValueError, match="The mask is invalid as it is empty"):
+        apply_mask(data_img, full_mask_img)
 
     # Check weird values in data
-    mask[10, 10, 10] = 2
-    pytest.raises(
-        ValueError, apply_mask, data_img, Nifti1Image(mask, AFFINE_EYE)
-    )
+    mask[5, 5, 5] = 2
+    with pytest.raises(
+        ValueError, match="Background of the mask must be represented with 0"
+    ):
+        apply_mask(data_img, Nifti1Image(mask, AFFINE_EYE))
 
-    mask[15, 15, 15] = 3
+    mask[6, 6, 6] = 3
     mask_img = Nifti1Image(mask, AFFINE_EYE)
-    pytest.raises(
-        ValueError, apply_mask, Nifti1Image(data, AFFINE_EYE), mask_img
-    )
+    with pytest.raises(ValueError, match="Given mask is not made of 2 values"):
+        apply_mask(Nifti1Image(data, AFFINE_EYE), mask_img)
 
 
 def test_unmask():
