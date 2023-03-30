@@ -43,7 +43,7 @@ def _check_second_level_input(second_level_input,
     )
 
 
-def _check_input_type(second_level_input) -> str:
+def _check_input_type(second_level_input):
     """Determines the type of input provided."""
     if isinstance(second_level_input, pd.DataFrame):
         return "df_object"
@@ -66,7 +66,7 @@ def _return_type(second_level_input):
         return type(second_level_input)
 
 
-def _check_input_type_when_list(second_level_input: list) -> str:
+def _check_input_type_when_list(second_level_input):
     """Determines the type of input provided when it is a list."""
     if len(second_level_input) < 2:
         raise TypeError('A second level model requires a list with at'
@@ -84,7 +84,7 @@ def _check_input_type_when_list(second_level_input: list) -> str:
                     f"Got {_return_type(second_level_input)} instead")
 
 
-def _check_all_elements_of_same_type(data: list) -> None:
+def _check_all_elements_of_same_type(data):
     for idx, input in enumerate(data):
         if not isinstance(input, type(data[0])):  
              raise TypeError(
@@ -93,9 +93,9 @@ def _check_all_elements_of_same_type(data: list) -> None:
 
 
 def _check_input_as_type(second_level_input,
-                         input_type: str,
-                         none_confounds: bool,
-                         none_design_matrix: bool):
+                         input_type,
+                         none_confounds,
+                         none_design_matrix):
     if input_type == "flm_object":
         _check_input_as_first_level_model(second_level_input, none_confounds)
     elif input_type == "nii_object":
@@ -105,7 +105,7 @@ def _check_input_as_type(second_level_input,
 
 
 def _check_input_as_first_level_model(second_level_input,
-                                      none_confounds: bool):
+                                      none_confounds):
     for model_idx, first_level in enumerate(second_level_input):
         if (first_level.labels_ is None or first_level.results_ is None):
              raise ValueError(
