@@ -343,7 +343,6 @@ def test_apply_mask_errors():
 
     # veriy that 4D masks are rejected
     mask_img_4d = Nifti1Image(np.ones(SHAPE_4D), AFFINE_EYE)
-
     with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG % "4D"):
         apply_mask(data_img, mask_img_4d)
 
@@ -377,16 +376,12 @@ def test_apply_mask_errors():
         apply_mask(Nifti1Image(data, AFFINE_EYE), mask_img)
 
 
-def test_unmask():
-    # A delta in 3D
-    shape = SHAPE_4D
+def test_unmask_4D():
     rng = np.random.RandomState(42)
 
-    data4D = rng.uniform(size=shape)
+    data4D = rng.uniform(size=SHAPE_4D)
 
-    data3D = data4D[..., 0]
-
-    mask = rng.randint(2, size=shape[:3], dtype="int32")
+    mask = rng.randint(2, size=SHAPE_3D, dtype="int32")
     mask_img = Nifti1Image(mask, AFFINE_EYE)
     mask = mask.astype(bool)
 
@@ -395,11 +390,6 @@ def test_unmask():
     unmasked4D = data4D.copy()
     unmasked4D[np.logical_not(mask), :] = 0
 
-    masked3D = data3D[mask]
-
-    unmasked3D = data3D.copy()
-    unmasked3D[np.logical_not(mask)] = 0
-
     # 4D Test, test value ordering at the same time.
     t = get_data(unmask(masked4D, mask_img, order="C"))
 
@@ -407,7 +397,9 @@ def test_unmask():
     assert t.flags["C_CONTIGUOUS"]
     assert not t.flags["F_CONTIGUOUS"]
     assert_array_equal(t, unmasked4D)
+
     t = unmask([masked4D], mask_img, order="F")
+
     t = [get_data(t_) for t_ in t]
     assert isinstance(t, list)
     assert t[0].ndim == 4
@@ -415,43 +407,60 @@ def test_unmask():
     assert t[0].flags["F_CONTIGUOUS"]
     assert_array_equal(t[0], unmasked4D)
 
-    # 3D Test - check both with Nifti1Image and file
-    for create_files in (False, True):
-        with write_tmp_imgs(mask_img, create_files=create_files) as filename:
-            t = get_data(unmask(masked3D, filename, order="C"))
 
-            assert t.ndim == 3
-            assert t.flags["C_CONTIGUOUS"]
-            assert not t.flags["F_CONTIGUOUS"]
-            assert_array_equal(t, unmasked3D)
+@pytest.mark.parametrize("create_files", [False, True])
+def test_unmask_3D(create_files):
+    """Check both with Nifti1Image and file."""
+    rng = np.random.RandomState(42)
 
-            t = unmask([masked3D], filename, order="F")
-            t = [get_data(t_) for t_ in t]
+    data3D = rng.uniform(size=SHAPE_3D)
 
-            assert isinstance(t, list)
-            assert t[0].ndim == 3
-            assert not t[0].flags["C_CONTIGUOUS"]
-            assert t[0].flags["F_CONTIGUOUS"]
-            assert_array_equal(t[0], unmasked3D)
+    mask = rng.randint(2, size=SHAPE_3D, dtype="int32")
+    mask_img = Nifti1Image(mask, AFFINE_EYE)
+    mask = mask.astype(bool)
+
+    masked3D = data3D[mask]
+
+    unmasked3D = data3D.copy()
+    unmasked3D[np.logical_not(mask)] = 0
+
+    with write_tmp_imgs(mask_img, create_files=create_files) as filename:
+        t = get_data(unmask(masked3D, filename, order="C"))
+
+        assert t.ndim == 3
+        assert t.flags["C_CONTIGUOUS"]
+        assert not t.flags["F_CONTIGUOUS"]
+        assert_array_equal(t, unmasked3D)
+
+        t = unmask([masked3D], filename, order="F")
+        t = [get_data(t_) for t_ in t]
+
+        assert isinstance(t, list)
+        assert t[0].ndim == 3
+        assert not t[0].flags["C_CONTIGUOUS"]
+        assert t[0].flags["F_CONTIGUOUS"]
+        assert_array_equal(t[0], unmasked3D)
 
 
 def test_unmask_errors():
-    # A delta in 3D
-    shape = SHAPE_3D
     rng = np.random.RandomState(42)
 
-    mask = rng.randint(2, size=shape[:3], dtype="int32")
+    mask = rng.randint(2, size=SHAPE_3D, dtype="int32")
     mask_img = Nifti1Image(mask, AFFINE_EYE)
     mask = mask.astype(bool)
 
     # Error test: shape
     vec_1D = np.empty((500,), dtype=int)
-    pytest.raises(TypeError, unmask, vec_1D, mask_img)
-    pytest.raises(TypeError, unmask, [vec_1D], mask_img)
+    with pytest.raises(TypeError, match="X must be of shape "):
+        unmask(vec_1D, mask_img)
+    with pytest.raises(TypeError, match="X must be of shape "):
+        unmask([vec_1D], mask_img)
 
     vec_2D = np.empty((500, 500), dtype=np.float64)
-    pytest.raises(TypeError, unmask, vec_2D, mask_img)
-    pytest.raises(TypeError, unmask, [vec_2D], mask_img)
+    with pytest.raises(TypeError, match="X must be of shape "):
+        unmask(vec_2D, mask_img)
+    with pytest.raises(TypeError, match="X must be of shape "):
+        unmask([vec_2D], mask_img)
 
     # Error test: mask type
     with pytest.raises(TypeError, match="mask must be a boolean array"):
