@@ -73,6 +73,7 @@ def test_infer_repetition_time_from_dataset(tmp_path):
         filters=[('task', 'main'), ('run', '01')])
     assert t_r == 2.0        
 
+
 def test_infer_repetition_time_from_dataset_error(tmp_path):
 
     with pytest.warns(UserWarning, match="path .* does not exist"):
@@ -104,6 +105,7 @@ def test_infer_slice_timing_start_time_from_dataset(tmp_path):
         filters=[('task', 'main')]
         )
     assert StartTime == 1.0    
+
 
 def test_infer_slice_timing_start_time_from_dataset_error(tmp_path):
 

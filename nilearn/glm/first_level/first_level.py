@@ -923,6 +923,10 @@ def first_level_from_bids(dataset_path,
     derivatives_path = Path(dataset_path) / derivatives_folder
 
     # Get acq specs for models.
+    #
+    # We do it once and assume all subjects and runs 
+    # have the same value.
+    #
     # RepetitionTime and StartTime for slice timing.
     # Throw warning if no bold.json is found
     if t_r is not None:
