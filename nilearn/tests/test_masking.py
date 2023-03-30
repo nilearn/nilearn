@@ -474,6 +474,9 @@ def test_unmask_errors():
         unmask(transposed_vector, mask_img)
 
 
+SHAPE_MASK = (4, 4, 1)
+
+
 def make_mask_a():
     # +---+---+---+---+
     # |   |   |   |   |
@@ -484,7 +487,7 @@ def make_mask_a():
     # +---+---+---+---+
     # |   |   | X | X |
     # +---+---+---+---+
-    mask_a = np.zeros((4, 4, 1), dtype=bool)
+    mask_a = np.zeros(SHAPE_MASK, dtype=bool)
     mask_a[2:4, 2:4] = 1
     return mask_a
 
@@ -509,7 +512,7 @@ def make_mask_b():
     # +---+---+---+---+
     # |   |   |   |   |
     # +---+---+---+---+
-    mask_b = np.zeros((4, 4, 1), dtype=bool)
+    mask_b = np.zeros(SHAPE_MASK, dtype=bool)
     mask_b[1:3, 1:3] = 1
     return mask_b
 
@@ -526,7 +529,7 @@ def mask_b_img():
 
 @pytest.fixture
 def expected_mask_ab():
-    expected_mask_ab = np.zeros((4, 4, 1), dtype=bool)
+    expected_mask_ab = np.zeros(SHAPE_MASK, dtype=bool)
     expected_mask_ab[2, 2] = 1
     return expected_mask_ab
 
@@ -541,7 +544,7 @@ def make_mask_c():
     # +---+---+---+---+
     # |   |   | X |   |
     # +---+---+---+---+
-    mask_c = np.zeros((4, 4, 1), dtype=bool)
+    mask_c = np.zeros(SHAPE_MASK, dtype=bool)
     mask_c[:, 2] = 1
     mask_c[0, 0] = 1
     return mask_c
@@ -573,24 +576,18 @@ def mask_d_img():
     return Nifti1Image(make_mask_d().astype("uint8"), AFFINE_EYE / 2.0)
 
 
-def test_intersect_masks_filename(mask_a_img, mask_b_img):
+def test_intersect_masks_filename(mask_a_img, mask_b_img, expected_mask_ab):
     with write_tmp_imgs(
         mask_a_img, mask_b_img, create_files=True
     ) as filenames:
         mask_ab = intersect_masks(filenames, threshold=1.0)
 
-        expected_mask_ab = np.zeros((4, 4, 1), dtype=bool)
-        expected_mask_ab[2, 2] = 1
         assert_array_equal(get_data(mask_ab), expected_mask_ab)
 
 
-def test_intersect_masks(
-    mask_a,
+def test_intersect_masks_2_images(
     mask_a_img,
-    mask_b,
     mask_b_img,
-    mask_c,
-    mask_c_img,
     expected_mask_ab,
 ):
     """Test the intersect_masks function"""
@@ -598,36 +595,45 @@ def test_intersect_masks(
 
     assert_array_equal(get_data(mask_ab), expected_mask_ab)
 
-    expected_mask_abc = mask_a + mask_b + mask_c
 
-    mask_abc_ = intersect_masks(
-        [mask_a_img, mask_b_img, mask_c_img], threshold=0.0, connected=False
+@pytest.mark.parametrize("threshold", [0.5, 1.0])
+def test_intersect_masks_3_images(
+    threshold,
+    mask_a_img,
+    mask_b_img,
+    mask_c_img,
+    expected_mask_ab,
+):
+    """Test the intersect_masks function
+
+    default threshold is 0.5
+    """
+    mask_abc = intersect_masks(
+        [mask_a_img, mask_b_img, mask_c_img], threshold=threshold
     )
-
-    assert_array_equal(get_data(mask_abc_), expected_mask_abc)
-
-    expected_mask_abc[0, 0] = 0
-
-    mask_abc_ = intersect_masks(
-        [mask_a_img, mask_b_img, mask_c_img], threshold=0.0
-    )
-
-    assert_array_equal(get_data(mask_abc_), expected_mask_abc)
 
     expected_mask_abc = expected_mask_ab
+    if threshold == 0.5:
+        expected_mask_abc[1, 2] = 1
+        expected_mask_abc[3, 2] = 1
+    assert_array_equal(get_data(mask_abc), expected_mask_abc)
 
-    mask_abc_ = intersect_masks(
-        [mask_a_img, mask_b_img, mask_c_img], threshold=1.0
+
+@pytest.mark.parametrize("connected", [True, False])
+def test_intersect_masks_3_images_connected(
+    mask_a, mask_a_img, mask_b, mask_b_img, mask_c, mask_c_img, connected
+):
+    """Test the intersect_masks function"""
+    mask_abc = intersect_masks(
+        [mask_a_img, mask_b_img, mask_c_img],
+        threshold=0.0,
+        connected=connected,
     )
 
-    assert_array_equal(get_data(mask_abc_), expected_mask_abc)
-
-    expected_mask_abc[1, 2] = 1
-    expected_mask_abc[3, 2] = 1
-
-    mask_abc_ = intersect_masks([mask_a_img, mask_b_img, mask_c_img])
-
-    assert_array_equal(get_data(mask_abc_), expected_mask_abc)
+    expected_mask_abc = mask_a + mask_b + mask_c
+    if connected:
+        expected_mask_abc[0, 0] = 0
+    assert_array_equal(get_data(mask_abc), expected_mask_abc)
 
 
 def test_intersect_masks_with_f8(mask_a_img, mask_b_img, expected_mask_ab):
@@ -668,7 +674,7 @@ def test_compute_multi_epi_mask(mask_a_img, mask_d_img, expected_mask_ab):
         threshold=1.0,
         opening=0,
         target_affine=AFFINE_EYE,
-        target_shape=(4, 4, 1),
+        target_shape=SHAPE_MASK,
     )
 
     assert_array_equal(get_data(mask_ab), expected_mask_ab)
