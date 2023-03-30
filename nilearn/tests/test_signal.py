@@ -579,7 +579,7 @@ def test_clean_frequencies():
         t_r=2.5,
         standardize_confounds="zscore_sample",
     )
-    assert np.array_equal(sx_orig, sx)
+    assert np.array_equal(sx, sx_orig)
 
 
 def test_clean_runs():
