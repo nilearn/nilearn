@@ -922,75 +922,87 @@ def first_level_from_bids(dataset_path,
 
     derivatives_path = Path(dataset_path) / derivatives_folder
 
-    # Get acq specs for models.
+    # Get metadata for models.
     #
     # We do it once and assume all subjects and runs 
     # have the same value.
+
+    # Repetition time
     #
-    # RepetitionTime and StartTime for slice timing.
-    # Throw warning if no bold.json is found
-    if t_r is not None:
-        _check_repetition_time(t_r)
-    else:
+    # Try to find a t_r value in the bids datasets
+    # If the parameter information is not found in the derivatives folder,
+    # a search is done in the raw data folder.  
+    filters = _make_bids_files_filter(
+        task_label=task_label,
+        space_label=space_label,
+        supported_filters=[*_bids_entities()["raw"], *_bids_entities()["derivatives"]],
+        extra_filter=img_filters,
+        verbose=verbose
+    )
+    inferred_t_r = _infer_repetition_time_from_dataset(
+        bids_path=derivatives_path,
+        filters=filters,
+        verbose=verbose)       
+    if inferred_t_r is None:
         filters = _make_bids_files_filter(
             task_label=task_label,
-            space_label=space_label,
-            supported_filters=[*_bids_entities()["raw"], *_bids_entities()["derivatives"]],
+            supported_filters=[*_bids_entities()["raw"]],
             extra_filter=img_filters,
-            verbose=verbose
+                        verbose=verbose
         )
-        t_r = _infer_repetition_time_from_dataset(
-            bids_path=derivatives_path,
-            filters=filters,
-            verbose=verbose)
-        # If the parameter information is not found in the derivatives folder,
-        # a search is done in the raw data folder.         
-        if t_r is None:
-            filters = _make_bids_files_filter(
-                task_label=task_label,
-                supported_filters=[*_bids_entities()["raw"]],
-                extra_filter=img_filters,
-                            verbose=verbose
-            )
-            t_r = _infer_repetition_time_from_dataset(
-            bids_path=dataset_path,
-            filters=filters,
-            verbose=verbose)
+        inferred_t_r = _infer_repetition_time_from_dataset(
+        bids_path=dataset_path,
+        filters=filters,
+        verbose=verbose)
+
+    if t_r is None and inferred_t_r is not None:     
+            t_r = inferred_t_r        
+    if t_r is not None and t_r != inferred_t_r:
+        warn(f"'t_r' provided ({t_r}) is different "
+             f"from the value found in the BIDS dataset ({inferred_t_r}).\n"
+             "Note this may lead to the wrong model specification.")
     if t_r is not None:        
         _check_repetition_time(t_r)
     else:
-        warn("'t_r' not provided and cannot be inferred from metadata. " 
+        warn("'t_r' not provided and cannot be inferred from BIDS metadata. " 
              "It will need to be set manually in the list of models, "
              "otherwise their fit will throw an exception.")
 
+    # Slice time correction reference time
+    #
+    # Try to infer a slice_time_ref value in the bids derivatives dataset.
+    filters = _make_bids_files_filter(
+        task_label=task_label,
+        space_label=space_label,
+        supported_filters=[*_bids_entities()["raw"], *_bids_entities()["derivatives"]],
+        extra_filter=img_filters,
+        verbose=verbose
+    )
+    StartTime = _infer_slice_timing_start_time_from_dataset(
+        bids_path=derivatives_path, 
+        filters=filters,
+        verbose=verbose)
+    if StartTime is not None and t_r is not None:
+        assert(StartTime < t_r)
+        inferred_slice_time_ref = StartTime / t_r
+    else:
+        warn("'slice_time_ref' not provided "
+             "and cannot be inferred from metadata."
+             "It will be assumed that the slice timing reference "
+             "is 0.0 percent of the repetition time. "
+             "If it is not the case it will need to "
+             "be set manually in the generated list of models.")    
+        inferred_slice_time_ref = 0.0        
+
+    if slice_time_ref is None and inferred_slice_time_ref is not None:     
+            slice_time_ref = inferred_slice_time_ref   
+    if slice_time_ref is not None and slice_time_ref != inferred_slice_time_ref:
+        warn(f"'slice_time_ref' provided ({slice_time_ref}) is different "
+             f"from the value found in the BIDS dataset "
+             f"({inferred_slice_time_ref}).\n"
+             "Note this may lead to the wrong model specification.")            
     if slice_time_ref is not None:
         _check_slice_time_ref(slice_time_ref)
-    else:
-        filters = _make_bids_files_filter(
-            task_label=task_label,
-            space_label=space_label,
-            supported_filters=[*_bids_entities()["raw"], *_bids_entities()["derivatives"]],
-            extra_filter=img_filters,
-            verbose=verbose
-        )
-        StartTime = _infer_slice_timing_start_time_from_dataset(
-            bids_path=derivatives_path, 
-            filters=filters,
-            verbose=verbose)
-        if StartTime is not None and t_r is not None:
-            assert(StartTime < t_r)
-            slice_time_ref = StartTime / t_r
-        else:
-            warn("'slice_time_ref' not provided "
-                 "and cannot be inferred from metadata."
-                 "It will be assumed that the slice timing reference "
-                 "is 0.0 percent of the repetition time. "
-                 "If it is not the case it will need to "
-                 "be set manually in the generated list of models.")            
-            slice_time_ref = 0.0
-    _check_slice_time_ref(slice_time_ref)
-
-    sub_labels = _list_valid_subjects(derivatives_path, sub_labels)
 
     # Build fit_kwargs dictionaries to pass to their respective models fit
     # Events and confounds files must match number of imgs (runs)
@@ -999,6 +1011,7 @@ def first_level_from_bids(dataset_path,
     models_events = []
     models_confounds = []
 
+    sub_labels = _list_valid_subjects(derivatives_path, sub_labels)
     for sub_label_ in sub_labels:
 
         # Create model
