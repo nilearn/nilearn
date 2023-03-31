@@ -1140,8 +1140,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
 
 def _check_hemisphere_is_valid(hemi):
-    valid = hemi in VALID_HEMISPHERES
-    return valid
+    return hemi in VALID_HEMISPHERES
 
 
 def _check_hemispheres(hemispheres):
@@ -1177,12 +1176,11 @@ def _check_view_is_valid(view) -> bool:
     -------
     valid: True if view is valid, False otherwise.
     """
-    valid = False
     if isinstance(view, str) and (view in VALID_VIEWS):
-        valid = True
+        return True
     elif isinstance(view, Sequence) and len(view) == 2:
-        valid = True
-    return valid
+        return True
+    return False
 
 
 def _check_views(views) -> list:
