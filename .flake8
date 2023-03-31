@@ -25,7 +25,6 @@ max_function_length = 150
 	# W503: line break before binary operator
 	# W504: line break after binary operator
 per-file-ignores =
-	setup.py: D100
     # - docstrings rules that should not be applied to tests
 	*/tests/*: D100, D103, D104, D205, D400, D401
 	*/*/tests/*: D100, D103, D104, D205, D400, D401

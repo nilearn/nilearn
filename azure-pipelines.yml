@@ -27,7 +27,7 @@ jobs:
       architecture: 'x64'
 
   # Install the standard and testing-related dependencies
-  # See setup.cfg for dependency group options
+  # See pyproject.toml for dependency group options
   - script: |
       python -m pip install --upgrade pip
       pip install pytest-azurepipelines

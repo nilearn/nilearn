@@ -268,7 +268,7 @@ Build the source and binary distributions:
 
 .. code-block:: bash
 
-    python setup.py sdist bdist_wheel
+    python -m build
 
 
 This should add two files to the `dist` subfolder:
