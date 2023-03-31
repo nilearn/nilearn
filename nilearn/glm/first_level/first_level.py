@@ -9,12 +9,10 @@ from __future__ import annotations
 
 import glob
 import os
-import pathlib
 import sys
 import time
 
 from pathlib import Path
-from typing import Optional
 from warnings import warn
 
 import numpy as np
@@ -831,7 +829,7 @@ def first_level_from_bids(dataset_path,
                           sub_labels=None,
                           img_filters=None,
                           t_r=None,
-                          slice_time_ref=None,
+                          slice_time_ref=0,
                           hrf_model='glover',
                           drift_model='cosine',
                           high_pass=.01,
@@ -884,6 +882,17 @@ def first_level_from_bids(dataset_path,
         Filter examples would be ('desc', 'preproc'), ('dir', 'pa')
         and ('run', '10').
 
+    slice_time_ref : float, optional
+        This parameter indicates the time of the reference slice used in the
+        slice timing preprocessing step of the experimental runs. It is
+        expressed as a percentage of the t_r (time repetition), so it can have
+        values between 0. and 1. Default=0.
+
+        .. deprecated:: 0.10.1
+
+            The default=0 for ``slice_time_ref`` will be deprecated.
+            The default value will change to 'None' in 0.xx.        
+
     derivatives_folder : :obj:`str`, Defaults="derivatives".
         derivatives and app folder path containing preprocessed files.
         Like "derivatives/FMRIPREP".
@@ -910,6 +919,13 @@ def first_level_from_bids(dataset_path,
         Items for the FirstLevelModel fit function of their respective model.
 
     """
+
+    if slice_time_ref == 0:
+        warn(
+            'Starting in version 0.xx, slice_time_ref will default to None.',
+            DeprecationWarning,
+        )
+
     sub_labels = sub_labels or []
     img_filters = img_filters or []
     

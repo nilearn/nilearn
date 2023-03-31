@@ -695,7 +695,8 @@ def test_first_level_from_bids_get_metadata_from_derivatives(tmp_path):
             dataset_path=str(tmp_path / bids_path),
             task_label='main',
             space_label='MNI',
-            img_filters=[('desc', 'preproc')])
+            img_filters=[('desc', 'preproc')],
+            slice_time_ref=None,)
         assert models[0].t_r == RepetitionTime                     
         assert models[0].slice_time_ref == StartTime / RepetitionTime
 
@@ -751,7 +752,8 @@ def test_first_level_from_bids_get_StartTime_from_derivatives(tmp_path):
             dataset_path=str(tmp_path / bids_path),
             task_label='main',
             space_label='MNI',
-            img_filters=[('desc', 'preproc')])
+            img_filters=[('desc', 'preproc')],
+            slice_time_ref=None)
         assert models[0].t_r == 1.5                     
         assert models[0].slice_time_ref == StartTime / 1.5   
 
