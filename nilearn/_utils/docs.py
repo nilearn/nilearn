@@ -567,7 +567,7 @@ hemispheres : list of :obj:`str`, optional
 
 # view
 docdict['view'] = """
-view : either a string or pair of floats, optional.
+view : :obj:`str` or a pair of :obj:`float`, optional.
         If a string, must be in {'lateral', 'medial', 'dorsal', 'ventral',\
         'anterior', 'posterior'}.
         If a sequence, must be a pair (elev, azim) of float
