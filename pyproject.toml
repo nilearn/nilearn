@@ -207,6 +207,7 @@ ignore = ["D105", "D107", "E402", "W503", "W504", "W605"]
 # for compatibility with black
 # https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html#flake8
 extend-ignore = ["E203"]
+require-plugins = "Flake8-pyproject"
 
 [tool.codespell]
 skip = [
