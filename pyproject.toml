@@ -44,8 +44,10 @@ classifiers = [
 dynamic = ["version"]
 
 [project.urls]
-"Homepage" = "https://nilearn.github.io"
-"Development" = "https://github.com/nilearn/nilearn"
+Homepage = "https://nilearn.github.io"
+Development = "https://github.com/nilearn/nilearn"
+Discussions = "https://neurostars.org/tag/nilearn"
+Changelog = "https://nilearn.github.io/stable/changes/whats_new.html"
 
 [project.optional-dependencies]
 # Necessary req to use nilearn's plotting module
