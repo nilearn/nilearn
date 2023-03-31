@@ -1168,10 +1168,14 @@ def _check_view_is_valid(view) -> bool:
     """Checks whether a single view is one of two
     valid input types.
 
+    Parameters
+    ----------
     view: string in {"anterior", "posterior", "medial", "lateral",
         "dorsal", "ventral" or pair of floats (elev, azim).
 
-    returns: True if view is valid, False otherwise.
+    Returns
+    -------
+    valid: True if view is valid, False otherwise.
     """
     valid = False
     if isinstance(view, str) and (view in VALID_VIEWS):
@@ -1185,10 +1189,16 @@ def _check_views(views) -> list:
     """Checks whether the views passed to in plot_img_on_surf are
     correct.
 
+    Parameters
+    ----------
     views : list
         Any combination of string in {"anterior", "posterior", "medial",
         "lateral", "dorsal", "ventral"} and / or pair of floats (elev, azim).
 
+    Returns
+    -------
+    views: list
+        Views given as inputs.
     """
     invalid_views = [not _check_view_is_valid(view) for view in views]
 
