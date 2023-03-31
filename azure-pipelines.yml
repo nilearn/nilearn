@@ -69,7 +69,7 @@ jobs:
   - script: |
       set -e
       python -m pip install --upgrade pip
-      pip install --prefer-binary setuptools wheel
+      pip install --prefer-binary build wheel
     displayName: 'Install dependencies for building Nilearn'
 
   - script: |
@@ -107,7 +107,7 @@ jobs:
   - script: |
       set -e
       python -m pip install --upgrade pip
-      pip install --prefer-binary setuptools wheel
+      pip install --prefer-binary build wheel
     displayName: 'Install dependencies for building Nilearn'
 
   - script: |
@@ -145,7 +145,7 @@ jobs:
   - script: |
       :; set -o errexit
       python -m pip install --upgrade pip
-      pip install --prefer-binary setuptools wheel
+      pip install --prefer-binary build wheel
       python -m build
     displayName: 'Install dependencies for building Nilearn'
 
@@ -183,7 +183,7 @@ jobs:
   - script: |
       set -e
       python -m pip install --upgrade pip
-      pip install --prefer-binary setuptools wheel
+      pip install --prefer-binary build wheel
     displayName: 'Install dependencies for building Nilearn'
 
   - script: |
