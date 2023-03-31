@@ -32,7 +32,8 @@ jobs:
       - name: "Install Flake8"
         shell: bash {0}
         run: |
-          python -m pip install --upgrade pip flake8 flake8-docstrings
+          python -m pip install --upgrade pip flake8 flake8-docstrings \
+            Flake8-pyproject
 
       - name: "Run Flake8 on whole file"
         shell: bash {0}
