@@ -18,4 +18,5 @@ jobs:
         run: |
           pip install codespell tomli
       - name: Check spelling
-        run: codespell
+        run: |
+          codespell --config pyproject.toml
