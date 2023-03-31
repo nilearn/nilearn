@@ -20,7 +20,7 @@
 # 'X.Y.dev0' is the canonical version of 'X.Y.dev'
 #
 try:
-    from ._version import __version__
+    from ._version import __version__  # noqa: F401
 except ImportError:
     pass
 
