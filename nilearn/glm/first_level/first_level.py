@@ -851,9 +851,11 @@ def first_level_from_bids(dataset_path,
                           derivatives_folder='derivatives'):
     """Create FirstLevelModel objects and fit arguments from a BIDS dataset.
 
-    If t_r is not specified this function will attempt to load it from a
-    bold.json file alongside slice_time_ref.
-    Otherwise t_r and slice_time_ref are taken as given.
+    If t_r is `None` this function will attempt to load it from a bold.json.
+    If `slice_time_ref` is  `None` this function will attempt
+    to infer it from a bold.json.
+    Otherwise t_r and slice_time_ref are taken as given,
+    but a warning may be raised if they are not consistent with the bold.json.
 
     Parameters
     ----------
@@ -882,11 +884,11 @@ def first_level_from_bids(dataset_path,
         Filter examples would be ('desc', 'preproc'), ('dir', 'pa')
         and ('run', '10').
 
-    slice_time_ref : float, optional
+    slice_time_ref : :obj:`float` between 0.0 and 1.0, optional
         This parameter indicates the time of the reference slice used in the
         slice timing preprocessing step of the experimental runs. It is
         expressed as a percentage of the t_r (time repetition), so it can have
-        values between 0. and 1. Default=0.
+        values between 0. and 1. Default=0.0
 
         .. deprecated:: 0.10.1
 
