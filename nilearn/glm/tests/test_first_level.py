@@ -586,6 +586,7 @@ def test_first_level_from_bids_set_repetition_time_warnings(tmp_path, t_r, warni
             space_label='MNI',
             img_filters=[('desc', 'preproc')],
             t_r=t_r,
+            slice_time_ref=None,
             verbose=1
         )
         
@@ -615,6 +616,7 @@ def test_first_level_from_bids_set_repetition_time_errors(tmp_path,
             task_label='main',
             space_label='MNI',
             img_filters=[('desc', 'preproc')],
+            slice_time_ref=None,
             t_r=t_r
         )
 
@@ -724,6 +726,7 @@ def test_first_level_from_bids_get_RepetitionTime_from_derivatives(tmp_path):
             dataset_path=str(tmp_path / bids_path),
             task_label='main',
             space_label='MNI',
+            slice_time_ref=None,
             img_filters=[('desc', 'preproc')])
         assert models[0].t_r == 6.0                   
         assert models[0].slice_time_ref == 0.0                           
@@ -1091,7 +1094,8 @@ def test_first_level_from_bids(tmp_path, n_runs, n_ses, task_index, space_label)
         dataset_path=bids_path,
         task_label=tasks[task_index],
         space_label=space_label,
-        img_filters=[("desc", "preproc")]
+        img_filters=[("desc", "preproc")],
+        slice_time_ref=None,
     )
 
     assert len(models) == n_sub
@@ -1122,7 +1126,8 @@ def test_first_level_from_bids_select_one_run_per_session(bids_dataset):
                             task_label='main',
                             space_label='MNI',
                             img_filters=[('run', '01'), 
-                                            ('desc', 'preproc')])
+                                         ('desc', 'preproc')],
+                            slice_time_ref=None,)
 
     assert len(models) == n_sub
     assert len(models) == len(m_imgs)
@@ -1141,7 +1146,8 @@ def test_first_level_from_bids_select_all_runs_of_one_session(bids_dataset):
                             task_label='main',
                             space_label='MNI',
                             img_filters=[('ses', '01'), 
-                                            ('desc', 'preproc')])  
+                                         ('desc', 'preproc')],
+                            slice_time_ref=None,)  
     
     assert len(models) == n_sub
     assert len(models) == len(m_imgs)
@@ -1159,6 +1165,7 @@ def test_first_level_from_bids_smoke_test_for_verbose_argument(bids_dataset, ver
         space_label="MNI",
         img_filters=[("desc", "preproc")],
         verbose=verbose,
+        slice_time_ref=None,        
     )
 
 
@@ -1189,6 +1196,7 @@ def test_first_level_from_bids_several_labels_per_entity(tmp_path, entity):
         task_label="main",
         space_label="MNI",
         img_filters=[("desc", "preproc"), (entity, "A")],
+        slice_time_ref=None,        
     )
     assert len(models) == n_sub
     assert len(models) == len(m_imgs)
@@ -1214,7 +1222,8 @@ def test_first_level_from_bids_with_subject_labels(bids_dataset):
                                 task_label='main',
                                 sub_labels=["foo", "01"],
                                 space_label='MNI',
-                                img_filters=[('desc', 'preproc')])
+                                img_filters=[('desc', 'preproc')],
+                                slice_time_ref=None,                                )
         assert models[0].subject_label == '01'
 
 
@@ -1229,7 +1238,8 @@ def test_first_level_from_bids_no_duplicate_sub_labels(bids_dataset):
                             task_label='main',
                             sub_labels=["01", "01"],
                             space_label='MNI',
-                            img_filters=[('desc', 'preproc')])  
+                            img_filters=[('desc', 'preproc')],
+                            slice_time_ref=None,)  
     
     assert len(models) == 1
 
@@ -1238,16 +1248,19 @@ def test_first_level_from_bids_validation_input_dataset_path():
     with pytest.raises(TypeError, match='must be a string or pathlike'):
         first_level_from_bids(dataset_path=2,
                               task_label="main",
-                              space_label="MNI")
+                              space_label="MNI",
+                            slice_time_ref=None,)
     with pytest.raises(ValueError, match="'dataset_path' does not exist"):
         first_level_from_bids(dataset_path="lolo",
                               task_label="main",
-                              space_label="MNI")
+                              space_label="MNI",
+                              slice_time_ref=None,)
     with pytest.raises(TypeError, match="derivatives_.* must be a string"):
         first_level_from_bids(dataset_path=Path(),
                               task_label="main",
                               space_label="MNI",
-                              derivatives_folder=1)        
+                              derivatives_folder=1,
+                              slice_time_ref=None,)        
 
 
 @pytest.mark.parametrize("task_label, error_type", 
@@ -1277,7 +1290,8 @@ def test_first_level_from_bids_validation_sub_labels(bids_dataset,
         first_level_from_bids(
             dataset_path=bids_dataset,
             task_label="main",
-            sub_labels=sub_labels
+            sub_labels=sub_labels,
+            slice_time_ref=None,
         )        
 
 @pytest.mark.parametrize("space_label, error_type", 
@@ -1292,7 +1306,8 @@ def test_first_level_from_bids_validation_space_label(bids_dataset,
         first_level_from_bids(
             dataset_path=bids_dataset,
             task_label="main",
-            space_label=space_label
+            space_label=space_label,
+            slice_time_ref=None,            
         )           
 
 
@@ -1312,7 +1327,8 @@ def test_first_level_from_bids_validation_img_filter(bids_dataset,
         first_level_from_bids(
             dataset_path=bids_dataset,
             task_label="main",
-            img_filters=img_filters
+            img_filters=img_filters,
+            slice_time_ref=None,
         )
 
 
@@ -1325,7 +1341,8 @@ def test_first_level_from_bids_too_many_bold_files(bids_dataset):
     with pytest.raises(ValueError,
                         match="Too many images found"):
         first_level_from_bids(
-            dataset_path=bids_dataset, task_label="main", space_label="T1w"
+            dataset_path=bids_dataset, task_label="main", space_label="T1w",
+            slice_time_ref=None,
         )
 
 
@@ -1338,7 +1355,8 @@ def test_first_level_from_bids_with_missing_events(tmp_path_factory):
 
     with pytest.raises(ValueError, match="No events.tsv files found"):
         first_level_from_bids(
-            dataset_path=bids_dataset, task_label="main", space_label="MNI"
+            dataset_path=bids_dataset, task_label="main", space_label="MNI",
+            slice_time_ref=None,
         )        
 
 
@@ -1352,7 +1370,8 @@ def test_first_level_from_bids_no_bold_file(tmp_path_factory):
 
     with pytest.raises(ValueError, match="No BOLD files found "):
         first_level_from_bids(
-            dataset_path=bids_dataset, task_label="main", space_label="MNI"
+            dataset_path=bids_dataset, task_label="main", space_label="MNI",
+            slice_time_ref=None,            
         )            
 
 
@@ -1366,7 +1385,8 @@ def test_first_level_from_bids_with_one_events_missing(tmp_path_factory):
         ValueError, match="Same number of event files "
     ):
         first_level_from_bids(
-            dataset_path=bids_dataset, task_label="main", space_label="MNI"
+            dataset_path=bids_dataset, task_label="main", space_label="MNI",
+            slice_time_ref=None,            
         )
 
 
@@ -1384,7 +1404,8 @@ def test_first_level_from_bids_one_confound_missing(tmp_path_factory):
 
     with pytest.raises(ValueError, match="Same number of confound"):
         first_level_from_bids(
-            dataset_path=bids_dataset, task_label="main", space_label="MNI"
+            dataset_path=bids_dataset, task_label="main", space_label="MNI",
+            slice_time_ref=None,            
         )
 
 
@@ -1404,6 +1425,7 @@ def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
         space_label="MNI",
         img_filters=[("desc", "preproc")],
         verbose=0,
+        slice_time_ref=None,        
     )
 
     assert len(models) == len(m_imgs)
@@ -1425,7 +1447,8 @@ def test_first_level_from_bids_no_derivatives(tmp_path):
     )
     with pytest.raises(ValueError, match="derivatives folder not found"):
         first_level_from_bids(
-            dataset_path=bids_path, task_label="main", space_label="MNI"
+            dataset_path=bids_path, task_label="main", space_label="MNI",
+            slice_time_ref=None,
         )
 
 
@@ -1444,7 +1467,8 @@ def test_first_level_from_bids_no_session(tmp_path):
     with pytest.raises(ValueError,
                         match="Too many images found"):
         first_level_from_bids(
-            dataset_path=bids_path, task_label="main", space_label="T1w"
+            dataset_path=bids_path, task_label="main", space_label="T1w",
+            slice_time_ref=None,
         )
 
 
@@ -1465,6 +1489,7 @@ def test_first_level_from_bids_mismatch_run_index(tmp_path_factory):
             dataset_path=bids_dataset,
             task_label="main",
             space_label="MNI",
-            img_filters=[("desc", "preproc")]
+            img_filters=[("desc", "preproc")],
+            slice_time_ref=None,
         )
 
