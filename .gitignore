@@ -60,5 +60,12 @@ examples/**/*.pdf
 examples/**/results/
 examples/results/
 
+
 # created during testing
+fmri_run0.nii
+fmri_run1.nii
+dmtx_0.csv
+dmtx_1.csv
+mask.nii
 bids_dataset
+
