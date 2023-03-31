@@ -3,7 +3,7 @@
 # caution: testing won't work on windows, see README
 
 PYTHON ?= python
-CYTHON ?= cython
+#CYTHON ?= cython
 CTAGS ?= ctags
 
 all: clean test doc-noplot
@@ -24,9 +24,9 @@ clean-ctags:
 
 clean: clean-build clean-pyc clean-so clean-ctags
 
-in: inplace # just a shortcut
-inplace:
-	$(PYTHON) setup.py build_ext -i
+# in: inplace # just a shortcut
+# inplace:
+# 	$(PYTHON) setup.py build_ext -i
 
 test-code:
 	python -m pytest --pyargs nilearn --cov=nilearn
@@ -45,8 +45,8 @@ test: test-code test-doc
 trailing-spaces:
 	find . -name "*.py" | xargs perl -pi -e 's/[ \t]*$$//'
 
-cython:
-	find -name "*.pyx" | xargs $(CYTHON)
+# cython:
+# 	find -name "*.pyx" | xargs $(CYTHON)
 
 ctags:
 	# make tags for symbol based navigation in emacs and vim

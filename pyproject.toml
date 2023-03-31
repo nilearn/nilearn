@@ -114,7 +114,6 @@ include = """
 (
   examples/.*py
   | maint_tools/.*py
-  | setup.py
   | nilearn/connectome/.*py
   | nilearn/dec.*
   | nilearn/image/.*py
@@ -153,7 +152,6 @@ extend-exclude =  """
 profile = "black"
 src_paths = [
   'maint_tools',
-  'setup.py',
   'nilearn/connectome/.*py',
   'nilearn/dec.*',
   'nilearn/image/.*py',
