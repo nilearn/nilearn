@@ -22,7 +22,7 @@
 try:
     from ._version import __version__  # noqa: F401
 except ImportError:
-    pass
+    __version__ = "0+unknown"
 
 _NILEARN_INSTALL_MSG = "See %s for installation information." % (
     "https://nilearn.github.io/stable/introduction.html#installation"

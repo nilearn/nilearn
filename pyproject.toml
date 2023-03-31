@@ -90,16 +90,10 @@ test = [
 	"pytest-cov",
 ]
 # A combination of dependencies useful for developers
-dev = ["nilearn[plotting,plotly,soc,test]"]
-
-[tool.hatch.build.targets.sdist]
-exclude = ["nilearn/_version.py"]  # .gitignore or this not working
+dev = ["nilearn[plotting,plotly,doc,test]"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["nilearn"]
-# Copy of what is in MANIFEST.in
-include = ["AUTHORS.rst", "LICENSE", "README.rst"]
-exclude = ["nilearn/_version.py"]  # .gitignore or this not working
 
 [tool.hatch.version]
 source = "vcs"
