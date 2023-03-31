@@ -18,7 +18,7 @@ from nilearn.decoding.decoder import (
     FREMRegressor,
     _BaseDecoder,
     _check_estimator,
-    _check_param_grid,
+    _default_param_grid,
     _parallel_fit,
     _wrap_param_grid,
 )
@@ -68,51 +68,65 @@ y_regression = rng.rand(100)
 y_classification = np.hstack([[-1] * 50, [1] * 50])
 
 
-def test_check_param_grid():
+def test_default_param_grid():
     """Test several estimators.
 
     Each one with its specific regularization parameter.
     """
     # Regression
     for _, (regressor, param) in regressors.items():
-        param_grid = _check_param_grid(regressor, X, y_regression, None)
+        param_grid = _default_param_grid(regressor, X, y_regression)
         assert list(param_grid.keys()) == list(param)
     # Classification
     for _, (classifier, param) in classifiers.items():
-        param_grid = _check_param_grid(classifier, X, y_classification, None)
+        param_grid = _default_param_grid(classifier, X, y_classification)
         assert list(param_grid.keys()) == list(param)
 
     # Using a non-linear estimator to raise the error
     for estimator in ["log_l1", random_forest]:
         pytest.raises(
-            ValueError, _check_param_grid, estimator, X, y_classification, None
+            ValueError, _default_param_grid, estimator, X, y_classification
         )
 
     # Test return parameter grid is empty
-    param_grid = _check_param_grid(dummy_classifier, X, y_classification, None)
+    param_grid = _default_param_grid(dummy_classifier, X, y_classification)
     assert param_grid == {}
 
 
 @pytest.mark.parametrize(
-    "param_grid",
+    "param_grid,need_wrap",
     [
-        {"alphas": [1, 10, 100, 1000]},
-        {"alphas": [1, 10, 100, 1000], "fit_intercept": [True, False]},
-        {"fit_intercept": [True, False]},
-        {"alphas": [[1, 10, 100, 1000]]},
-        {"alphas": (1, 10, 100, 1000)},
-        {"alphas": [(1, 10, 100, 1000)]},
-        {"alphas": ((1, 10, 100, 1000))},
-        {"alphas": np.array([1, 10, 100, 1000])},
-        {"alphas": [np.array([1, 10, 100, 1000])]},
-        [{"alphas": [1, 10]}, {"alphas": [[100, 1000]]}],
-        [{"alphas": [1, 10]}, {"fit_intercept": [True, False]}],
-        None,
+        ({"alphas": [1, 10, 100, 1000]}, True),
+        ({"alphas": [1, 10, 100, 1000], "fit_intercept": [True, False]}, True),
+        ({"fit_intercept": [True, False]}, False),
+        ({"alphas": [[1, 10, 100, 1000]]}, False),
+        ({"alphas": (1, 10, 100, 1000)}, True),
+        ({"alphas": [(1, 10, 100, 1000)]}, False),
+        ({"alphas": ((1, 10, 100, 1000),)}, False),
+        ({"alphas": np.array([1, 10, 100, 1000])}, True),
+        ({"alphas": [np.array([1, 10, 100, 1000])]}, False),
+        ([{"alphas": [1, 10]}, {"alphas": [[100, 1000]]}], True),
+        ([{"alphas": [1, 10]}, {"fit_intercept": [True, False]}], True),
+        (None, False),
     ],
 )
-def test_wrap_param_grid(param_grid):
+def test_wrap_param_grid(param_grid, need_wrap):
     param_name = "alphas"
-    param_grid_wrapped = _wrap_param_grid(param_grid, param_name)
+    expected_warning_substring = "should be a sequence of iterables"
+
+    with warnings.catch_warnings(record=True) as raised_warnings:
+        param_grid_wrapped = _wrap_param_grid(param_grid, param_name)
+    warning_messages = [str(warning.message) for warning in raised_warnings]
+
+    found_warning = any(
+        expected_warning_substring in warning_message
+        for warning_message in warning_messages
+    )
+
+    if need_wrap:
+        assert found_warning
+    else:
+        assert not found_warning
 
     if param_grid is None:
         assert param_grid_wrapped is None
@@ -240,13 +254,15 @@ def test_parallel_fit():
 
 
 @pytest.mark.parametrize(
-    "estimator,param_name,is_classification",
+    "estimator,param_name,fitted_param_name,is_classification",
     [
-        (ridge, "alphas", False),
-        (ridge_classifier, "alphas", True),
+        (ridge, "alphas", "best_alpha", False),
+        (ridge_classifier, "alphas", "best_alpha", True),
     ],
 )
-def test_parallel_fit_builtin_cv(estimator, param_name, is_classification):
+def test_parallel_fit_builtin_cv(
+    estimator, param_name, fitted_param_name, is_classification
+):
     """Check that the best_param output of _parallel_fit is a single value even
     if param_grid is wrapped in a list for models with built-in CV.
     """
@@ -302,7 +318,7 @@ def test_parallel_fit_builtin_cv(estimator, param_name, is_classification):
             selector=selector,
             clustering_percentile=100,
         )
-        assert best_param[param_name] in param_values
+        assert best_param[fitted_param_name] in param_values
 
 
 def _make_binary_classification_test_data(n_samples):

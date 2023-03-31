@@ -107,42 +107,72 @@ def _check_param_grid(estimator, X, y, param_grid=None):
 
     """
     if param_grid is None:
-        param_grid = {}
-        # define loss function
-        if isinstance(estimator, LogisticRegression):
-            loss = "log"
-        elif isinstance(
-            estimator, (LinearSVC, RidgeCV, RidgeClassifierCV, SVR)
-        ):
-            loss = "squared_hinge"
-        elif isinstance(estimator, (DummyClassifier, DummyRegressor)):
-            if estimator.strategy in ["constant"]:
-                message = (
-                    "Dummy classification implemented only for strategies"
-                    ' "most_frequent", "prior", "stratified"'
-                )
-                raise NotImplementedError(message)
-        else:
-            raise ValueError(
-                "Invalid estimator. The supported estimators are:"
-                f" {list(SUPPORTED_ESTIMATORS.keys())}"
-            )
-        # define sensible default for different types of estimators
-        if hasattr(estimator, "penalty") and (estimator.penalty == "l1"):
-            min_c = l1_min_c(X, y, loss=loss)
-        else:
-            min_c = 0.5
-
-        if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
-            param_grid["alphas"] = [np.geomspace(1e-4, 100, num=20)]
-        elif not isinstance(estimator, (DummyClassifier, DummyRegressor)):
-            param_grid["C"] = np.array([2, 20, 200]) * min_c
-        else:
-            param_grid = {}
+        param_grid = _default_param_grid(estimator, X, y)
 
     else:
         if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
             param_grid = _wrap_param_grid(param_grid, "alphas")
+
+    return param_grid
+
+
+def _default_param_grid(estimator, X, y):
+    """Generate sensible default for param_grid.
+
+    Parameters
+    ----------
+    estimator: str, optional
+        The estimator to choose among:
+        %(classifier_options)s
+        %(regressor_options)s
+        Default 'svc'.
+
+    X: list of Niimg-like objects
+        See :ref:`extracting_data`.
+        Data on which model is to be fitted. If this is a list,
+        the affine is considered the same for all.
+
+    y: array or list of shape (n_samples)
+        The dependent variable (age, sex, IQ, yes/no, etc.).
+        Target variable to predict. Must have exactly as many elements as
+        3D images in niimg.
+
+    Returns
+    -------
+    param_grid: dict of str to sequence, or sequence of such. Sensible default
+    dict has size 1 for linear models.
+    """
+    param_grid = {}
+
+    # define loss function
+    if isinstance(estimator, LogisticRegression):
+        loss = "log"
+    elif isinstance(estimator, (LinearSVC, RidgeCV, RidgeClassifierCV, SVR)):
+        loss = "squared_hinge"
+    elif isinstance(estimator, (DummyClassifier, DummyRegressor)):
+        if estimator.strategy in ["constant"]:
+            message = (
+                "Dummy classification implemented only for strategies"
+                ' "most_frequent", "prior", "stratified"'
+            )
+            raise NotImplementedError(message)
+    else:
+        raise ValueError(
+            "Invalid estimator. The supported estimators are:"
+            f" {list(SUPPORTED_ESTIMATORS.keys())}"
+        )
+    # define sensible default for different types of estimators
+    if hasattr(estimator, "penalty") and (estimator.penalty == "l1"):
+        min_c = l1_min_c(X, y, loss=loss)
+    else:
+        min_c = 0.5
+
+    if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
+        param_grid["alphas"] = [np.geomspace(1e-3, 1e4, 8)]
+    elif not isinstance(estimator, (DummyClassifier, DummyRegressor)):
+        param_grid["C"] = np.array([2, 20, 200]) * min_c
+    else:
+        param_grid = {}
 
     return param_grid
 
@@ -179,21 +209,29 @@ def _wrap_param_grid(param_grid, param_name):
     else:
         param_grids = param_grid
 
-    # update each dict
-    for i_param_grid in range(len(param_grids)):
-        param_grid_ = param_grids[i_param_grid].copy()  # shallow copy
-        try:
-            if not isinstance(param_grid_[param_name][0], Iterable):
-                param_grid_[param_name] = [param_grid_[param_name]]
-        except KeyError:
-            continue
-        param_grids[i_param_grid] = param_grid_
+    # process dicts one by one and add them to a new list
+    new_param_grid = []
+    for param_grid_item in param_grids:
+        if param_name in param_grid_item and not isinstance(
+            param_grid_item[param_name][0], Iterable
+        ):
+            warnings.warn(
+                f"parameter '{param_name}' should be a sequence of iterables"
+                f" (e.g., { {param_name:[[1, 10, 100]]} }) to benefit from"
+                " the built-in cross-validation of the estimator."
+                f" Wrapping {param_grid_item[param_name]} in an outer list."
+            )
 
-    # return a dict if the original input was a dict
+            param_grid_item = dict(param_grid_item)  # make a new dict
+            param_grid_item[param_name] = [param_grid_item[param_name]]
+
+        new_param_grid.append(param_grid_item)
+
+    # return a dict (not a list) if the original input was a dict
     if input_is_dict:
-        param_grids = param_grids[0]
+        new_param_grid = new_param_grid[0]
 
-    return param_grids
+    return new_param_grid
 
 
 def _check_estimator(estimator):
@@ -289,7 +327,7 @@ def _parallel_fit(
                     dummy_output = estimator.constant_
 
             if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
-                param["alphas"] = estimator.alpha_
+                param["best_alpha"] = estimator.alpha_
             best_param = param
 
     if best_coef is not None:
@@ -537,7 +575,11 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         `cv_params_` : dict of lists
             Best point in the parameter grid for each tested fold
             in the inner cross validation loop. The grid is empty
-            when Dummy estimators are provided.
+            when Dummy estimators are provided. Note: if the estimator used its
+            built-in cross-validation, this will include an additional key for
+            the single best value estimated by the built-in cross-validation
+            (e.g., 'best_alpha' for RidgeCV/RidgeClassifierCV), in addition to
+            the input list of values.
 
         'scorer_' : function
             Scorer function used on the held out data to choose the best
