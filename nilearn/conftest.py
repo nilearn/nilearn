@@ -7,7 +7,6 @@ from nilearn import image
 # we need to import these fixtures even if not used in this module
 from nilearn.datasets._testing import request_mocker  # noqa: F401
 from nilearn.datasets._testing import temp_nilearn_data_dir  # noqa: F401
-from nilearn.version import _compare_version  # noqa: F401
 
 collect_ignore = ["datasets/data/convert_templates.py"]
 
