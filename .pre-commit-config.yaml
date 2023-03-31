@@ -100,4 +100,4 @@ repos:
     hooks:
       - id: flake8
         args: [--verbose]
-        additional_dependencies: [flake8-docstrings, Flake8-pyproject]
+        additional_dependencies: [flake8-docstrings]
