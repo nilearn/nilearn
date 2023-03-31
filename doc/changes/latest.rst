@@ -15,7 +15,7 @@ NEW
 Fixes
 -----
 
-- Improve how :func:`~.glm.first_level.first_level_from_bids` handles fetching slice timing metadata and add additional input validation. In release ``0.XX.XX`` the default `slice_time_ref` will be `None` instead of `0` (:gh:`3605` by `Rémi Gau`_).
+- Improve how :func:`~.glm.first_level.first_level_from_bids` handles fetching slice timing metadata and add additional input validation. In release ``0.12`` the default `slice_time_ref` will be `None` instead of `0` (:gh:`3605` by `Rémi Gau`_).
 
 - Fixes several bugs in :func:`~glm.first_level.first_level_from_bids`. Refactors :func:`~glm.first_level.first_level_from_bids` and ``nilearn._utils.data_gen.create_fake_bids_dataset``. (:gh:`3525` by `Rémi Gau`_).
 

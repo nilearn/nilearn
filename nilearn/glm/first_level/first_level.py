@@ -891,7 +891,7 @@ def first_level_from_bids(dataset_path,
         .. deprecated:: 0.10.1
 
             The default=0 for ``slice_time_ref`` will be deprecated.
-            The default value will change to 'None' in 0.xx.        
+            The default value will change to 'None' in 0.12.        
 
     derivatives_folder : :obj:`str`, Defaults="derivatives".
         derivatives and app folder path containing preprocessed files.
@@ -922,7 +922,7 @@ def first_level_from_bids(dataset_path,
 
     if slice_time_ref == 0:
         warn(
-            'Starting in version 0.xx, slice_time_ref will default to None.',
+            'Starting in version 0.12, slice_time_ref will default to None.',
             DeprecationWarning,
         )
 
@@ -987,6 +987,8 @@ def first_level_from_bids(dataset_path,
     # Slice time correction reference time
     #
     # Try to infer a slice_time_ref value in the bids derivatives dataset.
+    #
+    # If no value can be inferred, the default value of 0.0 is used.
     filters = _make_bids_files_filter(
         task_label=task_label,
         space_label=space_label,
@@ -1011,7 +1013,7 @@ def first_level_from_bids(dataset_path,
         inferred_slice_time_ref = 0.0        
 
     if slice_time_ref is None and inferred_slice_time_ref is not None:     
-            slice_time_ref = inferred_slice_time_ref   
+            slice_time_ref = inferred_slice_time_ref               
     if slice_time_ref is not None and slice_time_ref != inferred_slice_time_ref:
         warn(f"'slice_time_ref' provided ({slice_time_ref}) is different "
              f"from the value found in the BIDS dataset "
