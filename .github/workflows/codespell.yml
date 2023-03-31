@@ -14,4 +14,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - uses: codespell-project/actions-codespell@master
+      - name: Install dependencies
+        run: |
+          pip install codespell tomli
+      - name: Check spelling
+        run: codespell
