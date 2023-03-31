@@ -33,6 +33,7 @@ nilearn.egg-info/
 build
 dist/
 nilearn/_version.py
+.pytest_cache
 
 # virtual environment
 env/
