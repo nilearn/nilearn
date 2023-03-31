@@ -572,8 +572,7 @@ view : :obj:`str` or a pair of :obj:`float`, optional.
         'anterior', 'posterior'}.
         If a sequence, must be a pair (elev, azim) of float
         angles in degrees that will manually set a custom view.
-        E.g., view=[270.0, 90.0] or view=(0.0, -180.0). Note that this
-        manual option is only available when the plotting engine is matplotlib.
+        E.g., view=[270.0, 90.0] or view=(0.0, -180.0).
         Otherwise, the view can only be specified via one of the pre-set
         strings.
     View of the surface that is rendered.
