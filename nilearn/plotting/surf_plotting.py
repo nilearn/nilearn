@@ -1140,8 +1140,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
 
 
 def _check_hemisphere_is_valid(hemi):
-    valid = hemi in VALID_HEMISPHERES
-    return valid
+    return hemi in VALID_HEMISPHERES
 
 
 def _check_hemispheres(hemispheres):
