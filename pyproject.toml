@@ -6,8 +6,8 @@ build-backend = "hatchling.build"
 name = "nilearn"
 description = "Statistical learning for neuroimaging in Python"
 long_description = { file = "README.rst" }
-authors = { name = "Nilearn developers" }
-maintainers = { name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr" }
+authors = [{ name = "Nilearn developers" }]
+maintainers = [{ name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr" }]
 readme = "README.rst"
 license = { text = "new BSD" }
 requires-python = ">=3.7"
@@ -89,7 +89,7 @@ test = [
 	"pytest-cov",
 ]
 # A combination of dependencies useful for developers
-dev = ["nilearn[plotting,plotly,doc,test]"]
+dev = ["nilearn[plotting,plotly,soc,test]"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["nilearn"]

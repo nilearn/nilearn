@@ -32,7 +32,7 @@ tmp
 nilearn.egg-info/
 build
 dist/
-_version.py
+nilearn/_version.py
 
 # virtual environment
 env/
