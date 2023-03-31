@@ -1158,10 +1158,8 @@ def _check_hemispheres(hemispheres):
     if any(invalid_hemis):
         raise ValueError(
             "Invalid hemispheres definition!\n"
-            + "Got: "
-            + str(np.array(hemispheres)[invalid_hemis])
-            + "\nSupported values are:"
-            + str(VALID_HEMISPHERES)
+            f"Got: {str(np.array(hemispheres)[invalid_hemis])}\n"
+            f"Supported values are: {str(VALID_HEMISPHERES)}"
         )
     return hemispheres
 
@@ -1188,7 +1186,7 @@ def _check_views(views) -> list:
     correct.
 
     views : list
-        Any combination of string in {"anterior", "posterior", "medial", 
+        Any combination of string in {"anterior", "posterior", "medial",
         "lateral", "dorsal", "ventral"} and / or pair of floats (elev, azim).
 
     """
@@ -1197,12 +1195,10 @@ def _check_views(views) -> list:
     if any(invalid_views):
         raise ValueError(
             "Invalid view definition!\n"
-            + "Got: "
-            + str(np.array(views)[invalid_views])
-            + "\nSupported values are:"
-            + str(VALID_VIEWS)
-            + " or a sequence of length 2"
-            + " setting the elevation and azimut of the camera"
+            f"Got: {str(np.array(views)[invalid_views])}\n"
+            f"Supported values are: {str(VALID_VIEWS)}"
+            " or a sequence of length 2"
+            " setting the elevation and azimut of the camera."
         )
 
     return views
