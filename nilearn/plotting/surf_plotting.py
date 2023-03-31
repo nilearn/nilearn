@@ -116,6 +116,64 @@ LAYOUT = {
 }
 
 
+def _get_camera_view_from_string_view(hemi, view):
+    """Return plotly camera parameters from string view."""
+    if view == 'lateral':
+        return CAMERAS[hemi]
+    elif view == 'medial':
+        return CAMERAS[
+            VALID_HEMISPHERES[0]
+            if hemi == VALID_HEMISPHERES[1]
+            else VALID_HEMISPHERES[1]
+        ]
+    else:
+        return CAMERAS[view]
+
+
+def _get_camera_view_from_elevation_and_azimut(view):
+    """Compute plotly camera parameters from elevation and azimut."""
+    elev, azim = view
+    # The radius is useful only when using a "perspective" projection,
+    # otherwise, if projection is "orthographic",
+    # one should tweak the "aspectratio" to emulate zoom
+    r = 1.5
+    # The camera position and orientation is set by three 3d vectors,
+    # whose coordinates are independent of the plotted data.
+    return {
+        # Where the camera should look at
+        # (it should always be looking at the center of the scene)
+        "center": {"x": 0, "y": 0, "z": 0},
+        # Where the camera should be located
+        "eye": {
+            "x": (
+                r
+                * math.cos(azim / 360 * 2 * math.pi)
+                * math.cos(elev / 360 * 2 * math.pi)
+            ),
+            "y": (
+                r
+                * math.sin(azim / 360 * 2 * math.pi)
+                * math.cos(elev / 360 * 2 * math.pi)
+            ),
+            "z": r * math.sin(elev / 360 * 2 * math.pi),
+        },
+        # How the camera should be rotated.
+        # It is determined by a 3d vector indicating which direction
+        # should look up in the generated plot
+        "up": {
+            "x": math.sin(elev / 360 * 2 * math.pi) * math.cos(
+                azim / 360 * 2 * math.pi + math.pi
+            ),
+            "y": math.sin(elev / 360 * 2 * math.pi) * math.sin(
+                azim / 360 * 2 * math.pi + math.pi
+            ),
+            "z": math.cos(elev / 360 * 2 * math.pi),
+        },
+        # "projection": {"type": "perspective"},
+        "projection": {"type": "orthographic"},
+    }
+
+
 def _get_view_plot_surf_plotly(hemi, view):
     """
     Get camera parameters from hemi and view for the plotly engine.
@@ -123,62 +181,11 @@ def _get_view_plot_surf_plotly(hemi, view):
     This function checks the selected hemisphere and view, and
     returns the cameras view.
     """
-    camera_view = None
-    if _check_views([view]) and _check_hemispheres([hemi]):
-        if isinstance(view, str):
-            if view == 'lateral':
-                camera_view = CAMERAS[hemi]
-            elif view == 'medial':
-                camera_view = CAMERAS[
-                    VALID_HEMISPHERES[0]
-                    if hemi == VALID_HEMISPHERES[1]
-                    else VALID_HEMISPHERES[1]
-                ]
-            else:
-                camera_view = CAMERAS[view]
-        else:
-            elev, azim = view
-            # The radius is useful only when using a "perspective" projection,
-            # otherwise, if projection is "orthographic",
-            # one should tweak the "aspectratio" to emulate zoom
-            r = 1.5
-            # The camera position and orientation is set by three 3d vectors,
-            # whose coordinates are independent of the plotted data.
-            camera_view = {
-                # Where the camera should look at
-                # (it should always be looking at the center of the scene)
-                "center": {"x": 0, "y": 0, "z": 0},
-                # Where the camera should be located
-                "eye": {
-                    "x": (
-                        r
-                        * math.cos(azim / 360 * 2 * math.pi)
-                        * math.cos(elev / 360 * 2 * math.pi)
-                    ),
-                    "y": (
-                        r
-                        * math.sin(azim / 360 * 2 * math.pi)
-                        * math.cos(elev / 360 * 2 * math.pi)
-                    ),
-                    "z": r * math.sin(elev / 360 * 2 * math.pi),
-                },
-                # How the camera should be rotated.
-                # It is determined by a 3d vector indicating which direction
-                # should look up in the generated plot
-                "up": {
-                    "x": math.sin(elev / 360 * 2 * math.pi) * math.cos(
-                        azim / 360 * 2 * math.pi + math.pi
-                    ),
-                    "y": math.sin(elev / 360 * 2 * math.pi) * math.sin(
-                        azim / 360 * 2 * math.pi + math.pi
-                    ),
-                    "z": math.cos(elev / 360 * 2 * math.pi),
-                },
-                # "projection": {"type": "perspective"},
-                "projection": {"type": "orthographic"},
-            }
-
-    return camera_view
+    _check_views([view])
+    _check_hemispheres([hemi])
+    if isinstance(view, str):
+        return _get_camera_view_from_string_view(hemi, view)
+    return _get_camera_view_from_elevation_and_azimut(view)
 
 
 def _configure_title_plotly(title, font_size, color="black"):
@@ -331,13 +338,11 @@ def _get_view_plot_surf_matplotlib(hemi, view):
     This function checks the selected hemisphere and view, and
     returns elev and azim.
     """
-    if _check_views([view]) and _check_hemispheres([hemi]):
-        if isinstance(view, str):
-            elev, azim = MATPLOTLIB_VIEWS[hemi][view]
-        elif isinstance(view, Sequence):
-            elev, azim = view
-
-    return elev, azim
+    _check_views([view])
+    _check_hemispheres([hemi])
+    if isinstance(view, str):
+        return MATPLOTLIB_VIEWS[hemi][view]
+    return view
 
 
 def _check_surf_map(surf_map, n_vertices):

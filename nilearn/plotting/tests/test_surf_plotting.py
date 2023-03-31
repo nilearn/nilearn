@@ -10,11 +10,15 @@ import os
 import unittest.mock as mock
 
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
-from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
-                                            plot_surf_roi, plot_img_on_surf,
-                                            plot_surf_contours,
-                                            _get_ticks_matplotlib,
-                                            _compute_facecolors_matplotlib)
+from nilearn.plotting.surf_plotting import (
+    plot_surf,
+    plot_surf_stat_map,
+    plot_surf_roi,
+    plot_img_on_surf,
+    plot_surf_contours,
+    _get_ticks_matplotlib,
+    _compute_facecolors_matplotlib
+)
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.surface import load_surf_data, load_surf_mesh
 from nilearn.surface.testing_utils import generate_surf
@@ -195,20 +199,33 @@ EXPECTED_VIEW_MATPLOTLIB = {"left": {"anterior": (0, 90),
 
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
 def test_get_view_plot_surf_plotly(full_view):
-    from nilearn.plotting.surf_plotting import _get_view_plot_surf_plotly
+    from nilearn.plotting.surf_plotting import (
+        _get_camera_view_from_elevation_and_azimut,
+        _get_camera_view_from_string_view,
+        _get_view_plot_surf_plotly,
+    )
     hemi, view_name, (elev, azim), expected_camera_view = full_view
     camera_view = _get_view_plot_surf_plotly(hemi, view_name)
+    camera_view_string = _get_camera_view_from_string_view(hemi, view_name)
+    camera_view_elev_azim = _get_camera_view_from_elevation_and_azimut(
+        (elev, azim)
+    )
     # Check camera view
     for k in ["center", "eye", "up"]:
         assert np.allclose(
             list(camera_view[k].values()),
             list(expected_camera_view[k].values())
         )
-    # Check camera custom view
-    camera_custom_view = _get_view_plot_surf_plotly(hemi, (elev, azim))
+    # Check camera view obtained from string view
     for k in ["center", "eye", "up"]:
         assert np.allclose(
-            list(camera_custom_view[k].values()),
+            list(camera_view_string[k].values()),
+            list(expected_camera_view[k].values())
+        )
+    # Check camera view obtained from elevation & azimut
+    for k in ["center", "eye", "up"]:
+        assert np.allclose(
+            list(camera_view_elev_azim[k].values()),
             list(expected_camera_view[k].values())
         )
 
@@ -311,35 +328,57 @@ def test_instantiation_error_plotly_surface_figure(input_obj):
         PlotlySurfaceFigure(input_obj)
 
 
-def test_check_view_is_valid():
+
+@pytest.mark.parametrize(
+    "view,is_valid",
+    [
+        ("lateral", True),
+        ("medial", True),
+        ("latreal", False),
+        ((100, 100), True),
+        ((100, 100, 1), False),
+    ]
+)
+def test_check_view_is_valid(view, is_valid):
     from nilearn.plotting.surf_plotting import _check_view_is_valid
-    assert _check_view_is_valid("lateral") is True
-    assert _check_view_is_valid("medial") is True
-    assert _check_view_is_valid("latreal") is False
-    assert _check_view_is_valid((100, 100)) is True
-    assert _check_view_is_valid((100, 100, 1)) is False
+    assert _check_view_is_valid(view) is is_valid
 
 
-def test_check_hemisphere_is_valid():
+@pytest.mark.parametrize(
+    "hemi,is_valid",
+    [
+        ("left", True),
+        ("right", True),
+        ("lft", False),
+    ]
+)
+def test_check_hemisphere_is_valid(hemi, is_valid):
     from nilearn.plotting.surf_plotting import _check_hemisphere_is_valid
-    assert _check_hemisphere_is_valid("left") is True
-    assert _check_hemisphere_is_valid("right") is True
-    assert _check_hemisphere_is_valid("lft") is False
+    assert _check_hemisphere_is_valid(hemi) is is_valid
 
 
-def test_get_view_plot_surf_errors():
+@pytest.mark.parametrize("hemi,view", [("foo", "medial"), ("bar", "anterior")])
+def test_get_view_plot_surf_hemisphere_errors(hemi, view):
     from nilearn.plotting.surf_plotting import (_get_view_plot_surf_matplotlib,
                                                 _get_view_plot_surf_plotly)
     with pytest.raises(ValueError,
                        match="Invalid hemispheres definition"):
-        _get_view_plot_surf_matplotlib("foo", "medial")
-        _get_view_plot_surf_plotly("bar", "anterior")
+        _get_view_plot_surf_matplotlib(hemi, view)
+    with pytest.raises(ValueError,
+                       match="Invalid hemispheres definition"):
+        _get_view_plot_surf_plotly(hemi, view)
+
+
+@pytest.mark.parametrize("hemi,view", [("left", "foo"), ("right", "bar")])
+def test_get_view_plot_surf_view_errors(hemi, view):
+    from nilearn.plotting.surf_plotting import (_get_view_plot_surf_matplotlib,
+                                                _get_view_plot_surf_plotly)
     with pytest.raises(ValueError,
                        match="Invalid view definition"):
-        _get_view_plot_surf_matplotlib("left", "foo")
-        _get_view_plot_surf_matplotlib("right", "bar")
-        _get_view_plot_surf_plotly("left", "foo")
-        _get_view_plot_surf_plotly("right", "bar")
+        _get_view_plot_surf_matplotlib(hemi, view)
+    with pytest.raises(ValueError,
+                       match="Invalid view definition"):
+        _get_view_plot_surf_plotly(hemi, view)
 
 
 def test_configure_title_plotly():
