@@ -1174,12 +1174,11 @@ def _check_view_is_valid(view) -> bool:
 
     returns: True if view is valid, False otherwise.
     """
-    valid = False
     if isinstance(view, str) and (view in VALID_VIEWS):
-        valid = True
+        return True
     elif isinstance(view, Sequence) and len(view) == 2:
-        valid = True
-    return valid
+        return True
+    return False
 
 
 def _check_views(views) -> list:
