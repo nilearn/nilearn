@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-python setup.py build
+python -m build
 if [ ! -z "$MIN_REQUIREMENTS" ]; then
     # Install the oldest supported versions of all required dependencies
     # See pyproject.toml for dependency group options

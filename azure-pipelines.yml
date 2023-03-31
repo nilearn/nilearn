@@ -74,7 +74,7 @@ jobs:
 
   - script: |
       set -e
-      python setup.py sdist bdist_wheel
+      python -m build
     displayName: 'Build Nilearn'
 
   - script: |
@@ -112,7 +112,7 @@ jobs:
 
   - script: |
       set -e
-      python setup.py sdist bdist_wheel
+      python -m build
     displayName: 'Build Nilearn'
 
   - script: |
@@ -146,12 +146,12 @@ jobs:
       :; set -o errexit
       python -m pip install --upgrade pip
       pip install --prefer-binary setuptools wheel
-      python setup.py sdist bdist_wheel
+      python -m build
     displayName: 'Install dependencies for building Nilearn'
 
   - script: |
       :; set -o errexit
-      python setup.py sdist bdist_wheel
+      python -m build
     displayName: 'Build Nilearn'
 
   - script: |
@@ -188,7 +188,7 @@ jobs:
 
   - script: |
       set -e
-      python setup.py sdist bdist_wheel
+      python -m build
     displayName: 'Build Nilearn'
 
   - script: |
