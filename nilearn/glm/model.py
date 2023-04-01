@@ -264,7 +264,7 @@ class LikelihoodModelResults:
         if invcov is None:
             invcov = inv(self.vcov(matrix=matrix, dispersion=1.0))
         F = (np.add.reduce(np.dot(invcov, ctheta) * ctheta, 0)
-             * positive_reciprocal((q * dispersion))
+             * positive_reciprocal(q * dispersion)
              )
         F = np.squeeze(F)
         return FContrastResults(

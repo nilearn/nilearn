@@ -99,7 +99,7 @@ class OLSModel:
             observations in rows.
 
         """
-        super(OLSModel, self).__init__()
+        super().__init__()
         self.initialize(design)
 
     def initialize(self, design):
@@ -267,7 +267,7 @@ class ARModel(OLSModel):
             if self.rho.shape == ():
                 self.rho.shape = (1,)
             self.order = self.rho.shape[0]
-        super(ARModel, self).__init__(design)
+        super().__init__(design)
 
     def whiten(self, X):
         """Whiten a series of columns according to AR(p) covariance structure

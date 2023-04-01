@@ -19,11 +19,11 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 
-VALID_FIELDS = set(["onset",
+VALID_FIELDS = {"onset",
                     "duration",
                     "trial_type",
                     "modulation",
-                    ])
+                    }
 
 
 def check_events(events):

@@ -165,8 +165,8 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
     acceptable_noise_models = ['ols', 'arN']
     if ((noise_model[:2] != 'ar') and (noise_model != 'ols')):
         raise ValueError(
-            "Acceptable noise models are {0}. You provided "
-            "'noise_model={1}'".format(acceptable_noise_models,
+            "Acceptable noise models are {}. You provided "
+            "'noise_model={}'".format(acceptable_noise_models,
                                        noise_model)
         )
     if Y.shape[0] != X.shape[0]:
@@ -183,7 +183,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
 
         err_msg = ('AR order must be a positive integer specified as arN, '
                    'where N is an integer. E.g. ar3. '
-                   'You provided {0}.'.format(noise_model))
+                   'You provided {}.'.format(noise_model))
         try:
             ar_order = int(noise_model[2:])
         except ValueError:
@@ -731,7 +731,7 @@ class FirstLevelModel(BaseGLM):
             output = self.masker_.inverse_transform(estimate_)
             contrast_name = str(con_vals)
             output.header['descrip'] = (
-                '%s of contrast %s' % (output_type_, contrast_name))
+                '{} of contrast {}'.format(output_type_, contrast_name))
             outputs[output_type_] = output
 
         return outputs if output_type == 'all' else output
@@ -940,7 +940,7 @@ def first_level_from_bids(dataset_path,
                  ' and will need to be set manually in the list of models'
                  ' otherwise their fit will throw an exception.')
         else:
-            specs = json.load(open(img_specs[0], 'r'))
+            specs = json.load(open(img_specs[0]))
             if 'RepetitionTime' in specs:
                 t_r = float(specs['RepetitionTime'])
             else:

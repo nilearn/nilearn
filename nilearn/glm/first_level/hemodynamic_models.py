@@ -506,9 +506,9 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
     elif hrf_model is None:
         hkernel = [np.hstack((1, np.zeros(oversampling - 1)))]
     else:
-        raise ValueError('"{0}" is not a known hrf model. '
+        raise ValueError('"{}" is not a known hrf model. '
                          'Use either a custom model or '
-                         'one of {1}'.format(hrf_model,
+                         'one of {}'.format(hrf_model,
                                              acceptable_hrfs))
     return hkernel
 
