@@ -95,7 +95,7 @@ def fdr_threshold(z_vals, alpha):
     """
     if alpha < 0 or alpha > 1:
         raise ValueError(
-            'alpha should be between 0 and 1. {} was provided'.format(alpha))
+            f'alpha should be between 0 and 1. {alpha} was provided')
     z_vals_ = - np.sort(- z_vals)
     p_vals = norm.sf(z_vals_)
     n_samples = len(p_vals)

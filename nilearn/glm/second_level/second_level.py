@@ -173,7 +173,7 @@ def _check_first_level_contrast(second_level_input, first_level_contrast):
 
 def _check_output_type(output_type, valid_types):
     if output_type not in valid_types:
-        raise ValueError('output_type must be one of {}'.format(valid_types))
+        raise ValueError(f'output_type must be one of {valid_types}')
 
 
 def _check_design_matrix(design_matrix):
@@ -216,8 +216,7 @@ def _get_contrast(second_level_contrast, design_matrix):
         if second_level_contrast in design_matrix.columns.tolist():
             contrast = second_level_contrast
         else:
-            raise ValueError('"{}" is not a valid contrast name'.format(
-                second_level_contrast)
+            raise ValueError(f'"{second_level_contrast}" is not a valid contrast name'
             )
     else:
         # Check contrast definition
@@ -448,7 +447,7 @@ class SecondLevelModel(BaseGLM):
                 if our_param is None:
                     continue
                 if getattr(self.masker_, param_name) is not None:
-                    warn('Parameter %s of the masker overridden' % param_name)
+                    warn(f'Parameter {param_name} of the masker overridden')
                 setattr(self.masker_, param_name, our_param)
         self.masker_.fit(sample_map)
 
@@ -556,7 +555,7 @@ class SecondLevelModel(BaseGLM):
             output = self.masker_.inverse_transform(estimate_)
             contrast_name = str(con_val)
             output.header['descrip'] = (
-                '{} of contrast {}'.format(output_type, contrast_name))
+                f'{output_type} of contrast {contrast_name}')
             outputs[output_type_] = output
 
         return outputs if output_type == 'all' else output
@@ -592,8 +591,7 @@ class SecondLevelModel(BaseGLM):
                                if '__' not in prop
                                ]
         if attribute not in possible_attributes:
-            msg = ("attribute must be one of: "
-                   "{attr}".format(attr=possible_attributes)
+            msg = (f"attribute must be one of: {possible_attributes}"
                    )
             raise ValueError(msg)
 

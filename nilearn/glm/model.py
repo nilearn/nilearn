@@ -191,7 +191,7 @@ class LikelihoodModelResults:
                                                         matrix.shape[1]))
         store = set(store)
         if not store.issubset(('t', 'effect', 'sd')):
-            raise ValueError('Unexpected store request in %s' % store)
+            raise ValueError(f'Unexpected store request in {store}')
         st_t = st_effect = st_sd = effect = sd = None
         if 't' in store or 'effect' in store:
             effect = np.dot(matrix, self.theta)

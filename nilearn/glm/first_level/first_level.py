@@ -536,8 +536,7 @@ class FirstLevelModel(BaseGLM):
                     if our_param is None:
                         continue
                     if getattr(self.masker_, param_name) is not None:
-                        warn('Parameter %s of the masker'
-                             ' overridden' % param_name)
+                        warn(f'Parameter {param_name} of the masker overridden')
                     setattr(self.masker_, param_name, our_param)
                 self.masker_.fit(run_imgs[0])
             else:
@@ -558,7 +557,7 @@ class FirstLevelModel(BaseGLM):
                     remaining = 'go take a coffee, a big one'
                 else:
                     remaining = (100. - percent) / max(0.01, percent) * dt
-                    remaining = '%i seconds remaining' % remaining
+                    remaining = f'{int(remaining)} seconds remaining'
 
                 sys.stderr.write(
                     "Computing run %d out of %d runs (%s)\n"
@@ -613,8 +612,7 @@ class FirstLevelModel(BaseGLM):
 
             if self.verbose > 1:
                 t_masking = time.time() - t_masking
-                sys.stderr.write('Masker took %d seconds       \n'
-                                 % t_masking)
+                sys.stderr.write(f'Masker took {int(t_masking)} seconds       \n')
 
             if self.signal_scaling is not False:  # noqa
                 Y, _ = mean_scaling(Y, self.signal_scaling)
@@ -633,7 +631,7 @@ class FirstLevelModel(BaseGLM):
                                       random_state=self.random_state)
             if self.verbose > 1:
                 t_glm = time.time() - t_glm
-                sys.stderr.write('GLM took %d seconds         \n' % t_glm)
+                sys.stderr.write(f'GLM took {int(t_glm)} seconds         \n')
 
             self.labels_.append(labels)
             # We save memory if inspecting model details is not necessary
@@ -699,7 +697,7 @@ class FirstLevelModel(BaseGLM):
         n_runs = len(self.labels_)
         n_contrasts = len(con_vals)
         if n_contrasts == 1 and n_runs > 1:
-            warn('One contrast given, assuming it for all %d runs' % n_runs)
+            warn(f'One contrast given, assuming it for all {int(n_runs)} runs')
             con_vals = con_vals * n_runs
         elif n_contrasts != n_runs:
             raise ValueError('%d contrasts given, while there are %d runs' %
@@ -719,7 +717,7 @@ class FirstLevelModel(BaseGLM):
         valid_types.append('all')  # ensuring 'all' is the final entry.
         if output_type not in valid_types:
             raise ValueError(
-                'output_type must be one of {}'.format(valid_types))
+                f'output_type must be one of {valid_types}')
         contrast = _compute_fixed_effect_contrast(self.labels_, self.results_,
                                                   con_vals, stat_type)
         output_types = (valid_types[:-1]
@@ -731,7 +729,7 @@ class FirstLevelModel(BaseGLM):
             output = self.masker_.inverse_transform(estimate_)
             contrast_name = str(con_vals)
             output.header['descrip'] = (
-                '{} of contrast {}'.format(output_type_, contrast_name))
+                f'{output_type_} of contrast {contrast_name}')
             outputs[output_type_] = output
 
         return outputs if output_type == 'all' else output
@@ -767,8 +765,7 @@ class FirstLevelModel(BaseGLM):
                                if '__' not in prop
                                ]
         if attribute not in possible_attributes:
-            msg = ("attribute must be one of: "
-                   "{attr}".format(attr=possible_attributes)
+            msg = (f"attribute must be one of: {possible_attributes}"
                    )
             raise ValueError(msg)
 

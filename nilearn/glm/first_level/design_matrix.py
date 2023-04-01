@@ -167,10 +167,10 @@ def _make_drift(drift_model, frame_times, order, high_pass):
     elif drift_model is None:
         drift = _none_drift(frame_times)
     else:
-        raise NotImplementedError("Unknown drift model %r" % (drift_model))
+        raise NotImplementedError(f"Unknown drift model {drift_model!r}")
     names = []
     for k in range(1, drift.shape[1]):
-        names.append('drift_%d' % k)
+        names.append(f'drift_{int(k)}')
     names.append('constant')
     return drift, names
 
@@ -342,7 +342,7 @@ def make_first_level_design_matrix(
 
     # check that additional regressor names are well specified
     if add_reg_names is None:
-        add_reg_names = ['reg%d' % k for k in range(n_add_regs)]
+        add_reg_names = [f'reg{int(k)}' for k in range(n_add_regs)]
     elif len(add_reg_names) != n_add_regs:
         raise ValueError(
             'Incorrect number of additional regressor names was provided'
@@ -465,8 +465,7 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
                 raise ValueError('confounds contain more than one row for '
                                  'subject %s' % subject_label)
             elif np.sum(conrow) == 0:
-                raise ValueError('confounds not specified for subject %s' %
-                                 subject_label)
+                raise ValueError(f'confounds not specified for subject {subject_label}')
             for conf_name in confounds_name:
                 confounds_value = confounds[conrow][conf_name].values[0]
                 design_matrix.loc[ridx, conf_name] = confounds_value

@@ -41,8 +41,7 @@ def test_for_invalid_separator():
     data_for_temp_datafile, delimiters = make_data_for_test_runs()
     for delimiter_name, delimiter_char in delimiters.items():
         with InTemporaryDirectory():
-            temp_tsv_file = 'tempfile.{} separated values'.format(
-                delimiter_name)
+            temp_tsv_file = f'tempfile.{delimiter_name} separated values'
             _create_test_file(temp_csv=temp_tsv_file,
                               test_data=data_for_temp_datafile,
                               delimiter=delimiter_char)

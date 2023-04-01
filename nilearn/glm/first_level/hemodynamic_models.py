@@ -419,7 +419,7 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
                        'glover + derivative + dispersion']:
         names = [con_name, con_name + "_derivative", con_name + "_dispersion"]
     elif hrf_model == 'fir':
-        names = [con_name + "_delay_%d" % i for i in fir_delays]
+        names = [con_name + f"_delay_{int(i)}" for i in fir_delays]
     # Handle callables
     elif callable(hrf_model):
         names = [f"{con_name}_{hrf_model.__name__}"]
