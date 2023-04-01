@@ -1,5 +1,4 @@
-"""
-This module is for contrast computation and operation on contrast to
+"""Contrast computation and operation on contrast to \
 obtain fixed effect results.
 
 Author: Bertrand Thirion, Martin Perez-Guevara, Ana Luisa Pinho 2020
@@ -18,7 +17,7 @@ DEF_DOFMAX = 1e10
 
 
 def expression_to_contrast_vector(expression, design_columns):
-    """ Converts a string describing a contrast to a contrast vector
+    """Converts a string describing a contrast to a contrast vector.
 
     Parameters
     ----------
@@ -47,7 +46,7 @@ def expression_to_contrast_vector(expression, design_columns):
 
 
 def compute_contrast(labels, regression_result, con_val, contrast_type=None):
-    """ Compute the specified contrast given an estimated glm
+    """Compute the specified contrast given an estimated glm.
 
     Parameters
     ----------
@@ -139,8 +138,9 @@ def _compute_fixed_effect_contrast(labels, results, con_vals,
 
 
 class Contrast:
-    """ The contrast class handles the estimation of statistical contrasts
+    """The contrast class handles the estimation of statistical contrasts \
     on a given model: student (t) or Fisher (F).
+
     The important feature is that it supports addition,
     thus opening the possibility of fixed-effects models.
 
@@ -151,7 +151,8 @@ class Contrast:
     """
     def __init__(self, effect, variance, dim=None, dof=DEF_DOFMAX,
                  contrast_type='t', tiny=DEF_TINY, dofmax=DEF_DOFMAX):
-        """
+        """Construct instance.
+
         Parameters
         ----------
         effect : array of shape (contrast_dim, n_voxels)
@@ -204,18 +205,18 @@ class Contrast:
         self.dofmax = dofmax
 
     def effect_size(self):
-        """Make access to summary statistics more straightforward when
-        computing contrasts"""
+        """Make access to summary statistics more straightforward \
+        when computing contrasts."""
         return self.effect[0, :]
 
     def effect_variance(self):
-        """Make access to summary statistics more straightforward when
-        computing contrasts"""
+        """Make access to summary statistics more straightforward \
+        when computing contrasts."""
         return self.variance
 
     def stat(self, baseline=0.0):
-        """Return the decision statistic associated with the test of the
-        null hypothesis: (H0) 'contrast equals baseline'
+        """Return the decision statistic associated with the test of the \
+        null hypothesis: (H0) 'contrast equals baseline'.
 
         Parameters
         ----------
@@ -245,9 +246,9 @@ class Contrast:
         return self.stat_
 
     def p_value(self, baseline=0.0):
-        """Return a parametric estimate of the p-value associated with
-        the null hypothesis (H0): 'contrast equals baseline',
-        using the survival function
+        """Return a parametric estimate of the p-value associated with \
+        the null hypothesis (H0): 'contrast equals baseline', \
+        using the survival function.
 
         Parameters
         ----------
@@ -275,10 +276,10 @@ class Contrast:
         return p_values
 
     def one_minus_pvalue(self, baseline=0.0):
-        """Return a parametric estimate of the 1 - p-value associated with
-        the null hypothesis (H0): 'contrast equals baseline',
-        using the cumulative distribution function,
-        to ensure numerical stability
+        """Return a parametric estimate of the 1 - p-value associated \
+        with the null hypothesis (H0): 'contrast equals baseline', \
+        using the cumulative distribution function, \
+        to ensure numerical stability.
 
         Parameters
         ----------
@@ -306,8 +307,8 @@ class Contrast:
         return one_minus_pvalues
 
     def z_score(self, baseline=0.0):
-        """Return a parametric estimation of the z-score associated
-        with the null hypothesis: (H0) 'contrast equals baseline'
+        """Return a parametric estimation of the z-score associated \
+        with the null hypothesis: (H0) 'contrast equals baseline'.
 
         Parameters
         ----------
@@ -332,7 +333,8 @@ class Contrast:
         return self.z_score_
 
     def __add__(self, other):
-        """Addition of selfwith others, Yields an new Contrast instance
+        """Addit of selfwith others, Yields an new Contrast instance.
+
         This should be used only on indepndent contrasts"""
         if self.contrast_type != other.contrast_type:
             raise ValueError(
@@ -349,7 +351,7 @@ class Contrast:
                         dof=dof_, contrast_type=self.contrast_type)
 
     def __rmul__(self, scalar):
-        """Multiplication of the contrast by a scalar"""
+        """Multiply a contrast by a scalar."""
         scalar = float(scalar)
         effect_ = self.effect * scalar
         variance_ = self.variance * scalar ** 2
@@ -365,7 +367,7 @@ class Contrast:
 
 def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
                           precision_weighted=False):
-    """Compute the fixed effects, given images of effects and variance
+    """Compute the fixed effects, given images of effects and variance.
 
     Parameters
     ----------
@@ -422,9 +424,8 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
 
 
 def _compute_fixed_effects_params(contrasts, variances, precision_weighted):
-    """ Computes the fixed effects t-statistic, contrast, variance,
-    given arrays of effects and variance.
-    """
+    """Compute the fixed effects t-statistic, contrast, variance, \
+    given arrays of effects and variance."""
     tiny = 1.e-16
     contrasts, variances = np.asarray(contrasts), np.asarray(variances)
     variances = np.maximum(variances, tiny)

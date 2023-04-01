@@ -1,5 +1,4 @@
-"""
-This module contains the GLM and contrast classes that are meant to be the main
+"""Contain the GLM and contrast classes that are meant to be the main \
 objects of fMRI data analyses.
 
 Author: Bertrand Thirion, Martin Perez-Guevara, 2016
@@ -48,8 +47,8 @@ from sklearn.cluster import KMeans
 
 
 def mean_scaling(Y, axis=0):
-    """Scaling of the data to have percent of baseline change along the
-    specified axis
+    """Scaling of the data to have percent of baseline change \
+    along the specified axis.
 
     Parameters
     ----------
@@ -79,7 +78,7 @@ def mean_scaling(Y, axis=0):
 
 
 def _ar_model_fit(X, val, Y):
-    """Wrapper for fit method of ARModel to allow joblib parallelization"""
+    """Wrap for fit method of ARModel to allow joblib parallelization."""
     return ARModel(X, val).fit(Y)
 
 
@@ -113,7 +112,7 @@ def _yule_walker(x, order):
 
 def run_glm(Y, X, noise_model='ar1', bins=100,
             n_jobs=1, verbose=0, random_state=None):
-    """ GLM fit for an fMRI data matrix
+    """GLM fit for an fMRI data matrix.
 
     Parameters
     ----------
@@ -236,8 +235,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
 
 @fill_doc
 class FirstLevelModel(BaseGLM):
-    """ Implementation of the General Linear Model
-    for single session fMRI data.
+    """Implement of the General Linear Model for single session fMRI data.
 
     Parameters
     ----------
@@ -416,7 +414,7 @@ class FirstLevelModel(BaseGLM):
 
     def fit(self, run_imgs, events=None, confounds=None, sample_masks=None,
             design_matrices=None, bins=100):
-        """Fit the GLM
+        """Fit the GLM.
 
         For each run:
         1. create design matrix X
@@ -647,8 +645,9 @@ class FirstLevelModel(BaseGLM):
 
     def compute_contrast(self, contrast_def, stat_type=None,
                          output_type='z_score'):
-        """Generate different outputs corresponding to
+        """Generate different outputs corresponding to \
         the contrasts provided e.g. z_map, t_map, effects and variance.
+
         In multi-session case, outputs the fixed effects map.
 
         Parameters
@@ -734,9 +733,9 @@ class FirstLevelModel(BaseGLM):
 
     def _get_voxelwise_model_attribute(self, attribute,
                                        result_as_time_series):
-        """Transform RegressionResults instances within a dictionary
-        (whose keys represent the autoregressive coefficient under the 'ar1'
-        noise model or only 0.0 under 'ols' noise_model and values are the
+        """Transform RegressionResults instances within a dictionary \
+        (whose keys represent the autoregressive coefficient under the 'ar1' \
+        noise model or only 0.0 under 'ols' noise_model and values are the \
         RegressionResults instances) into input nifti space.
 
         Parameters
@@ -1030,7 +1029,7 @@ def _list_valid_subjects(derivatives_path,
     -------
     sub_labels : :obj:`list` of :obj:`str`, optional
         List of subject labels that will be processed.
-    """    
+    """   
     # Infer subjects in dataset if not provided
     if not sub_labels:
         sub_folders = glob.glob(os.path.join(derivatives_path, "sub-*/"))

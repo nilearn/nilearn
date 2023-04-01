@@ -52,7 +52,7 @@ from nilearn.glm.first_level.hemodynamic_models import (
 
 
 def _poly_drift(order, frame_times):
-    """Create a polynomial drift matrix
+    """Create a polynomial drift matrix.
 
     Parameters
     ----------
@@ -79,8 +79,7 @@ def _poly_drift(order, frame_times):
 
 
 def _cosine_drift(high_pass, frame_times):
-    """Create a cosine drift matrix with frequencies  or equal to
-    high_pass.
+    """Create a cosine drift matrix with frequencies or equal to high_pass.
 
     Parameters
     ----------
@@ -122,7 +121,7 @@ def _cosine_drift(high_pass, frame_times):
 
 
 def _none_drift(frame_times):
-    """ Create an intercept vector
+    """Create an intercept vector.
 
     Returns
     -------
@@ -133,7 +132,7 @@ def _none_drift(frame_times):
 
 
 def _make_drift(drift_model, frame_times, order, high_pass):
-    """Create the drift matrix
+    """Create the drift matrix.
 
     Parameters
     ----------
@@ -177,8 +176,8 @@ def _make_drift(drift_model, frame_times, order, high_pass):
 
 def _convolve_regressors(events, hrf_model, frame_times, fir_delays=[0],
                          min_onset=-24, oversampling=50):
-    """ Creation of  a matrix that comprises
-    the convolution of the conditions onset with a certain hrf model
+    """Creation of  a matrix that comprises \
+    the convolution of the conditions onset with a certain hrf model.
 
     Parameters
     ----------
@@ -255,7 +254,7 @@ def make_first_level_design_matrix(
         frame_times, events=None, hrf_model='glover',
         drift_model='cosine', high_pass=.01, drift_order=1, fir_delays=[0],
         add_regs=None, add_reg_names=None, min_onset=-24, oversampling=50):
-    """Generate a design matrix from the input parameters
+    """Generate a design matrix from the input parameters.
 
     Parameters
     ----------
@@ -394,8 +393,8 @@ def make_first_level_design_matrix(
 
 
 def check_design_matrix(design_matrix):
-    """Check that the provided DataFrame is indeed a valid design matrix
-    descriptor, and returns a triplet of fields
+    """Check that the provided DataFrame is indeed a valid design matrix \
+    descriptor, and returns a triplet of fields.
 
     Parameters
     ----------

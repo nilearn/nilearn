@@ -45,8 +45,7 @@ def input_df():
 
 
 def test_non_parametric_inference_with_flm_objects():
-    """see https://github.com/nilearn/nilearn/issues/3579"""
-
+    """See https://github.com/nilearn/nilearn/issues/3579 ."""
     with InTemporaryDirectory():        
         shapes, rk = [(7, 8, 9, 15)], 3
         mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -668,9 +667,8 @@ def test_non_parametric_inference_cluster_level():
 def test_non_parametric_inference_cluster_level_with_covariates(
         random_state=0
 ):
-    """Test non-parametric inference with cluster-level inference in
+    """Test non-parametric inference with cluster-level inference in \
     the context of covariates."""
-
     rng = np.random.RandomState(random_state)
 
     with InTemporaryDirectory():

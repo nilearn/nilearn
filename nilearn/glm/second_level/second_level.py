@@ -1,6 +1,5 @@
-"""
-This module provides facilities to realize a second level analysis on lists of
-first level contrasts or directly on fitted first level models
+"""Provide facilities to realize a second level analysis on lists of \
+first level contrasts or directly on fitted first level models.
 
 Author: Martin Perez-Guevara, 2016
 """
@@ -34,7 +33,7 @@ from sklearn.base import clone
 def _check_second_level_input(second_level_input,
                               design_matrix,
                               confounds=None):
-    """Checking second_level_input type"""
+    """Check second_level_input type."""
     input_type = _check_input_type(second_level_input)
     _check_input_as_type(
         second_level_input,
@@ -144,7 +143,7 @@ def _check_input_as_nifti_images(second_level_input, none_design_matrix):
 
 
 def _check_confounds(confounds):
-    """Checking confounds type"""
+    """Check confounds type."""
     if confounds is not None:
         if not isinstance(confounds, pd.DataFrame):
             raise ValueError('confounds must be a pandas DataFrame')
@@ -177,7 +176,7 @@ def _check_output_type(output_type, valid_types):
 
 
 def _check_design_matrix(design_matrix):
-    """Checking design_matrix type"""
+    """Check design_matrix type."""
     if design_matrix is not None:
         if not isinstance(design_matrix, pd.DataFrame):
             raise ValueError('design matrix must be a pandas DataFrame')
@@ -192,8 +191,8 @@ def _check_effect_maps(effect_maps, design_matrix):
 
 
 def _get_con_val(second_level_contrast, design_matrix):
-    """ Check the contrast and return con_val when testing one contrast or more
-    """
+    """Check the contrast and return con_val \
+    when testing one contrast or more."""
     if second_level_contrast is None:
         if design_matrix.shape[1] == 1:
             second_level_contrast = np.ones([1])
@@ -211,7 +210,7 @@ def _get_con_val(second_level_contrast, design_matrix):
 
 
 def _get_contrast(second_level_contrast, design_matrix):
-    """ Check and return contrast when testing one contrast at the time """
+    """Check and return contrast when testing one contrast at the time."""
     if isinstance(second_level_contrast, str):
         if second_level_contrast in design_matrix.columns.tolist():
             contrast = second_level_contrast
@@ -234,7 +233,7 @@ def _get_contrast(second_level_contrast, design_matrix):
 
 
 def _infer_effect_maps(second_level_input, contrast_def):
-    """Deals with the different possibilities of second_level_input"""
+    """Deal with the different possibilities of second_level_input."""
     # Build the design matrix X and list of imgs Y for GLM fit
     if isinstance(second_level_input, pd.DataFrame):
         # If a Dataframe was given, we expect contrast_def to be in map_name
@@ -263,7 +262,7 @@ def _infer_effect_maps(second_level_input, contrast_def):
 
 
 def _process_second_level_input(second_level_input):
-    """Helper function to process second_level_input."""
+    """Process second_level_input."""
     if isinstance(second_level_input, pd.DataFrame):
         return _process_second_level_input_as_dataframe(second_level_input)
     elif(hasattr(second_level_input, "__iter__")
@@ -276,9 +275,7 @@ def _process_second_level_input(second_level_input):
 
 
 def _process_second_level_input_as_dataframe(second_level_input):
-    """Helper function to process second_level_input provided
-    as a pandas DataFrame.
-    """
+    """Process second_level_input provided as a pandas DataFrame."""
     sample_map = second_level_input['effects_map_path'][0]
     labels = second_level_input['subject_label']
     subjects_label = labels.values.tolist()
@@ -286,10 +283,9 @@ def _process_second_level_input_as_dataframe(second_level_input):
 
 
 def _sort_input_dataframe(second_level_input):
-    """This function sorts the pandas dataframe by subject_label to
-    avoid inconsistencies with the design matrix row order when
-    automatically extracting maps.
-    """
+    """This function sorts the pandas dataframe by subject_label to \
+    avoid inconsistencies with the design matrix row order when \
+    automatically extracting maps."""
     columns = second_level_input.columns.tolist()
     column_index = columns.index('subject_label')
     sorted_matrix = sorted(
@@ -299,9 +295,8 @@ def _sort_input_dataframe(second_level_input):
 
 
 def _process_second_level_input_as_firstlevelmodels(second_level_input):
-    """Helper function to process second_level_input provided
-    as a list of FirstLevelModel objects.
-    """
+    """Process second_level_input provided \
+    as a list of FirstLevelModel objects."""
     sample_model = second_level_input[0]
     sample_condition = sample_model.design_matrices_[0].columns[0]
     sample_map = sample_model.compute_contrast(
@@ -313,7 +308,7 @@ def _process_second_level_input_as_firstlevelmodels(second_level_input):
 
 @fill_doc
 class SecondLevelModel(BaseGLM):
-    """Implementation of the :term:`General Linear Model<GLM>` for multiple
+    """Implement of the :term:`General Linear Model<GLM>` for multiple \
     subject :term:`fMRI` data.
 
     Parameters
@@ -462,7 +457,7 @@ class SecondLevelModel(BaseGLM):
     def compute_contrast(self, second_level_contrast=None,
                          first_level_contrast=None,
                          second_level_stat_type=None, output_type='z_score'):
-        """Generate different outputs corresponding to
+        """Generate different outputs corresponding to \
         the contrasts provided e.g. z_map, t_map, effects and variance.
 
         Parameters
@@ -562,9 +557,9 @@ class SecondLevelModel(BaseGLM):
 
     def _get_voxelwise_model_attribute(self, attribute,
                                        result_as_time_series):
-        """Transform RegressionResults instances within a dictionary
-        (whose keys represent the autoregressive coefficient under the 'ar1'
-        noise model or only 0.0 under 'ols' noise_model and values are the
+        """Transform RegressionResults instances within a dictionary \
+        (whose keys represent the autoregressive coefficient under the 'ar1' \
+        noise model or only 0.0 under 'ols' noise_model and values are the \
         RegressionResults instances) into input nifti space.
 
         Parameters

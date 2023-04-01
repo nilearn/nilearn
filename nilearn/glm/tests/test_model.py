@@ -1,5 +1,4 @@
-""" Testing models module
-"""
+"""Testing models module."""
 
 import numpy as np
 import pytest

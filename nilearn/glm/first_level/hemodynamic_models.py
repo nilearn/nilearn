@@ -18,7 +18,7 @@ from scipy.stats import gamma
 def _gamma_difference_hrf(tr, oversampling=50, time_length=32., onset=0.,
                           delay=6, undershoot=16., dispersion=1.,
                           u_dispersion=1., ratio=0.167):
-    """Compute an hrf as the difference of two gamma functions
+    """Compute an hrf as the difference of two gamma functions.
 
     Parameters
     ----------
@@ -85,7 +85,7 @@ def _gamma_difference_hrf(tr, oversampling=50, time_length=32., onset=0.,
 
 
 def spm_hrf(tr, oversampling=50, time_length=32., onset=0.):
-    """Implementation of the SPM hrf model
+    """Implement of the SPM hrf model.
 
     Parameters
     ----------
@@ -111,7 +111,7 @@ def spm_hrf(tr, oversampling=50, time_length=32., onset=0.):
 
 
 def glover_hrf(tr, oversampling=50, time_length=32., onset=0.):
-    """Implementation of the Glover hrf model
+    """Implement of the Glover hrf model.
 
     Parameters
     ----------
@@ -139,7 +139,7 @@ def glover_hrf(tr, oversampling=50, time_length=32., onset=0.):
 
 
 def spm_time_derivative(tr, oversampling=50, time_length=32., onset=0.):
-    """Implementation of the SPM time derivative hrf (dhrf) model
+    """Implement of the SPM time derivative hrf (dhrf) model.
 
     Parameters
     ----------
@@ -170,7 +170,7 @@ def spm_time_derivative(tr, oversampling=50, time_length=32., onset=0.):
 
 
 def glover_time_derivative(tr, oversampling=50, time_length=32., onset=0.):
-    """Implementation of the Glover time derivative hrf (dhrf) model
+    """Implement of the Glover time derivative hrf (dhrf) model.
 
     Parameters
     ----------
@@ -201,7 +201,7 @@ def glover_time_derivative(tr, oversampling=50, time_length=32., onset=0.):
 
 
 def spm_dispersion_derivative(tr, oversampling=50, time_length=32., onset=0.):
-    """Implementation of the SPM dispersion derivative hrf model
+    """Implement of the SPM dispersion derivative hrf model.
 
     Parameters
     ----------
@@ -233,7 +233,7 @@ def spm_dispersion_derivative(tr, oversampling=50, time_length=32., onset=0.):
 
 def glover_dispersion_derivative(tr, oversampling=50, time_length=32.,
                                  onset=0.):
-    """Implementation of the Glover dispersion derivative hrf model
+    """Implement of the Glover dispersion derivative hrf model.
 
     Parameters
     ----------
@@ -335,7 +335,7 @@ def _sample_condition(exp_condition, frame_times, oversampling=50,
 
 
 def _resample_regressor(hr_regressor, hr_frame_times, frame_times):
-    """ this function sub-samples the regressors at frame times
+    """Sub-sample the regressors at frame times.
 
     Parameters
     ----------
@@ -360,7 +360,7 @@ def _resample_regressor(hr_regressor, hr_frame_times, frame_times):
 
 
 def _orthogonalize(X):
-    """ Orthogonalize every column of design `X` w.r.t preceding columns
+    """Orthogonalize every column of design `X` w.r.t preceding columns.
 
     Parameters
     ----------
@@ -389,9 +389,12 @@ def _orthogonalize(X):
 
 @fill_doc
 def _regressor_names(con_name, hrf_model, fir_delays=None):
-    """ Returns a list of regressor names, computed from con-name and hrf type
-    when this information is explicitly given. If hrf_model is
-    a custom function or a list of custom functions, return their name.
+    """Return a list of regressor names, \
+    computed from con-name and hrf type \
+    when this information is explicitly given.
+    
+    If hrf_model is a custom function or a list of custom functions,
+    return their name.
 
     Parameters
     ----------
@@ -439,8 +442,9 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
 
 
 def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
-    """ Given the specification of the hemodynamic model and time parameters,
-    return the list of matching kernels
+    """Return the list of matching kernels \
+    given the specification of the hemodynamic model and time parameters.
+    
 
     Parameters
     ----------
@@ -516,7 +520,7 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
 @fill_doc
 def compute_regressor(exp_condition, hrf_model, frame_times, con_id='cond',
                       oversampling=50, fir_delays=None, min_onset=-24):
-    """ This is the main function to convolve regressors with hrf model
+    """Convolve regressors with hrf model.
 
     Parameters
     ----------

@@ -34,9 +34,8 @@ def design_matrix_light(
         frame_times, events=None, hrf_model='glover',
         drift_model='cosine', high_pass=.01, drift_order=1, fir_delays=None,
         add_regs=None, add_reg_names=None, min_onset=-24, path=None):
-    """ Same as make_first_level_design_matrix,
-    but only returns the computed matrix and associated name.
-    """
+    """Same as make_first_level_design_matrix, \
+    but only returns the computed matrix and associated name."""
     fir_delays = fir_delays or [0]
     dmtx = make_first_level_design_matrix(frame_times, events, hrf_model,
                                           drift_model, high_pass, drift_order,
@@ -458,7 +457,7 @@ def test_oversampling():
 
 
 def test_high_pass():
-    """ test that high-pass values lead to reasonable design matrices"""
+    """Test that high-pass values lead to reasonable design matrices"""
     n_frames = 128
     tr = 2.0
     frame_times = np.arange(0, tr * n_frames, tr)

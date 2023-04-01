@@ -1,5 +1,4 @@
-"""
-An experimental protocol is handled as a pandas DataFrame
+"""An experimental protocol is handled as a pandas DataFrame \
 that includes an 'onset' field.
 
 This yields the onset time of the events in the experimental paradigm.
@@ -27,7 +26,7 @@ VALID_FIELDS = {"onset",
 
 
 def check_events(events):
-    """Test that the events data describes a valid experimental paradigm
+    """Test that the events data describes a valid experimental paradigm.
 
     It is valid if the events data  has an 'onset' key.
 

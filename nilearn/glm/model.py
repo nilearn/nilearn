@@ -1,5 +1,4 @@
-"""
-This module implement classes to handle statistical tests on likelihood models
+"""Implement classes to handle statistical tests on likelihood models.
 
 Author: Bertrand Thirion, 2011--2015
 """
@@ -14,7 +13,7 @@ inv_t_cdf = t_distribution.ppf
 
 
 class LikelihoodModelResults:
-    """ Class to contain results from likelihood models.
+    """Class to contain results from likelihood models.
 
     This is the class in which things like AIC, BIC, llf
     can be implemented as methods, not computed in, say,
@@ -23,7 +22,7 @@ class LikelihoodModelResults:
     """
     def __init__(self, theta, Y, model, cov=None, dispersion=1.,
                  nuisance=None, rank=None):
-        """ Set up results structure
+        """Set up results structure.
 
         Parameters
         ----------
@@ -78,9 +77,7 @@ class LikelihoodModelResults:
 
     @auto_attr
     def logL(self):
-        """
-        The maximized log-likelihood
-        """
+        """Return the maximized log-likelihood."""
         return self.model.logL(self.theta, self.Y, nuisance=self.nuisance)
 
     def t(self, column=None):
@@ -102,7 +99,7 @@ class LikelihoodModelResults:
         return _t
 
     def vcov(self, matrix=None, column=None, dispersion=None, other=None):
-        """ Variance/covariance matrix of linear contrast
+        """Return Variance/covariance matrix of linear contrast.
 
         Parameters
         ----------
@@ -159,7 +156,7 @@ class LikelihoodModelResults:
             return self.cov * dispersion
 
     def Tcontrast(self, matrix, store=('t', 'effect', 'sd'), dispersion=None):
-        """ Compute a Tcontrast for a row vector `matrix`
+        """Compute a Tcontrast for a row vector `matrix`.
 
         To get the t-statistic for a single column, use the 't' method.
 
@@ -207,7 +204,7 @@ class LikelihoodModelResults:
                                 df_den=self.df_residuals)
 
     def Fcontrast(self, matrix, dispersion=None, invcov=None):
-        """ Compute an Fcontrast for a contrast matrix `matrix`.
+        """Compute an Fcontrast for a contrast matrix `matrix`.
 
         Here, `matrix` M is assumed to be non-singular. More precisely
 
@@ -273,7 +270,7 @@ class LikelihoodModelResults:
             F=F, df_den=self.df_residuals, df_num=invcov.shape[0])
 
     def conf_int(self, alpha=.05, cols=None, dispersion=None):
-        ''' The confidence interval of the specified theta estimates.
+        """Return the confidence interval of the specified theta estimates.
 
         Parameters
         ----------
@@ -312,7 +309,7 @@ class LikelihoodModelResults:
         tails : string, optional
             Possible values: 'two' | 'upper' | 'lower'
 
-        '''
+        """
         if cols is None:
             lower = (self.theta
                      - inv_t_cdf(1 - alpha / 2, self.df_residuals)
