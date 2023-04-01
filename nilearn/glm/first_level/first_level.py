@@ -10,11 +10,9 @@ from __future__ import annotations
 import glob
 import json
 import os
-import pathlib
 import sys
 import time
 from pathlib import Path
-from typing import Optional
 from warnings import warn
 
 import numpy as np

@@ -169,7 +169,7 @@ def test_low_level_fixed_effects():
     assert_almost_equal(tf, Xf / np.sqrt(Vf))
 
     # Same thing, but now there is no precision weighting
-    Xw, Vw, tw = _compute_fixed_effects_params([X1, X2], [V1, V2],
+    Xw, Vw, _ = _compute_fixed_effects_params([X1, X2], [V1, V2],
                                                precision_weighted=True)
     assert_almost_equal(Xw, 1.2 * X1)
     assert_almost_equal(Vw, .8 * V1)
