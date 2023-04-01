@@ -43,6 +43,7 @@ jobs:
             setup.py \
             nilearn/connectome \
             nilearn/de* \
+            nilearn/glm \
             nilearn/image \
             nilearn/mass_univariate \
             nilearn/regions \
