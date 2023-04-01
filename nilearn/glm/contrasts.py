@@ -8,11 +8,10 @@ Author: Bertrand Thirion, Martin Perez-Guevara, Ana Luisa Pinho 2020
 from warnings import warn
 
 import numpy as np
-import scipy.stats as sps
 import pandas as pd
-
-from nilearn.maskers import NiftiMasker
+import scipy.stats as sps
 from nilearn._utils.glm import z_score
+from nilearn.maskers import NiftiMasker
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10

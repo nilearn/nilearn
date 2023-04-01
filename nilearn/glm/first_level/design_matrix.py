@@ -38,12 +38,13 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
-
 from nilearn._utils import fill_doc
 from nilearn._utils.glm import full_rank
 from nilearn.glm.first_level.experimental_paradigm import check_events
-from nilearn.glm.first_level.hemodynamic_models import (_orthogonalize,
-                                                        compute_regressor)
+from nilearn.glm.first_level.hemodynamic_models import (
+    _orthogonalize,
+    compute_regressor,
+)
 
 ######################################################################
 # Ancillary functions

@@ -13,7 +13,6 @@ import os
 import pathlib
 import sys
 import time
-
 from pathlib import Path
 from typing import Optional
 from warnings import warn
@@ -22,24 +21,32 @@ import numpy as np
 import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
+from nilearn._utils import fill_doc, stringify_path
+from nilearn._utils.glm import (
+    _check_events_file_uses_tab_separators,
+    _check_run_sample_masks,
+    _check_run_tables,
+)
+from nilearn._utils.niimg_conversions import check_niimg
+from nilearn.glm._base import BaseGLM
+from nilearn.glm.contrasts import (
+    _compute_fixed_effect_contrast,
+    expression_to_contrast_vector,
+)
+from nilearn.glm.first_level.design_matrix import (
+    make_first_level_design_matrix,
+)
+from nilearn.glm.regression import (
+    ARModel,
+    OLSModel,
+    RegressionResults,
+    SimpleRegressionResults,
+)
+from nilearn.image import get_data
+from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
+from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
 from sklearn.base import clone
 from sklearn.cluster import KMeans
-
-from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
-from nilearn._utils import fill_doc
-from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
-from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
-                                _check_run_tables, _check_run_sample_masks)
-from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils import stringify_path
-from nilearn.glm.contrasts import (_compute_fixed_effect_contrast,
-                                   expression_to_contrast_vector)
-from nilearn.glm.first_level.design_matrix import \
-    make_first_level_design_matrix
-from nilearn.image import get_data
-from nilearn.glm.regression import (ARModel, OLSModel, RegressionResults,
-                                    SimpleRegressionResults)
-from nilearn.glm._base import BaseGLM
 
 
 def mean_scaling(Y, axis=0):

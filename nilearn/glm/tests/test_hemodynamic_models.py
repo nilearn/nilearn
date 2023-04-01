@@ -2,18 +2,26 @@ import warnings
 
 import numpy as np
 import pytest
-
-from numpy.testing import (assert_almost_equal,
-                           assert_array_equal,
-                           assert_array_almost_equal,
-                           )
-
-from nilearn.glm.first_level.hemodynamic_models import \
-    (_hrf_kernel, _orthogonalize, _regressor_names, _resample_regressor,
-     _sample_condition, compute_regressor, _calculate_tr, spm_dispersion_derivative,
-     spm_hrf, spm_time_derivative, glover_dispersion_derivative,
-     glover_hrf, glover_time_derivative)
-
+from nilearn.glm.first_level.hemodynamic_models import (
+    _calculate_tr,
+    _hrf_kernel,
+    _orthogonalize,
+    _regressor_names,
+    _resample_regressor,
+    _sample_condition,
+    compute_regressor,
+    glover_dispersion_derivative,
+    glover_hrf,
+    glover_time_derivative,
+    spm_dispersion_derivative,
+    spm_hrf,
+    spm_time_derivative,
+)
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
 
 HRF_MODEL_NAMES = ['spm', 'glover', 'spm + derivative',
                    'glover + derivative',

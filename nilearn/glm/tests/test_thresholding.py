@@ -3,13 +3,15 @@
 import nibabel as nib
 import numpy as np
 import pytest
+from nilearn.glm import (
+    cluster_level_inference,
+    fdr_threshold,
+    threshold_stats_img,
+)
+from nilearn.glm.thresholding import _compute_hommel_value
+from nilearn.image import get_data
 from numpy.testing import assert_almost_equal, assert_equal
 from scipy.stats import norm
-
-from nilearn.image import get_data
-from nilearn.glm import (cluster_level_inference, fdr_threshold,
-                         threshold_stats_img)
-from nilearn.glm.thresholding import _compute_hommel_value
 
 
 def test_fdr():

@@ -9,20 +9,20 @@ from os import path as osp
 import numpy as np
 import pandas as pd
 import pytest
-
 from nibabel.tmpdirs import InTemporaryDirectory
-from numpy.testing import (
-    assert_almost_equal, assert_array_equal, assert_array_almost_equal)
-
+from nilearn._utils.data_gen import basic_paradigm
 from nilearn.glm.first_level.design_matrix import (
     _convolve_regressors,
     _cosine_drift,
     check_design_matrix,
     make_first_level_design_matrix,
-    make_second_level_design_matrix
+    make_second_level_design_matrix,
 )
-
-from nilearn._utils.data_gen import basic_paradigm
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
 
 # load the spm file to test cosine basis
 my_path = osp.dirname(osp.abspath(__file__))

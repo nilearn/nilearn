@@ -4,12 +4,10 @@ This module implement classes to handle statistical tests on likelihood models
 Author: Bertrand Thirion, 2011--2015
 """
 import numpy as np
-
 from nibabel.onetime import auto_attr
+from nilearn._utils.glm import positive_reciprocal
 from scipy.linalg import inv
 from scipy.stats import t as t_distribution
-
-from nilearn._utils.glm import positive_reciprocal
 
 # Inverse t cumulative distribution
 inv_t_cdf = t_distribution.ppf

@@ -3,29 +3,25 @@ Test the second level model.
 """
 import os
 
-import pytest
-
 import numpy as np
 import pandas as pd
-
-from scipy import stats
-
-from nibabel import (load,
-                     Nifti1Image,
-                     )
+import pytest
+from nibabel import Nifti1Image, load
 from nibabel.tmpdirs import InTemporaryDirectory
-from numpy.testing import (assert_almost_equal,
-                           assert_array_equal,
-                           assert_array_almost_equal,
-                           )
-
-from nilearn._utils.data_gen import (write_fake_fmri_data_and_design,
-                                     generate_fake_fmri_data_and_design)
+from nilearn._utils.data_gen import (
+    generate_fake_fmri_data_and_design,
+    write_fake_fmri_data_and_design,
+)
+from nilearn.glm.first_level import FirstLevelModel, run_glm
+from nilearn.glm.second_level import SecondLevelModel, non_parametric_inference
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker
-from nilearn.glm.first_level import (FirstLevelModel, run_glm)
-from nilearn.glm.second_level import (SecondLevelModel,
-                                      non_parametric_inference)
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
+from scipy import stats
 
 try:
     from nilearn.reporting import get_clusters_table
@@ -80,7 +76,9 @@ def test_non_parametric_inference_with_flm_objects():
 
 def test_process_second_level_input_as_dataframe(input_df):
     """Unit tests for function _process_second_level_input_as_dataframe()."""
-    from nilearn.glm.second_level.second_level import _process_second_level_input_as_dataframe  # noqa
+    from nilearn.glm.second_level.second_level import (  # noqa
+        _process_second_level_input_as_dataframe,
+    )
     sample_map, subjects_label = _process_second_level_input_as_dataframe(
         input_df
     )
@@ -103,7 +101,9 @@ def test_process_second_level_input_as_firstlevelmodels():
     """Unit tests for function
     _process_second_level_input_as_firstlevelmodels().
     """
-    from nilearn.glm.second_level.second_level import _process_second_level_input_as_firstlevelmodels  # noqa
+    from nilearn.glm.second_level.second_level import (  # noqa
+        _process_second_level_input_as_firstlevelmodels,
+    )
     shapes, rk = [(7, 8, 9, 15)], 3
     mask, fmri_data, design_matrices = \
         generate_fake_fmri_data_and_design(shapes, rk)
@@ -218,8 +218,9 @@ def test_check_confounds():
 
 
 def test_check_first_level_contrast():
-    from nilearn.glm.second_level.second_level import \
-        _check_first_level_contrast
+    from nilearn.glm.second_level.second_level import (
+        _check_first_level_contrast,
+    )
     _check_first_level_contrast(["foo"], None)  # Should not do anything
     with pytest.raises(ValueError,
                        match="If second_level_input was a list"):
@@ -258,6 +259,7 @@ def test_get_contrast():
 
 def test_infer_effect_maps():
     from nilearn.glm.second_level.second_level import _infer_effect_maps
+
     # with InTemporaryDirectory():
     shapes, rk = ((7, 8, 9, 1), (7, 8, 7, 16)), 3
     mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(shapes,

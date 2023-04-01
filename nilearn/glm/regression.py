@@ -18,18 +18,16 @@ General reference for regression models:
 
 __docformat__ = 'restructuredtext en'
 
-import warnings
 import functools
+import warnings
 
 import numpy as np
-
-from nibabel.onetime import auto_attr
-from numpy.linalg import matrix_rank
 import scipy.linalg as spl
-
+from nibabel.onetime import auto_attr
+from nilearn._utils.glm import positive_reciprocal
 from nilearn._utils.helpers import rename_parameters
 from nilearn.glm.model import LikelihoodModelResults
-from nilearn._utils.glm import positive_reciprocal
+from numpy.linalg import matrix_rank
 
 
 def _deprecation_warning(old_param,

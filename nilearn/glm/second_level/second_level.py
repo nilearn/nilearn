@@ -13,21 +13,22 @@ import numpy as np
 import pandas as pd
 from joblib import Memory
 from nibabel import Nifti1Image
-from sklearn.base import clone
-
-from nilearn._utils import fill_doc
+from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils import stringify_path
-from nilearn.maskers import NiftiMasker
-from nilearn.glm.contrasts import (compute_contrast,
-                                   expression_to_contrast_vector)
+from nilearn.glm._base import BaseGLM
+from nilearn.glm.contrasts import (
+    compute_contrast,
+    expression_to_contrast_vector,
+)
 from nilearn.glm.first_level import FirstLevelModel, run_glm
-from nilearn.glm.first_level.design_matrix import \
-    make_second_level_design_matrix
+from nilearn.glm.first_level.design_matrix import (
+    make_second_level_design_matrix,
+)
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
 from nilearn.image import mean_img
+from nilearn.maskers import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
-from nilearn.glm._base import BaseGLM
+from sklearn.base import clone
 
 
 def _check_second_level_input(second_level_input,

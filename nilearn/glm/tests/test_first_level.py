@@ -7,23 +7,35 @@ import pandas as pd
 import pytest
 from nibabel import Nifti1Image, load
 from nibabel.tmpdirs import InTemporaryDirectory
-from numpy.testing import (assert_almost_equal, assert_array_almost_equal,
-                           assert_array_equal, assert_array_less)
-from sklearn.cluster import KMeans
-
-from nilearn._utils.data_gen import (basic_paradigm, create_fake_bids_dataset,
-                                     generate_fake_fmri_data_and_design,
-                                     write_fake_fmri_data_and_design)
+from nilearn._utils.data_gen import (
+    basic_paradigm,
+    create_fake_bids_dataset,
+    generate_fake_fmri_data_and_design,
+    write_fake_fmri_data_and_design,
+)
 from nilearn.glm.contrasts import compute_fixed_effects
-from nilearn.glm.first_level import (FirstLevelModel, first_level_from_bids,
-                                     mean_scaling, run_glm)
+from nilearn.glm.first_level import (
+    FirstLevelModel,
+    first_level_from_bids,
+    mean_scaling,
+    run_glm,
+)
 from nilearn.glm.first_level.design_matrix import (
-    check_design_matrix, make_first_level_design_matrix)
+    check_design_matrix,
+    make_first_level_design_matrix,
+)
 from nilearn.glm.first_level.first_level import _yule_walker
 from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.maskers import NiftiMasker
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+    assert_array_less,
+)
+from sklearn.cluster import KMeans
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')

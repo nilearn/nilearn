@@ -8,12 +8,12 @@ Author: Bertrand Thirion, 2011--2018
 
 import re
 import warnings
-
-import numpy as np
-from scipy.stats import gamma
 from collections.abc import Iterable
 
+import numpy as np
 from nilearn._utils import fill_doc
+from scipy.stats import gamma
+
 
 def _gamma_difference_hrf(tr, oversampling=50, time_length=32., onset=0.,
                           delay=6, undershoot=16., dispersion=1.,

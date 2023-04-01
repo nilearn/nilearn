@@ -1,16 +1,16 @@
 import numpy as np
 import pytest
-
+from nilearn.glm.contrasts import (
+    Contrast,
+    _compute_fixed_effect_contrast,
+    _compute_fixed_effects_params,
+    compute_contrast,
+    expression_to_contrast_vector,
+)
+from nilearn.glm.first_level import run_glm
 from numpy.testing import assert_almost_equal
 from sklearn.datasets import make_regression
 from sklearn.linear_model import LinearRegression
-
-from nilearn.glm.contrasts import (Contrast,
-                                   _compute_fixed_effect_contrast,
-                                   _compute_fixed_effects_params,
-                                   compute_contrast,
-                                   expression_to_contrast_vector)
-from nilearn.glm.first_level import run_glm
 
 
 def test_expression_to_contrast_vector():
