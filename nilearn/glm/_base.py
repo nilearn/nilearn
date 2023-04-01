@@ -5,8 +5,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
     """Implement of a base class \
-    for the :term:`General Linear Model<GLM>`.
-    """
+    for the :term:`General Linear Model<GLM>`."""
+
     @auto_attr
     def residuals(self):
         """Transform voxelwise residuals to the same shape \

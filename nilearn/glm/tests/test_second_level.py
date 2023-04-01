@@ -1,6 +1,4 @@
-"""
-Test the second level model.
-"""
+"""Test the second level model."""
 import os
 
 import numpy as np
@@ -46,7 +44,7 @@ def input_df():
 
 def test_non_parametric_inference_with_flm_objects():
     """See https://github.com/nilearn/nilearn/issues/3579 ."""
-    with InTemporaryDirectory():        
+    with InTemporaryDirectory():
         shapes, rk = [(7, 8, 9, 15)], 3
         mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
             shapes, rk
@@ -70,7 +68,7 @@ def test_non_parametric_inference_with_flm_objects():
             second_level_input=second_level_input,
             design_matrix=design_matrix,
             first_level_contrast="x",
-            n_perm=N_PERM)      
+            n_perm=N_PERM)
 
 
 def test_process_second_level_input_as_dataframe(input_df):
@@ -90,10 +88,8 @@ def test_sort_input_dataframe(input_df):
     from nilearn.glm.second_level.second_level import _sort_input_dataframe
     output_df = _sort_input_dataframe(input_df)
     assert output_df['subject_label'].values.tolist() == ["bar", "baz", "foo"]
-    assert(
-        output_df['effects_map_path'].values.tolist()
-        == ["bar.nii", "baz.nii", "foo.nii"]
-    )
+    assert (output_df['effects_map_path'].values.tolist()
+            == ["bar.nii", "baz.nii", "foo.nii"])
 
 
 def test_process_second_level_input_as_firstlevelmodels():
@@ -125,7 +121,7 @@ def test_check_second_level_input():
                              "least two first level models or niimgs"):
         _check_second_level_input([FirstLevelModel()], pd.DataFrame())
     with pytest.raises(ValueError,
-                           match="Model sub_1 at index 0 has not been fit yet"):
+                       match="Model sub_1 at index 0 has not been fit yet"):
         _check_second_level_input(
             [FirstLevelModel(subject_label=f"sub_{i}") for i in range(1, 3)],
             pd.DataFrame(),
@@ -136,11 +132,12 @@ def test_check_second_level_input():
             generate_fake_fmri_data_and_design(shapes, rk)
         input_models = [FirstLevelModel(mask_img=mask).fit(
             fmri_data[0], design_matrices=design_matrices[0])]
-        obj = lambda: None
+        obj = lambda: None # noqa : E731
         obj.results_ = "foo"
         obj.labels_ = "bar"
-        with pytest.raises(TypeError,
-                           match="Got object type <class 'function'> at idx 1"):
+        with pytest.raises(
+                TypeError,
+                match="Got object type <class 'function'> at idx 1"):
             _check_second_level_input(input_models + [obj], pd.DataFrame())
         with pytest.raises(ValueError,
                            match="In case confounds are provided, first level "
@@ -261,22 +258,23 @@ def test_infer_effect_maps():
 
     # with InTemporaryDirectory():
     shapes, rk = ((7, 8, 9, 1), (7, 8, 7, 16)), 3
-    mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(shapes,
-                                                                    rk)
+    mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
+        shapes,
+        rk
+    )
     func_img = load(fmri_data[0])
     second_level_input = pd.DataFrame({'map_name': ["a", "b"],
-                                    'effects_map_path': [fmri_data[0],
+                                       'effects_map_path': [fmri_data[0],
                                                             "bar"]})
     assert _infer_effect_maps(second_level_input, "a") == [fmri_data[0]]
-    with pytest.raises(ValueError,
-                    match="File not found: 'bar'"):
+    with pytest.raises(ValueError, match="File not found: 'bar'"):
         _infer_effect_maps(second_level_input, "b")
     assert _infer_effect_maps([fmri_data[0]], None) == [fmri_data[0]]
     contrast = np.eye(rk)[1]
     second_level_input = [FirstLevelModel(mask_img=mask)] * 2
     for i, model in enumerate(second_level_input):
         model.fit(fmri_data[i],
-                design_matrices=design_matrices[i])
+                  design_matrices=design_matrices[i])
     assert len(_infer_effect_maps(second_level_input, contrast)) == 2
     # Delete objects attached to files to avoid WindowsError when deleting
     # temporary directory (in Windows)
@@ -721,14 +719,14 @@ def test_non_parametric_inference_cluster_level_with_covariates(
         # Test single covariate
         X = pd.DataFrame({"intercept": [1] * len(Y)})
         non_parametric_inference(
-                    Y,
-                    design_matrix=X,
-                    mask=mask,
-                    model_intercept=False,
-                    second_level_contrast="intercept",
-                    n_perm=N_PERM,
-                    threshold=unc_pval,
-                )
+            Y,
+            design_matrix=X,
+            mask=mask,
+            model_intercept=False,
+            second_level_contrast="intercept",
+            n_perm=N_PERM,
+            threshold=unc_pval,
+        )
 
         del func_img, FUNCFILE, out, X, Y, logp_unc
 

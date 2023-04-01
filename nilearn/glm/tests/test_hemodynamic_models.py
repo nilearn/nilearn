@@ -95,7 +95,7 @@ def test_sample_condition_1():
     condition = ([1, 20, 36.5], [0, 0, 0], [1, 1, 1])
     frame_times = np.linspace(0, 49, 50)
     reg, _ = _sample_condition(condition, frame_times, oversampling=1,
-                                min_onset=0)
+                               min_onset=0)
     assert reg.sum() == 3
     assert reg[1] == 1
     assert reg[20] == 1
@@ -113,7 +113,7 @@ def test_sample_condition_2():
     condition = ([0, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frame_times = np.linspace(0, 49, 50)
     reg, _ = _sample_condition(condition, frame_times, oversampling=1,
-                                min_onset=- 10)
+                               min_onset=- 10)
     assert reg.sum() == 6
     assert reg[10] == 1
     assert reg[48] == 1
@@ -125,7 +125,7 @@ def test_sample_condition_3():
     condition = ([1, 20, 36.5], [2, 2, 2], [1, 1, 1])
     frame_times = np.linspace(0, 49, 50)
     reg, _ = _sample_condition(condition, frame_times, oversampling=10,
-                                min_onset=0)
+                               min_onset=0)
     assert_almost_equal(reg.sum(), 60.)
     assert reg[10] == 1
     assert reg[380] == 1
@@ -133,7 +133,7 @@ def test_sample_condition_3():
     assert np.sum(reg > 0) == 60
     # check robustness to non-int oversampling
     reg_, _ = _sample_condition(condition, frame_times, oversampling=10.,
-                                  min_onset=0)
+                                min_onset=0)
     assert_almost_equal(reg, reg_)
 
 
@@ -300,8 +300,8 @@ def test_make_regressor_3():
     assert_array_almost_equal(np.sum(reg, 0), np.array([3, 3, 3, 3]))
     assert len(reg_names) == 4
     reg_, _ = compute_regressor(condition, hrf_model, frame_times,
-                                         fir_delays=np.arange(4),
-                                         oversampling=50.)
+                                fir_delays=np.arange(4),
+                                oversampling=50.)
     assert_array_equal(reg, reg_)
 
 

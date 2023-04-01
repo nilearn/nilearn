@@ -222,7 +222,7 @@ def test_design_matrix4():
 
 
 def test_design_matrix5():
-    # idem test_design_matrix1 with a block experimental paradigm
+    # test_design_matrix1 with a block experimental paradigm
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     events = block_paradigm()
@@ -233,8 +233,7 @@ def test_design_matrix5():
 
 
 def test_design_matrix6():
-    """
-    idem test_design_matrix1 with a block experimental paradigm
+    """Test similar to test_design_matrix1 with a block experimental paradigm
     and the hrf derivative
     """
     tr = 1.0

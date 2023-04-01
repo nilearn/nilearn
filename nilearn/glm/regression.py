@@ -87,6 +87,7 @@ class OLSModel:
         Degrees of freedome of the model.  The rank of the design.
 
     """
+
     def __init__(self, design):
         """Construct instance.
 
@@ -102,6 +103,7 @@ class OLSModel:
         self.initialize(design)
 
     def initialize(self, design):
+        """Construct instance."""
         # PLEASE don't assume we have a constant...
         # TODO: handle case for noconstant regression
         self.design = design
@@ -116,7 +118,7 @@ class OLSModel:
         self.df_residuals = self.df_total - self.df_model
 
     def logL(self, beta, Y, nuisance=None):
-        r'''Returns the value of the loglikelihood function at beta.
+        r"""Return the value of the loglikelihood function at beta.
 
         Given the whitened design matrix, the loglikelihood is evaluated
         at the parameter vector, beta, for the dependent variable, Y
@@ -169,7 +171,7 @@ class OLSModel:
         ----------
         .. footbibliography::
 
-        '''
+        """
         # This is overwriting an abstract method of LikelihoodModel
         X = self.whitened_design
         wY = self.whiten(Y)
@@ -242,6 +244,7 @@ class ARModel(OLSModel):
     shows up as multiplier in front of the AR(p) covariance.
 
     """
+
     def __init__(self, design, rho):
         """Initialize AR model instance.
 
@@ -293,7 +296,7 @@ class ARModel(OLSModel):
 
 
 class RegressionResults(LikelihoodModelResults):
-    """This class summarizes the fit of a linear regression model.
+    """Summarize the fit of a linear regression model.
 
     It handles the output of contrasts, estimates of covariance, etc.
 
@@ -315,9 +318,7 @@ class RegressionResults(LikelihoodModelResults):
 
     @auto_attr
     def residuals(self):
-        """
-        Residuals from the fit.
-        """
+        """Residuals from the fit."""
         return self.Y - self.predicted
 
     @auto_attr
@@ -345,8 +346,7 @@ class RegressionResults(LikelihoodModelResults):
 
     @auto_attr
     def predicted(self):
-        """Return linear predictor values from a design matrix.
-        """
+        """Return linear predictor values from a design matrix."""
         beta = self.theta
         # the LikelihoodModelResults has parameters named 'theta'
         X = self.whitened_design
@@ -354,13 +354,16 @@ class RegressionResults(LikelihoodModelResults):
 
     @auto_attr
     def SSE(self):
-        """Error sum of squares. If not from an OLS model this is "pseudo"-SSE.
+        """Error sum of squares.
+
+        If not from an OLS model this is "pseudo"-SSE.
         """
         return (self.whitened_residuals ** 2).sum(0)
 
     @auto_attr
     def r_square(self):
         """Proportion of explained variance.
+
         If not from an OLS model this is "pseudo"-R2.
         """
         return np.var(self.predicted, 0) / np.var(self.whitened_Y, 0)
@@ -378,6 +381,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
     Its intended to save memory when details of the model are unnecessary.
 
     """
+
     def __init__(self, results):
         """See LikelihoodModelResults constructor.
 
@@ -399,9 +403,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
         raise ValueError('can not use this method for simple results')
 
     def residuals(self, Y):
-        """
-        Residuals from the fit.
-        """
+        """Residuals from the fit."""
         return Y - self.predicted
 
     def normalized_residuals(self, Y):
@@ -430,8 +432,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
 
     @auto_attr
     def predicted(self):
-        """Return linear predictor values from a design matrix.
-        """
+        """Return linear predictor values from a design matrix."""
         beta = self.theta
         # the LikelihoodModelResults has parameters named 'theta'
         X = self.model.design

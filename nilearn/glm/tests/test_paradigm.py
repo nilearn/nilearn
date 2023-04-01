@@ -155,8 +155,7 @@ def test_duplicate_events():
 
 
 def test_read_events():
-    """Test that a events for an experimental paradigm are correctly read.
-    """
+    """Test that a events for an experimental paradigm are correctly read."""
     import tempfile
     tmpdir = tempfile.mkdtemp()
     for events in (block_paradigm(),

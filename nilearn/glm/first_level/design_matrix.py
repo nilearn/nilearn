@@ -1,5 +1,4 @@
-"""
-This module implements fMRI Design Matrix creation.
+"""Implement fMRI Design Matrix creation.
 
 Design matrices are represented by Pandas DataFrames
 Computations of the different parts of the design matrix are confined
@@ -420,7 +419,7 @@ def check_design_matrix(design_matrix):
 
 
 def make_second_level_design_matrix(subjects_label, confounds=None):
-    """Sets up a second level design.
+    """Set up a second level design.
 
     Construct a design matrix with an intercept and subject specific confounds.
 
@@ -464,7 +463,8 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
                 raise ValueError('confounds contain more than one row for '
                                  'subject %s' % subject_label)
             elif np.sum(conrow) == 0:
-                raise ValueError(f'confounds not specified for subject {subject_label}')
+                raise ValueError(
+                    f'confounds not specified for subject {subject_label}')
             for conf_name in confounds_name:
                 confounds_value = confounds[conrow][conf_name].values[0]
                 design_matrix.loc[ridx, conf_name] = confounds_value

@@ -17,7 +17,7 @@ DEF_DOFMAX = 1e10
 
 
 def expression_to_contrast_vector(expression, design_columns):
-    """Converts a string describing a contrast to a contrast vector.
+    """Convert a string describing a contrast to a contrast vector.
 
     Parameters
     ----------
@@ -115,7 +115,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
 
 def _compute_fixed_effect_contrast(labels, results, con_vals,
                                    contrast_type=None):
-    """Computes the summary contrast assuming fixed effects.
+    """Compute the summary contrast assuming fixed effects.
 
     Adds the same contrast applied to all labels and results lists.
 
@@ -147,8 +147,8 @@ class Contrast:
     The current implementation is meant to be simple,
     and could be enhanced in the future on the computational side
     (high-dimensional F contrasts may lead to memory breakage).
-
     """
+
     def __init__(self, effect, variance, dim=None, dof=DEF_DOFMAX,
                  contrast_type='t', tiny=DEF_TINY, dofmax=DEF_DOFMAX):
         """Construct instance.
@@ -335,7 +335,8 @@ class Contrast:
     def __add__(self, other):
         """Addit of selfwith others, Yields an new Contrast instance.
 
-        This should be used only on indepndent contrasts"""
+        This should be used only on indepndent contrasts.
+        """
         if self.contrast_type != other.contrast_type:
             raise ValueError(
                 'The two contrasts do not have consistent type dimensions')

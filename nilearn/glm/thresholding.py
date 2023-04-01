@@ -229,7 +229,7 @@ def threshold_stats_img(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
     If the input image is not z-scaled (i.e. some z-transformed statistic)
     the computed threshold is not rigorous and likely meaningless
 
-    See also
+    See Also
     --------
     nilearn.image.threshold_img :
         Apply an explicit voxel-level (and optionally cluster-level) threshold

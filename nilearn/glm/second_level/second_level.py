@@ -44,7 +44,7 @@ def _check_second_level_input(second_level_input,
 
 
 def _check_input_type(second_level_input):
-    """Determines the type of input provided."""
+    """Determine the type of input provided."""
     if isinstance(second_level_input, pd.DataFrame):
         return "df_object"
     if isinstance(second_level_input, (str, Nifti1Image)):
@@ -67,11 +67,11 @@ def _return_type(second_level_input):
 
 
 def _check_input_type_when_list(second_level_input):
-    """Determines the type of input provided when it is a list."""
+    """Determine the type of input provided when it is a list."""
     if len(second_level_input) < 2:
         raise TypeError('A second level model requires a list with at'
-                            ' least two first level models or niimgs')
-    _check_all_elements_of_same_type(second_level_input)   
+                        ' least two first level models or niimgs')
+    _check_all_elements_of_same_type(second_level_input)
     if all(isinstance(x, (str, Nifti1Image)) for x in second_level_input):
         return "nii_object"
     if all(isinstance(x, FirstLevelModel) for x in second_level_input):
@@ -86,10 +86,11 @@ def _check_input_type_when_list(second_level_input):
 
 def _check_all_elements_of_same_type(data):
     for idx, input in enumerate(data):
-        if not isinstance(input, type(data[0])):  
-             raise TypeError(
-                 f'Elements of second_level_input must be of the same type.'
-                 f' Got object type {type(input)} at idx {idx}.')
+        if not isinstance(input, type(data[0])):
+            raise TypeError(
+                f'Elements of second_level_input must be of the same type.'
+                f' Got object type {type(input)} at idx {idx}.'
+            )
 
 
 def _check_input_as_type(second_level_input,
@@ -99,26 +100,26 @@ def _check_input_as_type(second_level_input,
     if input_type == "flm_object":
         _check_input_as_first_level_model(second_level_input, none_confounds)
     elif input_type == "nii_object":
-         _check_input_as_nifti_images(second_level_input, none_design_matrix)
+        _check_input_as_nifti_images(second_level_input, none_design_matrix)
     else:
-         _check_input_as_dataframe(second_level_input)
+        _check_input_as_dataframe(second_level_input)
 
 
 def _check_input_as_first_level_model(second_level_input,
                                       none_confounds):
     for model_idx, first_level in enumerate(second_level_input):
         if (first_level.labels_ is None or first_level.results_ is None):
-             raise ValueError(
-                 'Model %s at index %i has not been fit yet'
-                 '' % (first_level.subject_label, model_idx))
+            raise ValueError(
+                'Model %s at index %i has not been fit yet'
+                '' % (first_level.subject_label, model_idx))
         if not none_confounds and first_level.subject_label is None:
-                raise ValueError(
-                    'In case confounds are provided, first level '
-                    'objects need to provide the attribute '
-                    'subject_label to match rows appropriately.'
-                    f'Model at idx {model_idx} does not provide it. '
-                    'To set it, you can do '
-                    'first_level.subject_label = "01"')
+            raise ValueError(
+                'In case confounds are provided, first level '
+                'objects need to provide the attribute '
+                'subject_label to match rows appropriately.'
+                f'Model at idx {model_idx} does not provide it. '
+                'To set it, you can do '
+                'first_level.subject_label = "01"')
 
 
 def _check_input_as_dataframe(second_level_input):
@@ -127,7 +128,7 @@ def _check_input_as_dataframe(second_level_input):
             raise ValueError('second_level_input DataFrame must have'
                              ' columns subject_label, map_name and'
                              ' effects_map_path')
-    if not all(isinstance(_, str) 
+    if not all(isinstance(_, str)
                for _ in second_level_input['subject_label'].tolist()):
         raise ValueError('subject_label column must contain only strings')
 
@@ -215,7 +216,8 @@ def _get_contrast(second_level_contrast, design_matrix):
         if second_level_contrast in design_matrix.columns.tolist():
             contrast = second_level_contrast
         else:
-            raise ValueError(f'"{second_level_contrast}" is not a valid contrast name'
+            raise ValueError(
+                f'"{second_level_contrast}" is not a valid contrast name'
             )
     else:
         # Check contrast definition
@@ -265,8 +267,8 @@ def _process_second_level_input(second_level_input):
     """Process second_level_input."""
     if isinstance(second_level_input, pd.DataFrame):
         return _process_second_level_input_as_dataframe(second_level_input)
-    elif(hasattr(second_level_input, "__iter__")
-         and isinstance(second_level_input[0], FirstLevelModel)):
+    elif (hasattr(second_level_input, "__iter__")
+            and isinstance(second_level_input[0], FirstLevelModel)):
         return _process_second_level_input_as_firstlevelmodels(
             second_level_input
         )
@@ -283,7 +285,7 @@ def _process_second_level_input_as_dataframe(second_level_input):
 
 
 def _sort_input_dataframe(second_level_input):
-    """This function sorts the pandas dataframe by subject_label to \
+    """Sort the pandas dataframe by subject_label to \
     avoid inconsistencies with the design matrix row order when \
     automatically extracting maps."""
     columns = second_level_input.columns.tolist()
@@ -345,6 +347,7 @@ class SecondLevelModel(BaseGLM):
         on memory consumption. Default=True.
 
     """
+
     def __init__(self, mask_img=None, target_affine=None, target_shape=None,
                  smoothing_fwhm=None,
                  memory=Memory(None), memory_level=1, verbose=0,
@@ -810,7 +813,7 @@ def non_parametric_inference(
                         Returned only if ``tfce`` is True.
         =============== =======================================================
 
-    See also
+    See Also
     --------
     :func:`~nilearn.mass_univariate.permuted_ols` : For more information on \
         the permutation procedure.

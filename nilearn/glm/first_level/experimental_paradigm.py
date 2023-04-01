@@ -19,10 +19,9 @@ import pandas as pd
 from pandas.api.types import is_numeric_dtype
 
 VALID_FIELDS = {"onset",
-                    "duration",
-                    "trial_type",
-                    "modulation",
-                    }
+                "duration",
+                "trial_type",
+                "modulation"}
 
 
 def check_events(events):
@@ -61,7 +60,8 @@ def check_events(events):
     # Column checks
     for col_name in ['onset', 'duration']:
         if col_name not in events.columns:
-            raise ValueError(f"The provided events data has no {col_name} column.")
+            raise ValueError(
+                f"The provided events data has no {col_name} column.")
 
     # Make a copy of the dataframe
     events_copy = events.copy()

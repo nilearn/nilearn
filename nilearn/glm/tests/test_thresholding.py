@@ -1,5 +1,4 @@
-"""Test the thresholding utilities
-"""
+"""Test the thresholding utilities."""
 import nibabel as nib
 import numpy as np
 import pytest

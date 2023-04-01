@@ -58,7 +58,6 @@ exclude: |
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
-    files: '.*py'
     hooks:
       - id: check-ast
       - id: check-case-conflict

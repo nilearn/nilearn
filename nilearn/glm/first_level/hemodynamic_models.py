@@ -1,12 +1,11 @@
-"""
-This module is for hemodynamic response function (hrf) specification.
+"""Hemodynamic response function (hrf) specification.
+
 Here we provide for SPM, Glover hrfs and finite timpulse response (FIR) models.
 This module closely follows SPM implementation
 
 Author: Bertrand Thirion, 2011--2018
 """
 
-import re
 import warnings
 from collections.abc import Iterable
 
@@ -392,7 +391,7 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     """Return a list of regressor names, \
     computed from con-name and hrf type \
     when this information is explicitly given.
-    
+
     If hrf_model is a custom function or a list of custom functions,
     return their name.
 
@@ -444,7 +443,6 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
 def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
     """Return the list of matching kernels \
     given the specification of the hemodynamic model and time parameters.
-    
 
     Parameters
     ----------
@@ -501,8 +499,8 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
             hkernel = [hrf_model(tr, oversampling)]
         except TypeError:
             raise ValueError(error_msg)
-    elif(isinstance(hrf_model, Iterable)
-         and all([callable(_) for _ in hrf_model])):
+    elif (isinstance(hrf_model, Iterable)
+            and all([callable(_) for _ in hrf_model])):
         try:
             hkernel = [model(tr, oversampling) for model in hrf_model]
         except TypeError:
@@ -513,7 +511,7 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
         raise ValueError('"{}" is not a known hrf model. '
                          'Use either a custom model or '
                          'one of {}'.format(hrf_model,
-                                             acceptable_hrfs))
+                                            acceptable_hrfs))
     return hkernel
 
 

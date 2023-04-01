@@ -164,7 +164,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
         raise ValueError(
             "Acceptable noise models are {}. You provided "
             "'noise_model={}'".format(acceptable_noise_models,
-                                       noise_model)
+                                      noise_model)
         )
     if Y.shape[0] != X.shape[0]:
         raise ValueError('The number of rows of Y '
@@ -406,6 +406,7 @@ class FirstLevelModel(BaseGLM):
 
     @property
     def scaling_axis(self):
+        """Return scaling of axis."""
         warn(DeprecationWarning(
             "Deprecated. `scaling_axis` will be removed in 0.11.0. "
             "Please use `signal_scaling` instead."
@@ -532,7 +533,9 @@ class FirstLevelModel(BaseGLM):
                     if our_param is None:
                         continue
                     if getattr(self.masker_, param_name) is not None:
-                        warn(f'Parameter {param_name} of the masker overridden')
+                        warn(
+                            f'Parameter {param_name} of the masker overridden'
+                        )
                     setattr(self.masker_, param_name, our_param)
                 self.masker_.fit(run_imgs[0])
             else:
@@ -608,7 +611,8 @@ class FirstLevelModel(BaseGLM):
 
             if self.verbose > 1:
                 t_masking = time.time() - t_masking
-                sys.stderr.write(f'Masker took {int(t_masking)} seconds       \n')
+                sys.stderr.write(
+                    f'Masker took {int(t_masking)} seconds       \n')
 
             if self.signal_scaling is not False:  # noqa
                 Y, _ = mean_scaling(Y, self.signal_scaling)
@@ -888,13 +892,13 @@ def first_level_from_bids(dataset_path,
     """
     sub_labels = sub_labels or []
     img_filters = img_filters or []
-    
+
     _check_args_first_level_from_bids(dataset_path=dataset_path,
-                                         task_label=task_label,
-                                         space_label=space_label,
-                                         sub_labels=sub_labels,
-                                         img_filters=img_filters,
-                                         derivatives_folder=derivatives_folder)
+                                      task_label=task_label,
+                                      space_label=space_label,
+                                      sub_labels=sub_labels,
+                                      img_filters=img_filters,
+                                      derivatives_folder=derivatives_folder)
 
     derivatives_path = Path(dataset_path) / derivatives_folder
 
@@ -907,7 +911,8 @@ def first_level_from_bids(dataset_path,
     else:
         filters = _make_bids_files_filter(
             task_label=task_label,
-            supported_filters=[*_bids_entities()["raw"], *_bids_entities()["derivatives"]],
+            supported_filters=[*_bids_entities()["raw"],
+                               *_bids_entities()["derivatives"]],
             extra_filter=img_filters
         )
         img_specs = get_bids_files(derivatives_path,
@@ -1022,14 +1027,14 @@ def _list_valid_subjects(derivatives_path,
         Path to the BIDS derivatives folder.
 
     sub_labels : :obj:`list` of :obj:`str`, optional
-        List of subject labels to process. 
+        List of subject labels to process.
         If None, all subjects in the dataset will be processed.
 
     Returns
     -------
     sub_labels : :obj:`list` of :obj:`str`, optional
         List of subject labels that will be processed.
-    """   
+    """
     # Infer subjects in dataset if not provided
     if not sub_labels:
         sub_folders = glob.glob(os.path.join(derivatives_path, "sub-*/"))
@@ -1402,8 +1407,8 @@ def _check_args_first_level_from_bids(
 def _make_bids_files_filter(
     task_label,
     space_label=None,
-    supported_filters= None,
-    extra_filter= None,
+    supported_filters=None,
+    extra_filter=None,
 ) :
     """Return a filter to specific files from a BIDS dataset.
 

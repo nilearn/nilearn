@@ -20,6 +20,7 @@ class LikelihoodModelResults:
     the fit method of OLSModel.
 
     """
+
     def __init__(self, theta, Y, model, cov=None, dispersion=1.,
                  nuisance=None, rank=None):
         """Set up results structure.
@@ -343,6 +344,7 @@ class TContrastResults:
     and returns the T-statistics when np.asarray is called.
 
     """
+
     def __init__(self, t, sd, effect, df_den=None):
         if df_den is None:
             df_den = np.inf
@@ -365,8 +367,8 @@ class FContrastResults:
     The class does nothing.
     It is a container for the results from F contrasts,
     and returns the F-statistics when np.asarray is called.
-
     """
+
     def __init__(self, effect, covariance, F, df_num, df_den=None):
         if df_den is None:
             df_den = np.inf
