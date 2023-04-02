@@ -2,13 +2,11 @@
 import nibabel
 import numpy as np
 import pytest
-from _pytest.doctest import DoctestItem
 from nilearn import image
 
 # we need to import these fixtures even if not used in this module
 from nilearn.datasets._testing import request_mocker  # noqa: F401
 from nilearn.datasets._testing import temp_nilearn_data_dir  # noqa: F401
-from nilearn.version import _compare_version
 
 collect_ignore = ["datasets/data/convert_templates.py"]
 
@@ -77,21 +75,3 @@ def close_all():
         import matplotlib.pyplot as plt
 
         plt.close("all")  # takes < 1 us so just always do it
-
-
-def pytest_collection_modifyitems(items):
-    """Run doctests only for numpy >= 1.14.Adapted from scikit-learn.
-
-    numpy changed the str/repr formatting of numpy arrays in 1.14.
-    """
-    if _compare_version(np.__version__, "<", "1.14"):
-        reason = "doctests are only run for numpy >= 1.14"
-        skip_doctests = True
-    else:
-        skip_doctests = False
-
-    if skip_doctests:
-        skip_marker = pytest.mark.skip(reason=reason)
-        for item in items:
-            if isinstance(item, DoctestItem):
-                item.add_marker(skip_marker)
