@@ -136,7 +136,7 @@ def _check_input_as_nifti_images(second_level_input, none_design_matrix):
     if isinstance(second_level_input, (str, Nifti1Image)):
         second_level_input = [second_level_input]
     for niimg in second_level_input:
-        check_niimg(niimg=niimg, ensure_ndim=4)
+        check_niimg(niimg=niimg, atleast_4d=True)
     if none_design_matrix:
         raise ValueError('List of niimgs as second_level_input'
                          ' require a design matrix to be provided')
