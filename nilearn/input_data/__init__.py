@@ -30,5 +30,11 @@ from .nifti_maps_masker import NiftiMapsMasker
 from .nifti_masker import NiftiMasker
 from .nifti_spheres_masker import NiftiSpheresMasker
 
-__all__ = ['BaseMasker', 'NiftiMasker', 'NiftiSpheresMasker',
-           'NiftiMapsMasker', 'NiftiLabelsMasker', 'MultiNiftiMasker']
+__all__ = [
+    "BaseMasker",
+    "NiftiMasker",
+    "NiftiSpheresMasker",
+    "NiftiMapsMasker",
+    "NiftiLabelsMasker",
+    "MultiNiftiMasker",
+]
