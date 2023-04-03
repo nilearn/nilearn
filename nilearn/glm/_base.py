@@ -4,7 +4,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 
 class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
-    """Implement of a base class \
+    """Implement a base class \
     for the :term:`General Linear Model<GLM>`."""
 
     @auto_attr

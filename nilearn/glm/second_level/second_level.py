@@ -310,7 +310,7 @@ def _process_second_level_input_as_firstlevelmodels(second_level_input):
 
 @fill_doc
 class SecondLevelModel(BaseGLM):
-    """Implement of the :term:`General Linear Model<GLM>` for multiple \
+    """Implement the :term:`General Linear Model<GLM>` for multiple \
     subject :term:`fMRI` data.
 
     Parameters

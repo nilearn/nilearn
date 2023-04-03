@@ -84,7 +84,7 @@ def _gamma_difference_hrf(tr, oversampling=50, time_length=32., onset=0.,
 
 
 def spm_hrf(tr, oversampling=50, time_length=32., onset=0.):
-    """Implement of the SPM hrf model.
+    """Implement the SPM hrf model.
 
     Parameters
     ----------
@@ -110,7 +110,7 @@ def spm_hrf(tr, oversampling=50, time_length=32., onset=0.):
 
 
 def glover_hrf(tr, oversampling=50, time_length=32., onset=0.):
-    """Implement of the Glover hrf model.
+    """Implement the Glover hrf model.
 
     Parameters
     ----------
@@ -138,7 +138,7 @@ def glover_hrf(tr, oversampling=50, time_length=32., onset=0.):
 
 
 def spm_time_derivative(tr, oversampling=50, time_length=32., onset=0.):
-    """Implement of the SPM time derivative hrf (dhrf) model.
+    """Implement the SPM time derivative hrf (dhrf) model.
 
     Parameters
     ----------
@@ -169,7 +169,7 @@ def spm_time_derivative(tr, oversampling=50, time_length=32., onset=0.):
 
 
 def glover_time_derivative(tr, oversampling=50, time_length=32., onset=0.):
-    """Implement of the Glover time derivative hrf (dhrf) model.
+    """Implement the Glover time derivative hrf (dhrf) model.
 
     Parameters
     ----------
@@ -200,7 +200,7 @@ def glover_time_derivative(tr, oversampling=50, time_length=32., onset=0.):
 
 
 def spm_dispersion_derivative(tr, oversampling=50, time_length=32., onset=0.):
-    """Implement of the SPM dispersion derivative hrf model.
+    """Implement the SPM dispersion derivative hrf model.
 
     Parameters
     ----------
@@ -232,7 +232,7 @@ def spm_dispersion_derivative(tr, oversampling=50, time_length=32., onset=0.):
 
 def glover_dispersion_derivative(tr, oversampling=50, time_length=32.,
                                  onset=0.):
-    """Implement of the Glover dispersion derivative hrf model.
+    """Implement the Glover dispersion derivative hrf model.
 
     Parameters
     ----------
@@ -393,7 +393,7 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     when this information is explicitly given.
 
     If hrf_model is a custom function or a list of custom functions,
-    return their name.
+    return their names.
 
     Parameters
     ----------

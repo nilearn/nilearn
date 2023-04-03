@@ -175,7 +175,7 @@ def _make_drift(drift_model, frame_times, order, high_pass):
 
 def _convolve_regressors(events, hrf_model, frame_times, fir_delays=[0],
                          min_onset=-24, oversampling=50):
-    """Creation of  a matrix that comprises \
+    """Creation of a matrix that comprises \
     the convolution of the conditions onset with a certain hrf model.
 
     Parameters
