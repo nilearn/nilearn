@@ -66,7 +66,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     # when given image is empty, return (0., 0., 0.)
     if np.all(data == 0.):
         warnings.warn(
-            "Given img is empty. Returning default cut_coords={0} instead."
+            "Given img is empty. Returning default cut_coords={} instead."
             .format(DEFAULT_CUT_COORDS))
         x_map, y_map, z_map = DEFAULT_CUT_COORDS
         return np.asarray(coord_transform(x_map, y_map, z_map,
@@ -419,7 +419,7 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     """
     # check label_hemisphere input
     if label_hemisphere not in ['left', 'right']:
-        raise ValueError("Invalid label_hemisphere name:{0}. Should be one "
+        raise ValueError("Invalid label_hemisphere name:{}. Should be one "
                          "of these 'left' or 'right'.".format(label_hemisphere))
     # Grab data and affine
     labels_img = reorder_img(check_niimg_3d(labels_img))

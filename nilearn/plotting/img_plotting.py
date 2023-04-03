@@ -161,10 +161,10 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
     if (isinstance(cut_coords, numbers.Number) and
             display_mode in ('ortho', 'tiled')):
         raise ValueError(
-            "The input given for display_mode='{0}' needs to be "
+            "The input given for display_mode='{}' needs to be "
             "a list of 3d world coordinates in (x, y, z). "
             "You provided single cut, "
-            "cut_coords={1}".format(display_mode, cut_coords))
+            "cut_coords={}".format(display_mode, cut_coords))
 
     if img is not False and img is not None:
         img = _utils.check_niimg_3d(img, dtype='auto')
@@ -1243,7 +1243,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
     # Validate node_values
     if node_values.shape != (node_coords.shape[0], ):
         msg = ("Dimension mismatch: 'node_values' should be vector of length "
-               "{0}, but current shape is {1} instead of {2}").format(
+               "{}, but current shape is {} instead of {}").format(
                    len(node_coords),
                    node_values.shape,
                    (node_coords.shape[0], ))
@@ -1259,8 +1259,8 @@ def plot_markers(node_values, node_coords, node_size='auto',
     # Filter out nodes with node values below threshold
     if node_threshold is not None:
         if node_threshold > np.max(node_values):
-            msg = ("Provided 'node_threshold' value: {0} should not exceed "
-                   "highest node value: {1}").format(node_threshold,
+            msg = ("Provided 'node_threshold' value: {} should not exceed "
+                   "highest node value: {}").format(node_threshold,
                                                      np.max(node_values))
             raise ValueError(msg)
 

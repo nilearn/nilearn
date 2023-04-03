@@ -54,7 +54,7 @@ def test_sanitize_labels():
         assert _sanitize_labels((2, 2), lab) == labs
 
 
-VALID_TRI_VALUES = set(["full", "lower", "diag"])
+VALID_TRI_VALUES = {"full", "lower", "diag"}
 
 
 @pytest.mark.parametrize("tri", VALID_TRI_VALUES)
@@ -72,7 +72,7 @@ def test_sanitize_tri_error(tri):
         _sanitize_tri(tri)
 
 
-VALID_REORDER_VALUES = set([True, False, 'single', 'complete', 'average'])
+VALID_REORDER_VALUES = {True, False, 'single', 'complete', 'average'}
 
 
 @pytest.mark.parametrize("reorder", VALID_REORDER_VALUES)

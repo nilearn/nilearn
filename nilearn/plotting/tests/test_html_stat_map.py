@@ -347,9 +347,9 @@ def test_view_img():
         _check_html(html_view)
 
     # Check that all warnings were expected
-    warnings_set = set(warning_.category for warning_ in w)
-    expected_set = set([FutureWarning, UserWarning,
-                       DeprecationWarning])
+    warnings_set = {warning_.category for warning_ in w}
+    expected_set = {FutureWarning, UserWarning,
+                       DeprecationWarning}
     assert warnings_set.issubset(expected_set), (
         "the following warnings were not expected: {}").format(
         warnings_set.difference(expected_set))

@@ -100,26 +100,26 @@ def _get_json_and_transform(direction):
 
     dirname = os.path.dirname(os.path.abspath(__file__))
     dirname = os.path.join(dirname, 'glass_brain_files')
-    direction_to_filename = dict([
-        (_direction, os.path.join(
+    direction_to_filename = {
+        _direction: os.path.join(
             dirname,
-            f'brain_schematics_{view_name}.json'))
-        for _direction, view_name in direction_to_view_name.items()])
+            f'brain_schematics_{view_name}.json')
+        for _direction, view_name in direction_to_view_name.items()}
 
-    direction_to_transforms = dict([
-        (_direction, transforms.Affine2D.from_values(*params))
-        for _direction, params in direction_to_transform_params.items()])
+    direction_to_transforms = {
+        _direction: transforms.Affine2D.from_values(*params)
+        for _direction, params in direction_to_transform_params.items()}
 
-    direction_to_json_and_transform = dict([
-        (_direction, (direction_to_filename[_direction],
-                      direction_to_transforms[_direction]))
-        for _direction in direction_to_filename])
+    direction_to_json_and_transform = {
+        _direction: (direction_to_filename[_direction],
+                      direction_to_transforms[_direction])
+        for _direction in direction_to_filename}
 
     filename_and_transform = direction_to_json_and_transform.get(direction)
 
     if filename_and_transform is None:
-        message = ("No glass brain view associated with direction '{0}'. "
-                   "Possible directions are {1}").format(
+        message = ("No glass brain view associated with direction '{}'. "
+                   "Possible directions are {}").format(
                        direction,
                        list(direction_to_json_and_transform.keys()))
         raise ValueError(message)

@@ -1,4 +1,3 @@
-
 import collections
 import numbers
 
@@ -1917,7 +1916,7 @@ def _get_create_display_fun(display_mode, class_dict):
     try:
         return class_dict[display_mode].init_with_figure
     except KeyError:
-        message = ('{0} is not a valid display_mode. '
-                   'Valid options are {1}').format(
+        message = ('{} is not a valid display_mode. '
+                   'Valid options are {}').format(
                         display_mode, sorted(class_dict.keys()))
         raise ValueError(message)

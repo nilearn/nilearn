@@ -1,4 +1,3 @@
-
 import warnings
 
 import matplotlib.pyplot as plt
@@ -132,7 +131,7 @@ class OrthoProjector(OrthoSlicer):
                 or adjacency_matrix_shape[0] != adjacency_matrix_shape[1]):
             raise ValueError(
                 "'adjacency_matrix' is supposed to have shape (n, n)."
-                ' Its shape was {0}'.format(adjacency_matrix_shape))
+                ' Its shape was {}'.format(adjacency_matrix_shape))
 
         node_coords_shape = node_coords.shape
         if len(node_coords_shape) != 2 or node_coords_shape[1] != 3:
@@ -148,31 +147,31 @@ class OrthoProjector(OrthoSlicer):
         if isinstance(node_color, (list, np.ndarray)) and len(node_color) != 1:
             if len(node_color) != node_coords_shape[0]:
                 raise ValueError(
-                    "Mismatch between the number of nodes ({0}) "
-                    "and the number of node colors ({1})."
+                    "Mismatch between the number of nodes ({}) "
+                    "and the number of node colors ({})."
                     .format(node_coords_shape[0], len(node_color)))
 
         if node_coords_shape[0] != adjacency_matrix_shape[0]:
             raise ValueError(
                 "Shape mismatch between 'adjacency_matrix' "
                 "and 'node_coords'"
-                "'adjacency_matrix' shape is {0}, 'node_coords' shape is {1}"
+                "'adjacency_matrix' shape is {}, 'node_coords' shape is {}"
                 .format(adjacency_matrix_shape, node_coords_shape))
 
         # If the adjacency matrix is not symmetric, give a warning
         symmetric = True
         if not np.allclose(adjacency_matrix, adjacency_matrix.T, rtol=1e-3):
             symmetric = False
-            warnings.warn(("'adjacency_matrix' is not symmetric. "
-                           "A directed graph will be plotted."))
+            warnings.warn("'adjacency_matrix' is not symmetric. "
+                           "A directed graph will be plotted.")
 
         # For a masked array, masked values are replaced with zeros
         if hasattr(adjacency_matrix, 'mask'):
             if not (adjacency_matrix.mask == adjacency_matrix.mask.T).all():
                 symmetric = False
-                warnings.warn(("'adjacency_matrix' was masked with "
+                warnings.warn("'adjacency_matrix' was masked with "
                                "a non symmetric mask. A directed "
-                               "graph will be plotted."))
+                               "graph will be plotted.")
             adjacency_matrix = adjacency_matrix.filled(0)
 
         if edge_threshold is not None:

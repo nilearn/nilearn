@@ -1,4 +1,3 @@
-
 import numbers
 
 import matplotlib.pyplot as plt
@@ -255,11 +254,11 @@ class CutAxes(BaseAxes):
         if self.direction not in ['x', 'y', 'z']:
             raise ValueError(f'Invalid value for direction {self.direction}')
         coords['xyz'.index(self.direction)] = self.coord
-        x_map, y_map, z_map = [int(np.round(c)) for c in
+        x_map, y_map, z_map = (int(np.round(c)) for c in
                                coord_transform(coords[0],
                                                coords[1],
                                                coords[2],
-                                               np.linalg.inv(affine))]
+                                               np.linalg.inv(affine)))
         if self.direction == 'y':
             cut = np.rot90(data[:, y_map, :])
         elif self.direction == 'x':
@@ -313,7 +312,7 @@ def _get_index_from_direction(direction):
             index = directions.index(direction)
     except ValueError:
         message = (
-            '{0} is not a valid direction. '
+            '{} is not a valid direction. '
             "Allowed values are 'l', 'r', 'x', 'y' and 'z'").format(direction)
         raise ValueError(message)
     return index
@@ -349,7 +348,7 @@ class GlassBrainAxes(BaseAxes):
 
     """
     def __init__(self, ax, direction, coord, plot_abs=True, **kwargs):
-        super(GlassBrainAxes, self).__init__(ax, direction, coord)
+        super().__init__(ax, direction, coord)
         self._plot_abs = plot_abs
         if ax is not None:
             object_bounds = plot_brain_schematics(ax, direction, **kwargs)

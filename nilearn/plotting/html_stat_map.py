@@ -107,8 +107,8 @@ def _threshold_data(data, threshold=None):
         data = data * np.logical_not(mask)
 
     if not np.any(mask):
-        warnings.warn("Threshold given was {0}, but "
-                      "the data has no values below {1}. ".format(threshold,
+        warnings.warn("Threshold given was {}, but "
+                      "the data has no values below {}. ".format(threshold,
                                                                   data.min()))
     return data, mask, threshold
 
@@ -404,12 +404,12 @@ def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
         raise ValueError(
             "The input given for display_mode='ortho' needs to be "
             "a list of 3d world coordinates in (x, y, z). "
-            "You provided cut_coords={0}".format(cut_coords))
+            "You provided cut_coords={}".format(cut_coords))
     except IndexError:
         raise ValueError(
             "The input given for display_mode='ortho' needs to be "
             "a list of 3d world coordinates in (x, y, z). "
-            "You provided single cut, cut_coords={0}".format(cut_coords))
+            "You provided single cut, cut_coords={}".format(cut_coords))
 
     return cut_slices
 

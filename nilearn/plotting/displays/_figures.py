@@ -1,5 +1,3 @@
-
-
 class SurfaceFigure:
     """Abstract class for surface figures.
 

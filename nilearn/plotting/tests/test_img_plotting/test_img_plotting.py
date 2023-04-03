@@ -20,12 +20,12 @@ from nilearn.plotting.img_plotting import MNI152TEMPLATE
 
 from .testing_utils import MNI_AFFINE, testdata_3d, testdata_4d  # noqa:F401
 
-ALL_PLOTTING_FUNCS = set([plot_img, plot_anat, plot_stat_map, plot_roi,
+ALL_PLOTTING_FUNCS = {plot_img, plot_anat, plot_stat_map, plot_roi,
                           plot_epi, plot_glass_brain, plot_carpet,
-                          plot_prob_atlas])
+                          plot_prob_atlas}
 
 
-PLOTTING_FUNCS_4D = set([plot_prob_atlas, plot_carpet])
+PLOTTING_FUNCS_4D = {plot_prob_atlas, plot_carpet}
 
 
 PLOTTING_FUNCS_3D = ALL_PLOTTING_FUNCS.difference(PLOTTING_FUNCS_4D)
@@ -83,7 +83,7 @@ def test_plot_functions_4d_default_params(plot_func, testdata_3d, testdata_4d, t
 
 
 @pytest.mark.parametrize("plot_func",
-                         PLOTTING_FUNCS_3D.difference(set([plot_glass_brain])))
+                         PLOTTING_FUNCS_3D.difference({plot_glass_brain}))
 @pytest.mark.parametrize("cut_coords", [None, 5, (5, 4, 3)])
 def test_plot_functions_mosaic_mode(plot_func, cut_coords, testdata_3d):  # noqa
     """Smoke-test for plotting functions in mosaic mode."""
