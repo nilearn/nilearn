@@ -218,7 +218,9 @@ Once the PR has been reviewed and merged, pull from master and tag the merge com
     git tag x.y.z
     git push upstream --tags
 
-``hatch-vcs``, defined in ``pyproject.toml``, extracts the version number using this tag and writes it to a ``_version.py`` file.
+.. note::
+
+    When building the distribution as described below, ``hatch-vcs``, defined in ``pyproject.toml``, extracts the version number using this tag and writes it to a ``_version.py`` file.
 
 
 Build the distributions and upload them to Pypi
