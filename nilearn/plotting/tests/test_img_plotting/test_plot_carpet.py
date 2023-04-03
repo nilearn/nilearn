@@ -16,7 +16,7 @@ def test_plot_carpet(testdata_4d):  # noqa:F811
     # Next two lines retrieve the numpy array from the plot
     ax = display.axes[0]
     plotted_array = ax.images[0].get_array()
-    assert(
+    assert (
         plotted_array.shape == (np.prod(img_4d.shape[:-1]), img_4d.shape[-1])
     )
     # Make sure that the values in the figure match the values in the image

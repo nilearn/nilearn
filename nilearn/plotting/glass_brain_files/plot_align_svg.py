@@ -26,7 +26,6 @@ if __name__ == '__main__':
     # plotting slices for finer alignment
     # e.g. parieto-occipital sulcus
 
-
     def add_brain_schematics(display):
         for axes in display.axes.values():
             kwargs = {'alpha': 0.5, 'linewidth': 1, 'edgecolor': 'orange'}
@@ -34,7 +33,6 @@ if __name__ == '__main__':
                                                               axes.direction,
                                                               **kwargs)
             axes.add_object_bounds(object_bounds)
-
 
     # side
     display = plotting.plot_anat(display_mode='x', cut_coords=[-2])
@@ -49,7 +47,8 @@ if __name__ == '__main__':
     add_brain_schematics(display)
 
     # all in one
-    display = plotting.plot_anat(display_mode='ortho', cut_coords=(-2, -20, 20))
+    display = plotting.plot_anat(display_mode='ortho',
+                                 cut_coords=(-2, -20, 20))
     add_brain_schematics(display)
 
     # Plot multiple slices

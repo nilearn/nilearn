@@ -19,6 +19,7 @@ from nilearn.plotting.matrix_plotting import (
 ##############################################################################
 # Some smoke testing for graphics-related code
 
+
 @pytest.mark.parametrize("fig,axes",
                          [("foo", "bar"),
                           (1, 2),
@@ -164,7 +165,7 @@ def test_matrix_plotting_reorder(mat, labels):
     reordered_labels = [int(lbl.get_text())
                         for lbl in ax.axes.get_xticklabels()]
     # block order does not matter
-    assert(  # noqa
+    assert (  # noqa
         (reordered_labels[:3] == idx or reordered_labels[-3:] == idx),
         'Clustering does not find block structure.'
     )

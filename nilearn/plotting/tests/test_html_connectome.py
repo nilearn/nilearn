@@ -13,7 +13,7 @@ def test_prepare_line():
     n = np.asarray([[0, 1], [0, 2], [2, 3], [8, 9]], dtype=int)
     pe, pn = html_connectome._prepare_line(e, n)
     assert (pn == [0, 1, 0, 0, 2, 0, 2, 3, 0, 8, 9, 0]).all()
-    assert(pe == [0, 0, 0, 1, 1, 0, 2, 2, 0, 3, 3, 0]).all()
+    assert (pe == [0, 0, 0, 1, 1, 0, 2, 2, 0, 3, 3, 0]).all()
 
 
 @pytest.mark.parametrize('node_color,expected_marker_colors', [
@@ -87,7 +87,7 @@ def test_view_markers():
     coords = np.arange(12).reshape((4, 3))
     colors = ['r', 'g', 'black', 'white']
     labels = ["red marker", "green marker",
-          "black marker", "white marker"]
+              "black marker", "white marker"]
     html = html_connectome.view_markers(coords, colors)
     check_html(html, False, 'connectome-plot')
     html = html_connectome.view_markers(coords)
@@ -101,8 +101,8 @@ def test_view_markers():
         coords, marker_size=list(range(len(coords))))
     check_html(html, False, 'connectome-plot')
     html = html_connectome.view_markers(coords,
-                                    marker_size=5.0,
-                                    marker_color=colors,
-                                    marker_labels=labels)
+                                        marker_size=5.0,
+                                        marker_color=colors,
+                                        marker_labels=labels)
     labels_dict = {"marker_labels": labels}
     assert json.dumps(labels_dict)[1:-1] in html.html

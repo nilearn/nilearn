@@ -85,7 +85,6 @@ def test_find_cut_coords():
     np.testing.assert_array_equal(cut_coords,
                                   [4.5, 4.5, 4.5])
 
-
     # regression test (cf. #922)
     # pseudo-4D images as input (i.e., X, Y, Z, 1)
     # previously raised "ValueError: too many values to unpack"
@@ -170,9 +169,11 @@ def test_validity_of_ncuts_error_in_find_cut_slices():
     img = nibabel.Nifti1Image(data, affine)
     direction = 'z'
     for n_cuts in (0, -2, -10.00034, 0.999999, 0.4, 0.11111111):
-        message = ("Image has %d slices in direction %s. Therefore, the number "
-                   "of cuts must be between 1 and %d. You provided n_cuts=%s " % (
-                       data.shape[0], direction, data.shape[0], n_cuts))
+        message = (
+            "Image has %d slices in direction %s. Therefore, the number "
+            "of cuts must be between 1 and %d. You provided n_cuts=%s " % (
+                data.shape[0], direction, data.shape[0], n_cuts)
+        )
         with pytest.raises(ValueError, match=message):
             find_cut_slices(img, n_cuts=n_cuts)
 
@@ -204,14 +205,14 @@ def test_tranform_cut_coords():
     # test that when n_cuts is 1 we do get an iterable
     for direction in 'xyz':
         assert hasattr(_transform_cut_coords([4], direction, affine),
-                            "__iter__")
+                       "__iter__")
 
     # test that n_cuts after as before function call
     n_cuts = 5
     cut_coords = np.arange(n_cuts)
     for direction in 'xyz':
         assert (len(_transform_cut_coords(cut_coords, direction, affine)) ==
-                     n_cuts)
+                n_cuts)
 
 
 def test_find_cuts_empty_mask_no_crash():
@@ -296,11 +297,15 @@ def test_find_probabilistic_atlas_cut_coords():
     # make data
     arr1 = np.zeros((100, 100, 100))
     x_map_a, y_map_a, z_map_a = 30, 40, 50
-    arr1[x_map_a - 10:x_map_a + 10, y_map_a - 20:y_map_a + 20, z_map_a - 30: z_map_a + 30] = 1
+    arr1[x_map_a - 10:x_map_a + 10,
+         y_map_a - 20:y_map_a + 20,
+         z_map_a - 30: z_map_a + 30] = 1
 
     arr2 = np.zeros((100, 100, 100))
     x_map_b, y_map_b, z_map_b = 40, 50, 60
-    arr2[x_map_b - 10:x_map_b + 10, y_map_b - 20:y_map_b + 20, z_map_b - 30: z_map_b + 30] = 1
+    arr2[x_map_b - 10:x_map_b + 10,
+         y_map_b - 20:y_map_b + 20,
+         z_map_b - 30: z_map_b + 30] = 1
 
     # make data with empty in between non-empty maps to make sure that
     # code does not crash

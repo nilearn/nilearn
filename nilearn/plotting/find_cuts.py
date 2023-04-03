@@ -23,9 +23,9 @@ from ..image import iter_img, new_img_like, reorder_img
 from ..image.image import _smooth_array
 from ..image.resampling import coord_transform, get_mask_bounds
 
-################################################################################
+###############################################################################
 # Functions for automatic choice of cuts coordinates
-################################################################################
+###############################################################################
 
 DEFAULT_CUT_COORDS = (0., 0., 0.)
 
@@ -77,9 +77,9 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
         mask_img = check_niimg_3d(mask_img)
         mask = _safe_get_data(mask_img)
         if not np.allclose(mask_img.affine, img.affine):
-            raise ValueError('Mask affine: \n%s\n is different from img affine:'
-                             '\n%s' % (str(mask_img.affine),
-                                       str(img.affine)))
+            raise ValueError(
+                'Mask affine: \n%s\n is different from img affine:'
+                '\n%s' % (str(mask_img.affine), str(img.affine)))
     else:
         mask = None
 
@@ -180,15 +180,16 @@ def _get_auto_mask_bounds(img):
     else:
         # The mask will be anything that is fairly different
         # from the values in the corners
-        edge_value = float(data[0, 0, 0] + data[0, -1, 0]
-                            + data[-1, 0, 0] + data[0, 0, -1]
-                            + data[-1, -1, 0] + data[-1, 0, -1]
-                            + data[0, -1, -1] + data[-1, -1, -1]
-                        )
+        edge_value = float(
+            data[0, 0, 0] + data[0, -1, 0]
+            + data[-1, 0, 0] + data[0, 0, -1]
+            + data[-1, -1, 0] + data[-1, 0, -1]
+            + data[0, -1, -1] + data[-1, -1, -1]
+        )
         edge_value /= 6
-        mask = np.abs(data - edge_value) > .005*data.ptp()
+        mask = np.abs(data - edge_value) > .005 * data.ptp()
     xmin, xmax, ymin, ymax, zmin, zmax = \
-            get_mask_bounds(new_img_like(img, mask, affine))
+        get_mask_bounds(new_img_like(img, mask, affine))
     return (xmin, xmax), (ymin, ymax), (zmin, zmax)
 
 
@@ -267,7 +268,7 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
 
     """
     # misc
-    if not direction in 'xyz':
+    if direction not in 'xyz':
         raise ValueError(
             f"'direction' must be one of 'x', 'y', or 'z'. Got '{direction}'")
     axis = 'xyz'.index(direction)
@@ -355,8 +356,8 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
         if len(cut_coords) > 1:
             middle_idx = np.argmax(np.diff(cut_coords))
             slice_middle = int(.5 * (cut_coords[middle_idx]
-                                    + cut_coords[middle_idx + 1]))
-            if not slice_middle in cut_coords:
+                                     + cut_coords[middle_idx + 1]))
+            if slice_middle not in cut_coords:
                 candidates.append(slice_middle)
         if slice_below >= 0:
             # We need positive slice to avoid having negative
@@ -381,7 +382,8 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
     return _transform_cut_coords(cut_coords, direction, affine)
 
 
-def find_parcellation_cut_coords(labels_img, background_label=0, return_label_names=False,
+def find_parcellation_cut_coords(labels_img, background_label=0, 
+                                 return_label_names=False,
                                  label_hemisphere='left'):
     """Return coordinates of center of mass of 3D parcellation atlas.
 
@@ -419,8 +421,9 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
     """
     # check label_hemisphere input
     if label_hemisphere not in ['left', 'right']:
-        raise ValueError("Invalid label_hemisphere name:{}. Should be one "
-                         "of these 'left' or 'right'.".format(label_hemisphere))
+        raise ValueError(
+            "Invalid label_hemisphere name:{}. Should be one "
+            "of these 'left' or 'right'.".format(label_hemisphere))
     # Grab data and affine
     labels_img = reorder_img(check_niimg_3d(labels_img))
     labels_data = get_data(labels_img)
@@ -446,7 +449,7 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
         right_hemi[:int(x)] = 0
 
         # Two connected component in both hemispheres
-        if not np.all(left_hemi == False) or np.all(right_hemi == False):
+        if not np.all(left_hemi is False) or np.all(right_hemi is False):
             if label_hemisphere == 'left':
                 cur_img = left_hemi.astype(int)
             elif label_hemisphere == 'right':
@@ -466,7 +469,8 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
         coord_list.append((x, y, z))
 
         # Transform coordinates
-        coords = [coord_transform(i[0], i[1], i[2], labels_affine) for i in coord_list]
+        coords = [coord_transform(i[0], i[1], i[2], labels_affine) 
+                  for i in coord_list]
 
     if return_label_names:
         return np.array(coords), label_list

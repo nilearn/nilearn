@@ -1,6 +1,5 @@
 import collections.abc
 import json
-import warnings
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt

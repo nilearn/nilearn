@@ -92,14 +92,16 @@ def _sanitize_tri(tri):
     """Helper function for plot_matrix."""
     VALID_TRI_VALUES = {"full", "lower", "diag"}
     if tri not in VALID_TRI_VALUES:
-        raise ValueError(f"Parameter tri needs to be one of {VALID_TRI_VALUES}.")
+        raise ValueError(
+            f"Parameter tri needs to be one of {VALID_TRI_VALUES}.")
 
 
 def _sanitize_reorder(reorder):
     """Helper function for plot_matrix."""
     VALID_REORDER_ARGS = {True, False, 'single', 'complete', 'average'}
     if reorder not in VALID_REORDER_ARGS:
-        raise ValueError(f"Parameter reorder needs to be one of {VALID_REORDER_ARGS}.")
+        raise ValueError(
+            f"Parameter reorder needs to be one of {VALID_REORDER_ARGS}.")
     reorder = 'average' if reorder is True else reorder
     return reorder
 
@@ -272,8 +274,10 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
         mat, labels = _reorder_matrix(mat, labels, reorder)
     if tri != "full":
         mat = _mask_matrix(mat, tri)
-    display = axes.imshow(mat, aspect='equal', interpolation='nearest',
-                        cmap=cmap, **kwargs)
+    display = axes.imshow(
+        mat, aspect='equal',
+        interpolation='nearest',
+        cmap=cmap, **kwargs)
     axes.set_autoscale_on(False)
     ymin, ymax = axes.get_ylim()
     _configure_axis(axes, labels, label_size="x-small",
@@ -331,7 +335,8 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
     %(colorbar)s
         Default=False.
     ax : :class:`matplotlib.axes.Axes`, optional
-        Axis on which to plot the figure. If None, a new figure will be created.
+        Axis on which to plot the figure. 
+        If None, a new figure will be created.
     %(output_file)s
 
     Returns
@@ -475,13 +480,14 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     event_labels = pd.concat(event['trial_type'] for event in model_event)
     event_labels = np.unique(event_labels)
 
-    cmap_dictionary = {label:idx for idx, label in enumerate(event_labels)}
+    cmap_dictionary = {label : idx for idx, label in enumerate(event_labels)}
 
     if len(event_labels) > cmap.N:
         plt.close()
-        raise ValueError("The number of event types is greater than "+ \
-            " colors in colormap (%d > %d). Use a different colormap." \
-            % (len(event_labels), cmap.N))
+        raise ValueError(
+            "The number of event types is greater than "
+            f" colors in colormap ({len(event_labels)} > {cmap.N}). "
+            "Use a different colormap.")
 
     for idx_run, event_df in enumerate(model_event):
 

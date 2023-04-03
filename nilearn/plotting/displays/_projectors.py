@@ -163,15 +163,15 @@ class OrthoProjector(OrthoSlicer):
         if not np.allclose(adjacency_matrix, adjacency_matrix.T, rtol=1e-3):
             symmetric = False
             warnings.warn("'adjacency_matrix' is not symmetric. "
-                           "A directed graph will be plotted.")
+                          "A directed graph will be plotted.")
 
         # For a masked array, masked values are replaced with zeros
         if hasattr(adjacency_matrix, 'mask'):
             if not (adjacency_matrix.mask == adjacency_matrix.mask.T).all():
                 symmetric = False
                 warnings.warn("'adjacency_matrix' was masked with "
-                               "a non symmetric mask. A directed "
-                               "graph will be plotted.")
+                              "a non symmetric mask. A directed "
+                              "graph will be plotted.")
             adjacency_matrix = adjacency_matrix.filled(0)
 
         if edge_threshold is not None:
@@ -213,7 +213,7 @@ class OrthoProjector(OrthoSlicer):
                               directed=(not symmetric),
                               **edge_kwargs)
             # To obtain the brain left view, we simply invert the x axis
-            if(ax.direction == 'l'
+            if (ax.direction == 'l'
                and not (ax.ax.get_xlim()[0] > ax.ax.get_xlim()[1])):
                 ax.ax.invert_xaxis()
 

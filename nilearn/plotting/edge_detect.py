@@ -16,15 +16,16 @@ from .._utils.extmath import fast_abs_percentile
 # Author: Gael Varoquaux
 # License: BSD
 
-################################################################################
+###############################################################################
 # Edge detection
+
 
 def _orientation_kernel(t):
     """ structure elements for calculating the value of neighbors in several
         directions
     """
     sin = np.sin
-    pi  = np.pi
+    pi = np.pi
     t = pi * t
     arr = np.array([[sin(t), sin(t + .5 * pi), sin(t + pi)],
                     [sin(t + 1.5 * pi), 0, sin(t + 1.5 * pi)],
@@ -98,9 +99,9 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
             )
         )
     # Remove the edges next to the side of the image: they are not reliable
-    thinner[0]     = 0
-    thinner[-1]    = 0
-    thinner[:, 0]  = 0
+    thinner[0] = 0
+    thinner[-1] = 0
+    thinner[:, 0] = 0
     thinner[:, -1] = 0
 
     thinned_grad = thinner * grad_mag

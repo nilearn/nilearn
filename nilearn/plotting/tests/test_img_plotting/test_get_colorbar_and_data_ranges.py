@@ -124,7 +124,7 @@ def test_get_colorbar_and_data_ranges(case, data, symmetric_cbar, vmax,
         - masked data.
     """
     kwargs = {'aspect': 'auto', 'alpha': 0.9}
-    assert(_get_colorbar_and_data_ranges(
+    assert (_get_colorbar_and_data_ranges(
         data, vmax=vmax, symmetric_cbar=symmetric_cbar, kwargs=kwargs)
         == expected_results
     )

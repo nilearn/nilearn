@@ -6,12 +6,13 @@ Matplotlib colormaps useful for neuroimaging.
 import numpy as _np
 from matplotlib import cm as _cm, colors as _colors, rcParams as _rcParams
 
-################################################################################
+###############################################################################
 # Custom colormaps for two-tailed symmetric statistics
-################################################################################
+###############################################################################
 
-################################################################################
+###############################################################################
 # Helper functions
+
 
 def _rotate_cmap(cmap, swap_order=('green', 'red', 'blue')):
     """ Utility function to swap the colors of a colormap.
@@ -20,11 +21,11 @@ def _rotate_cmap(cmap, swap_order=('green', 'red', 'blue')):
 
     cdict = dict()
     cdict['green'] = [(p, c1, c2)
-                        for (p, c1, c2) in orig_cdict[swap_order[0]]]
+                      for (p, c1, c2) in orig_cdict[swap_order[0]]]
     cdict['blue'] = [(p, c1, c2)
-                        for (p, c1, c2) in orig_cdict[swap_order[1]]]
+                     for (p, c1, c2) in orig_cdict[swap_order[1]]]
     cdict['red'] = [(p, c1, c2)
-                        for (p, c1, c2) in orig_cdict[swap_order[2]]]
+                    for (p, c1, c2) in orig_cdict[swap_order[2]]]
 
     return cdict
 
@@ -60,26 +61,28 @@ def _concat_cmap(cmap1, cmap2):
     cdict2 = cmap2._segmentdata.copy()
     if not hasattr(cdict1['red'], '__call__'):
         for c in ['red', 'green', 'blue']:
-            cdict[c] = [(0.5*p, c1, c2) for (p, c1, c2) in cdict1[c]]
+            cdict[c] = [(0.5 * p, c1, c2) for (p, c1, c2) in cdict1[c]]
     else:
         for c in ['red', 'green', 'blue']:
             cdict[c] = []
         ps = _np.linspace(0, 1, 10)
         colors = cmap1(ps)
         for p, (r, g, b, a) in zip(ps, colors):
-            cdict['red'].append((.5*p, r, r))
-            cdict['green'].append((.5*p, g, g))
-            cdict['blue'].append((.5*p, b, b))
+            cdict['red'].append((.5 * p, r, r))
+            cdict['green'].append((.5 * p, g, g))
+            cdict['blue'].append((.5 * p, b, b))
     if not hasattr(cdict2['red'], '__call__'):
         for c in ['red', 'green', 'blue']:
-            cdict[c].extend([(0.5*(1+p), c1, c2) for (p, c1, c2) in cdict2[c]])
+            cdict[c].extend([
+                (0.5 * (1 + p), c1, c2) for (p, c1, c2) in cdict2[c]
+            ])
     else:
         ps = _np.linspace(0, 1, 10)
         colors = cmap2(ps)
         for p, (r, g, b, a) in zip(ps, colors):
-            cdict['red'].append((.5*(1+p), r, r))
-            cdict['green'].append((.5*(1+p), g, g))
-            cdict['blue'].append((.5*(1+p), b, b))
+            cdict['red'].append((.5 * (1 + p), r, r))
+            cdict['green'].append((.5 * (1 + p), g, g))
+            cdict['blue'].append((.5 * (1 + p), b, b))
 
     return cdict
 
@@ -107,9 +110,7 @@ def alpha_cmap(color, name='', alpha_min=0.5, alpha_max=1.):
     red, green, blue = _colors.colorConverter.to_rgb(color)
     if name == '' and hasattr(color, 'startswith'):
         name = color
-    cmapspec = [(red, green, blue, 1.),
-                (red, green, blue, 1.),
-               ]
+    cmapspec = [(red, green, blue, 1.), (red, green, blue, 1.)]
     cmap = _colors.LinearSegmentedColormap.from_list(
         f'{name}_transparent', cmapspec, _rcParams['image.lut'])
     cmap._init()
@@ -118,37 +119,38 @@ def alpha_cmap(color, name='', alpha_min=0.5, alpha_max=1.):
     return cmap
 
 
-
-################################################################################
+###############################################################################
 # Our colormaps definition
+
+
 _cmaps_data = dict(
-    cold_hot     = _pigtailed_cmap(_cm.hot),
-    cold_white_hot = _pigtailed_cmap(_cm.hot_r),
-    brown_blue   = _pigtailed_cmap(_cm.bone),
-    cyan_copper  = _pigtailed_cmap(_cm.copper),
-    cyan_orange  = _pigtailed_cmap(_cm.YlOrBr_r),
-    blue_red     = _pigtailed_cmap(_cm.Reds_r),
-    brown_cyan   = _pigtailed_cmap(_cm.Blues_r),
-    purple_green = _pigtailed_cmap(_cm.Greens_r,
-                    swap_order=('red', 'blue', 'green')),
-    purple_blue  = _pigtailed_cmap(_cm.Blues_r,
-                    swap_order=('red', 'blue', 'green')),
-    blue_orange  = _pigtailed_cmap(_cm.Oranges_r,
-                    swap_order=('green', 'red', 'blue')),
-    black_blue   = _rotate_cmap(_cm.hot),
-    black_purple = _rotate_cmap(_cm.hot,
-                                    swap_order=('blue', 'red', 'green')),
-    black_pink   = _rotate_cmap(_cm.hot,
+    cold_hot=_pigtailed_cmap(_cm.hot),
+    cold_white_hot=_pigtailed_cmap(_cm.hot_r),
+    brown_blue=_pigtailed_cmap(_cm.bone),
+    cyan_copper=_pigtailed_cmap(_cm.copper),
+    cyan_orange=_pigtailed_cmap(_cm.YlOrBr_r),
+    blue_red=_pigtailed_cmap(_cm.Reds_r),
+    brown_cyan=_pigtailed_cmap(_cm.Blues_r),
+    purple_green=_pigtailed_cmap(_cm.Greens_r,
+                                 swap_order=('red', 'blue', 'green')),
+    purple_blue=_pigtailed_cmap(_cm.Blues_r,
+                                swap_order=('red', 'blue', 'green')),
+    blue_orange=_pigtailed_cmap(_cm.Oranges_r,
+                                swap_order=('green', 'red', 'blue')),
+    black_blue=_rotate_cmap(_cm.hot),
+    black_purple=_rotate_cmap(_cm.hot,
+                              swap_order=('blue', 'red', 'green')),
+    black_pink=_rotate_cmap(_cm.hot,
                             swap_order=('blue', 'green', 'red')),
-    black_green  = _rotate_cmap(_cm.hot,
-                            swap_order=('red', 'blue', 'green')),
-    black_red    = _cm.hot._segmentdata.copy(),
+    black_green=_rotate_cmap(_cm.hot,
+                             swap_order=('red', 'blue', 'green')),
+    black_red=_cm.hot._segmentdata.copy(),
 )
 
 if hasattr(_cm, 'ocean'):
     # MPL 0.99 doesn't have Ocean
-    _cmaps_data['ocean_hot'] =  _concat_cmap(_cm.ocean, _cm.hot_r)
-if hasattr(_cm, 'afmhot'): # or afmhot
+    _cmaps_data['ocean_hot'] = _concat_cmap(_cm.ocean, _cm.hot_r)
+if hasattr(_cm, 'afmhot') :  # or afmhot
     _cmaps_data['hot_white_bone'] = _concat_cmap(_cm.afmhot, _cm.bone_r)
     _cmaps_data['hot_black_bone'] = _concat_cmap(_cm.afmhot_r, _cm.bone)
 
@@ -158,7 +160,7 @@ _cmaps_data['bwr'] = _colors.LinearSegmentedColormap.from_list(
     'bwr', _bwr_data)._segmentdata.copy()
 
 
-################################################################################
+###############################################################################
 # Build colormaps and their reverse.
 
 # backported and adapted from matplotlib since it's deprecated in 3.2
@@ -171,7 +173,7 @@ def _revcmap(data):
 
 _cmap_d = dict()
 
-for _cmapname in list(_cmaps_data.keys()):  # needed as dict changes within loop
+for _cmapname in list(_cmaps_data.keys()):  # needed as dict changes in loop
     _cmapname_r = _cmapname + '_r'
     _cmapspec = _cmaps_data[_cmapname]
     _cmaps_data[_cmapname_r] = _revcmap(_cmapspec)
@@ -180,7 +182,7 @@ for _cmapname in list(_cmaps_data.keys()):  # needed as dict changes within loop
     _cmap_d[_cmapname_r] = _colors.LinearSegmentedColormap(
         _cmapname_r, _cmaps_data[_cmapname_r], _rcParams['image.lut'])
 
-################################################################################
+###############################################################################
 # A few transparent colormaps
 for color, name in (((1, 0, 0), 'red'),
                     ((0, 1, 0), 'green'),
@@ -231,9 +233,9 @@ for k, v in _cmap_d.items():
         pass
 
 
-################################################################################
+###############################################################################
 # Utility to replace a colormap by another in an interval
-################################################################################
+###############################################################################
 
 def dim_cmap(cmap, factor=.3, to_white=True):
     """ Dim a colormap to white, or to black.
@@ -262,8 +264,10 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
     """ Replace a colormap by another inside a pair of values.
     """
     assert vmin < vmax, ValueError('vmin must be smaller than vmax')
-    assert vmin >= 0, ValueError(f'vmin must be larger than 0, {vmin} was passed.')
-    assert vmax <= 1, ValueError(f'vmax must be smaller than 1, {vmax} was passed.')
+    assert vmin >= 0, ValueError(
+        f'vmin must be larger than 0, {vmin} was passed.')
+    assert vmax <= 1, ValueError(
+        f'vmax must be smaller than 1, {vmax} was passed.')
     outer_cdict = outer_cmap._segmentdata.copy()
     inner_cdict = inner_cmap._segmentdata.copy()
 

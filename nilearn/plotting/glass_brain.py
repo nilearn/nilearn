@@ -112,7 +112,7 @@ def _get_json_and_transform(direction):
 
     direction_to_json_and_transform = {
         _direction: (direction_to_filename[_direction],
-                      direction_to_transforms[_direction])
+                     direction_to_transforms[_direction])
         for _direction in direction_to_filename}
 
     filename_and_transform = direction_to_json_and_transform.get(direction)
@@ -169,7 +169,7 @@ def plot_brain_schematics(ax, direction, **kwargs):
         get_axis_bg_color = ax.get_axis_bgcolor()
 
     black_bg = colors.colorConverter.to_rgba(get_axis_bg_color) \
-                    == colors.colorConverter.to_rgba('k')
+        == colors.colorConverter.to_rgba('k')
 
     json_filename, transform = _get_json_and_transform(direction)
     with open(json_filename) as json_file:

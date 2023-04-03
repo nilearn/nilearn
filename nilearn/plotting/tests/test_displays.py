@@ -1,6 +1,5 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-import tempfile
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -98,6 +97,7 @@ def test_glass_brain_axes():
         axes._add_lines(line_coords, line_values, None, vmin=10, vmax=None)
     axes._add_lines(line_coords, line_values, None, vmin=-10, vmax=None)
     axes._add_lines(line_coords, line_values, None, vmin=-10, vmax=-5)
+
 
 def test_get_index_from_direction_exception():
     """Tests that a ValueError is raised when an invalid direction
@@ -289,7 +289,7 @@ def test_user_given_cmap_with_colorbar(img):
 
 @pytest.mark.parametrize("display", [OrthoSlicer, LYRZProjector])
 def test_data_complete_mask(display):
-    """This special case test is due to matplotlib 2.1.0.
+    """Test for a special case due to matplotlib 2.1.0.
 
     When the data is completely masked, then we have plotting issues
     See similar issue #9280 reported in matplotlib. This function

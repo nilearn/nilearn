@@ -147,6 +147,7 @@ def _import_svg():
                      ' which is required to parse the svg file', )
         raise
 
+
 if __name__ == '__main__':
     svg = _import_svg()
 

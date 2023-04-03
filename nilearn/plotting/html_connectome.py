@@ -31,7 +31,8 @@ def _encode_coordinates(coords, prefix):
         The coordinates of the nodes in MNI space.
 
     prefix : str
-        Prefix for the key value in the returned dict. Schema is {prefix}{x|y|z}
+        Prefix for the key value in the returned dict. 
+        Schema is {prefix}{x|y|z}
 
     Returns
     -------
@@ -157,7 +158,8 @@ def _prepare_lines_metadata(adjacency_matrix, coords, threshold,
     nodes = np.asarray([s.row, s.col], dtype=int).T
     edges = np.arange(len(nodes))
     path_edges, path_nodes = _prepare_line(edges, nodes)
-    lines_metadata["_con_w"] = encode(np.asarray(s.data, dtype='<f4')[path_edges])
+    lines_metadata["_con_w"] = encode(
+        np.asarray(s.data, dtype='<f4')[path_edges])
 
     line_coords = coords[path_nodes]
 

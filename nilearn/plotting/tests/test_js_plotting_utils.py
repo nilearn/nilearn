@@ -134,7 +134,7 @@ def test_colorscale_asymmetric_cmap(values, vmax, vmin, threshold,
     assert (min(values) < 0) | (not colors['symmetric_cmap'])
     assert colors['cmap'].N == 256
     assert (int(colors['vmin']), int(colors['vmax'])) == expected_vmin_vmax
-    assert(
+    assert (
         (colors['norm'].vmax, colors['norm'].vmin) == expected_vmin_vmax[::-1]
     )
 

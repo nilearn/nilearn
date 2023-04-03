@@ -36,9 +36,9 @@ def _simulate_img(affine=np.eye(4)):
 def _check_affine(affine):
     """ Check positive, isotropic, near-diagonal affine.
     """
-    assert(affine[0, 0] == affine[1, 1])
-    assert(affine[2, 2] == affine[1, 1])
-    assert(affine[0, 0] > 0)
+    assert (affine[0, 0] == affine[1, 1])
+    assert (affine[2, 2] == affine[1, 1])
+    assert (affine[0, 0] > 0)
 
     A, b = image.resampling.to_matrix_vector(affine)
     assert np.all((np.abs(A) > 0.001).sum(axis=0) == 1), (
@@ -71,7 +71,8 @@ def test_threshold_data():
     data = np.arange(-3, 4)
 
     # Check that an 'auto' threshold leaves at least one element
-    data_t, mask, thresh = html_stat_map._threshold_data(data, threshold='auto')
+    data_t, mask, thresh = html_stat_map._threshold_data(data, 
+                                                         threshold='auto')
     gtruth_m = np.array([False, True, True, True, True, True, False])
     gtruth_d = np.array([-3, 0, 0, 0, 0, 0, 3])
     assert (mask == gtruth_m).all()
@@ -100,7 +101,7 @@ def test_threshold_data():
 
 
 def test_save_sprite():
-    """This test covers _save_sprite as well as _bytesIO_to_base64
+    """Test covers _save_sprite as well as _bytesIO_to_base64
     """
 
     # Generate a simulated volume with a square inside
@@ -129,7 +130,7 @@ def test_save_sprite():
 @pytest.mark.parametrize("cmap", ["tab10", "cold_hot"])
 @pytest.mark.parametrize("n_colors", [7, 20])
 def test_save_cmap(cmap, n_colors):
-    """This test covers _save_cmap as well as _bytesIO_to_base64
+    """Test covers _save_cmap as well as _bytesIO_to_base64
     """
     # Save the cmap using BytesIO
     cmap_io = BytesIO()
@@ -349,7 +350,7 @@ def test_view_img():
     # Check that all warnings were expected
     warnings_set = {warning_.category for warning_ in w}
     expected_set = {FutureWarning, UserWarning,
-                       DeprecationWarning}
+                    DeprecationWarning}
     assert warnings_set.issubset(expected_set), (
         "the following warnings were not expected: {}").format(
         warnings_set.difference(expected_set))

@@ -27,7 +27,6 @@ from nibabel.spatialimages import SpatialImage
 from nilearn.image.resampling import reorder_img
 from nilearn.maskers import NiftiMasker
 from nilearn.plotting.displays import get_projector, get_slicer
-from nilearn.version import _compare_version
 from scipy import stats
 from scipy.ndimage import binary_fill_holes
 
@@ -280,7 +279,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
 
 # A constant class to serve as a sentinel for the default MNI template
 class _MNI152Template(SpatialImage):
-    """This class is a constant pointing to the MNI152 Template
+    """Constant pointing to the MNI152 Template
     provided by nilearn.
 
     """
@@ -1011,7 +1010,7 @@ def plot_glass_brain(stat_map_img,
         absolute value will be used (rendering positive and negative
         values in the same manner). If set to false the sign of the
         maximum intensity will be represented with different colors.
-        See http://nilearn.github.io/auto_examples/01_plotting/plot_demo_glass_brain_extensive.html
+        See http://nilearn.github.io/auto_examples/01_plotting/plot_demo_glass_brain_extensive.html # noqa
         for examples. Default=True.
     %(symmetric_cbar)s
         Default='auto'.
@@ -1259,9 +1258,10 @@ def plot_markers(node_values, node_coords, node_size='auto',
     # Filter out nodes with node values below threshold
     if node_threshold is not None:
         if node_threshold > np.max(node_values):
-            msg = ("Provided 'node_threshold' value: {} should not exceed "
-                   "highest node value: {}").format(node_threshold,
-                                                     np.max(node_values))
+            msg = (
+                "Provided 'node_threshold' value: {} should not exceed "
+                "highest node value: {}").format(node_threshold,
+                                                 np.max(node_values))
             raise ValueError(msg)
 
         retained_nodes = node_values > node_threshold
