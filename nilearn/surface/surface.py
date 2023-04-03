@@ -6,9 +6,15 @@ import warnings
 from collections import namedtuple
 from collections.abc import Mapping
 
+import nibabel
 import numpy as np
 import sklearn.cluster
 import sklearn.preprocessing
+from nibabel import freesurfer as fs, gifti
+from nilearn import _utils, datasets
+from nilearn._utils import stringify_path
+from nilearn._utils.path_finding import _resolve_globbing
+from nilearn.image import get_data, load_img, resampling
 from scipy import interpolate, sparse
 
 try:
@@ -16,13 +22,6 @@ try:
 except ImportError:
     class EfficiencyWarning(UserWarning):
         """Warning used to notify the user of inefficient computation."""
-
-import nibabel
-from nibabel import freesurfer as fs, gifti
-from nilearn import _utils, datasets
-from nilearn._utils import stringify_path
-from nilearn._utils.path_finding import _resolve_globbing
-from nilearn.image import get_data, load_img, resampling
 
 # Create a namedtuple object for meshes
 Mesh = namedtuple("mesh", ["coordinates", "faces"])
