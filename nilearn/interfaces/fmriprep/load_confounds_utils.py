@@ -25,10 +25,11 @@ img_file_error = {
     "aroma": (
         "Input must be desc-smoothAROMAnonaggr_bold for full ICA-AROMA"
         " strategy."
-    ),    "nii.gz": "Invalid file type for the selected method.",
+    ), "nii.gz": "Invalid file type for the selected method.",
     "dtseries.nii": "Invalid file type for the selected method.",
     "func.gii": "need fMRIprep output with extension func.gii",
 }
+
 
 def _check_params(confounds_raw, params):
     """Check that specified parameters can be found in the confounds."""
@@ -120,8 +121,8 @@ def _get_file_name(nii_file):
     if not confounds_raw:
         raise ValueError(
             "Could not find associated confound file. "
-             "The functional derivatives should exist under the same parent "
-             "directory."
+            "The functional derivatives should exist under the same parent "
+            "directory."
         )
     elif len(confounds_raw) != 1:
         raise ValueError("Found more than one confound file.")
@@ -136,7 +137,7 @@ def _get_confounds_file(image_file, flag_full_aroma):
 
 
 def _get_json(confounds_raw_path):
-    """return json data companion file to the confounds tsv file."""
+    """Return json data companion file to the confounds tsv file."""
     # Load JSON file
     return confounds_raw_path.replace("tsv", "json")
 
@@ -149,10 +150,10 @@ def _load_confounds_json(confounds_json, flag_acompcor):
     except OSError:
         if flag_acompcor:
             raise ValueError(
-                    f"Could not find associated json file {confounds_json}."
-                    "This is necessary for anatomical CompCor."
-                    "The CompCor component is only supported for fMRIprep "
-                    "version >= 1.4.0."
+                f"Could not find associated json file {confounds_json}."
+                "This is necessary for anatomical CompCor."
+                "The CompCor component is only supported for fMRIprep "
+                "version >= 1.4.0."
             )
     return confounds_json
 

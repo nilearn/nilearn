@@ -21,8 +21,8 @@ from sklearn.preprocessing import scale
 
 
 def _simu_img(tmp_path, demean):
-    """Simulate an nifti image based on confound file with some parts confounds
-    and some parts noise."""
+    """Simulate an nifti image based on confound file \
+    with some parts confounds and some parts noise."""
     file_nii, _ = create_tmp_filepath(tmp_path, copy_confounds=True)
     # set the size of the image matrix
     nx = 5
@@ -246,8 +246,8 @@ def test_confounds2df(tmp_path):
 
 
 def test_load_single_confounds_file(tmp_path):
-    """Check that the load_confounds function returns the same confounds as
-    _load_single_confounds_file."""
+    """Check that the load_confounds function returns the same confounds \
+    as _load_single_confounds_file."""
     nii_file, confounds_file = create_tmp_filepath(tmp_path,
                                                    copy_confounds=True)
 
@@ -273,8 +273,8 @@ def test_load_single_confounds_file(tmp_path):
                           ((0, ), "not a supported type of confounds."),
                           (("compcor", ), "high_pass")])
 def test_check_strategy(strategy, message):
-    """Check that flawed strategy options generate meaningful error
-    messages."""
+    """Check that flawed strategy options \
+    generate meaningful error messages."""
     with pytest.raises(ValueError) as exc_info:
         _check_strategy(strategy=strategy)
     assert message in exc_info.value.args[0]
