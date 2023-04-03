@@ -2,6 +2,8 @@
 # Author: Ph. Gervais
 # License: simplified BSD
 
+import warnings
+
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -131,13 +133,15 @@ def _all_voxel_of_each_region_have_same_values(
 
 def test_check_shape_and_affine_compatibility_without_dim(img_3D):
     """Ensure correct behaviour for valid data without dim"""
-    with pytest.warns(None):
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         _check_shape_and_affine_compatibility(img1=img_3D, img2=img_3D)
 
 
 def test_check_shape_and_affine_compatibility_with_dim(img_3D, img_4D):
     """Ensure correct behaviour for valid data without dim"""
-    with pytest.warns(None):
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         _check_shape_and_affine_compatibility(img1=img_4D, img2=img_3D, dim=3)
 
 

@@ -225,7 +225,7 @@ class CanICA(_MultiPCA):
         results = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
             delayed(self._cache(fastica, func_memory_level=2))(
                 components.astype(np.float64),
-                whiten=True,
+                whiten="arbitrary-variance",
                 fun="cube",
                 random_state=seed,
             )
