@@ -1,5 +1,6 @@
 """
 The :mod:`nilearn.input_data` module used to include masker objects.
+
 It is deprecated since release 0.9.0 in favor of the
 :mod:`~nilearn.maskers` module.
 Please consider updating your code:
