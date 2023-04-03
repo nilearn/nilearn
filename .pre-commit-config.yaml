@@ -94,6 +94,8 @@ repos:
     rev: v2.2.4
     hooks:
       - id: codespell
+        args: [--toml=pyproject.toml]
+        additional_dependencies: [tomli]
 
   - repo: https://github.com/pyCQA/flake8
     rev: 6.0.0
