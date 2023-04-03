@@ -168,11 +168,13 @@ def test_check_param_grid_classification(rand_X_Y, classifier, param):
 
 
 @pytest.mark.parametrize("estimator", ["log_l1", RandomForestClassifier()])
-def test_check_param_grid_error(rand_X_Y, estimator):
-    """Raise the error when using a non-linear estimator."""
+def test_non_supported_estimator_error(rand_X_Y, estimator):
+    """Raise the error when using a non supported estimator."""
     X, Y = rand_X_Y
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="Invalid estimator. The supported estimators are:"
+    ):
         _check_param_grid(estimator, X, Y, None)
 
 
