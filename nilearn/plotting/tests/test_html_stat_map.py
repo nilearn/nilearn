@@ -20,7 +20,7 @@ def _check_html(html_view, title=None):
     assert "var brain =" in str(html_view)
     assert "overlayImg" in str(html_view)
     if title is not None:
-        assert "<title>{}</title>".format(title) in str(html_view)
+        assert f"<title>{title}</title>" in str(html_view)
 
 
 def _simulate_img(affine=np.eye(4)):

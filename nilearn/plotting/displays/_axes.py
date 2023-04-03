@@ -62,8 +62,7 @@ class BaseAxes:
             (xmin, xmax), (zmin, zmax), (_, _) = data_bounds
             (xmin_, xmax_), (zmin_, zmax_), (_, _) = bounding_box
         else:
-            raise ValueError('Invalid value for direction %s' %
-                             self.direction)
+            raise ValueError(f'Invalid value for direction {self.direction}')
         ax = self.ax
         # Here we need to do a copy to avoid having the image changing as
         # we change the data
@@ -201,7 +200,7 @@ class BaseAxes:
         anchor_size_bar = AnchoredSizeBar(
             axis.transData,
             width_mm,
-            '%g%s' % (size, units),
+            f'{size:g}{units}',
             fontproperties=fontproperties,
             frameon=frameon,
             loc=loc,
@@ -254,8 +253,7 @@ class CutAxes(BaseAxes):
         """
         coords = [0, 0, 0]
         if self.direction not in ['x', 'y', 'z']:
-            raise ValueError('Invalid value for direction %s' %
-                             self.direction)
+            raise ValueError(f'Invalid value for direction {self.direction}')
         coords['xyz'.index(self.direction)] = self.coord
         x_map, y_map, z_map = [int(np.round(c)) for c in
                                coord_transform(coords[0],
@@ -288,7 +286,7 @@ class CutAxes(BaseAxes):
 
         """
         if decimals:
-            text = '%s=%.{}f'.format(decimals)
+            text = f'%s=%.{decimals}f'
             coord = float(self.coord)
         else:
             text = '%s=%i'

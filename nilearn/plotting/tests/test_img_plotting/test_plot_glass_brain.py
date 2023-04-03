@@ -43,7 +43,7 @@ def test_plot_noncurrent_axes():
     slicer = plot_glass_brain(maps_img, axes=ax1, title='test')
     for ax_name, niax in slicer.axes.items():
         ax_fh = niax.ax.get_figure()
-        assert ax_fh == fh1, 'New axis %s should be in fh1.' % ax_name
+        assert ax_fh == fh1, f'New axis {ax_name} should be in fh1.'
     plt.close()
 
 

@@ -20,4 +20,4 @@ if __name__ == '__main__':
         try:
             os.remove(args.file_name)
         except Exception as e:
-            warnings.warn('failed to remove {}:\n{}'.format(args.file_name, e))
+            warnings.warn(f'failed to remove {args.file_name}:\n{e}')

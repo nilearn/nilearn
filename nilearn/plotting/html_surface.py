@@ -157,8 +157,8 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
     info = {}
     mesh = surface.surface._check_mesh(mesh)
     surface_maps = {
-        h: surface.vol_to_surf(volume_img, mesh['pial_{}'.format(h)],
-                               inner_mesh=mesh.get('white_{}'.format(h), None),
+        h: surface.vol_to_surf(volume_img, mesh[f'pial_{h}'],
+                               inner_mesh=mesh.get(f'white_{h}', None),
                                **vol_to_surf_kwargs)
         for h in ['left', 'right']
     }
@@ -167,15 +167,15 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
         symmetric_cmap=symmetric_cmap, vmax=vmax, vmin=vmin)
 
     for hemi, surf_map in surface_maps.items():
-        curv_map = surface.load_surf_data(mesh["curv_{}".format(hemi)])
+        curv_map = surface.load_surf_data(mesh[f"curv_{hemi}"])
         bg_map = np.sign(curv_map)
 
-        info['pial_{}'.format(hemi)] = mesh_to_plotly(
-            mesh['pial_{}'.format(hemi)])
-        info['inflated_{}'.format(hemi)] = mesh_to_plotly(
-            mesh['infl_{}'.format(hemi)])
+        info[f'pial_{hemi}'] = mesh_to_plotly(
+            mesh[f'pial_{hemi}'])
+        info[f'inflated_{hemi}'] = mesh_to_plotly(
+            mesh[f'infl_{hemi}'])
 
-        info['vertexcolor_{}'.format(hemi)] = _get_vertexcolor(
+        info[f'vertexcolor_{hemi}'] = _get_vertexcolor(
             surf_map, colors['cmap'], colors['norm'],
             absolute_threshold=colors['abs_threshold'], bg_map=bg_map,
             bg_on_data=bg_on_data, darkness=darkness,

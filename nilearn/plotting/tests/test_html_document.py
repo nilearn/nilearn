@@ -14,7 +14,7 @@ from numpy.testing import assert_no_warnings
 
 
 def _open_mock(f):
-    print('opened {}'.format(f))
+    print(f'opened {f}')
 
 
 def test_temp_file_removing():

@@ -32,7 +32,7 @@ class SVGToJSONConverter:
             my_type = 'segment'
             pts = [p.coord() for p in (obj.start, obj.end)]
         else:
-            msg = '{0} is not a supported class'.format(obj.__class__)
+            msg = f'{obj.__class__} is not a supported class'
             raise TypeError(msg)
 
         # svg has its origin in the top left whereas

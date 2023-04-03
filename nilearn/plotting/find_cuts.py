@@ -269,8 +269,7 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
     # misc
     if not direction in 'xyz':
         raise ValueError(
-            "'direction' must be one of 'x', 'y', or 'z'. Got '%s'" % (
-                direction))
+            f"'direction' must be one of 'x', 'y', or 'z'. Got '{direction}'")
     axis = 'xyz'.index(direction)
     img = check_niimg_3d(img)
     affine = img.affine

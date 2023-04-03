@@ -799,7 +799,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
             correction_factor = .8
         else:
             correction_factor = .5
-        threshold = "%f%%" % (100 * (1 - .2 * correction_factor / n_maps))
+        threshold = f"{100 * (1 - 0.2 * correction_factor / n_maps):f}%"
 
     if (isinstance(threshold, collections.abc.Iterable) and
             not isinstance(threshold, str)):
@@ -1398,7 +1398,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
             interpolation='nearest',
         )
         atlas_bin = math_img(
-            'img != {}'.format(background_label),
+            f'img != {background_label}',
             img=atlas_img_res,
         )
         masker = NiftiMasker(atlas_bin, target_affine=img.affine)
@@ -1410,7 +1410,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
         if mask_labels:
             label_dtype = type(list(mask_labels.values())[0])
             if label_dtype != atlas_values.dtype:
-                print('Coercing atlas_values to {}'.format(label_dtype))
+                print(f'Coercing atlas_values to {label_dtype}')
                 atlas_values = atlas_values.astype(label_dtype)
 
         # Sort data and atlas by atlas values
@@ -1520,7 +1520,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
 
     labels = t_r * (np.array(xticks))
     labels *= (2 ** n_decimations)
-    axes.set_xticklabels(['%.02f' % t for t in labels.tolist()])
+    axes.set_xticklabels([f'{t:.02f}' for t in labels.tolist()])
 
     # Remove and redefine spines
     for side in ['top', 'right']:
@@ -1610,7 +1610,7 @@ def plot_img_comparison(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
 
         if plot_hist:
             ax1.scatter(
-                ref_data, src_data, label="Pearsonr: %.2f" % corr, c="g",
+                ref_data, src_data, label=f"Pearsonr: {corr:.2f}", c="g",
                 alpha=.6)
             x = np.linspace(*ax1.get_xlim(), num=100)
             ax1.plot(x, x, linestyle="--", c="k")
@@ -1628,7 +1628,7 @@ def plot_img_comparison(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
             if output_dir is not None:
                 if not os.path.exists(output_dir):
                     os.makedirs(output_dir)
-                plt.savefig(os.path.join(output_dir, "%04i.png" % i))
+                plt.savefig(os.path.join(output_dir, f"{int(i):04}.png"))
 
         plt.tight_layout()
 

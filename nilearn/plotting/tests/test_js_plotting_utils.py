@@ -189,7 +189,7 @@ def check_html(html, check_selects=True, plot_div_id='surface-plot',
     assert 'width="3" height="17"' in html.get_iframe()
     assert 'width="33" height="37"' in html.get_iframe(33, 37)
     if title is not None:
-        assert "<title>{}</title>".format(title) in str(html)
+        assert f"<title>{title}</title>" in str(html)
     if not LXML_INSTALLED:
         return
     root = etree.HTML(html.html.encode('utf-8'),
@@ -215,7 +215,7 @@ def check_html(html, check_selects=True, plot_div_id='surface-plot',
 
 
 def _open_mock(f):
-    print('opened {}'.format(f))
+    print(f'opened {f}')
 
 
 def _check_open_in_browser(html):

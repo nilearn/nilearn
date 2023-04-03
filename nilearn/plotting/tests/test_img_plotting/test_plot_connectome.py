@@ -198,7 +198,7 @@ def plot_connectome_edge_thresholding(node_coords, non_symmetric_matrix):
     thresh = 80
     ax = plot_connectome(non_symmetric_matrix,
                          node_coords,
-                         edge_threshold="{}%".format(thresh))
+                         edge_threshold=f"{thresh}%")
     for direction in ['x', 'y', 'z']:
         assert(len([patch for patch in ax.axes[direction].ax.patches
                     if isinstance(patch, FancyArrow)])

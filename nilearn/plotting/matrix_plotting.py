@@ -92,16 +92,14 @@ def _sanitize_tri(tri):
     """Helper function for plot_matrix."""
     VALID_TRI_VALUES = set(["full", "lower", "diag"])
     if tri not in VALID_TRI_VALUES:
-        raise ValueError("Parameter tri needs to be "
-                         "one of {}.".format(VALID_TRI_VALUES))
+        raise ValueError(f"Parameter tri needs to be one of {VALID_TRI_VALUES}.")
 
 
 def _sanitize_reorder(reorder):
     """Helper function for plot_matrix."""
     VALID_REORDER_ARGS = set([True, False, 'single', 'complete', 'average'])
     if reorder not in VALID_REORDER_ARGS:
-        raise ValueError("Parameter reorder needs to be "
-                         "one of {}.".format(VALID_REORDER_ARGS))
+        raise ValueError(f"Parameter reorder needs to be one of {VALID_REORDER_ARGS}.")
     reorder = 'average' if reorder is True else reorder
     return reorder
 

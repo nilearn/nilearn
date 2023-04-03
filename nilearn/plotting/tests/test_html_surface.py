@@ -112,12 +112,12 @@ def test_full_brain_info():
     assert type(info['cmax']) == float
     json.dumps(info)
     for hemi in ['left', 'right']:
-        mesh = surface.load_surf_mesh(surfaces['pial_{}'.format(hemi)])
-        assert len(info['vertexcolor_{}'.format(hemi)]) == len(mesh[0])
+        mesh = surface.load_surf_mesh(surfaces[f'pial_{hemi}'])
+        assert len(info[f'vertexcolor_{hemi}']) == len(mesh[0])
         assert len(decode(
-            info['inflated_{}'.format(hemi)]['_z'], '<f4')) == len(mesh[0])
+            info[f'inflated_{hemi}']['_z'], '<f4')) == len(mesh[0])
         assert len(decode(
-            info['pial_{}'.format(hemi)]['_j'], '<i4')) == len(mesh[1])
+            info[f'pial_{hemi}']['_j'], '<i4')) == len(mesh[1])
 
 
 def test_fill_html_template():

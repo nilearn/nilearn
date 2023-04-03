@@ -50,13 +50,13 @@ def add_js_lib(html, embed_js=True):
             jquery = f.read()
         with open(os.path.join(js_dir, 'plotly-gl3d-latest.min.js')) as f:
             plotly = f.read()
-        js_lib = """
-        <script>{}</script>
-        <script>{}</script>
+        js_lib = f"""
+        <script>{jquery}</script>
+        <script>{plotly}</script>
         <script>
-        {}
+        {js_utils}
         </script>
-        """.format(jquery, plotly, js_utils)
+        """
     if not isinstance(html, Template):
         html = Template(html)
     return html.safe_substitute({'INSERT_JS_LIBRARIES_HERE': js_lib})

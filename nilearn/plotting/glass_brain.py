@@ -14,7 +14,7 @@ from nilearn.version import _compare_version
 def _codes_bezier(pts):
     bezier_num = len(pts)
     # Next two lines are meant to handle both Bezier 3 and 4
-    path_attr = 'CURVE{0}'.format(bezier_num)
+    path_attr = f'CURVE{bezier_num}'
     codes = [getattr(Path, path_attr)] * (bezier_num - 1)
     return [Path.MOVETO] + codes
 
@@ -103,7 +103,7 @@ def _get_json_and_transform(direction):
     direction_to_filename = dict([
         (_direction, os.path.join(
             dirname,
-            'brain_schematics_{0}.json'.format(view_name)))
+            f'brain_schematics_{view_name}.json'))
         for _direction, view_name in direction_to_view_name.items()])
 
     direction_to_transforms = dict([

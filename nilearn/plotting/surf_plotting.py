@@ -1233,8 +1233,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     """
     for arg in ('figure', 'axes'):
         if arg in kwargs:
-            raise ValueError(('plot_img_on_surf does not'
-                              ' accept %s as an argument' % arg))
+            raise ValueError(f'plot_img_on_surf does not accept {arg} as an argument')
 
     stat_map = check_niimg_3d(stat_map, dtype='auto')
     modes = _check_views(views)
@@ -1271,12 +1270,12 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         # sulc depth background map otherwise
         if inflate:
             curv_map = surface.load_surf_data(
-                surf_mesh["curv_{}".format(hemi)]
+                surf_mesh[f"curv_{hemi}"]
             )
             curv_sign_map = (np.sign(curv_map) + 1) / 4 + 0.25
             bg_map = curv_sign_map
         else:
-            sulc_map = surf_mesh['sulc_%s' % hemi]
+            sulc_map = surf_mesh[f'sulc_{hemi}']
             bg_map = sulc_map
 
         ax = fig.add_subplot(grid[i + len(hemis)], projection="3d")

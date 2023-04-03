@@ -111,7 +111,7 @@ def alpha_cmap(color, name='', alpha_min=0.5, alpha_max=1.):
                 (red, green, blue, 1.),
                ]
     cmap = _colors.LinearSegmentedColormap.from_list(
-        '%s_transparent' % name, cmapspec, _rcParams['image.lut'])
+        f'{name}_transparent', cmapspec, _rcParams['image.lut'])
     cmap._init()
     cmap._lut[:, -1] = _np.linspace(alpha_min, alpha_max, cmap._lut.shape[0])
     cmap._lut[-1, -1] = 0
@@ -186,8 +186,8 @@ for color, name in (((1, 0, 0), 'red'),
                     ((0, 1, 0), 'green'),
                     ((0, 0, 1), 'blue'),
                     ):
-    _cmap_d['%s_transparent' % name] = alpha_cmap(color, name=name)
-    _cmap_d['%s_transparent_full_alpha_range' % name] = alpha_cmap(
+    _cmap_d[f'{name}_transparent'] = alpha_cmap(color, name=name)
+    _cmap_d[f'{name}_transparent_full_alpha_range'] = alpha_cmap(
         color, alpha_min=0,
         alpha_max=1, name=name)
 
@@ -255,17 +255,15 @@ def dim_cmap(cmap, factor=.3, to_white=True):
         cdict[color] = color_lst
 
     return _colors.LinearSegmentedColormap(
-        '%s_dimmed' % cmap.name, cdict, _rcParams['image.lut'])
+        f'{cmap.name}_dimmed', cdict, _rcParams['image.lut'])
 
 
 def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
     """ Replace a colormap by another inside a pair of values.
     """
     assert vmin < vmax, ValueError('vmin must be smaller than vmax')
-    assert vmin >= 0, ValueError('vmin must be larger than 0, %s was passed.'
-                                 % vmin)
-    assert vmax <= 1, ValueError('vmax must be smaller than 1, %s was passed.'
-                                 % vmax)
+    assert vmin >= 0, ValueError(f'vmin must be larger than 0, {vmin} was passed.')
+    assert vmax <= 1, ValueError(f'vmax must be smaller than 1, {vmax} was passed.')
     outer_cdict = outer_cmap._segmentdata.copy()
     inner_cdict = inner_cmap._segmentdata.copy()
 
@@ -314,5 +312,5 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
         cdict[color] = color_lst
 
     return _colors.LinearSegmentedColormap(
-        '%s_inside_%s' % (inner_cmap.name, outer_cmap.name),
+        f'{inner_cmap.name}_inside_{outer_cmap.name}',
         cdict, _rcParams['image.lut'])

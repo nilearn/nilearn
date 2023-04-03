@@ -166,7 +166,7 @@ class HTMLDocument:
         else:
             self._temp_file_removing_proc = _remove_after_n_seconds(
                 self._temp_file, temp_file_lifetime)
-        webbrowser.open('file://{}'.format(file_name))
+        webbrowser.open(f'file://{file_name}')
 
     def remove_temp_file(self):
         """Remove the temporary file created by
@@ -178,5 +178,5 @@ class HTMLDocument:
         if not os.path.isfile(self._temp_file):
             return
         os.remove(self._temp_file)
-        print('removed {}'.format(self._temp_file))
+        print(f'removed {self._temp_file}')
         self._temp_file = None
