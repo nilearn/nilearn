@@ -1,21 +1,23 @@
-import sys
 import re
+import sys
+
 import numpy as np
 import pandas as pd
-from scipy.stats import pearsonr
-from sklearn.preprocessing import scale
 import pytest
 from nibabel import Nifti1Image
-from nilearn.maskers import NiftiMasker
-from nilearn.interfaces.fmriprep import load_confounds
-from nilearn.interfaces.fmriprep.load_confounds import _check_strategy, \
-    _load_single_confounds_file
-
 from nilearn._utils.fmriprep_confounds import _to_camel_case
-
-from nilearn.interfaces.fmriprep.tests.utils import (
-    create_tmp_filepath, get_leagal_confound
+from nilearn.interfaces.fmriprep import load_confounds
+from nilearn.interfaces.fmriprep.load_confounds import (
+    _check_strategy,
+    _load_single_confounds_file,
 )
+from nilearn.interfaces.fmriprep.tests.utils import (
+    create_tmp_filepath,
+    get_leagal_confound,
+)
+from nilearn.maskers import NiftiMasker
+from scipy.stats import pearsonr
+from sklearn.preprocessing import scale
 
 
 def _simu_img(tmp_path, demean):
