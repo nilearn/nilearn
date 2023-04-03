@@ -78,7 +78,7 @@ def mean_scaling(Y, axis=0):
 
 
 def _ar_model_fit(X, val, Y):
-    """Wrap for fit method of ARModel to allow joblib parallelization."""
+    """Wrap fit method of ARModel to allow joblib parallelization."""
     return ARModel(X, val).fit(Y)
 
 
