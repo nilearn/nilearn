@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 from nilearn.plotting import plot_carpet
 
-from .testing_utils import testdata_4d  # noqa:F401
+from .testing_utils import testdata_4d
 
 
-def test_plot_carpet(testdata_4d):  # noqa:F811
+def test_plot_carpet(testdata_4d):
     """Check contents of plot_carpet figure against data in image."""
     img_4d = testdata_4d['img_4d']
     img_4d_long = testdata_4d['img_4d_long']
@@ -41,7 +41,7 @@ def test_plot_carpet(testdata_4d):  # noqa:F811
     plt.close(display)
 
 
-def test_plot_carpet_with_atlas(testdata_4d):  # noqa:F811
+def test_plot_carpet_with_atlas(testdata_4d):
     """Test plot_carpet when using an atlas."""
     img_4d = testdata_4d['img_4d']
     mask_img = testdata_4d['img_atlas']

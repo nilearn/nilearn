@@ -79,7 +79,7 @@ VALID_REORDER_VALUES = {True, False, 'single', 'complete', 'average'}
 @pytest.mark.parametrize("reorder", VALID_REORDER_VALUES)
 def test_sanitize_reorder(reorder):
     from ..matrix_plotting import _sanitize_reorder
-    if reorder != True:  # noqa
+    if reorder is not True:
         assert _sanitize_reorder(reorder) == reorder
     else:
         assert _sanitize_reorder(reorder) == 'average'
@@ -165,7 +165,7 @@ def test_matrix_plotting_reorder(mat, labels):
     reordered_labels = [int(lbl.get_text())
                         for lbl in ax.axes.get_xticklabels()]
     # block order does not matter
-    assert (  # noqa
+    assert (
         (reordered_labels[:3] == idx or reordered_labels[-3:] == idx),
         'Clustering does not find block structure.'
     )

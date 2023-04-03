@@ -10,7 +10,7 @@ import sys
 
 
 class SVGToJSONConverter:
-    """Reads an svg file and exports paths to a JSON format
+    """Reads an svg file and exports paths to a JSON format.
 
     Only segments and Bezier curves are supported
     """
@@ -80,7 +80,7 @@ class SVGToJSONConverter:
         return xmin, xmax, ymin, ymax
 
     def to_json(self):
-        """Exports the svg paths into json.
+        """Export the svg paths into json.
 
         The json format looks like this:
         {

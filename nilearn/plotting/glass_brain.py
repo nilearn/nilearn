@@ -1,6 +1,4 @@
-"""
-Brain schematics plotting for glass brain functionality
-"""
+"""Brain schematics plotting for glass brain functionality."""
 
 import json
 import os
@@ -31,7 +29,7 @@ def _codes(atype, pts):
 
 
 def _invert_color(color):
-    """Return inverted color
+    """Return inverted color.
 
     If color is (R, G, B) it returns (1 - R, 1 - G, 1 - B). If
     'color' can not be converted to a color it is returned
@@ -48,8 +46,7 @@ def _invert_color(color):
 
 def _get_mpl_patches(json_content, transform=None,
                      invert_color=False, **kwargs):
-    """Walks over the json content and builds a list of matplotlib patches
-    """
+    """Walk over the json content and build a list of matplotlib patches."""
     mpl_patches = []
     kwargs_edgecolor = kwargs.pop('edgecolor', None)
     kwargs_linewidth = kwargs.pop('linewidth', None)
@@ -82,9 +79,8 @@ def _get_mpl_patches(json_content, transform=None,
 
 
 def _get_json_and_transform(direction):
-    """Returns the json filename and an affine transform, which has
-    been tweaked by hand to fit the MNI template
-    """
+    """Return the json filename and an affine transform, which has \
+    been tweaked by hand to fit the MNI template."""
     direction_to_view_name = {'x': 'side',
                               'y': 'back',
                               'z': 'top',
@@ -143,7 +139,7 @@ def _get_object_bounds(json_content, transform):
 
 
 def plot_brain_schematics(ax, direction, **kwargs):
-    """Creates matplotlib patches from a json custom format and plots them
+    """Create matplotlib patches from a json custom format and plots them \
     on a matplotlib Axes.
 
     Parameters

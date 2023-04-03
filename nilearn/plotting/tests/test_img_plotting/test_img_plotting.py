@@ -50,7 +50,7 @@ def test_mni152template_is_reordered():
 
 
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
-def test_plot_functions_3d_default_params(plot_func, testdata_3d, tmpdir):  # noqa
+def test_plot_functions_3d_default_params(plot_func, testdata_3d, tmpdir):
     """Smoke tests for 3D plotting functions with default parameters."""
     filename = str(tmpdir.join('temp.png'))
     plot_func(testdata_3d['img'], output_file=filename)
@@ -59,7 +59,7 @@ def test_plot_functions_3d_default_params(plot_func, testdata_3d, tmpdir):  # no
 
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize("cbar_tick_format", ["%f", "%i"])
-def test_cbar_tick_format(plot_func, testdata_3d, cbar_tick_format, tmpdir):  # noqa
+def test_cbar_tick_format(plot_func, testdata_3d, cbar_tick_format, tmpdir):
     """Test different colorbar tick format with 3D plotting functions."""
     filename = str(tmpdir.join('temp.png'))
     plot_func(
@@ -70,7 +70,10 @@ def test_cbar_tick_format(plot_func, testdata_3d, cbar_tick_format, tmpdir):  # 
 
 
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_4D)
-def test_plot_functions_4d_default_params(plot_func, testdata_3d, testdata_4d, tmpdir):  # noqa
+def test_plot_functions_4d_default_params(plot_func,
+                                          testdata_3d,
+                                          testdata_4d,
+                                          tmpdir):
     """Smoke-test for 4D plotting functions with default arguments."""
     filename = str(tmpdir.join('temp.png'))
     kwargs = {"output_file": filename}
@@ -85,7 +88,7 @@ def test_plot_functions_4d_default_params(plot_func, testdata_3d, testdata_4d, t
 @pytest.mark.parametrize("plot_func",
                          PLOTTING_FUNCS_3D.difference({plot_glass_brain}))
 @pytest.mark.parametrize("cut_coords", [None, 5, (5, 4, 3)])
-def test_plot_functions_mosaic_mode(plot_func, cut_coords, testdata_3d):  # noqa
+def test_plot_functions_mosaic_mode(plot_func, cut_coords, testdata_3d):
     """Smoke-test for plotting functions in mosaic mode."""
     plot_func(testdata_3d['img'], display_mode='mosaic',
               title='mosaic mode', cut_coords=cut_coords)
@@ -93,7 +96,7 @@ def test_plot_functions_mosaic_mode(plot_func, cut_coords, testdata_3d):  # noqa
 
 
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_glass_brain])
-def test_plot_threshold_for_uint8(plot_func, testdata_3d):  # noqa:F811
+def test_plot_threshold_for_uint8(plot_func, testdata_3d):
     """Mask was applied in [-threshold, threshold] which is problematic
     for uint8 data. See https://github.com/nilearn/nilearn/issues/611
     for more details.
@@ -142,7 +145,7 @@ def expected_error_message(display_mode, cut_coords):
                          [('ortho', 2), ('tiled', 2),
                           ('tiled', (2, 2)), ('mosaic', (2, 2))])
 def test_invalid_cut_coords_with_display_mode(plot_func, display_mode,
-                                              cut_coords, testdata_3d,  # noqa
+                                              cut_coords, testdata_3d,
                                               expected_error_message):
     """Tests for invalid combinations of cut_coords and display_mode."""
     if plot_func == plot_glass_brain and display_mode != 'ortho':
@@ -153,7 +156,7 @@ def test_invalid_cut_coords_with_display_mode(plot_func, display_mode,
 
 
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
-def test_plot_with_nans(plot_func, testdata_3d):  # noqa:F811
+def test_plot_with_nans(plot_func, testdata_3d):
     """Smoke test for plotting functions with nans in data image."""
     plot_func(_test_data_with_nans(testdata_3d['img']))
 
@@ -169,7 +172,7 @@ def test_plotting_functions_with_cmaps(plot_func, cmap):
 
 @pytest.mark.parametrize("plot_func",
                          [plot_anat, plot_roi, plot_stat_map])
-def test_plotting_functions_with_nans_in_bg_img(plot_func, testdata_3d):  # noqa
+def test_plotting_functions_with_nans_in_bg_img(plot_func, testdata_3d):
     """Smoke test for plotting functions with nans in background image."""
     bg_img = _test_data_with_nans(testdata_3d['img'])
     if plot_func == plot_anat:
@@ -180,7 +183,7 @@ def test_plotting_functions_with_nans_in_bg_img(plot_func, testdata_3d):  # noqa
 
 
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_anat, plot_img])
-def test_plotting_functions_with_display_mode_tiled(plot_func, testdata_3d):  # noqa
+def test_plotting_functions_with_display_mode_tiled(plot_func, testdata_3d):
     """Smoke test for plotting functions with tiled display mode."""
     if plot_func == plot_anat:
         plot_func(display_mode='tiled')

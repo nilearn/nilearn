@@ -38,7 +38,7 @@ class BaseAxes:
                                   "in derived classes'")
 
     def add_object_bounds(self, bounds):
-        """Ensures that axes get rescaled when adding object bounds."""
+        """Ensure that axes get rescaled when adding object bounds."""
         old_object_bounds = self.get_object_bounds()
         self._object_bounds.append(bounds)
         new_object_bounds = self.get_object_bounds()
@@ -128,7 +128,7 @@ class BaseAxes:
                        fontproperties=None, frameon=False, loc=4, pad=.1,
                        borderpad=.5, sep=5, size_vertical=0, label_top=False,
                        color='black', fontsize=None, **kwargs):
-        """Adds a scale bar annotation to the display.
+        """Add a scale bar annotation to the display.
 
         Parameters
         ----------
@@ -217,9 +217,8 @@ class BaseAxes:
         axis.add_artist(anchor_size_bar)
 
     def draw_position(self, size, bg_color, **kwargs):
-        """``draw_position`` is not implemented in base class and
-        should be implemented in derived classes.
-        """
+        """``draw_position`` is not implemented in base class and \
+        should be implemented in derived classes."""
         raise NotImplementedError("'draw_position' should be implemented "
                                   "in derived classes")
 
@@ -302,7 +301,7 @@ class CutAxes(BaseAxes):
 
 
 def _get_index_from_direction(direction):
-    """Returns numerical index from direction."""
+    """Return numerical index from direction."""
     directions = ['x', 'y', 'z']
     try:
         # l and r are subcases of x
@@ -330,7 +329,7 @@ def _coords_3d_to_2d(coords_3d, direction, return_direction=False):
 
 @fill_doc
 class GlassBrainAxes(BaseAxes):
-    """An MPL axis-like object that displays a 2D projection of 3D
+    """An MPL axis-like object that displays a 2D projection of 3D \
     volumes with a schematic view of the brain.
 
     Parameters
@@ -355,7 +354,7 @@ class GlassBrainAxes(BaseAxes):
             self.add_object_bounds(object_bounds)
 
     def transform_to_2d(self, data, affine):
-        """Returns the maximum of the absolute value of the 3D volume
+        """Return the maximum of the absolute value of the 3D volume \
         along an axis.
 
         Parameters
@@ -415,9 +414,9 @@ class GlassBrainAxes(BaseAxes):
         return np.rot90(maximum_intensity_data)
 
     def draw_position(self, size, bg_color, **kwargs):
-        """Not implemented as it does not make sense to draw crosses for
-        the position of the cuts since we are taking the max along one axis.
-        """
+        """Not implemented as it does not make sense to draw crosses for \
+        the position of the cuts \
+        since we are taking the max along one axis."""
         pass
 
     def _add_markers(self, marker_coords, marker_color, marker_size, **kwargs):
@@ -465,7 +464,7 @@ class GlassBrainAxes(BaseAxes):
 
     def _add_lines(self, line_coords, line_values, cmap,
                    vmin=None, vmax=None, directed=False, **kwargs):
-        """Plot lines
+        """Plot lines.
 
         Parameters
         ----------

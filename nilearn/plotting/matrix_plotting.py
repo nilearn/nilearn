@@ -1,6 +1,4 @@
-"""
-Miscellaneous matrix plotting utilities.
-"""
+"""Miscellaneous matrix plotting utilities."""
 import warnings
 
 import matplotlib.patches as mpatches
@@ -18,7 +16,7 @@ with warnings.catch_warnings():
 
 
 def _fit_axes(ax):
-    """Helper function for plot_matrix.
+    """Help for plot_matrix.
 
     This function redimensions the given axes to have
     labels fitting.
@@ -42,8 +40,10 @@ def _fit_axes(ax):
         ax.set_position(new_position)
 
 
-def _sanitize_inputs_plot_matrix(mat_shape, tri, labels, reorder, figure, axes):  # noqa
-    """Helper function for plot_matrix.
+def _sanitize_inputs_plot_matrix(mat_shape, tri, labels, reorder,
+                                 figure,
+                                 axes):
+    """Help for plot_matrix.
 
     This function makes sure the inputs to plot_matrix are valid.
     """
@@ -55,7 +55,7 @@ def _sanitize_inputs_plot_matrix(mat_shape, tri, labels, reorder, figure, axes):
 
 
 def _sanitize_figure_and_axes(figure, axes):
-    """Helper function for plot_matrix."""
+    """Help for plot_matrix."""
     if axes is not None and figure is not None:
         raise ValueError(
             "Parameters figure and axes cannot be specified "
@@ -79,7 +79,7 @@ def _sanitize_figure_and_axes(figure, axes):
 
 
 def _sanitize_labels(mat_shape, labels):
-    """Helper function for plot_matrix."""
+    """Help for plot_matrix."""
     # we need a list so an empty one will be cast to False
     if isinstance(labels, np.ndarray):
         labels = labels.tolist()
@@ -89,7 +89,7 @@ def _sanitize_labels(mat_shape, labels):
 
 
 def _sanitize_tri(tri):
-    """Helper function for plot_matrix."""
+    """Help for plot_matrix."""
     VALID_TRI_VALUES = {"full", "lower", "diag"}
     if tri not in VALID_TRI_VALUES:
         raise ValueError(
@@ -97,7 +97,7 @@ def _sanitize_tri(tri):
 
 
 def _sanitize_reorder(reorder):
-    """Helper function for plot_matrix."""
+    """Help for plot_matrix."""
     VALID_REORDER_ARGS = {True, False, 'single', 'complete', 'average'}
     if reorder not in VALID_REORDER_ARGS:
         raise ValueError(
@@ -107,7 +107,7 @@ def _sanitize_reorder(reorder):
 
 
 def _reorder_matrix(mat, labels, reorder):
-    """Helper function for plot_matrix.
+    """Help for plot_matrix.
 
     This function reorders the provided matrix.
     """
@@ -135,7 +135,7 @@ def _reorder_matrix(mat, labels, reorder):
 
 
 def _mask_matrix(mat, tri):
-    """Helper function for plot_matrix.
+    """Help for plot_matrix.
 
     This function masks the matrix depending on the provided
     value of ``tri``.
@@ -149,7 +149,7 @@ def _mask_matrix(mat, tri):
 
 def _configure_axis(axes, labels, label_size,
                     x_label_rotation, y_label_rotation):
-    """Helper function for plot_matrix."""
+    """Help for plot_matrix."""
     if not labels:
         axes.xaxis.set_major_formatter(plt.NullFormatter())
         axes.yaxis.set_major_formatter(plt.NullFormatter())
@@ -168,7 +168,7 @@ def _configure_axis(axes, labels, label_size,
 
 
 def _configure_grid(axes, grid, tri, size):
-    """Helper function for plot_matrix."""
+    """Help for plot_matrix."""
     # Different grids for different layouts
     if tri == 'lower':
         for i in range(size):
@@ -314,7 +314,7 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
 @fill_doc
 def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
                          output_file=None):
-    """Creates plot for contrast definition.
+    """Create plot for contrast definition.
 
     Parameters
     ----------
@@ -335,7 +335,7 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
     %(colorbar)s
         Default=False.
     ax : :class:`matplotlib.axes.Axes`, optional
-        Axis on which to plot the figure. 
+        Axis on which to plot the figure.
         If None, a new figure will be created.
     %(output_file)s
 
@@ -440,7 +440,7 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
 
 @fill_doc
 def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
-    """Creates plot for event visualization.
+    """Create plot for event visualization.
 
     Parameters
     ----------

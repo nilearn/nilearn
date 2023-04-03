@@ -14,8 +14,7 @@ from ..js_plotting_utils import colorscale
 
 
 def _check_html(html_view, title=None):
-    """ Check the presence of some expected code in the html viewer
-    """
+    """Check the presence of some expected code in the html viewer."""
     assert isinstance(html_view, html_stat_map.StatMapView)
     assert "var brain =" in str(html_view)
     assert "overlayImg" in str(html_view)
@@ -24,7 +23,8 @@ def _check_html(html_view, title=None):
 
 
 def _simulate_img(affine=np.eye(4)):
-    """ Simulate data with one "spot"
+    """Simulate data with one "spot"
+
         Returns: img, data
     """
     data = np.zeros([8, 8, 8])
@@ -34,8 +34,7 @@ def _simulate_img(affine=np.eye(4)):
 
 
 def _check_affine(affine):
-    """ Check positive, isotropic, near-diagonal affine.
-    """
+    """Check positive, isotropic, near-diagonal affine."""
     assert (affine[0, 0] == affine[1, 1])
     assert (affine[2, 2] == affine[1, 1])
     assert (affine[0, 0] > 0)
@@ -71,7 +70,7 @@ def test_threshold_data():
     data = np.arange(-3, 4)
 
     # Check that an 'auto' threshold leaves at least one element
-    data_t, mask, thresh = html_stat_map._threshold_data(data, 
+    data_t, mask, thresh = html_stat_map._threshold_data(data,
                                                          threshold='auto')
     gtruth_m = np.array([False, True, True, True, True, True, False])
     gtruth_d = np.array([-3, 0, 0, 0, 0, 0, 3])
@@ -101,8 +100,7 @@ def test_threshold_data():
 
 
 def test_save_sprite():
-    """Test covers _save_sprite as well as _bytesIO_to_base64
-    """
+    """Test covers _save_sprite as well as _bytesIO_to_base64."""
 
     # Generate a simulated volume with a square inside
     data = np.random.RandomState(42).uniform(size=140).reshape(7, 5, 4)
@@ -130,8 +128,7 @@ def test_save_sprite():
 @pytest.mark.parametrize("cmap", ["tab10", "cold_hot"])
 @pytest.mark.parametrize("n_colors", [7, 20])
 def test_save_cmap(cmap, n_colors):
-    """Test covers _save_cmap as well as _bytesIO_to_base64
-    """
+    """Test covers _save_cmap as well as _bytesIO_to_base64."""
     # Save the cmap using BytesIO
     cmap_io = BytesIO()
     html_stat_map._save_cm(cmap_io, cmap, format='png', n_colors=n_colors)

@@ -5,7 +5,7 @@ import pytest
 from nilearn.plotting import plot_anat
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
 
-from .testing_utils import testdata_3d  # noqa:F401
+from .testing_utils import testdata_3d
 
 
 @pytest.mark.parametrize("anat_img", [False, MNI152TEMPLATE])
@@ -32,7 +32,7 @@ def test_plot_anat_colorbar(anat_img, display_mode, cbar_tick_format, tmpdir):
     plt.close()
 
 
-def test_plot_anat_3d_img(testdata_3d, tmpdir):  # noqa:F811
+def test_plot_anat_3d_img(testdata_3d, tmpdir):
     """Smoke test for plot_anat."""
     filename = str(tmpdir.join('test.png'))
     slicer = plot_anat(testdata_3d['img'], dim='auto')

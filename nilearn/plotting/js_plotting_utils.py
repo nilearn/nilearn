@@ -1,7 +1,5 @@
-"""
-Helper functions for views, i.e. interactive plots from html_surface and
-html_connectome.
-"""
+"""Helps for views, i.e. interactive plots from html_surface and \
+html_connectome."""
 
 import base64
 import os
@@ -13,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # included here for backward compatibility
-from nilearn.plotting.html_document import (  # noqa: F401
+from nilearn.plotting.html_document import ( 
     HTMLDocument,
     set_max_img_views_before_warning,
 )
@@ -63,7 +61,7 @@ def add_js_lib(html, embed_js=True):
 
 
 def get_html_template(template_name):
-    """Get an HTML file from package data"""
+    """Get an HTML file from package data."""
     template_path = os.path.join(
         os.path.dirname(__file__), 'data', 'html', template_name)
     with open(template_path, 'rb') as f:
@@ -121,7 +119,7 @@ def colorscale(cmap, values, threshold=None, symmetric_cmap=True,
 
 
 def encode(a):
-    """Base64 encode a numpy array"""
+    """Base64 encode a numpy array."""
     try:
         data = a.tobytes()
     except AttributeError:
@@ -131,7 +129,7 @@ def encode(a):
 
 
 def decode(b, dtype):
-    """Decode a numpy array encoded as Base64"""
+    """Decode a numpy array encoded as Base64."""
     return np.frombuffer(base64.b64decode(b.encode('utf-8')), dtype)
 
 

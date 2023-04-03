@@ -107,11 +107,13 @@ class HTMLDocument:
         return wrapped
 
     def get_standalone(self):
-        """Returns the plot in an HTML page."""
+        """Return the plot in an HTML page."""
         return self.html
 
     def _repr_html_(self):
-        """Used by the Jupyter notebook.
+        """Return html representation of the plot.
+        
+        Used by the Jupyter notebook.
 
         Users normally won't call this method explicitly.
         """
@@ -121,7 +123,7 @@ class HTMLDocument:
         return self.html
 
     def save_as_html(self, file_name):
-        """Save the plot in an HTML file, that can later be opened
+        """Save the plot in an HTML file, that can later be opened \
         in a browser.
 
         Parameters
@@ -169,10 +171,8 @@ class HTMLDocument:
         webbrowser.open(f'file://{file_name}')
 
     def remove_temp_file(self):
-        """Remove the temporary file created by
-        ``open_in_browser``, if necessary.
-
-        """
+        """Remove the temporary file created by \
+        ``open_in_browser``, if necessary."""
         if self._temp_file is None:
             return
         if not os.path.isfile(self._temp_file):

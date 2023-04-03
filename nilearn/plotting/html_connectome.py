@@ -22,8 +22,7 @@ class ConnectomeView(HTMLDocument):
 
 
 def _encode_coordinates(coords, prefix):
-    """
-    Transform a 2D-array of 3D data (x, y, z) into a dict of base64 values
+    """Transform a 2D-array of 3D data (x, y, z) into a dict of base64 values.
 
     Parameters
     ----------
@@ -31,7 +30,7 @@ def _encode_coordinates(coords, prefix):
         The coordinates of the nodes in MNI space.
 
     prefix : str
-        Prefix for the key value in the returned dict. 
+        Prefix for the key value in the returned dict.
         Schema is {prefix}{x|y|z}
 
     Returns
@@ -51,7 +50,8 @@ def _encode_coordinates(coords, prefix):
 
 
 def _prepare_line(edges, nodes):
-    """prepare a plotly scatter3d line plot so that a set of disconnected edges
+    """Prepare a plotly scatter3d line plot \
+    so that a set of disconnected edges \
     can be drawn as a single line.
 
     `edges` are values associated with each edge (that get mapped to colors
@@ -83,8 +83,8 @@ def _prepare_line(edges, nodes):
 
 
 def _prepare_colors_for_markers(marker_color, number_of_nodes):
-    """
-    Generate "color" and "colorscale" attributes based on `marker_color` mode
+    """Generate "color" and "colorscale" attributes \
+    based on `marker_color` mode.
 
     Parameters
     ----------
@@ -111,8 +111,7 @@ def _prepare_colors_for_markers(marker_color, number_of_nodes):
 
 def _prepare_lines_metadata(adjacency_matrix, coords, threshold,
                             cmap, symmetric_cmap):
-    """
-    Generate metadata related to lines for _connectome_view plot
+    """Generate metadata related to lines for _connectome_view plot.
 
     Parameters
     ----------

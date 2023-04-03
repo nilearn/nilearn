@@ -18,8 +18,8 @@ class SurfaceFigure:
         raise NotImplementedError
 
     def _check_output_file(self, output_file=None):
-        """If an output file is provided, set it as
-        the new default output file.
+        """If an output file is provided, \
+        set it as the new default output file.
 
         Parameters
         ----------
@@ -81,7 +81,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             return self.figure
 
     def savefig(self, output_file=None):
-        """Saves the figure to file.
+        """Save the figure to file.
 
         Parameters
         ----------

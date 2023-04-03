@@ -15,8 +15,10 @@ from scipy.stats import scoreatpercentile
 
 
 class OrthoProjector(OrthoSlicer):
-    """A class to create linked axes for plotting orthogonal projections
-    of 3D maps. This visualization mode can be activated from
+    """A class to create linked axes for plotting orthogonal projections \
+    of 3D maps.
+    
+    This visualization mode can be activated from
     :func:`~nilearn.plotting.plot_glass_brain`, by setting
     ``display_mode='ortho'``:
 
@@ -225,8 +227,9 @@ class OrthoProjector(OrthoSlicer):
 
 
 class XProjector(OrthoProjector):
-    """The ``XProjector`` class enables sagittal visualization through 2D
+    """The ``XProjector`` class enables sagittal visualization through 2D \
     projections with :func:`~nilearn.plotting.plot_glass_brain`.
+
     This visualization mode can be activated by setting ``display_mode='x'``:
 
      .. code-block:: python
@@ -256,8 +259,9 @@ class XProjector(OrthoProjector):
 
 
 class YProjector(OrthoProjector):
-    """The ``YProjector`` class enables coronal visualization through 2D
+    """The ``YProjector`` class enables coronal visualization through 2D \
     projections with :func:`~nilearn.plotting.plot_glass_brain`.
+
     This visualization mode can be activated by setting ``display_mode='y'``:
 
      .. code-block:: python
@@ -287,8 +291,9 @@ class YProjector(OrthoProjector):
 
 
 class ZProjector(OrthoProjector):
-    """The ``ZProjector`` class enables axial visualization through 2D
+    """The ``ZProjector`` class enables axial visualization through 2D \
     projections with :func:`~nilearn.plotting.plot_glass_brain`.
+
     This visualization mode can be activated by setting ``display_mode='z'``:
 
      .. code-block:: python
@@ -318,9 +323,12 @@ class ZProjector(OrthoProjector):
 
 
 class XZProjector(OrthoProjector):
-    """The ``XZProjector`` class enables to combine sagittal and axial views
-     on the same figure through 2D projections with
-     :func:`~nilearn.plotting.plot_glass_brain`. This visualization mode
+    """The ``XZProjector`` class enables to combine sagittal \
+    and axial views \
+     on the same figure through 2D projections with \
+     :func:`~nilearn.plotting.plot_glass_brain`.
+     
+     This visualization mode
      can be activated by setting ``display_mode='xz'``:
 
      .. code-block:: python
@@ -349,9 +357,12 @@ class XZProjector(OrthoProjector):
 
 
 class YXProjector(OrthoProjector):
-    """The ``YXProjector`` class enables to combine coronal and sagittal views
-     on the same figure through 2D projections with
-     :func:`~nilearn.plotting.plot_glass_brain`. This visualization mode
+    """The ``YXProjector`` class enables to combine coronal \
+    and sagittal views \
+     on the same figure through 2D projections with \
+     :func:`~nilearn.plotting.plot_glass_brain`.
+     
+     This visualization mode
      can be activated by setting ``display_mode='yx'``:
 
      .. code-block:: python
@@ -380,9 +391,11 @@ class YXProjector(OrthoProjector):
 
 
 class YZProjector(OrthoProjector):
-    """The ``YZProjector`` class enables to combine coronal and axial views
-     on the same figure through 2D projections with
-     :func:`~nilearn.plotting.plot_glass_brain`. This visualization mode
+    """The ``YZProjector`` class enables to combine coronal and axial views \
+     on the same figure through 2D projections with \
+     :func:`~nilearn.plotting.plot_glass_brain`.
+     
+     This visualization mode
      can be activated by setting ``display_mode='yz'``:
 
      .. code-block:: python
@@ -411,9 +424,11 @@ class YZProjector(OrthoProjector):
 
 
 class LYRZProjector(OrthoProjector):
-    """The ``LYRZProjector`` class enables ? visualization
-     on the same figure through 2D projections with
-     :func:`~nilearn.plotting.plot_glass_brain`. This visualization mode
+    """The ``LYRZProjector`` class enables ? visualization \
+     on the same figure through 2D projections with \
+     :func:`~nilearn.plotting.plot_glass_brain`.
+     
+     This visualization mode
      can be activated by setting ``display_mode='lyrz'``:
 
      .. code-block:: python
@@ -442,9 +457,11 @@ class LYRZProjector(OrthoProjector):
 
 
 class LZRYProjector(OrthoProjector):
-    """The ``LZRYProjector`` class enables ? visualization
-     on the same figure through 2D projections with
-     :func:`~nilearn.plotting.plot_glass_brain`. This visualization mode
+    """The ``LZRYProjector`` class enables ? visualization \
+     on the same figure through 2D projections with \
+     :func:`~nilearn.plotting.plot_glass_brain`.
+     
+     This visualization mode
      can be activated by setting ``display_mode='lzry'``:
 
      .. code-block:: python
@@ -473,9 +490,11 @@ class LZRYProjector(OrthoProjector):
 
 
 class LZRProjector(OrthoProjector):
-    """The ``LZRProjector`` class enables hemispheric sagittal visualization
-     on the same figure through 2D projections with
-     :func:`~nilearn.plotting.plot_glass_brain`. This visualization mode
+    """The ``LZRProjector`` class enables hemispheric sagittal visualization \
+     on the same figure through 2D projections with \
+     :func:`~nilearn.plotting.plot_glass_brain`.
+     
+     This visualization mode
      can be activated by setting ``display_mode='lzr'``:
 
      .. code-block:: python
@@ -503,9 +522,11 @@ class LZRProjector(OrthoProjector):
 
 
 class LYRProjector(OrthoProjector):
-    """The ``LYRProjector`` class enables ? visualization
-     on the same figure through 2D projections with
-     :func:`~nilearn.plotting.plot_glass_brain`. This visualization mode
+    """The ``LYRProjector`` class enables ? visualization \
+     on the same figure through 2D projections with \
+     :func:`~nilearn.plotting.plot_glass_brain`.
+     
+     This visualization mode
      can be activated by setting ``display_mode='lyr'``:
 
      .. code-block:: python
@@ -533,9 +554,11 @@ class LYRProjector(OrthoProjector):
 
 
 class LRProjector(OrthoProjector):
-    """The ``LRProjector`` class enables left-right visualization
-     on the same figure through 2D projections with
-     :func:`~nilearn.plotting.plot_glass_brain`. This visualization mode
+    """The ``LRProjector`` class enables left-right visualization \
+     on the same figure through 2D projections with \
+     :func:`~nilearn.plotting.plot_glass_brain`.
+     
+     This visualization mode
      can be activated by setting ``display_mode='lr'``:
 
      .. code-block:: python
@@ -559,8 +582,10 @@ class LRProjector(OrthoProjector):
 
 
 class LProjector(OrthoProjector):
-    """The ``LProjector`` class enables the visualization of left 2D
-    projection with :func:`~nilearn.plotting.plot_glass_brain`. This
+    """The ``LProjector`` class enables the visualization of left 2D \
+    projection with :func:`~nilearn.plotting.plot_glass_brain`.
+    
+    This
     visualization mode can be activated by setting ``display_mode='l'``:
 
      .. code-block:: python
@@ -589,8 +614,10 @@ class LProjector(OrthoProjector):
 
 
 class RProjector(OrthoProjector):
-    """The ``RProjector`` class enables the visualization of right 2D
-    projection with :func:`~nilearn.plotting.plot_glass_brain`. This
+    """The ``RProjector`` class enables the visualization of right 2D \
+    projection with :func:`~nilearn.plotting.plot_glass_brain`.
+    
+    This
     visualization mode can be activated by setting ``display_mode='r'``:
 
      .. code-block:: python

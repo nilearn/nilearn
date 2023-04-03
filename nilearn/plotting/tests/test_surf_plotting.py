@@ -28,21 +28,21 @@ from nilearn.surface.testing_utils import generate_surf
 from numpy.testing import assert_array_equal
 
 try:
-    import plotly.graph_objects as go  # noqa
+    import plotly.graph_objects as go
 except ImportError:
     PLOTLY_INSTALLED = False
 else:
     PLOTLY_INSTALLED = True
 
 try:
-    import kaleido  # noqa
+    import kaleido  # noqa:F401
 except ImportError:
     KALEIDO_INSTALLED = False
 else:
     KALEIDO_INSTALLED = True
 
 try:
-    import IPython.display  # noqa
+    import IPython.display  # noqa:F401
 except ImportError:
     IPYTHON_INSTALLED = False
 else:
@@ -515,8 +515,9 @@ def test_plot_surf_stat_map_matplotlib_specific():
     fig = plot_surf_stat_map(mesh, stat_map=data)
     # Check that the resulting plot facecolors contain no transparent faces
     # (last column equals zero) even though the texture contains nan values
+    tmp = fig._axstack.as_list()[0].collections[0]
     assert (mesh[1].shape[0] ==
-            ((fig._axstack.as_list()[0].collections[0]._facecolors[:, 3]) != 0).sum())  # noqa
+            ((tmp._facecolors[:, 3]) != 0).sum())
 
     # Save execution time and memory
     plt.close()

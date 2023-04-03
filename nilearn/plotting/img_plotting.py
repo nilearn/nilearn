@@ -1,5 +1,5 @@
-"""
-Functions to do automatic visualization of Niimg-like objects
+"""Functions to do automatic visualization of Niimg-like objects.
+
 See http://nilearn.github.io/stable/manipulating_images/input_output.html
 
 Only matplotlib is required.
@@ -62,7 +62,7 @@ def show():
 
 def _get_colorbar_and_data_ranges(stat_map_data, vmax, symmetric_cbar, kwargs,
                                   force_min_stat_map_value=None):
-    """Internal function for setting colormap and colorbar limits.
+    """Set colormap and colorbar limits.
 
     Used by for plot_stat_map and plot_glass_brain.
 
@@ -127,8 +127,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                       brain_color=(0.5, 0.5, 0.5),
                       decimals=False,
                       **kwargs):
-    """Internal function, please refer to the docstring of plot_img for
-    parameters not listed below.
+    """Refer to the docstring of plot_img for parameters not listed below.
 
     Parameters
     ----------
@@ -224,7 +223,9 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
              cbar_tick_format="%.2g",
              resampling_interpolation='continuous',
              bg_img=None, vmin=None, vmax=None, **kwargs):
-    """ Plot cuts of a given image (by default Frontal, Axial, and Lateral)
+    """Plot cuts of a given image.
+
+    By default Frontal, Axial, and Lateral.
 
     Parameters
     ----------
@@ -259,7 +260,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
     kwargs : extra keyword arguments, optional
         Extra keyword arguments passed to matplotlib.pyplot.imshow.
 
-    """  # noqa: E501
+    """
     display = _plot_img_with_bg(
         img, cut_coords=cut_coords,
         output_file=output_file, display_mode=display_mode,
@@ -279,10 +280,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
 
 # A constant class to serve as a sentinel for the default MNI template
 class _MNI152Template(SpatialImage):
-    """Constant pointing to the MNI152 Template
-    provided by nilearn.
-
-    """
+    """Constant pointing to the MNI152 Template provided by nilearn."""
     data = None
     affine = None
     vmax = None
@@ -351,8 +349,7 @@ MNI152TEMPLATE = _MNI152Template()
 
 
 def _load_anat(anat_img=MNI152TEMPLATE, dim='auto', black_bg='auto'):
-    """ Internal function used to load anatomy, for optional diming
-    """
+    """Load anatomy, for optional diming."""
     vmin = None
     vmax = None
     if anat_img is False or anat_img is None:
@@ -416,8 +413,9 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
               draw_cross=True, black_bg='auto', dim='auto', cmap=plt.cm.gray,
               colorbar=False, cbar_tick_format="%.2g", vmin=None,
               vmax=None, **kwargs):
-    """Plot cuts of an anatomical image (by default 3 cuts:
-    Frontal, Axial, and Lateral)
+    """Plot cuts of an anatomical image.
+
+    Bby default 3 cuts: Frontal, Axial, and Lateral.
 
     Parameters
     ----------
@@ -484,8 +482,9 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
              annotate=True, draw_cross=True, black_bg=True,
              colorbar=False, cbar_tick_format="%.2g",
              cmap=plt.cm.nipy_spectral, vmin=None, vmax=None, **kwargs):
-    """Plot cuts of an EPI image (by default 3 cuts:
-    Frontal, Axial, and Lateral)
+    """Plot cuts of an EPI image.
+
+    By default 3 cuts: Frontal, Axial, and Lateral.
 
     Parameters
     ----------
@@ -529,7 +528,7 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
 
 
 def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
-    """Helper function for plotting regions of interest ROIs in contours.
+    """Help for plotting regions of interest ROIs in contours.
 
     Parameters
     ----------
@@ -583,8 +582,9 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
              colorbar=False, cbar_tick_format="%i", vmin=None, vmax=None,
              resampling_interpolation='nearest', view_type='continuous',
              linewidths=2.5, **kwargs):
-    """Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
-    Lateral)
+    """Plot cuts of an ROI/mask image.
+
+    By default 3 cuts: Frontal, Axial, and Lateral.
 
     Parameters
     ----------
@@ -647,7 +647,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
         (4D images)
 
-    """  # noqa: E501
+    """
     valid_view_types = ['continuous', 'contours']
     if view_type not in valid_view_types:
         raise ValueError(
@@ -687,8 +687,8 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
                     colorbar=False,
                     cmap=plt.cm.gist_rainbow, vmin=None, vmax=None,
                     alpha=0.7, **kwargs):
-    """Plot the probabilistic atlases onto the anatomical image
-    by default MNI template
+    """Plot the probabilistic atlases onto the anatomical image \
+    by default MNI template.
 
     Parameters
     ----------
@@ -865,8 +865,9 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                   black_bg='auto', cmap=cm.cold_hot, symmetric_cbar="auto",
                   dim='auto', vmax=None, resampling_interpolation='continuous',
                   **kwargs):
-    """Plot cuts of an ROI/mask image (by default 3 cuts: Frontal, Axial, and
-    Lateral)
+    """Plot cuts of an ROI/mask image.
+
+    By default 3 cuts: Frontal, Axial, and Lateral.
 
     Parameters
     ----------
@@ -922,7 +923,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     nilearn.plotting.plot_epi : To simply plot raw EPI images
     nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
 
-    """  # noqa: E501
+    """
     # dim the background
     bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
                                                     black_bg=black_bg)
@@ -1548,7 +1549,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
 def plot_img_comparison(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
                         ref_label="image set 1", src_label="image set 2",
                         output_dir=None, axes=None):
-    """Creates plots to compare two lists of images and measure correlation.
+    """Create plots to compare two lists of images and measure correlation.
 
     The first plot displays linear correlation between voxel values.
     The second plot superimposes histograms to compare values distribution.

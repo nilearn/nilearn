@@ -1,6 +1,4 @@
-"""
-Visualizing 3D stat maps in a Brainsprite viewer
-"""
+"""Visualizing 3D stat maps in a Brainsprite viewer."""
 import copy
 import json
 import os
@@ -28,7 +26,7 @@ from .js_plotting_utils import colorscale, get_html_template
 
 
 def _data_to_sprite(data):
-    """ Convert a 3D array into a sprite of sagittal slices.
+    """Convert a 3D array into a sprite of sagittal slices.
 
     Parameters
     ----------
@@ -160,7 +158,8 @@ def _save_sprite(data, output_sprite, vmax, vmin, mask=None, cmap='Greys',
 
 
 def _bytesIO_to_base64(handle_io):
-    """ Encode the content of a bytesIO virtual file as base64.
+    """Encode the content of a bytesIO virtual file as base64.
+
         Also closes the file.
         Returns: data
     """
@@ -171,8 +170,7 @@ def _bytesIO_to_base64(handle_io):
 
 
 def _save_cm(output_cmap, cmap, format='png', n_colors=256):
-    """ Save the colormap of an image as an image file.
-    """
+    """Save the colormap of an image as an image file."""
 
     # save the colormap
     data = np.arange(0., n_colors) / (n_colors - 1.)
@@ -185,7 +183,7 @@ class StatMapView(HTMLDocument):
 
 
 def _mask_stat_map(stat_map_img, threshold=None):
-    """ Load a stat map and apply a threshold.
+    """Load a stat map and apply a threshold.
         Returns: mask_img, stat_map_img, data, threshold
     """
     # Load stat map
@@ -203,8 +201,9 @@ def _mask_stat_map(stat_map_img, threshold=None):
 
 
 def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
-    """Load and resample bg_img in an isotropic resolution,
+    """Load and resample bg_img in an isotropic resolution, \
     with a positive diagonal affine matrix.
+
     Returns: bg_img, bg_min, bg_max, black_bg
 
     """
@@ -315,7 +314,7 @@ def _json_view_size(params):
 
 
 def _get_bg_mask_and_cmap(bg_img, black_bg):
-    """Helper function of _json_view_data."""
+    """Help of _json_view_data."""
     bg_mask = np.ma.getmaskarray(get_data(bg_img))
     bg_cmap = copy.copy(matplotlib.pyplot.get_cmap('gray'))
     if black_bg:

@@ -7,10 +7,10 @@ from nibabel import Nifti1Image
 from nilearn.image import get_data
 from nilearn.plotting import plot_glass_brain
 
-from .testing_utils import testdata_3d  # noqa:F401
+from .testing_utils import testdata_3d
 
 
-def test_plot_glass_brain(testdata_3d, tmpdir):  # noqa:F811
+def test_plot_glass_brain(testdata_3d, tmpdir):
     """Smoke tests for plot_glass_brain with colorbar and negative values."""
     img = testdata_3d['img']
     plot_glass_brain(img, colorbar=True, resampling_interpolation='nearest')
@@ -19,7 +19,7 @@ def test_plot_glass_brain(testdata_3d, tmpdir):  # noqa:F811
                      resampling_interpolation='nearest')
 
 
-def test_plot_glass_brain_file_output(testdata_3d, tmpdir):  # noqa:F811
+def test_plot_glass_brain_file_output(testdata_3d, tmpdir):
     """Smoke-test for hemispheric glass brain with file output."""
     filename = str(tmpdir.join('test.png'))
     plot_glass_brain(
@@ -80,7 +80,7 @@ def test_add_markers_using_plot_glass_brain():
                == (2, 2))
 
 
-def test_plot_glass_brain_colorbar_having_nans(testdata_3d):  # noqa:F811
+def test_plot_glass_brain_colorbar_having_nans(testdata_3d):
     """Smoke-test for plot_glass_brain and nans in the data image."""
     data = get_data(testdata_3d['img'])
     data[6, 5, 2] = np.inf

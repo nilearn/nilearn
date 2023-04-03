@@ -1,8 +1,6 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""
-Matplotlib colormaps useful for neuroimaging.
-"""
+"""Matplotlib colormaps useful for neuroimaging."""
 import numpy as _np
 from matplotlib import cm as _cm, colors as _colors, rcParams as _rcParams
 
@@ -11,12 +9,11 @@ from matplotlib import cm as _cm, colors as _colors, rcParams as _rcParams
 ###############################################################################
 
 ###############################################################################
-# Helper functions
+# Helps
 
 
 def _rotate_cmap(cmap, swap_order=('green', 'red', 'blue')):
-    """ Utility function to swap the colors of a colormap.
-    """
+    """Swap the colors of a colormap."""
     orig_cdict = cmap._segmentdata.copy()
 
     cdict = dict()
@@ -31,9 +28,7 @@ def _rotate_cmap(cmap, swap_order=('green', 'red', 'blue')):
 
 
 def _pigtailed_cmap(cmap, swap_order=('green', 'red', 'blue')):
-    """ Utility function to make a new colormap by concatenating a
-        colormap with its reverse.
-    """
+    """Make a new colormap by concatenating a colormap with its reverse."""
     orig_cdict = cmap._segmentdata.copy()
 
     cdict = dict()
@@ -52,9 +47,7 @@ def _pigtailed_cmap(cmap, swap_order=('green', 'red', 'blue')):
 
 
 def _concat_cmap(cmap1, cmap2):
-    """ Utility function to make a new colormap by concatenating two
-        colormaps.
-    """
+    """Make a new colormap by concatenating two colormaps."""
     cdict = dict()
 
     cdict1 = cmap1._segmentdata.copy()
@@ -88,8 +81,7 @@ def _concat_cmap(cmap1, cmap2):
 
 
 def alpha_cmap(color, name='', alpha_min=0.5, alpha_max=1.):
-    """ Return a colormap with the given color, and alpha going from
-    zero to 1.
+    """Return a colormap with the given color, and alpha going from zero to 1.
 
     Parameters
     ----------
@@ -238,8 +230,7 @@ for k, v in _cmap_d.items():
 ###############################################################################
 
 def dim_cmap(cmap, factor=.3, to_white=True):
-    """ Dim a colormap to white, or to black.
-    """
+    """Dim a colormap to white, or to black."""
     assert 0 <= factor <= 1, ValueError(
         'Dimming factor must be larger than 0 and smaller than 1, %s was '
         'passed.' % factor)
@@ -261,8 +252,7 @@ def dim_cmap(cmap, factor=.3, to_white=True):
 
 
 def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
-    """ Replace a colormap by another inside a pair of values.
-    """
+    """Replace a colormap by another inside a pair of values."""
     assert vmin < vmax, ValueError('vmin must be smaller than vmax')
     assert vmin >= 0, ValueError(
         f'vmin must be larger than 0, {vmin} was passed.')

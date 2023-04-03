@@ -1,6 +1,4 @@
-"""
-Edge detection routines: this file provides a Canny filter
-"""
+"""Edge detection routines: this file provides a Canny filter."""
 
 import numpy as np
 from scipy import signal
@@ -21,9 +19,8 @@ from .._utils.extmath import fast_abs_percentile
 
 
 def _orientation_kernel(t):
-    """ structure elements for calculating the value of neighbors in several
-        directions
-    """
+    """structure elements for calculating the value of neighbors in several \
+    directions."""
     sin = np.sin
     pi = np.pi
     t = pi * t
@@ -119,7 +116,7 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
 
 
 def _edge_map(image):
-    """ Return a maps of edges suitable for visualization.
+    """Return a maps of edges suitable for visualization.
 
     Parameters
     ----------

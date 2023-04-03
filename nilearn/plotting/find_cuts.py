@@ -1,6 +1,4 @@
-"""
-Tools to find activations and cut on maps
-"""
+"""Tools to find activations and cut on maps."""
 
 # Author: Gael Varoquaux
 # License: BSD
@@ -31,7 +29,7 @@ DEFAULT_CUT_COORDS = (0., 0., 0.)
 
 
 def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
-    """ Find the center of the largest activation connected component.
+    """Find the center of the largest activation connected component.
 
     Parameters
     ----------
@@ -170,8 +168,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
 
 
 def _get_auto_mask_bounds(img):
-    """ Compute the bounds of the data with an automatically computed mask
-    """
+    """Compute the bounds of the data with an automatically computed mask."""
     data = _safe_get_data(img)
     affine = img.affine
     if hasattr(data, 'mask'):
@@ -194,7 +191,7 @@ def _get_auto_mask_bounds(img):
 
 
 def _transform_cut_coords(cut_coords, direction, affine):
-    """Transforms cut_coords back in image space
+    """Transform cut_coords back in image space.
 
     Parameters
     ----------
@@ -228,7 +225,7 @@ def _transform_cut_coords(cut_coords, direction, affine):
 
 
 def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
-    """ Find 'good' cross-section slicing positions along a given axis.
+    """Find 'good' cross-section slicing positions along a given axis.
 
     Parameters
     ----------
@@ -382,7 +379,7 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
     return _transform_cut_coords(cut_coords, direction, affine)
 
 
-def find_parcellation_cut_coords(labels_img, background_label=0, 
+def find_parcellation_cut_coords(labels_img, background_label=0,
                                  return_label_names=False,
                                  label_hemisphere='left'):
     """Return coordinates of center of mass of 3D parcellation atlas.
@@ -469,7 +466,7 @@ def find_parcellation_cut_coords(labels_img, background_label=0,
         coord_list.append((x, y, z))
 
         # Transform coordinates
-        coords = [coord_transform(i[0], i[1], i[2], labels_affine) 
+        coords = [coord_transform(i[0], i[1], i[2], labels_affine)
                   for i in coord_list]
 
     if return_label_names:
