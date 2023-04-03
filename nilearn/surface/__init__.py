@@ -1,6 +1,4 @@
-"""
-Functions for surface manipulation.
-"""
+"""Functions for surface manipulation."""
 
 from .surface import (
     Mesh,

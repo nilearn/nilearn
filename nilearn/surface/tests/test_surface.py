@@ -3,7 +3,6 @@
 import os
 import tempfile
 import warnings
-from collections import namedtuple
 
 import nibabel as nb
 import numpy as np
@@ -12,14 +11,12 @@ from nibabel import gifti
 from nilearn import datasets, image
 from nilearn._utils import data_gen
 from nilearn.image import resampling
-from nilearn.image.tests.test_resampling import rotation
 from nilearn.surface import (
     Mesh,
     Surface,
     load_surf_data,
     load_surf_mesh,
     surface,
-    vol_to_surf,
 )
 from nilearn.surface.surface import (
     _gifti_img_to_mesh,
@@ -38,12 +35,15 @@ class MeshLikeObject:
     """Class with attributes coordinates and
     faces to be used for testing purposes.
     """
+
     def __init__(self, coordinates, faces):
         self._coordinates = coordinates
         self._faces = faces
+
     @property
     def coordinates(self):
         return self._coordinates
+
     @property
     def faces(self):
         return self._faces
@@ -53,15 +53,19 @@ class SurfaceLikeObject:
     """Class with attributes mesh and
     data to be used for testing purposes.
     """
+
     def __init__(self, mesh, data):
         self._mesh = mesh
         self._data = data
+
     @classmethod
     def fromarrays(cls, coordinates, faces, data):
         return cls(MeshLikeObject(coordinates, faces), data)
+
     @property
     def mesh(self):
         return self._mesh
+
     @property
     def data(self):
         return self._data
@@ -225,7 +229,7 @@ def test_load_surf_mesh():
 def test_load_surface():
     coords, faces = generate_surf()
     mesh = Mesh(coords, faces)
-    data = mesh[0][:,0]
+    data = mesh[0][:, 0]
     surf = Surface(mesh, data)
     surf_like_obj = SurfaceLikeObject(mesh, data)
     # Load the surface from:
@@ -324,8 +328,9 @@ def test_load_surf_mesh_file_gii(tmp_path):
     fd_no, filename_gii_mesh_no_point = tempfile.mkstemp(suffix='.gii',
                                                          dir=str(tmp_path))
     os.close(fd_no)
-    nb.save(gifti.GiftiImage(darrays=[face_array, face_array]),
-                filename_gii_mesh_no_point)
+    nb.save(gifti.GiftiImage(
+            darrays=[face_array, face_array]),
+            filename_gii_mesh_no_point)
     with pytest.raises(ValueError, match='NIFTI_INTENT_POINTSET'):
         load_surf_mesh(filename_gii_mesh_no_point)
     os.remove(filename_gii_mesh_no_point)
@@ -333,8 +338,9 @@ def test_load_surf_mesh_file_gii(tmp_path):
     fd_face, filename_gii_mesh_no_face = tempfile.mkstemp(suffix='.gii',
                                                           dir=str(tmp_path))
     os.close(fd_face)
-    nb.save(gifti.GiftiImage(darrays=[coord_array, coord_array]),
-                filename_gii_mesh_no_face)
+    nb.save(gifti.GiftiImage(
+        darrays=[coord_array, coord_array]),
+        filename_gii_mesh_no_face)
     with pytest.raises(ValueError, match='NIFTI_INTENT_TRIANGLE'):
         load_surf_mesh(filename_gii_mesh_no_face)
     os.remove(filename_gii_mesh_no_face)
@@ -722,9 +728,11 @@ def test_check_mesh_and_data():
     rng = np.random.RandomState(42)
     wrong_faces = rng.randint(coords.shape[0] + 1, size=(30, 3))
     wrong_mesh = Mesh(coords, wrong_faces)
-    # Check that check_mesh_and_data raises an error with the resulting wrong mesh
-    with pytest.raises(ValueError,
-                       match="Mismatch between the indices of faces and the number of nodes."):
+    # Check that check_mesh_and_data raises an error
+    # with the resulting wrong mesh
+    with pytest.raises(
+            ValueError,
+            match="Mismatch between .* indices of faces .* number of nodes."):
         surface.check_mesh_and_data(wrong_mesh, data)
     # Alter the data and check that an error is raised
     data = mesh[0][::2, 0]
@@ -736,7 +744,7 @@ def test_check_mesh_and_data():
 def test_check_surface():
     coords, faces = generate_surf()
     mesh = Mesh(coords, faces)
-    data = mesh[0][:,0]
+    data = mesh[0][:, 0]
     surf = Surface(mesh, data)
     s = surface.check_surface(surf)
     assert_array_equal(s.data, data)
@@ -751,9 +759,11 @@ def test_check_surface():
     wrong_faces = rng.randint(coords.shape[0] + 1, size=(30, 3))
     wrong_mesh = Mesh(coords, wrong_faces)
     wrong_surface = Surface(wrong_mesh, data)
-    # Check that check_mesh_and_data raises an error with the resulting wrong mesh
-    with pytest.raises(ValueError,
-                       match="Mismatch between the indices of faces and the number of nodes."):
+    # Check that check_mesh_and_data raises an error
+    # with the resulting wrong mesh
+    with pytest.raises(
+            ValueError,
+            match="Mismatch between .* indices of faces .* number of nodes."):
         surface.check_surface(wrong_surface)
     # Alter the data and check that an error is raised
     wrong_data = mesh[0][::2, 0]
