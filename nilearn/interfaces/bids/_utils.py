@@ -144,8 +144,7 @@ def _generate_dataset_description(out_file, model_level):
                 'first-level' if model_level == 1 else 'second-level'
             ),
             'CodeURL': (
-                'https://github.com/nilearn/nilearn/releases/tag/'
-                '{}'.format(nilearn.__version__)
+                f'https://github.com/nilearn/nilearn/releases/tag/{nilearn.__version__}'
             )
         }
     }
