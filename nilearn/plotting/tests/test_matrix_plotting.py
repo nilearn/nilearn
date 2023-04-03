@@ -165,7 +165,7 @@ def test_matrix_plotting_reorder(mat, labels):
     reordered_labels = [int(lbl.get_text())
                         for lbl in ax.axes.get_xticklabels()]
     # block order does not matter
-    assert (
+    assert (  # noqa: F631
         (reordered_labels[:3] == idx or reordered_labels[-3:] == idx),
         'Clustering does not find block structure.'
     )

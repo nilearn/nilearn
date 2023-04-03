@@ -160,8 +160,9 @@ def _save_sprite(data, output_sprite, vmax, vmin, mask=None, cmap='Greys',
 def _bytesIO_to_base64(handle_io):
     """Encode the content of a bytesIO virtual file as base64.
 
-        Also closes the file.
-        Returns: data
+    Also closes the file.
+
+    Returns: data
     """
     handle_io.seek(0)
     data = b64encode(handle_io.read()).decode('utf-8')
@@ -171,20 +172,20 @@ def _bytesIO_to_base64(handle_io):
 
 def _save_cm(output_cmap, cmap, format='png', n_colors=256):
     """Save the colormap of an image as an image file."""
-
     # save the colormap
     data = np.arange(0., n_colors) / (n_colors - 1.)
     data = data.reshape([1, n_colors])
     imsave(output_cmap, data, cmap=cmap, format=format)
 
 
-class StatMapView(HTMLDocument):
+class StatMapView(HTMLDocument):  # noqa: D101
     pass
 
 
 def _mask_stat_map(stat_map_img, threshold=None):
     """Load a stat map and apply a threshold.
-        Returns: mask_img, stat_map_img, data, threshold
+
+    Returns: mask_img, stat_map_img, data, threshold
     """
     # Load stat map
     stat_map_img = check_niimg_3d(stat_map_img, dtype='auto')
@@ -231,6 +232,7 @@ def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
 def _resample_stat_map(stat_map_img, bg_img, mask_img,
                        resampling_interpolation='continuous'):
     """Resample the stat map and mask to the background.
+
     Returns: stat_map_img, mask_img
 
     """
@@ -246,6 +248,7 @@ def _json_view_params(shape, affine, vmin, vmax, cut_slices, black_bg=False,
                       opacity=1, draw_cross=True, annotate=True, title=None,
                       colorbar=True, value=True):
     """Create a dictionary with all the brainsprite parameters.
+
     Returns: params
 
     """
@@ -293,6 +296,7 @@ def _json_view_params(shape, affine, vmin, vmax, cut_slices, black_bg=False,
 
 def _json_view_size(params):
     """Define the size of the viewer.
+
     Returns: width_view, height_view
 
     """
@@ -327,6 +331,7 @@ def _get_bg_mask_and_cmap(bg_img, black_bg):
 def _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max, black_bg,
                     colors, cmap, colorbar):
     """Create a json-like viewer object, and populate with base64 data.
+
     Returns: json_view
 
     """
@@ -362,6 +367,7 @@ def _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max, black_bg,
 
 def _json_view_to_html(json_view):
     """Fill a brainsprite html template with relevant parameters and data.
+
     Returns: html_view
 
     """
@@ -387,9 +393,9 @@ def _json_view_to_html(json_view):
 
 def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
     """For internal use.
+
     Find slice numbers for the cut.
     Based on find_xyz_cut_coords
-
     """
     # Select coordinates for the cut
     if cut_coords is None:

@@ -1,3 +1,5 @@
+"""Handle plotting of surfaces for html rendering."""
+
 import collections.abc
 import json
 
@@ -18,7 +20,7 @@ from nilearn.plotting.js_plotting_utils import (
 )
 
 
-class SurfaceView(HTMLDocument):
+class SurfaceView(HTMLDocument):  # noqa: D101
     pass
 
 

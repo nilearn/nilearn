@@ -34,6 +34,7 @@ class BaseAxes:
         self.shape = None
 
     def transform_to_2d(self, data, affine):
+        """Transform to a 2D."""
         raise NotImplementedError("'transform_to_2d' needs to be implemented "
                                   "in derived classes'")
 
@@ -346,6 +347,7 @@ class GlassBrainAxes(BaseAxes):
         Default=True.
 
     """
+
     def __init__(self, ax, direction, coord, plot_abs=True, **kwargs):
         super().__init__(ax, direction, coord)
         self._plot_abs = plot_abs

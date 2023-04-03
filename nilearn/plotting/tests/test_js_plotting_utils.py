@@ -258,7 +258,7 @@ def test_to_color_strings(colors):
 
 def test_import_html_document_from_js_plotting():
     """Smoke test importing HTMLDocument from js_plotting_utils."""
-    from nilearn.plotting.js_plotting_utils import ( # noqa: F401
+    from nilearn.plotting.js_plotting_utils import (  # noqa: F401
         HTMLDocument,
         set_max_img_views_before_warning,
     )

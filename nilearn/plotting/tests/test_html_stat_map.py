@@ -23,9 +23,9 @@ def _check_html(html_view, title=None):
 
 
 def _simulate_img(affine=np.eye(4)):
-    """Simulate data with one "spot"
+    """Simulate data with one "spot".
 
-        Returns: img, data
+    Returns: img, data
     """
     data = np.zeros([8, 8, 8])
     data[4, 4, 4] = 1
@@ -101,7 +101,6 @@ def test_threshold_data():
 
 def test_save_sprite():
     """Test covers _save_sprite as well as _bytesIO_to_base64."""
-
     # Generate a simulated volume with a square inside
     data = np.random.RandomState(42).uniform(size=140).reshape(7, 5, 4)
     mask = np.zeros((7, 5, 4), dtype=int)

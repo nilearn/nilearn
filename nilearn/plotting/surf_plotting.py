@@ -753,7 +753,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
 
 def _get_faces_on_edge(faces, parc_idx):
-    '''Identify which faces lie on the outeredge of the parcellation \
+    """Identify which faces lie on the outeredge of the parcellation \
     defined by the indices in parc_idx.
 
     Parameters
@@ -763,7 +763,7 @@ def _get_faces_on_edge(faces, parc_idx):
     parc_idx : numpy.ndarray, indices of the vertices
         of the region to be plotted
 
-    '''
+    """
     # count how many vertices belong to the given parcellation in each face
     verts_per_face = np.isin(faces, parc_idx).sum(axis=1)
 

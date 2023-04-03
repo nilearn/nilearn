@@ -25,10 +25,11 @@ if __name__ == '__main__':
                                   title='anat', alpha=1,
                                   display_mode='lyrz')
 
-    # plotting slices for finer alignment
-    # e.g. parieto-occipital sulcus
-
     def add_brain_schematics(display):
+        """Plot slices for finer alignment.
+
+        e.g. parieto-occipital sulcus
+        """
         for axes in display.axes.values():
             kwargs = {'alpha': 0.5, 'linewidth': 1, 'edgecolor': 'orange'}
             object_bounds = glass_brain.plot_brain_schematics(axes.ax,

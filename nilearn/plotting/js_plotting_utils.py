@@ -134,6 +134,7 @@ def decode(b, dtype):
 
 
 def mesh_to_plotly(mesh):
+    """Convert a mesh to plotly format."""
     mesh = surface.load_surf_mesh(mesh)
     x, y, z = map(encode, np.asarray(mesh[0].T, dtype='<f4'))
     i, j, k = map(encode, np.asarray(mesh[1].T, dtype='<i4'))
@@ -149,6 +150,7 @@ def mesh_to_plotly(mesh):
 
 
 def to_color_strings(colors):
+    """Return a list of colors as hex strings."""
     cmap = mpl.colors.ListedColormap(colors)
     colors = cmap(np.arange(cmap.N))[:, :3]
     colors = np.asarray(colors * 255, dtype='uint8')

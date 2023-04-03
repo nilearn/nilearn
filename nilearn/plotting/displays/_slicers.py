@@ -46,6 +46,7 @@ class BaseSlicer:
         transparent colorbars).
         Default=(0.5, 0.5, 0.5)
     """
+
     # This actually encodes the figsize for only one axe
     _default_figsize = [2.2, 2.6]
     _axes_class = CutAxes
@@ -73,10 +74,12 @@ class BaseSlicer:
 
     @property
     def brain_color(self):
+        """Return brain color."""
         return self._brain_color
 
     @property
     def black_bg(self):
+        """Return black background."""
         return self._black_bg
 
     @staticmethod
@@ -690,6 +693,7 @@ class BaseSlicer:
 
     def close(self):
         """Close the figure.
+
         This is necessary to avoid leaking memory.
         """
         plt.close(self.frame_axes.figure.number)
@@ -755,6 +759,7 @@ class OrthoSlicer(BaseSlicer):
     and arranged in a 2x2 grid.
 
     """
+
     _cut_displayed = 'yxz'
     _axes_class = CutAxes
 
@@ -968,6 +973,7 @@ class TiledSlicer(BaseSlicer):
        and arranged in a 2x2 grid.
 
     """
+
     _cut_displayed = 'yxz'
     _axes_class = CutAxes
     _default_figsize = [2.0, 6.0]
@@ -1120,7 +1126,7 @@ class TiledSlicer(BaseSlicer):
 
     def _find_axes_coord(self, rel_width_dict, rel_height_dict,
                          rect_x0, rect_y0, rect_x1, rect_y1):
-        """"Find coordinates for initial axes placement for xyz cuts.
+        """Find coordinates for initial axes placement for xyz cuts.
 
         Parameters
         ----------
@@ -1456,6 +1462,7 @@ class XSlicer(BaseStackedSlicer):
     nilearn.plotting.displays.ZSlicer : Axial view
 
     """
+
     _direction = 'x'
     _default_figsize = [2.6, 2.3]
 
@@ -1493,6 +1500,7 @@ class YSlicer(BaseStackedSlicer):
     nilearn.plotting.displays.ZSlicer : Axial view
 
     """
+
     _direction = 'y'
     _default_figsize = [2.2, 2.3]
 
@@ -1530,6 +1538,7 @@ class ZSlicer(BaseStackedSlicer):
     nilearn.plotting.displays.YSlicer : Coronal view
 
     """
+
     _direction = 'z'
     _default_figsize = [2.2, 2.3]
 
@@ -1567,6 +1576,7 @@ class XZSlicer(OrthoSlicer):
     nilearn.plotting.displays.YZSlicer : Coronal + Axial views
 
     """
+
     _cut_displayed = 'xz'
 
 
@@ -1603,6 +1613,7 @@ class YXSlicer(OrthoSlicer):
     nilearn.plotting.displays.YZSlicer : Coronal + Axial views
 
     """
+
     _cut_displayed = 'yx'
 
 
@@ -1639,6 +1650,7 @@ class YZSlicer(OrthoSlicer):
     nilearn.plotting.displays.YXSlicer : Coronal + Sagittal views
 
     """
+
     _cut_displayed = 'yz'
 
 
@@ -1679,6 +1691,7 @@ class MosaicSlicer(BaseSlicer):
     and arranged in a 2x2 grid.
 
     """
+
     _cut_displayed = 'yxz'
     _axes_class = CutAxes
     _default_figsize = [11.1, 7.2]

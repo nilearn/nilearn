@@ -1,3 +1,5 @@
+"""Handle plotting of connectomes in html."""
+
 import json
 
 import numpy as np
@@ -17,7 +19,7 @@ from .js_plotting_utils import (
 )
 
 
-class ConnectomeView(HTMLDocument):
+class ConnectomeView(HTMLDocument): # noqa E101
     pass
 
 

@@ -14,6 +14,7 @@ class SVGToJSONConverter:
 
     Only segments and Bezier curves are supported
     """
+
     def __init__(self, filename):
         self.filename = filename
         self.svg = svg.parse(filename)
@@ -132,6 +133,7 @@ class SVGToJSONConverter:
         return json.dumps(result, indent=2, separators=(',', ': '))
 
     def save_json(self, filename):
+        """Save to JSON."""
         json_content = self.to_json()
 
         with open(filename, 'w') as f:
