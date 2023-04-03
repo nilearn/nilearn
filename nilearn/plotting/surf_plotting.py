@@ -9,7 +9,6 @@ from matplotlib.cm import ScalarMappable
 from matplotlib.colorbar import make_axes
 from matplotlib.colors import LinearSegmentedColormap, Normalize, to_rgba
 from matplotlib.patches import Patch
-from mpl_toolkits.mplot3d import Axes3D 
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from nilearn import image, surface
 from nilearn._utils import check_niimg_3d, fill_doc

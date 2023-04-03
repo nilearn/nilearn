@@ -115,7 +115,7 @@ class HTMLDocument:
 
     def _repr_html_(self):
         """Return html representation of the plot.
-        
+
         Used by the Jupyter notebook.
 
         Users normally won't call this method explicitly.

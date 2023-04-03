@@ -8,7 +8,18 @@ from nilearn._utils.niimg import _is_binary_niimg
 from nilearn.image import get_data
 from nilearn.plotting import plot_img
 
-from .testing_utils import MNI_AFFINE, testdata_3d
+from .testing_utils import MNI_AFFINE
+
+
+@pytest.fixture()
+def testdata_3d():
+    """A random 3D image for testing figures."""
+    data_positive = np.zeros((7, 7, 3))
+    rng = np.random.RandomState(42)
+    data_rng = rng.uniform(size=(7, 7, 3))
+    data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
+    img_3d = Nifti1Image(data_positive, MNI_AFFINE)
+    return {'img': img_3d}
 
 
 def _testdata_3d_for_resampling(img, binary):

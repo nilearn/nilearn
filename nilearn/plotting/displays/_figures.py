@@ -9,7 +9,7 @@ class SurfaceFigure:
     output_file : :obj:`str` or ``None``, optional
         Path to output file.
     """
-    
+
     def __init__(self, figure=None, output_file=None):
         self.figure = figure
         self.output_file = output_file

@@ -239,7 +239,7 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
     %(threshold)s
     %(annotate)s
     decimals : integer, optional
-        Number of decimal places on slice position annotation. 
+        Number of decimal places on slice position annotation.
         If False (default),
         the slice position is integer without decimal point.
     %(draw_cross)s
@@ -629,7 +629,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     %(resampling_interpolation)s
         Default='nearest'.
     view_type : {'continuous', 'contours'}, optional
-        By default view_type == 'continuous', 
+        By default view_type == 'continuous',
         rois are shown as continuous colors.
         If view_type == 'contours', maps are shown as contours.
         For this type, label

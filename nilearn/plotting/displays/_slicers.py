@@ -22,7 +22,7 @@ from nilearn.version import _compare_version
 class BaseSlicer:
     """BaseSlicer implementation which main purpose is to auto adjust \
     the axes size to the data with different layout of cuts.
-    
+
     It creates
     3 linked axes for plotting orthogonal cuts.
 
@@ -720,7 +720,7 @@ class BaseSlicer:
 class OrthoSlicer(BaseSlicer):
     """Class to create 3 linked axes for plotting orthogonal \
     cuts of 3D maps.
-    
+
     This visualization mode can be activated
     from Nilearn plotting functions, like
     :func:`~nilearn.plotting.plot_img`, by setting
@@ -834,7 +834,7 @@ class OrthoSlicer(BaseSlicer):
 
     def _locator(self, axes, renderer):
         """Adjust the size of the axes.
-        
+
         The locator function used by matplotlib to position axes.
 
         Here we put the logic used to adjust the size of the axes.
@@ -1175,7 +1175,7 @@ class TiledSlicer(BaseSlicer):
 
     def _locator(self, axes, renderer):
         """Adjust the size of the axes.
-        
+
         The locator function used by matplotlib to position axes.
 
         Here we put the logic used to adjust the size of the axes.
@@ -1376,7 +1376,7 @@ class BaseStackedSlicer(BaseSlicer):
 
     def _locator(self, axes, renderer):
         """Adjust the size of the axes.
-        
+
         The locator function used by matplotlib to position axes.
 
         Here we put the logic used to adjust the size of the axes.
@@ -1829,7 +1829,7 @@ class MosaicSlicer(BaseSlicer):
 
     def _locator(self, axes, renderer):
         """Adjust the size of the axes.
-        
+
         Locator function used by matplotlib to position axes.
 
         Here we put the logic used to adjust the size of the axes.
