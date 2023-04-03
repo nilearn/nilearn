@@ -44,7 +44,7 @@ def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
 def _load_uniform_ball_cloud(n_points=20):
     stored_points = os.path.abspath(
         os.path.join(__file__, '..', 'data',
-                     'ball_cloud_{}_samples.csv'.format(n_points)))
+                     f'ball_cloud_{n_points}_samples.csv'))
     if os.path.isfile(stored_points):
         points = np.loadtxt(stored_points)
         return points
@@ -258,7 +258,7 @@ def _sample_locations(mesh, affine, radius, kind='auto', n_points=None,
     }
     if kind not in projectors:
         raise ValueError(
-            '"kind" must be one of {}'.format(tuple(projectors.keys())))
+            f'"kind" must be one of {tuple(projectors.keys())}')
     projector, extra_kwargs = projectors[kind]
     # let the projector choose the default for n_points
     # (for example a ball probably needs more than a line)

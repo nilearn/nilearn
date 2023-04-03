@@ -400,7 +400,7 @@ def test_load_surf_data_file_glob(tmp_path):
     data2D = np.ones((20, 3))
     fnames = []
     for f in range(3):
-        fd, filename = tempfile.mkstemp(prefix='glob_%s_' % f,
+        fd, filename = tempfile.mkstemp(prefix=f'glob_{f}_',
                                         suffix='.gii',
                                         dir=str(tmp_path))
         os.close(fd)
