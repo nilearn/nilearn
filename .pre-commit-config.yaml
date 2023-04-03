@@ -66,6 +66,7 @@ repos:
       - id: check-yaml
       - id: end-of-file-fixer
       - id: trailing-whitespace
+      - id: check-toml
 
   - repo: https://github.com/pycqa/isort
     rev: 5.12.0
