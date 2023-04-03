@@ -681,7 +681,9 @@ def _gifti_img_to_data(gifti_img):
     """
     if not gifti_img.darrays:
         raise ValueError('Gifti must contain at least one data array')
-    return np.asarray([arr.data for arr in gifti_img.darrays]).T.squeeze()
+    return np.asarray(
+        [arr.data for arr in gifti_img.darrays],
+        dtype=object).T.squeeze()
 
 
 # function to figure out datatype and load data
