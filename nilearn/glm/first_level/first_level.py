@@ -1,4 +1,4 @@
-"""Contain the GLM and contrast classes that are meant to be the main \
+"""Contains the GLM and contrast classes that are meant to be the main \
 objects of fMRI data analyses.
 
 Author: Bertrand Thirion, Martin Perez-Guevara, 2016
