@@ -1,16 +1,17 @@
 """
 Functions for surface manipulation.
 """
+import gzip
 import os
 import warnings
-import gzip
 from collections import namedtuple
 from collections.abc import Mapping
 
 import numpy as np
-from scipy import sparse, interpolate
-import sklearn.preprocessing
 import sklearn.cluster
+import sklearn.preprocessing
+from scipy import interpolate, sparse
+
 try:
     from sklearn.exceptions import EfficiencyWarning
 except ImportError:
@@ -18,16 +19,11 @@ except ImportError:
         """Warning used to notify the user of inefficient computation."""
 
 import nibabel
-from nibabel import gifti
-from nibabel import freesurfer as fs
-
-from nilearn import datasets
-from nilearn.image import load_img
-from nilearn.image import resampling
-from nilearn._utils.path_finding import _resolve_globbing
+from nibabel import freesurfer as fs, gifti
+from nilearn import _utils, datasets
 from nilearn._utils import stringify_path
-from nilearn import _utils
-from nilearn.image import get_data
+from nilearn._utils.path_finding import _resolve_globbing
+from nilearn.image import get_data, load_img, resampling
 
 # Create a namedtuple object for meshes
 Mesh = namedtuple("mesh", ["coordinates", "faces"])

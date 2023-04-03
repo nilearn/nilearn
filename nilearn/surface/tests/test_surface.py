@@ -3,31 +3,32 @@
 import os
 import tempfile
 import warnings
-
 from collections import namedtuple
 
 import nibabel as nb
 import numpy as np
 import pytest
-
-from numpy.testing import assert_array_equal, assert_array_almost_equal
-from scipy.spatial import Delaunay
-from scipy.stats import pearsonr
-
 from nibabel import gifti
-
-from nilearn import datasets
-from nilearn import image
+from nilearn import datasets, image
+from nilearn._utils import data_gen
 from nilearn.image import resampling
 from nilearn.image.tests.test_resampling import rotation
-from nilearn.surface import Mesh, Surface
-from nilearn.surface import surface
-from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
-from nilearn.surface.surface import (_gifti_img_to_mesh,
-                                     _load_surf_files_gifti_gzip)
-from nilearn.surface.testing_utils import (generate_surf, flat_mesh,
-                                           z_const_img)
-from nilearn._utils import data_gen
+from nilearn.surface import (
+    Mesh,
+    Surface,
+    load_surf_data,
+    load_surf_mesh,
+    surface,
+    vol_to_surf,
+)
+from nilearn.surface.surface import (
+    _gifti_img_to_mesh,
+    _load_surf_files_gifti_gzip,
+)
+from nilearn.surface.testing_utils import flat_mesh, generate_surf, z_const_img
+from numpy.testing import assert_array_almost_equal, assert_array_equal
+from scipy.spatial import Delaunay
+from scipy.stats import pearsonr
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
