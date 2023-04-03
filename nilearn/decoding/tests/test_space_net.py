@@ -23,6 +23,7 @@ from numpy.testing import assert_almost_equal, assert_array_equal
 from scipy import linalg
 from sklearn.datasets import load_iris
 from sklearn.linear_model import Lasso, LogisticRegression
+from sklearn.linear_model._coordinate_descent import _alpha_grid
 from sklearn.metrics import accuracy_score
 from sklearn.utils import check_random_state
 
@@ -65,19 +66,14 @@ def test_space_net_alpha_grid(
 
 
 def test_space_net_alpha_grid_same_as_sk():
-    try:
-        from sklearn.linear_model._coordinate_descent import _alpha_grid
+    iris = load_iris()
+    X = iris.data
+    y = iris.target
 
-        iris = load_iris()
-        X = iris.data
-        y = iris.target
-
-        assert_almost_equal(
-            _space_net_alpha_grid(X, y, n_alphas=5),
-            X.shape[0] * _alpha_grid(X, y, n_alphas=5, fit_intercept=False),
-        )
-    except ImportError:
-        raise pytest.skip()
+    assert_almost_equal(
+        _space_net_alpha_grid(X, y, n_alphas=5),
+        X.shape[0] * _alpha_grid(X, y, n_alphas=5, fit_intercept=False),
+    )
 
 
 def test_early_stopping_callback_object(n_samples=10, n_features=30):
