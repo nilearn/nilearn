@@ -65,9 +65,8 @@ def test_space_net_alpha_grid(
 
 
 def test_space_net_alpha_grid_same_as_sk():
-    # for old sklearn versions ???
     try:
-        from sklearn.linear_model.coordinate_descent import _alpha_grid
+        from sklearn.linear_model._coordinate_descent import _alpha_grid
 
         iris = load_iris()
         X = iris.data

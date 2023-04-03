@@ -91,13 +91,18 @@ def _make_multiclass_classification_test_data(n_samples=200):
 
 @pytest.fixture(scope="session")
 def dummy_binary_classification_data():
-    """Use for testing errors."""
+    """Use for testing errors.
+
+    This fixture aims to return a very small data set
+    because it will only be used for the tests
+    that check error handling like input validation.
+    """
     return _make_binary_classification_test_data(n_samples=20)
 
 
 @pytest.fixture
 def binary_classification_data():
-    """Use for testing errors."""
+    """Use for test where classifcication is actually performed."""
     return _make_binary_classification_test_data(n_samples=N_SAMPLES)
 
 
