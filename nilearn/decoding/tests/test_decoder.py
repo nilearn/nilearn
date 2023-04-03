@@ -97,7 +97,7 @@ def dummy_binary_classification_data():
 
 @pytest.fixture
 def binary_classification_data():
-    """Use for testting errors."""
+    """Use for testing errors."""
     return _make_binary_classification_test_data(n_samples=N_SAMPLES)
 
 
