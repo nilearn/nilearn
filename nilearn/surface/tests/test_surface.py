@@ -468,11 +468,6 @@ def test_flat_mesh(xy):
     assert np.allclose(n, [0., 0., 1.])
 
 
-def _z_const_img(x_s, y_s, z_s):
-    hslice = np.arange(x_s * y_s).reshape((x_s, y_s))
-    return np.ones((x_s, y_s, z_s)) * hslice[:, :, np.newaxis]
-
-
 def test_vertex_outer_normals():
     # compute normals for a flat horizontal mesh, they should all be (0, 0, 1)
     mesh = flat_mesh(5, 7)

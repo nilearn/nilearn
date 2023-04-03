@@ -36,7 +36,7 @@ def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
     rng = np.random.RandomState(0)
     mc_cube = rng.uniform(-1, 1, size=(n_monte_carlo, dim))
     mc_ball = mc_cube[(mc_cube**2).sum(axis=1) <= 1.]
-    centroids, assignments, _ = sklearn.cluster.k_means(
+    centroids, *_ = sklearn.cluster.k_means(
         mc_ball, n_clusters=n_points, random_state=0)
     return centroids
 
@@ -385,7 +385,7 @@ def _projection_matrix(mesh, affine, img_shape, kind='auto', radius=3.,
         mesh, affine, kind=kind, radius=radius, n_points=n_points,
         inner_mesh=inner_mesh, depth=depth)
     sample_locations = np.asarray(np.round(sample_locations), dtype=int)
-    n_vertices, n_points, img_dim = sample_locations.shape
+    n_vertices, n_points, _ = sample_locations.shape
     masked = _masked_indices(np.vstack(sample_locations), img_shape, mask=mask)
     sample_locations = np.rollaxis(sample_locations, -1)
     sample_indices = np.ravel_multi_index(
@@ -440,7 +440,7 @@ def _interpolation_sampling(images, mesh, affine, kind='auto', radius=3,
     sample_locations = _sample_locations(
         mesh, affine, kind=kind, radius=radius, n_points=n_points,
         inner_mesh=inner_mesh, depth=depth)
-    n_vertices, n_points, img_dim = sample_locations.shape
+    n_vertices, n_points, _ = sample_locations.shape
     grid = [np.arange(size) for size in images[0].shape]
     interp_locations = np.vstack(sample_locations)
     masked = _masked_indices(interp_locations, images[0].shape, mask=mask)
