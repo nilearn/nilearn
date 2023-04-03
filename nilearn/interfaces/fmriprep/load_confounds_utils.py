@@ -119,10 +119,9 @@ def _get_file_name(nii_file):
 
     if not confounds_raw:
         raise ValueError(
-            ("Could not find associated confound file. "
+            "Could not find associated confound file. "
              "The functional derivatives should exist under the same parent "
              "directory."
-             )
         )
     elif len(confounds_raw) != 1:
         raise ValueError("Found more than one confound file.")
@@ -150,12 +149,10 @@ def _load_confounds_json(confounds_json, flag_acompcor):
     except OSError:
         if flag_acompcor:
             raise ValueError(
-                (
                     f"Could not find associated json file {confounds_json}."
                     "This is necessary for anatomical CompCor."
                     "The CompCor component is only supported for fMRIprep "
                     "version >= 1.4.0."
-                )
             )
     return confounds_json
 

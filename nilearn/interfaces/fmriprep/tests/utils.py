@@ -94,6 +94,6 @@ def get_leagal_confound(non_steady_state=True):
     """Load the valid confound files for manipulation."""
     conf, meta = get_testdata_path(non_steady_state=non_steady_state)
     conf = pd.read_csv(conf, delimiter="\t", encoding="utf-8")
-    with open(meta, "r") as file:
+    with open(meta) as file:
         meta = json.load(file)
     return conf, meta
