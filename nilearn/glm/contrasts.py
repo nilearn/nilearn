@@ -333,7 +333,7 @@ class Contrast:
         return self.z_score_
 
     def __add__(self, other):
-        """Addit of selfwith others, Yields an new Contrast instance.
+        """Add two contrast, Yields an new Contrast instance.
 
         This should be used only on indepndent contrasts.
         """

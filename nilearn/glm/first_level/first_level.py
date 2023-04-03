@@ -235,7 +235,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
 
 @fill_doc
 class FirstLevelModel(BaseGLM):
-    """Implement of the General Linear Model for single session fMRI data.
+    """Implement the General Linear Model for single session fMRI data.
 
     Parameters
     ----------
