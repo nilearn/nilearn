@@ -2,13 +2,12 @@ import json
 
 import numpy as np
 import pytest
-
-from nilearn import datasets, surface, image
+from nilearn import datasets, image, surface
+from nilearn._utils.exceptions import DimensionError
+from nilearn.datasets import fetch_surf_fsaverage
+from nilearn.image import get_data
 from nilearn.plotting import html_surface
 from nilearn.plotting.js_plotting_utils import decode
-from nilearn.datasets import fetch_surf_fsaverage
-from nilearn._utils.exceptions import DimensionError
-from nilearn.image import get_data
 
 from .test_js_plotting_utils import check_colors, check_html
 

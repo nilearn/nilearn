@@ -8,40 +8,40 @@ Only matplotlib is required.
 # Author: Gael Varoquaux, Chris Filo Gorgolewski
 # License: BSD
 
-# Standard library imports
-import os
 import collections.abc
 import functools
 import numbers
+
+# Standard library imports
+import os
 import warnings
-from nilearn.version import _compare_version
+
+import matplotlib
+import matplotlib.pyplot as plt
 
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
-from scipy.ndimage import binary_fill_holes
-from scipy import stats
-from nibabel.spatialimages import SpatialImage
-
-from ..signal import clean
-from .._utils.numpy_conversions import as_ndarray
-from .._utils.niimg import _safe_get_data
-
-import matplotlib
-import matplotlib.pyplot as plt
 from matplotlib import gridspec as mgs
+from nibabel.spatialimages import SpatialImage
+from nilearn.image.resampling import reorder_img
+from nilearn.maskers import NiftiMasker
+from nilearn.plotting.displays import get_projector, get_slicer
+from nilearn.version import _compare_version
+from scipy import stats
+from scipy.ndimage import binary_fill_holes
 
 from .. import _utils
 from .._utils import fill_doc
 from .._utils.extmath import fast_abs_percentile
-from .._utils.param_validation import check_threshold
 from .._utils.ndimage import get_border_data
+from .._utils.niimg import _safe_get_data
+from .._utils.numpy_conversions import as_ndarray
+from .._utils.param_validation import check_threshold
 from ..datasets import load_mni152_template
-from ..image import new_img_like, iter_img, get_data, math_img, resample_to_img
-from nilearn.maskers import NiftiMasker
-from nilearn.image.resampling import reorder_img
-from ..masking import compute_epi_mask, apply_mask
-from nilearn.plotting.displays import get_slicer, get_projector
+from ..image import get_data, iter_img, math_img, new_img_like, resample_to_img
+from ..masking import apply_mask, compute_epi_mask
+from ..signal import clean
 from . import cm
 
 

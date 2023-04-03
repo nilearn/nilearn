@@ -2,12 +2,15 @@
 Miscellaneous matrix plotting utilities.
 """
 import warnings
+
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 from .._utils import fill_doc
+
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", FutureWarning)
     from nilearn.glm.contrasts import expression_to_contrast_vector
@@ -111,9 +114,11 @@ def _reorder_matrix(mat, labels, reorder):
     if not labels:
         raise ValueError("Labels are needed to show the reordering.")
     try:
-        from scipy.cluster.hierarchy import (linkage,
-                                             optimal_leaf_ordering,
-                                             leaves_list)
+        from scipy.cluster.hierarchy import (
+            leaves_list,
+            linkage,
+            optimal_leaf_ordering,
+        )
     except ImportError:
         raise ImportError("A scipy version of at least 1.0 is needed for "
                           "ordering the matrix with optimal_leaf_ordering.")

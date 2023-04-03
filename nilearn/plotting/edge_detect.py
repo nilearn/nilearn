@@ -5,11 +5,12 @@ Edge detection routines: this file provides a Canny filter
 import numpy as np
 from scipy import signal
 from scipy.ndimage import (
-    sobel,
-    maximum_filter,
     binary_dilation,
     distance_transform_cdt,
+    maximum_filter,
+    sobel,
 )
+
 from .._utils.extmath import fast_abs_percentile
 
 # Author: Gael Varoquaux

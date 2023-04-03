@@ -1,19 +1,20 @@
 import os
 
-import pytest
-
-import numpy as np
-import pandas as pd
-from nibabel.tmpdirs import InTemporaryDirectory
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-
+import numpy as np
+import pandas as pd
+import pytest
+from nibabel.tmpdirs import InTemporaryDirectory
 from nilearn.glm.first_level.design_matrix import (
-    make_first_level_design_matrix)
-
+    make_first_level_design_matrix,
+)
 from nilearn.plotting.matrix_plotting import (
-    plot_matrix, plot_contrast_matrix, plot_event, plot_design_matrix)
-
+    plot_contrast_matrix,
+    plot_design_matrix,
+    plot_event,
+    plot_matrix,
+)
 
 ##############################################################################
 # Some smoke testing for graphics-related code
@@ -152,6 +153,7 @@ def test_matrix_plotting_grid(mat, labels, tri):
 
 def test_matrix_plotting_reorder(mat, labels):
     from itertools import permutations
+
     # test if reordering with default linkage works
     idx = [2, 3, 5]
     # make symmetric matrix of similarities so we can get a block

@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-
 MNI_AFFINE = np.array([[-2., 0., 0., 90.],
                        [0., 2., 0., -126.],
                        [0., 0., 2., -72.],

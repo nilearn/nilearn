@@ -1,11 +1,12 @@
 """Tests for :func:`nilearn.plotting.plot_glass_brain`."""
 
-import pytest
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import pytest
 from nibabel import Nifti1Image
 from nilearn.image import get_data
 from nilearn.plotting import plot_glass_brain
+
 from .testing_utils import testdata_3d  # noqa:F401
 
 

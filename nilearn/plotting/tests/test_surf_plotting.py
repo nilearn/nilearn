@@ -1,26 +1,31 @@
 # Tests for functions in surf_plotting.py
-import numpy as np
-import nibabel
-from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
-import pytest
+import os
 import re
 import tempfile
-import os
 import unittest.mock as mock
 
-from nilearn.plotting.img_plotting import MNI152TEMPLATE
-from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
-                                            plot_surf_roi, plot_img_on_surf,
-                                            plot_surf_contours,
-                                            _get_ticks_matplotlib,
-                                            _compute_facecolors_matplotlib)
+import matplotlib.pyplot as plt
+import nibabel
+import numpy as np
+import pytest
+from matplotlib.figure import Figure
 from nilearn.datasets import fetch_surf_fsaverage
+from nilearn.plotting.displays import PlotlySurfaceFigure
+from nilearn.plotting.img_plotting import MNI152TEMPLATE
+from nilearn.plotting.surf_plotting import (
+    VALID_HEMISPHERES,
+    VALID_VIEWS,
+    _compute_facecolors_matplotlib,
+    _get_ticks_matplotlib,
+    plot_img_on_surf,
+    plot_surf,
+    plot_surf_contours,
+    plot_surf_roi,
+    plot_surf_stat_map,
+)
 from nilearn.surface import load_surf_data, load_surf_mesh
 from nilearn.surface.testing_utils import generate_surf
 from numpy.testing import assert_array_equal
-from nilearn.plotting.surf_plotting import VALID_HEMISPHERES, VALID_VIEWS
-from nilearn.plotting.displays import PlotlySurfaceFigure
 
 try:
     import plotly.graph_objects as go  # noqa
@@ -182,8 +187,10 @@ def test_instantiation_error_plotly_surface_figure(input_obj):
 
 
 def test_set_view_plot_surf_errors():
-    from nilearn.plotting.surf_plotting import (_set_view_plot_surf_matplotlib,
-                                                _set_view_plot_surf_plotly)
+    from nilearn.plotting.surf_plotting import (
+        _set_view_plot_surf_matplotlib,
+        _set_view_plot_surf_plotly,
+    )
     with pytest.raises(ValueError,
                        match="hemi must be one of"):
         _set_view_plot_surf_matplotlib("foo", "medial")

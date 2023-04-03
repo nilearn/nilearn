@@ -7,29 +7,21 @@ import warnings
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-
 from matplotlib import gridspec
-from matplotlib.colorbar import make_axes
 from matplotlib.cm import ScalarMappable
-from matplotlib.colors import Normalize, LinearSegmentedColormap
-from mpl_toolkits.mplot3d import Axes3D  # noqa
-from nilearn import image, surface
-from nilearn.plotting.cm import cold_hot
-from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges
-from nilearn.surface import (load_surf_data,
-                             load_surf_mesh,
-                             vol_to_surf)
-from nilearn.surface.surface import _check_mesh
-from nilearn._utils import check_niimg_3d, fill_doc
-from nilearn.plotting.js_plotting_utils import colorscale
-from nilearn.plotting.html_surface import (
-    _get_vertexcolor,
-    _mix_colormaps
-)
-
-from matplotlib.colors import to_rgba
+from matplotlib.colorbar import make_axes
+from matplotlib.colors import LinearSegmentedColormap, Normalize, to_rgba
 from matplotlib.patches import Patch
+from mpl_toolkits.mplot3d import Axes3D  # noqa
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+from nilearn import image, surface
+from nilearn._utils import check_niimg_3d, fill_doc
+from nilearn.plotting.cm import cold_hot
+from nilearn.plotting.html_surface import _get_vertexcolor, _mix_colormaps
+from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges
+from nilearn.plotting.js_plotting_utils import colorscale
+from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
+from nilearn.surface.surface import _check_mesh
 
 VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
 VALID_HEMISPHERES = "left", "right"

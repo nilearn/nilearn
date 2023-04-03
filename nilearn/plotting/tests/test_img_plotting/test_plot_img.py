@@ -1,12 +1,13 @@
 """Tests for :func:`nilearn.plotting.plot_img`."""
 
-import pytest
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import pytest
 from nibabel import Nifti1Image
-from nilearn.plotting import plot_img
-from nilearn.image import get_data
 from nilearn._utils.niimg import _is_binary_niimg
+from nilearn.image import get_data
+from nilearn.plotting import plot_img
+
 from .testing_utils import MNI_AFFINE, testdata_3d  # noqa:F401
 
 

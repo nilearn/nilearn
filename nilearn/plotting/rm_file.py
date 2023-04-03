@@ -4,10 +4,10 @@ by nilearn.plotting.html_surface.SurfaceView to remove the temporary
 file it uses to open a plot in a web browser.
 
 """
+import argparse
 import os
 import time
 import warnings
-import argparse
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

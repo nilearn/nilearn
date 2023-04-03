@@ -2,15 +2,19 @@ import json
 
 import numpy as np
 from matplotlib import cm as mpl_cm
+from nilearn.plotting.html_document import HTMLDocument
 from scipy import sparse
 
 from .. import datasets
 from . import cm
-
-from .js_plotting_utils import (add_js_lib, mesh_to_plotly,
-                                encode, colorscale, get_html_template,
-                                to_color_strings)
-from nilearn.plotting.html_document import HTMLDocument
+from .js_plotting_utils import (
+    add_js_lib,
+    colorscale,
+    encode,
+    get_html_template,
+    mesh_to_plotly,
+    to_color_strings,
+)
 
 
 class ConnectomeView(HTMLDocument):

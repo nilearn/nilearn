@@ -1,31 +1,30 @@
 """
 Visualizing 3D stat maps in a Brainsprite viewer
 """
-import os
-import json
 import copy
+import json
+import os
 import warnings
-from io import BytesIO
 from base64 import b64encode
+from io import BytesIO
 
-import numpy as np
 import matplotlib
+import numpy as np
 from matplotlib.image import imsave
-
 from nibabel.affines import apply_affine
+from nilearn.plotting.html_document import HTMLDocument
 
-from ..image import resample_to_img, new_img_like, reorder_img, get_data
-from .js_plotting_utils import get_html_template, colorscale
+from .._utils import fill_doc
+from .._utils.extmath import fast_abs_percentile
+from .._utils.niimg import _safe_get_data
+from .._utils.niimg_conversions import check_niimg_3d
+from .._utils.param_validation import check_threshold
+from ..datasets import load_mni152_template
+from ..image import get_data, new_img_like, reorder_img, resample_to_img
 from ..plotting import cm
 from ..plotting.find_cuts import find_xyz_cut_coords
 from ..plotting.img_plotting import _load_anat
-from nilearn.plotting.html_document import HTMLDocument
-from .._utils import fill_doc
-from .._utils.niimg_conversions import check_niimg_3d
-from .._utils.param_validation import check_threshold
-from .._utils.extmath import fast_abs_percentile
-from .._utils.niimg import _safe_get_data
-from ..datasets import load_mni152_template
+from .js_plotting_utils import colorscale, get_html_template
 
 
 def _data_to_sprite(data):

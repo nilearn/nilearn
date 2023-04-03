@@ -4,9 +4,9 @@ The main assumption is that the SVG only contains Bezier curves and
 segments. The output JSON is used for plotting glass brain schematics.
 """
 
+import json
 import re
 import sys
-import json
 
 
 class SVGToJSONConverter:

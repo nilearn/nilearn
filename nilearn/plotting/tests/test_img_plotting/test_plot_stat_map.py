@@ -1,14 +1,15 @@
 """Tests for :func:`nilearn.plotting.plot_stat_map`."""
 
-import pytest
-import numpy as np
 import matplotlib.pyplot as plt
-from nilearn.plotting import plot_stat_map
+import numpy as np
+import pytest
+from nibabel import Nifti1Image
+from nilearn.datasets import load_mni152_template
 from nilearn.image import get_data
 from nilearn.image.resampling import coord_transform
+from nilearn.plotting import plot_stat_map
 from nilearn.plotting.find_cuts import find_cut_slices
-from nilearn.datasets import load_mni152_template
-from nibabel import Nifti1Image
+
 from .testing_utils import MNI_AFFINE, testdata_3d  # noqa:F401
 
 

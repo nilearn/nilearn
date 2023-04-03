@@ -1,11 +1,11 @@
 import os
-import time
-import pytest
-import warnings
 import tempfile
+import time
+import warnings
 import webbrowser
-from nilearn.plotting import html_document
 
+import pytest
+from nilearn.plotting import html_document
 from numpy.testing import assert_no_warnings
 
 # Note: html output by nilearn view_* functions

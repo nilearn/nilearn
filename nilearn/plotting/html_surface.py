@@ -2,19 +2,21 @@ import collections.abc
 import json
 import warnings
 
-import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-
-from nilearn._utils.niimg_conversions import check_niimg_3d
+import numpy as np
+from nilearn import datasets, surface
 from nilearn._utils import fill_doc
-from nilearn import surface
-from nilearn import datasets
-from nilearn.plotting.html_document import HTMLDocument
+from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn.plotting import cm
+from nilearn.plotting.html_document import HTMLDocument
 from nilearn.plotting.js_plotting_utils import (
-    colorscale, mesh_to_plotly, get_html_template, add_js_lib,
-    to_color_strings)
+    add_js_lib,
+    colorscale,
+    get_html_template,
+    mesh_to_plotly,
+    to_color_strings,
+)
 
 
 class SurfaceView(HTMLDocument):

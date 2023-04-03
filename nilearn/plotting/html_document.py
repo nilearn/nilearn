@@ -1,10 +1,10 @@
 import os
-import sys
-import weakref
-import warnings
-import tempfile
-import webbrowser
 import subprocess
+import sys
+import tempfile
+import warnings
+import weakref
+import webbrowser
 from html import escape
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10

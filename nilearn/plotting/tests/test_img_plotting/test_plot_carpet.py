@@ -1,8 +1,9 @@
 """Tests for :func:`nilearn.plotting.plot_carpet`."""
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from nilearn.plotting import plot_carpet
+
 from .testing_utils import testdata_4d  # noqa:F401
 
 

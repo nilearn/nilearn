@@ -1,18 +1,18 @@
 
 import warnings
-import numpy as np
-from scipy.sparse import issparse
-from scipy.stats import scoreatpercentile
 
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib import cm as mpl_cm
-
-from nilearn.plotting import cm
 from nilearn._utils.param_validation import check_threshold
-from nilearn.plotting.displays._slicers import (
-    OrthoSlicer, _get_create_display_fun
-)
+from nilearn.plotting import cm
 from nilearn.plotting.displays._axes import GlassBrainAxes
+from nilearn.plotting.displays._slicers import (
+    OrthoSlicer,
+    _get_create_display_fun,
+)
+from scipy.sparse import issparse
+from scipy.stats import scoreatpercentile
 
 
 class OrthoProjector(OrthoSlicer):

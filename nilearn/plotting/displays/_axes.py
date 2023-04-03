@@ -1,15 +1,14 @@
 
 import numbers
-from nilearn._utils.docs import fill_doc
-import numpy as np
 
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.colors import Normalize
-from matplotlib.patches import FancyArrow
-from matplotlib.lines import Line2D
 from matplotlib.font_manager import FontProperties
+from matplotlib.lines import Line2D
+from matplotlib.patches import FancyArrow
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
-
+from nilearn._utils.docs import fill_doc
 from nilearn.image import coord_transform
 from nilearn.plotting.glass_brain import plot_brain_schematics
 

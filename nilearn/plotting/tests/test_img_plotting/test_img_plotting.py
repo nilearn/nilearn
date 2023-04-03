@@ -1,17 +1,24 @@
 """This file contains tests common to multiple image plotting functions."""
 
-import pytest
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import pytest
 from nibabel import Nifti1Image
-from nilearn.image import get_data, reorder_img
 from nilearn.datasets import load_mni152_template
+from nilearn.image import get_data, reorder_img
+from nilearn.plotting import (
+    plot_anat,
+    plot_carpet,
+    plot_epi,
+    plot_glass_brain,
+    plot_img,
+    plot_prob_atlas,
+    plot_roi,
+    plot_stat_map,
+)
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
-from nilearn.plotting import (plot_img, plot_anat, plot_stat_map, plot_roi,
-                              plot_epi, plot_glass_brain, plot_carpet,
-                              plot_prob_atlas)
-from .testing_utils import MNI_AFFINE, testdata_3d, testdata_4d  # noqa:F401
 
+from .testing_utils import MNI_AFFINE, testdata_3d, testdata_4d  # noqa:F401
 
 ALL_PLOTTING_FUNCS = set([plot_img, plot_anat, plot_stat_map, plot_roi,
                           plot_epi, plot_glass_brain, plot_carpet,

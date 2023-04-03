@@ -5,24 +5,23 @@ Tools to find activations and cut on maps
 # Author: Gael Varoquaux
 # License: BSD
 
-import warnings
 import numbers
+import warnings
+
 import numpy as np
-from scipy.ndimage import (
-    center_of_mass,
-    find_objects,
-    label,
-)
-# Local imports
-from ..image import new_img_like, reorder_img, iter_img
-from ..image.resampling import get_mask_bounds, coord_transform
-from ..image.image import _smooth_array
-from .._utils.ndimage import largest_connected_component
-from .._utils.extmath import fast_abs_percentile
-from .._utils.numpy_conversions import as_ndarray
-from .._utils import check_niimg_3d, check_niimg_4d
-from .._utils.niimg import _safe_get_data
 from nilearn.image import get_data
+from scipy.ndimage import center_of_mass, find_objects, label
+
+from .._utils import check_niimg_3d, check_niimg_4d
+from .._utils.extmath import fast_abs_percentile
+from .._utils.ndimage import largest_connected_component
+from .._utils.niimg import _safe_get_data
+from .._utils.numpy_conversions import as_ndarray
+
+# Local imports
+from ..image import iter_img, new_img_like, reorder_img
+from ..image.image import _smooth_array
+from ..image.resampling import coord_transform, get_mask_bounds
 
 ################################################################################
 # Functions for automatic choice of cuts coordinates

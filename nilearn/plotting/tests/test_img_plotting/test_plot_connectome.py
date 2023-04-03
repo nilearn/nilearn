@@ -3,12 +3,13 @@ Tests for :func:`nilearn.plotting.plot_connectome`.
 """
 
 import os
-import pytest
-import numpy as np
+
 import matplotlib.pyplot as plt
-from scipy import sparse
+import numpy as np
+import pytest
 from matplotlib.patches import FancyArrow
 from nilearn.plotting import plot_connectome
+from scipy import sparse
 
 
 @pytest.fixture

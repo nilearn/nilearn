@@ -1,17 +1,15 @@
+import base64
 import warnings
 from io import BytesIO
-import base64
 
 import numpy as np
-from matplotlib import pyplot as plt
 import pytest
-
+from matplotlib import pyplot as plt
 from nibabel import Nifti1Image
-
 from nilearn import datasets, image
+from nilearn.image import get_data, new_img_like
 from nilearn.plotting import html_stat_map
-from nilearn.image import new_img_like
-from nilearn.image import get_data
+
 from ..js_plotting_utils import colorscale
 
 

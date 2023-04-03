@@ -3,7 +3,6 @@
 """ Smoke testing the cm module
 """
 import matplotlib.pyplot as plt
-
 from nilearn.plotting.cm import dim_cmap, replace_inside
 
 

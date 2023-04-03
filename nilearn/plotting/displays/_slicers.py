@@ -1,24 +1,23 @@
 
-import numbers
 import collections
-from nilearn._utils.docs import fill_doc
-import numpy as np
+import numbers
 
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap, ListedColormap
+import numpy as np
 from matplotlib.colorbar import ColorbarBase
+from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.transforms import Bbox
-
-from nilearn.version import _compare_version
 from nilearn._utils import check_niimg_3d
-from nilearn.plotting.find_cuts import find_xyz_cut_coords, find_cut_slices
-from nilearn.plotting.displays import CutAxes
-from nilearn.plotting.edge_detect import _edge_map
-from nilearn.image.resampling import get_bounds, get_mask_bounds
-from nilearn.image import reorder_img, new_img_like, get_data
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.niimg import _is_binary_niimg, _safe_get_data
+from nilearn.image import get_data, new_img_like, reorder_img
+from nilearn.image.resampling import get_bounds, get_mask_bounds
+from nilearn.plotting.displays import CutAxes
 from nilearn.plotting.displays._axes import _coords_3d_to_2d
+from nilearn.plotting.edge_detect import _edge_map
+from nilearn.plotting.find_cuts import find_cut_slices, find_xyz_cut_coords
+from nilearn.version import _compare_version
 
 
 class BaseSlicer:

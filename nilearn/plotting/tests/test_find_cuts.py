@@ -1,12 +1,14 @@
-import numpy as np
 import nibabel
+import numpy as np
 import pytest
-
-from nilearn.plotting.find_cuts import (find_xyz_cut_coords, find_cut_slices,
-                                        _transform_cut_coords,
-                                        find_parcellation_cut_coords,
-                                        find_probabilistic_atlas_cut_coords)
 from nilearn.masking import compute_epi_mask
+from nilearn.plotting.find_cuts import (
+    _transform_cut_coords,
+    find_cut_slices,
+    find_parcellation_cut_coords,
+    find_probabilistic_atlas_cut_coords,
+    find_xyz_cut_coords,
+)
 
 
 def test_find_cut_coords():

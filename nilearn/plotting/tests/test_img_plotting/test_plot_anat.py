@@ -1,9 +1,10 @@
 """Tests for :func:`nilearn.plotting.plot_anat`."""
 
-import pytest
 import matplotlib.pyplot as plt
+import pytest
 from nilearn.plotting import plot_anat
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
+
 from .testing_utils import testdata_3d  # noqa:F401
 
 

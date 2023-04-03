@@ -4,18 +4,36 @@ import tempfile
 
 import matplotlib
 import matplotlib.pyplot as plt
-from nibabel import Nifti1Image
-import pytest
 import numpy as np
-
-from nilearn.plotting.displays import (
-    OrthoSlicer, XSlicer, YSlicer, ZSlicer, XZSlicer, YXSlicer, YZSlicer,
-    OrthoProjector, TiledSlicer, MosaicSlicer, LZRYProjector, LYRZProjector,
-    XZProjector, YZProjector, YXProjector, XProjector, YProjector, ZProjector,
-    LYRProjector, LZRProjector, LRProjector, LProjector, RProjector, BaseAxes
-)
+import pytest
+from nibabel import Nifti1Image
 from nilearn.datasets import load_mni152_template
-
+from nilearn.plotting.displays import (
+    BaseAxes,
+    LProjector,
+    LRProjector,
+    LYRProjector,
+    LYRZProjector,
+    LZRProjector,
+    LZRYProjector,
+    MosaicSlicer,
+    OrthoProjector,
+    OrthoSlicer,
+    RProjector,
+    TiledSlicer,
+    XProjector,
+    XSlicer,
+    XZProjector,
+    XZSlicer,
+    YProjector,
+    YSlicer,
+    YXProjector,
+    YXSlicer,
+    YZProjector,
+    YZSlicer,
+    ZProjector,
+    ZSlicer,
+)
 
 SLICER_KEYS = [
     'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'yz', 'mosaic', 'xz'

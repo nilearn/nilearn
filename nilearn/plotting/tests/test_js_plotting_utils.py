@@ -1,17 +1,22 @@
+import base64
 import os
 import re
-import base64
-import webbrowser
 import tempfile
+import webbrowser
+
 import numpy as np
 import pytest
-
+from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.js_plotting_utils import (
-    colorscale, get_html_template, add_js_lib, encode,
-    decode, mesh_to_plotly, to_color_strings
+    add_js_lib,
+    colorscale,
+    decode,
+    encode,
+    get_html_template,
+    mesh_to_plotly,
+    to_color_strings,
 )
 from nilearn.surface import load_surf_mesh
-from nilearn.datasets import fetch_surf_fsaverage
 
 try:
     from lxml import etree
@@ -253,5 +258,7 @@ def test_to_color_strings(colors):
 
 def test_import_html_document_from_js_plotting():
     """Smoke test importing HTMLDocument from js_plotting_utils."""
-    from nilearn.plotting.js_plotting_utils import (
-        HTMLDocument, set_max_img_views_before_warning)  #noqa
+    from nilearn.plotting.js_plotting_utils import (  # noqa
+        HTMLDocument,
+        set_max_img_views_before_warning,
+    )
