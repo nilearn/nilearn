@@ -568,11 +568,11 @@ hemispheres : list of :obj:`str`, optional
 # view
 docdict['view'] = """
 view : :obj:`str` or a pair of :obj:`float`, optional.
-        If a string, must be in {'lateral', 'medial', 'dorsal', 'ventral',\
-        'anterior', 'posterior'}.
-        If a sequence, must be a pair (elev, azim) of float
-        angles in degrees that will manually set a custom view.
-        E.g., view=[270.0, 90.0] or view=(0.0, -180.0).
+    If a string, must be in {'lateral', 'medial', 'dorsal', 'ventral',\
+    'anterior', 'posterior'}.
+    If a sequence, must be a pair (elev, azim) of float
+    angles in degrees that will manually set a custom view.
+    E.g., view=[270.0, 90.0] or view=(0.0, -180.0).
     View of the surface that is rendered.
     Default='lateral'.
 
