@@ -475,7 +475,7 @@ class FirstLevelModel(BaseGLM):
                 'confounds and events will be ignored.'
             )
         # Local import to prevent circular imports
-        from nilearn.maskers import NiftiMasker  # noqa
+        from nilearn.maskers import NiftiMasker
 
         # Check arguments
         # Check imgs type
@@ -614,7 +614,7 @@ class FirstLevelModel(BaseGLM):
                 sys.stderr.write(
                     f'Masker took {int(t_masking)} seconds       \n')
 
-            if self.signal_scaling is not False:  # noqa
+            if self.signal_scaling is not False:
                 Y, _ = mean_scaling(Y, self.signal_scaling)
             if self.memory:
                 mem_glm = self.memory.cache(run_glm, ignore=['n_jobs'])

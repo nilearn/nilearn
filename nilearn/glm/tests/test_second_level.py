@@ -96,7 +96,7 @@ def test_process_second_level_input_as_firstlevelmodels():
     """Unit tests for function
     _process_second_level_input_as_firstlevelmodels().
     """
-    from nilearn.glm.second_level.second_level import (  # noqa
+    from nilearn.glm.second_level.second_level import (
         _process_second_level_input_as_firstlevelmodels,
     )
     shapes, rk = [(7, 8, 9, 15)], 3
