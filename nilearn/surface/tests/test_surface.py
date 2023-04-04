@@ -79,7 +79,9 @@ def test_load_surf_data_file_nii_gii(tmp_path):
     fd_gii, filename_gii = tempfile.mkstemp(suffix='.gii',
                                             dir=str(tmp_path))
     os.close(fd_gii)
-    darray = gifti.GiftiDataArray(data=np.zeros((20, )))
+    darray = gifti.GiftiDataArray(
+        data=np.zeros((20, )), datatype='NIFTI_TYPE_FLOAT32'
+    )
     gii = gifti.GiftiImage(darrays=[darray])
     nb.save(gii, filename_gii)
     assert_array_equal(load_surf_data(filename_gii), np.zeros((20, )))
@@ -277,10 +279,14 @@ def test_load_surf_mesh_list():
 def test_gifti_img_to_mesh():
     mesh = generate_surf()
 
-    coord_array = gifti.GiftiDataArray(data=mesh[0])
+    coord_array = gifti.GiftiDataArray(
+        data=mesh[0], datatype='NIFTI_TYPE_FLOAT32'
+    )
     coord_array.intent = nb.nifti1.intent_codes['NIFTI_INTENT_POINTSET']
 
-    face_array = gifti.GiftiDataArray(data=mesh[1])
+    face_array = gifti.GiftiDataArray(
+        data=mesh[1], datatype='NIFTI_TYPE_FLOAT32'
+    )
     face_array.intent = nb.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE']
 
     gii = gifti.GiftiImage(darrays=[coord_array, face_array])
@@ -306,12 +312,16 @@ def test_load_surf_mesh_file_gii(tmp_path):
     fd_mesh, filename_gii_mesh = tempfile.mkstemp(suffix='.gii',
                                                   dir=str(tmp_path))
     os.close(fd_mesh)
-    coord_array = gifti.GiftiDataArray(data=mesh[0],
-                                       intent=nb.nifti1.intent_codes[
-                                           'NIFTI_INTENT_POINTSET'])
-    face_array = gifti.GiftiDataArray(data=mesh[1],
-                                      intent=nb.nifti1.intent_codes[
-                                          'NIFTI_INTENT_TRIANGLE'])
+    coord_array = gifti.GiftiDataArray(
+        data=mesh[0],
+        intent=nb.nifti1.intent_codes['NIFTI_INTENT_POINTSET'],
+        datatype='NIFTI_TYPE_FLOAT32'
+    )
+    face_array = gifti.GiftiDataArray(
+        data=mesh[1],
+        intent=nb.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'],
+        datatype='NIFTI_TYPE_FLOAT32'
+    )
 
     gii = gifti.GiftiImage(darrays=[coord_array, face_array])
     nb.save(gii, filename_gii_mesh)
@@ -405,7 +415,9 @@ def test_load_surf_data_file_glob(tmp_path):
         os.close(fd)
         fnames.append(filename)
         data2D[:, f] *= f
-        darray = gifti.GiftiDataArray(data=data2D[:, f])
+        darray = gifti.GiftiDataArray(
+            data=data2D[:, f], datatype='NIFTI_TYPE_FLOAT32'
+        )
         gii = gifti.GiftiImage(darrays=[darray])
         nb.save(gii, fnames[f])
 
