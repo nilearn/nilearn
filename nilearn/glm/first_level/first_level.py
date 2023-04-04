@@ -850,7 +850,7 @@ def first_level_from_bids(dataset_path,
         If 'None', will model all subjects in the dataset.
         .. versionadded:: 0.10.1.dev
 
-    img_filters : :obj:`list` of :obj:`tuples` (str, str), optional
+    img_filters : :obj:`list` of :obj:`tuple` (str, str), optional
         Filters are of the form (field, label). Only one filter per field
         allowed.
         A file that does not match a filter will be discarded.
