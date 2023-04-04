@@ -8,15 +8,13 @@ from tempfile import mkdtemp
 
 import numpy as np
 import pytest
-from nibabel import Nifti1Image
-
-from numpy.testing import assert_array_equal
 from joblib import Memory
-
+from nibabel import Nifti1Image
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_tmp_imgs
-from nilearn.maskers import MultiNiftiMasker
 from nilearn.image import get_data
+from nilearn.maskers import MultiNiftiMasker
+from numpy.testing import assert_array_equal
 
 
 def test_auto_mask():
@@ -124,6 +122,7 @@ def test_3d_images():
 
 def test_joblib_cache():
     from joblib import hash
+
     # Dummy mask
     mask = np.zeros((40, 40, 40))
     mask[20, 20, 20] = 1

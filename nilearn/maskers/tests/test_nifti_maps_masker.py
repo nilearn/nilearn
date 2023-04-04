@@ -10,7 +10,6 @@ import warnings
 import nibabel
 import numpy as np
 import pytest
-
 from nilearn._utils import data_gen, testing
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import get_data

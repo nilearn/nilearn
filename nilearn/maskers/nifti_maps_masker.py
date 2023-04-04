@@ -5,9 +5,8 @@ import warnings
 
 import numpy as np
 from joblib import Memory
-
 from nilearn import _utils, image
-from nilearn.maskers.base_masker import _filter_and_extract, BaseMasker
+from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
 
 class _ExtractionFunctor:
@@ -291,8 +290,8 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             A list of all displays to be rendered.
 
         """
-        from nilearn.reporting.html_report import _embed_img
         from nilearn import plotting
+        from nilearn.reporting.html_report import _embed_img
 
         if self._reporting_data is not None:
             maps_image = self._reporting_data['maps_image']

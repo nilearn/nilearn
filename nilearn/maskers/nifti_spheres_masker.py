@@ -4,22 +4,22 @@ Transformer for computing seeds signals
 
 Mask nifti images by spherical volumes for seed-region analyses
 """
-import numpy as np
 import warnings
-from sklearn import neighbors
-from joblib import Memory
-from scipy import sparse
 
+import numpy as np
+from joblib import Memory
 from nilearn import image, masking
-from nilearn._utils import CacheMixin, logger, fill_doc
-from nilearn.maskers.base_masker import _filter_and_extract, BaseMasker
+from nilearn._utils import CacheMixin, fill_doc, logger
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.niimg_conversions import (
     _safe_get_data,
-    check_niimg_4d,
     check_niimg_3d,
+    check_niimg_4d,
 )
+from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
+from scipy import sparse
+from sklearn import neighbors
 
 
 def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,

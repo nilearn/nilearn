@@ -1,10 +1,10 @@
 import warnings
-
-import numpy as np
 from string import Template
 
-from .._utils.class_inspect import get_params
+import numpy as np
+
 from .._utils.cache_mixin import _check_memory
+from .._utils.class_inspect import get_params
 from .multi_nifti_masker import MultiNiftiMasker
 from .nifti_masker import NiftiMasker
 

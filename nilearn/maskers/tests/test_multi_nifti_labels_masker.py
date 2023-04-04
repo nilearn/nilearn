@@ -2,15 +2,13 @@
 Test the multi_nifti_labels_masker module
 """
 
-import numpy as np
-
 import nibabel
+import numpy as np
 import pytest
-
-from nilearn._utils import testing, data_gen
+from nilearn._utils import data_gen, testing
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import get_data
-from nilearn.maskers import NiftiLabelsMasker, MultiNiftiLabelsMasker
+from nilearn.maskers import MultiNiftiLabelsMasker, NiftiLabelsMasker
 
 
 def test_multi_nifti_labels_masker():

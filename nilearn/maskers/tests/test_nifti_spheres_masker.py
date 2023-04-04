@@ -4,11 +4,10 @@ import warnings
 import nibabel
 import numpy as np
 import pytest
-from numpy.testing import assert_array_almost_equal, assert_array_equal
-
 from nilearn._utils import data_gen
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
+from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 
 def test_seed_extraction():

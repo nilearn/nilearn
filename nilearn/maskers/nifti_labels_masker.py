@@ -2,13 +2,12 @@
 Transformer for computing ROI signals.
 """
 
-import numpy as np
 import warnings
 
+import numpy as np
 from joblib import Memory
-
 from nilearn import _utils, image, masking
-from nilearn.maskers.base_masker import _filter_and_extract, BaseMasker
+from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
 
 class _ExtractionFunctor:

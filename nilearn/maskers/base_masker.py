@@ -4,22 +4,18 @@ Transformer used to apply basic transformations on :term:`fMRI` data.
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
-import warnings
 import abc
+import warnings
 
 import numpy as np
-
-from sklearn.base import BaseEstimator, TransformerMixin
 from joblib import Memory
+from nilearn.image import high_variance_confounds
+from sklearn.base import BaseEstimator, TransformerMixin
 
-from .. import masking
-from .. import image
-from .. import signal
-from .. import _utils
+from .. import _utils, image, masking, signal
+from .._utils import stringify_path
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.class_inspect import enclosing_scope_name
-from .._utils import stringify_path
-from nilearn.image import high_variance_confounds
 
 
 def _filter_and_extract(
