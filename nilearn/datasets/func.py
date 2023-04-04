@@ -1974,7 +1974,7 @@ def fetch_development_fmri(
 
     adult_count, child_count = _filter_func_regressors_by_participants(
         participants, age_group
-    )  # noqa: E126
+    )
     max_subjects = adult_count + child_count
 
     n_subjects = _set_invalid_n_subjects_to_max(

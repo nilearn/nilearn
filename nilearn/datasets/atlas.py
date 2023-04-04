@@ -1270,15 +1270,16 @@ def fetch_atlas_aal(
     dataset_name = "aal_" + version
     opts = {"uncompress": True}
 
+    base_url = "http://www.gin.cnrs.fr/"
     if url is None:
         if version == "SPM12":
-            url = "http://www.gin.cnrs.fr/AAL_files/aal_for_SPM12.tar.gz"
+            url = f"{base_url}AAL_files/aal_for_SPM12.tar.gz"
             basenames = ("AAL.nii", "AAL.xml")
             filenames = [
                 (os.path.join("aal", "atlas", f), url, opts) for f in basenames
             ]
         else:
-            url = f"http://www.gin.cnrs.fr/wp-content/uploads/aal_for_{version}.zip"  # noqa
+            url = f"{base_url}wp-content/uploads/aal_for_{version}.zip"
             basenames = ("ROI_MNI_V4.nii", "ROI_MNI_V4.txt")
             filenames = [
                 (os.path.join(f"aal_for_{version}", f), url, opts)
