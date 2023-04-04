@@ -16,7 +16,7 @@ from nilearn.maskers import NiftiMasker
 from nilearn.reporting import glm_reporter as glmr
 
 try:
-    import matplotlib as mpl  # noqa: F401 F841
+    import matplotlib as mpl  # noqa: F401
 except ImportError:
     not_have_mpl = True
 else:
@@ -241,7 +241,7 @@ def test_stat_map_to_svg_slice_z(cut_coords):
     with InTemporaryDirectory():
         img = _generate_img()
         table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
-        glmr._stat_map_to_svg(  # noqa: F841
+        glmr._stat_map_to_svg(
             stat_img=img,
             bg_img=None,
             cut_coords=cut_coords,
@@ -256,7 +256,7 @@ def test_stat_map_to_svg_glass_z(cut_coords):
     with InTemporaryDirectory():
         img = _generate_img()
         table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
-        glmr._stat_map_to_svg(  # noqa: F841
+        glmr._stat_map_to_svg(
             stat_img=img,
             bg_img=None,
             cut_coords=cut_coords,

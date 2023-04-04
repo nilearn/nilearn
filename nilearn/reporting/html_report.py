@@ -1,3 +1,5 @@
+"""Generate HTML reports."""
+
 import os
 import copy
 import warnings
@@ -282,7 +284,7 @@ class HTMLReport(HTMLDocument):
 
     def _repr_html_(self):
         """Return body of the report.
-        
+
         Method used by the Jupyter notebook.
         Users normally won't call this method explicitly.
         """

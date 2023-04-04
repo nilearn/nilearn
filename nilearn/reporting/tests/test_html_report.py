@@ -99,7 +99,9 @@ def test_empty_report(masker_class, input_parameters):
 
 
 @pytest.mark.parametrize("masker_class", [NiftiMasker, NiftiLabelsMasker])
-def test_reports_after_fit_3d_data(masker_class, input_parameters, data_img_3d):  # noqa
+def test_reports_after_fit_3d_data(masker_class,
+                                   input_parameters,
+                                   data_img_3d):
     """Tests report generation after fitting on 3D data."""
     masker = masker_class(**input_parameters)
     masker.fit(data_img_3d)
@@ -108,7 +110,10 @@ def test_reports_after_fit_3d_data(masker_class, input_parameters, data_img_3d):
 
 
 @pytest.mark.parametrize("masker_class", [NiftiMasker, NiftiLabelsMasker])
-def test_reports_after_fit_3d_data_with_mask(masker_class, input_parameters, data_img_3d, mask):  # noqa
+def test_reports_after_fit_3d_data_with_mask(masker_class,
+                                             input_parameters,
+                                             data_img_3d,
+                                             mask):
     """Tests report generation after fitting on 3D data with mask_img."""
     input_parameters["mask_img"] = mask
     masker = masker_class(**input_parameters)
@@ -120,7 +125,8 @@ def test_reports_after_fit_3d_data_with_mask(masker_class, input_parameters, dat
 
 @pytest.mark.parametrize("masker_class",
                          [NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker])
-def test_warning_in_report_after_empty_fit(masker_class, input_parameters):  # noqa
+def test_warning_in_report_after_empty_fit(masker_class,
+                                           input_parameters):
     """Tests that a warning is both given and written in the report if
     no images were provided to fit.
     """
@@ -173,7 +179,7 @@ def test_nifti_maps_masker_report_list_and_arrays_maps_number(
     html = masker.generate_report(displayed_maps)
     assert masker._report_content['report_id'] == 0
     assert masker._report_content['number_of_maps'] == 9
-    assert(
+    assert (
         masker._report_content['displayed_maps']
         == list(displayed_maps)
     )
@@ -200,7 +206,7 @@ def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
         html = masker.generate_report(displayed_maps)
     assert masker._report_content['report_id'] == 0
     assert masker._report_content['number_of_maps'] == 9
-    assert(
+    assert (
         masker._report_content['displayed_maps']
         == list(range(expected_n_maps))
     )
@@ -226,7 +232,10 @@ def test_nifti_labels_masker_report(data_img_3d, mask):
     shape = (13, 11, 12)
     affine = np.diag([2, 2, 2, 1])
     n_regions = 9
-    labels = (['background'] + [f'region_{i}' for i in range(1, n_regions + 1)])
+    labels = (
+        ['background'] +
+        [f'region_{i}' for i in range(1, n_regions + 1)]
+    )
     EXPECTED_COLUMNS = ['label value',
                         'region name',
                         'size (in mm^3)',
