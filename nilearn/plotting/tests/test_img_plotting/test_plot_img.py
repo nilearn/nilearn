@@ -8,19 +8,6 @@ from nilearn._utils.niimg import _is_binary_niimg
 from nilearn.image import get_data
 from nilearn.plotting import plot_img
 
-from .testing_utils import MNI_AFFINE
-
-
-@pytest.fixture()
-def testdata_3d():
-    """A random 3D image for testing figures."""
-    data_positive = np.zeros((7, 7, 3))
-    rng = np.random.RandomState(42)
-    data_rng = rng.uniform(size=(7, 7, 3))
-    data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
-    img_3d = Nifti1Image(data_positive, MNI_AFFINE)
-    return {'img': img_3d}
-
 
 def _testdata_3d_for_resampling(img, binary):
     """Returns testing data for resampling tests.
@@ -57,11 +44,11 @@ def test_plot_with_axes_or_figure(testdata_3d):
     plt.close()
 
 
-def test_plot_empty_slice(testdata_3d):
+def test_plot_empty_slice(mni_affine):
     """Test that things don't crash when we give a map with
     nothing above threshold. This is only a smoke test.
     """
-    img = Nifti1Image(np.zeros((20, 20, 20)), MNI_AFFINE)
+    img = Nifti1Image(np.zeros((20, 20, 20)), mni_affine)
     plot_img(img, display_mode='y', threshold=1)
     plt.close()
 

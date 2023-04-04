@@ -7,7 +7,7 @@ from nibabel import Nifti1Image
 from nilearn.image.resampling import coord_transform
 from nilearn.plotting import plot_roi
 
-from .testing_utils import MNI_AFFINE
+from nilearn.conftest import MNI_AFFINE
 
 
 def demo_plot_roi(**kwargs):

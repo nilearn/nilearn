@@ -10,19 +10,6 @@ from nilearn.image.resampling import coord_transform
 from nilearn.plotting import plot_stat_map
 from nilearn.plotting.find_cuts import find_cut_slices
 
-from .testing_utils import MNI_AFFINE
-
-
-@pytest.fixture()
-def testdata_3d():
-    """A random 3D image for testing figures."""
-    data_positive = np.zeros((7, 7, 3))
-    rng = np.random.RandomState(42)
-    data_rng = rng.uniform(size=(7, 7, 3))
-    data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
-    img_3d = Nifti1Image(data_positive, MNI_AFFINE)
-    return {'img': img_3d}
-
 
 def test_plot_stat_map_bad_input(testdata_3d, tmpdir):
     """Test for bad input arguments (cf. #510)."""
@@ -61,10 +48,10 @@ def test_plot_stat_map_cut_coords_and_display_mode(display_mode, cut_coords,
     plt.close()
 
 
-def test_plot_stat_map_with_masked_image(testdata_3d):
+def test_plot_stat_map_with_masked_image(testdata_3d, mni_affine):
     """Smoke test coordinate finder with mask."""
     masked_img = Nifti1Image(
-        np.ma.masked_equal(get_data(testdata_3d['img']), 0), MNI_AFFINE
+        np.ma.masked_equal(get_data(testdata_3d['img']), 0), mni_affine
     )
     plot_stat_map(masked_img, display_mode='x')
     plt.close()
@@ -112,7 +99,7 @@ def test_plot_stat_map_threshold_for_affine_with_rotation():
                           {"symmetric_cbar": False, "vmax": 10},
                           {"symmetric_cbar": True, "vmax": 10},
                           {"colorbar": False}])
-def test_plot_stat_map_colorbar_variations(params, testdata_3d):
+def test_plot_stat_map_colorbar_variations(params, testdata_3d, mni_affine):
     """Smoke test for plot_stat_map with different colorbar configurations."""
     img_positive = testdata_3d['img']
     data_positive = get_data(img_positive)
@@ -121,8 +108,8 @@ def test_plot_stat_map_colorbar_variations(params, testdata_3d):
     data_heterogeneous = data_positive * rng.standard_normal(
         size=data_positive.shape
     )
-    img_negative = Nifti1Image(data_negative, MNI_AFFINE)
-    img_heterogeneous = Nifti1Image(data_heterogeneous, MNI_AFFINE)
+    img_negative = Nifti1Image(data_negative, mni_affine)
+    img_heterogeneous = Nifti1Image(data_heterogeneous, mni_affine)
     for img in [img_positive, img_negative, img_heterogeneous]:
         plot_stat_map(img, cut_coords=(80, -120, -60), **params)
         plt.close()
