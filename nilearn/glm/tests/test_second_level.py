@@ -26,6 +26,7 @@ from nilearn.maskers import NiftiMasker
 from nilearn.glm.first_level import (FirstLevelModel, run_glm)
 from nilearn.glm.second_level import (SecondLevelModel,
                                       non_parametric_inference)
+from nilearn._utils import testing                    
 
 try:
     from nilearn.reporting import get_clusters_table
@@ -98,6 +99,37 @@ def test_sort_input_dataframe(input_df):
         == ["bar.nii", "baz.nii", "foo.nii"]
     )
 
+def test_second_level_input_as_3D_images():
+    """Test second level model with a list 3D image filenames as input.
+
+    Should act as a regression test for:
+    https://github.com/nilearn/nilearn/issues/3636
+
+    Adapted from examples: plot_second_level_one_sample_test.py
+
+    """
+
+    shape = (7, 8, 9)
+    images = []
+    nb_subjects = 10
+    affine = np.eye(4)
+    for _ in range(nb_subjects):
+        data= np.random.rand(*shape)
+        images.append( Nifti1Image(data, affine))
+
+    with testing.write_tmp_imgs(*images, create_files=True) as filenames:
+
+        second_level_input = filenames
+        design_matrix = pd.DataFrame(
+            [1] * len(second_level_input),
+            columns=["intercept"],
+        )
+
+        second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
+        second_level_model = second_level_model.fit(
+            second_level_input,
+            design_matrix=design_matrix,
+        )
 
 def test_process_second_level_input_as_firstlevelmodels():
     """Unit tests for function
