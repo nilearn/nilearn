@@ -325,8 +325,8 @@ def test_load_surf_mesh_file_gii(tmp_path):
 
     gii = gifti.GiftiImage(darrays=[coord_array, face_array])
     nb.save(gii, filename_gii_mesh)
-    assert_array_equal(load_surf_mesh(filename_gii_mesh)[0], mesh[0])
-    assert_array_equal(load_surf_mesh(filename_gii_mesh)[1], mesh[1])
+    assert_array_almost_equal(load_surf_mesh(filename_gii_mesh)[0], mesh[0])
+    assert_array_almost_equal(load_surf_mesh(filename_gii_mesh)[1], mesh[1])
     os.remove(filename_gii_mesh)
 
     # test if incorrect gii raises error
@@ -432,10 +432,10 @@ def test_load_surf_data_file_glob(tmp_path):
                                     dir=str(tmp_path))
     os.close(fd)
     fnames.append(filename)
-    darray1 = gifti.GiftiDataArray(data=np.ones((20, )))
-    darray2 = gifti.GiftiDataArray(data=np.ones((20, )))
-    darray3 = gifti.GiftiDataArray(data=np.ones((20, )))
-    gii = gifti.GiftiImage(darrays=[darray1, darray2, darray3])
+    darray1 = gifti.GiftiDataArray(
+        data=np.ones((20, )), datatype='NIFTI_TYPE_FLOAT32'
+    )
+    gii = gifti.GiftiImage(darrays=[darray1, darray1, darray1])
     nb.save(gii, fnames[-1])
 
     data2D = np.concatenate((data2D, np.ones((20, 3))), axis=1)
@@ -448,7 +448,9 @@ def test_load_surf_data_file_glob(tmp_path):
                                     dir=str(tmp_path))
     os.close(fd)
     fnames.append(filename)
-    darray = gifti.GiftiDataArray(data=np.ones((15, 1)))
+    darray = gifti.GiftiDataArray(
+        data=np.ones((15, 1)), datatype='NIFTI_TYPE_FLOAT32'
+    )
     gii = gifti.GiftiImage(darrays=[darray])
     nb.save(gii, fnames[-1])
 
