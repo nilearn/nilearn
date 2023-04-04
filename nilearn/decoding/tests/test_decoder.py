@@ -90,7 +90,7 @@ def _make_multiclass_classification_test_data(n_samples=200):
 
 
 @pytest.fixture(scope="session")
-def dummy_binary_classification_data():
+def tiny_binary_classification_data():
     """Use for testing errors.
 
     This fixture aims to return a very small data set
@@ -417,8 +417,8 @@ def test_decoder_dummy_classifier_with_callable(binary_classification_data):
     assert model.score(X, y) == accuracy_score(y, y_pred)
 
 
-def test_decoder_error_model_not_fitted(dummy_binary_classification_data):
-    X, y, mask = dummy_binary_classification_data
+def test_decoder_error_model_not_fitted(tiny_binary_classification_data):
+    X, y, mask = tiny_binary_classification_data
 
     model = Decoder(estimator="dummy_classifier", mask=mask)
 
@@ -429,7 +429,7 @@ def test_decoder_error_model_not_fitted(dummy_binary_classification_data):
 
 
 def test_decoder_dummy_classifier_strategy_prior():
-    X, y, mask = _make_binary_classification_test_data(n_samples=400)
+    X, y, mask = _make_binary_classification_test_data(n_samples=300)
 
     param = dict(strategy="prior")
     dummy_classifier = DummyClassifier(random_state=0)
@@ -443,7 +443,7 @@ def test_decoder_dummy_classifier_strategy_prior():
 
 
 def test_decoder_dummy_classifier_strategy_most_frequent():
-    X, y, mask = _make_binary_classification_test_data(n_samples=400)
+    X, y, mask = _make_binary_classification_test_data(n_samples=300)
 
     param = dict(strategy="most_frequent")
     dummy_classifier = DummyClassifier(random_state=0)
@@ -471,8 +471,8 @@ def test_decoder_dummy_classifier_roc_scoring(binary_classification_data):
     assert np.mean(model.cv_scores_[0]) >= 0.45
 
 
-def test_decoder_error_not_implemented(dummy_binary_classification_data):
-    X, y, mask = dummy_binary_classification_data
+def test_decoder_error_not_implemented(tiny_binary_classification_data):
+    X, y, mask = tiny_binary_classification_data
 
     param = dict(strategy="constant")
     dummy_classifier = DummyClassifier(random_state=0)
@@ -485,9 +485,9 @@ def test_decoder_error_not_implemented(dummy_binary_classification_data):
 
 
 def test_decoder_error_unknown_scoring_metrics(
-    dummy_binary_classification_data,
+    tiny_binary_classification_data,
 ):
-    X, y, mask = dummy_binary_classification_data
+    X, y, mask = tiny_binary_classification_data
 
     dummy_classifier = DummyClassifier(random_state=0)
 
