@@ -83,9 +83,9 @@ def _check_embedded_nifti_masker(estimator, multi_subject=True):
     conflict_string = ""
     for param_key in sorted(estimator_params):
         if np.any(new_masker_params[param_key] != estimator_params[param_key]):
-            conflict_string += ("Parameter {0} :\n"
-                                "    Masker parameter {1}"
-                                " - overriding estimator parameter {2}\n"
+            conflict_string += ("Parameter {} :\n"
+                                "    Masker parameter {}"
+                                " - overriding estimator parameter {}\n"
                                 ).format(param_key,
                                          new_masker_params[param_key],
                                          estimator_params[param_key])
@@ -93,7 +93,7 @@ def _check_embedded_nifti_masker(estimator, multi_subject=True):
     if conflict_string != "":
         warn_str = ("Overriding provided-default estimator parameters with"
                     " provided masker parameters :\n"
-                    "{0:s}").format(conflict_string)
+                    "{:s}").format(conflict_string)
         warnings.warn(warn_str)
     masker = masker_type(**new_masker_params)
 

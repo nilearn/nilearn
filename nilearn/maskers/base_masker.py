@@ -59,7 +59,7 @@ def _filter_and_extract(
         copy = False
 
     if verbose > 0:
-        print("[%s] Loading data from %s" % (
+        print("[{}] Loading data from {}".format(
             class_name,
             _utils._repr_niimgs(imgs, shorten=False)))
 
@@ -85,7 +85,7 @@ def _filter_and_extract(
     target_affine = parameters.get('target_affine')
     if target_shape is not None or target_affine is not None:
         if verbose > 0:
-            print("[%s] Resampling images" % class_name)
+            print(f"[{class_name}] Resampling images")
         imgs = cache(
             image.resample_img, memory, func_memory_level=2,
             memory_level=memory_level, ignore=['copy'])(
@@ -97,14 +97,14 @@ def _filter_and_extract(
     smoothing_fwhm = parameters.get('smoothing_fwhm')
     if smoothing_fwhm is not None:
         if verbose > 0:
-            print("[%s] Smoothing images" % class_name)
+            print(f"[{class_name}] Smoothing images")
         imgs = cache(
             image.smooth_img, memory, func_memory_level=2,
             memory_level=memory_level)(
                 imgs, parameters['smoothing_fwhm'])
 
     if verbose > 0:
-        print("[%s] Extracting region signals" % class_name)
+        print(f"[{class_name}] Extracting region signals")
     region_signals, aux = cache(extraction_function, memory,
                                 func_memory_level=2,
                                 memory_level=memory_level)(imgs)
@@ -116,7 +116,7 @@ def _filter_and_extract(
     # Confounds removing (from csv file or numpy array)
     # Normalizing
     if verbose > 0:
-        print("[%s] Cleaning extracted signals" % class_name)
+        print(f"[{class_name}] Cleaning extracted signals")
     runs = parameters.get('runs', None)
     region_signals = cache(
         signal.clean,
