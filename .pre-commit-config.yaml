@@ -26,11 +26,12 @@ files: |
         | nilearn/conftest.py
         | nilearn/version.py
         | nilearn/de.*
-        | nilearn/connectome/.*
-        | nilearn/image/.*
-        | nilearn/regions/.*
-        | nilearn/reporting/.*
-        | nilearn/mass_univariate/.*
+        | nilearn/connectome/.*py
+        | nilearn/image/.*py
+        | nilearn/input_data/.*py
+        | nilearn/regions.*py
+        | nilearn/reporting/.*py
+        | nilearn/mass_univariate/.*py
     )$
 
 exclude: |
@@ -78,7 +79,7 @@ repos:
         args: ["--profile", "black"]
 
   - repo: https://github.com/ikamensh/flynt/
-    rev: "0.77"
+    rev: "0.78"
     hooks:
     -   id: flynt
 
@@ -89,7 +90,7 @@ repos:
         args: [--py36-plus]
 
   - repo: https://github.com/psf/black
-    rev: 23.1.0
+    rev: 23.3.0
     hooks:
       - id: black
         args: [--config=pyproject.toml, --verbose]
