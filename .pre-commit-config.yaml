@@ -23,10 +23,11 @@ files: |
         | nilearn/__init__.py
         | nilearn/_utils/.*
         | nilearn/de.*
-        | nilearn/connectome/.*
-        | nilearn/image/.*
-        | nilearn/regions/.*
-        | nilearn/mass_univariate/.*
+        | nilearn/connectome/.*py
+        | nilearn/image/.*py
+        | nilearn/input_data/.*py
+        | nilearn/regions.*py
+        | nilearn/mass_univariate/.*py
         | nilearn/signal.py
         | nilearn/masking.py
         | nilearn/conftest.py
@@ -91,7 +92,7 @@ repos:
         args: [--py36-plus]
 
   - repo: https://github.com/psf/black
-    rev: 23.1.0
+    rev: 23.3.0
     hooks:
       - id: black
         args: [--config=pyproject.toml, --verbose]
