@@ -95,7 +95,7 @@ def mni_affine():
 
 
 @pytest.fixture()
-def testdata_3d():
+def testdata_3d_for_plotting():
     """A random 3D image for testing figures."""
     data_positive = np.zeros((7, 7, 3))
     rng = np.random.RandomState(42)
@@ -106,7 +106,7 @@ def testdata_3d():
 
 
 @pytest.fixture()
-def testdata_4d():
+def testdata_4d_for_plotting():
     """Random 4D images for testing figures for multivolume data."""
     rng = np.random.RandomState(42)
     img_4d = Nifti1Image(rng.uniform(size=(7, 7, 3, 10)), MNI_AFFINE)

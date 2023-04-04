@@ -11,23 +11,23 @@ from nilearn.plotting import plot_stat_map
 from nilearn.plotting.find_cuts import find_cut_slices
 
 
-def test_plot_stat_map_bad_input(testdata_3d, tmpdir):
+def test_plot_stat_map_bad_input(testdata_3d_for_plotting, tmpdir):
     """Test for bad input arguments (cf. #510)."""
     filename = str(tmpdir.join('temp.png'))
     ax = plt.subplot(111, rasterized=True)
-    plot_stat_map(testdata_3d['img'], symmetric_cbar=True,
+    plot_stat_map(testdata_3d_for_plotting['img'], symmetric_cbar=True,
                   output_file=filename, axes=ax, vmax=np.nan)
     plt.close()
 
 
 @pytest.mark.parametrize("params",
                          [{}, {'display_mode': 'x', 'cut_coords': 3}])
-def test_save_plot_stat_map(params, testdata_3d, tmpdir):
+def test_save_plot_stat_map(params, testdata_3d_for_plotting, tmpdir):
     """Test saving figure to file in different ways."""
     filename = str(tmpdir.join('test.png'))
-    display = plot_stat_map(testdata_3d['img'], output_file=filename, **params)
+    display = plot_stat_map(testdata_3d_for_plotting['img'], output_file=filename, **params)
     assert display is None
-    display = plot_stat_map(testdata_3d['img'], **params)
+    display = plot_stat_map(testdata_3d_for_plotting['img'], **params)
     display.savefig(filename)
     plt.close()
 
@@ -36,22 +36,22 @@ def test_save_plot_stat_map(params, testdata_3d, tmpdir):
                          [('ortho', (80, -120, -60)),
                           ('y', 2), ('yx', None)])
 def test_plot_stat_map_cut_coords_and_display_mode(display_mode, cut_coords,
-                                                   testdata_3d):
+                                                   testdata_3d_for_plotting):
     """Smoke-tests for plot_stat_map.
 
     Tests different combinations of parameters `cut_coords`
     and `display_mode`.
     """
     plot_stat_map(
-        testdata_3d['img'], display_mode=display_mode, cut_coords=cut_coords
+        testdata_3d_for_plotting['img'], display_mode=display_mode, cut_coords=cut_coords
     )
     plt.close()
 
 
-def test_plot_stat_map_with_masked_image(testdata_3d, mni_affine):
+def test_plot_stat_map_with_masked_image(testdata_3d_for_plotting, mni_affine):
     """Smoke test coordinate finder with mask."""
     masked_img = Nifti1Image(
-        np.ma.masked_equal(get_data(testdata_3d['img']), 0), mni_affine
+        np.ma.masked_equal(get_data(testdata_3d_for_plotting['img']), 0), mni_affine
     )
     plot_stat_map(masked_img, display_mode='x')
     plt.close()
@@ -99,9 +99,9 @@ def test_plot_stat_map_threshold_for_affine_with_rotation():
                           {"symmetric_cbar": False, "vmax": 10},
                           {"symmetric_cbar": True, "vmax": 10},
                           {"colorbar": False}])
-def test_plot_stat_map_colorbar_variations(params, testdata_3d, mni_affine):
+def test_plot_stat_map_colorbar_variations(params, testdata_3d_for_plotting, mni_affine):
     """Smoke test for plot_stat_map with different colorbar configurations."""
-    img_positive = testdata_3d['img']
+    img_positive = testdata_3d_for_plotting['img']
     data_positive = get_data(img_positive)
     rng = np.random.RandomState(42)
     data_negative = -data_positive
@@ -147,6 +147,6 @@ def test_outlier_cut_coords():
                   bg_img=bg_img)
 
 
-def test_plotting_functions_with_dim_invalid_input(testdata_3d):
+def test_plotting_functions_with_dim_invalid_input(testdata_3d_for_plotting):
     """Test whether error raises with bad error to input."""
-    pytest.raises(ValueError, plot_stat_map, testdata_3d['img'], dim='-10')
+    pytest.raises(ValueError, plot_stat_map, testdata_3d_for_plotting['img'], dim='-10')

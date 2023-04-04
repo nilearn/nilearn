@@ -30,10 +30,10 @@ def test_plot_anat_colorbar(anat_img, display_mode, cbar_tick_format, tmpdir):
     plt.close()
 
 
-def test_plot_anat_3d_img(testdata_3d, tmpdir):
+def test_plot_anat_3d_img(testdata_3d_for_plotting, tmpdir):
     """Smoke test for plot_anat."""
     filename = str(tmpdir.join('test.png'))
-    slicer = plot_anat(testdata_3d['img'], dim='auto')
+    slicer = plot_anat(testdata_3d_for_plotting['img'], dim='auto')
     slicer.savefig(filename)
     plt.close()
 

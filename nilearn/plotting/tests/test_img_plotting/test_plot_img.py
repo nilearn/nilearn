@@ -9,7 +9,7 @@ from nilearn.image import get_data
 from nilearn.plotting import plot_img
 
 
-def _testdata_3d_for_resampling(img, binary):
+def _testdata_3d_for_plotting_for_resampling(img, binary):
     """Returns testing data for resampling tests.
     Data can be binarize or not.
     """
@@ -24,9 +24,9 @@ def _testdata_3d_for_resampling(img, binary):
     return Nifti1Image(data, affine)
 
 
-def test_display_methods(testdata_3d):
+def test_display_methods(testdata_3d_for_plotting):
     """Tests display methods."""
-    img = testdata_3d['img']
+    img = testdata_3d_for_plotting['img']
     display = plot_img(img)
     display.add_overlay(img, threshold=0)
     display.add_edges(img, color='c')
@@ -34,9 +34,9 @@ def test_display_methods(testdata_3d):
                          colors=['limegreen', 'yellow'])
 
 
-def test_plot_with_axes_or_figure(testdata_3d):
+def test_plot_with_axes_or_figure(testdata_3d_for_plotting):
     """Smoke tests for plot_img with providing figure or Axes."""
-    img = testdata_3d['img']
+    img = testdata_3d_for_plotting['img']
     figure = plt.figure()
     plot_img(img, figure=figure)
     ax = plt.subplot(111)
@@ -54,7 +54,7 @@ def test_plot_empty_slice(mni_affine):
 
 
 @pytest.mark.parametrize("display_mode", ["x", "y", "z"])
-def test_plot_img_with_auto_cut_coords(display_mode, testdata_3d):
+def test_plot_img_with_auto_cut_coords(display_mode, testdata_3d_for_plotting):
     """Smoke test for plot_img with cut_coords set in auto mode."""
     data = np.zeros((20, 20, 20))
     data[3:-3, 3:-3, 3:-3] = 1
@@ -64,9 +64,9 @@ def test_plot_img_with_auto_cut_coords(display_mode, testdata_3d):
 
 
 @pytest.mark.parametrize("binary_img", [True, False])
-def test_plot_img_with_resampling(binary_img, testdata_3d):
+def test_plot_img_with_resampling(binary_img, testdata_3d_for_plotting):
     """Tests for plot_img with resampling of the data image."""
-    img = _testdata_3d_for_resampling(testdata_3d['img'], binary_img)
+    img = _testdata_3d_for_plotting_for_resampling(testdata_3d_for_plotting['img'], binary_img)
     if binary_img:
         assert _is_binary_niimg(img)
     else:
@@ -80,9 +80,9 @@ def test_plot_img_with_resampling(binary_img, testdata_3d):
     plt.close()
 
 
-def test_display_methods_with_display_mode_tiled(testdata_3d):
+def test_display_methods_with_display_mode_tiled(testdata_3d_for_plotting):
     """Smoke tests for display methods with tiled display mode."""
-    img = testdata_3d['img']
+    img = testdata_3d_for_plotting['img']
     display = plot_img(img, display_mode='tiled')
     display.add_overlay(img, threshold=0)
     display.add_edges(img, color='c')
