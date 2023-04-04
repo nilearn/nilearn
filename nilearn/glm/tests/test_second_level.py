@@ -73,7 +73,7 @@ def test_non_parametric_inference_with_flm_objects():
 
 def test_process_second_level_input_as_dataframe(input_df):
     """Unit tests for function _process_second_level_input_as_dataframe()."""
-    from nilearn.glm.second_level.second_level import (  # noqa
+    from nilearn.glm.second_level.second_level import (
         _process_second_level_input_as_dataframe,
     )
     sample_map, subjects_label = _process_second_level_input_as_dataframe(
