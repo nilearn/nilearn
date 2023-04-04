@@ -38,6 +38,7 @@ jobs:
             nilearn/de* \
             nilearn/image \
             nilearn/interfaces \
+            nilearn/input_data \
             nilearn/mass_univariate \
             nilearn/regions \
             nilearn/*.py
