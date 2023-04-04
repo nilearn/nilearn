@@ -1195,7 +1195,7 @@ def _check_views(views) -> list:
     Parameters
     ----------
     views : list
-        Any combination of string in {"anterior", "posterior", "medial",
+        Any combination of strings in {"anterior", "posterior", "medial",
         "lateral", "dorsal", "ventral"} and / or pair of floats (elev, azim).
 
     Returns
