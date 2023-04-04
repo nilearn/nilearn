@@ -105,8 +105,6 @@ def test_second_level_input_as_3D_images():
     Should act as a regression test for:
     https://github.com/nilearn/nilearn/issues/3636
 
-    Adapted from examples: plot_second_level_one_sample_test.py
-
     """
 
     shape = (7, 8, 9)
