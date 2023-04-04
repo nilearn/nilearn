@@ -1183,7 +1183,7 @@ def _check_view_is_valid(view) -> bool:
     """
     if isinstance(view, str) and (view in VALID_VIEWS):
         return True
-    elif isinstance(view, Sequence) and len(view) == 2:
+    if isinstance(view, Sequence) and len(view) == 2:
         return True
     return False
 
