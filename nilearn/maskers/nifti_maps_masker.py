@@ -1,6 +1,4 @@
-"""
-Transformer for computing ROI signals.
-"""
+"""Transformer for computing ROI signals."""
 import warnings
 
 import numpy as np
@@ -138,12 +136,13 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
     transform() will be resampled to the shape of maps_img. It may lead to a
     very large memory consumption if the voxel number in maps_img is large.
 
-    See also
+    See Also
     --------
     nilearn.maskers.NiftiMasker
     nilearn.maskers.NiftiLabelsMasker
 
     """
+
     # memory and memory_level are used by CacheMixin.
 
     def __init__(
@@ -283,7 +282,8 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         return generate_report(self)
 
     def _reporting(self):
-        """
+        """Return a list of all displays to be rendered.
+
         Returns
         -------
         displays : list
@@ -456,9 +456,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             )
 
     def fit_transform(self, imgs, confounds=None, sample_mask=None):
-        """Prepare and perform signal extraction.
-
-        """
+        """Prepare and perform signal extraction."""
         return self.fit().transform(imgs, confounds=confounds,
                                     sample_mask=sample_mask)
 
@@ -613,7 +611,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         return region_signals
 
     def inverse_transform(self, region_signals):
-        """Compute voxel signals from region signals
+        """Compute voxel signals from region signals.
 
         Any mask given at initialization is taken into account.
 

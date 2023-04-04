@@ -1,6 +1,4 @@
-"""
-Transformer used to apply basic transformations on :term:`fMRI` data.
-"""
+"""Transformer used to apply basic transformations on :term:`fMRI` data."""
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
@@ -190,7 +188,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         raise NotImplementedError()
 
     def transform(self, imgs, confounds=None, sample_mask=None):
-        """Apply mask, spatial and temporal preprocessing
+        """Apply mask, spatial and temporal preprocessing.
 
         Parameters
         ----------
@@ -252,7 +250,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     def fit_transform(self, X, y=None, confounds=None, sample_mask=None,
                       **fit_params):
-        """Fit to data, then transform it
+        """Fit to data, then transform it.
 
         Parameters
         ----------
@@ -307,7 +305,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                                         )
 
     def inverse_transform(self, X):
-        """ Transform the 2D data matrix back to an image in brain space.
+        """Transform the 2D data matrix back to an image in brain space.
 
         This step only performs spatial unmasking,
         without inverting any additional processing performed by ``transform``,

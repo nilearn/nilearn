@@ -1,6 +1,4 @@
-"""
-Test the base_masker module
-"""
+"""Test the base_masker module."""
 
 import nibabel
 import numpy as np

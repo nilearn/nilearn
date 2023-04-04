@@ -262,8 +262,9 @@ def test_nifti_maps_masker_with_nans_and_infs_in_mask():
         (13, 11, 12, length),
         affine=np.eye(4),
     )
-    maps_img, _ = data_gen.generate_maps((13, 11, 12), n_regions,
-                                                     affine=np.eye(4))
+    maps_img, _ = data_gen.generate_maps((13, 11, 12),
+                                         n_regions,
+                                         affine=np.eye(4))
 
     # Add NaNs and infs to mask
     mask_data = np.array(get_data(mask_img), dtype=np.float64)
@@ -545,6 +546,6 @@ def test_3d_images():
     masker = NiftiMapsMasker(maps33_img, mask_img=mask_img)
 
     epis = masker.fit_transform(epi_img1)
-    assert(epis.shape == (1, 3))
+    assert (epis.shape == (1, 3))
     epis = masker.fit_transform([epi_img1, epi_img2])
-    assert(epis.shape == (2, 3))
+    assert (epis.shape == (2, 3))

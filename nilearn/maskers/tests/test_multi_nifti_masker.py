@@ -1,6 +1,5 @@
-"""
-Test the multi_nifti_masker module
-"""
+"""Test the multi_nifti_masker module."""
+
 # Author: Gael Varoquaux, Ana Luisa Pinho
 # License: simplified BSD
 import shutil
@@ -220,7 +219,7 @@ def test_dtype():
     masker.fit([[img]])
 
     masked_img = masker.transform([[img]])
-    assert(masked_img[0].dtype == np.float32)
+    assert (masked_img[0].dtype == np.float32)
 
 
 def test_standardization():

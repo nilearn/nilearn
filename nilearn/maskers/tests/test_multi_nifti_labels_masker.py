@@ -1,6 +1,4 @@
-"""
-Test the multi_nifti_labels_masker module
-"""
+"""Test the multi_nifti_labels_masker module."""
 
 import nibabel
 import numpy as np

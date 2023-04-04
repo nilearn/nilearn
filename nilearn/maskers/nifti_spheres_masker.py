@@ -1,6 +1,4 @@
-"""
-Transformer for computing seeds signals
-----------------------------------------
+"""Transformer for computing seeds signals.
 
 Mask nifti images by spherical volumes for seed-region analyses
 """
@@ -24,9 +22,10 @@ from sklearn import neighbors
 
 def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
                                  mask_img=None):
-    """Utility function to get only the rows which are occupied by sphere at
-    given seed locations and the provided radius. Rows are in target_affine and
-    target_shape space.
+    """Get only the rows which are occupied by sphere \
+    at given seed locations and the provided radius.
+
+    Rows are in target_affine and target_shape space.
 
     Parameters
     ----------
@@ -151,7 +150,7 @@ def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,
 
 def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
                                mask_img=None):
-    """Utility function to iterate over spheres.
+    """Iterate over spheres.
 
     Parameters
     ----------
@@ -304,11 +303,12 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
     seeds_ : :obj:`list` of :obj:`list`
         The coordinates of the seeds in the masker.
 
-    See also
+    See Also
     --------
     nilearn.maskers.NiftiMasker
 
     """
+
     # memory and memory_level are used by CacheMixin.
 
     def __init__(
@@ -512,7 +512,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
         return signals
 
     def inverse_transform(self, region_signals):
-        """Compute voxel signals from spheres signals
+        """Compute voxel signals from spheres signals.
 
         Any mask given at initialization is taken into account. Throws an error
         if mask_img==None

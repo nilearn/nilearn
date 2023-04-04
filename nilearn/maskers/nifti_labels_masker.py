@@ -1,6 +1,4 @@
-"""
-Transformer for computing ROI signals.
-"""
+"""Transformer for computing ROI signals."""
 
 import warnings
 
@@ -151,11 +149,12 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         .. versionadded:: 0.9.2
 
-    See also
+    See Also
     --------
     nilearn.maskers.NiftiMasker
 
     """
+
     # memory and memory_level are used by _utils.CacheMixin.
 
     def __init__(
@@ -240,11 +239,13 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             )
 
     def generate_report(self):
+        """Generate a report."""
         from nilearn.reporting.html_report import generate_report
         return generate_report(self)
 
     def _reporting(self):
-        """
+        """Return a list of all displays to be rendered.
+
         Returns
         -------
         displays : list
@@ -282,7 +283,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                                        != self.background_label)
             # Basic safety check to ensure we have as many labels as we
             # have regions (plus background).
-            if(self.labels is not None
+            if (self.labels is not None
                and len(self.labels) != number_of_regions + 1):
                 raise ValueError(
                     'Mismatch between the number of provided labels '
@@ -647,7 +648,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         return region_signals
 
     def inverse_transform(self, signals):
-        """Compute voxel signals from region signals
+        """Compute voxel signals from region signals.
 
         Any mask given at initialization is taken into account.
 

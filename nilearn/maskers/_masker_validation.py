@@ -10,7 +10,9 @@ from .nifti_masker import NiftiMasker
 
 
 def _check_embedded_nifti_masker(estimator, multi_subject=True):
-    """Base function for using a masker within a BaseEstimator class
+    """Create a masker from instance parameters.
+
+    Base function for using a masker within a BaseEstimator class
 
     This creates a masker from instance parameters :
     - If instance contains a mask image in mask parameter,
@@ -55,14 +57,16 @@ def _check_embedded_nifti_masker(estimator, multi_subject=True):
         # For MultiNiftiMasker only
         new_masker_params['n_jobs'] = estimator.n_jobs
 
-    warning_msg = Template("Provided estimator has no $attribute attribute set."
-                           "Setting $attribute to $default_value by default.")
+    warning_msg = Template(
+        "Provided estimator has no $attribute attribute set."
+        "Setting $attribute to $default_value by default.")
 
     if hasattr(estimator, 'memory'):
         new_masker_params['memory'] = _check_memory(estimator.memory)
     else:
-        warnings.warn(warning_msg.substitute(attribute='memory',
-                                             default_value='Memory(location=None)'))
+        warnings.warn(warning_msg.substitute(
+            attribute='memory',
+            default_value='Memory(location=None)'))
         new_masker_params['memory'] = _check_memory(None)
 
     if hasattr(estimator, 'memory_level'):
