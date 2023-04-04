@@ -84,7 +84,7 @@ class BaseSlicer:
 
     @staticmethod
     def find_cut_coords(img=None, threshold=None, cut_coords=None):
-        """Act as placeholer and is not implemented in the base class \
+        """Act as placeholder and is not implemented in the base class \
         and has to be implemented in derived classes."""
         # Implement this as a staticmethod or a classmethod when
         # subclassing

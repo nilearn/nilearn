@@ -1,4 +1,4 @@
-"""Hanlde HTML plotting."""
+"""Handle HTML plotting."""
 
 import os
 import subprocess
