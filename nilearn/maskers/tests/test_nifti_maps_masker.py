@@ -40,7 +40,7 @@ def test_nifti_maps_masker():
         affine=affine1,
     )
 
-    labels11_img, labels_mask_img = data_gen.generate_maps(
+    labels11_img, _ = data_gen.generate_maps(
         shape1[:3], n_regions, affine=affine1
     )
 
@@ -218,7 +218,7 @@ def test_nifti_maps_masker_with_nans_and_infs():
         (13, 11, 12, length),
         affine=np.eye(4),
     )
-    maps_img, maps_mask_img = data_gen.generate_maps(
+    maps_img, _ = data_gen.generate_maps(
         (13, 11, 12),
         n_regions,
         affine=np.eye(4),
@@ -262,7 +262,7 @@ def test_nifti_maps_masker_with_nans_and_infs_in_mask():
         (13, 11, 12, length),
         affine=np.eye(4),
     )
-    maps_img, maps_mask_img = data_gen.generate_maps((13, 11, 12), n_regions,
+    maps_img, _ = data_gen.generate_maps((13, 11, 12), n_regions,
                                                      affine=np.eye(4))
 
     # Add NaNs and infs to mask
@@ -294,7 +294,7 @@ def test_nifti_maps_masker_with_nans_and_infs_in_data():
         (13, 11, 12, length),
         affine=np.eye(4),
     )
-    maps_img, maps_mask_img = data_gen.generate_maps(
+    maps_img, _ = data_gen.generate_maps(
         (13, 11, 12),
         n_regions,
         affine=np.eye(4),
