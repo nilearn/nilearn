@@ -9,7 +9,6 @@ import warnings
 import nibabel
 import numpy as np
 import pytest
-
 from nilearn._utils import data_gen, testing
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import get_data
@@ -577,6 +576,6 @@ def test_3d_images():
     masker = NiftiLabelsMasker(labels33_img, mask_img=mask_img)
 
     epis = masker.fit_transform(epi_img1)
-    assert(epis.shape == (1, 3))
+    assert (epis.shape == (1, 3))
     epis = masker.fit_transform([epi_img1, epi_img2])
-    assert(epis.shape == (2, 3))
+    assert (epis.shape == (2, 3))
