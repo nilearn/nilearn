@@ -417,7 +417,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
               vmax=None, **kwargs):
     """Plot cuts of an anatomical image.
 
-    Bby default 3 cuts: Frontal, Axial, and Lateral.
+    By default 3 cuts: Frontal, Axial, and Lateral.
 
     Parameters
     ----------
