@@ -558,7 +558,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               cbar_vmin=None, cbar_vmax=None, cbar_tick_format="auto",
               title=None, title_font_size=18, output_file=None, axes=None,
               figure=None, **kwargs):
-    """Plot of surfaces with optional background and data.
+    """Plot surfaces with optional background and data.
 
     .. versionadded:: 0.3
 
