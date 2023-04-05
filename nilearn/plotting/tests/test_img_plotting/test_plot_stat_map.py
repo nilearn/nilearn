@@ -25,7 +25,8 @@ def test_plot_stat_map_bad_input(testdata_3d_for_plotting, tmpdir):
 def test_save_plot_stat_map(params, testdata_3d_for_plotting, tmpdir):
     """Test saving figure to file in different ways."""
     filename = str(tmpdir.join('test.png'))
-    display = plot_stat_map(testdata_3d_for_plotting['img'], output_file=filename, **params)
+    display = plot_stat_map(testdata_3d_for_plotting['img'],
+                            output_file=filename, **params)
     assert display is None
     display = plot_stat_map(testdata_3d_for_plotting['img'], **params)
     display.savefig(filename)
@@ -43,7 +44,8 @@ def test_plot_stat_map_cut_coords_and_display_mode(display_mode, cut_coords,
     and `display_mode`.
     """
     plot_stat_map(
-        testdata_3d_for_plotting['img'], display_mode=display_mode, cut_coords=cut_coords
+        testdata_3d_for_plotting['img'], display_mode=display_mode,
+        cut_coords=cut_coords
     )
     plt.close()
 
@@ -51,7 +53,8 @@ def test_plot_stat_map_cut_coords_and_display_mode(display_mode, cut_coords,
 def test_plot_stat_map_with_masked_image(testdata_3d_for_plotting, mni_affine):
     """Smoke test coordinate finder with mask."""
     masked_img = Nifti1Image(
-        np.ma.masked_equal(get_data(testdata_3d_for_plotting['img']), 0), mni_affine
+        np.ma.masked_equal(get_data(testdata_3d_for_plotting['img']), 0),
+        mni_affine
     )
     plot_stat_map(masked_img, display_mode='x')
     plt.close()
@@ -99,7 +102,8 @@ def test_plot_stat_map_threshold_for_affine_with_rotation():
                           {"symmetric_cbar": False, "vmax": 10},
                           {"symmetric_cbar": True, "vmax": 10},
                           {"colorbar": False}])
-def test_plot_stat_map_colorbar_variations(params, testdata_3d_for_plotting, mni_affine):
+def test_plot_stat_map_colorbar_variations(params, testdata_3d_for_plotting,
+                                           mni_affine):
     """Smoke test for plot_stat_map with different colorbar configurations."""
     img_positive = testdata_3d_for_plotting['img']
     data_positive = get_data(img_positive)
@@ -149,4 +153,5 @@ def test_outlier_cut_coords():
 
 def test_plotting_functions_with_dim_invalid_input(testdata_3d_for_plotting):
     """Test whether error raises with bad error to input."""
-    pytest.raises(ValueError, plot_stat_map, testdata_3d_for_plotting['img'], dim='-10')
+    pytest.raises(ValueError, plot_stat_map, testdata_3d_for_plotting['img'],
+                  dim='-10')

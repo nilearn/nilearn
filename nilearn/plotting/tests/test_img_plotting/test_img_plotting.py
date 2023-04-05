@@ -51,7 +51,9 @@ def test_mni152template_is_reordered():
 
 
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
-def test_plot_functions_3d_default_params(plot_func, testdata_3d_for_plotting, tmpdir):
+def test_plot_functions_3d_default_params(plot_func,
+                                          testdata_3d_for_plotting,
+                                          tmpdir):
     """Smoke tests for 3D plotting functions with default parameters."""
     filename = str(tmpdir.join('temp.png'))
     plot_func(testdata_3d_for_plotting['img'], output_file=filename)
@@ -60,7 +62,8 @@ def test_plot_functions_3d_default_params(plot_func, testdata_3d_for_plotting, t
 
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize("cbar_tick_format", ["%f", "%i"])
-def test_cbar_tick_format(plot_func, testdata_3d_for_plotting, cbar_tick_format, tmpdir):
+def test_cbar_tick_format(plot_func, testdata_3d_for_plotting,
+                          cbar_tick_format, tmpdir):
     """Test different colorbar tick format with 3D plotting functions."""
     filename = str(tmpdir.join('temp.png'))
     plot_func(
@@ -89,7 +92,8 @@ def test_plot_functions_4d_default_params(plot_func,
 @pytest.mark.parametrize("plot_func",
                          PLOTTING_FUNCS_3D.difference({plot_glass_brain}))
 @pytest.mark.parametrize("cut_coords", [None, 5, (5, 4, 3)])
-def test_plot_functions_mosaic_mode(plot_func, cut_coords, testdata_3d_for_plotting):
+def test_plot_functions_mosaic_mode(plot_func, cut_coords,
+                                    testdata_3d_for_plotting):
     """Smoke-test for plotting functions in mosaic mode."""
     plot_func(testdata_3d_for_plotting['img'], display_mode='mosaic',
               title='mosaic mode', cut_coords=cut_coords)
@@ -146,7 +150,8 @@ def expected_error_message(display_mode, cut_coords):
                          [('ortho', 2), ('tiled', 2),
                           ('tiled', (2, 2)), ('mosaic', (2, 2))])
 def test_invalid_cut_coords_with_display_mode(plot_func, display_mode,
-                                              cut_coords, testdata_3d_for_plotting,
+                                              cut_coords,
+                                              testdata_3d_for_plotting,
                                               expected_error_message):
     """Tests for invalid combinations of cut_coords and display_mode."""
     if plot_func == plot_glass_brain and display_mode != 'ortho':
@@ -173,7 +178,8 @@ def test_plotting_functions_with_cmaps(plot_func, cmap):
 
 @pytest.mark.parametrize("plot_func",
                          [plot_anat, plot_roi, plot_stat_map])
-def test_plotting_functions_with_nans_in_bg_img(plot_func, testdata_3d_for_plotting):
+def test_plotting_functions_with_nans_in_bg_img(plot_func,
+                                                testdata_3d_for_plotting):
     """Smoke test for plotting functions with nans in background image."""
     bg_img = _test_data_with_nans(testdata_3d_for_plotting['img'])
     if plot_func == plot_anat:
@@ -184,7 +190,8 @@ def test_plotting_functions_with_nans_in_bg_img(plot_func, testdata_3d_for_plott
 
 
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_anat, plot_img])
-def test_plotting_functions_with_display_mode_tiled(plot_func, testdata_3d_for_plotting):
+def test_plotting_functions_with_display_mode_tiled(plot_func,
+                                                    testdata_3d_for_plotting):
     """Smoke test for plotting functions with tiled display mode."""
     if plot_func == plot_anat:
         plot_func(display_mode='tiled')

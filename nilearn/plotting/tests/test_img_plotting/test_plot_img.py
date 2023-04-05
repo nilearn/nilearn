@@ -66,7 +66,8 @@ def test_plot_img_with_auto_cut_coords(display_mode, testdata_3d_for_plotting):
 @pytest.mark.parametrize("binary_img", [True, False])
 def test_plot_img_with_resampling(binary_img, testdata_3d_for_plotting):
     """Tests for plot_img with resampling of the data image."""
-    img = _testdata_3d_for_plotting_for_resampling(testdata_3d_for_plotting['img'], binary_img)
+    img = _testdata_3d_for_plotting_for_resampling(
+        testdata_3d_for_plotting['img'], binary_img)
     if binary_img:
         assert _is_binary_niimg(img)
     else:

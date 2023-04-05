@@ -21,7 +21,8 @@ def test_plot_glass_brain_file_output(testdata_3d_for_plotting, tmpdir):
     """Smoke-test for hemispheric glass brain with file output."""
     filename = str(tmpdir.join('test.png'))
     plot_glass_brain(
-        testdata_3d_for_plotting['img'], output_file=filename, display_mode='lzry'
+        testdata_3d_for_plotting['img'], output_file=filename,
+        display_mode='lzry'
     )
     plt.close()
 
