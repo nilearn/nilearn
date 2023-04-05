@@ -16,6 +16,8 @@ from nilearn.plotting.surf_plotting import (
     plot_surf_roi,
     plot_img_on_surf,
     plot_surf_contours,
+    _get_view_plot_surf_matplotlib,
+    _get_view_plot_surf_plotly,
     _get_ticks_matplotlib,
     _compute_facecolors_matplotlib
 )
@@ -368,16 +370,17 @@ def test_get_view_plot_surf_hemisphere_errors(hemi, view):
         _get_view_plot_surf_plotly(hemi, view)
 
 
-@pytest.mark.parametrize("hemi,view", [("left", "foo"), ("right", "bar")])
-def test_get_view_plot_surf_view_errors(hemi, view):
-    from nilearn.plotting.surf_plotting import (_get_view_plot_surf_matplotlib,
-                                                _get_view_plot_surf_plotly)
+@pytest.mark.parametrize(
+    "hemi,view,f",
+    [
+        ("left", "foo", _get_view_plot_surf_matplotlib),
+        ("right", "bar", _get_view_plot_surf_plotly),
+    ]
+)
+def test_get_view_plot_surf_view_errors(hemi, view, f):
     with pytest.raises(ValueError,
                        match="Invalid view definition"):
-        _get_view_plot_surf_matplotlib(hemi, view)
-    with pytest.raises(ValueError,
-                       match="Invalid view definition"):
-        _get_view_plot_surf_plotly(hemi, view)
+        f(hemi, view)
 
 
 def test_configure_title_plotly():
