@@ -4,8 +4,8 @@ from nilearn.glm.first_level.design_matrix import (
 )
 from nilearn.glm.first_level.experimental_paradigm import check_events
 from nilearn.glm.first_level.first_level import (
-    first_level_from_bids,
     FirstLevelModel,
+    first_level_from_bids,
     mean_scaling,
     run_glm,
 )

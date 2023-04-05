@@ -36,6 +36,7 @@ jobs:
             setup.py \
             nilearn/connectome \
             nilearn/de* \
+            nilearn/glm \
             nilearn/image \
             nilearn/interfaces \
             nilearn/input_data \
