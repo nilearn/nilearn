@@ -10,10 +10,14 @@
 *.zip
 *#
 
+.mypy_cache
+
 nilearn_cache
 nilearn_data
 
 pip-log.txt
+
+.pytest_cache
 
 .ropeproject/
 
@@ -33,7 +37,6 @@ nilearn.egg-info/
 build
 dist/
 nilearn/_version.py
-.pytest_cache
 
 # virtual environment
 env/
@@ -58,3 +61,6 @@ doc/themes/nilearn/static/jquery.js
 examples/**/*.pdf
 examples/**/results/
 examples/results/
+examples/*.nii
+examples/*.nii.gz
+examples/*.png
