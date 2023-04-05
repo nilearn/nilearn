@@ -210,20 +210,19 @@ def test_get_view_plot_surf_plotly(full_view):
     camera_view_elev_azim = _get_camera_view_from_elevation_and_azimut(
         (elev, azim)
     )
-    # Check camera view
+    # Check each camera view parameter
     for k in ["center", "eye", "up"]:
+        # Check default camera view
         assert np.allclose(
             list(camera_view[k].values()),
             list(expected_camera_view[k].values())
         )
-    # Check camera view obtained from string view
-    for k in ["center", "eye", "up"]:
+        # Check camera view obtained from string view
         assert np.allclose(
             list(camera_view_string[k].values()),
             list(expected_camera_view[k].values())
         )
-    # Check camera view obtained from elevation & azimut
-    for k in ["center", "eye", "up"]:
+        # Check camera view obtained from elevation & azimut
         assert np.allclose(
             list(camera_view_elev_azim[k].values()),
             list(expected_camera_view[k].values())
