@@ -698,7 +698,9 @@ def test_decoder_multiclass_classification_cross_validation(
     assert accuracy_score(y, y_pred) > 0.9
 
 
-def test_decoder_multiclass_classification_apply_mask():
+def test_decoder_multiclass_classification_apply_mask_shape():
+    """Test whether if _apply mask output has the same shape \
+    as original matrix."""
     X_init, _ = make_classification(
         n_samples=200,
         n_features=125,
@@ -713,11 +715,25 @@ def test_decoder_multiclass_classification_apply_mask():
 
     X_masked = model._apply_mask(X)
 
-    # test whether if _apply mask output has the same shape as original matrix
     assert X_masked.shape == X_init.shape
 
-    # test whether model.masker_ have some desire attributes manually set after
-    # calling _apply_mask; by default these parameters are set to None
+
+def test_decoder_multiclass_classification_apply_mask_attributes():
+    """Test whether model.masker_ have some desire attributes \
+    manually set after calling _apply_mask.
+
+    By default these parameters are set to None;
+    """
+    X_init, _ = make_classification(
+        n_samples=200,
+        n_features=125,
+        scale=3.0,
+        n_informative=5,
+        n_classes=4,
+        random_state=42,
+    )
+    X, _ = to_niimgs(X_init, [5, 5, 5])
+
     target_affine = 2 * np.eye(4)
     target_shape = (1, 1, 1)
     t_r = 1
