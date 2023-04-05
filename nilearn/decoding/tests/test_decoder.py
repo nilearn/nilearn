@@ -52,7 +52,7 @@ from sklearn.svm import SVR, LinearSVC
 
 N_SAMPLES = 100
 
-ESTIMATOR_REGRESSION = ["ridge", "svr"]
+ESTIMATOR_REGRESSION = ("ridge", "svr")
 
 
 def _make_binary_classification_test_data(n_samples=N_SAMPLES):
