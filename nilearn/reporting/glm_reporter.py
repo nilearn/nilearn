@@ -358,7 +358,7 @@ def _plot_to_svg(plot):
 
 
 def _plot_contrasts(contrasts, design_matrices):
-    """Accept dict of contrasts and list of design matrices and generates \
+    """Accept dict of contrasts and list of design matrices and generate \
     a dict of contrast titles & HTML for SVG Image data url \
     for corresponding contrast plot.
 
@@ -557,7 +557,7 @@ def _make_stat_maps(model, contrasts, output_type="z_score"):
 
 def _dmtx_to_svg_url(design_matrices):
     """Accept a FirstLevelModel or SecondLevelModel object \
-    with fitted design matrices & generates SVG Image URL, \
+    with fitted design matrices & generate SVG Image URL, \
     which can be inserted into an HTML template.
 
     Parameters
@@ -599,7 +599,7 @@ def _dmtx_to_svg_url(design_matrices):
 
 
 def _resize_plot_inches(plot, width_change=0, height_change=0):
-    """Accept a matplotlib figure or axes object and resizes it (in inches).
+    """Accept a matplotlib figure or axes object and resize it (in inches).
 
     Returns the original object.
 
@@ -692,7 +692,7 @@ def _make_stat_maps_contrast_clusters(
 ):
     """Populate a smaller HTML sub-template with the proper values, \
     make a list containing one or more of such components \
-    & returns the list to be inserted into the HTML Report Template.
+    & return the list to be inserted into the HTML Report Template.
 
     Each component contains the HTML code for
     a contrast & its corresponding statistical maps & cluster table;
