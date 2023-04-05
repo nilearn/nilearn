@@ -2,7 +2,6 @@
 import os
 
 import numpy as np
-
 from nilearn.interfaces.bids._utils import (
     _clean_contrast_name,
     _generate_dataset_description,
