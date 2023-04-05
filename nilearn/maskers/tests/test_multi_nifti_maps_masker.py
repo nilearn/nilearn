@@ -1,15 +1,11 @@
-"""
-Test the multi_nifti_maps_masker module
-"""
-
-import numpy as np
+"""Test the multi_nifti_maps_masker module."""
 
 import nibabel
+import numpy as np
 import pytest
-
-from nilearn._utils import testing, data_gen
+from nilearn._utils import data_gen, testing
 from nilearn._utils.exceptions import DimensionError
-from nilearn.maskers import NiftiMapsMasker, MultiNiftiMapsMasker
+from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
 
 
 def test_multi_nifti_maps_masker():

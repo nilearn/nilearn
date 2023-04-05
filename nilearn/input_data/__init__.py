@@ -1,6 +1,6 @@
-
 """
 The :mod:`nilearn.input_data` module used to include masker objects.
+
 It is deprecated since release 0.9.0 in favor of the
 :mod:`~nilearn.maskers` module.
 Please consider updating your code:
@@ -24,11 +24,17 @@ warnings.warn(message, FutureWarning)
 
 
 from .base_masker import BaseMasker
+from .multi_nifti_masker import MultiNiftiMasker
+from .nifti_labels_masker import NiftiLabelsMasker
+from .nifti_maps_masker import NiftiMapsMasker
 from .nifti_masker import NiftiMasker
 from .nifti_spheres_masker import NiftiSpheresMasker
-from .nifti_maps_masker import NiftiMapsMasker
-from .nifti_labels_masker import NiftiLabelsMasker
-from .multi_nifti_masker import MultiNiftiMasker
 
-__all__ = ['BaseMasker', 'NiftiMasker', 'NiftiSpheresMasker',
-           'NiftiMapsMasker', 'NiftiLabelsMasker', 'MultiNiftiMasker']
+__all__ = [
+    "BaseMasker",
+    "NiftiMasker",
+    "NiftiSpheresMasker",
+    "NiftiMapsMasker",
+    "NiftiLabelsMasker",
+    "MultiNiftiMasker",
+]

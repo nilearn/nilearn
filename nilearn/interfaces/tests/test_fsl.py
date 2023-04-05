@@ -2,7 +2,6 @@
 import os
 
 import numpy as np
-
 from nilearn.interfaces.fsl import get_design_from_fslmat
 
 

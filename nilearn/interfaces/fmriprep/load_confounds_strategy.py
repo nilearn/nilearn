@@ -3,6 +3,7 @@
 Authors: Hao-Ting Wang, Pierre Bellec
 """
 import warnings
+
 from . import load_confounds
 
 # defining a preset strategy with python dictionary:

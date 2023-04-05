@@ -9,20 +9,20 @@ from os import path as osp
 import numpy as np
 import pandas as pd
 import pytest
-
 from nibabel.tmpdirs import InTemporaryDirectory
-from numpy.testing import (
-    assert_almost_equal, assert_array_equal, assert_array_almost_equal)
-
+from nilearn._utils.data_gen import basic_paradigm
 from nilearn.glm.first_level.design_matrix import (
     _convolve_regressors,
     _cosine_drift,
     check_design_matrix,
     make_first_level_design_matrix,
-    make_second_level_design_matrix
+    make_second_level_design_matrix,
 )
-
-from nilearn._utils.data_gen import basic_paradigm
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
 
 # load the spm file to test cosine basis
 my_path = osp.dirname(osp.abspath(__file__))
@@ -34,9 +34,8 @@ def design_matrix_light(
         frame_times, events=None, hrf_model='glover',
         drift_model='cosine', high_pass=.01, drift_order=1, fir_delays=None,
         add_regs=None, add_reg_names=None, min_onset=-24, path=None):
-    """ Same as make_first_level_design_matrix,
-    but only returns the computed matrix and associated name.
-    """
+    """Same as make_first_level_design_matrix, \
+    but only returns the computed matrix and associated name."""
     fir_delays = fir_delays or [0]
     dmtx = make_first_level_design_matrix(frame_times, events, hrf_model,
                                           drift_model, high_pass, drift_order,
@@ -223,7 +222,7 @@ def test_design_matrix4():
 
 
 def test_design_matrix5():
-    # idem test_design_matrix1 with a block experimental paradigm
+    # test_design_matrix1 with a block experimental paradigm
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
     events = block_paradigm()
@@ -234,8 +233,7 @@ def test_design_matrix5():
 
 
 def test_design_matrix6():
-    """
-    idem test_design_matrix1 with a block experimental paradigm
+    """Test similar to test_design_matrix1 with a block experimental paradigm
     and the hrf derivative
     """
     tr = 1.0
@@ -458,7 +456,7 @@ def test_oversampling():
 
 
 def test_high_pass():
-    """ test that high-pass values lead to reasonable design matrices"""
+    """Test that high-pass values lead to reasonable design matrices"""
     n_frames = 128
     tr = 2.0
     frame_times = np.arange(0, tr * n_frames, tr)
