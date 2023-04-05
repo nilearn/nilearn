@@ -69,6 +69,26 @@ def test_resample():
     X = masker.fit_transform(img)
     assert np.any(X != 0)
 
+def test_upsample_warning():
+    """Check that a warning is raised when data is
+    being upsampled to mask's resolution.
+    """
+    data = np.zeros((9, 9, 9))
+    data[3:-3, 3:-3, 3:-3] = 10
+    img = nibabel.Nifti1Image(data, np.eye(4))
+    # defining a mask with a higher resolution than img
+    mask = np.zeros((12, 12, 12))
+    mask[3:-3, 3:-3, 3:-3] = 10
+    mask = mask.astype("uint8")
+    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+    masker = NiftiMasker(mask_img=mask_img)
+    with pytest.warns(
+        UserWarning,
+        match='imgs are being upsampled to the mask_img resolution, '
+            'you might want to provide a target_affine to save memory and computation time.'
+    ):
+        masker.fit_transform(img)
+
 
 def test_with_files():
     """Test standard masking with filenames."""
