@@ -8,6 +8,7 @@ include = """
   | nilearn/connectome/.*py
   | nilearn/dec.*
   | nilearn/image/.*py
+  | nilearn/input_data/.*py
   | nilearn/mass_univariate/.*py
   | nilearn/regions/.*py
   | nilearn/signal.py
