@@ -1,17 +1,8 @@
-"""
-Test functions for models.regression
-"""
+"""Test functions for models.regression"""
 
 import numpy as np
-import pytest
-
-from numpy.testing import (assert_almost_equal,
-                           assert_array_almost_equal,
-                           assert_array_equal,
-                           )
-
-from nilearn.glm import OLSModel, ARModel
-
+from nilearn.glm import ARModel, OLSModel
+from numpy.testing import assert_almost_equal, assert_array_almost_equal
 
 RNG = np.random.RandomState(42)
 X = RNG.standard_normal(size=(40, 10))
