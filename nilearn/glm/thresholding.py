@@ -1,5 +1,5 @@
-"""Utilities for probabilistic error control at voxel- and
-cluster-level in brain imaging: cluster-level thresholding, false
+"""Utilities for probabilistic error control at voxel- and \
+cluster-level in brain imaging: cluster-level thresholding, false \
 discovery rate control, false discovery proportion in clusters.
 
 Author: Bertrand Thirion, 2015 -- 2019
@@ -8,15 +8,14 @@ Author: Bertrand Thirion, 2015 -- 2019
 import warnings
 
 import numpy as np
+from nilearn.image import get_data, math_img, threshold_img
+from nilearn.maskers import NiftiMasker
 from scipy.ndimage import label
 from scipy.stats import norm
 
-from nilearn.maskers import NiftiMasker
-from nilearn.image import get_data, math_img, threshold_img
-
 
 def _compute_hommel_value(z_vals, alpha, verbose=False):
-    """Compute the All-Resolution Inference hommel-value"""
+    """Compute the All-Resolution Inference hommel-value."""
     if alpha < 0 or alpha > 1:
         raise ValueError('alpha should be between 0 and 1')
     z_vals_ = - np.sort(- z_vals)
@@ -48,7 +47,7 @@ def _compute_hommel_value(z_vals, alpha, verbose=False):
 
 
 def _true_positive_fraction(z_vals, hommel_value, alpha):
-    """Given a bunch of z-avalues, return the true positive fraction
+    """Given a bunch of z-avalues, return the true positive fraction.
 
     Parameters
     ----------
@@ -78,7 +77,7 @@ def _true_positive_fraction(z_vals, hommel_value, alpha):
 
 
 def fdr_threshold(z_vals, alpha):
-    """Return the Benjamini-Hochberg FDR threshold for the input z_vals
+    """Return the Benjamini-Hochberg FDR threshold for the input z_vals.
 
     Parameters
     ----------
@@ -96,7 +95,7 @@ def fdr_threshold(z_vals, alpha):
     """
     if alpha < 0 or alpha > 1:
         raise ValueError(
-            'alpha should be between 0 and 1. {} was provided'.format(alpha))
+            f'alpha should be between 0 and 1. {alpha} was provided')
     z_vals_ = - np.sort(- z_vals)
     p_vals = norm.sf(z_vals_)
     n_samples = len(p_vals)
@@ -109,7 +108,7 @@ def fdr_threshold(z_vals, alpha):
 
 def cluster_level_inference(stat_img, mask_img=None,
                             threshold=3., alpha=.05, verbose=False):
-    """ Report the proportion of active voxels for all clusters
+    """Report the proportion of active voxels for all clusters \
     defined by the input threshold.
 
     This implements the method described in :footcite:`Rosenblatt2018`.
@@ -142,7 +141,6 @@ def cluster_level_inference(stat_img, mask_img=None,
     .. footbibliography::
 
     """
-
     if not isinstance(threshold, list):
         threshold = [threshold]
 
@@ -180,7 +178,7 @@ def cluster_level_inference(stat_img, mask_img=None,
 def threshold_stats_img(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
                         height_control='fpr', cluster_threshold=0,
                         two_sided=True):
-    """ Compute the required threshold level and return the thresholded map
+    """Compute the required threshold level and return the thresholded map.
 
     Parameters
     ----------
@@ -231,7 +229,7 @@ def threshold_stats_img(stat_img=None, mask_img=None, alpha=.001, threshold=3.,
     If the input image is not z-scaled (i.e. some z-transformed statistic)
     the computed threshold is not rigorous and likely meaningless
 
-    See also
+    See Also
     --------
     nilearn.image.threshold_img :
         Apply an explicit voxel-level (and optionally cluster-level) threshold

@@ -2,22 +2,26 @@
 import numpy as np
 import pandas as pd
 import pytest
-import scipy.stats as sps
 import scipy.linalg as spl
-
+import scipy.stats as sps
+from nilearn._utils.data_gen import generate_fake_fmri
+from nilearn._utils.glm import (
+    _check_and_load_tables,
+    _check_list_length_match,
+    _check_run_tables,
+    full_rank,
+    multiple_fast_inverse,
+    multiple_mahalanobis,
+    positive_reciprocal,
+    z_score,
+)
+from nilearn.glm.first_level import (
+    FirstLevelModel,
+    make_first_level_design_matrix,
+)
+from nilearn.maskers import NiftiMasker
 from numpy.testing import assert_almost_equal, assert_array_almost_equal
 from scipy.stats import norm
-
-from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn._utils.glm import (_check_and_load_tables,
-                                _check_list_length_match, _check_run_tables,
-                                full_rank,
-                                multiple_fast_inverse,
-                                multiple_mahalanobis,
-                                positive_reciprocal, z_score)
-from nilearn.maskers import NiftiMasker
-from nilearn.glm.first_level import (FirstLevelModel,
-                                     make_first_level_design_matrix)
 
 
 def test_full_rank():
@@ -124,20 +128,14 @@ def test_z_score_opposite_contrast():
             contrasts['seed1 - seed2'], output_type='z_score')
         z_map_seed2_vs_seed1 = fmri_glm.compute_contrast(
             contrasts['seed2 - seed1'], output_type='z_score')
-        assert_almost_equal(z_map_seed1_vs_seed2.get_fdata(
-                                dtype="float32"
-                            ).min(),
-                            -z_map_seed2_vs_seed1.get_fdata(
-                                dtype="float32"
-                            ).max(),
-                            decimal=10)
-        assert_almost_equal(z_map_seed1_vs_seed2.get_fdata(
-                                dtype="float32"
-                            ).max(),
-                            -z_map_seed2_vs_seed1.get_fdata(
-                                dtype="float32"
-                            ).min(),
-                            decimal=10)
+        assert_almost_equal(
+            z_map_seed1_vs_seed2.get_fdata(dtype="float32").min(),
+            -z_map_seed2_vs_seed1.get_fdata(dtype="float32").max(),
+            decimal=10)
+        assert_almost_equal(
+            z_map_seed1_vs_seed2.get_fdata(dtype="float32").max(),
+            -z_map_seed2_vs_seed1.get_fdata(dtype="float32").min(),
+            decimal=10)
 
 
 def test_mahalanobis():

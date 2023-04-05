@@ -1,9 +1,10 @@
 import re
-import pytest
+
 import pandas as pd
+import pytest
 from nilearn.interfaces.fmriprep import load_confounds_strategy
 from nilearn.interfaces.fmriprep.load_confounds_strategy import (
-    preset_strategies
+    preset_strategies,
 )
 from nilearn.interfaces.fmriprep.tests.utils import create_tmp_filepath
 
