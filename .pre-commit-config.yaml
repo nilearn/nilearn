@@ -28,6 +28,7 @@ files: |
         | nilearn/de.*
         | nilearn/connectome/.*py
         | nilearn/image/.*py
+        | nilearn/input_data/.*py
         | nilearn/regions.*py
         | nilearn/mass_univariate/.*py
     )$
