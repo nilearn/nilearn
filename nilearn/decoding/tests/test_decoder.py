@@ -582,7 +582,13 @@ def test_decoder_dummy_regression(regression_data):
     assert r2_score(y, y_pred) <= 0.0
     assert model.score(X, y) == r2_score(y, y_pred)
 
-    # Check that default scoring metric for regression is r2
+
+def test_decoder_dummy_regression_default_scoring_metric_is_r2(
+    regression_data,
+):
+    """Check that default scoring metric for regression is r2."""
+    X, y, mask = regression_data
+
     model = DecoderRegressor(
         estimator="dummy_regressor", mask=mask, scoring=None
     )
@@ -591,7 +597,11 @@ def test_decoder_dummy_regression(regression_data):
 
     assert model.score(X, y) == r2_score(y, y_pred)
 
-    # decoder object use other strategy for dummy regressor
+
+def test_decoder_dummy_regression_other_strategy(regression_data):
+    """Chexk that decoder object use other strategy for dummy regressor."""
+    X, y, mask = regression_data
+
     dummy_regressor = DummyRegressor()
     param = dict(strategy="median")
     dummy_regressor.set_params(**param)
@@ -734,15 +744,20 @@ def test_decoder_multiclass_classification_apply_mask():
     assert model.masker_.smoothing_fwhm == smoothing_fwhm
 
 
-def test_decoder_multiclass_classification_split_cv(multiclass_data):
+def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
+    """Check whether ValueError is raised when cv is not set correctly."""
+    X, y, _ = multiclass_data
+
+    for cv in ["abc", LinearSVC()]:
+        model = Decoder(mask=NiftiMasker(), cv=cv)
+        with pytest.raises(ValueError, match="Expected cv as an integer"):
+            model.fit(X, y)
+
+
+def test_decoder_multiclass_warnings(multiclass_data):
     X, y, _ = multiclass_data
     rand_local = np.random.RandomState(42)
     groups = rand_local.binomial(2, 0.3, size=len(y))
-
-    # Check whether ValueError is raised when cv is not set correctly
-    for cv in ["abc", LinearSVC()]:
-        model = Decoder(mask=NiftiMasker(), cv=cv)
-        pytest.raises(ValueError, model.fit, X, y)
 
     # Check whether decoder raised warning when groups is set to specific
     # value but CV Splitter is not set
