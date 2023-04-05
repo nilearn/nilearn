@@ -78,16 +78,6 @@ def test_logistic_loss_derivative(n_samples=4, n_features=10, decimal=5):
         decimal=decimal,
     )
 
-    assert_almost_equal(
-        check_grad(
-            lambda w: _logistic(X, y, w),
-            lambda w: _logistic_loss_grad(X, y, w),
-            w,
-        ),
-        0.0,
-        decimal=decimal,
-    )
-
 
 def test_baseestimator_invalid_l1_ratio():
     with pytest.raises(ValueError):
