@@ -1,4 +1,4 @@
-""" Misc utilities for the library
+"""Misc utilities for the library
 
 Authors: Bertrand Thirion, Matthew Brett, Ana Luisa Pinho, 2020
 """

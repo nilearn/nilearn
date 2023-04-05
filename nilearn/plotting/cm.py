@@ -1,15 +1,10 @@
-# emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
-# vi: set ft=python sts=4 ts=4 sw=4 et:
 """Matplotlib colormaps useful for neuroimaging."""
+
 import numpy as _np
 from matplotlib import cm as _cm, colors as _colors, rcParams as _rcParams
 
 ###############################################################################
 # Custom colormaps for two-tailed symmetric statistics
-###############################################################################
-
-###############################################################################
-# Helps
 
 
 def _rotate_cmap(cmap, swap_order=('green', 'red', 'blue')):
@@ -139,10 +134,10 @@ _cmaps_data = dict(
     black_red=_cm.hot._segmentdata.copy(),
 )
 
+# MPL 0.99 doesn't have Ocean or afmhot
 if hasattr(_cm, 'ocean'):
-    # MPL 0.99 doesn't have Ocean
     _cmaps_data['ocean_hot'] = _concat_cmap(_cm.ocean, _cm.hot_r)
-if hasattr(_cm, 'afmhot') :  # or afmhot
+if hasattr(_cm, 'afmhot') :
     _cmaps_data['hot_white_bone'] = _concat_cmap(_cm.afmhot, _cm.bone_r)
     _cmaps_data['hot_black_bone'] = _concat_cmap(_cm.afmhot_r, _cm.bone)
 
@@ -227,7 +222,6 @@ for k, v in _cmap_d.items():
 
 ###############################################################################
 # Utility to replace a colormap by another in an interval
-###############################################################################
 
 def dim_cmap(cmap, factor=.3, to_white=True):
     """Dim a colormap to white, or to black."""
