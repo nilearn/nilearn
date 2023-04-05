@@ -44,6 +44,7 @@ jobs:
             nilearn/connectome \
             nilearn/de* \
             nilearn/image \
+            nilearn/input_data \
             nilearn/mass_univariate \
             nilearn/regions \
             nilearn/*.py
