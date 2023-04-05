@@ -44,6 +44,7 @@ jobs:
             nilearn/connectome \
             nilearn/de* \
             nilearn/image \
+            nilearn/interfaces \
             nilearn/input_data \
             nilearn/maskers \
             nilearn/mass_univariate \
