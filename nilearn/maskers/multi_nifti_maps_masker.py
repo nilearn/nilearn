@@ -1,6 +1,4 @@
-"""
-Transformer for computing ROI signals of multiple 4D images
-"""
+"""Transformer for computing ROI signals of multiple 4D images."""
 
 import itertools
 
@@ -95,13 +93,14 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
     transform() will be resampled to the shape of maps_img. It may lead to a
     very large memory consumption if the voxel number in maps_img is large.
 
-    See also
+    See Also
     --------
     nilearn.maskers.NiftiMasker
     nilearn.maskers.NiftiLabelsMasker
     nilearn.maskers.NiftiMapsMasker
 
     """
+
     # memory and memory_level are used by CacheMixin.
 
     def __init__(
@@ -189,7 +188,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         return region_signals
 
     def transform(self, imgs, confounds=None, sample_mask=None):
-        """ Apply mask, spatial and temporal preprocessing
+        """Apply mask, spatial and temporal preprocessing.
 
         Parameters
         ----------
@@ -205,7 +204,6 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             shape: list of (number of scans, number of maps)
 
         """
-
         self._check_fitted()
         if (not hasattr(imgs, '__iter__')
                 or isinstance(imgs, str)):

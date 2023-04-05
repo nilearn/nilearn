@@ -29,6 +29,7 @@ The nilearn core developers are:
 * `Hao-Ting Wang`_
 * `Jerome Dockes`_
 * `Nicolas Gensollen`_
+* `Rémi Gau`_
 * `Taylor Salo`_
 * `Yasmin Mzayek`_
 
@@ -65,6 +66,9 @@ Some other past or present contributors are:
 
 Funding
 .......
+
+`Rémi Gau`_ is paid by a grant from the
+`Chan Zuckerberg Initiative <https://chanzuckerberg.com/eoss/proposals/improving-standard-practice-for-neuroimaging-analyses-with-nilearn/>`_
 
 `Alexandre Abraham`_, `Gael Varoquaux`_, `Kamalakar Reddy Daddy`_, `Loic Estève`_,
 `Mehdi Rahim`_, `Philippe Gervais`_ were paid by the
