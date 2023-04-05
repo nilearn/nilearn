@@ -44,7 +44,7 @@ import os
 import sys
 import warnings
 
-from .version import __version__, _check_module_dependencies
+from .version import __version__
 
 # TODO: Check if still needed
 # Workaround issue discovered in intel-openmp 2019.5:
@@ -69,7 +69,6 @@ def _python_deprecation_warnings():
         _py37_deprecation_warning()
 
 
-_check_module_dependencies()
 _python_deprecation_warnings()
 
 
