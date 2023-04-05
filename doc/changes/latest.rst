@@ -12,6 +12,7 @@ NEW
 
 - ``fsaverage`` meshes accessed through :func:`~datasets.fetch_surf_fsaverage` now come with flat maps for all resolutions (:gh:`3444` by `Alexis Thual`_).
 
+
 Fixes
 -----
 
@@ -19,10 +20,9 @@ Fixes
 
 - Change calculation of TR in :func:`~.glm.first_level.compute_regressor` to be more precise (:gh:`3362` by `Anne-Sophie Kieslinger`_)
 
-
 - :func:`~nilearn.interfaces.fmriprep.load_confounds` can support searching preprocessed data in native space. (:gh:`3531` by `Hao-Ting Wang`_)
 
-- :func:`~nilearn.second_level.non_parametric_inference` can accept first level model as input without failing. (:gh:`3600` by `Rémi Gau`_)
+- :func:`~glm.second_level.non_parametric_inference` can accept first level model as input without failing. (:gh:`3600` by `Rémi Gau`_)
 
 - Add correct "zscore_sample" strategy to ``signal._standardize`` which will replace the default "zscore" strategy in release 0.13  (:gh:`3474` by `Yasmin Mzayek`_).
 
@@ -82,4 +82,3 @@ Changes
 - :bdg-primary:`Doc` The documentation for :func:`~image.threshold_img` has been improved, with more information about which voxels are set to 0 and which ones keep their original values (:gh:`3485` by `Rémi Gau`_).
 
 - :bdg-secondary:`Maint` Modules :mod:`~nilearn.decomposition` and :mod:`~nilearn.decoding` code and docstrings have been reformatted using black. Changes resulted in improved readability overall and increased consistency (:gh:`3491` and :gh:`3484` by `Rémi Gau`_).
-
