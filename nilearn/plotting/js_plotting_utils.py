@@ -10,6 +10,11 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
+from nilearn.plotting.html_document import (  # noqa: F401
+    HTMLDocument,
+    set_max_img_views_before_warning,
+)
+
 from .. import surface
 from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
