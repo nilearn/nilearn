@@ -27,6 +27,7 @@ files: |
         | nilearn/version.py
         | nilearn/de.*
         | nilearn/connectome/.*py
+        | nilearn/glm/.*py
         | nilearn/image/.*py
         | nilearn/input_data/.*py
         | nilearn/regions.*py
@@ -54,6 +55,11 @@ exclude: |
         | examples/.*/.*surface_bids_analysis.py
         | examples/.*/.*surface_projection_strategies.py
         | nilearn/externals/tempita
+        | nilearn/glm/contrasts.py
+        | nilearn/glm/first_level/first_level.py
+        | nilearn/glm/tests/test_contrasts.py
+        | nilearn/glm/tests/test_first_level.py
+        | nilearn/glm/tests/test_second_level.py
     )$
 
 repos:
