@@ -237,7 +237,6 @@ def get_bids_files(
             modality_folder,
             f'sub-{sub_label}*_{file_tag}.{file_type}',
         )
-
     else:
         files = os.path.join(main_path, f'*{file_tag}.{file_type}')
 

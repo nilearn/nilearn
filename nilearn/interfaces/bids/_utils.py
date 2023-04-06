@@ -136,6 +136,7 @@ def _generate_dataset_description(out_file, model_level):
         The level of the model. 1 means a first-level model.
         2 means a second-level model.
     """
+    repo_url = "https://github.com/nilearn/nilearn"
     dataset_description = {
         'GeneratedBy': {
             'Name': 'nilearn',
@@ -144,8 +145,7 @@ def _generate_dataset_description(out_file, model_level):
                 'first-level' if model_level == 1 else 'second-level'
             ),
             'CodeURL': (
-                'https://github.com/nilearn/nilearn/releases/tag/'
-                '{}'.format(nilearn.__version__)
+                f"{repo_url}/releases/tag/{nilearn.__version__}"
             )
         }
     }

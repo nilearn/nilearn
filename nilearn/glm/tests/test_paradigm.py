@@ -6,12 +6,13 @@ not whether it is exact.
 """
 
 import os
-import pytest
+
 import numpy as np
 import pandas as pd
-from numpy.testing import assert_array_equal
+import pytest
 from nilearn._utils.data_gen import basic_paradigm
 from nilearn.glm.first_level import check_events
+from numpy.testing import assert_array_equal
 
 
 def duplicate_events_paradigm():
@@ -154,8 +155,7 @@ def test_duplicate_events():
 
 
 def test_read_events():
-    """ test that a events for an experimental paradigm are correctly read.
-    """
+    """Test that a events for an experimental paradigm are correctly read."""
     import tempfile
     tmpdir = tempfile.mkdtemp()
     for events in (block_paradigm(),

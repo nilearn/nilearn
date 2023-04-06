@@ -6,20 +6,19 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel.tmpdirs import InTemporaryDirectory
-
-from nilearn.maskers import NiftiMasker
-from nilearn.glm.first_level import FirstLevelModel
-from nilearn.glm.second_level import SecondLevelModel
 from nilearn._utils.data_gen import (
     create_fake_bids_dataset,
     generate_fake_fmri_data_and_design,
     add_metadata_to_bids_dataset
 )
+from nilearn.glm.first_level import FirstLevelModel
+from nilearn.glm.second_level import SecondLevelModel
 from nilearn.interfaces.bids import (
     get_bids_files,
     parse_bids_filename,
     save_glm_to_bids,
 )
+from nilearn.maskers import NiftiMasker
 
 from nilearn.interfaces.bids.query import \
     (_get_metadata_from_bids,

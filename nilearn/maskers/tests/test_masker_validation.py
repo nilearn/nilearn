@@ -1,12 +1,10 @@
 import nibabel
 import numpy as np
 import pytest
-
-from sklearn.base import BaseEstimator
 from joblib import Memory
-
-from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker
+from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
+from sklearn.base import BaseEstimator
 
 
 class OwningClass(BaseEstimator):
@@ -47,14 +45,18 @@ class DummyEstimator:
     def fit(self, *args, **kwargs):
         self.masker = _check_embedded_nifti_masker(self)
 
+
 def test_check_embedded_nifti_masker_defaults():
     dummy = DummyEstimator(memory=None, memory_level=1)
-    with pytest.warns(Warning, match="Provided estimator has no verbose attribute set."):
+    with pytest.warns(
+            Warning,
+            match="Provided estimator has no verbose attribute set."):
         dummy.fit()
     assert dummy.masker.memory_level == 0
     assert dummy.masker.verbose == 0
     dummy = DummyEstimator(verbose=1)
-    with pytest.warns(Warning, match="Provided estimator has no memory attribute set."):
+    with pytest.warns(Warning,
+                      match="Provided estimator has no memory attribute set."):
         dummy.fit()
     assert isinstance(dummy.masker.memory, Memory)
     assert dummy.masker.memory.location is None
@@ -71,16 +73,16 @@ def test_check_embedded_nifti_masker():
             (MultiNiftiMasker(), True), (NiftiMasker(), False)):
         owner = OwningClass(mask=mask)
         masker = _check_embedded_nifti_masker(owner,
-                                             multi_subject=multi_subject)
+                                              multi_subject=multi_subject)
         assert type(masker) == type(mask)
         for param_key in masker.get_params():
             if param_key not in ['memory', 'memory_level', 'n_jobs',
                                  'verbose']:
                 assert (getattr(masker, param_key) ==
-                             getattr(mask, param_key))
+                        getattr(mask, param_key))
             else:
                 assert (getattr(masker, param_key) ==
-                             getattr(owner, param_key))
+                        getattr(owner, param_key))
 
     # Check use of mask as mask_img
     shape = (6, 8, 10, 5)

@@ -1,12 +1,9 @@
-""" Testing models module
-"""
+"""Testing models module."""
 
 import numpy as np
 import pytest
-
-from numpy.testing import assert_array_almost_equal
 from nilearn.glm import OLSModel
-
+from numpy.testing import assert_array_almost_equal
 
 N = 10
 X = np.c_[np.linspace(- 1, 1, N), np.ones((N,))]

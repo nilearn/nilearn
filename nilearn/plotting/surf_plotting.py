@@ -2,7 +2,10 @@
 Functions for surface visualization.
 """
 import itertools
+import math
 import warnings
+
+from collections.abc import Sequence
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -35,34 +38,24 @@ VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
 VALID_HEMISPHERES = "left", "right"
 
 
-AXIS_CONFIG = {
-    "showgrid": False,
-    "showline": False,
-    "ticks": "",
-    "title": "",
-    "showticklabels": False,
-    "zeroline": False,
-    "showspikes": False,
-    "spikesides": False,
-    "showbackground": False,
+MATPLOTLIB_VIEWS = {
+    "left": {
+        "lateral": (0, 180),
+        "medial": (0, 0),
+        "dorsal": (90, 0),
+        "ventral": (270, 0),
+        "anterior": (0, 90),
+        "posterior": (0, 270)
+    },
+    "right": {
+        "lateral": (0, 0),
+        "medial": (0, 180),
+        "dorsal": (90, 0),
+        "ventral": (270, 0),
+        "anterior": (0, 90),
+        "posterior": (0, 270)
+    }
 }
-
-
-MATPLOTLIB_VIEWS = {"right": {"lateral": (0, 0),
-                              "medial": (0, 180),
-                              "dorsal": (90, 0),
-                              "ventral": (270, 0),
-                              "anterior": (0, 90),
-                              "posterior": (0, 270)
-                              },
-                    "left": {"medial": (0, 0),
-                             "lateral": (0, 180),
-                             "dorsal": (90, 0),
-                             "ventral": (270, 0),
-                             "anterior": (0, 90),
-                             "posterior": (0, 270)
-                             }
-                    }
 
 
 CAMERAS = {
@@ -78,12 +71,12 @@ CAMERAS = {
     },
     "dorsal": {
         "eye": {"x": 0, "y": 0, "z": 1.5},
-        "up": {"x": 0, "y": 1, "z": 0},
+        "up": {"x": -1, "y": 0, "z": 0},
         "center": {"x": 0, "y": 0, "z": 0},
     },
     "ventral": {
         "eye": {"x": 0, "y": 0, "z": -1.5},
-        "up": {"x": 0, "y": 1, "z": 0},
+        "up": {"x": 1, "y": 0, "z": 0},
         "center": {"x": 0, "y": 0, "z": 0},
     },
     "anterior": {
@@ -99,31 +92,100 @@ CAMERAS = {
 }
 
 
+AXIS_CONFIG = {
+    "showgrid": False,
+    "showline": False,
+    "ticks": "",
+    "title": "",
+    "showticklabels": False,
+    "zeroline": False,
+    "showspikes": False,
+    "spikesides": False,
+    "showbackground": False,
+}
+
+
 LAYOUT = {
-    "scene": {f"{dim}axis": AXIS_CONFIG for dim in ("x", "y", "z")},
+    "scene": {
+        "dragmode": "orbit",
+        **{f"{dim}axis": AXIS_CONFIG for dim in ("x", "y", "z")}
+    },
     "paper_bgcolor": "#fff",
     "hovermode": False,
     "margin": {"l": 0, "r": 0, "b": 0, "t": 0, "pad": 0},
 }
 
 
-def _set_view_plot_surf_plotly(hemi, view):
-    """Helper function for plot_surf with plotly engine.
+def _get_camera_view_from_string_view(hemi, view):
+    """Return plotly camera parameters from string view."""
+    if view == 'lateral':
+        return CAMERAS[hemi]
+    elif view == 'medial':
+        return CAMERAS[
+            VALID_HEMISPHERES[0]
+            if hemi == VALID_HEMISPHERES[1]
+            else VALID_HEMISPHERES[1]
+        ]
+    else:
+        return CAMERAS[view]
+
+
+def _get_camera_view_from_elevation_and_azimut(view):
+    """Compute plotly camera parameters from elevation and azimut."""
+    elev, azim = view
+    # The radius is useful only when using a "perspective" projection,
+    # otherwise, if projection is "orthographic",
+    # one should tweak the "aspectratio" to emulate zoom
+    r = 1.5
+    # The camera position and orientation is set by three 3d vectors,
+    # whose coordinates are independent of the plotted data.
+    return {
+        # Where the camera should look at
+        # (it should always be looking at the center of the scene)
+        "center": {"x": 0, "y": 0, "z": 0},
+        # Where the camera should be located
+        "eye": {
+            "x": (
+                r
+                * math.cos(azim / 360 * 2 * math.pi)
+                * math.cos(elev / 360 * 2 * math.pi)
+            ),
+            "y": (
+                r
+                * math.sin(azim / 360 * 2 * math.pi)
+                * math.cos(elev / 360 * 2 * math.pi)
+            ),
+            "z": r * math.sin(elev / 360 * 2 * math.pi),
+        },
+        # How the camera should be rotated.
+        # It is determined by a 3d vector indicating which direction
+        # should look up in the generated plot
+        "up": {
+            "x": math.sin(elev / 360 * 2 * math.pi) * math.cos(
+                azim / 360 * 2 * math.pi + math.pi
+            ),
+            "y": math.sin(elev / 360 * 2 * math.pi) * math.sin(
+                azim / 360 * 2 * math.pi + math.pi
+            ),
+            "z": math.cos(elev / 360 * 2 * math.pi),
+        },
+        # "projection": {"type": "perspective"},
+        "projection": {"type": "orthographic"},
+    }
+
+
+def _get_view_plot_surf_plotly(hemi, view):
+    """
+    Get camera parameters from hemi and view for the plotly engine.
 
     This function checks the selected hemisphere and view, and
     returns the cameras view.
     """
-    if hemi not in VALID_HEMISPHERES:
-        raise ValueError(f"hemi must be one of {VALID_HEMISPHERES}")
-    if view == 'lateral':
-        view = hemi
-    elif view == 'medial':
-        view = (VALID_HEMISPHERES[0]
-                if hemi == VALID_HEMISPHERES[1]
-                else VALID_HEMISPHERES[1])
-    if view not in CAMERAS:
-        raise ValueError(f"view must be one of {VALID_VIEWS}")
-    return view
+    _check_views([view])
+    _check_hemispheres([hemi])
+    if isinstance(view, str):
+        return _get_camera_view_from_string_view(hemi, view)
+    return _get_camera_view_from_elevation_and_azimut(view)
 
 
 def _configure_title_plotly(title, font_size, color="black"):
@@ -249,9 +311,9 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
         fig_data.append(dummy)
 
     # instantiate plotly figure
-    cameras_view = _set_view_plot_surf_plotly(hemi, view)
+    camera_view = _get_view_plot_surf_plotly(hemi, view)
     fig = go.Figure(data=fig_data)
-    fig.update_layout(scene_camera=CAMERAS[cameras_view],
+    fig.update_layout(scene_camera=camera_view,
                       title=_configure_title_plotly(title, title_font_size),
                       **LAYOUT)
 
@@ -270,17 +332,17 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
     return plotly_figure
 
 
-def _set_view_plot_surf_matplotlib(hemi, view):
+def _get_view_plot_surf_matplotlib(hemi, view):
     """Helper function for plot_surf with matplotlib engine.
 
     This function checks the selected hemisphere and view, and
     returns elev and azim.
     """
-    if hemi not in VALID_HEMISPHERES:
-        raise ValueError(f"hemi must be one of {VALID_HEMISPHERES}")
-    if view not in MATPLOTLIB_VIEWS[hemi]:
-        raise ValueError(f"view must be one of {VALID_VIEWS}")
-    return MATPLOTLIB_VIEWS[hemi][view]
+    _check_views([view])
+    _check_hemispheres([hemi])
+    if isinstance(view, str):
+        return MATPLOTLIB_VIEWS[hemi][view]
+    return view
 
 
 def _check_surf_map(surf_map, n_vertices):
@@ -470,8 +532,8 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
     _default_figsize = [4, 4]
     limits = [coords.min(), coords.max()]
 
-    # set view
-    elev, azim = _set_view_plot_surf_matplotlib(hemi, view)
+    # Get elevation and azimut from view
+    elev, azim = _get_view_plot_surf_matplotlib(hemi, view)
 
     # if no cmap is given, set to matplotlib default
     if cmap is None:
@@ -1082,6 +1144,10 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     return display
 
 
+def _check_hemisphere_is_valid(hemi):
+    return hemi in VALID_HEMISPHERES
+
+
 def _check_hemispheres(hemispheres):
     """Checks whether the hemispheres passed to in plot_img_on_surf are
     correct.
@@ -1090,26 +1156,64 @@ def _check_hemispheres(hemispheres):
         Any combination of 'left' and 'right'.
 
     """
-    invalid_hemi = any([hemi not in VALID_HEMISPHERES for hemi in hemispheres])
-    if invalid_hemi:
-        supported = "Supported hemispheres:\n" + str(VALID_HEMISPHERES)
-        raise ValueError("Invalid hemispheres definition!\n" + supported)
+    invalid_hemis = [
+        not _check_hemisphere_is_valid(hemi) for hemi in hemispheres
+    ]
+    if any(invalid_hemis):
+        raise ValueError(
+            "Invalid hemispheres definition!\n"
+            f"Got: {str(np.array(hemispheres)[invalid_hemis])}\n"
+            f"Supported values are: {str(VALID_HEMISPHERES)}"
+        )
     return hemispheres
+
+
+def _check_view_is_valid(view) -> bool:
+    """Checks whether a single view is one of two
+    valid input types.
+
+    Parameters
+    ----------
+    view: string in {"anterior", "posterior", "medial", "lateral",
+        "dorsal", "ventral" or pair of floats (elev, azim).
+
+    Returns
+    -------
+    valid: True if view is valid, False otherwise.
+    """
+    if isinstance(view, str) and (view in VALID_VIEWS):
+        return True
+    if isinstance(view, Sequence) and len(view) == 2:
+        return True
+    return False
 
 
 def _check_views(views) -> list:
     """Checks whether the views passed to in plot_img_on_surf are
     correct.
 
+    Parameters
+    ----------
     views : list
-        Any combination of "anterior", "posterior", "medial", "lateral",
-        "dorsal", "ventral".
+        Any combination of strings in {"anterior", "posterior", "medial",
+        "lateral", "dorsal", "ventral"} and / or pair of floats (elev, azim).
 
+    Returns
+    -------
+    views: list
+        Views given as inputs.
     """
-    invalid_view = any([view not in VALID_VIEWS for view in views])
-    if invalid_view:
-        supported = "Supported views:\n" + str(VALID_VIEWS)
-        raise ValueError("Invalid view definition!\n" + supported)
+    invalid_views = [not _check_view_is_valid(view) for view in views]
+
+    if any(invalid_views):
+        raise ValueError(
+            "Invalid view definition!\n"
+            f"Got: {str(np.array(views)[invalid_views])}\n"
+            f"Supported values are: {str(VALID_VIEWS)}"
+            " or a sequence of length 2"
+            " setting the elevation and azimut of the camera."
+        )
+
     return views
 
 

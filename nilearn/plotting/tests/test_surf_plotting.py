@@ -10,11 +10,17 @@ import os
 import unittest.mock as mock
 
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
-from nilearn.plotting.surf_plotting import (plot_surf, plot_surf_stat_map,
-                                            plot_surf_roi, plot_img_on_surf,
-                                            plot_surf_contours,
-                                            _get_ticks_matplotlib,
-                                            _compute_facecolors_matplotlib)
+from nilearn.plotting.surf_plotting import (
+    plot_surf,
+    plot_surf_stat_map,
+    plot_surf_roi,
+    plot_img_on_surf,
+    plot_surf_contours,
+    _get_view_plot_surf_matplotlib,
+    _get_view_plot_surf_plotly,
+    _get_ticks_matplotlib,
+    _compute_facecolors_matplotlib
+)
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.surface import load_surf_data, load_surf_mesh
 from nilearn.surface.testing_utils import generate_surf
@@ -43,18 +49,139 @@ except ImportError:
 else:
     IPYTHON_INSTALLED = True
 
-EXPECTED_CAMERAS_PLOTLY = {"left": {"anterior": "anterior",
-                                    "posterior": "posterior",
-                                    "medial": "right",
-                                    "lateral": "left",
-                                    "dorsal": "dorsal",
-                                    "ventral": "ventral"},
-                           "right": {"anterior": "anterior",
-                                     "posterior": "posterior",
-                                     "medial": "left",
-                                     "lateral": "right",
-                                     "dorsal": "dorsal",
-                                     "ventral": "ventral"}}
+
+EXPECTED_CAMERAS_PLOTLY = [
+    (
+        "left",
+        "lateral",
+        (0, 180),
+        {
+            "eye": {"x": -1.5, "y": 0, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    (
+        "left",
+        "medial",
+        (0, 0),
+        {
+            "eye": {"x": 1.5, "y": 0, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Dorsal left
+    (
+        "left",
+        "dorsal",
+        (90, 0),
+        {
+            "eye": {"x": 0, "y": 0, "z": 1.5},
+            "up": {"x": -1, "y": 0, "z": 0},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Ventral left
+    (
+        "left",
+        "ventral",
+        (270, 0),
+        {
+            "eye": {"x": 0, "y": 0, "z": -1.5},
+            "up": {"x": 1, "y": 0, "z": 0},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Anterior left
+    (
+        "left",
+        "anterior",
+        (0, 90),
+        {
+            "eye": {"x": 0, "y": 1.5, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Posterior left
+    (
+        "left",
+        "posterior",
+        (0, 270),
+        {
+            "eye": {"x": 0, "y": -1.5, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Lateral right
+    (
+        "right",
+        "lateral",
+        (0, 0),
+        {
+            "eye": {"x": 1.5, "y": 0, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Medial right
+    (
+        "right",
+        "medial",
+        (0, 180),
+        {
+            "eye": {"x": -1.5, "y": 0, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Dorsal right
+    (
+        "right",
+        "dorsal",
+        (90, 0),
+        {
+            "eye": {"x": 0, "y": 0, "z": 1.5},
+            "up": {"x": -1, "y": 0, "z": 0},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Ventral right
+    (
+        "right",
+        "ventral",
+        (270, 0),
+        {
+            "eye": {"x": 0, "y": 0, "z": -1.5},
+            "up": {"x": 1, "y": 0, "z": 0},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Anterior right
+    (
+        "right",
+        "anterior",
+        (0, 90),
+        {
+            "eye": {"x": 0, "y": 1.5, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+    # Posterior right
+    (
+        "right",
+        "posterior",
+        (0, 270),
+        {
+            "eye": {"x": 0, "y": -1.5, "z": 0},
+            "up": {"x": 0, "y": 0, "z": 1},
+            "center": {"x": 0, "y": 0, "z": 0},
+        },
+    ),
+]
 
 
 EXPECTED_VIEW_MATPLOTLIB = {"left": {"anterior": (0, 90),
@@ -71,16 +198,37 @@ EXPECTED_VIEW_MATPLOTLIB = {"left": {"anterior": (0, 90),
                                       "ventral": (270, 0)}}
 
 
-@pytest.fixture
-def expected_cameras_plotly(hemi, view):
-    return EXPECTED_CAMERAS_PLOTLY[hemi][view]
 
-
-@pytest.mark.parametrize("hemi", VALID_HEMISPHERES)
-@pytest.mark.parametrize("view", VALID_VIEWS)
-def test_set_view_plot_surf_plotly(hemi, view, expected_cameras_plotly):
-    from nilearn.plotting.surf_plotting import _set_view_plot_surf_plotly
-    assert _set_view_plot_surf_plotly(hemi, view) == expected_cameras_plotly
+@pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
+def test_get_view_plot_surf_plotly(full_view):
+    from nilearn.plotting.surf_plotting import (
+        _get_camera_view_from_elevation_and_azimut,
+        _get_camera_view_from_string_view,
+        _get_view_plot_surf_plotly,
+    )
+    hemi, view_name, (elev, azim), expected_camera_view = full_view
+    camera_view = _get_view_plot_surf_plotly(hemi, view_name)
+    camera_view_string = _get_camera_view_from_string_view(hemi, view_name)
+    camera_view_elev_azim = _get_camera_view_from_elevation_and_azimut(
+        (elev, azim)
+    )
+    # Check each camera view parameter
+    for k in ["center", "eye", "up"]:
+        # Check default camera view
+        assert np.allclose(
+            list(camera_view[k].values()),
+            list(expected_camera_view[k].values())
+        )
+        # Check camera view obtained from string view
+        assert np.allclose(
+            list(camera_view_string[k].values()),
+            list(expected_camera_view[k].values())
+        )
+        # Check camera view obtained from elevation & azimut
+        assert np.allclose(
+            list(camera_view_elev_azim[k].values()),
+            list(expected_camera_view[k].values())
+        )
 
 
 @pytest.fixture
@@ -90,9 +238,9 @@ def expected_view_matplotlib(hemi, view):
 
 @pytest.mark.parametrize("hemi", VALID_HEMISPHERES)
 @pytest.mark.parametrize("view", VALID_VIEWS)
-def test_set_view_plot_surf_matplotlib(hemi, view, expected_view_matplotlib):
-    from nilearn.plotting.surf_plotting import _set_view_plot_surf_matplotlib
-    assert(_set_view_plot_surf_matplotlib(hemi, view)
+def test_get_view_plot_surf_matplotlib(hemi, view, expected_view_matplotlib):
+    from nilearn.plotting.surf_plotting import _get_view_plot_surf_matplotlib
+    assert(_get_view_plot_surf_matplotlib(hemi, view)
            == expected_view_matplotlib)
 
 
@@ -181,19 +329,58 @@ def test_instantiation_error_plotly_surface_figure(input_obj):
         PlotlySurfaceFigure(input_obj)
 
 
-def test_set_view_plot_surf_errors():
-    from nilearn.plotting.surf_plotting import (_set_view_plot_surf_matplotlib,
-                                                _set_view_plot_surf_plotly)
+
+@pytest.mark.parametrize(
+    "view,is_valid",
+    [
+        ("lateral", True),
+        ("medial", True),
+        ("latreal", False),
+        ((100, 100), True),
+        ((100, 100, 1), False),
+    ]
+)
+def test_check_view_is_valid(view, is_valid):
+    from nilearn.plotting.surf_plotting import _check_view_is_valid
+    assert _check_view_is_valid(view) is is_valid
+
+
+@pytest.mark.parametrize(
+    "hemi,is_valid",
+    [
+        ("left", True),
+        ("right", True),
+        ("lft", False),
+    ]
+)
+def test_check_hemisphere_is_valid(hemi, is_valid):
+    from nilearn.plotting.surf_plotting import _check_hemisphere_is_valid
+    assert _check_hemisphere_is_valid(hemi) is is_valid
+
+
+@pytest.mark.parametrize("hemi,view", [("foo", "medial"), ("bar", "anterior")])
+def test_get_view_plot_surf_hemisphere_errors(hemi, view):
+    from nilearn.plotting.surf_plotting import (_get_view_plot_surf_matplotlib,
+                                                _get_view_plot_surf_plotly)
     with pytest.raises(ValueError,
-                       match="hemi must be one of"):
-        _set_view_plot_surf_matplotlib("foo", "medial")
-        _set_view_plot_surf_plotly("bar", "anterior")
+                       match="Invalid hemispheres definition"):
+        _get_view_plot_surf_matplotlib(hemi, view)
     with pytest.raises(ValueError,
-                       match="view must be one of"):
-        _set_view_plot_surf_matplotlib("left", "foo")
-        _set_view_plot_surf_matplotlib("right", "bar")
-        _set_view_plot_surf_plotly("left", "foo")
-        _set_view_plot_surf_plotly("right", "bar")
+                       match="Invalid hemispheres definition"):
+        _get_view_plot_surf_plotly(hemi, view)
+
+
+@pytest.mark.parametrize(
+    "hemi,view,f",
+    [
+        ("left", "foo", _get_view_plot_surf_matplotlib),
+        ("right", "bar", _get_view_plot_surf_plotly),
+    ]
+)
+def test_get_view_plot_surf_view_errors(hemi, view, f):
+    with pytest.raises(ValueError,
+                       match="Invalid view definition"):
+        f(hemi, view)
 
 
 def test_configure_title_plotly():
@@ -316,9 +503,9 @@ def test_plot_surf_error(engine):
     rng = np.random.RandomState(42)
 
     # Wrong inputs for view or hemi
-    with pytest.raises(ValueError, match='view must be one of'):
+    with pytest.raises(ValueError, match='Invalid view definition'):
         plot_surf(mesh, view='middle', engine=engine)
-    with pytest.raises(ValueError, match='hemi must be one of'):
+    with pytest.raises(ValueError, match='Invalid hemispheres definition'):
         plot_surf(mesh, hemi='lft', engine=engine)
 
     # Wrong size of background image
@@ -647,6 +834,11 @@ def test_plot_img_on_surf_hemispheres_and_orientations():
     plot_img_on_surf(nii,
                      hemispheres=['left', 'right'],
                      views=['dorsal', 'medial'])
+    # Check that manually set view angles work.
+    plot_img_on_surf(nii,
+                     hemispheres=['left', 'right'],
+                     views=[(210.0, 90.0), (15.0, -45.0)])
+
 
 
 def test_plot_img_on_surf_colorbar():
