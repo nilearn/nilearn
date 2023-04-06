@@ -7,18 +7,12 @@ import pytest
 # (using nilearn.signal is not possible)
 from nilearn import signal as nisignal
 from nilearn._utils.data_gen import generate_signals
-from numpy.testing import (
-
-    assert_almost_equal,
-    assert_array_equal,
-)
-
 from nilearn.glm.first_level.design_matrix import _cosine_drift
+from numpy.testing import assert_almost_equal, assert_array_equal
+
 
 def test_create_cosine_drift_terms():
     """Testing cosine filter interface and output."""
-
-
     # fmriprep high pass cutoff is 128s, it's around 0.008 hz
     t_r, high_pass = 2.5, 0.008
     signals, _, confounds = generate_signals(
@@ -43,7 +37,6 @@ def test_create_cosine_drift_terms():
 
 def test_create_cosine_drift_terms_warnings():
     """Testing cosine filter interface and output."""
-
     # fmriprep high pass cutoff is 128s, it's around 0.008 hz
     t_r, high_pass = 2.5, 0.008
     signals, _, confounds = generate_signals(
@@ -69,4 +62,3 @@ def test_create_cosine_drift_terms_warnings():
             signals, confounds, high_pass_fail, t_r
         )
     assert_array_equal(cosine_confounds, confounds)
-
