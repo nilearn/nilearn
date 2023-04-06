@@ -41,29 +41,12 @@ from nilearn.glm.regression import (
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
 from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
+from nilearn.interfaces.bids.query import (
+    _infer_repetition_time_from_dataset,
+    _infer_slice_timing_start_time_from_dataset,
+)
 from sklearn.base import clone
 from sklearn.cluster import KMeans
-
-from nilearn.interfaces.bids import (get_bids_files,
-                                     parse_bids_filename)
-from nilearn.interfaces.bids.query import \
-    (_infer_slice_timing_start_time_from_dataset,
-     _infer_repetition_time_from_dataset)
-from nilearn._utils import fill_doc
-from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
-from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
-                                _check_run_tables, _check_run_sample_masks)
-from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils import stringify_path
-from nilearn.glm.contrasts import (_compute_fixed_effect_contrast,
-                                   expression_to_contrast_vector)
-from nilearn.glm.first_level.design_matrix import \
-    make_first_level_design_matrix
-from nilearn.image import get_data
-from nilearn.glm.regression import (ARModel, OLSModel, RegressionResults,
-                                    SimpleRegressionResults)
-from nilearn.glm._base import BaseGLM
-
 
 
 def mean_scaling(Y, axis=0):
@@ -389,7 +372,7 @@ class FirstLevelModel(BaseGLM):
             _check_repetition_time(t_r)
         self.t_r = t_r
         if slice_time_ref is not None:
-            _check_slice_time_ref(slice_time_ref)        
+            _check_slice_time_ref(slice_time_ref)
         self.slice_time_ref = slice_time_ref
         self.hrf_model = hrf_model
         self.drift_model = drift_model
@@ -832,19 +815,19 @@ class FirstLevelModel(BaseGLM):
 def _check_repetition_time(t_r):
     if not isinstance(t_r, (float, int)):
         raise TypeError("'t_r' must be a float or an integer. "
-                        f"Got {type(t_r)} instead.")   
+                        f"Got {type(t_r)} instead.")
     if t_r <= 0:
         raise ValueError("'t_r' must be positive. "
-                        f"Got {t_r} instead.")        
+                         f"Got {t_r} instead.")
 
 
 def _check_slice_time_ref(slice_time_ref):
     if not isinstance(slice_time_ref, (float, int)):
         raise TypeError("'slice_time_ref' must be a float or an integer. "
-                        f"Got {type(slice_time_ref)} instead.")   
+                        f"Got {type(slice_time_ref)} instead.")
     if slice_time_ref < 0 or slice_time_ref > 1:
         raise ValueError("'slice_time_ref' must be between 0 and 1. "
-                        f"Got {slice_time_ref} instead.")  
+                         f"Got {slice_time_ref} instead.")
 
 
 def first_level_from_bids(dataset_path,
@@ -917,7 +900,7 @@ def first_level_from_bids(dataset_path,
         .. deprecated:: 0.10.1
 
             The default=0 for ``slice_time_ref`` will be deprecated.
-            The default value will change to 'None' in 0.12.        
+            The default value will change to 'None' in 0.12.
 
     derivatives_folder : :obj:`str`, Defaults="derivatives".
         derivatives and app folder path containing preprocessed files.
@@ -945,7 +928,6 @@ def first_level_from_bids(dataset_path,
         Items for the FirstLevelModel fit function of their respective model.
 
     """
-
     if slice_time_ref == 0:
         warn(
             'Starting in version 0.12, slice_time_ref will default to None.',
@@ -966,47 +948,48 @@ def first_level_from_bids(dataset_path,
 
     # Get metadata for models.
     #
-    # We do it once and assume all subjects and runs 
+    # We do it once and assume all subjects and runs
     # have the same value.
 
     # Repetition time
     #
     # Try to find a t_r value in the bids datasets
     # If the parameter information is not found in the derivatives folder,
-    # a search is done in the raw data folder.  
+    # a search is done in the raw data folder.
     filters = _make_bids_files_filter(
         task_label=task_label,
         space_label=space_label,
-        supported_filters=[*_bids_entities()["raw"], *_bids_entities()["derivatives"]],
+        supported_filters=[*_bids_entities()["raw"],
+                           *_bids_entities()["derivatives"]],
         extra_filter=img_filters,
         verbose=verbose
     )
     inferred_t_r = _infer_repetition_time_from_dataset(
         bids_path=derivatives_path,
         filters=filters,
-        verbose=verbose)       
+        verbose=verbose)
     if inferred_t_r is None:
         filters = _make_bids_files_filter(
             task_label=task_label,
             supported_filters=[*_bids_entities()["raw"]],
             extra_filter=img_filters,
-                        verbose=verbose
+            verbose=verbose
         )
         inferred_t_r = _infer_repetition_time_from_dataset(
-        bids_path=dataset_path,
-        filters=filters,
-        verbose=verbose)
+            bids_path=dataset_path,
+            filters=filters,
+            verbose=verbose)
 
-    if t_r is None and inferred_t_r is not None:     
-            t_r = inferred_t_r        
+    if t_r is None and inferred_t_r is not None:
+        t_r = inferred_t_r
     if t_r is not None and t_r != inferred_t_r:
         warn(f"'t_r' provided ({t_r}) is different "
              f"from the value found in the BIDS dataset ({inferred_t_r}).\n"
              "Note this may lead to the wrong model specification.")
-    if t_r is not None:        
+    if t_r is not None:
         _check_repetition_time(t_r)
     else:
-        warn("'t_r' not provided and cannot be inferred from BIDS metadata. " 
+        warn("'t_r' not provided and cannot be inferred from BIDS metadata. "
              "It will need to be set manually in the list of models, "
              "otherwise their fit will throw an exception.")
 
@@ -1018,16 +1001,17 @@ def first_level_from_bids(dataset_path,
     filters = _make_bids_files_filter(
         task_label=task_label,
         space_label=space_label,
-        supported_filters=[*_bids_entities()["raw"], *_bids_entities()["derivatives"]],
+        supported_filters=[*_bids_entities()["raw"],
+                           *_bids_entities()["derivatives"]],
         extra_filter=img_filters,
         verbose=verbose
     )
     StartTime = _infer_slice_timing_start_time_from_dataset(
-        bids_path=derivatives_path, 
+        bids_path=derivatives_path,
         filters=filters,
         verbose=verbose)
     if StartTime is not None and t_r is not None:
-        assert(StartTime < t_r)
+        assert (StartTime < t_r)
         inferred_slice_time_ref = StartTime / t_r
     else:
         warn("'slice_time_ref' not provided "
@@ -1035,16 +1019,17 @@ def first_level_from_bids(dataset_path,
              "It will be assumed that the slice timing reference "
              "is 0.0 percent of the repetition time. "
              "If it is not the case it will need to "
-             "be set manually in the generated list of models.")    
-        inferred_slice_time_ref = 0.0        
+             "be set manually in the generated list of models.")
+        inferred_slice_time_ref = 0.0
 
-    if slice_time_ref is None and inferred_slice_time_ref is not None:     
-            slice_time_ref = inferred_slice_time_ref               
-    if slice_time_ref is not None and slice_time_ref != inferred_slice_time_ref:
+    if slice_time_ref is None and inferred_slice_time_ref is not None:
+        slice_time_ref = inferred_slice_time_ref
+    if (slice_time_ref is not None
+            and slice_time_ref != inferred_slice_time_ref):
         warn(f"'slice_time_ref' provided ({slice_time_ref}) is different "
              f"from the value found in the BIDS dataset "
              f"({inferred_slice_time_ref}).\n"
-             "Note this may lead to the wrong model specification.")            
+             "Note this may lead to the wrong model specification.")
     if slice_time_ref is not None:
         _check_slice_time_ref(slice_time_ref)
 
@@ -1504,6 +1489,7 @@ def _make_bids_files_filter(
     space_label=None,
     supported_filters=None,
     extra_filter=None,
+    verbose=0
 ) :
     """Return a filter to specific files from a BIDS dataset.
 
@@ -1520,7 +1506,11 @@ def _make_bids_files_filter(
         List of authorized BIDS entities
 
     extra_filter : :obj:`list` of :obj:`tuple` (str, str) or None, optional
-        _description_
+        Filters are of the form (field, label).
+        Only one filter per field allowed.
+
+    verbose : :obj:`integer`
+        Indicate the level of verbosity.
 
     Returns
     -------
