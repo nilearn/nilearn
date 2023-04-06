@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 from nibabel import Nifti1Image, load
 from nibabel.tmpdirs import InTemporaryDirectory
+from nilearn._utils import testing
 from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
     write_fake_fmri_data_and_design,
@@ -14,14 +15,12 @@ from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.second_level import SecondLevelModel, non_parametric_inference
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker
-from nilearn._utils import testing                    
 from numpy.testing import (
     assert_almost_equal,
     assert_array_almost_equal,
     assert_array_equal,
 )
 from scipy import stats
-
 
 try:
     from nilearn.reporting import get_clusters_table
@@ -93,6 +92,7 @@ def test_sort_input_dataframe(input_df):
     assert (output_df['effects_map_path'].values.tolist()
             == ["bar.nii", "baz.nii", "foo.nii"])
 
+
 def test_second_level_input_as_3D_images():
     """Test second level model with a list 3D image filenames as input.
 
@@ -100,14 +100,13 @@ def test_second_level_input_as_3D_images():
     https://github.com/nilearn/nilearn/issues/3636
 
     """
-
     shape = (7, 8, 9)
     images = []
     nb_subjects = 10
     affine = np.eye(4)
     for _ in range(nb_subjects):
-        data= np.random.rand(*shape)
-        images.append( Nifti1Image(data, affine))
+        data = np.random.rand(*shape)
+        images.append(Nifti1Image(data, affine))
 
     with testing.write_tmp_imgs(*images, create_files=True) as filenames:
 
@@ -122,6 +121,7 @@ def test_second_level_input_as_3D_images():
             second_level_input,
             design_matrix=design_matrix,
         )
+
 
 def test_process_second_level_input_as_firstlevelmodels():
     """Unit tests for function
