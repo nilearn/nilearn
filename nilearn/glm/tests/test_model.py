@@ -6,7 +6,7 @@ from nilearn.glm import OLSModel
 from numpy.testing import assert_array_almost_equal
 
 N = 10
-X = np.c_[np.linspace(- 1, 1, N), np.ones((N,))]
+X = np.c_[np.linspace(-1, 1, N), np.ones((N,))]
 Y = np.r_[range(5), range(1, 6)]
 MODEL = OLSModel(X)
 RESULTS = MODEL.fit(Y)
@@ -83,19 +83,19 @@ def test_t_output():
     assert_array_almost_equal(res.t, exp_t)
     assert_array_almost_equal(res.effect, exp_effect)
     assert_array_almost_equal(res.sd, exp_sd)
-    res = RESULTS.Tcontrast([1, 0], store=('effect',))
+    res = RESULTS.Tcontrast([1, 0], store=("effect",))
     assert res.t is None
     assert_array_almost_equal(res.effect, exp_effect)
     assert res.sd is None
-    res = RESULTS.Tcontrast([1, 0], store=('t',))
+    res = RESULTS.Tcontrast([1, 0], store=("t",))
     assert_array_almost_equal(res.t, exp_t)
     assert res.effect is None
     assert res.sd is None
-    res = RESULTS.Tcontrast([1, 0], store=('sd',))
+    res = RESULTS.Tcontrast([1, 0], store=("sd",))
     assert res.t is None
     assert res.effect is None
     assert_array_almost_equal(res.sd, exp_sd)
-    res = RESULTS.Tcontrast([1, 0], store=('effect', 'sd'))
+    res = RESULTS.Tcontrast([1, 0], store=("effect", "sd"))
     assert res.t is None
     assert_array_almost_equal(res.effect, exp_effect)
     assert_array_almost_equal(res.sd, exp_sd)
