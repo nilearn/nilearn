@@ -1,25 +1,19 @@
-"""
-Transformer used to apply basic transformations on :term:`fMRI` data.
-"""
+"""Transformer used to apply basic transformations on :term:`fMRI` data."""
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
-import warnings
 import abc
+import warnings
 
 import numpy as np
-
-from sklearn.base import BaseEstimator, TransformerMixin
 from joblib import Memory
+from nilearn.image import high_variance_confounds
+from sklearn.base import BaseEstimator, TransformerMixin
 
-from .. import masking
-from .. import image
-from .. import signal
-from .. import _utils
+from .. import _utils, image, masking, signal
+from .._utils import stringify_path
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.class_inspect import enclosing_scope_name
-from .._utils import stringify_path
-from nilearn.image import high_variance_confounds
 
 
 def _filter_and_extract(
@@ -63,7 +57,7 @@ def _filter_and_extract(
         copy = False
 
     if verbose > 0:
-        print("[%s] Loading data from %s" % (
+        print("[{}] Loading data from {}".format(
             class_name,
             _utils._repr_niimgs(imgs, shorten=False)))
 
@@ -89,7 +83,7 @@ def _filter_and_extract(
     target_affine = parameters.get('target_affine')
     if target_shape is not None or target_affine is not None:
         if verbose > 0:
-            print("[%s] Resampling images" % class_name)
+            print(f"[{class_name}] Resampling images")
         imgs = cache(
             image.resample_img, memory, func_memory_level=2,
             memory_level=memory_level, ignore=['copy'])(
@@ -101,14 +95,14 @@ def _filter_and_extract(
     smoothing_fwhm = parameters.get('smoothing_fwhm')
     if smoothing_fwhm is not None:
         if verbose > 0:
-            print("[%s] Smoothing images" % class_name)
+            print(f"[{class_name}] Smoothing images")
         imgs = cache(
             image.smooth_img, memory, func_memory_level=2,
             memory_level=memory_level)(
                 imgs, parameters['smoothing_fwhm'])
 
     if verbose > 0:
-        print("[%s] Extracting region signals" % class_name)
+        print(f"[{class_name}] Extracting region signals")
     region_signals, aux = cache(extraction_function, memory,
                                 func_memory_level=2,
                                 memory_level=memory_level)(imgs)
@@ -120,7 +114,7 @@ def _filter_and_extract(
     # Confounds removing (from csv file or numpy array)
     # Normalizing
     if verbose > 0:
-        print("[%s] Cleaning extracted signals" % class_name)
+        print(f"[{class_name}] Cleaning extracted signals")
     runs = parameters.get('runs', None)
     region_signals = cache(
         signal.clean,
@@ -194,7 +188,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         raise NotImplementedError()
 
     def transform(self, imgs, confounds=None, sample_mask=None):
-        """Apply mask, spatial and temporal preprocessing
+        """Apply mask, spatial and temporal preprocessing.
 
         Parameters
         ----------
@@ -256,7 +250,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     def fit_transform(self, X, y=None, confounds=None, sample_mask=None,
                       **fit_params):
-        """Fit to data, then transform it
+        """Fit to data, then transform it.
 
         Parameters
         ----------
@@ -311,7 +305,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                                                         )
 
     def inverse_transform(self, X):
-        """ Transform the 2D data matrix back to an image in brain space.
+        """Transform the 2D data matrix back to an image in brain space.
 
         This step only performs spatial unmasking,
         without inverting any additional processing performed by ``transform``,
