@@ -1,5 +1,4 @@
-"""
-This module contains the GLM and contrast classes that are meant to be the main
+"""Contains the GLM and contrast classes that are meant to be the main \
 objects of fMRI data analyses.
 
 Author: Bertrand Thirion, Martin Perez-Guevara, 2016
@@ -10,41 +9,46 @@ from __future__ import annotations
 import glob
 import json
 import os
-import pathlib
 import sys
 import time
-
 from pathlib import Path
-from typing import Optional
 from warnings import warn
 
 import numpy as np
 import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
+from nilearn._utils import fill_doc, stringify_path
+from nilearn._utils.glm import (
+    _check_events_file_uses_tab_separators,
+    _check_run_sample_masks,
+    _check_run_tables,
+)
+from nilearn._utils.niimg_conversions import check_niimg
+from nilearn.glm._base import BaseGLM
+from nilearn.glm.contrasts import (
+    _compute_fixed_effect_contrast,
+    expression_to_contrast_vector,
+)
+from nilearn.glm.first_level.design_matrix import (
+    make_first_level_design_matrix,
+)
+from nilearn.glm.regression import (
+    ARModel,
+    OLSModel,
+    RegressionResults,
+    SimpleRegressionResults,
+)
+from nilearn.image import get_data
+from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
+from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
 from sklearn.base import clone
 from sklearn.cluster import KMeans
 
-from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
-from nilearn._utils import fill_doc
-from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
-from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
-                                _check_run_tables, _check_run_sample_masks)
-from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils import stringify_path
-from nilearn.glm.contrasts import (_compute_fixed_effect_contrast,
-                                   expression_to_contrast_vector)
-from nilearn.glm.first_level.design_matrix import \
-    make_first_level_design_matrix
-from nilearn.image import get_data
-from nilearn.glm.regression import (ARModel, OLSModel, RegressionResults,
-                                    SimpleRegressionResults)
-from nilearn.glm._base import BaseGLM
-
 
 def mean_scaling(Y, axis=0):
-    """Scaling of the data to have percent of baseline change along the
-    specified axis
+    """Scaling of the data to have percent of baseline change \
+    along the specified axis.
 
     Parameters
     ----------
@@ -74,7 +78,7 @@ def mean_scaling(Y, axis=0):
 
 
 def _ar_model_fit(X, val, Y):
-    """Wrapper for fit method of ARModel to allow joblib parallelization"""
+    """Wrap fit method of ARModel to allow joblib parallelization."""
     return ARModel(X, val).fit(Y)
 
 
@@ -108,7 +112,7 @@ def _yule_walker(x, order):
 
 def run_glm(Y, X, noise_model='ar1', bins=100,
             n_jobs=1, verbose=0, random_state=None):
-    """ GLM fit for an fMRI data matrix
+    """GLM fit for an fMRI data matrix.
 
     Parameters
     ----------
@@ -158,9 +162,9 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
     acceptable_noise_models = ['ols', 'arN']
     if ((noise_model[:2] != 'ar') and (noise_model != 'ols')):
         raise ValueError(
-            "Acceptable noise models are {0}. You provided "
-            "'noise_model={1}'".format(acceptable_noise_models,
-                                       noise_model)
+            "Acceptable noise models are {}. You provided "
+            "'noise_model={}'".format(acceptable_noise_models,
+                                      noise_model)
         )
     if Y.shape[0] != X.shape[0]:
         raise ValueError('The number of rows of Y '
@@ -176,7 +180,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
 
         err_msg = ('AR order must be a positive integer specified as arN, '
                    'where N is an integer. E.g. ar3. '
-                   'You provided {0}.'.format(noise_model))
+                   'You provided {}.'.format(noise_model))
         try:
             ar_order = int(noise_model[2:])
         except ValueError:
@@ -231,8 +235,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
 
 @fill_doc
 class FirstLevelModel(BaseGLM):
-    """ Implementation of the General Linear Model
-    for single session fMRI data.
+    """Implement the General Linear Model for single session fMRI data.
 
     Parameters
     ----------
@@ -403,6 +406,7 @@ class FirstLevelModel(BaseGLM):
 
     @property
     def scaling_axis(self):
+        """Return scaling of axis."""
         warn(DeprecationWarning(
             "Deprecated. `scaling_axis` will be removed in 0.11.0. "
             "Please use `signal_scaling` instead."
@@ -411,7 +415,7 @@ class FirstLevelModel(BaseGLM):
 
     def fit(self, run_imgs, events=None, confounds=None, sample_masks=None,
             design_matrices=None, bins=100):
-        """Fit the GLM
+        """Fit the GLM.
 
         For each run:
         1. create design matrix X
@@ -471,7 +475,7 @@ class FirstLevelModel(BaseGLM):
                 'confounds and events will be ignored.'
             )
         # Local import to prevent circular imports
-        from nilearn.maskers import NiftiMasker  # noqa
+        from nilearn.maskers import NiftiMasker
 
         # Check arguments
         # Check imgs type
@@ -529,8 +533,9 @@ class FirstLevelModel(BaseGLM):
                     if our_param is None:
                         continue
                     if getattr(self.masker_, param_name) is not None:
-                        warn('Parameter %s of the masker'
-                             ' overridden' % param_name)
+                        warn(
+                            f'Parameter {param_name} of the masker overridden'
+                        )
                     setattr(self.masker_, param_name, our_param)
                 self.masker_.fit(run_imgs[0])
             else:
@@ -551,7 +556,7 @@ class FirstLevelModel(BaseGLM):
                     remaining = 'go take a coffee, a big one'
                 else:
                     remaining = (100. - percent) / max(0.01, percent) * dt
-                    remaining = '%i seconds remaining' % remaining
+                    remaining = f'{int(remaining)} seconds remaining'
 
                 sys.stderr.write(
                     "Computing run %d out of %d runs (%s)\n"
@@ -606,10 +611,10 @@ class FirstLevelModel(BaseGLM):
 
             if self.verbose > 1:
                 t_masking = time.time() - t_masking
-                sys.stderr.write('Masker took %d seconds       \n'
-                                 % t_masking)
+                sys.stderr.write(
+                    f'Masker took {int(t_masking)} seconds       \n')
 
-            if self.signal_scaling is not False:  # noqa
+            if self.signal_scaling is not False:
                 Y, _ = mean_scaling(Y, self.signal_scaling)
             if self.memory:
                 mem_glm = self.memory.cache(run_glm, ignore=['n_jobs'])
@@ -626,7 +631,7 @@ class FirstLevelModel(BaseGLM):
                                       random_state=self.random_state)
             if self.verbose > 1:
                 t_glm = time.time() - t_glm
-                sys.stderr.write('GLM took %d seconds         \n' % t_glm)
+                sys.stderr.write(f'GLM took {int(t_glm)} seconds         \n')
 
             self.labels_.append(labels)
             # We save memory if inspecting model details is not necessary
@@ -644,8 +649,9 @@ class FirstLevelModel(BaseGLM):
 
     def compute_contrast(self, contrast_def, stat_type=None,
                          output_type='z_score'):
-        """Generate different outputs corresponding to
+        """Generate different outputs corresponding to \
         the contrasts provided e.g. z_map, t_map, effects and variance.
+
         In multi-session case, outputs the fixed effects map.
 
         Parameters
@@ -692,7 +698,7 @@ class FirstLevelModel(BaseGLM):
         n_runs = len(self.labels_)
         n_contrasts = len(con_vals)
         if n_contrasts == 1 and n_runs > 1:
-            warn('One contrast given, assuming it for all %d runs' % n_runs)
+            warn(f'One contrast given, assuming it for all {int(n_runs)} runs')
             con_vals = con_vals * n_runs
         elif n_contrasts != n_runs:
             raise ValueError('%d contrasts given, while there are %d runs' %
@@ -712,7 +718,7 @@ class FirstLevelModel(BaseGLM):
         valid_types.append('all')  # ensuring 'all' is the final entry.
         if output_type not in valid_types:
             raise ValueError(
-                'output_type must be one of {}'.format(valid_types))
+                f'output_type must be one of {valid_types}')
         contrast = _compute_fixed_effect_contrast(self.labels_, self.results_,
                                                   con_vals, stat_type)
         output_types = (valid_types[:-1]
@@ -724,16 +730,16 @@ class FirstLevelModel(BaseGLM):
             output = self.masker_.inverse_transform(estimate_)
             contrast_name = str(con_vals)
             output.header['descrip'] = (
-                '%s of contrast %s' % (output_type_, contrast_name))
+                f'{output_type_} of contrast {contrast_name}')
             outputs[output_type_] = output
 
         return outputs if output_type == 'all' else output
 
     def _get_voxelwise_model_attribute(self, attribute,
                                        result_as_time_series):
-        """Transform RegressionResults instances within a dictionary
-        (whose keys represent the autoregressive coefficient under the 'ar1'
-        noise model or only 0.0 under 'ols' noise_model and values are the
+        """Transform RegressionResults instances within a dictionary \
+        (whose keys represent the autoregressive coefficient under the 'ar1' \
+        noise model or only 0.0 under 'ols' noise_model and values are the \
         RegressionResults instances) into input nifti space.
 
         Parameters
@@ -760,8 +766,7 @@ class FirstLevelModel(BaseGLM):
                                if '__' not in prop
                                ]
         if attribute not in possible_attributes:
-            msg = ("attribute must be one of: "
-                   "{attr}".format(attr=possible_attributes)
+            msg = (f"attribute must be one of: {possible_attributes}"
                    )
             raise ValueError(msg)
 
@@ -850,7 +855,7 @@ def first_level_from_bids(dataset_path,
         If 'None', will model all subjects in the dataset.
         .. versionadded:: 0.10.1.dev
 
-    img_filters : :obj:`list` of :obj:`tuples` (str, str), optional
+    img_filters : :obj:`list` of :obj:`tuple` (str, str), optional
         Filters are of the form (field, label). Only one filter per field
         allowed.
         A file that does not match a filter will be discarded.
@@ -887,13 +892,13 @@ def first_level_from_bids(dataset_path,
     """
     sub_labels = sub_labels or []
     img_filters = img_filters or []
-    
+
     _check_args_first_level_from_bids(dataset_path=dataset_path,
-                                         task_label=task_label,
-                                         space_label=space_label,
-                                         sub_labels=sub_labels,
-                                         img_filters=img_filters,
-                                         derivatives_folder=derivatives_folder)
+                                      task_label=task_label,
+                                      space_label=space_label,
+                                      sub_labels=sub_labels,
+                                      img_filters=img_filters,
+                                      derivatives_folder=derivatives_folder)
 
     derivatives_path = Path(dataset_path) / derivatives_folder
 
@@ -906,7 +911,8 @@ def first_level_from_bids(dataset_path,
     else:
         filters = _make_bids_files_filter(
             task_label=task_label,
-            supported_filters=[*_bids_entities()["raw"], *_bids_entities()["derivatives"]],
+            supported_filters=[*_bids_entities()["raw"],
+                               *_bids_entities()["derivatives"]],
             extra_filter=img_filters
         )
         img_specs = get_bids_files(derivatives_path,
@@ -933,7 +939,7 @@ def first_level_from_bids(dataset_path,
                  ' and will need to be set manually in the list of models'
                  ' otherwise their fit will throw an exception.')
         else:
-            specs = json.load(open(img_specs[0], 'r'))
+            specs = json.load(open(img_specs[0]))
             if 'RepetitionTime' in specs:
                 t_r = float(specs['RepetitionTime'])
             else:
@@ -1021,14 +1027,14 @@ def _list_valid_subjects(derivatives_path,
         Path to the BIDS derivatives folder.
 
     sub_labels : :obj:`list` of :obj:`str`, optional
-        List of subject labels to process. 
+        List of subject labels to process.
         If None, all subjects in the dataset will be processed.
 
     Returns
     -------
     sub_labels : :obj:`list` of :obj:`str`, optional
         List of subject labels that will be processed.
-    """    
+    """
     # Infer subjects in dataset if not provided
     if not sub_labels:
         sub_folders = glob.glob(os.path.join(derivatives_path, "sub-*/"))
@@ -1401,8 +1407,8 @@ def _check_args_first_level_from_bids(
 def _make_bids_files_filter(
     task_label,
     space_label=None,
-    supported_filters= None,
-    extra_filter= None,
+    supported_filters=None,
+    extra_filter=None,
 ) :
     """Return a filter to specific files from a BIDS dataset.
 

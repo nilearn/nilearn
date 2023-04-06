@@ -1,13 +1,10 @@
-"""
-Test the base_masker module
-"""
+"""Test the base_masker module."""
 
-import numpy as np
-from numpy.testing import assert_array_almost_equal
 import nibabel
-
-from nilearn.maskers.nifti_masker import _filter_and_mask
+import numpy as np
 from nilearn import image
+from nilearn.maskers.nifti_masker import _filter_and_mask
+from numpy.testing import assert_array_almost_equal
 
 
 def test_cropping_code_paths():

@@ -1,5 +1,4 @@
-"""
-This module implements fMRI Design Matrix creation.
+"""Implement fMRI Design Matrix creation.
 
 Design matrices are represented by Pandas DataFrames
 Computations of the different parts of the design matrix are confined
@@ -38,12 +37,13 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
-
 from nilearn._utils import fill_doc
 from nilearn._utils.glm import full_rank
 from nilearn.glm.first_level.experimental_paradigm import check_events
-from nilearn.glm.first_level.hemodynamic_models import (_orthogonalize,
-                                                        compute_regressor)
+from nilearn.glm.first_level.hemodynamic_models import (
+    _orthogonalize,
+    compute_regressor,
+)
 
 ######################################################################
 # Ancillary functions
@@ -51,7 +51,7 @@ from nilearn.glm.first_level.hemodynamic_models import (_orthogonalize,
 
 
 def _poly_drift(order, frame_times):
-    """Create a polynomial drift matrix
+    """Create a polynomial drift matrix.
 
     Parameters
     ----------
@@ -78,8 +78,7 @@ def _poly_drift(order, frame_times):
 
 
 def _cosine_drift(high_pass, frame_times):
-    """Create a cosine drift matrix with frequencies  or equal to
-    high_pass.
+    """Create a cosine drift matrix with frequencies or equal to high_pass.
 
     Parameters
     ----------
@@ -106,7 +105,7 @@ def _cosine_drift(high_pass, frame_times):
         warn('High-pass filter will span all accessible frequencies '
              'and saturate the design matrix. '
              'You may want to reduce the high_pass value.'
-             'The provided value is {0} Hz'.format(high_pass))
+             'The provided value is {} Hz'.format(high_pass))
     order = np.minimum(n_frames - 1,
                        int(np.floor(2 * n_frames * high_pass * dt)))
     cosine_drift = np.zeros((n_frames, order + 1))
@@ -121,7 +120,7 @@ def _cosine_drift(high_pass, frame_times):
 
 
 def _none_drift(frame_times):
-    """ Create an intercept vector
+    """Create an intercept vector.
 
     Returns
     -------
@@ -132,7 +131,7 @@ def _none_drift(frame_times):
 
 
 def _make_drift(drift_model, frame_times, order, high_pass):
-    """Create the drift matrix
+    """Create the drift matrix.
 
     Parameters
     ----------
@@ -166,18 +165,18 @@ def _make_drift(drift_model, frame_times, order, high_pass):
     elif drift_model is None:
         drift = _none_drift(frame_times)
     else:
-        raise NotImplementedError("Unknown drift model %r" % (drift_model))
+        raise NotImplementedError(f"Unknown drift model {drift_model!r}")
     names = []
     for k in range(1, drift.shape[1]):
-        names.append('drift_%d' % k)
+        names.append(f'drift_{int(k)}')
     names.append('constant')
     return drift, names
 
 
 def _convolve_regressors(events, hrf_model, frame_times, fir_delays=[0],
                          min_onset=-24, oversampling=50):
-    """ Creation of  a matrix that comprises
-    the convolution of the conditions onset with a certain hrf model
+    """Creation of a matrix that comprises \
+    the convolution of the conditions onset with a certain hrf model.
 
     Parameters
     ----------
@@ -254,7 +253,7 @@ def make_first_level_design_matrix(
         frame_times, events=None, hrf_model='glover',
         drift_model='cosine', high_pass=.01, drift_order=1, fir_delays=[0],
         add_regs=None, add_reg_names=None, min_onset=-24, oversampling=50):
-    """Generate a design matrix from the input parameters
+    """Generate a design matrix from the input parameters.
 
     Parameters
     ----------
@@ -341,7 +340,7 @@ def make_first_level_design_matrix(
 
     # check that additional regressor names are well specified
     if add_reg_names is None:
-        add_reg_names = ['reg%d' % k for k in range(n_add_regs)]
+        add_reg_names = [f'reg{int(k)}' for k in range(n_add_regs)]
     elif len(add_reg_names) != n_add_regs:
         raise ValueError(
             'Incorrect number of additional regressor names was provided'
@@ -393,8 +392,8 @@ def make_first_level_design_matrix(
 
 
 def check_design_matrix(design_matrix):
-    """Check that the provided DataFrame is indeed a valid design matrix
-    descriptor, and returns a triplet of fields
+    """Check that the provided DataFrame is indeed a valid design matrix \
+    descriptor, and returns a triplet of fields.
 
     Parameters
     ----------
@@ -420,7 +419,7 @@ def check_design_matrix(design_matrix):
 
 
 def make_second_level_design_matrix(subjects_label, confounds=None):
-    """Sets up a second level design.
+    """Set up a second level design.
 
     Construct a design matrix with an intercept and subject specific confounds.
 
@@ -464,8 +463,8 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
                 raise ValueError('confounds contain more than one row for '
                                  'subject %s' % subject_label)
             elif np.sum(conrow) == 0:
-                raise ValueError('confounds not specified for subject %s' %
-                                 subject_label)
+                raise ValueError(
+                    f'confounds not specified for subject {subject_label}')
             for conf_name in confounds_name:
                 confounds_value = confounds[conrow][conf_name].values[0]
                 design_matrix.loc[ridx, conf_name] = confounds_value
