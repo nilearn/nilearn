@@ -1376,6 +1376,24 @@ def test_first_level_from_bids_with_missing_events(tmp_path_factory):
             slice_time_ref=None,
         )
 
+def test_first_level_from_bids_no_tr(tmp_path_factory):
+    """Throw warning when t_r information cannot be inferred from the data \
+    and t_r=None is passed."""
+    bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("no_events"))
+    json_files = get_bids_files(main_path=bids_dataset,
+                                  file_tag="bold",
+                                  file_type="json")
+    for f in json_files:
+        os.remove(f)
+
+    with pytest.warns(
+         UserWarning,
+         match="t_r.* will need to be set manually in the list of models"):
+        first_level_from_bids(
+            dataset_path=bids_dataset, task_label="main", space_label="MNI",
+            slice_time_ref=None, t_r=None
+        )        
+
 
 def test_first_level_from_bids_no_bold_file(tmp_path_factory):
     bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("no_bold"))
