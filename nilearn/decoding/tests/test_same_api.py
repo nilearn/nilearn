@@ -121,40 +121,59 @@ def test_lipschitz_constant_loss_logreg():
     assert a == b
 
 
-@pytest.mark.parametrize("standardize", [True, False])
-def test_graph_net_and_tvl1_same_for_pure_l1(
-    standardize, max_iter=100, decimal=2
-):
-    ###############################################################
-    # graph_net_solver and tvl1_solver should give same results
-    # when l1_ratio = 1.
-    ###############################################################
+def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
+    """Check that graph_net_solver and tvl1_solver give same results \
+    when l1_ratio = 1.
 
+    Results should be exactly the same for pure lasso
+    However because of the TV-L1 prox approx, results might be 'slightly'
+    different.
+    """
     X, y, _, mask = _make_data(dim=(3, 3, 3))
     y = np.round(y)
     alpha = 0.01
     unmasked_X = np.rollaxis(X, -1, start=0)
     unmasked_X = np.array([x[mask] for x in unmasked_X])
 
-    # results should be exactly the same for pure lasso
     a = tvl1_solver(
         unmasked_X,
         y,
         alpha,
-        1.0,
-        mask,
+        l1_ratios=1.0,
+        mask=mask,
         loss="mse",
         max_iter=max_iter,
         verbose=0,
     )[0]
     b = _graph_net_squared_loss(
-        unmasked_X, y, alpha, 1.0, max_iter=max_iter, mask=mask, verbose=0
+        unmasked_X,
+        y,
+        alpha,
+        l1_ratios=1.0,
+        max_iter=max_iter,
+        mask=mask,
+        verbose=0,
     )[0]
 
-    # Should be exactly the same (except for numerical errors).
-    # However because of the TV-L1 prox approx, results might be 'slightly'
-    # different.
     assert_array_almost_equal(a, b, decimal=decimal)
+
+
+@pytest.mark.parametrize("standardize", [True, False])
+def test_graph_net_and_tvl1_same_for_pure_l1_BaseSpaceNet(
+    standardize, max_iter=100, decimal=2
+):
+    """Check that graph_net_solver and tvl1_solver give same results \
+    when l1_ratio = 1.
+
+    Results should be exactly the same for pure lasso
+    However because of the TV-L1 prox approx, results might be 'slightly'
+    different.
+    """
+    X, y, _, mask = _make_data(dim=(3, 3, 3))
+    y = np.round(y)
+    alpha = 0.01
+    unmasked_X = np.rollaxis(X, -1, start=0)
+    unmasked_X = np.array([x[mask] for x in unmasked_X])
 
     mask = Nifti1Image(mask.astype(np.float64), np.eye(4))
     X = Nifti1Image(X.astype(np.float64), np.eye(4))
@@ -178,45 +197,47 @@ def test_graph_net_and_tvl1_same_for_pure_l1(
         verbose=0,
     ).fit(X, y)
 
-    # Should be exactly the same (except for numerical errors).
-    # However because of the TV-L1 prox approx, results might be 'slightly'
-    # different.
     assert_array_almost_equal(sl.coef_, tvl1.coef_, decimal=decimal)
 
 
-@pytest.mark.parametrize("standardize", [True, False])
-def test_graph_net_and_tvl1_same_for_pure_l1_logistic(
-    standardize, max_iter=20, decimal=2
-):
-    ###############################################################
-    # graph_net_solver and tvl1_solver should give same results
-    # when l1_ratio = 1.
-    ###############################################################
-
+def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20, decimal=2):
+    """Check graph_net_solver and tvl1_solver should give same results \
+    when l1_ratio = 1."""
     iris = load_iris()
     X, y = iris.data, iris.target
     y = y > 0.0
     alpha = 1.0 / X.shape[0]
-    X_, mask_ = to_niimgs(X, (2, 2, 2))
+    _, mask_ = to_niimgs(X, (2, 2, 2))
     mask = get_data(mask_).astype(bool).ravel()
 
-    # results should be exactly the same for pure lasso
     a = _graph_net_logistic(
-        X, y, alpha, 1.0, mask=mask, max_iter=max_iter, verbose=0
+        X, y, alpha, l1_ratios=1.0, mask=mask, max_iter=max_iter, verbose=0
     )[0]
     b = tvl1_solver(
         X,
         y,
         alpha,
-        1.0,
+        l1_ratios=1.0,
         loss="logistic",
         mask=mask,
         max_iter=max_iter,
         verbose=0,
     )[0]
 
-    # should be exactly the same (except for numerical errors)
     assert_array_almost_equal(a, b, decimal=decimal)
+
+
+@pytest.mark.parametrize("standardize", [True, False])
+def test_graph_net_and_tvl1_same_for_pure_l1_logistic_spacenet_classifier(
+    standardize, max_iter=20, decimal=2
+):
+    """Check graph_net_solver and tvl1_solver should give same results \
+    when l1_ratio = 1."""
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    y = y > 0.0
+    alpha = 1.0 / X.shape[0]
+    X_, mask_ = to_niimgs(X, (2, 2, 2))
 
     sl = SpaceNetClassifier(
         alphas=alpha,
@@ -237,7 +258,6 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(
         verbose=0,
     ).fit(X_, y)
 
-    # should be exactly the same (except for numerical errors)
     assert_array_almost_equal(sl.coef_[0], tvl1.coef_[0], decimal=decimal)
 
 
@@ -245,11 +265,8 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(
 def test_graph_net_and_tv_same_for_pure_l1_another_test(
     standardize, decimal=1
 ):
-    ###############################################################
-    # graph_net_solver and tvl1_solver should give same results
-    # when l1_ratio = 1.
-    ###############################################################
-
+    """Check that graph_net_solver and tvl1_solver give same results \
+    when l1_ratio = 1."""
     dim = (3, 3, 3)
     X, y, _, mask = _make_data(masked=True, dim=dim)
     X, mask = to_niimgs(X, dim)
@@ -278,7 +295,6 @@ def test_graph_net_and_tv_same_for_pure_l1_another_test(
         verbose=0,
     ).fit(X, y)
 
-    # should be exactly the same (except for numerical errors)
     assert_array_almost_equal(sl.coef_, tvl1.coef_, decimal=decimal)
 
 
