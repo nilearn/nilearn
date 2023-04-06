@@ -69,6 +69,7 @@ def test_resample():
     X = masker.fit_transform(img)
     assert np.any(X != 0)
 
+
 def test_upsample_warning():
     """Check that a warning is raised when data is
     being upsampled to mask's resolution.
@@ -84,8 +85,10 @@ def test_upsample_warning():
     masker = NiftiMasker(mask_img=mask_img)
     with pytest.warns(
         UserWarning,
-        match='imgs are being upsampled to the mask_img resolution, '
-            'you might want to provide a target_affine to save memory and computation time.'
+        match='imgs are being upsampled to the mask_img resolution. '
+            'This process is memory intensive when using a '
+            'high resolution mask. You might want to provide '
+            'a target_affine to save memory and computation time.'
     ):
         masker.fit_transform(img)
 
@@ -133,11 +136,11 @@ def test_matrix_orientation():
     fmri, mask = data_gen.generate_fake_fmri(shape=(40, 41, 42), kind="step")
     masker = NiftiMasker(mask_img=mask, standardize=True, detrend=True)
     timeseries = masker.fit_transform(fmri)
-    assert(timeseries.shape[0] == fmri.shape[3])
-    assert(timeseries.shape[1] == get_data(mask).sum())
+    assert (timeseries.shape[0] == fmri.shape[3])
+    assert (timeseries.shape[1] == get_data(mask).sum())
     std = timeseries.std(axis=0)
-    assert(std.shape[0] == timeseries.shape[1])  # paranoid
-    assert(not np.any(std < 0.1))
+    assert (std.shape[0] == timeseries.shape[1])  # paranoid
+    assert (not np.any(std < 0.1))
 
     # Test inverse transform
     masker = NiftiMasker(mask_img=mask, standardize=False, detrend=False)
@@ -445,12 +448,12 @@ def test_dtype():
     img_64 = nibabel.Nifti1Image(data_64, affine_64)
 
     masker_1 = NiftiMasker(dtype='auto')
-    assert(masker_1.fit_transform(img_32).dtype == np.float32)
-    assert(masker_1.fit_transform(img_64).dtype == np.float32)
+    assert (masker_1.fit_transform(img_32).dtype == np.float32)
+    assert (masker_1.fit_transform(img_64).dtype == np.float32)
 
     masker_2 = NiftiMasker(dtype='float64')
-    assert(masker_2.fit_transform(img_32).dtype == np.float64)
-    assert(masker_2.fit_transform(img_64).dtype == np.float64)
+    assert (masker_2.fit_transform(img_32).dtype == np.float64)
+    assert (masker_2.fit_transform(img_64).dtype == np.float64)
 
 
 def test_standardization():
