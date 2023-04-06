@@ -5,9 +5,9 @@ from __future__ import annotations
 import glob
 import json
 import os
-
 from pathlib import Path
 from warnings import warn
+
 
 def _get_metadata_from_bids(field,
                             json_files,
@@ -35,10 +35,8 @@ def _get_metadata_from_bids(field,
         value of the field or None if the field is not found.
     """
     if json_files:
-        assert (
-                isinstance(json_files, list) 
-                and isinstance(json_files[0], (Path, str))
-                )
+        assert (isinstance(json_files, list)
+                and isinstance(json_files[0], (Path, str)))
         with open(json_files[0], 'r') as f:
             specs = json.load(f)
         value = specs.get(field)
@@ -49,7 +47,7 @@ def _get_metadata_from_bids(field,
     else:
         msg_suffix = f" in {bids_path}" if bids_path else ""
         warn(f'No bold.json found in BIDS folder{msg_suffix}.')
-    
+
     return None
 
 
@@ -77,7 +75,7 @@ def _infer_slice_timing_start_time_from_dataset(
 
     verbose : :obj:`int`, optional
         Indicate the level of verbosity. By default, nothing is printed.
-        If 0 prints nothing. If 1 prints warnings.         
+        If 0 prints nothing. If 1 prints warnings.
 
     Returns
     -------
@@ -95,17 +93,17 @@ def _infer_slice_timing_start_time_from_dataset(
             msg_suffix = f" in {bids_path}"
             warn(f'No bold.json found in BIDS folder{msg_suffix}.')
         return None
-    
+
     return _get_metadata_from_bids(field="StartTime",
                                    json_files=img_specs,
-                                   bids_path=bids_path,)  
+                                   bids_path=bids_path,)
 
 
 def _infer_repetition_time_from_dataset(
-        bids_path, 
+        bids_path,
         filters,
         verbose=0):
-    """Return the RepetitionTime metadata field from a BIDS dataset. 
+    """Return the RepetitionTime metadata field from a BIDS dataset.
 
     Parameters
     ----------
@@ -120,7 +118,7 @@ def _infer_repetition_time_from_dataset(
 
     verbose : :obj:`int`, optional
         Indicate the level of verbosity. By default, nothing is printed.
-        If 0 prints nothing. If 1 prints warnings.          
+        If 0 prints nothing. If 1 prints warnings.
 
     Returns
     -------
@@ -133,7 +131,7 @@ def _infer_repetition_time_from_dataset(
                                file_tag='bold',
                                file_type='json',
                                filters=filters)
-    
+
     if not img_specs:
         if verbose:
             msg_suffix = f" in {bids_path}"
