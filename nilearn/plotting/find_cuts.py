@@ -379,7 +379,8 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
     return _transform_cut_coords(cut_coords, direction, affine)
 
 
-def find_parcellation_cut_coords(labels_img, background_label=0,
+def find_parcellation_cut_coords(labels_img,
+                                 background_label=0,
                                  return_label_names=False,
                                  label_hemisphere='left'):
     """Return coordinates of center of mass of 3D parcellation atlas.
@@ -418,9 +419,8 @@ def find_parcellation_cut_coords(labels_img, background_label=0,
     """
     # check label_hemisphere input
     if label_hemisphere not in ['left', 'right']:
-        raise ValueError(
-            "Invalid label_hemisphere name:{}. Should be one "
-            "of these 'left' or 'right'.".format(label_hemisphere))
+        raise ValueError(f"Invalid label_hemisphere name:{label_hemisphere}.\n"
+                         "Should be one of these 'left' or 'right'.")
     # Grab data and affine
     labels_img = reorder_img(check_niimg_3d(labels_img))
     labels_data = get_data(labels_img)
@@ -446,7 +446,8 @@ def find_parcellation_cut_coords(labels_img, background_label=0,
         right_hemi[:int(x)] = 0
 
         # Two connected component in both hemispheres
-        if not np.all(left_hemi is False) or np.all(right_hemi is False):
+        if (not np.all(left_hemi == False) or  # noqa: E712
+                np.all(right_hemi == False)):  # noqa: E712
             if label_hemisphere == 'left':
                 cur_img = left_hemi.astype(int)
             elif label_hemisphere == 'right':
