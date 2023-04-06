@@ -9,18 +9,6 @@ import nibabel
 import numpy as np
 import pytest
 from matplotlib.figure import Figure
-from nilearn.plotting.img_plotting import MNI152TEMPLATE
-from nilearn.plotting.surf_plotting import (
-    plot_surf,
-    plot_surf_stat_map,
-    plot_surf_roi,
-    plot_img_on_surf,
-    plot_surf_contours,
-    _get_view_plot_surf_matplotlib,
-    _get_view_plot_surf_plotly,
-    _get_ticks_matplotlib,
-    _compute_facecolors_matplotlib
-)
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
@@ -29,6 +17,8 @@ from nilearn.plotting.surf_plotting import (
     VALID_VIEWS,
     _compute_facecolors_matplotlib,
     _get_ticks_matplotlib,
+    _get_view_plot_surf_matplotlib,
+    _get_view_plot_surf_plotly,
     plot_img_on_surf,
     plot_surf,
     plot_surf_contours,
@@ -209,7 +199,6 @@ EXPECTED_VIEW_MATPLOTLIB = {"left": {"anterior": (0, 90),
                                       "ventral": (270, 0)}}
 
 
-
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
 def test_get_view_plot_surf_plotly(full_view):
     from nilearn.plotting.surf_plotting import (
@@ -251,8 +240,8 @@ def expected_view_matplotlib(hemi, view):
 @pytest.mark.parametrize("view", VALID_VIEWS)
 def test_get_view_plot_surf_matplotlib(hemi, view, expected_view_matplotlib):
     from nilearn.plotting.surf_plotting import _get_view_plot_surf_matplotlib
-    assert(_get_view_plot_surf_matplotlib(hemi, view)
-           == expected_view_matplotlib)
+    assert (_get_view_plot_surf_matplotlib(hemi, view)
+            == expected_view_matplotlib)
 
 
 def test_surface_figure():
@@ -370,8 +359,10 @@ def test_check_hemisphere_is_valid(hemi, is_valid):
 
 @pytest.mark.parametrize("hemi,view", [("foo", "medial"), ("bar", "anterior")])
 def test_get_view_plot_surf_hemisphere_errors(hemi, view):
-    from nilearn.plotting.surf_plotting import (_get_view_plot_surf_matplotlib,
-                                                _get_view_plot_surf_plotly)
+    from nilearn.plotting.surf_plotting import (
+        _get_view_plot_surf_matplotlib,
+        _get_view_plot_surf_plotly,
+    )
     with pytest.raises(ValueError,
                        match="Invalid hemispheres definition"):
         _get_view_plot_surf_matplotlib(hemi, view)
@@ -853,7 +844,6 @@ def test_plot_img_on_surf_hemispheres_and_orientations():
     plot_img_on_surf(nii,
                      hemispheres=['left', 'right'],
                      views=[(210.0, 90.0), (15.0, -45.0)])
-
 
 
 def test_plot_img_on_surf_colorbar():

@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+from nilearn.conftest import MNI_AFFINE
 from nilearn.datasets import load_mni152_template
 from nilearn.image import get_data, reorder_img
 from nilearn.plotting import (
@@ -17,9 +18,6 @@ from nilearn.plotting import (
     plot_stat_map,
 )
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
-
-from nilearn.conftest import MNI_AFFINE
-
 
 ALL_PLOTTING_FUNCS = {plot_img, plot_anat, plot_stat_map, plot_roi,
                       plot_epi, plot_glass_brain, plot_carpet,

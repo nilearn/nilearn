@@ -1,8 +1,6 @@
 """Functions for surface visualization."""
 import itertools
 import math
-import warnings
-
 from collections.abc import Sequence
 
 import matplotlib as mpl
@@ -1158,8 +1156,7 @@ def _check_hemispheres(hemispheres):
 
 
 def _check_view_is_valid(view) -> bool:
-    """Checks whether a single view is one of two
-    valid input types.
+    """Check whether a single view is one of two valid input types.
 
     Parameters
     ----------
