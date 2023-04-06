@@ -139,7 +139,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
         unmasked_X,
         y,
         alpha,
-        l1_ratios=1.0,
+        l1_ratio=1.0,
         mask=mask,
         loss="mse",
         max_iter=max_iter,
@@ -149,7 +149,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
         unmasked_X,
         y,
         alpha,
-        l1_ratios=1.0,
+        l1_ratio=1.0,
         max_iter=max_iter,
         mask=mask,
         verbose=0,
@@ -211,13 +211,13 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20, decimal=2):
     mask = get_data(mask_).astype(bool).ravel()
 
     a = _graph_net_logistic(
-        X, y, alpha, l1_ratios=1.0, mask=mask, max_iter=max_iter, verbose=0
+        X, y, alpha, l1_ratio=1.0, mask=mask, max_iter=max_iter, verbose=0
     )[0]
     b = tvl1_solver(
         X,
         y,
         alpha,
-        l1_ratios=1.0,
+        l1_ratio=1.0,
         loss="logistic",
         mask=mask,
         max_iter=max_iter,
