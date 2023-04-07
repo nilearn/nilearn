@@ -657,68 +657,61 @@ def permuted_ols(
     )
 
     # OLS regression on original data
-    covars_orthonormalized = None
-    targetvars_resid_covars = _normalize_matrix_on_axis(target_vars).T
-    testedvars_resid_covars = _normalize_matrix_on_axis(tested_vars).copy()
-    n_covars = 0
+    target_vars_resid_covars = _normalize_matrix_on_axis(target_vars).T
+
+    tested_vars_resid_covars = _normalize_matrix_on_axis(tested_vars).copy()
+
+    confounding_vars = _orthonormalize_confounding_vars(confounding_vars)
+
     if confounding_vars is not None:
-        # step 1: extract effect of covars from target vars
-        covars_orthonormalized = _orthonormalize_matrix(confounding_vars)
-        covars_orthonormalized = _make_array_contiguous(
-            covars_orthonormalized, "Confounding"
-        )
-
         # faster with F-ordered target_vars_chunk
-        targetvars_normalized = _normalize_matrix_on_axis(target_vars).T
-        targetvars_normalized = _make_array_contiguous(
-            targetvars_normalized, "Target"
+        target_vars_normalized = _normalize_matrix_on_axis(target_vars).T
+        target_vars_normalized = _make_array_contiguous(
+            target_vars_normalized, "Target"
         )
 
-        beta_targetvars_covars = np.dot(
-            targetvars_normalized, covars_orthonormalized
+        beta_target_vars_covars = np.dot(
+            target_vars_normalized, confounding_vars
         )
-        targetvars_resid_covars = targetvars_normalized - np.dot(
-            beta_targetvars_covars, covars_orthonormalized.T
+        target_vars_resid_covars = target_vars_normalized - np.dot(
+            beta_target_vars_covars, confounding_vars.T
         )
-        targetvars_resid_covars = _normalize_matrix_on_axis(
-            targetvars_resid_covars, axis=1
+        target_vars_resid_covars = _normalize_matrix_on_axis(
+            target_vars_resid_covars, axis=1
         )
 
         # step 2: extract effect of covars from tested vars
-        testedvars_normalized = _normalize_matrix_on_axis(
+        tested_vars_normalized = _normalize_matrix_on_axis(
             tested_vars.T, axis=1
         )
-        beta_testedvars_covars = np.dot(
-            testedvars_normalized, covars_orthonormalized
+        beta_tested_vars_covars = np.dot(
+            tested_vars_normalized, confounding_vars
         )
-        testedvars_resid_covars = testedvars_normalized - np.dot(
-            beta_testedvars_covars, covars_orthonormalized.T
+        tested_vars_resid_covars = tested_vars_normalized - np.dot(
+            beta_tested_vars_covars, confounding_vars.T
         )
-        testedvars_resid_covars = _normalize_matrix_on_axis(
-            testedvars_resid_covars, axis=1
+        tested_vars_resid_covars = _normalize_matrix_on_axis(
+            tested_vars_resid_covars, axis=1
         ).T.copy()
 
-        n_covars = confounding_vars.shape[1]
-
-    targetvars_resid_covars = _make_array_contiguous(
-        targetvars_resid_covars, "Target"
+    target_vars_resid_covars = _make_array_contiguous(
+        target_vars_resid_covars, "Target"
     )
-    testedvars_resid_covars = _make_array_contiguous(
-        testedvars_resid_covars, "Tested"
+    tested_vars_resid_covars = _make_array_contiguous(
+        tested_vars_resid_covars, "Tested"
     )
 
     # step 3: original regression (= regression on residuals + adjust t-score)
     # compute t score map of each tested var for original data
     # scores_original_data is in samples-by-regressors shape
     scores_original_data = _t_score_with_covars_and_normalized_design(
-        testedvars_resid_covars,
-        targetvars_resid_covars.T,
-        covars_orthonormalized,
+        tested_vars_resid_covars,
+        target_vars_resid_covars.T,
+        confounding_vars,
     )
 
     # Define connectivity for TFCE and/or cluster measures
     bin_struct = generate_binary_structure(3, 1)
-
     tfce_original_data = _get_tfce_original_data(
         tfce, masker, scores_original_data, bin_struct, two_sided_test
     )
@@ -739,8 +732,7 @@ def permuted_ols(
     if n_perm > n_jobs:
         n_perm_chunks = np.asarray([n_perm / n_jobs] * n_jobs, dtype=int)
         n_perm_chunks[-1] += n_perm % n_jobs
-
-    elif n_perm > 0:
+    if n_perm > 0:
         warnings.warn(
             f"The specified number of permutations is {n_perm} and the number "
             f"of jobs to be performed in parallel has set to {n_jobs}. "
@@ -750,6 +742,9 @@ def permuted_ols(
         )
         n_perm_chunks = np.ones(n_perm, dtype=int)
 
+    n_covars = 0
+    if confounding_vars is not None:
+        n_covars = confounding_vars.shape[1]
     threshold_t = _determine_t_statistic_threshold(
         threshold, n_samples, n_regressors, n_covars, two_sided_test
     )
@@ -760,11 +755,11 @@ def permuted_ols(
     ret = joblib.Parallel(n_jobs=n_jobs, verbose=verbose)(
         joblib.delayed(_permuted_ols_on_chunk)(
             scores_original_data,
-            testedvars_resid_covars,
-            targetvars_resid_covars.T,
+            tested_vars_resid_covars,
+            target_vars_resid_covars.T,
             thread_id=thread_id + 1,
             threshold=threshold_t,
-            confounding_vars=covars_orthonormalized,
+            confounding_vars=confounding_vars,
             masker=masker,
             n_perm=n_perm,
             n_perm_chunk=n_perm_chunk,
@@ -841,6 +836,16 @@ def permuted_ols(
         outputs["h0_max_mass"] = cluster_dict["mass_h0"]
 
     return outputs
+
+
+def _orthonormalize_confounding_vars(confounding_vars):
+    covars_orthonormalized = None
+    if confounding_vars is not None:
+        covars_orthonormalized = _orthonormalize_matrix(confounding_vars)
+        covars_orthonormalized = _make_array_contiguous(
+            covars_orthonormalized, "Confounding"
+        )
+    return covars_orthonormalized
 
 
 def _make_array_contiguous(array, variable_name):
