@@ -617,6 +617,15 @@ def permuted_ols(
     _check_args_permuted_ols(target_vars, n_jobs, tfce, threshold, masker)
     output_type = _check_output_type_permuted_ols(output_type, tfce, threshold)
 
+    # check n_sample consistent across arguments
+    assert target_vars.shape[0] == tested_vars.shape[0]
+    if confounding_vars is not None:
+        assert target_vars.shape[0] == confounding_vars.shape[0]
+
+    # check explanatory variates' dimensions
+    if tested_vars.ndim == 1:
+        tested_vars = np.atleast_2d(tested_vars).T
+
     # check n_jobs (number of CPUs)
     if n_jobs < 0:
         n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
@@ -633,18 +642,14 @@ def permuted_ols(
             "generation."
         )
 
-    # check explanatory variates' dimensions
-    if tested_vars.ndim == 1:
-        tested_vars = np.atleast_2d(tested_vars).T
-
-    intercept_test = _check_for_intercept_in_tested_var(tested_vars)
+    tested_var_has_intercept = _check_for_intercept_in_tested_var(tested_vars)
 
     (
         confounding_vars,
         intercept_test,
         model_intercept,
     ) = _check_for_intercept_in_confounds(
-        confounding_vars, intercept_test, model_intercept
+        confounding_vars, tested_var_has_intercept, model_intercept
     )
 
     confounding_vars = _optionally_add_intercept(
@@ -820,19 +825,40 @@ def _check_for_intercept_in_tested_var(tested_vars):
 
 
 def _check_for_intercept_in_confounds(
-    confounding_vars, intercept_test, model_intercept
+    confounding_vars, tested_var_has_intercept, model_intercept
 ):
-    # check if confounding vars contains an intercept
-    if confounding_vars is None:
-        return confounding_vars, intercept_test, model_intercept
+    """Check if confounding variates contain an intercept (constant) or not.
 
+    If the tested var has an intercept, only this one is kept
+    and all other intercept are removed from the confounds.
+
+    Parameters
+    ----------
+    confounding_vars : array-like, shape=(n_samples, n_covars)
+        Confounding variates (covariates), fitted but not tested.
+
+    tested_var_has_intercept : :obj:`bool`
+        Whether the tested variate already contains an intercept or not.
+
+    model_intercept : :obj:`bool`
+        If True, a constant column will be added to the confounding variates.
+        This value may be updated if all intercepts were removed.
+
+    """
+    if confounding_vars is None:
+        test_intercept = tested_var_has_intercept
+        return confounding_vars, test_intercept, model_intercept
+
+    # Search for all constant columns
     constants = [
         column
         for column in range(confounding_vars.shape[1])
         if np.unique(confounding_vars[:, column]).size == 1
     ]
     # check if multiple intercepts are defined across all variates
-    if (intercept_test and len(constants) == 1) or len(constants) > 1:
+    if (tested_var_has_intercept and len(constants) == 1) or len(
+        constants
+    ) > 1:
         # remove all constant columns
         confounding_vars = np.delete(confounding_vars, constants, axis=1)
         # warn user if multiple intercepts are found
@@ -844,22 +870,34 @@ def _check_for_intercept_in_confounds(
                 "Only one will be used as intercept."
             ),
         )
+        # In case tested vars has no intercept,
+        # and len(constants) > 1,
+        # we will need to add an intercept (see _optionally_add_intercept)
+        # because by now have removed all intercepts from confounding_vars.
         model_intercept = True
 
-        # remove confounding vars variable if it is empty
+        # Remove confounding vars variable if it is empty
         if confounding_vars.size == 0:
             confounding_vars = None
 
     # intercept is only defined in confounding vars
-    if not intercept_test and len(constants) == 1:
-        intercept_test = True
+    if not tested_var_has_intercept and len(constants) == 1:
+        tested_var_has_intercept = True
 
-    return confounding_vars, intercept_test, model_intercept
+    test_intercept = tested_var_has_intercept
+    return confounding_vars, test_intercept, model_intercept
 
 
 def _optionally_add_intercept(
     confounding_vars, model_intercept, intercept_test, n_samples
 ):
+    """Add intercept to confounding variates if necessary.
+
+    May be done because:
+    - requested by the user or may be necessary with model_intercept=True
+    - all intercepts have been removed from the confounds
+      by _check_for_intercept_in_confounds and at least one must be added.
+    """
     if model_intercept and not intercept_test:
         if confounding_vars is not None:
             confounding_vars = np.hstack(
@@ -1009,8 +1047,9 @@ def _run_permutations(
     rng = check_random_state(random_state)
 
     # actual permutations
-    # seeded from a random integer between 0
-    # and maximum value represented by np.int32 (to have a large entropy).
+    # seeded from a random integer
+    # between 0 and maximum value represented by np.int32
+    # (to have a large entropy).
     ret = joblib.Parallel(n_jobs=n_jobs, verbose=verbose)(
         joblib.delayed(_permuted_ols_on_chunk)(
             scores_original_data,
@@ -1100,8 +1139,7 @@ def _run_permutations(
 def _determine_t_statistic_threshold(
     threshold, tested_vars, confounding_vars, two_sided_test
 ):
-    """Return  t-statistic threshold for depending on \
-    numbers of degrees of freedom and sidedness.
+    """Return t-statistic threshold for cluster-level inference.
 
     Parameters
     ----------
@@ -1113,14 +1151,13 @@ def _determine_t_statistic_threshold(
     tested_vars : array-like, shape=(n_samples, n_regressors)
         Explanatory variates, fitted and tested independently from each others.
 
-    confounding_vars : array-like, shape=(n_samples, n_covars)
-        Confounding variates (covariates).
+    confounding_vars : array-like, shape=(n_samples, n_covars), optional
+        Confounding variates (covariates), fitted but not tested.
 
     two_sided_test : :obj:`bool`
         If True, performs an unsigned t-test. Both positive and negative
-        effects are considered; the null hypothesis is that the effect is zero.
-        If False, only positive effects are considered as relevant. The null
-        hypothesis is that the effect is zero or negative.
+        effects are considered.
+        If False, only positive effects are considered as relevant.
 
     Returns
     -------
@@ -1220,7 +1257,7 @@ def _compute_cluster_level_statistics(
 
 
 def _label_clusters(scores_original_data_3d, threshold_t, two_sided_test):
-    """Label clusters for bot cluster mass and size inference."""
+    """Label clusters for both cluster mass and size inference."""
     labeled_arr3d, _ = label(
         input=scores_original_data_3d > threshold_t,
         structure=_binary_structure(),
