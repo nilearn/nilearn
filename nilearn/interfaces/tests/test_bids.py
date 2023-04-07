@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 from nibabel.tmpdirs import InTemporaryDirectory
 from nilearn._utils.data_gen import (
-    add_metadata_to_bids_dataset,
+    _add_metadata_to_bids_dataset,
     create_fake_bids_dataset,
     generate_fake_fmri_data_and_design,
 )
@@ -63,7 +63,7 @@ def test_infer_repetition_time_from_dataset(tmp_path):
         filters=[('task', 'main')])
     assert t_r == 1.5
 
-    add_metadata_to_bids_dataset(
+    _add_metadata_to_bids_dataset(
         bids_path=tmp_path / bids_path,
         metadata={"RepetitionTime": 2.0})
     t_r = _infer_repetition_time_from_dataset(
@@ -85,7 +85,7 @@ def test_infer_slice_timing_start_time_from_dataset(tmp_path):
         filters=[('task', 'main')])
     assert StartTime is None
 
-    add_metadata_to_bids_dataset(
+    _add_metadata_to_bids_dataset(
         bids_path=tmp_path / bids_path,
         metadata={"StartTime": 1.0})
     StartTime = _infer_slice_timing_start_time_from_dataset(
@@ -118,7 +118,7 @@ def test_get_bids_files_inheritance_principle_root_folder(tmp_path):
 
     # add json file to root of dataset
     json_file = 'task-main_bold.json'
-    json_file = add_metadata_to_bids_dataset(
+    json_file = _add_metadata_to_bids_dataset(
         bids_path=bids_path,
         metadata={"RepetitionTime": 1.5},
         json_file=json_file
@@ -164,7 +164,7 @@ def test_get_bids_files_inheritance_principle_sub_folder(tmp_path, json_file):
 
     _rm_all_json_files_from_bids_dataset(bids_path)
 
-    new_json_file = add_metadata_to_bids_dataset(
+    new_json_file = _add_metadata_to_bids_dataset(
         bids_path=bids_path,
         metadata={"RepetitionTime": 1.5},
         json_file=json_file

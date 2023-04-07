@@ -251,7 +251,7 @@ class FirstLevelModel(BaseGLM):
     slice_time_ref : float, optional
         This parameter indicates the time of the reference slice used in the
         slice timing preprocessing step of the experimental runs. It is
-        expressed as a percentage of the t_r (time repetition), so it can have
+        expressed as a fraction of the t_r (time repetition), so it can have
         values between 0. and 1. Default=0.
     %(hrf_model)s
         Default='glover'.
@@ -894,7 +894,7 @@ def first_level_from_bids(dataset_path,
     slice_time_ref : :obj:`float` between 0.0 and 1.0, optional
         This parameter indicates the time of the reference slice used in the
         slice timing preprocessing step of the experimental runs. It is
-        expressed as a percentage of the t_r (time repetition), so it can have
+        expressed as a fraction of the t_r (time repetition), so it can have
         values between 0. and 1. Default=0.0
 
         .. deprecated:: 0.10.1
