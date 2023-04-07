@@ -664,19 +664,15 @@ def permuted_ols(
     if confounding_vars is not None:
         # step 1: extract effect of covars from target vars
         covars_orthonormalized = _orthonormalize_matrix(confounding_vars)
-        if not covars_orthonormalized.flags["C_CONTIGUOUS"]:
-            # useful to developer
-            warnings.warn("Confounding variates not C_CONTIGUOUS.")
-            covars_orthonormalized = np.ascontiguousarray(
-                covars_orthonormalized
-            )
+        covars_orthonormalized = _make_array_contiguous(
+            covars_orthonormalized, "Confounding"
+        )
 
         # faster with F-ordered target_vars_chunk
         targetvars_normalized = _normalize_matrix_on_axis(target_vars).T
-        if not targetvars_normalized.flags["C_CONTIGUOUS"]:
-            # useful to developer
-            warnings.warn("Target variates not C_CONTIGUOUS.")
-            targetvars_normalized = np.ascontiguousarray(targetvars_normalized)
+        targetvars_normalized = _make_array_contiguous(
+            targetvars_normalized, "Target"
+        )
 
         beta_targetvars_covars = np.dot(
             targetvars_normalized, covars_orthonormalized
@@ -704,16 +700,12 @@ def permuted_ols(
 
         n_covars = confounding_vars.shape[1]
 
-    # check arrays contiguousity (for the sake of code efficiency)
-    if not targetvars_resid_covars.flags["C_CONTIGUOUS"]:
-        # useful to developer
-        warnings.warn("Target variates not C_CONTIGUOUS.")
-        targetvars_resid_covars = np.ascontiguousarray(targetvars_resid_covars)
-
-    if not testedvars_resid_covars.flags["C_CONTIGUOUS"]:
-        # useful to developer
-        warnings.warn("Tested variates not C_CONTIGUOUS.")
-        testedvars_resid_covars = np.ascontiguousarray(testedvars_resid_covars)
+    targetvars_resid_covars = _make_array_contiguous(
+        targetvars_resid_covars, "Target"
+    )
+    testedvars_resid_covars = _make_array_contiguous(
+        testedvars_resid_covars, "Tested"
+    )
 
     # step 3: original regression (= regression on residuals + adjust t-score)
     # compute t score map of each tested var for original data
@@ -762,8 +754,9 @@ def permuted_ols(
         threshold, n_samples, n_regressors, n_covars, two_sided_test
     )
 
-    # actual permutations, seeded from a random integer between 0 and maximum
-    # value represented by np.int32 (to have a large entropy).
+    # actual permutations
+    # seeded from a random integer between 0
+    # and maximum value represented by np.int32 (to have a large entropy).
     ret = joblib.Parallel(n_jobs=n_jobs, verbose=verbose)(
         joblib.delayed(_permuted_ols_on_chunk)(
             scores_original_data,
@@ -848,6 +841,15 @@ def permuted_ols(
         outputs["h0_max_mass"] = cluster_dict["mass_h0"]
 
     return outputs
+
+
+def _make_array_contiguous(array, variable_name):
+    """Ensure arrays is contiguous for the sake of code efficiency."""
+    if not array.flags["C_CONTIGUOUS"]:
+        # useful to developer
+        warnings.warn(f"{variable_name} variates not C_CONTIGUOUS.")
+        array = np.ascontiguousarray(array)
+    return array
 
 
 def _check_for_intercept_in_confounds(
