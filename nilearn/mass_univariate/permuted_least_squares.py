@@ -657,29 +657,15 @@ def permuted_ols(
     )
 
     # OLS regression on original data
-    target_vars_resid_covars = _normalize_matrix_on_axis(target_vars).T
+    confounding_vars = _orthonormalize_confounding_vars(confounding_vars)
+
+    target_vars_resid_covars = _prepare_target_vars(
+        target_vars, confounding_vars
+    )
 
     tested_vars_resid_covars = _normalize_matrix_on_axis(tested_vars).copy()
 
-    confounding_vars = _orthonormalize_confounding_vars(confounding_vars)
-
     if confounding_vars is not None:
-        # faster with F-ordered target_vars_chunk
-        target_vars_normalized = _normalize_matrix_on_axis(target_vars).T
-        target_vars_normalized = _make_array_contiguous(
-            target_vars_normalized, "Target"
-        )
-
-        beta_target_vars_covars = np.dot(
-            target_vars_normalized, confounding_vars
-        )
-        target_vars_resid_covars = target_vars_normalized - np.dot(
-            beta_target_vars_covars, confounding_vars.T
-        )
-        target_vars_resid_covars = _normalize_matrix_on_axis(
-            target_vars_resid_covars, axis=1
-        )
-
         # step 2: extract effect of covars from tested vars
         tested_vars_normalized = _normalize_matrix_on_axis(
             tested_vars.T, axis=1
@@ -694,9 +680,6 @@ def permuted_ols(
             tested_vars_resid_covars, axis=1
         ).T.copy()
 
-    target_vars_resid_covars = _make_array_contiguous(
-        target_vars_resid_covars, "Target"
-    )
     tested_vars_resid_covars = _make_array_contiguous(
         tested_vars_resid_covars, "Tested"
     )
@@ -846,6 +829,38 @@ def _orthonormalize_confounding_vars(confounding_vars):
             covars_orthonormalized, "Confounding"
         )
     return covars_orthonormalized
+
+
+def _prepare_target_vars(target_vars, confounding_vars):
+    """Prepare target variables for OLS.
+
+    Normalize target variables and remove effect of confounding variables
+    if there are any.
+    """
+    target_vars_resid_covars = _normalize_matrix_on_axis(target_vars).T
+
+    if confounding_vars is not None:
+        # faster with F-ordered target_vars_chunk
+        target_vars_normalized = _normalize_matrix_on_axis(target_vars).T
+        target_vars_normalized = _make_array_contiguous(
+            target_vars_normalized, "Target"
+        )
+
+        beta_target_vars_covars = np.dot(
+            target_vars_normalized, confounding_vars
+        )
+        target_vars_resid_covars = target_vars_normalized - np.dot(
+            beta_target_vars_covars, confounding_vars.T
+        )
+        target_vars_resid_covars = _normalize_matrix_on_axis(
+            target_vars_resid_covars, axis=1
+        )
+
+    target_vars_resid_covars = _make_array_contiguous(
+        target_vars_resid_covars, "Target"
+    )
+
+    return target_vars_resid_covars
 
 
 def _make_array_contiguous(array, variable_name):
