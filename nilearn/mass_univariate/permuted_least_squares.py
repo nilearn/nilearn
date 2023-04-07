@@ -659,20 +659,16 @@ def permuted_ols(
     # OLS regression on original data
     confounding_vars = _orthonormalize_confounding_vars(confounding_vars)
 
-    target_vars_resid_covars = _prepare_target_vars(
-        target_vars, confounding_vars
-    )
+    target_vars = _prepare_target_vars(target_vars, confounding_vars)
 
-    tested_vars_resid_covars = _prepare_tested_vars(
-        tested_vars, confounding_vars
-    )
+    tested_vars = _prepare_tested_vars(tested_vars, confounding_vars)
 
     # original regression (= regression on residuals + adjust t-score)
     # compute t score map of each tested var for original data
     # scores_original_data is in samples-by-regressors shape
     scores_original_data = _t_score_with_covars_and_normalized_design(
-        tested_vars_resid_covars,
-        target_vars_resid_covars.T,
+        tested_vars,
+        target_vars.T,
         confounding_vars,
     )
 
@@ -721,8 +717,8 @@ def permuted_ols(
     ret = joblib.Parallel(n_jobs=n_jobs, verbose=verbose)(
         joblib.delayed(_permuted_ols_on_chunk)(
             scores_original_data,
-            tested_vars_resid_covars,
-            target_vars_resid_covars.T,
+            tested_vars,
+            target_vars.T,
             thread_id=thread_id + 1,
             threshold=threshold_t,
             confounding_vars=confounding_vars,
@@ -822,53 +818,50 @@ def _prepare_target_vars(target_vars, confounding_vars):
     """
     target_vars_resid_covars = _normalize_matrix_on_axis(target_vars).T
 
-    if confounding_vars is not None:
-        # faster with F-ordered target_vars_chunk
-        target_vars_normalized = _normalize_matrix_on_axis(target_vars).T
-        target_vars_normalized = _make_array_contiguous(
-            target_vars_normalized, "Target"
-        )
+    if confounding_vars is None:
+        return _make_array_contiguous(target_vars_resid_covars, "Target")
 
-        beta_target_vars_covars = np.dot(
-            target_vars_normalized, confounding_vars
-        )
-        target_vars_resid_covars = target_vars_normalized - np.dot(
-            beta_target_vars_covars, confounding_vars.T
-        )
-        target_vars_resid_covars = _normalize_matrix_on_axis(
-            target_vars_resid_covars, axis=1
-        )
-
-    target_vars_resid_covars = _make_array_contiguous(
-        target_vars_resid_covars, "Target"
+    target_vars_normalized = _normalize_matrix_on_axis(target_vars).T
+    target_vars_normalized = _make_array_contiguous(
+        target_vars_normalized, "Target"
     )
 
-    return target_vars_resid_covars
+    target_vars_resid_covars = _remove_effect_confounds(
+        target_vars_normalized, confounding_vars
+    )
+    target_vars_resid_covars = _normalize_matrix_on_axis(
+        target_vars_resid_covars, axis=1
+    )
+
+    return _make_array_contiguous(target_vars_resid_covars, "Target")
 
 
 def _prepare_tested_vars(tested_vars, confounding_vars):
+    """Prepare tested variables for OLS.
+
+    Normalize tested variables and remove effect of confounding variables
+    if there are any.
+    """
     tested_vars_resid_covars = _normalize_matrix_on_axis(tested_vars).copy()
 
-    if confounding_vars is not None:
-        # step 2: extract effect of covars from tested vars
-        tested_vars_normalized = _normalize_matrix_on_axis(
-            tested_vars.T, axis=1
-        )
-        beta_tested_vars_covars = np.dot(
-            tested_vars_normalized, confounding_vars
-        )
-        tested_vars_resid_covars = tested_vars_normalized - np.dot(
-            beta_tested_vars_covars, confounding_vars.T
-        )
-        tested_vars_resid_covars = _normalize_matrix_on_axis(
-            tested_vars_resid_covars, axis=1
-        ).T.copy()
+    if confounding_vars is None:
+        return _make_array_contiguous(tested_vars_resid_covars, "Tested")
 
-    tested_vars_resid_covars = _make_array_contiguous(
-        tested_vars_resid_covars, "Tested"
+    tested_vars_normalized = _normalize_matrix_on_axis(tested_vars.T, axis=1)
+    tested_vars_resid_covars = _remove_effect_confounds(
+        tested_vars_normalized, confounding_vars
     )
+    tested_vars_resid_covars = _normalize_matrix_on_axis(
+        tested_vars_resid_covars, axis=1
+    ).T.copy()
 
-    return tested_vars_resid_covars
+    return _make_array_contiguous(tested_vars_resid_covars, "Tested")
+
+
+def _remove_effect_confounds(vars, confounding_vars):
+    beta_covars = np.dot(vars, confounding_vars)
+    vars = vars - np.dot(beta_covars, confounding_vars.T)
+    return vars
 
 
 def _make_array_contiguous(array, variable_name):
@@ -900,9 +893,9 @@ def _check_for_intercept_in_confounds(
         warnings.warn(
             category=UserWarning,
             message=(
-                'Multiple columns across "confounding_vars" and/or '
-                '"target_vars" are constant. Only one will be used '
-                "as intercept."
+                "Multiple columns across 'confounding_vars' and/or "
+                "'target_vars' are constant.\n"
+                "Only one will be used as intercept."
             ),
         )
         model_intercept = True
