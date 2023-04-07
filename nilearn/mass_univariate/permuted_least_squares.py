@@ -663,28 +663,11 @@ def permuted_ols(
         target_vars, confounding_vars
     )
 
-    tested_vars_resid_covars = _normalize_matrix_on_axis(tested_vars).copy()
-
-    if confounding_vars is not None:
-        # step 2: extract effect of covars from tested vars
-        tested_vars_normalized = _normalize_matrix_on_axis(
-            tested_vars.T, axis=1
-        )
-        beta_tested_vars_covars = np.dot(
-            tested_vars_normalized, confounding_vars
-        )
-        tested_vars_resid_covars = tested_vars_normalized - np.dot(
-            beta_tested_vars_covars, confounding_vars.T
-        )
-        tested_vars_resid_covars = _normalize_matrix_on_axis(
-            tested_vars_resid_covars, axis=1
-        ).T.copy()
-
-    tested_vars_resid_covars = _make_array_contiguous(
-        tested_vars_resid_covars, "Tested"
+    tested_vars_resid_covars = _prepare_tested_vars(
+        tested_vars, confounding_vars
     )
 
-    # step 3: original regression (= regression on residuals + adjust t-score)
+    # original regression (= regression on residuals + adjust t-score)
     # compute t score map of each tested var for original data
     # scores_original_data is in samples-by-regressors shape
     scores_original_data = _t_score_with_covars_and_normalized_design(
@@ -861,6 +844,31 @@ def _prepare_target_vars(target_vars, confounding_vars):
     )
 
     return target_vars_resid_covars
+
+
+def _prepare_tested_vars(tested_vars, confounding_vars):
+    tested_vars_resid_covars = _normalize_matrix_on_axis(tested_vars).copy()
+
+    if confounding_vars is not None:
+        # step 2: extract effect of covars from tested vars
+        tested_vars_normalized = _normalize_matrix_on_axis(
+            tested_vars.T, axis=1
+        )
+        beta_tested_vars_covars = np.dot(
+            tested_vars_normalized, confounding_vars
+        )
+        tested_vars_resid_covars = tested_vars_normalized - np.dot(
+            beta_tested_vars_covars, confounding_vars.T
+        )
+        tested_vars_resid_covars = _normalize_matrix_on_axis(
+            tested_vars_resid_covars, axis=1
+        ).T.copy()
+
+    tested_vars_resid_covars = _make_array_contiguous(
+        tested_vars_resid_covars, "Tested"
+    )
+
+    return tested_vars_resid_covars
 
 
 def _make_array_contiguous(array, variable_name):
