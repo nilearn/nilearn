@@ -287,7 +287,7 @@ def test_find_parcellation_cut_coords():
                                (x_map_c / 2., y_map_c / 3., z_map_c / 4.),
                                rtol=6e-2)
     # test raises an error with wrong label_hemisphere name with 'lft'
-    error_msg = ("Invalid label_hemisphere name:lft. Should be one of "
+    error_msg = ("Invalid label_hemisphere name:lft.\nShould be one of "
                  "these 'left' or 'right'.")
     with pytest.raises(ValueError, match=error_msg):
         find_parcellation_cut_coords(labels_img=img, label_hemisphere='lft')
