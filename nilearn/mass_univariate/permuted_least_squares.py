@@ -614,40 +614,14 @@ def permuted_ols(
     # initialize the seed of the random generator
     rng = check_random_state(random_state)
 
-    _check_arguments_permuted_ols(target_vars, n_jobs, tfce, threshold, masker)
+    _check_args_permuted_ols(target_vars, n_jobs, tfce, threshold, masker)
+    output_type = _check_output_type_permuted_ols(output_type, tfce, threshold)
 
     # check n_jobs (number of CPUs)
     if n_jobs < 0:
         n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
     else:
         n_jobs = min(n_jobs, joblib.cpu_count())
-
-    # Resolve the output_type as well
-    if tfce and output_type == "legacy":
-        warnings.warn(
-            'If "tfce" is set to True, "output_type" must be set to "dict". '
-            "Overriding."
-        )
-        output_type = "dict"
-
-    if (threshold is not None) and (output_type == "legacy"):
-        warnings.warn(
-            'If "threshold" is not None, "output_type" must be set to "dict". '
-            "Overriding."
-        )
-        output_type = "dict"
-
-    if output_type == "legacy":
-        warnings.warn(
-            category=DeprecationWarning,
-            message=(
-                'The "legacy" output structure for "permuted_ols" is '
-                "deprecated. "
-                'The default output structure will be changed to "dict" '
-                "in version 0.13."
-            ),
-            stacklevel=3,
-        )
 
     # make target_vars F-ordered to speed-up computation
     target_vars = np.asfortranarray(target_vars)  # efficient for chunking
@@ -697,9 +671,8 @@ def permuted_ols(
                 covars_orthonormalized
             )
 
-        targetvars_normalized = _normalize_matrix_on_axis(
-            target_vars
-        ).T  # faster with F-ordered target_vars_chunk
+        # faster with F-ordered target_vars_chunk
+        targetvars_normalized = _normalize_matrix_on_axis(target_vars).T
         if not targetvars_normalized.flags["C_CONTIGUOUS"]:
             # useful to developer
             warnings.warn("Target variates not C_CONTIGUOUS.")
@@ -830,6 +803,15 @@ def permuted_ols(
 
     vfwe_pvals = (n_perm + 1 - vfwe_scores_as_ranks) / float(1 + n_perm)
 
+    if output_type == "legacy":
+        return (-np.log10(vfwe_pvals), scores_original_data.T, vfwe_h0)
+
+    outputs = {
+        "t": scores_original_data.T,
+        "logp_max_t": -np.log10(vfwe_pvals),
+        "h0_max_t": vfwe_h0,
+    }
+
     if tfce:
         # We can use the same approach for TFCE that we use for vFWE
         h0_tfcemax = np.hstack(h0_tfce_parts)
@@ -839,6 +821,10 @@ def permuted_ols(
 
         tfce_pvals = (n_perm + 1 - tfce_scores_as_ranks) / float(1 + n_perm)
         neg_log10_tfce_pvals = -np.log10(tfce_pvals)
+
+        outputs["tfce"] = tfce_original_data.T
+        outputs["logp_max_tfce"] = neg_log10_tfce_pvals
+        outputs["h0_max_tfce"] = h0_tfcemax
 
     if threshold is not None:
         # Cluster-size and cluster-mass FWE
@@ -854,28 +840,12 @@ def permuted_ols(
             two_sided_test,
         )
 
-    if output_type == "legacy":
-        outputs = (-np.log10(vfwe_pvals), scores_original_data.T, vfwe_h0)
-
-    else:
-        outputs = {
-            "t": scores_original_data.T,
-            "logp_max_t": -np.log10(vfwe_pvals),
-            "h0_max_t": vfwe_h0,
-        }
-
-        if tfce:
-            outputs["tfce"] = tfce_original_data.T
-            outputs["logp_max_tfce"] = neg_log10_tfce_pvals
-            outputs["h0_max_tfce"] = h0_tfcemax
-
-        if threshold is not None:
-            outputs["size"] = cluster_dict["size"]
-            outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
-            outputs["h0_max_size"] = cluster_dict["size_h0"]
-            outputs["mass"] = cluster_dict["mass"]
-            outputs["logp_max_mass"] = -np.log10(cluster_dict["mass_pvals"])
-            outputs["h0_max_mass"] = cluster_dict["mass_h0"]
+        outputs["size"] = cluster_dict["size"]
+        outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
+        outputs["h0_max_size"] = cluster_dict["size_h0"]
+        outputs["mass"] = cluster_dict["mass"]
+        outputs["logp_max_mass"] = -np.log10(cluster_dict["mass_pvals"])
+        outputs["h0_max_mass"] = cluster_dict["mass_h0"]
 
     return outputs
 
@@ -1065,9 +1035,38 @@ def _compute_cluster_dict(
     return cluster_dict
 
 
-def _check_arguments_permuted_ols(
-    target_vars, n_jobs, tfce, threshold, masker
-):
+def _check_args_permuted_ols(target_vars, n_jobs, tfce, threshold, masker):
+    """Validate input arguments for permuted_ols.
+
+    Parameters
+    ----------
+    target_vars : array-like, shape=(n_samples, n_descriptors)
+        fMRI data to analyze according to the explanatory and confounding
+        variates.
+
+    n_jobs : :obj:`int`
+        Number of parallel workers.
+        If -1 is provided, all CPUs are used.
+        A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
+
+    tfce : :obj:`bool`
+        Whether to calculate :term:`TFCE` as part of the permutation procedure
+        or not.
+        The TFCE calculation is implemented as described in
+        :footcite:t:`Smith2009a`.
+
+    threshold : None or :obj:`float`
+        Cluster-forming threshold in p-scale.
+        This is only used for cluster-level inference.
+        If None, cluster-level inference will not be performed.
+
+    masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
+            :class:`~nilearn.maskers.MultiNiftiMasker`
+        A mask to be used on the data.
+        This is required for cluster-level inference, so it must be provided
+        if ``threshold`` is not None.
+
+    """
     if target_vars.ndim != 2:
         raise ValueError(
             "'target_vars' should be a 2D array. "
@@ -1090,3 +1089,54 @@ def _check_arguments_permuted_ols(
         raise ValueError(
             'If "threshold" is not None, masker must be defined as well.'
         )
+
+
+def _check_output_type_permuted_ols(output_type, tfce, threshold):
+    """Check that the output type is valid \
+    for the given threhsold argument and depending if we are doing TFCE.
+
+    output_type may be updated when necessary.
+
+    Parameters
+    ----------
+    output_type : {'legacy', 'dict'}, optional
+        Determines how outputs should be returned.
+
+    tfce : :obj:`bool`
+        Whether to calculate :term:`TFCE` as part of the permutation procedure
+        or not.
+        The TFCE calculation is implemented as described in
+        :footcite:t:`Smith2009a`.
+
+    threshold : None or :obj:`float`
+        Cluster-forming threshold in p-scale.
+        This is only used for cluster-level inference.
+        If None, cluster-level inference will not be performed.
+    """
+    if tfce and output_type == "legacy":
+        warnings.warn(
+            'If "tfce" is set to True, "output_type" must be set to "dict". '
+            "Overriding."
+        )
+        output_type = "dict"
+
+    if (threshold is not None) and (output_type == "legacy"):
+        warnings.warn(
+            'If "threshold" is not None, "output_type" must be set to "dict". '
+            "Overriding."
+        )
+        output_type = "dict"
+
+    if output_type == "legacy":
+        warnings.warn(
+            category=DeprecationWarning,
+            message=(
+                'The "legacy" output structure for "permuted_ols" is '
+                "deprecated. "
+                'The default output structure will be changed to "dict" '
+                "in version 0.13."
+            ),
+            stacklevel=3,
+        )
+
+    return output_type
