@@ -579,7 +579,7 @@ def test_first_level_from_bids_set_repetition_time_warnings(tmp_path):
     """Raise a warning when there is no bold.json file in the derivatives
     and no TR value is passed as argument.
 
-    create_fake_bids_dataset does not add JSON files in derivatives, 
+    create_fake_bids_dataset does not add JSON files in derivatives,
     so the TR value will be inferred from the raw.
     """
     bids_path = create_fake_bids_dataset(base_dir=tmp_path,
@@ -601,8 +601,8 @@ def test_first_level_from_bids_set_repetition_time_warnings(tmp_path):
         )
 
         # If no t_r is provided it is inferred from the raw dataset
-        # create_fake_bids_dataset generates a dataset 
-        # with bold data with TR=1.5 secs        
+        # create_fake_bids_dataset generates a dataset
+        # with bold data with TR=1.5 secs
         expected_t_r = 1.5
         assert models[0].t_r == expected_t_r
 
@@ -638,7 +638,6 @@ def test_first_level_from_bids_set_slice_timing_ref_warnings(tmp_path):
 
     In this case the model should be created with a slice_time_ref of 0.0.
     """
-
     bids_path = create_fake_bids_dataset(base_dir=tmp_path,
                                          n_sub=10,
                                          n_ses=1,
@@ -668,8 +667,7 @@ def test_first_level_from_bids_set_slice_timing_ref_errors(
         slice_time_ref,
         error_type,
         error_msg):
-    """Throw errors for impossible values of slice_time_ref."""    
-
+    """Throw errors for impossible values of slice_time_ref."""
     bids_path = create_fake_bids_dataset(base_dir=tmp_path,
                                          n_sub=1,
                                          n_ses=1,
@@ -687,7 +685,7 @@ def test_first_level_from_bids_set_slice_timing_ref_errors(
 
 def test_first_level_from_bids_get_metadata_from_derivatives(tmp_path):
     """No warning should be thrown given derivatives have metadata.
-    
+
     The model created should use the values found in the derivatives.
     """
     bids_path = create_fake_bids_dataset(base_dir=tmp_path,
@@ -766,8 +764,8 @@ def test_first_level_from_bids_get_StartTime_from_derivatives(tmp_path):
             space_label='MNI',
             img_filters=[('desc', 'preproc')],
             slice_time_ref=None)
-        
-        # create_fake_bids_dataset generates a dataset 
+
+        # create_fake_bids_dataset generates a dataset
         # with bold data with TR=1.5 secs
         assert models[0].t_r == 1.5
         assert models[0].slice_time_ref == StartTime / 1.5
