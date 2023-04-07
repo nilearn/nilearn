@@ -637,12 +637,7 @@ def permuted_ols(
     if tested_vars.ndim == 1:
         tested_vars = np.atleast_2d(tested_vars).T
 
-    n_samples, n_regressors = tested_vars.shape
-
-    # check if explanatory variates contain an intercept (constant) or not
-    intercept_test = False
-    if n_regressors == np.unique(tested_vars).size == 1:
-        intercept_test = True
+    intercept_test = _check_for_intercept_in_tested_var(tested_vars)
 
     (
         confounding_vars,
@@ -653,19 +648,19 @@ def permuted_ols(
     )
 
     confounding_vars = _optionally_add_intercept(
-        confounding_vars, model_intercept, intercept_test, n_samples
+        confounding_vars,
+        model_intercept,
+        intercept_test,
+        n_samples=tested_vars.shape[0],
     )
 
     # OLS regression on original data
-    confounding_vars = _orthonormalize_confounding_vars(confounding_vars)
-
-    target_vars = _prepare_target_vars(target_vars, confounding_vars)
-
-    tested_vars = _prepare_tested_vars(tested_vars, confounding_vars)
-
     # original regression (= regression on residuals + adjust t-score)
     # compute t score map of each tested var for original data
     # scores_original_data is in samples-by-regressors shape
+    confounding_vars = _orthonormalize_confounding_vars(confounding_vars)
+    target_vars = _prepare_target_vars(target_vars, confounding_vars)
+    tested_vars = _prepare_tested_vars(tested_vars, confounding_vars)
     scores_original_data = _t_score_with_covars_and_normalized_design(
         tested_vars,
         target_vars.T,
@@ -816,6 +811,12 @@ def _check_output_type_permuted_ols(output_type, tfce, threshold):
         )
 
     return output_type
+
+
+def _check_for_intercept_in_tested_var(tested_vars):
+    """Check if explanatory variates contain an intercept (constant) or not."""
+    n_regressors = tested_vars.shape[1]
+    return n_regressors == np.unique(tested_vars).size == 1
 
 
 def _check_for_intercept_in_confounds(
@@ -1000,13 +1001,8 @@ def _run_permutations(
         )
         n_perm_chunks = np.ones(n_perm, dtype=int)
 
-    n_samples, n_regressors = tested_vars.shape
-
-    n_covars = 0
-    if confounding_vars is not None:
-        n_covars = confounding_vars.shape[1]
     threshold_t = _determine_t_statistic_threshold(
-        threshold, n_samples, n_regressors, n_covars, two_sided_test
+        threshold, tested_vars, confounding_vars, two_sided_test
     )
 
     # initialize the seed of the random generator
@@ -1046,6 +1042,8 @@ def _run_permutations(
         h0_tfce_parts,
     ) = zip(*ret)
 
+    n_regressors = tested_vars.shape[1]
+
     # Voxel-level FWE
     vfwe_h0 = np.hstack(h0_vfwe_parts)
     vfwe_scores_as_ranks = np.zeros((n_regressors, n_descriptors))
@@ -1078,8 +1076,7 @@ def _run_permutations(
         outputs["h0_max_tfce"] = h0_tfcemax
 
     if threshold is not None:
-        # Cluster-size and cluster-mass FWE
-        cluster_dict = _compute_cluster_dict(
+        cluster_stats = _compute_cluster_level_statistics(
             csfwe_h0_parts,
             cmfwe_h0_parts,
             vfwe_pvals,
@@ -1090,18 +1087,18 @@ def _run_permutations(
             two_sided_test,
         )
 
-        outputs["size"] = cluster_dict["size"]
-        outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
-        outputs["h0_max_size"] = cluster_dict["size_h0"]
-        outputs["mass"] = cluster_dict["mass"]
-        outputs["logp_max_mass"] = -np.log10(cluster_dict["mass_pvals"])
-        outputs["h0_max_mass"] = cluster_dict["mass_h0"]
+        outputs["size"] = cluster_stats["size"]
+        outputs["logp_max_size"] = -np.log10(cluster_stats["size_pvals"])
+        outputs["h0_max_size"] = cluster_stats["size_h0"]
+        outputs["mass"] = cluster_stats["mass"]
+        outputs["logp_max_mass"] = -np.log10(cluster_stats["mass_pvals"])
+        outputs["h0_max_mass"] = cluster_stats["mass_h0"]
 
     return outputs
 
 
 def _determine_t_statistic_threshold(
-    threshold, n_samples, n_regressors, n_covars, two_sided_test
+    threshold, tested_vars, confounding_vars, two_sided_test
 ):
     """Return  t-statistic threshold for depending on \
     numbers of degrees of freedom and sidedness.
@@ -1113,14 +1110,11 @@ def _determine_t_statistic_threshold(
         This is only used for cluster-level inference.
         If None, cluster-level inference will not be performed.
 
-    n_samples : :obj:`int`
-        number of samples
+    tested_vars : array-like, shape=(n_samples, n_regressors)
+        Explanatory variates, fitted and tested independently from each others.
 
-    n_regressors : :obj:`int`
-        number of regressors
-
-    n_covars : :obj:`int`
-        number of confounding variables
+    confounding_vars : array-like, shape=(n_samples, n_covars)
+        Confounding variates (covariates).
 
     two_sided_test : :obj:`bool`
         If True, performs an unsigned t-test. Both positive and negative
@@ -1136,17 +1130,16 @@ def _determine_t_statistic_threshold(
     if threshold is None:
         return None
 
-    # determine t-statistic threshold
-    dof = n_samples - (n_regressors + n_covars)
+    n_samples, n_regressors = tested_vars.shape
+    n_covars = 0 if confounding_vars is None else confounding_vars.shape[1]
+    df = n_samples - (n_regressors + n_covars)
 
-    threshold_t = stats.t.isf(threshold, df=dof)
     if two_sided_test:
-        threshold_t = stats.t.isf(threshold / 2, df=dof)
+        return stats.t.isf(threshold / 2, df=df)
+    return stats.t.isf(threshold, df=df)
 
-    return threshold_t
 
-
-def _compute_cluster_dict(
+def _compute_cluster_level_statistics(
     csfwe_h0_parts,
     cmfwe_h0_parts,
     vfwe_pvals,
@@ -1156,8 +1149,13 @@ def _compute_cluster_dict(
     threshold_t,
     two_sided_test,
 ):
-    # Cluster-size and cluster-mass FWE
-    cluster_dict = {
+    """Compute several cluster levels statistics.
+
+    - size
+    - cluster-mass
+    - FWE
+    """
+    cluster_stats = {
         "size_h0": np.hstack(csfwe_h0_parts),
         "mass_h0": np.hstack(cmfwe_h0_parts),
         "size": np.zeros_like(vfwe_pvals).astype(int),
@@ -1173,24 +1171,11 @@ def _compute_cluster_dict(
     for i_regressor in range(n_regressors):
         scores_original_data_3d = scores_original_data_4d[..., i_regressor]
 
-        # Label the clusters for both cluster mass and size inference
-        labeled_arr3d, _ = label(
-            input=scores_original_data_3d > threshold_t,
-            structure=_binary_structure(),
+        labeled_arr3d = _label_clusters(
+            scores_original_data_3d, threshold_t, two_sided_test
         )
 
-        if two_sided_test:
-            # Add negative cluster labels
-            temp_labeled_arr3d, _ = label(
-                input=scores_original_data_3d < -threshold_t,
-                structure=_binary_structure(),
-            )
-            n_negative_clusters = np.max(temp_labeled_arr3d)
-            labeled_arr3d[labeled_arr3d > 0] += n_negative_clusters
-            labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
-            del temp_labeled_arr3d
-
-        cluster_labels, idx, cluster_dict["size_regressor"] = np.unique(
+        cluster_labels, idx, cluster_stats["size_regressor"] = np.unique(
             labeled_arr3d,
             return_inverse=True,
             return_counts=True,
@@ -1198,42 +1183,72 @@ def _compute_cluster_dict(
         assert cluster_labels[0] == 0  # the background
 
         # Replace background's "cluster size" w zeros
-        cluster_dict["size_regressor"][0] = 0
+        cluster_stats["size_regressor"][0] = 0
 
-        # Calculate mass for each cluster
-        cluster_dict["mass_regressor"] = np.zeros(cluster_labels.shape)
-        for j_val in cluster_labels[1:]:  # skip background
-            cluster_mass = np.sum(
-                np.fabs(scores_original_data_3d[labeled_arr3d == j_val])
-                - threshold_t
-            )
-            cluster_dict["mass_regressor"][j_val] = cluster_mass
+        cluster_stats["mass_regressor"] = _compute_cluster_masses(
+            scores_original_data_3d, cluster_labels, labeled_arr3d, threshold_t
+        )
 
         # Calculate p-values from size/mass values and associated h0s
         for metric in ["mass", "size"]:
             p_vals = _null_to_p(
-                cluster_dict[f"{metric}_regressor"],
-                cluster_dict[f"{metric}_h0"][i_regressor, :],
+                cluster_stats[f"{metric}_regressor"],
+                cluster_stats[f"{metric}_h0"][i_regressor, :],
                 "larger",
             )
             p_map = p_vals[np.reshape(idx, labeled_arr3d.shape)]
-            metric_map = cluster_dict[f"{metric}_regressor"][
+            metric_map = cluster_stats[f"{metric}_regressor"][
                 np.reshape(idx, labeled_arr3d.shape)
             ]
 
             # Convert 3D to image, then to 1D
             # There is a problem if the masker performs preprocessing,
             # so we use apply_mask here.
-            cluster_dict[f"{metric}_pvals"][i_regressor, :] = np.squeeze(
+            cluster_stats[f"{metric}_pvals"][i_regressor, :] = np.squeeze(
                 apply_mask(
                     image.new_img_like(masker.mask_img_, p_map),
                     masker.mask_img_,
                 )
             )
-            cluster_dict[metric][i_regressor, :] = np.squeeze(
+            cluster_stats[metric][i_regressor, :] = np.squeeze(
                 apply_mask(
                     image.new_img_like(masker.mask_img_, metric_map),
                     masker.mask_img_,
                 )
             )
-    return cluster_dict
+    return cluster_stats
+
+
+def _label_clusters(scores_original_data_3d, threshold_t, two_sided_test):
+    """Label clusters for bot cluster mass and size inference."""
+    labeled_arr3d, _ = label(
+        input=scores_original_data_3d > threshold_t,
+        structure=_binary_structure(),
+    )
+
+    if not two_sided_test:
+        return labeled_arr3d
+
+    # Add negative cluster labels
+    temp_labeled_arr3d, _ = label(
+        input=scores_original_data_3d < -threshold_t,
+        structure=_binary_structure(),
+    )
+    n_negative_clusters = np.max(temp_labeled_arr3d)
+    labeled_arr3d[labeled_arr3d > 0] += n_negative_clusters
+    labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
+    del temp_labeled_arr3d
+
+    return labeled_arr3d
+
+
+def _compute_cluster_masses(
+    scores_original_data_3d, cluster_labels, labeled_arr3d, threshold_t
+):
+    mass_regressor = np.zeros(cluster_labels.shape)
+    for i in cluster_labels[1:]:  # skip background
+        cluster_mass = np.sum(
+            np.fabs(scores_original_data_3d[labeled_arr3d == i]) - threshold_t
+        )
+        mass_regressor[i] = cluster_mass
+    return mass_regressor
