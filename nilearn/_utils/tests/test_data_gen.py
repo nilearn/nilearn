@@ -36,7 +36,7 @@ def test_add_metadata_to_bids_derivatives_with_json_path(tmp_path):
     # bare bone smoke test
     target_dir = tmp_path / 'derivatives' / 'sub-02' 
     target_dir.mkdir(parents=True)
-    json_file='derivatives/sub-02/sub-02_task-main_bold.json'
+    json_file = 'derivatives/sub-02/sub-02_task-main_bold.json'
     json_file = _add_metadata_to_bids_dataset(bids_path=tmp_path,
                                               metadata={"foo": "bar"},
                                               json_file=json_file)
