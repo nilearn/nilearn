@@ -934,7 +934,7 @@ def _orthonormalize_confounding_vars(confounding_vars):
 
 
 def _make_array_contiguous(array, variable_name):
-    """Ensure arrays is contiguous for the sake of code efficiency."""
+    """Ensure array is contiguous for the sake of code efficiency."""
     if not array.flags["C_CONTIGUOUS"]:
         # useful to developer
         warnings.warn(f"{variable_name} variates not C_CONTIGUOUS.")
@@ -1242,7 +1242,7 @@ def _compute_cluster_level_statistics(
         )
 
         # Calculate p-values from size/mass values and associated h0s
-        for metric in ["mass", "size"]:
+        for metric in ("mass", "size"):
             p_vals = _null_to_p(
                 cluster_stats[f"{metric}_regressor"],
                 cluster_stats[f"{metric}_h0"][i_regressor, :],
