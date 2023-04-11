@@ -1,6 +1,4 @@
-"""
-Interfaces for Nilearn.
-"""
+"""Interfaces for Nilearn."""
 
 from nilearn.interfaces import bids, fmriprep, fsl
 

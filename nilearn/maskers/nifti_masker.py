@@ -1,18 +1,15 @@
-"""
-Transformer used to apply basic transformations on MRI data.
-"""
+"""Transformer used to apply basic transformations on MRI data."""
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
 import warnings
 from copy import copy as copy_object
 from functools import partial
-
-from joblib import Memory
 import numpy as np
 
-from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
+from joblib import Memory
 from nilearn import _utils, image, masking
+from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
 
 class _ExtractionFunctor:
@@ -33,9 +30,7 @@ class _ExtractionFunctor:
 
 
 def _get_mask_strategy(strategy):
-    """Helper function returning the mask computing method based
-    on a provided strategy.
-    """
+    """Return the mask computing method based on a provided strategy."""
     if strategy == 'background':
         return masking.compute_background_mask
     elif strategy == 'epi':
@@ -260,7 +255,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
 
         .. versionadded:: 0.9.2
 
-    See also
+    See Also
     --------
     nilearn.masking.compute_background_mask
     nilearn.masking.compute_epi_mask
@@ -270,6 +265,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
     nilearn.signal.clean
 
     """
+
     def __init__(
         self,
         mask_img=None,
@@ -332,6 +328,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         }
 
     def generate_report(self):
+        """Generate a report of the masker."""
         from nilearn.reporting.html_report import generate_report
         return generate_report(self)
 
@@ -345,8 +342,8 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
 
         """
         try:
-            from nilearn import plotting
             import matplotlib.pyplot as plt
+            from nilearn import plotting
 
         except ImportError:
             with warnings.catch_warnings():
@@ -569,7 +566,6 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             inputs.
 
         """
-
         # Ignore the mask-computing params: they are not useful and will
         # just invalid the cache for no good reason
         # target_shape and target_affine are conveyed implicitly in mask_img

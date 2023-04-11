@@ -220,6 +220,8 @@
 
 .. _Salma Bougacha: https://github.com/salma1601
 
+.. _Sam Buck Johnson: https://github.com/sambjohnson
+
 .. _Sami Jawhar: https://github.com/sjawhar
 
 .. _Simon Steinkamp: https://github.com/SRSteinkamp

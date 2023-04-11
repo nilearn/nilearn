@@ -36,7 +36,11 @@ jobs:
             setup.py \
             nilearn/connectome \
             nilearn/de* \
+            nilearn/glm \
             nilearn/image \
+            nilearn/interfaces \
+            nilearn/input_data \
+            nilearn/maskers \
             nilearn/mass_univariate \
             nilearn/regions \
             nilearn/*.py

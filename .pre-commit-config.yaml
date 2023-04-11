@@ -28,6 +28,7 @@ files: |
         | nilearn/de.*
         | nilearn/connectome/.*py
         | nilearn/image/.*py
+        | nilearn/input_data/.*py
         | nilearn/regions.*py
         | nilearn/mass_univariate/.*py
     )$
@@ -85,7 +86,7 @@ repos:
         args: [--py36-plus]
 
   - repo: https://github.com/psf/black
-    rev: 23.1.0
+    rev: 23.3.0
     hooks:
       - id: black
         args: [--config=pyproject.toml, --verbose]
