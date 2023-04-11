@@ -12,6 +12,7 @@ NEW
 
 - ``fsaverage`` meshes accessed through :func:`~datasets.fetch_surf_fsaverage` now come with flat maps for all resolutions (:gh:`3444` by `Alexis Thual`_).
 
+- surface plotting functions allow setting custom view angles and are no longer limited to predefined views (:gh:`3259` by `Sam Buck Johnson`_ and `Alexis Thual`_).
 
 Fixes
 -----

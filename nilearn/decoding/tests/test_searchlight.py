@@ -2,8 +2,8 @@
 # Author: Alexandre Abraham
 # License: simplified BSD
 
-import nibabel
 import numpy as np
+from nibabel import Nifti1Image
 from nilearn.decoding import searchlight
 from sklearn.model_selection import KFold
 
@@ -14,14 +14,14 @@ def _make_searchlight_test_data(frames):
     frames = frames
     data = rand.rand(5, 5, 5, frames)
     mask = np.ones((5, 5, 5), dtype=bool)
-    mask_img = nibabel.Nifti1Image(mask.astype("uint8"), np.eye(4))
+    mask_img = Nifti1Image(mask.astype("uint8"), np.eye(4))
     # Create a condition array, with balanced classes
     cond = np.arange(frames, dtype=int) >= (frames // 2)
 
     # Create an activation pixel.
     data[2, 2, 2, :] = 0
     data[2, 2, 2][cond.astype(bool)] = 2
-    data_img = nibabel.Nifti1Image(data, np.eye(4))
+    data_img = Nifti1Image(data, np.eye(4))
 
     return data_img, cond, mask_img
 
@@ -61,9 +61,7 @@ def test_searchlight_mask_far_from_signal():
 
     process_mask = np.zeros((5, 5, 5), dtype=bool)
     process_mask[0, 0, 0] = True
-    process_mask_img = nibabel.Nifti1Image(
-        process_mask.astype("uint8"), np.eye(4)
-    )
+    process_mask_img = Nifti1Image(process_mask.astype("uint8"), np.eye(4))
     sl = searchlight.SearchLight(
         mask_img,
         process_mask_img=process_mask_img,
@@ -116,6 +114,7 @@ def test_searchlight_large_radius():
         cv=cv,
     )
     sl.fit(data_img, cond)
+
     assert np.where(sl.scores_ == 1)[0].size == 33
     assert sl.scores_[2, 2, 2] == 1.0
 
@@ -151,6 +150,7 @@ def test_searchlight_group_cross_validation():
         cv=gcv,
     )
     sl.fit(data_img, cond, groups)
+
     assert np.where(sl.scores_ == 1)[0].size == 7
     assert sl.scores_[2, 2, 2] == 1.0
 
@@ -173,13 +173,14 @@ def test_searchlight_group_cross_validation_with_extra_group_variable():
         cv=cv,
     )
     sl.fit(data_img, cond, groups)
+
     assert np.where(sl.scores_ == 1)[0].size == 7
     assert sl.scores_[2, 2, 2] == 1.0
 
     # Check whether searchlight works on list of 3D images
     rand = np.random.RandomState(0)
     data = rand.rand(5, 5, 5)
-    data_img = nibabel.Nifti1Image(data, affine=np.eye(4))
+    data_img = Nifti1Image(data, affine=np.eye(4))
     imgs = [data_img] * 12
 
     # labels

@@ -1,4 +1,4 @@
-"""Simple code to simulate data."""
+"""Test utilities for decoding module."""
 
 import numpy as np
 from scipy import linalg

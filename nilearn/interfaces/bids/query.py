@@ -85,20 +85,20 @@ def get_bids_files(
         if glob.glob(files):
             files = os.path.join(
                 main_path,
-                'sub-%s' % sub_label,
+                f'sub-{sub_label}',
                 'ses-*',
                 modality_folder,
-                'sub-%s*_%s.%s' % (sub_label, file_tag, file_type),
+                f'sub-{sub_label}*_{file_tag}.{file_type}',
             )
         else:
             files = os.path.join(
                 main_path,
-                'sub-%s' % sub_label,
+                f'sub-{sub_label}',
                 modality_folder,
-                'sub-%s*_%s.%s' % (sub_label, file_tag, file_type),
+                f'sub-{sub_label}*_{file_tag}.{file_type}',
             )
     else:
-        files = os.path.join(main_path, '*%s.%s' % (file_tag, file_type))
+        files = os.path.join(main_path, f'*{file_tag}.{file_type}')
 
     files = glob.glob(files)
     files.sort()

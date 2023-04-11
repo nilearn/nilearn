@@ -1,15 +1,16 @@
-""" Test the thresholding utilities
-"""
+"""Test the thresholding utilities."""
 import nibabel as nib
 import numpy as np
 import pytest
+from nilearn.glm import (
+    cluster_level_inference,
+    fdr_threshold,
+    threshold_stats_img,
+)
+from nilearn.glm.thresholding import _compute_hommel_value
+from nilearn.image import get_data
 from numpy.testing import assert_almost_equal, assert_equal
 from scipy.stats import norm
-
-from nilearn.image import get_data
-from nilearn.glm import (cluster_level_inference, fdr_threshold,
-                         threshold_stats_img)
-from nilearn.glm.thresholding import _compute_hommel_value
 
 
 def test_fdr():
@@ -90,13 +91,13 @@ def test_threshold_stats_img():
         None, None, threshold=3.0, height_control=None,
         cluster_threshold=0)
     assert threshold == 3.0
-    assert th_map == None  # noqa: E711
+    assert th_map is None
 
     th_map, threshold = threshold_stats_img(
         None, None, alpha=0.05, height_control='fpr',
         cluster_threshold=0)
     assert (threshold > 1.64)
-    assert th_map == None  # noqa: E711
+    assert th_map is None
 
     with pytest.raises(ValueError):
         threshold_stats_img(None, None, alpha=0.05, height_control='fdr')

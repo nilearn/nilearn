@@ -4,15 +4,19 @@ Authors: Pierre Bellec, François Paugam, Hanad Sharmarke, Hao-Ting Wang,
 Michael W. Weiss, Steven Meisler, Thibault Piront.
 """
 import warnings
+
 import pandas as pd
-from .load_confounds_utils import (_sanitize_confounds,
-                                   _prepare_output,
-                                   MissingConfound,
-                                   _get_confounds_file,
-                                   _load_confounds_file_as_dataframe,
-                                   _load_confounds_json,
-                                   _get_json)
+
 from . import load_confounds_components as components
+from .load_confounds_utils import (
+    MissingConfound,
+    _get_confounds_file,
+    _get_json,
+    _load_confounds_file_as_dataframe,
+    _load_confounds_json,
+    _prepare_output,
+    _sanitize_confounds,
+)
 
 # Global variables listing the admissible types of noise components
 all_confounds = [
