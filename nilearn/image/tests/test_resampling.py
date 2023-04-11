@@ -774,21 +774,23 @@ def test_reorder_img_with_resample_arg(affine):
     assert_array_equal(get_data(reordered_img), get_data(resampled_img))
 
 
-def test_reorder_img_error_reorder_axis(affine):
+def test_reorder_img_error_reorder_axis():
     rng = np.random.RandomState(42)
 
     shape = (5, 5, 5, 2, 2)
     data = rng.uniform(size=shape)
 
-    # Create a non-diagonal affine, and check that we raise a sensible
-    # exception
-    affine[1, 0] = 0.1
-    ref_img = Nifti1Image(data, affine)
-    with pytest.raises(ValueError, match="Cannot reorder the axes"):
-        reorder_img(ref_img)
+    # Create a non-diagonal affine,
+    # and check that we raise a sensible exception
+    non_diagonal_affine = np.eye(4)
+    non_diagonal_affine[1, 0] = 0.1
+    ref_img = Nifti1Image(data, non_diagonal_affine)
 
     # Test that no exception is raised when resample='continuous'
     reorder_img(ref_img, resample="continuous")
+
+    with pytest.raises(ValueError, match="Cannot reorder the axes"):
+        reorder_img(ref_img)
 
 
 def test_reorder_img_flipping_axis():
