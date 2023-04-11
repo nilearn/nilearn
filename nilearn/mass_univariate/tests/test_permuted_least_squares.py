@@ -359,6 +359,22 @@ def test_permuted_ols_no_covar_warning(random_state=RANDOM_STATE):
     assert np.array_equal(output_1["t"][1:], output_2["t"][1:])
 
 
+def test_permuted_ols_no_covar_negative_n_job(
+    design, random_state=RANDOM_STATE
+):
+    target_var, tested_var, *_ = design
+    output = permuted_ols(
+        tested_var,
+        target_var,
+        model_intercept=False,
+        n_perm=0,
+        random_state=random_state,
+        output_type="dict",
+        n_jobs=-1,
+    )
+    compare_to_ref_score(output["t"], tested_var, target_var)
+
+
 def test_permuted_ols_no_covar_n_job_error(dummy_design):
     """Ensure that a warning is raised when a given voxel has all zeros.
 
@@ -366,13 +382,33 @@ def test_permuted_ols_no_covar_n_job_error(dummy_design):
     """
     target_var, tested_var, *_ = dummy_design
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="'n_jobs == 0' is not a valid choice."
+    ):
         permuted_ols(
             tested_var,
             target_var,
             model_intercept=False,
             n_perm=N_PERM,
             n_jobs=0,  # not allowed
+            random_state=RANDOM_STATE,
+        )
+
+
+@pytest.mark.parametrize("shape", [[3], [3, 3, 3]])
+def test_permuted_ols_no_covar_target_vars_ndim_error(dummy_design, shape):
+    """Ensure target_vars has only 2 dimensions."""
+    _, tested_var, *_ = dummy_design
+
+    rng = check_random_state(RANDOM_STATE)
+    target_var = rng.randn(*shape)
+
+    with pytest.raises(ValueError, match="'target_vars' should be a 2D array"):
+        permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            n_perm=N_PERM,
             random_state=RANDOM_STATE,
         )
 
