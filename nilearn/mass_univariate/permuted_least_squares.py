@@ -769,7 +769,7 @@ def _check_args_permuted_ols(target_vars, n_jobs, tfce, threshold, masker):
 
 def _check_output_type_permuted_ols(output_type, tfce, threshold):
     """Check that the output type is valid \
-    for the given threhsold argument and depending if we are doing TFCE.
+    for the given threshold argument and depending if we are doing TFCE.
 
     output_type may be updated when necessary.
 

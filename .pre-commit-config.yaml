@@ -95,7 +95,7 @@ repos:
     rev: v2.2.4
     hooks:
       - id: codespell
-        args: [--config=setup.cfg]
+        args: [--config=setup.cfg, -D=.codespell_dict]
 
   - repo: https://github.com/pyCQA/flake8
     rev: 6.0.0
