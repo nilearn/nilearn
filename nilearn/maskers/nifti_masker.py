@@ -5,8 +5,8 @@
 import warnings
 from copy import copy as copy_object
 from functools import partial
-import numpy as np
 
+import numpy as np
 from joblib import Memory
 from nilearn import _utils, image, masking
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
