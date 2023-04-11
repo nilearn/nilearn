@@ -28,11 +28,10 @@ from nilearn.maskers import NiftiMasker
 
 def test_get_metadata_from_bids(tmp_path):
     """Ensure that metadata is correctly extracted from BIDS JSON files.
-    
+
     Throw a warning when the field is not found.
     Throw a warning when there is no JSON file.
     """
-
     json_file = tmp_path / "sub-01_task-main_bold.json"
     json_files = [json_file]
 
@@ -57,12 +56,11 @@ def test_get_metadata_from_bids(tmp_path):
 
 def test_infer_repetition_time_from_dataset(tmp_path):
     """Test inferring repetition time from the BIDS dataset.
-     
+
     When using create_fake_bids_dataset the value is 1.5 secs by default
     in the raw dataset.
     When using _add_metadata_to_bids_dataset the value is 2.0 secs.
     """
-
     bids_path = create_fake_bids_dataset(base_dir=tmp_path,
                                          n_sub=1,
                                          n_ses=1,
@@ -72,7 +70,7 @@ def test_infer_repetition_time_from_dataset(tmp_path):
     t_r = _infer_repetition_time_from_dataset(
         bids_path=tmp_path / bids_path,
         filters=[('task', 'main')])
-    
+
     expected_t_r = 1.5
     assert t_r == expected_t_r
 
@@ -80,16 +78,23 @@ def test_infer_repetition_time_from_dataset(tmp_path):
     _add_metadata_to_bids_dataset(
         bids_path=tmp_path / bids_path,
         metadata={"RepetitionTime": expected_t_r})
-    
+
     t_r = _infer_repetition_time_from_dataset(
         bids_path=tmp_path / bids_path / 'derivatives',
         filters=[('task', 'main'), ('run', '01')])
-    
+
     assert t_r == expected_t_r
 
 
 def test_infer_slice_timing_start_time_from_dataset(tmp_path):
+    """Test inferring slice timing start time from the BIDS dataset.
 
+    create_fake_bids_dataset does not add slice timing information
+    by default so the value returned will be None.
+
+    If the metadata is added to the BIDS dataset,
+    then this value should be returned.
+    """
     bids_path = create_fake_bids_dataset(base_dir=tmp_path,
                                          n_sub=1,
                                          n_ses=1,
@@ -99,7 +104,7 @@ def test_infer_slice_timing_start_time_from_dataset(tmp_path):
     StartTime = _infer_slice_timing_start_time_from_dataset(
         bids_path=tmp_path / bids_path / "derivatives",
         filters=[('task', 'main')])
-    
+
     expected_StartTime = None
     assert StartTime is expected_StartTime
 
@@ -107,11 +112,11 @@ def test_infer_slice_timing_start_time_from_dataset(tmp_path):
     _add_metadata_to_bids_dataset(
         bids_path=tmp_path / bids_path,
         metadata={"StartTime": expected_StartTime})
-    
+
     StartTime = _infer_slice_timing_start_time_from_dataset(
         bids_path=tmp_path / bids_path / "derivatives",
         filters=[('task', 'main')])
-    
+
     assert StartTime == expected_StartTime
 
 
