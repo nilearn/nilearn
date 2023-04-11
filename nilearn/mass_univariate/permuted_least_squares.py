@@ -652,7 +652,7 @@ def permuted_ols(
         confounding_vars, tested_var_has_intercept, model_intercept
     )
 
-    confounding_vars = _optionally_add_intercept(
+    confounding_vars = _add_intercept_optionally(
         confounding_vars,
         model_intercept,
         intercept_test,
@@ -872,7 +872,7 @@ def _check_for_intercept_in_confounds(
         )
         # In case tested vars has no intercept,
         # and len(constants) > 1,
-        # we will need to add an intercept (see _optionally_add_intercept)
+        # we will need to add an intercept (see _add_intercept_optionally)
         # because by now have removed all intercepts from confounding_vars.
         model_intercept = True
 
@@ -888,7 +888,7 @@ def _check_for_intercept_in_confounds(
     return confounding_vars, test_intercept, model_intercept
 
 
-def _optionally_add_intercept(
+def _add_intercept_optionally(
     confounding_vars, model_intercept, intercept_test, n_samples
 ):
     """Add intercept to confounding variates if necessary.
@@ -1186,8 +1186,7 @@ def _determine_t_statistic_threshold(
     n_covars = 0 if confounding_vars is None else confounding_vars.shape[1]
     df = n_samples - (n_regressors + n_covars)
 
-    if two_sided_test:
-        return stats.t.isf(threshold / 2, df=df)
+    threshold = threshold / 2 if two_sided_test else threshold
     return stats.t.isf(threshold, df=df)
 
 
