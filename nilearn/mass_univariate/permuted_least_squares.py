@@ -718,9 +718,15 @@ def _check_args_permuted_ols(
 
     Parameters
     ----------
+    tested_vars : array-like, shape=(n_samples, n_regressors)
+        Explanatory variates, fitted and tested independently from each others.
+
     target_vars : array-like, shape=(n_samples, n_descriptors)
         fMRI data to analyze according to the explanatory and confounding
         variates.
+
+    confounding_vars : array-like, shape=(n_samples, n_covars), optional
+        Confounding variates (covariates), fitted but not tested.
 
     n_jobs : :obj:`int`
         Number of parallel workers.
@@ -733,13 +739,9 @@ def _check_args_permuted_ols(
     tfce : :obj:`bool`
         Whether to calculate :term:`TFCE` as part of the permutation procedure
         or not.
-        The TFCE calculation is implemented as described in
-        :footcite:t:`Smith2009a`.
 
     threshold : None or :obj:`float`
         Cluster-forming threshold in p-scale.
-        This is only used for cluster-level inference.
-        If None, cluster-level inference will not be performed.
 
     masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
             :class:`~nilearn.maskers.MultiNiftiMasker`
@@ -748,12 +750,6 @@ def _check_args_permuted_ols(
         if ``threshold`` is not None.
 
     """
-    if target_vars.ndim != 2:
-        raise ValueError(
-            "'target_vars' should be a 2D array. "
-            f"An array with {target_vars.ndim} dimension(s) was passed."
-        )
-
     if n_jobs == 0:  # invalid according to joblib's conventions
         raise ValueError(
             "'n_jobs == 0' is not a valid choice. "
@@ -779,28 +775,11 @@ def _check_args_permuted_ols(
 
     output_type = _check_output_type_permuted_ols(output_type, tfce, threshold)
 
-    # check explanatory variates' dimensions
-    if tested_vars.ndim == 1:
-        tested_vars = np.atleast_2d(tested_vars).T
-
-    # check n_sample consistent across arguments
-    if target_vars.shape[0] != tested_vars.shape[0]:
-        raise ValueError(
-            "'target_vars' and 'tested_vars' "
-            "first dimension should be equal.\n"
-            f"Got: {target_vars.shape[0]} for 'target_vars'"
-            f"and {tested_vars.shape[0]} for 'tested_vars'."
-        )
-    if (
-        confounding_vars is not None
-        and target_vars.shape[0] != confounding_vars.shape[0]
-    ):
-        raise ValueError(
-            "'target_vars' and 'confounding_vars' "
-            "first dimension should be equal.\n"
-            f"Got: {target_vars.shape[0]} for 'target_vars'"
-            f"and {confounding_vars.shape[0]} for 'confounding_vars'."
-        )
+    tested_vars = _check_vars_dimensions(
+        target_vars,
+        tested_vars,
+        confounding_vars,
+    )
 
     return output_type, n_jobs, tested_vars
 
@@ -819,8 +798,6 @@ def _check_output_type_permuted_ols(output_type, tfce, threshold):
     tfce : :obj:`bool`
         Whether to calculate :term:`TFCE` as part of the permutation procedure
         or not.
-        The TFCE calculation is implemented as described in
-        :footcite:t:`Smith2009a`.
 
     threshold : None or :obj:`float`
         Cluster-forming threshold in p-scale.
@@ -854,6 +831,57 @@ def _check_output_type_permuted_ols(output_type, tfce, threshold):
         )
 
     return output_type
+
+
+def _check_vars_dimensions(
+    target_vars,
+    tested_vars,
+    confounding_vars,
+):
+    """Check that dimensions of the input variables are consistent.
+
+    Parameters
+    ----------
+    tested_vars : array-like, shape=(n_samples, n_regressors)
+        Explanatory variates, fitted and tested independently from each others.
+
+    target_vars : array-like, shape=(n_samples, n_descriptors)
+        fMRI data to analyze according to the explanatory and confounding
+        variates.
+
+    confounding_vars : array-like, shape=(n_samples, n_covars), optional
+        Confounding variates (covariates), fitted but not tested.
+    """
+    if target_vars.ndim != 2:
+        raise ValueError(
+            "'target_vars' should be a 2D array. "
+            f"An array with {target_vars.ndim} dimension(s) was passed."
+        )
+
+    # check explanatory variates' dimensions
+    if tested_vars.ndim == 1:
+        tested_vars = np.atleast_2d(tested_vars).T
+
+    # check n_sample consistent across arguments
+    if target_vars.shape[0] != tested_vars.shape[0]:
+        raise ValueError(
+            "'target_vars' and 'tested_vars' "
+            "first dimension should be equal.\n"
+            f"Got: {target_vars.shape[0]} for 'target_vars'"
+            f"and {tested_vars.shape[0]} for 'tested_vars'."
+        )
+    if (
+        confounding_vars is not None
+        and target_vars.shape[0] != confounding_vars.shape[0]
+    ):
+        raise ValueError(
+            "'target_vars' and 'confounding_vars' "
+            "first dimension should be equal.\n"
+            f"Got: {target_vars.shape[0]} for 'target_vars'"
+            f"and {confounding_vars.shape[0]} for 'confounding_vars'."
+        )
+
+    return tested_vars
 
 
 def _check_for_intercept_in_tested_var(tested_vars):
