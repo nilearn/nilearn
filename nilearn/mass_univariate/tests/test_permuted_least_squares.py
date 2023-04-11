@@ -359,6 +359,20 @@ def test_permuted_ols_no_covar_warning(random_state=RANDOM_STATE):
     assert np.array_equal(output_1["t"][1:], output_2["t"][1:])
 
 
+def test_permuted_ols_tested_var_transpose(design, random_state=RANDOM_STATE):
+    target_var, tested_var, *_ = design
+    output = permuted_ols(
+        tested_var,
+        target_var,
+        model_intercept=False,
+        n_perm=0,
+        random_state=random_state,
+        output_type="dict",
+        n_jobs=-1,
+    )
+    compare_to_ref_score(output["t"], tested_var, target_var)
+
+
 def test_permuted_ols_no_covar_negative_n_job(
     design, random_state=RANDOM_STATE
 ):

@@ -614,23 +614,16 @@ def permuted_ols(
     .. footbibliography::
 
     """
-    _check_args_permuted_ols(target_vars, n_jobs, tfce, threshold, masker)
-    output_type = _check_output_type_permuted_ols(output_type, tfce, threshold)
-
-    # check n_sample consistent across arguments
-    assert target_vars.shape[0] == tested_vars.shape[0]
-    if confounding_vars is not None:
-        assert target_vars.shape[0] == confounding_vars.shape[0]
-
-    # check explanatory variates' dimensions
-    if tested_vars.ndim == 1:
-        tested_vars = np.atleast_2d(tested_vars).T
-
-    # check n_jobs (number of CPUs)
-    if n_jobs < 0:
-        n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
-    else:
-        n_jobs = min(n_jobs, joblib.cpu_count())
+    output_type, n_jobs, tested_vars = _check_args_permuted_ols(
+        target_vars,
+        tested_vars,
+        confounding_vars,
+        n_jobs,
+        output_type,
+        tfce,
+        threshold,
+        masker,
+    )
 
     # make target_vars F-ordered to speed-up computation
     n_descriptors = target_vars.shape[1]
@@ -711,7 +704,16 @@ def permuted_ols(
     )
 
 
-def _check_args_permuted_ols(target_vars, n_jobs, tfce, threshold, masker):
+def _check_args_permuted_ols(
+    target_vars,
+    tested_vars,
+    confounding_vars,
+    n_jobs,
+    output_type,
+    tfce,
+    threshold,
+    masker,
+):
     """Validate input arguments for permuted_ols.
 
     Parameters
@@ -724,6 +726,9 @@ def _check_args_permuted_ols(target_vars, n_jobs, tfce, threshold, masker):
         Number of parallel workers.
         If -1 is provided, all CPUs are used.
         A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
+
+    output_type : {'legacy', 'dict'}, optional
+        Determines how outputs should be returned.
 
     tfce : :obj:`bool`
         Whether to calculate :term:`TFCE` as part of the permutation procedure
@@ -757,6 +762,12 @@ def _check_args_permuted_ols(target_vars, n_jobs, tfce, threshold, masker):
             "(joblib conventions)."
         )
 
+    # check n_jobs (number of CPUs)
+    if n_jobs < 0:
+        n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
+    else:
+        n_jobs = min(n_jobs, joblib.cpu_count())
+
     # check that masker is provided if it is needed
     if tfce and not masker:
         raise ValueError("A masker must be provided if tfce is True.")
@@ -765,6 +776,19 @@ def _check_args_permuted_ols(target_vars, n_jobs, tfce, threshold, masker):
         raise ValueError(
             'If "threshold" is not None, masker must be defined as well.'
         )
+
+    output_type = _check_output_type_permuted_ols(output_type, tfce, threshold)
+
+    # check explanatory variates' dimensions
+    if tested_vars.ndim == 1:
+        tested_vars = np.atleast_2d(tested_vars).T
+
+    # check n_sample consistent across arguments
+    assert target_vars.shape[0] == tested_vars.shape[0]
+    if confounding_vars is not None:
+        assert target_vars.shape[0] == confounding_vars.shape[0]
+
+    return output_type, n_jobs, tested_vars
 
 
 def _check_output_type_permuted_ols(output_type, tfce, threshold):
