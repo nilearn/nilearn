@@ -897,6 +897,21 @@ def _optionally_add_intercept(
     - requested by the user or may be necessary with model_intercept=True
     - all intercepts have been removed from the confounds
       by _check_for_intercept_in_confounds and at least one must be added.
+
+    Parameters
+    ----------
+    confounding_vars : array-like, shape=(n_samples, n_covars)
+        Confounding variates (covariates), fitted but not tested.
+
+    model_intercept : :obj:`bool`
+        If True, a constant column will be added to the confounding variates.
+        This value may be updated if all intercepts were removed.
+
+    intercept_test : :obj:`bool`
+        Whether an intercept is already present.
+
+    n_samples : :obj:`int`
+        number of samples
     """
     if model_intercept and not intercept_test:
         if confounding_vars is not None:
