@@ -1,5 +1,4 @@
-"""
-An experimental protocol is handled as a pandas DataFrame
+"""An experimental protocol is handled as a pandas DataFrame \
 that includes an 'onset' field.
 
 This yields the onset time of the events in the experimental paradigm.
@@ -19,15 +18,14 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 
-VALID_FIELDS = set(["onset",
-                    "duration",
-                    "trial_type",
-                    "modulation",
-                    ])
+VALID_FIELDS = {"onset",
+                "duration",
+                "trial_type",
+                "modulation"}
 
 
 def check_events(events):
-    """Test that the events data describes a valid experimental paradigm
+    """Test that the events data describes a valid experimental paradigm.
 
     It is valid if the events data  has an 'onset' key.
 
@@ -62,9 +60,8 @@ def check_events(events):
     # Column checks
     for col_name in ['onset', 'duration']:
         if col_name not in events.columns:
-            raise ValueError("The provided events data "
-                             "has no {} column.".format(
-                                 col_name))
+            raise ValueError(
+                f"The provided events data has no {col_name} column.")
 
     # Make a copy of the dataframe
     events_copy = events.copy()

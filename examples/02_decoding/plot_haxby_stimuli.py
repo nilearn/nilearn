@@ -1,6 +1,6 @@
 """
 Show stimuli of Haxby et al. dataset
-===============================================================================
+====================================
 
 In this script we plot an overview of the stimuli used in "Distributed
 and Overlapping Representations of Faces and Objects in Ventral Temporal
@@ -8,7 +8,6 @@ Cortex" (Science 2001)
 """
 
 import matplotlib.pyplot as plt
-
 from nilearn import datasets
 from nilearn.plotting import show
 
@@ -17,8 +16,7 @@ stimulus_information = haxby_dataset.stimuli
 
 for stim_type in stimulus_information:
     # skip control images, there are too many
-    if stim_type != 'controls':
-
+    if stim_type != "controls":
         file_names = stimulus_information[stim_type]
 
         fig, axes = plt.subplots(6, 8)

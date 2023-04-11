@@ -1,6 +1,4 @@
-"""
-Transformer for computing ROI signals of multiple 4D images
-"""
+"""Transformer for computing ROI signals of multiple 4D images."""
 
 import itertools
 
@@ -14,6 +12,7 @@ from .nifti_labels_masker import NiftiLabelsMasker
 @fill_doc
 class MultiNiftiLabelsMasker(NiftiLabelsMasker):
     """Class for masking of Niimg-like objects.
+
     MultiNiftiLabelsMasker is useful when data from non-overlapping volumes
     and from different subjects should be extracted (contrary to
     :class:`nilearn.maskers.NiftiLabelsMasker`).
@@ -96,7 +95,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
     %(masker_kwargs)s
 
-    See also
+    See Also
     --------
     nilearn.maskers.NiftiMasker
     nilearn.maskers.NiftiLabelsMasker
@@ -190,7 +189,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         return region_signals
 
     def transform(self, imgs, confounds=None, sample_mask=None):
-        """Apply mask, spatial and temporal preprocessing
+        """Apply mask, spatial and temporal preprocessing.
 
         Parameters
         ----------
@@ -206,7 +205,6 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             shape: list of (number of scans, number of labels)
 
         """
-
         self._check_fitted()
         if (not hasattr(imgs, '__iter__')
                 or isinstance(imgs, str)):

@@ -1,10 +1,8 @@
 """
 Test the _utils.cache_mixin module
 """
-import json
 import os
 import shutil
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -26,38 +24,22 @@ def f(x):
     return x
 
 
-def test_check_memory():
+def test_check_memory(tmp_path):
     # Test if _check_memory returns a memory object with the location equal to
     # input path
-    with tempfile.TemporaryDirectory() as temp_dir:
 
-        mem_none = Memory(location=None)
-        mem_temp = Memory(location=temp_dir)
+    mem_none = Memory(location=None)
+    mem_temp = Memory(location=str(tmp_path))
 
-        for mem in [None, mem_none]:
-            memory = cache_mixin._check_memory(mem, verbose=False)
-            assert memory, Memory
-            assert memory.location == mem_none.location
+    for mem in [None, mem_none]:
+        memory = cache_mixin._check_memory(mem, verbose=False)
+        assert memory, Memory
+        assert memory.location == mem_none.location
 
-        for mem in [temp_dir, mem_temp]:
-            memory = cache_mixin._check_memory(mem, verbose=False)
-            assert memory.location == mem_temp.location
-            assert memory, Memory
-
-
-def test_cache_memory_level():
-    with tempfile.TemporaryDirectory() as temp_dir:
-        joblib_dir = Path(
-            temp_dir, 'joblib', 'nilearn', 'tests', 'test_cache_mixin', 'f')
-        mem = Memory(location=temp_dir, verbose=0)
-        cache_mixin.cache(f, mem, func_memory_level=2, memory_level=1)(2)
-        assert len(_get_subdirs(joblib_dir)) == 0
-        cache_mixin.cache(f, Memory(location=None))(2)
-        assert len(_get_subdirs(joblib_dir)) == 0
-        cache_mixin.cache(f, mem, func_memory_level=2, memory_level=3)(2)
-        assert len(_get_subdirs(joblib_dir)) == 1
-        cache_mixin.cache(f, mem)(3)
-        assert len(_get_subdirs(joblib_dir)) == 2
+    for mem in [str(tmp_path), mem_temp]:
+        memory = cache_mixin._check_memory(mem, verbose=False)
+        assert memory.location == mem_temp.location
+        assert memory, Memory
 
 
 class CacheMixinTest(CacheMixin):
@@ -126,14 +108,31 @@ def test_cache_mixin_wrong_dirs():
                 shutil.rmtree(expand_cache_dir)
 
 
-def test_cache_shelving():
-    with tempfile.TemporaryDirectory() as temp_dir:
-        joblib_dir = Path(
-            temp_dir, 'joblib', 'nilearn', 'tests', 'test_cache_mixin', 'f')
-        mem = Memory(location=temp_dir, verbose=0)
-        res = cache_mixin.cache(f, mem, shelve=True)(2)
-        assert res.get() == 2
-        assert len(_get_subdirs(joblib_dir)) == 1
-        res = cache_mixin.cache(f, mem, shelve=True)(2)
-        assert res.get() == 2
-        assert len(_get_subdirs(joblib_dir)) == 1
+def test_cache_memory_level(tmp_path):
+
+    joblib_dir = tmp_path / 'joblib' / 'test_cache_mixin' / 'f'
+    
+    cache_mixin.cache(f, Memory(location=None))(2)
+    assert len(_get_subdirs(joblib_dir)) == 0
+    
+    mem = Memory(location=str(tmp_path), verbose=0)
+
+    cache_mixin.cache(f, mem, func_memory_level=2, memory_level=1)(2)
+    assert len(_get_subdirs(joblib_dir)) == 0
+
+    cache_mixin.cache(f, mem, func_memory_level=2, memory_level=3)(2)
+    assert len(_get_subdirs(joblib_dir)) == 1
+
+    cache_mixin.cache(f, mem)(3)
+    assert len(_get_subdirs(joblib_dir)) == 2
+
+
+def test_cache_shelving(tmp_path):
+    joblib_dir = tmp_path / 'joblib' / 'test_cache_mixin' / 'f'
+    mem = Memory(location=str(tmp_path), verbose=0)
+    res = cache_mixin.cache(f, mem, shelve=True)(2)
+    assert res.get() == 2
+    assert len(_get_subdirs(joblib_dir)) == 1
+    res = cache_mixin.cache(f, mem, shelve=True)(2)
+    assert res.get() == 2
+    assert len(_get_subdirs(joblib_dir)) == 1    

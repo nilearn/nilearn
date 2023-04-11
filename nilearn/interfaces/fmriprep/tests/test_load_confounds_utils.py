@@ -1,10 +1,9 @@
 import pytest
 from nilearn.interfaces.fmriprep.load_confounds_utils import (
-    _sanitize_confounds, _get_file_name
+    _get_file_name,
+    _sanitize_confounds,
 )
-from nilearn.interfaces.fmriprep.tests.utils import (
-    create_tmp_filepath
-)
+from nilearn.interfaces.fmriprep.tests.utils import create_tmp_filepath
 
 
 @pytest.mark.parametrize(

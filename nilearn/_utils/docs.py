@@ -567,19 +567,26 @@ hemispheres : list of :obj:`str`, optional
 
 # view
 docdict['view'] = """
-view : {'lateral', 'medial', 'dorsal', 'ventral',\
-        'anterior', 'posterior'}, optional
+view : :obj:`str` or a pair of :obj:`float`, optional.
+    If a string, must be in {'lateral', 'medial', 'dorsal', 'ventral',\
+    'anterior', 'posterior'}.
+    If a sequence, must be a pair (elev, azim) of float
+    angles in degrees that will manually set a custom view.
+    E.g., view=[270.0, 90.0] or view=(0.0, -180.0).
     View of the surface that is rendered.
     Default='lateral'.
+
 """
 
 # bg_on_data
-docdict['bg_on_data'] = """
+docdict['bg_on_data'] = r"""
 bg_on_data : :obj:`bool`, optional
-    If ``True``, and a ``bg_map`` is specified,
+    If ``True`` and a ``bg_map`` is specified,
     the ``surf_data`` data is multiplied by the background
-    image, so that e.g. sulcal depth is visible beneath
-    the ``surf_data``.
+    image, so that e.g. sulcal depth is jointly visible with ``surf_data``.
+    Otherwise, the background image will only be visible where there
+    is no surface data (either because ``surf_data`` contains ``nan``\s
+    or because is was thresholded).
 
         .. note::
             This non-uniformly changes the surf_data values according

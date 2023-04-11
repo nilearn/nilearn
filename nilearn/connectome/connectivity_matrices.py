@@ -1,11 +1,13 @@
+"""Connectivity matrices."""
+
 import warnings
-from math import sqrt, floor
+from math import floor, sqrt
 
 import numpy as np
 from scipy import linalg
-
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
+
 from .. import signal
 from .._utils.extmath import is_spd
 
@@ -20,12 +22,13 @@ def _check_square(matrix):
 
     """
     if matrix.ndim != 2 or (matrix.shape[0] != matrix.shape[-1]):
-        raise ValueError('Expected a square matrix, got array of shape'
-                         ' {0}.'.format(matrix.shape))
+        raise ValueError(
+            f"Expected a square matrix, got array of shape {matrix.shape}."
+        )
 
 
 def _check_spd(matrix):
-    """Raise a ValueError if the input matrix is not symmetric positive
+    """Raise a ValueError if the input matrix is not symmetric positive \
     definite.
 
     Parameters
@@ -35,11 +38,11 @@ def _check_spd(matrix):
 
     """
     if not is_spd(matrix, decimal=7):
-        raise ValueError('Expected a symmetric positive definite matrix.')
+        raise ValueError("Expected a symmetric positive definite matrix.")
 
 
 def _form_symmetric(function, eigenvalues, eigenvectors):
-    """Return the symmetric matrix with the given eigenvectors and
+    """Return the symmetric matrix with the given eigenvectors and \
     eigenvalues transformed by function.
 
     Parameters
@@ -64,8 +67,9 @@ def _form_symmetric(function, eigenvalues, eigenvectors):
 
 
 def _map_eigenvalues(function, symmetric):
-    """Matrix function, for real symmetric matrices. The function is applied
-    to the eigenvalues of symmetric.
+    """Matrix function, for real symmetric matrices.
+
+    The function is applied to the eigenvalues of symmetric.
 
     Parameters
     ----------
@@ -157,43 +161,47 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
         gmean = init
 
     norm_old = np.inf
-    step = 1.
+    step = 1.0
 
     # Gradient descent
-    for n in range(max_iter):
+    for _ in range(max_iter):
         # Computation of the gradient
         vals_gmean, vecs_gmean = linalg.eigh(gmean)
-        gmean_inv_sqrt = _form_symmetric(np.sqrt, 1. / vals_gmean, vecs_gmean)
-        whitened_matrices = [gmean_inv_sqrt.dot(matrix).dot(gmean_inv_sqrt)
-                             for matrix in matrices]
+        gmean_inv_sqrt = _form_symmetric(np.sqrt, 1.0 / vals_gmean, vecs_gmean)
+        whitened_matrices = [
+            gmean_inv_sqrt.dot(matrix).dot(gmean_inv_sqrt)
+            for matrix in matrices
+        ]
         logs = [_map_eigenvalues(np.log, w_mat) for w_mat in whitened_matrices]
-        logs_mean = np.mean(logs, axis=0)  # Covariant derivative is
-                                           # - gmean.dot(logms_mean)
+        # Covariant derivative is - gmean.dot(logms_mean)
+        logs_mean = np.mean(logs, axis=0)
         if np.any(np.isnan(logs_mean)):
             raise FloatingPointError("Nan value after logarithm operation.")
 
-        norm = np.linalg.norm(logs_mean)  # Norm of the covariant derivative on
-                                          # the tangent space at point gmean
+        # Norm of the covariant derivative on the tangent space at point gmean
+        norm = np.linalg.norm(logs_mean)
 
         # Update of the minimizer
         vals_log, vecs_log = linalg.eigh(logs_mean)
         gmean_sqrt = _form_symmetric(np.sqrt, vals_gmean, vecs_gmean)
         # Move along the geodesic
         gmean = gmean_sqrt.dot(
-            _form_symmetric(np.exp, vals_log * step, vecs_log)).dot(gmean_sqrt)
+            _form_symmetric(np.exp, vals_log * step, vecs_log)
+        ).dot(gmean_sqrt)
 
         # Update the norm and the step size
         if norm < norm_old:
             norm_old = norm
         elif norm > norm_old:
-            step = step / 2.
+            step = step / 2.0
             norm = norm_old
         if tol is not None and norm / gmean.size < tol:
             break
     if tol is not None and norm / gmean.size >= tol:
-        warnings.warn("Maximum number of iterations {0} reached without "
-                      "getting to the requested tolerance level "
-                      "{1}.".format(max_iter, tol))
+        warnings.warn(
+            f"Maximum number of iterations {max_iter} reached without "
+            f"getting to the requested tolerance level {tol}."
+        )
 
     return gmean
 
@@ -228,11 +236,10 @@ def sym_matrix_to_vec(symmetric, discard_diagonal=False):
     """
     if discard_diagonal:
         # No scaling, we directly return the values
-        tril_mask = np.tril(np.ones(symmetric.shape[-2:]), k=-1).astype(
-            bool)
+        tril_mask = np.tril(np.ones(symmetric.shape[-2:]), k=-1).astype(bool)
         return symmetric[..., tril_mask]
     scaling = np.ones(symmetric.shape[-2:])
-    np.fill_diagonal(scaling, sqrt(2.))
+    np.fill_diagonal(scaling, sqrt(2.0))
     tril_mask = np.tril(np.ones(symmetric.shape[-2:])).astype(bool)
     return symmetric[..., tril_mask] / scaling[tril_mask]
 
@@ -269,7 +276,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
     separately to reconstruct the symmetric matrix. For instance this can be
     useful for correlation matrices for which we know the diagonal is 1.
 
-    See also
+    See Also
     --------
     nilearn.connectome.sym_matrix_to_vec
 
@@ -277,29 +284,33 @@ def vec_to_sym_matrix(vec, diagonal=None):
     n = vec.shape[-1]
     # Compute the number of the symmetric matrix columns
     # solve n_columns * (n_columns + 1) / 2 = n subject to n_columns > 0
-    n_columns = (sqrt(8 * n + 1) - 1.) / 2
+    n_columns = (sqrt(8 * n + 1) - 1.0) / 2
     if diagonal is not None:
         n_columns += 1
 
     if n_columns > floor(n_columns):
         raise ValueError(
-            "Vector of unsuitable shape {0} can not be transformed to "
-            "a symmetric matrix.".format(vec.shape))
+            f"Vector of unsuitable shape {vec.shape} cannot be transformed to "
+            "a symmetric matrix."
+        )
 
     n_columns = int(n_columns)
     first_shape = vec.shape[:-1]
-    if diagonal is not None:
-        if diagonal.shape[:-1] != first_shape or\
-                diagonal.shape[-1] != n_columns:
-            raise ValueError("diagonal of shape {0} incompatible with vector "
-                             "of shape {1}".format(diagonal.shape, vec.shape))
+    if diagonal is not None and (
+        diagonal.shape[:-1] != first_shape or diagonal.shape[-1] != n_columns
+    ):
+        raise ValueError(
+            f"diagonal of shape {diagonal.shape} incompatible "
+            f"with vector of shape {vec.shape}"
+        )
 
     sym = np.zeros(first_shape + (n_columns, n_columns))
 
     # Fill lower triangular part
-    skip_diagonal = (diagonal is not None)
+    skip_diagonal = diagonal is not None
     mask = np.tril(np.ones((n_columns, n_columns)), k=-skip_diagonal).astype(
-        bool)
+        bool
+    )
     sym[..., mask] = vec
 
     # Fill upper triangular part
@@ -330,11 +341,11 @@ def cov_to_corr(covariance):
         The output correlation matrix.
 
     """
-    diagonal = np.atleast_2d(1. / np.sqrt(np.diag(covariance)))
+    diagonal = np.atleast_2d(1.0 / np.sqrt(np.diag(covariance)))
     correlation = covariance * diagonal * diagonal.T
 
     # Force exact 1. on diagonal
-    np.fill_diagonal(correlation, 1.)
+    np.fill_diagonal(correlation, 1.0)
     return correlation
 
 
@@ -353,12 +364,12 @@ def prec_to_partial(precision):
 
     """
     partial_correlation = -cov_to_corr(precision)
-    np.fill_diagonal(partial_correlation, 1.)
+    np.fill_diagonal(partial_correlation, 1.0)
     return partial_correlation
 
 
 class ConnectivityMeasure(BaseEstimator, TransformerMixin):
-    """A class that computes different kinds of functional connectivity
+    """A class that computes different kinds of functional connectivity \
     matrices.
 
     .. versionadded:: 0.2
@@ -372,7 +383,8 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     kind : {"covariance", "correlation", "partial correlation",\
             "tangent", "precision"}, optional
-        The matrix kind. For the use of "tangent" see :footcite:`Varoquaux2010b`.
+        The matrix kind.
+        For the use of "tangent" see :footcite:`Varoquaux2010b`.
         Default='covariance'.
 
     vectorize : bool, optional
@@ -405,8 +417,13 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     """
 
-    def __init__(self, cov_estimator=LedoitWolf(store_precision=False),
-                 kind='covariance', vectorize=False, discard_diagonal=False):
+    def __init__(
+        self,
+        cov_estimator=LedoitWolf(store_precision=False),
+        kind="covariance",
+        vectorize=False,
+        discard_diagonal=False,
+    ):
         self.cov_estimator = cov_estimator
         self.kind = kind
         self.vectorize = vectorize
@@ -414,34 +431,40 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     def _check_input(self, X, confounds=None):
         if not hasattr(X, "__iter__"):
-            raise ValueError("'subjects' input argument must be an iterable. "
-                             "You provided {0}".format(X.__class__))
+            raise ValueError(
+                "'subjects' input argument must be an iterable. "
+                f"You provided {X.__class__}"
+            )
 
         subjects_types = [type(s) for s in X]
-        if set(subjects_types) != set([np.ndarray]):
-            raise ValueError("Each subject must be 2D numpy.ndarray.\n You "
-                             "provided {0}".format(str(subjects_types)))
+        if set(subjects_types) != {np.ndarray}:
+            raise ValueError(
+                "Each subject must be 2D numpy.ndarray.\n "
+                f"You provided {subjects_types}"
+            )
 
         subjects_dims = [s.ndim for s in X]
-        if set(subjects_dims) != set([2]):
-            raise ValueError("Each subject must be 2D numpy.ndarray.\n You"
-                             "provided arrays of dimensions "
-                             "{0}".format(str(subjects_dims)))
+        if set(subjects_dims) != {2}:
+            raise ValueError(
+                "Each subject must be 2D numpy.ndarray.\n "
+                f"You provided arrays of dimensions {subjects_dims}"
+            )
 
         features_dims = [s.shape[1] for s in X]
         if len(set(features_dims)) > 1:
-            raise ValueError("All subjects must have the same number of "
-                             "features.\nYou provided: "
-                             "{0}".format(str(features_dims)))
+            raise ValueError(
+                "All subjects must have the same number of features.\n"
+                f"You provided: {features_dims}"
+            )
 
-        if confounds is not None:
-            if not hasattr(confounds, "__iter__"):
-                raise ValueError("'confounds' input argument must be an "
-                                 "iterable. You provided {0}"
-                                 .format(confounds.__class__))
+        if confounds is not None and not hasattr(confounds, "__iter__"):
+            raise ValueError(
+                "'confounds' input argument must be an iterable. "
+                f"You provided {confounds.__class__}"
+            )
 
     def fit(self, X, y=None):
-        """Fit the covariance estimator to the given time series for each
+        """Fit the covariance estimator to the given time series for each \
         subject.
 
         Parameters
@@ -459,79 +482,97 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         self._fit_transform(X, do_fit=True)
         return self
 
-    def _fit_transform(self, X, do_transform=False, do_fit=False,
-                       confounds=None):
-        """ Internal function to avoid duplication of computation
-
-        """
+    def _fit_transform(
+        self, X, do_transform=False, do_fit=False, confounds=None
+    ):
+        """Avoid duplication of computation."""
         self._check_input(X, confounds=confounds)
         if do_fit:
             self.cov_estimator_ = clone(self.cov_estimator)
 
         # Compute all the matrices, stored in "connectivities"
-        if self.kind == 'correlation':
-            covariances_std = [self.cov_estimator_.fit(
-                signal._standardize(x, detrend=False, standardize=True)
-                ).covariance_ for x in X]
+        if self.kind == "correlation":
+            covariances_std = [
+                self.cov_estimator_.fit(
+                    signal._standardize(x, detrend=False, standardize=True)
+                ).covariance_
+                for x in X
+            ]
             connectivities = [cov_to_corr(cov) for cov in covariances_std]
         else:
             covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
-            if self.kind in ('covariance', 'tangent'):
+            if self.kind in ("covariance", "tangent"):
                 connectivities = covariances
-            elif self.kind == 'precision':
+            elif self.kind == "precision":
                 connectivities = [linalg.inv(cov) for cov in covariances]
-            elif self.kind == 'partial correlation':
-                connectivities = [prec_to_partial(linalg.inv(cov))
-                                  for cov in covariances]
+            elif self.kind == "partial correlation":
+                connectivities = [
+                    prec_to_partial(linalg.inv(cov)) for cov in covariances
+                ]
             else:
-                raise ValueError('Allowed connectivity kinds are '
-                                 '"correlation", '
-                                 '"partial correlation", "tangent", '
-                                 '"covariance" and "precision", got kind '
-                                 '"{}"'.format(self.kind))
+                allowed_kinds = (
+                    "correlation",
+                    "partial correlation",
+                    "tangent",
+                    "covariance",
+                    "precision",
+                )
+                raise ValueError(
+                    f"Allowed connectivity kinds are {allowed_kinds}. "
+                    f"Got kind {self.kind}."
+                )
 
         # Store the mean
         if do_fit:
-            if self.kind == 'tangent':
-                self.mean_ = _geometric_mean(covariances, max_iter=30, tol=1e-7)
-                self.whitening_ = _map_eigenvalues(lambda x: 1. / np.sqrt(x),
-                                                self.mean_)
+            if self.kind == "tangent":
+                self.mean_ = _geometric_mean(
+                    covariances, max_iter=30, tol=1e-7
+                )
+                self.whitening_ = _map_eigenvalues(
+                    lambda x: 1.0 / np.sqrt(x), self.mean_
+                )
             else:
                 self.mean_ = np.mean(connectivities, axis=0)
                 # Fight numerical instabilities: make symmetric
                 self.mean_ = self.mean_ + self.mean_.T
-                self.mean_ *= .5
+                self.mean_ *= 0.5
 
         # Compute the vector we return on transform
         if do_transform:
-            if self.kind == 'tangent':
-                connectivities = [_map_eigenvalues(np.log, self.whitening_.dot(
-                                                   cov).dot(self.whitening_))
-                                    for cov in connectivities]
+            if self.kind == "tangent":
+                connectivities = [
+                    _map_eigenvalues(
+                        np.log, self.whitening_.dot(cov).dot(self.whitening_)
+                    )
+                    for cov in connectivities
+                ]
 
             connectivities = np.array(connectivities)
 
             if confounds is not None and not self.vectorize:
-                error_message = ("'confounds' are provided but "
-                                 "vectorize=False. Confounds are only "
-                                 "cleaned on vectorized matrices as "
-                                 "second level connectome regression "
-                                 "but not on symmetric matrices.")
+                error_message = (
+                    "'confounds' are provided but vectorize=False. "
+                    "Confounds are only cleaned on vectorized matrices "
+                    "as second level connectome regression "
+                    "but not on symmetric matrices."
+                )
                 raise ValueError(error_message)
 
             if self.vectorize:
                 connectivities = sym_matrix_to_vec(
-                    connectivities, discard_diagonal=self.discard_diagonal)
+                    connectivities, discard_diagonal=self.discard_diagonal
+                )
                 if confounds is not None:
-                    connectivities = signal.clean(connectivities,
-                                                  confounds=confounds)
+                    connectivities = signal.clean(
+                        connectivities, confounds=confounds
+                    )
 
         return connectivities
 
     def fit_transform(self, X, y=None, confounds=None):
-        """Fit the covariance estimator to the given time series for each
-        subject. Then apply transform to covariance matrices for the chosen
-        kind.
+        """Fit the covariance estimator to the given time series \
+        for each subject. \
+        Then apply transform to covariance matrices for the chosen kind.
 
         Parameters
         ----------
@@ -556,22 +597,22 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
             Vectors are cleaned when vectorize=True and confounds are provided.
 
         """
-        if self.kind == 'tangent':
+        if self.kind == "tangent" and len(X) <= 1:
             # Check that people are applying fit_transform to a group of
             # subject
             # We can only impose this in fit_transform, as it is legit to
             # fit only on a single given reference point
-            if not len(X) > 1:
-                raise ValueError("Tangent space parametrization can only "
-                    "be applied to a group of subjects, as it returns "
-                    "deviations to the mean. You provided %r" % X
-                    )
-        return self._fit_transform(X, do_fit=True, do_transform=True,
-                                   confounds=confounds)
-
+            raise ValueError(
+                "Tangent space parametrization can only "
+                "be applied to a group of subjects, as it returns "
+                f"deviations to the mean. You provided {X!r}"
+            )
+        return self._fit_transform(
+            X, do_fit=True, do_transform=True, confounds=confounds
+        )
 
     def transform(self, X, confounds=None):
-        """Apply transform to covariances matrices to get the connectivity
+        """Apply transform to covariances matrices to get the connectivity \
         matrices for the chosen kind.
 
         Parameters
@@ -602,13 +643,15 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     def _check_fitted(self):
         if not hasattr(self, "cov_estimator_"):
-            raise ValueError('It seems that {0} has not been fitted. '
-                             'You must call fit() before calling '
-                             'transform().'.format(self.__class__.__name__)
-                             )
+            raise ValueError(
+                f"It seems that {self.__class__.__name__} "
+                "has not been fitted. "
+                "You must call fit() before calling transform()."
+            )
 
     def inverse_transform(self, connectivities, diagonal=None):
-        """Returns connectivity matrices from connectivities, vectorized or not.
+        """Return connectivity matrices from connectivities, \
+        vectorized or not.
 
         If kind is 'tangent', the covariance matrices are reconstructed.
 
@@ -635,25 +678,30 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
         connectivities = np.array(connectivities)
         if self.vectorize:
-            if self.discard_diagonal:
-                if diagonal is None:
-                    if self.kind in ['correlation', 'partial correlation']:
-                        diagonal = np.ones((connectivities.shape[0],
-                                            self.mean_.shape[0])) / sqrt(2.)
-                    else:
-                        raise ValueError("diagonal values has been discarded "
-                                         "and are unknown for {0} kind, can "
-                                         "not reconstruct connectivity "
-                                         "matrices.".format(self.kind))
+            if self.discard_diagonal and diagonal is None:
+                if self.kind in ["correlation", "partial correlation"]:
+                    diagonal = np.ones(
+                        (connectivities.shape[0], self.mean_.shape[0])
+                    ) / sqrt(2.0)
+                else:
+                    raise ValueError(
+                        "diagonal values has been discarded and are unknown "
+                        f"for {self.kind} kind, "
+                        "cannot reconstruct connectivity matrices."
+                    )
 
-            connectivities = vec_to_sym_matrix(connectivities,
-                                               diagonal=diagonal)
+            connectivities = vec_to_sym_matrix(
+                connectivities, diagonal=diagonal
+            )
 
-        if self.kind == 'tangent':
+        if self.kind == "tangent":
             mean_sqrt = _map_eigenvalues(np.sqrt, self.mean_)
-            connectivities = [mean_sqrt.dot(
-                _map_eigenvalues(np.exp, displacement)).dot(mean_sqrt)
-                for displacement in connectivities]
+            connectivities = [
+                mean_sqrt.dot(_map_eigenvalues(np.exp, displacement)).dot(
+                    mean_sqrt
+                )
+                for displacement in connectivities
+            ]
             connectivities = np.array(connectivities)
 
         return connectivities

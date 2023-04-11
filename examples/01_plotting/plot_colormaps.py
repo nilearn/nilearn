@@ -1,6 +1,6 @@
 """
 Matplotlib colormaps in Nilearn
-================================
+===============================
 
 Visualize HCP connectome workbench color maps shipped with Nilearn
 which can be used for plotting brain images on surface.
@@ -10,13 +10,12 @@ See :ref:`surface-plotting` for surface plotting details.
 
 import matplotlib.pyplot as plt
 import numpy as np
-
 from nilearn.plotting import show
 from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
 
 ###########################################################################
 # Plot color maps
-# ----------------
+# ---------------
 
 nmaps = len(nilearn_cmaps)
 a = np.outer(np.arange(0, 1, 0.01), np.ones(10))
@@ -34,6 +33,7 @@ for index, cmap in enumerate(nilearn_cmaps):
 ###########################################################################
 # Plot matplotlib color maps
 # --------------------------
+
 plt.figure(figsize=(10, 5))
 plt.subplots_adjust(top=0.8, bottom=0.05, left=0.01, right=0.99)
 deprecated_cmaps = ["Vega10", "Vega20", "Vega20b", "Vega20c", "spectral"]

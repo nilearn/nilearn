@@ -1,43 +1,54 @@
-"""
-This module contains the GLM and contrast classes that are meant to be the main
+"""Contains the GLM and contrast classes that are meant to be the main \
 objects of fMRI data analyses.
 
 Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 
 """
+from __future__ import annotations
+
 import glob
 import json
 import os
 import sys
 import time
+from pathlib import Path
 from warnings import warn
 
 import numpy as np
 import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
+from nilearn._utils import fill_doc, stringify_path
+from nilearn._utils.glm import (
+    _check_events_file_uses_tab_separators,
+    _check_run_sample_masks,
+    _check_run_tables,
+)
+from nilearn._utils.niimg_conversions import check_niimg
+from nilearn.glm._base import BaseGLM
+from nilearn.glm.contrasts import (
+    _compute_fixed_effect_contrast,
+    expression_to_contrast_vector,
+)
+from nilearn.glm.first_level.design_matrix import (
+    make_first_level_design_matrix,
+)
+from nilearn.glm.regression import (
+    ARModel,
+    OLSModel,
+    RegressionResults,
+    SimpleRegressionResults,
+)
+from nilearn.image import get_data
+from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
+from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
 from sklearn.base import clone
 from sklearn.cluster import KMeans
 
-from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
-from nilearn._utils import fill_doc
-from nilearn._utils.glm import (_check_events_file_uses_tab_separators,
-                                _check_run_tables, _check_run_sample_masks)
-from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils import stringify_path
-from nilearn.glm.contrasts import (_compute_fixed_effect_contrast,
-                                   expression_to_contrast_vector)
-from nilearn.glm.first_level.design_matrix import \
-    make_first_level_design_matrix
-from nilearn.image import get_data
-from nilearn.glm.regression import (ARModel, OLSModel, RegressionResults,
-                                    SimpleRegressionResults)
-from nilearn.glm._base import BaseGLM
-
 
 def mean_scaling(Y, axis=0):
-    """Scaling of the data to have percent of baseline change along the
-    specified axis
+    """Scaling of the data to have percent of baseline change \
+    along the specified axis.
 
     Parameters
     ----------
@@ -67,7 +78,7 @@ def mean_scaling(Y, axis=0):
 
 
 def _ar_model_fit(X, val, Y):
-    """Wrapper for fit method of ARModel to allow joblib parallelization"""
+    """Wrap fit method of ARModel to allow joblib parallelization."""
     return ARModel(X, val).fit(Y)
 
 
@@ -101,7 +112,7 @@ def _yule_walker(x, order):
 
 def run_glm(Y, X, noise_model='ar1', bins=100,
             n_jobs=1, verbose=0, random_state=None):
-    """ GLM fit for an fMRI data matrix
+    """GLM fit for an fMRI data matrix.
 
     Parameters
     ----------
@@ -151,9 +162,9 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
     acceptable_noise_models = ['ols', 'arN']
     if ((noise_model[:2] != 'ar') and (noise_model != 'ols')):
         raise ValueError(
-            "Acceptable noise models are {0}. You provided "
-            "'noise_model={1}'".format(acceptable_noise_models,
-                                       noise_model)
+            "Acceptable noise models are {}. You provided "
+            "'noise_model={}'".format(acceptable_noise_models,
+                                      noise_model)
         )
     if Y.shape[0] != X.shape[0]:
         raise ValueError('The number of rows of Y '
@@ -169,7 +180,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
 
         err_msg = ('AR order must be a positive integer specified as arN, '
                    'where N is an integer. E.g. ar3. '
-                   'You provided {0}.'.format(noise_model))
+                   'You provided {}.'.format(noise_model))
         try:
             ar_order = int(noise_model[2:])
         except ValueError:
@@ -224,8 +235,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
 
 @fill_doc
 class FirstLevelModel(BaseGLM):
-    """ Implementation of the General Linear Model
-    for single session fMRI data.
+    """Implement the General Linear Model for single session fMRI data.
 
     Parameters
     ----------
@@ -396,6 +406,7 @@ class FirstLevelModel(BaseGLM):
 
     @property
     def scaling_axis(self):
+        """Return scaling of axis."""
         warn(DeprecationWarning(
             "Deprecated. `scaling_axis` will be removed in 0.11.0. "
             "Please use `signal_scaling` instead."
@@ -404,7 +415,7 @@ class FirstLevelModel(BaseGLM):
 
     def fit(self, run_imgs, events=None, confounds=None, sample_masks=None,
             design_matrices=None, bins=100):
-        """Fit the GLM
+        """Fit the GLM.
 
         For each run:
         1. create design matrix X
@@ -464,7 +475,7 @@ class FirstLevelModel(BaseGLM):
                 'confounds and events will be ignored.'
             )
         # Local import to prevent circular imports
-        from nilearn.maskers import NiftiMasker  # noqa
+        from nilearn.maskers import NiftiMasker
 
         # Check arguments
         # Check imgs type
@@ -522,8 +533,9 @@ class FirstLevelModel(BaseGLM):
                     if our_param is None:
                         continue
                     if getattr(self.masker_, param_name) is not None:
-                        warn('Parameter %s of the masker'
-                             ' overridden' % param_name)
+                        warn(
+                            f'Parameter {param_name} of the masker overridden'
+                        )
                     setattr(self.masker_, param_name, our_param)
                 self.masker_.fit(run_imgs[0])
             else:
@@ -544,7 +556,7 @@ class FirstLevelModel(BaseGLM):
                     remaining = 'go take a coffee, a big one'
                 else:
                     remaining = (100. - percent) / max(0.01, percent) * dt
-                    remaining = '%i seconds remaining' % remaining
+                    remaining = f'{int(remaining)} seconds remaining'
 
                 sys.stderr.write(
                     "Computing run %d out of %d runs (%s)\n"
@@ -599,10 +611,10 @@ class FirstLevelModel(BaseGLM):
 
             if self.verbose > 1:
                 t_masking = time.time() - t_masking
-                sys.stderr.write('Masker took %d seconds       \n'
-                                 % t_masking)
+                sys.stderr.write(
+                    f'Masker took {int(t_masking)} seconds       \n')
 
-            if self.signal_scaling is not False:  # noqa
+            if self.signal_scaling is not False:
                 Y, _ = mean_scaling(Y, self.signal_scaling)
             if self.memory:
                 mem_glm = self.memory.cache(run_glm, ignore=['n_jobs'])
@@ -619,7 +631,7 @@ class FirstLevelModel(BaseGLM):
                                       random_state=self.random_state)
             if self.verbose > 1:
                 t_glm = time.time() - t_glm
-                sys.stderr.write('GLM took %d seconds         \n' % t_glm)
+                sys.stderr.write(f'GLM took {int(t_glm)} seconds         \n')
 
             self.labels_.append(labels)
             # We save memory if inspecting model details is not necessary
@@ -637,8 +649,9 @@ class FirstLevelModel(BaseGLM):
 
     def compute_contrast(self, contrast_def, stat_type=None,
                          output_type='z_score'):
-        """Generate different outputs corresponding to
+        """Generate different outputs corresponding to \
         the contrasts provided e.g. z_map, t_map, effects and variance.
+
         In multi-session case, outputs the fixed effects map.
 
         Parameters
@@ -685,7 +698,7 @@ class FirstLevelModel(BaseGLM):
         n_runs = len(self.labels_)
         n_contrasts = len(con_vals)
         if n_contrasts == 1 and n_runs > 1:
-            warn('One contrast given, assuming it for all %d runs' % n_runs)
+            warn(f'One contrast given, assuming it for all {int(n_runs)} runs')
             con_vals = con_vals * n_runs
         elif n_contrasts != n_runs:
             raise ValueError('%d contrasts given, while there are %d runs' %
@@ -705,7 +718,7 @@ class FirstLevelModel(BaseGLM):
         valid_types.append('all')  # ensuring 'all' is the final entry.
         if output_type not in valid_types:
             raise ValueError(
-                'output_type must be one of {}'.format(valid_types))
+                f'output_type must be one of {valid_types}')
         contrast = _compute_fixed_effect_contrast(self.labels_, self.results_,
                                                   con_vals, stat_type)
         output_types = (valid_types[:-1]
@@ -717,16 +730,16 @@ class FirstLevelModel(BaseGLM):
             output = self.masker_.inverse_transform(estimate_)
             contrast_name = str(con_vals)
             output.header['descrip'] = (
-                '%s of contrast %s' % (output_type_, contrast_name))
+                f'{output_type_} of contrast {contrast_name}')
             outputs[output_type_] = output
 
         return outputs if output_type == 'all' else output
 
     def _get_voxelwise_model_attribute(self, attribute,
                                        result_as_time_series):
-        """Transform RegressionResults instances within a dictionary
-        (whose keys represent the autoregressive coefficient under the 'ar1'
-        noise model or only 0.0 under 'ols' noise_model and values are the
+        """Transform RegressionResults instances within a dictionary \
+        (whose keys represent the autoregressive coefficient under the 'ar1' \
+        noise model or only 0.0 under 'ols' noise_model and values are the \
         RegressionResults instances) into input nifti space.
 
         Parameters
@@ -753,8 +766,7 @@ class FirstLevelModel(BaseGLM):
                                if '__' not in prop
                                ]
         if attribute not in possible_attributes:
-            msg = ("attribute must be one of: "
-                   "{attr}".format(attr=possible_attributes)
+            msg = (f"attribute must be one of: {possible_attributes}"
                    )
             raise ValueError(msg)
 
@@ -793,58 +805,80 @@ class FirstLevelModel(BaseGLM):
         return output
 
 
-def first_level_from_bids(dataset_path, task_label, space_label=None,
-                          img_filters=None, t_r=None, slice_time_ref=0.,
-                          hrf_model='glover', drift_model='cosine',
-                          high_pass=.01, drift_order=1, fir_delays=[0],
-                          min_onset=-24, mask_img=None,
-                          target_affine=None, target_shape=None,
-                          smoothing_fwhm=None, memory=Memory(None),
-                          memory_level=1, standardize=False,
-                          signal_scaling=0, noise_model='ar1',
-                          verbose=0, n_jobs=1,
+def first_level_from_bids(dataset_path,
+                          task_label,
+                          space_label=None,
+                          sub_labels=None,
+                          img_filters=None,
+                          t_r=None,
+                          slice_time_ref=0.,
+                          hrf_model='glover',
+                          drift_model='cosine',
+                          high_pass=.01,
+                          drift_order=1,
+                          fir_delays=[0],
+                          min_onset=-24,
+                          mask_img=None,
+                          target_affine=None,
+                          target_shape=None,
+                          smoothing_fwhm=None,
+                          memory=Memory(None),
+                          memory_level=1,
+                          standardize=False,
+                          signal_scaling=0,
+                          noise_model='ar1',
+                          verbose=0,
+                          n_jobs=1,
                           minimize_memory=True,
                           derivatives_folder='derivatives'):
     """Create FirstLevelModel objects and fit arguments from a BIDS dataset.
 
-    It t_r is not specified this function will attempt to load it from a
-    bold.json file alongside slice_time_ref. Otherwise t_r and slice_time_ref
-    are taken as given.
+    If t_r is not specified this function will attempt to load it from a
+    bold.json file alongside slice_time_ref.
+    Otherwise t_r and slice_time_ref are taken as given.
 
     Parameters
     ----------
-    dataset_path : str
-        Directory of the highest level folder of the BIDS dataset. Should
-        contain subject folders and a derivatives folder.
+    dataset_path : :obj:`str` or :obj:`pathlib.Path`
+        Directory of the highest level folder of the BIDS dataset.
+        Should contain subject folders and a derivatives folder.
 
-    task_label : str
+    task_label : :obj:`str`
         Task_label as specified in the file names like _task-<task_label>_.
 
-    space_label : str, optional
+    space_label : :obj:`str`, optional
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like _space-<space_label>_.
 
-    img_filters : list of tuples (str, str), optional
-        Filters are of the form (field, label). Only one filter per field
-        allowed. A file that does not match a filter will be discarded.
-        Possible filters are 'acq', 'ce', 'dir', 'rec', 'run', 'echo', 'res',
-        'den', and 'desc'. Filter examples would be ('desc', 'preproc'),
-        ('dir', 'pa') and ('run', '10').
+    sub_labels : :obj:`list` of :obj:`str`, optional
+        Specifies the subset of subject labels to model.
+        If 'None', will model all subjects in the dataset.
+        .. versionadded:: 0.10.1.dev
 
-    derivatives_folder : str, optional
+    img_filters : :obj:`list` of :obj:`tuple` (str, str), optional
+        Filters are of the form (field, label). Only one filter per field
+        allowed.
+        A file that does not match a filter will be discarded.
+        Possible filters are 'acq', 'ce', 'dir', 'rec', 'run', 'echo', 'res',
+        'den', and 'desc'.
+        Filter examples would be ('desc', 'preproc'), ('dir', 'pa')
+        and ('run', '10').
+
+    derivatives_folder : :obj:`str`, Defaults="derivatives".
         derivatives and app folder path containing preprocessed files.
-        Like "derivatives/FMRIPREP". Default="derivatives".
+        Like "derivatives/FMRIPREP".
 
     All other parameters correspond to a `FirstLevelModel` object, which
-    contains their documentation. The subject label of the model will be
-    determined directly from the BIDS dataset.
+    contains their documentation.
+    The subject label of the model will be determined directly
+    from the BIDS dataset.
 
     Returns
     -------
     models : list of `FirstLevelModel` objects
-        Each FirstLevelModel object corresponds to a subject. All runs from
-        different sessions are considered together for the same subject to run
-        a fixed effects analysis on them.
+        Each FirstLevelModel object corresponds to a subject.
+        All runs from different sessions are considered together
+        for the same subject to run a fixed effects analysis on them.
 
     models_run_imgs : list of list of Niimg-like objects,
         Items for the FirstLevelModel fit function of their respective model.
@@ -856,76 +890,63 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
         Items for the FirstLevelModel fit function of their respective model.
 
     """
-    # check arguments
+    sub_labels = sub_labels or []
     img_filters = img_filters or []
-    if not isinstance(dataset_path, str):
-        raise TypeError(
-            'dataset_path must be a string, instead %s was given' %
-            type(task_label))
-    if not os.path.exists(dataset_path):
-        raise ValueError('given path do not exist: %s' % dataset_path)
-    if not isinstance(task_label, str):
-        raise TypeError('task_label must be a string, instead %s was given' %
-                        type(task_label))
-    if space_label is not None and not isinstance(space_label, str):
-        raise TypeError('space_label must be a string, instead %s was given' %
-                        type(space_label))
-    if not isinstance(img_filters, list):
-        raise TypeError('img_filters must be a list, instead %s was given' %
-                        type(img_filters))
-    for img_filter in img_filters:
-        if (not isinstance(img_filter[0], str)
-                or not isinstance(img_filter[1], str)):
-            raise TypeError('filters in img filters must be (str, str), '
-                            'instead %s was given' % type(img_filter))
-        if img_filter[0] not in ['acq', 'ce', 'dir', 'rec', 'run',
-                                 'echo', 'desc', 'res', 'den',
-                                 ]:
-            raise ValueError(
-                "field %s is not a possible filter. Only "
-                "'acq', 'ce', 'dir', 'rec', 'run', 'echo', "
-                "'desc', 'res', 'den' are allowed." % img_filter[0])
 
-    # check derivatives folder is present
-    derivatives_path = os.path.join(dataset_path, derivatives_folder)
-    if not os.path.exists(derivatives_path):
-        raise ValueError('derivatives folder does not exist in given dataset')
+    _check_args_first_level_from_bids(dataset_path=dataset_path,
+                                      task_label=task_label,
+                                      space_label=space_label,
+                                      sub_labels=sub_labels,
+                                      img_filters=img_filters,
+                                      derivatives_folder=derivatives_folder)
+
+    derivatives_path = Path(dataset_path) / derivatives_folder
 
     # Get acq specs for models. RepetitionTime and SliceTimingReference.
     # Throw warning if no bold.json is found
     if t_r is not None:
-        warn('RepetitionTime given in model_init as %d' % t_r)
-        warn('slice_time_ref is %d percent of the repetition '
-             'time' % slice_time_ref)
+        warn(f'RepetitionTime given in as {t_r}')
+        warn(f'slice_time_ref is {slice_time_ref} percent '
+             'of the repetition time')
     else:
-        filters = [('task', task_label)]
-        for img_filter in img_filters:
-            if img_filter[0] in ['acq', 'rec', 'run']:
-                filters.append(img_filter)
-
-        img_specs = get_bids_files(derivatives_path, modality_folder='func',
-                                   file_tag='bold', file_type='json',
+        filters = _make_bids_files_filter(
+            task_label=task_label,
+            supported_filters=[*_bids_entities()["raw"],
+                               *_bids_entities()["derivatives"]],
+            extra_filter=img_filters
+        )
+        img_specs = get_bids_files(derivatives_path,
+                                   modality_folder='func',
+                                   file_tag='bold',
+                                   file_type='json',
                                    filters=filters)
         # If we don't find the parameter information in the derivatives folder
         # we try to search in the raw data folder
         if not img_specs:
-            img_specs = get_bids_files(dataset_path, modality_folder='func',
-                                       file_tag='bold', file_type='json',
+            filters = _make_bids_files_filter(
+                task_label=task_label,
+                supported_filters=_bids_entities()["raw"],
+                extra_filter=img_filters
+            )
+            img_specs = get_bids_files(dataset_path,
+                                       modality_folder='func',
+                                       file_tag='bold',
+                                       file_type='json',
                                        filters=filters)
         if not img_specs:
-            warn('No bold.json found in derivatives folder or '
-                 'in dataset folder. t_r can not be inferred and will need to'
-                 ' be set manually in the list of models, otherwise their fit'
-                 ' will throw an exception')
+            warn('No bold.json found in the derivatives or dataset folder.'
+                 ' t_r can not be inferred '
+                 ' and will need to be set manually in the list of models'
+                 ' otherwise their fit will throw an exception.')
         else:
-            specs = json.load(open(img_specs[0], 'r'))
+            specs = json.load(open(img_specs[0]))
             if 'RepetitionTime' in specs:
                 t_r = float(specs['RepetitionTime'])
             else:
-                warn('RepetitionTime not found in file %s. t_r can not be '
-                     'inferred and will need to be set manually in the '
-                     'list of models. Otherwise their fit will throw an '
-                     ' exception' % img_specs[0])
+                warn(f'RepetitionTime not found in file {img_specs[0]}.'
+                     ' t_r can not be inferred ',
+                     ' and will need to be set manually in the list of models',
+                     ' otherwise their fit will throw an exception.')
             if 'SliceTimingRef' in specs:
                 slice_time_ref = float(specs['SliceTimingRef'])
             else:
@@ -935,10 +956,7 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
                      'be set manually in the generated list of models' %
                      img_specs[0])
 
-    # Infer subjects in dataset
-    sub_folders = glob.glob(os.path.join(derivatives_path, 'sub-*/'))
-    sub_labels = [os.path.basename(s[:-1]).split('-')[1] for s in sub_folders]
-    sub_labels = sorted(list(set(sub_labels)))
+    sub_labels = _list_valid_subjects(derivatives_path, sub_labels)
 
     # Build fit_kwargs dictionaries to pass to their respective models fit
     # Events and confounds files must match number of imgs (runs)
@@ -946,7 +964,9 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
     models_run_imgs = []
     models_events = []
     models_confounds = []
-    for sub_label in sub_labels:
+
+    for sub_label_ in sub_labels:
+
         # Create model
         model = FirstLevelModel(
             t_r=t_r, slice_time_ref=slice_time_ref, hrf_model=hrf_model,
@@ -958,108 +978,656 @@ def first_level_from_bids(dataset_path, task_label, space_label=None,
             memory_level=memory_level, standardize=standardize,
             signal_scaling=signal_scaling, noise_model=noise_model,
             verbose=verbose, n_jobs=n_jobs,
-            minimize_memory=minimize_memory, subject_label=sub_label)
+            minimize_memory=minimize_memory, subject_label=sub_label_)
         models.append(model)
 
-        # Get preprocessed imgs
-        if space_label is None:
-            filters = [('task', task_label)] + img_filters
-        else:
-            filters = [('task', task_label),
-                       ('space', space_label)] + img_filters
-        imgs = get_bids_files(derivatives_path, modality_folder='func',
-                              file_tag='bold', file_type='nii*',
-                              sub_label=sub_label, filters=filters)
-        # If there is more than one file for the same (ses, run), likely we
-        # have an issue of underspecification of filters.
-        run_check_list = []
-        # If more than one run is present the run field is mandatory in BIDS
-        # as well as the ses field if more than one session is present.
-        if len(imgs) > 1:
-            for img in imgs:
-                img_dict = parse_bids_filename(img)
-                if (
-                    '_ses-' in img_dict['file_basename']
-                    and '_run-' in img_dict['file_basename']
-                ):
-                    if (img_dict['ses'], img_dict['run']) in run_check_list:
-                        raise ValueError(
-                            'More than one nifti image found '
-                            'for the same run %s and session %s. '
-                            'Please verify that the '
-                            'desc_label and space_label labels '
-                            'corresponding to the BIDS spec '
-                            'were correctly specified.' %
-                            (img_dict['run'], img_dict['ses']))
-                    else:
-                        run_check_list.append((img_dict['ses'],
-                                               img_dict['run']))
-
-                elif '_ses-' in img_dict['file_basename']:
-                    if img_dict['ses'] in run_check_list:
-                        raise ValueError(
-                            'More than one nifti image '
-                            'found for the same ses %s, while '
-                            'no additional run specification present'
-                            '. Please verify that the desc_label and '
-                            'space_label labels '
-                            'corresponding to the BIDS spec '
-                            'were correctly specified.' %
-                            img_dict['ses'])
-                    else:
-                        run_check_list.append(img_dict['ses'])
-
-                elif '_run-' in img_dict['file_basename']:
-                    if img_dict['run'] in run_check_list:
-                        raise ValueError(
-                            'More than one nifti image '
-                            'found for the same run %s. '
-                            'Please verify that the desc_label and '
-                            'space_label labels '
-                            'corresponding to the BIDS spec '
-                            'were correctly specified.' %
-                            img_dict['run'])
-                    else:
-                        run_check_list.append(img_dict['run'])
+        imgs = _get_processed_imgs(derivatives_path=derivatives_path,
+                                   sub_label=sub_label_,
+                                   task_label=task_label,
+                                   space_label=space_label,
+                                   img_filters=img_filters,
+                                   verbose=verbose)
         models_run_imgs.append(imgs)
 
-        # Get events and extra confounds
-        filters = [('task', task_label)]
-        for img_filter in img_filters:
-            if img_filter[0] in ['acq', 'rec', 'run']:
-                filters.append(img_filter)
+        events = _get_events_files(dataset_path=dataset_path,
+                                   sub_label=sub_label_,
+                                   task_label=task_label,
+                                   img_filters=img_filters,
+                                   imgs=imgs,
+                                   verbose=verbose)
+        events = [pd.read_csv(event, sep='\t', index_col=None)
+                  for event in events]
+        models_events.append(events)
 
-        # Get events files
-        events = get_bids_files(dataset_path, modality_folder='func',
-                                file_tag='events', file_type='tsv',
-                                sub_label=sub_label, filters=filters)
-        if events:
-            if len(events) != len(imgs):
-                raise ValueError('%d events.tsv files found for %d bold '
-                                 'files. Same number of event files as '
-                                 'the number of runs is expected' %
-                                 (len(events), len(imgs)))
-            events = [pd.read_csv(event, sep='\t', index_col=None)
-                      for event in events]
-            models_events.append(events)
-        else:
-            raise ValueError('No events.tsv files found')
-
-        # Get confounds. If not found it will be assumed there are none.
-        # If there are confounds, they are assumed to be present for all runs.
-        confounds = get_bids_files(derivatives_path, modality_folder='func',
-                                   file_tag='desc-confounds*',
-                                   file_type='tsv', sub_label=sub_label,
-                                   filters=filters)
-
+        confounds = _get_confounds(derivatives_path=derivatives_path,
+                                   sub_label=sub_label_,
+                                   task_label=task_label,
+                                   img_filters=img_filters,
+                                   imgs=imgs,
+                                   verbose=verbose)
         if confounds:
-            if len(confounds) != len(imgs):
-                raise ValueError('%d confounds.tsv files found for %d bold '
-                                 'files. Same number of confound files as '
-                                 'the number of runs is expected' %
-                                 (len(events), len(imgs)))
             confounds = [pd.read_csv(c, sep='\t', index_col=None)
                          for c in confounds]
-            models_confounds.append(confounds)
+        models_confounds.append(confounds)
 
     return models, models_run_imgs, models_events, models_confounds
+
+
+def _list_valid_subjects(derivatives_path,
+                         sub_labels):
+    """List valid subjects in the dataset.
+
+    - Include all subjects if no subject pre-selection is passed.
+    - Exclude subjects that do not exist in the derivatives folder.
+    - Remove duplicate subjects.
+
+    Parameters
+    ----------
+    derivatives_path : :obj:`str`
+        Path to the BIDS derivatives folder.
+
+    sub_labels : :obj:`list` of :obj:`str`, optional
+        List of subject labels to process.
+        If None, all subjects in the dataset will be processed.
+
+    Returns
+    -------
+    sub_labels : :obj:`list` of :obj:`str`, optional
+        List of subject labels that will be processed.
+    """
+    # Infer subjects in dataset if not provided
+    if not sub_labels:
+        sub_folders = glob.glob(os.path.join(derivatives_path, "sub-*/"))
+        sub_labels = [
+            os.path.basename(s[:-1]).split("-")[1] for s in sub_folders
+        ]
+        sub_labels = sorted(list(set(sub_labels)))
+
+    # keep only existing subjects
+    sub_labels_exist = []
+    for sub_label_ in sub_labels:
+        if os.path.exists(os.path.join(derivatives_path, f"sub-{sub_label_}")):
+            sub_labels_exist.append(sub_label_)
+        else:
+            warn(
+                f"Subject label {sub_label_} is not present in the"
+                " dataset and cannot be processed."
+            )
+
+    return set(sub_labels_exist)
+
+
+def _report_found_files(
+    files, text, sub_label, filters
+):
+    """Print list of files found for a given subject and filter.
+
+    Parameters
+    ----------
+    files : :obj:`list` of :obj:`str`
+        List of fullpath of files.
+
+    text :  :obj:`str`
+        Text description of the file type.
+
+    sub_label : :obj:`str`
+        Subject label as specified in the file names like sub-<sub_label>_.
+
+    filters : :obj:`list` of :obj:`tuple` (str, str)
+        Filters are of the form (field, label).
+        Only one filter per field allowed.
+
+    """
+    print(
+        f"Found the following {len(files)} {text} files\n",
+        f"for subject {sub_label}\n",
+        f"for filter: {filters}:\n",
+        f"{files}\n",
+    )
+
+
+def _get_processed_imgs(
+    derivatives_path,
+    sub_label,
+    task_label,
+    space_label,
+    img_filters,
+    verbose
+) :
+    """Get images for a given subject, task and filters.
+
+    Also checks that there is only one images per run / session.
+
+    Parameters
+    ----------
+    derivatives_path : :obj:`str`
+        Directory of the derivatives BIDS dataset.
+
+    sub_label : :obj:`str`
+        Subject label as specified in the file names like sub-<sub_label>_.
+
+    task_label : :obj:`str`
+        Task label as specified in the file names like _task-<task_label>_.
+
+    img_filters : :obj:`list` of :obj:`tuple` (str, str)
+        Filters are of the form (field, label).
+        Only one filter per field allowed.
+
+    verbose : :obj:`integer`
+        Indicate the level of verbosity.
+
+    Returns
+    -------
+    imgs : :obj:`list` of :obj:`str`
+        List of fullpath to the imgs files
+
+    """
+    filters = _make_bids_files_filter(
+        task_label=task_label,
+        space_label=space_label,
+        supported_filters=_bids_entities()["raw"]
+        + _bids_entities()["derivatives"],
+        extra_filter=img_filters,
+    )
+    imgs = get_bids_files(
+        main_path=derivatives_path,
+        modality_folder="func",
+        file_tag="bold",
+        file_type="nii*",
+        sub_label=sub_label,
+        filters=filters,
+    )
+    if verbose:
+        _report_found_files(files=imgs,
+                            text='preprocessed BOLD',
+                            sub_label=sub_label,
+                            filters=filters)
+    _check_bids_image_list(imgs, sub_label, filters)
+    return imgs
+
+
+def _get_events_files(
+    dataset_path,
+    sub_label,
+    task_label,
+    img_filters,
+    imgs,
+    verbose,
+):
+    """Get events.tsv files for a given subject, task and filters.
+
+    Also checks that the number of events.tsv files
+    matches the number of images.
+
+    Parameters
+    ----------
+    dataset_path : :obj:`str`
+        Directory of the derivatives BIDS dataset.
+
+    sub_label : :obj:`str`
+        Subject label as specified in the file names like sub-<sub_label>_.
+
+    task_label : :obj:`str`
+        Task label as specified in the file names like _task-<task_label>_.
+
+    img_filters : :obj:`list` of :obj:`tuple` (str, str)
+        Filters are of the form (field, label).
+        Only one filter per field allowed.
+
+    imgs : :obj:`list` of :obj:`str`
+        List of fullpath to the preprocessed images
+
+    verbose : :obj:`integer`
+        Indicate the level of verbosity.
+
+    Returns
+    -------
+    events : :obj:`list` of :obj:`str`
+        List of fullpath to the events files
+    """
+    events_filters = _make_bids_files_filter(
+        task_label=task_label,
+        supported_filters=_bids_entities()["raw"],
+        extra_filter=img_filters,
+    )
+    events = get_bids_files(
+        dataset_path,
+        modality_folder="func",
+        file_tag="events",
+        file_type="tsv",
+        sub_label=sub_label,
+        filters=events_filters,
+    )
+    if verbose:
+        _report_found_files(files=events,
+                            text='events',
+                            sub_label=sub_label,
+                            filters=events_filters)
+    _check_bids_events_list(
+        events=events,
+        imgs=imgs,
+        sub_label=sub_label,
+        task_label=task_label,
+        dataset_path=dataset_path,
+        events_filters=events_filters,
+    )
+    return events
+
+
+def _get_confounds(
+    derivatives_path,
+    sub_label,
+    task_label,
+    img_filters,
+    imgs,
+    verbose,
+):
+    """Get confounds.tsv files for a given subject, task and filters.
+
+    Also checks that the number of confounds.tsv files
+    matches the number of images.
+
+    Parameters
+    ----------
+    derivatives_path : :obj:`str`
+        Directory of the derivatives BIDS dataset.
+
+    sub_label : :obj:`str`
+        Subject label as specified in the file names like sub-<sub_label>_.
+
+    task_label : :obj:`str`
+        Task label as specified in the file names like _task-<task_label>_.
+
+    img_filters : :obj:`list` of :obj:`tuple` (str, str)
+        Filters are of the form (field, label).
+        Only one filter per field allowed.
+
+    imgs : :obj:`list` of :obj:`str`
+        List of fullpath to the preprocessed images
+
+    verbose : :obj:`integer`
+        Indicate the level of verbosity.
+
+    Returns
+    -------
+    confounds : :obj:`list` of :obj:`str` or None
+        List of fullpath to the confounds.tsv files
+
+    """
+    supported_filters = (
+        _bids_entities()["raw"]
+        + _bids_entities()["derivatives"]
+    )
+    # confounds use a desc-confounds,
+    # so we must remove desc if it was passed as a filter
+    supported_filters.remove("desc")
+    filters = _make_bids_files_filter(
+        task_label=task_label,
+        supported_filters=supported_filters,
+        extra_filter=img_filters,
+    )
+    confounds = get_bids_files(
+        derivatives_path,
+        modality_folder="func",
+        file_tag="desc-confounds*",
+        file_type="tsv",
+        sub_label=sub_label,
+        filters=filters,
+    )
+    if verbose:
+        _report_found_files(files=confounds,
+                            text='confounds',
+                            sub_label=sub_label,
+                            filters=filters)
+    _check_confounds_list(confounds=confounds, imgs=imgs)
+    return confounds or None
+
+
+def _check_confounds_list(confounds, imgs):
+    """Check the number of confounds.tsv files.
+
+    If no file is found, it will be assumed there are none,
+    but if there are any confounds files, there must be one per run.
+
+    Parameters
+    ----------
+    confounds : :obj:`list` of :obj:`str`
+        List of fullpath to the confounds.tsv files
+
+    imgs : :obj:`list` of :obj:`str`
+        List of fullpath to the preprocessed images
+
+    """
+    if confounds and len(confounds) != len(imgs):
+        raise ValueError(
+            f"{len(confounds)} confounds.tsv files found "
+            f"for {len(imgs)} bold files. "
+            "Same number of confound files as "
+            "the number of runs is expected"
+        )
+
+
+def _check_args_first_level_from_bids(
+    dataset_path,
+    task_label,
+    space_label,
+    sub_labels,
+    img_filters,
+    derivatives_folder,
+):
+    """Check type and value of arguments of first_level_from_bids.
+
+    Check that:
+        - dataset_path is a string and exists
+        - derivatives_path exists
+        - task_label and space_label are valid bids labels
+        - img_filters is a list of tuples of strings
+          and all filters are valid bids entities
+          with valid bids labels
+
+    Parameters
+    ----------
+    dataset_path : :obj:`str`
+        Fullpath of the BIDS dataset root folder.
+
+    task_label : :obj:`str`
+        Task_label as specified in the file names like _task-<task_label>_.
+
+    space_label : :obj:`str`
+        Specifies the space label of the preprocessed bold.nii images.
+        As they are specified in the file names like _space-<space_label>_.
+
+    sub_labels : :obj:`list` of :obj:`str`, optional
+        Specifies the subset of subject labels to model.
+        If 'None', will model all subjects in the dataset.
+
+    img_filters : :obj:`list` of :obj:`tuples` (str, str)
+        Filters are of the form (field, label).
+        Only one filter per field allowed.
+
+    derivatives_path : :obj:`str`
+        Fullpath of the BIDS dataset derivative folder.
+
+    """
+    if not isinstance(dataset_path, (str, Path)):
+        raise TypeError(
+            "'dataset_path' must be a string or pathlike. "
+            f"Got {type(dataset_path)} instead."
+        )
+    dataset_path = Path(dataset_path)
+    if not dataset_path.exists():
+        raise ValueError(f"'dataset_path' does not exist:\n{dataset_path}")
+
+    if not isinstance(derivatives_folder, str):
+        raise TypeError(
+            "'derivatives_folder' must be a string. "
+            f"Got {type(derivatives_folder)} instead."
+        )
+    derivatives_folder = dataset_path / derivatives_folder
+    if not derivatives_folder.exists():
+        raise ValueError(
+            "derivatives folder not found in given dataset:\n"
+            f"{derivatives_folder}"
+        )
+
+    _check_bids_label(task_label)
+
+    if space_label is not None:
+        _check_bids_label(space_label)
+
+    if not isinstance(sub_labels, list):
+        raise TypeError(
+            f"sub_labels must be a list, instead {type(sub_labels)} was given"
+        )
+    for sub_label_ in sub_labels:
+        _check_bids_label(sub_label_)
+
+    if not isinstance(img_filters, list):
+        raise TypeError(
+            f"'img_filters' must be a list. "
+            f"Got {type(img_filters)} instead."
+        )
+    supported_filters = [
+        *_bids_entities()["raw"], *_bids_entities()["derivatives"]
+    ]
+    for filter_ in img_filters:
+        if len(filter_) != 2 or not all(isinstance(x, str) for x in filter_):
+            raise TypeError(
+                "Filters in img_filters must be (str, str). "
+                f"Got {filter_} instead."
+            )
+        if filter_[0] not in supported_filters:
+            raise ValueError(
+                f"Entity {filter_[0]} for {filter_} is not a possible filter. "
+                f"Only {supported_filters} are allowed."
+            )
+        _check_bids_label(filter_[1])
+
+
+def _make_bids_files_filter(
+    task_label,
+    space_label=None,
+    supported_filters=None,
+    extra_filter=None,
+) :
+    """Return a filter to specific files from a BIDS dataset.
+
+    Parameters
+    ----------
+    task_label : :obj:`str`
+        Task label as specified in the file names like _task-<task_label>_.
+
+    space_label : :obj:`str` or None, optional
+        Specifies the space label of the preprocessed bold.nii images.
+        As they are specified in the file names like _space-<space_label>_.
+
+    supported_filters : :obj:`list` of :obj:`str` or None, optional
+        List of authorized BIDS entities
+
+    extra_filter : :obj:`list` of :obj:`tuple` (str, str) or None, optional
+        _description_
+
+    Returns
+    -------
+    Filter to be used by :func:`get_bids_files`: \
+        :obj:`list` of :obj:`tuple` (str, str)
+        filters
+
+    """
+    filters = [("task", task_label)]
+
+    if space_label is not None:
+        filters.append(("space", space_label))
+
+    if extra_filter and supported_filters:
+        for filter_ in extra_filter:
+            if filter_[0] not in supported_filters:
+                warn(
+                    f"The filter {filter_} will be skipped. "
+                    f"'{filter_[0]}' is not among the supported filters. "
+                    f"Allowed filters include: {supported_filters}"
+                )
+                continue
+
+            filters.append(filter_)
+
+    return filters
+
+
+def _check_bids_image_list(
+    imgs, sub_label, filters
+):
+    """Check input BIDS images.
+
+    Check that:
+        - some images were found
+        - if more than one image was found, check that there is not more than
+          one image for a given session / run combination.
+
+    Parameters
+    ----------
+    imgs : :obj:`list` of :obj:`str` or None
+        List of image fullpath filenames.
+
+    sub_label : :obj:`str`
+        Subject label as specified in the file names like _sub-<sub_label>_.
+
+    filters : :obj:`list` of :obj:`tuple` (str, str)
+        Filters of the form (field, label) used to select the files.
+        See :func:`get_bids_files`.
+
+    """
+    if not imgs:
+        raise ValueError(
+            "No BOLD files found "
+            f"for subject {sub_label} "
+            f"for filter: {filters}"
+        )
+
+    if len(imgs) <= 1:
+        return
+
+    msg_start = (
+        "Too many images found\n "
+        f"for subject: '{sub_label}'\n"
+        f"for filters: {filters}\n"
+    )
+    msg_end = (
+        "Please specify it further by setting, "
+        "for example, some required task_label, "
+        "space_label or img_filters"
+    )
+
+    run_check_list: list = []
+
+    for img_ in imgs:
+        parsed_filename = parse_bids_filename(img_)
+        session = parsed_filename.get("ses", None)
+        run = parsed_filename.get("run", None)
+
+        if session and run:
+            if (session, run) in set(run_check_list):
+                raise ValueError(
+                    f"{msg_start}"
+                    f"for the same run {run} and session {session}. "
+                    f"{msg_end}"
+                )
+            run_check_list.append((session, run))
+
+        elif session:
+            if session in set(run_check_list):
+                raise ValueError(
+                    f"{msg_start}"
+                    f"for the same session {session}, "
+                    "while no additional run specification present. "
+                    f"{msg_end}"
+                )
+            run_check_list.append(session)
+
+        elif run:
+            if run in set(run_check_list):
+                raise ValueError(
+                    f"{msg_start}" f"for the same run {run}. " f"{msg_end}"
+                )
+            run_check_list.append(run)
+
+
+def _check_bids_events_list(
+    events,
+    imgs,
+    sub_label,
+    task_label,
+    dataset_path,
+    events_filters,
+):
+    """Check input BIDS events.
+
+    Check that:
+        - some events.tsv files were found
+        - as many events.tsv were found as images
+        - there is only one events.tsv per image and that they have the same
+          raw entities.
+
+    Parameters
+    ----------
+    events : :obj:`list` of :obj:`str` or None
+        List of events.tsv fullpath filenames.
+
+    imgs : :obj:`list` of :obj:`str`
+        List of image fullpath filenames.
+
+    sub_label : :obj:`str`
+        Subject label as specified in the file names like sub-<sub_label>_.
+
+    task_label : :obj:`str`
+        Task label as specified in the file names like _task-<task_label>_.
+
+    dataset_path : :obj:`str`
+        Fullpath to the BIDS dataset.
+
+    events_filters : :obj:`list` of :obj:`tuple` (str, str)
+        Filters of the form (field, label) used to select the files.
+        See :func:`get_bids_files`.
+
+    """
+    if not events:
+        raise ValueError(
+            "No events.tsv files found "
+            f"for subject {sub_label} "
+            f"for filter: {events_filters}."
+        )
+    if len(events) != len(imgs):
+        raise ValueError(
+            f"{len(events)} events.tsv files found"
+            f" for {len(imgs)} bold files. "
+            "Same number of event files "
+            "as the number of runs is expected."
+        )
+
+    supported_filters = [
+        "sub",
+        "ses",
+        "task",
+        *_bids_entities()["raw"],
+    ]
+    for this_img in imgs:
+        parsed_filename = parse_bids_filename(this_img)
+        extra_filter = [
+            (key, parsed_filename[key])
+            for key in parsed_filename
+            if key in supported_filters
+        ]
+        filters = _make_bids_files_filter(
+            task_label=task_label,
+            space_label=None,
+            supported_filters=supported_filters,
+            extra_filter=extra_filter,
+        )
+        this_event = get_bids_files(
+            dataset_path,
+            modality_folder="func",
+            file_tag="events",
+            file_type="tsv",
+            sub_label=sub_label,
+            filters=filters,
+        )
+        msg_suffix = (
+            f" bold file:\n{this_img}\nfilter:\n{filters})\n"
+            "Found all the following events files "
+            f"for filter:\n{events}\n"
+        )
+        if len(this_event) == 0:
+            raise ValueError(
+                f"No events.tsv files " f"corresponding to {msg_suffix}"
+            )
+        if len(this_event) > 1:
+            raise ValueError(
+                f"More than 1 events.tsv files "
+                f"corresponding to {msg_suffix}"
+            )
+        if this_event[0] not in events:
+            raise ValueError(
+                f"\n{this_event} not in {events}.\n"
+                "No corresponding events.tsv files found "
+                f"for {msg_suffix}"
+            )
