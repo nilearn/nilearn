@@ -784,9 +784,23 @@ def _check_args_permuted_ols(
         tested_vars = np.atleast_2d(tested_vars).T
 
     # check n_sample consistent across arguments
-    assert target_vars.shape[0] == tested_vars.shape[0]
-    if confounding_vars is not None:
-        assert target_vars.shape[0] == confounding_vars.shape[0]
+    if target_vars.shape[0] != tested_vars.shape[0]:
+        raise ValueError(
+            "'target_vars' and 'tested_vars' "
+            "first dimension should be equal.\n"
+            f"Got: {target_vars.shape[0]} for 'target_vars'"
+            f"and {tested_vars.shape[0]} for 'tested_vars'."
+        )
+    if (
+        confounding_vars is not None
+        and target_vars.shape[0] != confounding_vars.shape[0]
+    ):
+        raise ValueError(
+            "'target_vars' and 'confounding_vars' "
+            "first dimension should be equal.\n"
+            f"Got: {target_vars.shape[0]} for 'target_vars'"
+            f"and {confounding_vars.shape[0]} for 'confounding_vars'."
+        )
 
     return output_type, n_jobs, tested_vars
 
