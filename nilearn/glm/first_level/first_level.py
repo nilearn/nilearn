@@ -823,7 +823,7 @@ def _check_repetition_time(t_r):
 
 
 def _check_slice_time_ref(slice_time_ref):
-    """Check that slice_time_ref is a number betwen 0 and 1."""
+    """Check that slice_time_ref is a number between 0 and 1."""
     if not isinstance(slice_time_ref, (float, int)):
         raise TypeError("'slice_time_ref' must be a float or an integer. "
                         f"Got {type(slice_time_ref)} instead.")
