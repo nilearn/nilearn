@@ -187,6 +187,7 @@ def test_check_parameter_grid_is_empty(rand_X_Y):
 
     assert param_grid == {}
 
+
 @pytest.mark.parametrize(
     "param_grid, need_wrap",
     [
@@ -368,45 +369,37 @@ def test_parallel_fit(rand_X_Y):
     ],
 )
 def test_parallel_fit_builtin_cv(
-    estimator, param_name, fitted_param_name, is_classification
+    rand_X_Y, estimator, param_name, fitted_param_name, is_classification
 ):
-    """Check that the best_param output of _parallel_fit is a single value even
-    if param_grid is wrapped in a list for models with built-in CV.
+    """Check that the `fitted_param_name` output of _parallel_fit is a single
+    value even if param_grid is wrapped in a list for models with built-in CV.
     """
     param_values = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
-    n_samples = 100
-    n_samples_test = int(0.8 * n_samples)
-    n_features = 20
-    n_informative = 5
-    random_state = 42
-    noise = 0.2  # for regression only
+
+    # y will be replaced if this is a classification
+    X, y = make_regression(
+        n_samples=N_SAMPLES,
+        n_features=20,
+        n_informative=5,
+        noise=0.2,
+        random_state=42,
+    )
 
     # train/test indices
-    train = range(n_samples_test)
-    test = range(n_samples_test, n_samples)
+    n_samples_train = int(0.8 * N_SAMPLES)
+    train = range(n_samples_train)
+    test = range(n_samples_train, N_SAMPLES)
 
     # define a screening selector
     selector = check_feature_screening(
         screening_percentile=None, mask_img=None, is_classification=False
     )
 
-    # generate data and create appropriate scorer
+    # create appropriate scorer and update y for classification
     if is_classification:
-        X, y = make_classification(
-            n_samples=n_samples,
-            n_features=n_features,
-            n_informative=n_informative,
-            random_state=random_state,
-        )
         scorer = check_scoring(estimator, "accuracy")
+        _, y = rand_X_Y
     else:
-        X, y = make_regression(
-            n_samples=n_samples,
-            n_features=n_features,
-            n_informative=n_informative,
-            noise=noise,
-            random_state=random_state,
-        )
         scorer = check_scoring(estimator, "r2")
 
     for params in [param_values, [param_values]]:  # test unwrapped and wrapped
