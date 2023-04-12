@@ -1,8 +1,7 @@
 """Tests for the data generation utilities."""
-
 from __future__ import annotations
 
-from pathlib import Path
+import json
 
 import numpy as np
 import pytest
@@ -14,6 +13,39 @@ from nilearn._utils.data_gen import (
     generate_regions_ts,
 )
 from nilearn.image import get_data
+
+from nilearn._utils.data_gen import _add_metadata_to_bids_dataset
+
+
+def test_add_metadata_to_bids_derivatives_default_path(tmp_path):
+    """Check the filename created is the default value \
+    of _add_metadata_to_bids_dataset."""
+    target_dir = tmp_path / 'derivatives' / 'sub-01' / 'ses-01' / 'func'
+    target_dir.mkdir(parents=True)
+    json_file = _add_metadata_to_bids_dataset(bids_path=tmp_path,
+                                              metadata={"foo": "bar"})
+    assert json_file.exists()
+    assert (json_file.name == 
+            'sub-01_ses-01_task-main_run-01_space-MNI_desc-preproc_bold.json')
+    with open(json_file, 'r') as f:
+        metadata = json.load(f)
+        assert metadata == {"foo": "bar"}
+
+
+def test_add_metadata_to_bids_derivatives_with_json_path(tmp_path):
+    # bare bone smoke test
+    target_dir = tmp_path / 'derivatives' / 'sub-02' 
+    target_dir.mkdir(parents=True)
+    json_file = 'derivatives/sub-02/sub-02_task-main_bold.json'
+    json_file = _add_metadata_to_bids_dataset(bids_path=tmp_path,
+                                              metadata={"foo": "bar"},
+                                              json_file=json_file)
+    assert json_file.exists()
+    assert (json_file.name == 
+            'sub-02_task-main_bold.json')
+    with open(json_file, 'r') as f:
+        metadata = json.load(f)
+        assert metadata == {"foo": "bar"}
 
 
 def _bids_path_template(

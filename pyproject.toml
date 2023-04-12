@@ -109,6 +109,7 @@ include = """
   | maint_tools/.*py
   | nilearn/connectome/.*py
   | nilearn/dec.*
+  | nilearn/glm/.*py
   | nilearn/image/.*py
   | nilearn/input_data/.*py
   | nilearn/mass_univariate/.*py
@@ -143,6 +144,11 @@ extend-exclude =  """
   | nilearn/reporting/data/html/report_body_template_niftispheresmasker.html
   | nilearn/reporting/html_report.py
   | nilearn/reporting/tests/test_html_report.py
+  | nilearn/glm/contrasts.py
+  | nilearn/glm/first_level/first_level.py
+  | nilearn/glm/tests/test_contrasts.py
+  | nilearn/glm/tests/test_first_level.py
+  | nilearn/glm/tests/test_second_level.py
 )
 """
 
