@@ -109,6 +109,7 @@ include = """
   | maint_tools/.*py
   | nilearn/connectome/.*py
   | nilearn/dec.*
+  | nilearn/glm/.*py
   | nilearn/image/.*py
   | nilearn/input_data/.*py
   | nilearn/mass_univariate/.*py
@@ -139,6 +140,11 @@ extend-exclude =  """
   | examples/.*/.*surf_stat_map.py
   | examples/.*/.*surface_bids_analysis.py
   | examples/.*/.*surface_projection_strategies.py
+  | nilearn/glm/contrasts.py
+  | nilearn/glm/first_level/first_level.py
+  | nilearn/glm/tests/test_contrasts.py
+  | nilearn/glm/tests/test_first_level.py
+  | nilearn/glm/tests/test_second_level.py
 )
 """
 
