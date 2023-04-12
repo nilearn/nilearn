@@ -124,7 +124,7 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
                 "subject_label to match rows appropriately."
                 f"Model at idx {model_idx} does not provide it. "
                 "To set it, you can do "
-                'first_level.subject_label = "01"'
+                "first_level.subject_label = '01'"
             )
 
 
@@ -162,7 +162,7 @@ def _check_confounds(confounds):
             raise ValueError("confounds must be a pandas DataFrame")
         if "subject_label" not in confounds.columns:
             raise ValueError(
-                "confounds DataFrame must contain column" ' "subject_label"'
+                "confounds DataFrame must contain column 'subject_label'"
             )
         if len(confounds.columns) < 2:
             raise ValueError(
@@ -248,7 +248,7 @@ def _get_contrast(second_level_contrast, design_matrix):
                 raise ValueError("No second-level contrast is specified.")
         elif (np.nonzero(second_level_contrast)[0]).size != 1:
             raise ValueError(
-                "second_level_contrast must be " "a list of 0s and 1s"
+                "second_level_contrast must be a list of 0s and 1s."
             )
         con_val = np.asarray(second_level_contrast, dtype=bool)
         contrast = np.asarray(design_matrix.columns.tolist())[con_val][0]
@@ -452,7 +452,7 @@ class SecondLevelModel(BaseGLM):
         t0 = time.time()
         if self.verbose > 0:
             sys.stderr.write(
-                "Fitting second level model. " "Take a deep breath\r"
+                "Fitting second level model. Take a deep breath.\r"
             )
 
         # Create and set design matrix, if not given

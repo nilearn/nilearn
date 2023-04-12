@@ -68,7 +68,7 @@ def check_events(events):
     # Handle missing trial types
     if "trial_type" not in events_copy.columns:
         warnings.warn(
-            "'trial_type' column not found " "in the given events data."
+            "'trial_type' column not found in the given events data."
         )
         events_copy["trial_type"] = "dummy"
 
@@ -86,8 +86,8 @@ def check_events(events):
     unexpected_columns = set(events_copy.columns).difference(VALID_FIELDS)
     for unexpected_column in unexpected_columns:
         warnings.warn(
-            f"Unexpected column `{unexpected_column}` in events "
-            "data will be ignored."
+            f"Unexpected column `{unexpected_column}` in events. "
+            "Data will be ignored."
         )
 
     # Make sure we have a numeric type for duration
@@ -96,7 +96,7 @@ def check_events(events):
             events_copy = events_copy.astype({"duration": float})
         except ValueError:
             raise ValueError(
-                "Could not cast duration to float " "in events data."
+                "Could not cast duration to float in events data."
             )
 
     # Handle duplicate events
