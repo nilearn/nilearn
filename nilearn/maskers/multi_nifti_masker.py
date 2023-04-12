@@ -1,6 +1,5 @@
-"""
-Transformer used to apply basic transformations on multi subject MRI data.
-"""
+"""Transformer used to apply basic transformations \
+on multi subject MRI data."""
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
@@ -10,15 +9,12 @@ import warnings
 from functools import partial
 
 from joblib import Memory, Parallel, delayed
-
 from nilearn import _utils, image, masking
 from nilearn.maskers.nifti_masker import NiftiMasker, _filter_and_mask
 
 
 def _get_mask_strategy(strategy):
-    """Helper function returning the mask computing method based
-    on a provided strategy.
-    """
+    """Return the mask computing method based on a provided strategy."""
     if strategy == 'background':
         return masking.compute_multi_background_mask
     elif strategy == 'epi':
@@ -236,7 +232,6 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
             compatibility.
 
         """
-
         # Load data (if filenames are given, load them)
         if self.verbose > 0:
             print(
@@ -312,11 +307,10 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
 
     def transform_imgs(self, imgs_list, confounds=None, sample_mask=None,
                        copy=True, n_jobs=1):
-        """Prepare multi subject data in parallel
+        """Prepare multi subject data in parallel.
 
         Parameters
         ----------
-
         imgs_list : :obj:`list` of Niimg-like objects
             See :ref:`extracting_data`.
             List of imgs file to prepare. One item per subject.
@@ -354,7 +348,6 @@ class MultiNiftiMasker(NiftiMasker, _utils.CacheMixin):
             inputs.
 
         """
-
         if not hasattr(self, 'mask_img_'):
             raise ValueError(
                 f'It seems that {self.__class__.__name__} has not been '

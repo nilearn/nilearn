@@ -27,6 +27,7 @@ files: |
         | nilearn/version.py
         | nilearn/de.*
         | nilearn/connectome/.*py
+        | nilearn/glm/.*py
         | nilearn/image/.*py
         | nilearn/input_data/.*py
         | nilearn/regions.*py
@@ -54,6 +55,11 @@ exclude: |
         | examples/.*/.*surface_bids_analysis.py
         | examples/.*/.*surface_projection_strategies.py
         | nilearn/externals/tempita
+        | nilearn/glm/contrasts.py
+        | nilearn/glm/first_level/first_level.py
+        | nilearn/glm/tests/test_contrasts.py
+        | nilearn/glm/tests/test_first_level.py
+        | nilearn/glm/tests/test_second_level.py
     )$
 
 repos:
@@ -67,6 +73,7 @@ repos:
       - id: check-yaml
       - id: end-of-file-fixer
       - id: trailing-whitespace
+      - id: check-toml
 
   - repo: https://github.com/pycqa/isort
     rev: 5.12.0
@@ -95,11 +102,12 @@ repos:
     rev: v2.2.4
     hooks:
       - id: codespell
-        args: [--config=setup.cfg]
+        args: [--toml=pyproject.toml]
+        additional_dependencies: [tomli]
 
   - repo: https://github.com/pyCQA/flake8
     rev: 6.0.0
     hooks:
       - id: flake8
-        args: [--config=setup.cfg, --verbose]
+        args: [--verbose]
         additional_dependencies: [flake8-docstrings]

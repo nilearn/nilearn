@@ -1,0 +1,40 @@
+[flake8]
+exclude =
+    .git,
+    __pycache__,
+	env,
+	venv,
+    build,
+    dist,
+	nilearn/externals/tempita
+	nilearn_cache
+--select = D,E,F,W,C90
+docstring-convention = numpy
+max-line-length = 79
+max_complexity = 43
+max_function_length = 150
+# For PEP8 error codes see
+# http://pep8.readthedocs.org/en/latest/intro.html#error-codes
+	# D100, D103, D104: missing docstring
+	# D105: missing docstring in magic method
+	# D107: missing docstring in __init__
+	# D205: 1 blank line required between summary line and description
+	# D400: first line should end with a period
+	# E203: whitespace before ':'
+	# E402: module level import not at top of file
+	# F401: module imported but unused
+	# W503: line break before binary operator
+	# W504: line break after binary operator
+per-file-ignores =
+	*/__init__.py: D104
+    # - docstrings rules that should not be applied to tests
+	*/tests/*: D100, D101, D102, D103, D104, D205, D400, D401
+	*/*/tests/*: D100, D101, D102, D103, D104, D205, D400, D401
+    # - docstrings rules that should not be applied to examples
+	examples/*/*: D103, D205, D301, D400
+    # - docstrings rules that should not be applied to doc
+	doc/*: D100, D103, F401
+ignore = D105, D107, E402, W503, W504, W605
+# for compatibility with black
+# https://black.readthedocs.io/en/stable/guides/using_black_with_other_tools.html#flake8
+extend-ignore = E203

@@ -12,9 +12,12 @@ NEW
 
 - ``fsaverage`` meshes accessed through :func:`~datasets.fetch_surf_fsaverage` now come with flat maps for all resolutions (:gh:`3444` by `Alexis Thual`_).
 
+- surface plotting functions allow setting custom view angles and are no longer limited to predefined views (:gh:`3259` by `Sam Buck Johnson`_ and `Alexis Thual`_).
 
 Fixes
 -----
+
+- Improve how :func:`~.glm.first_level.first_level_from_bids` handles fetching slice timing metadata and add additional input validation. In release ``0.12`` the default `slice_time_ref` will be `None` instead of `0` (:gh:`3605` by `Rémi Gau`_).
 
 - Fixes several bugs in :func:`~glm.first_level.first_level_from_bids`. Refactors :func:`~glm.first_level.first_level_from_bids` and ``nilearn._utils.data_gen.create_fake_bids_dataset``. (:gh:`3525` by `Rémi Gau`_).
 
@@ -47,6 +50,7 @@ Changes
 
 - Extract helper-functions for input-image validation from :func:`~regions.img_to_signals_labels`, :func:`~regions.signals_to_img_labels`, :func:`~regions.img_to_signals_maps` :func:`~regions.signals_to_img_maps` (:gh:`3523` by `Rémi Gau`_ and `Christian Gerloff`_).
 
+- Moved packaging from ``setup.py`` and setuptools build backend to ``pyproject.toml`` and hatchling backend. This change comes about as new standards are defined for Python packaging that are better met by the new configuration (:gh:`3635` by `Yasmin Mzayek`_).
 
 0.10.1rc1
 =========

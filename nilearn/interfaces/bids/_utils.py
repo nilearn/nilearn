@@ -136,6 +136,7 @@ def _generate_dataset_description(out_file, model_level):
         The level of the model. 1 means a first-level model.
         2 means a second-level model.
     """
+    repo_url = "https://github.com/nilearn/nilearn"
     dataset_description = {
         'GeneratedBy': {
             'Name': 'nilearn',
@@ -144,8 +145,7 @@ def _generate_dataset_description(out_file, model_level):
                 'first-level' if model_level == 1 else 'second-level'
             ),
             'CodeURL': (
-                'https://github.com/nilearn/nilearn/releases/tag/'
-                '{}'.format(nilearn.__version__)
+                f"{repo_url}/releases/tag/{nilearn.__version__}"
             )
         }
     }
@@ -154,7 +154,7 @@ def _generate_dataset_description(out_file, model_level):
         json.dump(dataset_description, f_obj, indent=4, sort_keys=True)
 
 
-def _bids_entities() -> dict[str, list[str]]:
+def _bids_entities():
     """Return a dictionary of BIDS entities.
 
     Entities are listed in the order they should appear in a filename.
@@ -190,7 +190,7 @@ def _bids_entities() -> dict[str, list[str]]:
     }
 
 
-def _check_bids_label(label) -> None:
+def _check_bids_label(label):
     """Validate a BIDS label.
 
     https://bids-specification.readthedocs.io/en/stable/glossary.html#label-formats # noqa

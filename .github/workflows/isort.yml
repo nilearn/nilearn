@@ -32,5 +32,4 @@ jobs:
         run: isort --diff --check --settings-path pyproject.toml \
             examples/0[0234567]* \
             maint_tools \
-            nilearn \
-            setup.py
+            nilearn
