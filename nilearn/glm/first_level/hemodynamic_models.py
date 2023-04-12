@@ -160,6 +160,7 @@ def _generic_time_derivative(
     return _compute_derivative_from_values(
         func(tr, oversampling, time_length, onset),
         func(tr, oversampling, time_length, onset + do),
+        x=do,
     )
 
 
@@ -186,14 +187,12 @@ def spm_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
           dhrf sampling on the provided grid
 
     """
-    do = 0.1
     dhrf = _generic_time_derivative(
         spm_hrf,
         tr=tr,
         oversampling=oversampling,
         time_length=time_length,
         onset=onset,
-        do=do,
     )
     return dhrf
 
@@ -221,16 +220,47 @@ def glover_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
           dhrf sampling on the provided grid
 
     """
-    do = 0.1
     dhrf = _generic_time_derivative(
         glover_hrf,
         tr=tr,
         oversampling=oversampling,
         time_length=time_length,
         onset=onset,
-        do=do,
     )
     return dhrf
+
+
+def _generic_dispersion_derivative(
+    tr,
+    oversampling=50,
+    time_length=32.0,
+    onset=0.0,
+    undershoot=16,
+    ratio=0.167,
+    dispersion=1.0,
+    dd=0.01,
+):
+    return _compute_derivative_from_values(
+        _gamma_difference_hrf(
+            tr,
+            oversampling,
+            time_length,
+            onset,
+            undershoot=undershoot,
+            ratio=ratio,
+            dispersion=dispersion,
+        ),
+        _gamma_difference_hrf(
+            tr,
+            oversampling,
+            time_length,
+            onset,
+            undershoot=undershoot,
+            ratio=ratio,
+            dispersion=dispersion + dd,
+        ),
+        x=dd,
+    )
 
 
 def spm_dispersion_derivative(
@@ -258,15 +288,8 @@ def spm_dispersion_derivative(
           dhrf sampling on the oversampled time grid
 
     """
-    dd = 0.01
-    values_at_onset = _gamma_difference_hrf(
-        tr, oversampling, time_length, onset
-    )
-    values_at_onset_plus_dd = _gamma_difference_hrf(
-        tr, oversampling, time_length, onset, dispersion=1.0 + dd
-    )
-    dhrf = _compute_derivative_from_values(
-        values_at_onset, values_at_onset_plus_dd, dd=dd
+    dhrf = _generic_dispersion_derivative(
+        tr, oversampling=oversampling, time_length=time_length, onset=onset
     )
     return dhrf
 
@@ -296,27 +319,14 @@ def glover_dispersion_derivative(
           dhrf sampling on the oversampled time grid
 
     """
-    dd = 0.01
-    values = _gamma_difference_hrf(
+    dhrf = _generic_dispersion_derivative(
         tr,
-        oversampling,
-        time_length,
-        onset,
+        oversampling=oversampling,
+        time_length=time_length,
+        onset=onset,
         undershoot=12.0,
+        ratio=0.35,
         dispersion=0.9,
-        ratio=0.35,
-    )
-    values_plus_dispersion = _gamma_difference_hrf(
-        tr,
-        oversampling,
-        time_length,
-        onset,
-        undershoot=12.0,
-        dispersion=0.9 + dd,
-        ratio=0.35,
-    )
-    dhrf = _compute_derivative_from_values(
-        values, values_plus_dispersion, dd=dd
     )
     return dhrf
 
