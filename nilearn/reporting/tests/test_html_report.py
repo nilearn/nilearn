@@ -218,7 +218,7 @@ def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
 
 
 def test_nifti_maps_masker_report_image_in_fit(niftimapsmasker_inputs):
-    """"""
+    """Tests NiftiMapsMasker reporting with image provided to fit."""
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
     image, _ = generate_random_img((13, 11, 12), affine=np.eye(4), length=3)
     masker.fit(image)
