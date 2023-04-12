@@ -42,4 +42,5 @@ jobs:
             nilearn/maskers \
             nilearn/mass_univariate \
             nilearn/regions \
+            nilearn/rerporting \
             nilearn/*.py

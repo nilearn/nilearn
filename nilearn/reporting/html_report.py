@@ -1,13 +1,13 @@
 """Generate HTML reports."""
 
-import os
 import copy
+import os
 import warnings
 from pathlib import Path
 from string import Template
 
-from nilearn.plotting.html_document import HTMLDocument
 from nilearn.externals import tempita
+from nilearn.plotting.html_document import HTMLDocument
 from nilearn.reporting.utils import figure_to_svg_base64
 
 ESTIMATOR_TEMPLATES = {
