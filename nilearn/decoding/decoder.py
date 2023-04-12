@@ -71,11 +71,10 @@ def _check_param_grid(estimator, X, y, param_grid=None):
 
     Parameters
     ----------
-    estimator: str, optional
+    estimator: str
         The estimator to choose among:
         %(classifier_options)s
         %(regressor_options)s
-        Default 'svc'.
 
     X: list of Niimg-like objects
         See :ref:`extracting_data`.
@@ -121,11 +120,10 @@ def _default_param_grid(estimator, X, y):
 
     Parameters
     ----------
-    estimator: str, optional
+    estimator: str
         The estimator to choose among:
         %(classifier_options)s
         %(regressor_options)s
-        Default 'svc'.
 
     X: list of Niimg-like objects
         See :ref:`extracting_data`.
