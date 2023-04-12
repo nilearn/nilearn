@@ -44,9 +44,12 @@ jobs:
 
   # use the codecov uploader to upload the coverage report
   # https://docs.codecov.com/docs/codecov-uploader
-  - script: |
-      Invoke-WebRequest -Uri https://uploader.codecov.io/latest/windows/codecov.exe -Outfile codecov.exe
-      .\codecov.exe -t ${CODECOV_TOKEN}
+  - task: PowerShell@2
+    inputs:
+      targetType: 'inline'
+      script: |
+        Invoke-WebRequest -Uri https://uploader.codecov.io/latest/windows/codecov.exe -Outfile codecov.exe
+        .\codecov.exe -t ${CODECOV_TOKEN}
     displayName: 'codecov'
     env:
       CODECOV_TOKEN: $(CODECOV_TOKEN)
