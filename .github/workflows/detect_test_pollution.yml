@@ -1,5 +1,11 @@
 name: 'detect test pollution'
 
+# Runs once a month.
+# Use pytest with the pytest-random-order plugin to run all tests
+# in a random order.
+# This aims to detect tests that are not properly isolated
+# from each other (test pollution).
+
 on:
 
 # Uses the cron schedule for github actions
