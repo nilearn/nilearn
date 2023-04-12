@@ -50,4 +50,5 @@ jobs:
             nilearn/mass_univariate \
             nilearn/regions \
             nilearn/reporting \
+            nilearn/surface \
             nilearn/*.py
