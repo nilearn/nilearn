@@ -1,16 +1,18 @@
 import warnings
-
-import numpy as np
 from string import Template
 
-from .._utils.class_inspect import get_params
+import numpy as np
+
 from .._utils.cache_mixin import _check_memory
+from .._utils.class_inspect import get_params
 from .multi_nifti_masker import MultiNiftiMasker
 from .nifti_masker import NiftiMasker
 
 
 def _check_embedded_nifti_masker(estimator, multi_subject=True):
-    """Base function for using a masker within a BaseEstimator class
+    """Create a masker from instance parameters.
+
+    Base function for using a masker within a BaseEstimator class
 
     This creates a masker from instance parameters :
     - If instance contains a mask image in mask parameter,
@@ -55,14 +57,16 @@ def _check_embedded_nifti_masker(estimator, multi_subject=True):
         # For MultiNiftiMasker only
         new_masker_params['n_jobs'] = estimator.n_jobs
 
-    warning_msg = Template("Provided estimator has no $attribute attribute set."
-                           "Setting $attribute to $default_value by default.")
+    warning_msg = Template(
+        "Provided estimator has no $attribute attribute set."
+        "Setting $attribute to $default_value by default.")
 
     if hasattr(estimator, 'memory'):
         new_masker_params['memory'] = _check_memory(estimator.memory)
     else:
-        warnings.warn(warning_msg.substitute(attribute='memory',
-                                             default_value='Memory(location=None)'))
+        warnings.warn(warning_msg.substitute(
+            attribute='memory',
+            default_value='Memory(location=None)'))
         new_masker_params['memory'] = _check_memory(None)
 
     if hasattr(estimator, 'memory_level'):
@@ -83,9 +87,9 @@ def _check_embedded_nifti_masker(estimator, multi_subject=True):
     conflict_string = ""
     for param_key in sorted(estimator_params):
         if np.any(new_masker_params[param_key] != estimator_params[param_key]):
-            conflict_string += ("Parameter {0} :\n"
-                                "    Masker parameter {1}"
-                                " - overriding estimator parameter {2}\n"
+            conflict_string += ("Parameter {} :\n"
+                                "    Masker parameter {}"
+                                " - overriding estimator parameter {}\n"
                                 ).format(param_key,
                                          new_masker_params[param_key],
                                          estimator_params[param_key])
@@ -93,7 +97,7 @@ def _check_embedded_nifti_masker(estimator, multi_subject=True):
     if conflict_string != "":
         warn_str = ("Overriding provided-default estimator parameters with"
                     " provided masker parameters :\n"
-                    "{0:s}").format(conflict_string)
+                    "{:s}").format(conflict_string)
         warnings.warn(warn_str)
     masker = masker_type(**new_masker_params)
 

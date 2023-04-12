@@ -71,6 +71,7 @@ repos:
       - id: check-yaml
       - id: end-of-file-fixer
       - id: trailing-whitespace
+      - id: check-toml
 
   - repo: https://github.com/pycqa/isort
     rev: 5.12.0
@@ -99,11 +100,12 @@ repos:
     rev: v2.2.4
     hooks:
       - id: codespell
-        args: [--config=setup.cfg]
+        args: [--toml=pyproject.toml]
+        additional_dependencies: [tomli]
 
   - repo: https://github.com/pyCQA/flake8
     rev: 6.0.0
     hooks:
       - id: flake8
-        args: [--config=setup.cfg, --verbose]
+        args: [--verbose]
         additional_dependencies: [flake8-docstrings]

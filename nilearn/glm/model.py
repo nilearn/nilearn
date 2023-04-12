@@ -1,31 +1,29 @@
-"""
-This module implement classes to handle statistical tests on likelihood models
+"""Implement classes to handle statistical tests on likelihood models.
 
 Author: Bertrand Thirion, 2011--2015
 """
 import numpy as np
-
 from nibabel.onetime import auto_attr
+from nilearn._utils.glm import positive_reciprocal
 from scipy.linalg import inv
 from scipy.stats import t as t_distribution
-
-from nilearn._utils.glm import positive_reciprocal
 
 # Inverse t cumulative distribution
 inv_t_cdf = t_distribution.ppf
 
 
 class LikelihoodModelResults:
-    """ Class to contain results from likelihood models.
+    """Class to contain results from likelihood models.
 
     This is the class in which things like AIC, BIC, llf
     can be implemented as methods, not computed in, say,
     the fit method of OLSModel.
 
     """
+
     def __init__(self, theta, Y, model, cov=None, dispersion=1.,
                  nuisance=None, rank=None):
-        """ Set up results structure
+        """Set up results structure.
 
         Parameters
         ----------
@@ -80,9 +78,7 @@ class LikelihoodModelResults:
 
     @auto_attr
     def logL(self):
-        """
-        The maximized log-likelihood
-        """
+        """Return the maximized log-likelihood."""
         return self.model.logL(self.theta, self.Y, nuisance=self.nuisance)
 
     def t(self, column=None):
@@ -104,7 +100,7 @@ class LikelihoodModelResults:
         return _t
 
     def vcov(self, matrix=None, column=None, dispersion=None, other=None):
-        """ Variance/covariance matrix of linear contrast
+        """Return Variance/covariance matrix of linear contrast.
 
         Parameters
         ----------
@@ -161,7 +157,7 @@ class LikelihoodModelResults:
             return self.cov * dispersion
 
     def Tcontrast(self, matrix, store=('t', 'effect', 'sd'), dispersion=None):
-        """ Compute a Tcontrast for a row vector `matrix`
+        """Compute a Tcontrast for a row vector `matrix`.
 
         To get the t-statistic for a single column, use the 't' method.
 
@@ -193,7 +189,7 @@ class LikelihoodModelResults:
                                                         matrix.shape[1]))
         store = set(store)
         if not store.issubset(('t', 'effect', 'sd')):
-            raise ValueError('Unexpected store request in %s' % store)
+            raise ValueError(f'Unexpected store request in {store}')
         st_t = st_effect = st_sd = effect = sd = None
         if 't' in store or 'effect' in store:
             effect = np.dot(matrix, self.theta)
@@ -209,7 +205,7 @@ class LikelihoodModelResults:
                                 df_den=self.df_residuals)
 
     def Fcontrast(self, matrix, dispersion=None, invcov=None):
-        """ Compute an Fcontrast for a contrast matrix `matrix`.
+        """Compute an Fcontrast for a contrast matrix `matrix`.
 
         Here, `matrix` M is assumed to be non-singular. More precisely
 
@@ -266,7 +262,7 @@ class LikelihoodModelResults:
         if invcov is None:
             invcov = inv(self.vcov(matrix=matrix, dispersion=1.0))
         F = (np.add.reduce(np.dot(invcov, ctheta) * ctheta, 0)
-             * positive_reciprocal((q * dispersion))
+             * positive_reciprocal(q * dispersion)
              )
         F = np.squeeze(F)
         return FContrastResults(
@@ -275,7 +271,7 @@ class LikelihoodModelResults:
             F=F, df_den=self.df_residuals, df_num=invcov.shape[0])
 
     def conf_int(self, alpha=.05, cols=None, dispersion=None):
-        ''' The confidence interval of the specified theta estimates.
+        """Return the confidence interval of the specified theta estimates.
 
         Parameters
         ----------
@@ -314,7 +310,7 @@ class LikelihoodModelResults:
         tails : string, optional
             Possible values: 'two' | 'upper' | 'lower'
 
-        '''
+        """
         if cols is None:
             lower = (self.theta
                      - inv_t_cdf(1 - alpha / 2, self.df_residuals)
@@ -348,6 +344,7 @@ class TContrastResults:
     and returns the T-statistics when np.asarray is called.
 
     """
+
     def __init__(self, t, sd, effect, df_den=None):
         if df_den is None:
             df_den = np.inf
@@ -370,8 +367,8 @@ class FContrastResults:
     The class does nothing.
     It is a container for the results from F contrasts,
     and returns the F-statistics when np.asarray is called.
-
     """
+
     def __init__(self, effect, covariance, F, df_num, df_den=None):
         if df_den is None:
             df_den = np.inf
