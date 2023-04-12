@@ -358,29 +358,21 @@ def _sample_condition(
     regressor : array of shape(over_sampling * n_scans)
         Possibly oversampled event regressor.
 
-    hr_frame_times : array of shape(over_sampling * n_scans)
+    frame_times_high_res : array of shape(over_sampling * n_scans)
         Time points used for regressor sampling.
 
     """
     # Find the high-resolution frame_times
-    n = frame_times.size
+    n_frames = frame_times.size
     min_onset = float(min_onset)
-    n_hr = (
-        (n - 1)
-        * 1.0
-        / (frame_times.max() - frame_times.min())
-        * (
-            frame_times.max() * (1 + 1.0 / (n - 1))
-            - frame_times.min()
-            - min_onset
-        )
-        * oversampling
-    ) + 1
+    n_frames_high_res = _compute_n_frames_high_res(
+        frame_times, min_onset, oversampling
+    )
 
-    hr_frame_times = np.linspace(
+    frame_times_high_res = np.linspace(
         frame_times.min() + min_onset,
-        frame_times.max() * (1 + 1.0 / (n - 1)),
-        np.rint(n_hr).astype(int),
+        frame_times.max() * (1 + 1.0 / (n_frames - 1)),
+        np.rint(n_frames_high_res).astype(int),
     )
 
     # Get the condition information
@@ -396,13 +388,15 @@ def _sample_condition(
         )
 
     # Set up the regressor timecourse
-    tmax = len(hr_frame_times)
-    regressor = np.zeros_like(hr_frame_times).astype(np.float64)
-    t_onset = np.minimum(np.searchsorted(hr_frame_times, onsets), tmax - 1)
+    tmax = len(frame_times_high_res)
+    regressor = np.zeros_like(frame_times_high_res).astype(np.float64)
+    t_onset = np.minimum(
+        np.searchsorted(frame_times_high_res, onsets), tmax - 1
+    )
     for t, v in zip(t_onset, values):
         regressor[t] += v
     t_offset = np.minimum(
-        np.searchsorted(hr_frame_times, onsets + durations), tmax - 1
+        np.searchsorted(frame_times_high_res, onsets + durations), tmax - 1
     )
 
     # Handle the case where duration is 0 by offsetting at t + 1
@@ -414,10 +408,24 @@ def _sample_condition(
         regressor[t] -= v
     regressor = np.cumsum(regressor)
 
-    return regressor, hr_frame_times
+    return regressor, frame_times_high_res
 
 
-def _resample_regressor(hr_regressor, hr_frame_times, frame_times):
+def _compute_n_frames_high_res(frame_times, min_onset, oversampling):
+    n_frames = frame_times.size
+    mini, maxi = _extrema(frame_times)
+    n_frames_high_res = (n_frames - 1) * 1.0 / (maxi - mini)
+    n_frames_high_res *= (
+        maxi * (1 + 1.0 / (n_frames - 1)) - mini - min_onset
+    ) * oversampling
+    return n_frames_high_res + 1
+
+
+def _extrema(arr):
+    return np.min(arr), np.max(arr)
+
+
+def _resample_regressor(hr_regressor, frame_times_high_res, frame_times):
     """Sub-sample the regressors at frame times.
 
     Parameters
@@ -425,7 +433,7 @@ def _resample_regressor(hr_regressor, hr_frame_times, frame_times):
     hr_regressor : array of shape(n_samples),
         the regressor time course sampled at high temporal resolution
 
-    hr_frame_times : array of shape(n_samples),
+    frame_times_high_res : array of shape(n_samples),
         the corresponding time stamps
 
     frame_times : array of shape(n_scans),
@@ -439,7 +447,7 @@ def _resample_regressor(hr_regressor, hr_frame_times, frame_times):
     """
     from scipy.interpolate import interp1d
 
-    f = interp1d(hr_frame_times, hr_regressor)
+    f = interp1d(frame_times_high_res, hr_regressor)
     return f(frame_times).T
 
 
@@ -678,7 +686,7 @@ def compute_regressor(
     # this is the minimal tr in this session, not necessarily the true tr
     tr = _calculate_tr(frame_times)
     # 1. create the high temporal resolution regressor
-    hr_regressor, hr_frame_times = _sample_condition(
+    hr_regressor, frame_times_high_res = _sample_condition(
         exp_condition, frame_times, oversampling, min_onset
     )
 
@@ -694,12 +702,12 @@ def compute_regressor(
     if hrf_model == "fir" and oversampling > 1:
         computed_regressors = _resample_regressor(
             conv_reg[:, oversampling - 1 :],
-            hr_frame_times[: 1 - oversampling],
+            frame_times_high_res[: 1 - oversampling],
             frame_times,
         )
     else:
         computed_regressors = _resample_regressor(
-            conv_reg, hr_frame_times, frame_times
+            conv_reg, frame_times_high_res, frame_times
         )
 
     # 5. ortogonalize the regressors
