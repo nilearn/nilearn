@@ -38,6 +38,8 @@ jobs:
       python -m pytest --pyargs nilearn --cov-report=xml --cov=nilearn --cov-append --junitxml=test-results.xml
     displayName: 'test'
 
+  # use the codecov uploader to upload the coverage report
+  # https://docs.codecov.com/docs/codecov-uploader
   - script: |
       Invoke-WebRequest -Uri https://uploader.codecov.io/latest/windows/codecov.exe -Outfile codecov.exe
       .\codecov.exe -t ${CODECOV_TOKEN}
