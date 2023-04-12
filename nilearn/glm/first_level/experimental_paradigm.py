@@ -53,7 +53,7 @@ def check_events(events):
     if not isinstance(events, pd.DataFrame):
         raise TypeError(
             "Events should be a Pandas DataFrame. "
-            "A {} was provided instead.".format(type(events))
+            f"A {type(events)} was provided instead."
         )
     # Column checks
     for col_name in ["onset", "duration"]:
@@ -86,9 +86,8 @@ def check_events(events):
     unexpected_columns = set(events_copy.columns).difference(VALID_FIELDS)
     for unexpected_column in unexpected_columns:
         warnings.warn(
-            (
-                "Unexpected column `{}` in events " "data will be ignored."
-            ).format(unexpected_column)
+            f"Unexpected column `{unexpected_column}` in events "
+            "data will be ignored."
         )
 
     # Make sure we have a numeric type for duration

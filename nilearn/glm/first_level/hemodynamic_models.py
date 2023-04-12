@@ -485,14 +485,14 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     if hrf_model in ["glover", "spm"]:
         names = [con_name]
     elif hrf_model in ["glover + derivative", "spm + derivative"]:
-        names = [con_name, con_name + "_derivative"]
+        names = [con_name, f"{con_name}_derivative"]
     elif hrf_model in [
         "spm + derivative + dispersion",
         "glover + derivative + dispersion",
     ]:
-        names = [con_name, con_name + "_derivative", con_name + "_dispersion"]
+        names = [con_name, f"{con_name}_derivative", f"{con_name}_dispersion"]
     elif hrf_model == "fir":
-        names = [con_name + f"_delay_{int(i)}" for i in fir_delays]
+        names = [f"{con_name}_delay_{int(i)}" for i in fir_delays]
     # Handle callables
     elif callable(hrf_model):
         names = [f"{con_name}_{hrf_model.__name__}"]
@@ -501,9 +501,8 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     ):
         names = [f"{con_name}_{model.__name__}" for model in hrf_model]
     # Handle some default cases
-    else:
-        if isinstance(hrf_model, Iterable) and not isinstance(hrf_model, str):
-            names = [f"{con_name}_{i}" for i in range(len(hrf_model))]
+    elif isinstance(hrf_model, Iterable) and not isinstance(hrf_model, str):
+        names = [f"{con_name}_{i}" for i in range(len(hrf_model))]
 
     # Check that all names within the list are different
     if len(np.unique(names)) != len(names):
@@ -603,9 +602,9 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
         hkernel = [np.hstack((1, np.zeros(oversampling - 1)))]
     else:
         raise ValueError(
-            '"{}" is not a known hrf model. '
+            f'"{hrf_model}" is not a known hrf model. '
             "Use either a custom model or "
-            "one of {}".format(hrf_model, acceptable_hrfs)
+            f"one of {acceptable_hrfs}"
         )
     return hkernel
 

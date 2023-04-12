@@ -206,12 +206,12 @@ class LikelihoodModelResults:
         st_t = st_effect = st_sd = effect = sd = None
         if "t" in store or "effect" in store:
             effect = np.dot(matrix, self.theta)
-            if "effect" in store:
-                st_effect = np.squeeze(effect)
+        if "effect" in store:
+            st_effect = np.squeeze(effect)
         if "t" in store or "sd" in store:
             sd = np.sqrt(self.vcov(matrix=matrix, dispersion=dispersion))
-            if "sd" in store:
-                st_sd = np.squeeze(sd)
+        if "sd" in store:
+            st_sd = np.squeeze(sd)
         if "t" in store:
             st_t = np.squeeze(effect * positive_reciprocal(sd))
         return TContrastResults(

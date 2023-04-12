@@ -181,10 +181,8 @@ class OLSModel:
         r = wY - np.dot(X, beta)
         n = self.df_total
         SSE = (r**2).sum(0)
-        if nuisance is None:
-            sigmasq = SSE / n
-        else:
-            sigmasq = nuisance["sigma"]
+        sigmasq = SSE / n if nuisance is None else nuisance["sigma"]
+
         loglf = -n / 2.0 * np.log(2 * np.pi * sigmasq) - SSE / (2 * sigmasq)
         return loglf
 
@@ -298,7 +296,7 @@ class ARModel(OLSModel):
         whitened_X = X.copy()
         for i in range(self.order):
             whitened_X[(i + 1) :] = (
-                whitened_X[(i + 1) :] - self.rho[i] * X[0 : -(i + 1)]
+                whitened_X[(i + 1) :] - self.rho[i] * X[: -(i + 1)]
             )
         return whitened_X
 
