@@ -1113,8 +1113,8 @@ def _run_permutations(
     elif n_perm > 0:
         warnings.warn(
             f"The specified number of permutations is {n_perm} and the number "
-            f"of jobs to be performed in parallel has set to {n_jobs}. "
-            f"This is incompatible so only {n_perm} jobs will be running. "
+            f"of jobs to be performed in parallel was set to {n_jobs}. "
+            f"This is incompatible, so only {n_perm} jobs will be running. "
             "You may want to perform more permutations in order to take the "
             "most of the available computing resources."
         )
@@ -1362,6 +1362,7 @@ def _label_clusters(scores_original_data_3d, threshold_t, two_sided_test):
 def _compute_cluster_masses(
     scores_original_data_3d, cluster_labels, labeled_arr3d, threshold_t
 ):
+    """Return an array with the cluster mass for each cluster."""
     mass_regressor = np.zeros(cluster_labels.shape)
     for i in cluster_labels[1:]:  # skip background
         cluster_mass = np.sum(
