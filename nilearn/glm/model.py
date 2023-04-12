@@ -196,9 +196,8 @@ class LikelihoodModelResults:
             raise ValueError("t contrasts should have only one row")
         if matrix.shape[1] != self.theta.shape[0]:
             raise ValueError(
-                "t contrasts should be length P=%d, "
-                "but this is length %d"
-                % (self.theta.shape[0], matrix.shape[1])
+                f"t contrasts should be length P={self.theta.shape[0]}, "
+                f"but this is length {matrix.shape[1]}"
             )
         store = set(store)
         if not store.issubset(("t", "effect", "sd")):
@@ -264,9 +263,8 @@ class LikelihoodModelResults:
             matrix = matrix[None]
         if matrix.shape[1] != self.theta.shape[0]:
             raise ValueError(
-                "F contrasts should have shape[1] P=%d, "
-                "but this has shape[1] %d"
-                % (self.theta.shape[0], matrix.shape[1])
+                f"F contrasts should have shape[1] P={self.theta.shape[0]}, "
+                f"but this has shape[1] {matrix.shape[1]}"
             )
         ctheta = np.dot(matrix, self.theta)
         if matrix.ndim == 1:
@@ -375,11 +373,12 @@ class TContrastResults:
         return np.asarray(self.t)
 
     def __str__(self):
-        return "<T contrast: effect=%s, sd=%s, t=%s, df_den=%d>" % (
-            self.effect,
-            self.sd,
-            self.t,
-            self.df_den,
+        return (
+            "<T contrast: "
+            f"effect={self.effect}, "
+            f"sd={self.sd}, "
+            f"t={self.t}, "
+            f"df_den={self.df_den}>"
         )
 
 
@@ -404,8 +403,9 @@ class FContrastResults:
         return np.asarray(self.F)
 
     def __str__(self):
-        return "<F contrast: F=%s, df_den=%d, df_num=%d>" % (
-            repr(self.F),
-            self.df_den,
-            self.df_num,
+        return (
+            "<F contrast: "
+            f"F={repr(self.F)}, "
+            f"df_den={self.df_den}, "
+            f"df_num={self.df_num}>"
         )

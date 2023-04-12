@@ -37,11 +37,10 @@ def _deprecation_warning(
             warnings.warn(
                 category=FutureWarning,
                 message=(
-                    "'{}' has been deprecated in version {} "
-                    "and will be removed in version {}. "
-                    "Please use '{}' instead.".format(
-                        old_param, start_version, end_version, new_param
-                    )
+                    f"'{old_param}' has been deprecated "
+                    f"in version {start_version} "
+                    f"and will be removed in version {end_version}.\n"
+                    f"Please use '{new_param}' instead."
                 ),
             )
             return func(*args, **kwargs)

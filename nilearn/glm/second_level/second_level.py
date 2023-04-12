@@ -114,8 +114,8 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
     for model_idx, first_level in enumerate(second_level_input):
         if first_level.labels_ is None or first_level.results_ is None:
             raise ValueError(
-                "Model %s at index %i has not been fit yet"
-                "" % (first_level.subject_label, model_idx)
+                f"Model {first_level.subject_label} "
+                f"at index {model_idx} has not been fit yet."
             )
         if not none_confounds and first_level.subject_label is None:
             raise ValueError(
@@ -205,8 +205,8 @@ def _check_effect_maps(effect_maps, design_matrix):
     if len(effect_maps) != design_matrix.shape[0]:
         raise ValueError(
             "design_matrix does not match the number of maps considered. "
-            "%i rows in design matrix do not match with %i maps"
-            % (design_matrix.shape[0], len(effect_maps))
+            f"{design_matrix.shape[0]} rows in design matrix do not match "
+            f"with {len(effect_maps)} maps."
         )
 
 
@@ -488,7 +488,7 @@ class SecondLevelModel(BaseGLM):
         if self.verbose > 0:
             sys.stderr.write(
                 "\nComputation of second level model done in "
-                "%i seconds\n" % (time.time() - t0)
+                f"{time.time() - t0} seconds.\n"
             )
 
         return self
@@ -914,7 +914,7 @@ def non_parametric_inference(
     if verbose > 0:
         sys.stderr.write(
             "\nComputation of second level model done in "
-            "%i seconds\n" % (time.time() - t0)
+            f"{time.time() - t0} seconds\n"
         )
 
     # Check and obtain the contrast

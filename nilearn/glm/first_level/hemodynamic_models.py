@@ -371,9 +371,9 @@ def _sample_condition(
     if (onsets < frame_times[0] + min_onset).any():
         warnings.warn(
             (
-                "Some stimulus onsets are earlier than %s in the"
-                " experiment and are thus not considered in the model"
-                % (frame_times[0] + min_onset)
+                "Some stimulus onsets are earlier "
+                f"than {frame_times[0] + min_onset} in the"
+                " experiment and are thus not considered in the model."
             ),
             UserWarning,
         )

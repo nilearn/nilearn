@@ -359,8 +359,8 @@ def make_first_level_design_matrix(
         n_add_regs = add_regs_.shape[1]
         assert add_regs_.shape[0] == np.size(frame_times), ValueError(
             "Incorrect specification of additional regressors: "
-            "length of regressors provided: %d, number of "
-            "time-frames: %d" % (add_regs_.shape[0], np.size(frame_times))
+            f"length of regressors provided: {add_regs_.shape[0]}, number of "
+            f"time-frames: {np.size(frame_times)}."
         )
 
     # check that additional regressor names are well specified
@@ -369,7 +369,7 @@ def make_first_level_design_matrix(
     elif len(add_reg_names) != n_add_regs:
         raise ValueError(
             "Incorrect number of additional regressor names was provided"
-            "(%d provided, %d expected" % (len(add_reg_names), n_add_regs)
+            f"({len(add_reg_names)} provided, {n_add_regs} expected."
         )
 
     # computation of the matrix
