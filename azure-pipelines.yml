@@ -27,7 +27,7 @@ jobs:
       architecture: 'x64'
 
   # Install the standard and testing-related dependencies
-  # See setup.cfg for dependency group options
+  # See pyproject.toml for dependency group options
   - script: |
       python -m pip install --upgrade pip
       pip install pytest-azurepipelines
@@ -69,24 +69,19 @@ jobs:
   - script: |
       set -e
       python -m pip install --upgrade pip
-      pip install --prefer-binary setuptools wheel
+      pip install --prefer-binary build
     displayName: 'Install dependencies for building Nilearn'
 
   - script: |
       set -e
-      python setup.py sdist bdist_wheel
+      python -m build
     displayName: 'Build Nilearn'
 
   - script: |
       set -e
       pip install dist/nilearn-*-py3-none-any.whl
-      python -c "from nilearn.tests.test_package_installation import test_required_package_installation as test_pkg; test_pkg()"
-    displayName: 'Install Nilearn from wheel & check required package installation'
-
-  - script: |
-      set -e
-      python -c "from nilearn.tests.test_package_installation import test_required_package_installation as test_pkg; test_pkg()"
-    displayName: 'Test required package installation'
+      python -c "import nilearn"
+    displayName: 'Install Nilearn from wheel & check installation'
 
 
 - job: 'test_installing_on_macos'
@@ -107,24 +102,19 @@ jobs:
   - script: |
       set -e
       python -m pip install --upgrade pip
-      pip install --prefer-binary setuptools wheel
+      pip install --prefer-binary build
     displayName: 'Install dependencies for building Nilearn'
 
   - script: |
       set -e
-      python setup.py sdist bdist_wheel
+      python -m build
     displayName: 'Build Nilearn'
 
   - script: |
       set -e
       pip install dist/nilearn-*-py3-none-any.whl
-      python -c "from nilearn.tests.test_package_installation import test_required_package_installation as test_pkg; test_pkg()"
-    displayName: 'Install Nilearn from wheel & check required package installation'
-
-  - script: |
-      set -e
-      python -c "from nilearn.tests.test_package_installation import test_required_package_installation as test_pkg; test_pkg()"
-    displayName: 'Test required package installation'
+      python -c "import nilearn"
+    displayName: 'Install Nilearn from wheel & check installation'
 
 
 - job: 'test_installing_on_windows'
@@ -145,13 +135,13 @@ jobs:
   - script: |
       :; set -o errexit
       python -m pip install --upgrade pip
-      pip install --prefer-binary setuptools wheel
-      python setup.py sdist bdist_wheel
+      pip install --prefer-binary build
+      python -m build
     displayName: 'Install dependencies for building Nilearn'
 
   - script: |
       :; set -o errexit
-      python setup.py sdist bdist_wheel
+      python -m build
     displayName: 'Build Nilearn'
 
   - script: |
@@ -161,8 +151,8 @@ jobs:
 
   - script: |
       :; set -o errexit
-      python -c "from nilearn.tests.test_package_installation import test_required_package_installation as test_pkg; test_pkg()"
-    displayName: 'Test that required package are installed'
+      python -c "import nilearn"
+    displayName: 'Test that installation succeeded'
 
 
 - job: 'test_expected_to_fail_installation_on_linux'
@@ -183,12 +173,12 @@ jobs:
   - script: |
       set -e
       python -m pip install --upgrade pip
-      pip install --prefer-binary setuptools wheel
+      pip install --prefer-binary build
     displayName: 'Install dependencies for building Nilearn'
 
   - script: |
       set -e
-      python setup.py sdist bdist_wheel
+      python -m build
     displayName: 'Build Nilearn'
 
   - script: |

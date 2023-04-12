@@ -20,12 +20,20 @@ def _set_mpl_backend():
             skip_if_running_tests('matplotlib not installed')
         raise
     else:
-        from ..version import (_import_module_with_version_check,
+        from ..version import (_compare_version,
                                OPTIONAL_MATPLOTLIB_MIN_VERSION)
         # When matplotlib was successfully imported we need to check
         # that the version is greater that the minimum required one
-        _import_module_with_version_check('matplotlib',
-                                          OPTIONAL_MATPLOTLIB_MIN_VERSION)
+        mpl_version = getattr(matplotlib, "__version__", "0.0.0")
+        if not _compare_version(
+            mpl_version, ">=", OPTIONAL_MATPLOTLIB_MIN_VERSION
+        ):
+            raise ImportError(
+                f"A matplotlib version of at least "
+                f"{OPTIONAL_MATPLOTLIB_MIN_VERSION} "
+                f"is required to use nilearn. {mpl_version} was found. "
+                f"Please upgrade matplotlib"
+            )
         current_backend = matplotlib.get_backend().lower()
 
         try:

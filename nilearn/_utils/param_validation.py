@@ -133,7 +133,7 @@ def _adjust_screening_percentile(screening_percentile, mask_img,
     elif mask_volume < .005 * MNI152_BRAIN_VOLUME:
         warnings.warn(
             "Brain mask is smaller than .5% of the volume "
-            "human brain. This object is probably not tuned to"
+            "human brain. This object is probably not tuned to "
             "be used on such data.", stacklevel=2)
 
     if screening_percentile < 100.:
