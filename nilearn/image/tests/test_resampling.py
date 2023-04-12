@@ -65,7 +65,7 @@ def shape():
 
 @pytest.fixture
 def affine():
-    return AFFINE_EYE
+    return np.eye(4)
 
 
 def test_identity_resample(shape, affine):
