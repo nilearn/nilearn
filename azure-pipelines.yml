@@ -39,7 +39,8 @@ jobs:
     displayName: 'test'
 
   - script: |
-      codecov -f coverage.xml -t %CODECOV_TOKEN%
+      Invoke-WebRequest -Uri https://uploader.codecov.io/latest/windows/codecov.exe -Outfile codecov.exe
+      .\codecov.exe -t ${CODECOV_TOKEN}
     displayName: 'codecov'
     env:
       CODECOV_TOKEN: $(CODECOV_TOKEN)
