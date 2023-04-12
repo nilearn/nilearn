@@ -151,12 +151,32 @@ def glover_hrf(tr, oversampling=50, time_length=32.0, onset=0.0):
 
 
 def _compute_derivative_from_values(values, values_plus_x, x=0.1):
+    """Return the time or dispersion derivative of an hrf."""
     return 1.0 / x * (values - values_plus_x)
 
 
 def _generic_time_derivative(
     func, tr, oversampling=50, time_length=32.0, onset=0.0, do=0.1
 ):
+    """Return the time derivative of an hrf for a given function.
+
+    Parameters
+    ----------
+    func : :obj:`function`
+        spm_hrf or glover_hrf
+
+    tr : float
+        Scan repeat time, in seconds.
+
+    oversampling : int, optional
+        Temporal oversampling factor. Default=50.
+
+    time_length : float, optional
+        hrf kernel length, in seconds. Default=32.
+
+    onset : float, optional
+        Onset of the response. Default=0.
+    """
     return _compute_derivative_from_values(
         func(tr, oversampling, time_length, onset),
         func(tr, oversampling, time_length, onset + do),
@@ -240,6 +260,10 @@ def _generic_dispersion_derivative(
     dispersion=1.0,
     dd=0.01,
 ):
+    """Return the dispersion derivative of an hrf.
+
+    See _generic_dispersion_derivative for the parameters description.
+    """
     return _compute_derivative_from_values(
         _gamma_difference_hrf(
             tr,
@@ -412,6 +436,7 @@ def _sample_condition(
 
 
 def _compute_n_frames_high_res(frame_times, min_onset, oversampling):
+    """Compute the number of frames after upsampling."""
     n_frames = frame_times.size
     mini, maxi = _extrema(frame_times)
     n_frames_high_res = (n_frames - 1) * 1.0 / (maxi - mini)
@@ -422,6 +447,7 @@ def _compute_n_frames_high_res(frame_times, min_onset, oversampling):
 
 
 def _extrema(arr):
+    """Return the min and max of an array."""
     return np.min(arr), np.max(arr)
 
 
