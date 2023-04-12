@@ -307,7 +307,7 @@ def test_apply_mask(create_files, affine):
         assert_equal(proj.sum(), 9 / np.abs(affine[axis, axis]))
 
 
-def test_apply_mask_NaNs_do_not_propagate():
+def test_apply_mask_nans_do_not_propagate():
     data = np.zeros(SHAPE_4D)
     data[5, 5, 5] = 1
     data[6, 6, 6] = np.NaN
@@ -321,7 +321,7 @@ def test_apply_mask_NaNs_do_not_propagate():
     assert np.all(np.isfinite(series))
 
 
-def test_apply_mask_3D_data_is_accepted():
+def test_apply_mask_3d_data_is_accepted():
     shape = (3, 3, 3)
     data_3d = Nifti1Image(
         np.arange(27, dtype="int32").reshape(shape), AFFINE_EYE
@@ -376,7 +376,7 @@ def test_apply_mask_errors():
         apply_mask(Nifti1Image(data, AFFINE_EYE), mask_img)
 
 
-def test_unmask_4D():
+def test_unmask_4d():
     rng = np.random.RandomState(42)
 
     data4D = rng.uniform(size=SHAPE_4D)
@@ -409,7 +409,7 @@ def test_unmask_4D():
 
 
 @pytest.mark.parametrize("create_files", [False, True])
-def test_unmask_3D(create_files):
+def test_unmask_3d(create_files):
     """Check both with Nifti1Image and file."""
     rng = np.random.RandomState(42)
 
