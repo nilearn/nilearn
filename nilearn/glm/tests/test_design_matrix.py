@@ -51,7 +51,6 @@ def test_create_cosine_drift_terms_no_confounds(set_up):
 
     Not passing confounds it will return drift terms only
     """
-
     signals, _, t_r, high_pass = set_up
 
     drift_terms_only = nisignal._create_cosine_drift_terms(
