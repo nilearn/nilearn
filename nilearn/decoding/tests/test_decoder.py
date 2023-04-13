@@ -235,8 +235,7 @@ def test_wrap_param_grid_warning(param_grid, need_wrap):
     warning_messages = [str(warning.message) for warning in raised_warnings]
 
     found_warning = any(
-        expected_warning_substring in x
-        for x in warning_messages
+        expected_warning_substring in x for x in warning_messages
     )
 
     if need_wrap:
