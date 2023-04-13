@@ -1,5 +1,5 @@
 import pytest
-from nilearn.version import _compare_version
+from nilearn._utils import _compare_version
 
 
 @pytest.mark.parametrize("version_a,operator,version_b",

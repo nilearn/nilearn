@@ -22,7 +22,7 @@ def _set_mpl_backend():
             skip_if_running_tests('matplotlib not installed')
         raise
     else:
-        from .._utils.helpers import _compare_version
+        from .._utils import _compare_version
         # When matplotlib was successfully imported we need to check
         # that the version is greater that the minimum required one
         mpl_version = getattr(matplotlib, "__version__", "0.0.0")
