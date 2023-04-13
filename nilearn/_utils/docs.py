@@ -26,7 +26,7 @@ SKLEARN_LINKS = {
 
 ##############################################################################
 # Standard documentation entries
-# 
+#
 # Entries are listed in alphabetical order.
 #
 docdict = dict()
