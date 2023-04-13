@@ -92,7 +92,7 @@ def cache(
     func_memory_level=None,
     memory_level=None,
     shelve=False,
-    **kwargs
+    **kwargs,
 ):
     """Return a joblib.Memory object.
 
@@ -253,5 +253,5 @@ class CacheMixin:
             func_memory_level=func_memory_level,
             memory_level=self.memory_level,
             shelve=shelve,
-            **kwargs
+            **kwargs,
         )
