@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import itertools
-
 import json
 import string
 from pathlib import Path
@@ -751,7 +750,7 @@ def _add_metadata_to_bids_dataset(bids_path,
                                   json_file=None):
     """Add JSON file with specific metadata to BIDS dataset.
 
-    Note no "BIDS validation" are performed on the metadata, 
+    Note no "BIDS validation" are performed on the metadata,
     or on the file path.
 
     Parameters
@@ -764,23 +763,23 @@ def _add_metadata_to_bids_dataset(bids_path,
 
     json_file :  :obj:`str` or :obj:`pathlib.Path`, default=None
         Path to the json file relative to the root of the BIDS dataset.
-        If no json_file is specified, a default path is used 
-        that is meant to work well with the defaults of 
-        `create_fake_bids_dataset`: 
+        If no json_file is specified, a default path is used
+        that is meant to work well with the defaults of
+        `create_fake_bids_dataset`:
         this is meant to facilitate modifying datasets used during tests.
 
     Returns
     -------
     pathlib.Path
         Full path to the json file created.
-    """    
+    """
     if json_file is None:
         json_file = (
-            Path(bids_path) / 
-            'derivatives' / 
-            'sub-01' / 
-            'ses-01' / 
-            'func' / 
+            Path(bids_path) /
+            'derivatives' /
+            'sub-01' /
+            'ses-01' /
+            'func' /
             'sub-01_ses-01_task-main_run-01_space-MNI_desc-preproc_bold.json'
         )
     else:

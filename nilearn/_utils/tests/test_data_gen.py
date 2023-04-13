@@ -6,6 +6,7 @@ import json
 import numpy as np
 import pytest
 from nilearn._utils.data_gen import (
+    _add_metadata_to_bids_dataset,
     create_fake_bids_dataset,
     generate_fake_fmri,
     generate_labeled_regions,
@@ -13,8 +14,6 @@ from nilearn._utils.data_gen import (
     generate_regions_ts,
 )
 from nilearn.image import get_data
-
-from nilearn._utils.data_gen import _add_metadata_to_bids_dataset
 
 
 def test_add_metadata_to_bids_derivatives_default_path(tmp_path):
