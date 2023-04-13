@@ -123,7 +123,7 @@ def test_threshold_stats_img():
         threshold_stats_img(None, None, alpha=0.05, height_control="plop")
 
 
-@pytest.parametrize(
+@pytest.mark.parametrize(
     "alpha, expected",
     [
         (1.0e-9, 7),

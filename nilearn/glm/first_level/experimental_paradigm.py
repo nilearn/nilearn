@@ -86,8 +86,8 @@ def check_events(events):
     unexpected_columns = set(events_copy.columns).difference(VALID_FIELDS)
     for unexpected_column in unexpected_columns:
         warnings.warn(
-            f"Unexpected column `{unexpected_column}` in events. "
-            "Data will be ignored."
+            f"Unexpected column '{unexpected_column}' in events data. "
+            "It will be ignored."
         )
 
     # Make sure we have a numeric type for duration
