@@ -679,18 +679,18 @@ def _gifti_img_to_data(gifti_img):
     return np.asarray([arr.data for arr in gifti_img.darrays]).T.squeeze()
 
 
-FREESURFER_MESH_EXTENSIONS = [".orig",
+FREESURFER_MESH_EXTENSIONS = (".orig",
                               ".pial",
                               ".sphere",
                               ".white",
-                              ".inflated"]
+                              ".inflated")
 
-FREESURFER_DATA_EXTENSIONS = [".area",
+FREESURFER_DATA_EXTENSIONS = (".area",
                               ".curv",
                               ".sulc",
                               ".thickness",
                               ".label",
-                              ".annot"]
+                              ".annot")
 
 
 def _stringify(word_list):
@@ -747,7 +747,7 @@ def load_surf_data(surf_data):
                 data_part = _gifti_img_to_data(gii)
             else:
                 raise ValueError(('The input type is not recognized. '
-                                  f'{surf_data:r} was '
+                                  f'{surf_data!r} was '
                                   'given while valid inputs are a Numpy array '
                                   'or one of the following file formats: .gii,'
                                   ' .gii.gz, .mgz, .nii, .nii.gz, '
@@ -843,7 +843,7 @@ def load_surf_mesh(surf_mesh):
             raise ValueError(f"More than one file matching path: {surf_mesh} \n"
                              "load_surf_mesh can only load one file at a time.")
 
-        if any(surf_mesh.endswith(x) for x in FREESURFER_MESH_EXTENSIONS):
+        if any(surf_mesh.endswith(x[1:]) for x in FREESURFER_MESH_EXTENSIONS):
             coords, faces, header = fs.io.read_geometry(surf_mesh,
                                                         read_metadata=True)
             # See https://github.com/nilearn/nilearn/pull/3235
@@ -859,7 +859,7 @@ def load_surf_mesh(surf_mesh):
             mesh = Mesh(coordinates=coords, faces=faces)
         else:
             raise ValueError('The input type is not recognized. '
-                              f'{surf_mesh:r} was given '
+                              f'{surf_mesh!r} was given '
                               'while valid inputs are one of the following '
                               'file formats: .gii, .gii.gz, '
                               'Freesurfer specific files such as '
@@ -936,7 +936,7 @@ def load_surface(surface):
             raise ValueError("`load_surface` accepts iterables "
                              "of length 2 to define a surface. "
                              f"You provided a { type(surface)} "
-                             f"of length {en(surface)}.")
+                             f"of length {len(surface)}.")
         mesh = load_surf_mesh(surface[0])
         data = load_surf_data(surface[1])
     else:
