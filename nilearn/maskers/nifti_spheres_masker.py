@@ -179,7 +179,7 @@ def _iter_signals_from_spheres(seeds, niimg, radius, allow_overlap,
     X, A = _apply_mask_and_get_affinity(seeds, niimg, radius,
                                         allow_overlap,
                                         mask_img=mask_img)
-    for i, row in enumerate(A.rows):
+    for row in A.rows:
         yield X[:, row]
 
 
@@ -374,7 +374,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
         if not hasattr(self.seeds, '__iter__'):
             raise ValueError(
-                error + 'Given seed list is of type: ' + type(self.seeds)
+                f"{error}Given seed list is of type: {type(self.seeds)}"
             )
 
         self.seeds_ = []
@@ -383,8 +383,8 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
             # Check the type first
             if not hasattr(seed, '__len__'):
                 raise ValueError(
-                    error + f'Seed #{i} is not a valid triplet '
-                    f'of coordinates. It is of type {type(seed)}.'
+                    f'{error}Seed #{i} is not a valid triplet of coordinates. '
+                    f'It is of type {type(seed)}.'
                 )
             # Convert to list because it is easier to process
             if isinstance(seed, np.ndarray):
@@ -396,8 +396,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
             # Check the length
             if len(seed) != 3:
                 raise ValueError(
-                    error + f'Seed #{i} is of length %{len(seed)} '
-                    'instead of 3.'
+                    f'{error}Seed #{i} is of length {len(seed)} instead of 3.'
                 )
 
             self.seeds_.append(seed)
@@ -442,9 +441,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
     def _check_fitted(self):
         if not hasattr(self, "seeds_"):
-            raise ValueError('It seems that %s has not been fitted. '
-                             'You must call fit() before calling transform().'
-                             % self.__class__.__name__)
+            raise ValueError('It seems that {self.__class__.__name__} '
+                             'has not been fitted. '
+                             'You must call fit() before calling transform().')
 
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from a single 4D niimg.

@@ -192,7 +192,7 @@ def test_4d_single_scan():
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
     rng = np.random.RandomState(42)
-    data_5d = [rng.random_sample(shape_4d) for i in range(5)]
+    data_5d = [rng.random_sample(shape_4d) for _ in range(5)]
     data_4d = [d[..., 0] for d in data_5d]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
     data_4d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_4d]
@@ -225,7 +225,7 @@ def test_5d():
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
     rng = np.random.RandomState(42)
-    data_5d = [rng.random_sample(shape_4d) for i in range(5)]
+    data_5d = [rng.random_sample(shape_4d) for _ in range(5)]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
 
     masker = NiftiMasker(mask_img=mask_img)
@@ -354,18 +354,18 @@ def test_compute_epi_mask():
 def expected_mask(mask_args):
     """Create an expected mask."""
     mask = np.zeros((9, 9, 5))
-    if mask_args == dict():
+    if mask_args == {}:
         return mask
-    else:
-        mask[2:7, 2:7, 2] = 1
-        return mask
+    
+    mask[2:7, 2:7, 2] = 1
+    return mask
 
 
 @pytest.mark.parametrize('strategy',
                          [f'{p}-template' for p in
                           ['whole-brain', 'gm', 'wm']])
 @pytest.mark.parametrize('mask_args',
-                         [dict(), dict(threshold=0.)])
+                         [{}, dict(threshold=0.)])
 def test_compute_brain_mask(strategy, mask_args, expected_mask):
     """Check masker for template masking strategy."""
     img, _ = data_gen.generate_random_img((9, 9, 5))
