@@ -1,5 +1,4 @@
-"""
-This module implements plotting functions useful to report analysis results.
+"""Implement plotting functions useful to report analysis results.
 
 Author: Martin Perez-Guevara, Elvis Dohmatob, 2017
 """
@@ -7,20 +6,20 @@ Author: Martin Perez-Guevara, Elvis Dohmatob, 2017
 import warnings
 from string import ascii_lowercase
 
+import nibabel as nib
 import numpy as np
 import pandas as pd
-import nibabel as nib
-from scipy.ndimage import (
-    maximum_filter,
-    minimum_filter,
-    label,
-    center_of_mass,
-    generate_binary_structure,
-)
-from nilearn.image import threshold_img, new_img_like
-from nilearn.image.resampling import coord_transform
 from nilearn._utils import check_niimg_3d
 from nilearn._utils.niimg import _safe_get_data
+from nilearn.image import new_img_like, threshold_img
+from nilearn.image.resampling import coord_transform
+from scipy.ndimage import (
+    center_of_mass,
+    generate_binary_structure,
+    label,
+    maximum_filter,
+    minimum_filter,
+)
 
 
 def _local_max(data, affine, min_distance):
@@ -214,7 +213,7 @@ def get_clusters_table(
     min_distance=8.0,
     return_label_maps=False,
 ):
-    """Creates pandas dataframe with img cluster statistics.
+    """Create pandas dataframe with img cluster statistics.
 
     This function should work on any statistical maps where more extreme values
     indicate greater statistical significance.
@@ -337,10 +336,9 @@ def get_clusters_table(
         # If the stat threshold is too high simply return an empty dataframe
         if np.sum(binarized) == 0:
             warnings.warn(
-                "Attention: No clusters with stat {0} than {1}".format(
-                    "higher" if sign == 1 else "lower",
-                    stat_threshold * sign,
-                )
+                "Attention: No clusters "
+                f'with stat {"higher" if sign == 1 else "lower"} '
+                f"than {stat_threshold * sign}"
             )
             continue
 
@@ -400,10 +398,7 @@ def get_clusters_table(
                 else:
                     # Subpeak naming convention is cluster num+letter:
                     # 1a, 1b, etc
-                    sp_id = "{0}{1}".format(
-                        c_id + 1,
-                        ascii_lowercase[subpeak - 1],
-                    )
+                    sp_id = f"{c_id + 1}{ascii_lowercase[subpeak - 1]}"
                     row = [
                         sp_id,
                         subpeak_xyz[subpeak, 0],
