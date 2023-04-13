@@ -8,14 +8,11 @@ from pathlib import Path
 import numpy as np
 import pytest
 import scipy.signal
-
-# Use nisignal here to avoid name collisions
-# (using nilearn.signal is not possible)
-from nilearn import signal as nisignal
 from nilearn._utils.data_gen import generate_signals
 from nilearn.signal import (
     _detrend,
     _handle_scrubbed_volumes,
+    _mean_of_squares,
     _row_sum_of_squares,
     _standardize,
     butterworth,
@@ -330,7 +327,7 @@ def test_mean_of_squares():
     signals, *_ = generate_signals(
         n_features=n_features, length=n_samples, same_variance=True
     )
-    var = nisignal._mean_of_squares(signals)
+    var = _mean_of_squares(signals)
 
     # Reference computation
     expected_var = np.copy(signals)
@@ -722,78 +719,55 @@ def test_clean_confounds_from_file():
     data_dir = Path(__file__).parent / "data"
 
     filename1 = data_dir / "spm_confounds.txt"
-
-    clean(
-        signals,
-        detrend=False,
-        standardize=False,
-        confounds=str(filename1),
-        standardize_confounds="zscore_sample",  # avoid wrong strategy warnings
-    )
-
     filename2 = data_dir / "confounds_with_header.csv"
 
-    clean(
-        signals,
-        detrend=False,
-        standardize=False,
-        confounds=str(filename2),
-        standardize_confounds="zscore_sample",  # avoid wrong strategy warnings
-    )
-
-    clean(
-        signals,
-        detrend=False,
-        standardize=False,
-        confounds=confounds[:, 1],
-        standardize_confounds="zscore_sample",  # avoid wrong strategy warnings
-    )
-
-    # Use a list containing two filenames, a 2D array and a 1D array
-    clean(
-        signals,
-        detrend=False,
-        standardize=False,
-        confounds=[
+    # last item in the loop
+    # use a list containing two filenames, a 2D array and a 1D array
+    for confounds_to_test in [
+        str(filename1),
+        str(filename2),
+        confounds[:, 1],
+        [
             str(filename1),
             confounds[:, 0:2],
             str(filename2),
             confounds[:, 2],
         ],
-        standardize_confounds="zscore_sample",  # avoid wrong strategy warnings
-    )
+    ]:
+        clean(
+            signals,
+            detrend=False,
+            standardize=False,
+            confounds=confounds_to_test,
+            standardize_confounds="zscore_sample",
+            # avoid wrong strategy warnings
+        )
 
 
 def test_clean_confounds_from_file_with_confounds_as_pandas_DataFrame():
     # test with confounds as a pandas DataFrame
     data_dir = Path(__file__).parent / "data"
 
-    filename2 = data_dir / "confounds_with_header.csv"
-    confounds_df = read_csv(filename2, sep="\t")
+    filename = data_dir / "confounds_with_header.csv"
+    confounds_df = read_csv(filename, sep="\t")
 
-    length = 20
-    signals, _, _ = generate_signals(
-        n_features=41, n_confounds=3, length=length
-    )
+    signals, _, _ = generate_signals(n_features=41, n_confounds=3, length=20)
 
-    clean(
-        signals,
-        detrend=False,
-        standardize=False,
-        confounds=confounds_df.values,
-        standardize_confounds="zscore_sample",  # avoid wrong strategy warnings
-    )
+    for confounds in [confounds_df, confounds_df.values]:
+        clean(
+            signals,
+            detrend=False,
+            standardize=False,
+            confounds=confounds,
+            standardize_confounds="zscore_sample",  # avoid strategy warnings
+        )
 
-    clean(
-        signals,
-        detrend=False,
-        standardize=False,
-        confounds=confounds_df,
-        standardize_confounds="zscore_sample",  # avoid wrong strategy warnings
-    )
 
-    # test array-like signals
+def test_clean_confounds_from_array_like_signal():
+    signals, _, _ = generate_signals(n_features=41, n_confounds=3, length=20)
+
     list_signal = signals.tolist()
+
     clean(
         list_signal,
         standardize=False,
