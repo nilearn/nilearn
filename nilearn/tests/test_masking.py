@@ -77,7 +77,7 @@ def _cov_conf(tseries, conf):
 
 @pytest.mark.parametrize(
     "standardize_signal, expected",
-    [(False, 10.0), ("zscore", 1.0), (True, 1.0), ("psc", 10.0)],
+    [(False, 10.0), ("zscore_sample", 1.0), (True, 1.0), ("psc", 10.0)],
 )
 def test_confounds_standardization_confounds_are_standarized(
     standardize_signal, expected
@@ -99,7 +99,7 @@ def test_confounds_standardization_confounds_are_standarized(
     )
 
 
-@pytest.mark.parametrize("standardize_signal", [False, "zscore", "psc"])
+@pytest.mark.parametrize("standardize_signal", [False, "zscore_sample", "psc"])
 def test_confounds_standardization_confounds_are_not_standarized(
     standardize_signal,
 ):
@@ -706,7 +706,7 @@ def test_compute_multi_brain_mask_errors():
     # Check error raised if images with different shapes are given as input
     imgs = [
         generate_mni_space_img(res=8, random_state=0)[0],
-        generate_mni_space_img(res=12, random_state=0)[0],
+        generate_mni_space_img(res=r, random_state=0)[0] for r in (8, 12)
     ]
     with pytest.raises(
         ValueError,
