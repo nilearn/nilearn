@@ -32,7 +32,7 @@ def test_full_rank():
     assert_array_almost_equal(X, X_)
     X[:, -1] = X[:, :-1].sum(1)
     X_, cond = full_rank(X)
-    assert cond > 1.e10
+    assert cond > 1.0e10
     assert_array_almost_equal(X, X_)
 
 
@@ -45,8 +45,8 @@ def test_z_score():
     # Estimate the p-values using the Cumulative Distribution Function (CDF)
     cdfval = sps.t.cdf(tval, 1e10)
     # Set a minimum threshold for p-values to avoid infinite z-scores
-    pval = np.array(np.minimum(np.maximum(pval, 1.e-300), 1. - 1.e-16))
-    cdfval = np.array(np.minimum(np.maximum(cdfval, 1.e-300), 1. - 1.e-16))
+    pval = np.array(np.minimum(np.maximum(pval, 1.0e-300), 1.0 - 1.0e-16))
+    cdfval = np.array(np.minimum(np.maximum(cdfval, 1.0e-300), 1.0 - 1.0e-16))
     # Compute z-score from the p-value estimated with the SF
     zval_sf = norm.isf(pval)
     # Compute z-score from the p-value estimated with the CDF
@@ -71,8 +71,10 @@ def test_z_score():
     # Estimate the p-values using the Cumulative Distribution Function (CDF)
     cdf_val = sps.f.cdf(fval, 42, 1e10)
     # Set a minimum threshold for p-values to avoid infinite z-scores
-    p_val = np.array(np.minimum(np.maximum(p_val, 1.e-300), 1. - 1.e-16))
-    cdf_val = np.array(np.minimum(np.maximum(cdf_val, 1.e-300), 1. - 1.e-16))
+    p_val = np.array(np.minimum(np.maximum(p_val, 1.0e-300), 1.0 - 1.0e-16))
+    cdf_val = np.array(
+        np.minimum(np.maximum(cdf_val, 1.0e-300), 1.0 - 1.0e-16)
+    )
     # Compute z-score from the p-value estimated with the SF
     z_val_sf = norm.isf(p_val)
     # Compute z-score from the p-value estimated with the CDF
@@ -95,7 +97,7 @@ def test_z_score():
         cdf = sps.t.cdf(t, 1e10)
         z_sf = norm.isf(p)
         z_cdf = norm.ppf(cdf)
-        if p <= .5:
+        if p <= 0.5:
             z = z_sf
         else:
             z = z_cdf
@@ -103,8 +105,9 @@ def test_z_score():
 
 
 def test_z_score_opposite_contrast():
-    fmri, mask = generate_fake_fmri(shape=(50, 20, 50), length=96,
-                                    random_state=np.random.RandomState(42))
+    fmri, mask = generate_fake_fmri(
+        shape=(50, 20, 50), length=96, random_state=np.random.RandomState(42)
+    )
 
     nifti_masker = NiftiMasker(mask_img=mask)
     data = nifti_masker.fit_transform(fmri)
@@ -113,29 +116,37 @@ def test_z_score_opposite_contrast():
 
     for i in [0, 20]:
         design_matrix = make_first_level_design_matrix(
-            frametimes, hrf_model='spm',
-            add_regs=np.array(data[:, i]).reshape(-1, 1))
+            frametimes,
+            hrf_model="spm",
+            add_regs=np.array(data[:, i]).reshape(-1, 1),
+        )
         c1 = np.array([1] + [0] * (design_matrix.shape[1] - 1))
         c2 = np.array([0] + [1] + [0] * (design_matrix.shape[1] - 2))
-        contrasts = {'seed1 - seed2': c1 - c2, 'seed2 - seed1': c2 - c1}
-        fmri_glm = FirstLevelModel(t_r=2.,
-                                   noise_model='ar1',
-                                   standardize=False,
-                                   hrf_model='spm',
-                                   drift_model='cosine')
+        contrasts = {"seed1 - seed2": c1 - c2, "seed2 - seed1": c2 - c1}
+        fmri_glm = FirstLevelModel(
+            t_r=2.0,
+            noise_model="ar1",
+            standardize=False,
+            hrf_model="spm",
+            drift_model="cosine",
+        )
         fmri_glm.fit(fmri, design_matrices=design_matrix)
         z_map_seed1_vs_seed2 = fmri_glm.compute_contrast(
-            contrasts['seed1 - seed2'], output_type='z_score')
+            contrasts["seed1 - seed2"], output_type="z_score"
+        )
         z_map_seed2_vs_seed1 = fmri_glm.compute_contrast(
-            contrasts['seed2 - seed1'], output_type='z_score')
+            contrasts["seed2 - seed1"], output_type="z_score"
+        )
         assert_almost_equal(
             z_map_seed1_vs_seed2.get_fdata(dtype="float32").min(),
             -z_map_seed2_vs_seed1.get_fdata(dtype="float32").max(),
-            decimal=10)
+            decimal=10,
+        )
         assert_almost_equal(
             z_map_seed1_vs_seed2.get_fdata(dtype="float32").max(),
             -z_map_seed2_vs_seed1.get_fdata(dtype="float32").min(),
-            decimal=10)
+            decimal=10,
+        )
 
 
 def test_mahalanobis():
@@ -219,20 +230,20 @@ def test_pos_recipr():
 def test_img_table_checks():
     # check matching lengths
     with pytest.raises(ValueError):
-        _check_list_length_match([''] * 2, [''], "", "")
+        _check_list_length_match([""] * 2, [""], "", "")
     # check tables type and that can be loaded
     with pytest.raises(ValueError):
-        _check_and_load_tables(['.csv', '.csv'], "")
+        _check_and_load_tables([".csv", ".csv"], "")
     with pytest.raises(TypeError):
         _check_and_load_tables([[], pd.DataFrame()], "")  # np.array([0]),
     with pytest.raises(ValueError):
-        _check_and_load_tables(['.csv', pd.DataFrame()], "")
+        _check_and_load_tables([".csv", pd.DataFrame()], "")
     # check high level wrapper keeps behavior
     with pytest.raises(ValueError):
-        _check_run_tables([''] * 2, [''], "")
+        _check_run_tables([""] * 2, [""], "")
     with pytest.raises(ValueError):
-        _check_run_tables([''] * 2, ['.csv', '.csv'], "")
+        _check_run_tables([""] * 2, [".csv", ".csv"], "")
     with pytest.raises(TypeError):
-        _check_run_tables([''] * 2, [[0], pd.DataFrame()], "")
+        _check_run_tables([""] * 2, [[0], pd.DataFrame()], "")
     with pytest.raises(ValueError):
-        _check_run_tables([''] * 2, ['.csv', pd.DataFrame()], "")
+        _check_run_tables([""] * 2, [".csv", pd.DataFrame()], "")

@@ -15,7 +15,7 @@ General reference for regression models:
 
 """
 
-__docformat__ = 'restructuredtext en'
+__docformat__ = "restructuredtext en"
 
 import functools
 import warnings
@@ -28,24 +28,26 @@ from nilearn.glm.model import LikelihoodModelResults
 from numpy.linalg import matrix_rank
 
 
-def _deprecation_warning(old_param,
-                         new_param,
-                         start_version,
-                         end_version='future'):
+def _deprecation_warning(
+    old_param, new_param, start_version, end_version="future"
+):
     def _warned_func(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            warnings.warn(category=FutureWarning,
-                          message=("'{}' has been deprecated in version {} "
-                                   "and will be removed in version {}. "
-                                   "Please use '{}' instead.".format(
-                                       old_param,
-                                       start_version,
-                                       end_version,
-                                       new_param
-                                   )))
+            warnings.warn(
+                category=FutureWarning,
+                message=(
+                    "'{}' has been deprecated in version {} "
+                    "and will be removed in version {}. "
+                    "Please use '{}' instead.".format(
+                        old_param, start_version, end_version, new_param
+                    )
+                ),
+            )
             return func(*args, **kwargs)
+
         return wrapper
+
     return _warned_func
 
 
@@ -109,8 +111,9 @@ class OLSModel:
         self.design = design
         self.whitened_design = self.whiten(self.design)
         self.calc_beta = spl.pinv(self.whitened_design)
-        self.normalized_cov_beta = np.dot(self.calc_beta,
-                                          np.transpose(self.calc_beta))
+        self.normalized_cov_beta = np.dot(
+            self.calc_beta, np.transpose(self.calc_beta)
+        )
         self.df_total = self.whitened_design.shape[0]
 
         eps = np.abs(self.design).sum() * np.finfo(np.float64).eps
@@ -177,12 +180,12 @@ class OLSModel:
         wY = self.whiten(Y)
         r = wY - np.dot(X, beta)
         n = self.df_total
-        SSE = (r ** 2).sum(0)
+        SSE = (r**2).sum(0)
         if nuisance is None:
             sigmasq = SSE / n
         else:
-            sigmasq = nuisance['sigma']
-        loglf = - n / 2. * np.log(2 * np.pi * sigmasq) - SSE / (2 * sigmasq)
+            sigmasq = nuisance["sigma"]
+        loglf = -n / 2.0 * np.log(2 * np.pi * sigmasq) - SSE / (2 * sigmasq)
         return loglf
 
     def whiten(self, X):
@@ -226,12 +229,18 @@ class OLSModel:
         wY = self.whiten(Y)
         beta = np.dot(self.calc_beta, wY)
         wresid = wY - np.dot(self.whitened_design, beta)
-        dispersion = np.sum(wresid ** 2, 0) / (
+        dispersion = np.sum(wresid**2, 0) / (
             self.whitened_design.shape[0] - self.whitened_design.shape[1]
         )
-        lfit = RegressionResults(beta, Y, self,
-                                 wY, wresid, dispersion=dispersion,
-                                 cov=self.normalized_cov_beta)
+        lfit = RegressionResults(
+            beta,
+            Y,
+            self,
+            wY,
+            wresid,
+            dispersion=dispersion,
+            cov=self.normalized_cov_beta,
+        )
         return lfit
 
 
@@ -288,10 +297,9 @@ class ARModel(OLSModel):
         X = np.asarray(X, np.float64)
         whitened_X = X.copy()
         for i in range(self.order):
-            whitened_X[(i + 1):] = (whitened_X[(i + 1):]
-                                    - self.rho[i]
-                                    * X[0: - (i + 1)]
-                                    )
+            whitened_X[(i + 1) :] = (
+                whitened_X[(i + 1) :] - self.rho[i] * X[0 : -(i + 1)]
+            )
         return whitened_X
 
 
@@ -302,16 +310,26 @@ class RegressionResults(LikelihoodModelResults):
 
     """
 
-    def __init__(self, theta, Y, model, whitened_Y, whitened_residuals,
-                 cov=None, dispersion=1., nuisance=None):
+    def __init__(
+        self,
+        theta,
+        Y,
+        model,
+        whitened_Y,
+        whitened_residuals,
+        cov=None,
+        dispersion=1.0,
+        nuisance=None,
+    ):
         """See LikelihoodModelResults constructor.
 
         The only difference is that the whitened Y and residual values
         are stored for a regression model.
 
         """
-        LikelihoodModelResults.__init__(self, theta, Y, model, cov,
-                                        dispersion, nuisance)
+        LikelihoodModelResults.__init__(
+            self, theta, Y, model, cov, dispersion, nuisance
+        )
         self.whitened_Y = whitened_Y
         self.whitened_residuals = whitened_residuals
         self.whitened_design = model.whitened_design
@@ -358,7 +376,7 @@ class RegressionResults(LikelihoodModelResults):
 
         If not from an OLS model this is "pseudo"-SSE.
         """
-        return (self.whitened_residuals ** 2).sum(0)
+        return (self.whitened_residuals**2).sum(0)
 
     @auto_attr
     def r_square(self):
@@ -400,7 +418,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
 
     def logL(self, Y):
         """Return the maximized log-likelihood."""
-        raise ValueError('can not use this method for simple results')
+        raise ValueError("can not use this method for simple results")
 
     def residuals(self, Y):
         """Residuals from the fit."""
@@ -426,9 +444,9 @@ class SimpleRegressionResults(LikelihoodModelResults):
         .. footbibliography::
 
         """
-        return (self.residuals(Y)
-                * positive_reciprocal(np.sqrt(self.dispersion))
-                )
+        return self.residuals(Y) * positive_reciprocal(
+            np.sqrt(self.dispersion)
+        )
 
     @auto_attr
     def predicted(self):
