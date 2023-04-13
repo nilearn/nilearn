@@ -189,28 +189,49 @@ def test_check_parameter_grid_is_empty(rand_X_Y):
 
 
 @pytest.mark.parametrize(
+    "param_grid",
+    [
+        {"alphas": [1, 10, 100, 1000]},
+        {"alphas": [1, 10, 100, 1000], "fit_intercept": [True, False]},
+        {"fit_intercept": [True, False]},
+        {"alphas": [[1, 10, 100, 1000]]},
+        {"alphas": (1, 10, 100, 1000)},
+        {"alphas": [(1, 10, 100, 1000)]},
+        {"alphas": ((1, 10, 100, 1000),)},
+        {"alphas": np.array([1, 10, 100, 1000])},
+        {"alphas": [np.array([1, 10, 100, 1000])]},
+        [{"alphas": [1, 10]}, {"alphas": [[100, 1000]]}],
+        [{"alphas": [1, 10]}, {"fit_intercept": [True, False]}],
+    ],
+)
+def test_wrap_param_grid(param_grid):
+    param_name = "alphas"
+    for param in ParameterGrid(_wrap_param_grid(param_grid, param_name)):
+        try:
+            for param_value in param[param_name]:
+                assert param_value in (1, 10, 100, 1000)
+
+        # if param_name is not in param_grid_wrapped,
+        # make sure that no other change was made
+        except KeyError:
+            assert any(
+                [param == param_ for param_ in ParameterGrid(param_grid)]
+            )
+
+
+@pytest.mark.parametrize(
     "param_grid, need_wrap",
     [
         ({"alphas": [1, 10, 100, 1000]}, True),
-        ({"alphas": [1, 10, 100, 1000], "fit_intercept": [True, False]}, True),
-        ({"fit_intercept": [True, False]}, False),
         ({"alphas": [[1, 10, 100, 1000]]}, False),
-        ({"alphas": (1, 10, 100, 1000)}, True),
-        ({"alphas": [(1, 10, 100, 1000)]}, False),
-        ({"alphas": ((1, 10, 100, 1000),)}, False),
-        ({"alphas": np.array([1, 10, 100, 1000])}, True),
-        ({"alphas": [np.array([1, 10, 100, 1000])]}, False),
-        ([{"alphas": [1, 10]}, {"alphas": [[100, 1000]]}], True),
-        ([{"alphas": [1, 10]}, {"fit_intercept": [True, False]}], True),
-        (None, False),
     ],
 )
-def test_wrap_param_grid(param_grid, need_wrap):
+def test_wrap_param_grid_warning(param_grid, need_wrap):
     param_name = "alphas"
     expected_warning_substring = "should be a sequence of iterables"
 
     with warnings.catch_warnings(record=True) as raised_warnings:
-        param_grid_wrapped = _wrap_param_grid(param_grid, param_name)
+        _wrap_param_grid(param_grid, param_name)
     warning_messages = [str(warning.message) for warning in raised_warnings]
 
     found_warning = any(
@@ -223,21 +244,9 @@ def test_wrap_param_grid(param_grid, need_wrap):
     else:
         assert not found_warning
 
-    if param_grid is None:
-        assert param_grid_wrapped is None
 
-    else:
-        for param in ParameterGrid(param_grid_wrapped):
-            try:
-                for param_value in param[param_name]:
-                    assert param_value in (1, 10, 100, 1000)
-
-            # if param_name is not in param_grid_wrapped,
-            # make sure that no other change was made
-            except KeyError:
-                assert any(
-                    [param == param_ for param_ in ParameterGrid(param_grid)]
-                )
+def test_wrap_param_grid_is_none():
+    assert _wrap_param_grid(None, "alphas") is None
 
 
 @pytest.mark.parametrize(
