@@ -84,7 +84,6 @@ min = [
 ]
 # For running unit and docstring tests
 test = [
-	"codecov",
 	"coverage",
 	"pytest>=6.0.0",
 	"pytest-cov",

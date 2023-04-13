@@ -12,4 +12,3 @@ dependencies:
     - pytest
     - pytest-cov
     - lxml
-    - codecov
