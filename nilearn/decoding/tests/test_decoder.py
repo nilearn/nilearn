@@ -361,6 +361,9 @@ def test_parallel_fit(rand_X_Y):
             assert a == b
 
 
+@pytest.mark.parametrize("param_values", 
+    ([0.001, 0.01, 0.1, 1, 10, 100, 1000],
+     [[0.001, 0.01, 0.1, 1, 10, 100, 1000]]))
 @pytest.mark.parametrize(
     "estimator, param_name, fitted_param_name, is_classification",
     [
@@ -369,13 +372,12 @@ def test_parallel_fit(rand_X_Y):
     ],
 )
 def test_parallel_fit_builtin_cv(
-    rand_X_Y, estimator, param_name, fitted_param_name, is_classification
+    rand_X_Y, estimator, param_name, fitted_param_name, is_classification,
+    param_values
 ):
     """Check that the `fitted_param_name` output of _parallel_fit is a single
     value even if param_grid is wrapped in a list for models with built-in CV.
     """
-    param_values = [0.001, 0.01, 0.1, 1, 10, 100, 1000]
-
     # y will be replaced if this is a classification
     X, y = make_regression(
         n_samples=N_SAMPLES,
@@ -402,23 +404,22 @@ def test_parallel_fit_builtin_cv(
     else:
         scorer = check_scoring(estimator, "r2")
 
-    for params in [param_values, [param_values]]:  # test unwrapped and wrapped
-        param_grid = {param_name: params}
-        _, _, _, best_param, _, _ = _parallel_fit(
-            estimator=estimator,
-            X=X,
-            y=y,
-            train=train,
-            test=test,
-            param_grid=param_grid,
-            is_classification=is_classification,
-            scorer=scorer,
-            mask_img=None,
-            class_index=1,
-            selector=selector,
-            clustering_percentile=100,
-        )
-        assert best_param[fitted_param_name] in param_values
+      param_grid = {param_name: param_values}
+      _, _, _, best_param, _, _ = _parallel_fit(
+          estimator=estimator,
+          X=X,
+          y=y,
+          train=train,
+          test=test,
+          param_grid=param_grid,
+          is_classification=is_classification,
+          scorer=scorer,
+          mask_img=None,
+          class_index=1,
+          selector=selector,
+          clustering_percentile=100,
+      )
+      assert best_param[fitted_param_name] in param_values
 
 
 def test_decoder_binary_classification_with_masker_object(
