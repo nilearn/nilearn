@@ -694,7 +694,7 @@ FREESURFER_DATA_EXTENSIONS = (".area",
 
 
 def _stringify(word_list):
-    sep =  "', '"
+    sep = "', '"
     return f"'{sep.join(word_list)[:-3]}'"
 
 
@@ -746,13 +746,14 @@ def load_surf_data(surf_data):
                 gii = _load_surf_files_gifti_gzip(surf_data)
                 data_part = _gifti_img_to_data(gii)
             else:
-                raise ValueError(('The input type is not recognized. '
-                                  f'{surf_data!r} was '
-                                  'given while valid inputs are a Numpy array '
-                                  'or one of the following file formats: .gii,'
-                                  ' .gii.gz, .mgz, .nii, .nii.gz, '
-                                  'Freesurfer specific files such as '
-                                  f"{_stringify(FREESURFER_DATA_EXTENSIONS)}."))
+                raise ValueError(
+                    'The input type is not recognized. '
+                    f'{surf_data!r} was '
+                    'given while valid inputs are a Numpy array '
+                    'or one of the following file formats: .gii,'
+                    ' .gii.gz, .mgz, .nii, .nii.gz, '
+                    'Freesurfer specific files such as '
+                    f"{_stringify(FREESURFER_DATA_EXTENSIONS)}.")
 
             if len(data_part.shape) == 1:
                 data_part = data_part[:, np.newaxis]
@@ -777,9 +778,6 @@ def load_surf_data(surf_data):
                          'Freesurfer specific files such as '
                          f"{_stringify(FREESURFER_DATA_EXTENSIONS)}.")
     return np.squeeze(data)
-
-
-
 
 
 def _gifti_img_to_mesh(gifti_img):
@@ -840,8 +838,9 @@ def load_surf_mesh(surf_mesh):
             surf_mesh = file_list[0]
         elif len(file_list) > 1:
             # empty list is handled inside _resolve_globbing function
-            raise ValueError(f"More than one file matching path: {surf_mesh} \n"
-                             "load_surf_mesh can only load one file at a time.")
+            raise ValueError(
+                f"More than one file matching path: {surf_mesh} \n"
+                "load_surf_mesh can only load one file at a time.")
 
         if any(surf_mesh.endswith(x[1:]) for x in FREESURFER_MESH_EXTENSIONS):
             coords, faces, header = fs.io.read_geometry(surf_mesh,
@@ -859,27 +858,26 @@ def load_surf_mesh(surf_mesh):
             mesh = Mesh(coordinates=coords, faces=faces)
         else:
             raise ValueError('The input type is not recognized. '
-                              f'{surf_mesh!r} was given '
-                              'while valid inputs are one of the following '
-                              'file formats: .gii, .gii.gz, '
-                              'Freesurfer specific files such as '
-                              f"{_stringify(FREESURFER_MESH_EXTENSIONS)}, "
-                              'two Numpy arrays organized in a list, tuple '
-                              'or a namedtuple with the '
-                              'fields "coordinates" and "faces".'
-                              )
+                             f'{surf_mesh!r} was given '
+                             'while valid inputs are one of the following '
+                             'file formats: .gii, .gii.gz, '
+                             'Freesurfer specific files such as '
+                             f"{_stringify(FREESURFER_MESH_EXTENSIONS)}, "
+                             'two Numpy arrays organized in a list, tuple '
+                             'or a namedtuple with the '
+                             'fields "coordinates" and "faces".')
     elif isinstance(surf_mesh, (list, tuple)):
         try:
             coords, faces = surf_mesh
             mesh = Mesh(coordinates=coords, faces=faces)
         except Exception:
             raise ValueError('If a list or tuple is given as input, '
-                              'it must have two elements, the first is '
-                              'a Numpy array containing the x-y-z coordinates '
-                              'of the mesh vertices, the second is a Numpy '
-                              'array containing  the indices (into coords) of '
-                              'the mesh faces. The input was a list with '
-                              f'{len(surf_mesh)} elements.')
+                             'it must have two elements, the first is '
+                             'a Numpy array containing the x-y-z coordinates '
+                             'of the mesh vertices, the second is a Numpy '
+                             'array containing  the indices (into coords) of '
+                             'the mesh faces. The input was a list with '
+                             f'{len(surf_mesh)} elements.')
     elif (hasattr(surf_mesh, "faces") and hasattr(surf_mesh, "coordinates")):
         coords, faces = surf_mesh.coordinates, surf_mesh.faces
         mesh = Mesh(coordinates=coords, faces=faces)
