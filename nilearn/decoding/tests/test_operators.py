@@ -1,7 +1,9 @@
 import itertools
 
 import numpy as np
+import pytest
 from nilearn.decoding.proximal_operators import _prox_l1, _prox_tvl1
+from numpy.testing import assert_almost_equal
 
 
 def test_prox_l1_nonexpansiveness(n_features=10):
@@ -19,29 +21,29 @@ def test_prox_l1_nonexpansiveness(n_features=10):
         assert (sa - sb) ** 2 <= (a - b) ** 2 - (pa - pb) ** 2
 
 
+@pytest.mark.parametrize("ndim", range(3, 4))
+@pytest.mark.parametrize("weight", np.logspace(-10, 10, num=10))
 def test_prox_tvl1_approximates_prox_l1_for_lasso(
-    size=15, random_state=42, decimal=4, dgap_tol=1e-7
+    ndim, weight, size=15, random_state=42, decimal=4, dgap_tol=1e-7
 ):
     rng = np.random.RandomState(random_state)
 
     l1_ratio = 1.0  # pure LASSO
-    for ndim in range(3, 4):
-        shape = [size] * ndim
-        z = rng.randn(*shape)
-        for weight in np.logspace(-10, 10, num=10):
-            # use prox_tvl1 approximation to prox_l1
-            a = _prox_tvl1(
-                z.copy(),
-                weight=weight,
-                l1_ratio=l1_ratio,
-                dgap_tol=dgap_tol,
-                max_iter=10,
-            )[0][-1].ravel()
 
-            # use exact closed-form soft shrinkage formula for prox_l1
-            b = _prox_l1(z.copy(), weight)[-1].ravel()
+    shape = [size] * ndim
+    z = rng.randn(*shape)
 
-            # results should be close in l-infinity norm
-            np.testing.assert_almost_equal(
-                np.abs(a - b).max(), 0.0, decimal=decimal
-            )
+    # use prox_tvl1 approximation to prox_l1
+    a = _prox_tvl1(
+        z.copy(),
+        weight=weight,
+        l1_ratio=l1_ratio,
+        dgap_tol=dgap_tol,
+        max_iter=10,
+    )[0][-1].ravel()
+
+    # use exact closed-form soft shrinkage formula for prox_l1
+    b = _prox_l1(z.copy(), weight)[-1].ravel()
+
+    # results should be close in l-infinity norm
+    assert_almost_equal(np.abs(a - b).max(), 0.0, decimal=decimal)

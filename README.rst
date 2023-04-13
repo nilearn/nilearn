@@ -101,7 +101,7 @@ For more information and ways to engage with the Nilearn team see
 Dependencies
 ============
 
-The required dependencies to use the software are listed in the file `nilearn/setup.cfg <https://github.com/nilearn/nilearn/blob/main/setup.cfg>`_.
+The required dependencies to use the software are listed in the file `pyproject.toml <https://github.com/nilearn/nilearn/blob/main/pyproject.toml>`_.
 
 If you are using nilearn plotting functionalities or running the examples, matplotlib >= 3.3.0 is required.
 

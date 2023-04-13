@@ -1,4 +1,5 @@
 """Tests for the nilearn.interfaces.bids submodule."""
+import json
 import os
 
 import numpy as np
@@ -6,6 +7,7 @@ import pandas as pd
 import pytest
 from nibabel.tmpdirs import InTemporaryDirectory
 from nilearn._utils.data_gen import (
+    _add_metadata_to_bids_dataset,
     create_fake_bids_dataset,
     generate_fake_fmri_data_and_design,
 )
@@ -16,7 +18,201 @@ from nilearn.interfaces.bids import (
     parse_bids_filename,
     save_glm_to_bids,
 )
+from nilearn.interfaces.bids.query import (
+    _get_metadata_from_bids,
+    _infer_repetition_time_from_dataset,
+    _infer_slice_timing_start_time_from_dataset,
+)
 from nilearn.maskers import NiftiMasker
+
+
+def test_get_metadata_from_bids(tmp_path):
+    """Ensure that metadata is correctly extracted from BIDS JSON files.
+
+    Throw a warning when the field is not found.
+    Throw a warning when there is no JSON file.
+    """
+    json_file = tmp_path / "sub-01_task-main_bold.json"
+    json_files = [json_file]
+
+    with open(json_file, "w") as f:
+        json.dump({"RepetitionTime": 2.0}, f)
+    value = _get_metadata_from_bids(field="RepetitionTime",
+                                    json_files=json_files)
+    assert value == 2.0
+
+    with open(json_file, "w") as f:
+        json.dump({"foo": 2.0}, f)
+    with pytest.warns(UserWarning, match="'RepetitionTime' not found"):
+        value = _get_metadata_from_bids(field="RepetitionTime",
+                                        json_files=json_files)
+
+    json_files = []
+    with pytest.warns(UserWarning, match="No .*json found in BIDS"):
+        value = _get_metadata_from_bids(field="RepetitionTime",
+                                        json_files=json_files)
+        assert value is None
+
+
+def test_infer_repetition_time_from_dataset(tmp_path):
+    """Test inferring repetition time from the BIDS dataset.
+
+    When using create_fake_bids_dataset the value is 1.5 secs by default
+    in the raw dataset.
+    When using _add_metadata_to_bids_dataset the value is 2.0 secs.
+    """
+    bids_path = create_fake_bids_dataset(base_dir=tmp_path,
+                                         n_sub=1,
+                                         n_ses=1,
+                                         tasks=['main'],
+                                         n_runs=[1])
+
+    t_r = _infer_repetition_time_from_dataset(
+        bids_path=tmp_path / bids_path,
+        filters=[('task', 'main')])
+
+    expected_t_r = 1.5
+    assert t_r == expected_t_r
+
+    expected_t_r = 2.0
+    _add_metadata_to_bids_dataset(
+        bids_path=tmp_path / bids_path,
+        metadata={"RepetitionTime": expected_t_r})
+
+    t_r = _infer_repetition_time_from_dataset(
+        bids_path=tmp_path / bids_path / 'derivatives',
+        filters=[('task', 'main'), ('run', '01')])
+
+    assert t_r == expected_t_r
+
+
+def test_infer_slice_timing_start_time_from_dataset(tmp_path):
+    """Test inferring slice timing start time from the BIDS dataset.
+
+    create_fake_bids_dataset does not add slice timing information
+    by default so the value returned will be None.
+
+    If the metadata is added to the BIDS dataset,
+    then this value should be returned.
+    """
+    bids_path = create_fake_bids_dataset(base_dir=tmp_path,
+                                         n_sub=1,
+                                         n_ses=1,
+                                         tasks=['main'],
+                                         n_runs=[1])
+
+    StartTime = _infer_slice_timing_start_time_from_dataset(
+        bids_path=tmp_path / bids_path / "derivatives",
+        filters=[('task', 'main')])
+
+    expected_StartTime = None
+    assert StartTime is expected_StartTime
+
+    expected_StartTime = 1.0
+    _add_metadata_to_bids_dataset(
+        bids_path=tmp_path / bids_path,
+        metadata={"StartTime": expected_StartTime})
+
+    StartTime = _infer_slice_timing_start_time_from_dataset(
+        bids_path=tmp_path / bids_path / "derivatives",
+        filters=[('task', 'main')])
+
+    assert StartTime == expected_StartTime
+
+
+def _rm_all_json_files_from_bids_dataset(bids_path):
+    """Remove all json and make sure that get_bids_files does not find any."""
+    [x.unlink() for x in bids_path.glob("**/*.json")]
+    selection = get_bids_files(bids_path, file_type='json', sub_folder=True)
+    assert selection == []
+    selection = get_bids_files(bids_path, file_type='json', sub_folder=False)
+    assert selection == []
+
+
+def test_get_bids_files_inheritance_principle_root_folder(tmp_path):
+    """Check if json files are found if in root folder of a dataset.
+
+    see https://bids-specification.readthedocs.io/en/latest/common-principles.html#the-inheritance-principle  # noqa: E501
+    """
+    bids_path = create_fake_bids_dataset(base_dir=tmp_path,
+                                         n_sub=1,
+                                         n_ses=1,
+                                         tasks=['main'],
+                                         n_runs=[1])
+
+    _rm_all_json_files_from_bids_dataset(bids_path)
+
+    # add json file to root of dataset
+    json_file = 'task-main_bold.json'
+    json_file = _add_metadata_to_bids_dataset(
+        bids_path=bids_path,
+        metadata={"RepetitionTime": 1.5},
+        json_file=json_file
+    )
+    assert json_file.exists()
+
+    # make sure that get_bids_files finds the json file
+    # but only when looking in root of dataset
+    selection = get_bids_files(bids_path,
+                               file_tag="bold",
+                               file_type='json',
+                               filters=[('task', 'main')],
+                               sub_folder=True)
+    assert selection == []
+    selection = get_bids_files(bids_path,
+                               file_tag="bold",
+                               file_type='json',
+                               filters=[('task', 'main')],
+                               sub_folder=False)
+    assert selection != []
+    assert selection[0] == str(json_file)
+
+
+@pytest.mark.xfail(
+    reason=("get_bids_files does not find json files"
+            " that are directly in the subject folder of a dataset."),
+    strict=True)
+@pytest.mark.parametrize(
+    "json_file",
+    ['sub-01/sub-01_task-main_bold.json',
+     'sub-01/ses-01/sub-01_ses-01_task-main_bold.json']
+)
+def test_get_bids_files_inheritance_principle_sub_folder(tmp_path, json_file):
+    """Check if json files are found if in subject or session folder.
+
+    see https://bids-specification.readthedocs.io/en/latest/common-principles.html#the-inheritance-principle  # noqa: E501
+    """
+    bids_path = create_fake_bids_dataset(base_dir=tmp_path,
+                                         n_sub=1,
+                                         n_ses=1,
+                                         tasks=['main'],
+                                         n_runs=[1])
+
+    _rm_all_json_files_from_bids_dataset(bids_path)
+
+    new_json_file = _add_metadata_to_bids_dataset(
+        bids_path=bids_path,
+        metadata={"RepetitionTime": 1.5},
+        json_file=json_file
+    )
+    print(new_json_file)
+    assert new_json_file.exists()
+
+    # make sure that get_bids_files finds the json file
+    # but only when NOT looking in root of dataset
+    selection = get_bids_files(bids_path,
+                               file_tag="bold",
+                               file_type='json',
+                               filters=[('task', 'main')],
+                               sub_folder=False)
+    assert selection == []
+    selection = get_bids_files(bids_path,
+                               file_tag="bold",
+                               file_type='json',
+                               filters=[('task', 'main')],
+                               sub_folder=True)
+    assert selection != []
+    assert selection[0] == str(new_json_file)
 
 
 def test_get_bids_files():
