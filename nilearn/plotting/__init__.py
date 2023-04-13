@@ -20,8 +20,7 @@ def _set_mpl_backend():
         raise
     else:
 
-        from ..version import (_compare_version,
-                               OPTIONAL_MATPLOTLIB_MIN_VERSION)
+        from ..version import OPTIONAL_MATPLOTLIB_MIN_VERSION, _compare_version
 
         # When matplotlib was successfully imported we need to check
         # that the version is greater that the minimum required one

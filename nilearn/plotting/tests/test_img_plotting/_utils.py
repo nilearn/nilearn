@@ -2,7 +2,6 @@
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
-
 from nilearn.conftest import MNI_AFFINE
 
 
