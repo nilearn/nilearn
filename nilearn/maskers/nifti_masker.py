@@ -6,7 +6,6 @@ import warnings
 from copy import copy as copy_object
 from functools import partial
 
-import numpy as np
 from joblib import Memory
 from nilearn import _utils, image, masking
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
@@ -96,17 +95,14 @@ def _filter_and_mask(
     # as small as possible in order to speed up the process
 
     if not _utils.niimg_conversions._check_same_fov(imgs, mask_img_):
-        # check if imgs resolution is lower than mask_img_ in any dimension
-        if np.any(
-            [i < j for i, j in zip(imgs.shape[:3], mask_img_.shape[:3])]
-        ):
-            warnings.warn(
-                'imgs are being upsampled to the mask_img resolution. '
-                'This process is memory intensive when using a '
-                'high resolution mask. You might want to provide '
-                'a target_affine to save memory and computation time.',
-                UserWarning
-            )
+        warnings.warn(
+            'imgs are being resampled to the mask_img resolution. '
+            'This process is memory intensive when using a '
+            'high resolution mask. You might want to provide '
+            'a target_affine or resample the mask beforehand '
+            'to save memory and computation time.',
+            UserWarning
+        )
         parameters = copy_object(parameters)
         # now we can crop
         mask_img_ = image.crop_img(mask_img_, copy=False)
