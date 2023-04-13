@@ -75,13 +75,13 @@ With a merge on main, both "host" and "deploy" jobs are run.
 
 ### codespell.yml
 
-Checks for spelling errors. Configured in [setup.cfg](/setup.cfg). More information here: https://github.com/codespell-project/actions-codespell
+Checks for spelling errors. Configured in [pyproject.toml](/pyproject.toml). More information here: https://github.com/codespell-project/actions-codespell
 
 ## PEP8 check
 
 ### flake8.yml
 
-Uses flake8 tool to verify code is PEP8 compliant. Configured in [setup.cfg](/setup.cfg)
+Uses flake8 tool to verify code is PEP8 compliant. Configured in [.flake8](/.flake8)
 
 ## Sort imports automatically
 
