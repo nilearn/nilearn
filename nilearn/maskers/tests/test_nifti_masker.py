@@ -84,10 +84,11 @@ def test_upsample_warning():
     masker = NiftiMasker(mask_img=mask_img)
     with pytest.warns(
         UserWarning,
-        match='imgs are being upsampled to the mask_img resolution. '
+        match='imgs are being resampled to the mask_img resolution. '
             'This process is memory intensive when using a '
             'high resolution mask. You might want to provide '
-            'a target_affine to save memory and computation time.'
+            'a target_affine or resample the mask beforehand '
+            'to save memory and computation time.'
     ):
         masker.fit_transform(img)
 
