@@ -370,9 +370,13 @@ def test_parallel_fit(rand_X_Y):
             assert a == b
 
 
-@pytest.mark.parametrize("param_values", 
-    ([0.001, 0.01, 0.1, 1, 10, 100, 1000],
-     [[0.001, 0.01, 0.1, 1, 10, 100, 1000]]))
+@pytest.mark.parametrize(
+    "param_values",
+    (
+        [0.001, 0.01, 0.1, 1, 10, 100, 1000],
+        [[0.001, 0.01, 0.1, 1, 10, 100, 1000]],
+    ),
+)
 @pytest.mark.parametrize(
     "estimator, param_name, fitted_param_name, is_classification",
     [
@@ -381,8 +385,12 @@ def test_parallel_fit(rand_X_Y):
     ],
 )
 def test_parallel_fit_builtin_cv(
-    rand_X_Y, estimator, param_name, fitted_param_name, is_classification,
-    param_values
+    rand_X_Y,
+    estimator,
+    param_name,
+    fitted_param_name,
+    is_classification,
+    param_values,
 ):
     """Check that the `fitted_param_name` output of _parallel_fit is a single
     value even if param_grid is wrapped in a list for models with built-in CV.
