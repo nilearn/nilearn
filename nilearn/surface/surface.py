@@ -630,7 +630,7 @@ def vol_to_surf(img, surf_mesh,
                         'nearest': _nearest_voxel_sampling}
     if interpolation not in sampling_schemes:
         raise ValueError("'interpolation' should be one of "
-                         f"{tuple(sampling_schemes.keys())}')
+                         f"{tuple(sampling_schemes.keys())}")
     img = load_img(img)
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)
@@ -677,6 +677,25 @@ def _gifti_img_to_data(gifti_img):
     if not gifti_img.darrays:
         raise ValueError('Gifti must contain at least one data array')
     return np.asarray([arr.data for arr in gifti_img.darrays]).T.squeeze()
+
+
+FREESURFER_MESH_EXTENSIONS = [".orig",
+                              ".pial",
+                              ".sphere",
+                              ".white",
+                              ".inflated"]
+
+FREESURFER_DATA_EXTENSIONS = [".area",
+                              ".curv",
+                              ".sulc",
+                              ".thickness",
+                              ".label",
+                              ".annot"]
+
+
+def _stringify(word_list):
+    sep =  "', '"
+    return f"'{sep.join(word_list)[:-3]}'"
 
 
 # function to figure out datatype and load data
@@ -727,12 +746,13 @@ def load_surf_data(surf_data):
                 gii = _load_surf_files_gifti_gzip(surf_data)
                 data_part = _gifti_img_to_data(gii)
             else:
-                raise ValueError(('The input type is not recognized. %r was '
+                raise ValueError(('The input type is not recognized. '
+                                  f'{surf_data:r} was '
                                   'given while valid inputs are a Numpy array '
                                   'or one of the following file formats: .gii,'
-                                  ' .gii.gz, .mgz, .nii, .nii.gz, Freesurfer '
-                                  'specific files such as .area, .curv, .sulc,'
-                                  ' .thickness, .annot, .label') % surf_data)
+                                  ' .gii.gz, .mgz, .nii, .nii.gz, '
+                                  'Freesurfer specific files such as '
+                                  f"{_stringify(FREESURFER_DATA_EXTENSIONS)}."))
 
             if len(data_part.shape) == 1:
                 data_part = data_part[:, np.newaxis]
@@ -753,9 +773,13 @@ def load_surf_data(surf_data):
         raise ValueError('The input type is not recognized. '
                          'Valid inputs are a Numpy array or one of the '
                          'following file formats: .gii, .gii.gz, .mgz, .nii, '
-                         '.nii.gz, Freesurfer specific files such as .area, '
-                         '.curv, .sulc, .thickness, .annot, .label')
+                         '.nii.gz, '
+                         'Freesurfer specific files such as '
+                         f"{_stringify(FREESURFER_DATA_EXTENSIONS)}.")
     return np.squeeze(data)
+
+
+
 
 
 def _gifti_img_to_mesh(gifti_img):
@@ -765,10 +789,11 @@ def _gifti_img_to_mesh(gifti_img):
     acceptable to .gii or .gii.gz
 
     """
-    error_message = ('The surf_mesh input is not recognized. Valid Freesurfer '
-                     'surface mesh inputs are .pial, .inflated, .sphere, '
-                     '.orig, .white. You provided input which have no '
-                     '{0} or of empty value={1}')
+    error_message = ('The surf_mesh input is not recognized. '
+                     'Valid Freesurfer surface mesh inputs are: '
+                     f"{_stringify(FREESURFER_MESH_EXTENSIONS)}."
+                     'You provided input which have '
+                     'no {0} or of empty value={1}')
     try:
         coords = gifti_img.get_arrays_from_intent(
             nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
@@ -815,13 +840,10 @@ def load_surf_mesh(surf_mesh):
             surf_mesh = file_list[0]
         elif len(file_list) > 1:
             # empty list is handled inside _resolve_globbing function
-            raise ValueError(("More than one file matching path: %s \n"
-                             "load_surf_mesh can only load one file at a time")
-                             % surf_mesh)
+            raise ValueError(f"More than one file matching path: {surf_mesh} \n"
+                             "load_surf_mesh can only load one file at a time.")
 
-        if (surf_mesh.endswith('orig') or surf_mesh.endswith('pial') or
-                surf_mesh.endswith('white') or surf_mesh.endswith('sphere') or
-                surf_mesh.endswith('inflated')):
+        if any(surf_mesh.endswith(x) for x in FREESURFER_MESH_EXTENSIONS):
             coords, faces, header = fs.io.read_geometry(surf_mesh,
                                                         read_metadata=True)
             # See https://github.com/nilearn/nilearn/pull/3235
@@ -836,27 +858,28 @@ def load_surf_mesh(surf_mesh):
             coords, faces = _gifti_img_to_mesh(gifti_img)
             mesh = Mesh(coordinates=coords, faces=faces)
         else:
-            raise ValueError(('The input type is not recognized. %r was given '
+            raise ValueError('The input type is not recognized. '
+                              f'{surf_mesh:r} was given '
                               'while valid inputs are one of the following '
-                              'file formats: .gii, .gii.gz, Freesurfer '
-                              'specific files such as .orig, .pial, .sphere, '
-                              '.white, .inflated or '
-                              'two Numpy arrays organized '
-                              'in a list, tuple or a namedtuple with the '
-                              'fields "coordinates" and "faces"'
-                              ) % surf_mesh)
+                              'file formats: .gii, .gii.gz, '
+                              'Freesurfer specific files such as '
+                              f"{_stringify(FREESURFER_MESH_EXTENSIONS)}, "
+                              'two Numpy arrays organized in a list, tuple '
+                              'or a namedtuple with the '
+                              'fields "coordinates" and "faces".'
+                              )
     elif isinstance(surf_mesh, (list, tuple)):
         try:
             coords, faces = surf_mesh
             mesh = Mesh(coordinates=coords, faces=faces)
         except Exception:
-            raise ValueError(('If a list or tuple is given as input, '
+            raise ValueError('If a list or tuple is given as input, '
                               'it must have two elements, the first is '
                               'a Numpy array containing the x-y-z coordinates '
                               'of the mesh vertices, the second is a Numpy '
                               'array containing  the indices (into coords) of '
                               'the mesh faces. The input was a list with '
-                              '%r elements.') % len(surf_mesh))
+                              f'{len(surf_mesh)} elements.')
     elif (hasattr(surf_mesh, "faces") and hasattr(surf_mesh, "coordinates")):
         coords, faces = surf_mesh.coordinates, surf_mesh.faces
         mesh = Mesh(coordinates=coords, faces=faces)
@@ -864,8 +887,9 @@ def load_surf_mesh(surf_mesh):
     else:
         raise ValueError('The input type is not recognized. '
                          'Valid inputs are one of the following file '
-                         'formats: .gii, .gii.gz, Freesurfer specific files '
-                         'such as .orig, .pial, .sphere, .white, .inflated '
+                         'formats: .gii, .gii.gz, '
+                         'Freesurfer specific files such as '
+                         f"{_stringify(FREESURFER_MESH_EXTENSIONS)}"
                          'or two Numpy arrays organized in a list, tuple or '
                          'a namedtuple with the fields "coordinates" and '
                          '"faces"')
