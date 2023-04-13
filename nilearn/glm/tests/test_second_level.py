@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 from nibabel import Nifti1Image, load
 from nibabel.tmpdirs import InTemporaryDirectory
+from nilearn._utils import testing
 from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
     write_fake_fmri_data_and_design,
@@ -90,6 +91,36 @@ def test_sort_input_dataframe(input_df):
     assert output_df['subject_label'].values.tolist() == ["bar", "baz", "foo"]
     assert (output_df['effects_map_path'].values.tolist()
             == ["bar.nii", "baz.nii", "foo.nii"])
+
+
+def test_second_level_input_as_3D_images():
+    """Test second level model with a list 3D image filenames as input.
+
+    Should act as a regression test for:
+    https://github.com/nilearn/nilearn/issues/3636
+
+    """
+    shape = (7, 8, 9)
+    images = []
+    nb_subjects = 10
+    affine = np.eye(4)
+    for _ in range(nb_subjects):
+        data = np.random.rand(*shape)
+        images.append(Nifti1Image(data, affine))
+
+    with testing.write_tmp_imgs(*images, create_files=True) as filenames:
+
+        second_level_input = filenames
+        design_matrix = pd.DataFrame(
+            [1] * len(second_level_input),
+            columns=["intercept"],
+        )
+
+        second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
+        second_level_model = second_level_model.fit(
+            second_level_input,
+            design_matrix=design_matrix,
+        )
 
 
 def test_process_second_level_input_as_firstlevelmodels():

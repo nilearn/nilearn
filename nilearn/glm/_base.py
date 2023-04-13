@@ -18,8 +18,9 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
             A list of Nifti1Image(s).
 
         """
-        return self._get_voxelwise_model_attribute('residuals',
-                                                   result_as_time_series=True)
+        return self._get_voxelwise_model_attribute(
+            "residuals", result_as_time_series=True
+        )
 
     @auto_attr
     def predicted(self):
@@ -32,8 +33,9 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
             A list of Nifti1Image(s).
 
         """
-        return self._get_voxelwise_model_attribute('predicted',
-                                                   result_as_time_series=True)
+        return self._get_voxelwise_model_attribute(
+            "predicted", result_as_time_series=True
+        )
 
     @auto_attr
     def r_square(self):
@@ -46,15 +48,24 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
             A list of Nifti1Image(s).
 
         """
-        return self._get_voxelwise_model_attribute('r_square',
-                                                   result_as_time_series=False
-                                                   )
+        return self._get_voxelwise_model_attribute(
+            "r_square", result_as_time_series=False
+        )
 
     def generate_report(
-            self, contrasts, title=None, bg_img="MNI152TEMPLATE",
-            threshold=3.09, alpha=0.001, cluster_threshold=0,
-            height_control='fpr', min_distance=8., plot_type='slice',
-            display_mode=None, report_dims=(1600, 800)):
+        self,
+        contrasts,
+        title=None,
+        bg_img="MNI152TEMPLATE",
+        threshold=3.09,
+        alpha=0.001,
+        cluster_threshold=0,
+        height_control="fpr",
+        min_distance=8.0,
+        plot_type="slice",
+        display_mode=None,
+        report_dims=(1600, 800),
+    ):
         """Return a :class:`~nilearn.reporting.HTMLReport` \
         which shows all important aspects of a fitted :term:`GLM`.
 
@@ -168,9 +179,18 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
 
         """
         from nilearn.reporting import make_glm_report
+
         return make_glm_report(
-            self, contrasts, title=title, bg_img=bg_img, threshold=threshold,
-            alpha=alpha, cluster_threshold=cluster_threshold,
-            height_control=height_control, min_distance=min_distance,
-            plot_type=plot_type, display_mode=display_mode,
-            report_dims=report_dims)
+            self,
+            contrasts,
+            title=title,
+            bg_img=bg_img,
+            threshold=threshold,
+            alpha=alpha,
+            cluster_threshold=cluster_threshold,
+            height_control=height_control,
+            min_distance=min_distance,
+            plot_type=plot_type,
+            display_mode=display_mode,
+            report_dims=report_dims,
+        )

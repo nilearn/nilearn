@@ -7,7 +7,7 @@ from nilearn.glm.second_level.second_level import (
 )
 
 __all__ = [
-    'make_second_level_design_matrix',
-    'non_parametric_inference',
-    'SecondLevelModel',
+    "make_second_level_design_matrix",
+    "non_parametric_inference",
+    "SecondLevelModel",
 ]
