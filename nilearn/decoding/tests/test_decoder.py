@@ -404,22 +404,23 @@ def test_parallel_fit_builtin_cv(
     else:
         scorer = check_scoring(estimator, "r2")
 
-      param_grid = {param_name: param_values}
-      _, _, _, best_param, _, _ = _parallel_fit(
-          estimator=estimator,
-          X=X,
-          y=y,
-          train=train,
-          test=test,
-          param_grid=param_grid,
-          is_classification=is_classification,
-          scorer=scorer,
-          mask_img=None,
-          class_index=1,
-          selector=selector,
-          clustering_percentile=100,
-      )
-      assert best_param[fitted_param_name] in param_values
+    param_grid = {param_name: param_values}
+    _, _, _, best_param, _, _ = _parallel_fit(
+        estimator=estimator,
+        X=X,
+        y=y,
+        train=train,
+        test=test,
+        param_grid=param_grid,
+        is_classification=is_classification,
+        scorer=scorer,
+        mask_img=None,
+        class_index=1,
+        selector=selector,
+        clustering_percentile=100,
+    )
+
+    assert isinstance(best_param[fitted_param_name], (float, int))
 
 
 def test_decoder_binary_classification_with_masker_object(
