@@ -1,5 +1,6 @@
 import os
 import unittest.mock
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -8,6 +9,7 @@ import pytest
 from nibabel import Nifti1Image, load
 from nibabel.tmpdirs import InTemporaryDirectory
 from nilearn._utils.data_gen import (
+    _add_metadata_to_bids_dataset,
     basic_paradigm,
     create_fake_bids_dataset,
     generate_fake_fmri_data_and_design,
@@ -573,6 +575,202 @@ def test_first_level_glm_computation_with_memory_caching():
         del mask, func_img, FUNCFILE, model
 
 
+def test_first_level_from_bids_set_repetition_time_warnings(tmp_path):
+    """Raise a warning when there is no bold.json file in the derivatives
+    and no TR value is passed as argument.
+
+    create_fake_bids_dataset does not add JSON files in derivatives,
+    so the TR value will be inferred from the raw.
+    """
+    bids_path = create_fake_bids_dataset(base_dir=tmp_path,
+                                         n_sub=10,
+                                         n_ses=1,
+                                         tasks=['main'],
+                                         n_runs=[1])
+    t_r = None
+    warning_msg = "No bold.json .* BIDS"
+    with pytest.warns(UserWarning, match=warning_msg):
+        models, *_ = first_level_from_bids(
+            dataset_path=str(tmp_path / bids_path),
+            task_label='main',
+            space_label='MNI',
+            img_filters=[('desc', 'preproc')],
+            t_r=t_r,
+            slice_time_ref=None,
+            verbose=1
+        )
+
+        # If no t_r is provided it is inferred from the raw dataset
+        # create_fake_bids_dataset generates a dataset
+        # with bold data with TR=1.5 secs
+        expected_t_r = 1.5
+        assert models[0].t_r == expected_t_r
+
+
+@pytest.mark.parametrize('t_r, error_type, error_msg',
+                         [('not a number', TypeError, "must be a float"),
+                          (-1, ValueError, "positive")])
+def test_first_level_from_bids_set_repetition_time_errors(tmp_path,
+                                                          t_r,
+                                                          error_type,
+                                                          error_msg):
+    """Throw errors for impossible values of TR."""
+    bids_path = create_fake_bids_dataset(base_dir=tmp_path,
+                                         n_sub=1,
+                                         n_ses=1,
+                                         tasks=['main'],
+                                         n_runs=[1])
+
+    with pytest.raises(error_type, match=error_msg):
+        first_level_from_bids(
+            dataset_path=str(tmp_path / bids_path),
+            task_label='main',
+            space_label='MNI',
+            img_filters=[('desc', 'preproc')],
+            slice_time_ref=None,
+            t_r=t_r
+        )
+
+
+def test_first_level_from_bids_set_slice_timing_ref_warnings(tmp_path):
+    """Check that a warning is raised when slice_time_ref is not provided \
+    and cannot be inferred from the dataset.
+
+    In this case the model should be created with a slice_time_ref of 0.0.
+    """
+    bids_path = create_fake_bids_dataset(base_dir=tmp_path,
+                                         n_sub=10,
+                                         n_ses=1,
+                                         tasks=['main'],
+                                         n_runs=[1])
+
+    slice_time_ref = None
+    warning_msg = "not provided and cannot be inferred"
+    with pytest.warns(UserWarning, match=warning_msg):
+        models, *_ = first_level_from_bids(
+            dataset_path=str(tmp_path / bids_path),
+            task_label='main',
+            space_label='MNI',
+            img_filters=[('desc', 'preproc')],
+            slice_time_ref=slice_time_ref
+        )
+
+        expected_slice_time_ref = 0.0
+        assert models[0].slice_time_ref == expected_slice_time_ref
+
+
+@pytest.mark.parametrize('slice_time_ref, error_type, error_msg',
+                         [('not a number', TypeError, "must be a float"),
+                          (2, ValueError, "between 0 and 1")])
+def test_first_level_from_bids_set_slice_timing_ref_errors(
+        tmp_path,
+        slice_time_ref,
+        error_type,
+        error_msg):
+    """Throw errors for impossible values of slice_time_ref."""
+    bids_path = create_fake_bids_dataset(base_dir=tmp_path,
+                                         n_sub=1,
+                                         n_ses=1,
+                                         tasks=['main'],
+                                         n_runs=[1])
+
+    with pytest.raises(error_type, match=error_msg):
+        first_level_from_bids(
+            dataset_path=str(tmp_path / bids_path),
+            task_label='main',
+            space_label='MNI',
+            img_filters=[('desc', 'preproc')],
+            slice_time_ref=slice_time_ref)
+
+
+def test_first_level_from_bids_get_metadata_from_derivatives(tmp_path):
+    """No warning should be thrown given derivatives have metadata.
+
+    The model created should use the values found in the derivatives.
+    """
+    bids_path = create_fake_bids_dataset(base_dir=tmp_path,
+                                         n_sub=10,
+                                         n_ses=1,
+                                         tasks=['main'],
+                                         n_runs=[1])
+
+    RepetitionTime = 6.0
+    StartTime = 2.0
+    _add_metadata_to_bids_dataset(
+        bids_path=tmp_path / bids_path,
+        metadata={"RepetitionTime": RepetitionTime,
+                  "StartTime": StartTime})
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        models, *_ = first_level_from_bids(
+            dataset_path=str(tmp_path / bids_path),
+            task_label='main',
+            space_label='MNI',
+            img_filters=[('desc', 'preproc')],
+            slice_time_ref=None,)
+        assert models[0].t_r == RepetitionTime
+        assert models[0].slice_time_ref == StartTime / RepetitionTime
+
+
+def test_first_level_from_bids_get_RepetitionTime_from_derivatives(tmp_path):
+    """Only RepetitionTime is provided in derivatives.
+
+    Warning about missing StarTime time in derivatives.
+    slice_time_ref cannot be inferred: defaults to 0.
+    """
+    bids_path = create_fake_bids_dataset(base_dir=tmp_path,
+                                         n_sub=10,
+                                         n_ses=1,
+                                         tasks=['main'],
+                                         n_runs=[1])
+    RepetitionTime = 6.0
+    _add_metadata_to_bids_dataset(
+        bids_path=tmp_path / bids_path,
+        metadata={"RepetitionTime": RepetitionTime})
+
+    with pytest.warns(UserWarning,
+                      match="StartTime' not found in file"):
+        models, *_ = first_level_from_bids(
+            dataset_path=str(tmp_path / bids_path),
+            task_label='main',
+            space_label='MNI',
+            slice_time_ref=None,
+            img_filters=[('desc', 'preproc')])
+        assert models[0].t_r == 6.0
+        assert models[0].slice_time_ref == 0.
+
+
+def test_first_level_from_bids_get_StartTime_from_derivatives(tmp_path):
+    """Only StartTime is provided in derivatives.
+
+    Warning about missing repetition time in derivatives,
+    but RepetitionTime is still read from raw dataset.
+    """
+    bids_path = create_fake_bids_dataset(base_dir=tmp_path,
+                                         n_sub=10,
+                                         n_ses=1,
+                                         tasks=['main'],
+                                         n_runs=[1])
+    StartTime = 1.0
+    _add_metadata_to_bids_dataset(
+        bids_path=tmp_path / bids_path,
+        metadata={"StartTime": StartTime})
+
+    with pytest.warns(UserWarning,
+                      match="RepetitionTime' not found in file"):
+        models, *_ = first_level_from_bids(
+            dataset_path=str(tmp_path / bids_path),
+            task_label='main',
+            space_label='MNI',
+            img_filters=[('desc', 'preproc')],
+            slice_time_ref=None)
+
+        # create_fake_bids_dataset generates a dataset
+        # with bold data with TR=1.5 secs
+        assert models[0].t_r == 1.5
+        assert models[0].slice_time_ref == StartTime / 1.5
+
+
 def test_first_level_contrast_computation():
     with InTemporaryDirectory():
         shapes = ((7, 8, 9, 10),)
@@ -909,7 +1107,8 @@ def test_first_level_from_bids(tmp_path,
         dataset_path=bids_path,
         task_label=tasks[task_index],
         space_label=space_label,
-        img_filters=[("desc", "preproc")]
+        img_filters=[("desc", "preproc")],
+        slice_time_ref=None,
     )
 
     assert len(models) == n_sub
@@ -940,7 +1139,8 @@ def test_first_level_from_bids_select_one_run_per_session(bids_dataset):
         task_label='main',
         space_label='MNI',
         img_filters=[('run', '01'),
-                     ('desc', 'preproc')]
+                     ('desc', 'preproc')],
+        slice_time_ref=None,
     )
 
     assert len(models) == n_sub
@@ -960,7 +1160,8 @@ def test_first_level_from_bids_select_all_runs_of_one_session(bids_dataset):
         task_label='main',
         space_label='MNI',
         img_filters=[('ses', '01'),
-                     ('desc', 'preproc')]
+                     ('desc', 'preproc')],
+        slice_time_ref=None,
     )
 
     assert len(models) == n_sub
@@ -982,6 +1183,7 @@ def test_first_level_from_bids_smoke_test_for_verbose_argument(
         space_label="MNI",
         img_filters=[("desc", "preproc")],
         verbose=verbose,
+        slice_time_ref=None,
     )
 
 
@@ -1012,6 +1214,7 @@ def test_first_level_from_bids_several_labels_per_entity(tmp_path, entity):
         task_label="main",
         space_label="MNI",
         img_filters=[("desc", "preproc"), (entity, "A")],
+        slice_time_ref=None,
     )
     assert len(models) == n_sub
     assert len(models) == len(m_imgs)
@@ -1037,8 +1240,10 @@ def test_first_level_from_bids_with_subject_labels(bids_dataset):
             task_label='main',
             sub_labels=["foo", "01"],
             space_label='MNI',
-            img_filters=[('desc', 'preproc')]
+            img_filters=[('desc', 'preproc')],
+            slice_time_ref=None,
         )
+
         assert models[0].subject_label == '01'
 
 
@@ -1053,7 +1258,8 @@ def test_first_level_from_bids_no_duplicate_sub_labels(bids_dataset):
         task_label='main',
         sub_labels=["01", "01"],
         space_label='MNI',
-        img_filters=[('desc', 'preproc')]
+        img_filters=[('desc', 'preproc')],
+        slice_time_ref=None,
     )
 
     assert len(models) == 1
@@ -1063,16 +1269,19 @@ def test_first_level_from_bids_validation_input_dataset_path():
     with pytest.raises(TypeError, match='must be a string or pathlike'):
         first_level_from_bids(dataset_path=2,
                               task_label="main",
-                              space_label="MNI")
+                              space_label="MNI",
+                              slice_time_ref=None,)
     with pytest.raises(ValueError, match="'dataset_path' does not exist"):
         first_level_from_bids(dataset_path="lolo",
                               task_label="main",
-                              space_label="MNI")
+                              space_label="MNI",
+                              slice_time_ref=None,)
     with pytest.raises(TypeError, match="derivatives_.* must be a string"):
         first_level_from_bids(dataset_path=Path(),
                               task_label="main",
                               space_label="MNI",
-                              derivatives_folder=1)
+                              derivatives_folder=1,
+                              slice_time_ref=None,)
 
 
 @pytest.mark.parametrize("task_label, error_type",
@@ -1102,7 +1311,8 @@ def test_first_level_from_bids_validation_sub_labels(bids_dataset,
         first_level_from_bids(
             dataset_path=bids_dataset,
             task_label="main",
-            sub_labels=sub_labels
+            sub_labels=sub_labels,
+            slice_time_ref=None,
         )
 
 
@@ -1118,7 +1328,8 @@ def test_first_level_from_bids_validation_space_label(bids_dataset,
         first_level_from_bids(
             dataset_path=bids_dataset,
             task_label="main",
-            space_label=space_label
+            space_label=space_label,
+            slice_time_ref=None,
         )
 
 
@@ -1138,7 +1349,8 @@ def test_first_level_from_bids_validation_img_filter(bids_dataset,
         first_level_from_bids(
             dataset_path=bids_dataset,
             task_label="main",
-            img_filters=img_filters
+            img_filters=img_filters,
+            slice_time_ref=None,
         )
 
 
@@ -1151,7 +1363,8 @@ def test_first_level_from_bids_too_many_bold_files(bids_dataset):
     with pytest.raises(ValueError,
                        match="Too many images found"):
         first_level_from_bids(
-            dataset_path=bids_dataset, task_label="main", space_label="T1w"
+            dataset_path=bids_dataset, task_label="main", space_label="T1w",
+            slice_time_ref=None,
         )
 
 
@@ -1164,7 +1377,27 @@ def test_first_level_from_bids_with_missing_events(tmp_path_factory):
 
     with pytest.raises(ValueError, match="No events.tsv files found"):
         first_level_from_bids(
-            dataset_path=bids_dataset, task_label="main", space_label="MNI"
+            dataset_path=bids_dataset, task_label="main", space_label="MNI",
+            slice_time_ref=None,
+        )
+
+
+def test_first_level_from_bids_no_tr(tmp_path_factory):
+    """Throw warning when t_r information cannot be inferred from the data \
+    and t_r=None is passed."""
+    bids_dataset = _new_bids_dataset(tmp_path_factory.mktemp("no_events"))
+    json_files = get_bids_files(main_path=bids_dataset,
+                                file_tag="bold",
+                                file_type="json")
+    for f in json_files:
+        os.remove(f)
+
+    with pytest.warns(
+         UserWarning,
+         match="t_r.* will need to be set manually in the list of models"):
+        first_level_from_bids(
+            dataset_path=bids_dataset, task_label="main", space_label="MNI",
+            slice_time_ref=None, t_r=None
         )
 
 
@@ -1178,7 +1411,8 @@ def test_first_level_from_bids_no_bold_file(tmp_path_factory):
 
     with pytest.raises(ValueError, match="No BOLD files found "):
         first_level_from_bids(
-            dataset_path=bids_dataset, task_label="main", space_label="MNI"
+            dataset_path=bids_dataset, task_label="main", space_label="MNI",
+            slice_time_ref=None,
         )
 
 
@@ -1194,7 +1428,8 @@ def test_first_level_from_bids_with_one_events_missing(tmp_path_factory):
         ValueError, match="Same number of event files "
     ):
         first_level_from_bids(
-            dataset_path=bids_dataset, task_label="main", space_label="MNI"
+            dataset_path=bids_dataset, task_label="main", space_label="MNI",
+            slice_time_ref=None,
         )
 
 
@@ -1214,7 +1449,8 @@ def test_first_level_from_bids_one_confound_missing(tmp_path_factory):
 
     with pytest.raises(ValueError, match="Same number of confound"):
         first_level_from_bids(
-            dataset_path=bids_dataset, task_label="main", space_label="MNI"
+            dataset_path=bids_dataset, task_label="main", space_label="MNI",
+            slice_time_ref=None,
         )
 
 
@@ -1235,6 +1471,7 @@ def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
         space_label="MNI",
         img_filters=[("desc", "preproc")],
         verbose=0,
+        slice_time_ref=None,
     )
 
     assert len(models) == len(m_imgs)
@@ -1256,7 +1493,8 @@ def test_first_level_from_bids_no_derivatives(tmp_path):
     )
     with pytest.raises(ValueError, match="derivatives folder not found"):
         first_level_from_bids(
-            dataset_path=bids_path, task_label="main", space_label="MNI"
+            dataset_path=bids_path, task_label="main", space_label="MNI",
+            slice_time_ref=None,
         )
 
 
@@ -1275,7 +1513,8 @@ def test_first_level_from_bids_no_session(tmp_path):
     with pytest.raises(ValueError,
                        match="Too many images found"):
         first_level_from_bids(
-            dataset_path=bids_path, task_label="main", space_label="T1w"
+            dataset_path=bids_path, task_label="main", space_label="T1w",
+            slice_time_ref=None,
         )
 
 
@@ -1298,5 +1537,17 @@ def test_first_level_from_bids_mismatch_run_index(tmp_path_factory):
             dataset_path=bids_dataset,
             task_label="main",
             space_label="MNI",
-            img_filters=[("desc", "preproc")]
+            img_filters=[("desc", "preproc")],
+            slice_time_ref=None,
+        )
+
+
+def test_first_level_from_bids_deprecated_slice_time_default(bids_dataset):
+    with pytest.deprecated_call(match="slice_time_ref will default to None."):
+        first_level_from_bids(
+            dataset_path=bids_dataset,
+            task_label="main",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            slice_time_ref=0,
         )

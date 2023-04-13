@@ -7,7 +7,6 @@ Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 from __future__ import annotations
 
 import glob
-import json
 import os
 import sys
 import time
@@ -42,6 +41,10 @@ from nilearn.glm.regression import (
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
 from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
+from nilearn.interfaces.bids.query import (
+    _infer_repetition_time_from_dataset,
+    _infer_slice_timing_start_time_from_dataset,
+)
 from sklearn.base import clone
 from sklearn.cluster import KMeans
 
@@ -248,7 +251,7 @@ class FirstLevelModel(BaseGLM):
     slice_time_ref : float, optional
         This parameter indicates the time of the reference slice used in the
         slice timing preprocessing step of the experimental runs. It is
-        expressed as a percentage of the t_r (time repetition), so it can have
+        expressed as a fraction of the t_r (time repetition), so it can have
         values between 0. and 1. Default=0.
     %(hrf_model)s
         Default='glover'.
@@ -365,7 +368,11 @@ class FirstLevelModel(BaseGLM):
                  signal_scaling=0, noise_model='ar1', verbose=0, n_jobs=1,
                  minimize_memory=True, subject_label=None, random_state=None):
         # design matrix parameters
+        if t_r is not None:
+            _check_repetition_time(t_r)
         self.t_r = t_r
+        if slice_time_ref is not None:
+            _check_slice_time_ref(slice_time_ref)
         self.slice_time_ref = slice_time_ref
         self.hrf_model = hrf_model
         self.drift_model = drift_model
@@ -805,13 +812,33 @@ class FirstLevelModel(BaseGLM):
         return output
 
 
+def _check_repetition_time(t_r):
+    """Check that the repetition time is a positive number."""
+    if not isinstance(t_r, (float, int)):
+        raise TypeError("'t_r' must be a float or an integer. "
+                        f"Got {type(t_r)} instead.")
+    if t_r <= 0:
+        raise ValueError("'t_r' must be positive. "
+                         f"Got {t_r} instead.")
+
+
+def _check_slice_time_ref(slice_time_ref):
+    """Check that slice_time_ref is a number between 0 and 1."""
+    if not isinstance(slice_time_ref, (float, int)):
+        raise TypeError("'slice_time_ref' must be a float or an integer. "
+                        f"Got {type(slice_time_ref)} instead.")
+    if slice_time_ref < 0 or slice_time_ref > 1:
+        raise ValueError("'slice_time_ref' must be between 0 and 1. "
+                         f"Got {slice_time_ref} instead.")
+
+
 def first_level_from_bids(dataset_path,
                           task_label,
                           space_label=None,
                           sub_labels=None,
                           img_filters=None,
                           t_r=None,
-                          slice_time_ref=0.,
+                          slice_time_ref=0.0,
                           hrf_model='glover',
                           drift_model='cosine',
                           high_pass=.01,
@@ -833,9 +860,11 @@ def first_level_from_bids(dataset_path,
                           derivatives_folder='derivatives'):
     """Create FirstLevelModel objects and fit arguments from a BIDS dataset.
 
-    If t_r is not specified this function will attempt to load it from a
-    bold.json file alongside slice_time_ref.
-    Otherwise t_r and slice_time_ref are taken as given.
+    If t_r is `None` this function will attempt to load it from a bold.json.
+    If `slice_time_ref` is  `None` this function will attempt
+    to infer it from a bold.json.
+    Otherwise t_r and slice_time_ref are taken as given,
+    but a warning may be raised if they are not consistent with the bold.json.
 
     Parameters
     ----------
@@ -864,6 +893,17 @@ def first_level_from_bids(dataset_path,
         Filter examples would be ('desc', 'preproc'), ('dir', 'pa')
         and ('run', '10').
 
+    slice_time_ref : :obj:`float` between 0.0 and 1.0, optional
+        This parameter indicates the time of the reference slice used in the
+        slice timing preprocessing step of the experimental runs. It is
+        expressed as a fraction of the t_r (time repetition), so it can have
+        values between 0. and 1. Default=0.0
+
+        .. deprecated:: 0.10.1
+
+            The default=0 for ``slice_time_ref`` will be deprecated.
+            The default value will change to 'None' in 0.12.
+
     derivatives_folder : :obj:`str`, Defaults="derivatives".
         derivatives and app folder path containing preprocessed files.
         Like "derivatives/FMRIPREP".
@@ -890,6 +930,12 @@ def first_level_from_bids(dataset_path,
         Items for the FirstLevelModel fit function of their respective model.
 
     """
+    if slice_time_ref == 0:
+        warn(
+            'Starting in version 0.12, slice_time_ref will default to None.',
+            DeprecationWarning,
+        )
+
     sub_labels = sub_labels or []
     img_filters = img_filters or []
 
@@ -902,61 +948,92 @@ def first_level_from_bids(dataset_path,
 
     derivatives_path = Path(dataset_path) / derivatives_folder
 
-    # Get acq specs for models. RepetitionTime and SliceTimingReference.
-    # Throw warning if no bold.json is found
-    if t_r is not None:
-        warn(f'RepetitionTime given in as {t_r}')
-        warn(f'slice_time_ref is {slice_time_ref} percent '
-             'of the repetition time')
-    else:
+    # Get metadata for models.
+    #
+    # We do it once and assume all subjects and runs
+    # have the same value.
+
+    # Repetition time
+    #
+    # Try to find a t_r value in the bids datasets
+    # If the parameter information is not found in the derivatives folder,
+    # a search is done in the raw data folder.
+    filters = _make_bids_files_filter(
+        task_label=task_label,
+        space_label=space_label,
+        supported_filters=[*_bids_entities()["raw"],
+                           *_bids_entities()["derivatives"]],
+        extra_filter=img_filters,
+        verbose=verbose
+    )
+    inferred_t_r = _infer_repetition_time_from_dataset(
+        bids_path=derivatives_path,
+        filters=filters,
+        verbose=verbose)
+    if inferred_t_r is None:
         filters = _make_bids_files_filter(
             task_label=task_label,
-            supported_filters=[*_bids_entities()["raw"],
-                               *_bids_entities()["derivatives"]],
-            extra_filter=img_filters
+            supported_filters=[*_bids_entities()["raw"]],
+            extra_filter=img_filters,
+            verbose=verbose
         )
-        img_specs = get_bids_files(derivatives_path,
-                                   modality_folder='func',
-                                   file_tag='bold',
-                                   file_type='json',
-                                   filters=filters)
-        # If we don't find the parameter information in the derivatives folder
-        # we try to search in the raw data folder
-        if not img_specs:
-            filters = _make_bids_files_filter(
-                task_label=task_label,
-                supported_filters=_bids_entities()["raw"],
-                extra_filter=img_filters
-            )
-            img_specs = get_bids_files(dataset_path,
-                                       modality_folder='func',
-                                       file_tag='bold',
-                                       file_type='json',
-                                       filters=filters)
-        if not img_specs:
-            warn('No bold.json found in the derivatives or dataset folder.'
-                 ' t_r can not be inferred '
-                 ' and will need to be set manually in the list of models'
-                 ' otherwise their fit will throw an exception.')
-        else:
-            specs = json.load(open(img_specs[0]))
-            if 'RepetitionTime' in specs:
-                t_r = float(specs['RepetitionTime'])
-            else:
-                warn(f'RepetitionTime not found in file {img_specs[0]}.'
-                     ' t_r can not be inferred ',
-                     ' and will need to be set manually in the list of models',
-                     ' otherwise their fit will throw an exception.')
-            if 'SliceTimingRef' in specs:
-                slice_time_ref = float(specs['SliceTimingRef'])
-            else:
-                warn('SliceTimingRef not found in file %s. It will be assumed'
-                     ' that the slice timing reference is 0.0 percent of the '
-                     'repetition time. If it is not the case it will need to '
-                     'be set manually in the generated list of models' %
-                     img_specs[0])
+        inferred_t_r = _infer_repetition_time_from_dataset(
+            bids_path=dataset_path,
+            filters=filters,
+            verbose=verbose)
 
-    sub_labels = _list_valid_subjects(derivatives_path, sub_labels)
+    if t_r is None and inferred_t_r is not None:
+        t_r = inferred_t_r
+    if t_r is not None and t_r != inferred_t_r:
+        warn(f"'t_r' provided ({t_r}) is different "
+             f"from the value found in the BIDS dataset ({inferred_t_r}).\n"
+             "Note this may lead to the wrong model specification.")
+    if t_r is not None:
+        _check_repetition_time(t_r)
+    else:
+        warn("'t_r' not provided and cannot be inferred from BIDS metadata. "
+             "It will need to be set manually in the list of models, "
+             "otherwise their fit will throw an exception.")
+
+    # Slice time correction reference time
+    #
+    # Try to infer a slice_time_ref value in the bids derivatives dataset.
+    #
+    # If no value can be inferred, the default value of 0.0 is used.
+    filters = _make_bids_files_filter(
+        task_label=task_label,
+        space_label=space_label,
+        supported_filters=[*_bids_entities()["raw"],
+                           *_bids_entities()["derivatives"]],
+        extra_filter=img_filters,
+        verbose=verbose
+    )
+    StartTime = _infer_slice_timing_start_time_from_dataset(
+        bids_path=derivatives_path,
+        filters=filters,
+        verbose=verbose)
+    if StartTime is not None and t_r is not None:
+        assert (StartTime < t_r)
+        inferred_slice_time_ref = StartTime / t_r
+    else:
+        warn("'slice_time_ref' not provided "
+             "and cannot be inferred from metadata."
+             "It will be assumed that the slice timing reference "
+             "is 0.0 percent of the repetition time. "
+             "If it is not the case it will need to "
+             "be set manually in the generated list of models.")
+        inferred_slice_time_ref = 0.0
+
+    if slice_time_ref is None and inferred_slice_time_ref is not None:
+        slice_time_ref = inferred_slice_time_ref
+    if (slice_time_ref is not None
+            and slice_time_ref != inferred_slice_time_ref):
+        warn(f"'slice_time_ref' provided ({slice_time_ref}) is different "
+             f"from the value found in the BIDS dataset "
+             f"({inferred_slice_time_ref}).\n"
+             "Note this may lead to the wrong model specification.")
+    if slice_time_ref is not None:
+        _check_slice_time_ref(slice_time_ref)
 
     # Build fit_kwargs dictionaries to pass to their respective models fit
     # Events and confounds files must match number of imgs (runs)
@@ -965,6 +1042,7 @@ def first_level_from_bids(dataset_path,
     models_events = []
     models_confounds = []
 
+    sub_labels = _list_valid_subjects(derivatives_path, sub_labels)
     for sub_label_ in sub_labels:
 
         # Create model
@@ -1128,6 +1206,7 @@ def _get_processed_imgs(
         supported_filters=_bids_entities()["raw"]
         + _bids_entities()["derivatives"],
         extra_filter=img_filters,
+        verbose=verbose,
     )
     imgs = get_bids_files(
         main_path=derivatives_path,
@@ -1189,6 +1268,7 @@ def _get_events_files(
         task_label=task_label,
         supported_filters=_bids_entities()["raw"],
         extra_filter=img_filters,
+        verbose=verbose,
     )
     events = get_bids_files(
         dataset_path,
@@ -1210,6 +1290,7 @@ def _get_events_files(
         task_label=task_label,
         dataset_path=dataset_path,
         events_filters=events_filters,
+        verbose=verbose,
     )
     return events
 
@@ -1265,6 +1346,7 @@ def _get_confounds(
         task_label=task_label,
         supported_filters=supported_filters,
         extra_filter=img_filters,
+        verbose=verbose,
     )
     confounds = get_bids_files(
         derivatives_path,
@@ -1409,6 +1491,7 @@ def _make_bids_files_filter(
     space_label=None,
     supported_filters=None,
     extra_filter=None,
+    verbose=0
 ) :
     """Return a filter to specific files from a BIDS dataset.
 
@@ -1425,7 +1508,11 @@ def _make_bids_files_filter(
         List of authorized BIDS entities
 
     extra_filter : :obj:`list` of :obj:`tuple` (str, str) or None, optional
-        _description_
+        Filters are of the form (field, label).
+        Only one filter per field allowed.
+
+    verbose : :obj:`integer`
+        Indicate the level of verbosity.
 
     Returns
     -------
@@ -1442,11 +1529,12 @@ def _make_bids_files_filter(
     if extra_filter and supported_filters:
         for filter_ in extra_filter:
             if filter_[0] not in supported_filters:
-                warn(
-                    f"The filter {filter_} will be skipped. "
-                    f"'{filter_[0]}' is not among the supported filters. "
-                    f"Allowed filters include: {supported_filters}"
-                )
+                if verbose:
+                    warn(
+                        f"The filter {filter_} will be skipped. "
+                        f"'{filter_[0]}' is not among the supported filters. "
+                        f"Allowed filters include: {supported_filters}"
+                    )
                 continue
 
             filters.append(filter_)
@@ -1539,6 +1627,7 @@ def _check_bids_events_list(
     task_label,
     dataset_path,
     events_filters,
+    verbose
 ):
     """Check input BIDS events.
 
@@ -1602,6 +1691,7 @@ def _check_bids_events_list(
             space_label=None,
             supported_filters=supported_filters,
             extra_filter=extra_filter,
+            verbose=verbose
         )
         this_event = get_bids_files(
             dataset_path,

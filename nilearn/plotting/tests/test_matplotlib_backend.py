@@ -46,3 +46,10 @@ def test_should_switch_to_agg_backend_if_current_backend_fails(use_mock):
     assert use_mock.call_count == 2
     # Check that the most recent call to `matplotlib.use` has arg `Agg`
     use_mock.assert_called_with("Agg")
+
+
+@pytest.mark.skipif(not MATPLOTLIB_INSTALLED, reason=SKIP_REASON)
+@patch("matplotlib.__version__", "0.0.0")
+def test_should_raise_import_error_for_version_check():
+    with pytest.raises(ImportError, match="A matplotlib version of at least"):
+        _set_mpl_backend()
