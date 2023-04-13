@@ -58,10 +58,11 @@ def _confounds_regression(standardize_signal=True, standardize_confounds=True):
 
 
 def _simu_img():
+    rng = np.random.RandomState(42)
     # Random confounds
-    conf = 2 + np.random.randn(100, 6)
+    conf = 2 + rng.standard_normal(size=(100, 6))
     # Random 4D volume
-    vol = 100 + 10 * np.random.randn(5, 5, 2, 100)
+    vol = 100 + 10 * rng.standard_normal(size=(5, 5, 2, 100))
     img = Nifti1Image(vol, AFFINE_EYE)
     # Create an nifti image with the data, and corresponding mask
     mask = Nifti1Image(np.ones([5, 5, 2]), AFFINE_EYE)
@@ -79,13 +80,13 @@ def _cov_conf(tseries, conf):
     "standardize_signal, expected",
     [(False, 10.0), ("zscore_sample", 1.0), (True, 1.0), ("psc", 10.0)],
 )
-def test_confounds_standardization_confounds_are_standarized(
+def test_confounds_standardization_when_confounds_are_standarized(
     standardize_signal, expected
 ):
-    """See Issue #2584
-    Code from @pbellec
+    """Confounds are explicitly standardized.
 
-    Confounds are explicitly standardized
+    See Issue #2584
+    Code from @pbellec
     """
     eps = 10e-10
 
@@ -100,14 +101,13 @@ def test_confounds_standardization_confounds_are_standarized(
 
 
 @pytest.mark.parametrize("standardize_signal", [False, "zscore_sample", "psc"])
-def test_confounds_standardization_confounds_are_not_standarized(
+def test_confounds_standardization_when_confounds_are_not_standarized(
     standardize_signal,
 ):
-    """See Issue #2584
-    Code from @pbellec
+    """When confounds are not standardized, the regression should fail.
 
-    Confounds are not standardized
-    In this case, the regression should fail...
+    See Issue #2584
+    Code from @pbellec
     """
     assert (
         _confounds_regression(
@@ -122,20 +122,16 @@ def test_high_variance_confounds():
 
     hv_confounds = high_variance_confounds(img)
 
-    masker1 = NiftiMasker(
-        standardize=True,
-        detrend=False,
-        high_variance_confounds=False,
-        mask_img=mask,
-    ).fit()
+    masker1, masker2 = (
+        NiftiMasker(
+            high_variance_confounds=hvc,
+            standardize=True,
+            detrend=False,
+            mask_img=mask,
+        ).fit()
+        for hvc in (False, True)
+    )
     tseries1 = masker1.transform(img, confounds=[hv_confounds, conf])
-
-    masker2 = NiftiMasker(
-        standardize=True,
-        detrend=False,
-        high_variance_confounds=True,
-        mask_img=mask,
-    ).fit()
     tseries2 = masker2.transform(img, confounds=conf)
 
     assert_array_equal(tseries1, tseries2)
@@ -228,11 +224,10 @@ def test_compute_background_mask_errors_warnings():
 def test_compute_brain_mask():
     img, _ = generate_mni_space_img(res=8, random_state=0)
 
-    brain_mask = compute_brain_mask(img, threshold=0.2)
-
-    gm_mask = compute_brain_mask(img, threshold=0.2, mask_type="gm")
-
-    wm_mask = compute_brain_mask(img, threshold=0.2, mask_type="wm")
+    brain_mask, gm_mask, wm_mask = (
+        compute_brain_mask(img, threshold=0.2, mask_type=m)
+        for m in ("whole-brain", "gm", "wm")
+    )
 
     brain_data, gm_data, wm_data = map(
         get_data, (brain_mask, gm_mask, wm_mask)
@@ -704,10 +699,7 @@ def test_compute_multi_brain_mask_errors():
         compute_multi_brain_mask([])
 
     # Check error raised if images with different shapes are given as input
-    imgs = [
-        generate_mni_space_img(res=8, random_state=0)[0],
-        generate_mni_space_img(res=r, random_state=0)[0] for r in (8, 12)
-    ]
+    imgs = [generate_mni_space_img(res=r, random_state=0)[0] for r in (8, 12)]
     with pytest.raises(
         ValueError,
         match="Field of view of image #1 is different from reference FOV",
