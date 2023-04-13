@@ -629,8 +629,8 @@ def vol_to_surf(img, surf_mesh,
     sampling_schemes = {'linear': _interpolation_sampling,
                         'nearest': _nearest_voxel_sampling}
     if interpolation not in sampling_schemes:
-        raise ValueError('"interpolation" should be one of {}'.format(
-            tuple(sampling_schemes.keys())))
+        raise ValueError("'interpolation' should be one of "
+                         f"{tuple(sampling_schemes.keys())}')
     img = load_img(img)
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)
@@ -908,14 +908,13 @@ def load_surface(surface):
     # Handle the case where we received a sequence
     # (mesh, data)
     elif isinstance(surface, (list, tuple, np.ndarray)):
-        if len(surface) == 2:
-            mesh = load_surf_mesh(surface[0])
-            data = load_surf_data(surface[1])
-        else:
+        if len(surface) != 2:
             raise ValueError("`load_surface` accepts iterables "
                              "of length 2 to define a surface. "
-                             "You provided a {} of length {}.".format(
-                                 type(surface), len(surface)))
+                             f"You provided a { type(surface)} "
+                             f"of length {en(surface)}.")
+        mesh = load_surf_mesh(surface[0])
+        data = load_surf_data(surface[1])
     else:
         raise ValueError(
             "Wrong parameter `surface` in `load_surface`. "
@@ -935,13 +934,13 @@ def _check_mesh(mesh):
         return datasets.fetch_surf_fsaverage(mesh)
     if not isinstance(mesh, Mapping):
         raise TypeError("The mesh should be a str or a dictionary, "
-                        "you provided: {}.".format(type(mesh).__name__))
+                        f"you provided: {type(mesh).__name__}.")
     missing = {'pial_left', 'pial_right', 'sulc_left', 'sulc_right',
                'infl_left', 'infl_right'}.difference(mesh.keys())
     if missing:
         raise ValueError(
-            "{} {} missing from the provided mesh dictionary".format(
-                missing, ('are' if len(missing) > 1 else 'is')))
+            f"{missing} {'are' if len(missing) > 1 else 'is'} "
+            "missing from the provided mesh dictionary")
     return mesh
 
 
@@ -979,9 +978,9 @@ def check_mesh_and_data(mesh, data):
     # equal to the size of the data.
     if len(data) != len(mesh.coordinates):
         raise ValueError(
-            'Mismatch between number of nodes in mesh ({}) and '
-            'size of surface data ({})'.format(len(mesh.coordinates),
-                                               len(data)))
+            'Mismatch between number of nodes '
+            f'in mesh ({len(mesh.coordinates)}) and '
+            f'size of surface data ({len(data)})')
     # Check that the indices of faces are consistent with the
     # mesh coordinates. That is, we shouldn't have an index
     # larger or equal to the length of the coordinates array.
