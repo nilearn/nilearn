@@ -278,8 +278,8 @@ def parse_bids_filename(img_path):
         key with no value and will be included in the 'file_fields' key.
 
     """
-    reference= {"file_path": img_path,
-                "file_basename": os.path.basename(img_path)}
+    reference = {"file_path": img_path,
+                 "file_basename": os.path.basename(img_path)}
     parts = reference['file_basename'].split('_')
     tag, type_ = parts[-1].split('.', 1)
     reference['file_tag'] = tag
