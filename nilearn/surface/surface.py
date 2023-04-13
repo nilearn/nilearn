@@ -1,33 +1,27 @@
-"""
-Functions for surface manipulation.
-"""
+"""Functions for surface manipulation."""
+
+import gzip
 import os
 import warnings
-import gzip
 from collections import namedtuple
 from collections.abc import Mapping
 
+import nibabel
 import numpy as np
-from scipy import sparse, interpolate
-import sklearn.preprocessing
 import sklearn.cluster
+import sklearn.preprocessing
+from nibabel import freesurfer as fs, gifti
+from nilearn import _utils, datasets
+from nilearn._utils import stringify_path
+from nilearn._utils.path_finding import _resolve_globbing
+from nilearn.image import get_data, load_img, resampling
+from scipy import interpolate, sparse
+
 try:
     from sklearn.exceptions import EfficiencyWarning
 except ImportError:
     class EfficiencyWarning(UserWarning):
         """Warning used to notify the user of inefficient computation."""
-
-import nibabel
-from nibabel import gifti
-from nibabel import freesurfer as fs
-
-from nilearn import datasets
-from nilearn.image import load_img
-from nilearn.image import resampling
-from nilearn._utils.path_finding import _resolve_globbing
-from nilearn._utils import stringify_path
-from nilearn import _utils
-from nilearn.image import get_data
 
 # Create a namedtuple object for meshes
 Mesh = namedtuple("mesh", ["coordinates", "faces"])
@@ -35,12 +29,13 @@ Mesh = namedtuple("mesh", ["coordinates", "faces"])
 # Create a namedtuple object for surfaces
 Surface = namedtuple("surface", ["mesh", "data"])
 
+
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
     """Get points uniformly spaced in the unit ball."""
     rng = np.random.RandomState(0)
     mc_cube = rng.uniform(-1, 1, size=(n_monte_carlo, dim))
     mc_ball = mc_cube[(mc_cube**2).sum(axis=1) <= 1.]
-    centroids, assignments, _ = sklearn.cluster.k_means(
+    centroids, *_ = sklearn.cluster.k_means(
         mc_ball, n_clusters=n_points, random_state=0)
     return centroids
 
@@ -48,7 +43,7 @@ def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
 def _load_uniform_ball_cloud(n_points=20):
     stored_points = os.path.abspath(
         os.path.join(__file__, '..', 'data',
-                     'ball_cloud_{}_samples.csv'.format(n_points)))
+                     f'ball_cloud_{n_points}_samples.csv'))
     if os.path.isfile(stored_points):
         points = np.loadtxt(stored_points)
         return points
@@ -136,8 +131,8 @@ def _ball_sample_locations(
     mesh : pair of np arrays.
         `mesh[0]` contains the 3d coordinates of the vertices
         (shape n_vertices, 3)
-        `mesh[1]` contains, for each triangle, the indices into `mesh[0]` of its
-        vertices (shape n_triangles, 3)
+        `mesh[1]` contains, for each triangle,
+        the indices into `mesh[0]` of its vertices (shape n_triangles, 3)
 
     affine : array of shape (4, 4)
         Affine transformation from image voxels to the vertices' coordinate
@@ -195,8 +190,8 @@ def _line_sample_locations(
     mesh : pair of numpy.ndarray
         `mesh[0]` contains the 3d coordinates of the vertices
         (shape n_vertices, 3)
-        `mesh[1]` contains, for each triangle, the indices into `mesh[0]` of its
-        vertices (shape n_triangles, 3)
+        `mesh[1]` contains, for each triangle,
+        the indices into `mesh[0]` of its vertices (shape n_triangles, 3)
 
     affine : numpy.ndarray of shape (4, 4)
         Affine transformation from image voxels to the vertices' coordinate
@@ -262,7 +257,7 @@ def _sample_locations(mesh, affine, radius, kind='auto', n_points=None,
     }
     if kind not in projectors:
         raise ValueError(
-            '"kind" must be one of {}'.format(tuple(projectors.keys())))
+            f'"kind" must be one of {tuple(projectors.keys())}')
     projector, extra_kwargs = projectors[kind]
     # let the projector choose the default for n_points
     # (for example a ball probably needs more than a line)
@@ -389,7 +384,7 @@ def _projection_matrix(mesh, affine, img_shape, kind='auto', radius=3.,
         mesh, affine, kind=kind, radius=radius, n_points=n_points,
         inner_mesh=inner_mesh, depth=depth)
     sample_locations = np.asarray(np.round(sample_locations), dtype=int)
-    n_vertices, n_points, img_dim = sample_locations.shape
+    n_vertices, n_points, _ = sample_locations.shape
     masked = _masked_indices(np.vstack(sample_locations), img_shape, mask=mask)
     sample_locations = np.rollaxis(sample_locations, -1)
     sample_indices = np.ravel_multi_index(
@@ -444,7 +439,7 @@ def _interpolation_sampling(images, mesh, affine, kind='auto', radius=3,
     sample_locations = _sample_locations(
         mesh, affine, kind=kind, radius=radius, n_points=n_points,
         inner_mesh=inner_mesh, depth=depth)
-    n_vertices, n_points, img_dim = sample_locations.shape
+    n_vertices, n_points, _ = sample_locations.shape
     grid = [np.arange(size) for size in images[0].shape]
     interp_locations = np.vstack(sample_locations)
     masked = _masked_indices(interp_locations, images[0].shape, mask=mask)
@@ -659,10 +654,10 @@ def vol_to_surf(img, surf_mesh,
 
 
 def _load_surf_files_gifti_gzip(surf_file):
-    """Load surface data Gifti files which are gzipped. This
-    function is used by load_surf_mesh and load_surf_data for
-    extracting gzipped files.
+    """Load surface data Gifti files which are gzipped.
 
+    This function is used by load_surf_mesh and load_surf_data for
+    extracting gzipped files.
     """
     with gzip.open(surf_file) as f:
         as_bytes = f.read()
@@ -672,8 +667,8 @@ def _load_surf_files_gifti_gzip(surf_file):
 
 
 def _gifti_img_to_data(gifti_img):
-    """Load surface image e.g. sulcal depth or statistical map in
-    nibabel.gifti.GiftiImage to data
+    """Load surface image e.g. sulcal depth or statistical map \
+    in nibabel.gifti.GiftiImage to data.
 
     Used by load_surf_data function in common to surface sulcal data
     acceptable to .gii or .gii.gz
@@ -686,7 +681,7 @@ def _gifti_img_to_data(gifti_img):
 
 # function to figure out datatype and load data
 def load_surf_data(surf_data):
-    """Loading data to be represented on a surface mesh.
+    """Load data to be represented on a surface mesh.
 
     Parameters
     ----------
@@ -764,7 +759,7 @@ def load_surf_data(surf_data):
 
 
 def _gifti_img_to_mesh(gifti_img):
-    """Load surface image in nibabel.gifti.GiftiImage to data
+    """Load surface image in nibabel.gifti.GiftiImage to data.
 
     Used by load_surf_mesh function in common to surface mesh
     acceptable to .gii or .gii.gz
@@ -793,7 +788,7 @@ def _gifti_img_to_mesh(gifti_img):
 
 # function to figure out datatype and load data
 def load_surf_mesh(surf_mesh):
-    """Loading a surface mesh geometry
+    """Load a surface mesh geometry.
 
     Parameters
     ----------
@@ -811,7 +806,6 @@ def load_surf_mesh(surf_mesh):
         numpy.ndarray
 
     """
-
     # if input is a filename, try to load it
     surf_mesh = stringify_path(surf_mesh)
     if isinstance(surf_mesh, str):
@@ -846,7 +840,8 @@ def load_surf_mesh(surf_mesh):
                               'while valid inputs are one of the following '
                               'file formats: .gii, .gii.gz, Freesurfer '
                               'specific files such as .orig, .pial, .sphere, '
-                              '.white, .inflated or two Numpy arrays organized '
+                              '.white, .inflated or '
+                              'two Numpy arrays organized '
                               'in a list, tuple or a namedtuple with the '
                               'fields "coordinates" and "faces"'
                               ) % surf_mesh)
@@ -879,7 +874,7 @@ def load_surf_mesh(surf_mesh):
 
 
 def load_surface(surface):
-    """Loads a surface.
+    """Load a surface.
 
     Parameters
     ----------
@@ -922,14 +917,15 @@ def load_surface(surface):
                              "You provided a {} of length {}.".format(
                                  type(surface), len(surface)))
     else:
-        raise ValueError("Wrong parameter `surface` in `load_surface`. "
-                         "Please refer to the documentation for more information.")
+        raise ValueError(
+            "Wrong parameter `surface` in `load_surface`. "
+            "Please refer to the documentation for more information.")
     return Surface(mesh, data)
 
 
 def _check_mesh(mesh):
-    """Check that mesh data is either a str, or a dict with sufficient
-    entries.
+    """Check that mesh data is either a str, \
+    or a dict with sufficient entries.
 
     Used by plotting.surf_plotting.plot_img_on_surf and
     plotting.html_surface.full_brain_info
@@ -984,20 +980,23 @@ def check_mesh_and_data(mesh, data):
     if len(data) != len(mesh.coordinates):
         raise ValueError(
             'Mismatch between number of nodes in mesh ({}) and '
-            'size of surface data ({})'.format(len(mesh.coordinates), len(data)))
+            'size of surface data ({})'.format(len(mesh.coordinates),
+                                               len(data)))
     # Check that the indices of faces are consistent with the
     # mesh coordinates. That is, we shouldn't have an index
     # larger or equal to the length of the coordinates array.
     if mesh.faces.max() >= len(mesh.coordinates):
         raise ValueError(
             "Mismatch between the indices of faces and the number of nodes. "
-            "Maximum face index is {} while coordinates array has length {}.".format(
-                mesh.faces.max(), len(mesh.coordinates)))
+            f"Maximum face index is {mesh.faces.max()} "
+            f"while coordinates array has length {len(mesh.coordinates)}."
+        )
     return mesh, data
 
 
 def check_surface(surface):
     """Load a surface as a Surface object.
+
     This function will make sure that the surfaces's
     mesh and data have compatible shapes.
 

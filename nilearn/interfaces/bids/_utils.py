@@ -154,7 +154,7 @@ def _generate_dataset_description(out_file, model_level):
         json.dump(dataset_description, f_obj, indent=4, sort_keys=True)
 
 
-def _bids_entities() -> dict[str, list[str]]:
+def _bids_entities():
     """Return a dictionary of BIDS entities.
 
     Entities are listed in the order they should appear in a filename.
@@ -190,7 +190,7 @@ def _bids_entities() -> dict[str, list[str]]:
     }
 
 
-def _check_bids_label(label) -> None:
+def _check_bids_label(label):
     """Validate a BIDS label.
 
     https://bids-specification.readthedocs.io/en/stable/glossary.html#label-formats # noqa

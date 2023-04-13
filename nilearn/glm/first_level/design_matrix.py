@@ -101,21 +101,25 @@ def _cosine_drift(high_pass, frame_times):
     n_frames = len(frame_times)
     n_times = np.arange(n_frames)
     dt = (frame_times[-1] - frame_times[0]) / (n_frames - 1)
-    if high_pass * dt >= .5:
-        warn('High-pass filter will span all accessible frequencies '
-             'and saturate the design matrix. '
-             'You may want to reduce the high_pass value.'
-             'The provided value is {} Hz'.format(high_pass))
-    order = np.minimum(n_frames - 1,
-                       int(np.floor(2 * n_frames * high_pass * dt)))
+    if high_pass * dt >= 0.5:
+        warn(
+            "High-pass filter will span all accessible frequencies "
+            "and saturate the design matrix. "
+            "You may want to reduce the high_pass value."
+            "The provided value is {} Hz".format(high_pass)
+        )
+    order = np.minimum(
+        n_frames - 1, int(np.floor(2 * n_frames * high_pass * dt))
+    )
     cosine_drift = np.zeros((n_frames, order + 1))
     normalizer = np.sqrt(2.0 / n_frames)
 
     for k in range(1, order + 1):
         cosine_drift[:, k - 1] = normalizer * np.cos(
-            (np.pi / n_frames) * (n_times + .5) * k)
+            (np.pi / n_frames) * (n_times + 0.5) * k
+        )
 
-    cosine_drift[:, -1] = 1.
+    cosine_drift[:, -1] = 1.0
     return cosine_drift
 
 
@@ -158,9 +162,9 @@ def _make_drift(drift_model, frame_times, order, high_pass):
     """
     if isinstance(drift_model, str):
         drift_model = drift_model.lower()  # for robust comparisons
-    if drift_model == 'polynomial':
+    if drift_model == "polynomial":
         drift = _poly_drift(order, frame_times)
-    elif drift_model == 'cosine':
+    elif drift_model == "cosine":
         drift = _cosine_drift(high_pass, frame_times)
     elif drift_model is None:
         drift = _none_drift(frame_times)
@@ -168,13 +172,19 @@ def _make_drift(drift_model, frame_times, order, high_pass):
         raise NotImplementedError(f"Unknown drift model {drift_model!r}")
     names = []
     for k in range(1, drift.shape[1]):
-        names.append(f'drift_{int(k)}')
-    names.append('constant')
+        names.append(f"drift_{int(k)}")
+    names.append("constant")
     return drift, names
 
 
-def _convolve_regressors(events, hrf_model, frame_times, fir_delays=[0],
-                         min_onset=-24, oversampling=50):
+def _convolve_regressors(
+    events,
+    hrf_model,
+    frame_times,
+    fir_delays=[0],
+    min_onset=-24,
+    oversampling=50,
+):
     """Creation of a matrix that comprises \
     the convolution of the conditions onset with a certain hrf model.
 
@@ -226,14 +236,21 @@ def _convolve_regressors(events, hrf_model, frame_times, fir_delays=[0],
     regressor_matrix = None
     trial_type, onset, duration, modulation = check_events(events)
     for condition in np.unique(trial_type):
-        condition_mask = (trial_type == condition)
-        exp_condition = (onset[condition_mask],
-                         duration[condition_mask],
-                         modulation[condition_mask])
+        condition_mask = trial_type == condition
+        exp_condition = (
+            onset[condition_mask],
+            duration[condition_mask],
+            modulation[condition_mask],
+        )
         reg, names = compute_regressor(
-            exp_condition, hrf_model, frame_times, con_id=condition,
-            fir_delays=fir_delays, oversampling=oversampling,
-            min_onset=min_onset)
+            exp_condition,
+            hrf_model,
+            frame_times,
+            con_id=condition,
+            fir_delays=fir_delays,
+            oversampling=oversampling,
+            min_onset=min_onset,
+        )
 
         regressor_names += names
         if regressor_matrix is None:
@@ -250,9 +267,18 @@ def _convolve_regressors(events, hrf_model, frame_times, fir_delays=[0],
 
 @fill_doc
 def make_first_level_design_matrix(
-        frame_times, events=None, hrf_model='glover',
-        drift_model='cosine', high_pass=.01, drift_order=1, fir_delays=[0],
-        add_regs=None, add_reg_names=None, min_onset=-24, oversampling=50):
+    frame_times,
+    events=None,
+    hrf_model="glover",
+    drift_model="cosine",
+    high_pass=0.01,
+    drift_order=1,
+    fir_delays=[0],
+    add_regs=None,
+    add_reg_names=None,
+    min_onset=-24,
+    oversampling=50,
+):
     """Generate a design matrix from the input parameters.
 
     Parameters
@@ -334,18 +360,19 @@ def make_first_level_design_matrix(
             add_regs_ = np.atleast_2d(add_regs)
         n_add_regs = add_regs_.shape[1]
         assert add_regs_.shape[0] == np.size(frame_times), ValueError(
-            'Incorrect specification of additional regressors: '
-            'length of regressors provided: %d, number of '
-            'time-frames: %d' % (add_regs_.shape[0], np.size(frame_times)))
+            "Incorrect specification of additional regressors: "
+            "length of regressors provided: %d, number of "
+            "time-frames: %d" % (add_regs_.shape[0], np.size(frame_times))
+        )
 
     # check that additional regressor names are well specified
     if add_reg_names is None:
-        add_reg_names = [f'reg{int(k)}' for k in range(n_add_regs)]
+        add_reg_names = [f"reg{int(k)}" for k in range(n_add_regs)]
     elif len(add_reg_names) != n_add_regs:
         raise ValueError(
-            'Incorrect number of additional regressor names was provided'
-            '(%d provided, %d expected' % (len(add_reg_names),
-                                           n_add_regs))
+            "Incorrect number of additional regressor names was provided"
+            "(%d provided, %d expected" % (len(add_reg_names), n_add_regs)
+        )
 
     # computation of the matrix
     names = []
@@ -357,8 +384,8 @@ def make_first_level_design_matrix(
         if isinstance(hrf_model, str):
             hrf_model = hrf_model.lower()
         matrix, names = _convolve_regressors(
-            events, hrf_model, frame_times, fir_delays, min_onset,
-            oversampling)
+            events, hrf_model, frame_times, fir_delays, min_onset, oversampling
+        )
 
     # step 2: additional regressors
     if add_regs is not None:
@@ -370,8 +397,9 @@ def make_first_level_design_matrix(
         names += add_reg_names
 
     # step 3: drifts
-    drift, dnames = _make_drift(drift_model, frame_times, drift_order,
-                                high_pass)
+    drift, dnames = _make_drift(
+        drift_model, frame_times, drift_order, high_pass
+    )
 
     if matrix is not None:
         matrix = np.hstack((matrix, drift))
@@ -381,13 +409,12 @@ def make_first_level_design_matrix(
     names += dnames
     # check column names are all unique
     if len(np.unique(names)) != len(names):
-        raise ValueError('Design matrix columns do not have unique names')
+        raise ValueError("Design matrix columns do not have unique names")
 
     # step 4: Force the design matrix to be full rank at working precision
     matrix, _ = full_rank(matrix)
 
-    design_matrix = pd.DataFrame(
-        matrix, columns=names, index=frame_times)
+    design_matrix = pd.DataFrame(matrix, columns=names, index=frame_times)
     return design_matrix
 
 
@@ -445,26 +472,29 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
     confounds_name = []
     if confounds is not None:
         confounds_name = confounds.columns.tolist()
-        confounds_name.remove('subject_label')
+        confounds_name.remove("subject_label")
 
-    design_columns = (confounds_name + ['intercept'])
+    design_columns = confounds_name + ["intercept"]
     # check column names are unique
     if len(np.unique(design_columns)) != len(design_columns):
-        raise ValueError('Design matrix columns do not have unique names')
+        raise ValueError("Design matrix columns do not have unique names")
 
     # float dtype necessary for linalg
     design_matrix = pd.DataFrame(columns=design_columns, dtype=float)
     for ridx, subject_label in enumerate(subjects_label):
         design_matrix.loc[ridx] = [0] * len(design_columns)
-        design_matrix.loc[ridx, 'intercept'] = 1
+        design_matrix.loc[ridx, "intercept"] = 1
         if confounds is not None:
-            conrow = confounds['subject_label'] == subject_label
+            conrow = confounds["subject_label"] == subject_label
             if np.sum(conrow) > 1:
-                raise ValueError('confounds contain more than one row for '
-                                 'subject %s' % subject_label)
+                raise ValueError(
+                    "confounds contain more than one row "
+                    f"for subject {subject_label}"
+                )
             elif np.sum(conrow) == 0:
                 raise ValueError(
-                    f'confounds not specified for subject {subject_label}')
+                    f"confounds not specified for subject {subject_label}"
+                )
             for conf_name in confounds_name:
                 confounds_value = confounds[conrow][conf_name].values[0]
                 design_matrix.loc[ridx, conf_name] = confounds_value
@@ -472,6 +502,8 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
     # check design matrix is not singular
     sys.float_info.epsilon
     if np.linalg.cond(design_matrix.values) > design_matrix.size:
-        warn('Attention: Design matrix is singular. Aberrant estimates '
-             'are expected.')
+        warn(
+            "Attention: Design matrix is singular. Aberrant estimates "
+            "are expected."
+        )
     return design_matrix
