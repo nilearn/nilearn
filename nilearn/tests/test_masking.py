@@ -638,11 +638,9 @@ def test_intersect_masks_with_f8(mask_a_img, mask_b_img, expected_mask_ab):
     largest_connected_component to check if intersect_masks passes with
     connected=True (which is by default)
     """
-    mask_a_img_change_dtype = Nifti1Image(
-        get_data(mask_a_img).astype(">f8"), affine=mask_a_img.affine
-    )
-    mask_b_img_change_dtype = Nifti1Image(
-        get_data(mask_b_img).astype(">f8"), affine=mask_b_img.affine
+    mask_a_img_change_dtype, mask_b_img_change_dtype = (
+        Nifti1Image(get_data(mask).astype(">f8"), affine=mask.affine)
+        for mask in (mask_a_img, mask_b_img)
     )
     mask_ab_change_type = intersect_masks(
         [mask_a_img_change_dtype, mask_b_img_change_dtype], threshold=1.0
