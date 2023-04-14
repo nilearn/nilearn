@@ -130,7 +130,7 @@ dc = "Dummy classifier with stratified strategy"
 
 docdict['classifier_options'] = f"""
 
-        - `svc`: `{svc} <%(svc)s>`_ with L2 penalty.
+        - `svc`: :class:`{svc} <sklearn.svm.SVC>` with L2 penalty.
             .. code-block:: python
 
                 svc = LinearSVC(penalty='l2',
