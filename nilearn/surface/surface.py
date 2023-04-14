@@ -679,23 +679,29 @@ def _gifti_img_to_data(gifti_img):
     return np.asarray([arr.data for arr in gifti_img.darrays]).T.squeeze()
 
 
-FREESURFER_MESH_EXTENSIONS = (".orig",
-                              ".pial",
-                              ".sphere",
-                              ".white",
-                              ".inflated")
+FREESURFER_MESH_EXTENSIONS = ("orig",
+                              "pial",
+                              "sphere",
+                              "white",
+                              "inflated")
 
-FREESURFER_DATA_EXTENSIONS = (".area",
-                              ".curv",
-                              ".sulc",
-                              ".thickness",
-                              ".label",
-                              ".annot")
+FREESURFER_DATA_EXTENSIONS = ("area",
+                              "curv",
+                              "sulc",
+                              "thickness",
+                              "label",
+                              "annot")
+
+DATA_EXTENSIONS = ("gii",
+                   "gii.gz",
+                   "mgz",
+                   "nii",
+                   "nii.gz")
 
 
 def _stringify(word_list):
-    sep = "', '"
-    return f"'{sep.join(word_list)[:-3]}'"
+    sep = "', '."
+    return f"'.{sep.join(word_list)[:-3]}'"
 
 
 # function to figure out datatype and load data
@@ -718,6 +724,16 @@ def load_surf_data(surf_data):
     """
     # if the input is a filename, load it
     surf_data = stringify_path(surf_data)
+
+    if not isinstance(surf_data, (str, np.ndarray)):
+        raise ValueError(
+            'The input type is not recognized. '
+            'Valid inputs are a Numpy array or one of the '
+            'following file formats: '
+            f"{_stringify(DATA_EXTENSIONS)}, "
+            'Freesurfer specific files such as '
+            f"{_stringify(FREESURFER_DATA_EXTENSIONS)}.")
+
     if isinstance(surf_data, str):
 
         # resolve globbing
@@ -726,6 +742,19 @@ def load_surf_data(surf_data):
 
         for f in range(len(file_list)):
             surf_data = file_list[f]
+
+            if (not any(surf_data.endswith(x)
+                        for x in DATA_EXTENSIONS +
+                        FREESURFER_DATA_EXTENSIONS)):
+                raise ValueError(
+                    'The input type is not recognized. '
+                    f'{surf_data!r} was given '
+                    'while valid inputs are a Numpy array '
+                    'or one of the following file formats: '
+                    f"{_stringify(DATA_EXTENSIONS)}, "
+                    'Freesurfer specific files such as '
+                    f"{_stringify(FREESURFER_DATA_EXTENSIONS)}.")
+
             if (surf_data.endswith('nii') or surf_data.endswith('nii.gz') or
                     surf_data.endswith('mgz')):
                 data_part = np.squeeze(get_data(nibabel.load(surf_data)))
@@ -745,15 +774,6 @@ def load_surf_data(surf_data):
             elif surf_data.endswith('gii.gz'):
                 gii = _load_surf_files_gifti_gzip(surf_data)
                 data_part = _gifti_img_to_data(gii)
-            else:
-                raise ValueError(
-                    'The input type is not recognized. '
-                    f'{surf_data!r} was '
-                    'given while valid inputs are a Numpy array '
-                    'or one of the following file formats: .gii,'
-                    ' .gii.gz, .mgz, .nii, .nii.gz, '
-                    'Freesurfer specific files such as '
-                    f"{_stringify(FREESURFER_DATA_EXTENSIONS)}.")
 
             if len(data_part.shape) == 1:
                 data_part = data_part[:, np.newaxis]
@@ -770,13 +790,7 @@ def load_surf_data(surf_data):
     # if the input is a numpy array
     elif isinstance(surf_data, np.ndarray):
         data = surf_data
-    else:
-        raise ValueError('The input type is not recognized. '
-                         'Valid inputs are a Numpy array or one of the '
-                         'following file formats: .gii, .gii.gz, .mgz, .nii, '
-                         '.nii.gz, '
-                         'Freesurfer specific files such as '
-                         f"{_stringify(FREESURFER_DATA_EXTENSIONS)}.")
+
     return np.squeeze(data)
 
 
@@ -842,7 +856,7 @@ def load_surf_mesh(surf_mesh):
                 f"More than one file matching path: {surf_mesh} \n"
                 "load_surf_mesh can only load one file at a time.")
 
-        if any(surf_mesh.endswith(x[1:]) for x in FREESURFER_MESH_EXTENSIONS):
+        if any(surf_mesh.endswith(x) for x in FREESURFER_MESH_EXTENSIONS):
             coords, faces, header = fs.io.read_geometry(surf_mesh,
                                                         read_metadata=True)
             # See https://github.com/nilearn/nilearn/pull/3235
@@ -852,7 +866,7 @@ def load_surf_mesh(surf_mesh):
         elif surf_mesh.endswith('gii'):
             coords, faces = _gifti_img_to_mesh(nibabel.load(surf_mesh))
             mesh = Mesh(coordinates=coords, faces=faces)
-        elif surf_mesh.endswith('.gii.gz'):
+        elif surf_mesh.endswith('gii.gz'):
             gifti_img = _load_surf_files_gifti_gzip(surf_mesh)
             coords, faces = _gifti_img_to_mesh(gifti_img)
             mesh = Mesh(coordinates=coords, faces=faces)
