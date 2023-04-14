@@ -240,7 +240,7 @@ def glover_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
           dhrf sampling on the provided grid
 
     """
-    dhrf = _generic_time_derivative(
+    return _generic_time_derivative(
         glover_hrf,
         tr=tr,
         oversampling=oversampling,
@@ -312,7 +312,7 @@ def spm_dispersion_derivative(
           dhrf sampling on the oversampled time grid
 
     """
-    dhrf = _generic_dispersion_derivative(
+    return _generic_dispersion_derivative(
         tr, oversampling=oversampling, time_length=time_length, onset=onset
     )
     return dhrf
@@ -343,7 +343,7 @@ def glover_dispersion_derivative(
           dhrf sampling on the oversampled time grid
 
     """
-    dhrf = _generic_dispersion_derivative(
+    return _generic_dispersion_derivative(
         tr,
         oversampling=oversampling,
         time_length=time_length,
