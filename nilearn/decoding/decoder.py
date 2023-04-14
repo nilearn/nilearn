@@ -206,13 +206,13 @@ def _wrap_param_grid(param_grid, param_name):
     # we make sure that it is a sequence we can loop over
     input_is_dict = isinstance(param_grid, dict)
     if input_is_dict:
-        param_grids = [param_grid]
+        param_grid = [param_grid]
     else:
-        param_grids = param_grid
+        param_grid = param_grid
 
     # process dicts one by one and add them to a new list
     new_param_grid = []
-    for param_grid_item in param_grids:
+    for param_grid_item in param_grid:
         if param_name in param_grid_item and not isinstance(
             param_grid_item[param_name][0], Iterable
         ):
