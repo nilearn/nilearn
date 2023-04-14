@@ -150,13 +150,13 @@ def glover_hrf(tr, oversampling=50, time_length=32.0, onset=0.0):
     )
 
 
-def _compute_derivative_from_values(values, values_plus_x, x=0.1):
+def _compute_derivative_from_values(values, values_plus_dt, dt=0.1):
     """Return the time or dispersion derivative of an hrf."""
-    return 1.0 / x * (values - values_plus_x)
+    return 1.0 / dt * (values - values_plus_dt)
 
 
 def _generic_time_derivative(
-    func, tr, oversampling=50, time_length=32.0, onset=0.0, do=0.1
+    func, tr, oversampling=50, time_length=32.0, onset=0.0, dt=0.1
 ):
     """Return the time derivative of an hrf for a given function.
 
@@ -176,11 +176,14 @@ def _generic_time_derivative(
 
     onset : float, optional
         Onset of the response. Default=0.
+
+    dt : float, optional
+        Time step for the derivative. Default=0.1.
     """
     return _compute_derivative_from_values(
         func(tr, oversampling, time_length, onset),
-        func(tr, oversampling, time_length, onset + do),
-        x=do,
+        func(tr, oversampling, time_length, onset + dt),
+        dt=dt,
     )
 
 
@@ -207,14 +210,13 @@ def spm_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
           dhrf sampling on the provided grid
 
     """
-    dhrf = _generic_time_derivative(
+    return _generic_time_derivative(
         spm_hrf,
         tr=tr,
         oversampling=oversampling,
         time_length=time_length,
         onset=onset,
     )
-    return dhrf
 
 
 def glover_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
@@ -247,7 +249,6 @@ def glover_time_derivative(tr, oversampling=50, time_length=32.0, onset=0.0):
         time_length=time_length,
         onset=onset,
     )
-    return dhrf
 
 
 def _generic_dispersion_derivative(
@@ -258,11 +259,16 @@ def _generic_dispersion_derivative(
     undershoot=16,
     ratio=0.167,
     dispersion=1.0,
-    dd=0.01,
+    dt=0.01,
 ):
     """Return the dispersion derivative of an hrf.
 
-    See _generic_dispersion_derivative for the parameters description.
+    Parameters
+    ----------
+    dt : float, optional
+        Dispersion step for the derivative. Default=0.01.
+
+    See _gamma_difference_hrf for the other parameters description.
     """
     return _compute_derivative_from_values(
         _gamma_difference_hrf(
@@ -281,9 +287,9 @@ def _generic_dispersion_derivative(
             onset,
             undershoot=undershoot,
             ratio=ratio,
-            dispersion=dispersion + dd,
+            dispersion=dispersion + dt,
         ),
-        x=dd,
+        dt=dt,
     )
 
 
@@ -315,7 +321,6 @@ def spm_dispersion_derivative(
     return _generic_dispersion_derivative(
         tr, oversampling=oversampling, time_length=time_length, onset=onset
     )
-    return dhrf
 
 
 def glover_dispersion_derivative(
@@ -352,7 +357,6 @@ def glover_dispersion_derivative(
         ratio=0.35,
         dispersion=0.9,
     )
-    return dhrf
 
 
 def _sample_condition(
