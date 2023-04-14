@@ -139,10 +139,13 @@ def test_threshold_stats_img():
     ],
 )
 def test_hommel(alpha, expected):
-    # Check that the computation of Hommel value
-    # For these, we take the example in  Meijer et al. 2017
-    # 'A shortcut for Hommel's procedure in linearithmic time'
-    # and check that we obtain the same values
+    """Check that the computation of Hommel value.
+
+    For these, we take the example in  Meijer et al. 2017
+    'A shortcut for Hommel's procedure in linearithmic time'
+    and check that we obtain the same values.
+    https://arxiv.org/abs/1710.08273
+    """
     z = norm.isf([1.0e-8, 0.01, 0.08, 0.1, 0.5, 0.7, 0.9])
     assert _compute_hommel_value(z, alpha=alpha) == expected
 
