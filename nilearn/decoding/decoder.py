@@ -142,10 +142,10 @@ def _default_param_grid(estimator, X, y):
     """
     param_grid = {}
 
-    # define loss function
+    # validate estimator and define loss function if needed
     if isinstance(estimator, LogisticRegression):
         loss = "log"
-    elif isinstance(estimator, (LinearSVC, RidgeCV, RidgeClassifierCV, SVR)):
+    elif isinstance(estimator, LinearSVC):
         loss = "squared_hinge"
     elif isinstance(estimator, (DummyClassifier, DummyRegressor)):
         if estimator.strategy in ["constant"]:
@@ -154,17 +154,20 @@ def _default_param_grid(estimator, X, y):
                 ' "most_frequent", "prior", "stratified"'
             )
             raise NotImplementedError(message)
-    else:
+    elif not isinstance(estimator, (RidgeCV, RidgeClassifierCV, SVR)):
         raise ValueError(
             "Invalid estimator. The supported estimators are:"
             f" {list(SUPPORTED_ESTIMATORS.keys())}"
         )
-    # define sensible default for different types of estimators
+    
+    # use l1_min_c to get lower bound for estimators with L1 penalty
     if hasattr(estimator, "penalty") and (estimator.penalty == "l1"):
         min_c = l1_min_c(X, y, loss=loss)
+    # otherwise use 0.5 which will give param_grid["C"] = [1, 10, 100]
     else:
         min_c = 0.5
 
+    # define sensible default for different types of estimators
     if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
         param_grid["alphas"] = [np.geomspace(1e-3, 1e4, 8)]
     elif not isinstance(estimator, (DummyClassifier, DummyRegressor)):
