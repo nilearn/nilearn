@@ -11,17 +11,7 @@ https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py
 
 import sys
 
-base_url = "https://scikit-learn.org/stable/modules/generated/sklearn"
 
-SKLEARN_LINKS = {
-    'svc': f"{base_url}.svm.SVC.html",
-    'logistic': f"{base_url}.linear_model.LogisticRegression.html",
-    'ridge_classifier': f"{base_url}.linear_model.RidgeClassifierCV.html",
-    'dummy_classifier': f"{base_url}.dummy.DummyClassifier.html",
-    'ridge': f"{base_url}.linear_model.RidgeCV.html",
-    'svr': f"{base_url}.svm.SVR.html",
-    'dummy_regressor': f"{base_url}.dummy.DummyRegressor.html",
-}
 
 
 ##############################################################################
@@ -136,45 +126,52 @@ docdict['classifier_options'] = f"""
                 svc = LinearSVC(penalty='l2',
                                 max_iter=1e4)
 
-        - `svc_l2`: `{svc} <%(svc)s>`_ with L2 penalty.
+        - `svc_l2`: :class:`{svc} <sklearn.svm.SVC>` with L2 penalty.
             .. note::
                 Same as option `svc`.
 
-        - `svc_l1`: `{svc} <%(svc)s>`_ with L1 penalty.
+        - `svc_l1`: :class:`{svc} <sklearn.svm.SVC>` with L1 penalty.
             .. code-block:: python
 
                 svc_l1 = LinearSVC(penalty='l1',
                                    dual=False,
                                    max_iter=1e4)
 
-        - `logistic`: `{logistic} <%(logistic)s>`_ with L2 penalty.
+        - `logistic`: \
+            :class:`{logistic} <sklearn.linear_model.LogisticRegression>` \
+            with L2 penalty.
             .. code-block:: python
 
                 logistic = LogisticRegression(penalty='l2',
                                               solver='liblinear')
 
-        - `logistic_l1`: `{logistic} <%(logistic)s>`_ with L1 penalty.
+        - `logistic_l1`: \
+            :class:`{logistic} <sklearn.linear_model.LogisticRegression>` \
+            with L1 penalty.
             .. code-block:: python
 
                 logistic_l1 = LogisticRegression(penalty='l1',
                                                  solver='liblinear')
 
-        - `logistic_l2`: `{logistic} <%(logistic)s>`_ with L2 penalty
+        - `logistic_l2`: \
+            :class:`{logistic} <sklearn.linear_model.LogisticRegression>` \
+            with L2 penalty
             .. note::
                 Same as option `logistic`.
 
-        - `ridge_classifier`: `{rc} <%(ridge_classifier)s>`_.
+        - `ridge_classifier`: \
+            :class:`{rc} <sklearn.linear_model.RidgeClassifierCV>`.
             .. code-block:: python
 
                 ridge_classifier = RidgeClassifierCV()
 
-        - `dummy_classifier`: `{dc} <%(dummy_classifier)s>`_.
+        - `dummy_classifier`: :class:`{dc} <sklearn.dummy.DummyClassifier>`.
             .. code-block:: python
 
                 dummy = DummyClassifier(strategy='stratified',
                                         random_state=0)
 
-""" % SKLEARN_LINKS
+"""
 
 # cmap
 docdict['cmap'] = """
@@ -356,7 +353,7 @@ hemi : {'left', 'right'}, optional
 
 # hemispheres
 docdict['hemispheres'] = """
-hemispheres : list of :obj:`str`, optional
+hemispheres : :obj:`list` of :obj:`str`, optional
     Hemispheres to display. Default=['left', 'right']."""
 
 
@@ -584,27 +581,30 @@ random_state : :obj:`int` or RandomState, optional
 # regressor_options
 docdict['regressor_options'] = """
 
-        - `ridge`: `Ridge regression <%(ridge)s>`_.
+        - `ridge`: \
+            :class:`{Ridge regression} <sklearn.linear_model.RidgeCV>`.
             .. code-block:: python
 
                 ridge = RidgeCV()
 
-        - `ridge_regressor`: `Ridge regression <%(ridge)s>`_.
+        - `ridge_regressor`: \
+            :class:`{Ridge regression} <sklearn.linear_model.RidgeCV>`.
             .. note::
                 Same option as `ridge`.
 
-        - `svr`: `Support vector regression <%(svr)s>`_.
+        - `svr`: :class:`{Support vector regression} <sklearn.svm.SVR>`.
             .. code-block:: python
 
                 svr = SVR(kernel='linear',
                           max_iter=1e4)
 
-        - `dummy_regressor`: `Dummy regressor <%(dummy_regressor)s>`_.
+        - `dummy_regressor`: \
+            :class:`{Dummy regressor} <sklearn.dummy.DummyRegressor>`.
             .. code-block:: python
 
                 dummy = DummyRegressor(strategy='mean')
 
-""" % SKLEARN_LINKS
+"""
 
 # resampling_interpolation
 docdict['resampling_interpolation'] = """
