@@ -159,7 +159,7 @@ def _default_param_grid(estimator, X, y):
             "Invalid estimator. The supported estimators are:"
             f" {list(SUPPORTED_ESTIMATORS.keys())}"
         )
-    
+
     # use l1_min_c to get lower bound for estimators with L1 penalty
     if hasattr(estimator, "penalty") and (estimator.penalty == "l1"):
         min_c = l1_min_c(X, y, loss=loss)
@@ -170,7 +170,7 @@ def _default_param_grid(estimator, X, y):
     # define sensible default for different types of estimators
     if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
         param_grid["alphas"] = [np.geomspace(1e-3, 1e4, 8)]
-    elif not isinstance(estimator, (DummyClassifier, DummyRegressor)):
+    elif isinstance(estimator, (LogisticRegression, LinearSVC, SVR)):
         param_grid["C"] = np.array([2, 20, 200]) * min_c
     else:
         param_grid = {}
