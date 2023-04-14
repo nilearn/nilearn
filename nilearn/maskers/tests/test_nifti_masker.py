@@ -356,7 +356,7 @@ def expected_mask(mask_args):
     mask = np.zeros((9, 9, 5))
     if mask_args == {}:
         return mask
-    
+
     mask[2:7, 2:7, 2] = 1
     return mask
 

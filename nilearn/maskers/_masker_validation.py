@@ -92,7 +92,7 @@ def _check_embedded_nifti_masker(estimator, multi_subject=True):
                 f"    Masker parameter {new_masker_params[param_key]}"
                 " - overriding estimator parameter "
                 f"{estimator_params[param_key]}\n"
-        )
+            )
 
     if conflict_string != "":
         warn_str = ("Overriding provided-default estimator parameters with"

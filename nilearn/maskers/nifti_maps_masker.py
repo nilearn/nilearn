@@ -199,9 +199,9 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         self.reports = reports
         self.report_id = -1
         self._report_content = {
-            'description':(
-            'This reports shows the spatial maps provided to the mask.'
-        ),
+            'description' : (
+                'This reports shows the spatial maps provided to the mask.'
+            ),
             'warning_message': None
         }
 
@@ -301,7 +301,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
 
         if maps_image is None:
             return [None]
-        
+
         n_maps = image.get_data(maps_image).shape[-1]
 
         maps_to_be_displayed = range(n_maps)
@@ -357,7 +357,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         cut_coords = [plotting.find_xyz_cut_coords(
             image.index_img(
                 maps_image, i)) for i in maps_to_be_displayed]
-        
+
         for idx, component in enumerate(maps_to_be_displayed):
             display = plotting.plot_img(
                 img,
@@ -372,7 +372,6 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             embeded_images.append(_embed_img(display))
             display.close()
         return embeded_images
-
 
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.

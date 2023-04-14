@@ -283,23 +283,23 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 return self.fit(X, **fit_params
                                 ).transform(X, confounds=confounds,
                                             sample_mask=sample_mask)
-            
+
             return self.fit(**fit_params).transform(X,
                                                     confounds=confounds,
                                                     sample_mask=sample_mask
                                                     )
-        
+
         # fit method of arity 2 (supervised transformation)
         if self.mask_img is None:
             return self.fit(X, y, **fit_params
                             ).transform(X, confounds=confounds,
                                         sample_mask=sample_mask)
-        
+
         warnings.warn(f'[{self.__class__.__name__}.fit] '
-                        'Generation of a mask has been'
-                        ' requested (y != None) while a mask has'
-                        ' been provided at masker creation. Given mask'
-                        ' will be used.')
+                      'Generation of a mask has been'
+                      ' requested (y != None) while a mask has'
+                      ' been provided at masker creation. Given mask'
+                      ' will be used.')
         return self.fit(**fit_params).transform(X, confounds=confounds,
                                                 sample_mask=sample_mask
                                                 )
