@@ -800,45 +800,7 @@ def test__extrapolate_out_mask():
             ],
         ]
     )
-    target_mask = np.array(
-        [
-            [
-                [False, False, False, False, False],
-                [False, False, False, False, False],
-                [False, False, True, False, False],
-                [False, False, False, False, False],
-                [False, False, False, False, False],
-            ],
-            [
-                [False, False, False, False, False],
-                [False, False, True, False, False],
-                [False, True, True, True, False],
-                [False, False, True, False, False],
-                [False, False, False, False, False],
-            ],
-            [
-                [False, False, True, False, False],
-                [False, True, True, True, False],
-                [True, True, True, True, True],
-                [False, True, True, True, False],
-                [False, False, True, False, False],
-            ],
-            [
-                [False, False, False, False, False],
-                [False, False, True, False, False],
-                [False, True, True, True, False],
-                [False, False, True, False, False],
-                [False, False, False, False, False],
-            ],
-            [
-                [False, False, False, False, False],
-                [False, False, False, False, False],
-                [False, False, True, False, False],
-                [False, False, False, False, False],
-                [False, False, False, False, False],
-            ],
-        ]
-    )
+    target_mask = np.not_equal(target_data, 0)
 
     # Test:
     extrapolated_data, extrapolated_mask = _extrapolate_out_mask(
