@@ -704,6 +704,144 @@ def permuted_ols(
     )
 
 
+def _run_permutations(
+    tested_vars,
+    target_vars,
+    confounding_vars,
+    n_perm,
+    random_state,
+    two_sided_test,
+    n_jobs,
+    verbose,
+    masker,
+    tfce,
+    threshold,
+    output_type,
+    n_descriptors,
+    intercept_test,
+    scores_original_data,
+    tfce_original_data,
+):
+    """Run permutations and compute p-values.
+
+    If permutation test was requested, this function will run
+    the n_perm permutations and compute the p-values of
+    the voxel-wise scores_original_data
+    and the p-values of the cluster-wise tfce_original_data
+    and return the proper output_type.
+
+    See permuted_ols for a description of the parameters.
+    """
+    if n_perm > n_jobs:
+        n_perm_chunks = np.asarray([n_perm / n_jobs] * n_jobs, dtype=int)
+        n_perm_chunks[-1] += n_perm % n_jobs
+    elif n_perm > 0:
+        warnings.warn(
+            f"The specified number of permutations is {n_perm} and the number "
+            f"of jobs to be performed in parallel was set to {n_jobs}. "
+            f"This is incompatible, so only {n_perm} jobs will be running. "
+            "You may want to perform more permutations in order to take the "
+            "most of the available computing resources."
+        )
+        n_perm_chunks = np.ones(n_perm, dtype=int)
+
+    threshold_t = _determine_t_statistic_threshold(
+        threshold, tested_vars, confounding_vars, two_sided_test
+    )
+
+    # initialize the seed of the random generator
+    rng = check_random_state(random_state)
+
+    # actual permutations
+    # seeded from a random integer
+    # between 0 and maximum value represented by np.int32
+    # (to have a large entropy).
+    ret = joblib.Parallel(n_jobs=n_jobs, verbose=verbose)(
+        joblib.delayed(_permuted_ols_on_chunk)(
+            scores_original_data,
+            tested_vars,
+            target_vars.T,
+            thread_id=thread_id + 1,
+            threshold=threshold_t,
+            confounding_vars=confounding_vars,
+            masker=masker,
+            n_perm=n_perm,
+            n_perm_chunk=n_perm_chunk,
+            intercept_test=intercept_test,
+            two_sided_test=two_sided_test,
+            tfce=tfce,
+            tfce_original_data=tfce_original_data,
+            random_state=rng.randint(1, np.iinfo(np.int32).max - 1),
+            verbose=verbose,
+        )
+        for thread_id, n_perm_chunk in enumerate(n_perm_chunks)
+    )
+
+    # reduce results
+    (
+        vfwe_scores_as_ranks_parts,
+        h0_vfwe_parts,
+        csfwe_h0_parts,
+        cmfwe_h0_parts,
+        tfce_scores_as_ranks_parts,
+        h0_tfce_parts,
+    ) = zip(*ret)
+
+    n_regressors = tested_vars.shape[1]
+
+    # Voxel-level FWE
+    vfwe_h0 = np.hstack(h0_vfwe_parts)
+    vfwe_scores_as_ranks = np.zeros((n_regressors, n_descriptors))
+    for scores_as_ranks_part in vfwe_scores_as_ranks_parts:
+        vfwe_scores_as_ranks += scores_as_ranks_part
+
+    vfwe_pvals = (n_perm + 1 - vfwe_scores_as_ranks) / float(1 + n_perm)
+
+    if output_type == "legacy":
+        return (-np.log10(vfwe_pvals), scores_original_data.T, vfwe_h0)
+
+    outputs = {
+        "t": scores_original_data.T,
+        "logp_max_t": -np.log10(vfwe_pvals),
+        "h0_max_t": vfwe_h0,
+    }
+
+    if tfce:
+        # We can use the same approach for TFCE that we use for vFWE
+        h0_tfcemax = np.hstack(h0_tfce_parts)
+        tfce_scores_as_ranks = np.zeros((n_regressors, n_descriptors))
+        for tfce_scores_as_ranks_part in tfce_scores_as_ranks_parts:
+            tfce_scores_as_ranks += tfce_scores_as_ranks_part
+
+        tfce_pvals = (n_perm + 1 - tfce_scores_as_ranks) / float(1 + n_perm)
+        neg_log10_tfce_pvals = -np.log10(tfce_pvals)
+
+        outputs["tfce"] = tfce_original_data.T
+        outputs["logp_max_tfce"] = neg_log10_tfce_pvals
+        outputs["h0_max_tfce"] = h0_tfcemax
+
+    if threshold is not None:
+        cluster_stats = _compute_cluster_level_statistics(
+            csfwe_h0_parts,
+            cmfwe_h0_parts,
+            vfwe_pvals,
+            masker,
+            scores_original_data,
+            n_regressors,
+            threshold_t,
+            two_sided_test,
+        )
+
+        outputs["size"] = cluster_stats["size"]
+        outputs["logp_max_size"] = -np.log10(cluster_stats["size_pvals"])
+        outputs["h0_max_size"] = cluster_stats["size_h0"]
+        outputs["mass"] = cluster_stats["mass"]
+        outputs["logp_max_mass"] = -np.log10(cluster_stats["mass_pvals"])
+        outputs["h0_max_mass"] = cluster_stats["mass_h0"]
+
+    return outputs
+
+
 def _check_args_permuted_ols(
     target_vars,
     tested_vars,
@@ -885,7 +1023,13 @@ def _check_vars_dimensions(
 
 
 def _check_for_intercept_in_tested_var(tested_vars):
-    """Check if explanatory variates contain an intercept (constant) or not."""
+    """Check if explanatory variates contain an intercept (constant) or not.
+
+    Parameters
+    ----------
+    tested_vars : array-like, shape=(n_samples, n_regressors)
+        Explanatory variates, fitted and tested independently from each others.
+    """
     n_regressors = tested_vars.shape[1]
     return n_regressors == np.unique(tested_vars).size == 1
 
@@ -1013,6 +1157,15 @@ def _prepare_target_vars(target_vars, confounding_vars):
 
     Normalize target variables and remove effect of confounding variables
     if there are any.
+
+    Parameters
+    ----------
+    target_vars : array-like, shape=(n_samples, n_descriptors)
+        fMRI data to analyze according to the explanatory and confounding
+        variates.
+
+    confounding_vars : array-like, shape=(n_samples, n_covars), optional
+        Confounding variates (covariates), fitted but not tested.
     """
     target_vars_normalized = _normalize_matrix_on_axis(target_vars).T
     target_vars_normalized = _make_array_contiguous(
@@ -1045,6 +1198,14 @@ def _prepare_tested_vars(tested_vars, confounding_vars):
 
     Normalize tested variables and remove effect of confounding variables
     if there are any.
+
+    Parameters
+    ----------
+    tested_vars : array-like, shape=(n_samples, n_regressors)
+        Explanatory variates, fitted and tested independently from each others.
+
+    confounding_vars : array-like, shape=(n_samples, n_covars), optional
+        Confounding variates (covariates), fitted but not tested.
     """
     tested_vars_resid_covars = _normalize_matrix_on_axis(tested_vars).copy()
 
@@ -1068,6 +1229,29 @@ def _prepare_tested_vars(tested_vars, confounding_vars):
 def _get_tfce_original_data(
     tfce, masker, scores_original_data, two_sided_test
 ):
+    """Calculate threshold-free cluster enhancement values.
+
+    This value will be returned as is by permuted_ols
+    if there is no permutation test.
+    Otherwise it will be used as reference after permutations to compute
+    the p-values.
+
+    Parameters
+    ----------
+    tfce : :obj:`bool`
+        Whether to calculate :term:`TFCE` \
+        as part of the permutation procedure or not.
+
+    masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
+            :class:`~nilearn.maskers.MultiNiftiMasker`
+        A mask to be used on the data.
+
+    scores_original_data : array-like, shape=(n_descriptors, n_regressors)
+        t-scores obtained for the original (non-permuted) data.
+
+    two_sided_test : :obj:`bool`, optional
+        If True, performs an unsigned t-test.
+    """
     if not tfce:
         return None
 
@@ -1087,134 +1271,6 @@ def _get_tfce_original_data(
     ).T
 
     return tfce_original_data
-
-
-def _run_permutations(
-    tested_vars,
-    target_vars,
-    confounding_vars,
-    n_perm,
-    random_state,
-    two_sided_test,
-    n_jobs,
-    verbose,
-    masker,
-    tfce,
-    threshold,
-    output_type,
-    n_descriptors,
-    intercept_test,
-    scores_original_data,
-    tfce_original_data,
-):
-    if n_perm > n_jobs:
-        n_perm_chunks = np.asarray([n_perm / n_jobs] * n_jobs, dtype=int)
-        n_perm_chunks[-1] += n_perm % n_jobs
-    elif n_perm > 0:
-        warnings.warn(
-            f"The specified number of permutations is {n_perm} and the number "
-            f"of jobs to be performed in parallel was set to {n_jobs}. "
-            f"This is incompatible, so only {n_perm} jobs will be running. "
-            "You may want to perform more permutations in order to take the "
-            "most of the available computing resources."
-        )
-        n_perm_chunks = np.ones(n_perm, dtype=int)
-
-    threshold_t = _determine_t_statistic_threshold(
-        threshold, tested_vars, confounding_vars, two_sided_test
-    )
-
-    # initialize the seed of the random generator
-    rng = check_random_state(random_state)
-
-    # actual permutations
-    # seeded from a random integer
-    # between 0 and maximum value represented by np.int32
-    # (to have a large entropy).
-    ret = joblib.Parallel(n_jobs=n_jobs, verbose=verbose)(
-        joblib.delayed(_permuted_ols_on_chunk)(
-            scores_original_data,
-            tested_vars,
-            target_vars.T,
-            thread_id=thread_id + 1,
-            threshold=threshold_t,
-            confounding_vars=confounding_vars,
-            masker=masker,
-            n_perm=n_perm,
-            n_perm_chunk=n_perm_chunk,
-            intercept_test=intercept_test,
-            two_sided_test=two_sided_test,
-            tfce=tfce,
-            tfce_original_data=tfce_original_data,
-            random_state=rng.randint(1, np.iinfo(np.int32).max - 1),
-            verbose=verbose,
-        )
-        for thread_id, n_perm_chunk in enumerate(n_perm_chunks)
-    )
-
-    # reduce results
-    (
-        vfwe_scores_as_ranks_parts,
-        h0_vfwe_parts,
-        csfwe_h0_parts,
-        cmfwe_h0_parts,
-        tfce_scores_as_ranks_parts,
-        h0_tfce_parts,
-    ) = zip(*ret)
-
-    n_regressors = tested_vars.shape[1]
-
-    # Voxel-level FWE
-    vfwe_h0 = np.hstack(h0_vfwe_parts)
-    vfwe_scores_as_ranks = np.zeros((n_regressors, n_descriptors))
-    for scores_as_ranks_part in vfwe_scores_as_ranks_parts:
-        vfwe_scores_as_ranks += scores_as_ranks_part
-
-    vfwe_pvals = (n_perm + 1 - vfwe_scores_as_ranks) / float(1 + n_perm)
-
-    if output_type == "legacy":
-        return (-np.log10(vfwe_pvals), scores_original_data.T, vfwe_h0)
-
-    outputs = {
-        "t": scores_original_data.T,
-        "logp_max_t": -np.log10(vfwe_pvals),
-        "h0_max_t": vfwe_h0,
-    }
-
-    if tfce:
-        # We can use the same approach for TFCE that we use for vFWE
-        h0_tfcemax = np.hstack(h0_tfce_parts)
-        tfce_scores_as_ranks = np.zeros((n_regressors, n_descriptors))
-        for tfce_scores_as_ranks_part in tfce_scores_as_ranks_parts:
-            tfce_scores_as_ranks += tfce_scores_as_ranks_part
-
-        tfce_pvals = (n_perm + 1 - tfce_scores_as_ranks) / float(1 + n_perm)
-        neg_log10_tfce_pvals = -np.log10(tfce_pvals)
-
-        outputs["tfce"] = tfce_original_data.T
-        outputs["logp_max_tfce"] = neg_log10_tfce_pvals
-        outputs["h0_max_tfce"] = h0_tfcemax
-
-    if threshold is not None:
-        cluster_stats = _compute_cluster_level_statistics(
-            csfwe_h0_parts,
-            cmfwe_h0_parts,
-            vfwe_pvals,
-            masker,
-            scores_original_data,
-            n_regressors,
-            threshold_t,
-            two_sided_test,
-        )
-
-        outputs["size"] = cluster_stats["size"]
-        outputs["logp_max_size"] = -np.log10(cluster_stats["size_pvals"])
-        outputs["h0_max_size"] = cluster_stats["size_h0"]
-        outputs["mass"] = cluster_stats["mass"]
-        outputs["logp_max_mass"] = -np.log10(cluster_stats["mass_pvals"])
-        outputs["h0_max_mass"] = cluster_stats["mass_h0"]
-
-    return outputs
 
 
 def _determine_t_statistic_threshold(
@@ -1337,7 +1393,10 @@ def _compute_cluster_level_statistics(
 
 
 def _label_clusters(scores_original_data_3d, threshold_t, two_sided_test):
-    """Label clusters for both cluster mass and size inference."""
+    """Give a label to each voxel depending on the cluster it belongs to.
+
+    This is a preparatory step to estimate cluster mass and size.
+    """
     labeled_arr3d, _ = label(
         input=scores_original_data_3d > threshold_t,
         structure=_binary_structure(),
