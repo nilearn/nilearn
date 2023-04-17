@@ -294,7 +294,9 @@ def test_resampling_error_checks():
         resample_img(filename, target_shape=target_shape, target_affine=affine)
 
     # Missing parameter
-    with pytest.raises(ValueError, match="target_affine should be specified"):
+    with pytest.raises(
+        ValueError, match="'target_affine' should be specified"
+    ):
         resample_img(img, target_shape=target_shape)
 
     # Invalid shape

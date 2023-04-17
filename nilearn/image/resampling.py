@@ -484,61 +484,18 @@ def resample_img(
         return img
 
     # We now know that some resampling must be done.
-    # The value of "copy" is of no importance: output is always a separate
-    # array.
+    # The value of "copy" is of no importance:
+    # output is always a separate array.
     data = _get_data(img)
 
-    # Get a bounding box for the transformed data
-    # Embed target_affine in 4x4 shape if necessary
-    if target_affine.shape == (3, 3):
-        missing_offset = True
-        target_affine_tmp = np.eye(4)
-        target_affine_tmp[:3, :3] = target_affine
-        target_affine = target_affine_tmp
-    else:
-        missing_offset = False
-        target_affine = target_affine.copy()
-    transform_affine = np.linalg.inv(target_affine).dot(affine)
-    (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(
-        data.shape[:3], transform_affine
+    target_affine, target_shape = _get_bounding_box(
+        target_affine, target_shape, affine, data
     )
 
-    # if target_affine is (3, 3), then calculate
-    # offset from bounding box and update bounding box
-    # to be in the voxel coordinates of the calculated 4x4 affine
-    if missing_offset:
-        offset = target_affine[:3, :3].dot([xmin, ymin, zmin])
-        target_affine[:3, 3] = offset
-        (xmin, xmax), (ymin, ymax), (zmin, zmax) = (
-            (0, xmax - xmin),
-            (0, ymax - ymin),
-            (0, zmax - zmin),
-        )
-
-    # if target_shape is not given (always the case with 3x3
-    # transformation matrix and sometimes the case with 4x4
-    # transformation matrix), then set it to contain the bounding
-    # box by a margin of 1 voxel
-    if target_shape is None:
-        target_shape = (
-            int(np.ceil(xmax)) + 1,
-            int(np.ceil(ymax)) + 1,
-            int(np.ceil(zmax)) + 1,
-        )
-
-    # Check whether transformed data is actually within the FOV
-    # of the target affine
-    if xmax < 0 or ymax < 0 or zmax < 0:
-        raise BoundingBoxError(
-            "The field of view given by the target affine does not "
-            "contain any of the data."
-        )
-
+    transform_affine = np.dot(linalg.inv(affine), target_affine)
     if np.all(target_affine == affine):
         # Small trick to be more numerically stable
         transform_affine = np.eye(4)
-    else:
-        transform_affine = np.dot(linalg.inv(affine), target_affine)
     A, b = to_matrix_vector(transform_affine)
 
     data_shape = list(data.shape)
@@ -564,8 +521,8 @@ def resample_img(
         resampled_data_dtype = data.dtype
 
     # Since the release of 0.17, resampling nifti images have some issues
-    # when affine is passed as 1D array and if data is of non-native
-    # endianness.
+    # when affine is passed as 1D array
+    # and if data is of non-native endianness.
     # See issue https://github.com/nilearn/nilearn/issues/1445.
     # If affine is passed as 1D, scipy uses _nd_image.zoom_shift rather
     # than _geometric_transform (2D) where _geometric_transform is able
@@ -584,8 +541,6 @@ def resample_img(
         dtype=resampled_data_dtype,
     )
 
-    all_img = (slice(None),) * 3
-
     # if (A == I OR some combination of permutation(I) and sign-flipped(I)) AND
     # all(b == integers):
     if (
@@ -603,8 +558,8 @@ def resample_img(
         # TODO: flip axes that are flipped
         # TODO: un-shuffle permuted dimensions
 
-        # offset the original un-cropped image indices by the relative
-        # translation, b.
+        # offset the original un-cropped image indices
+        # by the relative translation, b.
         indices = [
             (int(off.start - dim_b), int(off.stop - dim_b))
             for off, dim_b in zip(offsets[:3], b[:3])
@@ -621,18 +576,22 @@ def resample_img(
         # ensure the source image being placed isn't larger than the dest
         subset_indices = tuple(slice(0, s.stop - s.start) for s in slices)
         resampled_data[slices] = _get_data(cropped_img)[subset_indices]
+
     else:
-        # If A is diagonal, ndimage.affine_transform is clever enough to use a
-        # better algorithm.
+        all_img = (slice(None),) * 3
+
+        # If A is diagonal, ndimage.affine_transform is clever enough
+        # to use a better algorithm.
         if np.all(np.diag(np.diag(A)) == A):
             if _compare_version(scipy.__version__, "<", "0.18"):
-                # Before scipy 0.18, ndimage.affine_transform was applying a
-                # different logic to the offset for diagonal affine
+                # Before scipy 0.18, ndimage.affine_transform was applying
+                # a different logic to the offset for diagonal affine
                 b = np.dot(linalg.inv(A), b)
             A = np.diag(A)
-        # Iterate over a set of 3D volumes, as the interpolation problem is
-        # separable in the extra dimensions. This reduces the
-        # computational cost
+
+        # Iterate over a set of 3D volumes, as the interpolation problem
+        # is separable in the extra dimensions.
+        # This reduces the computational cost
         for ind in np.ndindex(*other_shape):
             _resample_one_img(
                 data[all_img + ind],
@@ -650,13 +609,72 @@ def resample_img(
     return new_img_like(img, resampled_data, target_affine)
 
 
+def _get_bounding_box(target_affine, target_shape, affine, data):
+    """Get a bounding box for the transformed data.
+
+    If necessary:
+        - embed target_affine in 4x4 shape
+        - calculate offset from bounding box
+        - compute target_shape
+    """
+    if target_affine.shape == (3, 3):
+        # Embed target_affine in 4x4 shape
+        missing_offset = True
+        target_affine_tmp = np.eye(4)
+        target_affine_tmp[:3, :3] = target_affine
+        target_affine = target_affine_tmp
+    else:
+        missing_offset = False
+        target_affine = target_affine.copy()
+
+    transform_affine = np.linalg.inv(target_affine).dot(affine)
+    (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(
+        data.shape[:3], transform_affine
+    )
+
+    # if target_affine is (3, 3),
+    # then calculate offset from bounding box and update bounding box
+    # to be in the voxel coordinates of the calculated 4x4 affine
+    if missing_offset:
+        offset = target_affine[:3, :3].dot([xmin, ymin, zmin])
+        target_affine[:3, 3] = offset
+        (xmin, xmax), (ymin, ymax), (zmin, zmax) = (
+            (0, xmax - xmin),
+            (0, ymax - ymin),
+            (0, zmax - zmin),
+        )
+
+    # Check whether transformed data is actually within the FOV
+    # of the target affine
+    if xmax < 0 or ymax < 0 or zmax < 0:
+        raise BoundingBoxError(
+            "The field of view given by the target affine does not "
+            "contain any of the data."
+        )
+
+    # if target_shape is not given
+    # (always the case with 3x3 transformation matrix
+    # and sometimes the case with 4x4 transformation matrix),
+    # then set it to contain the bounding box by a margin of 1 voxel
+    if target_shape is None:
+        target_shape = (
+            int(np.ceil(xmax)) + 1,
+            int(np.ceil(ymax)) + 1,
+            int(np.ceil(zmax)) + 1,
+        )
+
+    return target_affine, target_shape
+
+
 def _clip_img(data, resampled_data, clip):
+    """Force resampled data to have a range contained in the original data \
+    preventing ringing artefact.
+
+    We need to add zero as a value considered for clipping,
+    as it appears in padding images.
+    """
     if not clip:
         return resampled_data
-    # force resampled data to have a range contained in the original data
-    # preventing ringing artefact
-    # We need to add zero as a value considered for clipping, as it
-    # appears in padding images.
     vmin = min(data.min(), 0)
     vmax = max(data.max(), 0)
     resampled_data.clip(vmin, vmax, out=resampled_data)
@@ -673,19 +691,35 @@ def _interpolation_order(interpolation):
 
 
 def _check_param_resample_img(target_shape, target_affine, interpolation):
-    # Do as many checks as possible before loading data, to avoid potentially
-    # costly calls before raising an exception.
+    """Do as many checks as possible before loading data, \
+    to avoid potentially costly calls before raising an exception.
+
+    Parameters
+    ----------
+    target_affine : numpy.ndarray
+        If specified, the image is resampled corresponding to this new affine.
+        target_affine can be a 3x3 or a 4x4 matrix.
+
+    target_shape : tuple or list
+        If specified, the image will be resized to match this new shape.
+        len(target_shape) must be equal to 3.
+        If target_shape is specified, a target_affine of shape (4, 4)
+        must also be given.
+
+    interpolation : str,
+        Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
+        method.
+    """
     if target_shape is not None and target_affine is None:
         raise ValueError(
-            "If target_shape is specified, target_affine should"
-            " be specified too."
+            "If target_shape is specified, "
+            "'target_affine' should be specified too."
         )
 
     if target_shape is not None and len(target_shape) != 3:
         raise ValueError(
-            "The shape specified should be the shape of "
-            "the 3D grid, and thus of length 3. %s was specified"
-            % str(target_shape)
+            "The shape specified should be the shape of the 3D grid, "
+            f"and thus of length 3. {target_shape} was specified"
         )
 
     if target_shape is not None and target_affine.shape == (3, 3):
@@ -697,7 +731,7 @@ def _check_param_resample_img(target_shape, target_affine, interpolation):
     if interpolation not in ALLOWED_INTERPOLATIONS:
         message = (
             f"interpolation must be one of: {ALLOWED_INTERPOLATIONS} "
-            f"but it was set to '{interpolation}'"
+            f"but it was set to '{interpolation}'."
         )
         raise ValueError(message)
 
