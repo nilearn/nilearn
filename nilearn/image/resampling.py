@@ -442,37 +442,26 @@ def resample_img(
     """
     from .image import new_img_like  # avoid circular imports
 
-    _check_param_resample_img(target_shape, target_affine, interpolation)
+    img, input_img_is_string = _check_param_resample_img(
+        img, target_shape, target_affine, interpolation
+    )
 
-    img = stringify_path(img)
-    input_img_is_string = isinstance(img, str)
-
-    img = _utils.check_niimg(img)
     shape = img.shape
     affine = img.affine
-
-    # If later on we want to impute sform using qform add this condition
-    # see : https://github.com/nilearn/nilearn/issues/3168#issuecomment-1159447771 # noqa:E501
-    if hasattr(img, "get_sform"):  # NIfTI images only
-        _, sform_code = img.get_sform(coded=True)
-        if not sform_code:
-            warnings.warn(
-                "The provided image has no sform in its header. "
-                "Please check the provided file. "
-                "Results may not be as expected."
-            )
 
     # noop cases
     if target_affine is None and target_shape is None:
         if copy and not input_img_is_string:
             img = _utils.copy_img(img)
         return img
+
     if (
         np.shape(target_affine) == np.shape(affine)
         and np.allclose(target_affine, affine)
         and np.array_equal(target_shape, shape)
     ):
         return img
+
     if target_affine is not None:
         target_affine = np.asarray(target_affine)
 
@@ -509,29 +498,7 @@ def resample_img(
         # that caused instability.
         data = data.astype(data.dtype.newbyteorder("N"))
 
-    if interpolation == "continuous" and data.dtype.kind == "i":
-        # cast unsupported data types to closest support dtype
-        aux = data.dtype.name.replace("int", "float")
-        aux = aux.replace("ufloat", "float").replace("floatc", "float")
-        if aux in ["float8", "float16"]:
-            aux = "float32"
-        warnings.warn(f"Casting data from {data.dtype.name} to {aux}")
-        resampled_data_dtype = np.dtype(aux)
-    else:
-        resampled_data_dtype = data.dtype
-
-    # Since the release of 0.17, resampling nifti images have some issues
-    # when affine is passed as 1D array
-    # and if data is of non-native endianness.
-    # See issue https://github.com/nilearn/nilearn/issues/1445.
-    # If affine is passed as 1D, scipy uses _nd_image.zoom_shift rather
-    # than _geometric_transform (2D) where _geometric_transform is able
-    # to swap byte order in scipy later than 0.15 for nonnative endianness.
-
-    # We convert to 'native' order to not have any issues either with
-    # 'little' or 'big' endian data dtypes (non-native endians).
-    if len(A.shape) == 1 and not resampled_data_dtype.isnative:
-        resampled_data_dtype = resampled_data_dtype.newbyteorder("N")
+    resampled_data_dtype = _get_resampled_datatype(interpolation, data, A)
 
     # Code is generic enough to work for both 3D and 4D images
     other_shape = data_shape[3:]
@@ -607,6 +574,34 @@ def resample_img(
     resampled_data = _clip_img(data, resampled_data, clip)
 
     return new_img_like(img, resampled_data, target_affine)
+
+
+def _get_resampled_datatype(interpolation, data, A):
+    if interpolation == "continuous" and data.dtype.kind == "i":
+        # cast unsupported data types to closest support dtype
+        aux = data.dtype.name.replace("int", "float")
+        aux = aux.replace("ufloat", "float").replace("floatc", "float")
+        if aux in ["float8", "float16"]:
+            aux = "float32"
+        warnings.warn(f"Casting data from {data.dtype.name} to {aux}")
+        resampled_data_dtype = np.dtype(aux)
+    else:
+        resampled_data_dtype = data.dtype
+
+    # Since the release of 0.17, resampling nifti images have some issues
+    # when affine is passed as 1D array
+    # and if data is of non-native endianness.
+    # See issue https://github.com/nilearn/nilearn/issues/1445.
+    # If affine is passed as 1D, scipy uses _nd_image.zoom_shift rather
+    # than _geometric_transform (2D) where _geometric_transform is able
+    # to swap byte order in scipy later than 0.15 for nonnative endianness.
+
+    # We convert to 'native' order to not have any issues either with
+    # 'little' or 'big' endian data dtypes (non-native endians).
+    if len(A.shape) == 1 and not resampled_data_dtype.isnative:
+        resampled_data_dtype = resampled_data_dtype.newbyteorder("N")
+
+    return resampled_data_dtype
 
 
 def _get_bounding_box(target_affine, target_shape, affine, data):
@@ -690,12 +685,16 @@ def _interpolation_order(interpolation):
         return 0
 
 
-def _check_param_resample_img(target_shape, target_affine, interpolation):
+def _check_param_resample_img(img, target_shape, target_affine, interpolation):
     """Do as many checks as possible before loading data, \
     to avoid potentially costly calls before raising an exception.
 
     Parameters
     ----------
+    img : Niimg-like object
+        See :ref:`extracting_data`.
+        Image(s) to resample.
+
     target_affine : numpy.ndarray
         If specified, the image is resampled corresponding to this new affine.
         target_affine can be a 3x3 or a 4x4 matrix.
@@ -734,6 +733,24 @@ def _check_param_resample_img(target_shape, target_affine, interpolation):
             f"but it was set to '{interpolation}'."
         )
         raise ValueError(message)
+
+    img = stringify_path(img)
+    input_img_is_string = isinstance(img, str)
+
+    img = _utils.check_niimg(img)
+
+    # If later on we want to impute sform using qform add this condition
+    # see : https://github.com/nilearn/nilearn/issues/3168#issuecomment-1159447771 # noqa:E501
+    if hasattr(img, "get_sform"):  # NIfTI images only
+        _, sform_code = img.get_sform(coded=True)
+        if not sform_code:
+            warnings.warn(
+                "The provided image has no sform in its header. "
+                "Please check the provided file. "
+                "Results may not be as expected."
+            )
+
+    return img, input_img_is_string
 
 
 def resample_to_img(
