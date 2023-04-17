@@ -18,7 +18,7 @@ import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
 from nilearn._utils import fill_doc, stringify_path
-from nilearn._utils.glm import (
+from nilearn.glm._utils import (
     _check_events_file_uses_tab_separators,
     _check_run_sample_masks,
     _check_run_tables,
