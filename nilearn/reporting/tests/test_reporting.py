@@ -1,15 +1,14 @@
 import nibabel as nib
 import numpy as np
 import pytest
+from nilearn.image import get_data
 
 # Set backend to avoid DISPLAY problems
 from nilearn.plotting import _set_mpl_backend
-
 from nilearn.reporting import get_clusters_table
-from nilearn.image import get_data
 from nilearn.reporting._get_clusters_table import (
-    _local_max,
     _cluster_nearest_neighbor,
+    _local_max,
 )
 
 # Avoid making pyflakes unhappy

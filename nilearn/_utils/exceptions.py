@@ -1,17 +1,17 @@
 AuthorizedException = (
-        BufferError,
-        ArithmeticError,
-        AssertionError,
-        AttributeError,
-        EnvironmentError,
-        EOFError,
-        LookupError,
-        MemoryError,
-        ReferenceError,
-        RuntimeError,
-        SystemError,
-        TypeError,
-        ValueError
+    BufferError,
+    ArithmeticError,
+    AssertionError,
+    AttributeError,
+    EnvironmentError,
+    EOFError,
+    LookupError,
+    MemoryError,
+    ReferenceError,
+    RuntimeError,
+    SystemError,
+    TypeError,
+    ValueError,
 )
 
 
@@ -31,12 +31,13 @@ class DimensionError(TypeError):
         The dimension the nifti file should have.
 
     """
+
     def __init__(self, file_dimension, required_dimension):
         self.file_dimension = file_dimension
         self.required_dimension = required_dimension
         self.stack_counter = 0
 
-        super(DimensionError, self).__init__()
+        super().__init__()
 
     def increment_stack_counter(self):
         """Increments the counter of recursive calls.
@@ -50,20 +51,21 @@ class DimensionError(TypeError):
 
     @property
     def message(self):
-        return ("Input data has incompatible dimensionality: "
-                "Expected dimension is {0}D and you provided a "
-                "{1}{2}D image{3}{4}. "
-                "See https://nilearn.github.io/stable/manipulating_images/"
-                "input_output.html."
-                .format(self.required_dimension + self.stack_counter,
-                        "list of " * self.stack_counter,
-                        self.file_dimension,
-                        "s" * (self.stack_counter != 0),
-                        (" (%iD)" %
-                            (self.file_dimension + self.stack_counter)) *
-                        (self.stack_counter > 0)
-                        )
-                )
+        """Format error message."""
+        return (
+            "Input data has incompatible dimensionality: "
+            "Expected dimension is {}D and you provided a "
+            "{}{}D image{}{}. "
+            "See https://nilearn.github.io/stable/manipulating_images/"
+            "input_output.html.".format(
+                self.required_dimension + self.stack_counter,
+                "list of " * self.stack_counter,
+                self.file_dimension,
+                "s" * (self.stack_counter != 0),
+                (" (%iD)" % (self.file_dimension + self.stack_counter))
+                * (self.stack_counter > 0),
+            )
+        )
 
     def __str__(self):
         return self.message

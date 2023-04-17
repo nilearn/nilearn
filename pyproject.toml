@@ -84,7 +84,6 @@ min = [
 ]
 # For running unit and docstring tests
 test = [
-	"codecov",
 	"coverage",
 	"pytest>=6.0.0",
 	"pytest-cov",
@@ -109,11 +108,13 @@ include = """
   | maint_tools/.*py
   | nilearn/connectome/.*py
   | nilearn/dec.*
+  | nilearn/_utils/.*py$
   | nilearn/glm/.*py
   | nilearn/image/.*py
   | nilearn/input_data/.*py
   | nilearn/mass_univariate/.*py
   | nilearn/regions/.*py
+  | nilearn/reporting/.*py
   | nilearn/signal.py
   | nilearn/masking.py
   | nilearn/conftest.py
@@ -123,6 +124,11 @@ include = """
 extend-exclude =  """
 (
   nilearn/externals
+  | nilearn/_utils/__init__.py
+  | nilearn/_utils/data_gen.py
+  | nilearn/_utils/docs.py
+  | nilearn/_utils/helpers.py
+  | nilearn/_utils/tests/test_data_gen.py
   | examples/.*/.*3d_map_to_surface_projection.py
   | examples/.*/.*demo_glass_brain.py
   | examples/.*/.*demo_glass_brain_extensive.py
@@ -140,6 +146,9 @@ extend-exclude =  """
   | examples/.*/.*surf_stat_map.py
   | examples/.*/.*surface_bids_analysis.py
   | examples/.*/.*surface_projection_strategies.py
+  | nilearn/reporting/data/html/report_body_template_niftispheresmasker.html
+  | nilearn/reporting/html_report.py
+  | nilearn/reporting/tests/test_html_report.py
   | nilearn/glm/contrasts.py
   | nilearn/glm/first_level/first_level.py
   | nilearn/glm/tests/test_contrasts.py
@@ -157,6 +166,7 @@ src_paths = [
   'nilearn/image/.*py',
   'nilearn/mass_univariate/.*py',
   'nilearn/regions/.*py',
+  'nilearn/reporting/.*py'
 ]
 line_length = 79
 skip_gitignore = true
