@@ -171,12 +171,6 @@ def make_glm_report(
         Contains the HTML code for the GLM Report.
 
     """
-    """
-    Bug in Pandas 0.18 : https://github.com/pandas-dev/pandas/issues/13257
-    pd.set_option('display.precision', 2)
-    limits number of digits shown instead of precision.
-    Hence pd.option_context('display.precision', 2) has been used.
-    """
     if bg_img == "MNI152TEMPLATE":
         bg_img = MNI152TEMPLATE
     if not display_mode:
@@ -968,7 +962,7 @@ def _stat_map_to_svg(
             "Invalid plot type provided. Acceptable options are"
             "'slice' or 'glass'."
         )
-    with pd.option_context("display.precision", 2):
+    with pd.set_option("display.precision", 2):
         _add_params_to_plot(table_details, stat_map_plot)
     fig = plt.gcf()
     stat_map_svg = _plot_to_svg(fig)
@@ -1038,7 +1032,7 @@ def _dataframe_to_html(df, precision, **kwargs):
         Code for HTML table.
 
     """
-    with pd.option_context("display.precision", precision):
+    with pd.set_option("display.precision", precision):
         html_table = df.to_html(**kwargs)
     html_table = html_table.replace('border="1" ', "")
     return html_table
