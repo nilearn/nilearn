@@ -18,13 +18,13 @@ import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
 from nilearn._utils import fill_doc, stringify_path
+from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import _check_run_sample_masks
+from nilearn.glm._base import BaseGLM
 from nilearn.glm._utils import (
     _check_events_file_uses_tab_separators,
     _check_run_tables,
 )
-from nilearn._utils.niimg_conversions import check_niimg
-from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     _compute_fixed_effect_contrast,
     expression_to_contrast_vector,
