@@ -2,6 +2,8 @@ import functools
 import os
 import warnings
 
+import numpy as np
+
 
 def rename_parameters(replacement_params,
                       end_version='future',
@@ -165,3 +167,4 @@ def stringify_path(path):
 
     """
     return path.__fspath__() if isinstance(path, os.PathLike) else path
+
