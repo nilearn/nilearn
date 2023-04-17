@@ -21,6 +21,7 @@ files: |
         | maint_tools/.*
         | setup.*
         | nilearn/__init__.py
+        | nilearn/datasets/.*
         | nilearn/_utils/.*
         | nilearn/de.*
         | nilearn/connectome/.*py
