@@ -1,6 +1,16 @@
+import nilearn
+from pathlib import Path
 import sys
 import warnings
 import pytest
+
+
+def test_version_number():
+    version_file = Path(__file__).parent.parent / "_version.py"
+    if version_file.exists():
+        assert nilearn.__version__ == nilearn._version.__version__
+    else:
+        assert nilearn.__version__ == "0+unknown"
 
 
 with warnings.catch_warnings(record=True):
