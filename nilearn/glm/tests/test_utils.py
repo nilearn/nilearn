@@ -97,10 +97,7 @@ def test_z_score():
         cdf = sps.t.cdf(t, 1e10)
         z_sf = norm.isf(p)
         z_cdf = norm.ppf(cdf)
-        if p <= 0.5:
-            z = z_sf
-        else:
-            z = z_cdf
+        z = z_sf if p <= 0.5 else z_cdf
         assert_array_almost_equal(z_score(p, one_minus_pvalue=cdf), z)
 
 
