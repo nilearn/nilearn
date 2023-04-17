@@ -97,9 +97,9 @@ def _filter_and_mask(
     if not _utils.niimg_conversions._check_same_fov(imgs, mask_img_):
         warnings.warn(
             'imgs are being resampled to the mask_img resolution. '
-            'This process is memory intensive when using a '
-            'high resolution mask. You might want to provide '
-            'a target_affine or resample the mask beforehand '
+            'This process is memory intensive. You might want to provide '
+            'a target_affine that is equal to the affine of the imgs '
+            'or resample the mask beforehand '
             'to save memory and computation time.',
             UserWarning
         )
