@@ -10,14 +10,15 @@ import warnings
 
 import numpy as np
 import scipy
+from nilearn import _utils
+from nilearn._utils import stringify_path
+from nilearn._utils.niimg import _get_data
+from nilearn.image import crop_img
 from nilearn.version import _compare_version
 from scipy import linalg
 from scipy.ndimage import affine_transform, find_objects
 
-from .. import _utils
-from .._utils import stringify_path
-from .._utils.niimg import _get_data
-from .image import crop_img
+ALLOWED_INTERPOLATIONS = ("continuous", "linear", "nearest")
 
 ###############################################################################
 # Affine utils
@@ -441,46 +442,10 @@ def resample_img(
     """
     from .image import new_img_like  # avoid circular imports
 
-    # Do as many checks as possible before loading data, to avoid potentially
-    # costly calls before raising an exception.
-    if target_shape is not None and target_affine is None:
-        raise ValueError(
-            "If target_shape is specified, target_affine should"
-            " be specified too."
-        )
+    _check_param_resample_img(target_shape, target_affine, interpolation)
 
-    if target_shape is not None and not len(target_shape) == 3:
-        raise ValueError(
-            "The shape specified should be the shape of "
-            "the 3D grid, and thus of length 3. "
-            f"{target_shape} was specified."
-        )
-
-    if target_shape is not None and target_affine.shape == (3, 3):
-        raise ValueError(
-            "Given target shape without anchor vector: "
-            "Affine shape should be (4, 4) and not (3, 3)"
-        )
-
-    allowed_interpolations = ("continuous", "linear", "nearest")
-    if interpolation not in allowed_interpolations:
-        raise ValueError(
-            f"interpolation must be one of {allowed_interpolations}.\n"
-            f" Got '{interpolation}' instead."
-        )
-
-    if interpolation == "continuous":
-        interpolation_order = 3
-    elif interpolation == "linear":
-        interpolation_order = 1
-    elif interpolation == "nearest":
-        interpolation_order = 0
-
-    input_img_is_string = False
     img = stringify_path(img)
-    if isinstance(img, str):
-        # Avoid a useless copy
-        input_img_is_string = True
+    input_img_is_string = isinstance(img, str)
 
     img = _utils.check_niimg(img)
     shape = img.shape
@@ -565,9 +530,8 @@ def resample_img(
     # of the target affine
     if xmax < 0 or ymax < 0 or zmax < 0:
         raise BoundingBoxError(
-            "The field of view given "
-            "by the target affine does "
-            "not contain any of the data"
+            "The field of view given by the target affine does not "
+            "contain any of the data."
         )
 
     if np.all(target_affine == affine):
@@ -675,22 +639,67 @@ def resample_img(
                 A,
                 b,
                 target_shape,
-                interpolation_order,
+                _interpolation_order(interpolation),
                 out=resampled_data[all_img + ind],
                 copy=not input_img_is_string,
                 fill_value=fill_value,
             )
 
-    if clip:
-        # force resampled data to have a range contained in the original data
-        # preventing ringing artefact
-        # We need to add zero as a value considered for clipping, as it
-        # appears in padding images.
-        vmin = min(data.min(), 0)
-        vmax = max(data.max(), 0)
-        resampled_data.clip(vmin, vmax, out=resampled_data)
+    resampled_data = _clip_img(data, resampled_data, clip)
 
     return new_img_like(img, resampled_data, target_affine)
+
+
+def _clip_img(data, resampled_data, clip):
+    if not clip:
+        return resampled_data
+    # force resampled data to have a range contained in the original data
+    # preventing ringing artefact
+    # We need to add zero as a value considered for clipping, as it
+    # appears in padding images.
+    vmin = min(data.min(), 0)
+    vmax = max(data.max(), 0)
+    resampled_data.clip(vmin, vmax, out=resampled_data)
+    return resampled_data
+
+
+def _interpolation_order(interpolation):
+    if interpolation == "continuous":
+        return 3
+    elif interpolation == "linear":
+        return 1
+    elif interpolation == "nearest":
+        return 0
+
+
+def _check_param_resample_img(target_shape, target_affine, interpolation):
+    # Do as many checks as possible before loading data, to avoid potentially
+    # costly calls before raising an exception.
+    if target_shape is not None and target_affine is None:
+        raise ValueError(
+            "If target_shape is specified, target_affine should"
+            " be specified too."
+        )
+
+    if target_shape is not None and len(target_shape) != 3:
+        raise ValueError(
+            "The shape specified should be the shape of "
+            "the 3D grid, and thus of length 3. %s was specified"
+            % str(target_shape)
+        )
+
+    if target_shape is not None and target_affine.shape == (3, 3):
+        raise ValueError(
+            "Given target shape without anchor vector: "
+            "Affine shape should be (4, 4) and not (3, 3)"
+        )
+
+    if interpolation not in ALLOWED_INTERPOLATIONS:
+        message = (
+            f"interpolation must be one of: {ALLOWED_INTERPOLATIONS} "
+            f"but it was set to '{interpolation}'"
+        )
+        raise ValueError(message)
 
 
 def resample_to_img(
