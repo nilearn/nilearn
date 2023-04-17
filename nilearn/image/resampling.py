@@ -498,7 +498,9 @@ def resample_img(
         # that caused instability.
         data = data.astype(data.dtype.newbyteorder("N"))
 
-    resampled_data_dtype = _get_resampled_datatype(interpolation, data, A)
+    resampled_data_dtype = _get_resampled_datatype(
+        interpolation, data, transform_affine
+    )
 
     # Code is generic enough to work for both 3D and 4D images
     other_shape = data_shape[3:]
@@ -576,9 +578,9 @@ def resample_img(
     return new_img_like(img, resampled_data, target_affine)
 
 
-def _get_resampled_datatype(interpolation, data, A):
+def _get_resampled_datatype(interpolation, data, transform_affine):
+    """Cast unsupported data types to closest support dtype."""
     if interpolation == "continuous" and data.dtype.kind == "i":
-        # cast unsupported data types to closest support dtype
         aux = data.dtype.name.replace("int", "float")
         aux = aux.replace("ufloat", "float").replace("floatc", "float")
         if aux in ["float8", "float16"]:
@@ -598,6 +600,7 @@ def _get_resampled_datatype(interpolation, data, A):
 
     # We convert to 'native' order to not have any issues either with
     # 'little' or 'big' endian data dtypes (non-native endians).
+    A, _ = to_matrix_vector(transform_affine)
     if len(A.shape) == 1 and not resampled_data_dtype.isnative:
         resampled_data_dtype = resampled_data_dtype.newbyteorder("N")
 
@@ -611,6 +614,24 @@ def _get_bounding_box(target_affine, target_shape, affine, data):
         - embed target_affine in 4x4 shape
         - calculate offset from bounding box
         - compute target_shape
+
+    Parameters
+    ----------
+    target_affine : numpy.ndarray
+        If specified, the image is resampled corresponding to this new affine.
+        target_affine can be a 3x3 or a 4x4 matrix.
+
+    target_shape : tuple or list
+        If specified, the image will be resized to match this new shape.
+        len(target_shape) must be equal to 3.
+        If target_shape is specified, a target_affine of shape (4, 4)
+        must also be given.
+
+    affine : numpy.ndarray
+        Affine of the input image.
+
+    data : numpy.ndarray
+        data of the input image.
     """
     if target_affine.shape == (3, 3):
         # Embed target_affine in 4x4 shape
