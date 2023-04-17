@@ -40,6 +40,7 @@ jobs:
           flake8 --verbose \
             examples/0[0234567]* \
             maint_tools \
+            nilearn/_utils \
             nilearn/connectome \
             nilearn/de* \
             nilearn/glm \
