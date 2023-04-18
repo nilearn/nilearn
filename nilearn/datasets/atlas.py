@@ -487,7 +487,7 @@ def fetch_atlas_harvard_oxford(
     is_probabilistic = "-prob-" in atlas_name
     if is_probabilistic and symmetric_split:
         raise ValueError(
-            "Region splitting not supported for probabilistic " "atlases"
+            "Region splitting not supported for probabilistic atlases"
         )
     (
         atlas_img,
@@ -621,7 +621,7 @@ def fetch_atlas_juelich(
     is_probabilistic = atlas_name.startswith("prob-")
     if is_probabilistic and symmetric_split:
         raise ValueError(
-            "Region splitting not supported for probabilistic " "atlases"
+            "Region splitting not supported for probabilistic atlases"
         )
     atlas_img, atlas_filename, names, _ = _get_atlas_data_and_labels(
         "Juelich",
@@ -668,7 +668,7 @@ def _get_atlas_data_and_labels(
     if atlas_source == "Juelich":
         url = "https://www.nitrc.org/frs/download.php/12096/Juelich.tgz"
     elif atlas_source == "HarvardOxford":
-        url = "http://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz"
+        url = "https://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz"
     else:
         raise ValueError(f"Atlas source {atlas_source} is not valid.")
     # For practical reasons, we mimic the FSL data directory here.
@@ -1010,7 +1010,7 @@ def fetch_atlas_smith_2009(
     """
     if url is None:
         if mirror == "origin":
-            url = "http://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/"
+            url = "https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/"
         elif mirror == "nitrc":
             url = [
                 "https://www.nitrc.org/frs/download.php/7730/",
@@ -1270,7 +1270,7 @@ def fetch_atlas_aal(
     dataset_name = "aal_" + version
     opts = {"uncompress": True}
 
-    base_url = "http://www.gin.cnrs.fr/"
+    base_url = "https://www.gin.cnrs.fr/"
     if url is None:
         if version == "SPM12":
             url = f"{base_url}AAL_files/aal_for_SPM12.tar.gz"
@@ -1478,7 +1478,7 @@ def fetch_atlas_basc_multiscale_2015(
 def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=True):
     """Load the Dosenbach et al 160 ROIs.
 
-    These ROIs cover much of the cerebral cortex \
+    These ROIs cover much of the cerebral cortex
     and cerebellum and are assigned to 6 networks.
 
     See :footcite:`Dosenbach2010`.
