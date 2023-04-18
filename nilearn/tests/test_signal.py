@@ -599,7 +599,6 @@ def test_clean_runs():
         low_pass=None,
         high_pass=None,
         runs=runs,
-        standardize_confounds="zscore_sample",
     )
     # clean should not modify inputs
     assert np.array_equal(x_orig, x)
@@ -612,7 +611,6 @@ def test_clean_runs():
         detrend=True,
         low_pass=None,
         high_pass=None,
-        standardize_confounds="zscore_sample",
     )
     assert np.array_equal(x_run1, x_detrended[0 : n_samples // 2, :])
 
