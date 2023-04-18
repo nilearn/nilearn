@@ -9,7 +9,7 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 import scipy.stats as sps
-from nilearn._utils.glm import z_score
+from nilearn.glm._utils import z_score
 from nilearn.maskers import NiftiMasker
 
 DEF_TINY = 1e-50
@@ -37,10 +37,10 @@ def expression_to_contrast_vector(expression, design_columns):
         contrast_vector = df.eval(expression, engine="python").values
     except Exception:
         raise ValueError(
-            'The expression (%s) is not valid. This could be due to '
+            f'The expression ({expression}) is not valid. '
+            'This could be due to '
             'defining the contrasts using design matrix columns that are '
-            'invalid python identifiers. '
-            % expression
+            'invalid python identifiers.'
         )
     return contrast_vector
 
@@ -82,8 +82,8 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     acceptable_contrast_types = ['t', 'F']
     if contrast_type not in acceptable_contrast_types:
         raise ValueError(
-            '"{0}" is not a known contrast type. Allowed types are {1}'.
-            format(contrast_type, acceptable_contrast_types))
+            f"'{contrast_type}' is not a known contrast type. "
+            f"Allowed types are {acceptable_contrast_types}.")
 
     if contrast_type == 't':
         effect_ = np.zeros((1, labels.size))
@@ -399,9 +399,8 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
     """
     if len(contrast_imgs) != len(variance_imgs):
         raise ValueError(
-            'The number of contrast images (%d) '
-            'differs from the number of variance images (%d). '
-            % (len(contrast_imgs), len(variance_imgs))
+            f'The number of contrast images ({len(contrast_imgs)}) differs '
+            f'from the number of variance images ({len(variance_imgs)}). '
         )
 
     if isinstance(mask, NiftiMasker):

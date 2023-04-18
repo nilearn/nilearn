@@ -1,22 +1,21 @@
-"""
-Mixin for cache with joblib
-"""
+"""Mixin for cache with joblib."""
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
-import warnings
 import os
+import warnings
 
 from joblib import Memory
 
-MEMORY_CLASSES = (Memory, )
+MEMORY_CLASSES = (Memory,)
 
 import nilearn
+
 from .helpers import stringify_path
 
 
 def _check_memory(memory, verbose=0):
-    """Function to ensure an instance of a joblib.Memory object.
+    """Ensure an instance of a joblib.Memory object.
 
     Parameters
     ----------
@@ -42,30 +41,34 @@ def _check_memory(memory, verbose=0):
 
         # Perform some verifications on given path.
         split_cache_dir = os.path.split(cache_dir)
-        if (len(split_cache_dir) > 1 and
-                (not os.path.exists(split_cache_dir[0]) and
-                    split_cache_dir[0] != '')):
-            if (not nilearn.EXPAND_PATH_WILDCARDS and
-                    cache_dir.startswith("~")):
+        if len(split_cache_dir) > 1 and (
+            not os.path.exists(split_cache_dir[0]) and split_cache_dir[0] != ""
+        ):
+            if not nilearn.EXPAND_PATH_WILDCARDS and cache_dir.startswith("~"):
                 # Maybe the user want to enable expanded user path.
-                error_msg = ("Given cache path parent directory doesn't "
-                             "exists, you gave '{0}'. Enabling "
-                             "nilearn.EXPAND_PATH_WILDCARDS could solve "
-                             "this issue.".format(split_cache_dir[0]))
+                error_msg = (
+                    "Given cache path parent directory doesn't "
+                    "exists, you gave '{}'. Enabling "
+                    "nilearn.EXPAND_PATH_WILDCARDS could solve "
+                    "this issue.".format(split_cache_dir[0])
+                )
             elif memory.startswith("~"):
                 # Path built on top of expanded user path doesn't exist.
-                error_msg = ("Given cache path parent directory doesn't "
-                             "exists, you gave '{0}' which was expanded "
-                             "as '{1}' but doesn't exist either. Use "
-                             "nilearn.EXPAND_PATH_WILDCARDS to deactivate "
-                             "auto expand user path (~) behavior."
-                             .format(split_cache_dir[0],
-                                     os.path.dirname(memory)))
+                error_msg = (
+                    "Given cache path parent directory doesn't "
+                    "exists, you gave '{}' which was expanded "
+                    "as '{}' but doesn't exist either. Use "
+                    "nilearn.EXPAND_PATH_WILDCARDS to deactivate "
+                    "auto expand user path (~) behavior.".format(
+                        split_cache_dir[0], os.path.dirname(memory)
+                    )
+                )
             else:
                 # The given cache base path doesn't exist.
-                error_msg = ("Given cache path parent directory doesn't "
-                             "exists, you gave '{0}'."
-                             .format(split_cache_dir[0]))
+                error_msg = (
+                    "Given cache path parent directory doesn't "
+                    "exists, you gave '{}'.".format(split_cache_dir[0])
+                )
             raise ValueError(error_msg)
 
         memory = Memory(location=cache_dir, verbose=verbose)
@@ -73,17 +76,24 @@ def _check_memory(memory, verbose=0):
 
 
 class _ShelvedFunc:
-    """Work around for Python 2, for which pickle fails on instance method"""
+    """Work around for Python 2, for which pickle fails on instance method."""
+
     def __init__(self, func):
         self.func = func
-        self.func_name = func.__name__ + '_shelved'
+        self.func_name = func.__name__ + "_shelved"
 
     def __call__(self, *args, **kwargs):
-            return self.func.call_and_shelve(*args, **kwargs)
+        return self.func.call_and_shelve(*args, **kwargs)
 
 
-def cache(func, memory, func_memory_level=None, memory_level=None,
-          shelve=False, **kwargs):
+def cache(
+    func,
+    memory,
+    func_memory_level=None,
+    memory_level=None,
+    shelve=False,
+    **kwargs,
+):
     """Return a joblib.Memory object.
 
     The memory_level determines the level above which the wrapped
@@ -126,7 +136,7 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
         For consistency, a callable object is always returned.
 
     """
-    verbose = kwargs.get('verbose', 0)
+    verbose = kwargs.get("verbose", 0)
 
     # memory_level and func_memory_level must be both None or both integers.
     memory_levels = [memory_level, func_memory_level]
@@ -134,26 +144,35 @@ def cache(func, memory, func_memory_level=None, memory_level=None,
     both_params_none = all(lvl is None for lvl in memory_levels)
 
     if not (both_params_integers or both_params_none):
-        raise ValueError('Reference and user memory levels must be both None '
-                         'or both integers.')
+        raise ValueError(
+            "Reference and user memory levels must be both None "
+            "or both integers."
+        )
 
-    if memory is not None and (func_memory_level is None or
-                               memory_level >= func_memory_level):
+    if memory is not None and (
+        func_memory_level is None or memory_level >= func_memory_level
+    ):
         memory = stringify_path(memory)
         if isinstance(memory, str):
             memory = Memory(location=memory, verbose=verbose)
         if not isinstance(memory, MEMORY_CLASSES):
-            raise TypeError("'memory' argument must be a string or a "
-                            "joblib.Memory object. "
-                            "%s %s was given." % (memory, type(memory)))
-        if (memory.location is None and memory_level is not None
-                and memory_level > 1):
-            warnings.warn("Caching has been enabled (memory_level = %d) "
-                          "but no Memory object or path has been provided"
-                          " (parameter memory). Caching deactivated for "
-                          "function %s." %
-                          (memory_level, func.__name__),
-                          stacklevel=2)
+            raise TypeError(
+                "'memory' argument must be a string or a "
+                "joblib.Memory object. "
+                "%s %s was given." % (memory, type(memory))
+            )
+        if (
+            memory.location is None
+            and memory_level is not None
+            and memory_level > 1
+        ):
+            warnings.warn(
+                "Caching has been enabled (memory_level = %d) "
+                "but no Memory object or path has been provided"
+                " (parameter memory). Caching deactivated for "
+                "function %s." % (memory_level, func.__name__),
+                stacklevel=2,
+            )
     else:
         memory = Memory(location=None, verbose=verbose)
     cached_func = memory.cache(func, **kwargs)
@@ -176,6 +195,7 @@ class CacheMixin:
     parameter to self._cache(). See _cache() documentation for details.
 
     """
+
     def _cache(self, func, func_memory_level=1, shelve=False, **kwargs):
         """Return a joblib.Memory object.
 
@@ -207,7 +227,7 @@ class CacheMixin:
             For consistency, a callable object is always returned.
 
         """
-        verbose = getattr(self, 'verbose', 0)
+        verbose = getattr(self, "verbose", 0)
 
         # Creates attributes if they don't exist
         # This is to make creating them in __init__() optional.
@@ -220,11 +240,18 @@ class CacheMixin:
         # If cache level is 0 but a memory object has been provided, set
         # memory_level to 1 with a warning.
         if self.memory_level == 0 and self.memory.location is not None:
-            warnings.warn("memory_level is currently set to 0 but "
-                          "a Memory object has been provided. "
-                          "Setting memory_level to 1.")
+            warnings.warn(
+                "memory_level is currently set to 0 but "
+                "a Memory object has been provided. "
+                "Setting memory_level to 1."
+            )
             self.memory_level = 1
 
-        return cache(func, self.memory, func_memory_level=func_memory_level,
-                     memory_level=self.memory_level, shelve=shelve,
-                     **kwargs)
+        return cache(
+            func,
+            self.memory,
+            func_memory_level=func_memory_level,
+            memory_level=self.memory_level,
+            shelve=shelve,
+            **kwargs,
+        )

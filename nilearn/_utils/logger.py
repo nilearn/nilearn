@@ -1,4 +1,4 @@
-"""Logging facility for nilearn"""
+"""Logging facility for nilearn."""
 
 # Author: Philippe Gervais
 # License: simplified BSD
@@ -10,8 +10,9 @@ from sklearn.base import BaseEstimator
 
 # The technique used in the log() function only applies to CPython, because
 # it uses the inspect module to walk the call stack.
-def log(msg, verbose=1, object_classes=(BaseEstimator, ),
-        stack_level=1, msg_level=1):
+def log(
+    msg, verbose=1, object_classes=(BaseEstimator,), stack_level=1, msg_level=1
+):
     """Display a message to the user, depending on the verbosity level.
 
     This function allows to display some information that references an object
@@ -67,20 +68,19 @@ def log(msg, verbose=1, object_classes=(BaseEstimator, ),
 
         if object_frame is None:  # no object found: use stack_level
             if stack_level >= len(stack):
-                func_name = '<top_level>'
+                func_name = "<top_level>"
             else:
                 object_frame, _, _, func_name = stack[stack_level][:4]
                 object_self = object_frame.f_locals.get("self", None)
 
         if object_self is not None:
-            func_name = "%s.%s" % (object_self.__class__.__name__, func_name)
+            func_name = f"{object_self.__class__.__name__}.{func_name}"
 
-
-        print("[{func_name}] {msg}".format(func_name=func_name, msg=msg))
+        print(f"[{func_name}] {msg}")
 
 
 def _compose_err_msg(msg, **kwargs):
-    """Append key-value pairs to msg, for display.
+    """Append key-value pairs to msg, for display. # noqa: D301.
 
     Parameters
     ----------
