@@ -7,6 +7,8 @@ import numpy as np
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.transforms import Bbox
+
+from nilearn._utils import _compare_version
 from nilearn._utils import check_niimg_3d
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.niimg import _is_binary_niimg, _safe_get_data

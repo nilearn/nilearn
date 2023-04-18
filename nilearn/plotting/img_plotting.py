@@ -19,6 +19,9 @@ import warnings
 import matplotlib
 import matplotlib.pyplot as plt
 
+from nilearn._utils import _compare_version
+
+
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np

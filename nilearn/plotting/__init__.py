@@ -4,6 +4,8 @@ import importlib
 import warnings
 
 
+OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.3.0"
+
 ###############################################################################
 # Make sure that we don't get DISPLAY problems when running without X on
 # unices
@@ -19,9 +21,9 @@ def _set_mpl_backend():
             skip_if_running_tests('matplotlib not installed')
         raise
     else:
-
-        from ..version import OPTIONAL_MATPLOTLIB_MIN_VERSION, _compare_version
-
+    
+        from .._utils import _compare_version
+        
         # When matplotlib was successfully imported we need to check
         # that the version is greater that the minimum required one
         mpl_version = getattr(matplotlib, "__version__", "0.0.0")

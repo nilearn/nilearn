@@ -10,7 +10,7 @@ import warnings
 
 import numpy as np
 import scipy
-from nilearn.version import _compare_version
+from nilearn._utils import _compare_version
 from scipy import linalg
 from scipy.ndimage import affine_transform, find_objects
 
