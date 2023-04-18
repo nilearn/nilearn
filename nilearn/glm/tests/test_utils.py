@@ -5,7 +5,7 @@ import pytest
 import scipy.linalg as spl
 import scipy.stats as sps
 from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn._utils.glm import (
+from nilearn.glm._utils import (
     _check_and_load_tables,
     _check_list_length_match,
     _check_run_tables,
