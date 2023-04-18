@@ -1,4 +1,5 @@
 import functools
+import operator
 import os
 import warnings
 
@@ -165,3 +166,45 @@ def stringify_path(path):
 
     """
     return path.__fspath__() if isinstance(path, os.PathLike) else path
+
+
+VERSION_OPERATORS = {
+    "==": operator.eq,
+    "!=": operator.ne,
+    ">": operator.gt,
+    ">=": operator.ge,
+    "<": operator.lt,
+    "<=": operator.le,
+}
+
+
+def _compare_version(version_a, operator, version_b):
+    """Compare two version strings via a user-specified operator.
+
+    Note: This function is inspired from MNE-Python.
+    See https://github.com/mne-tools/mne-python/blob/main/mne/fixes.py
+
+    Parameters
+    ----------
+    version_a : :obj:`str`
+        First version string.
+
+    operator : {'==', '!=','>', '<', '>=', '<='}
+        Operator to compare ``version_a`` and ``version_b`` in the form of
+        ``version_a operator version_b``.
+
+    version_b : :obj:`str`
+        Second version string.
+
+    Returns
+    -------
+    result : :obj:`bool`
+        The result of the version comparison.
+
+    """
+    from packaging.version import parse
+
+    if operator not in VERSION_OPERATORS:
+        error_msg = "'_compare_version' received an unexpected operator "
+        raise ValueError(error_msg + operator + ".")
+    return VERSION_OPERATORS[operator](parse(version_a), parse(version_b))

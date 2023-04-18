@@ -14,7 +14,7 @@ import collections.abc
 import functools
 import numbers
 import warnings
-from nilearn.version import _compare_version
+from nilearn._utils import _compare_version
 
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
