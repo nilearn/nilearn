@@ -7,7 +7,6 @@ import matplotlib
 from matplotlib import colors, patches, transforms
 from matplotlib.path import Path
 from nilearn._utils import _compare_version
-from nilearn.version import _compare_version
 
 
 def _codes_bezier(pts):

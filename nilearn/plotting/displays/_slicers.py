@@ -16,7 +16,6 @@ from nilearn.plotting.displays import CutAxes
 from nilearn.plotting.displays._axes import _coords_3d_to_2d
 from nilearn.plotting.edge_detect import _edge_map
 from nilearn.plotting.find_cuts import find_cut_slices, find_xyz_cut_coords
-from nilearn.version import _compare_version
 
 
 class BaseSlicer:
