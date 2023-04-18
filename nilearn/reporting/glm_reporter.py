@@ -1032,7 +1032,7 @@ def _dataframe_to_html(df, precision, **kwargs):
         Code for HTML table.
 
     """
-    with pd.set_option("display.precision", precision):
+    with pd.option_context("display.precision", precision):
         html_table = df.to_html(**kwargs)
     html_table = html_table.replace('border="1" ', "")
     return html_table
