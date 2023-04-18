@@ -277,7 +277,7 @@ def test_load_surf_mesh_list():
     with pytest.raises(ValueError, match='input type is not recognized'):
         load_surf_mesh(mesh[0])
     with pytest.raises(ValueError, match='input type is not recognized'):
-        load_surf_mesh(dict())
+        load_surf_mesh({})
     del mesh
 
 

@@ -103,10 +103,7 @@ def fdr_threshold(z_vals, alpha):
     p_vals = norm.sf(z_vals_)
     n_samples = len(p_vals)
     pos = p_vals < alpha * np.linspace(1 / n_samples, 1, n_samples)
-    if pos.any():
-        return z_vals_[pos][-1] - 1.0e-12
-
-    return np.infty
+    return z_vals_[pos][-1] - 1.0e-12 if pos.any() else np.infty
 
 
 def cluster_level_inference(

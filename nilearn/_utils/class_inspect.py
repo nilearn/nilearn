@@ -1,14 +1,14 @@
-""" Small utilities to inspect classes
-"""
+"""Small utilities to inspect classes."""
+
+import inspect
 
 from sklearn.base import BaseEstimator
-import inspect
 
 from .exceptions import AuthorizedException
 
 
 def get_params(cls, instance, ignore=None):
-    """Retrieve the initialization parameters corresponding to a class
+    """Retrieve the initialization parameters corresponding to a class.
 
     This helper function retrieves the parameters of function __init__ for
     class 'cls' and returns the value for these parameters in object
@@ -32,7 +32,7 @@ def get_params(cls, instance, ignore=None):
         The dict of parameters.
 
     """
-    _ignore = set(('memory', 'memory_level', 'verbose', 'copy', 'n_jobs'))
+    _ignore = {"memory", "memory_level", "verbose", "copy", "n_jobs"}
     if ignore is not None:
         _ignore.update(ignore)
 
@@ -49,7 +49,7 @@ def get_params(cls, instance, ignore=None):
 
 
 def enclosing_scope_name(ensure_estimator=True, stack_level=2):
-    """Find the name of the enclosing scope for debug output purpose
+    """Find the name of the enclosing scope for debug output purpose.
 
     Use inspection to climb up the stack until the calling object. This is
     typically used to get the estimator at the origin of a functional call
@@ -74,18 +74,17 @@ def enclosing_scope_name(ensure_estimator=True, stack_level=2):
         else:
             while True:
                 frame = frame.f_back
-                if not 'self' in frame.f_locals:
+                if "self" not in frame.f_locals:
                     continue
-                if not isinstance(frame.f_locals['self'], BaseEstimator):
+                if not isinstance(frame.f_locals["self"], BaseEstimator):
                     continue
                 break
-        if 'self' in frame.f_locals:
-            caller_name = frame.f_locals['self'].__class__.__name__
-            caller_name = '%s.%s' % (caller_name,
-                                    frame.f_code.co_name)
+        if "self" in frame.f_locals:
+            caller_name = frame.f_locals["self"].__class__.__name__
+            caller_name = f"{caller_name}.{frame.f_code.co_name}"
         else:
             caller_name = frame.f_code.co_name
 
         return caller_name
     except AuthorizedException:
-        return 'Unknown'
+        return "Unknown"

@@ -123,22 +123,31 @@ def test_threshold_stats_img():
         threshold_stats_img(None, None, alpha=0.05, height_control="plop")
 
 
-def test_hommel():
-    # Check that the computation of Hommel value
-    # For these, we take the example in  Meijer et al. 2017
-    # 'A shortcut for Hommel's procedure in linearithmic time'
-    # and check that we obtain the same values
+@pytest.mark.parametrize(
+    "alpha, expected",
+    [
+        (1.0e-9, 7),
+        (1.0e-7, 6),
+        (0.059, 6),
+        (0.061, 5),
+        (0.249, 5),
+        (0.251, 4),
+        (0.399, 4),
+        (0.401, 3),
+        (0.899, 3),
+        (0.901, 0),
+    ],
+)
+def test_hommel(alpha, expected):
+    """Check that the computation of Hommel value.
+
+    For these, we take the example in  Meijer et al. 2017
+    'A shortcut for Hommel's procedure in linearithmic time'
+    and check that we obtain the same values.
+    https://arxiv.org/abs/1710.08273
+    """
     z = norm.isf([1.0e-8, 0.01, 0.08, 0.1, 0.5, 0.7, 0.9])
-    assert _compute_hommel_value(z, 1.0e-9) == 7
-    assert _compute_hommel_value(z, 1.0e-7) == 6
-    assert _compute_hommel_value(z, 0.059) == 6
-    assert _compute_hommel_value(z, 0.061) == 5
-    assert _compute_hommel_value(z, 0.249) == 5
-    assert _compute_hommel_value(z, 0.251) == 4
-    assert _compute_hommel_value(z, 0.399) == 4
-    assert _compute_hommel_value(z, 0.401) == 3
-    assert _compute_hommel_value(z, 0.899) == 3
-    assert _compute_hommel_value(z, 0.901) == 0
+    assert _compute_hommel_value(z, alpha=alpha) == expected
 
 
 def test_all_resolution_inference():

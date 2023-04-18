@@ -114,8 +114,8 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
     for model_idx, first_level in enumerate(second_level_input):
         if first_level.labels_ is None or first_level.results_ is None:
             raise ValueError(
-                "Model %s at index %i has not been fit yet"
-                "" % (first_level.subject_label, model_idx)
+                f"Model {first_level.subject_label} "
+                f"at index {model_idx} has not been fit yet."
             )
         if not none_confounds and first_level.subject_label is None:
             raise ValueError(
@@ -124,7 +124,7 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
                 "subject_label to match rows appropriately."
                 f"Model at idx {model_idx} does not provide it. "
                 "To set it, you can do "
-                'first_level.subject_label = "01"'
+                "first_level.subject_label = '01'"
             )
 
 
@@ -162,7 +162,7 @@ def _check_confounds(confounds):
             raise ValueError("confounds must be a pandas DataFrame")
         if "subject_label" not in confounds.columns:
             raise ValueError(
-                "confounds DataFrame must contain column" ' "subject_label"'
+                "confounds DataFrame must contain column 'subject_label'"
             )
         if len(confounds.columns) < 2:
             raise ValueError(
@@ -205,8 +205,8 @@ def _check_effect_maps(effect_maps, design_matrix):
     if len(effect_maps) != design_matrix.shape[0]:
         raise ValueError(
             "design_matrix does not match the number of maps considered. "
-            "%i rows in design matrix do not match with %i maps"
-            % (design_matrix.shape[0], len(effect_maps))
+            f"{design_matrix.shape[0]} rows in design matrix do not match "
+            f"with {len(effect_maps)} maps."
         )
 
 
@@ -248,7 +248,7 @@ def _get_contrast(second_level_contrast, design_matrix):
                 raise ValueError("No second-level contrast is specified.")
         elif (np.nonzero(second_level_contrast)[0]).size != 1:
             raise ValueError(
-                "second_level_contrast must be " "a list of 0s and 1s"
+                "second_level_contrast must be a list of 0s and 1s."
             )
         con_val = np.asarray(second_level_contrast, dtype=bool)
         contrast = np.asarray(design_matrix.columns.tolist())[con_val][0]
@@ -452,7 +452,7 @@ class SecondLevelModel(BaseGLM):
         t0 = time.time()
         if self.verbose > 0:
             sys.stderr.write(
-                "Fitting second level model. " "Take a deep breath\r"
+                "Fitting second level model. Take a deep breath.\r"
             )
 
         # Create and set design matrix, if not given
@@ -488,7 +488,7 @@ class SecondLevelModel(BaseGLM):
         if self.verbose > 0:
             sys.stderr.write(
                 "\nComputation of second level model done in "
-                "%i seconds\n" % (time.time() - t0)
+                f"{time.time() - t0} seconds.\n"
             )
 
         return self
@@ -914,7 +914,7 @@ def non_parametric_inference(
     if verbose > 0:
         sys.stderr.write(
             "\nComputation of second level model done in "
-            "%i seconds\n" % (time.time() - t0)
+            f"{time.time() - t0} seconds\n"
         )
 
     # Check and obtain the contrast

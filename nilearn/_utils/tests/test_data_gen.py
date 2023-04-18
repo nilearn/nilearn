@@ -6,6 +6,7 @@ import json
 import numpy as np
 import pytest
 from nilearn._utils.data_gen import (
+    _add_metadata_to_bids_dataset,
     create_fake_bids_dataset,
     generate_fake_fmri,
     generate_labeled_regions,
@@ -13,8 +14,6 @@ from nilearn._utils.data_gen import (
     generate_regions_ts,
 )
 from nilearn.image import get_data
-
-from nilearn._utils.data_gen import _add_metadata_to_bids_dataset
 
 
 def test_add_metadata_to_bids_derivatives_default_path(tmp_path):
@@ -25,7 +24,7 @@ def test_add_metadata_to_bids_derivatives_default_path(tmp_path):
     json_file = _add_metadata_to_bids_dataset(bids_path=tmp_path,
                                               metadata={"foo": "bar"})
     assert json_file.exists()
-    assert (json_file.name == 
+    assert (json_file.name ==
             'sub-01_ses-01_task-main_run-01_space-MNI_desc-preproc_bold.json')
     with open(json_file, 'r') as f:
         metadata = json.load(f)
@@ -34,14 +33,14 @@ def test_add_metadata_to_bids_derivatives_default_path(tmp_path):
 
 def test_add_metadata_to_bids_derivatives_with_json_path(tmp_path):
     # bare bone smoke test
-    target_dir = tmp_path / 'derivatives' / 'sub-02' 
+    target_dir = tmp_path / 'derivatives' / 'sub-02'
     target_dir.mkdir(parents=True)
     json_file = 'derivatives/sub-02/sub-02_task-main_bold.json'
     json_file = _add_metadata_to_bids_dataset(bids_path=tmp_path,
                                               metadata={"foo": "bar"},
                                               json_file=json_file)
     assert json_file.exists()
-    assert (json_file.name == 
+    assert (json_file.name ==
             'sub-02_task-main_bold.json')
     with open(json_file, 'r') as f:
         metadata = json.load(f)
@@ -51,10 +50,10 @@ def test_add_metadata_to_bids_derivatives_with_json_path(tmp_path):
 def _bids_path_template(
     task,
     suffix,
-    n_runs = None,
-    space = None,
-    desc = None,
-    extra_entity = None,
+    n_runs=None,
+    space=None,
+    desc=None,
+    extra_entity=None,
 ):
     """Create a BIDS filepath from a template.
 
@@ -124,7 +123,7 @@ def _check_nb_files_derivatives_for_task(
     n_ses,
     task,
     n_run,
-    extra_entity = None,
+    extra_entity=None,
 ):
     """Check number of each file 'type' in derivatives for a given task."""
     for suffix in ["timeseries.tsv"]:

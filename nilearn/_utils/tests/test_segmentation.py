@@ -6,7 +6,6 @@ Thanks to scikit image.
 
 import numpy as np
 import pytest
-
 from nilearn._utils.segmentation import _random_walker
 
 
@@ -25,7 +24,8 @@ def test_modes_in_random_walker():
     assert img.shape == random_walker_cg.shape
     # test `mask` strategy of sub function _mask_edges_weights in laplacian
     labels[5:25, 26:29, 26:29] = -1
-    random_walker_inactive = _random_walker(img, labels, beta=30)
+    _random_walker(img, labels, beta=30)
+
 
 def test_isolated_pixel():
     data = np.random.random((3, 3))
@@ -44,10 +44,11 @@ def test_isolated_pixel():
     # array([[ 0., -1., -1.],
     #        [-1., -1., -1.],
     #        [-1., -1.,  1.]])
-    expected = np.array([[ 0., -1., -1.],
-                         [-1., -1., -1.],
-                         [-1., -1.,  1.]])
+    expected = np.array(
+        [[0.0, -1.0, -1.0], [-1.0, -1.0, -1.0], [-1.0, -1.0, 1.0]]
+    )
     np.testing.assert_array_equal(expected, _random_walker(data, labels))
+
 
 def test_isolated_seed():
     data = np.random.random((3, 3))
@@ -68,9 +69,9 @@ def test_isolated_seed():
     # array([[ 1.,  1., -1.],
     #        [-1., -1., -1.],
     #        [-1., -1., -1.]])
-    expected = np.array([[ 1.,  1., -1.],
-                         [-1., -1., -1.],
-                         [-1., -1., -1.]])
+    expected = np.array(
+        [[1.0, 1.0, -1.0], [-1.0, -1.0, -1.0], [-1.0, -1.0, -1.0]]
+    )
     np.testing.assert_array_equal(expected, _random_walker(data, labels))
 
 
@@ -105,7 +106,7 @@ def test_bad_inputs():
     # Too many dimensions
     rng = np.random.RandomState(42)
     img = rng.normal(size=(3, 3, 3, 3, 3))
-    labels = np.arange(3 ** 5).reshape(img.shape)
+    labels = np.arange(3**5).reshape(img.shape)
     with pytest.raises(ValueError):
         _random_walker(img, labels)
 
@@ -119,10 +120,13 @@ def test_bad_inputs():
 
 
 def test_reorder_labels():
-    # When labels have non-consecutive integers, we make them consecutive
-    # by reordering them to make no gaps/differences between integers. We expect
-    # labels to be of same shape even if they are reordered.
-    # Issue #938, comment #14.
+    """When labels have non-consecutive integers, make them consecutive by \
+    reordering them to make no gaps/differences between integers.
+
+    We expect labels to be of same shape even if they are reordered.
+
+    Issue #938, comment #14.
+    """
     data = np.zeros((5, 5)) + 0.1 * np.random.RandomState(42).standard_normal(
         size=(5, 5)
     )
@@ -130,7 +134,7 @@ def test_reorder_labels():
 
     labels = np.zeros_like(data)
     labels[3, 3] = 1
-    labels[1, 4] = 4 # giving integer which is non-consecutive
+    labels[1, 4] = 4  # giving integer which is non-consecutive
 
     labels = _random_walker(data, labels)
     assert data.shape == labels.shape

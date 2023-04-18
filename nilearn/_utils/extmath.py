@@ -1,6 +1,4 @@
-"""
-Extended math utilities
-"""
+"""Extended math utilities."""
 # Author: Gael Varoquaux
 # License: BSD
 
@@ -8,7 +6,7 @@ import numpy as np
 
 
 def fast_abs_percentile(data, percentile=80):
-    """A fast version of the percentile of the absolute value.
+    """Implement a fast version of the percentile of the absolute value.
 
     Parameters
     ----------
@@ -29,12 +27,12 @@ def fast_abs_percentile(data, percentile=80):
     scipy.stats.scoreatpercentile(np.abs(data), percentile)
 
     """
-    if hasattr(data, 'mask'):
+    if hasattr(data, "mask"):
         # Catter for masked arrays
         data = np.asarray(data[np.logical_not(data.mask)])
     data = np.abs(data)
     data = data.ravel()
-    index = int(data.size * .01 * percentile)
+    index = int(data.size * 0.01 * percentile)
     # Partial sort: faster than sort
     data = np.partition(data, index)
     return data[index]
@@ -63,12 +61,12 @@ def is_spd(M, decimal=15, verbose=1):
         True if matrix is symmetric positive definite, False otherwise.
 
     """
-    if not np.allclose(M, M.T, atol=0, rtol=10 ** -decimal):
+    if not np.allclose(M, M.T, atol=0, rtol=10**-decimal):
         if verbose > 0:
             print("matrix not symmetric to %d decimals" % decimal)
         return False
     eigvalsh = np.linalg.eigvalsh(M)
     ispd = eigvalsh.min() > 0
     if not ispd and verbose > 0:
-        print("matrix has a negative eigenvalue: %.3f" % eigvalsh.min())
+        print(f"matrix has a negative eigenvalue: {eigvalsh.min():.3f}")
     return ispd

@@ -18,13 +18,13 @@ import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
 from nilearn._utils import fill_doc, stringify_path
-from nilearn._utils.glm import (
+from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.param_validation import _check_run_sample_masks
+from nilearn.glm._base import BaseGLM
+from nilearn.glm._utils import (
     _check_events_file_uses_tab_separators,
-    _check_run_sample_masks,
     _check_run_tables,
 )
-from nilearn._utils.niimg_conversions import check_niimg
-from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     _compute_fixed_effect_contrast,
     expression_to_contrast_vector,
@@ -165,16 +165,14 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
     acceptable_noise_models = ['ols', 'arN']
     if ((noise_model[:2] != 'ar') and (noise_model != 'ols')):
         raise ValueError(
-            "Acceptable noise models are {}. You provided "
-            "'noise_model={}'".format(acceptable_noise_models,
-                                      noise_model)
+            f"Acceptable noise models are {acceptable_noise_models}."
+            f"You provided 'noise_model={noise_model}'."
         )
     if Y.shape[0] != X.shape[0]:
         raise ValueError('The number of rows of Y '
-                         'should match the number of rows of X.'
-                         ' You provided X with shape {0} '
-                         'and Y with shape {1}'.
-                         format(X.shape, Y.shape))
+                         'should match the number of rows of X.\n'
+                         f'You provided X with shape {X.shape} '
+                         f'and Y with shape {Y.shape}.')
 
     # Create the model
     ols_result = OLSModel(X).fit(Y)
@@ -183,7 +181,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
 
         err_msg = ('AR order must be a positive integer specified as arN, '
                    'where N is an integer. E.g. ar3. '
-                   'You provided {}.'.format(noise_model))
+                   f'You provided {noise_model}.')
         try:
             ar_order = int(noise_model[2:])
         except ValueError:
@@ -566,8 +564,8 @@ class FirstLevelModel(BaseGLM):
                     remaining = f'{int(remaining)} seconds remaining'
 
                 sys.stderr.write(
-                    "Computing run %d out of %d runs (%s)\n"
-                    % (run_idx + 1, n_runs, remaining))
+                    f"Computing run {run_idx + 1} "
+                    f"out of {n_runs} runs ({remaining})\n")
 
             # Build the experimental design for the glm
             run_img = check_niimg(run_img, ensure_ndim=4)
@@ -577,8 +575,8 @@ class FirstLevelModel(BaseGLM):
                     confounds_matrix = confounds[run_idx].values
                     if confounds_matrix.shape[0] != n_scans:
                         raise ValueError('Rows in confounds does not match'
-                                         'n_scans in run_img at index %d'
-                                         % (run_idx,))
+                                         'n_scans in run_img '
+                                         f'at index {run_idx}.')
                     confounds_names = confounds[run_idx].columns.tolist()
                 else:
                     confounds_matrix = None
@@ -650,8 +648,8 @@ class FirstLevelModel(BaseGLM):
 
         # Report progress
         if self.verbose > 0:
-            sys.stderr.write("\nComputation of %d runs done in %i seconds\n\n"
-                             % (n_runs, time.time() - t0))
+            sys.stderr.write(f"\nComputation of {n_runs} runs done "
+                             f"in {time.time() - t0} seconds.\n\n")
         return self
 
     def compute_contrast(self, contrast_def, stat_type=None,
@@ -708,8 +706,8 @@ class FirstLevelModel(BaseGLM):
             warn(f'One contrast given, assuming it for all {int(n_runs)} runs')
             con_vals = con_vals * n_runs
         elif n_contrasts != n_runs:
-            raise ValueError('%d contrasts given, while there are %d runs' %
-                             (n_contrasts, n_runs))
+            raise ValueError(f'{n_contrasts} contrasts given, '
+                             f'while there are {n_runs} runs.')
 
         # Translate formulas to vectors
         for cidx, (con, design_mat) in enumerate(zip(con_vals,

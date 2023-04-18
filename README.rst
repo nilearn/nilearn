@@ -93,7 +93,7 @@ The Nilearn team organizes regular online drop-in hours to answer questions,
 discuss feature requests, or have any Nilearn-related discussions. Nilearn
 drop-in hours occur *every Wednesday from 4pm to 5pm UTC*, and we make sure that at
 least one member of the core-developer team is available. These events are held
-on our on `Discord server <https://discord.gg/bMBhb7w>`_ and are fully open,
+on `Jitsi Meet <https://meet.jit.si/nilearn-drop-in-hours>`_ and are fully open,
 anyone is welcome to join!
 For more information and ways to engage with the Nilearn team see
 `How to get help <https://nilearn.github.io/stable/development.html#how-to-get-help>`_.

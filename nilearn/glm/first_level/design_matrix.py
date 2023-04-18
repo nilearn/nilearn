@@ -38,7 +38,7 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 from nilearn._utils import fill_doc
-from nilearn._utils.glm import full_rank
+from nilearn.glm._utils import full_rank
 from nilearn.glm.first_level.experimental_paradigm import check_events
 from nilearn.glm.first_level.hemodynamic_models import (
     _orthogonalize,
@@ -106,7 +106,7 @@ def _cosine_drift(high_pass, frame_times):
             "High-pass filter will span all accessible frequencies "
             "and saturate the design matrix. "
             "You may want to reduce the high_pass value."
-            "The provided value is {} Hz".format(high_pass)
+            f"The provided value is {high_pass} Hz"
         )
     order = np.minimum(
         n_frames - 1, int(np.floor(2 * n_frames * high_pass * dt))
@@ -170,9 +170,7 @@ def _make_drift(drift_model, frame_times, order, high_pass):
         drift = _none_drift(frame_times)
     else:
         raise NotImplementedError(f"Unknown drift model {drift_model!r}")
-    names = []
-    for k in range(1, drift.shape[1]):
-        names.append(f"drift_{int(k)}")
+    names = [f"drift_{int(k)}" for k in range(1, drift.shape[1])]
     names.append("constant")
     return drift, names
 
@@ -361,8 +359,8 @@ def make_first_level_design_matrix(
         n_add_regs = add_regs_.shape[1]
         assert add_regs_.shape[0] == np.size(frame_times), ValueError(
             "Incorrect specification of additional regressors: "
-            "length of regressors provided: %d, number of "
-            "time-frames: %d" % (add_regs_.shape[0], np.size(frame_times))
+            f"length of regressors provided: {add_regs_.shape[0]}, number of "
+            f"time-frames: {np.size(frame_times)}."
         )
 
     # check that additional regressor names are well specified
@@ -371,7 +369,7 @@ def make_first_level_design_matrix(
     elif len(add_reg_names) != n_add_regs:
         raise ValueError(
             "Incorrect number of additional regressor names was provided"
-            "(%d provided, %d expected" % (len(add_reg_names), n_add_regs)
+            f"({len(add_reg_names)} provided, {n_add_regs} expected."
         )
 
     # computation of the matrix
@@ -390,10 +388,9 @@ def make_first_level_design_matrix(
     # step 2: additional regressors
     if add_regs is not None:
         # add user-supplied regressors and corresponding names
-        if matrix is not None:
-            matrix = np.hstack((matrix, add_regs))
-        else:
-            matrix = add_regs
+        matrix = (
+            np.hstack((matrix, add_regs)) if matrix is not None else add_regs
+        )
         names += add_reg_names
 
     # step 3: drifts
@@ -401,10 +398,7 @@ def make_first_level_design_matrix(
         drift_model, frame_times, drift_order, high_pass
     )
 
-    if matrix is not None:
-        matrix = np.hstack((matrix, drift))
-    else:
-        matrix = drift
+    matrix = np.hstack((matrix, drift)) if matrix is not None else drift
 
     names += dnames
     # check column names are all unique
