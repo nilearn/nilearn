@@ -3,12 +3,10 @@
 import json
 import os
 
-
-from nilearn._utils import _compare_version
-
 import matplotlib
 from matplotlib import colors, patches, transforms
 from matplotlib.path import Path
+from nilearn._utils import _compare_version
 from nilearn.version import _compare_version
 
 

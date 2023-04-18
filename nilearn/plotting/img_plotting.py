@@ -19,14 +19,12 @@ import warnings
 import matplotlib
 import matplotlib.pyplot as plt
 
-from nilearn._utils import _compare_version
-
-
 # Standard scientific libraries imports (more specific imports are
 # delayed, so that the part module can be used without them).
 import numpy as np
 from matplotlib import gridspec as mgs
 from nibabel.spatialimages import SpatialImage
+from nilearn._utils import _compare_version
 from nilearn.image.resampling import reorder_img
 from nilearn.maskers import NiftiMasker
 from nilearn.plotting.displays import get_projector, get_slicer
