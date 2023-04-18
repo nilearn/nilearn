@@ -10,7 +10,7 @@ from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.transforms import Bbox
 
-from nilearn.version import _compare_version
+from nilearn._utils import _compare_version
 from nilearn._utils import check_niimg_3d
 from nilearn.plotting.find_cuts import find_xyz_cut_coords, find_cut_slices
 from nilearn.plotting.displays import CutAxes

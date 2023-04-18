@@ -5,7 +5,7 @@ Brain schematics plotting for glass brain functionality
 import json
 import os
 
-from nilearn.version import _compare_version
+from nilearn._utils import _compare_version
 
 import matplotlib
 from matplotlib.path import Path
