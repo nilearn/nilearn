@@ -18,8 +18,9 @@ from ._multi_pca import _MultiPCA
 
 @fill_doc
 class CanICA(_MultiPCA):
-    """Perform :term:`Canonical Independent Component Analysis<CanICA>`  \
-    :footcite:`Varoquaux2010c` :footcite:`Varoquaux2010d`.
+    """Perform :term:`Canonical Independent Component Analysis<CanICA>`.
+
+    See :footcite:`Varoquaux2010c` and :footcite:`Varoquaux2010d`.
 
     Parameters
     ----------
