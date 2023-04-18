@@ -134,7 +134,9 @@ details on their process are available
 How to make a release?
 ======================
 
-This section describes how to make a new release of Nilearn. It is targeted to the specific case of Nilearn although it contains generic steps for packaging and distributing projects. More detailed information can be found on `packaging.python.org <https://packaging.python.org/guides/distributing-packages-using-setuptools/#id70>`_.
+This section describes how to make a new release of Nilearn. It is targeted to the specific case of Nilearn although it contains generic steps for packaging and distributing projects. More detailed information can be found on `packaging.python.org <https://packaging.python.org/en/latest/tutorials/packaging-projects/>`_.
+
+The packaging specification is contained in `pyproject.toml <https://github.com/nilearn/nilearn/blob/main/pyproject.toml>`_. We use ``hatchling`` and ``hatch-vcs`` as described in these `guidelines <https://effigies.gitlab.io/posts/python-packaging-2023/>`_ to build the sdist, wheel, and extract version number from the git tag.
 
 We assume that we are in a clean state where all the Pull Requests (PR) that we wish to include in the new release have been merged.
 
@@ -198,22 +200,6 @@ By:
    .. include:: x.y.z.rst
 
 
-Next, we need to bump the version number of Nilearn by updating the file ``nilearn/version.py`` with the new version number, that is edit the line:
-
-.. code-block:: python
-
-    __version__ = x.y.z.dev
-
-
-to be:
-
-.. code-block:: python
-
-    __version__ = x.y.z
-
-
-In addition, we can have a look at `MANIFEST.in` to check that all additional files that we want to be included or excluded from the release are indicated. Normally we shouldn't have to touch this file.
-
 Add these changes and submit a PR:
 
 .. code:: bash
@@ -231,6 +217,10 @@ Once the PR has been reviewed and merged, pull from master and tag the merge com
     git pull upstream master
     git tag x.y.z
     git push upstream --tags
+
+.. note::
+
+    When building the distribution as described below, ``hatch-vcs``, defined in ``pyproject.toml``, extracts the version number using this tag and writes it to a ``_version.py`` file.
 
 
 Build the distributions and upload them to Pypi
@@ -250,11 +240,11 @@ If the workspace contains a `dist` folder, make sure to clean it:
     rm -r dist
 
 
-In order to build the binary wheel files, we need to install `wheel <https://pypi.org/project/wheel/>`_:
+In order to build the binary wheel files, we need to install `build <https://pypi.org/project/build/>`_:
 
 .. code-block:: bash
 
-    pip install wheel
+    pip install build
 
 
 And, in order to upload to `Pypi`, we will use `twine <https://pypi.org/project/twine/>`_ that you can also install with `pip`:
@@ -268,13 +258,15 @@ Build the source and binary distributions:
 
 .. code-block:: bash
 
-    python setup.py sdist bdist_wheel
+    python -m build
 
 
 This should add two files to the `dist` subfolder:
 
 - one for the source distribution that should look like `PACKAGENAME-VERSION.tar.gz`
 - one for the built distribution that should look like `PACKAGENAME-PACKAGEVERSION-PYTHONVERSION-PYTHONCVERSION-PLATFORM.whl`
+
+This will also update ``_version.py``.
 
 Optionally, we can run some basic checks with `twine`:
 

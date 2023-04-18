@@ -65,7 +65,7 @@ def shape():
 
 @pytest.fixture
 def affine():
-    return AFFINE_EYE
+    return np.eye(4)
 
 
 def test_identity_resample(shape, affine):
@@ -774,21 +774,23 @@ def test_reorder_img_with_resample_arg(affine):
     assert_array_equal(get_data(reordered_img), get_data(resampled_img))
 
 
-def test_reorder_img_error_reorder_axis(affine):
+def test_reorder_img_error_reorder_axis():
     rng = np.random.RandomState(42)
 
     shape = (5, 5, 5, 2, 2)
     data = rng.uniform(size=shape)
 
-    # Create a non-diagonal affine, and check that we raise a sensible
-    # exception
-    affine[1, 0] = 0.1
-    ref_img = Nifti1Image(data, affine)
-    with pytest.raises(ValueError, match="Cannot reorder the axes"):
-        reorder_img(ref_img)
+    # Create a non-diagonal affine,
+    # and check that we raise a sensible exception
+    non_diagonal_affine = np.eye(4)
+    non_diagonal_affine[1, 0] = 0.1
+    ref_img = Nifti1Image(data, non_diagonal_affine)
 
     # Test that no exception is raised when resample='continuous'
     reorder_img(ref_img, resample="continuous")
+
+    with pytest.raises(ValueError, match="Cannot reorder the axes"):
+        reorder_img(ref_img)
 
 
 def test_reorder_img_flipping_axis():
@@ -914,19 +916,13 @@ def test_coord_transform_trivial():
     assert x.shape == x_.shape
 
 
+#  TODO "This test does not run on ARM arch.",
 @pytest.mark.skipif(
     not testing.is_64bit(), reason="This test only runs on 64bits machines."
 )
 @pytest.mark.skipif(
     os.environ.get("APPVEYOR") == "True",
     reason="This test too slow (7-8 minutes) on AppVeyor",
-)
-@pytest.mark.skipif(
-    (
-        os.environ.get("TRAVIS") == "true"
-        and os.environ.get("TRAVIS_CPU_ARCH") == "arm64"
-    ),
-    reason="This test does not run on ARM arch.",
 )
 def test_resample_img_segmentation_fault():
     # see https://github.com/nilearn/nilearn/issues/346

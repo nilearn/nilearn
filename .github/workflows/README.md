@@ -75,13 +75,13 @@ With a merge on main, both "host" and "deploy" jobs are run.
 
 ### codespell.yml
 
-Checks for spelling errors. Configured in [setup.cfg](/setup.cfg). More information here: https://github.com/codespell-project/actions-codespell
+Checks for spelling errors. Configured in [pyproject.toml](/pyproject.toml). More information here: https://github.com/codespell-project/actions-codespell
 
 ## PEP8 check
 
 ### flake8.yml
 
-Uses flake8 tool to verify code is PEP8 compliant. Configured in [setup.cfg](/setup.cfg)
+Uses flake8 tool to verify code is PEP8 compliant. Configured in [.flake8](/.flake8)
 
 ## Sort imports automatically
 
@@ -94,6 +94,12 @@ Sorts Python imports alphabetically and by section. Configured in [pyproject.tom
 ### testing.yml
 
 Runs pytest in several environments including several Python and dependencies versions as well as on different systems.
+
+### detect_test_pollution.yml
+
+Runs once a month. 
+Use pytest with the pytest-random-order plugin to run all tests in a random order. 
+This aims to detect tests that are not properly isolated from each other (test pollution).
 
 ## Update precommit hooks
 

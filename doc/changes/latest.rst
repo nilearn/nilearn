@@ -17,6 +17,8 @@ NEW
 Fixes
 -----
 
+- Improve how :func:`~.glm.first_level.first_level_from_bids` handles fetching slice timing metadata and add additional input validation. In release ``0.12`` the default `slice_time_ref` will be `None` instead of `0` (:gh:`3605` by `Rémi Gau`_).
+
 - Fixes several bugs in :func:`~glm.first_level.first_level_from_bids`. Refactors :func:`~glm.first_level.first_level_from_bids` and ``nilearn._utils.data_gen.create_fake_bids_dataset``. (:gh:`3525` by `Rémi Gau`_).
 
 - Change calculation of TR in :func:`~.glm.first_level.compute_regressor` to be more precise (:gh:`3362` by `Anne-Sophie Kieslinger`_)
@@ -56,6 +58,7 @@ Changes
   :ref:`plot_multiscale_parcellations.py` and :ref:`plot_prob_atlas.py`with
   new altas API (:gh:`3557` by `Ahmad Chamma`_).
 
+- Moved packaging from ``setup.py`` and setuptools build backend to ``pyproject.toml`` and hatchling backend. This change comes about as new standards are defined for Python packaging that are better met by the new configuration (:gh:`3635` by `Yasmin Mzayek`_).
 
 0.10.1rc1
 =========

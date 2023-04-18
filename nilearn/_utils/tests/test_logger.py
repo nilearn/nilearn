@@ -1,4 +1,4 @@
-""" Test the logger module
+"""Test the logger module
 
 This test file is in nilearn/tests because Nosetest,
 which we historically used,
@@ -6,14 +6,15 @@ ignores modules whose name starts with an underscore.
 """
 import contextlib
 
-from sklearn.base import BaseEstimator
 from nilearn._utils.logger import log
+from sklearn.base import BaseEstimator
 
 
 @contextlib.contextmanager
 def capture_output():
     import sys
     from io import StringIO
+
     oldout, olderr = sys.stdout, sys.stderr
     try:
         out = [StringIO(), StringIO()]
@@ -37,14 +38,12 @@ def other_run():
 
 
 class Run3:
-
     def run3(self):
         log("method Test3")
         run()
 
 
 class Run2(BaseEstimator):
-
     def run2(self):
         log("method Test2")
         t = Run()
@@ -52,7 +51,6 @@ class Run2(BaseEstimator):
 
 
 class Run(BaseEstimator):
-
     def run(self):
         log("method Test")
         run()
@@ -69,17 +67,17 @@ def test_log():
     with capture_output() as out:
         t = Run2()
         t.run2()
-    assert (out[0] ==
-                 "[Run2.run2] method Test2\n"
-                 "[Run2.run2] method Test\n"
-                 "[Run2.run2] function run()\n")
+    assert (
+        out[0] == "[Run2.run2] method Test2\n"
+        "[Run2.run2] method Test\n"
+        "[Run2.run2] function run()\n"
+    )
 
     # Stack containing one matching object
     with capture_output() as out:
         t = Run()
         t.run()
-    assert (out[0] ==
-                 "[Run.run] method Test\n[Run.run] function run()\n")
+    assert out[0] == "[Run.run] method Test\n[Run.run] function run()\n"
 
     # Stack containing no object
     with capture_output() as out:
@@ -90,6 +88,7 @@ def test_log():
     with capture_output() as out:
         other_run()
     assert out[0] == "[<top_level>] function other_run()\n"
+
 
 # Will be executed by testrunner upon importing
 with capture_output() as out:
