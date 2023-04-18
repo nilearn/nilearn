@@ -16,6 +16,8 @@ Order of tests from top to bottom:
 #
 # License: simplified BSD
 
+import collections
+import numbers
 import warnings
 
 import numpy as np
@@ -206,17 +208,17 @@ def test_check_parameter_grid_is_empty(rand_X_Y):
 )
 def test_wrap_param_grid(param_grid):
     param_name = "alphas"
-    for param in ParameterGrid(_wrap_param_grid(param_grid, param_name)):
-        try:
-            for param_value in param[param_name]:
-                assert param_value in (1, 10, 100, 1000)
-
-        # if param_name is not in param_grid_wrapped,
-        # make sure that no other change was made
-        except KeyError:
-            assert any(
-                [param == param_ for param_ in ParameterGrid(param_grid)]
+    original_grid = ParameterGrid(param_grid)
+    wrapped_grid = ParameterGrid(_wrap_param_grid(param_grid, param_name))
+    for grid_row in wrapped_grid:
+        if param_name in grid_row:
+            param_value = grid_row[param_name]
+            assert isinstance(param_value, collections.abc.Iterable)
+            assert all(
+                isinstance(item, numbers.Number) for item in param_value
             )
+        else:
+            assert grid_row in original_grid
 
 
 @pytest.mark.parametrize(
