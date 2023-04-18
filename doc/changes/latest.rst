@@ -54,11 +54,11 @@ Changes
   :func:`~regions.signals_to_img_maps` (:gh:`3523` by `Rémi Gau`_ and `Christian
   Gerloff`_).
 
+- Moved packaging from ``setup.py`` and setuptools build backend to ``pyproject.toml`` and hatchling backend. This change comes about as new standards are defined for Python packaging that are better met by the new configuration (:gh:`3635` by `Yasmin Mzayek`_).
+
 - Examples are updated with the new atlas API :ref:`plot_3d_and_4d_niimg.py`,
   :ref:`plot_multiscale_parcellations.py` and :ref:`plot_prob_atlas.py`with
   new altas API (:gh:`3557` by `Ahmad Chamma`_).
-
-- Moved packaging from ``setup.py`` and setuptools build backend to ``pyproject.toml`` and hatchling backend. This change comes about as new standards are defined for Python packaging that are better met by the new configuration (:gh:`3635` by `Yasmin Mzayek`_).
 
 0.10.1rc1
 =========
