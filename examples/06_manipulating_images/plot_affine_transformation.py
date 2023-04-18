@@ -49,17 +49,25 @@ import numpy as np
 from nilearn.image import get_data
 
 grid = np.mgrid[0:192, 0:128]
-circle = np.sum(
-    (grid - np.array([32, 32])[:, np.newaxis, np.newaxis]) ** 2,
-    axis=0) < 256
-diamond = np.sum(
-    np.abs(grid - np.array([128, 80])[:, np.newaxis, np.newaxis]),
-    axis=0) < 16
-rectangle = np.max(np.abs(
-    grid - np.array([64, 96])[:, np.newaxis, np.newaxis]), axis=0) < 16
+circle = (
+    np.sum((grid - np.array([32, 32])[:, np.newaxis, np.newaxis]) ** 2, axis=0)
+    < 256
+)
+diamond = (
+    np.sum(
+        np.abs(grid - np.array([128, 80])[:, np.newaxis, np.newaxis]), axis=0
+    )
+    < 16
+)
+rectangle = (
+    np.max(
+        np.abs(grid - np.array([64, 96])[:, np.newaxis, np.newaxis]), axis=0
+    )
+    < 16
+)
 
 image = np.zeros_like(circle)
-image[16:160, 16:120] = 1.
+image[16:160, 16:120] = 1.0
 image = image + 2 * circle + 3 * rectangle + 4 * diamond + 1
 
 vmax = image.max()
@@ -71,44 +79,51 @@ source_affine[:2, 3] = np.array([96, 64])
 
 # Rotate it slightly
 angle = np.pi / 180 * 15
-rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)],
-                            [np.sin(angle), np.cos(angle)]])
+rotation_matrix = np.array(
+    [[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]]
+)
 source_affine[:2, :2] = rotation_matrix * 2.0  # 2.0mm voxel size
 
 # We need to turn this data into a nibabel image
 import nibabel
-img = nibabel.Nifti1Image(image[:, :, np.newaxis].astype("int32"),
-                          affine=source_affine)
+
+img = nibabel.Nifti1Image(
+    image[:, :, np.newaxis].astype("int32"), affine=source_affine
+)
 
 #############################################################################
 # Now resample the image
 from nilearn.image import resample_img
-img_in_mm_space = resample_img(img, target_affine=np.eye(4),
-                               target_shape=(512, 512, 1))
+
+img_in_mm_space = resample_img(
+    img, target_affine=np.eye(4), target_shape=(512, 512, 1)
+)
 
 target_affine_3x3 = np.eye(3) * 2
 target_affine_4x4 = np.eye(4) * 2
-target_affine_4x4[3, 3] = 1.
+target_affine_4x4[3, 3] = 1.0
 img_3d_affine = resample_img(img, target_affine=target_affine_3x3)
 img_4d_affine = resample_img(img, target_affine=target_affine_4x4)
 target_affine_mm_space_offset_changed = np.eye(4)
-target_affine_mm_space_offset_changed[:3, 3] = \
-    img_3d_affine.affine[:3, 3]
+target_affine_mm_space_offset_changed[:3, 3] = img_3d_affine.affine[:3, 3]
 
 img_3d_affine_in_mm_space = resample_img(
     img_3d_affine,
     target_affine=target_affine_mm_space_offset_changed,
-    target_shape=(np.array(img_3d_affine.shape) * 2).astype(int))
+    target_shape=(np.array(img_3d_affine.shape) * 2).astype(int),
+)
 
 img_4d_affine_in_mm_space = resample_img(
     img_4d_affine,
     target_affine=np.eye(4),
-    target_shape=(np.array(img_4d_affine.shape) * 2).astype(int))
+    target_shape=(np.array(img_4d_affine.shape) * 2).astype(int),
+)
 
 #############################################################################
 # Finally, visualize
 import matplotlib.pyplot as plt
 from nilearn.plotting import show
+
 plt.figure()
 plt.imshow(image, interpolation="nearest", vmin=0, vmax=vmax)
 plt.title("The original data in voxel space")
@@ -118,15 +133,17 @@ plt.imshow(get_data(img_in_mm_space)[:, :, 0], vmin=0, vmax=vmax)
 plt.title("The original data in mm space")
 
 plt.figure()
-plt.imshow(get_data(img_3d_affine_in_mm_space)[:, :, 0],
-           vmin=0, vmax=vmax)
-plt.title("Transformed using a 3x3 affine -\n leads to "
-          "re-estimation of bounding box")
+plt.imshow(get_data(img_3d_affine_in_mm_space)[:, :, 0], vmin=0, vmax=vmax)
+plt.title(
+    "Transformed using a 3x3 affine -\n leads to "
+    "re-estimation of bounding box"
+)
 
 plt.figure()
-plt.imshow(get_data(img_4d_affine_in_mm_space)[:, :, 0],
-           vmin=0, vmax=vmax)
-plt.title("Transformed using a 4x4 affine -\n Uses affine anchor "
-          "and estimates bounding box size")
+plt.imshow(get_data(img_4d_affine_in_mm_space)[:, :, 0], vmin=0, vmax=vmax)
+plt.title(
+    "Transformed using a 4x4 affine -\n Uses affine anchor "
+    "and estimates bounding box size"
+)
 
 show()

@@ -1,6 +1,6 @@
 """
 Seed-based connectivity on the surface
-=======================================
+======================================
 
 The dataset that is a subset of the enhanced NKI Rockland sample
 (http://fcon_1000.projects.nitrc.org/indi/enhanced/, Nooner et al, 2012)
@@ -28,7 +28,6 @@ See :ref:`plotting` for more details on plotting tools.
 
 References
 ----------
-
 Nooner et al, (2012). The NKI-Rockland Sample: A model for accelerating the
 pace of discovery science in psychiatry. Frontiers in neuroscience 6, 152.
 URL http://dx.doi.org/10.3389/fnins.2012.00152
@@ -44,6 +43,7 @@ http://dx.doi.org/10.1006/nimg.1998.0396
 Destrieux et al, (2010). Automatic parcellation of human cortical gyri and
 sulci using standard anatomical nomenclature. NeuroImage, 53, 1.
 URL http://dx.doi.org/10.1016/j.neuroimage.2010.06.010.
+
 """
 
 ###############################################################################
@@ -71,16 +71,20 @@ fsaverage = datasets.fetch_surf_fsaverage()
 
 # The fsaverage dataset contains file names pointing to
 # the file locations
-print('Fsaverage5 pial surface of left hemisphere is at: %s' %
-      fsaverage['pial_left'])
-print('Fsaverage5 inflated surface of left hemisphere is at: %s' %
-      fsaverage['infl_left'])
-print('Fsaverage5 sulcal depth map of left hemisphere is at: %s' %
-      fsaverage['sulc_left'])
+print('Fsaverage5 pial surface of left hemisphere is at: '
+      f"{fsaverage['pial_left']}")
+print('Fsaverage5 flatten pial surface of left hemisphere is at: '
+      f"{fsaverage['flat_left']}")
+print('Fsaverage5 inflated surface of left hemisphere is at: '
+      f"{fsaverage['infl_left']}")
+print('Fsaverage5 sulcal depth map of left hemisphere is at: '
+      f"{fsaverage['sulc_left']}")
+print('Fsaverage5 curvature map of left hemisphere is at: '
+      f"{fsaverage['curv_left']}")
 
 ###############################################################################
 # Extracting the seed time series
-# --------------------------------
+# -------------------------------
 
 # Load resting state time series from nilearn
 from nilearn import surface
@@ -91,6 +95,7 @@ timeseries = surface.load_surf_data(nki_dataset['func_left'][0])
 pcc_region = b'G_cingul-Post-dorsal'
 
 import numpy as np
+
 pcc_labels = np.where(parcellation == labels.index(pcc_region))[0]
 
 # Extract time series from seed region
@@ -120,10 +125,35 @@ pcc_map[pcc_labels] = 1
 
 from nilearn import plotting
 
-plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=pcc_map,
-                       hemi='left', view='medial',
-                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
-                       title='PCC Seed')
+plotting.plot_surf_roi(
+    fsaverage['pial_left'],
+    roi_map=pcc_map,
+    hemi='left',
+    view='medial',
+    bg_map=fsaverage['sulc_left'],
+    bg_on_data=True,
+    title='PCC Seed'
+)
+
+###############################################################################
+# Using a flat mesh can be useful in order to easily locate the area
+# of interest on the cortex. To make this plot easier to read,
+# we use the mesh curvature as a background map.
+
+bg_map = np.sign(surface.load_surf_data(fsaverage['curv_left']))
+# np.sign yields values in [-1, 1]. We rescale the background map
+# such that values are in [0.25, 0.75], resulting in a nicer looking plot.
+bg_map_rescaled = (bg_map + 1) / 4 + 0.25
+
+plotting.plot_surf_roi(
+    fsaverage['flat_left'],
+    roi_map=pcc_map,
+    hemi='left',
+    view='dorsal',
+    bg_map=bg_map_rescaled,
+    bg_on_data=True,
+    title='PCC Seed'
+)
 
 ###############################################################################
 # Display unthresholded stat map with a slightly dimmed background
@@ -161,3 +191,5 @@ plotting.plot_surf_stat_map(fsaverage['infl_left'], stat_map=stat_map,
                             output_file='plot_surf_stat_map.png')
 
 plotting.show()
+
+# sphinx_gallery_thumbnail_number = 2

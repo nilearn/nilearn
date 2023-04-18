@@ -1,5 +1,4 @@
-"""
-This module implements plotting functions useful to report analysis results.
+"""Implement plotting functions useful to report analysis results.
 
 Author: Martin Perez-Guevara, Elvis Dohmatob, 2017
 """
@@ -7,24 +6,25 @@ Author: Martin Perez-Guevara, Elvis Dohmatob, 2017
 import warnings
 from string import ascii_lowercase
 
+import nibabel as nib
 import numpy as np
 import pandas as pd
-import nibabel as nib
-from scipy.ndimage import (
-    maximum_filter,
-    minimum_filter,
-    label,
-    center_of_mass,
-    generate_binary_structure,
-)
-from nilearn.image import threshold_img, new_img_like
-from nilearn.image.resampling import coord_transform
 from nilearn._utils import check_niimg_3d
 from nilearn._utils.niimg import _safe_get_data
+from nilearn.image import new_img_like, threshold_img
+from nilearn.image.resampling import coord_transform
+from scipy.ndimage import (
+    center_of_mass,
+    generate_binary_structure,
+    label,
+    maximum_filter,
+    minimum_filter,
+)
 
 
 def _local_max(data, affine, min_distance):
     """Find all local maxima of the array, separated by at least min_distance.
+
     Adapted from https://stackoverflow.com/a/22631583/2589328
 
     Parameters
@@ -110,7 +110,7 @@ def _identify_subpeaks(data):
         ijk[subpeaks_outside_cluster] = _cluster_nearest_neighbor(
             ijk[subpeaks_outside_cluster],
             labels_index[subpeaks_outside_cluster],
-            labeled
+            labeled,
         )
     vals = data[ijk[:, 0], ijk[:, 1], ijk[:, 2]]
     return ijk, vals
@@ -205,10 +205,15 @@ def _pare_subpeaks(xyz, ijk, vals, min_distance):
     return ijk, vals
 
 
-def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
-                       two_sided=False, min_distance=8.,
-                       return_label_maps=False):
-    """Creates pandas dataframe with img cluster statistics.
+def get_clusters_table(
+    stat_img,
+    stat_threshold,
+    cluster_threshold=None,
+    two_sided=False,
+    min_distance=8.0,
+    return_label_maps=False,
+):
+    """Create pandas dataframe with img cluster statistics.
 
     This function should work on any statistical maps where more extreme values
     indicate greater statistical significance.
@@ -254,7 +259,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     return_label_maps : :obj:`bool`, optional
         Whether or not to additionally output cluster label map images.
         Default=False.
-    
+
         .. versionadded:: 0.10.1.dev
 
     Returns
@@ -274,7 +279,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
                            Rows corresponding to subpeaks will not have a value
                            in this column.
         ================== ====================================================
-        
+
     label_maps : :obj:`list`
         Returned if return_label_maps=True
         List of Niimg-like objects of cluster label maps.
@@ -284,14 +289,15 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         .. versionadded:: 0.10.1.dev
 
     """
-    cols = ['Cluster ID', 'X', 'Y', 'Z', 'Peak Stat', 'Cluster Size (mm3)']
+    cols = ["Cluster ID", "X", "Y", "Z", "Peak Stat", "Cluster Size (mm3)"]
     # Replace None with 0
     cluster_threshold = 0 if cluster_threshold is None else cluster_threshold
 
     # check that stat_img is niimg-like object and 3D
     stat_img = check_niimg_3d(stat_img)
     affine = stat_img.affine
-    
+    shape = stat_img.shape
+
     # Apply threshold(s) to image
     stat_img = threshold_img(
         img=stat_img,
@@ -304,8 +310,11 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
 
     # If cluster threshold is used, there is chance that stat_map will be
     # modified, therefore copy is needed
-    stat_map = _safe_get_data(stat_img, ensure_finite=True,
-                              copy_data=(cluster_threshold is not None))
+    stat_map = _safe_get_data(
+        stat_img,
+        ensure_finite=True,
+        copy_data=(cluster_threshold is not None),
+    )
 
     # Define array for 6-connectivity, aka NN1 or "faces"
     bin_struct = generate_binary_structure(rank=3, connectivity=1)
@@ -327,22 +336,29 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
         # If the stat threshold is too high simply return an empty dataframe
         if np.sum(binarized) == 0:
             warnings.warn(
-                'Attention: No clusters with stat {0} than {1}'.format(
-                    'higher' if sign == 1 else 'lower',
-                    stat_threshold * sign,
-                )
+                "Attention: No clusters "
+                f'with stat {"higher" if sign == 1 else "lower"} '
+                f"than {stat_threshold * sign}"
             )
             continue
 
         # Now re-label and create table
         label_map = label(binarized, bin_struct)[0]
-        # Save label maps as nifti objects
-        label_maps.append(new_img_like(stat_img, label_map, affine=affine))
         clust_ids = sorted(list(np.unique(label_map)[1:]))
         peak_vals = np.array(
-            [np.max(temp_stat_map * (label_map == c)) for c in clust_ids])
+            [np.max(temp_stat_map * (label_map == c)) for c in clust_ids]
+        )
         # Sort by descending max value
         clust_ids = [clust_ids[c] for c in (-peak_vals).argsort()]
+
+        if return_label_maps:
+            # Relabel label_map based on sorted ids
+            relabel_idx = np.insert(clust_ids, 0, 0).argsort().astype(np.int32)
+            relabel_map = relabel_idx[label_map.flatten()].reshape(shape)
+            # Save label maps as nifti objects
+            label_maps.append(
+                new_img_like(stat_img, relabel_map, affine=affine)
+            )
 
         for c_id, c_val in enumerate(clust_ids):
             cluster_mask = label_map == c_val
@@ -382,17 +398,14 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
                 else:
                     # Subpeak naming convention is cluster num+letter:
                     # 1a, 1b, etc
-                    sp_id = '{0}{1}'.format(
-                        c_id + 1,
-                        ascii_lowercase[subpeak - 1],
-                    )
+                    sp_id = f"{c_id + 1}{ascii_lowercase[subpeak - 1]}"
                     row = [
                         sp_id,
                         subpeak_xyz[subpeak, 0],
                         subpeak_xyz[subpeak, 1],
                         subpeak_xyz[subpeak, 2],
                         subpeak_vals[subpeak],
-                        '',
+                        "",
                     ]
                 rows += [row]
 
@@ -404,7 +417,4 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     else:
         df = pd.DataFrame(columns=cols, data=rows)
 
-    if return_label_maps:
-        return df, label_maps
-    else:
-        return df
+    return (df, label_maps) if return_label_maps else df

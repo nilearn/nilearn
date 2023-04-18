@@ -10,7 +10,7 @@ basic nilearn functionalities.
 from nilearn.datasets import MNI152_FILE_PATH
 
 # Note that the variable MNI152_FILE_PATH is just a path to a Nifti file
-print('Path to MNI152 template: %r' % MNI152_FILE_PATH)
+print(f"Path to MNI152 template: {MNI152_FILE_PATH!r}")
 
 #########################################################################
 # A first step: looking at our data
@@ -18,6 +18,7 @@ print('Path to MNI152 template: %r' % MNI152_FILE_PATH)
 #
 # Let's quickly plot this file:
 from nilearn import plotting
+
 plotting.plot_img(MNI152_FILE_PATH)
 
 #########################################################################
@@ -32,7 +33,7 @@ plotting.plot_img(MNI152_FILE_PATH)
 
 #########################################################################
 # Simple image manipulation: smoothing
-# -------------------------------------
+# ------------------------------------
 #
 # Let's use an image-smoothing function from nilearn:
 # :func:`nilearn.image.smooth_img`
@@ -41,6 +42,7 @@ plotting.plot_img(MNI152_FILE_PATH)
 #
 # Here we give as inputs the image filename and the smoothing value in mm
 from nilearn import image
+
 smooth_anat_img = image.smooth_img(MNI152_FILE_PATH, fwhm=3)
 
 # While we are giving a file name as input, the function returns
@@ -62,7 +64,7 @@ plotting.plot_img(more_smooth_anat_img)
 # -------------------------
 #
 # We can save any in-memory object as follows:
-more_smooth_anat_img.to_filename('more_smooth_anat_img.nii.gz')
+more_smooth_anat_img.to_filename("more_smooth_anat_img.nii.gz")
 
 #########################################################################
 # Finally, calling plotting.show() is necessary to display the figure
