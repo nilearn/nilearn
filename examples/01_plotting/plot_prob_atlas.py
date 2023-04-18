@@ -32,24 +32,12 @@ harvard_oxford_sub = datasets.fetch_atlas_harvard_oxford("sub-prob-2mm")
 msdl = datasets.fetch_atlas_msdl()
 
 # Smith ICA Atlas and Brain Maps 2009
-smith_rsn10 = datasets.fetch_atlas_smith_2009(resting=True, dimension=10)[
-    "map"
-]
-smith_rsn20 = datasets.fetch_atlas_smith_2009(resting=True, dimension=20)[
-    "map"
-]
-smith_rsn70 = datasets.fetch_atlas_smith_2009(resting=True, dimension=70)[
-    "map"
-]
-smith_bm10 = datasets.fetch_atlas_smith_2009(resting=False, dimension=10)[
-    "map"
-]
-smith_bm20 = datasets.fetch_atlas_smith_2009(resting=False, dimension=20)[
-    "map"
-]
-smith_bm70 = datasets.fetch_atlas_smith_2009(resting=False, dimension=70)[
-    "map"
-]
+smith_rsn10 = datasets.fetch_atlas_smith_2009(resting=True, dimension=10)["map"]
+smith_rsn20 = datasets.fetch_atlas_smith_2009(resting=True, dimension=20)["map"]
+smith_rsn70 = datasets.fetch_atlas_smith_2009(resting=True, dimension=70)["map"]
+smith_bm10 = datasets.fetch_atlas_smith_2009(resting=False, dimension=10)["map"]
+smith_bm20 = datasets.fetch_atlas_smith_2009(resting=False, dimension=20)["map"]
+smith_bm70 = datasets.fetch_atlas_smith_2009(resting=False, dimension=70)["map"]
 
 # ICBM tissue probability
 icbm = datasets.fetch_icbm152_2009()
@@ -82,7 +70,7 @@ atlas_types = {
     "ICBM tissues": (icbm["wm"], icbm["gm"], icbm["csf"]),
     "Allen2011": allen.rsn28,
     "Pauli2017 Subcortical Atlas": subcortex.maps,
-    "DiFuMo dimension {0} resolution {1}".format(dim, res): difumo.maps,
+    f"DiFuMo dimension {dim} resolution {res}": difumo.maps,
 }
 
 for name, atlas in sorted(atlas_types.items()):

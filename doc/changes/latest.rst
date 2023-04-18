@@ -46,7 +46,15 @@ Changes
 
 - Examples have been made PEP8 compliant and reformatted using black. (:gh:`3549`, :gh:`3550`, :gh:`3551`, :gh:`3552`, :gh:`3553`, :gh:`3554`, :gh:`3555`,  by `Rémi Gau`_).
 
-- Extract helper-functions for input-image validation from :func:`~regions.img_to_signals_labels`, :func:`~regions.signals_to_img_labels`, :func:`~regions.img_to_signals_maps` :func:`~regions.signals_to_img_maps` (:gh:`3523` by `Rémi Gau`_ and `Christian Gerloff`_).
+- Extract helper-functions for input-image validation from
+  :func:`~regions.img_to_signals_labels`,
+  :func:`~regions.signals_to_img_labels`, :func:`~regions.img_to_signals_maps`
+  :func:`~regions.signals_to_img_maps` (:gh:`3523` by `Rémi Gau`_ and `Christian
+  Gerloff`_).
+
+- Examples are updated with the new atlas API :ref:`plot_3d_and_4d_niimg.py`,
+  :ref:`plot_multiscale_parcellations.py` and :ref:`plot_prob_atlas.py`with
+  new altas API (:gh:`3557` by `Ahmad Chamma`_).
 
 
 0.10.1rc1
