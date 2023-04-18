@@ -56,9 +56,14 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
 
     Example:
 
-        a = numpy.asarray([0, 1, 2], dtype=numpy.int8)
-        b = as_ndarray(a, dtype=bool) # array([False, True, True], dtype=bool)
-        c = as_ndarray(b, dtype=numpy.int8) # array([0, 1, 2], dtype=numpy.int8) # noqa
+    >>> import numpy
+    >>> a = numpy.asarray([0, 1, 2], dtype=numpy.int8)
+    >>> b = as_ndarray(a, dtype=bool)
+    >>> b
+    array([False,  True,  True])
+    >>> c = as_ndarray(b, dtype=numpy.int8)
+    >>> c
+    array([0, 1, 2], dtype=int8)
 
     The usually expected result for the last line would be array([0, 1, 1])
     because True evaluates to 1. Since there is no copy made here, the original
