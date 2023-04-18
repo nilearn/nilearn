@@ -1173,7 +1173,7 @@ def test_first_level_from_bids_select_all_runs_of_one_session(bids_dataset):
     assert len(m_imgs[0]) == n_imgs_expected
 
 
-@pytest.mark.parametrize("verbose", [0, 1])
+@pytest.mark.parametrize("verbose", [0, 1, 2, 3])
 def test_first_level_from_bids_smoke_test_for_verbose_argument(
         bids_dataset,
         verbose):

@@ -49,6 +49,11 @@ from sklearn.base import clone
 from sklearn.cluster import KMeans
 
 
+import logging
+
+logging.basicConfig(level=logging.ERROR)
+logger = logging.getLogger(name="nilearn")
+
 def mean_scaling(Y, axis=0):
     """Scaling of the data to have percent of baseline change \
     along the specified axis.
@@ -928,6 +933,14 @@ def first_level_from_bids(dataset_path,
         Items for the FirstLevelModel fit function of their respective model.
 
     """
+
+    if verbose == 1:
+        logger.setLevel(logging.WARNING)
+    elif verbose == 2:
+        logger.setLevel(logging.INFO)
+    elif verbose == 3:
+        logger.setLevel(logging.DEBUG)
+
     if slice_time_ref == 0:
         warn(
             'Starting in version 0.12, slice_time_ref will default to None.',
@@ -962,7 +975,6 @@ def first_level_from_bids(dataset_path,
         supported_filters=[*_bids_entities()["raw"],
                            *_bids_entities()["derivatives"]],
         extra_filter=img_filters,
-        verbose=verbose
     )
     inferred_t_r = _infer_repetition_time_from_dataset(
         bids_path=derivatives_path,
@@ -973,7 +985,6 @@ def first_level_from_bids(dataset_path,
             task_label=task_label,
             supported_filters=[*_bids_entities()["raw"]],
             extra_filter=img_filters,
-            verbose=verbose
         )
         inferred_t_r = _infer_repetition_time_from_dataset(
             bids_path=dataset_path,
@@ -1004,7 +1015,6 @@ def first_level_from_bids(dataset_path,
         supported_filters=[*_bids_entities()["raw"],
                            *_bids_entities()["derivatives"]],
         extra_filter=img_filters,
-        verbose=verbose
     )
     StartTime = _infer_slice_timing_start_time_from_dataset(
         bids_path=derivatives_path,
@@ -1061,16 +1071,14 @@ def first_level_from_bids(dataset_path,
                                    sub_label=sub_label_,
                                    task_label=task_label,
                                    space_label=space_label,
-                                   img_filters=img_filters,
-                                   verbose=verbose)
+                                   img_filters=img_filters)
         models_run_imgs.append(imgs)
 
         events = _get_events_files(dataset_path=dataset_path,
                                    sub_label=sub_label_,
                                    task_label=task_label,
                                    img_filters=img_filters,
-                                   imgs=imgs,
-                                   verbose=verbose)
+                                   imgs=imgs)
         events = [pd.read_csv(event, sep='\t', index_col=None)
                   for event in events]
         models_events.append(events)
@@ -1079,8 +1087,7 @@ def first_level_from_bids(dataset_path,
                                    sub_label=sub_label_,
                                    task_label=task_label,
                                    img_filters=img_filters,
-                                   imgs=imgs,
-                                   verbose=verbose)
+                                   imgs=imgs)
         if confounds:
             confounds = [pd.read_csv(c, sep='\t', index_col=None)
                          for c in confounds]
@@ -1133,7 +1140,7 @@ def _list_valid_subjects(derivatives_path,
     return set(sub_labels_exist)
 
 
-def _report_found_files(
+def _format_report_found_files(
     files, text, sub_label, filters
 ):
     """Print list of files found for a given subject and filter.
@@ -1154,12 +1161,12 @@ def _report_found_files(
         Only one filter per field allowed.
 
     """
-    print(
-        f"Found the following {len(files)} {text} files\n",
-        f"for subject {sub_label}\n",
-        f"for filter: {filters}:\n",
-        f"{files}\n",
-    )
+    return (f"\nFound the following {len(files)} {text} files\n" +
+            f"for subject {sub_label}\n" +
+            f"for filter: {filters}:" +
+            "\n- " +
+            "\n- ".join(files))
+    
 
 
 def _get_processed_imgs(
@@ -1168,7 +1175,6 @@ def _get_processed_imgs(
     task_label,
     space_label,
     img_filters,
-    verbose
 ) :
     """Get images for a given subject, task and filters.
 
@@ -1189,9 +1195,6 @@ def _get_processed_imgs(
         Filters are of the form (field, label).
         Only one filter per field allowed.
 
-    verbose : :obj:`integer`
-        Indicate the level of verbosity.
-
     Returns
     -------
     imgs : :obj:`list` of :obj:`str`
@@ -1204,7 +1207,6 @@ def _get_processed_imgs(
         supported_filters=_bids_entities()["raw"]
         + _bids_entities()["derivatives"],
         extra_filter=img_filters,
-        verbose=verbose,
     )
     imgs = get_bids_files(
         main_path=derivatives_path,
@@ -1214,11 +1216,10 @@ def _get_processed_imgs(
         sub_label=sub_label,
         filters=filters,
     )
-    if verbose:
-        _report_found_files(files=imgs,
-                            text='preprocessed BOLD',
-                            sub_label=sub_label,
-                            filters=filters)
+    logger.info(_format_report_found_files(files=imgs,
+                                           text='preprocessed BOLD',
+                                           sub_label=sub_label,
+                                           filters=filters))
     _check_bids_image_list(imgs, sub_label, filters)
     return imgs
 
@@ -1229,7 +1230,6 @@ def _get_events_files(
     task_label,
     img_filters,
     imgs,
-    verbose,
 ):
     """Get events.tsv files for a given subject, task and filters.
 
@@ -1254,9 +1254,6 @@ def _get_events_files(
     imgs : :obj:`list` of :obj:`str`
         List of fullpath to the preprocessed images
 
-    verbose : :obj:`integer`
-        Indicate the level of verbosity.
-
     Returns
     -------
     events : :obj:`list` of :obj:`str`
@@ -1266,7 +1263,6 @@ def _get_events_files(
         task_label=task_label,
         supported_filters=_bids_entities()["raw"],
         extra_filter=img_filters,
-        verbose=verbose,
     )
     events = get_bids_files(
         dataset_path,
@@ -1276,11 +1272,10 @@ def _get_events_files(
         sub_label=sub_label,
         filters=events_filters,
     )
-    if verbose:
-        _report_found_files(files=events,
-                            text='events',
-                            sub_label=sub_label,
-                            filters=events_filters)
+    logger.info(_format_report_found_files(files=events,
+                                           text='events',
+                                           sub_label=sub_label,
+                                           filters=events_filters))
     _check_bids_events_list(
         events=events,
         imgs=imgs,
@@ -1288,7 +1283,6 @@ def _get_events_files(
         task_label=task_label,
         dataset_path=dataset_path,
         events_filters=events_filters,
-        verbose=verbose,
     )
     return events
 
@@ -1299,7 +1293,6 @@ def _get_confounds(
     task_label,
     img_filters,
     imgs,
-    verbose,
 ):
     """Get confounds.tsv files for a given subject, task and filters.
 
@@ -1324,9 +1317,6 @@ def _get_confounds(
     imgs : :obj:`list` of :obj:`str`
         List of fullpath to the preprocessed images
 
-    verbose : :obj:`integer`
-        Indicate the level of verbosity.
-
     Returns
     -------
     confounds : :obj:`list` of :obj:`str` or None
@@ -1344,7 +1334,6 @@ def _get_confounds(
         task_label=task_label,
         supported_filters=supported_filters,
         extra_filter=img_filters,
-        verbose=verbose,
     )
     confounds = get_bids_files(
         derivatives_path,
@@ -1354,11 +1343,10 @@ def _get_confounds(
         sub_label=sub_label,
         filters=filters,
     )
-    if verbose:
-        _report_found_files(files=confounds,
-                            text='confounds',
-                            sub_label=sub_label,
-                            filters=filters)
+    logger.info(_format_report_found_files(files=confounds,
+                                           text='confounds',
+                                           sub_label=sub_label,
+                                           filters=filters))
     _check_confounds_list(confounds=confounds, imgs=imgs)
     return confounds or None
 
@@ -1488,8 +1476,7 @@ def _make_bids_files_filter(
     task_label,
     space_label=None,
     supported_filters=None,
-    extra_filter=None,
-    verbose=0
+    extra_filter=None
 ) :
     """Return a filter to specific files from a BIDS dataset.
 
@@ -1509,9 +1496,6 @@ def _make_bids_files_filter(
         Filters are of the form (field, label).
         Only one filter per field allowed.
 
-    verbose : :obj:`integer`
-        Indicate the level of verbosity.
-
     Returns
     -------
     Filter to be used by :func:`get_bids_files`: \
@@ -1527,8 +1511,7 @@ def _make_bids_files_filter(
     if extra_filter and supported_filters:
         for filter_ in extra_filter:
             if filter_[0] not in supported_filters:
-                if verbose:
-                    warn(
+                logger.warning(
                         f"The filter {filter_} will be skipped. "
                         f"'{filter_[0]}' is not among the supported filters. "
                         f"Allowed filters include: {supported_filters}"
@@ -1625,7 +1608,6 @@ def _check_bids_events_list(
     task_label,
     dataset_path,
     events_filters,
-    verbose
 ):
     """Check input BIDS events.
 
@@ -1689,7 +1671,6 @@ def _check_bids_events_list(
             space_label=None,
             supported_filters=supported_filters,
             extra_filter=extra_filter,
-            verbose=verbose
         )
         this_event = get_bids_files(
             dataset_path,
