@@ -171,12 +171,6 @@ def make_glm_report(
         Contains the HTML code for the GLM Report.
 
     """
-    """
-    Bug in Pandas 0.18 : https://github.com/pandas-dev/pandas/issues/13257
-    pd.set_option('display.precision', 2)
-    limits number of digits shown instead of precision.
-    Hence pd.option_context('display.precision', 2) has been used.
-    """
     if bg_img == "MNI152TEMPLATE":
         bg_img = MNI152TEMPLATE
     if not display_mode:
