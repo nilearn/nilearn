@@ -60,7 +60,7 @@ def fetch_haxby(
     ----------
     %(data_dir)s
     subjects : list or int, optional
-        Either a list of subjects or the number of subjects to load, \
+        Either a list of subjects or the number of subjects to load,
         from 1 to 6.
         By default, 2nd subject will be loaded.
         Empty list returns no subject data. Default=(2,).
@@ -1716,7 +1716,7 @@ def fetch_surf_nki_enhanced(
 
 @fill_doc
 def _fetch_development_fmri_participants(data_dir, url, verbose):
-    """Fetch_development_fmri.
+    """Use in fetch_development_fmri function.
 
     This function helps in downloading and loading participants data from .tsv
     uploaded on Open Science Framework (OSF).
@@ -2566,7 +2566,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
 def _download_spm_auditory_data(data_dir, subject_dir, subject_id):
     print("Data absent, downloading...")
     url = (
-        "http://www.fil.ion.ucl.ac.uk/spm/download/data/MoAEpilot/"
+        "https://www.fil.ion.ucl.ac.uk/spm/download/data/MoAEpilot/"
         "MoAEpilot.zip"
     )
     archive_path = os.path.join(subject_dir, os.path.basename(url))
@@ -2643,7 +2643,7 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
 
 def _make_path_events_file_spm_auditory_data(spm_auditory_data):
     """Accept data for spm_auditory dataset as Bunch \
-    and constructs the filepath for its events descriptor file.
+    and construct the filepath for its events descriptor file.
 
     Parameters
     ----------
@@ -2832,12 +2832,12 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
     urls = [
         # fmri
         (
-            "http://www.fil.ion.ucl.ac.uk/spm/download/data/mmfaces/"
+            "https://www.fil.ion.ucl.ac.uk/spm/download/data/mmfaces/"
             "multimodal_fmri.zip"
         ),
         # structural
         (
-            "http://www.fil.ion.ucl.ac.uk/spm/download/data/mmfaces/"
+            "https://www.fil.ion.ucl.ac.uk/spm/download/data/mmfaces/"
             "multimodal_smri.zip"
         ),
     ]
