@@ -1379,9 +1379,8 @@ def fetch_megatrawls_netmats(
 
     matrices : str, optional
         Valid inputs are 'full_correlation' or 'partial_correlation'.
-        By default,
-        partial correlation matrices will be returned otherwise if selected
-        full correlation matrices will be returned.
+        By default, partial correlation matrices will be returned
+        otherwise if selected full correlation matrices will be returned.
         Default='partial_correlation'.
     %(data_dir)s
     %(resume)s
