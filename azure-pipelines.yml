@@ -39,6 +39,8 @@ jobs:
     displayName: 'Install dependencies'
 
   - script: |
+      mkdir temp
+      cd temp
       python -m pytest --pyargs nilearn --cov-report=xml --cov=nilearn --cov-append --junitxml=test-results.xml
     displayName: 'test'
 
