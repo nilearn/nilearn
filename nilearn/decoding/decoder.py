@@ -142,19 +142,18 @@ def _default_param_grid(estimator, X, y):
     """
     param_grid = {}
 
-    # validate estimator and define loss function if needed
-    if isinstance(estimator, LogisticRegression):
-        loss = "log"
-    elif isinstance(estimator, LinearSVC):
-        loss = "squared_hinge"
-    elif isinstance(estimator, (DummyClassifier, DummyRegressor)):
+    # validate estimator
+    if isinstance(estimator, (DummyClassifier, DummyRegressor)):
         if estimator.strategy in ["constant"]:
             message = (
                 "Dummy classification implemented only for strategies"
                 ' "most_frequent", "prior", "stratified"'
             )
             raise NotImplementedError(message)
-    elif not isinstance(estimator, (RidgeCV, RidgeClassifierCV, SVR)):
+    elif not isinstance(
+        estimator,
+        (LogisticRegression, LinearSVC, RidgeCV, RidgeClassifierCV, SVR),
+    ):
         raise ValueError(
             "Invalid estimator. The supported estimators are:"
             f" {list(SUPPORTED_ESTIMATORS.keys())}"
@@ -162,7 +161,14 @@ def _default_param_grid(estimator, X, y):
 
     # use l1_min_c to get lower bound for estimators with L1 penalty
     if hasattr(estimator, "penalty") and (estimator.penalty == "l1"):
+        # define loss function
+        if isinstance(estimator, LogisticRegression):
+            loss = "log"
+        elif isinstance(estimator, LinearSVC):
+            loss = "squared_hinge"
+
         min_c = l1_min_c(X, y, loss=loss)
+
     # otherwise use 0.5 which will give param_grid["C"] = [1, 10, 100]
     else:
         min_c = 0.5
@@ -207,8 +213,6 @@ def _wrap_param_grid(param_grid, param_name):
     input_is_dict = isinstance(param_grid, dict)
     if input_is_dict:
         param_grid = [param_grid]
-    else:
-        param_grid = param_grid
 
     # process dicts one by one and add them to a new list
     new_param_grid = []

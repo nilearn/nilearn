@@ -75,12 +75,20 @@ session = labels["chunks"][condition_mask]
 from nilearn.decoding import Decoder
 
 # We provide a grid of hyperparameter values to the Decoder's internal
-# cross-validation. If no param_grid is provided, the Decoder will use a default 
-# grid with sensible values for the chosen estimator
-param_grid = {
-    'C': [1, 10, 100, 1000],
-    'intercept_scaling': [1, 10],
-}
+# cross-validation. If no param_grid is provided, the Decoder will use a
+# default grid with sensible values for the chosen estimator
+param_grid = [
+    {
+        "penalty": ["l2"],
+        "dual": [True],
+        "C": [100, 1000],
+    },
+    {
+        "penalty": ["l1"],
+        "dual": [False],
+        "C": [100, 1000],
+    },
+]
 
 # Here screening_percentile is set to 2 percent, meaning around 800
 # features will be selected with ANOVA.
@@ -107,16 +115,17 @@ decoder = Decoder(
 decoder.fit(fmri_niimgs, y)
 
 # Print the best parameters for each fold
-for i, (best_C, best_intercept_scaling, cv_score) in enumerate(
+for i, (best_C, best_penalty, best_dual, cv_score) in enumerate(
     zip(
-        decoder.cv_params_["shoe"]["C"], 
-        decoder.cv_params_["shoe"]["intercept_scaling"], 
+        decoder.cv_params_["shoe"]["C"],
+        decoder.cv_params_["shoe"]["penalty"],
+        decoder.cv_params_["shoe"]["dual"],
         decoder.cv_scores_["shoe"],
     )
 ):
     print(
         f"Fold {i+1} | Best SVM parameters: C={best_C}"
-        f", intercept_scaling={best_intercept_scaling} with score: {cv_score}"
+        f", penalty={best_penalty}, dual={best_dual} with score: {cv_score}"
     )
 
 # Output the prediction with Decoder
