@@ -38,6 +38,9 @@ jobs:
       pip install --prefer-binary .[plotting,plotly,test]
     displayName: 'Install dependencies'
 
+  # Running pytest from different directory avoids adding nilearn root repo to
+  # sys.path, ensuring that the testing is run based on what's in the build
+  # distribution.
   - script: |
       mkdir temp
       cd temp
