@@ -76,7 +76,7 @@ def test_resample_to_mask_warning():
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
     img = nibabel.Nifti1Image(data, np.eye(4))
-    # defining a mask with a higher resolution than img
+    # defining a mask with different fov than img
     mask = np.zeros((12, 12, 12))
     mask[3:-3, 3:-3, 3:-3] = 10
     mask = mask.astype("uint8")
