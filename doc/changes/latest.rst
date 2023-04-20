@@ -37,6 +37,8 @@ Enhancements
 
 - :func:`~glm.first_level.first_level_from_bids` now takes an optional ``sub_labels`` argument and warns users of given subject labels that are not present in the dataset (:gh:`3351` by `Kevin Sitek`_).
 
+- :class:`NiftiMasker` now warns users if the data is being resampled to mask resolution (:gh:`3631` by `Mohammad Torabi`_).
+
 
 Changes
 -------

@@ -69,9 +69,9 @@ def test_resample():
     assert np.any(X != 0)
 
 
-def test_upsample_warning():
+def test_resample_to_mask_warning():
     """Check that a warning is raised when data is
-    being upsampled to mask's resolution.
+    being resampled to mask's resolution.
     """
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
