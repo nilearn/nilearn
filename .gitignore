@@ -5,8 +5,6 @@
 *.nt.bz2
 *.swp
 *.swo
-*.tgz
-*.zip
 *#
 
 .mypy_cache
