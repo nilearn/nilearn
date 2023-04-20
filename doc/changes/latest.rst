@@ -53,6 +53,10 @@ Changes
 
 - Moved packaging from ``setup.py`` and setuptools build backend to ``pyproject.toml`` and hatchling backend. This change comes about as new standards are defined for Python packaging that are better met by the new configuration (:gh:`3635` by `Yasmin Mzayek`_).
 
+- Update the references format of the functions
+  :func:`~nilearn.decomposition.CanICA` and
+  :func:`~nilearn.decomposition.DictLearning` with bibtex (:gh:`3558` by `Ahmad Chamma`_)
+
 0.10.1rc1
 =========
 

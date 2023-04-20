@@ -1,10 +1,9 @@
-"""
-Validation and conversion utilities for numpy.
-"""
+"""Validation and conversion utilities for numpy."""
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
 import csv
+
 import numpy as np
 
 from .helpers import stringify_path
@@ -13,17 +12,24 @@ from .helpers import stringify_path
 def _asarray(arr, dtype=None, order=None):
     # np.asarray does not take "K" and "A" orders in version 1.3.0
     if order in ("K", "A", None):
-        if (arr.itemsize == 1 and dtype in (bool, np.bool_)) \
-                or (arr.dtype in (bool, np.bool_) and
-                    np.dtype(dtype).itemsize == 1):
+        if (arr.itemsize == 1 and dtype in (bool, np.bool_)) or (
+            arr.dtype in (bool, np.bool_) and np.dtype(dtype).itemsize == 1
+        ):
             ret = arr.view(dtype=dtype)
         else:
             ret = np.asarray(arr, dtype=dtype)
     else:
-        if (((arr.itemsize == 1 and dtype in (bool, np.bool_)) or
-            (arr.dtype in (bool, np.bool_) and np.dtype(dtype).itemsize == 1))
-            and (order == "F" and arr.flags["F_CONTIGUOUS"]
-                 or order == "C" and arr.flags["C_CONTIGUOUS"])):
+        if (
+            (arr.itemsize == 1 and dtype in (bool, np.bool_))
+            or (
+                arr.dtype in (bool, np.bool_) and np.dtype(dtype).itemsize == 1
+            )
+        ) and (
+            order == "F"
+            and arr.flags["F_CONTIGUOUS"]
+            or order == "C"
+            and arr.flags["C_CONTIGUOUS"]
+        ):
             ret = arr.view(dtype=dtype)
         else:
             ret = np.asarray(arr, dtype=dtype, order=order)
@@ -31,8 +37,8 @@ def _asarray(arr, dtype=None, order=None):
     return ret
 
 
-def as_ndarray(arr, copy=False, dtype=None, order='K'):
-    """Starting with an arbitrary array, convert to numpy.ndarray.
+def as_ndarray(arr, copy=False, dtype=None, order="K"):
+    """Convert to numpy.ndarray starting with an arbitrary array, .
 
     In the case of a memmap array, a copy is automatically made to break the
     link with the underlying file (whatever the value of the "copy" keyword).
@@ -47,11 +53,17 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
 
     Caveat: this function does not copy during bool to/from 1-byte dtype
     conversions. This can lead to some surprising results in some rare cases.
+
     Example:
 
-        a = numpy.asarray([0, 1, 2], dtype=numpy.int8)
-        b = as_ndarray(a, dtype=bool)  # array([False, True, True], dtype=bool)
-        c = as_ndarray(b, dtype=numpy.int8)  # array([0, 1, 2], dtype=numpy.int8)
+    >>> import numpy
+    >>> a = numpy.asarray([0, 1, 2], dtype=numpy.int8)
+    >>> b = as_ndarray(a, dtype=bool)
+    >>> b
+    array([False,  True,  True])
+    >>> c = as_ndarray(b, dtype=numpy.int8)
+    >>> c
+    array([0, 1, 2], dtype=int8)
 
     The usually expected result for the last line would be array([0, 1, 1])
     because True evaluates to 1. Since there is no copy made here, the original
@@ -89,7 +101,7 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
     # .astype() always copies
 
     if order not in ("C", "F", "A", "K", None):
-        raise ValueError("Invalid value for 'order': %s" % str(order))
+        raise ValueError(f"Invalid value for 'order': {str(order)}")
 
     if isinstance(arr, np.memmap):
         if dtype is None:
@@ -125,13 +137,13 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
             ret = np.asarray(arr, dtype=dtype, order=order)
 
     else:
-        raise ValueError("Type not handled: %s" % arr.__class__)
+        raise ValueError(f"Type not handled: {arr.__class__}")
 
     return ret
 
 
-def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
-    """Read a CSV file by trying to guess its delimiter
+def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
+    """Read a CSV file by trying to guess its delimiter.
 
     Parameters
     ----------
@@ -153,8 +165,9 @@ def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
     """
     csv_path = stringify_path(csv_path)
     if not isinstance(csv_path, str):
-        raise TypeError('CSV must be a file path. Got a CSV of type: %s' %
-                        type(csv_path))
+        raise TypeError(
+            f"CSV must be a file path. Got a CSV of type: {type(csv_path)}"
+        )
 
     try:
         # First, we try genfromtxt which works in most cases.
@@ -164,13 +177,15 @@ def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
         # because the delimiter is wrong.
         # In that case, we try to guess the delimiter.
         try:
-            with open(csv_path, 'r') as csv_file:
+            with open(csv_path) as csv_file:
                 dialect = csv.Sniffer().sniff(csv_file.readline(), delimiters)
         except csv.Error as e:
             raise TypeError(
-                'Could not read CSV file [%s]: %s' % (csv_path, e.args[0]))
+                f"Could not read CSV file [{csv_path}]: {e.args[0]}"
+            )
 
-        array = np.genfromtxt(csv_path, delimiter=dialect.delimiter,
-                              encoding=None, **kwargs)
+        array = np.genfromtxt(
+            csv_path, delimiter=dialect.delimiter, encoding=None, **kwargs
+        )
 
     return array

@@ -219,7 +219,6 @@ def get_bids_files(
         List of file paths found.
 
     """
-    filters = filters or []
     if sub_folder:
 
         ses_level = ""
@@ -240,6 +239,8 @@ def get_bids_files(
 
     files = glob.glob(files)
     files.sort()
+
+    filters = filters or []
     if filters:
         files = [parse_bids_filename(file_) for file_ in files]
         for key, value in filters:
@@ -277,9 +278,8 @@ def parse_bids_filename(img_path):
         key with no value and will be included in the 'file_fields' key.
 
     """
-    reference = {}
-    reference['file_path'] = img_path
-    reference['file_basename'] = os.path.basename(img_path)
+    reference = {"file_path": img_path,
+                 "file_basename": os.path.basename(img_path)}
     parts = reference['file_basename'].split('_')
     tag, type_ = parts[-1].split('.', 1)
     reference['file_tag'] = tag

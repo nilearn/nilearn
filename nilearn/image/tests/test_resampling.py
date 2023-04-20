@@ -916,19 +916,13 @@ def test_coord_transform_trivial():
     assert x.shape == x_.shape
 
 
+#  TODO "This test does not run on ARM arch.",
 @pytest.mark.skipif(
     not testing.is_64bit(), reason="This test only runs on 64bits machines."
 )
 @pytest.mark.skipif(
     os.environ.get("APPVEYOR") == "True",
     reason="This test too slow (7-8 minutes) on AppVeyor",
-)
-@pytest.mark.skipif(
-    (
-        os.environ.get("TRAVIS") == "true"
-        and os.environ.get("TRAVIS_CPU_ARCH") == "arm64"
-    ),
-    reason="This test does not run on ARM arch.",
 )
 def test_resample_img_segmentation_fault():
     # see https://github.com/nilearn/nilearn/issues/346

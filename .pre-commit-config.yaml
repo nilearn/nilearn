@@ -18,13 +18,10 @@ files: |
         | Makefile
         | doc
         | examples
-        | maint_tools
+        | maint_tools/.*
         | setup.*
         | nilearn/__init__.py
-        | nilearn/signal.py
-        | nilearn/masking.py
-        | nilearn/conftest.py
-        | nilearn/version.py
+        | nilearn/_utils/.*
         | nilearn/de.*
         | nilearn/connectome/.*py
         | nilearn/glm/.*py
@@ -33,6 +30,9 @@ files: |
         | nilearn/regions.*py
         | nilearn/reporting/.*py
         | nilearn/mass_univariate/.*py
+        | nilearn/signal.py
+        | nilearn/masking.py
+        | nilearn/conftest.py
     )$
 
 exclude: |
@@ -59,6 +59,11 @@ exclude: |
         | nilearn/reporting/html_report.py
         | nilearn/reporting/tests/test_html_report.py
         | nilearn/externals/tempita
+        | nilearn/_utils/__init__.py
+        | nilearn/_utils/data_gen.py
+        | nilearn/_utils/docs.py
+        | nilearn/_utils/helpers.py
+        | nilearn/_utils/tests/test_data_gen.py
         | nilearn/glm/contrasts.py
         | nilearn/glm/first_level/first_level.py
         | nilearn/glm/tests/test_contrasts.py

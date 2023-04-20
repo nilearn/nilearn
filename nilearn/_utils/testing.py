@@ -3,26 +3,24 @@
 # License: simplified BSD
 import contextlib
 import functools
+import gc
 import os
 import sys
 import tempfile
 import warnings
-import gc
-from nilearn.version import _compare_version
 from pathlib import Path
 
 import pytest
 import sklearn
+from nilearn._utils import _compare_version
 
 # we use memory_profiler library for memory consumption checks
 try:
     from memory_profiler import memory_usage
 
-
     def with_memory_profiler(func):
-        """A decorator to skip tests requiring memory_profiler."""
+        """Use as a decorator to skip tests requiring memory_profiler."""
         return func
-
 
     def memory_used(func, *args, **kwargs):
         """Compute memory usage when executing func."""
@@ -36,38 +34,45 @@ try:
         return max(mem_use) - min(mem_use)
 
 except ImportError:
+
     def with_memory_profiler(func):
-        """A decorator to skip tests requiring memory_profiler."""
+        """Use as a decorator to skip tests requiring memory_profiler."""
 
         def dummy_func():
-            pytest.skip('Test requires memory_profiler.')
+            pytest.skip("Test requires memory_profiler.")
 
         return dummy_func
-
 
     memory_usage = memory_used = None
 
 
 def is_64bit() -> bool:
-    """Returns True if python is run on 64bits."""
+    """Return True if python is run on 64bits."""
     return sys.maxsize > 2**32
 
 
 def check_deprecation(func, match=None):
+    """Check if a function raises a deprecation warning."""
+
     @functools.wraps(func)
     def wrapped(*args, **kwargs):
-        if _compare_version(sklearn.__version__, '<', '0.22'):
+        # --- CAN BE REMOVED --- #
+        if _compare_version(sklearn.__version__, "<", "0.22"):
             with pytest.deprecated_call():
                 result = func(*args, **kwargs)
+        # --- CAN BE REMOVED --- #
+
         else:
             with pytest.warns(FutureWarning, match=match):
                 result = func(*args, **kwargs)
         return result
+
     return wrapped
 
 
-def assert_memory_less_than(memory_limit, tolerance,
-                            callable_obj, *args, **kwargs):
+def assert_memory_less_than(
+    memory_limit, tolerance, callable_obj, *args, **kwargs
+):
     """Check memory consumption of a callable stays below a given limit.
 
     Parameters
@@ -86,20 +91,25 @@ def assert_memory_less_than(memory_limit, tolerance,
     mem_used = memory_used(callable_obj, *args, **kwargs)
 
     if mem_used > memory_limit * (1 + tolerance):
-        raise ValueError("Memory consumption measured ({0:.2f} MiB) is "
-                         "greater than required memory limit ({1} MiB) within "
-                         "accepted tolerance ({2:.2f}%)."
-                         "".format(mem_used, memory_limit, tolerance * 100))
+        raise ValueError(
+            "Memory consumption measured ({:.2f} MiB) is "
+            "greater than required memory limit ({} MiB) within "
+            "accepted tolerance ({:.2f}%)."
+            "".format(mem_used, memory_limit, tolerance * 100)
+        )
 
     # We are confident in memory_profiler measures above 100MiB.
     # We raise an error if the measure is below the limit of 50MiB to avoid
     # false positive.
     if mem_used < 50:
-        raise ValueError("Memory profiler measured an untrustable memory "
-                         "consumption ({0:.2f} MiB). The expected memory "
-                         "limit was {1:.2f} MiB. Try to bench with larger "
-                         "objects (at least 100MiB in memory).".
-                         format(mem_used, memory_limit))
+        raise ValueError(
+            "Memory profiler measured an untrustable memory "
+            "consumption ({:.2f} MiB). The expected memory "
+            "limit was {:.2f} MiB. Try to bench with larger "
+            "objects (at least 100MiB in memory).".format(
+                mem_used, memory_limit
+            )
+        )
 
 
 def serialize_niimg(img, gzipped=True):
@@ -110,7 +120,7 @@ def serialize_niimg(img, gzipped=True):
     """
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
-        file_path = tmp_dir / "img.nii{}".format(".gz" if gzipped else "")
+        file_path = tmp_dir / f"img.nii{'.gz' if gzipped else ''}"
         img.to_filename(file_path)
         with file_path.open("rb") as f:
             return f.read()
@@ -147,13 +157,14 @@ def write_tmp_imgs(*imgs, **kwargs):
         list of string is returned.
 
     """
-    valid_keys = set(("create_files", "use_wildcards"))
+    valid_keys = {"create_files", "use_wildcards"}
     input_keys = set(kwargs.keys())
     invalid_keys = input_keys - valid_keys
     if len(invalid_keys) > 0:
-        raise TypeError("%s: unexpected keyword argument(s): %s" %
-                        (sys._getframe().f_code.co_name,
-                         " ".join(invalid_keys)))
+        raise TypeError(
+            "%s: unexpected keyword argument(s): %s"
+            % (sys._getframe().f_code.co_name, " ".join(invalid_keys))
+        )
     create_files = kwargs.get("create_files", True)
     use_wildcards = kwargs.get("use_wildcards", False)
 
@@ -166,9 +177,9 @@ def write_tmp_imgs(*imgs, **kwargs):
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", RuntimeWarning)
                 for img in imgs:
-                    fd, filename = tempfile.mkstemp(prefix=prefix,
-                                                    suffix=suffix,
-                                                    dir=None)
+                    fd, filename = tempfile.mkstemp(
+                        prefix=prefix, suffix=suffix, dir=None
+                    )
                     os.close(fd)
                     filenames.append(filename)
                     img.to_filename(filename)
@@ -194,11 +205,12 @@ def write_tmp_imgs(*imgs, **kwargs):
                     # problem eg permission, or open file descriptor
                     failures.append(e)
             if failures:
+                failed_lines = "\n".join(str(e) for e in failures)
                 raise OSError(
-                    "The following files could not be removed:\n".format(
-                        "\n".join(str(e) for e in failures)
-                    )
+                    "The following files could not be removed:\n"
+                    f"{failed_lines}"
                 )
+
     else:  # No-op
         if len(imgs) == 1:
             yield imgs[0]
@@ -207,13 +219,12 @@ def write_tmp_imgs(*imgs, **kwargs):
 
 
 def are_tests_running():
-    """Returns whether we are running the pytest test loader
-    """
-    return 'PYTEST_CURRENT_TEST' in os.environ
+    """Return whether we are running the pytest test loader."""
+    return "PYTEST_CURRENT_TEST" in os.environ
 
 
-def skip_if_running_tests(msg=''):
-    """ Raise a SkipTest if we appear to be running the pytest test loader.
+def skip_if_running_tests(msg=""):
+    """Raise a SkipTest if we appear to be running the pytest test loader.
 
     Parameters
     ----------
