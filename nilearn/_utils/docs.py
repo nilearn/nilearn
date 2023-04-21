@@ -21,9 +21,10 @@ docdict = dict()
 
 # annotate
 docdict['annotate'] = """
-annotate : :obj:`bool`, optional
+annotate : :obj:`bool`, default=True
     If ``annotate`` is ``True``, positions and left/right annotation
-    are added to the plot. Default=True."""
+    are added to the plot.
+"""
 
 # avg_method
 docdict['avg_method'] = """
@@ -41,13 +42,13 @@ avg_method : {'mean', 'median', 'min', 'max', custom function}, optional
 
                 def custom_function(vertices):
                     return vertices[0] * vertices[1] * vertices[2]
-
 """
 
 # ax
 docdict['ax'] = """
 ax : :class:`~matplotlib.axes.Axes`
-    The matplotlib axes in which the plots will be drawn."""
+    The matplotlib axes in which the plots will be drawn.
+"""
 
 # axes
 docdict['axes'] = """
@@ -55,7 +56,8 @@ axes : :class:`matplotlib.axes.Axes`, or 4 tuple\
 of :obj:`float`: (xmin, ymin, width, height), optional
     The axes, or the coordinates, in matplotlib figure
     space, of the axes used to display the plot.
-    If ``None``, the complete figure is used."""
+    If ``None``, the complete figure is used.
+"""
 
 # bg_img
 docdict['bg_img'] = """
@@ -77,18 +79,19 @@ bg_on_data : :obj:`bool`, optional
         .. note::
             This non-uniformly changes the surf_data values according
             to e.g the sulcal depth.
-
 """
 
 # bg_vmax
 docdict['bg_vmax'] = """
 bg_vmin : :obj:`float`, optional
-    vmax for ``bg_img``."""
+    vmax for ``bg_img``.
+"""
 
 # bg_vmin
 docdict['bg_vmin'] = """
 bg_vmin : :obj:`float`, optional
-    vmin for ``bg_img``."""
+    vmin for ``bg_img``.
+"""
 
 # black_bg
 docdict['black_bg'] = """
@@ -96,19 +99,22 @@ black_bg : :obj:`bool`, or 'auto', optional
     If ``True``, the background of the image is set to be black.
     If you wish to save figures with a black background, you
     will need to pass facecolor='k', edgecolor='k'
-    to :func:`matplotlib.pyplot.savefig`."""
+    to :func:`matplotlib.pyplot.savefig`.
+"""
 
 # border_size
 docdict['border_size'] = """
 border_size : :obj:`int`, optional
     The size, in :term:`voxel` of the border used on the side of
-    the image to determine the value of the background."""
+    the image to determine the value of the background.
+"""
 
 # cbar_tick_format
 docdict['cbar_tick_format'] = """
 cbar_tick_format : :obj:`str`, optional
     Controls how to format the tick labels of the colorbar.
-    Ex: use "%%.2g" to display using scientific notation."""
+    Ex: use "%%.2g" to display using scientific notation.
+"""
 
 # classifier_options
 svc = "Linear support vector classifier"
@@ -168,25 +174,26 @@ docdict['classifier_options'] = f"""
 
                 dummy = DummyClassifier(strategy='stratified',
                                         random_state=0)
-
 """
 
 # cmap
 docdict['cmap'] = """
 cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, optional
     The colormap to use. Either a string which is a name of
-    a matplotlib colormap, or a matplotlib colormap object."""
+    a matplotlib colormap, or a matplotlib colormap object.
+"""
 
 # colorbar
 docdict['colorbar'] = """
 colorbar : :obj:`bool`, optional
-    If ``True``, display a colorbar on the right of the plots."""
+    If ``True``, display a colorbar on the right of the plots.
+"""
 
 # connected
 docdict['connected'] = """
 connected : :obj:`bool`, optional
-    If connected is True, only the largest connect component is kept."""
-
+    If connected is True, only the largest connect component is kept.
+"""
 
 # confounds
 docdict['confounds'] = """
@@ -216,7 +223,6 @@ cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
             If ``display_mode`` is 'x', 'y' or 'z', ``cut_coords`` can be
             an integer, in which case it specifies the number of
             cuts to perform.
-
 """
 
 # darkness
@@ -227,19 +233,20 @@ darkness : :obj:`float` between 0 and 1, optional
         - '1' indicates that the original values of the background are used
         - '.5' indicates that the background values are reduced by half
           before being applied.
-
 """
 
 # data_dir
 docdict['data_dir'] = """
 data_dir : :obj:`pathlib.Path` or :obj:`str`, optional
     Path where data should be downloaded. By default,
-    files are downloaded in home directory."""
+    files are downloaded in home directory.
+"""
 
 # detrend
 docdict['detrend'] = """
 detrend : :obj:`bool`, optional
-    Whether to detrend signals or not."""
+    Whether to detrend signals or not.
+"""
 
 # dimming factor
 docdict['dim'] = """
@@ -248,12 +255,13 @@ dim : :obj:`float`, or 'auto', optional
     heuristics are applied based upon the background image intensity.
     Accepted float values, where a typical span is between -2 and 2
     (-2 = increase contrast; 2 = decrease contrast), but larger values
-    can be used for a more pronounced effect. 0 means no dimming."""
+    can be used for a more pronounced effect. 0 means no dimming.
+"""
 
 # display_mode
 docdict['display_mode'] = """
 display_mode : {'ortho', 'tiled', 'mosaic','x',\
-'y', 'z', 'yx', 'xz', 'yz'}, optional
+'y', 'z', 'yx', 'xz', 'yz'}, default='ortho'
     Choose the direction of the cuts:
 
         - 'x': sagittal
@@ -265,24 +273,25 @@ display_mode : {'ortho', 'tiled', 'mosaic','x',\
           in a 2x2 grid
         - 'mosaic': three cuts are performed along
           multiple rows and columns
-
-    Default='ortho'."""
+"""
 
 # draw_cross
 docdict['draw_cross'] = """
-draw_cross : :obj:`bool`, optional
+draw_cross : :obj:`bool`, default=True
     If ``draw_cross`` is ``True``, a cross is drawn on the plot to indicate
-    the cut position. Default=True."""
+    the cut position.
+"""
 
 # ensure_finite
 docdict['ensure_finite'] = """
 ensure_finite : :obj:`bool`, optional
     If True, the non-finite values (NANs and infs) found in the data
-    will be replaced by zeros."""
+    will be replaced by zeros.
+"""
 
 # extractor / extract_type
 docdict['extractor'] = """
-extractor : {'local_regions', 'connected_components'}, optional
+extractor : {'local_regions', 'connected_components'}, default='local_regions'
     This option can take two values:
 
         - 'connected_components': each component/region in the image is
@@ -293,15 +302,15 @@ extractor : {'local_regions', 'connected_components'}, optional
           their maximum peak value to define a seed marker and then using
           random walker segmentation algorithm on these markers for region
           separation.
-
-    Default='local_regions'."""
+"""
 docdict['extract_type'] = docdict['extractor']
 
 # figure
 docdict['figure'] = """
 figure : :obj:`int`, or :class:`matplotlib.figure.Figure`, or None,  optional
     Matplotlib figure used or its number. If ``None`` is given, a
-    new figure is created."""
+    new figure is created.
+"""
 
 # fsaverage options
 docdict['fsaverage_options'] = """
@@ -316,7 +325,6 @@ docdict['fsaverage_options'] = """
             .. note::
                 The high-resolution fsaverage will result in more computation
                 time and memory usage
-
 """
 
 # fwhm
@@ -341,25 +349,27 @@ or 'fast' or None, optional
 
         In corner case situations, `fwhm` is simply kept to None when `fwhm`
         is specified as `fwhm=0`.
-
 """
 
 # hemi
 docdict['hemi'] = """
-hemi : {'left', 'right'}, optional
-    Hemisphere to display. Default='left'."""
+hemi : {'left', 'right'}, default='left'
+    Hemisphere to display.
+"""
 
 # hemispheres
 docdict['hemispheres'] = """
-hemispheres : :obj:`list` of :obj:`str`, optional
-    Hemispheres to display. Default=['left', 'right']."""
+hemispheres : :obj:`list` of :obj:`str`, default=['left', 'right']
+    Hemispheres to display.
+"""
 
 
 # high_pass
 docdict['high_pass'] = """
-high_pass : :obj:`float`, optional
+high_pass : :obj:`float`, default=None
     High cutoff frequency in Hertz. If specified, signals below this
-    frequency will be filtered out. Default=None."""
+    frequency will be filtered out.
+"""
 
 # hrf_model
 docdict['hrf_model'] = """
@@ -407,7 +417,6 @@ hrf_model : :obj:`str`, function, list of functions, or None
     .. note::
         In case of `glover` and `spm` models, the derived regressors
         are orthogonalized wrt the main one.
-
 """
 
 # img
@@ -424,33 +433,36 @@ imgs : :obj:`list` of Niimg-like objects
 
 # legacy_format
 docdict['legacy_format'] = """
-legacy_format : :obj:`bool`, optional
+legacy_format : :obj:`bool`, default=True
     If set to ``True``, the fetcher will return recarrays. Otherwise,
     it will return pandas dataframes.
-    Default=True."""
+"""
 
 # linewidth
 docdict['linewidths'] = """
 linewidths : :obj:`float`, optional
     Set the boundary thickness of the contours.
-    Only reflects when ``view_type=contours``."""
+    Only reflects when ``view_type=contours``.
+"""
 
 # low_pass
 docdict['low_pass'] = """
-low_pass : :obj:`float` or None, optional
+low_pass : :obj:`float` or None, default=None
     Low cutoff frequency in Hertz. If specified, signals above this
     frequency will be filtered out. If None, no low-pass filtering
-    will be performed. Default=None."""
+    will be performed."""
 
 # lower_cutoff
 docdict['lower_cutoff'] = """
 lower_cutoff : :obj:`float`, optional
-    Lower fraction of the histogram to be discarded."""
+    Lower fraction of the histogram to be discarded.
+"""
 
 # mask_img
 docdict['mask_img'] = """
 mask_img : Niimg-like object
-    Object used for masking the data."""
+    Object used for masking the data.
+"""
 
 # mask_strategy
 docdict["mask_strategy"] = """
@@ -480,20 +492,16 @@ mask_strategy : {'background', 'epi', 'whole-brain-template',\
           data's field of view.
 
             .. versionadded:: 0.8.1
-
 """
 
 # mask_type
 docdict['mask_type'] = """
-mask_type : {'whole-brain', 'gm', 'wm'}, optional
+mask_type : {"whole-brain", "gm", "wm"}, default="whole-brain"
     Type of mask to be computed:
 
-        - 'whole-brain': Computes the whole-brain mask.
-        - 'gm': Computes the grey-matter mask.
-        - 'wm': Computes the white-matter mask.
-
-    Default = 'whole-brain'.
-
+        - "whole-brain": Computes the whole-brain mask.
+        - "gm": Computes the grey-matter mask.
+        - "wm": Computes the white-matter mask.
 """
 
 # kwargs for Maskers
@@ -513,14 +521,16 @@ memory : instance of :class:`joblib.Memory`, :obj:`str`, or \
 :class:`pathlib.Path`
     Used to cache the masking process.
     By default, no caching is done. If a :obj:`str` is given, it is the
-    path to the caching directory."""
+    path to the caching directory.
+"""
 
 # memory_level
 memory_level = """
 memory_level : :obj:`int`, optional.
     Rough estimator of the amount of memory used by caching. Higher value
     means more memory for caching. Zero means no caching.
-    Default={}."""
+    Default={}.
+"""
 docdict['memory_level'] = memory_level.format(0)
 docdict['memory_level1'] = memory_level.format(1)
 
@@ -528,7 +538,8 @@ docdict['memory_level1'] = memory_level.format(1)
 n_jobs = """
 n_jobs : :obj:`int`, optional.
     The number of CPUs to use to do the computation. -1 means 'all CPUs'.
-    Default={}."""
+    Default={}.
+"""
 docdict['n_jobs'] = n_jobs.format("1")
 docdict['n_jobs_all'] = n_jobs.format("-1")
 
@@ -536,7 +547,8 @@ docdict['n_jobs_all'] = n_jobs.format("-1")
 docdict['n_parcels'] = """
 n_parcels : :obj:`int`, optional
     Number of parcels to divide the data into.
-    Default=50."""
+    Default=50.
+"""
 
 # opening
 docdict['opening'] = """
@@ -561,7 +573,6 @@ opening : :obj:`bool` or :obj:`int`, optional
 
         Turning off :term:`opening<Opening>` (``opening=False``) will also
         prevent any smoothing applied to the image during the mask computation.
-
 """
 
 # output_file
@@ -569,12 +580,14 @@ docdict['output_file'] = """
 output_file : :obj:`str`, or None, optional
     The name of an image file to export the plot to. Valid extensions
     are .png, .pdf, .svg. If ``output_file`` is not None, the plot
-    is saved to a file, and the display is closed."""
+    is saved to a file, and the display is closed.
+"""
 
 # random_state
 docdict['random_state'] = """
 random_state : :obj:`int` or RandomState, optional
-    Pseudo-random number generator state used for random sampling."""
+    Pseudo-random number generator state used for random sampling.
+"""
 
 # regressor_options
 docdict['regressor_options'] = """
@@ -601,7 +614,6 @@ docdict['regressor_options'] = """
             .. code-block:: python
 
                 dummy = DummyRegressor(strategy='mean')
-
 """
 
 # resampling_interpolation
@@ -616,14 +628,14 @@ resampling_interpolation : :obj:`str`, optional
             .. note::
 
                 "nearest" is faster but can be noisier in some cases.
-
 """
 
 # resume
 docdict['resume'] = """
 resume : :obj:`bool`, optional
     Whether to resume download of a partly-downloaded file.
-    Default=True."""
+    Default=True.
+"""
 
 # sample_mask
 docdict['sample_mask'] = """
@@ -645,7 +657,8 @@ second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\
     with numbers with operators +-`*`/. The default (None) is accepted if the
     design matrix has a single column, in which case the only possible
     contrast array((1)) is applied; when the design matrix has multiple
-    columns, an error is raised."""
+    columns, an error is raised.
+"""
 
 # second_level_input
 docdict['second_level_input'] = """
@@ -672,7 +685,6 @@ or :class:`pandas.DataFrame` or :obj:`list` of Niimg-like objects.
     - If a :obj:`list` of Niimg-like objects then this is taken
       literally as Y for the model fit and ``design_matrix`` must be
       provided.
-
 """
 
 # smoothing_fwhm
@@ -680,7 +692,8 @@ docdict['smoothing_fwhm'] = """
 smoothing_fwhm : :obj:`float`, optional.
     If ``smoothing_fwhm`` is not ``None``, it gives
     the :term:`full-width at half maximum<FWHM>` in millimeters
-    of the spatial smoothing to apply to the signal."""
+    of the spatial smoothing to apply to the signal.
+"""
 
 # standardize
 standardize = """
@@ -688,7 +701,8 @@ standardize : :obj:`bool`, optional.
     If ``standardize`` is True, the data are centered and normed:
     their mean is put to 0 and their variance is put to 1 in the
     time dimension.
-    Default={}."""
+    Default={}.
+"""
 docdict['standardize'] = standardize.format('True')
 docdict['standardize_false'] = standardize.format('False')
 
@@ -697,7 +711,8 @@ docdict['standardize_confounds'] = """
 standardize_confounds : :obj:`bool`, optional
     If set to True, the confounds are z-scored: their mean is put
     to 0 and their variance to 1 in the time dimension.
-    Default=True."""
+    Default=True.
+"""
 
 # symmetric_cbar
 docdict['symmetric_cbar'] = """
@@ -709,7 +724,6 @@ symmetric_cbar : :obj:`bool`, or 'auto', optional
     .. note::
 
         The colormap will always range from ``-vmax`` to ``vmax``.
-
 """
 
 # t_r
@@ -717,14 +731,16 @@ docdict['t_r'] = """
 t_r : :obj:`float` or None, optional
     Repetition time, in seconds (sampling period).
     Set to ``None`` if not provided.
-    Default=None."""
+    Default=None.
+"""
 
 # target_affine
 docdict['target_affine'] = """
 target_affine : :class:`numpy.ndarray`, optional.
     If specified, the image is resampled corresponding to this new affine.
     ``target_affine`` can be a 3x3 or a 4x4 matrix.
-    Default=None."""
+    Default=None.
+"""
 
 # target_shape
 docdict['target_shape'] = """
@@ -736,7 +752,8 @@ target_shape : :obj:`tuple` or :obj:`list`, optional.
         If ``target_shape`` is specified, a ``target_affine`` of shape
         ``(4, 4)`` must also be given.
 
-    Default=None."""
+    Default=None.
+"""
 
 # templateflow
 docdict["templateflow"] = """
@@ -761,12 +778,14 @@ threshold : a number, None, or 'auto', optional
 docdict['title'] = """
 title : :obj:`str`, or None, optional
     The title displayed on the figure.
-    Default=None."""
+    Default=None.
+"""
 
 # upper_cutoff
 docdict['upper_cutoff'] = """
 upper_cutoff : :obj:`float`, optional
-    Upper fraction of the histogram to be discarded."""
+    Upper fraction of the histogram to be discarded.
+"""
 
 # url
 docdict['url'] = """
@@ -774,13 +793,15 @@ url : :obj:`str`, optional
     URL of file to download.
     Override download URL. Used for test only (or if you
     setup a mirror of the data).
-    Default=None."""
+    Default=None.
+"""
 
 # verbose
 verbose = """
 verbose : :obj:`int`, optional
     Verbosity level (0 means no message).
-    Default={}."""
+    Default={}.
+"""
 docdict['verbose'] = verbose.format(1)
 docdict['verbose0'] = verbose.format(0)
 
@@ -794,7 +815,6 @@ view : :obj:`str` or a pair of :obj:`float`, optional.
     E.g., view=[270.0, 90.0] or view=(0.0, -180.0).
     View of the surface that is rendered.
     Default='lateral'.
-
 """
 
 # vmax
