@@ -53,9 +53,12 @@ Changes
 
 - Moved packaging from ``setup.py`` and setuptools build backend to ``pyproject.toml`` and hatchling backend. This change comes about as new standards are defined for Python packaging that are better met by the new configuration (:gh:`3635` by `Yasmin Mzayek`_).
 
+- Examples are updated with the new atlas API :ref:`sphx_glr_auto_examples_00_tutorials_plot_3d_and_4d_niimg.py`, :ref:`sphx_glr_auto_examples_01_plotting_plot_multiscale_parcellations.py` and :ref:`sphx_glr_auto_examples_01_plotting_plot_prob_atlas.py` (:gh:`3557` by `Ahmad Chamma`_).
+
 - Update the references format of the functions
   :func:`~nilearn.decomposition.CanICA` and
   :func:`~nilearn.decomposition.DictLearning` with bibtex (:gh:`3558` by `Ahmad Chamma`_)
+
 
 0.10.1rc1
 =========

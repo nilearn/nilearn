@@ -47,7 +47,7 @@ plotting.plot_stat_map(tmap_filename, threshold=3)
 #
 # We can download resting-state networks from the Smith 2009 study on
 # correspondence between rest and task
-rsn = datasets.fetch_atlas_smith_2009()["rsn10"]
+rsn = datasets.fetch_atlas_smith_2009(resting=True, dimension=10)["map"]
 rsn
 
 ###############################################################################
