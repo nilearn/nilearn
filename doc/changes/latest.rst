@@ -56,9 +56,7 @@ Changes
 
 - Moved packaging from ``setup.py`` and setuptools build backend to ``pyproject.toml`` and hatchling backend. This change comes about as new standards are defined for Python packaging that are better met by the new configuration (:gh:`3635` by `Yasmin Mzayek`_).
 
-- Examples are updated with the new atlas API :ref:`plot_3d_and_4d_niimg.py`,
-  :ref:`plot_multiscale_parcellations.py` and :ref:`plot_prob_atlas.py`with
-  new altas API (:gh:`3557` by `Ahmad Chamma`_).
+- Examples are updated with the new atlas API :ref:`sphx_glr_auto_examples_00_tutorials_plot_3d_and_4d_niimg.py`, :ref:`sphx_glr_auto_examples_01_plotting_plot_multiscale_parcellations.py` and :ref:`sphx_glr_auto_examples_01_plotting_plot_prob_atlas.py` (:gh:`3557` by `Ahmad Chamma`_).
 
 0.10.1rc1
 =========
