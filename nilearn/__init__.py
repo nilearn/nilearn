@@ -40,18 +40,13 @@ signal                  --- Set of preprocessing functions for time series
 """
 
 import gzip
-import os
 import sys
 import warnings
 
-from .version import __version__
-
-# TODO: Check if still needed
-# Workaround issue discovered in intel-openmp 2019.5:
-# https://github.com/ContinuumIO/anaconda-issues/issues/11294
-#
-# see also https://github.com/scikit-learn/scikit-learn/pull/15020
-os.environ.setdefault("KMP_INIT_AT_FORK", "FALSE")
+try:
+    from ._version import __version__  # noqa: F401
+except ImportError:
+    __version__ = "0+unknown"
 
 
 def _py37_deprecation_warning():

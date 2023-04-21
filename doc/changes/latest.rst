@@ -48,15 +48,16 @@ Changes
 
 - Examples have been made PEP8 compliant and reformatted using black. (:gh:`3549`, :gh:`3550`, :gh:`3551`, :gh:`3552`, :gh:`3553`, :gh:`3554`, :gh:`3555`,  by `Rémi Gau`_).
 
-- Extract helper-functions for input-image validation from
-  :func:`~regions.img_to_signals_labels`,
-  :func:`~regions.signals_to_img_labels`, :func:`~regions.img_to_signals_maps`
-  :func:`~regions.signals_to_img_maps` (:gh:`3523` by `Rémi Gau`_ and `Christian
-  Gerloff`_).
+- Extract helper-functions for input-image validation from :func:`~regions.img_to_signals_labels`, :func:`~regions.signals_to_img_labels`, :func:`~regions.img_to_signals_maps` :func:`~regions.signals_to_img_maps` (:gh:`3523` by `Rémi Gau`_ and `Christian Gerloff`_).
 
 - Moved packaging from ``setup.py`` and setuptools build backend to ``pyproject.toml`` and hatchling backend. This change comes about as new standards are defined for Python packaging that are better met by the new configuration (:gh:`3635` by `Yasmin Mzayek`_).
 
 - Examples are updated with the new atlas API :ref:`sphx_glr_auto_examples_00_tutorials_plot_3d_and_4d_niimg.py`, :ref:`sphx_glr_auto_examples_01_plotting_plot_multiscale_parcellations.py` and :ref:`sphx_glr_auto_examples_01_plotting_plot_prob_atlas.py` (:gh:`3557` by `Ahmad Chamma`_).
+
+- Update the references format of the functions
+  :func:`~nilearn.decomposition.CanICA` and
+  :func:`~nilearn.decomposition.DictLearning` with bibtex (:gh:`3558` by `Ahmad Chamma`_)
+
 
 0.10.1rc1
 =========
