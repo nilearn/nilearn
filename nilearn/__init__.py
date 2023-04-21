@@ -3,7 +3,7 @@ Machine Learning module for NeuroImaging in python.
 ---------------------------------------------------
 
 Documentation is available in the docstrings and online at
-http://nilearn.github.io.
+https://nilearn.github.io.
 
 Contents
 --------
@@ -40,17 +40,13 @@ signal                  --- Set of preprocessing functions for time series
 """
 
 import gzip
-import os
 import sys
 import warnings
 
-from .version import __version__, _check_module_dependencies
-
-# Workaround issue discovered in intel-openmp 2019.5:
-# https://github.com/ContinuumIO/anaconda-issues/issues/11294
-#
-# see also https://github.com/scikit-learn/scikit-learn/pull/15020
-os.environ.setdefault("KMP_INIT_AT_FORK", "FALSE")
+try:
+    from ._version import __version__  # noqa: F401
+except ImportError:
+    __version__ = "0+unknown"
 
 
 def _py37_deprecation_warning():
@@ -68,7 +64,6 @@ def _python_deprecation_warnings():
         _py37_deprecation_warning()
 
 
-_check_module_dependencies()
 _python_deprecation_warnings()
 
 
@@ -81,13 +76,6 @@ if hasattr(gzip.GzipFile, "max_read_chunk"):
 # Default value it True, set it to False to completely deactivate this
 # behavior.
 EXPAND_PATH_WILDCARDS = True
-
-# Boolean controlling whether the joblib caches should be
-# flushed if the version of certain modules changes (eg nibabel, as it
-# does not respect the backward compatibility in some of its internal
-# structures
-# This  is used in nilearn._utils.cache_mixin
-CHECK_CACHE_VERSION = True
 
 # list all submodules available in nilearn and version
 __all__ = [

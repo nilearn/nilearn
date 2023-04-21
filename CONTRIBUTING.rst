@@ -401,7 +401,7 @@ Here are the key steps you need to go through to copy the repo before contributi
       pip install -e '.[dev]'
 
 This installs your local version of Nilearn, along with all dependencies necessary for developers (hence the ``[dev]`` tag).
-For more information about the dependency installation options, see ``setup.cfg``.
+For more information about the dependency installation options, see ``pyproject.toml``.
 The installed version will also reflect any changes you make to your code.
 
 4. check that all tests pass with (this can take a while)::

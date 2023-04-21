@@ -1,24 +1,23 @@
-"""
-Neuroimaging file input and output.
-"""
+"""Neuroimaging file input and output."""
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
+import collections.abc
 import copy
 import gc
-import collections.abc
+from pathlib import Path
 from warnings import warn
 
-import numpy as np
 import nibabel
-
-from pathlib import Path
+import numpy as np
 
 from .helpers import stringify_path
 
 
 def _get_data(img):
-    # copy-pasted from https://github.com/nipy/nibabel/blob/de44a105c1267b07ef9e28f6c35b31f851d5a005/nibabel/dataobj_images.py#L204
+    # copy-pasted from
+    # https://github.com/nipy/nibabel/blob/de44a105c1267b07ef9e28f6c35b31f851d5a005/nibabel/dataobj_images.py#L204 # noqa
+    #
     # get_data is removed from nibabel because:
     # see https://github.com/nipy/nibabel/wiki/BIAP8
     if img._data_cache is not None:
@@ -29,8 +28,8 @@ def _get_data(img):
 
 
 def _safe_get_data(img, ensure_finite=False, copy_data=False):
-    """ Get the data in the image without having a side effect on the
-        Nifti1Image object
+    """Get the data in the image without having a side effect \
+    on the Nifti1Image object.
 
     Parameters
     ----------
@@ -70,11 +69,10 @@ def _safe_get_data(img, ensure_finite=False, copy_data=False):
 
 
 def _get_target_dtype(dtype, target_dtype):
-    """Returns a new dtype if conversion is needed
+    """Return a new dtype if conversion is needed.
 
     Parameters
     ----------
-
     dtype: dtype
         Data type of the original data
 
@@ -86,15 +84,13 @@ def _get_target_dtype(dtype, target_dtype):
 
     Returns
     -------
-
     dtype: dtype
         The data type toward which the original data should be converted.
     """
-
     if target_dtype is None:
         return None
-    if target_dtype == 'auto':
-        if dtype.kind == 'i':
+    if target_dtype == "auto":
+        if dtype.kind == "i":
             target_dtype = np.int32
         else:
             target_dtype = np.float32
@@ -104,11 +100,10 @@ def _get_target_dtype(dtype, target_dtype):
 
 
 def load_niimg(niimg, dtype=None):
-    """Load a niimg, check if it is a nibabel SpatialImage and cast if needed
+    """Load a niimg, check if it is a nibabel SpatialImage and cast if needed.
 
     Parameters
     ----------
-
     niimg: Niimg-like object
         See :ref:`extracting_data`.
         Image to load.
@@ -130,27 +125,34 @@ def load_niimg(niimg, dtype=None):
         # data is a filename, we load it
         niimg = nibabel.load(niimg)
     elif not isinstance(niimg, nibabel.spatialimages.SpatialImage):
-        raise TypeError("Data given cannot be loaded because it is"
-                        " not compatible with nibabel format:\n"
-                        + _repr_niimgs(niimg, shorten=True))
+        raise TypeError(
+            "Data given cannot be loaded because it is"
+            " not compatible with nibabel format:\n"
+            + _repr_niimgs(niimg, shorten=True)
+        )
 
     dtype = _get_target_dtype(_get_data(niimg).dtype, dtype)
 
     if dtype is not None:
         # Copyheader and set dtype in header if header exists
         if niimg.header is not None:
-            niimg = new_img_like(niimg, _get_data(niimg).astype(dtype),
-                                niimg.affine, copy_header=True)
+            niimg = new_img_like(
+                niimg,
+                _get_data(niimg).astype(dtype),
+                niimg.affine,
+                copy_header=True,
+            )
             niimg.header.set_data_dtype(dtype)
         else:
-            niimg = new_img_like(niimg, _get_data(niimg).astype(dtype),
-                                niimg.affine)
+            niimg = new_img_like(
+                niimg, _get_data(niimg).astype(dtype), niimg.affine
+            )
 
     return niimg
 
 
 def _is_binary_niimg(niimg):
-    """Returns whether a given niimg is binary or not.
+    """Return whether a given niimg is binary or not.
 
     Parameters
     ----------
@@ -169,7 +171,7 @@ def _is_binary_niimg(niimg):
     unique_values = np.unique(data)
     if len(unique_values) != 2:
         return False
-    return sorted(list(unique_values)) == [0,1]
+    return sorted(list(unique_values)) == [0, 1]
 
 
 def copy_img(img):
@@ -189,12 +191,16 @@ def copy_img(img):
 
     if not isinstance(img, nibabel.spatialimages.SpatialImage):
         raise ValueError("Input value is not an image")
-    return new_img_like(img, _safe_get_data(img, copy_data=True), img.affine.copy(),
-                        copy_header=True)
+    return new_img_like(
+        img,
+        _safe_get_data(img, copy_data=True),
+        img.affine.copy(),
+        copy_header=True,
+    )
 
 
 def _repr_niimgs(niimgs, shorten=True):
-    """ Pretty printing of niimg or niimgs.
+    """Pretty printing of niimg or niimgs.
 
     Parameters
     ----------
@@ -220,32 +226,39 @@ def _repr_niimgs(niimgs, shorten=True):
     # Collection case
     if isinstance(niimgs, collections.abc.Iterable):
         if shorten and len(niimgs) > list_max_display:
-            return '[%s]' % ',\n         ...\n '.join(_repr_niimgs(niimg, shorten=shorten) for niimg in [niimgs[0], niimgs[-1]])
+            return "[%s]" % ",\n         ...\n ".join(
+                _repr_niimgs(niimg, shorten=shorten)
+                for niimg in [niimgs[0], niimgs[-1]]
+            )
         elif len(niimgs) > list_max_display:
-            return '[%s]' % ',\n '.join(_repr_niimgs(niimg, shorten=shorten) for niimg in niimgs)
+            return "[%s]" % ",\n ".join(
+                _repr_niimgs(niimg, shorten=shorten) for niimg in niimgs
+            )
         else:
-            return '[%s]' % ', '.join(_repr_niimgs(niimg, shorten=shorten) for niimg in niimgs)
-   # Nibabel objects have a 'get_filename'
+            tmp = [_repr_niimgs(niimg, shorten=shorten) for niimg in niimgs]
+            return f"[{', '.join(x for x in tmp)}]"
+    # Nibabel objects have a 'get_filename'
     try:
         filename = niimgs.get_filename()
         if filename is not None:
-            return "%s('%s')" % (niimgs.__class__.__name__,
-                                 _short_repr(filename,
-                                             shorten=shorten))
+            return "{}('{}')".format(
+                niimgs.__class__.__name__,
+                _short_repr(filename, shorten=shorten),
+            )
         else:
             # No shortening in this case
-            return "%s(\nshape=%s,\naffine=%s\n)" % \
-                   (niimgs.__class__.__name__,
-                    repr(niimgs.shape),
-                    repr(niimgs.affine))
+            return "{}(\nshape={},\naffine={}\n)".format(
+                niimgs.__class__.__name__,
+                repr(niimgs.shape),
+                repr(niimgs.affine),
+            )
     except Exception:
         pass
     return _short_repr(repr(niimgs), shorten=shorten)
 
 
 def _short_repr(niimg_rep, shorten=True, truncate=20):
-    """Gives a shorter version of niimg representation
-    """
+    """Give a shorter version of niimg representation."""
     # Make sure truncate has a reasonable value
     truncate = max(truncate, 10)
     path_to_niimg = Path(niimg_rep)
@@ -254,7 +267,7 @@ def _short_repr(niimg_rep, shorten=True, truncate=20):
     # If the name of the file itself is larger than
     # truncate, then shorten the name only
     if len(path_to_niimg.name) > truncate:
-        return path_to_niimg.name[: (truncate - 2)] + '...'
+        return path_to_niimg.name[: (truncate - 2)] + "..."
     # Else add some folder structure if available
     else:
         rep = path_to_niimg.name
@@ -269,20 +282,22 @@ def _short_repr(niimg_rep, shorten=True, truncate=20):
 
 
 def img_data_dtype(niimg):
-    """Determine type of data contained in image
+    """Determine type of data contained in image.
 
     Based on the information contained in ``niimg.dataobj``, determine the
     dtype of ``np.array(niimg.dataobj).dtype``.
     """
-
     dataobj = niimg.dataobj
 
     # Neuroimages that scale data should be interpreted as floating point
-    if nibabel.is_proxy(dataobj) and (dataobj.slope, dataobj.inter) != (1.0, 0.0):
+    if nibabel.is_proxy(dataobj) and (dataobj.slope, dataobj.inter) != (
+        1.0,
+        0.0,
+    ):
         return np.float_
 
     # ArrayProxy gained the dtype attribute in nibabel 2.2
-    if hasattr(dataobj, 'dtype'):
+    if hasattr(dataobj, "dtype"):
         return dataobj.dtype
 
     return niimg.get_data_dtype()

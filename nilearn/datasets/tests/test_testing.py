@@ -1,14 +1,12 @@
-from pathlib import Path
-import zipfile
-import tarfile
 import re
-
-import requests
+import tarfile
+import zipfile
+from pathlib import Path
 
 import pytest
-
-from nilearn._utils.data_gen import generate_fake_fmri
+import requests
 from nilearn import image
+from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.datasets import _testing
 
 
@@ -44,10 +42,10 @@ def test_loading_from_archive_contents(tmp_path):
     labels_file = zip_extract_dir / "data" / "labels.csv"
     assert labels_file.read_bytes() == b""
     for url_end in ["_default_format", "_tar_gz"]:
-        resp = requests.get("https://example.org/example{}".format(url_end))
+        resp = requests.get(f"https://example.org/example{url_end}")
         file_path = tmp_path / "archive.tar.gz"
         file_path.write_bytes(resp.content)
-        tar_extract_dir = tmp_path / "extract_tar{}".format(url_end)
+        tar_extract_dir = tmp_path / f"extract_tar{url_end}"
         tar_extract_dir.mkdir()
         with tarfile.open(str(file_path)) as tarf:
             assert (
@@ -69,11 +67,11 @@ def test_sender_regex(request_mocker):
     assert resp.text == "in info: hello nilearn"
 
     def f(match, request):
-        return "name: {}, url: {}".format(match.group("name"), request.url)
+        return f"name: {match.group('name')}, url: {request.url}"
 
     request_mocker.url_mapping[pattern] = f
     resp = requests.get(url)
-    assert resp.text == "name: nilearn, url: {}".format(url)
+    assert resp.text == f"name: nilearn, url: {url}"
 
     def g(match, request):
         return 403

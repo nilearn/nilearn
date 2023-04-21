@@ -1,4 +1,4 @@
-""" Test the ndimage module
+"""Test the ndimage module.
 
 This test file is in nilearn/tests because Nosetest,
 which we historically used,
@@ -6,33 +6,29 @@ ignores modules whose name starts with an underscore.
 """
 import numpy as np
 import pytest
-
-from nilearn._utils.ndimage import (largest_connected_component,
-                                    _peak_local_max)
 from nilearn._utils import data_gen
+from nilearn._utils.ndimage import _peak_local_max, largest_connected_component
 
 
 def test_largest_cc():
-    """ Check the extraction of the largest connected component.
-    """
+    """Check the extraction of the largest connected component."""
     a = np.zeros((6, 6, 6))
     pytest.raises(ValueError, largest_connected_component, a)
     a[1:3, 1:3, 1:3] = 1
     np.testing.assert_equal(a, largest_connected_component(a))
     # A simple test with non-native dtype
-    a_change_type = a.astype('>f8')
+    a_change_type = a.astype(">f8")
     np.testing.assert_equal(a, largest_connected_component(a_change_type))
 
     b = a.copy()
     b[5, 5, 5] = 1
     np.testing.assert_equal(a, largest_connected_component(b))
     # A simple test with non-native dtype
-    b_change_type = b.astype('>f8')
+    b_change_type = b.astype(">f8")
     np.testing.assert_equal(a, largest_connected_component(b_change_type))
 
     # Tests for correct errors, when an image or string are passed.
-    img = data_gen.generate_labeled_regions(shape=(10, 11, 12),
-                                            n_regions=2)
+    img = data_gen.generate_labeled_regions(shape=(10, 11, 12), n_regions=2)
 
     pytest.raises(ValueError, largest_connected_component, img)
     pytest.raises(ValueError, largest_connected_component, "Test String")
@@ -41,7 +37,7 @@ def test_largest_cc():
 def test_empty_peak_local_max():
     image = np.zeros((10, 20))
     result = _peak_local_max(image, min_distance=1, threshold_rel=0)
-    assert np.all(~ result)
+    assert np.all(~result)
 
 
 def test_flat_peak_local_max():
