@@ -288,6 +288,47 @@ Each function and class must come with a “docstring” at the top of the funct
 using numpydoc_ formatting.
 The docstring must summarize what the function does and document every parameter.
 
+If an argument takes in a default value, it should be described
+with the type definition of that argument.
+
+See the examples below:
+
+.. code-block:: python
+
+      def Good(x, y=1, z=None):
+      """Show how parameters are documented.
+
+      Parameters
+      ----------
+      x : :obj:`int`
+            X
+
+      y : :obj:`int`, default=1
+            Note that "default=1" is preferred to "Defaults to 1".
+
+      z : :obj:`str`, default=None
+
+      """
+      ...
+
+      def Bad(x, y=1, z=None):
+      """Show how parameters should not be documented.
+
+      Parameters
+      ----------
+      x :
+            X the type of X is not described
+
+      y : :obj:`int`
+            The default value of y is not described.
+
+      z : :obj:`str`
+            Defatuls=None.
+
+            The default value should be described after the type.
+      """
+      ...
+
 Additionally, we consider it best practice to write modular functions;
 i.e., functions should preferably be relatively short and do *one* thing.
 This is also useful for writing unit tests.
@@ -401,7 +442,7 @@ Here are the key steps you need to go through to copy the repo before contributi
       pip install -e '.[dev]'
 
 This installs your local version of Nilearn, along with all dependencies necessary for developers (hence the ``[dev]`` tag).
-For more information about the dependency installation options, see ``pyproject.toml``.
+For more information about the dependency installation options, see ``setup.cfg``.
 The installed version will also reflect any changes you make to your code.
 
 4. check that all tests pass with (this can take a while)::
