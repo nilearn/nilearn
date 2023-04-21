@@ -39,6 +39,7 @@ Enhancements
 
 - :func:`~glm.first_level.first_level_from_bids` now takes an optional ``sub_labels`` argument and warns users of given subject labels that are not present in the dataset (:gh:`3351` by `Kevin Sitek`_).
 
+- Added special handling of ``param_grid`` and ``cv_params_`` for Decoder objects using models with built-in cross-validation (e.g., ``RidgeCV``, ``RidgeClassifierCV``) (:gh:`3626` by `Michelle Wang`_).
 
 Changes
 -------
