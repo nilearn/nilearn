@@ -34,7 +34,6 @@ files: |
         | nilearn/signal.py
         | nilearn/masking.py
         | nilearn/conftest.py
-        | nilearn/version.py
     )$
 
 exclude: |
