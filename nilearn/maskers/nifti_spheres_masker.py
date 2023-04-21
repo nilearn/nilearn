@@ -441,7 +441,7 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
 
     def _check_fitted(self):
         if not hasattr(self, "seeds_"):
-            raise ValueError('It seems that {self.__class__.__name__} '
+            raise ValueError(f'It seems that {self.__class__.__name__} '
                              'has not been fitted. '
                              'You must call fit() before calling transform().')
 
