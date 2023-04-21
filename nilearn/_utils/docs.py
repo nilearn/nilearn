@@ -658,8 +658,7 @@ second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\
     Where ``n_col`` is the number of columns of the design matrix.
     The string can be a formula compatible with :meth:`pandas.DataFrame.eval`.
     Basically one can use the name of the conditions as they appear
-    in the design matrix of the fitted model
-    combined with operators +-
+    in the design matrix of the fitted model combined with operators +-
     and combined with numbers with operators +-`*`/.
     The default ``None`` is accepted if the design matrix has a single column,
     in which case the only possible contrast array((1)) is applied;
@@ -681,8 +680,7 @@ or :class:`pandas.DataFrame` or :obj:`list` of Niimg-like objects.
     - If a :class:`~pandas.DataFrame`, then it has to contain
       ``subject_label``, ``map_name`` and ``effects_map_path``.
       It can contain multiple maps that would be selected
-      during contrast estimation
-      with the argument ``first_level_contrast``
+      during contrast estimation with the argument ``first_level_contrast``
       of :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`.
       The :class:`~pandas.DataFrame` will be sorted
       based on the ``subject_label`` column to avoid order inconsistencies
