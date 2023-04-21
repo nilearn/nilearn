@@ -55,7 +55,7 @@ from nilearn.maskers import NiftiLabelsMasker
 
 masker = NiftiLabelsMasker(
     labels_img=atlas_filename,
-    standardize=True,
+    standardize="zscore_sample",
     memory="nilearn_cache",
     verbose=5,
 )
