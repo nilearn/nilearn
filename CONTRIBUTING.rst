@@ -318,14 +318,13 @@ See the examples below:
       Parameters
       ----------
       x :
-            X the type of X is not described
+            The type of X is not described
 
       y : :obj:`int`
             The default value of y is not described.
 
       z : :obj:`str`
-            Defatuls=None.
-
+            Defaults=None.
             The default value should be described after the type.
       """
       ...
