@@ -222,7 +222,7 @@ cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
 
         .. note::
 
-            If ``display_mode`` is "x", "y" or "z", 
+            If ``display_mode`` is "x", "y" or "z",
             ``cut_coords`` can be an integer,
             in which case it specifies the number of cuts to perform.
 """
@@ -302,7 +302,7 @@ extractor : {"local_regions", "connected_components"}, default="local_regions"
 
         - "local_regions": each component/region is extracted
           based on their maximum peak value to define a seed marker
-          and then using random walker segmentation algorithm 
+          and then using random walker segmentation algorithm
           on these markers for region separation.
 """
 docdict['extract_type'] = docdict['extractor']
@@ -310,7 +310,7 @@ docdict['extract_type'] = docdict['extractor']
 # figure
 docdict['figure'] = """
 figure : :obj:`int`, or :class:`matplotlib.figure.Figure`, or None,  optional
-    Matplotlib figure used or its number. 
+    Matplotlib figure used or its number.
     If ``None`` is given, a new figure is created.
 """
 
@@ -369,7 +369,7 @@ hemispheres : :obj:`list` of :obj:`str`, default=["left", "right"]
 # high_pass
 docdict['high_pass'] = """
 high_pass : :obj:`float`, default=None
-    High cutoff frequency in Hertz. 
+    High cutoff frequency in Hertz.
     If specified, signals below this frequency will be filtered out.
 """
 
@@ -523,14 +523,14 @@ docdict['memory'] = """
 memory : instance of :class:`joblib.Memory`, :obj:`str`, or \
 :class:`pathlib.Path`
     Used to cache the masking process.
-    By default, no caching is done. 
+    By default, no caching is done.
     If a :obj:`str` is given, it is the path to the caching directory.
 """
 
 # memory_level
 memory_level = """
 memory_level : :obj:`int`, default={}
-    Rough estimator of the amount of memory used by caching. 
+    Rough estimator of the amount of memory used by caching.
     Higher value means more memory for caching.
     Zero means no caching.
 """
@@ -583,9 +583,9 @@ opening : :obj:`bool` or :obj:`int`, optional
 # output_file
 docdict['output_file'] = """
 output_file : :obj:`str`, or None, optional
-    The name of an image file to export the plot to. 
-    Valid extensions are .png, .pdf, .svg. 
-    If ``output_file`` is not ``None``, the plot is saved to a file, 
+    The name of an image file to export the plot to.
+    Valid extensions are .png, .pdf, .svg.
+    If ``output_file`` is not ``None``, the plot is saved to a file,
     and the display is closed.
 """
 
