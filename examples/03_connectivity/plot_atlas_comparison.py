@@ -157,7 +157,7 @@ masker = MultiNiftiMapsMasker(
     maps_img=difumo.maps,
     standardize="zscore_sample",
     memory="nilearn_cache",
-    n_jobs=2
+    n_jobs=2,
 )
 
 # extract time series from all subjects

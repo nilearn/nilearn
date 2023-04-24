@@ -53,7 +53,7 @@ canica = CanICA(
     verbose=10,
     mask_strategy="whole-brain-template",
     random_state=0,
-    standardize="zscore_sample"
+    standardize="zscore_sample",
 )
 canica.fit(func_filenames)
 

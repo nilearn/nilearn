@@ -91,7 +91,7 @@ for classifier_name in sorted(classifiers):
         estimator=classifier_name,
         mask=mask_filename,
         standardize="zscore_sample",
-        cv=cv
+        cv=cv,
     )
     t0 = time.time()
     decoder.fit(fmri_niimgs, classification_target, groups=session_labels)
@@ -171,7 +171,7 @@ for classifier_name in sorted(classifiers):
         estimator=classifier_name,
         mask=mask_filename,
         standardize="zscore_sample",
-        cv=cv
+        cv=cv,
     )
     decoder.fit(fmri_niimgs_condition, stimuli, groups=session_labels)
     classifiers_data[classifier_name] = {}
