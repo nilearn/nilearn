@@ -22,8 +22,7 @@ class BaseSlicer:
     """BaseSlicer implementation which main purpose is to auto adjust \
     the axes size to the data with different layout of cuts.
 
-    It creates
-    3 linked axes for plotting orthogonal cuts.
+    It creates 3 linked axes for plotting orthogonal cuts.
 
     Attributes
     ----------
