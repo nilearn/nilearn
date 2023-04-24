@@ -85,7 +85,7 @@ bg_on_data : :obj:`bool`, optional
 # bg_vmax
 docdict['bg_vmax'] = """
 bg_vmin : :obj:`float`, optional
-    vmax for ``bg_img``.
+    vmax for `bg_img`.
 """
 
 # bg_vmin
@@ -512,11 +512,11 @@ mask_type : {"whole-brain", "gm", "wm"}, default="whole-brain"
 docdict['masker_kwargs'] = """
 kwargs : dict
     Keyword arguments to be passed to functions called within the masker.
-    Kwargs prefixed with ``'clean__'`` will be passed to
+    Kwargs prefixed with `'clean__'` will be passed to
     :func:`~nilearn.signal.clean`.
     Within :func:`~nilearn.signal.clean`, kwargs prefixed with
-    ``'butterworth__'`` will be passed to the Butterworth filter
-    (i.e., ``clean__butterworth__``).
+    `'butterworth__'` will be passed to the Butterworth filter
+    (i.e., `clean__butterworth__`).
 """
 
 # memory
@@ -576,7 +576,7 @@ opening : :obj:`bool` or :obj:`int`, optional
 
     .. note::
 
-        Turning off :term:`opening<Opening>` (``opening=False``) will also
+        Turning off :term:`opening<Opening>` (`opening=False`) will also
         prevent any smoothing applied to the image during the mask computation.
 """
 
@@ -797,7 +797,7 @@ url : :obj:`str`, default=None
 # verbose
 verbose = """
 verbose : :obj:`int`, default={}
-    Verbosity level (``0`` means no message).
+    Verbosity level (`0` means no message).
 """
 docdict['verbose'] = verbose.format(1)
 docdict['verbose0'] = verbose.format(0)
@@ -871,7 +871,7 @@ def fill_doc(f):
     Returns
     -------
     f : callable
-        The function, potentially with an updated ``__doc__``.
+        The function, potentially with an updated `__doc__`.
 
     """
     docstring = f.__doc__
