@@ -41,19 +41,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
     %(smoothing_fwhm)s
-    standardize : {'zscore', 'psc', True, False}, optional
-        Strategy to standardize the signal.
-
-            - 'zscore': the signal is z-scored. Timeseries are shifted
-              to zero mean and scaled to unit variance.
-            - 'psc':  Timeseries are shifted to zero mean value and scaled
-              to percent signal change (as compared to original mean signal).
-            - True : the signal is z-scored. Timeseries are shifted
-              to zero mean and scaled to unit variance.
-            - False : Do not standardize the data.
-
-        Default=False.
-
+    %(standardize_maskers)s
     %(standardize_confounds)s
     high_variance_confounds : :obj:`bool`, optional
         If True, high variance confounds are computed on provided image with
