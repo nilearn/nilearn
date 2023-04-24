@@ -69,6 +69,30 @@ def test_resample():
     assert np.any(X != 0)
 
 
+def test_resample_to_mask_warning():
+    """Check that a warning is raised when data is
+    being resampled to mask's resolution.
+    """
+    data = np.zeros((9, 9, 9))
+    data[3:-3, 3:-3, 3:-3] = 10
+    img = nibabel.Nifti1Image(data, np.eye(4))
+    # defining a mask with different fov than img
+    mask = np.zeros((12, 12, 12))
+    mask[3:-3, 3:-3, 3:-3] = 10
+    mask = mask.astype("uint8")
+    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+    masker = NiftiMasker(mask_img=mask_img)
+    with pytest.warns(
+        UserWarning,
+        match='imgs are being resampled to the mask_img resolution. '
+            'This process is memory intensive. You might want to provide '
+            'a target_affine that is equal to the affine of the imgs '
+            'or resample the mask beforehand '
+            'to save memory and computation time.'
+    ):
+        masker.fit_transform(img)
+
+
 def test_with_files():
     """Test standard masking with filenames."""
     data = np.zeros((40, 40, 40, 2))

@@ -4,7 +4,7 @@ Author: Bertrand Thirion, 2011--2015
 """
 import numpy as np
 from nibabel.onetime import auto_attr
-from nilearn._utils.glm import positive_reciprocal
+from nilearn.glm._utils import positive_reciprocal
 from scipy.linalg import inv
 from scipy.stats import t as t_distribution
 
