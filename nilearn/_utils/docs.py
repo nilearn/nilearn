@@ -28,7 +28,7 @@ annotate : :obj:`bool`, default=True
 
 # avg_method
 docdict['avg_method'] = """
-avg_method : {"mean", "median", "min", "max", custom function}, optional
+avg_method : {"mean", "median", "min", "max", custom function}, default="mean"
     How to average vertex values to derive the face value:
 
         - ``mean``: results in smooth boundaries
@@ -53,7 +53,7 @@ ax : :class:`~matplotlib.axes.Axes`
 # axes
 docdict['axes'] = """
 axes : :class:`matplotlib.axes.Axes`, or 4 tuple\
-of :obj:`float`: (xmin, ymin, width, height), optional
+of :obj:`float`: (xmin, ymin, width, height), default=None
     The axes, or the coordinates, in matplotlib figure space,
     of the axes used to display the plot.
     If ``None``, the complete figure is used.
