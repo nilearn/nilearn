@@ -295,7 +295,8 @@ See the examples below:
 
 .. code-block:: python
 
-      def Good(x, y=1, z=None):
+      def good(x, y=1, z=None):
+``` Assuming that this is supposed to be a function.
       """Show how parameters are documented.
 
       Parameters
