@@ -172,6 +172,8 @@
 
 .. _Michelle Wang: https://github.com/michellewang
 
+.. _Mohammad Torabi: https://github.com/mtorabi59
+
 .. _Moritz Boos: https://github.com/mjboos
 
 .. _Myeong Seop Song: https://github.com/NeuroVR-Song
