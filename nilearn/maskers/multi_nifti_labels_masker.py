@@ -69,7 +69,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         Default="data".
 
     %(memory)s
-    %(memory_level)s
+    %(memory_level1)s
     %(n_jobs)s
     %(verbose0)s
     strategy : :obj:`str`, optional
