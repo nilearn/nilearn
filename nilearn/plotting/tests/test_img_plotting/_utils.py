@@ -4,6 +4,10 @@ import pytest
 from nibabel import Nifti1Image
 from nilearn.conftest import MNI_AFFINE
 
+from nilearn.plotting import _set_mpl_backend
+
+_set_mpl_backend
+
 
 @pytest.fixture()
 def testdata_3d_for_plotting():
