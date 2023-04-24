@@ -51,6 +51,7 @@ dict_learn = DictLearning(
     memory="nilearn_cache",
     memory_level=2,
     random_state=0,
+    standardize="zscore_sample",
 )
 # Fit to the data
 dict_learn.fit(func_filenames)
