@@ -539,10 +539,9 @@ docdict['memory_level1'] = memory_level.format(1)
 
 # n_jobs
 n_jobs = """
-n_jobs : :obj:`int`, optional.
+n_jobs : :obj:`int`, default={}
     The number of CPUs to use to do the computation.
     ``-1`` means 'all CPUs'.
-    Default={}.
 """
 docdict['n_jobs'] = n_jobs.format("1")
 docdict['n_jobs_all'] = n_jobs.format("-1")
