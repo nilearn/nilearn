@@ -22,7 +22,7 @@ docdict = dict()
 # annotate
 docdict['annotate'] = """
 annotate : :obj:`bool`, default=True
-    If ``annotate`` is ``True``, positions and left/right annotation
+    If `annotate` is `True`, positions and left/right annotation
     are added to the plot.
 """
 
@@ -31,10 +31,10 @@ docdict['avg_method'] = """
 avg_method : {"mean", "median", "min", "max", custom function}, default="mean"
     How to average vertex values to derive the face value:
 
-        - ``mean``: results in smooth boundaries
-        - ``median``: results in sharp boundaries
-        - ``min`` or ``max``: for sparse matrices
-        - ``custom function``: You can also pass a custom function
+        - `mean`: results in smooth boundaries
+        - `median`: results in sharp boundaries
+        - `min` or `max`: for sparse matrices
+        - `custom function`: You can also pass a custom function
           which will be executed though :func:`numpy.apply_along_axis`.
           Here is an example of a custom function:
 
@@ -56,7 +56,7 @@ axes : :class:`matplotlib.axes.Axes`, or 4 tuple\
 of :obj:`float`: (xmin, ymin, width, height), default=None
     The axes, or the coordinates, in matplotlib figure space,
     of the axes used to display the plot.
-    If ``None``, the complete figure is used.
+    If `None`, the complete figure is used.
 """
 
 # bg_img
@@ -69,12 +69,12 @@ bg_img : Niimg-like object, optional
 # bg_on_data
 docdict['bg_on_data'] = r"""
 bg_on_data : :obj:`bool`, optional
-    If ``True`` and a ``bg_map`` is specified,
-    the ``surf_data`` data is multiplied by the background image,
-    so that e.g. sulcal depth is jointly visible with ``surf_data``.
+    If `True` and a `bg_map` is specified,
+    the `surf_data` data is multiplied by the background image,
+    so that e.g. sulcal depth is jointly visible with `surf_data`.
     Otherwise, the background image will only be visible
     where there is no surface data
-    (either because ``surf_data`` contains ``nan``\s
+    (either because `surf_data` contains `nan`\s
     or because is was thresholded).
 
         .. note::
@@ -91,15 +91,15 @@ bg_vmin : :obj:`float`, optional
 # bg_vmin
 docdict['bg_vmin'] = """
 bg_vmin : :obj:`float`, optional
-    vmin for ``bg_img``.
+    vmin for `bg_img`.
 """
 
 # black_bg
 docdict['black_bg'] = """
 black_bg : :obj:`bool`, or "auto", optional
-    If ``True``, the background of the image is set to be black.
+    If `True`, the background of the image is set to be black.
     If you wish to save figures with a black background,
-    you will need to pass facecolor="k", edgecolor="k"
+    you will need to pass `facecolor="k", edgecolor="k"`
     to :func:`matplotlib.pyplot.savefig`.
 """
 
@@ -188,13 +188,13 @@ cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, optional
 # colorbar
 docdict['colorbar'] = """
 colorbar : :obj:`bool`, optional
-    If ``True``, display a colorbar on the right of the plots.
+    If `True`, display a colorbar on the right of the plots.
 """
 
 # connected
 docdict['connected'] = """
 connected : :obj:`bool`, optional
-    If connected is True, only the largest connect component is kept.
+    If connected is `True`, only the largest connect component is kept.
 """
 
 # confounds
@@ -210,20 +210,20 @@ docdict['cut_coords'] = """
 cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
     The MNI coordinates of the point where the cut is performed.
 
-        - If ``display_mode`` is 'ortho' or 'tiled', this should
-          be a 3-tuple: ``(x, y, z)``
-        - For ``display_mode == "x"``, "y", or "z", then these are
+        - If `display_mode` is `'ortho'` or `'tiled'`, this should
+          be a 3-tuple: `(x, y, z)`
+        - For `display_mode == "x"`, "y", or "z", then these are
           the coordinates of each cut in the corresponding direction.
-        - If ``None`` is given, the cuts are calculated automatically.
-        - If ``display_mode`` is 'mosaic', and the number of cuts is the same
-          for all directions, ``cut_coords`` can be specified as an integer.
+        - If `None` is given, the cuts are calculated automatically.
+        - If `display_mode` is 'mosaic', and the number of cuts is the same
+          for all directions, `cut_coords` can be specified as an integer.
           It can also be a length 3 tuple specifying the number of cuts for
           every direction if these are different.
 
         .. note::
 
-            If ``display_mode`` is "x", "y" or "z",
-            ``cut_coords`` can be an integer,
+            If `display_mode` is "x", "y" or "z",
+            `cut_coords` can be an integer,
             in which case it specifies the number of cuts to perform.
 """
 
@@ -232,8 +232,8 @@ docdict['darkness'] = """
 darkness : :obj:`float` between 0 and 1, optional
     Specifying the darkness of the background image:
 
-        - ``1`` indicates that the original values of the background are used
-        - ``0.5`` indicates that the background values
+        - `1` indicates that the original values of the background are used
+        - `0.5` indicates that the background values
           are reduced by half before being applied.
 """
 
@@ -259,7 +259,7 @@ dim : :obj:`float`, or "auto", optional
     Accepted float values, where a typical span is between -2 and 2
     (-2 = increase contrast; 2 = decrease contrast),
     but larger values can be used for a more pronounced effect.
-    ``0`` means no dimming.
+    `0` means no dimming.
 """
 
 # display_mode
@@ -268,26 +268,26 @@ display_mode : {"ortho", "tiled", "mosaic", "x", \
 "y", "z", "yx", "xz", "yz"}, default="ortho"
     Choose the direction of the cuts:
 
-        - "x": sagittal
-        - "y": coronal
-        - "z": axial
-        - "ortho": three cuts are performed in orthogonal directions
-        - "tiled": three cuts are performed and arranged in a 2x2 grid
-        - "mosaic": three cuts are performed along
+        - `"x"`: sagittal
+        - `"y"`: coronal
+        - `"z"`: axial
+        - `"ortho"`: three cuts are performed in orthogonal directions
+        - `"tiled"`: three cuts are performed and arranged in a 2x2 grid
+        - `"mosaic"`: three cuts are performed along
           multiple rows and columns
 """
 
 # draw_cross
 docdict['draw_cross'] = """
 draw_cross : :obj:`bool`, default=True
-    If ``draw_cross`` is ``True``, a cross is drawn on the plot
+    If `draw_cross` is `True`, a cross is drawn on the plot
     to indicate the cut position.
 """
 
 # ensure_finite
 docdict['ensure_finite'] = """
 ensure_finite : :obj:`bool`, optional
-    If True, the non-finite values (NANs and infs) found in the data
+    If `True`, the non-finite values (NANs and infs) found in the data
     will be replaced by zeros.
 """
 
@@ -296,11 +296,11 @@ docdict['extractor'] = """
 extractor : {"local_regions", "connected_components"}, default="local_regions"
     This option can take two values:
 
-        - "connected_components": each component/region in the image
+        - `"connected_components"`: each component/region in the image
           is extracted automatically by labelling each region based
           upon the presence of unique features in their respective regions.
 
-        - "local_regions": each component/region is extracted
+        - `"local_regions"`: each component/region is extracted
           based on their maximum peak value to define a seed marker
           and then using random walker segmentation algorithm
           on these markers for region separation.
@@ -311,18 +311,18 @@ docdict['extract_type'] = docdict['extractor']
 docdict['figure'] = """
 figure : :obj:`int`, or :class:`matplotlib.figure.Figure`, or None,  optional
     Matplotlib figure used or its number.
-    If ``None`` is given, a new figure is created.
+    If `None` is given, a new figure is created.
 """
 
 # fsaverage options
 docdict['fsaverage_options'] = """
 
-        - "fsaverage3": the low-resolution fsaverage3 mesh (642 nodes)
-        - "fsaverage4": the low-resolution fsaverage4 mesh (2562 nodes)
-        - "fsaverage5": the low-resolution fsaverage5 mesh (10242 nodes)
-        - "fsaverage6": the medium-resolution fsaverage6 mesh (40962 nodes)
-        - "fsaverage7": same as "fsaverage"
-        - "fsaverage": the high-resolution fsaverage mesh (163842 nodes)
+        - `"fsaverage3"`: the low-resolution fsaverage3 mesh (642 nodes)
+        - `"fsaverage4"`: the low-resolution fsaverage4 mesh (2562 nodes)
+        - `"fsaverage5"`: the low-resolution fsaverage5 mesh (10242 nodes)
+        - `"fsaverage6"`: the medium-resolution fsaverage6 mesh (40962 nodes)
+        - `"fsaverage7"`: same as `"fsaverage"`
+        - `"fsaverage"`: the high-resolution fsaverage mesh (163842 nodes)
 
             .. note::
                 The high-resolution fsaverage will result in more computation
@@ -339,17 +339,17 @@ or 'fast' or None, optional
         - If a nonzero scalar is given, width is identical in all 3 directions.
         - If a :class:`numpy.ndarray`, :obj:`tuple`, or :obj:`list` is given,
           it must have 3 elements, giving the :term:`FWHM` along each axis.
-          If any of the elements is ``0`` or ``None``,
+          If any of the elements is `0` or `None`,
           smoothing is not performed along that axis.
         - If `fwhm="fast"`, a fast smoothing will be performed with a filter
           [0.2, 1, 0.2] in each direction and a normalisation to preserve the
           local average value.
-        - If ``fwhm`` is ``None``, no filtering is performed
+        - If `fwhm` is `None`, no filtering is performed
           (useful when just removal of non-finite values is needed).
 
     .. note::
 
-        In corner case situations, `fwhm` is simply kept to ``None``
+        In corner case situations, `fwhm` is simply kept to `None`
         when `fwhm` is specified as `fwhm=0`.
 """
 
@@ -381,29 +381,30 @@ hrf_model : :obj:`str`, function, list of functions, or None
     implemented in Nilearn.
     Valid names are:
 
-        - "spm": This is the :term:`HRF` model used in :term:`SPM`.
+        - `"spm"`: This is the :term:`HRF` model used in :term:`SPM`.
           See :func:`nilearn.glm.first_level.spm_hrf`.
-        - "spm + derivative": SPM model plus its time derivative.
+        - `"spm + derivative"`: SPM model plus its time derivative.
           This gives 2 regressors.
           See :func:`nilearn.glm.first_level.spm_hrf`, and
           :func:`nilearn.glm.first_level.spm_time_derivative`.
-        - "spm + derivative + dispersion": Idem, plus dispersion derivative.
+        - `"spm + derivative + dispersion"`: Idem, plus dispersion derivative.
           This gives 3 regressors.
           See :func:`nilearn.glm.first_level.spm_hrf`,
           :func:`nilearn.glm.first_level.spm_time_derivative`,
           and :func:`nilearn.glm.first_level.spm_dispersion_derivative`.
-        - "glover": This corresponds to the Glover :term:`HRF`.
+        - `"glover"`: This corresponds to the Glover :term:`HRF`.
           See :func:`nilearn.glm.first_level.glover_hrf`.
-        - "glover + derivative": The Glover :term:`HRF` + time derivative.
+        - `"glover + derivative"`: The Glover :term:`HRF` + time derivative.
           This gives 2 regressors.
           See :func:`nilearn.glm.first_level.glover_hrf`, and
           :func:`nilearn.glm.first_level.glover_time_derivative`.
-        - "glover"+ derivative + dispersion': Idem, plus dispersion derivative.
+        - `"glover"+ derivative + dispersion"`:
+          Idem, plus dispersion derivative.
           This gives 3 regressors.
           See :func:`nilearn.glm.first_level.glover_hrf`,
           :func:`nilearn.glm.first_level.glover_time_derivative`, and
           :func:`nilearn.glm.first_level.glover_dispersion_derivative`.
-        - "fir": Finite impulse response basis.
+        - `"fir"`: Finite impulse response basis.
           This is a set of delayed dirac models.
 
     It can also be a custom model.
@@ -413,11 +414,11 @@ hrf_model : :obj:`str`, function, list of functions, or None
     and return a sample numpy array of appropriate shape.
 
     .. note::
-        It is expected that `spm` standard and `glover` models
+        It is expected that `"spm"` standard and `"glover"` models
         would not yield large differences in most cases.
 
     .. note::
-        In case of `glover` and `spm` models, the derived regressors
+        In case of `"glover"` and `"spm"` models, the derived regressors
         are orthogonalized with respect to the main one.
 """
 
@@ -436,7 +437,7 @@ imgs : :obj:`list` of Niimg-like objects
 # legacy_format
 docdict['legacy_format'] = """
 legacy_format : :obj:`bool`, default=True
-    If set to ``True``, the fetcher will return recarrays.
+    If set to `True`, the fetcher will return recarrays.
     Otherwise, it will return pandas dataframes.
 """
 
@@ -444,7 +445,7 @@ legacy_format : :obj:`bool`, default=True
 docdict['linewidths'] = """
 linewidths : :obj:`float`, optional
     Set the boundary thickness of the contours.
-    Only reflects when ``view_type=contours``.
+    Only reflects when `view_type=contours`.
 """
 
 # low_pass
@@ -452,7 +453,7 @@ docdict['low_pass'] = """
 low_pass : :obj:`float` or None, default=None
     Low cutoff frequency in Hertz.
     If specified, signals above this frequency will be filtered out.
-    If ``None``, no low-pass filtering will be performed.
+    If `None`, no low-pass filtering will be performed.
 """
 
 # lower_cutoff
@@ -473,10 +474,10 @@ mask_strategy : {"background", "epi", "whole-brain-template",\
 "gm-template", "wm-template"}, optional
     The strategy used to compute the mask:
 
-        - "background": Use this option if your images present
+        - `"background"`: Use this option if your images present
           a clear homogeneous background.
-        - "epi": Use this option if your images are raw EPI images
-        - "whole-brain-template": This will extract the whole-brain
+        - `"epi"`: Use this option if your images are raw EPI images
+        - `"whole-brain-template"`: This will extract the whole-brain
           part of your data by resampling the MNI152 brain mask for
           your data's field of view.
 
@@ -484,13 +485,13 @@ mask_strategy : {"background", "epi", "whole-brain-template",\
                 This option is equivalent to the previous 'template' option
                 which is now deprecated.
 
-        - "gm-template": This will extract the gray matter part of your
+        - `"gm-template"`: This will extract the gray matter part of your
           data by resampling the corresponding MNI152 template for your
           data's field of view.
 
             .. versionadded:: 0.8.1
 
-        - "wm-template": This will extract the white matter part of your
+        - `"wm-template"`: This will extract the white matter part of your
           data by resampling the corresponding MNI152 template for your
           data's field of view.
 
@@ -502,9 +503,9 @@ docdict['mask_type'] = """
 mask_type : {"whole-brain", "gm", "wm"}, default="whole-brain"
     Type of mask to be computed:
 
-        - "whole-brain": Computes the whole-brain mask.
-        - "gm": Computes the grey-matter mask.
-        - "wm": Computes the white-matter mask.
+        - `"whole-brain"`: Computes the whole-brain mask.
+        - `"gm"`: Computes the grey-matter mask.
+        - `"wm"`: Computes the white-matter mask.
 """
 
 # kwargs for Maskers
@@ -541,7 +542,7 @@ docdict['memory_level1'] = memory_level.format(1)
 n_jobs = """
 n_jobs : :obj:`int`, default={}
     The number of CPUs to use to do the computation.
-    ``-1`` means 'all CPUs'.
+    `-1` means 'all CPUs'.
 """
 docdict['n_jobs'] = n_jobs.format("1")
 docdict['n_jobs_all'] = n_jobs.format("-1")
@@ -558,14 +559,14 @@ opening : :obj:`bool` or :obj:`int`, optional
     This parameter determines whether a morphological
     :term:`opening<Opening>` is performed, to keep only large structures.
     This step is useful to remove parts of the skull that might have been
-    included. ``opening`` can be:
+    included. `opening` can be:
 
-        - A boolean : If ``False``, no :term:`opening<Opening>` is performed.
-          If ``True``, it is equivalent to ``opening=1``.
+        - A boolean : If `False`, no :term:`opening<Opening>` is performed.
+          If `True`, it is equivalent to `opening=1`.
         - An integer `n`: The :term:`opening<Opening>` is performed via `n`
           :term:`erosions<Erosion>` (see :func:`scipy.ndimage.binary_erosion`).
           The largest connected component is then estimated
-          if ``connected`` is set to ``True``,
+          if `connected` is set to `True`,
           and 2`n` :term:`dilation<Dilation>` operations are performed
           (see :func:`scipy.ndimage.binary_dilation`)
           followed by `n` :term:`erosions<Erosion>`.
@@ -584,7 +585,7 @@ docdict['output_file'] = """
 output_file : :obj:`str`, or None, optional
     The name of an image file to export the plot to.
     Valid extensions are .png, .pdf, .svg.
-    If ``output_file`` is not ``None``, the plot is saved to a file,
+    If `output_file` is not `None`, the plot is saved to a file,
     and the display is closed.
 """
 
@@ -627,12 +628,12 @@ resampling_interpolation : :obj:`str`, optional
     Interpolation to use when resampling the image to
     the destination space. Can be:
 
-        - "continuous": use 3rd-order spline interpolation
-        - "nearest": use nearest-neighbor mapping.
+        - `"continuous"`: use 3rd-order spline interpolation
+        - `"nearest"`: use nearest-neighbor mapping.
 
             .. note::
 
-                "nearest" is faster but can be noisier in some cases.
+                `"nearest"` is faster but can be noisier in some cases.
 """
 
 # resume
@@ -654,12 +655,12 @@ sample_mask : Any type compatible with numpy-array indexing, optional
 docdict['second_level_contrast'] = """
 second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\
 (n_col), optional
-    Where ``n_col`` is the number of columns of the design matrix.
+    Where `n_col` is the number of columns of the design matrix.
     The string can be a formula compatible with :meth:`pandas.DataFrame.eval`.
     Basically one can use the name of the conditions as they appear
     in the design matrix of the fitted model combined with operators +-
     and combined with numbers with operators +-`*`/.
-    The default ``None`` is accepted if the design matrix has a single column,
+    The default `None` is accepted if the design matrix has a single column,
     in which case the only possible contrast array((1)) is applied;
     when the design matrix has multiple columns, an error is raised.
 """
@@ -672,29 +673,29 @@ or :class:`pandas.DataFrame` or :obj:`list` of Niimg-like objects.
 
     - Giving :class:`~nilearn.glm.first_level.FirstLevelModel` objects
       will allow to easily compute the second level contrast of arbitrary first
-      level contrasts thanks to the ``first_level_contrast`` argument of
+      level contrasts thanks to the `first_level_contrast` argument of
       :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`.
       Effect size images will be computed for each model
       to contrast at the second level.
     - If a :class:`~pandas.DataFrame`, then it has to contain
-      ``subject_label``, ``map_name`` and ``effects_map_path``.
+      `subject_label`, `map_name` and `effects_map_path`.
       It can contain multiple maps that would be selected
-      during contrast estimation with the argument ``first_level_contrast``
+      during contrast estimation with the argument `first_level_contrast`
       of :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`.
       The :class:`~pandas.DataFrame` will be sorted
-      based on the ``subject_label`` column to avoid order inconsistencies
+      based on the `subject_label` column to avoid order inconsistencies
       when extracting the maps.
       So the rows of the automatically computed design matrix,
-      if not provided, will correspond to the sorted ``subject_label`` column.
+      if not provided, will correspond to the sorted `subject_label` column.
     - If a :obj:`list` of Niimg-like objects
       then this is taken literally as Y for the model fit
-      and ``design_matrix`` must be provided.
+      and `design_matrix` must be provided.
 """
 
 # smoothing_fwhm
 docdict['smoothing_fwhm'] = """
 smoothing_fwhm : :obj:`float`, optional.
-    If ``smoothing_fwhm`` is not ``None``,
+    If `smoothing_fwhm` is not `None`,
     it gives the :term:`full-width at half maximum<FWHM>` in millimeters
     of the spatial smoothing to apply to the signal.
 """
@@ -702,7 +703,7 @@ smoothing_fwhm : :obj:`float`, optional.
 # standardize
 standardize = """
 standardize : :obj:`bool`, default={}
-    If ``standardize`` is ``True``, the data are centered and normed:
+    If `standardize` is `True`, the data are centered and normed:
     their mean is put to 0 and their variance is put to 1
     in the time dimension.
 """
@@ -712,46 +713,46 @@ docdict['standardize_false'] = standardize.format('False')
 # standardize_confounds
 docdict['standardize_confounds'] = """
 standardize_confounds : :obj:`bool`, default=True
-    If set to ``True``, the confounds are z-scored:
+    If set to `True`, the confounds are z-scored:
     their mean is put to 0 and their variance to 1 in the time dimension.
 """
 
 # symmetric_cbar
 docdict['symmetric_cbar'] = """
 symmetric_cbar : :obj:`bool`, or "auto", optional
-    Specifies whether the colorbar should range from ``-vmax`` to ``vmax``
-    or from ``vmin`` to ``vmax``.
-    Setting to "auto" will select the latter
+    Specifies whether the colorbar should range from `-vmax` to `vmax`
+    or from `vmin` to `vmax`.
+    Setting to `"auto"` will select the latter
     if the range of the whole image is either positive or negative.
 
     .. note::
 
-        The colormap will always range from ``-vmax`` to ``vmax``.
+        The colormap will always range from `-vmax` to `vmax`.
 """
 
 # t_r
 docdict['t_r'] = """
 t_r : :obj:`float` or None, default=None
     Repetition time, in seconds (sampling period).
-    Set to ``None`` if not provided.
+    Set to `None` if not provided.
 """
 
 # target_affine
 docdict['target_affine'] = """
 target_affine : :class:`numpy.ndarray`, default=None
     If specified, the image is resampled corresponding to this new affine.
-    ``target_affine`` can be a 3x3 or a 4x4 matrix.
+    `target_affine` can be a 3x3 or a 4x4 matrix.
 """
 
 # target_shape
 docdict['target_shape'] = """
 target_shape : :obj:`tuple` or :obj:`list`, default=None
     If specified, the image will be resized to match this new shape.
-    ``len(target_shape)`` must be equal to 3.
+    `len(target_shape)` must be equal to 3.
 
     .. note::
-        If ``target_shape`` is specified, a ``target_affine`` of shape
-        ``(4, 4)`` must also be given.
+        If `target_shape` is specified, a `target_affine` of shape
+        `(4, 4)` must also be given.
 """
 
 # templateflow
@@ -766,7 +767,7 @@ docdict["templateflow"] = """
 # threshold
 docdict['threshold'] = """
 threshold : a number, None, or 'auto', optional
-    If ``None`` is given, the image is not thresholded.
+    If `None` is given, the image is not thresholded.
     If a number is given, it is used to threshold the image:
     values below the threshold (in absolute value) are plotted as transparent.
     If "auto" is given, the threshold is determined magically
@@ -816,7 +817,7 @@ view : :obj:`str` or a pair of :obj:`float`, Default="lateral"
 docdict['vmax'] = """
 vmax : :obj:`float`, optional
     Upper bound of the colormap.
-    If ``None``, the max of the image is used.
+    If `None`, the max of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.
 """
 
@@ -824,7 +825,7 @@ vmax : :obj:`float`, optional
 docdict['vmin'] = """
 vmin : :obj:`float`, optional
     Lower bound of the colormap.
-    If ``None``, the min of the image is used.
+    If `None`, the min of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.
 """
 
