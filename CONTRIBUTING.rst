@@ -312,7 +312,7 @@ See the examples below:
       """
       ...
 
-      def Bad(x, y=1, z=None):
+      def bad(x, y=1, z=None):
       """Show how parameters should not be documented.
 
       Parameters
