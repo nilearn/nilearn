@@ -55,7 +55,7 @@ def test_sanitize_labels():
         assert _sanitize_labels((2, 2), lab) == labs
 
 
-VALID_TRI_VALUES = {"full", "lower", "diag"}
+VALID_TRI_VALUES = ("full", "lower", "diag")
 
 
 @pytest.mark.parametrize("tri", VALID_TRI_VALUES)
@@ -69,7 +69,7 @@ def test_sanitize_tri_error(tri):
     from ..matrix_plotting import _sanitize_tri
     with pytest.raises(ValueError,
                        match=("Parameter tri needs to be "
-                              f"one of {VALID_TRI_VALUES}")):
+                              f"one of: {', '.join(VALID_TRI_VALUES)}")):
         _sanitize_tri(tri)
 
 

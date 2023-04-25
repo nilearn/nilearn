@@ -90,10 +90,10 @@ def _sanitize_labels(mat_shape, labels):
 
 def _sanitize_tri(tri):
     """Help for plot_matrix."""
-    VALID_TRI_VALUES = {"full", "lower", "diag"}
+    VALID_TRI_VALUES = ("full", "lower", "diag")
     if tri not in VALID_TRI_VALUES:
         raise ValueError(
-            f"Parameter tri needs to be one of {VALID_TRI_VALUES}.")
+            f"Parameter tri needs to be one of: {', '.join(VALID_TRI_VALUES)}.")
 
 
 def _sanitize_reorder(reorder):
