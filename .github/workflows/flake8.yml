@@ -42,6 +42,7 @@ jobs:
             maint_tools \
             nilearn/_utils \
             nilearn/connectome \
+            nilearn/datasets \
             nilearn/de* \
             nilearn/glm \
             nilearn/image \

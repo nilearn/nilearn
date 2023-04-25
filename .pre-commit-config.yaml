@@ -21,6 +21,7 @@ files: |
         | maint_tools/.*
         | setup.*
         | nilearn/__init__.py
+        | nilearn/datasets/.*
         | nilearn/_utils/.*
         | nilearn/de.*
         | nilearn/connectome/.*py
@@ -58,6 +59,7 @@ exclude: |
         | nilearn/reporting/data/html/report_body_template_niftispheresmasker.html
         | nilearn/reporting/html_report.py
         | nilearn/reporting/tests/test_html_report.py
+        | nilearn/datasets/tests/data/localizer_behavioural.tsv
         | nilearn/externals/tempita
         | nilearn/_utils/__init__.py
         | nilearn/_utils/data_gen.py
