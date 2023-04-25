@@ -59,7 +59,7 @@ import numpy as np
 from nilearn.maskers import MultiNiftiMasker
 
 masker = MultiNiftiMasker(
-    mask_img=dataset.mask, detrend=True, standardize=True
+    mask_img=dataset.mask, detrend=True, standardize="zscore_sample"
 )
 masker.fit()
 fmri_data = masker.transform(fmri_random_runs_filenames)

@@ -41,7 +41,9 @@ print(f"The atlas contains {len(atlas.labels) - 1} non-overlapping regions")
 from nilearn.maskers import NiftiLabelsMasker
 
 # Instantiate the masker with label image and label values
-masker = NiftiLabelsMasker(atlas.maps, labels=atlas.labels, standardize=True)
+masker = NiftiLabelsMasker(
+    atlas.maps, labels=atlas.labels, standardize="zscore_sample"
+)
 
 # Visualize the atlas
 # Note that we need to call fit prior to generating the mask

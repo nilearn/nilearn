@@ -97,7 +97,7 @@ decoder = Decoder(
     cv=5,
     mask=mask_img,
     smoothing_fwhm=4,
-    standardize=True,
+    standardize="zscore_sample",
     screening_percentile=2,
     param_grid=param_grid,
 )
@@ -146,7 +146,7 @@ for sp in screening_percentile_range:
         mask=mask_img,
         smoothing_fwhm=4,
         cv=3,
-        standardize=True,
+        standardize="zscore_sample",
         screening_percentile=sp,
         param_grid=param_grid,
     )
@@ -180,7 +180,7 @@ for train, test in cv.split(session):
             mask=mask_img,
             smoothing_fwhm=4,
             cv=3,
-            standardize=True,
+            standardize="zscore_sample",
             screening_percentile=sp,
             param_grid=param_grid,
         )

@@ -51,6 +51,7 @@ dict_learn = DictLearning(
     memory="nilearn_cache",
     memory_level=2,
     random_state=0,
+    standardize="zscore_sample",
 )
 # Fit to the data
 dict_learn.fit(func_filenames)
@@ -83,7 +84,7 @@ extractor = RegionExtractor(
     threshold=0.5,
     thresholding_strategy="ratio_n_voxels",
     extractor="local_regions",
-    standardize=True,
+    standardize="zscore_sample",
     min_region_size=1350,
 )
 # Just call fit() to process for regions extraction
