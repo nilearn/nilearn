@@ -7,6 +7,7 @@ See also nilearn.signal.
 
 import collections.abc
 import copy
+import pathlib
 import warnings
 
 import nibabel
@@ -530,9 +531,9 @@ def mean_img(imgs, target_affine=None, target_shape=None, verbose=0, n_jobs=1):
 
     """
     imgs = stringify_path(imgs)
-    is_str = isinstance(imgs, str)
+    is_path = isinstance(imgs, str) or isinstance(imgs, pathlib.Path)
     is_iterable = isinstance(imgs, collections.abc.Iterable)
-    if is_str or not is_iterable:
+    if is_path or not is_iterable:
         imgs = [
             imgs,
         ]
@@ -751,19 +752,21 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     """
     # Hand-written loading code to avoid too much memory consumption
     orig_ref_niimg = ref_niimg
-    is_str = isinstance(ref_niimg, str)
+    is_path = isinstance(ref_niimg, str) or isinstance(ref_niimg, pathlib.Path)
     has_get_data = hasattr(ref_niimg, "get_data")
     has_get_fdata = hasattr(ref_niimg, "get_fdata")
     has_iter = hasattr(ref_niimg, "__iter__")
     has_affine = hasattr(ref_niimg, "affine")
-    if has_iter and not any([is_str, has_get_data, has_get_fdata]):
+    if has_iter and not any([is_path, has_get_data, has_get_fdata]):
         ref_niimg = ref_niimg[0]
-        is_str = isinstance(ref_niimg, str)
+        is_path = isinstance(ref_niimg, str) or isinstance(
+            ref_niimg, pathlib.Path
+        )
         has_get_data = hasattr(ref_niimg, "get_data")
         has_get_fdata = hasattr(ref_niimg, "get_fdata")
         has_affine = hasattr(ref_niimg, "affine")
     if not ((has_get_data or has_get_fdata) and has_affine):
-        if is_str:
+        if is_path:
             ref_niimg = nibabel.load(ref_niimg)
         else:
             raise TypeError(
