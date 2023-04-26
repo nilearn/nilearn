@@ -470,15 +470,12 @@ def test_fetch_atlas_difumo(tmp_path, request_mocker):
     resolutions = [2, 3]  # Valid resolution values
     dimensions = [64, 128, 256, 512, 1024]  # Valid dimension values
     dimension_urls = ["pqu9r", "wjvd5", "3vrct", "9b76y", "34792"]
-    url_mapping = {k: v for k, v in zip(dimensions, dimension_urls)}
-    url_count = 1
-
-    for dim in dimensions:
-        url_count += 1
+    url_mapping = dict(zip(dimensions, dimension_urls))
+    for url_count, dim in enumerate(dimensions, start=2):
         url = f"*osf.io/{url_mapping[dim]}/*"
         labels = pd.DataFrame(
             {
-                "Component": [_ for _ in range(1, dim + 1)],
+                "Component": list(range(1, dim + 1)),
                 "Difumo_names": ["" for _ in range(dim)],
                 "Yeo_networks7": ["" for _ in range(dim)],
                 "Yeo_networks17": ["" for _ in range(dim)],

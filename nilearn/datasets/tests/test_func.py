@@ -35,10 +35,11 @@ def _load_localizer_index():
         )
     localizer_index["/localizer/phenotype/behavioural.tsv"] = uuid.uuid4().hex
     localizer_index["/localizer/participants.tsv"] = uuid.uuid4().hex
-    tsv_files = {}
-    tsv_files["/localizer/phenotype/behavioural.tsv"] = pd.read_csv(
-        str(data_dir / "localizer_behavioural.tsv"), sep="\t"
-    )
+    tsv_files = {
+        "/localizer/phenotype/behavioural.tsv": pd.read_csv(
+            str(data_dir / "localizer_behavioural.tsv"), sep="\t"
+        )
+    }
     tsv_files["/localizer/participants.tsv"] = pd.read_csv(
         str(data_dir / "localizer_participants.tsv"), sep="\t"
     )
@@ -329,9 +330,9 @@ def test_fetch_abide_pcp(tmp_path, request_mocker, quality_checked):
     n_subjects = 800
     ids = list(range(n_subjects))
     filenames = ["no_filename"] * n_subjects
-    filenames[::2] = ["filename"] * int(n_subjects / 2)
+    filenames[::2] = ["filename"] * (n_subjects // 2)
     qc_rater_1 = ["OK"] * n_subjects
-    qc_rater_1[::4] = ["fail"] * int(n_subjects / 4)
+    qc_rater_1[::4] = ["fail"] * (n_subjects // 4)
     pheno = pd.DataFrame(
         {
             "subject_id": ids,
@@ -376,11 +377,10 @@ def test__load_mixed_gambles(request_mocker):
     n_trials = 48
     affine = np.eye(4)
     for n_subjects in [1, 5, 16]:
-        zmaps = []
-        for _ in range(n_subjects):
-            zmaps.append(
-                nibabel.Nifti1Image(rng.randn(3, 4, 5, n_trials), affine)
-            )
+        zmaps = [
+            nibabel.Nifti1Image(rng.randn(3, 4, 5, n_trials), affine)
+            for _ in range(n_subjects)
+        ]
         zmaps, gain, _ = func._load_mixed_gambles(zmaps)
         assert len(zmaps) == n_subjects * n_trials
         assert len(zmaps) == len(gain)
@@ -639,7 +639,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
     data = func.fetch_development_fmri(
         n_subjects=2, reduce_confounds=False, verbose=1, age_group="child"
     )
-    assert all([x == "child" for x in data.phenotypic["Child_Adult"]])
+    assert all(x == "child" for x in data.phenotypic["Child_Adult"])
 
 
 def test_fetch_development_fmri_invalid_n_subjects(request_mocker):
@@ -845,7 +845,7 @@ def test_fetch_localizer(request_mocker, tmp_path):
 
 def _mock_original_spm_auditory_events_file():
     expected_events_data = {
-        "onset": [factor * 42.0 for factor in range(0, 16)],
+        "onset": [factor * 42.0 for factor in range(16)],
         "duration": [42.0] * 16,
         "trial_type": ["rest", "active"] * 8,
     }
@@ -861,8 +861,7 @@ def _mock_original_spm_auditory_events_file():
 def _mock_bids_compliant_spm_auditory_events_file():
     events_filepath = os.path.join(os.getcwd(), "tests_events.tsv")
     func._make_events_file_spm_auditory_data(events_filepath=events_filepath)
-    with open(events_filepath) as actual_events_file_obj:
-        actual_events_data_string = actual_events_file_obj.read()
+    actual_events_data_string = Path(events_filepath).read_text()
     return actual_events_data_string, events_filepath
 
 
