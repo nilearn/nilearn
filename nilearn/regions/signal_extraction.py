@@ -102,7 +102,8 @@ def _check_shape_and_affine_compatibility(img1, img2=None, dim=None):
 
 
 def _get_labels_data(
-    target_img, labels_img, mask_img=None, background_label=0, dim=None
+    target_img, labels_img, mask_img=None, background_label=0, dim=None,
+    keep_masked_labels=True
 ):
     """Get the label data.
 
@@ -133,6 +134,11 @@ def _get_labels_data(
     dim : :obj:`int`, optional
         Integer slices mask for a specific dimension.
 
+    keep_masked_labels : :obj:`bool`, optional
+        If False, the labels in labels_img that are masked by mask_img
+        will be removed from output labels. If True, they are kept.
+        Default=True.
+
     Returns
     -------
     labels : :obj:`list` or :obj:`tuple`
@@ -154,9 +160,8 @@ def _get_labels_data(
 
     labels_data = _safe_get_data(labels_img, ensure_finite=True)
 
-    labels = list(np.unique(labels_data))
-    if background_label in labels:
-        labels.remove(background_label)
+    if keep_masked_labels:
+        labels = list(np.unique(labels_data))
 
     # Consider only data within the mask
     use_mask = _check_shape_and_affine_compatibility(target_img, mask_img, dim)
@@ -165,6 +170,12 @@ def _get_labels_data(
         mask_data = _safe_get_data(mask_img, ensure_finite=True)
         labels_data = labels_data.copy()
         labels_data[np.logical_not(mask_data)] = background_label
+
+    if not keep_masked_labels:
+        labels = list(np.unique(labels_data))
+
+    if background_label in labels:
+        labels.remove(background_label)
 
     return labels, labels_data
 
@@ -206,6 +217,7 @@ def img_to_signals_labels(
     background_label=0,
     order="F",
     strategy="mean",
+    keep_masked_labels=True
 ):
     """Extract region signals from image.
 
@@ -241,6 +253,12 @@ def img_to_signals_labels(
         Must be one of: sum, mean, median, minimum, maximum, variance,
         standard_deviation. Default="mean".
 
+    keep_masked_labels : :obj:`bool`, optional
+        If False, the labels in labels_img that are masked by mask_img
+        will be removed from the output. If True, they are kept, meaning
+        that they will be filled with zero in signals in the output.
+        Default=True.
+
     Returns
     -------
     signals : :class:`numpy.ndarray`
@@ -269,7 +287,8 @@ def img_to_signals_labels(
     # (load one image at a time).
     imgs = _utils.check_niimg_4d(imgs)
     labels, labels_data = _get_labels_data(
-        imgs, labels_img, mask_img, background_label
+        imgs, labels_img, mask_img, background_label,
+        keep_masked_labels=keep_masked_labels
     )
 
     data = _safe_get_data(imgs, ensure_finite=True)
@@ -284,10 +303,11 @@ def img_to_signals_labels(
             reduction_function(img, labels=labels_data, index=labels)
         )
     # Set to zero signals for missing labels. Workaround for Scipy behaviour
-    missing_labels = set(labels) - set(np.unique(labels_data))
-    labels_index = {l: n for n, l in enumerate(labels)}
-    for this_label in missing_labels:
-        signals[:, labels_index[this_label]] = 0
+    if keep_masked_labels:
+        missing_labels = set(labels) - set(np.unique(labels_data))
+        labels_index = {l: n for n, l in enumerate(labels)}
+        for this_label in missing_labels:
+            signals[:, labels_index[this_label]] = 0
     return signals, labels
 
 

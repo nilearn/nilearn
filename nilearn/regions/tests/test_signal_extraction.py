@@ -461,6 +461,18 @@ def test_signal_extraction_with_maps_and_labels(labeled_regions, fmri_img):
     maps_img_r = signals_to_img_maps(maps_signals, maps_img, mask_img=mask_img)
     assert maps_img_r.shape == SHAPE + (N_TIMEPOINTS,)
 
+    # apply img_to_signals_labels with a masking,
+    # containing only 3 regions, but
+    # not keeping the masked labels
+
+    labels_signals, labels_labels = img_to_signals_labels(
+        imgs=fmri_img, labels_img=labeled_regions, mask_img=mask_img,
+        keep_masked_labels=False
+    )
+    # only 3 regions must be kept, others must be removed
+    assert labels_signals.shape == (N_TIMEPOINTS, 3)
+    assert len(labels_labels) == 3
+
 
 def test_signal_extraction_nans_in_regions_are_replaced_with_zeros():
     shape = (4, 5, 6)
