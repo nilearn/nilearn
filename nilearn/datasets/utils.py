@@ -872,8 +872,8 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
             warnings.warn(f"An error occurred while fetching {file_}")
             abort = (
                 "Dataset has been downloaded but requested file was "
-                "not provided:\nURL: %s\n"
-                "Target file: %s\nDownloaded: %s" % (url, target_file, dl_file)
+                f"not provided:\nURL: {url}\n"
+                f"Target file: {target_file}\nDownloaded: {dl_file}"
             )
         if abort is not None:
             if os.path.exists(temp_dir):

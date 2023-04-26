@@ -478,9 +478,10 @@ def fetch_atlas_harvard_oxford(
         "sub-prob-2mm",
     ]
     if atlas_name not in atlases:
+        atlases = "\n".join(atlases)
         raise ValueError(
-            "Invalid atlas name: {}. Please choose "
-            "an atlas among:\n{}".format(atlas_name, "\n".join(atlases))
+            f"Invalid atlas name: {atlas_name}. "
+            f"Please choose an atlas among:\n{atlases}"
         )
     is_probabilistic = "-prob-" in atlas_name
     if is_probabilistic and symmetric_split:
@@ -612,9 +613,10 @@ def fetch_atlas_juelich(
         "prob-2mm",
     ]
     if atlas_name not in atlases:
+        atlases = "\n".join(atlases)
         raise ValueError(
-            "Invalid atlas name: {}. Please choose "
-            "an atlas among:\n{}".format(atlas_name, "\n".join(atlases))
+            f"Invalid atlas name: {atlas_name}. "
+            f"Please choose an atlas among:\n{atlases}"
         )
     is_probabilistic = atlas_name.startswith("prob-")
     if is_probabilistic and symmetric_split:

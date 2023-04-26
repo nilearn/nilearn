@@ -797,8 +797,9 @@ def fetch_localizer_contrasts(
                         "derivatives",
                         "spm_1st_level",
                         f"sub-{subject_id}",
-                        "sub-{}_task-localizer_acq-{}_{}.nii.gz".format(
-                            subject_id, contrast, data_type
+                        (
+                            f"sub-{subject_id}_task-localizer"
+                            f"_acq-{contrast}_{data_type}.nii.gz"
                         ),
                     ]
                 )
@@ -1233,8 +1234,8 @@ def _load_mixed_gambles(zmap_imgs):
         # gain levels
         if len(this_y) != this_X.shape[-1]:
             raise RuntimeError(
-                "%s: Expecting %i volumes, got %i!"
-                % (zmap_img, len(this_y), this_X.shape[-1])
+                f"{zmap_img}: Expecting {len(this_y)} volumes, "
+                f"got {this_X.shape[-1]}!"
             )
 
         # standardize subject data
@@ -2744,17 +2745,14 @@ def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
         glob.glob(
             os.path.join(
                 subject_dir,
-                (
-                    "fMRI/Session%i/fMETHODS-000%i-*-01.img"
-                    % (session, session + 4)
-                ),
+                f"fMRI/Session{session}/fMETHODS-000{session + 4}-*-01.img",
             )
         )
     )
     if len(session_func) < 390:
         print(
-            "Missing %i functional scans for session %i."
-            % (390 - len(session_func), session)
+            f"Missing {390 - len(session_func)} functional scans "
+            f"for session {session}."
         )
         return None
 
