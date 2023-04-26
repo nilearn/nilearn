@@ -29,6 +29,7 @@ Fixes
 
 - Add correct "zscore_sample" strategy to ``signal._standardize`` which will replace the default "zscore" strategy in release 0.13  (:gh:`3474` by `Yasmin Mzayek`_).
 
+- The label of the clusters in the label maps returned by :func:`~nilearn.reporting.get_clusters_table` now matches the Cluster IDs in the clusters table (:gh:`3563` by `Julio A Peraza`_).
 
 Enhancements
 ------------
@@ -43,8 +44,11 @@ Enhancements
 
 - :class:`~maskers.NiftiMasker` now warns users if the data is being resampled to mask resolution (:gh:`3631` by `Mohammad Torabi`_).
 
+- The docstrings of the maskers module have been update to be more consistent across the classes (:gh:`3414` by `Yasmin Mzayek`_)
+
 Changes
 -------
+
 - The behavior of :func:`~nilearn.datasets.fetch_atlas_craddock_2012`, :func:`~nilearn.datasets.fetch_atlas_smith_2009` and :func:`~nilearn.datasets.fetch_atlas_basc_multiscale_2015` is updated with their new parameters to return one map along with a deprecation cycle (:gh:`3353` by `Ahmad Chamma`_).
 
 - Modules :mod:`~nilearn.image` code and docstrings have been reformatted using black. Changes resulted in improved readability overall and increased consistency (:gh:`3548` by `Rémi Gau`_).
@@ -57,9 +61,7 @@ Changes
 
 - Examples are updated with the new atlas API :ref:`sphx_glr_auto_examples_00_tutorials_plot_3d_and_4d_niimg.py`, :ref:`sphx_glr_auto_examples_01_plotting_plot_multiscale_parcellations.py` and :ref:`sphx_glr_auto_examples_01_plotting_plot_prob_atlas.py` (:gh:`3557` by `Ahmad Chamma`_).
 
-- Update the references format of the functions
-  :func:`~nilearn.decomposition.CanICA` and
-  :func:`~nilearn.decomposition.DictLearning` with bibtex (:gh:`3558` by `Ahmad Chamma`_)
+- Update the references format of the functions :func:`~nilearn.decomposition.CanICA` and :func:`~nilearn.decomposition.DictLearning` with bibtex (:gh:`3558` by `Ahmad Chamma`_)
 
 
 0.10.1rc1
@@ -78,8 +80,6 @@ Fixes
 - :bdg-success:`API` :func:`~nilearn.glm.second_level.non_parametric_inference` now supports confounding variates when they are available in the input design matrix :func:`~nilearn.mass_univariate.permuted_ols` (:gh:`3465` by `Jelle Roelof Dalenberg`_).
 
 - :bdg-success:`API` :func:`~nilearn.mass_univariate.permuted_ols` now checks if confounding variates contain a intercept and raises an warning when multiple intercepts are defined across target and confounding variates (:gh:`3465` by `Jelle Roelof Dalenberg`_).
-
-- The label of the clusters in the label maps returned by :func:`~nilearn.reporting.get_clusters_table` now matches the Cluster IDs in the clusters table (:gh:`3563` by `Julio A Peraza`_).
 
 Enhancements
 ------------
