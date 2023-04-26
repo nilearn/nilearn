@@ -794,10 +794,10 @@ class ResultFilter:
         for key, value in self.query_terms_.items():
             if value != candidate.get(key):
                 return False
-        for callable_filter in self.callable_filters_:
-            if not callable_filter(candidate):
-                return False
-        return True
+        return all(
+            callable_filter(candidate)
+            for callable_filter in self.callable_filters_
+        )
 
     def OR(self, other_filter):
         """Implement the OR operator between two filters."""

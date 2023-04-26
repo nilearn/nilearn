@@ -2025,15 +2025,8 @@ def _filter_func_regressors_by_participants(participants, age_group):
 
     child_adult = participants["Child_Adult"].tolist()
 
-    if age_group != "adult":
-        child_count = child_adult.count("child")
-    else:
-        child_count = 0
-
-    if age_group != "child":
-        adult_count = child_adult.count("adult")
-    else:
-        adult_count = 0
+    child_count = child_adult.count("child") if age_group != "adult" else 0
+    adult_count = child_adult.count("adult") if age_group != "child" else 0
     return adult_count, child_count
 
 
