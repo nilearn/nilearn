@@ -90,7 +90,7 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
 
     """
     if not total_size:
-        sys.stderr.write("\rDownloaded %d of ? bytes." % (bytes_so_far))
+        sys.stderr.write(f"\rDownloaded {int(bytes_so_far)} of ? bytes.")
 
     else:
         # Estimate remaining download time

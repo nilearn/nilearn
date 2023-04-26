@@ -909,8 +909,8 @@ def test_make_spm_auditory_events_file(request_mocker):
 
 
 def test_fetch_spm_auditory(request_mocker, tmp_path):
-    saf = ["fM00223/fM00223_%03i.img" % index for index in range(4, 100)]
-    saf_ = ["fM00223/fM00223_%03i.hdr" % index for index in range(4, 100)]
+    saf = [f"fM00223/fM00223_{int(index):03}.img" for index in range(4, 100)]
+    saf_ = [f"fM00223/fM00223_{int(index):03}.hdr" for index in range(4, 100)]
 
     data_dir = str(tmp_path / "spm_auditory")
     os.mkdir(data_dir)
@@ -946,16 +946,16 @@ def test_fetch_spm_multimodal(request_mocker, tmp_path):
     for session in [0, 1]:
         open(
             os.path.join(
-                subject_dir, "fMRI", "trials_ses%i.mat" % (session + 1)
+                subject_dir, "fMRI", f"trials_ses{int(session + 1)}.mat"
             ),
             "a",
         ).close()
-        dir_ = os.path.join(subject_dir, "fMRI", "Session%d" % (session + 1))
+        dir_ = os.path.join(subject_dir, "fMRI", f"Session{int(session + 1)}")
         os.mkdir(dir_)
         for i in range(390):
             open(
                 os.path.join(
-                    dir_, "fMETHODS-000%i-%i-01.img" % (session + 5, i)
+                    dir_, f"fMETHODS-000{int(session + 5)}-{int(i)}-01.img"
                 ),
                 "a",
             ).close()
@@ -980,9 +980,9 @@ def test_fiac(request_mocker, tmp_path):
     os.makedirs(fiac0_dir)
     for session in [1, 2]:
         # glob func data for session session + 1
-        session_func = os.path.join(fiac0_dir, "run%i.nii.gz" % session)
+        session_func = os.path.join(fiac0_dir, f"run{int(session)}.nii.gz")
         open(session_func, "a").close()
-        sess_dmtx = os.path.join(fiac0_dir, "run%i_design.npz" % session)
+        sess_dmtx = os.path.join(fiac0_dir, f"run{int(session)}_design.npz")
         open(sess_dmtx, "a").close()
     mask = os.path.join(fiac0_dir, "mask.nii.gz")
     open(mask, "a").close()
