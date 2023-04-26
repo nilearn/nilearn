@@ -37,11 +37,11 @@ def _load_localizer_index():
     localizer_index["/localizer/participants.tsv"] = uuid.uuid4().hex
     tsv_files = {
         "/localizer/phenotype/behavioural.tsv": pd.read_csv(
-            str(data_dir / "localizer_behavioural.tsv"), sep="\t"
+            data_dir / "localizer_behavioural.tsv", sep="\t"
         )
     }
     tsv_files["/localizer/participants.tsv"] = pd.read_csv(
-        str(data_dir / "localizer_participants.tsv"), sep="\t"
+        data_dir / "localizer_participants.tsv", sep="\t"
     )
     return localizer_index, tsv_files
 
