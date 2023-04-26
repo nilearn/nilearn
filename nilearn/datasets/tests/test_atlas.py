@@ -564,7 +564,7 @@ def test_fetch_atlas_aal(
 
 def test_fetch_atlas_aal_version_error(tmp_path, request_mocker):
     with pytest.raises(
-        ValueError, match='The version of AAL requested "FLS33"'
+        ValueError, match="The version of AAL requested 'FLS33'"
     ):
         atlas.fetch_atlas_aal(version="FLS33", data_dir=tmp_path, verbose=0)
 
@@ -595,7 +595,7 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
 
     assert len(data_sym) == 2
     with pytest.raises(
-        ValueError, match='The version of Brain parcellations requested "aym"'
+        ValueError, match="The version of Brain parcellations requested 'aym'"
     ):
         atlas.fetch_atlas_basc_multiscale_2015(
             version="aym", data_dir=tmp_path, verbose=0
@@ -650,7 +650,7 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
 
     assert len(data_sym) == 10
     with pytest.raises(
-        ValueError, match='The version of Brain parcellations requested "aym"'
+        ValueError, match="The version of Brain parcellations requested 'aym'"
     ):
         atlas.fetch_atlas_basc_multiscale_2015(
             version="aym", data_dir=tmp_path, verbose=0
