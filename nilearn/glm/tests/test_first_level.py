@@ -142,7 +142,7 @@ def test_explicit_fixed_effects(tmp_path):
         compute_fixed_effects(contrasts, variance, mask, dofs=[100])
         compute_fixed_effects(contrasts, variance, mask, dofs=[100])
 
-        del mask, multi_session_model
+    del mask, multi_session_model
 
 
 def test_explicit_fixed_effects_without_mask(tmp_path):
