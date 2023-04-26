@@ -684,15 +684,18 @@ def test_select_from_index(request_mocker):
     )
     # Prepare url files for subject and filter tests
     urls = [
-        data_prefix + "/stuff.html",
-        data_prefix + "/sub-xxx.html",
-        data_prefix + "/sub-yyy.html",
-        data_prefix + "/sub-xxx/ses-01_task-rest.txt",
-        data_prefix + "/sub-xxx/ses-01_task-other.txt",
-        data_prefix + "/sub-xxx/ses-02_task-rest.txt",
-        data_prefix + "/sub-xxx/ses-02_task-other.txt",
-        data_prefix + "/sub-yyy/ses-01.txt",
-        data_prefix + "/sub-yyy/ses-02.txt",
+        f"{data_prefix}/{f}"
+        for f in [
+            "stuff.html",
+            "sub-xxx.html",
+            "sub-yyy.html",
+            "sub-xxx/ses-01_task-rest.txt",
+            "sub-xxx/ses-01_task-other.txt",
+            "sub-xxx/ses-02_task-rest.txt",
+            "sub-xxx/ses-02_task-other.txt",
+            "sub-yyy/ses-01.txt",
+            "sub-yyy/ses-02.txt",
+        ]
     ]
 
     # Only 1 subject and not subject specific files get downloaded
