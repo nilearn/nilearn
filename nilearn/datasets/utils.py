@@ -39,7 +39,8 @@ def _md5_sum_file(path):
     with open(path, "rb") as f:
         m = hashlib.md5()
         while True:
-            if data := f.read(8192):
+            data = f.read(8192)
+            if data:
                 m.update(data)
             else:
                 break
