@@ -473,7 +473,5 @@ def _compute_fixed_effects_params(
     fixed_fx_z_score = con.z_score()
     fixed_fx_stat = con.stat_
 
-    """
-    """
     return (fixed_fx_contrasts, fixed_fx_variance, fixed_fx_stat,
             fixed_fx_z_score)
