@@ -107,6 +107,7 @@ include = """
   examples/.*py
   | maint_tools/.*py
   | nilearn/connectome/.*py
+  | nilearn/datasets/.*py
   | nilearn/dec.*
   | nilearn/_utils/.*py$
   | nilearn/glm/.*py

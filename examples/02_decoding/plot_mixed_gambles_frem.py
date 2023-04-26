@@ -31,7 +31,7 @@ mask_filename = data.mask_img
 #
 from nilearn.decoding import FREMRegressor
 
-frem = FREMRegressor("svr", cv=10)
+frem = FREMRegressor("svr", cv=10, standardize="zscore_sample")
 
 frem.fit(zmap_filenames, behavioral_target)
 

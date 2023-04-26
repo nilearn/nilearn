@@ -302,7 +302,7 @@ seed_masker = NiftiSpheresMasker(
     coords,
     radius=8,
     detrend=True,
-    standardize=True,
+    standardize="zscore_sample",
     low_pass=None,
     high_pass=None,
     t_r=None,
@@ -314,7 +314,7 @@ seed_masker = NiftiSpheresMasker(
 brain_masker = NiftiMasker(
     smoothing_fwhm=6,
     detrend=True,
-    standardize=True,
+    standardize="zscore_sample",
     low_pass=None,
     high_pass=None,
     t_r=None,

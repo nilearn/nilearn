@@ -5,9 +5,6 @@
 *.nt.bz2
 *.swp
 *.swo
-*.tar.gz
-*.tgz
-*.zip
 *#
 
 .mypy_cache

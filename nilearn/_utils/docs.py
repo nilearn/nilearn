@@ -692,6 +692,23 @@ standardize : :obj:`bool`, optional.
 docdict['standardize'] = standardize.format('True')
 docdict['standardize_false'] = standardize.format('False')
 
+# standardize as used within maskers module
+docdict["standardize_maskers"] = """
+standardize : {'zscore_sample', 'zscore', 'psc', True, False}, default=False
+    Strategy to standardize the signal:
+
+        - 'zscore_sample': The signal is z-scored. Timeseries are shifted
+          to zero mean and scaled to unit variance. Uses sample std.
+        - 'zscore': The signal is z-scored. Timeseries are shifted
+          to zero mean and scaled to unit variance. Uses population std
+          by calling default :obj:`numpy.std` with N - ``ddof=0``.
+        - 'psc':  Timeseries are shifted to zero mean value and scaled
+          to percent signal change (as compared to original mean signal).
+        - True: The signal is z-scored (same as option `zscore`).
+          Timeseries are shifted to zero mean and scaled to unit variance.
+        - False: Do not standardize the data.
+"""
+
 # standardize_confounds
 docdict['standardize_confounds'] = """
 standardize_confounds : :obj:`bool`, optional

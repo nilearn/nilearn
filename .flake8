@@ -30,6 +30,7 @@ per-file-ignores =
     # - docstrings rules that should not be applied to tests
 	*/tests/*: D100, D101, D102, D103, D104, D205, D400, D401
 	*/*/tests/*: D100, D101, D102, D103, D104, D205, D400, D401
+	*/_testing.py: D100, D101, D102, D103, D104, D205, D400, D401
     # - docstrings rules that should not be applied to examples
 	examples/*/*: D103, D205, D301, D400
     # - docstrings rules that should not be applied to doc

@@ -23,7 +23,7 @@ import warnings
 import numpy as np
 import scipy.linalg as spl
 from nibabel.onetime import auto_attr
-from nilearn._utils.glm import positive_reciprocal
+from nilearn.glm._utils import positive_reciprocal
 from nilearn.glm.model import LikelihoodModelResults
 from numpy.linalg import matrix_rank
 

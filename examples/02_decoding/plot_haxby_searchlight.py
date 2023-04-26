@@ -98,7 +98,7 @@ from nilearn.maskers import NiftiMasker
 nifti_masker = NiftiMasker(
     mask_img=mask_img,
     runs=session,
-    standardize=True,
+    standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
 )

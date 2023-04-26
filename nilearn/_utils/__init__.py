@@ -1,4 +1,5 @@
 from nilearn._utils.helpers import (
+    _compare_version,
     remove_parameters,
     rename_parameters,
     stringify_path,
@@ -20,4 +21,5 @@ __all__ = ['check_niimg', 'check_niimg_3d', 'concat_niimgs', 'check_niimg_4d',
            '_repr_niimgs', 'copy_img', 'load_niimg',
            'as_ndarray', 'CacheMixin', '_compose_err_msg', 'rename_parameters',
            'remove_parameters', 'fill_doc', 'stringify_path',
+           '_compare_version'
            ]

@@ -39,6 +39,9 @@ Enhancements
 
 - :func:`~glm.first_level.first_level_from_bids` now takes an optional ``sub_labels`` argument and warns users of given subject labels that are not present in the dataset (:gh:`3351` by `Kevin Sitek`_).
 
+- Added special handling of ``param_grid`` and ``cv_params_`` for Decoder objects using models with built-in cross-validation (e.g., ``RidgeCV``, ``RidgeClassifierCV``) (:gh:`3626` by `Michelle Wang`_).
+
+- :class:`~maskers.NiftiMasker` now warns users if the data is being resampled to mask resolution (:gh:`3631` by `Mohammad Torabi`_).
 
 Changes
 -------
@@ -51,6 +54,13 @@ Changes
 - Extract helper-functions for input-image validation from :func:`~regions.img_to_signals_labels`, :func:`~regions.signals_to_img_labels`, :func:`~regions.img_to_signals_maps` :func:`~regions.signals_to_img_maps` (:gh:`3523` by `Rémi Gau`_ and `Christian Gerloff`_).
 
 - Moved packaging from ``setup.py`` and setuptools build backend to ``pyproject.toml`` and hatchling backend. This change comes about as new standards are defined for Python packaging that are better met by the new configuration (:gh:`3635` by `Yasmin Mzayek`_).
+
+- Examples are updated with the new atlas API :ref:`sphx_glr_auto_examples_00_tutorials_plot_3d_and_4d_niimg.py`, :ref:`sphx_glr_auto_examples_01_plotting_plot_multiscale_parcellations.py` and :ref:`sphx_glr_auto_examples_01_plotting_plot_prob_atlas.py` (:gh:`3557` by `Ahmad Chamma`_).
+
+- Update the references format of the functions
+  :func:`~nilearn.decomposition.CanICA` and
+  :func:`~nilearn.decomposition.DictLearning` with bibtex (:gh:`3558` by `Ahmad Chamma`_)
+
 
 0.10.1rc1
 =========

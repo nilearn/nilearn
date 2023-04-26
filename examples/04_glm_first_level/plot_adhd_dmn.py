@@ -46,7 +46,7 @@ seed_masker = NiftiSpheresMasker(
     [pcc_coords],
     radius=10,
     detrend=True,
-    standardize=True,
+    standardize="zscore_sample",
     low_pass=0.1,
     high_pass=0.01,
     t_r=2.0,

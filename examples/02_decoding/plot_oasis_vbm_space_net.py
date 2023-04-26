@@ -58,6 +58,7 @@ decoder = SpaceNetRegressor(
     penalty="graph-net",
     screening_percentile=5.0,
     memory_level=2,
+    standardize="zscore_sample",
 )
 decoder.fit(gm_imgs_train, age_train)  # fit
 coef_img = decoder.coef_img_
