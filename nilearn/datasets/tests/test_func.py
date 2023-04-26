@@ -430,19 +430,17 @@ def test_check_parameters_megatrawls_datasets(request_mocker):
 def test_fetch_megatrawls_netmats(tmp_path, request_mocker):
     # smoke test to see that files are fetched and read properly
     # since we are loading data present in it
-    files_dir = str(
-        tmp_path / "Megatrawls" / "3T_Q1-Q6related468_MSMsulc_d100_ts3"
-    )
-    os.makedirs(files_dir)
-    with open(os.path.join(files_dir, "Znet2.txt"), "w") as net_file:
-        net_file.write("1")
-
-    files_dir2 = str(
-        tmp_path / "Megatrawls" / "3T_Q1-Q6related468_MSMsulc_d300_ts2"
-    )
-    os.makedirs(files_dir2)
-    with open(os.path.join(files_dir2, "Znet1.txt"), "w") as net_file2:
-        net_file2.write("1")
+    for file, folder in zip(
+        ["Znet2.txt", "Znet1.txt"],
+        [
+            "3T_Q1-Q6related468_MSMsulc_d100_ts3",
+            "3T_Q1-Q6related468_MSMsulc_d300_ts2",
+        ],
+    ):
+        files_dir = tmp_path / "Megatrawls" / folder
+        files_dir.mkdir(parents=True, exist_ok=True)
+        with open(files_dir / file, "w") as net_file:
+            net_file.write("1")
 
     megatrawl_netmats_data = func.fetch_megatrawls_netmats(data_dir=tmp_path)
 
