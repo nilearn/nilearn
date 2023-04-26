@@ -324,7 +324,7 @@ def _get_format_and_pattern(file_path):
         match = re.match(r"format *: *(.+)", first_line)
         if match is None:
             return "gztar", first_line, 1
-        return match.group(1), f.readline().strip(), 2
+        return match[1], f.readline().strip(), 2
 
 
 def _index_archive_contents():

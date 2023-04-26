@@ -116,9 +116,9 @@ def fetch_haxby(
         for sub_id in subjects:
             if sub_id not in [1, 2, 3, 4, 5, 6]:
                 raise ValueError(
-                    "You provided invalid subject id {} in a "
+                    f"You provided invalid subject id {sub_id} in a "
                     "list. Subjects must be selected in "
-                    "[1, 2, 3, 4, 5, 6]".format(sub_id)
+                    "[1, 2, 3, 4, 5, 6]"
                 )
 
     dataset_name = "haxby2001"
@@ -172,7 +172,7 @@ def fetch_haxby(
         )
         for i in subject_mask
         for sub_file in sub_files
-        if not (sub_file == "anat.nii.gz" and i == 6)  # no anat for sub. 6
+        if sub_file != "anat.nii.gz" or i != 6
     ]
 
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
@@ -302,7 +302,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     if n_subjects is None:
         n_subjects = max_subjects
     if n_subjects > max_subjects:
-        warnings.warn(f"Warning: there are only {int(max_subjects)} subjects")
+        warnings.warn(f"Warning: there are only {max_subjects} subjects")
         n_subjects = max_subjects
     ids = ids[:n_subjects]
     nitrc_ids = nitrc_ids[:n_subjects]
@@ -1161,11 +1161,10 @@ def fetch_abide_pcp(
         pheno = ["i" + pheno_f.readline()]
 
         # This regexp replaces commas between double quotes
-        for line in pheno_f:
-            pheno.append(
-                re.sub(r',(?=[^"]*"(?:[^"]*"[^"]*")*[^"]*$)', ";", line)
-            )
-
+        pheno.extend(
+            re.sub(r',(?=[^"]*"(?:[^"]*"[^"]*")*[^"]*$)', ";", line)
+            for line in pheno_f
+        )
     # bytes (encode()) needed for python 2/3 compat with numpy
     pheno = "\n".join(pheno).encode()
     pheno = BytesIO(pheno)
@@ -1182,7 +1181,6 @@ def fetch_abide_pcp(
     url = "/".join([url, "Outputs", pipeline, strategy])
 
     # Get the files
-    results = {}
     file_ids = pheno["FILE_ID"].tolist()
     if n_subjects is not None:
         file_ids = file_ids[:n_subjects]
@@ -1192,8 +1190,10 @@ def fetch_abide_pcp(
         warnings.warn(_LEGACY_FORMAT_MSG)
         pheno = pheno.to_records(index=False)
 
-    results["description"] = _get_dataset_descr(dataset_name)
-    results["phenotypic"] = pheno
+    results = {
+        "description": _get_dataset_descr(dataset_name),
+        "phenotypic": pheno,
+    }
     for derivative in derivatives:
         ext = ".1D" if derivative.startswith("rois") else ".nii.gz"
         files = []
@@ -1636,7 +1636,7 @@ def fetch_surf_nki_enhanced(
     if n_subjects is None:
         n_subjects = max_subjects
     if n_subjects > max_subjects:
-        warnings.warn(f"Warning: there are only {int(max_subjects)} subjects")
+        warnings.warn(f"Warning: there are only {max_subjects} subjects")
         n_subjects = max_subjects
     ids = ids[:n_subjects]
 
@@ -2018,8 +2018,8 @@ def _filter_func_regressors_by_participants(participants, age_group):
     valid_age_groups = ("both", "child", "adult")
     if age_group not in valid_age_groups:
         raise ValueError(
-            "Wrong value for age_group={}. "
-            "Valid arguments are: {}".format(age_group, valid_age_groups)
+            f"Wrong value for age_group={age_group}. "
+            f"Valid arguments are: {valid_age_groups}"
         )
 
     child_adult = participants["Child_Adult"].tolist()
@@ -2059,9 +2059,9 @@ def _set_invalid_n_subjects_to_max(n_subjects, max_subjects, age_group):
         (n_subjects > max_subjects) or (n_subjects < 1)
     ):
         warnings.warn(
-            "Wrong value for n_subjects={}. The maximum "
-            "value (for age_group={}) will be used instead: "
-            "n_subjects={}".format(n_subjects, age_group, max_subjects)
+            f"Wrong value for n_subjects={n_subjects}. "
+            f"The maximum value (for age_group={age_group}) "
+            f"will be used instead: n_subjects={max_subjects}"
         )
         n_subjects = max_subjects
     return n_subjects
@@ -2116,7 +2116,7 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
         main_folder, data_dir=data_dir, verbose=verbose
     )
     # The files_spec needed for _fetch_files
-    files_spec = [(main_folder + ".zip", url, {"move": main_folder + ".zip"})]
+    files_spec = [(f"{main_folder}.zip", url, {"move": f"{main_folder}.zip"})]
     # Only download if directory is empty
     # Directory will have been created by the call to _get_dataset_dir above
     if not os.listdir(data_dir):
@@ -2158,7 +2158,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
         dataset_name, data_dir=data_dir, verbose=verbose
     )
     # The files_spec needed for _fetch_files
-    files_spec = [(main_folder + ".zip", url, {"move": main_folder + ".zip"})]
+    files_spec = [(f"{main_folder}.zip", url, {"move": f"{main_folder}.zip"})]
     if not os.path.exists(os.path.join(data_dir, main_folder)):
         downloaded_files = _fetch_files(
             data_dir, files_spec, resume=True, verbose=verbose
@@ -2342,7 +2342,7 @@ def select_from_index(
         subjects = set()
         for url in urls:
             if "sub-" in url:
-                subjects.add(re.search(subject_regex, url).group(0)[:-1])
+                subjects.add(re.search(subject_regex, url)[0][:-1])
         return sorted(subjects)
 
     # We get a list of subjects (for the moment the first n subjects)
@@ -2352,7 +2352,7 @@ def select_from_index(
         url
         for url in urls
         if "sub-" not in url
-        or re.search(subject_regex, url).group(0)[:-1] in selected_subjects
+        or re.search(subject_regex, url)[0][:-1] in selected_subjects
     ]
     return urls
 
@@ -2609,15 +2609,15 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
             print(f"{file_name} missing from filelist!")
             return None
 
-    _subject_data = {}
-    _subject_data["func"] = sorted(
-        [
-            subject_data[x]
-            for x in subject_data.keys()
-            if re.match(r"^fM00223_0\d\d\.img$", os.path.basename(x))
-        ]
-    )
-
+    _subject_data = {
+        "func": sorted(
+            [
+                subject_data[x]
+                for x in subject_data
+                if re.match(r"^fM00223_0\d\d\.img$", os.path.basename(x))
+            ]
+        )
+    }
     # volumes for this dataset of shape (64, 64, 64, 1); let's fix this
     for x in _subject_data["func"]:
         vol = nib.load(x)
@@ -2627,7 +2627,7 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
 
     _subject_data["anat"] = [
         subject_data[x]
-        for x in subject_data.keys()
+        for x in subject_data
         if re.match(r"^sM00223_002\.img$", os.path.basename(x))
     ][0]
 
@@ -2820,10 +2820,7 @@ def _glob_spm_multimodal_fmri_data(subject_dir):
     _subject_data = _get_anatomical_data_spm_multimodal(
         subject_dir, _subject_data
     )
-    if not _subject_data:
-        return None
-
-    return Bunch(**_subject_data)
+    return Bunch(**_subject_data) if _subject_data else None
 
 
 def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
