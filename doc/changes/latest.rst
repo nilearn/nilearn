@@ -2,7 +2,7 @@
 
 .. include:: names.rst
 
-0.10.1.dev
+0.10.1
 ==========
 
 NEW
