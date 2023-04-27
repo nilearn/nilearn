@@ -531,9 +531,9 @@ def mean_img(imgs, target_affine=None, target_shape=None, verbose=0, n_jobs=1):
 
     """
     imgs = stringify_path(imgs)
-    is_path = isinstance(imgs, str) or isinstance(imgs, pathlib.Path)
+    is_str = isinstance(imgs, str)
     is_iterable = isinstance(imgs, collections.abc.Iterable)
-    if is_path or not is_iterable:
+    if is_str or not is_iterable:
         imgs = [
             imgs,
         ]
