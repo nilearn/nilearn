@@ -21,8 +21,20 @@ from .. import surface
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
 
+LIBRARY_URL = {
+    "plotly": "https://cdn.plot.ly/plotly-gl3d-latest.min.js",
+    "jquery": "https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js",
+    "niivue": "https://niivue.github.io/niivue/features/niivue.umd.js",
+}
 
-def add_js_lib(html, embed_js=True):
+LIBRARY_FILE = {
+    "plotly": "plotly-gl3d-latest.min.js",
+    "jquery": "jquery.min.js",
+    "niivue": "niivue.umd.js",
+}
+
+
+def add_js_lib(html, libraries=["plotly", "jquery"], embed_js=True):
     """Add javascript libraries to html template.
 
     If embed_js is True, jquery and plotly are embedded in resulting page.
@@ -30,30 +42,25 @@ def add_js_lib(html, embed_js=True):
 
     """
     js_dir = os.path.join(os.path.dirname(__file__), 'data', 'js')
+    js_lib = ""
+
+    # Add each third-party js library
+    for library in libraries:
+        if library in LIBRARY_URL.keys():
+            if not embed_js:
+                js_lib += f'<script src="{LIBRARY_URL[library]}"></script>\n'
+            else:
+                with open(os.path.join(js_dir, LIBRARY_FILE[library])) as f:
+                    js_lib += f'<script>{f.read()}</script>\n'
+        else:
+            raise ValueError(
+                f"Unknown library {library}."
+                f"Valid libraries are {LIBRARY_URL.keys()}"
+            )
+    # Add our custom js library
     with open(os.path.join(js_dir, 'surface-plot-utils.js')) as f:
-        js_utils = f.read()
-    if not embed_js:
-        js_lib = """
-        <script
-        src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
-        </script>
-        <script src="https://cdn.plot.ly/plotly-gl3d-latest.min.js"></script>
-        <script>
-        {}
-        </script>
-        """.format(js_utils)
-    else:
-        with open(os.path.join(js_dir, 'jquery.min.js')) as f:
-            jquery = f.read()
-        with open(os.path.join(js_dir, 'plotly-gl3d-latest.min.js')) as f:
-            plotly = f.read()
-        js_lib = """
-        <script>{}</script>
-        <script>{}</script>
-        <script>
-        {}
-        </script>
-        """.format(jquery, plotly, js_utils)
+        js_lib += f'<script>{f.read()}</script>\n'
+
     if not isinstance(html, Template):
         html = Template(html)
     return html.safe_substitute({'INSERT_JS_LIBRARIES_HERE': js_lib})

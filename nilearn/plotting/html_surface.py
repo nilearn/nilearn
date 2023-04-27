@@ -1,7 +1,11 @@
+import base64
 import collections.abc
 import json
-import warnings
+import tempfile
 
+from pathlib import Path
+
+import nibabel as nib
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -19,6 +23,16 @@ from nilearn.plotting.js_plotting_utils import (
 
 class SurfaceView(HTMLDocument):
     pass
+
+
+def _check_engine(engine):
+    """Check engine is valid."""
+    valid_engines = ["plotly", "niivue"]
+    if engine not in valid_engines:
+        raise ValueError(
+            f"Invalid engine {engine}. Valid engines are {valid_engines}."
+        )
+    return engine
 
 
 def _mix_colormaps(fg, bg):
@@ -126,6 +140,58 @@ def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
     return info
 
 
+def one_mesh_info_niivue(surf_map, surf_mesh, threshold=None, bg_map=None):
+    """Build dict for plotting one surface map on a single mesh."""
+    info = {}
+
+    # Create temporary directory
+    output_path = Path(tempfile.mkdtemp())
+
+    # Handle mesh
+    surf_mesh_path = output_path / "surf_mesh.gii"
+    surf_mesh_gifti = nib.gifti.GiftiImage()
+    surf_mesh_gifti.add_gifti_data_array(
+        nib.gifti.GiftiDataArray(surf_mesh[0], "NIFTI_INTENT_POINTSET")
+    )
+    surf_mesh_gifti.add_gifti_data_array(
+        nib.gifti.GiftiDataArray(surf_mesh[1], "NIFTI_INTENT_TRIANGLE")
+    )
+    nib.save(surf_mesh_gifti, surf_mesh_path)
+    info["surf_mesh"] = base64.b64encode(
+        surf_mesh_path.read_bytes()
+    ).decode("UTF-8")
+
+    # Handle surface data
+    surf_map_path = output_path / "surf_map.gii"
+    surf_map_gifti = nib.gifti.gifti.GiftiImage()
+    surf_map_gifti.add_gifti_data_array(
+        nib.gifti.gifti.GiftiDataArray(
+            surf_map,
+            intent="NIFTI_INTENT_ZSCORE",
+        )
+    )
+    nib.save(surf_map_gifti, surf_map_path)
+    info["surf_map"] = base64.b64encode(
+        surf_map_path.read_bytes()
+    ).decode("UTF-8")
+
+    info["threshold"] = threshold
+
+    # Handle background map
+    if bg_map is not None:
+        bg_map_path = output_path / "bg_map.gii"
+        bg_map_gifti = nib.gifti.GiftiImage()
+        bg_map_gifti.add_gifti_data_array(
+            nib.gifti.GiftiDataArray(bg_map, "NIFTI_INTENT_NONE")
+        )
+        nib.save(bg_map_gifti, bg_map_path)
+        info["bg_map"] = base64.b64encode(
+            bg_map_path.read_bytes()
+        ).decode("UTF-8")
+
+    return info
+
+
 def _check_mesh(mesh):
     if isinstance(mesh, str):
         return datasets.fetch_surf_fsaverage(mesh)
@@ -190,7 +256,22 @@ def _fill_html_template(info, embed_js=True):
     as_html = get_html_template('surface_plot_template.html').safe_substitute(
         {'INSERT_STAT_MAP_JSON_HERE': as_json,
          'INSERT_PAGE_TITLE_HERE': info["title"] or "Surface plot"})
-    as_html = add_js_lib(as_html, embed_js=embed_js)
+    as_html = add_js_lib(
+        as_html, libraries=["plotly", "jquery"], embed_js=embed_js
+    )
+    return SurfaceView(as_html)
+
+
+def _fill_html_template_niivue(info, embed_js=True):
+    as_html = get_html_template(
+        'surface_plot_template_niivue.html'
+    ).safe_substitute({
+        'INSERT_SURF_MAP_BASE64_HERE': info["surf_map"],
+        'INSERT_MESH_BASE64_HERE': info["surf_mesh"],
+        'INSERT_BG_MAP_BASE64_HERE': info["bg_map"],
+        'INSERT_PAGE_TITLE_HERE': info["title"] or "Surface plot"
+    })
+    as_html = add_js_lib(as_html, libraries=["niivue"], embed_js=embed_js)
     return SurfaceView(as_html)
 
 
@@ -307,11 +388,25 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
     return _fill_html_template(info, embed_js=True)
 
 
-def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
-              cmap=cm.cold_hot, black_bg=False, vmax=None, vmin=None,
-              bg_on_data=False, darkness=.7, symmetric_cmap=True,
-              colorbar=True, colorbar_height=.5, colorbar_fontsize=25,
-              title=None, title_fontsize=25):
+def view_surf(
+    surf_mesh,
+    surf_map=None,
+    bg_map=None,
+    threshold=None,
+    cmap=cm.cold_hot,
+    black_bg=False,
+    vmax=None,
+    vmin=None,
+    bg_on_data=False,
+    darkness=.7,
+    symmetric_cmap=True,
+    colorbar=True,
+    colorbar_height=.5,
+    colorbar_fontsize=25,
+    title=None,
+    title_fontsize=25,
+    engine="plotly",
+):
     """Insert a surface plot of a surface map into an HTML page.
 
     Parameters
@@ -391,6 +486,9 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
     title_fontsize : int, optional
         Fontsize of the title. Default=25.
 
+    engine : {'plotly', 'niivue'}, optional
+        Engine to use for plotting. Default='plotly'.
+
     Returns
     -------
     SurfaceView : plot of the stat map.
@@ -406,22 +504,41 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
     nilearn.plotting.view_img_on_surf: Surface plot from a 3D statistical map.
 
     """
-    surf_mesh = surface.load_surf_mesh(surf_mesh)
-    if surf_map is None:
-        surf_map = np.ones(len(surf_mesh[0]))
-    else:
-        surf_mesh, surf_map = surface.check_mesh_and_data(
-            surf_mesh, surf_map)
-    if bg_map is not None:
-        _, bg_map = surface.check_mesh_and_data(surf_mesh, bg_map)
-    info = one_mesh_info(
-        surf_map=surf_map, surf_mesh=surf_mesh, threshold=threshold,
-        cmap=cmap, black_bg=black_bg, bg_map=bg_map,
-        bg_on_data=bg_on_data, darkness=darkness,
-        symmetric_cmap=symmetric_cmap, vmax=vmax, vmin=vmin)
-    info['colorbar'] = colorbar
-    info['cbar_height'] = colorbar_height
-    info['cbar_fontsize'] = colorbar_fontsize
-    info['title'] = title
-    info['title_fontsize'] = title_fontsize
-    return _fill_html_template(info, embed_js=True)
+    _check_engine(engine)
+    if engine == "plotly":
+        surf_mesh = surface.load_surf_mesh(surf_mesh)
+        if surf_map is None:
+            surf_map = np.ones(len(surf_mesh[0]))
+        else:
+            surf_mesh, surf_map = surface.check_mesh_and_data(
+                surf_mesh, surf_map)
+        if bg_map is not None:
+            _, bg_map = surface.check_mesh_and_data(surf_mesh, bg_map)
+        info = one_mesh_info(
+            surf_map=surf_map, surf_mesh=surf_mesh, threshold=threshold,
+            cmap=cmap, black_bg=black_bg, bg_map=bg_map,
+            bg_on_data=bg_on_data, darkness=darkness,
+            symmetric_cmap=symmetric_cmap, vmax=vmax, vmin=vmin)
+        info['colorbar'] = colorbar
+        info['cbar_height'] = colorbar_height
+        info['cbar_fontsize'] = colorbar_fontsize
+        info['title'] = title
+        info['title_fontsize'] = title_fontsize
+        return _fill_html_template(info, embed_js=True)
+    elif engine == "niivue":
+        surf_mesh = surface.load_surf_mesh(surf_mesh)
+        if surf_map is None:
+            surf_map = np.ones(len(surf_mesh[0]))
+        else:
+            surf_mesh, surf_map = surface.check_mesh_and_data(
+                surf_mesh, surf_map)
+        if bg_map is not None:
+            _, bg_map = surface.check_mesh_and_data(surf_mesh, bg_map)
+        info = one_mesh_info_niivue(
+            surf_map=surf_map,
+            surf_mesh=surf_mesh,
+            bg_map=bg_map,
+            threshold=threshold,
+        )
+        info['title'] = title
+        return _fill_html_template_niivue(info, embed_js=True)
