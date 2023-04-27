@@ -269,6 +269,7 @@ def _fill_html_template_niivue(info, embed_js=True):
         'INSERT_SURF_MAP_BASE64_HERE': info["surf_map"],
         'INSERT_MESH_BASE64_HERE': info["surf_mesh"],
         'INSERT_BG_MAP_BASE64_HERE': info["bg_map"],
+        'INSERT_THRESHOLD_HERE': json.dumps(info["threshold"]),
         'INSERT_PAGE_TITLE_HERE': info["title"] or "Surface plot"
     })
     as_html = add_js_lib(as_html, libraries=["niivue"], embed_js=embed_js)
