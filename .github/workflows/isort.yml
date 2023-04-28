@@ -43,6 +43,7 @@ jobs:
             nilearn/input_data \
             nilearn/maskers \
             nilearn/mass_univariate \
+            nilearn/plotting \
             nilearn/regions \
             nilearn/rerporting \
             nilearn/surface \

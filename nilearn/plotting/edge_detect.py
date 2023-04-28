@@ -1,34 +1,33 @@
-"""
-Edge detection routines: this file provides a Canny filter
-"""
+"""Edge detection routines: this file provides a Canny filter."""
 
 import numpy as np
 from scipy import signal
 from scipy.ndimage import (
-    sobel,
-    maximum_filter,
     binary_dilation,
     distance_transform_cdt,
+    maximum_filter,
+    sobel,
 )
+
 from .._utils.extmath import fast_abs_percentile
 
 # Author: Gael Varoquaux
 # License: BSD
 
-################################################################################
+###############################################################################
 # Edge detection
 
+
 def _orientation_kernel(t):
-    """ structure elements for calculating the value of neighbors in several
-        directions
-    """
+    """Structure elements for calculating the value of neighbors in several \
+    directions."""
     sin = np.sin
-    pi  = np.pi
+    pi = np.pi
     t = pi * t
     arr = np.array([[sin(t), sin(t + .5 * pi), sin(t + pi)],
                     [sin(t + 1.5 * pi), 0, sin(t + 1.5 * pi)],
                     [sin(t + pi), sin(t + .5 * pi), sin(t)]])
-    return np.round(.5 * ((1 + arr)) ** 2).astype(bool)
+    return np.round(.5 * (1 + arr) ** 2).astype(bool)
 
 
 def _edge_detect(image, high_threshold=.75, low_threshold=.4):
@@ -97,9 +96,9 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
             )
         )
     # Remove the edges next to the side of the image: they are not reliable
-    thinner[0]     = 0
-    thinner[-1]    = 0
-    thinner[:, 0]  = 0
+    thinner[0] = 0
+    thinner[-1] = 0
+    thinner[:, 0] = 0
     thinner[:, -1] = 0
 
     thinned_grad = thinner * grad_mag
@@ -117,7 +116,7 @@ def _edge_detect(image, high_threshold=.75, low_threshold=.4):
 
 
 def _edge_map(image):
-    """ Return a maps of edges suitable for visualization.
+    """Return a maps of edges suitable for visualization.
 
     Parameters
     ----------

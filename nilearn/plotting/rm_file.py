@@ -1,13 +1,14 @@
-"""
-Remove a file after a certain time. This is run in a subprocess
+"""Remove a file after a certain time.
+
+This is run in a subprocess
 by nilearn.plotting.html_surface.SurfaceView to remove the temporary
 file it uses to open a plot in a web browser.
 
 """
+import argparse
 import os
 import time
 import warnings
-import argparse
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -20,4 +21,4 @@ if __name__ == '__main__':
         try:
             os.remove(args.file_name)
         except Exception as e:
-            warnings.warn('failed to remove {}:\n{}'.format(args.file_name, e))
+            warnings.warn(f'failed to remove {args.file_name}:\n{e}')
