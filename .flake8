@@ -7,6 +7,7 @@ exclude =
     build,
     dist,
 	nilearn/externals/tempita
+	nilearn/externals/
 	nilearn_cache
 --select = D,E,F,W,C90
 docstring-convention = numpy

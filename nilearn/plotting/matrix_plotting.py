@@ -93,7 +93,8 @@ def _sanitize_tri(tri):
     VALID_TRI_VALUES = ("full", "lower", "diag")
     if tri not in VALID_TRI_VALUES:
         raise ValueError(
-            f"Parameter tri needs to be one of: {', '.join(VALID_TRI_VALUES)}.")
+            "Parameter tri needs to be one of: "
+            f"{', '.join(VALID_TRI_VALUES)}.")
 
 
 def _sanitize_reorder(reorder):

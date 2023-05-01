@@ -36,8 +36,4 @@ jobs:
 
       - name: "Run Flake8 on whole file"
         shell: bash {0}
-        run: |
-          flake8 --verbose \
-            examples/0[0234567]* \
-            maint_tools \
-            nilearn
+        run: flake8 --verbose .
