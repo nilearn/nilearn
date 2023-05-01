@@ -2,13 +2,14 @@
 exclude =
     .git,
     __pycache__,
-	env,
-	venv,
+	auto_examples,
     build,
     dist,
+	env,
 	nilearn/externals/tempita
 	nilearn/externals/
 	nilearn_cache
+	venv,
 --select = D,E,F,W,C90
 docstring-convention = numpy
 max-line-length = 79
