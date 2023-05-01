@@ -9,6 +9,7 @@ from string import Template
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+
 from nilearn.plotting.html_document import (  # noqa: F401
     HTMLDocument,
     set_max_img_views_before_warning,

@@ -4,6 +4,9 @@ import warnings
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+from numpy.testing import assert_array_equal
+from sklearn.preprocessing import StandardScaler
+
 from nilearn import masking
 
 # Authors: Ana Luisa Pinho, Jerome Dockes, NicolasGensollen
@@ -27,8 +30,6 @@ from nilearn.masking import (
     intersect_masks,
     unmask,
 )
-from numpy.testing import assert_array_equal
-from sklearn.preprocessing import StandardScaler
 
 np_version = (np.version.full_version if hasattr(np.version, 'full_version')
               else np.version.short_version)

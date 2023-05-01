@@ -24,11 +24,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import gridspec as mgs
 from nibabel.spatialimages import SpatialImage
+from scipy import stats
+from scipy.ndimage import binary_fill_holes
+
 from nilearn.image.resampling import reorder_img
 from nilearn.maskers import NiftiMasker
 from nilearn.plotting.displays import get_projector, get_slicer
-from scipy import stats
-from scipy.ndimage import binary_fill_holes
 
 from .. import _utils
 from .._utils import fill_doc

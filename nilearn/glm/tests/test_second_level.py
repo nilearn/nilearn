@@ -6,6 +6,13 @@ import pandas as pd
 import pytest
 from nibabel import Nifti1Image, load
 from nibabel.tmpdirs import InTemporaryDirectory
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
+from scipy import stats
+
 from nilearn._utils import testing
 from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
@@ -15,12 +22,6 @@ from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.second_level import SecondLevelModel, non_parametric_inference
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker
-from numpy.testing import (
-    assert_almost_equal,
-    assert_array_almost_equal,
-    assert_array_equal,
-)
-from scipy import stats
 
 try:
     from nilearn.reporting import get_clusters_table

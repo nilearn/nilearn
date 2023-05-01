@@ -1,8 +1,9 @@
 import sys
 import warnings
 
-import nilearn
 import pytest
+
+import nilearn
 
 
 def test_version_number():

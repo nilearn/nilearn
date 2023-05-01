@@ -15,12 +15,13 @@ from tempfile import mkdtemp
 import nibabel
 import numpy as np
 import pytest
+from numpy.testing import assert_array_equal
+
 from nilearn._utils import data_gen, exceptions, testing
 from nilearn._utils.class_inspect import get_params
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import _filter_and_mask
-from numpy.testing import assert_array_equal
 
 
 def test_auto_mask():

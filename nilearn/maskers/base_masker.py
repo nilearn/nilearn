@@ -7,8 +7,9 @@ import warnings
 
 import numpy as np
 from joblib import Memory
-from nilearn.image import high_variance_confounds
 from sklearn.base import BaseEstimator, TransformerMixin
+
+from nilearn.image import high_variance_confounds
 
 from .. import _utils, image, masking, signal
 from .._utils import stringify_path

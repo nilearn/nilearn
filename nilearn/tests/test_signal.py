@@ -7,12 +7,12 @@ import os.path
 import numpy as np
 import pytest
 import scipy.signal
+from pandas import read_csv
 
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
 from nilearn import signal as nisignal
 from nilearn.signal import clean
-from pandas import read_csv
 
 
 def generate_signals(n_features=17, n_confounds=5, length=41,

@@ -1,4 +1,5 @@
 import pytest
+
 from nilearn.interfaces.fmriprep.load_confounds_utils import (
     _get_file_name,
     _sanitize_confounds,

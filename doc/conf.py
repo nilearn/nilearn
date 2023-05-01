@@ -15,6 +15,7 @@ import re
 import sys
 
 import sphinx
+
 from nilearn._utils import _compare_version
 
 # ----------------------------------------------------------------------------

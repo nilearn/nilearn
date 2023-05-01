@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel.tmpdirs import InTemporaryDirectory
+
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
