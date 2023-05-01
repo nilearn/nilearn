@@ -160,6 +160,7 @@ extend-exclude =  """
 
 [tool.isort]
 profile = "black"
+skip_glob = "nilearn/externals/*"
 src_paths = [
   'maint_tools',
   'nilearn/connectome/.*py',

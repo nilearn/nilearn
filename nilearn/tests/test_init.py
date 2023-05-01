@@ -1,6 +1,7 @@
-import nilearn
 import sys
 import warnings
+
+import nilearn
 import pytest
 
 
@@ -12,9 +13,7 @@ def test_version_number():
 
 
 with warnings.catch_warnings(record=True):
-    from nilearn import (
-        _py37_deprecation_warning, _python_deprecation_warnings
-    )
+    from nilearn import _py37_deprecation_warning, _python_deprecation_warnings
 
 
 def test_py37_deprecation_warning():

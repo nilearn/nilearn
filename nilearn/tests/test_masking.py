@@ -1,32 +1,37 @@
 """
 Test the mask-extracting utilities.
 """
-# Authors: Ana Luisa Pinho, Jerome Dockes, NicolasGensollen
-# License: simplified BSD
-from nilearn._utils import _compare_version
 import warnings
+
 import numpy as np
 import pytest
 import sklearn
-
-from sklearn.preprocessing import StandardScaler
-
-from numpy.testing import assert_array_equal
-
 from nibabel import Nifti1Image
-
 from nilearn import masking
-from nilearn.image import get_data, high_variance_confounds
-from nilearn.masking import (compute_epi_mask, compute_multi_epi_mask,
-                             compute_background_mask, compute_brain_mask,
-                             compute_multi_brain_mask,
-                             unmask, _unmask_3d, _unmask_4d, intersect_masks,
-                             MaskWarning, _extrapolate_out_mask,
-                             _unmask_from_to_3d_array)
-from nilearn._utils.testing import write_tmp_imgs
+
+# Authors: Ana Luisa Pinho, Jerome Dockes, NicolasGensollen
+# License: simplified BSD
+from nilearn._utils import _compare_version, data_gen
 from nilearn._utils.exceptions import DimensionError
-from nilearn._utils import data_gen
+from nilearn._utils.testing import write_tmp_imgs
+from nilearn.image import get_data, high_variance_confounds
 from nilearn.maskers import NiftiMasker
+from nilearn.masking import (
+    MaskWarning,
+    _extrapolate_out_mask,
+    _unmask_3d,
+    _unmask_4d,
+    _unmask_from_to_3d_array,
+    compute_background_mask,
+    compute_brain_mask,
+    compute_epi_mask,
+    compute_multi_brain_mask,
+    compute_multi_epi_mask,
+    intersect_masks,
+    unmask,
+)
+from numpy.testing import assert_array_equal
+from sklearn.preprocessing import StandardScaler
 
 np_version = (np.version.full_version if hasattr(np.version, 'full_version')
               else np.version.short_version)

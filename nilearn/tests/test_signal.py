@@ -9,13 +9,13 @@ import warnings
 
 import numpy as np
 import pytest
+import scipy.signal
 
 # Use nisignal here to avoid name collisions (using nilearn.signal is
 # not possible)
 from nilearn import signal as nisignal
 from nilearn.signal import clean
 from pandas import read_csv
-import scipy.signal
 
 
 def generate_signals(n_features=17, n_confounds=5, length=41,
@@ -867,6 +867,7 @@ def test_clean_zscore():
 def test_create_cosine_drift_terms():
     '''Testing cosine filter interface and output.'''
     from nilearn.glm.first_level.design_matrix import _cosine_drift
+
     # fmriprep high pass cutoff is 128s, it's around 0.008 hz
     t_r, high_pass = 2.5, 0.008
     signals, _, confounds = generate_signals(n_features=41, n_confounds=5,
