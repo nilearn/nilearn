@@ -12,6 +12,13 @@ import pandas as pd
 import pytest
 from nibabel import AnalyzeImage, Nifti1Image, Nifti2Image
 from nibabel.freesurfer import MGHImage
+from numpy.testing import (
+    assert_allclose,
+    assert_almost_equal,
+    assert_array_equal,
+    assert_equal,
+)
+
 from nilearn import signal
 from nilearn._utils import niimg_conversions, testing
 from nilearn._utils.data_gen import (
@@ -37,12 +44,6 @@ from nilearn.image import (
     smooth_img,
     swap_img_hemispheres,
     threshold_img,
-)
-from numpy.testing import (
-    assert_allclose,
-    assert_almost_equal,
-    assert_array_equal,
-    assert_equal,
 )
 
 X64 = platform.architecture()[0] == "64bit"

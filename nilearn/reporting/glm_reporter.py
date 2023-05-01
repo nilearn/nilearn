@@ -19,6 +19,7 @@ from html import escape
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+
 from nilearn.plotting import plot_glass_brain, plot_roi, plot_stat_map
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.plotting.matrix_plotting import (

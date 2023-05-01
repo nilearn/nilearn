@@ -4,9 +4,10 @@ import warnings
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
-from nilearn.maskers import NiftiLabelsMasker
 from sklearn.base import clone
 from sklearn.feature_extraction import image
+
+from nilearn.maskers import NiftiLabelsMasker
 
 from .._utils import fill_doc, stringify_path
 from .._utils.niimg import _safe_get_data

@@ -5,9 +5,10 @@ import numbers
 
 import numpy as np
 from joblib import Memory
-from nilearn.maskers import NiftiMapsMasker
 from scipy.ndimage import label
 from scipy.stats import scoreatpercentile
+
+from nilearn.maskers import NiftiMapsMasker
 
 from .. import masking
 from .._utils import check_niimg, check_niimg_3d, check_niimg_4d, fill_doc

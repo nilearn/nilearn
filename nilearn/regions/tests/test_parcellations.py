@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image
+
 from nilearn.regions.parcellations import (
     Parcellations,
     _check_parameters_transform,

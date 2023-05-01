@@ -4,6 +4,9 @@ import pandas as pd
 import pytest
 import scipy.linalg as spl
 import scipy.stats as sps
+from numpy.testing import assert_almost_equal, assert_array_almost_equal
+from scipy.stats import norm
+
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.glm._utils import (
     _check_and_load_tables,
@@ -20,8 +23,6 @@ from nilearn.glm.first_level import (
     make_first_level_design_matrix,
 )
 from nilearn.maskers import NiftiMasker
-from numpy.testing import assert_almost_equal, assert_array_almost_equal
-from scipy.stats import norm
 
 
 def test_full_rank():

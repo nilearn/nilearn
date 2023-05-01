@@ -39,8 +39,9 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from nilearn._utils.testing import serialize_niimg
 from requests.exceptions import HTTPError
+
+from nilearn._utils.testing import serialize_niimg
 
 
 @pytest.fixture(autouse=True)

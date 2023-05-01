@@ -7,9 +7,10 @@ import os.path
 # License: simplified BSD
 import warnings
 
-import nilearn as ni
 import numpy as np
 from joblib import Memory
+
+import nilearn as ni
 
 from .cache_mixin import cache
 from .exceptions import DimensionError

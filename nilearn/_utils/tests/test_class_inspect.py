@@ -5,8 +5,9 @@ This test file is in nilearn/tests because Nosetest,
 which we historically used,
 ignores modules whose name starts with an underscore.
 """
-from nilearn._utils import class_inspect
 from sklearn.base import BaseEstimator
+
+from nilearn._utils import class_inspect
 
 ##############################################################################
 # Helpers for the tests
