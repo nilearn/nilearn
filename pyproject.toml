@@ -166,12 +166,8 @@ skip_glob = [
 ]
 src_paths = [
   'maint_tools',
-  'nilearn/connectome/.*py',
-  'nilearn/dec.*',
-  'nilearn/image/.*py',
-  'nilearn/mass_univariate/.*py',
-  'nilearn/regions/.*py',
-  'nilearn/reporting/.*py'
+  'nilearn',
+  'doc',
 ]
 line_length = 79
 skip_gitignore = true
