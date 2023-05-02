@@ -96,6 +96,12 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         that they will be filled with zero in signals in the output.
         Default=True.
 
+        .. deprecated:: 0.9.2
+
+            The 'True' option for ``keep_masked_labels`` is deprecated.
+            The default value will change to 'False' in 0.13,
+            and the ``keep_masked_labels`` parameter will be removed in 0.15.
+
     reports : :obj:`bool`, optional
         If set to True, data is saved in order to produce a report.
         Default=True.

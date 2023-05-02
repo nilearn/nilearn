@@ -6,6 +6,7 @@ or as weights in one image per region (maps).
 """
 # Author: Philippe Gervais
 # License: simplified BSD
+import warnings
 
 import numpy as np
 from scipy import linalg, ndimage
@@ -139,6 +140,12 @@ def _get_labels_data(
         will be removed from output labels. If True, they are kept.
         Default=True.
 
+        .. deprecated:: 0.9.2
+
+            The 'True' option for ``keep_masked_labels`` is deprecated.
+            The default value will change to 'False' in 0.13,
+            and the ``keep_masked_labels`` parameter will be removed in 0.15.
+
     Returns
     -------
     labels : :obj:`list` or :obj:`tuple`
@@ -162,6 +169,18 @@ def _get_labels_data(
 
     if keep_masked_labels:
         labels = list(np.unique(labels_data))
+        warnings.warn(
+            'Starting in version 0.15 the labels in "labels_img" '
+            'that are masked by "mask_img" will be removed from '
+            'output labels. '
+            'Until then, "keep_masked_labels=True" will produce '
+            'the old behavior. '
+            'The default behavior of "NiftiLabelsMasker" will be '
+            'changed to "keep_masked_labels=False" in version 0.13 '
+            'and "keep_masked_labels" parameter will be removed '
+            'in version 0.15.',
+            DeprecationWarning,
+        )
 
     # Consider only data within the mask
     use_mask = _check_shape_and_affine_compatibility(target_img, mask_img, dim)
@@ -258,6 +277,12 @@ def img_to_signals_labels(
         will be removed from the output. If True, they are kept, meaning
         that they will be filled with zero in signals in the output.
         Default=True.
+
+        .. deprecated:: 0.9.2
+
+            The 'True' option for ``keep_masked_labels`` is deprecated.
+            The default value will change to 'False' in 0.13,
+            and the ``keep_masked_labels`` parameter will be removed in 0.15.
 
     Returns
     -------
