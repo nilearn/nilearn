@@ -442,20 +442,19 @@ def test_parallel_fit_builtin_cv(
 
 
 def test_decoder_param_grid_sequence(binary_classification_data):
-
     X, y, _ = binary_classification_data
     n_cv_folds = 10
     param_grid = [
         {
             "penalty": ["l2"],
             "C": [100, 1000],
-            "random_state": [42], # fix the seed for consistent behaviour
+            "random_state": [42],  # fix the seed for consistent behaviour
         },
         {
             "penalty": ["l1"],
-            "dual": [False],    # "dual" is not in the first dict
+            "dual": [False],  # "dual" is not in the first dict
             "C": [100, 10],
-            "random_state": [42], # fix the seed for consistent behaviour
+            "random_state": [42],  # fix the seed for consistent behaviour
         },
     ]
 
