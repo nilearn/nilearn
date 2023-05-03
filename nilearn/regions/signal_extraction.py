@@ -7,6 +7,8 @@ or as weights in one image per region (maps).
 # Author: Philippe Gervais
 # License: simplified BSD
 
+import warnings
+
 import numpy as np
 from scipy import linalg, ndimage
 
@@ -376,7 +378,10 @@ def signals_to_img_labels(
 
 
 @_utils.fill_doc
-def img_to_signals_maps(imgs, maps_img, mask_img=None):
+def img_to_signals_maps(
+    imgs, maps_img, mask_img=None,
+    keep_masked_maps=True
+):
     """Extract region signals from image.
 
     This function is applicable to regions defined by maps.
@@ -396,6 +401,17 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
         Mask to apply to regions before extracting signals.
         Every point outside the mask is considered
         as background (i.e. outside of any region).
+
+    keep_masked_maps : :obj:`bool`, optional
+        If False, maps that lie completely outside the mask are dropped from
+        the output. If True, they are kept, meaning that maps that are
+        completely zero can occur in the output.
+        Default=True.
+
+        .. deprecated:: 0.9.2
+            The 'True' option for ``keep_masked_maps`` is deprecated.
+            The default value will change to 'False' in 0.13,
+            and the ``keep_masked_maps`` parameter will be removed in 0.15.
 
     Returns
     -------
@@ -430,9 +446,22 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
         maps_data, maps_mask, labels = _trim_maps(
             maps_data,
             _safe_get_data(mask_img, ensure_finite=True),
-            keep_empty=True,
+            keep_empty=keep_masked_maps,
         )
         maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
+        if keep_masked_maps:
+            warnings.warn(
+                'Starting in version 0.15 the maps in "maps_img" '
+                'that are masked by "mask_img" will be removed from '
+                'output. '
+                'Until then, "keep_masked_labels=True" will produce '
+                'the old behavior. '
+                'The default behavior of "NiftiMapsMasker" will be '
+                'changed to "keep_masked_maps=False" in version 0.13 '
+                'and "keep_masked_maps" parameter will be removed '
+                'in version 0.15.',
+                DeprecationWarning,
+            )
 
     data = _safe_get_data(imgs, ensure_finite=True)
     region_signals = linalg.lstsq(maps_data[maps_mask, :], data[maps_mask, :])[
