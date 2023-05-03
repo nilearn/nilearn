@@ -304,10 +304,18 @@ def _parallel_fit(
         X_test = selector.transform(X_test)
 
     # If there is no parameter grid, then we use a suitable grid (by default)
-    param_grid = _check_param_grid(estimator, X_train, y_train, param_grid)
+    param_grid = ParameterGrid(
+        _check_param_grid(estimator, X_train, y_train, param_grid)
+    )
+
+    # collect all parameter names from the grid
+    all_params = set()
+    for params in param_grid:
+        all_params.update(params.keys())
+
     best_score = None
-    for param in ParameterGrid(param_grid):
-        estimator = clone(estimator).set_params(**param)
+    for params in param_grid:
+        estimator = clone(estimator).set_params(**params)
         estimator.fit(X_train, y_train)
 
         if is_classification:
@@ -332,8 +340,13 @@ def _parallel_fit(
                     dummy_output = estimator.constant_
 
             if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
-                param["best_alpha"] = estimator.alpha_
-            best_param = param
+                params["best_alpha"] = estimator.alpha_
+            best_params = params
+
+            # fill in any missing param from param_grid
+            for param in all_params:
+                if param not in best_params:
+                    best_params[param] = getattr(estimator, param)
 
     if best_coef is not None:
         if do_screening:
@@ -346,7 +359,7 @@ def _parallel_fit(
         class_index,
         best_coef,
         best_intercept,
-        best_param,
+        best_params,
         best_score,
         dummy_output,
     )
