@@ -172,7 +172,7 @@ def _get_labels_data(
         warnings.warn(
             'Starting in version 0.15 the labels in "labels_img" '
             'that are masked by "mask_img" will be removed from '
-            'output labels. '
+            'output of "NiftiLabelsMasker" signal extraction. '
             'Until then, "keep_masked_labels=True" will produce '
             'the old behavior. '
             'The default behavior of "NiftiLabelsMasker" will be '
@@ -180,6 +180,7 @@ def _get_labels_data(
             'and "keep_masked_labels" parameter will be removed '
             'in version 0.15.',
             DeprecationWarning,
+            stacklevel=3
         )
 
     # Consider only data within the mask
