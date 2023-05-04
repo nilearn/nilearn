@@ -453,7 +453,7 @@ def img_to_signals_maps(
             warnings.warn(
                 'Starting in version 0.15 the maps in "maps_img" '
                 'that are masked by "mask_img" will be removed from '
-                'output. '
+                'output of "NiftiMapsMasker" signal extraction. '
                 'Until then, "keep_masked_labels=True" will produce '
                 'the old behavior. '
                 'The default behavior of "NiftiMapsMasker" will be '
@@ -461,6 +461,7 @@ def img_to_signals_maps(
                 'and "keep_masked_maps" parameter will be removed '
                 'in version 0.15.',
                 DeprecationWarning,
+                stacklevel=2
             )
 
     data = _safe_get_data(imgs, ensure_finite=True)
