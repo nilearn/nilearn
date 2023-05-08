@@ -41,7 +41,11 @@ from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.exceptions import NotFittedError
-from sklearn.linear_model import LogisticRegression, RidgeClassifierCV, RidgeCV
+from sklearn.linear_model import (
+    LogisticRegressionCV,
+    RidgeClassifierCV, 
+    RidgeCV,
+)
 from sklearn.metrics import (
     accuracy_score,
     check_scoring,
@@ -153,8 +157,8 @@ def test_check_param_grid_regression(regressor, param):
 @pytest.mark.parametrize(
     "classifier, param",
     [
-        (LogisticRegression(penalty="l1"), "C"),
-        (LogisticRegression(penalty="l2"), "C"),
+        (LogisticRegressionCV(penalty="l1"), ["Cs"]),
+        (LogisticRegressionCV(penalty="l2"), ["Cs"]),
         (RidgeClassifierCV(), ["alphas"]),
     ],
 )
@@ -383,6 +387,7 @@ def test_parallel_fit(rand_X_Y):
     [
         (RidgeCV(), "alphas", "best_alpha", False),
         (RidgeClassifierCV(), "alphas", "best_alpha", True),
+        (LogisticRegressionCV(), "Cs", "best_C", True),
     ],
 )
 def test_parallel_fit_builtin_cv(
@@ -438,7 +443,7 @@ def test_parallel_fit_builtin_cv(
         clustering_percentile=100,
     )
 
-    assert isinstance(best_param[fitted_param_name], (float, int))
+    assert isinstance(best_param[fitted_param_name], numbers.Number)
 
 
 def test_decoder_binary_classification_with_masker_object(
