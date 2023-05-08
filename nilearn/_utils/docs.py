@@ -136,23 +136,23 @@ docdict['classifier_options'] = f"""
                                    max_iter=1e4)
 
         - `logistic`: \
-            :class:`{logistic} <sklearn.linear_model.LogisticRegression>` \
+            :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
             with L2 penalty.
             .. code-block:: python
 
-                logistic = LogisticRegression(penalty='l2',
+                logistic = LogisticRegressionCV(penalty='l2',
                                               solver='liblinear')
 
         - `logistic_l1`: \
-            :class:`{logistic} <sklearn.linear_model.LogisticRegression>` \
+            :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
             with L1 penalty.
             .. code-block:: python
 
-                logistic_l1 = LogisticRegression(penalty='l1',
+                logistic_l1 = LogisticRegressionCV(penalty='l1',
                                                  solver='liblinear')
 
         - `logistic_l2`: \
-            :class:`{logistic} <sklearn.linear_model.LogisticRegression>` \
+            :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
             with L2 penalty
             .. note::
                 Same as option `logistic`.
