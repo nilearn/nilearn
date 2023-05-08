@@ -31,7 +31,7 @@ from sklearn import clone
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
     LinearRegression,
-    LogisticRegression,
+    LogisticRegressionCV,
     RidgeClassifierCV,
     RidgeCV,
 )
@@ -53,9 +53,9 @@ SUPPORTED_ESTIMATORS = dict(
     svc_l1=LinearSVC(penalty="l1", dual=False, max_iter=10000),
     svc_l2=LinearSVC(penalty="l2", max_iter=10000),
     svc=LinearSVC(penalty="l2", max_iter=10000),
-    logistic_l1=LogisticRegression(penalty="l1", solver="liblinear"),
-    logistic_l2=LogisticRegression(penalty="l2", solver="liblinear"),
-    logistic=LogisticRegression(penalty="l2", solver="liblinear"),
+    logistic_l1=LogisticRegressionCV(penalty="l1", solver="liblinear"),
+    logistic_l2=LogisticRegressionCV(penalty="l2", solver="liblinear"),
+    logistic=LogisticRegressionCV(penalty="l2", solver="liblinear"),
     ridge_classifier=RidgeClassifierCV(),
     ridge_regressor=RidgeCV(),
     ridge=RidgeCV(),
@@ -111,6 +111,8 @@ def _check_param_grid(estimator, X, y, param_grid=None):
     else:
         if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
             param_grid = _wrap_param_grid(param_grid, "alphas")
+        elif isinstance(estimator, LogisticRegressionCV):
+            param_grid = _wrap_param_grid(param_grid, "Cs")
 
     return param_grid
 
@@ -152,7 +154,7 @@ def _default_param_grid(estimator, X, y):
             raise NotImplementedError(message)
     elif not isinstance(
         estimator,
-        (LogisticRegression, LinearSVC, RidgeCV, RidgeClassifierCV, SVR),
+        (LogisticRegressionCV, LinearSVC, RidgeCV, RidgeClassifierCV, SVR),
     ):
         raise ValueError(
             "Invalid estimator. The supported estimators are:"
@@ -162,7 +164,7 @@ def _default_param_grid(estimator, X, y):
     # use l1_min_c to get lower bound for estimators with L1 penalty
     if hasattr(estimator, "penalty") and (estimator.penalty == "l1"):
         # define loss function
-        if isinstance(estimator, LogisticRegression):
+        if isinstance(estimator, LogisticRegressionCV):
             loss = "log"
         elif isinstance(estimator, LinearSVC):
             loss = "squared_hinge"
@@ -176,7 +178,9 @@ def _default_param_grid(estimator, X, y):
     # define sensible default for different types of estimators
     if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
         param_grid["alphas"] = [np.geomspace(1e-3, 1e4, 8)]
-    elif isinstance(estimator, (LogisticRegression, LinearSVC, SVR)):
+    elif isinstance(estimator, LogisticRegressionCV):
+        param_grid["Cs"] = [np.geomspace(2e-3, 2e4, 8) * min_c]
+    elif isinstance(estimator, (LinearSVC, SVR)):
         param_grid["C"] = np.array([2, 20, 200]) * min_c
     else:
         param_grid = {}
@@ -333,6 +337,8 @@ def _parallel_fit(
 
             if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
                 param["best_alpha"] = estimator.alpha_
+            elif isinstance(estimator, LogisticRegressionCV):
+                param["best_C"] = estimator.C_.item()
             best_param = param
 
     if best_coef is not None:
@@ -583,8 +589,8 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             when Dummy estimators are provided. Note: if the estimator used its
             built-in cross-validation, this will include an additional key for
             the single best value estimated by the built-in cross-validation
-            (e.g., 'best_alpha' for RidgeCV/RidgeClassifierCV), in addition to
-            the input list of values.
+            ('best_C' for LogisticRegressionCV and 'best_alpha' for 
+            RidgeCV/RidgeClassifierCV), in addition to the input list of values.
 
         'scorer_' : function
             Scorer function used on the held out data to choose the best
