@@ -589,8 +589,9 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             when Dummy estimators are provided. Note: if the estimator used its
             built-in cross-validation, this will include an additional key for
             the single best value estimated by the built-in cross-validation
-            ('best_C' for LogisticRegressionCV and 'best_alpha' for 
-            RidgeCV/RidgeClassifierCV), in addition to the input list of values.
+            ('best_C' for LogisticRegressionCV and 'best_alpha' for
+            RidgeCV/RidgeClassifierCV), in addition to the input list of
+            values.
 
         'scorer_' : function
             Scorer function used on the held out data to choose the best

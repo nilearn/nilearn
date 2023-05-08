@@ -43,7 +43,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import (
     LogisticRegressionCV,
-    RidgeClassifierCV, 
+    RidgeClassifierCV,
     RidgeCV,
 )
 from sklearn.metrics import (
