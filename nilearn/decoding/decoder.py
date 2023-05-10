@@ -179,8 +179,15 @@ def _default_param_grid(estimator, X, y):
     if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
         param_grid["alphas"] = [np.geomspace(1e-3, 1e4, 8)]
     elif isinstance(estimator, LogisticRegressionCV):
+        # min_c value is set to 0.5 unless the estimator uses L1 penalty,
+        # in which case min_c is computed with sklearn.svm.l1_min_c(),
+        # so for L2 penalty, param_grid["Cs"] is either 1e-3, ..., 1e4, and
+        # for L1 penalty the values are obtained in a more data-driven way
         param_grid["Cs"] = [np.geomspace(2e-3, 2e4, 8) * min_c]
     elif isinstance(estimator, (LinearSVC, SVR)):
+        # similar logic as above:
+        # - for L2 penalty this is [1, 10, 100]
+        # - for L1 penalty the values depend on the data
         param_grid["C"] = np.array([2, 20, 200]) * min_c
     else:
         param_grid = {}
