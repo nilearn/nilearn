@@ -403,10 +403,11 @@ def img_to_signals_maps(
         as background (i.e. outside of any region).
 
     keep_masked_maps : :obj:`bool`, optional
-        If False, maps that lie completely outside the mask are dropped from
-        the output. If True, they are kept, meaning that maps that are
-        completely zero can occur in the output.
-        Default=True.
+        If True, masked atlas with invalid maps (maps with no brain coverage
+        after applying the mask) will be retained in the output, resulting
+        in corresponding time series containing zeros only. If False, the
+        invalid maps will be removed from the trimmed atlas, resulting in
+        no empty time series in the output.
 
         .. deprecated:: 0.9.2
             The 'True' option for ``keep_masked_maps`` is deprecated.
@@ -451,14 +452,30 @@ def img_to_signals_maps(
         maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
         if keep_masked_maps:
             warnings.warn(
-                'Starting in version 0.15 the maps in "maps_img" '
-                'that are masked by "mask_img" will be removed from '
-                'output of "NiftiMapsMasker" signal extraction. '
-                'Until then, "keep_masked_labels=True" will produce '
-                'the old behavior. '
-                'The default behavior of "NiftiMapsMasker" will be '
-                'changed to "keep_masked_maps=False" in version 0.13 '
-                'and "keep_masked_maps" parameter will be removed '
+                'Starting in version 0.15, the behavior of "NiftiMapsMasker" '
+                'will change when a mask is supplied through the "mask_img" '
+                'parameter. The atlases are masked by "mask_img" before any '
+                'signal extraction happens. However, some maps in the atlas '
+                'may contain no brain coverage after applying the mask, '
+                'resulting in an invalid map with only zeroes (not suitable '
+                'for signal extraction). These invalid maps used to be kept. '
+                'In the new behavior, they will be removed from the output. '
+                '\n\n'
+                'If "keep_masked_maps" is set to True, the masked atlas with '
+                'these invalid maps will be retained in the output, resulting '
+                'in corresponding time series with zeros only (old behavior). '
+                'To enable this '
+                'behavior, specify the parameter "keep_masked_maps=True" when '
+                'initializing the "NiftiMapsMasker" object.\n\n'
+                'Starting from version 0.13, the default behavior will be '
+                'changed to "keep_masked_maps=False". If "keep_masked_maps" '
+                'is set to False, the invalid maps will be removed from the '
+                'trimmed atlas, ensuring no empty time series are present in '
+                'the output (new behavior). '
+                'To explicitly disable the retention of masked '
+                'maps, specify the parameter "keep_masked_maps=False" when '
+                'initializing the "NiftiMapsMasker" object.'
+                '"keep_masked_maps" parameter will be removed '
                 'in version 0.15.',
                 DeprecationWarning,
                 stacklevel=2
