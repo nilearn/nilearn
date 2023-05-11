@@ -217,11 +217,10 @@ def _get_labels_data(
         # Raising a warning if any label is removed due to the mask
         if len(labels_diff) > 0 and (not keep_masked_labels):
             warnings.warn(
-                "After applying mask to the label image "
-                "to the "
-                "data image, the following labels were "
+                "After applying mask to the labels image, "
+                "the following labels were "
                 f"removed: {labels_diff}. "
-                "Label image only contains "
+                "Labels image only contains "
                 f"{len(labels_after_mask)} labels "
                 "(including background).",
                 stacklevel=3
