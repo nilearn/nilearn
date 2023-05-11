@@ -136,8 +136,13 @@ def _get_labels_data(
         Integer slices mask for a specific dimension.
 
     keep_masked_labels : :obj:`bool`, optional
-        If False, the labels in labels_img that are masked by mask_img
-        will be removed from output labels. If True, they are kept.
+        When a mask is supplied through the "mask_img" parameter, some
+        labels in the atlas may not have any brain coverage within the
+        masked region, resulting in empty time series for those labels.
+        If True, the masked atlas with these empty labels will be retained
+        in the output, resulting in corresponding time series containing
+        zeros only. If False, the empty labels will be removed from the
+        output, ensuring no empty time series are present.
         Default=True.
 
         .. deprecated:: 0.9.2
@@ -170,14 +175,27 @@ def _get_labels_data(
     if keep_masked_labels:
         labels = list(np.unique(labels_data))
         warnings.warn(
-            'Starting in version 0.15 the labels in "labels_img" '
-            'that are masked by "mask_img" will be removed from '
-            'output of "NiftiLabelsMasker" signal extraction. '
-            'Until then, "keep_masked_labels=True" will produce '
-            'the old behavior. '
-            'The default behavior of "NiftiLabelsMasker" will be '
-            'changed to "keep_masked_labels=False" in version 0.13 '
-            'and "keep_masked_labels" parameter will be removed '
+            'Starting in version 0.15, the behavior of "NiftiLabelsMasker" '
+            'will change when a mask is supplied through the "mask_img" '
+            'parameter. When a mask is applied, some labels '
+            'in the atlas may not have any brain '
+            'coverage within the masked region, resulting in empty time '
+            'series for those labels.\n\n'
+            'If "keep_masked_labels" is set to True, the masked atlas with '
+            'these empty labels will be retained in the output, resulting '
+            'in corresponding time series with zeros only (old behavior). '
+            'To enable this '
+            'behavior, specify the parameter "keep_masked_labels=True" when '
+            'initializing the "NiftiLabelsMasker" object.\n\n'
+            'Starting from version 0.13, the default behavior will be '
+            'changed to "keep_masked_labels=False". If "keep_masked_labels" '
+            'is set to False, the empty labels will be removed from the '
+            'output, ensuring no empty time series are present '
+            '(new behavior). To '
+            'explicitly disable the retention of masked labels, specify the '
+            'parameter "keep_masked_labels=False" when initializing the '
+            '"NiftiLabelsMasker" object. '
+            '"keep_masked_labels" parameter will be removed '
             'in version 0.15.',
             DeprecationWarning,
             stacklevel=3
@@ -274,9 +292,13 @@ def img_to_signals_labels(
         standard_deviation. Default="mean".
 
     keep_masked_labels : :obj:`bool`, optional
-        If False, the labels in labels_img that are masked by mask_img
-        will be removed from the output. If True, they are kept, meaning
-        that they will be filled with zero in signals in the output.
+        When a mask is supplied through the "mask_img" parameter, some
+        labels in the atlas may not have any brain coverage within the
+        masked region, resulting in empty time series for those labels.
+        If True, the masked atlas with these empty labels will be retained
+        in the output, resulting in corresponding time series containing
+        zeros only. If False, the empty labels will be removed from the
+        output, ensuring no empty time series are present.
         Default=True.
 
         .. deprecated:: 0.9.2

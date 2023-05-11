@@ -91,9 +91,13 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         standard_deviation. Default='mean'.
 
     keep_masked_labels : :obj:`bool`, optional
-        If False, the labels in labels_img that are masked by mask_img
-        will be removed from the output. If True, they are kept, meaning
-        that they will be filled with zero in signals in the output.
+        When a mask is supplied through the "mask_img" parameter, some
+        labels in the atlas may not have any brain coverage within the
+        masked region, resulting in empty time series for those labels.
+        If True, the masked atlas with these empty labels will be retained
+        in the output, resulting in corresponding time series containing
+        zeros only. If False, the empty labels will be removed from the
+        output, ensuring no empty time series are present.
         Default=True.
 
         .. deprecated:: 0.9.2
