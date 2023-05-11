@@ -444,6 +444,7 @@ def img_to_signals_maps(
     use_mask = _check_shape_and_affine_compatibility(imgs, mask_img)
     if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
+        labels_before_mask = set(labels)
         maps_data, maps_mask, labels = _trim_maps(
             maps_data,
             _safe_get_data(mask_img, ensure_finite=True),
@@ -480,6 +481,21 @@ def img_to_signals_maps(
                 DeprecationWarning,
                 stacklevel=2
             )
+        else:
+            labels_after_mask = set(labels)
+            labels_diff = labels_before_mask.difference(
+                labels_after_mask
+            )
+            # Raising a warning if any map is removed due to the mask
+            if len(labels_diff) > 0:
+                warnings.warn(
+                    "After applying mask to the maps image, "
+                    "the following maps were "
+                    f"removed: {labels_diff}. "
+                    "Map image only contains "
+                    f"{len(labels_after_mask)} maps.",
+                    stacklevel=2
+                )
 
     data = _safe_get_data(imgs, ensure_finite=True)
     region_signals = linalg.lstsq(maps_data[maps_mask, :], data[maps_mask, :])[
