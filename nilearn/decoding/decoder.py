@@ -112,6 +112,7 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
             param_grid = _wrap_param_grid(param_grid, "alphas")
         elif isinstance(estimator, LogisticRegressionCV):
+            param_grid = _replace_param_grid_key(param_grid, "C", "Cs")
             param_grid = _wrap_param_grid(param_grid, "Cs")
 
     return param_grid
@@ -198,10 +199,10 @@ def _default_param_grid(estimator, X, y):
 def _wrap_param_grid(param_grid, param_name):
     """Wrap a parameter's sequence of values with an outer list.
 
-    This can be
-    desirable for models featuring built-in cross-validation, as it would leave
-    it to the model's internal (optimized) cross-validation to loop over
-    hyperparameter values. Does nothing if the parameter is already wrapped.
+    This can be desirable for models featuring built-in cross-validation,
+    as it would leave it to the model's internal (optimized) cross-validation
+    to loop over hyperparameter values. Does nothing if the parameter is
+    already wrapped.
 
     Parameters
     ----------
@@ -213,7 +214,7 @@ def _wrap_param_grid(param_grid, param_name):
 
     Returns
     -------
-    param_grid_wrapped: dict of str to sequence, or sequence of such
+    dict of str to sequence, or sequence of such
         The updated parameter grid
     """
     if param_grid is None:
@@ -244,6 +245,53 @@ def _wrap_param_grid(param_grid, param_name):
         new_param_grid.append(param_grid_item)
 
     # return a dict (not a list) if the original input was a dict
+    if input_is_dict:
+        new_param_grid = new_param_grid[0]
+
+    return new_param_grid
+
+
+def _replace_param_grid_key(param_grid, key_to_replace, new_key):
+    """Replace a parameter name by another one.
+
+    Parameters
+    ----------
+    param_grid : dict of str to sequence, or sequence of such
+        The parameter grid to process, as a dictionary mapping estimator
+        parameters to sequences of allowed values.
+    key_to_replace : str
+        Name of parameter to replace
+    new_key : str
+        New parameter name. If this key already exists in the parameter grid,
+        it is overwritten
+
+    Returns
+    -------
+    dict of str to sequence, or sequence of such
+        The updated parameter grid
+    """
+    # ensure param_grid is a list so that we can loop over it
+    input_is_dict = isinstance(param_grid, dict)
+    if input_is_dict:
+        param_grid = [param_grid]
+
+    # replace old key by new key if needed
+    new_param_grid = []
+    for param_grid_item in param_grid:
+        param_grid_item = dict(param_grid_item)  # make a new dict
+        if key_to_replace in param_grid_item:
+            warnings.warn(
+                f'The "{key_to_replace}" parameter in "param_grid" is'
+                f' being replaced by "{new_key}" due to a change in the'
+                " choice of underlying scikit-learn estimator. In a future"
+                " version, this will result in an error.",
+                DeprecationWarning,
+                stacklevel=13,
+            )
+            param_grid_item[new_key] = param_grid_item.pop(key_to_replace)
+        new_param_grid.append(param_grid_item)
+
+    # return a dict if input was a dict
     if input_is_dict:
         new_param_grid = new_param_grid[0]
 

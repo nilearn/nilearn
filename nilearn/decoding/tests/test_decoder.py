@@ -174,6 +174,30 @@ def test_check_param_grid_classification(rand_X_Y, classifier, param):
     assert list(param_grid.keys()) == list(param)
 
 
+@pytest.mark.parametrize(
+    "param_grid_input",
+    [
+        {"C": [1, 10, 100]},
+        {"Cs": [1, 10, 100]},
+        [{"C": [1, 10, 100]}, {"fit_intercept": [False]}],
+    ],
+)
+def test_check_param_grid_replacement(rand_X_Y, param_grid_input):
+    X, Y = rand_X_Y
+    param_to_replace = "C"
+    param_replaced = "Cs"
+    param_grid_output = _check_param_grid(
+        LogisticRegressionCV(),
+        X,
+        Y,
+        param_grid_input,
+    )
+    for params in ParameterGrid(param_grid_output):
+        assert param_to_replace not in params
+        if param_replaced not in params:
+            assert params in ParameterGrid(param_grid_input)
+
+
 @pytest.mark.parametrize("estimator", ["log_l1", RandomForestClassifier()])
 def test_non_supported_estimator_error(rand_X_Y, estimator):
     """Raise the error when using a non supported estimator."""
