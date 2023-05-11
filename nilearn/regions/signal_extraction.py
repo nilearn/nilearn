@@ -207,7 +207,25 @@ def _get_labels_data(
         mask_img = _utils.check_niimg_3d(mask_img)
         mask_data = _safe_get_data(mask_img, ensure_finite=True)
         labels_data = labels_data.copy()
+        labels_before_mask = set(np.unique(labels_data))
+        # Applying mask on labels_data
         labels_data[np.logical_not(mask_data)] = background_label
+        labels_after_mask = set(np.unique(labels_data))
+        labels_diff = labels_before_mask.difference(
+            labels_after_mask
+        )
+        # Raising a warning if any label is removed due to the mask
+        if len(labels_diff) > 0 and (not keep_masked_labels):
+            warnings.warn(
+                "After applying mask to the label image "
+                "to the "
+                "data image, the following labels were "
+                f"removed: {labels_diff}. "
+                "Label image only contains "
+                f"{len(labels_after_mask)} labels "
+                "(including background).",
+                stacklevel=3
+            )
 
     if not keep_masked_labels:
         labels = list(np.unique(labels_data))
