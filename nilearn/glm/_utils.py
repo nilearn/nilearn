@@ -2,6 +2,7 @@
 
 Authors: Bertrand Thirion, Matthew Brett, Ana Luisa Pinho, 2020
 """
+
 import csv
 from warnings import warn
 
