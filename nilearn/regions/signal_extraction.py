@@ -409,7 +409,7 @@ def img_to_signals_maps(
         invalid maps will be removed from the trimmed atlas, resulting in
         no empty time series in the output.
 
-        .. deprecated:: 0.9.2
+        .. deprecated:: 0.10.2
             The 'True' option for ``keep_masked_maps`` is deprecated.
             The default value will change to 'False' in 0.13,
             and the ``keep_masked_maps`` parameter will be removed in 0.15.
@@ -455,27 +455,17 @@ def img_to_signals_maps(
             warnings.warn(
                 'Starting in version 0.15, the behavior of "NiftiMapsMasker" '
                 'will change when a mask is supplied through the "mask_img" '
-                'parameter. The atlases are masked by "mask_img" before any '
-                'signal extraction happens. However, some maps in the atlas '
-                'may contain no brain coverage after applying the mask, '
-                'resulting in an invalid map with only zeroes (not suitable '
-                'for signal extraction). These invalid maps used to be kept. '
-                'In the new behavior, they will be removed from the output. '
-                '\n\n'
-                'If "keep_masked_maps" is set to True, the masked atlas with '
-                'these invalid maps will be retained in the output, resulting '
-                'in corresponding time series with zeros only (old behavior). '
-                'To enable this '
-                'behavior, specify the parameter "keep_masked_maps=True" when '
-                'initializing the "NiftiMapsMasker" object.\n\n'
+                'parameter. Applying "mask_img" before '
+                'signal extraction may result in empty time series in the '
+                'output. These empty time series used to be kept. '
+                'In the new behavior, they will be removed from the output.'
+                '\n'
+                'To explicitly enable/disable the retention of empty '
+                'time series, set the parameter "keep_masked_maps" to True/'
+                'False when '
+                'initializing the "NiftiMapsMasker" object. '
                 'Starting from version 0.13, the default behavior will be '
-                'changed to "keep_masked_maps=False". If "keep_masked_maps" '
-                'is set to False, the invalid maps will be removed from the '
-                'trimmed atlas, ensuring no empty time series are present in '
-                'the output (new behavior). '
-                'To explicitly disable the retention of masked '
-                'maps, specify the parameter "keep_masked_maps=False" when '
-                'initializing the "NiftiMapsMasker" object.'
+                'changed to "keep_masked_maps=False". '
                 '"keep_masked_maps" parameter will be removed '
                 'in version 0.15.',
                 DeprecationWarning,
@@ -492,7 +482,8 @@ def img_to_signals_maps(
                     "After applying mask to the maps image, "
                     "the following maps were "
                     f"removed: {labels_diff}. "
-                    "Map image only contains "
+                    f"Out of {len(labels_before_mask)} maps, the "
+                    "masked map image only contains "
                     f"{len(labels_after_mask)} maps.",
                     stacklevel=2
                 )
