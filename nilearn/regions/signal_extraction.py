@@ -177,24 +177,17 @@ def _get_labels_data(
         warnings.warn(
             'Starting in version 0.15, the behavior of "NiftiLabelsMasker" '
             'will change when a mask is supplied through the "mask_img" '
-            'parameter. When a mask is applied, some labels '
-            'in the atlas may not have any brain '
-            'coverage within the masked region, resulting in empty time '
-            'series for those labels.\n\n'
-            'If "keep_masked_labels" is set to True, the masked atlas with '
-            'these empty labels will be retained in the output, resulting '
-            'in corresponding time series with zeros only (old behavior). '
-            'To enable this '
-            'behavior, specify the parameter "keep_masked_labels=True" when '
-            'initializing the "NiftiLabelsMasker" object.\n\n'
+            'parameter. Applying "mask_img" before '
+            'signal extraction may result in empty region signals in the '
+            'output. These empty region signals used to be kept. '
+            'In the new behavior, they will be removed from the output.'
+            '\n'
+            'To explicitly enable/disable the retention of empty '
+            'region signals, set the parameter "keep_masked_labels" '
+            'to True/False when '
+            'initializing the "NiftiLabelsMasker" object. '
             'Starting from version 0.13, the default behavior will be '
-            'changed to "keep_masked_labels=False". If "keep_masked_labels" '
-            'is set to False, the empty labels will be removed from the '
-            'output, ensuring no empty time series are present '
-            '(new behavior). To '
-            'explicitly disable the retention of masked labels, specify the '
-            'parameter "keep_masked_labels=False" when initializing the '
-            '"NiftiLabelsMasker" object. '
+            'changed to "keep_masked_labels=False". '
             '"keep_masked_labels" parameter will be removed '
             'in version 0.15.',
             DeprecationWarning,
@@ -220,7 +213,8 @@ def _get_labels_data(
                 "After applying mask to the labels image, "
                 "the following labels were "
                 f"removed: {labels_diff}. "
-                "Labels image only contains "
+                f"Out of {len(labels_before_mask)} labels, the "
+                "masked labels image only contains "
                 f"{len(labels_after_mask)} labels "
                 "(including background).",
                 stacklevel=3
