@@ -77,7 +77,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
         - `func.gii`: list of a pair of paths to files, optionally as a list
           of lists.
 
-    denoise_strategy : {'simple', 'srubbing', 'compcor', 'ica_aroma'}
+    denoise_strategy : {'simple', 'scrubbing', 'compcor', 'ica_aroma'}
         Name of preset denoising strategies. Each strategy has a set of
         associated configurable parameters. For customiseable parameters,
         please see the table in Notes.
