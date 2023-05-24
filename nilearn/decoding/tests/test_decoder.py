@@ -441,6 +441,31 @@ def test_parallel_fit_builtin_cv(
     assert isinstance(best_param[fitted_param_name], (float, int))
 
 
+def test_decoder_param_grid_sequence(binary_classification_data):
+    X, y, _ = binary_classification_data
+    n_cv_folds = 10
+    param_grid = [
+        {
+            "penalty": ["l2"],
+            "C": [100, 1000],
+            "random_state": [42],  # fix the seed for consistent behaviour
+        },
+        {
+            "penalty": ["l1"],
+            "dual": [False],  # "dual" is not in the first dict
+            "C": [100, 10],
+            "random_state": [42],  # fix the seed for consistent behaviour
+        },
+    ]
+
+    model = Decoder(param_grid=param_grid, cv=n_cv_folds)
+    model.fit(X, y)
+
+    for best_params in model.cv_params_.values():
+        for param_list in best_params.values():
+            assert len(param_list) == n_cv_folds
+
+
 def test_decoder_binary_classification_with_masker_object(
     binary_classification_data,
 ):
