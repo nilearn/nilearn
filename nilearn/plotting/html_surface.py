@@ -145,49 +145,48 @@ def one_mesh_info_niivue(surf_map, surf_mesh, threshold=None, bg_map=None):
     info = {}
 
     # Create temporary directory
-    output_path = Path(tempfile.mkdtemp())
-
-    # Handle mesh
-    surf_mesh_path = output_path / "surf_mesh.gii"
-    surf_mesh_gifti = nib.gifti.GiftiImage()
-    surf_mesh_gifti.add_gifti_data_array(
-        nib.gifti.GiftiDataArray(surf_mesh[0], "NIFTI_INTENT_POINTSET")
-    )
-    surf_mesh_gifti.add_gifti_data_array(
-        nib.gifti.GiftiDataArray(surf_mesh[1], "NIFTI_INTENT_TRIANGLE")
-    )
-    nib.save(surf_mesh_gifti, surf_mesh_path)
-    info["surf_mesh"] = base64.b64encode(
-        surf_mesh_path.read_bytes()
-    ).decode("UTF-8")
-
-    # Handle surface data
-    surf_map_path = output_path / "surf_map.gii"
-    surf_map_gifti = nib.gifti.gifti.GiftiImage()
-    surf_map_gifti.add_gifti_data_array(
-        nib.gifti.gifti.GiftiDataArray(
-            surf_map,
-            intent="NIFTI_INTENT_ZSCORE",
+    with Path(tempfile.mkdtemp()) as output_path:
+        # Handle mesh
+        surf_mesh_path = output_path / "surf_mesh.gii"
+        surf_mesh_gifti = nib.gifti.GiftiImage()
+        surf_mesh_gifti.add_gifti_data_array(
+            nib.gifti.GiftiDataArray(surf_mesh[0], "NIFTI_INTENT_POINTSET")
         )
-    )
-    nib.save(surf_map_gifti, surf_map_path)
-    info["surf_map"] = base64.b64encode(
-        surf_map_path.read_bytes()
-    ).decode("UTF-8")
-
-    info["threshold"] = threshold
-
-    # Handle background map
-    if bg_map is not None:
-        bg_map_path = output_path / "bg_map.gii"
-        bg_map_gifti = nib.gifti.GiftiImage()
-        bg_map_gifti.add_gifti_data_array(
-            nib.gifti.GiftiDataArray(bg_map, "NIFTI_INTENT_NONE")
+        surf_mesh_gifti.add_gifti_data_array(
+            nib.gifti.GiftiDataArray(surf_mesh[1], "NIFTI_INTENT_TRIANGLE")
         )
-        nib.save(bg_map_gifti, bg_map_path)
-        info["bg_map"] = base64.b64encode(
-            bg_map_path.read_bytes()
+        nib.save(surf_mesh_gifti, surf_mesh_path)
+        info["surf_mesh"] = base64.b64encode(
+            surf_mesh_path.read_bytes()
         ).decode("UTF-8")
+
+        # Handle surface data
+        surf_map_path = output_path / "surf_map.gii"
+        surf_map_gifti = nib.gifti.gifti.GiftiImage()
+        surf_map_gifti.add_gifti_data_array(
+            nib.gifti.gifti.GiftiDataArray(
+                surf_map,
+                intent="NIFTI_INTENT_ZSCORE",
+            )
+        )
+        nib.save(surf_map_gifti, surf_map_path)
+        info["surf_map"] = base64.b64encode(
+            surf_map_path.read_bytes()
+        ).decode("UTF-8")
+
+        info["threshold"] = threshold
+
+        # Handle background map
+        if bg_map is not None:
+            bg_map_path = output_path / "bg_map.gii"
+            bg_map_gifti = nib.gifti.GiftiImage()
+            bg_map_gifti.add_gifti_data_array(
+                nib.gifti.GiftiDataArray(bg_map, "NIFTI_INTENT_NONE")
+            )
+            nib.save(bg_map_gifti, bg_map_path)
+            info["bg_map"] = base64.b64encode(
+                bg_map_path.read_bytes()
+            ).decode("UTF-8")
 
     return info
 
