@@ -140,7 +140,14 @@ def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
     return info
 
 
-def one_mesh_info_niivue(surf_map, surf_mesh, threshold=None, bg_map=None):
+def one_mesh_info_niivue(
+    surf_map,
+    surf_mesh,
+    threshold=None,
+    bg_map=None,
+    cmap=None,
+    colorbar=None
+):
     """Build dict for plotting one surface map on a single mesh."""
     info = {}
 
@@ -173,6 +180,14 @@ def one_mesh_info_niivue(surf_map, surf_mesh, threshold=None, bg_map=None):
         info["surf_map"] = base64.b64encode(
             surf_map_path.read_bytes()
         ).decode("UTF-8")
+
+        if isinstance(cmap, str):
+            info["cmap"] = cmap
+        elif isinstance(cmap, mpl.colors.Colormap):
+            info["cmap"] = cmap.name
+
+        if isinstance(colorbar, bool):
+            info["colorbar"] = str(colorbar).lower()
 
         info["threshold"] = threshold
 
@@ -266,8 +281,10 @@ def _fill_html_template_niivue(info, embed_js=True):
         'surface_plot_template_niivue.html'
     ).safe_substitute({
         'INSERT_SURF_MAP_BASE64_HERE': info["surf_map"],
+        'INSERT_SURF_COLORMAP_HERE': info["cmap"],
         'INSERT_MESH_BASE64_HERE': info["surf_mesh"],
         'INSERT_BG_MAP_BASE64_HERE': info["bg_map"],
+        'INSERT_COLORBAR_HERE': info["colorbar"],
         'INSERT_THRESHOLD_HERE': json.dumps(info["threshold"]),
         'INSERT_PAGE_TITLE_HERE': info["title"] or "Surface plot"
     })
@@ -538,6 +555,8 @@ def view_surf(
             surf_map=surf_map,
             surf_mesh=surf_mesh,
             bg_map=bg_map,
+            cmap=cmap,
+            colorbar=colorbar,
             threshold=threshold,
         )
         info['title'] = title
