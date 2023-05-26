@@ -77,18 +77,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
     %(memory)s
     %(memory_level)s
     %(verbose0)s
-
-    keep_masked_maps : :obj:`bool`, optional
-        If True, masked atlas with invalid maps (maps with no brain coverage
-        after applying the mask) will be retained in the output, resulting
-        in corresponding time series containing zeros only. If False, the
-        invalid maps will be removed from the trimmed atlas, resulting in
-        no empty time series in the output.
-
-        .. deprecated:: 0.9.2
-            The 'True' option for ``keep_masked_maps`` is deprecated.
-            The default value will change to 'False' in 0.13,
-            and the ``keep_masked_maps`` parameter will be removed in 0.15.
+    %(keep_masked_maps)s
 
     reports : :obj:`bool`, optional
         If set to True, data is saved in order to produce a report.
