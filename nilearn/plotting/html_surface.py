@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
+from matplotlib._cm import datad
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils import fill_doc
 from nilearn import surface
@@ -140,6 +141,67 @@ def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
     return info
 
 
+def _matplotlib_cm_to_niivue_cm(cmap):
+    """Convert matplotlib colormap to niivue colormap.
+
+    Parameters
+    ----------
+    cmap_name : str
+        Name of the colormap to convert.
+
+    Returns
+    -------
+    cmap : dict of list
+        Converted colormap, with keys "R", "G", "B", "A", "I".
+    """
+    name = None
+    spec = None
+    reverse = False
+
+    if isinstance(cmap, str):
+        name = cmap
+        if name[-2:] == "_r":
+            name = name[:-2]
+            reverse = True
+
+        if name not in datad:
+            print("Colormap not available 0 " + name)
+            return None
+
+        spec = datad[cmap]
+    elif isinstance(cmap, mpl.colors.Colormap):
+        spec = cmap
+        name = cmap.name
+
+    if (type(spec) is not tuple):
+        print("Colormap not available 1 " + name)
+        print(spec)
+        return None
+
+    n_nodes = len(spec)
+
+    if (type(spec[0][1]) is tuple):
+        print("Colormap not available 2 " + name)
+        return None
+
+    print("Converting {} with {} nodes".format(name, n_nodes))
+
+    js = {"R": [], "G": [], "B": [], "A": [], "I": []}
+    for i in range(n_nodes):
+        js["R"].append(int(255 * spec[i][0]))
+        js["G"].append(int(255 * spec[i][1]))
+        js["B"].append(int(255 * spec[i][2]))
+        idx = int(i / (n_nodes - 1) * 255)
+        js["A"].append(int(0.3 * idx))
+        js["I"].append(idx)
+
+    if reverse:
+        for k in js:
+            js[k] = js[k][::-1]
+
+    return js
+
+
 def one_mesh_info_niivue(
     surf_map,
     surf_mesh,
@@ -181,10 +243,8 @@ def one_mesh_info_niivue(
             surf_map_path.read_bytes()
         ).decode("UTF-8")
 
-        if isinstance(cmap, str):
-            info["cmap"] = cmap
-        elif isinstance(cmap, mpl.colors.Colormap):
-            info["cmap"] = cmap.name
+        if isinstance(cmap, mpl.colors.Colormap) or isinstance(cmap, str):
+            info["cmap"] = _matplotlib_cm_to_niivue_cm(cmap)
 
         if isinstance(colorbar, bool):
             info["colorbar"] = str(colorbar).lower()
