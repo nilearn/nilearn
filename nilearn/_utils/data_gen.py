@@ -1399,8 +1399,9 @@ def _write_bids_derivative_func(
     shape = [n_voxels, n_voxels, n_voxels, n_time_points]
 
     entities_to_include = [
-                *_bids_entities()["raw"], *_bids_entities()["derivatives"]
-            ]
+        *_bids_entities()["raw"],
+        *_bids_entities()["derivatives"]
+    ]
 
     for space in ("MNI", "T1w"):
         for desc in ("preproc", "fmriprep"):
@@ -1415,5 +1416,3 @@ def _write_bids_derivative_func(
                 fields=fields, entities_to_include=entities_to_include
             )
             write_fake_bold_img(bold_path, shape=shape, random_state=rand_gen)
-
-
