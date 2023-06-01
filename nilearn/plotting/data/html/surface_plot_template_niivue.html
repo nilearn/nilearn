@@ -28,7 +28,6 @@
           useNegativeCmap: true,
           opacity: 0.7,
           cal_min: $INSERT_THRESHOLD_HERE,
-          colormap: $INSERT_SURF_COLORMAP_HERE,
           base64: "$INSERT_SURF_MAP_BASE64_HERE",
       },
     ];
@@ -45,6 +44,12 @@
     // Hide background map colorbar
     nv.meshes[0].layers[0].colorbarVisible = false;
     nv.opts.isColorbar = $INSERT_COLORBAR_HERE;
+
+    // Customize colormap
+    let cmap = $INSERT_SURF_COLORMAP_HERE;
+    let key = "Custom";
+    await nv.addColormap(key, cmap);
+    nv.meshes[0].layers[1].colormap = key;
 
     // Refresh scene to take colorbar changes into account
     nv.updateGLVolume();
