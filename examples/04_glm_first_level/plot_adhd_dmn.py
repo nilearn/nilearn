@@ -66,9 +66,7 @@ import matplotlib.pyplot as plt
 
 fig = plt.figure(figsize=(15, 5))
 ax = fig.add_subplot(111)
-ax.plot(
-    frametimes, seed_time_series, linewidth=2, label="seed region"
-)
+ax.plot(frametimes, seed_time_series, linewidth=2, label="seed region")
 ax.legend(loc=2)
 ax.set_title("Time course of the seed region")
 plt.show()
