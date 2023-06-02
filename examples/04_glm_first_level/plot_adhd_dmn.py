@@ -64,7 +64,7 @@ frametimes = np.linspace(0, (n_scans - 1) * t_r, n_scans)
 # Plot the time course of the seed region.
 import matplotlib.pyplot as plt
 
-fig = plt.figure(figsize=(15, 5))
+fig = plt.figure(figsize=(9, 3))
 ax = fig.add_subplot(111)
 ax.plot(frametimes, seed_time_series, linewidth=2, label="seed region")
 ax.legend(loc=2)
