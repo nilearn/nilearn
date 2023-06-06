@@ -229,7 +229,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         from nilearn.reporting.html_report import generate_report
 
         if (
-            displayed_maps != "all"
+            (isinstance(displayed_maps, str) and displayed_maps != "all")
             and not isinstance(displayed_maps, (list, np.ndarray, int))
         ):
             raise TypeError(
