@@ -1016,7 +1016,7 @@ def plot_glass_brain(stat_map_img,
         absolute value will be used (rendering positive and negative
         values in the same manner). If set to false the sign of the
         maximum intensity will be represented with different colors.
-         See
+        See
         :ref:`sphx_glr_auto_examples_01_plotting_plot_demo_glass_brain_extensive.py` # noqa
         for examples. Default=True.
     %(symmetric_cbar)s
