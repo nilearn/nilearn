@@ -19,3 +19,4 @@ Enhancements
 Changes
 -------
 
+- Removed old files and test code from deprecated datasets COBRE and NYU resting state (:gh:`3743` by `Michelle Wang`_).
