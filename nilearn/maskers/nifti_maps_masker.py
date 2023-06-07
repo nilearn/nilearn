@@ -230,6 +230,10 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
 
         if (
             (isinstance(displayed_maps, str) and displayed_maps != "all")
+            or (
+                not isinstance(displayed_maps, str)
+                and np.all(displayed_maps != "all")
+            )
             and not isinstance(displayed_maps, (list, np.ndarray, int))
         ):
             raise TypeError(
