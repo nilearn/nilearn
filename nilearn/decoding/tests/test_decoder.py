@@ -41,7 +41,11 @@ from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.exceptions import NotFittedError
-from sklearn.linear_model import LogisticRegression, RidgeClassifierCV, RidgeCV
+from sklearn.linear_model import (
+    LogisticRegressionCV,
+    RidgeClassifierCV,
+    RidgeCV,
+)
 from sklearn.metrics import (
     accuracy_score,
     check_scoring,
@@ -153,8 +157,8 @@ def test_check_param_grid_regression(regressor, param):
 @pytest.mark.parametrize(
     "classifier, param",
     [
-        (LogisticRegression(penalty="l1"), "C"),
-        (LogisticRegression(penalty="l2"), "C"),
+        (LogisticRegressionCV(penalty="l1"), ["Cs"]),
+        (LogisticRegressionCV(penalty="l2"), ["Cs"]),
         (RidgeClassifierCV(), ["alphas"]),
     ],
 )
@@ -168,6 +172,30 @@ def test_check_param_grid_classification(rand_X_Y, classifier, param):
     param_grid = _check_param_grid(classifier, X, Y, None)
 
     assert list(param_grid.keys()) == list(param)
+
+
+@pytest.mark.parametrize(
+    "param_grid_input",
+    [
+        {"C": [1, 10, 100]},
+        {"Cs": [1, 10, 100]},
+        [{"C": [1, 10, 100]}, {"fit_intercept": [False]}],
+    ],
+)
+def test_check_param_grid_replacement(rand_X_Y, param_grid_input):
+    X, Y = rand_X_Y
+    param_to_replace = "C"
+    param_replaced = "Cs"
+    param_grid_output = _check_param_grid(
+        LogisticRegressionCV(),
+        X,
+        Y,
+        param_grid_input,
+    )
+    for params in ParameterGrid(param_grid_output):
+        assert param_to_replace not in params
+        if param_replaced not in params:
+            assert params in ParameterGrid(param_grid_input)
 
 
 @pytest.mark.parametrize("estimator", ["log_l1", RandomForestClassifier()])
@@ -383,6 +411,7 @@ def test_parallel_fit(rand_X_Y):
     [
         (RidgeCV(), "alphas", "best_alpha", False),
         (RidgeClassifierCV(), "alphas", "best_alpha", True),
+        (LogisticRegressionCV(), "Cs", "best_C", True),
     ],
 )
 def test_parallel_fit_builtin_cv(
@@ -438,7 +467,7 @@ def test_parallel_fit_builtin_cv(
         clustering_percentile=100,
     )
 
-    assert isinstance(best_param[fitted_param_name], (float, int))
+    assert isinstance(best_param[fitted_param_name], numbers.Number)
 
 
 def test_decoder_param_grid_sequence(binary_classification_data):
