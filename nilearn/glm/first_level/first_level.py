@@ -248,7 +248,6 @@ def _check_trial_type(events):
         ' If there is a column in the dataframe corresponding to trial information,'
         ' consider renaming it to "trial_type".')
 
-    return
   
   
 
