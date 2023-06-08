@@ -228,14 +228,16 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         """
         from nilearn.reporting.html_report import generate_report
 
-        if (
-            (isinstance(displayed_maps, str) and displayed_maps != "all")
-            or (
-                not isinstance(displayed_maps, str)
-                and np.all(displayed_maps != "all")
-            )
-            and not isinstance(displayed_maps, (list, np.ndarray, int))
-        ):
+        incorrect_type = not isinstance(
+            displayed_maps, (list, np.ndarray, int)
+        )
+        incorrect_string = (
+            isinstance(displayed_maps, str) and displayed_maps != "all"
+        )
+        incorrect_sequence = (
+                not incorrect_type and np.all(displayed_maps != "all")
+        )
+        if incorrect_type and incorrect_string or incorrect_sequence:
             raise TypeError(
                 "Parameter ``displayed_maps`` of "
                 "``generate_report()`` should be either 'all' or "
