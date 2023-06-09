@@ -243,7 +243,7 @@ def one_mesh_info_niivue(
             surf_map_path.read_bytes()
         ).decode("UTF-8")
 
-        if isinstance(cmap, mpl.colors.Colormap) or isinstance(cmap, str):
+        if isinstance(cmap, (mpl.colors.Colormap, str)):
             info["cmap"] = _matplotlib_cm_to_niivue_cm(cmap)
 
         if isinstance(colorbar, bool):
