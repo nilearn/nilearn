@@ -165,7 +165,7 @@ def _matplotlib_cm_to_niivue_cm(cmap):
             reverse = True
 
         if name not in datad:
-            print("Colormap not available 0 " + name)
+            print(f"Colormap not available 0 {name}")
             return None
 
         spec = datad[cmap]
