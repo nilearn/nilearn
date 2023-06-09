@@ -174,7 +174,7 @@ def _matplotlib_cm_to_niivue_cm(cmap):
         name = cmap.name
 
     if (type(spec) is not tuple):
-        print("Colormap not available 1 " + name)
+        print(f"Colormap not available 1 {name}")
         print(spec)
         return None
 
