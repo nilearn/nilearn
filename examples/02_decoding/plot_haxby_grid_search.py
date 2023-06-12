@@ -12,7 +12,7 @@ and choosing the parameter k to maximize the cross-validation score,
 might not maximize the score on left-out data.
 
 Thus using data to maximize a cross-validation score computed on that
-same data is likely to optimistic and lead to an overfit.
+same data is likely to be too optimistic and lead to an overfit.
 
 The proper approach is known as a "nested cross-validation". It consists
 in doing cross-validation loops to set the model parameters inside the
@@ -20,8 +20,8 @@ cross-validation loop used to judge the prediction performance: the
 parameters are set separately on each fold, never using the data used to
 measure performance.
 
-For decoding task, in nilearn, this can be done using the
-:class:`nilearn.decoding.Decoder` object, that will automatically select
+For decoding tasks, in nilearn, this can be done using the
+:class:`nilearn.decoding.Decoder` object, which will automatically select
 the best parameters of an estimator from a grid of parameter values.
 
 One difficulty is that the Decoder object is a composite estimator: a
@@ -74,6 +74,22 @@ session = labels["chunks"][condition_mask]
 # on nested cross-validation.
 from nilearn.decoding import Decoder
 
+# We provide a grid of hyperparameter values to the Decoder's internal
+# cross-validation. If no param_grid is provided, the Decoder will use a
+# default grid with sensible values for the chosen estimator
+param_grid = [
+    {
+        "penalty": ["l2"],
+        "dual": [True],
+        "C": [100, 1000],
+    },
+    {
+        "penalty": ["l1"],
+        "dual": [False],
+        "C": [100, 1000],
+    },
+]
+
 # Here screening_percentile is set to 2 percent, meaning around 800
 # features will be selected with ANOVA.
 decoder = Decoder(
@@ -81,8 +97,9 @@ decoder = Decoder(
     cv=5,
     mask=mask_img,
     smoothing_fwhm=4,
-    standardize=True,
+    standardize="zscore_sample",
     screening_percentile=2,
+    param_grid=param_grid,
 )
 
 ###########################################################################
@@ -93,16 +110,24 @@ decoder = Decoder(
 # best parameters selected for each cross-validation fold. See
 # https://scikit-learn.org/stable/modules/cross_validation.html for an
 # excellent explanation of how cross-validation works.
-#
-# First we fit the Decoder
+
+# Fit the Decoder
 decoder.fit(fmri_niimgs, y)
-for i, (param, cv_score) in enumerate(
-    zip(decoder.cv_params_["shoe"]["C"], decoder.cv_scores_["shoe"])
+
+# Print the best parameters for each fold
+for i, (best_C, best_penalty, best_dual, cv_score) in enumerate(
+    zip(
+        decoder.cv_params_["shoe"]["C"],
+        decoder.cv_params_["shoe"]["penalty"],
+        decoder.cv_params_["shoe"]["dual"],
+        decoder.cv_scores_["shoe"],
+    )
 ):
     print(
-        "Fold %d | Best SVM parameter: %.1f with score: %.3f"
-        % (i + 1, param, cv_score)
+        f"Fold {i+1} | Best SVM parameters: C={best_C}"
+        f", penalty={best_penalty}, dual={best_dual} with score: {cv_score}"
     )
+
 # Output the prediction with Decoder
 y_pred = decoder.predict(fmri_niimgs)
 
@@ -121,8 +146,9 @@ for sp in screening_percentile_range:
         mask=mask_img,
         smoothing_fwhm=4,
         cv=3,
-        standardize=True,
+        standardize="zscore_sample",
         screening_percentile=sp,
+        param_grid=param_grid,
     )
     decoder.fit(index_img(fmri_niimgs, session < 10), y[session < 10])
     cv_scores.append(np.mean(decoder.cv_scores_["bottle"]))
@@ -154,8 +180,9 @@ for train, test in cv.split(session):
             mask=mask_img,
             smoothing_fwhm=4,
             cv=3,
-            standardize=True,
+            standardize="zscore_sample",
             screening_percentile=sp,
+            param_grid=param_grid,
         )
         decoder.fit(index_img(fmri_niimgs, train), y_train)
         y_pred = decoder.predict(index_img(fmri_niimgs, test))

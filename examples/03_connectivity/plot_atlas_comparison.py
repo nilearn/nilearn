@@ -71,7 +71,7 @@ from nilearn import plotting
 # computation
 masker = MultiNiftiLabelsMasker(
     labels_img=yeo["thick_17"],
-    standardize=True,
+    standardize="zscore_sample",
     memory="nilearn_cache",
     n_jobs=2,
 )
@@ -154,7 +154,10 @@ from nilearn.maskers import MultiNiftiMapsMasker
 # atlas parcels from multiple subjects using parallelization to speed up the
 # # computation
 masker = MultiNiftiMapsMasker(
-    maps_img=difumo.maps, standardize=True, memory="nilearn_cache", n_jobs=2
+    maps_img=difumo.maps,
+    standardize="zscore_sample",
+    memory="nilearn_cache",
+    n_jobs=2,
 )
 
 # extract time series from all subjects

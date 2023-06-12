@@ -1,16 +1,12 @@
-"""
-Test the _utils.cache_mixin module
-"""
+"""Test the _utils.cache_mixin module."""
 import os
 import shutil
 from pathlib import Path
 
-import pytest
-
-from joblib import Memory
-
 import nilearn
-from nilearn._utils import cache_mixin, CacheMixin
+import pytest
+from joblib import Memory
+from nilearn._utils import CacheMixin, cache_mixin
 
 
 def _get_subdirs(top_dir):
@@ -78,8 +74,8 @@ def test_cache_mixin_without_expand_user():
         assert not os.path.exists(expand_cache_dir)
         nilearn.EXPAND_PATH_WILDCARDS = False
         with pytest.raises(
-                ValueError,
-                match="Given cache path parent directory doesn't"):
+            ValueError, match="Given cache path parent directory doesn't"
+        ):
             mixin_mock.run()
         assert not os.path.exists(expand_cache_dir)
         nilearn.EXPAND_PATH_WILDCARDS = True
@@ -92,15 +88,14 @@ def test_cache_mixin_wrong_dirs():
     # Test the memory cache raises a ValueError when input base path doesn't
     # exist.
 
-    for cache_dir in ("/bad_dir/cache",
-                      "~/nilearn_data/tmp/test_cache"):
+    for cache_dir in ("/bad_dir/cache", "~/nilearn_data/tmp/test_cache"):
         expand_cache_dir = os.path.expanduser(cache_dir)
         mixin_mock = CacheMixinTest(cache_dir)
 
         try:
             with pytest.raises(
-                    ValueError,
-                    match="Given cache path parent directory doesn't"):
+                ValueError, match="Given cache path parent directory doesn't"
+            ):
                 mixin_mock.run()
             assert not os.path.exists(expand_cache_dir)
         finally:
@@ -109,12 +104,19 @@ def test_cache_mixin_wrong_dirs():
 
 
 def test_cache_memory_level(tmp_path):
+    joblib_dir = (
+        tmp_path
+        / "joblib"
+        / "nilearn"
+        / "_utils"
+        / "tests"
+        / "test_cache_mixin"
+        / "f"
+    )
 
-    joblib_dir = tmp_path / 'joblib' / 'test_cache_mixin' / 'f'
-    
     cache_mixin.cache(f, Memory(location=None))(2)
     assert len(_get_subdirs(joblib_dir)) == 0
-    
+
     mem = Memory(location=str(tmp_path), verbose=0)
 
     cache_mixin.cache(f, mem, func_memory_level=2, memory_level=1)(2)
@@ -128,11 +130,19 @@ def test_cache_memory_level(tmp_path):
 
 
 def test_cache_shelving(tmp_path):
-    joblib_dir = tmp_path / 'joblib' / 'test_cache_mixin' / 'f'
+    joblib_dir = (
+        tmp_path
+        / "joblib"
+        / "nilearn"
+        / "_utils"
+        / "tests"
+        / "test_cache_mixin"
+        / "f"
+    )
     mem = Memory(location=str(tmp_path), verbose=0)
     res = cache_mixin.cache(f, mem, shelve=True)(2)
     assert res.get() == 2
     assert len(_get_subdirs(joblib_dir)) == 1
     res = cache_mixin.cache(f, mem, shelve=True)(2)
     assert res.get() == 2
-    assert len(_get_subdirs(joblib_dir)) == 1    
+    assert len(_get_subdirs(joblib_dir)) == 1

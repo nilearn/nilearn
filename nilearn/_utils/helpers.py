@@ -1,14 +1,15 @@
 import functools
-import warnings
+import operator
 import os
+import warnings
 
 
 def rename_parameters(replacement_params,
                       end_version='future',
                       lib_name='Nilearn',
                       ):
-    """Decorator to deprecate & replace specified parameters
-    in the decorated functions and methods without changing
+    """Use this decorator to deprecate & replace specified parameters \
+    in the decorated functions and methods without changing \
     function definition or signature.
 
     Parameters
@@ -45,8 +46,8 @@ def rename_parameters(replacement_params,
 
 
 def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
-    """For the decorator replace_parameters(), raises warnings about
-    deprecated parameters.
+    """Raise warnings about deprecated parameters, \
+    for the decorator replace_parameters().
 
     Parameters
     ----------
@@ -82,8 +83,9 @@ def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
 
 
 def _transfer_deprecated_param_vals(replacement_params, kwargs):
-    """For the decorator replace_parameters(), reassigns new parameters
-    the values passed to their corresponding deprecated parameters.
+    """Reassigns new parameters \
+    the values passed to their corresponding deprecated parameters \
+    for the decorator replace_parameters().
 
     Parameters
     ----------
@@ -113,8 +115,8 @@ def _transfer_deprecated_param_vals(replacement_params, kwargs):
 def remove_parameters(removed_params,
                       reason,
                       end_version='future'):
-    """Decorator to deprecate but not renamed parameters in the decorated
-    functions and methods.
+    """Use this decorator to deprecate \
+    but not renamed parameters in the decorated functions and methods.
 
     Parameters
     ----------
@@ -149,7 +151,7 @@ def remove_parameters(removed_params,
 
 
 def stringify_path(path):
-    """Converts path-like objects to string.
+    """Convert path-like objects to string.
 
     This is used to allow functions expecting string filesystem paths to accept
     objects using `__fspath__` protocol.
@@ -164,3 +166,45 @@ def stringify_path(path):
 
     """
     return path.__fspath__() if isinstance(path, os.PathLike) else path
+
+
+VERSION_OPERATORS = {
+    "==": operator.eq,
+    "!=": operator.ne,
+    ">": operator.gt,
+    ">=": operator.ge,
+    "<": operator.lt,
+    "<=": operator.le,
+}
+
+
+def _compare_version(version_a, operator, version_b):
+    """Compare two version strings via a user-specified operator.
+
+    Note: This function is inspired from MNE-Python.
+    See https://github.com/mne-tools/mne-python/blob/main/mne/fixes.py
+
+    Parameters
+    ----------
+    version_a : :obj:`str`
+        First version string.
+
+    operator : {'==', '!=','>', '<', '>=', '<='}
+        Operator to compare ``version_a`` and ``version_b`` in the form of
+        ``version_a operator version_b``.
+
+    version_b : :obj:`str`
+        Second version string.
+
+    Returns
+    -------
+    result : :obj:`bool`
+        The result of the version comparison.
+
+    """
+    from packaging.version import parse
+
+    if operator not in VERSION_OPERATORS:
+        error_msg = "'_compare_version' received an unexpected operator "
+        raise ValueError(error_msg + operator + ".")
+    return VERSION_OPERATORS[operator](parse(version_a), parse(version_b))

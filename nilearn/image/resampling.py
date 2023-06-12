@@ -10,7 +10,7 @@ import warnings
 
 import numpy as np
 import scipy
-from nilearn.version import _compare_version
+from nilearn._utils import _compare_version
 from scipy import linalg
 from scipy.ndimage import affine_transform, find_objects
 
@@ -686,8 +686,8 @@ def resample_img(
         # preventing ringing artefact
         # We need to add zero as a value considered for clipping, as it
         # appears in padding images.
-        vmin = min(data.min(), 0)
-        vmax = max(data.max(), 0)
+        vmin = min(np.nanmin(data), 0)
+        vmax = max(np.nanmax(data), 0)
         resampled_data.clip(vmin, vmax, out=resampled_data)
 
     return new_img_like(img, resampled_data, target_affine)

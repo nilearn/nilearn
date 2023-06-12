@@ -83,7 +83,7 @@ def _load_scrub(confounds_raw, scrub, fd_threshold, std_dvars_threshold):
         np.transpose(np.eye(n_scans)[motion_outliers_index]).astype(int)
     )
     column_names = [
-        "motion_outlier_" + str(num)
+        f"motion_outlier_{num}"
         for num in range(np.shape(motion_outlier_regressors)[1])
     ]
     motion_outlier_regressors.columns = column_names

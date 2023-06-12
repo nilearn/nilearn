@@ -1,13 +1,9 @@
-"""
-Data generation utilities
-"""
+"""Data generation utilities."""
 from __future__ import annotations
 
 import itertools
-
 import json
 import string
-
 from pathlib import Path
 
 import numpy as np
@@ -15,12 +11,11 @@ import pandas as pd
 import scipy.linalg
 import scipy.signal
 from nibabel import Nifti1Image
-from scipy.ndimage import binary_dilation
-from sklearn.utils import check_random_state
-
 from nilearn import datasets, image, maskers, masking
 from nilearn._utils import as_ndarray, logger
 from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
+from scipy.ndimage import binary_dilation
+from sklearn.utils import check_random_state
 
 
 def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
@@ -405,8 +400,8 @@ def generate_fake_fmri_data_and_design(shapes,
                                        rk=3,
                                        affine=np.eye(4),
                                        random_state=0):
-    """Generate random :term:`fMRI` time series and design matrices of given
-    shapes.
+    """Generate random :term:`fMRI` time series \
+    and design matrices of given shapes.
 
     Parameters
     ----------
@@ -459,8 +454,8 @@ def write_fake_fmri_data_and_design(shapes,
                                     rk=3,
                                     affine=np.eye(4),
                                     random_state=0):
-    """Generate random :term:`fMRI` data and design matrices and write them to
-    disk.
+    """Generate random :term:`fMRI` data \
+    and design matrices and write them to disk.
 
     Parameters
     ----------
@@ -722,8 +717,8 @@ def basic_paradigm(condition_names_have_spaces=False):
 
 
 def basic_confounds(length, random_state=0):
-    """Generate random motion parameters (3 translation directions, 3 rotation
-    directions).
+    """Generate random motion parameters \
+    (3 translation directions, 3 rotation directions).
 
     Parameters
     ----------
@@ -755,7 +750,7 @@ def _add_metadata_to_bids_dataset(bids_path,
                                   json_file=None):
     """Add JSON file with specific metadata to BIDS dataset.
 
-    Note no "BIDS validation" are performed on the metadata, 
+    Note no "BIDS validation" are performed on the metadata,
     or on the file path.
 
     Parameters
@@ -768,23 +763,23 @@ def _add_metadata_to_bids_dataset(bids_path,
 
     json_file :  :obj:`str` or :obj:`pathlib.Path`, default=None
         Path to the json file relative to the root of the BIDS dataset.
-        If no json_file is specified, a default path is used 
-        that is meant to work well with the defaults of 
-        `create_fake_bids_dataset`: 
+        If no json_file is specified, a default path is used
+        that is meant to work well with the defaults of
+        `create_fake_bids_dataset`:
         this is meant to facilitate modifying datasets used during tests.
 
     Returns
     -------
     pathlib.Path
         Full path to the json file created.
-    """    
+    """
     if json_file is None:
         json_file = (
-            Path(bids_path) / 
-            'derivatives' / 
-            'sub-01' / 
-            'ses-01' / 
-            'func' / 
+            Path(bids_path) /
+            'derivatives' /
+            'sub-01' /
+            'ses-01' /
+            'func' /
             'sub-01_ses-01_task-main_run-01_space-MNI_desc-preproc_bold.json'
         )
     else:
@@ -836,16 +831,16 @@ def generate_random_img(
 
 
 def create_fake_bids_dataset(
-    base_dir = Path(),
-    n_sub = 10,
-    n_ses = 2,
-    tasks = ["localizer", "main"],
-    n_runs = [1, 3],
-    with_derivatives = True,
-    with_confounds = True,
-    confounds_tag = "desc-confounds_timeseries",
+    base_dir=Path(),
+    n_sub=10,
+    n_ses=2,
+    tasks=["localizer", "main"],
+    n_runs=[1, 3],
+    with_derivatives=True,
+    with_confounds=True,
+    confounds_tag="desc-confounds_timeseries",
     random_state=0,
-    entities = None,
+    entities=None,
 ):
     """Create a fake :term:`bids<BIDS>` dataset directory with dummy files.
 
@@ -925,11 +920,10 @@ def create_fake_bids_dataset(
     for task_ in tasks:
         _check_bids_label(task_)
 
-    if (not isinstance(n_runs, list) 
-        or not all(isinstance(x, int) for x in n_runs)):
-        raise TypeError(
-            "n_runs must be a list of integers."
-        )
+    if not isinstance(n_runs, list) or not all(
+        isinstance(x, int) for x in n_runs
+    ):
+        raise TypeError("n_runs must be a list of integers.")
 
     if len(tasks) != len(n_runs):
         raise ValueError(
@@ -973,7 +967,7 @@ def create_fake_bids_dataset(
 
 def _check_entities_and_labels(entities):
     """Check entities and labels are BIDS compliant.
-    
+
     Parameters
     ----------
     entities : :obj:`dict`, optional
@@ -989,10 +983,13 @@ def _check_entities_and_labels(entities):
         raise ValueError("Only a single extra entity is supported for now.")
 
     for key in entities:
-        if key not in [*_bids_entities()["raw"], *_bids_entities()["derivatives"]]:
+        if key not in [*_bids_entities()["raw"],
+                       *_bids_entities()["derivatives"]]:
+            allowed_entities = [*_bids_entities()['raw'],
+                                *_bids_entities()['derivatives']]
             raise ValueError(
                 f"Invalid entity: {key}. Allowed entities are: "
-                f"{[*_bids_entities()['raw'], *_bids_entities()['derivatives']]}"
+                f"{allowed_entities}"
             )
         [_check_bids_label(label_) for label_ in entities[key]]
 
@@ -1203,7 +1200,7 @@ def _listify(n):
 
 
 def _create_bids_filename(
-    fields, entities_to_include = None
+    fields, entities_to_include=None
 ):
     """Create BIDS filename from dictionary of entity-label pairs.
 

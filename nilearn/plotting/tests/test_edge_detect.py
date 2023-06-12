@@ -1,5 +1,4 @@
 import numpy as np
-
 from nilearn.plotting.edge_detect import _edge_detect
 
 

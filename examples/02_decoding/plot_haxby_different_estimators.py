@@ -88,7 +88,10 @@ for classifier_name in sorted(classifiers):
 
     # The decoder has as default score the `roc_auc`
     decoder = Decoder(
-        estimator=classifier_name, mask=mask_filename, standardize=True, cv=cv
+        estimator=classifier_name,
+        mask=mask_filename,
+        standardize="zscore_sample",
+        cv=cv,
     )
     t0 = time.time()
     decoder.fit(fmri_niimgs, classification_target, groups=session_labels)
@@ -165,7 +168,10 @@ assert len(categories) == 2
 
 for classifier_name in sorted(classifiers):
     decoder = Decoder(
-        estimator=classifier_name, mask=mask_filename, standardize=True, cv=cv
+        estimator=classifier_name,
+        mask=mask_filename,
+        standardize="zscore_sample",
+        cv=cv,
     )
     decoder.fit(fmri_niimgs_condition, stimuli, groups=session_labels)
     classifiers_data[classifier_name] = {}

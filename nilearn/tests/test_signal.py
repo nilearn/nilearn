@@ -6,7 +6,6 @@ Test the signals module
 
 import os.path
 import warnings
-from nilearn.version import _compare_version
 
 import numpy as np
 import pytest

@@ -1,23 +1,21 @@
-"""
-Downloading NeuroImaging datasets: utility functions
-"""
-import os
-import numpy as np
+"""Downloading NeuroImaging datasets: utility functions."""
+
 import collections.abc
 import contextlib
 import fnmatch
 import hashlib
-from pathlib import Path
+import os
 import pickle
 import shutil
-import time
 import sys
 import tarfile
+import time
 import urllib
 import warnings
 import zipfile
-import json
+from pathlib import Path
 
+import numpy as np
 import requests
 
 from .._utils import fill_doc
@@ -26,22 +24,21 @@ _REQUESTS_TIMEOUT = (15.1, 61)
 
 
 def md5_hash(string):
+    """Calculate the MD5 hash of a string."""
     m = hashlib.md5()
-    m.update(string.encode('utf-8'))
+    m.update(string.encode("utf-8"))
     return m.hexdigest()
 
 
 def _format_time(t):
     if t > 60:
-        return "%4.1fmin" % (t / 60.)
-    else:
-        return " %5.1fs" % (t)
+        return f"{t / 60.0:4.1f}min"
+    return f" {t:5.1f}s"
 
 
 def _md5_sum_file(path):
-    """ Calculates the MD5 sum of a file.
-    """
-    with open(path, 'rb') as f:
+    """Calculate the MD5 sum of a file."""
+    with open(path, "rb") as f:
         m = hashlib.md5()
         while True:
             data = f.read(8192)
@@ -52,24 +49,20 @@ def _md5_sum_file(path):
 
 
 def _read_md5_sum_file(path):
-    """ Reads a MD5 checksum file and returns hashes as a dictionary.
-    """
-    with open(path, "r") as f:
+    """Read a MD5 checksum file and returns hashes as a dictionary."""
+    with open(path) as f:
         hashes = {}
         while True:
             line = f.readline()
             if not line:
                 break
-            h, name = line.rstrip().split('  ', 1)
+            h, name = line.rstrip().split("  ", 1)
             hashes[name] = h
     return hashes
 
 
 def readlinkabs(link):
-    """
-    Return an absolute path for the destination
-    of a symlink
-    """
+    """Return an absolute path for the destination of a symlink."""
     path = os.readlink(link)
     if os.path.isabs(path):
         return path
@@ -114,14 +107,26 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
         # varies
         sys.stderr.write(
             "\rDownloaded %d of %d bytes (%.1f%%, %s remaining)"
-            % (bytes_so_far, total_size, total_percent * 100,
-               _format_time(time_remaining)))
+            % (
+                bytes_so_far,
+                total_size,
+                total_percent * 100,
+                _format_time(time_remaining),
+            )
+        )
 
 
 @fill_doc
-def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
-                 initial_size=0, total_size=None, verbose=1):
-    """Download a file chunk by chunk and show advancement
+def _chunk_read_(
+    response,
+    local_file,
+    chunk_size=8192,
+    report_hook=None,
+    initial_size=0,
+    total_size=None,
+    verbose=1,
+):
+    """Download a file chunk by chunk and show advancement.
 
     Parameters
     ----------
@@ -153,13 +158,13 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     """
     try:
         if total_size is None:
-            total_size = response.headers.get('Content-Length').strip()
+            total_size = response.headers.get("Content-Length").strip()
         total_size = int(total_size) + initial_size
     except Exception as e:
         if verbose > 2:
             print("Warning: total size could not be determined.")
             if verbose > 3:
-                print("Full stack trace: %s" % e)
+                print(f"Full stack trace: {e}")
         total_size = None
     bytes_so_far = initial_size
 
@@ -167,12 +172,14 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
     for chunk in response.iter_content(chunk_size):
         bytes_so_far += len(chunk)
         time_last_read = time.time()
-        if (report_hook and
-                # Refresh report every second or when download is
-                # finished.
-                (time_last_read > time_last_display + 1. or not chunk)):
-            _chunk_report_(bytes_so_far,
-                           total_size, initial_size, t0)
+        if (
+            report_hook
+            and
+            # Refresh report every second or when download is
+            # finished.
+            (time_last_read > time_last_display + 1.0 or not chunk)
+        ):
+            _chunk_report_(bytes_so_far, total_size, initial_size, t0)
             time_last_display = time_last_read
         if chunk:
             local_file.write(chunk)
@@ -182,7 +189,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
 
 @fill_doc
 def get_data_dirs(data_dir=None):
-    """Returns the directories in which nilearn looks for data.
+    """Return the directories in which nilearn looks for data.
 
     This is typically useful for the end-user to check where the data is
     downloaded and stored.
@@ -219,22 +226,23 @@ def get_data_dirs(data_dir=None):
 
     # If data_dir has not been specified, then we crawl default locations
     if data_dir is None:
-        global_data = os.getenv('NILEARN_SHARED_DATA')
+        global_data = os.getenv("NILEARN_SHARED_DATA")
         if global_data is not None:
             paths.extend(global_data.split(os.pathsep))
 
-        local_data = os.getenv('NILEARN_DATA')
+        local_data = os.getenv("NILEARN_DATA")
         if local_data is not None:
             paths.extend(local_data.split(os.pathsep))
 
-        paths.append(os.path.expanduser('~/nilearn_data'))
+        paths.append(os.path.expanduser("~/nilearn_data"))
     return paths
 
 
 @fill_doc
-def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
-                     verbose=1):
-    """Creates if necessary and returns data directory of given dataset.
+def _get_dataset_dir(
+    dataset_name, data_dir=None, default_paths=None, verbose=1
+):
+    """Create if necessary and return data directory of given dataset.
 
     Parameters
     ----------
@@ -267,15 +275,14 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
     # Search possible data-specific system paths
     if default_paths is not None:
         for default_path in default_paths:
-            paths.extend([
-                (d, True)
-                for d in str(default_path).split(os.pathsep)]
+            paths.extend(
+                [(d, True) for d in str(default_path).split(os.pathsep)]
             )
 
     paths.extend([(d, False) for d in get_data_dirs(data_dir=data_dir)])
 
     if verbose > 2:
-        print('Dataset search paths: %s' % paths)
+        print(f"Dataset search paths: {paths}")
 
     # Check if the dataset exists somewhere
     for path, is_pre_dir in paths:
@@ -286,27 +293,28 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
             path = readlinkabs(path)
         if os.path.exists(path) and os.path.isdir(path):
             if verbose > 1:
-                print('\nDataset found in %s\n' % path)
+                print(f"\nDataset found in {path}\n")
             return path
 
     # If not, create a folder in the first writeable directory
     errors = []
-    for (path, is_pre_dir) in paths:
+    for path, is_pre_dir in paths:
         if not is_pre_dir:
             path = os.path.join(path, dataset_name)
         if not os.path.exists(path):
             try:
                 os.makedirs(path)
                 if verbose > 0:
-                    print('\nDataset created in %s\n' % path)
+                    print(f"\nDataset created in {path}\n")
                 return path
             except Exception as exc:
-                short_error_message = getattr(exc, 'strerror', str(exc))
-                errors.append('\n -{0} ({1})'.format(
-                    path, short_error_message))
+                short_error_message = getattr(exc, "strerror", str(exc))
+                errors.append(f"\n -{path} ({short_error_message})")
 
-    raise OSError('Nilearn tried to store the dataset in the following '
-                  'directories, but:' + ''.join(errors))
+    raise OSError(
+        "Nilearn tried to store the dataset in the following "
+        "directories, but:" + "".join(errors)
+    )
 
 
 # The functions _is_within_directory and _safe_extract were implemented in
@@ -350,7 +358,7 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
 
     """
     if verbose > 0:
-        sys.stderr.write('Extracting data from %s...' % file_)
+        sys.stderr.write(f"Extracting data from {file_}...")
     data_dir = os.path.dirname(file_)
     # We first try to see if it is a zip file
     try:
@@ -366,16 +374,17 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
                 os.remove(file_)
             file_ = filename
             processed = True
-        elif ext == '.gz' or header.startswith(b'\x1f\x8b'):
+        elif ext == ".gz" or header.startswith(b"\x1f\x8b"):
             import gzip
-            if ext == '.tgz':
-                filename = filename + '.tar'
-            elif ext == '':
+
+            if ext == ".tgz":
+                filename = filename + ".tar"
+            elif ext == "":
                 # We rely on the assumption that gzip files have an extension
-                shutil.move(file_, file_ + '.gz')
-                file_ = file_ + '.gz'
+                shutil.move(file_, file_ + ".gz")
+                file_ = file_ + ".gz"
             with gzip.open(file_) as gz:
-                with open(filename, 'wb') as out:
+                with open(filename, "wb") as out:
                     shutil.copyfileobj(gz, out, 8192)
             # If file is .tar.gz, this will be handled in the next case
             if delete_archive:
@@ -389,19 +398,18 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
                 os.remove(file_)
             processed = True
         if not processed:
-            raise IOError(
-                    "[Uncompress] unknown archive file format: %s" % file_)
+            raise OSError(f"[Uncompress] unknown archive file format: {file_}")
 
         if verbose > 0:
-            sys.stderr.write('.. done.\n')
+            sys.stderr.write(".. done.\n")
     except Exception as e:
         if verbose > 0:
-            print('Error uncompressing file: %s' % e)
+            print(f"Error uncompressing file: {e}")
         raise
 
 
 def _filter_column(array, col, criteria):
-    """Return index array matching criteria
+    """Return index array matching criteria.
 
     Parameters
     ----------
@@ -421,17 +429,20 @@ def _filter_column(array, col, criteria):
     # test it across all possible types (pandas, recarray...)
     try:
         array[col]
-    except:
-        raise KeyError('Filtering criterion %s does not exist' % col)
+    except Exception:
+        raise KeyError(f"Filtering criterion {col} does not exist")
 
-    if (not isinstance(criteria, str) and
-        not isinstance(criteria, bytes) and
-        not isinstance(criteria, tuple) and
-            isinstance(criteria, collections.abc.Iterable)):
+    if (
+        not isinstance(criteria, str)
+        and not isinstance(criteria, bytes)
+        and not isinstance(criteria, tuple)
+        and isinstance(criteria, collections.abc.Iterable)
+    ):
         filter = np.zeros(array.shape[0], dtype=bool)
         for criterion in criteria:
-            filter = np.logical_or(filter,
-                                   _filter_column(array, col, criterion))
+            filter = np.logical_or(
+                filter, _filter_column(array, col, criterion)
+            )
         return filter
 
     if isinstance(criteria, tuple):
@@ -451,7 +462,7 @@ def _filter_column(array, col, criteria):
     return array[col] == criteria
 
 
-def _filter_columns(array, filters, combination='and'):
+def _filter_columns(array, filters, combination="and"):
     """Return indices of recarray entries that match criteria.
 
     Parameters
@@ -467,14 +478,14 @@ def _filter_columns(array, filters, combination='and'):
         and "or". Default='and'.
 
     """
-    if combination == 'and':
+    if combination == "and":
         fcomb = np.logical_and
         mask = np.ones(array.shape[0], dtype=bool)
-    elif combination == 'or':
+    elif combination == "or":
         fcomb = np.logical_or
         mask = np.zeros(array.shape[0], dtype=bool)
     else:
-        raise ValueError('Combination mode not known: %s' % combination)
+        raise ValueError(f"Combination mode not known: {combination}")
 
     for column in filters:
         mask = fcomb(mask, _filter_column(array, column, filters[column]))
@@ -504,9 +515,17 @@ class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
 
 
 @fill_doc
-def _fetch_file(url, data_dir, resume=True, overwrite=False,
-                md5sum=None, username=None, password=None,
-                verbose=1, session=None):
+def _fetch_file(
+    url,
+    data_dir,
+    resume=True,
+    overwrite=False,
+    md5sum=None,
+    username=None,
+    password=None,
+    verbose=1,
+    session=None,
+):
     """Load requested file, downloading it if needed or requested.
 
     Parameters
@@ -544,9 +563,16 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         with requests.Session() as session:
             session.mount("ftp:", _NaiveFTPAdapter())
             return _fetch_file(
-                url, data_dir, resume=resume, overwrite=overwrite,
-                md5sum=md5sum, username=username, password=password,
-                verbose=verbose, session=session)
+                url,
+                data_dir,
+                resume=resume,
+                overwrite=overwrite,
+                md5sum=md5sum,
+                username=username,
+                password=password,
+                verbose=verbose,
+                session=session,
+            )
     # Determine data path
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
@@ -554,7 +580,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     # Determine filename using URL
     parse = urllib.parse.urlparse(url)
     file_name = os.path.basename(parse.path)
-    if file_name == '':
+    if file_name == "":
         file_name = md5_hash(parse.path)
 
     temp_file_name = file_name + ".part"
@@ -577,66 +603,92 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         headers = {}
         auth = None
         if username is not None and password is not None:
-            if not url.startswith('https'):
+            if not url.startswith("https"):
                 raise ValueError(
-                    'Authentication was requested on a non  secured URL (%s).'
-                    'Request has been blocked for security reasons.' % url)
+                    "Authentication was requested on a non  secured URL (%s)."
+                    "Request has been blocked for security reasons." % url
+                )
             auth = (username, password)
         if verbose > 0:
-            displayed_url = url.split('?')[0] if verbose == 1 else url
-            print('Downloading data from %s ...' % displayed_url)
+            displayed_url = url.split("?")[0] if verbose == 1 else url
+            print(f"Downloading data from {displayed_url} ...")
         if resume and os.path.exists(temp_full_name):
             # Download has been interrupted, we try to resume it.
             local_file_size = os.path.getsize(temp_full_name)
             # If the file exists, then only download the remainder
-            headers["Range"] = "bytes={}-".format(local_file_size)
+            headers["Range"] = f"bytes={local_file_size}-"
             try:
                 req = requests.Request(
-                    method="GET", url=url, headers=headers, auth=auth)
+                    method="GET", url=url, headers=headers, auth=auth
+                )
                 prepped = session.prepare_request(req)
-                with session.send(prepped, stream=True,
-                                  timeout=_REQUESTS_TIMEOUT) as resp:
+                with session.send(
+                    prepped, stream=True, timeout=_REQUESTS_TIMEOUT
+                ) as resp:
                     resp.raise_for_status()
-                    content_range = resp.headers.get('Content-Range')
-                    if (content_range is None or not content_range.startswith(
-                            'bytes {}-'.format(local_file_size))):
-                        raise IOError('Server does not support resuming')
+                    content_range = resp.headers.get("Content-Range")
+                    if content_range is None or not content_range.startswith(
+                        f"bytes {local_file_size}-"
+                    ):
+                        raise OSError("Server does not support resuming")
                     initial_size = local_file_size
                     with open(local_file, "ab") as fh:
                         _chunk_read_(
-                            resp, fh, report_hook=(verbose > 0),
-                            initial_size=initial_size, verbose=verbose)
+                            resp,
+                            fh,
+                            report_hook=(verbose > 0),
+                            initial_size=initial_size,
+                            verbose=verbose,
+                        )
             except Exception:
                 if verbose > 0:
-                    print('Resuming failed, try to download the whole file.')
+                    print("Resuming failed, try to download the whole file.")
                 return _fetch_file(
-                    url, data_dir, resume=False, overwrite=overwrite,
-                    md5sum=md5sum, username=username, password=password,
-                    verbose=verbose, session=session)
+                    url,
+                    data_dir,
+                    resume=False,
+                    overwrite=overwrite,
+                    md5sum=md5sum,
+                    username=username,
+                    password=password,
+                    verbose=verbose,
+                    session=session,
+                )
         else:
             req = requests.Request(
-                method="GET", url=url, headers=headers, auth=auth)
+                method="GET", url=url, headers=headers, auth=auth
+            )
             prepped = session.prepare_request(req)
             with session.send(
-                    prepped, stream=True, timeout=_REQUESTS_TIMEOUT) as resp:
+                prepped, stream=True, timeout=_REQUESTS_TIMEOUT
+            ) as resp:
                 resp.raise_for_status()
                 with open(temp_full_name, "wb") as fh:
-                    _chunk_read_(resp, fh, report_hook=(verbose > 0),
-                                 initial_size=initial_size, verbose=verbose)
+                    _chunk_read_(
+                        resp,
+                        fh,
+                        report_hook=(verbose > 0),
+                        initial_size=initial_size,
+                        verbose=verbose,
+                    )
         shutil.move(temp_full_name, full_name)
         dt = time.time() - t0
         if verbose > 0:
             # Complete the reporting hook
-            sys.stderr.write(' ...done. ({0:.0f} seconds, {1:.0f} min)\n'
-                             .format(dt, dt // 60))
-    except (requests.RequestException):
-        sys.stderr.write("Error while fetching file %s; dataset "
-                         "fetching aborted." % (file_name))
+            sys.stderr.write(
+                f" ...done. ({dt:.0f} seconds, {dt // 60:.0f} min)\n"
+            )
+    except requests.RequestException:
+        sys.stderr.write(
+            f"Error while fetching file {file_name}; dataset fetching aborted."
+        )
         raise
     if md5sum is not None:
-        if (_md5_sum_file(full_name) != md5sum):
-            raise ValueError("File %s checksum verification has failed."
-                             " Dataset fetching aborted." % local_file)
+        if _md5_sum_file(full_name) != md5sum:
+            raise ValueError(
+                "File %s checksum verification has failed."
+                " Dataset fetching aborted." % local_file
+            )
     return full_name
 
 
@@ -646,24 +698,27 @@ def _get_dataset_descr(ds_name):
     fname = ds_name
 
     try:
-        with open(os.path.join(module_path, 'description', fname + '.rst'),
-                  'rb') as rst_file:
+        with open(
+            os.path.join(module_path, "description", fname + ".rst"), "rb"
+        ) as rst_file:
             descr = rst_file.read()
-    except IOError:
-        descr = ''
+    except OSError:
+        descr = ""
 
-    if descr == '':
+    if descr == "":
         warnings.warn("Could not find dataset description.")
 
     if isinstance(descr, bytes):
-        descr = descr.decode('utf-8')
+        descr = descr.decode("utf-8")
 
     return descr
 
 
 def movetree(src, dst):
-    """Move an entire tree to another directory. Any existing file is
-    overwritten"""
+    """Move an entire tree to another directory.
+
+    Any existing file is overwritten.
+    """
     names = os.listdir(src)
 
     # Create destination dir if it does not exist
@@ -680,7 +735,7 @@ def movetree(src, dst):
                 os.rmdir(srcname)
             else:
                 shutil.move(srcname, dstname)
-        except (IOError, os.error) as why:
+        except (OSError, os.error) as why:
             errors.append((srcname, dstname, str(why)))
         # catch the Error from the recursive movetree so that we can
         # continue with other files
@@ -729,8 +784,12 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
         with requests.Session() as session:
             session.mount("ftp:", _NaiveFTPAdapter())
             return _fetch_files(
-                data_dir, files, resume=resume,
-                verbose=verbose, session=session)
+                data_dir,
+                files,
+                resume=resume,
+                verbose=verbose,
+                session=session,
+            )
     # There are two working directories here:
     # - data_dir is the destination directory of the dataset
     # - temp_dir is a temporary directory dedicated to this fetching call. All
@@ -762,51 +821,67 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
         # Target file in temp dir
         temp_target_file = os.path.join(temp_dir, file_)
         # Whether to keep existing files
-        overwrite = opts.get('overwrite', False)
-        if (abort is None and (overwrite or (not os.path.exists(target_file) and not
-                os.path.exists(temp_target_file)))):
-
+        overwrite = opts.get("overwrite", False)
+        if abort is None and (
+            overwrite
+            or (
+                not os.path.exists(target_file)
+                and not os.path.exists(temp_target_file)
+            )
+        ):
             # We may be in a global read-only repository. If so, we cannot
             # download files.
             if not os.access(data_dir, os.W_OK):
-                raise ValueError('Dataset files are missing but dataset'
-                                 ' repository is read-only. Contact your data'
-                                 ' administrator to solve the problem')
+                raise ValueError(
+                    "Dataset files are missing but dataset"
+                    " repository is read-only. Contact your data"
+                    " administrator to solve the problem"
+                )
 
             if not os.path.exists(temp_dir):
                 os.mkdir(temp_dir)
-            md5sum = opts.get('md5sum', None)
+            md5sum = opts.get("md5sum", None)
 
-            dl_file = _fetch_file(url, temp_dir, resume=resume,
-                                  verbose=verbose, md5sum=md5sum,
-                                  username=opts.get('username', None),
-                                  password=opts.get('password', None),
-                                  session=session, overwrite=overwrite)
-            if 'move' in opts:
+            dl_file = _fetch_file(
+                url,
+                temp_dir,
+                resume=resume,
+                verbose=verbose,
+                md5sum=md5sum,
+                username=opts.get("username", None),
+                password=opts.get("password", None),
+                session=session,
+                overwrite=overwrite,
+            )
+            if "move" in opts:
                 # XXX: here, move is supposed to be a dir, it can be a name
-                move = os.path.join(temp_dir, opts['move'])
+                move = os.path.join(temp_dir, opts["move"])
                 move_dir = os.path.dirname(move)
                 if not os.path.exists(move_dir):
                     os.makedirs(move_dir)
                 shutil.move(dl_file, move)
                 dl_file = move
-            if 'uncompress' in opts:
+            if "uncompress" in opts:
                 try:
                     _uncompress_file(dl_file, verbose=verbose)
                 except Exception as e:
                     abort = str(e)
 
-        if (abort is None and not os.path.exists(target_file) and not
-                os.path.exists(temp_target_file)):
-            warnings.warn('An error occurred while fetching %s' % file_)
-            abort = ("Dataset has been downloaded but requested file was "
-                     "not provided:\nURL: %s\n"
-                     "Target file: %s\nDownloaded: %s" %
-                     (url, target_file, dl_file))
+        if (
+            abort is None
+            and not os.path.exists(target_file)
+            and not os.path.exists(temp_target_file)
+        ):
+            warnings.warn(f"An error occurred while fetching {file_}")
+            abort = (
+                "Dataset has been downloaded but requested file was "
+                "not provided:\nURL: %s\n"
+                "Target file: %s\nDownloaded: %s" % (url, target_file, dl_file)
+            )
         if abort is not None:
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
-            raise IOError('Fetching aborted: ' + abort)
+            raise OSError("Fetching aborted: " + abort)
         files_.append(target_file)
     # If needed, move files from temps directory to final directory.
     if os.path.exists(temp_dir):
@@ -818,7 +893,7 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
 
 
 def _tree(path, pattern=None, dictionary=False):
-    """Return a directory tree under the form of a dictionaries and list
+    """Return a directory tree under the form of a dictionary or list.
 
     Parameters
     ----------
@@ -851,7 +926,7 @@ def _tree(path, pattern=None, dictionary=False):
     if len(dirs) == 0:
         return files
     if len(files) > 0:
-        dirs['.'] = files
+        dirs["."] = files
     return dirs
 
 
@@ -863,5 +938,4 @@ def load_sample_motor_activation_image():
     str
         Path to the sample functional image.
     """
-
     return str(Path(__file__).parent / "data" / "image_10426.nii.gz")

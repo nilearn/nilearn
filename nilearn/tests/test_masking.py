@@ -3,7 +3,7 @@ Test the mask-extracting utilities.
 """
 # Authors: Ana Luisa Pinho, Jerome Dockes, NicolasGensollen
 # License: simplified BSD
-from nilearn.version import _compare_version
+from nilearn._utils import _compare_version
 import warnings
 import numpy as np
 import pytest

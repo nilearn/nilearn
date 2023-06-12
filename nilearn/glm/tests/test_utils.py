@@ -5,7 +5,7 @@ import pytest
 import scipy.linalg as spl
 import scipy.stats as sps
 from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn._utils.glm import (
+from nilearn.glm._utils import (
     _check_and_load_tables,
     _check_list_length_match,
     _check_run_tables,
@@ -97,10 +97,7 @@ def test_z_score():
         cdf = sps.t.cdf(t, 1e10)
         z_sf = norm.isf(p)
         z_cdf = norm.ppf(cdf)
-        if p <= 0.5:
-            z = z_sf
-        else:
-            z = z_cdf
+        z = z_sf if p <= 0.5 else z_cdf
         assert_array_almost_equal(z_score(p, one_minus_pvalue=cdf), z)
 
 

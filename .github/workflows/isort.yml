@@ -33,7 +33,9 @@ jobs:
           isort --diff --check --settings-path pyproject.toml \
             examples/0[0234567]* \
             maint_tools \
+            nilearn/_utils \
             nilearn/connectome \
+            nilearn/datasets \
             nilearn/de* \
             nilearn/glm \
             nilearn/image \
@@ -41,6 +43,8 @@ jobs:
             nilearn/input_data \
             nilearn/maskers \
             nilearn/mass_univariate \
+            nilearn/plotting \
             nilearn/regions \
+            nilearn/rerporting \
             nilearn/surface \
             nilearn/*.py

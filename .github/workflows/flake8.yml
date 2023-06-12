@@ -40,7 +40,9 @@ jobs:
           flake8 --verbose \
             examples/0[0234567]* \
             maint_tools \
+            nilearn/_utils \
             nilearn/connectome \
+            nilearn/datasets \
             nilearn/de* \
             nilearn/glm \
             nilearn/image \
@@ -49,5 +51,6 @@ jobs:
             nilearn/maskers \
             nilearn/mass_univariate \
             nilearn/regions \
+            nilearn/reporting \
             nilearn/surface \
             nilearn/*.py

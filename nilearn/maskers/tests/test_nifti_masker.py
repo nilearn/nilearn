@@ -50,10 +50,43 @@ def test_detrend():
     img = nibabel.Nifti1Image(data, np.eye(4))
     mask = data.astype("uint8")
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
-    masker = NiftiMasker(mask_img=mask_img, detrend=True)
+
     # Smoke test the fit
+    masker = NiftiMasker(mask_img=mask_img, detrend=True)
     X = masker.fit_transform(img)
     assert np.any(X != 0)
+
+
+@pytest.mark.parametrize("y", [None, np.ones((9, 9, 9))])
+def test_fit_transform(y):
+    """Check fit_transform of BaseMasker with several input args."""
+    data = np.zeros((9, 9, 9))
+    data[3:-3, 3:-3, 3:-3] = 10
+    img = nibabel.Nifti1Image(data, np.eye(4))
+    mask = data.astype("uint8")
+
+    # Smoke test the fit
+
+    for mask_img in [nibabel.Nifti1Image(mask, np.eye(4)), None]:
+        masker = NiftiMasker(mask_img=mask_img)
+        X = masker.fit_transform(X=img, y=y)
+        assert np.any(X != 0)
+
+
+def test_fit_transform_warning():
+    data = np.zeros((9, 9, 9))
+    data[3:-3, 3:-3, 3:-3] = 10
+    img = nibabel.Nifti1Image(data, np.eye(4))
+    y = np.ones((9, 9, 9))
+    mask = data.astype("uint8")
+    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+    masker = NiftiMasker(mask_img=mask_img)
+    with pytest.warns(
+        UserWarning,
+        match=("Generation of a mask has been requested .*"
+               "while a mask has been provided at masker creation.")):
+        X = masker.fit_transform(X=img, y=y)
+        assert np.any(X != 0)
 
 
 def test_resample():
@@ -67,6 +100,30 @@ def test_resample():
     # Smoke test the fit
     X = masker.fit_transform(img)
     assert np.any(X != 0)
+
+
+def test_resample_to_mask_warning():
+    """Check that a warning is raised when data is
+    being resampled to mask's resolution.
+    """
+    data = np.zeros((9, 9, 9))
+    data[3:-3, 3:-3, 3:-3] = 10
+    img = nibabel.Nifti1Image(data, np.eye(4))
+    # defining a mask with different fov than img
+    mask = np.zeros((12, 12, 12))
+    mask[3:-3, 3:-3, 3:-3] = 10
+    mask = mask.astype("uint8")
+    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+    masker = NiftiMasker(mask_img=mask_img)
+    with pytest.warns(
+        UserWarning,
+        match='imgs are being resampled to the mask_img resolution. '
+            'This process is memory intensive. You might want to provide '
+            'a target_affine that is equal to the affine of the imgs '
+            'or resample the mask beforehand '
+            'to save memory and computation time.'
+    ):
+        masker.fit_transform(img)
 
 
 def test_with_files():
