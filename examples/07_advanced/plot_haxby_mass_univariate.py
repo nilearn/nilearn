@@ -196,3 +196,5 @@ title = (
 display.title(title, y=1.1)
 
 show()
+
+# sphinx_gallery_dummy_images=1

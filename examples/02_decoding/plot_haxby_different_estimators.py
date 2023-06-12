@@ -200,3 +200,5 @@ for classifier_name in sorted(classifiers):
     )
 
 show()
+
+# sphinx_gallery_dummy_images=6

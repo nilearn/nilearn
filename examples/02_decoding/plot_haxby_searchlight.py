@@ -150,3 +150,5 @@ plot_stat_map(
 )
 
 show()
+
+# sphinx_gallery_dummy_images=2

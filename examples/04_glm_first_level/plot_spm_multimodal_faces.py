@@ -163,3 +163,5 @@ for contrast_id, contrast_val in contrasts.items():
 # conditions. By contrast, the differential effect between "faces" and
 # "scrambled" involves sparser, more anterior and lateral regions. It
 # also displays some responses in the frontal lobe.
+
+# sphinx_gallery_dummy_images=3
