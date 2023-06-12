@@ -11,7 +11,7 @@ NEW
 Fixes
 -----
 
-- Fix bug in `first_level_from_bids` that returned no confound files if the corresponding bold files contained derivaties BIDS entities (:gh:`3742` by `Rémi Gau`_).
+- Fix bug in `first_level_from_bids` that returned no confound files if the corresponding bold files contained derivatives BIDS entities (:gh:`3742` by `Rémi Gau`_).
 - :bdg-dark:`Code` Fix bug where the `cv_params_` attribute of fitter Decoder objects sometimes had missing entries if `grid_param` is a sequence of dicts with different keys (:gh:`3733` by `Michelle Wang`_).
 
 Enhancements
