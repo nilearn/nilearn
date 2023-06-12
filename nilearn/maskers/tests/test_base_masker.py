@@ -3,8 +3,8 @@
 import nibabel
 import numpy as np
 from nilearn import image
-from nilearn.maskers.nifti_masker import _filter_and_mask
 from nilearn.maskers.base_masker import BaseMasker
+from nilearn.maskers.nifti_masker import _filter_and_mask
 from numpy.testing import assert_array_almost_equal
 
 
