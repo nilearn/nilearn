@@ -295,7 +295,7 @@ def test_infer_effect_maps():
         )
         func_img = load(fmri_data[0])
         second_level_input = pd.DataFrame({'map_name': ["a", "b"],
-                                        'effects_map_path': [fmri_data[0],
+                                           'effects_map_path': [fmri_data[0],
                                                                 "bar"]})
         assert _infer_effect_maps(second_level_input, "a") == [fmri_data[0]]
         with pytest.raises(ValueError, match="File not found: 'bar'"):
@@ -305,7 +305,7 @@ def test_infer_effect_maps():
         second_level_input = [FirstLevelModel(mask_img=mask)] * 2
         for i, model in enumerate(second_level_input):
             model.fit(fmri_data[i],
-                    design_matrices=design_matrices[i])
+                      design_matrices=design_matrices[i])
         assert len(_infer_effect_maps(second_level_input, contrast)) == 2
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
@@ -334,6 +334,7 @@ def test_infer_effect_maps_with_monkey_patch(tmp_path, monkeypatch):
         model.fit(fmri_data[i],
                   design_matrices=design_matrices[i])
     assert len(_infer_effect_maps(second_level_input, contrast)) == 2
+
 
 def test_high_level_glm_with_paths():
     with InTemporaryDirectory():
