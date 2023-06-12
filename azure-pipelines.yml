@@ -10,6 +10,7 @@ jobs:
 
 
 - job: 'run_tests_on_windows'
+  timeoutInMinutes: 0
   pool:
     vmImage: 'windows-latest'
   strategy:
