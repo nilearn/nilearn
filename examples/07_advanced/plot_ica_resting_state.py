@@ -44,7 +44,7 @@ masker = NiftiMasker(
     memory="nilearn_cache",
     memory_level=1,
     mask_strategy="epi",
-    standardize=True,
+    standardize="zscore_sample",
 )
 data_masked = masker.fit_transform(func_filename)
 

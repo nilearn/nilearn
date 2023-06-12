@@ -260,7 +260,7 @@ def get_clusters_table(
         Whether or not to additionally output cluster label map images.
         Default=False.
 
-        .. versionadded:: 0.10.1.dev
+        .. versionadded:: 0.10.1
 
     Returns
     -------
@@ -286,7 +286,7 @@ def get_clusters_table(
         If two_sided==True, first and second maps correspond
         to positive and negative tails.
 
-        .. versionadded:: 0.10.1.dev
+        .. versionadded:: 0.10.1
 
     """
     cols = ["Cluster ID", "X", "Y", "Z", "Peak Stat", "Cluster Size (mm3)"]

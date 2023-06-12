@@ -27,22 +27,20 @@ outside of temporary directories, this module also adds fixtures to patch the
 home directory and other default nilearn data directories.
 
 """
-import shutil
-import tempfile
-from pathlib import Path
+import fnmatch
+import json
+import os
 import pickle
 import re
-import fnmatch
-import os
-import json
-from unittest.mock import MagicMock
+import shutil
+import tempfile
 from collections import OrderedDict
-
-from requests.exceptions import HTTPError
+from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
-
 from nilearn._utils.testing import serialize_niimg
+from requests.exceptions import HTTPError
 
 
 @pytest.fixture(autouse=True)
@@ -64,8 +62,7 @@ def temp_nilearn_data_dir(tmp_path_factory, monkeypatch):
     data_dir.mkdir()
     monkeypatch.setenv("NILEARN_DATA", str(data_dir))
     shared_data_dir = home_dir / "nilearn_shared_data"
-    monkeypatch.setenv(
-        "NILEARN_SHARED_DATA", str(shared_data_dir))
+    monkeypatch.setenv("NILEARN_SHARED_DATA", str(shared_data_dir))
 
 
 @pytest.fixture(autouse=True)
@@ -100,6 +97,7 @@ class Response:
     interface; only the parts used by nilearn functions.
 
     """
+
     is_mock = True
 
     def __init__(self, content, url, status_code=200):
@@ -116,7 +114,7 @@ class Response:
 
     def iter_content(self, chunk_size=8):
         for i in range(0, len(self.content), chunk_size):
-            yield self.content[i: i + chunk_size]
+            yield self.content[i : i + chunk_size]
 
     @property
     def text(self):
@@ -127,13 +125,12 @@ class Response:
 
     def raise_for_status(self):
         if 400 <= self.status_code < 600:
-            raise HTTPError(
-                "{} Error for url: {}".format(self.status_code, self.url)
-            )
+            raise HTTPError(f"{self.status_code} Error for url: {self.url}")
 
 
 class Request:
     """A mock request class."""
+
     is_mock = True
 
     def __init__(self, url):
@@ -141,7 +138,7 @@ class Request:
 
 
 class Sender:
-    r"""Mock class used to patch requests.sessions.Session.send
+    r"""Mock class used to patch requests.sessions.Session.send.
 
     In nilearn's tests this replaces the function used by requests to send
     requests over the network.
@@ -247,6 +244,7 @@ class Sender:
     `visited_urls`, and the number of sent requests in `url_count`
 
     """
+
     is_mock = True
 
     def __init__(self):
@@ -315,7 +313,7 @@ class Sender:
             return Response(response, request.url)
         else:
             raise TypeError(
-                "Don't know how to make a Response from: {}".format(response)
+                f"Don't know how to make a Response from: {response}"
             )
 
 
@@ -360,8 +358,7 @@ def _add_to_archive(path, content):
             shutil.copytree(str(content), str(path))
         else:
             raise FileNotFoundError(
-                "Not found or not a regular file "
-                "or a directory {}".format(content)
+                f"Not found or not a regular file or a directory {content}"
             )
     elif isinstance(content, str):
         with path.open("w") as f:
@@ -375,7 +372,7 @@ def _add_to_archive(path, content):
 
 
 def dict_to_archive(data, archive_format="gztar"):
-    """Transform a {path: content} dict to an archive
+    """Transform a {path: content} dict to an archive.
 
     Parameters
     ----------
@@ -425,7 +422,7 @@ def dict_to_archive(data, archive_format="gztar"):
 
 
 def list_to_archive(sequence, archive_format="gztar", content=""):
-    """Transform a list of paths to an archive
+    """Transform a list of paths to an archive.
 
     This invokes dict_to_archive with the `sequence` items as keys and
     `content` (by default '') as values.

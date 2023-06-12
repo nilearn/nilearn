@@ -53,6 +53,7 @@ canica = CanICA(
     verbose=10,
     mask_strategy="whole-brain-template",
     random_state=0,
+    standardize="zscore_sample",
 )
 canica.fit(func_filenames)
 
@@ -114,6 +115,7 @@ dict_learning = DictLearning(
     random_state=0,
     n_epochs=1,
     mask_strategy="whole-brain-template",
+    standardize="zscore_sample",
 )
 
 print("[Example] Fitting dictionary learning model")

@@ -104,7 +104,15 @@ def test_cache_mixin_wrong_dirs():
 
 
 def test_cache_memory_level(tmp_path):
-    joblib_dir = tmp_path / "joblib" / "test_cache_mixin" / "f"
+    joblib_dir = (
+        tmp_path
+        / "joblib"
+        / "nilearn"
+        / "_utils"
+        / "tests"
+        / "test_cache_mixin"
+        / "f"
+    )
 
     cache_mixin.cache(f, Memory(location=None))(2)
     assert len(_get_subdirs(joblib_dir)) == 0
@@ -122,7 +130,15 @@ def test_cache_memory_level(tmp_path):
 
 
 def test_cache_shelving(tmp_path):
-    joblib_dir = tmp_path / "joblib" / "test_cache_mixin" / "f"
+    joblib_dir = (
+        tmp_path
+        / "joblib"
+        / "nilearn"
+        / "_utils"
+        / "tests"
+        / "test_cache_mixin"
+        / "f"
+    )
     mem = Memory(location=str(tmp_path), verbose=0)
     res = cache_mixin.cache(f, mem, shelve=True)(2)
     assert res.get() == 2

@@ -1,5 +1,3 @@
-
-
 class SurfaceFigure:
     """Abstract class for surface figures.
 
@@ -11,6 +9,7 @@ class SurfaceFigure:
     output_file : :obj:`str` or ``None``, optional
         Path to output file.
     """
+
     def __init__(self, figure=None, output_file=None):
         self.figure = figure
         self.output_file = output_file
@@ -20,8 +19,8 @@ class SurfaceFigure:
         raise NotImplementedError
 
     def _check_output_file(self, output_file=None):
-        """If an output file is provided, set it as
-        the new default output file.
+        """If an output file is provided, \
+        set it as the new default output file.
 
         Parameters
         ----------
@@ -58,6 +57,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
         Output file path.
 
     """
+
     def __init__(self, figure=None, output_file=None):
         try:
             import plotly.graph_objects as go
@@ -83,7 +83,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             return self.figure
 
     def savefig(self, output_file=None):
-        """Saves the figure to file.
+        """Save the figure to file.
 
         Parameters
         ----------
