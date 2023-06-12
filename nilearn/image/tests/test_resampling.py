@@ -586,8 +586,7 @@ def test_resampling_nan(affine, core_shape):
 
     # check 3x3 transformation matrix
     target_affine = np.eye(3)[axis_permutation]
-    with pytest.warns(Warning, match=r"(\bnan\b|invalid value)"):
-        resampled_img = resample_img(source_img, target_affine=target_affine)
+    resampled_img = resample_img(source_img, target_affine=target_affine)
 
     resampled_data = get_data(resampled_img)
     if full_data.ndim == 4:

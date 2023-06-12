@@ -139,7 +139,9 @@ print(conditions.shape)
 # first create it using by using :class:`nilearn.decoding.Decoder`.
 from nilearn.decoding import Decoder
 
-decoder = Decoder(estimator="svc", mask=mask_filename, standardize=True)
+decoder = Decoder(
+    estimator="svc", mask=mask_filename, standardize="zscore_sample"
+)
 
 ###########################################################################
 # The decoder object is an object that can be fit (or trained) on data with
@@ -181,7 +183,9 @@ fmri_niimgs_test = index_img(fmri_niimgs, slice(-30, None))
 conditions_train = conditions[:-30]
 conditions_test = conditions[-30:]
 
-decoder = Decoder(estimator="svc", mask=mask_filename, standardize=True)
+decoder = Decoder(
+    estimator="svc", mask=mask_filename, standardize="zscore_sample"
+)
 decoder.fit(fmri_niimgs_train, conditions_train)
 
 prediction = decoder.predict(fmri_niimgs_test)
@@ -207,7 +211,9 @@ from sklearn.model_selection import KFold
 cv = KFold(n_splits=5)
 
 for fold, (train, test) in enumerate(cv.split(conditions), start=1):
-    decoder = Decoder(estimator="svc", mask=mask_filename, standardize=True)
+    decoder = Decoder(
+        estimator="svc", mask=mask_filename, standardize="zscore_sample"
+    )
     decoder.fit(index_img(fmri_niimgs, train), conditions[train])
     prediction = decoder.predict(index_img(fmri_niimgs, test))
     print(
@@ -230,7 +236,7 @@ n_folds = 5
 decoder = Decoder(
     estimator="svc",
     mask=mask_filename,
-    standardize=True,
+    standardize="zscore_sample",
     cv=n_folds,
     scoring="accuracy",
 )
@@ -268,7 +274,9 @@ from sklearn.model_selection import LeaveOneGroupOut
 
 cv = LeaveOneGroupOut()
 
-decoder = Decoder(estimator="svc", mask=mask_filename, standardize=True, cv=cv)
+decoder = Decoder(
+    estimator="svc", mask=mask_filename, standardize="zscore_sample", cv=cv
+)
 decoder.fit(fmri_niimgs, conditions, groups=session_label)
 
 print(decoder.cv_scores_)
@@ -325,7 +333,10 @@ plotting.view_img(
 # Let's define a object with Dummy estimator replacing 'svc' for classification
 # setting. This object initializes estimator with default dummy strategy.
 dummy_decoder = Decoder(
-    estimator="dummy_classifier", mask=mask_filename, cv=cv
+    estimator="dummy_classifier",
+    mask=mask_filename,
+    cv=cv,
+    standardize="zscore_sample",
 )
 dummy_decoder.fit(fmri_niimgs, conditions, groups=session_label)
 

@@ -60,7 +60,7 @@ decoder = Decoder(
     estimator="svc",
     mask=mask_img,
     smoothing_fwhm=4,
-    standardize=True,
+    standardize="zscore_sample",
     screening_percentile=5,
     scoring="accuracy",
 )
@@ -88,7 +88,7 @@ cv = LeaveOneGroupOut()
 decoder = Decoder(
     estimator="svc",
     mask=mask_img,
-    standardize=True,
+    standardize="zscore_sample",
     screening_percentile=5,
     scoring="accuracy",
     cv=cv,

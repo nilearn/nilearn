@@ -49,7 +49,7 @@ from nilearn.maskers import NiftiMasker
 # For decoding, standardizing is often very important
 nifti_masker = NiftiMasker(
     mask_img=mask_filename,
-    standardize=True,
+    standardize="zscore_sample",
     runs=session,
     smoothing_fwhm=4,
     memory="nilearn_cache",
