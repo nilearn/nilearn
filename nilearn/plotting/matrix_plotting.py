@@ -101,7 +101,7 @@ def _sanitize_reorder(reorder):
     VALID_REORDER_ARGS = {True, False, 'single', 'complete', 'average'}
     if reorder not in VALID_REORDER_ARGS:
         raise ValueError(
-            f"Parameter reorder needs to be one of {list(VALID_REORDER_ARGS)}."
+            f"Parameter reorder needs to be one of {VALID_REORDER_ARGS}."
         )
     reorder = 'average' if reorder is True else reorder
     return reorder
