@@ -213,3 +213,5 @@ plt.axhline(
 
 plt.legend(loc="best", frameon=False)
 show()
+
+# sphinx_gallery_dummy_images=1

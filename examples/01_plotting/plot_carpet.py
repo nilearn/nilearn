@@ -78,3 +78,5 @@ display = plot_carpet(
 )
 
 fig.show()
+
+# sphinx_gallery_dummy_images=1

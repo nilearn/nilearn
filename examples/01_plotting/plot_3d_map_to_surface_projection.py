@@ -235,3 +235,5 @@ view = plotting.view_img_on_surf(
 
 # view.open_in_browser()
 view
+
+# sphinx_gallery_dummy_images=1

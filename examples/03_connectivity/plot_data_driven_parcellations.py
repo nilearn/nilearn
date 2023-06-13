@@ -429,3 +429,5 @@ plotting.plot_epi(
 # However, as said in the previous section, the computation time is
 # reduced which could still make ReNA more relevant than Ward in
 # some cases.
+
+# sphinx_gallery_dummy_images=3

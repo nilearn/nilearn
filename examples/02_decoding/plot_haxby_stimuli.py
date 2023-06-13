@@ -29,3 +29,5 @@ for stim_type in stimulus_information:
             ax.axis("off")
 
 show()
+
+# sphinx_gallery_dummy_images=7
