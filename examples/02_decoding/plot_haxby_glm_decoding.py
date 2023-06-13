@@ -22,6 +22,7 @@ More specifically:
 # By default 2nd subject will be fetched
 import numpy as np
 import pandas as pd
+
 from nilearn import datasets
 
 haxby_dataset = datasets.fetch_haxby()
@@ -161,8 +162,9 @@ report  # This report can be viewed in a notebook
 # corresponding conditions labels and session labels
 # (for the cross validation).
 
-from nilearn.decoding import Decoder
 from sklearn.model_selection import LeaveOneGroupOut
+
+from nilearn.decoding import Decoder
 
 decoder = Decoder(
     estimator="svc",

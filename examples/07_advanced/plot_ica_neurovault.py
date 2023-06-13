@@ -19,12 +19,13 @@ documentation for more details.
 import warnings
 
 import numpy as np
+from scipy import stats
+from sklearn.decomposition import FastICA
+
 from nilearn import plotting
 from nilearn.datasets import fetch_neurovault, load_mni152_brain_mask
 from nilearn.image import smooth_img
 from nilearn.maskers import NiftiMasker
-from scipy import stats
-from sklearn.decomposition import FastICA
 
 ######################################################################
 # Get image and term data

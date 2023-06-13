@@ -56,6 +56,7 @@ stimuli_random_runs_filenames = dataset.label[12:]
 # data, clean and mask it.
 
 import numpy as np
+
 from nilearn.maskers import MultiNiftiMasker
 
 masker = MultiNiftiMasker(

@@ -57,12 +57,13 @@ masked_data = [
 # adults. We use cross-validation and measure classification accuracy to
 # compare the different kinds of connectivity matrices.
 
-# prepare the classification pipeline
-from nilearn.connectome import ConnectivityMeasure
 from sklearn.dummy import DummyClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
+
+# prepare the classification pipeline
+from nilearn.connectome import ConnectivityMeasure
 
 kinds = ["correlation", "partial correlation", "tangent"]
 

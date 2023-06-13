@@ -20,6 +20,7 @@ More specifically:
 
 """
 import numpy as np
+
 from nilearn import datasets, plotting
 from nilearn.glm.first_level import (
     FirstLevelModel,

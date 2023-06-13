@@ -36,10 +36,7 @@ from time import time
 
 import matplotlib.pyplot as plt
 import nibabel
-import nilearn.masking
 import numpy as np
-from nilearn import decoding
-from nilearn.plotting import show
 from scipy import linalg
 from scipy.ndimage import gaussian_filter
 from sklearn import linear_model, svm
@@ -48,6 +45,10 @@ from sklearn.model_selection import KFold
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import check_random_state
+
+import nilearn.masking
+from nilearn import decoding
+from nilearn.plotting import show
 
 
 ##############################################################################
