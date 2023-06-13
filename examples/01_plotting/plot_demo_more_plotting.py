@@ -43,6 +43,7 @@ See :ref:`plotting` for more details.
 # First, we retrieve data from nilearn provided (general-purpose) datasets
 # ------------------------------------------------------------------------
 
+import matplotlib.pyplot as plt
 from nilearn import datasets
 
 # haxby dataset to have anatomical image, EPI images and masks
@@ -116,7 +117,8 @@ plotting.plot_stat_map(stat_img, display_mode='x',
 # again, selected automatically.
 
 plotting.plot_stat_map(stat_img, display_mode='y', cut_coords=1,
-                       title="display_mode='y', cut_coords=1")
+                       title="display_mode='y', cut_coords=1",
+                       figure=plt.figure(figsize=(4, 3)))
 
 ###############################################################################
 # Visualizing without a colorbar on the right side
