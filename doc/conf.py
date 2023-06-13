@@ -158,6 +158,8 @@ pygments_dark_style = "stata-dark"
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
 
+# A list of warning types to suppress arbitrary warning messages
+suppress_warnings = ["image.not_readable"]
 
 # -- Options for HTML output -------------------------------------------------
 

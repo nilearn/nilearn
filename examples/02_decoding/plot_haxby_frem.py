@@ -115,3 +115,5 @@ plotting.show()
 # even on heavier examples. Here we ensembled several instances of l2-SVC,
 # but FREMClassifier also works with ridge or logistic.
 # FREMRegressor object is also available to solve regression problems.
+
+# sphinx_gallery_dummy_images=1

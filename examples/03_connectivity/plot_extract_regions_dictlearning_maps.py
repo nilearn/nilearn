@@ -199,3 +199,5 @@ for each_index_of_map3, color in zip(regions_indices_of_map3[0], colors):
     )
 
 plotting.show()
+
+# sphinx_gallery_dummy_images=6

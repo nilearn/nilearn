@@ -147,3 +147,5 @@ plt.title(
 )
 
 show()
+
+# sphinx_gallery_dummy_images=4

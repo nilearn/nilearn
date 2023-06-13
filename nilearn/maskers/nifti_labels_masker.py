@@ -170,11 +170,10 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         self.memory_level = memory_level
         self.verbose = verbose
         self.reports = reports
-        self._report_content = dict()
-        self._report_content['description'] = (
-            'This reports shows the regions defined by the labels of the mask.'
-        )
-        self._report_content['warning_message'] = None
+        self._report_content = {
+            'description': ('This reports shows the regions '
+                            'defined by the labels of the mask.'),
+            'warning_message': None}
 
         available_reduction_strategies = {
             'mean',

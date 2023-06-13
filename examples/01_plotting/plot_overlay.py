@@ -76,3 +76,5 @@ display = plotting.plot_prob_atlas(
     dmn_nodes, cut_coords=(0, -55, 29), title="DMN nodes in MSDL atlas"
 )
 plotting.show()
+
+# sphinx_gallery_dummy_images=2

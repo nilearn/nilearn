@@ -51,3 +51,5 @@ for index, cmap in enumerate(m_cmaps):
     plt.title(cmap, fontsize=10, va="bottom", rotation=90)
 
 show()
+
+# sphinx_gallery_dummy_images=2

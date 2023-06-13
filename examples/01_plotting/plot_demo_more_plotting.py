@@ -375,3 +375,5 @@ display.savefig('plot_stat_map_from_display.png')
 display.close()
 
 plotting.show()
+
+# sphinx_gallery_dummy_images=17

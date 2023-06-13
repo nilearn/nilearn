@@ -357,3 +357,5 @@ print(dummy_decoder.cv_scores_)
 # * :ref:`space_net`
 #
 # ______________
+
+# sphinx_gallery_dummy_images=1

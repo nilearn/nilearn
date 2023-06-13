@@ -220,3 +220,5 @@ n_detections = (get_data(signed_neg_log_pvals_unmasked) > threshold).sum()
 print(f"\n{int(n_detections)} detections")
 
 show()
+
+# sphinx_gallery_dummy_images=2
