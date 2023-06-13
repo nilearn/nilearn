@@ -89,7 +89,10 @@ def test_sanitize_reorder(reorder):
 def test_sanitize_reorder_error(reorder):
     from ..matrix_plotting import _sanitize_reorder
     with pytest.raises(ValueError,
-                       match=("Parameter reorder needs to be ")):
+                       match=(
+            "Parameter reorder needs to be one of "
+            f"{', '.join(str(x) for x in VALID_REORDER_VALUES)}.")
+        ):
         _sanitize_reorder(reorder)
 
 
