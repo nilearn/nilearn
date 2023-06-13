@@ -90,9 +90,16 @@ def test_sanitize_reorder_error(reorder):
     from ..matrix_plotting import _sanitize_reorder
     with pytest.raises(ValueError,
                        match=("Parameter reorder needs to be "
-                              f"one of {VALID_REORDER_VALUES}")):
+                              f"one of {list(VALID_REORDER_VALUES)}")):
         _sanitize_reorder(reorder)
 
+@pytest.mark.parametrize("reorder", [None, "foo", 2])
+def test_sanitize_reorder_error_should_fail_with_311(reorder):
+    from ..matrix_plotting import _sanitize_reorder
+    with pytest.raises(ValueError,
+                       match=("Parameter reorder needs to be "
+                              f"one of {VALID_REORDER_VALUES}")):
+        _sanitize_reorder(reorder)
 
 @pytest.fixture
 def mat():
