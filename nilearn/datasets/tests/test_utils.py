@@ -16,6 +16,7 @@ from unittest.mock import MagicMock
 import numpy as np
 import pytest
 import requests
+
 from nilearn import datasets
 from nilearn.datasets import utils
 from nilearn.datasets.utils import _get_dataset_descr
@@ -31,7 +32,6 @@ DATASET_NAMES = {
     "allen_rsn_2011",
     "basc_multiscale_2015",
     "brainomics_localizer",
-    "cobre",
     "craddock_2012",
     "destrieux_surface",
     "development_fmri",
@@ -49,7 +49,6 @@ DATASET_NAMES = {
     "msdl_atlas",
     "neurovault",
     "nki_enhanced_surface",
-    "nyu_rest",
     "oasis1",
     "pauli_2017",
     "power_2011",

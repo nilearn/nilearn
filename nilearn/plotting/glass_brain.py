@@ -6,6 +6,7 @@ import os
 import matplotlib
 from matplotlib import colors, patches, transforms
 from matplotlib.path import Path
+
 from nilearn._utils import _compare_version
 
 

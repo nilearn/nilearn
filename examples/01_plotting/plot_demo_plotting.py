@@ -110,3 +110,5 @@ plotting.plot_epi(mean_haxby_img, title="plot_epi")
 # A call to plotting.show is needed to display the plots when running
 # in script mode (ie outside IPython)
 plotting.show()
+
+# sphinx_gallery_dummy_images=5

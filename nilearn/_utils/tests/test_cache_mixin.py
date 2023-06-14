@@ -3,9 +3,10 @@ import os
 import shutil
 from pathlib import Path
 
-import nilearn
 import pytest
 from joblib import Memory
+
+import nilearn
 from nilearn._utils import CacheMixin, cache_mixin
 
 

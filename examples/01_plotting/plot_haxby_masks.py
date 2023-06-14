@@ -7,6 +7,7 @@ Small script to plot the masks of the Haxby dataset.
 
 
 import matplotlib.pyplot as plt
+
 from nilearn import datasets
 
 haxby_dataset = datasets.fetch_haxby()
@@ -59,3 +60,5 @@ p_f = Rectangle((0, 0), 1, 1, fc="limegreen")
 plt.legend([p_v, p_h, p_f], ["vt", "house", "face"])
 
 show()
+
+# sphinx_gallery_dummy_images=1

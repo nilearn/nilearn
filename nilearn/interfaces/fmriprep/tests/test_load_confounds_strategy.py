@@ -2,6 +2,7 @@ import re
 
 import pandas as pd
 import pytest
+
 from nilearn.interfaces.fmriprep import load_confounds_strategy
 from nilearn.interfaces.fmriprep.load_confounds_strategy import (
     preset_strategies,

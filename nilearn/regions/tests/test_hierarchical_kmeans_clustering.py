@@ -1,5 +1,7 @@
 import numpy as np
 import pytest
+from numpy.testing import assert_array_almost_equal
+
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.input_data import NiftiMasker
 from nilearn.regions.hierarchical_kmeans_clustering import (
@@ -7,7 +9,6 @@ from nilearn.regions.hierarchical_kmeans_clustering import (
     _adjust_small_clusters,
     hierarchical_k_means,
 )
-from numpy.testing import assert_array_almost_equal
 
 
 @pytest.mark.parametrize(

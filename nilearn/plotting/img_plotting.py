@@ -24,12 +24,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import gridspec as mgs
 from nibabel.spatialimages import SpatialImage
-from nilearn._utils import _compare_version
+from scipy import stats
+from scipy.ndimage import binary_fill_holes
+
 from nilearn.image.resampling import reorder_img
 from nilearn.maskers import NiftiMasker
 from nilearn.plotting.displays import get_projector, get_slicer
-from scipy import stats
-from scipy.ndimage import binary_fill_holes
 
 from .. import _utils
 from .._utils import fill_doc
@@ -1016,7 +1016,7 @@ def plot_glass_brain(stat_map_img,
         absolute value will be used (rendering positive and negative
         values in the same manner). If set to false the sign of the
         maximum intensity will be represented with different colors.
-         See
+        See
         :ref:`sphx_glr_auto_examples_01_plotting_plot_demo_glass_brain_extensive.py` # noqa
         for examples. Default=True.
     %(symmetric_cbar)s

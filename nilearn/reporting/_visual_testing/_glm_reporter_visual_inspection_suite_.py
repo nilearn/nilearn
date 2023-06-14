@@ -9,9 +9,10 @@ to run a specific script and save time.
 """
 import os
 
-import nilearn
 import numpy as np
 import pandas as pd
+
+import nilearn
 from nilearn import datasets
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 from nilearn.glm.first_level.design_matrix import (

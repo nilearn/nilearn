@@ -293,3 +293,5 @@ display.add_contours(
 display.title('Now same plotting but with filled contours')
 # Finally, displaying them
 plotting.show()
+
+# sphinx_gallery_dummy_images=7

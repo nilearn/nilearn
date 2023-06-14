@@ -1,6 +1,7 @@
 import nibabel as nib
 import numpy as np
 import pytest
+
 from nilearn.image import get_data
 
 # Set backend to avoid DISPLAY problems

@@ -77,8 +77,9 @@ classifiers = [
 # classifiers
 import time
 
-from nilearn.decoding import Decoder
 from sklearn.model_selection import LeaveOneGroupOut
+
+from nilearn.decoding import Decoder
 
 cv = LeaveOneGroupOut()
 classifiers_data = {}
@@ -200,3 +201,5 @@ for classifier_name in sorted(classifiers):
     )
 
 show()
+
+# sphinx_gallery_dummy_images=6

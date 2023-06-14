@@ -15,12 +15,13 @@ from tempfile import mkdtemp
 import nibabel
 import numpy as np
 import pytest
+from numpy.testing import assert_array_equal
+
 from nilearn._utils import data_gen, exceptions, testing
 from nilearn._utils.class_inspect import get_params
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import _filter_and_mask
-from numpy.testing import assert_array_equal
 
 
 def test_auto_mask():
@@ -50,10 +51,43 @@ def test_detrend():
     img = nibabel.Nifti1Image(data, np.eye(4))
     mask = data.astype("uint8")
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
-    masker = NiftiMasker(mask_img=mask_img, detrend=True)
+
     # Smoke test the fit
+    masker = NiftiMasker(mask_img=mask_img, detrend=True)
     X = masker.fit_transform(img)
     assert np.any(X != 0)
+
+
+@pytest.mark.parametrize("y", [None, np.ones((9, 9, 9))])
+def test_fit_transform(y):
+    """Check fit_transform of BaseMasker with several input args."""
+    data = np.zeros((9, 9, 9))
+    data[3:-3, 3:-3, 3:-3] = 10
+    img = nibabel.Nifti1Image(data, np.eye(4))
+    mask = data.astype("uint8")
+
+    # Smoke test the fit
+
+    for mask_img in [nibabel.Nifti1Image(mask, np.eye(4)), None]:
+        masker = NiftiMasker(mask_img=mask_img)
+        X = masker.fit_transform(X=img, y=y)
+        assert np.any(X != 0)
+
+
+def test_fit_transform_warning():
+    data = np.zeros((9, 9, 9))
+    data[3:-3, 3:-3, 3:-3] = 10
+    img = nibabel.Nifti1Image(data, np.eye(4))
+    y = np.ones((9, 9, 9))
+    mask = data.astype("uint8")
+    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+    masker = NiftiMasker(mask_img=mask_img)
+    with pytest.warns(
+        UserWarning,
+        match=("Generation of a mask has been requested .*"
+               "while a mask has been provided at masker creation.")):
+        X = masker.fit_transform(X=img, y=y)
+        assert np.any(X != 0)
 
 
 def test_resample():
@@ -216,7 +250,7 @@ def test_4d_single_scan():
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
     rng = np.random.RandomState(42)
-    data_5d = [rng.random_sample(shape_4d) for i in range(5)]
+    data_5d = [rng.random_sample(shape_4d) for _ in range(5)]
     data_4d = [d[..., 0] for d in data_5d]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
     data_4d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_4d]
@@ -249,7 +283,7 @@ def test_5d():
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
     rng = np.random.RandomState(42)
-    data_5d = [rng.random_sample(shape_4d) for i in range(5)]
+    data_5d = [rng.random_sample(shape_4d) for _ in range(5)]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
 
     masker = NiftiMasker(mask_img=mask_img)
@@ -378,18 +412,18 @@ def test_compute_epi_mask():
 def expected_mask(mask_args):
     """Create an expected mask."""
     mask = np.zeros((9, 9, 5))
-    if mask_args == dict():
+    if mask_args == {}:
         return mask
-    else:
-        mask[2:7, 2:7, 2] = 1
-        return mask
+
+    mask[2:7, 2:7, 2] = 1
+    return mask
 
 
 @pytest.mark.parametrize('strategy',
                          [f'{p}-template' for p in
                           ['whole-brain', 'gm', 'wm']])
 @pytest.mark.parametrize('mask_args',
-                         [dict(), dict(threshold=0.)])
+                         [{}, dict(threshold=0.)])
 def test_compute_brain_mask(strategy, mask_args, expected_mask):
     """Check masker for template masking strategy."""
     img, _ = data_gen.generate_random_img((9, 9, 5))

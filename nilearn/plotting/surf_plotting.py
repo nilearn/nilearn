@@ -12,6 +12,7 @@ from matplotlib.colorbar import make_axes
 from matplotlib.colors import LinearSegmentedColormap, Normalize, to_rgba
 from matplotlib.patches import Patch
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
 from nilearn import image, surface
 from nilearn._utils import check_niimg_3d, fill_doc
 from nilearn.plotting.cm import cold_hot
@@ -249,6 +250,7 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
     """
     try:
         import plotly.graph_objects as go
+
         from nilearn.plotting.displays import PlotlySurfaceFigure
     except ImportError:
         msg = "Using engine='plotly' requires that ``plotly`` is installed."

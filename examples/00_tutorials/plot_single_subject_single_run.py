@@ -123,6 +123,7 @@ design_matrix = fmri_glm.design_matrices_[0]
 # Formally, we have taken the first design matrix, because the model is
 # implictily meant to for multiple runs.
 import matplotlib.pyplot as plt
+
 from nilearn.plotting import plot_design_matrix
 
 plot_design_matrix(design_matrix)

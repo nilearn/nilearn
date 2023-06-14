@@ -10,13 +10,14 @@ import warnings
 import numpy as np
 from joblib import Memory
 from nibabel import Nifti1Image
-from nilearn._utils import fill_doc
-from nilearn.image import get_data
-from nilearn.masking import _unmask_from_to_3d_array
 from scipy.sparse import coo_matrix, csgraph, dia_matrix
 from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
+
+from nilearn._utils import fill_doc
+from nilearn.image import get_data
+from nilearn.masking import _unmask_from_to_3d_array
 
 
 def _compute_weights(X, mask_img):

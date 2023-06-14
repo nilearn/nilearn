@@ -10,9 +10,10 @@ import os
 import numpy as np
 import pandas as pd
 import pytest
+from numpy.testing import assert_array_equal
+
 from nilearn._utils.data_gen import basic_paradigm
 from nilearn.glm.first_level import check_events
-from numpy.testing import assert_array_equal
 
 
 def duplicate_events_paradigm():

@@ -2,8 +2,11 @@
 Default Mode Network extraction of ADHD dataset
 ===============================================
 
-This example shows a full step-by-step workflow of fitting a GLM to data
+This example shows a full step-by-step workflow of fitting a GLM to signal
 extracted from a seed on the Posterior Cingulate Cortex and saving the results.
+More precisely, this example shows how to use a signal extracted from a
+seed region as the regressor in a GLM to determine the correlation
+of each region in the dataset with the seed region.
 
 More specifically:
 
@@ -17,6 +20,7 @@ More specifically:
 
 """
 import numpy as np
+
 from nilearn import datasets, plotting
 from nilearn.glm.first_level import (
     FirstLevelModel,
@@ -39,9 +43,9 @@ n_scans = 176
 pcc_coords = (0, -53, 26)
 
 #########################################################################
-# Estimate contrasts
-# ------------------
-# Specify the contrasts.
+# Extract the seed region's time course
+# -------------------------------------
+# Extract the time course of the seed region.
 seed_masker = NiftiSpheresMasker(
     [pcc_coords],
     radius=10,
@@ -56,6 +60,22 @@ seed_masker = NiftiSpheresMasker(
 )
 seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
 frametimes = np.linspace(0, (n_scans - 1) * t_r, n_scans)
+
+#########################################################################
+# Plot the time course of the seed region.
+import matplotlib.pyplot as plt
+
+fig = plt.figure(figsize=(9, 3))
+ax = fig.add_subplot(111)
+ax.plot(frametimes, seed_time_series, linewidth=2, label="seed region")
+ax.legend(loc=2)
+ax.set_title("Time course of the seed region")
+plt.show()
+
+#########################################################################
+# Estimate contrasts
+# ------------------
+# Specify the contrasts.
 design_matrix = make_first_level_design_matrix(
     frametimes,
     hrf_model="spm",

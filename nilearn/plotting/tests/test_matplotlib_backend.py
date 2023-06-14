@@ -10,6 +10,7 @@ else:
 import warnings
 
 import pytest
+
 from nilearn.plotting import _set_mpl_backend
 
 
