@@ -193,3 +193,4 @@ plotting.plot_surf_stat_map(fsaverage['infl_left'], stat_map=stat_map,
 plotting.show()
 
 # sphinx_gallery_thumbnail_number = 2
+# sphinx_gallery_dummy_images=1

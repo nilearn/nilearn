@@ -106,3 +106,5 @@ plotting.plot_matrix(
 plt.title(f"graph lasso, all subjects\n$\\alpha={gl.alpha_:.2f}$")
 
 show()
+
+# sphinx_gallery_dummy_images=1

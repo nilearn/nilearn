@@ -13,12 +13,13 @@ import nibabel
 import numpy as np
 import pandas as pd
 import pytest
+from numpy.testing import assert_array_equal
+
 from nilearn._utils import data_gen
 from nilearn._utils.testing import serialize_niimg
 from nilearn.datasets import atlas, utils
 from nilearn.datasets._testing import dict_to_archive
 from nilearn.image import get_data
-from numpy.testing import assert_array_equal
 
 
 def test_get_dataset_dir(tmp_path):

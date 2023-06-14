@@ -8,6 +8,14 @@ import pandas as pd
 import pytest
 from nibabel import Nifti1Image, load
 from nibabel.tmpdirs import InTemporaryDirectory
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+    assert_array_less,
+)
+from sklearn.cluster import KMeans
+
 from nilearn._utils.data_gen import (
     _add_metadata_to_bids_dataset,
     basic_paradigm,
@@ -31,13 +39,6 @@ from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.maskers import NiftiMasker
-from numpy.testing import (
-    assert_almost_equal,
-    assert_array_almost_equal,
-    assert_array_equal,
-    assert_array_less,
-)
-from sklearn.cluster import KMeans
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')

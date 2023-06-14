@@ -22,8 +22,7 @@ which is already defined.
 See :ref:`plotting` for more information to know how to tune the parameters.
 """
 # Load 4D probabilistic atlases
-from nilearn import plotting
-from nilearn import datasets
+from nilearn import datasets, plotting
 
 # Harvard Oxford Atlasf
 harvard_oxford = datasets.fetch_atlas_harvard_oxford("cort-prob-2mm")
@@ -96,3 +95,5 @@ plotting.plot_prob_atlas(
 )
 print("ready")
 plotting.show()
+
+# sphinx_gallery_dummy_images=3

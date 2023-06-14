@@ -3,6 +3,7 @@ import json
 import os
 
 import pandas as pd
+
 from nilearn.interfaces.fmriprep import load_confounds_utils
 
 img_file_patterns = {

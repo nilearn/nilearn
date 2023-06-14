@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pytest
 import sklearn
+
 from nilearn._utils import _compare_version
 
 # we use memory_profiler library for memory consumption checks

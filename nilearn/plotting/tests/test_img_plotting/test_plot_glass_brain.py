@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+
 from nilearn.image import get_data
 from nilearn.plotting import plot_glass_brain
 

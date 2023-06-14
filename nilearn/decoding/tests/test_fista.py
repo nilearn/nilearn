@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+
 from nilearn.decoding.fista import _check_lipschitz_continuous, mfista
 from nilearn.decoding.objective_functions import (
     _logistic,

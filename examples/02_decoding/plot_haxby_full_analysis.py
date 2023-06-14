@@ -65,10 +65,11 @@ task_data = index_img(func_filename, task_mask)
 # The classifier used here is a support vector classifier (svc). We use
 # class:`nilearn.decoding.Decoder` and specify the classifier.
 import numpy as np
-from nilearn.decoding import Decoder
 
 # Make a data splitting object for cross validation
 from sklearn.model_selection import LeaveOneGroupOut
+
+from nilearn.decoding import Decoder
 
 cv = LeaveOneGroupOut()
 
@@ -126,6 +127,7 @@ for mask_name in mask_names:
 # We make a simple bar plot to summarize the results
 # --------------------------------------------------
 import matplotlib.pyplot as plt
+
 from nilearn.plotting import show
 
 plt.figure()
@@ -164,3 +166,5 @@ plt.tight_layout()
 
 
 show()
+
+# sphinx_gallery_dummy_images=1

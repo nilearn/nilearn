@@ -16,6 +16,7 @@ from unittest.mock import MagicMock
 import numpy as np
 import pytest
 import requests
+
 from nilearn import datasets
 from nilearn.datasets import utils
 from nilearn.datasets.utils import _get_dataset_descr

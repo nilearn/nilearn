@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+
 from nilearn.conftest import MNI_AFFINE
 from nilearn.image.resampling import coord_transform
 from nilearn.plotting import plot_roi

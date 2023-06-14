@@ -10,6 +10,7 @@ import matplotlib
 import numpy as np
 from matplotlib.image import imsave
 from nibabel.affines import apply_affine
+
 from nilearn.plotting.html_document import HTMLDocument
 
 from .._utils import fill_doc

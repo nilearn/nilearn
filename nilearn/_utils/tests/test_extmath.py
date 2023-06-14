@@ -1,7 +1,8 @@
 """Test the _utils.extmath module."""
 import numpy as np
-from nilearn._utils.extmath import fast_abs_percentile, is_spd
 from sklearn.utils import check_random_state
+
+from nilearn._utils.extmath import fast_abs_percentile, is_spd
 
 
 def test_fast_abs_percentile():

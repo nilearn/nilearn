@@ -93,6 +93,7 @@ plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
 # the mean location to obtain the coordinates.
 
 import numpy as np
+
 from nilearn import surface
 
 atlas = destrieux_atlas
@@ -148,3 +149,5 @@ view = plotting.view_connectome(corr, coordinates, edge_threshold='90%')
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 view
+
+# sphinx_gallery_dummy_images=1

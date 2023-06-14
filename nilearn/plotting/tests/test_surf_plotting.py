@@ -9,6 +9,8 @@ import nibabel
 import numpy as np
 import pytest
 from matplotlib.figure import Figure
+from numpy.testing import assert_array_equal
+
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
@@ -27,7 +29,6 @@ from nilearn.plotting.surf_plotting import (
 )
 from nilearn.surface import load_surf_data, load_surf_mesh
 from nilearn.surface.testing_utils import generate_surf
-from numpy.testing import assert_array_equal
 
 try:
     import plotly.graph_objects as go

@@ -5,6 +5,7 @@ nilearn.plotting.img_plotting._get_colorbar_and_data_ranges.
 
 import numpy as np
 import pytest
+
 from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges
 
 data_pos_neg = np.array([[-.5, 1., np.nan],

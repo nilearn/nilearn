@@ -7,6 +7,8 @@ import warnings
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+from numpy.testing import assert_almost_equal, assert_equal
+
 from nilearn._utils.data_gen import (
     generate_fake_fmri,
     generate_labeled_regions,
@@ -25,7 +27,6 @@ from nilearn.regions.signal_extraction import (
     signals_to_img_labels,
     signals_to_img_maps,
 )
-from numpy.testing import assert_almost_equal, assert_equal
 
 _3D_EXPECTED_ERROR_MSG = (
     "Input data has incompatible dimensionality: "

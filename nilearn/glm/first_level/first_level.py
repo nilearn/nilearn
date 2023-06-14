@@ -17,6 +17,9 @@ import numpy as np
 import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
+from sklearn.base import clone
+from sklearn.cluster import KMeans
+
 from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import _check_run_sample_masks
@@ -45,8 +48,6 @@ from nilearn.interfaces.bids.query import (
     _infer_repetition_time_from_dataset,
     _infer_slice_timing_start_time_from_dataset,
 )
-from sklearn.base import clone
-from sklearn.cluster import KMeans
 
 
 def mean_scaling(Y, axis=0):

@@ -50,6 +50,7 @@ ____
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 from nilearn import datasets
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker
@@ -220,3 +221,5 @@ n_detections = (get_data(signed_neg_log_pvals_unmasked) > threshold).sum()
 print(f"\n{int(n_detections)} detections")
 
 show()
+
+# sphinx_gallery_dummy_images=2

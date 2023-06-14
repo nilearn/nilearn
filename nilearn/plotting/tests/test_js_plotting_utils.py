@@ -6,6 +6,7 @@ import webbrowser
 
 import numpy as np
 import pytest
+
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.js_plotting_utils import (
     add_js_lib,
