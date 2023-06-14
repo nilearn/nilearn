@@ -9,6 +9,7 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 import scipy.stats as sps
+
 from nilearn.glm._utils import z_score
 from nilearn.maskers import NiftiMasker
 

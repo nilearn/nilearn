@@ -22,11 +22,6 @@ from typing import Iterable
 
 import numpy as np
 from joblib import Parallel, delayed
-from nilearn._utils import CacheMixin, fill_doc
-from nilearn._utils.cache_mixin import _check_memory
-from nilearn._utils.param_validation import check_feature_screening
-from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
-from nilearn.regions.rena_clustering import ReNA
 from sklearn import clone
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
@@ -48,6 +43,12 @@ from sklearn.svm import SVR, LinearSVC, l1_min_c
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
+
+from nilearn._utils import CacheMixin, fill_doc
+from nilearn._utils.cache_mixin import _check_memory
+from nilearn._utils.param_validation import check_feature_screening
+from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
+from nilearn.regions.rena_clustering import ReNA
 
 SUPPORTED_ESTIMATORS = dict(
     svc_l1=LinearSVC(penalty="l1", dual=False, max_iter=10000),

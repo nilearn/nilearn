@@ -22,20 +22,6 @@ import warnings
 
 import numpy as np
 import pytest
-from nilearn._utils.param_validation import check_feature_screening
-from nilearn.decoding.decoder import (
-    Decoder,
-    DecoderRegressor,
-    FREMClassifier,
-    FREMRegressor,
-    _BaseDecoder,
-    _check_estimator,
-    _check_param_grid,
-    _parallel_fit,
-    _wrap_param_grid,
-)
-from nilearn.decoding.tests.test_same_api import to_niimgs
-from nilearn.maskers import NiftiMasker
 from numpy.testing import assert_array_almost_equal
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
@@ -56,6 +42,21 @@ from sklearn.metrics import (
 from sklearn.model_selection import KFold, LeaveOneGroupOut, ParameterGrid
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
+
+from nilearn._utils.param_validation import check_feature_screening
+from nilearn.decoding.decoder import (
+    Decoder,
+    DecoderRegressor,
+    FREMClassifier,
+    FREMRegressor,
+    _BaseDecoder,
+    _check_estimator,
+    _check_param_grid,
+    _parallel_fit,
+    _wrap_param_grid,
+)
+from nilearn.decoding.tests.test_same_api import to_niimgs
+from nilearn.maskers import NiftiMasker
 
 N_SAMPLES = 100
 

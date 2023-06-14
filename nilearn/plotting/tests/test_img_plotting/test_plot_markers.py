@@ -5,6 +5,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
+
 from nilearn.plotting import plot_markers
 
 

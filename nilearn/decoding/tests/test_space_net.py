@@ -2,6 +2,14 @@ from functools import partial
 
 import numpy as np
 import pytest
+from numpy.testing import assert_almost_equal, assert_array_equal
+from scipy import linalg
+from sklearn.datasets import load_iris
+from sklearn.linear_model import Lasso, LogisticRegression
+from sklearn.linear_model._coordinate_descent import _alpha_grid
+from sklearn.metrics import accuracy_score
+from sklearn.utils import check_random_state
+
 from nilearn._utils.param_validation import _adjust_screening_percentile
 from nilearn.decoding.space_net import (
     BaseSpaceNet,
@@ -19,13 +27,6 @@ from nilearn.decoding.space_net_solvers import (
 )
 from nilearn.decoding.tests._utils import create_graph_net_simulation_data
 from nilearn.image import get_data
-from numpy.testing import assert_almost_equal, assert_array_equal
-from scipy import linalg
-from sklearn.datasets import load_iris
-from sklearn.linear_model import Lasso, LogisticRegression
-from sklearn.linear_model._coordinate_descent import _alpha_grid
-from sklearn.metrics import accuracy_score
-from sklearn.utils import check_random_state
 
 logistic_path_scores = partial(path_scores, is_classif=True)
 squared_loss_path_scores = partial(path_scores, is_classif=False)

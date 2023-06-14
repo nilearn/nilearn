@@ -2,6 +2,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 from nilearn.plotting import plot_carpet
 
 

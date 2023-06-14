@@ -5,6 +5,9 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image
+from scipy.stats import pearsonr
+from sklearn.preprocessing import scale
+
 from nilearn._utils.fmriprep_confounds import _to_camel_case
 from nilearn.interfaces.fmriprep import load_confounds
 from nilearn.interfaces.fmriprep.load_confounds import (
@@ -16,8 +19,6 @@ from nilearn.interfaces.fmriprep.tests.utils import (
     get_leagal_confound,
 )
 from nilearn.maskers import NiftiMasker
-from scipy.stats import pearsonr
-from sklearn.preprocessing import scale
 
 
 def _simu_img(tmp_path, demean):

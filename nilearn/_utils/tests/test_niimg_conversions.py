@@ -14,10 +14,12 @@ import tempfile
 from pathlib import Path
 
 import nibabel
-import nilearn as ni
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+from numpy.testing import assert_array_almost_equal, assert_array_equal
+
+import nilearn as ni
 from nilearn import _utils, image
 from nilearn._utils import niimg_conversions, testing
 from nilearn._utils.exceptions import DimensionError
@@ -27,7 +29,6 @@ from nilearn._utils.testing import (
     with_memory_profiler,
 )
 from nilearn.image import get_data
-from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 
 class PhonyNiimage(nibabel.spatialimages.SpatialImage):

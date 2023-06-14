@@ -3,6 +3,7 @@ import nibabel
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+
 from nilearn import image
 
 # we need to import these fixtures even if not used in this module

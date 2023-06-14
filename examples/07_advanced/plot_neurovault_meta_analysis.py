@@ -12,6 +12,7 @@ documentation for more details.
 # Author: Ben Cipollini
 # License: BSD
 import scipy
+
 from nilearn import plotting
 from nilearn.datasets import fetch_neurovault_ids
 from nilearn.image import get_data, load_img, math_img, new_img_like

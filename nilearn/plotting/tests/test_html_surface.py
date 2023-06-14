@@ -2,6 +2,7 @@ import json
 
 import numpy as np
 import pytest
+
 from nilearn import datasets, image, surface
 from nilearn._utils.exceptions import DimensionError
 from nilearn.datasets import fetch_surf_fsaverage

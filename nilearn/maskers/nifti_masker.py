@@ -7,6 +7,7 @@ from copy import copy as copy_object
 from functools import partial
 
 from joblib import Memory
+
 from nilearn import _utils, image, masking
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
@@ -301,6 +302,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         """
         try:
             import matplotlib.pyplot as plt
+
             from nilearn import plotting
 
         except ImportError:

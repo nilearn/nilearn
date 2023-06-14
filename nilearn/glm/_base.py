@@ -1,6 +1,7 @@
 from nibabel.onetime import auto_attr
-from nilearn._utils import CacheMixin
 from sklearn.base import BaseEstimator, TransformerMixin
+
+from nilearn._utils import CacheMixin
 
 
 class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):

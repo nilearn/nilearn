@@ -154,8 +154,9 @@ fsl_z_map = nib.load(
 )
 
 import matplotlib.pyplot as plt
-from nilearn import plotting
 from scipy.stats import norm
+
+from nilearn import plotting
 
 plotting.plot_glass_brain(
     z_map,
