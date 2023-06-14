@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+
+title: "nilearn"
+
+version: 0.10.1
+
+abstract: |
+  Nilearn enables approachable and versatile analyses of brain volumes.
+  It provides statistical and machine-learning tools,
+  with instructive documentation & friendly community.
+
+message: "If you use this software, please cite it as below."
+
+repository-code: "https://github.com/nilearn/nilearn"
+
+identifiers:
+  - description: Machine learning for neuroimaging with scikit-learn
+    type: doi
+    value: "10.3389/fninf.2014.00014"
+
+contact:
+  - family-names: Thirion
+    given-names: Bertrand
+    email: bertrand.thirion@inria.fr
+    affiliation: INRIA, France
+
+authors:
+  - family-names: Thirion
+    given-names: Bertrand
+    email: bertrand.thirion@inria.fr
+    affiliation: INRIA, France
+
+
+license: BSD-4-Clause
+
+
