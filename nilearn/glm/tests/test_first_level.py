@@ -1112,7 +1112,7 @@ def test_first_level_from_bids(tmp_path,
         slice_time_ref=None,
     )
 
-    check_output_first_level_from_bids(n_sub,
+    _check_output_first_level_from_bids(n_sub,
                                        models,
                                        m_imgs,
                                        m_events,
@@ -1145,7 +1145,7 @@ def test_first_level_from_bids_select_one_run_per_session(bids_dataset):
         slice_time_ref=None,
     )
 
-    check_output_first_level_from_bids(n_sub,
+    _check_output_first_level_from_bids(n_sub,
                                        models,
                                        m_imgs,
                                        m_events,
@@ -1167,7 +1167,7 @@ def test_first_level_from_bids_select_all_runs_of_one_session(bids_dataset):
         slice_time_ref=None,
     )
 
-    check_output_first_level_from_bids(n_sub,
+    _check_output_first_level_from_bids(n_sub,
                                        models,
                                        m_imgs,
                                        m_events,
@@ -1221,7 +1221,7 @@ def test_first_level_from_bids_several_labels_per_entity(tmp_path, entity):
         slice_time_ref=None,
     )
 
-    check_output_first_level_from_bids(n_sub,
+    _check_output_first_level_from_bids(n_sub,
                                        models,
                                        m_imgs,
                                        m_events,
@@ -1230,7 +1230,7 @@ def test_first_level_from_bids_several_labels_per_entity(tmp_path, entity):
     assert len(m_imgs[0]) == n_imgs_expected
 
 
-def check_output_first_level_from_bids(n_sub,
+def _check_output_first_level_from_bids(n_sub,
                                        models,
                                        m_imgs,
                                        m_events,
