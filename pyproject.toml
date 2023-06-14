@@ -62,7 +62,7 @@ doc = [
 	"flake8-docstrings",
 	"black",
 	"furo",
-  "isort",
+	"isort",
 	"memory_profiler",  # measuring memory during docs building
 	"mkl",
 	"myst-parser",
