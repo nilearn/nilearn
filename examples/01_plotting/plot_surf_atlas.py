@@ -93,6 +93,7 @@ plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
 # the mean location to obtain the coordinates.
 
 import numpy as np
+
 from nilearn import surface
 
 atlas = destrieux_atlas

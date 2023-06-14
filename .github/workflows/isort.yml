@@ -28,9 +28,4 @@ jobs:
         run: python -m pip install --upgrade pip isort
 
       - name: "Run isort"
-        run: |
-            isort --diff --check --settings-path pyproject.toml \
-              examples/0[0234567]* \
-              maint_tools \
-              nilearn \
-              doc
+        run: isort --diff --check --settings-path pyproject.toml .
