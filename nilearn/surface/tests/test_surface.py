@@ -8,6 +8,10 @@ import nibabel as nb
 import numpy as np
 import pytest
 from nibabel import gifti
+from numpy.testing import assert_array_almost_equal, assert_array_equal
+from scipy.spatial import Delaunay
+from scipy.stats import pearsonr
+
 from nilearn import datasets, image
 from nilearn._utils import data_gen
 from nilearn.image import resampling
@@ -23,9 +27,6 @@ from nilearn.surface.surface import (
     _load_surf_files_gifti_gzip,
 )
 from nilearn.surface.testing_utils import flat_mesh, generate_surf, z_const_img
-from numpy.testing import assert_array_almost_equal, assert_array_equal
-from scipy.spatial import Delaunay
-from scipy.stats import pearsonr
 
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')

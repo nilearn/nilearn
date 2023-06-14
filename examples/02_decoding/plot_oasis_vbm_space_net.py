@@ -14,6 +14,7 @@ See also the documentation: :ref:`space_net`.
 # Load the Oasis VBM dataset
 # --------------------------
 import numpy as np
+
 from nilearn import datasets
 
 n_subjects = 200  # increase this number if you have more RAM on your box

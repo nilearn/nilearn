@@ -17,6 +17,7 @@ quality of the model fit.
 # Import modules
 # --------------
 import pandas as pd
+
 from nilearn import image, masking
 from nilearn.datasets import fetch_spm_auditory
 

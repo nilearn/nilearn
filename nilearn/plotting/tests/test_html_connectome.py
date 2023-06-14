@@ -2,6 +2,7 @@ import json
 
 import numpy as np
 import pytest
+
 from nilearn.plotting import html_connectome
 from nilearn.plotting.js_plotting_utils import decode
 

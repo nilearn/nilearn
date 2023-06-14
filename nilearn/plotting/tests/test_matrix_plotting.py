@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel.tmpdirs import InTemporaryDirectory
+
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
@@ -95,7 +96,7 @@ def test_sanitize_reorder_error(reorder):
         else:
             param_to_print.append(str(item))
     with pytest.raises(ValueError,
-                       match=("Parameter reorder needs to be one of:\n"
+                       match=("Parameter reorder needs to be one of:\\n"
                               f"{', '.join(param_to_print)}.")):
         _sanitize_reorder(reorder)
 

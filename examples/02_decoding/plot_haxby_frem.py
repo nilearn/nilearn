@@ -67,8 +67,9 @@ print(f"FREM classification accuracy : {accuracy:g}%")
 # ------------------------------------
 
 import numpy as np
-from nilearn import plotting
 from sklearn.metrics import confusion_matrix
+
+from nilearn import plotting
 
 # Calculate the confusion matrix
 matrix = confusion_matrix(

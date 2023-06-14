@@ -62,6 +62,7 @@ doc = [
 	"flake8-docstrings",
 	"black",
 	"furo",
+	"isort",
 	"memory_profiler",  # measuring memory during docs building
 	"mkl",
 	"myst-parser",
@@ -160,14 +161,14 @@ extend-exclude =  """
 
 [tool.isort]
 profile = "black"
+skip_glob = [
+  "nilearn/externals/*",
+  "doc/auto_examples/*",
+]
 src_paths = [
   'maint_tools',
-  'nilearn/connectome/.*py',
-  'nilearn/dec.*',
-  'nilearn/image/.*py',
-  'nilearn/mass_univariate/.*py',
-  'nilearn/regions/.*py',
-  'nilearn/reporting/.*py'
+  'nilearn',
+  'doc',
 ]
 line_length = 79
 skip_gitignore = true
@@ -180,5 +181,5 @@ doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 
 [tool.codespell]
-skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv"
+skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples"
 ignore-words = ".github/codespell_ignore_words.txt"

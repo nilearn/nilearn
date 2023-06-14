@@ -6,6 +6,9 @@ import warnings
 
 import numpy as np
 from joblib import Memory
+from scipy import sparse
+from sklearn import neighbors
+
 from nilearn import image, masking
 from nilearn._utils import CacheMixin, fill_doc, logger
 from nilearn._utils.class_inspect import get_params
@@ -16,8 +19,6 @@ from nilearn._utils.niimg_conversions import (
     check_niimg_4d,
 )
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
-from scipy import sparse
-from sklearn import neighbors
 
 
 def _apply_mask_and_get_affinity(seeds, niimg, radius, allow_overlap,

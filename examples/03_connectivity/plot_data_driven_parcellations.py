@@ -48,6 +48,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import patches, ticker
+
 from nilearn import datasets, plotting
 from nilearn.image import get_data, index_img, mean_img
 from nilearn.regions import Parcellations

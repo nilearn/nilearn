@@ -9,11 +9,12 @@ import numpy as np
 import pytest
 from joblib import Memory
 from nibabel import Nifti1Image
+from numpy.testing import assert_array_equal
+
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_tmp_imgs
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
-from numpy.testing import assert_array_equal
 
 
 def test_auto_mask():

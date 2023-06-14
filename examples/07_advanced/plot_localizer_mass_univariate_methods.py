@@ -22,6 +22,7 @@ is included in the model.
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
 import matplotlib.pyplot as plt
 import numpy as np
+
 from nilearn import datasets
 from nilearn.maskers import NiftiMasker
 from nilearn.mass_univariate import permuted_ols

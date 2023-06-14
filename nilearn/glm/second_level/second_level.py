@@ -12,6 +12,8 @@ import numpy as np
 import pandas as pd
 from joblib import Memory
 from nibabel import Nifti1Image
+from sklearn.base import clone
+
 from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn.glm._base import BaseGLM
@@ -27,7 +29,6 @@ from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
 from nilearn.image import mean_img
 from nilearn.maskers import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
-from sklearn.base import clone
 
 
 def _check_second_level_input(

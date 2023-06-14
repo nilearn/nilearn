@@ -8,6 +8,14 @@ import pandas as pd
 import pytest
 from nibabel import Nifti1Image, load
 from nibabel.tmpdirs import InTemporaryDirectory
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+    assert_array_less,
+)
+from sklearn.cluster import KMeans
+
 from nilearn._utils.data_gen import (
     _add_metadata_to_bids_dataset,
     basic_paradigm,
@@ -31,13 +39,6 @@ from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.maskers import NiftiMasker
-from numpy.testing import (
-    assert_almost_equal,
-    assert_array_almost_equal,
-    assert_array_equal,
-    assert_array_less,
-)
-from sklearn.cluster import KMeans
 
 BASEDIR = os.path.dirname(os.path.abspath(__file__))
 FUNCFILE = os.path.join(BASEDIR, 'functional.nii.gz')
@@ -1111,10 +1112,11 @@ def test_first_level_from_bids(tmp_path,
         slice_time_ref=None,
     )
 
-    assert len(models) == n_sub
-    assert len(models) == len(m_imgs)
-    assert len(models) == len(m_events)
-    assert len(models) == len(m_confounds)
+    _check_output_first_level_from_bids(n_sub,
+                                        models,
+                                        m_imgs,
+                                        m_events,
+                                        m_confounds)
 
     n_imgs_expected = n_ses * n_runs[task_index]
 
@@ -1143,10 +1145,11 @@ def test_first_level_from_bids_select_one_run_per_session(bids_dataset):
         slice_time_ref=None,
     )
 
-    assert len(models) == n_sub
-    assert len(models) == len(m_imgs)
-    assert len(models) == len(m_events)
-    assert len(models) == len(m_confounds)
+    _check_output_first_level_from_bids(n_sub,
+                                        models,
+                                        m_imgs,
+                                        m_events,
+                                        m_confounds)
 
     n_imgs_expected = n_ses
     assert len(m_imgs[0]) == n_imgs_expected
@@ -1164,10 +1167,11 @@ def test_first_level_from_bids_select_all_runs_of_one_session(bids_dataset):
         slice_time_ref=None,
     )
 
-    assert len(models) == n_sub
-    assert len(models) == len(m_imgs)
-    assert len(models) == len(m_events)
-    assert len(models) == len(m_confounds)
+    _check_output_first_level_from_bids(n_sub,
+                                        models,
+                                        m_imgs,
+                                        m_events,
+                                        m_confounds)
 
     n_imgs_expected = n_runs[0]
     assert len(m_imgs[0]) == n_imgs_expected
@@ -1216,13 +1220,36 @@ def test_first_level_from_bids_several_labels_per_entity(tmp_path, entity):
         img_filters=[("desc", "preproc"), (entity, "A")],
         slice_time_ref=None,
     )
-    assert len(models) == n_sub
-    assert len(models) == len(m_imgs)
-    assert len(models) == len(m_events)
-    assert len(models) == len(m_confounds)
 
+    _check_output_first_level_from_bids(n_sub,
+                                        models,
+                                        m_imgs,
+                                        m_events,
+                                        m_confounds)
     n_imgs_expected = n_ses * n_runs[0]
     assert len(m_imgs[0]) == n_imgs_expected
+
+
+def _check_output_first_level_from_bids(n_sub,
+                                        models,
+                                        m_imgs,
+                                        m_events,
+                                        m_confounds):
+    assert len(models) == n_sub
+    assert all(isinstance(model, FirstLevelModel) for model in models)
+    assert len(models) == len(m_imgs)
+    for imgs in m_imgs:
+        assert isinstance(imgs, list)
+        assert all(Path(img_).exists() for img_ in imgs)
+    assert len(models) == len(m_events)
+    for events in m_events:
+        assert isinstance(events, list)
+        assert all(isinstance(event_, pd.DataFrame) for event_ in events)
+    assert len(models) == len(m_confounds)
+    for confounds in m_confounds:
+        assert isinstance(confounds, list)
+        assert all(isinstance(confound_, pd.DataFrame)
+                   for confound_ in confounds)
 
 
 def test_first_level_from_bids_with_subject_labels(bids_dataset):

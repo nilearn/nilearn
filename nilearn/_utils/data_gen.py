@@ -11,11 +11,12 @@ import pandas as pd
 import scipy.linalg
 import scipy.signal
 from nibabel import Nifti1Image
+from scipy.ndimage import binary_dilation
+from sklearn.utils import check_random_state
+
 from nilearn import datasets, image, maskers, masking
 from nilearn._utils import as_ndarray, logger
 from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
-from scipy.ndimage import binary_dilation
-from sklearn.utils import check_random_state
 
 
 def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
@@ -1398,6 +1399,11 @@ def _write_bids_derivative_func(
 
     shape = [n_voxels, n_voxels, n_voxels, n_time_points]
 
+    entities_to_include = [
+        *_bids_entities()["raw"],
+        *_bids_entities()["derivatives"]
+    ]
+
     for space in ("MNI", "T1w"):
         for desc in ("preproc", "fmriprep"):
             # Only space 'T1w' include both descriptions.
@@ -1406,10 +1412,6 @@ def _write_bids_derivative_func(
 
             fields["entities"]["space"] = space
             fields["entities"]["desc"] = desc
-
-            entities_to_include = [
-                *_bids_entities()["raw"], *_bids_entities()["derivatives"]
-            ]
 
             bold_path = func_path / _create_bids_filename(
                 fields=fields, entities_to_include=entities_to_include

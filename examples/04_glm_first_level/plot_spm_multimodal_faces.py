@@ -71,6 +71,7 @@ mean_image = mean_img(fmri_img)
 # Make the design matrices.
 import numpy as np
 import pandas as pd
+
 from nilearn.glm.first_level import make_first_level_design_matrix
 
 design_matrices = []

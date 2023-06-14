@@ -1,6 +1,7 @@
 import nibabel
 import numpy as np
 import pytest
+
 from nilearn.masking import compute_epi_mask
 from nilearn.plotting.find_cuts import (
     _transform_cut_coords,

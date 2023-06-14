@@ -1,6 +1,7 @@
 import warnings
 
 import pytest
+
 from nilearn._utils import helpers
 
 
