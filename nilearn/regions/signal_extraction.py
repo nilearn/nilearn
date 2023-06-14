@@ -378,10 +378,7 @@ def signals_to_img_labels(
 
 
 @_utils.fill_doc
-def img_to_signals_maps(
-    imgs, maps_img, mask_img=None,
-    keep_masked_maps=True
-):
+def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
     """Extract region signals from image.
 
     This function is applicable to regions defined by maps.
@@ -445,26 +442,24 @@ def img_to_signals_maps(
                 'Starting in version 0.15, the behavior of "NiftiMapsMasker" '
                 'will change when a mask is supplied through the "mask_img" '
                 'parameter. Applying "mask_img" before '
-                'signal extraction may result in empty region signals in the '
-                'output. These empty region signals used to be kept. '
-                'In the new behavior, they will be removed from the output.'
-                '\n'
-                'To explicitly enable/disable the retention of empty '
+                "signal extraction may result in empty region signals in the "
+                "output. These empty region signals used to be kept. "
+                "In the new behavior, they will be removed from the output."
+                "\n"
+                "To explicitly enable/disable the retention of empty "
                 'region signals, set the parameter "keep_masked_maps" to '
-                'True/False when '
+                "True/False when "
                 'initializing the "NiftiMapsMasker" object. '
-                'Starting from version 0.13, the default behavior will be '
+                "Starting from version 0.13, the default behavior will be "
                 'changed to "keep_masked_maps=False". '
                 '"keep_masked_maps" parameter will be removed '
-                'in version 0.15.',
+                "in version 0.15.",
                 DeprecationWarning,
-                stacklevel=2
+                stacklevel=2,
             )
         else:
             labels_after_mask = set(labels)
-            labels_diff = labels_before_mask.difference(
-                labels_after_mask
-            )
+            labels_diff = labels_before_mask.difference(labels_after_mask)
             # Raising a warning if any map is removed due to the mask
             if len(labels_diff) > 0:
                 warnings.warn(
@@ -474,7 +469,7 @@ def img_to_signals_maps(
                     f"Out of {len(labels_before_mask)} maps, the "
                     "masked map image only contains "
                     f"{len(labels_after_mask)} maps.",
-                    stacklevel=2
+                    stacklevel=2,
                 )
 
     data = _safe_get_data(imgs, ensure_finite=True)
