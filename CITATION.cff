@@ -2,8 +2,6 @@ cff-version: 1.2.0
 
 title: "nilearn"
 
-version: 0.10.1
-
 abstract: |
   Nilearn enables approachable and versatile analyses of brain volumes.
   It provides statistical and machine-learning tools,
@@ -19,17 +17,122 @@ identifiers:
     value: "10.3389/fninf.2014.00014"
 
 contact:
-  - family-names: Thirion
-    given-names: Bertrand
+  - given-names: Bertrand
+    family-names: Thirion
     email: bertrand.thirion@inria.fr
     affiliation: INRIA, France
 
 authors:
-  - family-names: Thirion
-    given-names: Bertrand
+
+# Core developers
+
+  - given-names: Bertrand
+    family-names: Thirion
     email: bertrand.thirion@inria.fr
     affiliation: INRIA, France
 
+  - given-names: Alexis
+    family-names: Thirion
+
+  - given-names: Elizabeth
+    family-names: DuPre
+
+  - given-names: Hao-Ting
+    family-names: Wang
+
+  - given-names: Jerome
+    family-names: Dockes
+
+  - given-names: Nicolas
+    family-names: Gensollen
+
+  - given-names: Rémi
+    family-names: Gau
+    email: remi.gau2@mcgill.ca
+    affiliation: Origami lab, McGill University, Montreal, Canada
+
+  - given-names: Taylor
+    family-names: Salo
+
+  - given-names: Yasmin
+    family-names: Mzayek
+
+  - given-names: Alexandre
+    family-names: Gramfort
+
+# Other contributors
+
+  - given-names: Binh
+    family-names: Nguyen
+
+  - given-names: Gael
+    family-names: Varoquaux
+
+  - given-names: Julia
+    family-names: Huntenburg
+
+  - given-names: Thomas
+    family-names: Bazeille
+
+  - given-names: Alexandre
+    family-names: Abadie
+
+  - given-names: Alexandre
+    family-names: Abraham
+
+  - given-names: Andrés Hoyos
+    family-names: Idrobo
+
+  - given-names: Ben
+    family-names: Cipollini
+
+  - given-names: Chris
+    family-names: Gorgolewski
+
+  - given-names: Danilo
+    family-names: Bzdok
+
+  - given-names: Elvis
+    family-names: Dohmatob
+
+  - given-names: Fabian
+    family-names: Pedregosa
+
+  - given-names: Jean
+    family-names: Kossaifi
+
+  - given-names: Jerome-Alexis
+    family-names: Chevalier
+
+  - given-names: Kamalakar Reddy 
+    family-names: Daddy
+
+  - given-names: Kshitij
+    family-names: Chawla
+
+  - given-names: Loic
+    family-names: Estève
+
+  - given-names: Martin
+    family-names: Perez-Guevara
+
+  - given-names: Michael
+    family-names: Eickenberg
+
+  - given-names: Philippe
+    family-names: Gervais
+
+  - given-names: Pierre
+    family-names: Bellec
+
+  - given-names: Salma
+    family-names: Bougacha
+
+  - given-names: Vincent
+    family-names: Michel
+
+  - given-names: Virgile
+    family-names: Fritsch
 
 license: BSD-4-Clause
 
