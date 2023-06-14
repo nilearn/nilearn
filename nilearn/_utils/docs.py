@@ -840,7 +840,7 @@ keep_masked_labels : :obj:`bool`, optional
     output, ensuring no empty time series are present.
     Default=True.
 
-    .. deprecated:: 0.9.2
+    .. deprecated:: 0.10.2.dev
 
         The 'True' option for ``keep_masked_labels`` is deprecated.
         The default value will change to 'False' in 0.13,
