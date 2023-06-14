@@ -118,17 +118,17 @@ dc = "Dummy classifier with stratified strategy"
 
 docdict['classifier_options'] = f"""
 
-        - `svc`: :class:`{svc} <sklearn.svm.SVC>` with L2 penalty.
+        - `svc`: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
             .. code-block:: python
 
                 svc = LinearSVC(penalty='l2',
                                 max_iter=1e4)
 
-        - `svc_l2`: :class:`{svc} <sklearn.svm.SVC>` with L2 penalty.
+        - `svc_l2`: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
             .. note::
                 Same as option `svc`.
 
-        - `svc_l1`: :class:`{svc} <sklearn.svm.SVC>` with L1 penalty.
+        - `svc_l1`: :class:`{svc} <sklearn.svm.LinearSVC>` with L1 penalty.
             .. code-block:: python
 
                 svc_l1 = LinearSVC(penalty='l1',
@@ -136,23 +136,23 @@ docdict['classifier_options'] = f"""
                                    max_iter=1e4)
 
         - `logistic`: \
-            :class:`{logistic} <sklearn.linear_model.LogisticRegression>` \
+            :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
             with L2 penalty.
             .. code-block:: python
 
-                logistic = LogisticRegression(penalty='l2',
+                logistic = LogisticRegressionCV(penalty='l2',
                                               solver='liblinear')
 
         - `logistic_l1`: \
-            :class:`{logistic} <sklearn.linear_model.LogisticRegression>` \
+            :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
             with L1 penalty.
             .. code-block:: python
 
-                logistic_l1 = LogisticRegression(penalty='l1',
+                logistic_l1 = LogisticRegressionCV(penalty='l1',
                                                  solver='liblinear')
 
         - `logistic_l2`: \
-            :class:`{logistic} <sklearn.linear_model.LogisticRegression>` \
+            :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
             with L2 penalty
             .. note::
                 Same as option `logistic`.

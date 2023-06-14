@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+
 from nilearn.plotting import plot_prob_atlas
 
 

@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import requests
+
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.datasets import neurovault
 from nilearn.image import load_img

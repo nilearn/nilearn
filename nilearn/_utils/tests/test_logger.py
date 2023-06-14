@@ -6,8 +6,9 @@ ignores modules whose name starts with an underscore.
 """
 import contextlib
 
-from nilearn._utils.logger import log
 from sklearn.base import BaseEstimator
+
+from nilearn._utils.logger import log
 
 
 @contextlib.contextmanager

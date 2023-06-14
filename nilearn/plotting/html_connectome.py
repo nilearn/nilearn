@@ -4,8 +4,9 @@ import json
 
 import numpy as np
 from matplotlib import cm as mpl_cm
-from nilearn.plotting.html_document import HTMLDocument
 from scipy import sparse
+
+from nilearn.plotting.html_document import HTMLDocument
 
 from .. import datasets
 from . import cm

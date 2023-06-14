@@ -17,10 +17,11 @@ import nibabel as nib
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.utils import check_random_state
+
 from nilearn.datasets import func
 from nilearn.datasets._testing import dict_to_archive, list_to_archive
 from nilearn.datasets.utils import _get_dataset_dir
-from sklearn.utils import check_random_state
 
 
 def _load_localizer_index():

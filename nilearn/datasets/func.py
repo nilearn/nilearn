@@ -20,8 +20,9 @@ try:
 except ImportError:  # SciPy < 1.8
     from scipy.io.matlab.miobase import MatReadError
 
-from nilearn.image import get_data
 from sklearn.utils import Bunch
+
+from nilearn.image import get_data
 
 from .._utils import check_niimg, fill_doc
 from .._utils.numpy_conversions import csv_to_array

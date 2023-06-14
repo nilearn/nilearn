@@ -7,8 +7,9 @@ import numbers
 import warnings
 
 import numpy as np
-from nilearn.image import get_data
 from scipy.ndimage import center_of_mass, find_objects, label
+
+from nilearn.image import get_data
 
 from .._utils import check_niimg_3d, check_niimg_4d
 from .._utils.extmath import fast_abs_percentile

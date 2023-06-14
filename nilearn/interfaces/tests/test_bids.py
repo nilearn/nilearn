@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel.tmpdirs import InTemporaryDirectory
+
 from nilearn._utils.data_gen import (
     _add_metadata_to_bids_dataset,
     create_fake_bids_dataset,

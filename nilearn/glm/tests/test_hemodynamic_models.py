@@ -2,6 +2,12 @@ import warnings
 
 import numpy as np
 import pytest
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
+
 from nilearn.glm.first_level.hemodynamic_models import (
     _calculate_tr,
     _hrf_kernel,
@@ -16,11 +22,6 @@ from nilearn.glm.first_level.hemodynamic_models import (
     spm_dispersion_derivative,
     spm_hrf,
     spm_time_derivative,
-)
-from numpy.testing import (
-    assert_almost_equal,
-    assert_array_almost_equal,
-    assert_array_equal,
 )
 
 HRF_MODEL_NAMES = [
