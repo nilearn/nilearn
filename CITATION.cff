@@ -1,3 +1,5 @@
+# https://citation-file-format.github.io/
+# https://github.com/citation-file-format/citation-file-format/blob/main/schema-guide.md
 cff-version: 1.2.0
 
 title: "nilearn"
