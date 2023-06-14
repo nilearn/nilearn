@@ -108,8 +108,8 @@ def _sanitize_reorder(reorder):
             else:
                 param_to_print.append(str(item))
         raise ValueError(
-            f"Parameter reorder needs to be one of:"
-            "\n{', '.join(param_to_print)}."
+            "Parameter reorder needs to be one of:"
+            f"\n{', '.join(param_to_print)}."
         )
     reorder = 'average' if reorder is True else reorder
     return reorder
