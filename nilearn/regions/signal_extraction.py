@@ -439,19 +439,12 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
         maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
         if keep_masked_maps:
             warnings.warn(
-                'Starting in version 0.15, the behavior of "NiftiMapsMasker" '
-                'will change when a mask is supplied through the "mask_img" '
-                'parameter. Applying "mask_img" before '
+                'Applying "mask_img" before '
                 "signal extraction may result in empty region signals in the "
-                "output. These empty region signals used to be kept. "
-                "In the new behavior, they will be removed from the output."
-                "\n"
-                "To explicitly enable/disable the retention of empty "
-                'region signals, set the parameter "keep_masked_maps" to '
-                "True/False when "
-                'initializing the "NiftiMapsMasker" object. '
+                "output. These are currently kept. "
                 "Starting from version 0.13, the default behavior will be "
-                'changed to "keep_masked_maps=False". '
+                "changed to remove them by setting "
+                '"keep_masked_maps=False". '
                 '"keep_masked_maps" parameter will be removed '
                 "in version 0.15.",
                 DeprecationWarning,
