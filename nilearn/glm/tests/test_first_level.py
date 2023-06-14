@@ -1113,10 +1113,10 @@ def test_first_level_from_bids(tmp_path,
     )
 
     _check_output_first_level_from_bids(n_sub,
-                                       models,
-                                       m_imgs,
-                                       m_events,
-                                       m_confounds)
+                                        models,
+                                        m_imgs,
+                                        m_events,
+                                        m_confounds)
 
     n_imgs_expected = n_ses * n_runs[task_index]
 
@@ -1146,10 +1146,10 @@ def test_first_level_from_bids_select_one_run_per_session(bids_dataset):
     )
 
     _check_output_first_level_from_bids(n_sub,
-                                       models,
-                                       m_imgs,
-                                       m_events,
-                                       m_confounds)
+                                        models,
+                                        m_imgs,
+                                        m_events,
+                                        m_confounds)
 
     n_imgs_expected = n_ses
     assert len(m_imgs[0]) == n_imgs_expected
@@ -1168,10 +1168,10 @@ def test_first_level_from_bids_select_all_runs_of_one_session(bids_dataset):
     )
 
     _check_output_first_level_from_bids(n_sub,
-                                       models,
-                                       m_imgs,
-                                       m_events,
-                                       m_confounds)
+                                        models,
+                                        m_imgs,
+                                        m_events,
+                                        m_confounds)
 
     n_imgs_expected = n_runs[0]
     assert len(m_imgs[0]) == n_imgs_expected
@@ -1222,19 +1222,19 @@ def test_first_level_from_bids_several_labels_per_entity(tmp_path, entity):
     )
 
     _check_output_first_level_from_bids(n_sub,
-                                       models,
-                                       m_imgs,
-                                       m_events,
-                                       m_confounds)
+                                        models,
+                                        m_imgs,
+                                        m_events,
+                                        m_confounds)
     n_imgs_expected = n_ses * n_runs[0]
     assert len(m_imgs[0]) == n_imgs_expected
 
 
 def _check_output_first_level_from_bids(n_sub,
-                                       models,
-                                       m_imgs,
-                                       m_events,
-                                       m_confounds):
+                                        models,
+                                        m_imgs,
+                                        m_events,
+                                        m_confounds):
     assert len(models) == n_sub
     assert all(isinstance(model, FirstLevelModel) for model in models)
     assert len(models) == len(m_imgs)
