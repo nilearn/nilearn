@@ -96,7 +96,7 @@ def test_sanitize_reorder_error(reorder):
         else:
             param_to_print.append(str(item))
     with pytest.raises(ValueError,
-                       match=("Parameter reorder needs to be one of:\n"
+                       match=("Parameter reorder needs to be one of:\\n"
                               f"{', '.join(param_to_print)}.")):
         _sanitize_reorder(reorder)
 

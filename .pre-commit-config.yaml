@@ -38,7 +38,6 @@ files: |
 
 exclude: |
     (?x)^(
-        doc/changes/(names|latest).rst
         | doc/glm/first_level_model\\.rst
         | introduction\\.rst
         | maintenance\\.rst

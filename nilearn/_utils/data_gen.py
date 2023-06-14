@@ -1399,6 +1399,11 @@ def _write_bids_derivative_func(
 
     shape = [n_voxels, n_voxels, n_voxels, n_time_points]
 
+    entities_to_include = [
+        *_bids_entities()["raw"],
+        *_bids_entities()["derivatives"]
+    ]
+
     for space in ("MNI", "T1w"):
         for desc in ("preproc", "fmriprep"):
             # Only space 'T1w' include both descriptions.
@@ -1407,10 +1412,6 @@ def _write_bids_derivative_func(
 
             fields["entities"]["space"] = space
             fields["entities"]["desc"] = desc
-
-            entities_to_include = [
-                *_bids_entities()["raw"], *_bids_entities()["derivatives"]
-            ]
 
             bold_path = func_path / _create_bids_filename(
                 fields=fields, entities_to_include=entities_to_include

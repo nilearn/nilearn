@@ -1334,16 +1334,9 @@ def _get_confounds(
         List of fullpath to the confounds.tsv files
 
     """
-    supported_filters = (
-        _bids_entities()["raw"]
-        + _bids_entities()["derivatives"]
-    )
-    # confounds use a desc-confounds,
-    # so we must remove desc if it was passed as a filter
-    supported_filters.remove("desc")
     filters = _make_bids_files_filter(
         task_label=task_label,
-        supported_filters=supported_filters,
+        supported_filters=_bids_entities()["raw"],
         extra_filter=img_filters,
         verbose=verbose,
     )
