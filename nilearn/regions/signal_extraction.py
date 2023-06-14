@@ -103,8 +103,12 @@ def _check_shape_and_affine_compatibility(img1, img2=None, dim=None):
 
 
 def _get_labels_data(
-    target_img, labels_img, mask_img=None, background_label=0, dim=None,
-    keep_masked_labels=True
+    target_img,
+    labels_img,
+    mask_img=None,
+    background_label=0,
+    dim=None,
+    keep_masked_labels=True,
 ):
     """Get the label data.
 
@@ -163,20 +167,20 @@ def _get_labels_data(
             'Starting in version 0.15, the behavior of "NiftiLabelsMasker" '
             'will change when a mask is supplied through the "mask_img" '
             'parameter. Applying "mask_img" before '
-            'signal extraction may result in empty region signals in the '
-            'output. These empty region signals used to be kept. '
-            'In the new behavior, they will be removed from the output.'
-            '\n'
-            'To explicitly enable/disable the retention of empty '
+            "signal extraction may result in empty region signals in the "
+            "output. These empty region signals used to be kept. "
+            "In the new behavior, they will be removed from the output."
+            "\n"
+            "To explicitly enable/disable the retention of empty "
             'region signals, set the parameter "keep_masked_labels" '
-            'to True/False when '
+            "to True/False when "
             'initializing the "NiftiLabelsMasker" object. '
-            'Starting from version 0.13, the default behavior will be '
+            "Starting from version 0.13, the default behavior will be "
             'changed to "keep_masked_labels=False". '
             '"keep_masked_labels" parameter will be removed '
-            'in version 0.15.',
+            "in version 0.15.",
             DeprecationWarning,
-            stacklevel=3
+            stacklevel=3,
         )
 
     # Consider only data within the mask
@@ -189,9 +193,7 @@ def _get_labels_data(
         # Applying mask on labels_data
         labels_data[np.logical_not(mask_data)] = background_label
         labels_after_mask = set(np.unique(labels_data))
-        labels_diff = labels_before_mask.difference(
-            labels_after_mask
-        )
+        labels_diff = labels_before_mask.difference(labels_after_mask)
         # Raising a warning if any label is removed due to the mask
         if len(labels_diff) > 0 and (not keep_masked_labels):
             warnings.warn(
@@ -202,7 +204,7 @@ def _get_labels_data(
                 "masked labels image only contains "
                 f"{len(labels_after_mask)} labels "
                 "(including background).",
-                stacklevel=3
+                stacklevel=3,
             )
 
     if not keep_masked_labels:
@@ -251,7 +253,7 @@ def img_to_signals_labels(
     background_label=0,
     order="F",
     strategy="mean",
-    keep_masked_labels=True
+    keep_masked_labels=True,
 ):
     """Extract region signals from image.
 
@@ -316,8 +318,11 @@ def img_to_signals_labels(
     # (load one image at a time).
     imgs = _utils.check_niimg_4d(imgs)
     labels, labels_data = _get_labels_data(
-        imgs, labels_img, mask_img, background_label,
-        keep_masked_labels=keep_masked_labels
+        imgs,
+        labels_img,
+        mask_img,
+        background_label,
+        keep_masked_labels=keep_masked_labels,
     )
 
     data = _safe_get_data(imgs, ensure_finite=True)

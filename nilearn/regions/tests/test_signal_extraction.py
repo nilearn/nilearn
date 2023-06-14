@@ -466,8 +466,10 @@ def test_signal_extraction_with_maps_and_labels(labeled_regions, fmri_img):
     # not keeping the masked labels
 
     labels_signals, labels_labels = img_to_signals_labels(
-        imgs=fmri_img, labels_img=labeled_regions, mask_img=mask_img,
-        keep_masked_labels=False
+        imgs=fmri_img,
+        labels_img=labeled_regions,
+        mask_img=mask_img,
+        keep_masked_labels=False,
     )
     # only 3 regions must be kept, others must be removed
     assert labels_signals.shape == (N_TIMEPOINTS, 3)
