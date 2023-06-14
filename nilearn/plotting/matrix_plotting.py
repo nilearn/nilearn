@@ -101,8 +101,15 @@ def _sanitize_reorder(reorder):
     """Help for plot_matrix."""
     VALID_REORDER_ARGS = {True, False, 'single', 'complete', 'average'}
     if reorder not in VALID_REORDER_ARGS:
+        param_to_print = []
+        for item in VALID_REORDER_ARGS:
+            if isinstance(item, str):
+                param_to_print.append(f'"{item}"')
+            else:
+                param_to_print.append(str(item))
         raise ValueError(
-            f"Parameter reorder needs to be one of {VALID_REORDER_ARGS}.")
+            f"Parameter reorder needs to be one of:\n{', '.join(param_to_print)}."
+        )
     reorder = 'average' if reorder is True else reorder
     return reorder
 
