@@ -6,8 +6,8 @@ if [ "$GITHUB_REF_NAME" == "main" ] || [[ $(cat gitlog.txt) == *"[full doc]"* ]]
 else
     if [[ $(cat gitlog.txt) == *"[examples]"* ]]; then
         COMMIT_MESSAGE=${$(cat gitlog.txt)#*]};
-        if [[ $COMMIT_MESSAGE == ]]; then
-            DIRECTORY=;
+        if [[ $COMMIT_MESSAGE == "^[0-9][0-9]" ]]; then
+            DIRECTORY="../examples/${COMMIT_MESSAGE}";
         else
             FILENAMES="examples/*/${COMMIT_MESSAGE}";
         fi;
