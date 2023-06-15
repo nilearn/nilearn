@@ -1,23 +1,40 @@
 # ---------------------------------------------------------------------------- #
-#                               FORMATTING PRs
+#                               REFACTORING PRs
 #
 # Most recently merged PRs are at the top
 #
 # ---------------------------------------------------------------------------- #
 # [MAINT] refactor nilearn/maskers (sourcery, f-strings) (#3685)
 37333f4604488ccef0ace5870ad442b725f60860
-# [MAINT] Format nilearn/plotting: apply isort and fix flake8 errors (#3648)
-115816702222182a244414540bb74687d7ea9597
-# [MAINT] Formatting _utils (#3614)
-9a507162952e8598c1281bfdd1b86f6d6ad14425 
 # [MAINT] refactor nilearn/glm (sourcery, f-strings) (#3672)
 3522d9086eb9999d05549fc2ad0d13a83c590f8c 
 # [MAINT] refactor nilearn/surface (sourcery, f-strings) (#3682)
 9352506d7d32fa17cc83971b011ad00932befe56 
 # [MAINT] refactor nilearn/interfaces (sourcery, f-strings) (#3683)
 2e18c91342b65048307a21a45b5a8473414b6d16 
+# ---------------------------------------------------------------------------- #
+#                               FORMATTING PRs
+#
+# Most recently merged PRs are at the top
+#
+# ---------------------------------------------------------------------------- #
+# [MAINT] run isort and flake8 on the whole nilearn code base in CI (#3651)
+44933309ecd09add795ce1c3ea5edaab4294da87 
+
+# [MAINT] Format nilearn/plotting: apply isort and fix flake8 errors (#3648)
+115816702222182a244414540bb74687d7ea9597
+# [MAINT] Update config for formatting of nilearn/datasets (#3697)
+54aed7305f75be38d52d15ed30f80f45bfdd839f
+# [MAINT] Format datasets/atlas.py (#3694)
+983accf6d83983bae261143d311b2a9b10374d3a 
+# [MAINT] Formatting _utils (#3614)
+9a507162952e8598c1281bfdd1b86f6d6ad14425 
 # [MAINT] Format reporting (#3615)
 9ed76218dcef6814030c7473a52ae836d7a9ca7a  
+# [MAINT] Format nilearn/surface: apply isort and fix flake8 errors (#3645)
+17d4b53d2bdb3a7722530eef9be1d58b305c9a0d 
+# [MAINT] apply to black nilearn/glm (#3662)
+a9e13a62f4cbc9eddc4f789ee46c2e096c921f03 
 # [MAINT] Format nilearn/glm: apply isort and fix flake8 errors (#3640)
 1c334c9f2bfc5f2f5057489ea199aee483b8874d
 # [MAINT] Format nilearn/interfaces: apply isort and fix flake8 errors (#3647)
