@@ -7,8 +7,9 @@ import warnings
 
 import numpy as np
 from joblib import Memory
-from nilearn.image import high_variance_confounds
 from sklearn.base import BaseEstimator, TransformerMixin
+
+from nilearn.image import high_variance_confounds
 
 from .. import _utils, image, masking, signal
 from .._utils import stringify_path
@@ -57,9 +58,8 @@ def _filter_and_extract(
         copy = False
 
     if verbose > 0:
-        print("[{}] Loading data from {}".format(
-            class_name,
-            _utils._repr_niimgs(imgs, shorten=False)))
+        print(f"[{class_name}] Loading data "
+              f"from {_utils._repr_niimgs(imgs, shorten=False)}")
 
     # Convert input to niimg to check shape.
     # This must be repeated after the shape check because check_niimg will
@@ -284,25 +284,26 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 return self.fit(X, **fit_params
                                 ).transform(X, confounds=confounds,
                                             sample_mask=sample_mask)
-            else:
-                return self.fit(**fit_params).transform(X,
-                                                        confounds=confounds,
-                                                        sample_mask=sample_mask
-                                                        )
-        else:
-            # fit method of arity 2 (supervised transformation)
-            if self.mask_img is None:
-                return self.fit(X, y, **fit_params
-                                ).transform(X, confounds=confounds,
-                                            sample_mask=sample_mask)
-            else:
-                warnings.warn('[%s.fit] Generation of a mask has been'
-                              ' requested (y != None) while a mask has'
-                              ' been provided at masker creation. Given mask'
-                              ' will be used.' % self.__class__.__name__)
-                return self.fit(**fit_params).transform(X, confounds=confounds,
-                                                        sample_mask=sample_mask
-                                                        )
+
+            return self.fit(**fit_params).transform(X,
+                                                    confounds=confounds,
+                                                    sample_mask=sample_mask
+                                                    )
+
+        # fit method of arity 2 (supervised transformation)
+        if self.mask_img is None:
+            return self.fit(X, y, **fit_params
+                            ).transform(X, confounds=confounds,
+                                        sample_mask=sample_mask)
+
+        warnings.warn(f'[{self.__class__.__name__}.fit] '
+                      'Generation of a mask has been'
+                      ' requested (y != None) while a mask has'
+                      ' been provided at masker creation. Given mask'
+                      ' will be used.')
+        return self.fit(**fit_params).transform(X, confounds=confounds,
+                                                sample_mask=sample_mask
+                                                )
 
     def inverse_transform(self, X):
         """Transform the 2D data matrix back to an image in brain space.
@@ -340,6 +341,6 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     def _check_fitted(self):
         if not hasattr(self, "mask_img_"):
-            raise ValueError('It seems that %s has not been fitted. '
-                             'You must call fit() before calling transform().'
-                             % self.__class__.__name__)
+            raise ValueError(f'It seems that {self.__class__.__name__} '
+                             'has not been fitted. '
+                             'You must call fit() before calling transform().')

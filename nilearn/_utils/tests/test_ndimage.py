@@ -6,6 +6,7 @@ ignores modules whose name starts with an underscore.
 """
 import numpy as np
 import pytest
+
 from nilearn._utils import data_gen
 from nilearn._utils.ndimage import _peak_local_max, largest_connected_component
 

@@ -142,6 +142,7 @@ neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
 ##############################################################################
 # Visualization
 import matplotlib.pyplot as plt
+
 from nilearn.image import get_data
 from nilearn.plotting import plot_stat_map, show
 
@@ -196,3 +197,5 @@ title = (
 display.title(title, y=1.1)
 
 show()
+
+# sphinx_gallery_dummy_images=1

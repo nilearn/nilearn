@@ -1,9 +1,10 @@
 """Tests for :func:`nilearn.plotting.plot_prob_atlas`."""
 
-import pytest
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import pytest
 from nibabel import Nifti1Image
+
 from nilearn.plotting import plot_prob_atlas
 
 

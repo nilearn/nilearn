@@ -1,30 +1,29 @@
-
-import numbers
 import collections
-from nilearn._utils.docs import fill_doc
-import numpy as np
+import numbers
 
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap, ListedColormap
+import numpy as np
 from matplotlib.colorbar import ColorbarBase
+from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.transforms import Bbox
 
-from nilearn._utils import _compare_version
-from nilearn._utils import check_niimg_3d
-from nilearn.plotting.find_cuts import find_xyz_cut_coords, find_cut_slices
-from nilearn.plotting.displays import CutAxes
-from nilearn.plotting.edge_detect import _edge_map
-from nilearn.image.resampling import get_bounds, get_mask_bounds
-from nilearn.image import reorder_img, new_img_like, get_data
+from nilearn._utils import _compare_version, check_niimg_3d
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.niimg import _is_binary_niimg, _safe_get_data
+from nilearn.image import get_data, new_img_like, reorder_img
+from nilearn.image.resampling import get_bounds, get_mask_bounds
+from nilearn.plotting.displays import CutAxes
 from nilearn.plotting.displays._axes import _coords_3d_to_2d
+from nilearn.plotting.edge_detect import _edge_map
+from nilearn.plotting.find_cuts import find_cut_slices, find_xyz_cut_coords
 
 
 class BaseSlicer:
-    """BaseSlicer implementation which main purpose is to auto adjust
-    the axes size to the data with different layout of cuts. It create
-    3 linked axes for plotting orthogonal cuts.
+    """BaseSlicer implementation which main purpose is to auto adjust \
+    the axes size to the data with different layout of cuts.
+
+    It creates 3 linked axes for plotting orthogonal cuts.
 
     Attributes
     ----------
@@ -46,6 +45,7 @@ class BaseSlicer:
         transparent colorbars).
         Default=(0.5, 0.5, 0.5)
     """
+
     # This actually encodes the figsize for only one axe
     _default_figsize = [2.2, 2.6]
     _axes_class = CutAxes
@@ -73,17 +73,18 @@ class BaseSlicer:
 
     @property
     def brain_color(self):
+        """Return brain color."""
         return self._brain_color
 
     @property
     def black_bg(self):
+        """Return black background."""
         return self._black_bg
 
     @staticmethod
     def find_cut_coords(img=None, threshold=None, cut_coords=None):
-        """This is not implemented in the base class and has to
-        be implemented in derived classes.
-        """
+        """Act as placeholder and is not implemented in the base class \
+        and has to be implemented in derived classes."""
         # Implement this as a staticmethod or a classmethod when
         # subclassing
         raise NotImplementedError
@@ -220,7 +221,7 @@ class BaseSlicer:
     def add_overlay(self, img, threshold=1e-6, colorbar=False,
                     cbar_tick_format="%.2g", cbar_vmin=None, cbar_vmax=None,
                     **kwargs):
-        """ Plot a 3D map in all the views.
+        """Plot a 3D map in all the views.
 
         Parameters
         ----------
@@ -272,7 +273,8 @@ class BaseSlicer:
         kwargs.setdefault('interpolation', 'nearest')
         ims = self._map_show(img, type='imshow', threshold=threshold, **kwargs)
 
-        # `ims` can be empty in some corner cases, look at test_img_plotting.test_outlier_cut_coords.
+        # `ims` can be empty in some corner cases,
+        # look at test_img_plotting.test_outlier_cut_coords.
         if colorbar and ims:
             self._show_colorbar(ims[0].cmap, ims[0].norm,
                                 cbar_vmin, cbar_vmax, threshold)
@@ -281,7 +283,7 @@ class BaseSlicer:
 
     @fill_doc
     def add_contours(self, img, threshold=1e-6, filled=False, **kwargs):
-        """ Contour a 3D map in all the views.
+        """Contour a 3D map in all the views.
 
         Parameters
         ----------
@@ -326,7 +328,8 @@ class BaseSlicer:
             if 'levels' in kwargs:
                 levels = kwargs['levels']
                 if len(levels) <= 1:
-                    # contour fillings levels should be given as (lower, upper).
+                    # contour fillings levels
+                    # should be given as (lower, upper).
                     levels.append(np.inf)
 
             self._map_show(img, type='contourf', threshold=threshold, **kwargs)
@@ -417,7 +420,7 @@ class BaseSlicer:
     @fill_doc
     def _show_colorbar(self, cmap, norm, cbar_vmin=None,
                        cbar_vmax=None, threshold=None):
-        """Displays the colorbar.
+        """Display the colorbar.
 
         Parameters
         ----------
@@ -544,7 +547,8 @@ class BaseSlicer:
 
         marker_color : pyplot compatible color or :obj:`list` of\
         shape ``(n_markers,)``, optional
-            List of colors for each marker that can be string or matplotlib colors.
+            List of colors for each marker
+            that can be string or matplotlib colors.
             Default='r'.
 
         marker_size : :obj:`float` or :obj:`list` of :obj:`float` of\
@@ -563,14 +567,15 @@ class BaseSlicer:
             marker_coords_2d, third_d = _coords_3d_to_2d(
                 marker_coords, direction, return_direction=True)
             xdata, ydata = marker_coords_2d.T
-	        # Allow markers only in their respective hemisphere when appropriate
+            # Allow markers only in their respective hemisphere
+            # when appropriate
             marker_color_ = marker_color
             marker_size_ = marker_size
             if direction in ('lr'):
                 if (not isinstance(marker_color, str) and
-	            not isinstance(marker_color, np.ndarray)):
+                        not isinstance(marker_color, np.ndarray)):
                     marker_color_ = np.asarray(marker_color)
-                xcoords, ycoords, zcoords = marker_coords.T
+                xcoords, *_ = marker_coords.T
                 if direction == 'r':
                     relevant_coords = (xcoords >= 0)
                 elif direction == 'l':
@@ -687,6 +692,7 @@ class BaseSlicer:
 
     def close(self):
         """Close the figure.
+
         This is necessary to avoid leaking memory.
         """
         plt.close(self.frame_axes.figure.number)
@@ -711,8 +717,10 @@ class BaseSlicer:
 
 
 class OrthoSlicer(BaseSlicer):
-    """A class to create 3 linked axes for plotting orthogonal
-    cuts of 3D maps. This visualization mode can be activated
+    """Class to create 3 linked axes for plotting orthogonal \
+    cuts of 3D maps.
+
+    This visualization mode can be activated
     from Nilearn plotting functions, like
     :func:`~nilearn.plotting.plot_img`, by setting
     ``display_mode='ortho'``:
@@ -750,6 +758,7 @@ class OrthoSlicer(BaseSlicer):
     and arranged in a 2x2 grid.
 
     """
+
     _cut_displayed = 'yxz'
     _axes_class = CutAxes
 
@@ -823,7 +832,10 @@ class OrthoSlicer(BaseSlicer):
             self.frame_axes.set_zorder(-1000)
 
     def _locator(self, axes, renderer):
-        """The locator function used by matplotlib to position axes.
+        """Adjust the size of the axes.
+
+        The locator function used by matplotlib to position axes.
+
         Here we put the logic used to adjust the size of the axes.
         """
         x0, y0, x1, y1 = self.rect
@@ -868,8 +880,7 @@ class OrthoSlicer(BaseSlicer):
                      [left_dict[axes] + width_dict[axes], y1]])
 
     def draw_cross(self, cut_coords=None, **kwargs):
-        """Draw a crossbar on the plot to show where the cut is
-        performed.
+        """Draw a crossbar on the plot to show where the cut is performed.
 
         Parameters
         ----------
@@ -922,8 +933,9 @@ class OrthoSlicer(BaseSlicer):
 
 
 class TiledSlicer(BaseSlicer):
-    """A class to create 3 axes for plotting orthogonal
+    """A class to create 3 axes for plotting orthogonal \
     cuts of 3D maps, organized in a 2x2 grid.
+
     This visualization mode can be activated from Nilearn plotting functions,
     like :func:`~nilearn.plotting.plot_img`, by setting
     ``display_mode='tiled'``:
@@ -960,6 +972,7 @@ class TiledSlicer(BaseSlicer):
        and arranged in a 2x2 grid.
 
     """
+
     _cut_displayed = 'yxz'
     _axes_class = CutAxes
     _default_figsize = [2.0, 6.0]
@@ -1014,24 +1027,24 @@ class TiledSlicer(BaseSlicer):
         rect_x0, rect_y0, rect_x1, rect_y1 = self.rect
 
         if index == 0:
-                coord1 = rect_x1 - rect_x0
-                coord2 = 0.5 * (rect_y1 - rect_y0) + rect_y0
-                coord3 = 0.5 * (rect_x1 - rect_x0) + rect_x0
-                coord4 = rect_y1 - rect_y0
+            coord1 = rect_x1 - rect_x0
+            coord2 = 0.5 * (rect_y1 - rect_y0) + rect_y0
+            coord3 = 0.5 * (rect_x1 - rect_x0) + rect_x0
+            coord4 = rect_y1 - rect_y0
         elif index == 1:
-                coord1 = 0.5 * (rect_x1 - rect_x0) + rect_x0
-                coord2 = 0.5 * (rect_y1 - rect_y0) + rect_y0
-                coord3 = rect_x1 - rect_x0
-                coord4 = rect_y1 - rect_y0
+            coord1 = 0.5 * (rect_x1 - rect_x0) + rect_x0
+            coord2 = 0.5 * (rect_y1 - rect_y0) + rect_y0
+            coord3 = rect_x1 - rect_x0
+            coord4 = rect_y1 - rect_y0
         elif index == 2:
-                coord1 = rect_x1 - rect_x0
-                coord2 = rect_y1 - rect_y0
-                coord3 = 0.5 * (rect_x1 - rect_x0) + rect_x0
-                coord4 = 0.5 * (rect_y1 - rect_y0) + rect_y0
+            coord1 = rect_x1 - rect_x0
+            coord2 = rect_y1 - rect_y0
+            coord3 = 0.5 * (rect_x1 - rect_x0) + rect_x0
+            coord4 = 0.5 * (rect_y1 - rect_y0) + rect_y0
         return [coord1, coord2, coord3, coord4]
 
     def _init_axes(self, **kwargs):
-        """Initializes and places axes for display of 'xyz' cuts.
+        """Initialize and place axes for display of 'xyz' cuts.
 
         Parameters
         ----------
@@ -1065,7 +1078,7 @@ class TiledSlicer(BaseSlicer):
 
     def _adjust_width_height(self, width_dict, height_dict,
                              rect_x0, rect_y0, rect_x1, rect_y1):
-        """Adjusts absolute image width and height to ratios.
+        """Adjust absolute image width and height to ratios.
 
         Parameters
         ----------
@@ -1112,7 +1125,7 @@ class TiledSlicer(BaseSlicer):
 
     def _find_axes_coord(self, rel_width_dict, rel_height_dict,
                          rect_x0, rect_y0, rect_x1, rect_y1):
-        """"Find coordinates for initial axes placement for xyz cuts.
+        """Find coordinates for initial axes placement for xyz cuts.
 
         Parameters
         ----------
@@ -1157,10 +1170,13 @@ class TiledSlicer(BaseSlicer):
             coord3[ax] = rect_x0 + rel_width_dict[ax]
             coord4[ax] = rect_y0 + rel_height_dict[ax]
 
-        return(coord1, coord2, coord3, coord4)
+        return (coord1, coord2, coord3, coord4)
 
     def _locator(self, axes, renderer):
-        """The locator function used by matplotlib to position axes.
+        """Adjust the size of the axes.
+
+        The locator function used by matplotlib to position axes.
+
         Here we put the logic used to adjust the size of the axes.
         """
         rect_x0, rect_y0, rect_x1, rect_y1 = self.rect
@@ -1196,16 +1212,24 @@ class TiledSlicer(BaseSlicer):
 
         # relative image height and width
         rel_width_dict, rel_height_dict = self._adjust_width_height(
-                width_dict, height_dict,
-                rect_x0, rect_y0, rect_x1, rect_y1)
+            width_dict,
+            height_dict,
+            rect_x0,
+            rect_y0,
+            rect_x1,
+            rect_y1)
 
         direction_ax = []
         for d in self._cut_displayed:
             direction_ax.append(display_ax_dict.get(d, dummy_ax).ax)
 
         coord1, coord2, coord3, coord4 = self._find_axes_coord(
-                rel_width_dict, rel_height_dict,
-                rect_x0, rect_y0, rect_x1, rect_y1)
+            rel_width_dict,
+            rel_height_dict,
+            rect_x0,
+            rect_y0,
+            rect_x1,
+            rect_y1)
 
         return Bbox([[coord1[axes], coord2[axes]],
                      [coord3[axes], coord4[axes]]])
@@ -1265,8 +1289,7 @@ class TiledSlicer(BaseSlicer):
 
 
 class BaseStackedSlicer(BaseSlicer):
-    """A class to create linked axes for plotting stacked
-    cuts of 2D maps.
+    """A class to create linked axes for plotting stacked cuts of 2D maps.
 
     Attributes
     ----------
@@ -1351,7 +1374,10 @@ class BaseStackedSlicer(BaseSlicer):
             self.frame_axes.set_zorder(-1000)
 
     def _locator(self, axes, renderer):
-        """The locator function used by matplotlib to position axes.
+        """Adjust the size of the axes.
+
+        The locator function used by matplotlib to position axes.
+
         Here we put the logic used to adjust the size of the axes.
         """
         x0, y0, x1, y1 = self.rect
@@ -1387,8 +1413,7 @@ class BaseStackedSlicer(BaseSlicer):
                      [left_dict[axes] + width_dict[axes], y1]])
 
     def draw_cross(self, cut_coords=None, **kwargs):
-        """Draw a crossbar on the plot to show where the cut is
-        performed.
+        """Draw a crossbar on the plot to show where the cut is performed.
 
         Parameters
         ----------
@@ -1404,9 +1429,11 @@ class BaseStackedSlicer(BaseSlicer):
 
 
 class XSlicer(BaseStackedSlicer):
-    """The ``XSlicer`` class enables sagittal visualization with
-    plotting functions of Nilearn like
-    :func:`nilearn.plotting.plot_img`. This visualization mode
+    """The ``XSlicer`` class enables sagittal visualization with \
+    plotting functions of Nilearn like \
+    :func:`nilearn.plotting.plot_img`.
+
+    This visualization mode
     can be activated by setting ``display_mode='x'``:
 
     .. code-block:: python
@@ -1434,14 +1461,17 @@ class XSlicer(BaseStackedSlicer):
     nilearn.plotting.displays.ZSlicer : Axial view
 
     """
+
     _direction = 'x'
     _default_figsize = [2.6, 2.3]
 
 
 class YSlicer(BaseStackedSlicer):
-    """The ``YSlicer`` class enables coronal visualization with
-    plotting functions of Nilearn like
-    :func:`nilearn.plotting.plot_img`. This visualization mode
+    """The ``YSlicer`` class enables coronal visualization with \
+    plotting functions of Nilearn like \
+    :func:`nilearn.plotting.plot_img`.
+
+    This visualization mode
     can be activated by setting ``display_mode='y'``:
 
     .. code-block:: python
@@ -1469,14 +1499,17 @@ class YSlicer(BaseStackedSlicer):
     nilearn.plotting.displays.ZSlicer : Axial view
 
     """
+
     _direction = 'y'
     _default_figsize = [2.2, 2.3]
 
 
 class ZSlicer(BaseStackedSlicer):
-    """The ``ZSlicer`` class enables axial visualization with
-    plotting functions of Nilearn like
-    :func:`nilearn.plotting.plot_img`. This visualization mode
+    """The ``ZSlicer`` class enables axial visualization with \
+    plotting functions of Nilearn like \
+    :func:`nilearn.plotting.plot_img`.
+
+    This visualization mode
     can be activated by setting ``display_mode='z'``:
 
     .. code-block:: python
@@ -1504,14 +1537,17 @@ class ZSlicer(BaseStackedSlicer):
     nilearn.plotting.displays.YSlicer : Coronal view
 
     """
+
     _direction = 'z'
     _default_figsize = [2.2, 2.3]
 
 
 class XZSlicer(OrthoSlicer):
-    """The ``XZSlicer`` class enables to combine sagittal and axial views
-    on the same figure with plotting functions of Nilearn like
-    :func:`nilearn.plotting.plot_img`. This visualization mode
+    """The ``XZSlicer`` class enables to combine sagittal and axial views \
+    on the same figure with plotting functions of Nilearn like \
+    :func:`nilearn.plotting.plot_img`.
+
+    This visualization mode
     can be activated by setting ``display_mode='xz'``:
 
     .. code-block:: python
@@ -1539,13 +1575,16 @@ class XZSlicer(OrthoSlicer):
     nilearn.plotting.displays.YZSlicer : Coronal + Axial views
 
     """
+
     _cut_displayed = 'xz'
 
 
 class YXSlicer(OrthoSlicer):
-    """The ``YXSlicer`` class enables to combine coronal and sagittal views
-    on the same figure with plotting functions of Nilearn like
-    :func:`nilearn.plotting.plot_img`. This visualization mode
+    """The ``YXSlicer`` class enables to combine coronal and sagittal views \
+    on the same figure with plotting functions of Nilearn like \
+    :func:`nilearn.plotting.plot_img`.
+
+    This visualization mode
     can be activated by setting ``display_mode='yx'``:
 
     .. code-block:: python
@@ -1573,13 +1612,16 @@ class YXSlicer(OrthoSlicer):
     nilearn.plotting.displays.YZSlicer : Coronal + Axial views
 
     """
+
     _cut_displayed = 'yx'
 
 
 class YZSlicer(OrthoSlicer):
-    """The ``YZSlicer`` class enables to combine coronal and axial views
-    on the same figure with plotting functions of Nilearn like
-    :func:`nilearn.plotting.plot_img`. This visualization mode
+    """The ``YZSlicer`` class enables to combine coronal and axial views \
+    on the same figure with plotting functions of Nilearn like \
+    :func:`nilearn.plotting.plot_img`.
+
+    This visualization mode
     can be activated by setting ``display_mode='yz'``:
 
     .. code-block:: python
@@ -1607,12 +1649,14 @@ class YZSlicer(OrthoSlicer):
     nilearn.plotting.displays.YXSlicer : Coronal + Sagittal views
 
     """
+
     _cut_displayed = 'yz'
 
 
 class MosaicSlicer(BaseSlicer):
-    """A class to create 3 :class:`~matplotlib.axes.Axes` for
+    """A class to create 3 :class:`~matplotlib.axes.Axes` for \
     plotting cuts of 3D maps, in multiple rows and columns.
+
     This visualization mode can be activated from Nilearn plotting
     functions, like :func:`~nilearn.plotting.plot_img`, by setting
     ``display_mode='mosaic'``.
@@ -1646,6 +1690,7 @@ class MosaicSlicer(BaseSlicer):
     and arranged in a 2x2 grid.
 
     """
+
     _cut_displayed = 'yxz'
     _axes_class = CutAxes
     _default_figsize = [11.1, 7.2]
@@ -1688,7 +1733,7 @@ class MosaicSlicer(BaseSlicer):
             if len(cut_coords) != len(cls._cut_displayed):
                 raise ValueError('The number cut_coords passed does not'
                                  ' match the display_mode. Mosaic plotting '
-                                 'expects tuple of length 3.' )
+                                 'expects tuple of length 3.')
             cut_coords = [cut_coords['xyz'.find(c)]
                           for c in sorted(cls._cut_displayed)]
             cut_coords = cls._find_cut_coords(img, cut_coords,
@@ -1699,7 +1744,7 @@ class MosaicSlicer(BaseSlicer):
     def _find_cut_coords(img, cut_coords, cut_displayed):
         """Find slicing positions along a given axis.
 
-        Helper function to :func:`~nilearn.plotting.find_cut_coords`.
+        Help to :func:`~nilearn.plotting.find_cut_coords`.
 
         Parameters
         ----------
@@ -1735,7 +1780,7 @@ class MosaicSlicer(BaseSlicer):
         return coords
 
     def _init_axes(self, **kwargs):
-        """Initializes and places axes for display of 'xyz' multiple cuts.
+        """Initialize and place axes for display of 'xyz' multiple cuts.
 
         Parameters
         ----------
@@ -1764,12 +1809,13 @@ class MosaicSlicer(BaseSlicer):
                        x1, fraction * (y1 - y0)]
             ax = fh.add_axes(indices)
             ax.axis('off')
-            this_x0, this_y0, this_x1, this_y1 = indices
+            this_x0, this_y0, this_x1, _ = indices
             for index_c, coord in enumerate(coords):
                 coord = float(coord)
                 fh_c = ax.get_figure()
                 # indices for each sub axes within main axes
-                indices = [fraction_c * index_c * (this_x1 - this_x0) + this_x0,
+                indices = [fraction_c * index_c * (this_x1 - this_x0)
+                           + this_x0,
                            this_y0,
                            fraction_c * (this_x1 - this_x0),
                            height]
@@ -1781,7 +1827,10 @@ class MosaicSlicer(BaseSlicer):
                 ax.set_axes_locator(self._locator)
 
     def _locator(self, axes, renderer):
-        """The locator function used by matplotlib to position axes.
+        """Adjust the size of the axes.
+
+        Locator function used by matplotlib to position axes.
+
         Here we put the logic used to adjust the size of the axes.
         """
         x0, y0, x1, y1 = self.rect
@@ -1831,10 +1880,8 @@ class MosaicSlicer(BaseSlicer):
         return Bbox([[left_dict[axes], bottom_dict[axes]],
                      [left_dict[axes] + width_dict[axes], height_dict[axes]]])
 
-
     def draw_cross(self, cut_coords=None, **kwargs):
-        """Draw a crossbar on the plot to show where the cut is
-        performed.
+        """Draw a crossbar on the plot to show where the cut is performed.
 
         Parameters
         ----------
@@ -1911,14 +1958,13 @@ def get_slicer(display_mode):
 
 
 def _get_create_display_fun(display_mode, class_dict):
-    """Helper function for functions
-    :func:`~nilearn.plotting.displays.get_slicer` and
-    :func:`~nilearn.plotting.displays.get_projector`.
-    """
+    """Help for functions \
+    :func:`~nilearn.plotting.displays.get_slicer` and \
+    :func:`~nilearn.plotting.displays.get_projector`."""
     try:
         return class_dict[display_mode].init_with_figure
     except KeyError:
-        message = ('{0} is not a valid display_mode. '
-                   'Valid options are {1}').format(
-                        display_mode, sorted(class_dict.keys()))
+        message = (f'{display_mode} is not a valid display_mode. '
+                   f'Valid options are {sorted(class_dict.keys())}'
+                   )
         raise ValueError(message)

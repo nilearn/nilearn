@@ -3,12 +3,12 @@ import json
 import numpy as np
 import pytest
 
-from nilearn import datasets, surface, image
+from nilearn import datasets, image, surface
+from nilearn._utils.exceptions import DimensionError
+from nilearn.datasets import fetch_surf_fsaverage
+from nilearn.image import get_data
 from nilearn.plotting import html_surface
 from nilearn.plotting.js_plotting_utils import decode
-from nilearn.datasets import fetch_surf_fsaverage
-from nilearn._utils.exceptions import DimensionError
-from nilearn.image import get_data
 
 from .test_js_plotting_utils import check_colors, check_html
 
@@ -113,12 +113,12 @@ def test_full_brain_info():
     assert type(info['cmax']) == float
     json.dumps(info)
     for hemi in ['left', 'right']:
-        mesh = surface.load_surf_mesh(surfaces['pial_{}'.format(hemi)])
-        assert len(info['vertexcolor_{}'.format(hemi)]) == len(mesh[0])
+        mesh = surface.load_surf_mesh(surfaces[f'pial_{hemi}'])
+        assert len(info[f'vertexcolor_{hemi}']) == len(mesh[0])
         assert len(decode(
-            info['inflated_{}'.format(hemi)]['_z'], '<f4')) == len(mesh[0])
+            info[f'inflated_{hemi}']['_z'], '<f4')) == len(mesh[0])
         assert len(decode(
-            info['pial_{}'.format(hemi)]['_j'], '<i4')) == len(mesh[1])
+            info[f'pial_{hemi}']['_j'], '<i4')) == len(mesh[1])
 
 
 def test_fill_html_template():

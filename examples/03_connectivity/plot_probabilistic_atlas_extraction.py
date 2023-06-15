@@ -78,6 +78,7 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 # Display the correlation matrix
 import numpy as np
+
 from nilearn import plotting
 
 # Mask out the major diagonal
@@ -121,3 +122,5 @@ view
 
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
+
+# sphinx_gallery_dummy_images=2

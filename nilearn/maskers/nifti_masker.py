@@ -7,6 +7,7 @@ from copy import copy as copy_object
 from functools import partial
 
 from joblib import Memory
+
 from nilearn import _utils, image, masking
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
@@ -45,11 +46,11 @@ def _get_mask_strategy(strategy):
                       "Please use 'whole-brain-template' instead.")
         return partial(masking.compute_brain_mask, mask_type='whole-brain')
     else:
-        raise ValueError("Unknown value of mask_strategy '%s'. "
+        raise ValueError(f"Unknown value of mask_strategy '{strategy}'. "
                          "Acceptable values are 'background', "
                          "'epi', 'whole-brain-template', "
                          "'gm-template', and "
-                         "'wm-template'." % strategy)
+                         "'wm-template'.")
 
 
 def _filter_and_mask(
@@ -267,14 +268,15 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         self.memory_level = memory_level
         self.verbose = verbose
         self.reports = reports
-        self._report_content = dict()
-        self._report_content['description'] = (
-            'This report shows the input Nifti image overlaid '
-            'with the outlines of the mask (in green). We '
-            'recommend to inspect the report for the overlap '
-            'between the mask and its input image. '
-        )
-        self._report_content['warning_message'] = None
+        self._report_content = {
+            'description': (
+                'This report shows the input Nifti image overlaid '
+                'with the outlines of the mask (in green). We '
+                'recommend to inspect the report for the overlap '
+                'between the mask and its input image. '
+            ),
+            'warning_message': None
+        }
         self._overlay_text = (
             '\n To see the input Nifti image before resampling, '
             'hover over the displayed image.'
@@ -300,6 +302,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         """
         try:
             import matplotlib.pyplot as plt
+
             from nilearn import plotting
 
         except ImportError:
@@ -357,31 +360,30 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         if 'transform' not in self._reporting_data:
             return [init_display]
 
-        else:  # if resampling was performed
-            self._report_content['description'] += self._overlay_text
+        # if resampling was performed
+        self._report_content['description'] += self._overlay_text
 
-            # create display of resampled NiftiImage and mask
-            # assuming that resampl_img has same dim as img
-            resampl_img, resampl_mask = self._reporting_data['transform']
-            if resampl_img is not None:
-                if len(dim) == 4:
-                    # compute middle image from 4D series for plotting
-                    resampl_img = image.index_img(resampl_img, dim[-1] // 2)
-            else:  # images were not provided to fit
-                resampl_img = resampl_mask
+        # create display of resampled NiftiImage and mask
+        # assuming that resampl_img has same dim as img
+        resampl_img, resampl_mask = self._reporting_data['transform']
+        if resampl_img is None:  # images were not provided to fit
+            resampl_img = resampl_mask
+        elif len(dim) == 4:
+            # compute middle image from 4D series for plotting
+            resampl_img = image.index_img(resampl_img, dim[-1] // 2)
 
-            final_display = plotting.plot_img(
-                resampl_img,
-                black_bg=False,
-                cmap='CMRmap_r',
-            )
-            plt.close()
-            final_display.add_contours(
-                resampl_mask,
-                levels=[.5],
-                colors='g',
-                linewidths=2.5,
-            )
+        final_display = plotting.plot_img(
+            resampl_img,
+            black_bg=False,
+            cmap='CMRmap_r',
+        )
+        plt.close()
+        final_display.add_contours(
+            resampl_mask,
+            levels=[.5],
+            colors='g',
+            linewidths=2.5,
+        )
 
         return [init_display, final_display]
 
@@ -459,21 +461,24 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         if self.verbose > 10:
             print(f'[{self.__class__.__name__}.fit] Finished fit')
 
-        if (self.target_shape is not None) or (self.target_affine is not None):
-            if self.reports:
-                if imgs is not None:
-                    resampl_imgs = self._cache(image.resample_img)(
-                        imgs,
-                        target_affine=self.affine_,
-                        copy=False,
-                        interpolation='nearest',
-                    )
-                else:  # imgs not provided to fit
-                    resampl_imgs = None
+        if (
+            (self.target_shape is not None)
+            or (self.target_affine is not None)
+            and self.reports
+        ):
+            if imgs is not None:
+                resampl_imgs = self._cache(image.resample_img)(
+                    imgs,
+                    target_affine=self.affine_,
+                    copy=False,
+                    interpolation='nearest',
+                )
+            else:  # imgs not provided to fit
+                resampl_imgs = None
 
-                self._reporting_data['transform'] = [
-                    resampl_imgs, self.mask_img_
-                ]
+            self._reporting_data['transform'] = [
+                resampl_imgs, self.mask_img_
+            ]
 
         return self
 

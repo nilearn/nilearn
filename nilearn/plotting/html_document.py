@@ -1,10 +1,12 @@
+"""Handle HTML plotting."""
+
 import os
-import sys
-import weakref
-import warnings
-import tempfile
-import webbrowser
 import subprocess
+import sys
+import tempfile
+import warnings
+import weakref
+import webbrowser
 from html import escape
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
@@ -38,6 +40,7 @@ class HTMLDocument:
     web page, and ``document.get_iframe()`` to have it wrapped in an iframe.
 
     """
+
     _all_open_html_repr = weakref.WeakSet()
 
     def __init__(self, html, width=600, height=400):
@@ -107,11 +110,13 @@ class HTMLDocument:
         return wrapped
 
     def get_standalone(self):
-        """Returns the plot in an HTML page."""
+        """Return the plot in an HTML page."""
         return self.html
 
     def _repr_html_(self):
-        """Used by the Jupyter notebook.
+        """Return html representation of the plot.
+
+        Used by the Jupyter notebook.
 
         Users normally won't call this method explicitly.
         """
@@ -121,7 +126,7 @@ class HTMLDocument:
         return self.html
 
     def save_as_html(self, file_name):
-        """Save the plot in an HTML file, that can later be opened
+        """Save the plot in an HTML file, that can later be opened \
         in a browser.
 
         Parameters
@@ -166,17 +171,15 @@ class HTMLDocument:
         else:
             self._temp_file_removing_proc = _remove_after_n_seconds(
                 self._temp_file, temp_file_lifetime)
-        webbrowser.open('file://{}'.format(file_name))
+        webbrowser.open(f'file://{file_name}')
 
     def remove_temp_file(self):
-        """Remove the temporary file created by
-        ``open_in_browser``, if necessary.
-
-        """
+        """Remove the temporary file created by \
+        ``open_in_browser``, if necessary."""
         if self._temp_file is None:
             return
         if not os.path.isfile(self._temp_file):
             return
         os.remove(self._temp_file)
-        print('removed {}'.format(self._temp_file))
+        print(f'removed {self._temp_file}')
         self._temp_file = None

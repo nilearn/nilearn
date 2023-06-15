@@ -14,11 +14,12 @@ import warnings
 
 import numpy as np
 from joblib import Parallel, cpu_count, delayed
-from nilearn.maskers.nifti_spheres_masker import _apply_mask_and_get_affinity
 from sklearn import svm
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import cross_val_score
+
+from nilearn.maskers.nifti_spheres_masker import _apply_mask_and_get_affinity
 
 from .. import masking
 from .._utils import check_niimg_4d, fill_doc

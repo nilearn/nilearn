@@ -21,6 +21,7 @@ import gzip
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 from nilearn.image import get_data, load_img, new_img_like
 from nilearn.masking import apply_mask, unmask
 from nilearn.plotting import plot_img

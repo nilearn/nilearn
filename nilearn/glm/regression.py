@@ -23,9 +23,10 @@ import warnings
 import numpy as np
 import scipy.linalg as spl
 from nibabel.onetime import auto_attr
+from numpy.linalg import matrix_rank
+
 from nilearn.glm._utils import positive_reciprocal
 from nilearn.glm.model import LikelihoodModelResults
-from numpy.linalg import matrix_rank
 
 
 def _deprecation_warning(

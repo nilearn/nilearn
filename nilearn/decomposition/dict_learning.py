@@ -12,9 +12,10 @@ import warnings
 
 import numpy as np
 from joblib import Memory
-from nilearn._utils import fill_doc
 from sklearn.decomposition import dict_learning_online
 from sklearn.linear_model import Ridge
+
+from nilearn._utils import fill_doc
 
 from ._base import _BaseDecomposition
 from .canica import CanICA

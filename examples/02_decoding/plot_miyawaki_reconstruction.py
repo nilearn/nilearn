@@ -53,6 +53,7 @@ sys.stderr.write(f" Done ({time.time() - t0:.2f}s).\n")
 # Then we prepare and mask the data
 # ---------------------------------
 import numpy as np
+
 from nilearn.maskers import MultiNiftiMasker
 
 sys.stderr.write("Preprocessing data...")
@@ -295,6 +296,7 @@ print(
 # ground truth
 
 from matplotlib import pyplot as plt
+
 from nilearn.plotting import show
 
 for i in range(6):

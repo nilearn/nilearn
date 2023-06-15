@@ -38,7 +38,6 @@ files: |
 
 exclude: |
     (?x)^(
-        doc/changes/(names|latest).rst
         | doc/glm/first_level_model\\.rst
         | introduction\\.rst
         | maintenance\\.rst
@@ -98,7 +97,7 @@ repos:
     -   id: flynt
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.3.1
+    rev: v3.6.0
     hooks:
       - id: pyupgrade
         args: [--py36-plus]

@@ -22,16 +22,11 @@ from typing import Iterable
 
 import numpy as np
 from joblib import Parallel, delayed
-from nilearn._utils import CacheMixin, fill_doc
-from nilearn._utils.cache_mixin import _check_memory
-from nilearn._utils.param_validation import check_feature_screening
-from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
-from nilearn.regions.rena_clustering import ReNA
 from sklearn import clone
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
     LinearRegression,
-    LogisticRegression,
+    LogisticRegressionCV,
     RidgeClassifierCV,
     RidgeCV,
 )
@@ -49,13 +44,19 @@ from sklearn.utils import check_random_state
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
+from nilearn._utils import CacheMixin, fill_doc
+from nilearn._utils.cache_mixin import _check_memory
+from nilearn._utils.param_validation import check_feature_screening
+from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
+from nilearn.regions.rena_clustering import ReNA
+
 SUPPORTED_ESTIMATORS = dict(
     svc_l1=LinearSVC(penalty="l1", dual=False, max_iter=10000),
     svc_l2=LinearSVC(penalty="l2", max_iter=10000),
     svc=LinearSVC(penalty="l2", max_iter=10000),
-    logistic_l1=LogisticRegression(penalty="l1", solver="liblinear"),
-    logistic_l2=LogisticRegression(penalty="l2", solver="liblinear"),
-    logistic=LogisticRegression(penalty="l2", solver="liblinear"),
+    logistic_l1=LogisticRegressionCV(penalty="l1", solver="liblinear"),
+    logistic_l2=LogisticRegressionCV(penalty="l2", solver="liblinear"),
+    logistic=LogisticRegressionCV(penalty="l2", solver="liblinear"),
     ridge_classifier=RidgeClassifierCV(),
     ridge_regressor=RidgeCV(),
     ridge=RidgeCV(),
@@ -111,6 +112,9 @@ def _check_param_grid(estimator, X, y, param_grid=None):
     else:
         if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
             param_grid = _wrap_param_grid(param_grid, "alphas")
+        elif isinstance(estimator, LogisticRegressionCV):
+            param_grid = _replace_param_grid_key(param_grid, "C", "Cs")
+            param_grid = _wrap_param_grid(param_grid, "Cs")
 
     return param_grid
 
@@ -152,7 +156,7 @@ def _default_param_grid(estimator, X, y):
             raise NotImplementedError(message)
     elif not isinstance(
         estimator,
-        (LogisticRegression, LinearSVC, RidgeCV, RidgeClassifierCV, SVR),
+        (LogisticRegressionCV, LinearSVC, RidgeCV, RidgeClassifierCV, SVR),
     ):
         raise ValueError(
             "Invalid estimator. The supported estimators are:"
@@ -162,7 +166,7 @@ def _default_param_grid(estimator, X, y):
     # use l1_min_c to get lower bound for estimators with L1 penalty
     if hasattr(estimator, "penalty") and (estimator.penalty == "l1"):
         # define loss function
-        if isinstance(estimator, LogisticRegression):
+        if isinstance(estimator, LogisticRegressionCV):
             loss = "log"
         elif isinstance(estimator, LinearSVC):
             loss = "squared_hinge"
@@ -176,7 +180,16 @@ def _default_param_grid(estimator, X, y):
     # define sensible default for different types of estimators
     if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
         param_grid["alphas"] = [np.geomspace(1e-3, 1e4, 8)]
-    elif isinstance(estimator, (LogisticRegression, LinearSVC, SVR)):
+    elif isinstance(estimator, LogisticRegressionCV):
+        # min_c value is set to 0.5 unless the estimator uses L1 penalty,
+        # in which case min_c is computed with sklearn.svm.l1_min_c(),
+        # so for L2 penalty, param_grid["Cs"] is either 1e-3, ..., 1e4, and
+        # for L1 penalty the values are obtained in a more data-driven way
+        param_grid["Cs"] = [np.geomspace(2e-3, 2e4, 8) * min_c]
+    elif isinstance(estimator, (LinearSVC, SVR)):
+        # similar logic as above:
+        # - for L2 penalty this is [1, 10, 100]
+        # - for L1 penalty the values depend on the data
         param_grid["C"] = np.array([2, 20, 200]) * min_c
     else:
         param_grid = {}
@@ -187,10 +200,10 @@ def _default_param_grid(estimator, X, y):
 def _wrap_param_grid(param_grid, param_name):
     """Wrap a parameter's sequence of values with an outer list.
 
-    This can be
-    desirable for models featuring built-in cross-validation, as it would leave
-    it to the model's internal (optimized) cross-validation to loop over
-    hyperparameter values. Does nothing if the parameter is already wrapped.
+    This can be desirable for models featuring built-in cross-validation,
+    as it would leave it to the model's internal (optimized) cross-validation
+    to loop over hyperparameter values. Does nothing if the parameter is
+    already wrapped.
 
     Parameters
     ----------
@@ -202,7 +215,7 @@ def _wrap_param_grid(param_grid, param_name):
 
     Returns
     -------
-    param_grid_wrapped: dict of str to sequence, or sequence of such
+    dict of str to sequence, or sequence of such
         The updated parameter grid
     """
     if param_grid is None:
@@ -233,6 +246,53 @@ def _wrap_param_grid(param_grid, param_name):
         new_param_grid.append(param_grid_item)
 
     # return a dict (not a list) if the original input was a dict
+    if input_is_dict:
+        new_param_grid = new_param_grid[0]
+
+    return new_param_grid
+
+
+def _replace_param_grid_key(param_grid, key_to_replace, new_key):
+    """Replace a parameter name by another one.
+
+    Parameters
+    ----------
+    param_grid : dict of str to sequence, or sequence of such
+        The parameter grid to process, as a dictionary mapping estimator
+        parameters to sequences of allowed values.
+    key_to_replace : str
+        Name of parameter to replace
+    new_key : str
+        New parameter name. If this key already exists in the parameter grid,
+        it is overwritten
+
+    Returns
+    -------
+    dict of str to sequence, or sequence of such
+        The updated parameter grid
+    """
+    # ensure param_grid is a list so that we can loop over it
+    input_is_dict = isinstance(param_grid, dict)
+    if input_is_dict:
+        param_grid = [param_grid]
+
+    # replace old key by new key if needed
+    new_param_grid = []
+    for param_grid_item in param_grid:
+        param_grid_item = dict(param_grid_item)  # make a new dict
+        if key_to_replace in param_grid_item:
+            warnings.warn(
+                f'The "{key_to_replace}" parameter in "param_grid" is'
+                f' being replaced by "{new_key}" due to a change in the'
+                " choice of underlying scikit-learn estimator. In a future"
+                " version, this will result in an error.",
+                DeprecationWarning,
+                stacklevel=13,
+            )
+            param_grid_item[new_key] = param_grid_item.pop(key_to_replace)
+        new_param_grid.append(param_grid_item)
+
+    # return a dict if input was a dict
     if input_is_dict:
         new_param_grid = new_param_grid[0]
 
@@ -304,10 +364,18 @@ def _parallel_fit(
         X_test = selector.transform(X_test)
 
     # If there is no parameter grid, then we use a suitable grid (by default)
-    param_grid = _check_param_grid(estimator, X_train, y_train, param_grid)
+    param_grid = ParameterGrid(
+        _check_param_grid(estimator, X_train, y_train, param_grid)
+    )
+
+    # collect all parameter names from the grid
+    all_params = set()
+    for params in param_grid:
+        all_params.update(params.keys())
+
     best_score = None
-    for param in ParameterGrid(param_grid):
-        estimator = clone(estimator).set_params(**param)
+    for params in param_grid:
+        estimator = clone(estimator).set_params(**params)
         estimator.fit(X_train, y_train)
 
         if is_classification:
@@ -332,8 +400,15 @@ def _parallel_fit(
                     dummy_output = estimator.constant_
 
             if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
-                param["best_alpha"] = estimator.alpha_
-            best_param = param
+                params["best_alpha"] = estimator.alpha_
+            elif isinstance(estimator, LogisticRegressionCV):
+                params["best_C"] = estimator.C_.item()
+            best_params = params
+
+            # fill in any missing param from param_grid
+            for param in all_params:
+                if param not in best_params:
+                    best_params[param] = getattr(estimator, param)
 
     if best_coef is not None:
         if do_screening:
@@ -346,7 +421,7 @@ def _parallel_fit(
         class_index,
         best_coef,
         best_intercept,
-        best_param,
+        best_params,
         best_score,
         dummy_output,
     )
@@ -583,8 +658,9 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             when Dummy estimators are provided. Note: if the estimator used its
             built-in cross-validation, this will include an additional key for
             the single best value estimated by the built-in cross-validation
-            (e.g., 'best_alpha' for RidgeCV/RidgeClassifierCV), in addition to
-            the input list of values.
+            ('best_C' for LogisticRegressionCV and 'best_alpha' for
+            RidgeCV/RidgeClassifierCV), in addition to the input list of
+            values.
 
         'scorer_' : function
             Scorer function used on the held out data to choose the best

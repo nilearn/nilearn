@@ -15,6 +15,7 @@ the :term:`fMRI` (see the generated figures).
 # Load Haxby dataset
 # ------------------
 import pandas as pd
+
 from nilearn import datasets
 from nilearn.image import get_data, load_img, new_img_like
 
@@ -150,3 +151,5 @@ plot_stat_map(
 )
 
 show()
+
+# sphinx_gallery_dummy_images=2

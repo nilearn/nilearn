@@ -11,6 +11,7 @@ import nibabel
 import numpy as np
 import pandas as pd
 import pytest
+
 from nilearn.datasets import struct, utils
 from nilearn.datasets._testing import dict_to_archive, list_to_archive
 

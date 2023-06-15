@@ -1,21 +1,39 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-import tempfile
 
 import matplotlib
 import matplotlib.pyplot as plt
-from nibabel import Nifti1Image
-import pytest
 import numpy as np
+import pytest
+from nibabel import Nifti1Image
 
-from nilearn.plotting.displays import (
-    OrthoSlicer, XSlicer, YSlicer, ZSlicer, XZSlicer, YXSlicer, YZSlicer,
-    OrthoProjector, TiledSlicer, MosaicSlicer, LZRYProjector, LYRZProjector,
-    XZProjector, YZProjector, YXProjector, XProjector, YProjector, ZProjector,
-    LYRProjector, LZRProjector, LRProjector, LProjector, RProjector, BaseAxes
-)
 from nilearn.datasets import load_mni152_template
-
+from nilearn.plotting.displays import (
+    BaseAxes,
+    LProjector,
+    LRProjector,
+    LYRProjector,
+    LYRZProjector,
+    LZRProjector,
+    LZRYProjector,
+    MosaicSlicer,
+    OrthoProjector,
+    OrthoSlicer,
+    RProjector,
+    TiledSlicer,
+    XProjector,
+    XSlicer,
+    XZProjector,
+    XZSlicer,
+    YProjector,
+    YSlicer,
+    YXProjector,
+    YXSlicer,
+    YZProjector,
+    YZSlicer,
+    ZProjector,
+    ZSlicer,
+)
 
 SLICER_KEYS = [
     'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'yz', 'mosaic', 'xz'
@@ -80,6 +98,7 @@ def test_glass_brain_axes():
         axes._add_lines(line_coords, line_values, None, vmin=10, vmax=None)
     axes._add_lines(line_coords, line_values, None, vmin=-10, vmax=None)
     axes._add_lines(line_coords, line_values, None, vmin=-10, vmax=-5)
+
 
 def test_get_index_from_direction_exception():
     """Tests that a ValueError is raised when an invalid direction
@@ -271,7 +290,7 @@ def test_user_given_cmap_with_colorbar(img):
 
 @pytest.mark.parametrize("display", [OrthoSlicer, LYRZProjector])
 def test_data_complete_mask(display):
-    """This special case test is due to matplotlib 2.1.0.
+    """Test for a special case due to matplotlib 2.1.0.
 
     When the data is completely masked, then we have plotting issues
     See similar issue #9280 reported in matplotlib. This function

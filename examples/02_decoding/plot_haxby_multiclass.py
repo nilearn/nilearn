@@ -15,6 +15,7 @@ cross-validated accuracy and the confusion matrix.
 
 import numpy as np
 import pandas as pd
+
 from nilearn import datasets
 
 # By default 2nd subject from haxby datasets will be fetched.
@@ -117,8 +118,9 @@ plt.title("Prediction: accuracy score")
 # -----------------------
 # We fit on the first 10 sessions and plot a confusion matrix on the
 # last 2 sessions
-from nilearn.plotting import plot_matrix, show
 from sklearn.metrics import confusion_matrix
+
+from nilearn.plotting import plot_matrix, show
 
 svc_ovo.fit(X[session < 10], y[session < 10])
 y_pred_ovo = svc_ovo.predict(X[session >= 10])
@@ -141,3 +143,5 @@ plot_matrix(
 )
 
 show()
+
+# sphinx_gallery_dummy_images=3

@@ -6,6 +6,13 @@ import pandas as pd
 import pytest
 from nibabel import Nifti1Image, load
 from nibabel.tmpdirs import InTemporaryDirectory
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
+from scipy import stats
+
 from nilearn._utils import testing
 from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
@@ -15,12 +22,6 @@ from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.second_level import SecondLevelModel, non_parametric_inference
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker
-from numpy.testing import (
-    assert_almost_equal,
-    assert_array_almost_equal,
-    assert_array_equal,
-)
-from scipy import stats
 
 try:
     from nilearn.reporting import get_clusters_table
@@ -284,16 +285,15 @@ def test_get_contrast():
     assert _get_contrast([1, 0], design_matrix) == 'conf1'
 
 
-def test_infer_effect_maps():
+def test_infer_effect_maps(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
     from nilearn.glm.second_level.second_level import _infer_effect_maps
 
-    # with InTemporaryDirectory():
     shapes, rk = ((7, 8, 9, 1), (7, 8, 7, 16)), 3
     mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
         shapes,
         rk
     )
-    func_img = load(fmri_data[0])
     second_level_input = pd.DataFrame({'map_name': ["a", "b"],
                                        'effects_map_path': [fmri_data[0],
                                                             "bar"]})
@@ -307,9 +307,6 @@ def test_infer_effect_maps():
         model.fit(fmri_data[i],
                   design_matrices=design_matrices[i])
     assert len(_infer_effect_maps(second_level_input, contrast)) == 2
-    # Delete objects attached to files to avoid WindowsError when deleting
-    # temporary directory (in Windows)
-    del mask, fmri_data, func_img, second_level_input
 
 
 def test_high_level_glm_with_paths():

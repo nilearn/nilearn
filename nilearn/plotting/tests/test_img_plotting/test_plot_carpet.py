@@ -1,21 +1,21 @@
 """Tests for :func:`nilearn.plotting.plot_carpet`."""
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+
 from nilearn.plotting import plot_carpet
-from .testing_utils import testdata_4d  # noqa:F401
 
 
-def test_plot_carpet(testdata_4d):  # noqa:F811
+def test_plot_carpet(testdata_4d_for_plotting):
     """Check contents of plot_carpet figure against data in image."""
-    img_4d = testdata_4d['img_4d']
-    img_4d_long = testdata_4d['img_4d_long']
-    mask_img = testdata_4d['img_mask']
+    img_4d = testdata_4d_for_plotting['img_4d']
+    img_4d_long = testdata_4d_for_plotting['img_4d_long']
+    mask_img = testdata_4d_for_plotting['img_mask']
     display = plot_carpet(img_4d, mask_img, detrend=False, title='TEST')
     # Next two lines retrieve the numpy array from the plot
     ax = display.axes[0]
     plotted_array = ax.images[0].get_array()
-    assert(
+    assert (
         plotted_array.shape == (np.prod(img_4d.shape[:-1]), img_4d.shape[-1])
     )
     # Make sure that the values in the figure match the values in the image
@@ -40,11 +40,11 @@ def test_plot_carpet(testdata_4d):  # noqa:F811
     plt.close(display)
 
 
-def test_plot_carpet_with_atlas(testdata_4d):  # noqa:F811
+def test_plot_carpet_with_atlas(testdata_4d_for_plotting):
     """Test plot_carpet when using an atlas."""
-    img_4d = testdata_4d['img_4d']
-    mask_img = testdata_4d['img_atlas']
-    atlas_labels = testdata_4d['atlas_labels']
+    img_4d = testdata_4d_for_plotting['img_4d']
+    mask_img = testdata_4d_for_plotting['img_atlas']
+    atlas_labels = testdata_4d_for_plotting['atlas_labels']
 
     # Test atlas - labels
     # t_r is set explicitly for this test as well

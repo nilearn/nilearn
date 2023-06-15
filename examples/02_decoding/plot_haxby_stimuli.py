@@ -8,6 +8,7 @@ Cortex" (Science 2001)
 """
 
 import matplotlib.pyplot as plt
+
 from nilearn import datasets
 from nilearn.plotting import show
 
@@ -29,3 +30,5 @@ for stim_type in stimulus_information:
             ax.axis("off")
 
 show()
+
+# sphinx_gallery_dummy_images=7

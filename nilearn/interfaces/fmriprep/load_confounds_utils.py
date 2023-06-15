@@ -5,12 +5,13 @@ import re
 
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import scale
+
 from nilearn._utils.fmriprep_confounds import (
     _flag_single_gifti,
     _is_camel_case,
 )
 from nilearn.interfaces.bids import parse_bids_filename
-from sklearn.preprocessing import scale
 
 from .load_confounds_scrub import _extract_outlier_regressors
 

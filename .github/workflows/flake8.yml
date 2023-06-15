@@ -31,26 +31,8 @@ jobs:
 
       - name: "Install Flake8"
         shell: bash {0}
-        run: |
-          python -m pip install --upgrade pip flake8 flake8-docstrings
+        run: python -m pip install --upgrade pip flake8 flake8-docstrings
 
       - name: "Run Flake8 on whole file"
         shell: bash {0}
-        run: |
-          flake8 --verbose \
-            examples/0[0234567]* \
-            maint_tools \
-            nilearn/_utils \
-            nilearn/connectome \
-            nilearn/datasets \
-            nilearn/de* \
-            nilearn/glm \
-            nilearn/image \
-            nilearn/interfaces \
-            nilearn/input_data \
-            nilearn/maskers \
-            nilearn/mass_univariate \
-            nilearn/regions \
-            nilearn/reporting \
-            nilearn/surface \
-            nilearn/*.py
+        run: flake8 --verbose .

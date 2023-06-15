@@ -39,3 +39,5 @@ plotting.plot_glass_brain(stat_img,
                           display_mode='lyrz', threshold=3)
 
 plotting.show()
+
+# sphinx_gallery_dummy_images=1

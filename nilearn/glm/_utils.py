@@ -2,14 +2,16 @@
 
 Authors: Bertrand Thirion, Matthew Brett, Ana Luisa Pinho, 2020
 """
+
 import csv
 from warnings import warn
 
 import numpy as np
 import pandas as pd
 import scipy.linalg as spl
-from nilearn._utils.helpers import stringify_path
 from scipy.stats import norm
+
+from nilearn._utils.helpers import stringify_path
 
 
 def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
