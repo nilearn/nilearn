@@ -28,4 +28,4 @@ jobs:
         run: python -m pip install --upgrade pip flynt
 
       - name: "Run isort"
-        run: flynt --dry-run --fail-on-change .
+        run: flynt .
