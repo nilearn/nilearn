@@ -79,7 +79,7 @@ html-modified-examples-only: 	sym_links
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 html-examples-directory: 	sym_links
-	BUILD_DEV_HTML=1 $(SPHINXBUILD) -D sphinx_gallery_conf.examples_dirs=$(PATTERN) -D sphinx_gallery_conf.run_stale_examples=True -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -D sphinx_gallery_conf.examples_dirs=$(PATTERN) -D sphinx_gallery_conf.run_stale_examples=True -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	touch $(BUILDDIR)/html/.nojekyll
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."

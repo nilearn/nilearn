@@ -5,8 +5,12 @@ if [ "$GITHUB_REF_NAME" == "main" ] || [[ $(cat gitlog.txt) == *"[full doc]"* ]]
     echo html-strict > build.txt;
 else
     if [[ $(cat gitlog.txt) == *"[examples]"* ]]; then
-        FILENAMES=${$(cat gitlog.txt)#*]};
-        FILENAMES="examples/*/${FILENAMES}"
+        COMMIT_MESSAGE=${$(cat gitlog.txt)#*]};
+        if [[ $COMMIT_MESSAGE == ]]; then
+            DIRECTORY=;
+        else
+            FILENAMES="examples/*/${COMMIT_MESSAGE}";
+        fi;
     else
         FILENAMES=$(git diff --name-only $(git merge-base $COMMIT_SHA upstream/main) $COMMIT_SHA);
     fi;
@@ -22,6 +26,9 @@ else
         # Remove trailing \| introduced by the for loop above
         PATTERN="\(${PATTERN::-2}\)";
         echo html-modified-examples-only > build.txt;
+    elif [[ $DIRECTORY ]]; then
+        PATTERN="$DIRECTORY"
+        echo html-modified-directory > build.txt;
     else
         echo html-noplot > build.txt;
     fi;
