@@ -494,6 +494,18 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             Signal for each label.
             shape: (number of scans, number of labels)
 
+        region_ids : 2D numpy.ndarray
+            A dictionary containing the region ids corresponding to each
+            column in region_signal. The region id corresponding to
+            region_signal[:,i] is region_ids[i].
+            region_ids['background'] is the background label.
+
+        region_img : Niimg-like object
+            Regions definition as labels. The labels correspond to the
+            indices in region_ids. The region in region_img that takes
+            the value region_ids[i] is use to compute the signal in
+            region_signal[:,i].
+
         Warns
         -----
         DeprecationWarning
@@ -583,7 +595,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         params['target_affine'] = target_affine
         params['clean_kwargs'] = self.clean_kwargs
 
-        region_signals, labels_ = self._cache(
+        region_signals, ids, region_img = self._cache(
             _filter_and_extract,
             ignore=['verbose', 'memory', 'memory_level'],
         )(
@@ -605,9 +617,15 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             verbose=self.verbose,
         )
 
-        self.labels_ = labels_
+        self.labels_ = ids
 
-        return region_signals
+        # defining a dictionary containing regions ids
+        region_ids = {'background': self.background_label}
+        for i in range(region_signals.shape[1]):
+            # ids does not include background label
+            region_ids[i] = ids[i]
+
+        return region_signals, region_ids, region_img
 
     def inverse_transform(self, signals):
         """Compute voxel signals from region signals.

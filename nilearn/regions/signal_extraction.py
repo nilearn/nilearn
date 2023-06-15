@@ -8,6 +8,7 @@ or as weights in one image per region (maps).
 # License: simplified BSD
 
 import numpy as np
+from nibabel import Nifti1Image
 from scipy import linalg, ndimage
 
 from .. import _utils, masking
@@ -253,6 +254,9 @@ def img_to_signals_labels(
         Corresponding labels for each signal. signal[:, n] was extracted from
         the region with label labels[n].
 
+    labels_img_ : Niimg-like object
+        Regions definition as labels after applying the mask.
+
     See Also
     --------
     nilearn.regions.signals_to_img_labels
@@ -288,7 +292,11 @@ def img_to_signals_labels(
     labels_index = {l: n for n, l in enumerate(labels)}
     for this_label in missing_labels:
         signals[:, labels_index[this_label]] = 0
-    return signals, labels
+
+    # finding the new labels image
+    labels_img_ = Nifti1Image(labels_data.astype(np.int8), labels_img.affine)
+
+    return signals, labels, labels_img_
 
 
 def signals_to_img_labels(
