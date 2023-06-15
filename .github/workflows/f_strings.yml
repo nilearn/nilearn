@@ -27,5 +27,5 @@ jobs:
         shell: bash {0}
         run: python -m pip install --upgrade pip flynt
 
-      - name: "Run isort"
+      - name: "Run flynt"
         run: flynt .
