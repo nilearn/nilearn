@@ -75,7 +75,7 @@ def test_sanitize_tri_error(tri):
         _sanitize_tri(tri)
 
 
-VALID_REORDER_VALUES = {True, False, 'single', 'complete', 'average'}
+VALID_REORDER_VALUES = (True, False, 'single', 'complete', 'average')
 
 
 @pytest.mark.parametrize("reorder", VALID_REORDER_VALUES)
