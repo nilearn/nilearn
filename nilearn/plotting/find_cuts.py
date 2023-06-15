@@ -65,8 +65,8 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     # when given image is empty, return (0., 0., 0.)
     if np.all(data == 0.):
         warnings.warn(
-            "Given img is empty. Returning default cut_coords={} instead."
-            .format(DEFAULT_CUT_COORDS))
+            "Given img is empty. "
+            f"Returning default cut_coords={DEFAULT_CUT_COORDS} instead.")
         x_map, y_map, z_map = DEFAULT_CUT_COORDS
         return np.asarray(coord_transform(x_map, y_map, z_map,
                                           img.affine)).tolist()

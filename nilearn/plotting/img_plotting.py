@@ -160,10 +160,10 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
     if (isinstance(cut_coords, numbers.Number) and
             display_mode in ('ortho', 'tiled')):
         raise ValueError(
-            "The input given for display_mode='{}' needs to be "
-            "a list of 3d world coordinates in (x, y, z). "
+            f"The input given for display_mode='{display_mode}' "
+            "needs to be a list of 3d world coordinates in (x, y, z). "
             "You provided single cut, "
-            "cut_coords={}".format(display_mode, cut_coords))
+            f"cut_coords={cut_coords}")
 
     if img is not False and img is not None:
         img = _utils.check_niimg_3d(img, dtype='auto')
@@ -1249,10 +1249,9 @@ def plot_markers(node_values, node_coords, node_size='auto',
     # Validate node_values
     if node_values.shape != (node_coords.shape[0], ):
         msg = ("Dimension mismatch: 'node_values' should be vector of length "
-               "{}, but current shape is {} instead of {}").format(
-                   len(node_coords),
-                   node_values.shape,
-                   (node_coords.shape[0], ))
+               f"{len(node_coords)}, "
+               f"but current shape is {node_values.shape} "
+               f"instead of {(node_coords.shape[0], )}")
         raise ValueError(msg)
 
     display = plot_glass_brain(None, display_mode=display_mode,
@@ -1266,9 +1265,9 @@ def plot_markers(node_values, node_coords, node_size='auto',
     if node_threshold is not None:
         if node_threshold > np.max(node_values):
             msg = (
-                "Provided 'node_threshold' value: {} should not exceed "
-                "highest node value: {}").format(node_threshold,
-                                                 np.max(node_values))
+                f"Provided 'node_threshold' value: {node_threshold} "
+                "should not exceed "
+                f"highest node value: {np.max(node_values)}")
             raise ValueError(msg)
 
         retained_nodes = node_values > node_threshold

@@ -161,7 +161,7 @@ def _revcmap(data):
 _cmap_d = dict()
 
 for _cmapname in list(_cmaps_data.keys()):  # needed as dict changes in loop
-    _cmapname_r = _cmapname + '_r'
+    _cmapname_r = f'{_cmapname}_r'
     _cmapspec = _cmaps_data[_cmapname]
     _cmaps_data[_cmapname_r] = _revcmap(_cmapspec)
     _cmap_d[_cmapname] = _colors.LinearSegmentedColormap(

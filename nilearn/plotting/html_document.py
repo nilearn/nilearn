@@ -59,11 +59,11 @@ class HTMLDocument:
             return
         if len(HTMLDocument._all_open_html_repr
                ) > MAX_IMG_VIEWS_BEFORE_WARNING - 1:
-            warnings.warn('It seems you have created more than {} '
+            warnings.warn("It seems you have created "
+                          f"more than {MAX_IMG_VIEWS_BEFORE_WARNING} "
                           'nilearn views. As each view uses dozens '
                           'of megabytes of RAM, you might want to '
-                          'delete some of them.'.format(
-                              MAX_IMG_VIEWS_BEFORE_WARNING))
+                          'delete some of them.')
 
     def resize(self, width, height):
         """Resize the plot displayed in a Jupyter notebook.
@@ -105,8 +105,9 @@ class HTMLDocument:
         if height is None:
             height = self.height
         escaped = escape(self.html, quote=True)
-        wrapped = ('<iframe srcdoc="{}" width="{}" height="{}" '
-                   'frameBorder="0"></iframe>').format(escaped, width, height)
+        wrapped = (f'<iframe srcdoc="{escaped}'
+                   f'width="{width}" height="{height}" '
+                   'frameBorder="0"></iframe>')
         return wrapped
 
     def get_standalone(self):
