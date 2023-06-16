@@ -681,7 +681,11 @@ def test_decoder_error_unknown_scoring_metrics(
 
     model = Decoder(estimator=dummy_classifier, mask=mask, scoring="foo")
 
-    with pytest.raises(ValueError, match="'foo' is not a valid scoring value"):
+    with pytest.raises(
+        ValueError,
+        match="The 'scoring' parameter of check_scoring "
+        "must be a str among",
+    ):
         model.fit(X, y)
 
 
