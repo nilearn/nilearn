@@ -1,15 +1,17 @@
 #!/bin/bash -exf
 
-if [ "$GITHUB_REF_NAME" == "main" ] || [[ $(cat gitlog.txt) == *"[full doc]"* ]]; then
+GITLOG=$(cat gitlog.txt)
+if [ "$GITHUB_REF_NAME" == "main" ] || [[ $GITLOG == *"[full doc]"* ]]; then
     echo "Doing a full build";
     echo html-strict > build.txt;
 else
-    if [[ $(cat gitlog.txt) == *"[examples]"* ]]; then
-        COMMIT_MESSAGE=${$(cat gitlog.txt)#*]};
-        if [[ $COMMIT_MESSAGE == "^[0-9][0-9]" ]]; then
-            DIRECTORY="../examples/${COMMIT_MESSAGE}";
+    if [[ $GITLOG == *"[examples]"* ]]; then
+        echo "Building selected examples";
+        COMMIT_MESSAGE=${GITLOG#*] };
+        if [[ "${COMMIT_MESSAGE}" =~ "[0-9][0-9]" ]]; then
+            DIRECTORY="../examples/$COMMIT_MESSAGE";
         else
-            FILENAMES="examples/*/${COMMIT_MESSAGE}";
+            FILENAMES="examples/*/$COMMIT_MESSAGE";
         fi;
     else
         FILENAMES=$(git diff --name-only $(git merge-base $COMMIT_SHA upstream/main) $COMMIT_SHA);
@@ -27,7 +29,7 @@ else
         PATTERN="\(${PATTERN::-2}\)";
         echo html-modified-examples-only > build.txt;
     elif [[ $DIRECTORY ]]; then
-        PATTERN="$DIRECTORY"
+        PATTERN="$DIRECTORY";
         echo html-modified-directory > build.txt;
     else
         echo html-noplot > build.txt;
