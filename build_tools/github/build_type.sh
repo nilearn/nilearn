@@ -8,7 +8,7 @@ else
     if [[ $GITLOG == *"[examples]"* ]]; then
         echo "Building selected examples";
         COMMIT_MESSAGE=${GITLOG#*] };
-        if [[ "${COMMIT_MESSAGE}" =~ "[0-9][0-9]" ]]; then
+        if [[ ${COMMIT_MESSAGE%%_*} =~ ^[0-9]{2}$ ]]; then
             DIRECTORY="../examples/$COMMIT_MESSAGE";
         else
             FILENAMES="examples/*/$COMMIT_MESSAGE";
