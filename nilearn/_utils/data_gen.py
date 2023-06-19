@@ -677,7 +677,7 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
     topology = topology > 0
     assert (np.all(topology == topology.T))
     logger.log(
-        f"Sparsity: {1.0 * topology.sum() / topology.shape[0] ** 2:f}",
+        f"Sparsity: {1.0 * topology.sum() / topology.shape[0] ** 2 :f}",
         verbose=verbose)
 
     # Generate temporal signals
