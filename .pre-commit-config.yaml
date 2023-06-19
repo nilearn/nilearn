@@ -12,6 +12,7 @@ files: |
         | .*toml
         | .*yaml
         | .*yml
+        | \.git-blame.*
         | AUTHORS.rst
         | CONTRIBUTING.rst
         | LICENSE
