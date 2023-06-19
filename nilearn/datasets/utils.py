@@ -31,9 +31,7 @@ def md5_hash(string):
 
 
 def _format_time(t):
-    if t > 60:
-        return f"{t / 60.0:4.1f}min"
-    return f" {t:5.1f}s"
+    return f"{t / 60.0:4.1f}min" if t > 60 else f" {t:5.1f}s"
 
 
 def _md5_sum_file(path):
@@ -42,9 +40,10 @@ def _md5_sum_file(path):
         m = hashlib.md5()
         while True:
             data = f.read(8192)
-            if not data:
+            if data:
+                m.update(data)
+            else:
                 break
-            m.update(data)
     return m.hexdigest()
 
 
@@ -90,7 +89,7 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
 
     """
     if not total_size:
-        sys.stderr.write("\rDownloaded %d of ? bytes." % (bytes_so_far))
+        sys.stderr.write(f"\rDownloaded {int(bytes_so_far)} of ? bytes.")
 
     else:
         # Estimate remaining download time
@@ -378,11 +377,11 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
             import gzip
 
             if ext == ".tgz":
-                filename = filename + ".tar"
+                filename = f"{filename}.tar"
             elif ext == "":
                 # We rely on the assumption that gzip files have an extension
-                shutil.move(file_, file_ + ".gz")
-                file_ = file_ + ".gz"
+                shutil.move(file_, f"{file_}.gz")
+                file_ = f"{file_}.gz"
             with gzip.open(file_) as gz:
                 with open(filename, "wb") as out:
                     shutil.copyfileobj(gz, out, 8192)
@@ -583,7 +582,7 @@ def _fetch_file(
     if file_name == "":
         file_name = md5_hash(parse.path)
 
-    temp_file_name = file_name + ".part"
+    temp_file_name = f"{file_name}.part"
     full_name = os.path.join(data_dir, file_name)
     temp_full_name = os.path.join(data_dir, temp_file_name)
     if os.path.exists(full_name):
@@ -591,9 +590,8 @@ def _fetch_file(
             os.remove(full_name)
         else:
             return full_name
-    if os.path.exists(temp_full_name):
-        if overwrite:
-            os.remove(temp_full_name)
+    if os.path.exists(temp_full_name) and overwrite:
+        os.remove(temp_full_name)
     t0 = time.time()
     local_file = None
     initial_size = 0
@@ -605,8 +603,9 @@ def _fetch_file(
         if username is not None and password is not None:
             if not url.startswith("https"):
                 raise ValueError(
-                    "Authentication was requested on a non  secured URL (%s)."
-                    "Request has been blocked for security reasons." % url
+                    "Authentication was requested "
+                    f"on a non secured URL ({url})."
+                    "Request has been blocked for security reasons."
                 )
             auth = (username, password)
         if verbose > 0:
@@ -683,12 +682,11 @@ def _fetch_file(
             f"Error while fetching file {file_name}; dataset fetching aborted."
         )
         raise
-    if md5sum is not None:
-        if _md5_sum_file(full_name) != md5sum:
-            raise ValueError(
-                "File %s checksum verification has failed."
-                " Dataset fetching aborted." % local_file
-            )
+    if md5sum is not None and _md5_sum_file(full_name) != md5sum:
+        raise ValueError(
+            f"File {local_file} checksum verification has failed."
+            " Dataset fetching aborted."
+        )
     return full_name
 
 
@@ -699,13 +697,13 @@ def _get_dataset_descr(ds_name):
 
     try:
         with open(
-            os.path.join(module_path, "description", fname + ".rst"), "rb"
+            os.path.join(module_path, "description", f"{fname}.rst"), "rb"
         ) as rst_file:
             descr = rst_file.read()
     except OSError:
         descr = ""
 
-    if descr == "":
+    if not descr:
         warnings.warn("Could not find dataset description.")
 
     if isinstance(descr, bytes):
@@ -875,13 +873,13 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
             warnings.warn(f"An error occurred while fetching {file_}")
             abort = (
                 "Dataset has been downloaded but requested file was "
-                "not provided:\nURL: %s\n"
-                "Target file: %s\nDownloaded: %s" % (url, target_file, dl_file)
+                f"not provided:\nURL: {url}\n"
+                f"Target file: {target_file}\nDownloaded: {dl_file}"
             )
         if abort is not None:
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
-            raise OSError("Fetching aborted: " + abort)
+            raise OSError(f"Fetching aborted: {abort}")
         files_.append(target_file)
     # If needed, move files from temps directory to final directory.
     if os.path.exists(temp_dir):
@@ -909,17 +907,16 @@ def _tree(path, pattern=None, dictionary=False):
 
     """
     files = []
-    dirs = [] if not dictionary else {}
+    dirs = {} if dictionary else []
     for file_ in os.listdir(path):
         file_path = os.path.join(path, file_)
         if os.path.isdir(file_path):
-            if not dictionary:
-                dirs.append((file_, _tree(file_path, pattern)))
-            else:
+            if dictionary:
                 dirs[file_] = _tree(file_path, pattern)
-        else:
-            if pattern is None or fnmatch.fnmatch(file_, pattern):
-                files.append(file_path)
+            else:
+                dirs.append((file_, _tree(file_path, pattern)))
+        elif pattern is None or fnmatch.fnmatch(file_, pattern):
+            files.append(file_path)
     files = sorted(files)
     if not dictionary:
         return sorted(dirs) + files
