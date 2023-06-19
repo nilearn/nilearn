@@ -33,15 +33,15 @@ def add_js_lib(html, embed_js=True):
     with open(os.path.join(js_dir, 'surface-plot-utils.js')) as f:
         js_utils = f.read()
     if not embed_js:
-        js_lib = """
+        js_lib = f"""
         <script
         src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
         </script>
         <script src="https://cdn.plot.ly/plotly-gl3d-latest.min.js"></script>
         <script>
-        {}
+        {js_utils}
         </script>
-        """.format(js_utils)
+        """
     else:
         with open(os.path.join(js_dir, 'jquery.min.js')) as f:
             jquery = f.read()
@@ -109,7 +109,8 @@ def colorscale(cmap, values, threshold=None, symmetric_cmap=True,
     rgb = np.array(rgb, dtype=int)
     colors = []
     for i, col in zip(x, rgb):
-        colors.append([np.round(i, 3), "rgb({}, {}, {})".format(*col)])
+        colors.append([np.round(i, 3), 
+                       f"rgb({col[0]}, {col[1]}, {col[2]})"])
     return {
         'colors': colors, 'vmin': vmin, 'vmax': vmax, 'cmap': our_cmap,
         'norm': norm, 'abs_threshold': abs_threshold,

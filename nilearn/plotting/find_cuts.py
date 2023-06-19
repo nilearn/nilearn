@@ -77,8 +77,8 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
         mask = _safe_get_data(mask_img)
         if not np.allclose(mask_img.affine, img.affine):
             raise ValueError(
-                'Mask affine: \n%s\n is different from img affine:'
-                '\n%s' % (str(mask_img.affine), str(img.affine)))
+                f"Mask affine: \n{mask_img.affine}\n "
+                f"is different from img affine: \n{img.affine}")
     else:
         mask = None
 
@@ -287,7 +287,7 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
     if not isinstance(n_cuts, numbers.Number):
         raise ValueError("The number of cuts (n_cuts) must be an integer "
                          "greater than or equal to 1. "
-                         "You provided a value of n_cuts=%s. " % n_cuts)
+                         f"You provided a value of n_cuts={n_cuts}.")
 
     # BF issue #575: Return all the slices along and axis if this axis
     # is the display mode and there are at least as many requested
@@ -310,10 +310,10 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
     epsilon = np.finfo(np.float32).eps
     difference = abs(round(n_cuts) - n_cuts)
     if round(n_cuts) < 1. or difference > epsilon:
-        message = ("Image has %d slices in direction %s. "
-                   "Therefore, the number of cuts must be between 1 and %d. "
-                   "You provided n_cuts=%s " % (
-                       this_shape, direction, this_shape, n_cuts))
+        message = (f"Image has {this_shape} slices in direction {direction}. "
+                   "Therefore, the number of cuts "
+                   f"must be between 1 and {this_shape}. "
+                   f"You provided n_cuts={n_cuts}.")
         raise ValueError(message)
     else:
         n_cuts = int(round(n_cuts))

@@ -226,8 +226,8 @@ for k, v in _cmap_d.items():
 def dim_cmap(cmap, factor=.3, to_white=True):
     """Dim a colormap to white, or to black."""
     assert 0 <= factor <= 1, ValueError(
-        'Dimming factor must be larger than 0 and smaller than 1, %s was '
-        'passed.' % factor)
+        "Dimming factor must be larger than 0 and smaller than 1, "
+        f"{factor} was passed.")
     if to_white:
         def dimmer(c):
             return 1 - factor * (1 - c)
