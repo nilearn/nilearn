@@ -36,8 +36,6 @@
 
 .. _Caglar Cakan: https://github.com/caglorithm
 
-.. _Céline Delettre: https://github.com/celinede
-
 .. _Chris Gorgolewski: https://github.com/chrisgorgo
 
 .. _Chris Markiewicz: https://github.com/effigies
@@ -49,6 +47,8 @@
 .. _Colin Reininger: https://github.com/reiningc
 
 .. _Connor Lane: https://github.com/clane9
+
+.. _Céline Delettre: https://github.com/celinede
 
 .. _Dan Gale: https://danjgale.github.io/
 
@@ -85,8 +85,6 @@
 .. _Greydon Gilmore: https://www.greydongilmore.com/
 
 .. _Guillaume Lemaitre: https://glemaitre.github.io/
-
-.. _Sage Hahn: www.sagehahn.com/
 
 .. _Hao-Ting Wang: https://wanghaoting.com/
 
@@ -150,15 +148,15 @@
 
 .. _Manon Pietrantoni: https://github.com/ManonP38
 
+.. _Martin Perez-Guevara: https://github.com/MartinPerez
+
+.. _Martin Wegrzyn: https://github.com/mwegrzyn
+
 .. _Mathias Goncalves: https://github.com/mgxd
 
 .. _Matthias Ekman: https://github.com/mekman
 
 .. _Matthieu Joulot: https://github.com/MatthieuJoulot
-
-.. _Martin Perez-Guevara: https://github.com/MartinPerez
-
-.. _Martin Wegrzyn: https://github.com/mwegrzyn
 
 .. _Mehdi Rahim: https://github.com/mrahim
 
@@ -186,8 +184,6 @@
 
 .. _Oscar Esteban: https://github.com/oesteban
 
-.. _Óscar Nájera: https://github.com/Titan-C
-
 .. _Paul Bogdan: https://github.com/paulcbogdan
 
 .. _Paula Sanz-Leon: https://github.com/pausz
@@ -206,8 +202,6 @@
 
 .. _Raphael Meudec: https://github.com/RaphaelMeudec
 
-.. _Rémi Gau: https://github.com/Remi-Gau
-
 .. _Robert Luke: https://github.com/rob-luke
 
 .. _Robert Williamson: https://github.com/RobWilliamson15
@@ -218,7 +212,11 @@
 
 .. _Ryan Hammonds: https://github.com/ryanhammonds
 
+.. _Rémi Gau: https://github.com/Remi-Gau
+
 .. _Sachin Patalasingh: https://github.com/sachin-bsai
+
+.. _Sage Hahn: https://www.sagehahn.com/
 
 .. _Salma Bougacha: https://github.com/salma1601
 
@@ -253,3 +251,6 @@
 .. _Yasmin Mzayek: https://github.com/ymzayek
 
 .. _Zvi Baratz: https://github.com/ZviBaratz
+
+.. _Óscar Nájera: https://github.com/Titan-C
+

@@ -51,8 +51,6 @@ def main():
 
     nb_authors = count_authors()
 
-    print(nb_authors)
-
     with open(
         root_dir / "doc" / "changes" / "names.rst", "w", encoding="utf8"
     ) as f:
@@ -65,8 +63,6 @@ def main():
             print("", file=f)
 
     new_nb_authors = count_authors()
-
-    print(new_nb_authors)
 
     assert nb_authors <= new_nb_authors
 
