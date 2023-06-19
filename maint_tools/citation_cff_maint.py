@@ -25,77 +25,51 @@ def write_citation_cff(citation):
 
 def sort_authors(authors):
     """Sort authors by family name."""
-    authors.sort(key=lambda x: x["family-names"])
+    authors.sort(key=lambda x: x["given-names"])
     return authors
 
 
-def append_authors(new_authors, old_authors):
-    """Do."""
-    tmp = []
-    for citation_author in old_authors:
-        tmp.append(citation_author)
-    for this_author in new_authors:
-        if already_in_citation(this_author, old_authors):
-            continue
-        tmp.append(this_author)
-    return tmp
-
-
-def already_in_citation(this_author, old_authors):
-    """Do."""
-    return any(
-        (
-            citation_author["given-names"] == this_author["given-names"]
-            and citation_author["family-names"] == this_author["family-names"]
-        )
-        for citation_author in old_authors
-    )
+def count_authors():
+    """Count authors in names.rst."""
+    nb_authors = 0
+    with open(
+        root_dir / "doc" / "changes" / "names.rst", encoding="utf8"
+    ) as f:
+        # count authors
+        lines = f.readlines()
+        for line in lines:
+            if line.startswith(".. _"):
+                nb_authors += 1
+    return nb_authors
 
 
 def main():
     """Update CITATION.cff file."""
     citation = read_citation_cff()
 
-    # get names from doc
-    with open(root_dir / "doc" / "changes" / "names.rst") as f:
-        # read lines
-        lines = f.readlines()
-
-    authors = []
-    for line in lines:
-        if line.startswith(".. _"):
-            line = line.strip(".. _").replace("\n", "")
-            website = line.split(": ")[1]
-            author = line.split(": ")[0]
-            if len(author.split(" ")) == 2:
-                this_author = {
-                    "given-names": author.split(" ")[0],
-                    "family-names": author.split(" ")[1],
-                    "website": website,
-                }
-            elif len(line.split(": ")) > 2:
-                this_author = {
-                    "given-names": " ".join(author.split(" ")[:1]),
-                    "family-names": author.split(" ")[2],
-                    "website": website,
-                }
-            authors.append(this_author)
-
-    print(authors)
-
-    for citation_author in citation["authors"]:
-        for this_author in authors:
-            if (
-                citation_author["given-names"] == this_author["given-names"]
-                and citation_author["family-names"]
-                == this_author["family-names"]
-            ):
-                citation_author["website"] = this_author["website"]
-
-    print(append_authors(authors, citation["authors"]))
-    citation["authors"] = append_authors(authors, citation["authors"])
-
     citation["authors"] = sort_authors(citation["authors"])
+
+    nb_authors = count_authors()
+
+    print(nb_authors)
+
+    with open(
+        root_dir / "doc" / "changes" / "names.rst", "w", encoding="utf8"
+    ) as f:
+        for author in citation["authors"]:
+            line = (
+                f'.. _{author["given-names"]} {author["family-names"]}: '
+                f'{author["website"]}'
+            )
+            print(line, file=f)
+            print("", file=f)
+
+    new_nb_authors = count_authors()
+
+    print(new_nb_authors)
+
+    assert nb_authors <= new_nb_authors
+
     write_citation_cff(citation)
 
 

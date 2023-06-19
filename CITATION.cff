@@ -54,6 +54,9 @@ authors:
   - given-names: Amadeus
     family-names: Kanaan
     website: https://github.com/amadeuskanaan
+  - given-names: Ana Luisa 
+    family-names: Pinho
+    website: https://github.com/alpinho
   - given-names: Andrés Hoyos
     family-names: Idrobo
     website: https://github.com/ahoyosid
@@ -74,8 +77,6 @@ authors:
     website: https://github.com/bcipolli
   - given-names: Bertrand
     family-names: Thirion
-    email: bertrand.thirion@inria.fr
-    affiliation: INRIA, France
     website: https://pages.saclay.inria.fr/bertrand.thirion/
   - given-names: Binh
     family-names: Nguyen
@@ -90,11 +91,11 @@ authors:
     family-names: Markiewicz
     website: https://github.com/effigies
   - given-names: Christian
-    family-names: Gerloff
-    website: https://github.com/ChristianGerloff
-  - given-names: Christian
     family-names: Horea
     website: http://chymera.eu/
+  - given-names: Christian
+    family-names: Gerloff
+    website: https://github.com/ChristianGerloff
   - given-names: Colin
     family-names: Reininger
     website: https://github.com/reiningc
@@ -113,12 +114,18 @@ authors:
   - given-names: Danilo
     family-names: Bzdok
     website: https://github.com/banilo
+  - given-names: David G
+    family-names: Ellis
+    website: https://github.com/ellisdg
   - given-names: Demian
     family-names: Wassermann
     website: https://github.com/demianw
   - given-names: Derek
     family-names: Pisner
     website: https://github.com/dPys
+  - given-names: Dimitri Papadopoulos
+    family-names: Orfanos
+    website: https://github.com/DimitriPapadopoulos
   - given-names: Elizabeth
     family-names: DuPre
     website: https://elizabeth-dupre.com/#/
@@ -140,6 +147,9 @@ authors:
   - given-names: Gael
     family-names: Varoquaux
     website: http://gael-varoquaux.info/
+  - given-names: Gilles de
+    family-names: Hollander
+    website: https://github.com/Gilles86
   - given-names: Greg
     family-names: Kiar
     website: https://gkiar.me/
@@ -179,6 +189,9 @@ authors:
   - given-names: Jean-Rémi
     family-names: King
     website: https://github.com/kingjr
+  - given-names: Jelle Roelof
+    family-names: Dalenberg
+    website: https://github.com/jrdalenberg
   - given-names: Jeremy
     family-names: Lefort-Besnard
     website: https://jlefortbesnard.github.io/
@@ -191,6 +204,9 @@ authors:
   - given-names: Johannes
     family-names: Wiesner
     website: https://github.com/JohannesWiesner
+  - given-names: Jon Haitz Legarreta 
+    family-names: Gorrono
+    website: https://github.com/jhlegarreta
   - given-names: Jona
     family-names: Sassenhagen
     website: https://github.com/jona-sassenhagen
@@ -200,6 +216,9 @@ authors:
   - given-names: Julia
     family-names: Huntenburg
     website: https://github.com/juhuntenburg
+  - given-names: Julio A
+    family-names: Peraza
+    website: https://github.com/JulioAPeraza
   - given-names: Kamalakar Reddy
     family-names: Daddy
     website: https://github.com/KamalakerDadi
@@ -272,6 +291,9 @@ authors:
   - given-names: Moritz
     family-names: Boos
     website: https://github.com/mjboos
+  - given-names: Myeong Seop
+    family-names: Song
+    website: https://github.com/NeuroVR-Song
   - given-names: Natasha
     family-names: Clarke
     website: https://github.com/clarkenj
@@ -305,6 +327,9 @@ authors:
   - given-names: Pierre-Olivier
     family-names: Quirion
     website: https://github.com/poquirion
+  - given-names: Pradeep Reddy 
+    family-names: Raamana
+    website: https://github.com/raamana
   - given-names: Raphael
     family-names: Meudec
     website: https://github.com/RaphaelMeudec
@@ -325,19 +350,19 @@ authors:
     website: https://github.com/ryanhammonds
   - given-names: Rémi
     family-names: Gau
-    orcid: https://orcid.org/0000-0002-1535-9767
-    email: remi.gau2@mcgill.ca
-    affiliation: Origami lab, McGill University, Montreal, Canada
     website: https://github.com/Remi-Gau
   - given-names: Sachin
     family-names: Patalasingh
     website: https://github.com/sachin-bsai
   - given-names: Sage
     family-names: Hahn
-    website: https://www.sagehahn.com/
+    website: www.sagehahn.com/
   - given-names: Salma
     family-names: Bougacha
     website: https://github.com/salma1601
+  - given-names: Sam Buck
+    family-names: Johnson
+    website: https://github.com/sambjohnson
   - given-names: Sami
     family-names: Jawhar
     website: https://github.com/sjawhar
