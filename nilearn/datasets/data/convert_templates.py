@@ -62,7 +62,7 @@ for template_path in templates_paths:
     # Store and gzip with maximum compression rate
     fname_nii = template_path.split(".", 1)[0] + "_converted.nii"
     new_img.to_filename(fname_nii)
-    fname_nii_gz = fname_nii + ".gz"
+    fname_nii_gz = f"{fname_nii}.gz"
     with open(fname_nii, "rb") as f_in:
         content = f_in.read()
         with gzip.GzipFile(
