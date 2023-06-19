@@ -14,7 +14,6 @@ def read_citation_cff():
     """Read CITATION.cff file."""
     with open(root_dir / "CITATION.cff", encoding="utf8") as f:
         citation = yaml.load(f)
-    print(citation)
     return citation
 
 
@@ -28,6 +27,29 @@ def sort_authors(authors):
     """Sort authors by family name."""
     authors.sort(key=lambda x: x["family-names"])
     return authors
+
+
+def append_authors(new_authors, old_authors):
+    """Do."""
+    tmp = []
+    for citation_author in old_authors:
+        tmp.append(citation_author)
+    for this_author in new_authors:
+        if already_in_citation(this_author, old_authors):
+            continue
+        tmp.append(this_author)
+    return tmp
+
+
+def already_in_citation(this_author, old_authors):
+    """Do."""
+    return any(
+        (
+            citation_author["given-names"] == this_author["given-names"]
+            and citation_author["family-names"] == this_author["family-names"]
+        )
+        for citation_author in old_authors
+    )
 
 
 def main():
@@ -59,6 +81,8 @@ def main():
                 }
             authors.append(this_author)
 
+    print(authors)
+
     for citation_author in citation["authors"]:
         for this_author in authors:
             if (
@@ -67,6 +91,9 @@ def main():
                 == this_author["family-names"]
             ):
                 citation_author["website"] = this_author["website"]
+
+    print(append_authors(authors, citation["authors"]))
+    citation["authors"] = append_authors(authors, citation["authors"])
 
     citation["authors"] = sort_authors(citation["authors"])
     write_citation_cff(citation)
