@@ -8,8 +8,13 @@ NeuroVault
 See :func:`nilearn.datasets.fetch_neurovault_ids`
 documentation for more details.
 
+..
+    Original authors:
+
+    - Ben Cipollini
+
 """
-# Author: Ben Cipollini
+
 import scipy
 
 from nilearn import plotting
