@@ -1,0 +1,35 @@
+name: test install
+
+on:
+    push:
+        branches:
+        - "main"
+    pull_request:
+        branches:
+        - "*"
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    test_expected_to_fail_installation_on_linux:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: actions/setup-python@v4
+              with:
+                    python-version: "2.7"
+            - name: Install dependencies for building Nilearn
+              run: |
+                    set -e
+                    python -m pip install --upgrade pip
+                    pip install --prefer-binary build
+            - name: Build Nilearn
+              run: |
+                    set -e
+                    python -m build
+            - name: Attempt to install Nilearn from wheel (expected to fail)
+              run: |
+                    set -e
+                    pip install dist/nilearn-*-py3-none-any.whl 2>&1 | grep "^ERROR"
