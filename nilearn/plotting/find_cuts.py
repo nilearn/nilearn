@@ -293,8 +293,8 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
     # is the display mode and there are at least as many requested
     # n_slices as there are slices.
     if n_cuts > this_shape:
-        warnings.warn('Too many cuts requested for the data: '
-                      'n_cuts=%i, data size=%i' % (n_cuts, this_shape))
+        warnings.warn("Too many cuts requested for the data: "
+                      f"n_cuts={n_cuts}, data size={this_shape}.")
         return _transform_cut_coords(np.arange(this_shape), direction, affine)
 
     # To smooth data that might be np.int or np.uint,

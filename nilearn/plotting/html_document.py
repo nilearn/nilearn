@@ -166,9 +166,9 @@ class HTMLDocument:
             if not named_file:
                 warnings.warn(
                     (f"Saved HTML in temporary file: {file_name}\n"
-                     "file size is {:.1f}M, delete it when you're done, "
-                     "for example by calling this.remove_temp_file").format(
-                         file_size))
+                     f"file size is {file_size:.1f}M, "
+                     "delete it when you're done, "
+                     "for example by calling this.remove_temp_file"))
         else:
             self._temp_file_removing_proc = _remove_after_n_seconds(
                 self._temp_file, temp_file_lifetime)

@@ -109,7 +109,7 @@ def colorscale(cmap, values, threshold=None, symmetric_cmap=True,
     rgb = np.array(rgb, dtype=int)
     colors = []
     for i, col in zip(x, rgb):
-        colors.append([np.round(i, 3), 
+        colors.append([np.round(i, 3),
                        f"rgb({col[0]}, {col[1]}, {col[2]})"])
     return {
         'colors': colors, 'vmin': vmin, 'vmax': vmax, 'cmap': our_cmap,
@@ -154,5 +154,6 @@ def to_color_strings(colors):
     cmap = mpl.colors.ListedColormap(colors)
     colors = cmap(np.arange(cmap.N))[:, :3]
     colors = np.asarray(colors * 255, dtype='uint8')
-    colors = ['#{:02x}{:02x}{:02x}'.format(*row) for row in colors]
+    colors = [f'#{int(row[0]):02x}{int(row[1]):02x}{int(row[2]):02x}'
+              for row in colors]
     return colors
