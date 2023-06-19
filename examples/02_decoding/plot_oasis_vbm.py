@@ -44,7 +44,7 @@ ____
 
 ..
     Original authors:
-    
+
     - Elvis Dhomatob, <elvis.dohmatob@inria.fr>, Apr. 2014
     - Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
     - Gael Varoquaux, Apr 2014
