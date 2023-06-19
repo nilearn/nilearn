@@ -98,7 +98,7 @@ def _sanitize_tri(tri):
 
 def _sanitize_reorder(reorder):
     """Help for plot_matrix."""
-    VALID_REORDER_ARGS = {True, False, 'single', 'complete', 'average'}
+    VALID_REORDER_ARGS = (True, False, 'single', 'complete', 'average')
     if reorder not in VALID_REORDER_ARGS:
         param_to_print = []
         for item in VALID_REORDER_ARGS:
