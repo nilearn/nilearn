@@ -20,7 +20,7 @@ is included in the model.
 ..
     Original authors:
 
-    - Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
+    - Virgile Fritsch, May. 2014
 
 """
 import matplotlib.pyplot as plt

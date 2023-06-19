@@ -16,7 +16,7 @@ variates.  The user can refer to the
 ..
     Original authors:
 
-    - Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
+    - Virgile Fritsch, May. 2014
 
 """
 

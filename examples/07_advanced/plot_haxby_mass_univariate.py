@@ -31,7 +31,7 @@ References
 ..
     Original authors:
 
-    - Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
+    - Virgile Fritsch, Feb. 2014
 """
 
 ##############################################################################

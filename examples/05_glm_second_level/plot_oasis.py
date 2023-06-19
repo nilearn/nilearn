@@ -25,8 +25,8 @@ Note that more power would be obtained from using a larger sample of subjects.
     Original authors:
 
     - Bertrand Thirion, <bertrand.thirion@inria.fr>, July 2018
-    - Elvis Dhomatob, <elvis.dohmatob@inria.fr>, Apr. 2014
-    - Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
+    - Elvis Dhomatob, Apr. 2014
+    - Virgile Fritsch, Apr 2014
     - Gael Varoquaux, Apr 2014
 
 """
