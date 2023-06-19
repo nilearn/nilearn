@@ -17,9 +17,14 @@ is included in the model.
 
 .. include:: ../../../examples/masker_note.rst
 
+..
+    Original authors:
+
+    - Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
+
 """
 
-# Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
+# Author: 
 import matplotlib.pyplot as plt
 import numpy as np
 

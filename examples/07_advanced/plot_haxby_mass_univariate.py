@@ -28,8 +28,11 @@ References
     Australian & New Zealand Journal of Statistics, 43(1), 75-88.
     (http://avesbiodiv.mncn.csic.es/estadistica/permut2.pdf)
 
+..
+    Original authors:
+
+    - Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
 """
-# Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
 
 ##############################################################################
 # Load Haxby dataset

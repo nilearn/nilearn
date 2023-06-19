@@ -13,7 +13,6 @@ documentation for more details.
 
 """
 # Author: Ben Cipollini
-# License: BSD
 # Ported from code authored by Chris Filo Gorgolewski, Gael Varoquaux
 # https://github.com/NeuroVault/neurovault_analysis
 import warnings

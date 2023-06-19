@@ -10,7 +10,6 @@ documentation for more details.
 
 """
 # Author: Ben Cipollini
-# License: BSD
 import scipy
 
 from nilearn import plotting

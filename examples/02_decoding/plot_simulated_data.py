@@ -25,10 +25,7 @@ model with a random design matrix **X**:
 
 * **e** is random normal noise.
 
-
 """
-
-# Licence : BSD
 
 print(__doc__)
 

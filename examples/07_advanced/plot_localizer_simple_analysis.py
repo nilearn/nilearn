@@ -13,8 +13,13 @@ variates.  The user can refer to the
 
 .. include:: ../../../examples/masker_note.rst
 
+..
+    Original authors:
+
+    - Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
+
 """
-# Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
+
 import matplotlib.pyplot as plt
 import numpy as np
 
