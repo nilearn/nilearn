@@ -68,8 +68,8 @@ pdf:
 .PHONY : lint
 # TODO: add flynt when f strings are implemented in the whole codebase
 lint:
-	isort --profile black --settings-path pyproject.toml nilearn
-	black --config pyproject.toml nilearn
+	isort --profile black --settings-path pyproject.toml nilearn examples maint_tools
+	flynt .
+	black --config pyproject.toml nilearn examples maint_tools
 	codespell --toml pyproject.toml
-	flake8 --config .flake8 --black-config pyproject.toml nilearn
-# flynt .
+	flake8 --config .flake8 --black-config pyproject.toml nilearn examples maint_tools
