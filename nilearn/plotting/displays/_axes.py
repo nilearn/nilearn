@@ -313,8 +313,8 @@ def _get_index_from_direction(direction):
             index = directions.index(direction)
     except ValueError:
         message = (
-            '{} is not a valid direction. '
-            "Allowed values are 'l', 'r', 'x', 'y' and 'z'").format(direction)
+            f'{direction} is not a valid direction. '
+            "Allowed values are 'l', 'r', 'x', 'y' and 'z'")
         raise ValueError(message)
     return index
 

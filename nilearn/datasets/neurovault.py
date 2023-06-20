@@ -31,7 +31,7 @@ _NEUROVAULT_IMAGES_URL = urljoin(_NEUROVAULT_BASE_URL, "images/")
 _NEUROSYNTH_FETCH_WORDS_URL = "https://neurosynth.org/api/decode/"
 
 _COL_FILTERS_AVAILABLE_ON_SERVER = ("DOI", "name", "owner", "id")
-_IM_FILTERS_AVAILABLE_ON_SERVER = tuple()
+_IM_FILTERS_AVAILABLE_ON_SERVER = ()
 
 _DEFAULT_BATCH_SIZE = 100
 _DEFAULT_MAX_IMAGES = 100
@@ -553,12 +553,11 @@ class Contains(_SpecialValue):
         self.must_be_contained_ = must_be_contained
 
     def __eq__(self, other):
-        if not isinstance(other, Container):
-            return False
-        for item in self.must_be_contained_:
-            if item not in other:
-                return False
-        return True
+        return (
+            all(item in other for item in self.must_be_contained_)
+            if isinstance(other, Container)
+            else False
+        )
 
     def __repr__(self):
         return f"{self.__class__.__name__}{self.must_be_contained_!r}"
@@ -607,12 +606,11 @@ class NotContains(_SpecialValue):
         self.must_not_be_contained_ = must_not_be_contained
 
     def __eq__(self, other):
-        if not isinstance(other, Container):
-            return False
-        for item in self.must_not_be_contained_:
-            if item in other:
-                return False
-        return True
+        return (
+            all(item not in other for item in self.must_not_be_contained_)
+            if isinstance(other, Container)
+            else False
+        )
 
     def __repr__(self):
         return f"{self.__class__.__name__}{self.must_not_be_contained_!r}"
@@ -671,12 +669,10 @@ class Pattern(_SpecialValue):
         self.flags_ = flags
 
     def __eq__(self, other):
-        if (
-            not isinstance(other, str)
-            or re.match(self.pattern_, other, self.flags_) is None
-        ):
-            return False
-        return True
+        return (
+            isinstance(other, str)
+            and re.match(self.pattern_, other, self.flags_) is not None
+        )
 
     def __repr__(self):
         return "{}(pattern={!r}, flags={})".format(
@@ -796,12 +792,12 @@ class ResultFilter:
 
         """
         for key, value in self.query_terms_.items():
-            if not (value == candidate.get(key)):
+            if value != candidate.get(key):
                 return False
-        for callable_filter in self.callable_filters_:
-            if not callable_filter(candidate):
-                return False
-        return True
+        return all(
+            callable_filter(candidate)
+            for callable_filter in self.callable_filters_
+        )
 
     def OR(self, other_filter):
         """Implement the OR operator between two filters."""
@@ -1238,8 +1234,9 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
                     voc_empty = False
         except Exception:
             _print_if(
-                "Could not load words from file {}; error: {}".format(
-                    file_name, traceback.format_exc()
+                (
+                    f"Could not load words from file {file_name}; "
+                    f"error: {traceback.format_exc()}"
                 ),
                 _ERROR,
                 verbose,
@@ -1458,20 +1455,16 @@ def _fetch_collection_for_image(image_info, download_params):
     collection_absolute_path = os.path.join(
         download_params["nv_data_dir"], collection_relative_path
     )
-    if not os.path.isdir(collection_absolute_path):
-        col_batch = _get_batch(
-            urljoin(_NEUROVAULT_COLLECTIONS_URL, str(collection_id)),
-            verbose=download_params["verbose"],
-        )
-        collection = _download_collection(
-            col_batch["results"][0], download_params
-        )
-    else:
-        collection = _json_add_collection_dir(
+    if os.path.isdir(collection_absolute_path):
+        return _json_add_collection_dir(
             os.path.join(collection_absolute_path, "collection_metadata.json")
         )
 
-    return collection
+    col_batch = _get_batch(
+        urljoin(_NEUROVAULT_COLLECTIONS_URL, str(collection_id)),
+        verbose=download_params["verbose"],
+    )
+    return _download_collection(col_batch["results"][0], download_params)
 
 
 def _download_image_nii_file(image_info, collection, download_params):
@@ -1711,9 +1704,9 @@ def _update_image(image_info, download_params):
         _write_metadata(image_info, metadata_file_path)
     except OSError:
         warnings.warn(
-            "could not update metadata for image {}, "
-            "most likely because you do not have write "
-            "permissions to its metadata file".format(image_info["id"])
+            f"Could not update metadata for image {image_info['id']}, "
+            "most likely because you do not have "
+            "write permissions to its metadata file."
         )
     return image_info
 
@@ -1770,34 +1763,21 @@ def _scroll_local(download_params):
         )
         for image in good_images:
             image, collection = _update(image, collection, download_params)
-            if not download_params["resample"]:
-                if os.path.isfile(image["absolute_path"]):
-                    download_params["visited_images"].add(image["id"])
-                    download_params["visited_collections"].add(
-                        collection["id"]
-                    )
-                    yield image, collection
-                else:
-                    pass
-            else:
-                if os.path.isfile(image["resampled_absolute_path"]):
-                    download_params["visited_images"].add(image["id"])
-                    download_params["visited_collections"].add(
-                        collection["id"]
-                    )
-                    yield image, collection
-                else:
+            if download_params["resample"]:
+                if not os.path.isfile(image["resampled_absolute_path"]):
                     im_resampled = resample_img(
                         img=image["absolute_path"],
                         target_affine=STD_AFFINE,
                         interpolation=download_params["interpolation"],
                     )
                     im_resampled.to_filename(image["resampled_absolute_path"])
-                    download_params["visited_images"].add(image["id"])
-                    download_params["visited_collections"].add(
-                        collection["id"]
-                    )
-                    yield image, collection
+                download_params["visited_images"].add(image["id"])
+                download_params["visited_collections"].add(collection["id"])
+                yield image, collection
+            elif os.path.isfile(image["absolute_path"]):
+                download_params["visited_images"].add(image["id"])
+                download_params["visited_collections"].add(collection["id"])
+                yield image, collection
 
 
 def _scroll_collection(collection, download_params):
@@ -1859,18 +1839,20 @@ def _scroll_collection(collection, download_params):
             yield None
         if fails_in_collection == download_params["max_fails_in_collection"]:
             _print_if(
-                "Too many bad images in collection {}:  "
-                "{} bad images.".format(collection["id"], fails_in_collection),
+                (
+                    f"Too many bad images in collection {collection['id']}:  "
+                    f"{fails_in_collection} bad images."
+                ),
                 _ERROR,
                 download_params["verbose"],
             )
             return
     _print_if(
-        "On neurovault.org: "
-        "{} image{} matched query in collection {}".format(
-            (n_im_in_collection or "no"),
-            ("s" if n_im_in_collection > 1 else ""),
-            collection["id"],
+        (
+            "On neurovault.org: "
+            f"{n_im_in_collection or 'no'} "
+            f"image{'s' if n_im_in_collection > 1 else ''}"
+            f"matched query in collection {collection['id']}"
         ),
         _INFO,
         download_params["verbose"],
@@ -2121,8 +2103,10 @@ def _scroll(download_params):
             if found == download_params["max_images"]:
                 break
         _print_if(
-            "{} image{} found on local disk.".format(
-                ("No" if not found else found), ("s" if found > 1 else "")
+            (
+                f"{found or 'No'} "
+                f"image{'s' if found > 1 else ''} "
+                "found on local disk."
             ),
             _INFO,
             download_params["verbose"],
@@ -2146,9 +2130,7 @@ def _scroll(download_params):
         if n_consecutive_fails >= download_params["max_consecutive_fails"]:
             warnings.warn(
                 "Neurovault download stopped early: "
-                "too many downloads failed in a row ({})".format(
-                    n_consecutive_fails
-                )
+                "too many downloads failed in a row ({n_consecutive_fails})"
             )
             return
         if found == download_params["max_images"]:
@@ -2164,8 +2146,7 @@ def _split_terms(terms, available_on_server):
     server_terms = {
         k: terms_.pop(k)
         for k in available_on_server
-        if k in terms_
-        and (isinstance(terms_[k], str) or isinstance(terms_[k], int))
+        if k in terms_ and (isinstance(terms_[k], (str, int)))
     }
     return terms_, server_terms
 
@@ -2224,9 +2205,7 @@ def _move_col_id(im_terms, col_terms):
         return im_terms, col_terms
     im_terms = copy(im_terms)
     col_terms = copy(col_terms)
-    if "id" not in col_terms:
-        col_terms["id"] = im_terms.pop("collection_id")
-    elif col_terms["id"] == im_terms["collection_id"]:
+    if "id" not in col_terms or col_terms["id"] == im_terms["collection_id"]:
         col_terms["id"] = im_terms.pop("collection_id")
     else:
         warnings.warn(
@@ -2257,13 +2236,12 @@ def _read_download_params(
     vectorize_words=True,
 ):
     """Create a dictionary containing download information."""
-    download_params = {}
-    download_params["verbose"] = verbose
+    download_params = {"verbose": verbose}
     download_mode = download_mode.lower()
     if download_mode not in ["overwrite", "download_new", "offline"]:
         raise ValueError(
-            "supported download modes are overwrite,"
-            " download_new, offline; got {}".format(download_mode)
+            "Supported download modes are: overwrite, download_new, offline. "
+            f"Got {download_mode}."
         )
     download_params["download_mode"] = download_mode
     if collection_terms is None:
@@ -2441,8 +2419,9 @@ def _fetch_neurovault_implementation(
     neurovault_data_dir = _get_dataset_dir("neurovault", data_dir)
     if mode != "offline" and not os.access(neurovault_data_dir, os.W_OK):
         warnings.warn(
-            "You don't have write access to neurovault dir: {}; "
-            "fetch_neurovault is working offline.".format(neurovault_data_dir)
+            "You don't have write access to neurovault dir: "
+            f"{neurovault_data_dir}. "
+            "fetch_neurovault is working offline."
         )
         mode = "offline"
 
@@ -2662,9 +2641,13 @@ def fetch_neurovault(
     """
     if max_images == _DEFAULT_MAX_IMAGES:
         _print_if(
-            "fetch_neurovault: using default value of {} for max_images. "
-            "Set max_images to another value or None "
-            "if you want more images.".format(_DEFAULT_MAX_IMAGES),
+            (
+                "fetch_neurovault: "
+                f"using default value of {_DEFAULT_MAX_IMAGES} "
+                "for max_images. "
+                "Set max_images to another value or None "
+                "if you want more images."
+            ),
             _INFO,
             verbose,
         )
