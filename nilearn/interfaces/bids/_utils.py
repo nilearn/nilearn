@@ -141,9 +141,9 @@ def _generate_dataset_description(out_file, model_level):
         'GeneratedBy': {
             'Name': 'nilearn',
             'Version': nilearn.__version__,
-            'Description': 'A Nilearn {} GLM.'.format(
-                'first-level' if model_level == 1 else 'second-level'
-            ),
+            'Description': ("A Nilearn "
+                            f"{'first' if model_level == 1 else 'second'}"
+                            "-level GLM."),
             'CodeURL': (
                 f"{repo_url}/releases/tag/{nilearn.__version__}"
             )
