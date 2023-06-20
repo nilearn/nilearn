@@ -194,10 +194,10 @@ prediction = decoder.predict(fmri_niimgs_test)
 # of our model on examples it hasn't seen to examine how well the model perform
 # in general.
 
-predciton_accuracy = (prediction == conditions_test).sum() / float(
+predicton_accuracy = (prediction == conditions_test).sum() / float(
     len(conditions_test)
 )
-print(f"Prediction Accuracy: {predciton_accuracy:.3f}")
+print(f"Prediction Accuracy: {predicton_accuracy:.3f}")
 
 ###########################################################################
 # Implementing a KFold loop
@@ -215,12 +215,12 @@ for fold, (train, test) in enumerate(cv.split(conditions), start=1):
     )
     decoder.fit(index_img(fmri_niimgs, train), conditions[train])
     prediction = decoder.predict(index_img(fmri_niimgs, test))
-    predciton_accuracy = (prediction == conditions[test]).sum() / float(
+    predicton_accuracy = (prediction == conditions[test]).sum() / float(
         len(conditions[test])
     )
     print(
         f"CV Fold {fold:01d} | "
-        f"Prediction Accuracy: {predciton_accuracy:.3f}"
+        f"Prediction Accuracy: {predicton_accuracy:.3f}"
     )
 
 ###########################################################################
