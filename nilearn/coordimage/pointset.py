@@ -26,13 +26,13 @@ class TriangularMesh(Pointset):
     def __init__(self, mesh):
         if isinstance(mesh, tuple) and len(mesh) == 2:
             coords, self._triangles = mesh
-        elif hasattr(mesh, 'coords') and hasattr(mesh, 'triangles'):
+        elif hasattr(mesh, "coords") and hasattr(mesh, "triangles"):
             coords = mesh.coords
             self._triangles = mesh.triangles
-        elif hasattr(mesh, 'get_mesh'):
+        elif hasattr(mesh, "get_mesh"):
             coords, self._triangles = mesh.get_mesh()
         else:
-            raise ValueError('Cannot interpret input as triangular mesh')
+            raise ValueError("Cannot interpret input as triangular mesh")
         super().__init__(coords)
 
     @property
@@ -101,9 +101,9 @@ class NdGrid(Pointset):
         try:
             self._affines = dict(affines)
         except (TypeError, ValueError):
-            self._affines = {'world': np.array(affines)}
-        if 'voxels' not in self._affines:
-            self._affines['voxels'] = np.eye(4, dtype=np.uint8)
+            self._affines = {"world": np.array(affines)}
+        if "voxels" not in self._affines:
+            self._affines["voxels"] = np.eye(4, dtype=np.uint8)
 
     def get_affine(self, name=None):
         """4x4 array"""

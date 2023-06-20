@@ -15,17 +15,17 @@ class FreeSurferSubject(ci.GeometryCollection):
     def from_subject(klass, subject_id, subjects_dir=None):
         """Load a FreeSurfer subject by ID"""
         if subjects_dir is None:
-            subjects_dir = os.environ['SUBJECTS_DIR']
+            subjects_dir = os.environ["SUBJECTS_DIR"]
         return klass.from_spec(Path(subjects_dir) / subject_id)
 
     @classmethod
     def from_spec(klass, pathlike):
         """Load a FreeSurfer subject from its directory structure"""
         subject_dir = Path(pathlike)
-        surfs = subject_dir / 'surf'
+        surfs = subject_dir / "surf"
         structures = {
-            'lh': FreeSurferHemisphere.from_filename(surfs / 'lh.white'),
-            'rh': FreeSurferHemisphere.from_filename(surfs / 'rh.white'),
+            "lh": FreeSurferHemisphere.from_filename(surfs / "lh.white"),
+            "rh": FreeSurferHemisphere.from_filename(surfs / "rh.white"),
         }
         subject = klass(structures)
         subject._subject_dir = subject_dir
@@ -49,7 +49,7 @@ class CaretSpec(ci.GeometryCollection):
 
 
 def test_Cifti2Image_as_CoordImage():
-    ones = nb.load(CIFTI2_DATA / 'cifti2/ones.dscalar.nii')
+    ones = nb.load(CIFTI2_DATA / "cifti2/ones.dscalar.nii")
     assert ones.shape == (1, 91282)
     cimg = ci.CoordinateImage.from_image(ones)
     assert cimg.shape == (91282, 1)
@@ -69,7 +69,7 @@ def test_Cifti2Image_as_CoordImage():
     assert len(subaxis) == len(caxis) - 200
     assert len(subaxis.parcels) == len(caxis.parcels)
 
-    lh_img = cimg['CIFTI_STRUCTURE_CORTEX_LEFT']
+    lh_img = cimg["CIFTI_STRUCTURE_CORTEX_LEFT"]
     assert len(lh_img.coordaxis.parcels) == 1
     assert lh_img.shape == (29696, 1)
 

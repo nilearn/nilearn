@@ -27,7 +27,9 @@ class CoordinateImage:
         if isinstance(slicer, str):
             slicer = self.coordaxis.get_indices(slicer)
         elif isinstance(slicer, list):
-            slicer = np.hstack([self.coordaxis.get_indices(sub) for sub in slicer])
+            slicer = np.hstack(
+                [self.coordaxis.get_indices(sub) for sub in slicer]
+            )
 
         if isinstance(slicer, range):
             slicer = slice(slicer.start, slicer.stop, slicer.step)
@@ -35,20 +37,24 @@ class CoordinateImage:
         data = self.data
         if not isinstance(slicer, slice):
             data = np.asanyarray(data)
-        return self.__class__(data[slicer], self.coordaxis[slicer], header=self.header.copy())
+        return self.__class__(
+            data[slicer], self.coordaxis[slicer], header=self.header.copy()
+        )
 
     @classmethod
     def from_image(klass, img):
         coordaxis = CoordinateAxis.from_header(img.header)
         if isinstance(img, nib.Cifti2Image):
             if img.ndim != 2:
-                raise ValueError('Can only interpret 2D images')
+                raise ValueError("Can only interpret 2D images")
             for i in img.header.mapped_indices:
-                if isinstance(img.header.get_axis(i), nib.cifti2.BrainModelAxis):
+                if isinstance(
+                    img.header.get_axis(i), nib.cifti2.BrainModelAxis
+                ):
                     break
             # Reinterpret data ordering based on location of coordinate axis
             data = img.dataobj.copy()
-            data.order = ['F', 'C'][i]
+            data.order = ["F", "C"][i]
             if i == 1:
                 data._shape = data._shape[::-1]
         return klass(data, coordaxis, img.header)
@@ -75,13 +81,17 @@ class CoordinateAxis:
         Return a sub-sampled CoordinateAxis containing structures
         matching the indices provided.
         """
-        if slicer is Ellipsis or isinstance(slicer, slice) and slicer == slice(None):
+        if (
+            slicer is Ellipsis
+            or isinstance(slicer, slice)
+            and slicer == slice(None)
+        ):
             return self
         elif isinstance(slicer, slice):
             slicer = fill_slicer(slicer, len(self))
             start, stop, step = slicer.start, slicer.stop, slicer.step
         else:
-            raise TypeError(f'Indexing type not supported: {type(slicer)}')
+            raise TypeError(f"Indexing type not supported: {type(slicer)}")
 
         subparcels = []
         pstop = 0
@@ -131,7 +141,9 @@ class CoordinateAxis:
                 if isinstance(ax, nib.cifti2.BrainModelAxis):
                     break
             else:
-                raise ValueError('No BrainModelAxis, cannot create CoordinateAxis')
+                raise ValueError(
+                    "No BrainModelAxis, cannot create CoordinateAxis"
+                )
             for name, slicer, struct in ax.iter_structures():
                 if struct.volume_shape:
                     substruct = ps.NdGrid(struct.volume_shape, struct.affine)
@@ -159,7 +171,7 @@ class Parcel:
         self.indices = indices
 
     def __repr__(self):
-        return f'<Parcel {self.name}({len(self.indices)})>'
+        return f"<Parcel {self.name}({len(self.indices)})>"
 
     def __len__(self):
         return len(self.indices)
