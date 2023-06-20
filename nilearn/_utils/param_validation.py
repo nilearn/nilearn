@@ -50,10 +50,10 @@ def check_threshold(threshold, data, percentile_func, name="threshold"):
     """
     if isinstance(threshold, str):
         message = (
-            'If "{}" is given as string it '
+            f'If "{name}" is given as string it '
             "should be a number followed by the percent "
             'sign, e.g. "25.3%"'
-        ).format(name)
+        )
         if not threshold.endswith("%"):
             raise ValueError(message)
 
@@ -75,7 +75,7 @@ def check_threshold(threshold, data, percentile_func, name="threshold"):
             )
     else:
         raise TypeError(
-            f"{(name,)} should be either a number "
+            f"{name} should be either a number "
             "or a string finishing with a percent sign"
         )
     return threshold
