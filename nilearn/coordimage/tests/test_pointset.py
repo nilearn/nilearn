@@ -2,11 +2,9 @@ from pathlib import Path
 from unittest import skipUnless
 
 import numpy as np
-
 from nibabel.arrayproxy import ArrayProxy
 from nibabel.onetime import auto_attr
 from nibabel.optpkg import optional_package
-from nibabel.tests.nibabel_data import get_nibabel_data
 
 from nilearn.coordimage import pointset as ps
 

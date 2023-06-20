@@ -1,6 +1,5 @@
-import numpy as np
-
 import nibabel as nib
+import numpy as np
 from nibabel.fileslice import fill_slicer
 
 import nilearn.coordimage.pointset as ps

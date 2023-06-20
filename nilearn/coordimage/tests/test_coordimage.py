@@ -2,10 +2,9 @@ import os
 from pathlib import Path
 
 import nibabel as nb
-from nibabel.tests.nibabel_data import get_nibabel_data
 
-from nilearn.coordimage import coordimage as ci
-from nilearn.coordimage import pointset as ps
+from nilearn.coordimage import coordimage as ci, pointset as ps
+
 from .test_pointset import FreeSurferHemisphere
 
 CIFTI2_DATA = Path("nilearn/coordimage/tests/data")

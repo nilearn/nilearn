@@ -2,7 +2,6 @@ import operator as op
 from functools import reduce
 
 import numpy as np
-
 from nibabel.affines import apply_affine
 
 
