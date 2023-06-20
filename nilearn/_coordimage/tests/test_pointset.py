@@ -10,7 +10,7 @@ from nilearn._coordimage import pointset as ps
 
 h5, has_h5py, _ = optional_package("h5py")
 
-FS_DATA = Path("nilearn/coordimage/tests/data")
+FS_DATA = Path("nilearn/_coordimage/tests/data/fsaverage")
 
 
 class H5ArrayProxy:
@@ -152,7 +152,7 @@ class FreeSurferHemisphere(ps.TriMeshFamily):
 
 def test_FreeSurferHemisphere():
     lh = FreeSurferHemisphere.from_filename(
-        FS_DATA / "fsaverage/surf/lh.white"
+        FS_DATA / "surf/lh.white"
     )
     assert lh.n_coords == 10242
     assert lh.n_triangles == 20480
@@ -161,7 +161,7 @@ def test_FreeSurferHemisphere():
 @skipUnless(has_h5py, reason="Test requires h5py")
 def test_make_H5Geometry(tmp_path):
     lh = FreeSurferHemisphere.from_filename(
-        FS_DATA / "fsaverage/surf/lh.white"
+        FS_DATA / "surf/lh.white"
     )
     h5geo = H5Geometry({name: lh.get_mesh(name) for name in ("white", "pial")})
     h5geo.to_filename(tmp_path / "geometry.h5")

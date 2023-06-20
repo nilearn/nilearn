@@ -7,7 +7,7 @@ from nilearn._coordimage import coordimage as ci
 
 from .test_pointset import FreeSurferHemisphere
 
-CIFTI2_DATA = Path("nilearn/coordimage/tests/data")
+CIFTI2_DATA = Path("nilearn/_coordimage/tests/data/cifti2")
 
 
 class FreeSurferSubject(ci.GeometryCollection):
@@ -49,7 +49,7 @@ class CaretSpec(ci.GeometryCollection):
 
 
 def test_Cifti2Image_as_CoordImage():
-    ones = nb.load(CIFTI2_DATA / "cifti2/ones.dscalar.nii")
+    ones = nb.load(CIFTI2_DATA / "ones.dscalar.nii")
     assert ones.shape == (1, 91282)
     cimg = ci.CoordinateImage.from_image(ones)
     assert cimg.shape == (91282, 1)
