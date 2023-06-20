@@ -1,26 +1,29 @@
-import sys
 import re
+import sys
+
 import numpy as np
 import pandas as pd
-from scipy.stats import pearsonr
-from sklearn.preprocessing import scale
 import pytest
 from nibabel import Nifti1Image
-from nilearn.maskers import NiftiMasker
-from nilearn.interfaces.fmriprep import load_confounds
-from nilearn.interfaces.fmriprep.load_confounds import _check_strategy, \
-    _load_single_confounds_file
+from scipy.stats import pearsonr
+from sklearn.preprocessing import scale
 
 from nilearn._utils.fmriprep_confounds import _to_camel_case
-
-from nilearn.interfaces.fmriprep.tests.utils import (
-    create_tmp_filepath, get_leagal_confound
+from nilearn.interfaces.fmriprep import load_confounds
+from nilearn.interfaces.fmriprep.load_confounds import (
+    _check_strategy,
+    _load_single_confounds_file,
 )
+from nilearn.interfaces.fmriprep.tests.utils import (
+    create_tmp_filepath,
+    get_leagal_confound,
+)
+from nilearn.maskers import NiftiMasker
 
 
 def _simu_img(tmp_path, demean):
-    """Simulate an nifti image based on confound file with some parts confounds
-    and some parts noise."""
+    """Simulate an nifti image based on confound file \
+    with some parts confounds and some parts noise."""
     file_nii, _ = create_tmp_filepath(tmp_path, copy_confounds=True)
     # set the size of the image matrix
     nx = 5
@@ -244,8 +247,8 @@ def test_confounds2df(tmp_path):
 
 
 def test_load_single_confounds_file(tmp_path):
-    """Check that the load_confounds function returns the same confounds as
-    _load_single_confounds_file."""
+    """Check that the load_confounds function returns the same confounds \
+    as _load_single_confounds_file."""
     nii_file, confounds_file = create_tmp_filepath(tmp_path,
                                                    copy_confounds=True)
 
@@ -271,8 +274,8 @@ def test_load_single_confounds_file(tmp_path):
                           ((0, ), "not a supported type of confounds."),
                           (("compcor", ), "high_pass")])
 def test_check_strategy(strategy, message):
-    """Check that flawed strategy options generate meaningful error
-    messages."""
+    """Check that flawed strategy options \
+    generate meaningful error messages."""
     with pytest.raises(ValueError) as exc_info:
         _check_strategy(strategy=strategy)
     assert message in exc_info.value.args[0]
@@ -446,12 +449,14 @@ def test_load_non_nifti(tmp_path):
 
 def test_invalid_filetype(tmp_path):
     """Invalid file types/associated files for load method."""
-    bad_nii, bad_conf = create_tmp_filepath(tmp_path, copy_confounds=True,
+    bad_nii, bad_conf = create_tmp_filepath(tmp_path,
+                                            suffix="sub-test01_task-test",
+                                            copy_confounds=True,
                                             old_derivative_suffix=False)
     conf, _ = load_confounds(bad_nii)
 
     # more than one legal filename for confounds
-    add_conf = "test_desc-confounds_regressors.tsv"
+    add_conf = "sub-test01_task-test_desc-confounds_regressors.tsv"
     leagal_confounds, _ = get_leagal_confound()
     leagal_confounds.to_csv(tmp_path / add_conf, sep="\t", index=False)
     with pytest.raises(ValueError) as info:
@@ -551,7 +556,7 @@ def test_sample_mask(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "image_type", ["regular", "ica_aroma", "gifti", "cifti"]
+    "image_type", ["regular", "native", "ica_aroma", "gifti", "cifti"]
 )
 def test_inputs(tmp_path, image_type):
     """Test multiple images as input."""
@@ -560,7 +565,7 @@ def test_inputs(tmp_path, image_type):
     for i in range(2):  # gifti edge case
         nii, _ = create_tmp_filepath(
             tmp_path,
-            suffix=f"img{i+1}",
+            suffix=f"sub-test{i+1}_ses-test_task-testimg_run-01",
             image_type=image_type,
             copy_confounds=True,
             copy_json=True,

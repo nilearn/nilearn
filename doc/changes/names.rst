@@ -20,6 +20,8 @@
 
 .. _Andrés Hoyos Idrobo: https://github.com/ahoyosid
 
+.. _Anne-Sophie Kieslinger: https://github.com/askieslinger
+
 .. _Ariel Rokem: http://arokem.org/
 
 .. _Arthur Mensch: https://www.amensch.fr/
@@ -41,6 +43,8 @@
 .. _Chris Markiewicz: https://github.com/effigies
 
 .. _Christian Horea: http://chymera.eu/
+
+.. _Christian Gerloff: https://github.com/ChristianGerloff
 
 .. _Colin Reininger: https://github.com/reiningc
 
@@ -122,7 +126,11 @@
 
 .. _Julia Huntenburg: https://github.com/juhuntenburg
 
+.. _Julio A Peraza: https://github.com/JulioAPeraza
+
 .. _Kamalakar Reddy Daddy: https://github.com/KamalakerDadi
+
+.. _Kevin Sitek: https://github.com/sitek
 
 .. _Koen Helwegen: https://github.com/koenhelwegen
 
@@ -162,6 +170,10 @@
 
 .. _Michael Waskom: https://mwaskom.github.io/
 
+.. _Michelle Wang: https://github.com/michellewang
+
+.. _Mohammad Torabi: https://github.com/mtorabi59
+
 .. _Moritz Boos: https://github.com/mjboos
 
 .. _Myeong Seop Song: https://github.com/NeuroVR-Song
@@ -194,6 +206,8 @@
 
 .. _Raphael Meudec: https://github.com/RaphaelMeudec
 
+.. _Rémi Gau: https://github.com/Remi-Gau
+
 .. _Robert Luke: https://github.com/rob-luke
 
 .. _Robert Williamson: https://github.com/RobWilliamson15
@@ -208,11 +222,15 @@
 
 .. _Salma Bougacha: https://github.com/salma1601
 
+.. _Sam Buck Johnson: https://github.com/sambjohnson
+
 .. _Sami Jawhar: https://github.com/sjawhar
 
 .. _Simon Steinkamp: https://github.com/SRSteinkamp
 
 .. _Sourav Singh: https://github.com/souravsingh
+
+.. _Steven Meisler: https://www.stevenmeisler.com
 
 .. _Sylvain Lan: https://github.com/SylvainLan
 

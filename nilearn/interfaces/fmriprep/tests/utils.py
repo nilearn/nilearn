@@ -1,15 +1,18 @@
 """Utility functions for testing load_confounds"""
-import os
 import json
-import pandas as pd
-from nilearn.interfaces.fmriprep import load_confounds_utils
+import os
 
+import pandas as pd
+
+from nilearn.interfaces.fmriprep import load_confounds_utils
 
 img_file_patterns = {
     "ica_aroma":
         "_space-MNI152NLin2009cAsym_desc-smoothAROMAnonaggr_bold.nii.gz",
     "regular":
         "_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
+    "native":
+        "_desc-preproc_bold.nii.gz",
     "cifti":
         "_space-fsLR_den-91k_bold.dtseries.nii",
     "gifti": (
@@ -45,7 +48,7 @@ def get_testdata_path(non_steady_state=True):
 def create_tmp_filepath(
     base_path,
     image_type="regular",
-    suffix="test",
+    suffix="sub-test01_task-test",
     copy_confounds=False,
     copy_json=False,
     old_derivative_suffix=False
@@ -92,6 +95,6 @@ def get_leagal_confound(non_steady_state=True):
     """Load the valid confound files for manipulation."""
     conf, meta = get_testdata_path(non_steady_state=non_steady_state)
     conf = pd.read_csv(conf, delimiter="\t", encoding="utf-8")
-    with open(meta, "r") as file:
+    with open(meta) as file:
         meta = json.load(file)
     return conf, meta

@@ -93,7 +93,7 @@ The Nilearn team organizes regular online drop-in hours to answer questions,
 discuss feature requests, or have any Nilearn-related discussions. Nilearn
 drop-in hours occur *every Wednesday from 4pm to 5pm UTC*, and we make sure that at
 least one member of the core-developer team is available. These events are held
-on our on `Discord server <https://discord.gg/bMBhb7w>`_ and are fully open,
+on `Jitsi Meet <https://meet.jit.si/nilearn-drop-in-hours>`_ and are fully open,
 anyone is welcome to join!
 For more information and ways to engage with the Nilearn team see
 `How to get help <https://nilearn.github.io/stable/development.html#how-to-get-help>`_.
@@ -101,14 +101,14 @@ For more information and ways to engage with the Nilearn team see
 Dependencies
 ============
 
-The required dependencies to use the software are listed in the file `nilearn/setup.cfg <https://github.com/nilearn/nilearn/blob/main/setup.cfg>`_.
+The required dependencies to use the software are listed in the file `pyproject.toml <https://github.com/nilearn/nilearn/blob/main/pyproject.toml>`_.
 
-If you are using nilearn plotting functionalities or running the examples, matplotlib >= 3.0 is required.
+If you are using nilearn plotting functionalities or running the examples, matplotlib >= 3.3.0 is required.
 
 Some plotting functions in Nilearn support both matplotlib and plotly as plotting engines.
 In order to use the plotly engine in these functions, you will need to install both plotly and kaleido, which can both be installed with pip and anaconda.
 
-If you want to run the tests, you need pytest >= 3.9 and pytest-cov for coverage reporting.
+If you want to run the tests, you need pytest >= 6.0.0 and pytest-cov for coverage reporting.
 
 Development
 ===========

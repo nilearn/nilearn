@@ -1,6 +1,146 @@
 """Functions for working with BIDS datasets."""
+
+from __future__ import annotations
+
 import glob
+import json
 import os
+from pathlib import Path
+from warnings import warn
+
+
+def _get_metadata_from_bids(field,
+                            json_files,
+                            bids_path=None,):
+    """Get a metadata field from a BIDS json sidecar files.
+
+    This assumes that all the json files in the list have the same value
+    for that field,
+    hence the metadata is read only from the first json file in the list.
+
+    Parameters
+    ----------
+    field : :obj:`str`
+        Name of the field to be read. For example 'RepetitionTime'.
+
+    json_files : :obj:`list` of :obj:`str`
+        List of path to json files, for example returned by get_bids_files.
+
+    bids_path : :obj:`str` or :obj:`pathlib.Path`, optional
+        Fullpath to the BIDS dataset.
+
+    Returns
+    -------
+    float or None
+        value of the field or None if the field is not found.
+    """
+    if json_files:
+        assert (isinstance(json_files, list)
+                and isinstance(json_files[0], (Path, str)))
+        with open(json_files[0], 'r') as f:
+            specs = json.load(f)
+        value = specs.get(field)
+        if value is not None:
+            return value
+        else:
+            warn(f"'{field}' not found in file {json_files[0]}.")
+    else:
+        msg_suffix = f" in {bids_path}" if bids_path else ""
+        warn(f'No bold.json found in BIDS folder{msg_suffix}.')
+
+    return None
+
+
+def _infer_slice_timing_start_time_from_dataset(
+        bids_path,
+        filters,
+        verbose=0):
+    """Return the StartTime metadata field from a BIDS derivatives dataset.
+
+    This corresponds to the reference time (in seconds) used for the slice
+    timing correction.
+
+    See https://github.com/bids-standard/bids-specification/issues/836
+
+    Parameters
+    ----------
+    bids_path : :obj:`str` or :obj:`pathlib.Path`
+        Fullpath to the derivatives folder of the BIDS dataset.
+
+    filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), optional
+        Filters are of the form (field, label). Only one filter per field
+        allowed. A file that does not match a filter will be discarded.
+        Filter examples would be ('ses', '01'), ('dir', 'ap') and
+        ('task', 'localizer').
+
+    verbose : :obj:`int`, optional
+        Indicate the level of verbosity. By default, nothing is printed.
+        If 0 prints nothing. If 1 prints warnings.
+
+    Returns
+    -------
+    float or None
+        Value of the field or None if the field is not found.
+
+    """
+    img_specs = get_bids_files(bids_path,
+                               modality_folder='func',
+                               file_tag='bold',
+                               file_type='json',
+                               filters=filters)
+    if not img_specs:
+        if verbose:
+            msg_suffix = f" in {bids_path}"
+            warn(f'No bold.json found in BIDS folder{msg_suffix}.')
+        return None
+
+    return _get_metadata_from_bids(field="StartTime",
+                                   json_files=img_specs,
+                                   bids_path=bids_path,)
+
+
+def _infer_repetition_time_from_dataset(
+        bids_path,
+        filters,
+        verbose=0):
+    """Return the RepetitionTime metadata field from a BIDS dataset.
+
+    Parameters
+    ----------
+    bids_path : :obj:`str` or :obj:`pathlib.Path`
+        Fullpath to the raw folder of the BIDS dataset.
+
+    filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), optional
+        Filters are of the form (field, label). Only one filter per field
+        allowed. A file that does not match a filter will be discarded.
+        Filter examples would be ('ses', '01'), ('dir', 'ap') and
+        ('task', 'localizer').
+
+    verbose : :obj:`int`, optional
+        Indicate the level of verbosity. By default, nothing is printed.
+        If 0 prints nothing. If 1 prints warnings.
+
+    Returns
+    -------
+    float or None
+        Value of the field or None if the field is not found.
+
+    """
+    img_specs = get_bids_files(main_path=bids_path,
+                               modality_folder='func',
+                               file_tag='bold',
+                               file_type='json',
+                               filters=filters)
+
+    if not img_specs:
+        if verbose:
+            msg_suffix = f" in {bids_path}"
+            warn(f'No bold.json found in BIDS folder{msg_suffix}.')
+        return None
+
+    return _get_metadata_from_bids(field="RepetitionTime",
+                                   json_files=img_specs,
+                                   bids_path=bids_path,)
 
 
 def get_bids_files(
@@ -79,29 +219,28 @@ def get_bids_files(
         List of file paths found.
 
     """
-    filters = filters or []
     if sub_folder:
+
+        ses_level = ""
         files = os.path.join(main_path, 'sub-*', 'ses-*')
-        if glob.glob(files):
-            files = os.path.join(
-                main_path,
-                'sub-%s' % sub_label,
-                'ses-*',
-                modality_folder,
-                'sub-%s*_%s.%s' % (sub_label, file_tag, file_type),
-            )
-        else:
-            files = os.path.join(
-                main_path,
-                'sub-%s' % sub_label,
-                modality_folder,
-                'sub-%s*_%s.%s' % (sub_label, file_tag, file_type),
-            )
+        session_folder_exists = glob.glob(files)
+        if session_folder_exists:
+            ses_level = 'ses-*'
+
+        files = os.path.join(
+            main_path,
+            f'sub-{sub_label}',
+            ses_level,
+            modality_folder,
+            f'sub-{sub_label}*_{file_tag}.{file_type}',
+        )
     else:
-        files = os.path.join(main_path, '*%s.%s' % (file_tag, file_type))
+        files = os.path.join(main_path, f'*{file_tag}.{file_type}')
 
     files = glob.glob(files)
     files.sort()
+
+    filters = filters or []
     if filters:
         files = [parse_bids_filename(file_) for file_ in files]
         for key, value in filters:
@@ -139,9 +278,8 @@ def parse_bids_filename(img_path):
         key with no value and will be included in the 'file_fields' key.
 
     """
-    reference = {}
-    reference['file_path'] = img_path
-    reference['file_basename'] = os.path.basename(img_path)
+    reference = {"file_path": img_path,
+                 "file_basename": os.path.basename(img_path)}
     parts = reference['file_basename'].split('_')
     tag, type_ = parts[-1].split('.', 1)
     reference['file_tag'] = tag

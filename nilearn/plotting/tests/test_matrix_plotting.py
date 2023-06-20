@@ -1,22 +1,25 @@
 import os
 
-import pytest
-
-import numpy as np
-import pandas as pd
-from nibabel.tmpdirs import InTemporaryDirectory
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import pytest
+from nibabel.tmpdirs import InTemporaryDirectory
 
 from nilearn.glm.first_level.design_matrix import (
-    make_first_level_design_matrix)
-
+    make_first_level_design_matrix,
+)
 from nilearn.plotting.matrix_plotting import (
-    plot_matrix, plot_contrast_matrix, plot_event, plot_design_matrix)
-
+    plot_contrast_matrix,
+    plot_design_matrix,
+    plot_event,
+    plot_matrix,
+)
 
 ##############################################################################
 # Some smoke testing for graphics-related code
+
 
 @pytest.mark.parametrize("fig,axes",
                          [("foo", "bar"),
@@ -53,7 +56,7 @@ def test_sanitize_labels():
         assert _sanitize_labels((2, 2), lab) == labs
 
 
-VALID_TRI_VALUES = set(["full", "lower", "diag"])
+VALID_TRI_VALUES = ("full", "lower", "diag")
 
 
 @pytest.mark.parametrize("tri", VALID_TRI_VALUES)
@@ -67,17 +70,17 @@ def test_sanitize_tri_error(tri):
     from ..matrix_plotting import _sanitize_tri
     with pytest.raises(ValueError,
                        match=("Parameter tri needs to be "
-                              f"one of {VALID_TRI_VALUES}")):
+                              f"one of: {', '.join(VALID_TRI_VALUES)}")):
         _sanitize_tri(tri)
 
 
-VALID_REORDER_VALUES = set([True, False, 'single', 'complete', 'average'])
+VALID_REORDER_VALUES = (True, False, 'single', 'complete', 'average')
 
 
 @pytest.mark.parametrize("reorder", VALID_REORDER_VALUES)
 def test_sanitize_reorder(reorder):
     from ..matrix_plotting import _sanitize_reorder
-    if reorder != True:  # noqa
+    if reorder is not True:
         assert _sanitize_reorder(reorder) == reorder
     else:
         assert _sanitize_reorder(reorder) == 'average'
@@ -87,8 +90,7 @@ def test_sanitize_reorder(reorder):
 def test_sanitize_reorder_error(reorder):
     from ..matrix_plotting import _sanitize_reorder
     with pytest.raises(ValueError,
-                       match=("Parameter reorder needs to be "
-                              f"one of {VALID_REORDER_VALUES}")):
+                       match=("Parameter reorder needs to be one of")):
         _sanitize_reorder(reorder)
 
 
@@ -152,6 +154,7 @@ def test_matrix_plotting_grid(mat, labels, tri):
 
 def test_matrix_plotting_reorder(mat, labels):
     from itertools import permutations
+
     # test if reordering with default linkage works
     idx = [2, 3, 5]
     # make symmetric matrix of similarities so we can get a block
@@ -162,7 +165,7 @@ def test_matrix_plotting_reorder(mat, labels):
     reordered_labels = [int(lbl.get_text())
                         for lbl in ax.axes.get_xticklabels()]
     # block order does not matter
-    assert(  # noqa
+    assert (  # noqa: F631
         (reordered_labels[:3] == idx or reordered_labels[-3:] == idx),
         'Clustering does not find block structure.'
     )

@@ -1,5 +1,6 @@
-"""Example of surface-based first-level analysis
-================================================
+"""
+Example of surface-based first-level analysis
+=============================================
 
 A full step-by-step example of fitting a GLM to experimental data sampled on
 the cortical surface and visualizing the results.
@@ -10,7 +11,8 @@ More specifically:
 2. fMRI data are projected onto a reference cortical surface (the FreeSurfer
    template, fsaverage).
 3. A design matrix describing all the effects related to the data is computed.
-4. A GLM is applied to the dataset (effect/covariance, then contrast estimation).
+4. A GLM is applied to the dataset
+   (effect/covariance, then contrast estimation).
 
 The result of the analysis are statistical maps that are defined on the brain
 mesh. We display them using Nilearn capabilities.
@@ -32,7 +34,7 @@ accurate than using a subject-tailored mesh.
 
 ###############################################################################
 # Prepare data and analysis parameters
-# -------------------------------------
+# ------------------------------------
 # Prepare the timing parameters.
 t_r = 2.4
 slice_time_ref = 0.5
@@ -41,13 +43,15 @@ slice_time_ref = 0.5
 # Prepare the data.
 # First, the volume-based fMRI data.
 from nilearn.datasets import fetch_localizer_first_level
+
 data = fetch_localizer_first_level()
 fmri_img = data.epi_img
 
 ###############################################################################
 # Second, the experimental paradigm.
-events_file = data.events
 import pandas as pd
+
+events_file = data.events
 events = pd.read_table(events_file)
 
 ###############################################################################
@@ -57,14 +61,15 @@ events = pd.read_table(events_file)
 # For this we need to get a mesh representing the geometry of the surface. We
 # could use an individual mesh, but we first resort to a standard mesh, the
 # so-called fsaverage5 template from the FreeSurfer software.
-
 import nilearn
+
 fsaverage = nilearn.datasets.fetch_surf_fsaverage()
 
 ###############################################################################
 # The projection function simply takes the fMRI data and the mesh.
 # Note that those correspond spatially, are they are both in MNI space.
 from nilearn import surface
+
 texture = surface.vol_to_surf(fmri_img, fsaverage.pial_right)
 
 ###############################################################################
@@ -73,8 +78,8 @@ texture = surface.vol_to_surf(fmri_img, fsaverage.pial_right)
 #
 # This involves computing the design matrix and fitting the model.
 # We start by specifying the timing of fMRI frames.
-
 import numpy as np
+
 n_scans = texture.shape[1]
 frame_times = t_r * (np.arange(n_scans) + .5)
 
@@ -84,6 +89,7 @@ frame_times = t_r * (np.arange(n_scans) + .5)
 # We specify an hrf model containing the Glover model and its time derivative
 # The drift model is implicitly a cosine basis with a period cutoff at 128s.
 from nilearn.glm.first_level import make_first_level_design_matrix
+
 design_matrix = make_first_level_design_matrix(frame_times,
                                                events=events,
                                                hrf_model='glover + derivative'
@@ -96,8 +102,8 @@ design_matrix = make_first_level_design_matrix(frame_times,
 # `labels` tags voxels according to noise autocorrelation.
 # `estimates` contains the parameter estimates.
 # We keep them for later contrast computation.
-
 from nilearn.glm.first_level import run_glm
+
 labels, estimates = run_glm(texture.T, design_matrix.values)
 
 ###############################################################################
@@ -141,11 +147,16 @@ basic_contrasts['sentences'] = (basic_contrasts['sentence_listening']
 ###############################################################################
 # Finally, we create a dictionary of more relevant contrasts
 #
-# * 'left - right button press': probes motor activity in left versus right button presses.
-# * 'audio - visual': probes the difference of activity between listening to some content or reading the same type of content (instructions, stories).
-# * 'computation - sentences': looks at the activity when performing a mental computation task  versus simply reading sentences.
+# * 'left - right button press': probes motor activity
+#   in left versus right button presses.
+# * 'audio - visual': probes the difference of activity between listening
+#   to some content or reading the same type of content
+#   (instructions, stories).
+# * 'computation - sentences': looks at the activity
+#   when performing a mental computation task  versus simply reading sentences.
 #
-# Of course, we could define other contrasts, but we keep only 3 for simplicity.
+# Of course, we could define other contrasts,
+# but we keep only 3 for simplicity.
 
 contrasts = {
     'left - right button press': (
@@ -155,15 +166,16 @@ contrasts = {
         - basic_contrasts['visual_right_hand_button_press']
     ),
     'audio - visual': basic_contrasts['audio'] - basic_contrasts['visual'],
-    'computation - sentences': (basic_contrasts['computation'] -
-                                basic_contrasts['sentences']
+    'computation - sentences': (
+        basic_contrasts['computation']
+        - basic_contrasts['sentences']
     )
 }
 
 ###############################################################################
 # Let's estimate the contrasts by iterating over them.
-from nilearn.glm.contrasts import compute_contrast
 from nilearn import plotting
+from nilearn.glm.contrasts import compute_contrast
 
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     print('  Contrast % i out of %i: %s, right hemisphere' %

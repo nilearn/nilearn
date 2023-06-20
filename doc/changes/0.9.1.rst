@@ -14,34 +14,34 @@ This is a bugfix release.
 Fixes
 -----
 
-- Fix function :func:`~mass_univariate.permuted_ols`, which was only returning the null distribution (``h0_fmax``) for the first regressor (:gh:`3184` by `Taylor Salo`_).
+- :bdg-dark:`Code` Fix function :func:`~mass_univariate.permuted_ols`, which was only returning the null distribution (``h0_fmax``) for the first regressor (:gh:`3184` by `Taylor Salo`_).
 
-- Fix function :func:`~datasets.fetch_abide_pcp` which was returning empty phenotypes and ``func_preproc`` after release ``0.9.0`` due to supporting pandas dataframes in fetchers (:gh:`3174` by `Nicolas Gensollen`_).
+- :bdg-dark:`Code` Fix function :func:`~datasets.fetch_abide_pcp` which was returning empty phenotypes and ``func_preproc`` after release ``0.9.0`` due to supporting pandas dataframes in fetchers (:gh:`3174` by `Nicolas Gensollen`_).
 
-- Fix function :func:`~datasets.fetch_atlas_harvard_oxford` and :func:`~datasets.fetch_atlas_juelich` which were returning the image in the `filename` attribute instead of the path to the image (:gh:`3179` by `Raphael Meudec`_).
+- :bdg-dark:`Code` Fix function :func:`~datasets.fetch_atlas_harvard_oxford` and :func:`~datasets.fetch_atlas_juelich` which were returning the image in the `filename` attribute instead of the path to the image (:gh:`3179` by `Raphael Meudec`_).
 
-- Fix function ``nilearn.image._apply_cluster_size_threshold``, which resulted in wrong clusters extraction when ``cluster_size`` was non-zero (:gh:`3201` by `Bertrand Thirion`_).
+- :bdg-dark:`Code` Fix function ``nilearn.image._apply_cluster_size_threshold``, which resulted in wrong clusters extraction when ``cluster_size`` was non-zero (:gh:`3201` by `Bertrand Thirion`_).
 
-- Fix colorbars in :func:`~plotting.plot_stat_map`, :func:`~plotting.plot_glass_brain` and :func:`~plotting.plot_surf_stat_map` which could extend beyond the figure for users with newest matplotlib version (``>=3.5.1``) (:gh:`3188` by `Raphael Meudec`_).
+- :bdg-info:`Plotting` Fix colorbars in :func:`~plotting.plot_stat_map`, :func:`~plotting.plot_glass_brain` and :func:`~plotting.plot_surf_stat_map` which could extend beyond the figure for users with newest matplotlib version (``>=3.5.1``) (:gh:`3188` by `Raphael Meudec`_).
 
-- Function :func:`~datasets.fetch_atlas_aal` now works with all supported versions of ``SPM`` (5, 8, and 12). (:gh:`3098` by `Nicolas Gensollen`_).
+- :bdg-success:`API` Function :func:`~datasets.fetch_atlas_aal` now works with all supported versions of ``SPM`` (5, 8, and 12). (:gh:`3098` by `Nicolas Gensollen`_).
 
 
 Enhancements
 ------------
 
-- New example in :ref:`sphx_glr_auto_examples_07_advanced_plot_beta_series.py` to demonstrate how to implement common beta series models with nilearn (:gh:`3127` by `Taylor Salo`_).
+- :bdg-primary:`Doc` New example in :ref:`sphx_glr_auto_examples_07_advanced_plot_beta_series.py` to demonstrate how to implement common beta series models with nilearn (:gh:`3127` by `Taylor Salo`_).
 
-- Function :func:`~plotting.plot_carpet` now accepts a ``t_r`` parameter, which allows users to provide the TR of the image when the image's header may not be accurate. (:gh:`3165` by `Taylor Salo`_).
+- :bdg-success:`API` Function :func:`~plotting.plot_carpet` now accepts a ``t_r`` parameter, which allows users to provide the TR of the image when the image's header may not be accurate. (:gh:`3165` by `Taylor Salo`_).
 
-- Terms :term:`Probabilistic atlas` and :term:`Deterministic atlas` were added to the glossary and references were added to atlas fetchers (:gh:`3152` by `Nicolas Gensollen`_).
+- :bdg-primary:`Doc` Terms :term:`Probabilistic atlas` and :term:`Deterministic atlas` were added to the glossary and references were added to atlas fetchers (:gh:`3152` by `Nicolas Gensollen`_).
 
-- Functions in :mod:`nilearn.datasets` have been organized by the type of data in the references page and :func:`~datasets.fetch_mixed_gambles` has been added to the documentation (:gh:`3207` by `Taylor Salo`_).
+- :bdg-secondary:`Maint` Functions in :mod:`nilearn.datasets` have been organized by the type of data in the references page and :func:`~datasets.fetch_mixed_gambles` has been added to the documentation (:gh:`3207` by `Taylor Salo`_).
 
 
 Changes
 -------
 
-- The documentation for :func:`~reporting.get_clusters_table` has been improved, with more information about what inputs are valid and what the resulting table should look like (:gh:`3178` by `Taylor Salo`_).
+- :bdg-primary:`Doc` The documentation for :func:`~reporting.get_clusters_table` has been improved, with more information about what inputs are valid and what the resulting table should look like (:gh:`3178` by `Taylor Salo`_).
 
-- Requirements files have been consolidated into a ``setup.cfg`` file and installation instructions have been simplified (:gh:`2953` by `Taylor Salo`_).
+- :bdg-secondary:`Maint` Requirements files have been consolidated into a ``setup.cfg`` file and installation instructions have been simplified (:gh:`2953` by `Taylor Salo`_).

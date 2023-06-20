@@ -1,6 +1,6 @@
 """
 Show stimuli of Haxby et al. dataset
-===============================================================================
+====================================
 
 In this script we plot an overview of the stimuli used in "Distributed
 and Overlapping Representations of Faces and Objects in Ventral Temporal
@@ -17,8 +17,7 @@ stimulus_information = haxby_dataset.stimuli
 
 for stim_type in stimulus_information:
     # skip control images, there are too many
-    if stim_type != 'controls':
-
+    if stim_type != "controls":
         file_names = stimulus_information[stim_type]
 
         fig, axes = plt.subplots(6, 8)
@@ -31,3 +30,5 @@ for stim_type in stimulus_information:
             ax.axis("off")
 
 show()
+
+# sphinx_gallery_dummy_images=7

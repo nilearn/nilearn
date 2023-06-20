@@ -1,5 +1,6 @@
-"""
-Dictionary learning estimator: Perform a map learning algorithm by learning
+"""Dictionary learning estimator.
+
+Perform a map learning algorithm by learning
 a temporal dense dictionary along with sparse spatial loadings, that
 constitutes output maps
 """
@@ -10,16 +11,17 @@ constitutes output maps
 import warnings
 
 import numpy as np
-from sklearn.decomposition import dict_learning_online
 from joblib import Memory
+from sklearn.decomposition import dict_learning_online
 from sklearn.linear_model import Ridge
+
+from nilearn._utils import fill_doc
 
 from ._base import _BaseDecomposition
 from .canica import CanICA
-from nilearn._utils import fill_doc
 
 # check_input=False is an optimization available in sklearn.
-sparse_encode_args = {'check_input': False}
+sparse_encode_args = {"check_input": False}
 
 
 def _compute_loadings(components, data):
@@ -27,7 +29,7 @@ def _compute_loadings(components, data):
     ridge.fit(components.T, np.asarray(data.T))
     loadings = ridge.coef_.T
 
-    S = np.sqrt(np.sum(loadings ** 2, axis=0))
+    S = np.sqrt(np.sum(loadings**2, axis=0))
     S[S == 0] = 1
     loadings /= S[np.newaxis, :]
     return loadings
@@ -35,9 +37,12 @@ def _compute_loadings(components, data):
 
 @fill_doc
 class DictLearning(_BaseDecomposition):
-    """Perform a map learning algorithm based on spatial component sparsity,
-    over a :term:`CanICA` initialization [1]_.
+    """Perform a map learning algorithm based on spatial component sparsity, \
+    over a :term:`CanICA` initialization.
+
     This yields more stable maps than :term:`CanICA`.
+
+    See :footcite:`Mensch2016`.
 
      .. versionadded:: 0.2
 
@@ -174,32 +179,56 @@ class DictLearning(_BaseDecomposition):
 
     References
     ----------
-    .. [1] Arthur Mensch, Gael Varoquaux, Bertrand Thirion,
-       Compressed online dictionary learning for fast resting-state fMRI
-       decomposition. IEEE 13th International Symposium on Biomedical
-       Imaging (ISBI), 2016. pp. 1282-1285
+    .. footbibliography::
 
     """
 
-    def __init__(self, n_components=20,
-                 n_epochs=1, alpha=10, reduction_ratio='auto', dict_init=None,
-                 random_state=None, batch_size=20, method="cd", mask=None,
-                 smoothing_fwhm=4, standardize=True, detrend=True,
-                 low_pass=None, high_pass=None, t_r=None, target_affine=None,
-                 target_shape=None, mask_strategy='epi', mask_args=None,
-                 n_jobs=1, verbose=0, memory=Memory(location=None),
-                 memory_level=0):
-        _BaseDecomposition.__init__(self, n_components=n_components,
-                                    random_state=random_state, mask=mask,
-                                    smoothing_fwhm=smoothing_fwhm,
-                                    standardize=standardize, detrend=detrend,
-                                    low_pass=low_pass, high_pass=high_pass,
-                                    t_r=t_r, target_affine=target_affine,
-                                    target_shape=target_shape,
-                                    mask_strategy=mask_strategy,
-                                    mask_args=mask_args, memory=memory,
-                                    memory_level=memory_level, n_jobs=n_jobs,
-                                    verbose=verbose)
+    def __init__(
+        self,
+        n_components=20,
+        n_epochs=1,
+        alpha=10,
+        reduction_ratio="auto",
+        dict_init=None,
+        random_state=None,
+        batch_size=20,
+        method="cd",
+        mask=None,
+        smoothing_fwhm=4,
+        standardize=True,
+        detrend=True,
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        target_affine=None,
+        target_shape=None,
+        mask_strategy="epi",
+        mask_args=None,
+        n_jobs=1,
+        verbose=0,
+        memory=Memory(location=None),
+        memory_level=0,
+    ):
+        _BaseDecomposition.__init__(
+            self,
+            n_components=n_components,
+            random_state=random_state,
+            mask=mask,
+            smoothing_fwhm=smoothing_fwhm,
+            standardize=standardize,
+            detrend=detrend,
+            low_pass=low_pass,
+            high_pass=high_pass,
+            t_r=t_r,
+            target_affine=target_affine,
+            target_shape=target_shape,
+            mask_strategy=mask_strategy,
+            mask_args=mask_args,
+            memory=memory,
+            memory_level=memory_level,
+            n_jobs=n_jobs,
+            verbose=verbose,
+        )
         self.n_epochs = n_epochs
         self.batch_size = batch_size
         self.method = method
@@ -211,31 +240,38 @@ class DictLearning(_BaseDecomposition):
         if self.dict_init is not None:
             components = self.masker_.transform(self.dict_init)
         else:
-            canica = CanICA(n_components=self.n_components,
-                            # CanICA specific parameters
-                            do_cca=True, threshold=float(self.n_components),
-                            n_init=1,
-                            # mask parameter is not useful as we bypass masking
-                            mask=self.masker_, random_state=self.random_state,
-                            memory=self.memory, memory_level=self.memory_level,
-                            n_jobs=self.n_jobs, verbose=self.verbose)
+            canica = CanICA(
+                n_components=self.n_components,
+                # CanICA specific parameters
+                do_cca=True,
+                threshold=float(self.n_components),
+                n_init=1,
+                # mask parameter is not useful as we bypass masking
+                mask=self.masker_,
+                random_state=self.random_state,
+                memory=self.memory,
+                memory_level=self.memory_level,
+                n_jobs=self.n_jobs,
+                verbose=self.verbose,
+            )
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", UserWarning)
                 # We use protected function _raw_fit as data
                 # has already been unmasked
                 canica._raw_fit(data)
             components = canica.components_
-        S = (components ** 2).sum(axis=1)
+        S = (components**2).sum(axis=1)
         S[S == 0] = 1
         components /= S[:, np.newaxis]
         self.components_init_ = components
 
     def _init_loadings(self, data):
         self.loadings_init_ = self._cache(_compute_loadings)(
-            self.components_init_, data)
+            self.components_init_, data
+        )
 
     def _raw_fit(self, data):
-        """Helper function that directly process unmasked data
+        """Process unmasked data directly.
 
         Parameters
         ----------
@@ -244,13 +280,13 @@ class DictLearning(_BaseDecomposition):
 
         """
         if self.verbose:
-            print('[DictLearning] Learning initial components')
+            print("[DictLearning] Learning initial components")
         self._init_dict(data)
 
         _, n_features = data.shape
 
         if self.verbose:
-            print('[DictLearning] Computing initial loadings')
+            print("[DictLearning] Computing initial loadings")
         self._init_loadings(data)
 
         dict_init = self.loadings_init_
@@ -258,16 +294,24 @@ class DictLearning(_BaseDecomposition):
         n_iter = ((n_features - 1) // self.batch_size + 1) * self.n_epochs
 
         if self.verbose:
-            print('[DictLearning] Learning dictionary')
+            print("[DictLearning] Learning dictionary")
         self.components_, _ = self._cache(dict_learning_online)(
-            data.T, self.n_components, alpha=self.alpha, n_iter=n_iter,
-            batch_size=self.batch_size, method=self.method,
-            dict_init=dict_init, verbose=max(0, self.verbose - 1),
-            random_state=self.random_state, return_code=True, shuffle=True,
-            n_jobs=1)
+            data.T,
+            self.n_components,
+            alpha=self.alpha,
+            n_iter=n_iter,
+            batch_size=self.batch_size,
+            method=self.method,
+            dict_init=dict_init,
+            verbose=max(0, self.verbose - 1),
+            random_state=self.random_state,
+            return_code=True,
+            shuffle=True,
+            n_jobs=1,
+        )
         self.components_ = self.components_.T
         # Unit-variance scaling
-        S = np.sqrt(np.sum(self.components_ ** 2, axis=1))
+        S = np.sqrt(np.sum(self.components_**2, axis=1))
         S[S == 0] = 1
         self.components_ /= S[:, np.newaxis]
 
@@ -278,6 +322,8 @@ class DictLearning(_BaseDecomposition):
             if np.sum(component > 0) < np.sum(component < 0):
                 component *= -1
         if hasattr(self, "masker_"):
-            self.components_img_ = self.masker_.inverse_transform(self.components_)
+            self.components_img_ = self.masker_.inverse_transform(
+                self.components_
+            )
 
         return self

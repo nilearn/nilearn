@@ -1,8 +1,9 @@
 """Tests for :func:`nilearn.plotting.plot_img_comparison`."""
 
-import pytest
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import pytest
+
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.image import iter_img
 from nilearn.maskers import NiftiMasker

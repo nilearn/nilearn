@@ -1,25 +1,20 @@
-"""
-Transformer used to apply basic transformations on :term:`fMRI` data.
-"""
+"""Transformer used to apply basic transformations on :term:`fMRI` data."""
 # Author: Gael Varoquaux, Alexandre Abraham
 # License: simplified BSD
 
-import warnings
 import abc
+import warnings
 
 import numpy as np
-
-from sklearn.base import BaseEstimator, TransformerMixin
 from joblib import Memory
+from sklearn.base import BaseEstimator, TransformerMixin
 
-from .. import masking
-from .. import image
-from .. import signal
-from .. import _utils
+from nilearn.image import high_variance_confounds
+
+from .. import _utils, image, masking, signal
+from .._utils import stringify_path
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.class_inspect import enclosing_scope_name
-from .._utils import stringify_path
-from nilearn.image import high_variance_confounds
 
 
 def _filter_and_extract(
@@ -63,9 +58,8 @@ def _filter_and_extract(
         copy = False
 
     if verbose > 0:
-        print("[%s] Loading data from %s" % (
-            class_name,
-            _utils._repr_niimgs(imgs, shorten=False)))
+        print(f"[{class_name}] Loading data "
+              f"from {_utils._repr_niimgs(imgs, shorten=False)}")
 
     # Convert input to niimg to check shape.
     # This must be repeated after the shape check because check_niimg will
@@ -89,7 +83,7 @@ def _filter_and_extract(
     target_affine = parameters.get('target_affine')
     if target_shape is not None or target_affine is not None:
         if verbose > 0:
-            print("[%s] Resampling images" % class_name)
+            print(f"[{class_name}] Resampling images")
         imgs = cache(
             image.resample_img, memory, func_memory_level=2,
             memory_level=memory_level, ignore=['copy'])(
@@ -101,14 +95,14 @@ def _filter_and_extract(
     smoothing_fwhm = parameters.get('smoothing_fwhm')
     if smoothing_fwhm is not None:
         if verbose > 0:
-            print("[%s] Smoothing images" % class_name)
+            print(f"[{class_name}] Smoothing images")
         imgs = cache(
             image.smooth_img, memory, func_memory_level=2,
             memory_level=memory_level)(
                 imgs, parameters['smoothing_fwhm'])
 
     if verbose > 0:
-        print("[%s] Extracting region signals" % class_name)
+        print(f"[{class_name}] Extracting region signals")
     region_signals, aux = cache(extraction_function, memory,
                                 func_memory_level=2,
                                 memory_level=memory_level)(imgs)
@@ -120,21 +114,26 @@ def _filter_and_extract(
     # Confounds removing (from csv file or numpy array)
     # Normalizing
     if verbose > 0:
-        print("[%s] Cleaning extracted signals" % class_name)
+        print(f"[{class_name}] Cleaning extracted signals")
     runs = parameters.get('runs', None)
     region_signals = cache(
-        signal.clean, memory=memory, func_memory_level=2,
-        memory_level=memory_level)(
-            region_signals,
-            detrend=parameters['detrend'],
-            standardize=parameters['standardize'],
-            standardize_confounds=parameters['standardize_confounds'],
-            t_r=parameters['t_r'],
-            low_pass=parameters['low_pass'],
-            high_pass=parameters['high_pass'],
-            confounds=confounds,
-            sample_mask=sample_mask,
-            runs=runs)
+        signal.clean,
+        memory=memory,
+        func_memory_level=2,
+        memory_level=memory_level,
+    )(
+        region_signals,
+        detrend=parameters['detrend'],
+        standardize=parameters['standardize'],
+        standardize_confounds=parameters['standardize_confounds'],
+        t_r=parameters['t_r'],
+        low_pass=parameters['low_pass'],
+        high_pass=parameters['high_pass'],
+        confounds=confounds,
+        sample_mask=sample_mask,
+        runs=runs,
+        **parameters['clean_kwargs'],
+    )
 
     return region_signals, aux
 
@@ -189,7 +188,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         raise NotImplementedError()
 
     def transform(self, imgs, confounds=None, sample_mask=None):
-        """Apply mask, spatial and temporal preprocessing
+        """Apply mask, spatial and temporal preprocessing.
 
         Parameters
         ----------
@@ -251,7 +250,7 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     def fit_transform(self, X, y=None, confounds=None, sample_mask=None,
                       **fit_params):
-        """Fit to data, then transform it
+        """Fit to data, then transform it.
 
         Parameters
         ----------
@@ -285,28 +284,33 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 return self.fit(X, **fit_params
                                 ).transform(X, confounds=confounds,
                                             sample_mask=sample_mask)
-            else:
-                return self.fit(**fit_params).transform(X,
-                                                        confounds=confounds,
-                                                        sample_mask=sample_mask
-                                                        )
-        else:
-            # fit method of arity 2 (supervised transformation)
-            if self.mask_img is None:
-                return self.fit(X, y, **fit_params
-                                ).transform(X, confounds=confounds,
-                                            sample_mask=sample_mask)
-            else:
-                warnings.warn('[%s.fit] Generation of a mask has been'
-                              ' requested (y != None) while a mask has'
-                              ' been provided at masker creation. Given mask'
-                              ' will be used.' % self.__class__.__name__)
-                return self.fit(**fit_params).transform(X, confounds=confounds,
-                                                        sample_mask=sample_mask
-                                                        )
+
+            return self.fit(**fit_params).transform(X,
+                                                    confounds=confounds,
+                                                    sample_mask=sample_mask
+                                                    )
+
+        # fit method of arity 2 (supervised transformation)
+        if self.mask_img is None:
+            return self.fit(X, y, **fit_params
+                            ).transform(X, confounds=confounds,
+                                        sample_mask=sample_mask)
+
+        warnings.warn(f'[{self.__class__.__name__}.fit] '
+                      'Generation of a mask has been'
+                      ' requested (y != None) while a mask has'
+                      ' been provided at masker creation. Given mask'
+                      ' will be used.')
+        return self.fit(**fit_params).transform(X, confounds=confounds,
+                                                sample_mask=sample_mask
+                                                )
 
     def inverse_transform(self, X):
-        """ Transform the 2D data matrix back to an image in brain space.
+        """Transform the 2D data matrix back to an image in brain space.
+
+        This step only performs spatial unmasking,
+        without inverting any additional processing performed by ``transform``,
+        such as temporal filtering or smoothing.
 
         Parameters
         ----------
@@ -337,6 +341,6 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     def _check_fitted(self):
         if not hasattr(self, "mask_img_"):
-            raise ValueError('It seems that %s has not been fitted. '
-                             'You must call fit() before calling transform().'
-                             % self.__class__.__name__)
+            raise ValueError(f'It seems that {self.__class__.__name__} '
+                             'has not been fitted. '
+                             'You must call fit() before calling transform().')

@@ -1,6 +1,6 @@
 """
 Plotting tools in nilearn
-==========================
+=========================
 
 Nilearn comes with a set of plotting functions for easy visualization of
 Nifti-like images such as statistical maps mapped onto anatomical images
@@ -12,7 +12,7 @@ See :ref:`plotting` for more details.
 
 ###############################################################################
 # Retrieve data from nilearn provided (general-purpose) datasets
-# ---------------------------------------------------------------
+# --------------------------------------------------------------
 
 from nilearn import datasets
 
@@ -20,23 +20,24 @@ from nilearn import datasets
 haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
-print('First subject anatomical nifti image (3D) is at: %s' %
-      haxby_dataset.anat[0])
-print('First subject functional nifti image (4D) is at: %s' %
-      haxby_dataset.func[0])  # 4D data
+print("First subject anatomical nifti image (3D) is "
+      f"at: {haxby_dataset.anat[0]}")
+print(
+    "First subject functional nifti image (4D) is "
+    f"at: {haxby_dataset.func[0]}"
+)
 
 haxby_anat_filename = haxby_dataset.anat[0]
 haxby_mask_filename = haxby_dataset.mask_vt[0]
 haxby_func_filename = haxby_dataset.func[0]
 
-# one motor contrast map from NeuroVault
-motor_images = datasets.fetch_neurovault_motor_task()
-stat_img = motor_images.images[0]
+# one motor activation map
+stat_img = datasets.load_sample_motor_activation_image()
 
 
 ###############################################################################
 # Plotting statistical maps with function `plot_stat_map`
-# --------------------------------------------------------
+# -------------------------------------------------------
 
 from nilearn import plotting
 
@@ -76,24 +77,24 @@ plotting.plot_glass_brain(stat_img, title='plot_glass_brain',
 
 ###############################################################################
 # Plotting anatomical images with function `plot_anat`
-# -----------------------------------------------------
+# ----------------------------------------------------
 #
 # Visualizing anatomical image of haxby dataset
 plotting.plot_anat(haxby_anat_filename, title="plot_anat")
 
 ###############################################################################
 # Plotting ROIs (here the mask) with function `plot_roi`
-# -------------------------------------------------------
+# ------------------------------------------------------
 #
 # Visualizing ventral temporal region image from haxby dataset overlaid on
-# subject specific anatomical image with coordinates positioned automatically on
-# region of interest (roi)
+# subject specific anatomical image
+# with coordinates positioned automatically on region of interest (roi)
 plotting.plot_roi(haxby_mask_filename, bg_img=haxby_anat_filename,
                   title="plot_roi")
 
 ###############################################################################
 # Plotting EPI image with function `plot_epi`
-# ---------------------------------------------
+# -------------------------------------------
 
 # Import image processing tool
 from nilearn import image
@@ -109,3 +110,5 @@ plotting.plot_epi(mean_haxby_img, title="plot_epi")
 # A call to plotting.show is needed to display the plots when running
 # in script mode (ie outside IPython)
 plotting.show()
+
+# sphinx_gallery_dummy_images=5

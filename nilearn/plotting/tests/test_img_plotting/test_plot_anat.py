@@ -1,10 +1,10 @@
 """Tests for :func:`nilearn.plotting.plot_anat`."""
 
-import pytest
 import matplotlib.pyplot as plt
+import pytest
+
 from nilearn.plotting import plot_anat
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
-from .testing_utils import testdata_3d  # noqa:F401
 
 
 @pytest.mark.parametrize("anat_img", [False, MNI152TEMPLATE])
@@ -31,10 +31,10 @@ def test_plot_anat_colorbar(anat_img, display_mode, cbar_tick_format, tmpdir):
     plt.close()
 
 
-def test_plot_anat_3d_img(testdata_3d, tmpdir):  # noqa:F811
+def test_plot_anat_3d_img(testdata_3d_for_plotting, tmpdir):
     """Smoke test for plot_anat."""
     filename = str(tmpdir.join('test.png'))
-    slicer = plot_anat(testdata_3d['img'], dim='auto')
+    slicer = plot_anat(testdata_3d_for_plotting['img'], dim='auto')
     slicer.savefig(filename)
     plt.close()
 

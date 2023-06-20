@@ -1,23 +1,25 @@
-
 import warnings
+
+import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import cm as mpl_cm
 from scipy.sparse import issparse
 from scipy.stats import scoreatpercentile
 
-import matplotlib.pyplot as plt
-from matplotlib import cm as mpl_cm
-
-from nilearn.plotting import cm
 from nilearn._utils.param_validation import check_threshold
-from nilearn.plotting.displays._slicers import (
-    OrthoSlicer, _get_create_display_fun
-)
+from nilearn.plotting import cm
 from nilearn.plotting.displays._axes import GlassBrainAxes
+from nilearn.plotting.displays._slicers import (
+    OrthoSlicer,
+    _get_create_display_fun,
+)
 
 
 class OrthoProjector(OrthoSlicer):
-    """A class to create linked axes for plotting orthogonal projections
-    of 3D maps. This visualization mode can be activated from
+    """A class to create linked axes for plotting orthogonal projections \
+    of 3D maps.
+
+    This visualization mode can be activated from
     :func:`~nilearn.plotting.plot_glass_brain`, by setting
     ``display_mode='ortho'``:
 
@@ -29,24 +31,29 @@ class OrthoProjector(OrthoSlicer):
           # display is an instance of the OrthoProjector class
           display = plot_glass_brain(img, display_mode='ortho')
 
-     Attributes
-     ----------
-     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-         The 3 axes used to plot each view ('x', 'y', and 'z').
+    Attributes
+    ----------
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
+     The 3 axes used to plot each view ('x', 'y', and 'z').
 
-     frame_axes : :class:`~matplotlib.axes.Axes`
-         The axes framing the whole set of views.
+    frame_axes : :class:`~matplotlib.axes.Axes`
+     The axes framing the whole set of views.
 
     """
+
     _axes_class = GlassBrainAxes
 
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
+        """Find the coordinates of the cut."""
         return (None, ) * len(cls._cut_displayed)
 
     def draw_cross(self, cut_coords=None, **kwargs):
-        # It does not make sense to draw crosses for the position of
-        # the cuts since we are taking the max along one axis
+        """Do nothing.
+
+        It does not make sense to draw crosses for the position of
+        the cuts since we are taking the max along one axis.
+        """
         pass
 
     def add_graph(self, adjacency_matrix, node_coords,
@@ -132,7 +139,7 @@ class OrthoProjector(OrthoSlicer):
                 or adjacency_matrix_shape[0] != adjacency_matrix_shape[1]):
             raise ValueError(
                 "'adjacency_matrix' is supposed to have shape (n, n)."
-                ' Its shape was {0}'.format(adjacency_matrix_shape))
+                f' Its shape was {adjacency_matrix_shape}')
 
         node_coords_shape = node_coords.shape
         if len(node_coords_shape) != 2 or node_coords_shape[1] != 3:
@@ -148,31 +155,31 @@ class OrthoProjector(OrthoSlicer):
         if isinstance(node_color, (list, np.ndarray)) and len(node_color) != 1:
             if len(node_color) != node_coords_shape[0]:
                 raise ValueError(
-                    "Mismatch between the number of nodes ({0}) "
-                    "and the number of node colors ({1})."
-                    .format(node_coords_shape[0], len(node_color)))
+                    "Mismatch between the number of nodes "
+                    f"({node_coords_shape[0]}) "
+                    f"and the number of node colors ({len(node_color)}).")
 
         if node_coords_shape[0] != adjacency_matrix_shape[0]:
             raise ValueError(
                 "Shape mismatch between 'adjacency_matrix' "
                 "and 'node_coords'"
-                "'adjacency_matrix' shape is {0}, 'node_coords' shape is {1}"
-                .format(adjacency_matrix_shape, node_coords_shape))
+                f"'adjacency_matrix' shape is {adjacency_matrix_shape}, "
+                f"'node_coords' shape is {node_coords_shape}")
 
         # If the adjacency matrix is not symmetric, give a warning
         symmetric = True
         if not np.allclose(adjacency_matrix, adjacency_matrix.T, rtol=1e-3):
             symmetric = False
-            warnings.warn(("'adjacency_matrix' is not symmetric. "
-                           "A directed graph will be plotted."))
+            warnings.warn("'adjacency_matrix' is not symmetric. "
+                          "A directed graph will be plotted.")
 
         # For a masked array, masked values are replaced with zeros
         if hasattr(adjacency_matrix, 'mask'):
             if not (adjacency_matrix.mask == adjacency_matrix.mask.T).all():
                 symmetric = False
-                warnings.warn(("'adjacency_matrix' was masked with "
-                               "a non symmetric mask. A directed "
-                               "graph will be plotted."))
+                warnings.warn("'adjacency_matrix' was masked with "
+                              "a non symmetric mask. A directed "
+                              "graph will be plotted.")
             adjacency_matrix = adjacency_matrix.filled(0)
 
         if edge_threshold is not None:
@@ -214,7 +221,7 @@ class OrthoProjector(OrthoSlicer):
                               directed=(not symmetric),
                               **edge_kwargs)
             # To obtain the brain left view, we simply invert the x axis
-            if(ax.direction == 'l'
+            if (ax.direction == 'l'
                and not (ax.ax.get_xlim()[0] > ax.ax.get_xlim()[1])):
                 ax.ax.invert_xaxis()
 
@@ -226,395 +233,432 @@ class OrthoProjector(OrthoSlicer):
 
 
 class XProjector(OrthoProjector):
-    """The ``XProjector`` class enables sagittal visualization through 2D
+    """The ``XProjector`` class enables sagittal visualization through 2D \
     projections with :func:`~nilearn.plotting.plot_glass_brain`.
+
     This visualization mode can be activated by setting ``display_mode='x'``:
 
-     .. code-block:: python
+    .. code-block:: python
 
-         from nilearn.datasets import load_mni152_template
-         from nilearn.plotting import plot_glass_brain
-         img = load_mni152_template()
-         # display is an instance of the XProjector class
-         display = plot_glass_brain(img, display_mode='x')
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_glass_brain
+        img = load_mni152_template()
+        # display is an instance of the XProjector class
+        display = plot_glass_brain(img, display_mode='x')
 
-     Attributes
-     ----------
-     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-         The axes used for plotting.
+    Attributes
+    ----------
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
+        The axes used for plotting.
 
-     frame_axes : :class:`~matplotlib.axes.Axes`
-         The axes framing the whole set of views.
+    frame_axes : :class:`~matplotlib.axes.Axes`
+     The axes framing the whole set of views.
 
-     See Also
-     --------
-     nilearn.plotting.displays.YProjector : Coronal view
-     nilearn.plotting.displays.ZProjector : Axial view
+    See Also
+    --------
+    nilearn.plotting.displays.YProjector : Coronal view
+    nilearn.plotting.displays.ZProjector : Axial view
 
-     """
+    """
+
     _cut_displayed = 'x'
     _default_figsize = [2.6, 2.3]
 
 
 class YProjector(OrthoProjector):
-    """The ``YProjector`` class enables coronal visualization through 2D
+    """The ``YProjector`` class enables coronal visualization through 2D \
     projections with :func:`~nilearn.plotting.plot_glass_brain`.
+
     This visualization mode can be activated by setting ``display_mode='y'``:
 
-     .. code-block:: python
+    .. code-block:: python
 
-         from nilearn.datasets import load_mni152_template
-         from nilearn.plotting import plot_glass_brain
-         img = load_mni152_template()
-         # display is an instance of the YProjector class
-         display = plot_glass_brain(img, display_mode='y')
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_glass_brain
+        img = load_mni152_template()
+        # display is an instance of the YProjector class
+        display = plot_glass_brain(img, display_mode='y')
 
-     Attributes
-     ----------
-     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-         The axes used for plotting.
+    Attributes
+    ----------
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
+        The axes used for plotting.
 
-     frame_axes : :class:`~matplotlib.axes.Axes`
-         The axes framing the whole set of views.
+    frame_axes : :class:`~matplotlib.axes.Axes`
+        The axes framing the whole set of views.
 
-     See Also
-     --------
-     nilearn.plotting.displays.XProjector : Sagittal view
-     nilearn.plotting.displays.ZProjector : Axial view
+    See Also
+    --------
+    nilearn.plotting.displays.XProjector : Sagittal view
+    nilearn.plotting.displays.ZProjector : Axial view
 
-     """
+    """
+
     _cut_displayed = 'y'
     _default_figsize = [2.2, 2.3]
 
 
 class ZProjector(OrthoProjector):
-    """The ``ZProjector`` class enables axial visualization through 2D
+    """The ``ZProjector`` class enables axial visualization through 2D \
     projections with :func:`~nilearn.plotting.plot_glass_brain`.
+
     This visualization mode can be activated by setting ``display_mode='z'``:
 
-     .. code-block:: python
+    .. code-block:: python
 
-         from nilearn.datasets import load_mni152_template
-         from nilearn.plotting import plot_glass_brain
-         img = load_mni152_template()
-         # display is an instance of the ZProjector class
-         display = plot_glass_brain(img, display_mode='z')
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_glass_brain
+        img = load_mni152_template()
+        # display is an instance of the ZProjector class
+        display = plot_glass_brain(img, display_mode='z')
 
-     Attributes
-     ----------
-     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-         The axes used for plotting.
+    Attributes
+    ----------
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
+     The axes used for plotting.
 
-     frame_axes : :class:`~matplotlib.axes.Axes`
-         The axes framing the whole set of views.
+    frame_axes : :class:`~matplotlib.axes.Axes`
+     The axes framing the whole set of views.
 
-     See Also
-     --------
-     nilearn.plotting.displays.XProjector : Sagittal view
-     nilearn.plotting.displays.YProjector : Coronal view
+    See Also
+    --------
+    nilearn.plotting.displays.XProjector : Sagittal view
+    nilearn.plotting.displays.YProjector : Coronal view
 
-     """
+    """
+
     _cut_displayed = 'z'
     _default_figsize = [2.2, 2.3]
 
 
 class XZProjector(OrthoProjector):
-    """The ``XZProjector`` class enables to combine sagittal and axial views
-     on the same figure through 2D projections with
-     :func:`~nilearn.plotting.plot_glass_brain`. This visualization mode
-     can be activated by setting ``display_mode='xz'``:
+    """The ``XZProjector`` class enables to combine sagittal \
+    and axial views \
+    on the same figure through 2D projections with \
+    :func:`~nilearn.plotting.plot_glass_brain`.
 
-     .. code-block:: python
+    This visualization mode
+    can be activated by setting ``display_mode='xz'``:
 
-         from nilearn.datasets import load_mni152_template
-         from nilearn.plotting import plot_glass_brain
-         img = load_mni152_template()
-         # display is an instance of the XZProjector class
-         display = plot_glass_brain(img, display_mode='xz')
+    .. code-block:: python
 
-     Attributes
-     ----------
-     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-         The axes used for plotting in each direction ('x' and 'z' here).
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_glass_brain
+        img = load_mni152_template()
+        # display is an instance of the XZProjector class
+        display = plot_glass_brain(img, display_mode='xz')
 
-     frame_axes : :class:`~matplotlib.axes.Axes`
-         The axes framing the whole set of views.
+    Attributes
+    ----------
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
+            The axes used for plotting in each direction ('x' and 'z' here).
 
-     See Also
-     --------
-     nilearn.plotting.displays.YXProjector : Coronal + Sagittal views
-     nilearn.plotting.displays.YZProjector : Coronal + Axial views
+    frame_axes : :class:`~matplotlib.axes.Axes`
+                 The axes framing the whole set of views.
 
-     """
+    See Also
+    --------
+    nilearn.plotting.displays.YXProjector : Coronal + Sagittal views
+    nilearn.plotting.displays.YZProjector : Coronal + Axial views
+
+    """
+
     _cut_displayed = 'xz'
 
 
 class YXProjector(OrthoProjector):
-    """The ``YXProjector`` class enables to combine coronal and sagittal views
-     on the same figure through 2D projections with
-     :func:`~nilearn.plotting.plot_glass_brain`. This visualization mode
-     can be activated by setting ``display_mode='yx'``:
+    """The ``YXProjector`` class enables to combine coronal \
+    and sagittal views \
+    on the same figure through 2D projections with \
+    :func:`~nilearn.plotting.plot_glass_brain`.
 
-     .. code-block:: python
+    This visualization mode
+    can be activated by setting ``display_mode='yx'``:
 
-         from nilearn.datasets import load_mni152_template
-         from nilearn.plotting import plot_glass_brain
-         img = load_mni152_template()
-         # display is an instance of the YXProjector class
-         display = plot_glass_brain(img, display_mode='yx')
+    .. code-block:: python
 
-     Attributes
-     ----------
-     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-         The axes used for plotting in each direction ('x' and 'y' here).
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_glass_brain
+        img = load_mni152_template()
+        # display is an instance of the YXProjector class
+        display = plot_glass_brain(img, display_mode='yx')
 
-     frame_axes : :class:`~matplotlib.axes.Axes`
-         The axes framing the whole set of views.
+    Attributes
+    ----------
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
+     The axes used for plotting in each direction ('x' and 'y' here).
 
-     See Also
-     --------
-     nilearn.plotting.displays.XZProjector : Sagittal + Axial views
-     nilearn.plotting.displays.YZProjector : Coronal + Axial views
+    frame_axes : :class:`~matplotlib.axes.Axes`
+     The axes framing the whole set of views.
 
-     """
+    See Also
+    --------
+    nilearn.plotting.displays.XZProjector : Sagittal + Axial views
+    nilearn.plotting.displays.YZProjector : Coronal + Axial views
+
+    """
+
     _cut_displayed = 'yx'
 
 
 class YZProjector(OrthoProjector):
-    """The ``YZProjector`` class enables to combine coronal and axial views
-     on the same figure through 2D projections with
-     :func:`~nilearn.plotting.plot_glass_brain`. This visualization mode
-     can be activated by setting ``display_mode='yz'``:
+    """The ``YZProjector`` class enables to combine coronal and axial views \
+    on the same figure through 2D projections with \
+    :func:`~nilearn.plotting.plot_glass_brain`.
 
-     .. code-block:: python
+    This visualization mode
+    can be activated by setting ``display_mode='yz'``:
 
-         from nilearn.datasets import load_mni152_template
-         from nilearn.plotting import plot_glass_brain
-         img = load_mni152_template()
-         # display is an instance of the YZProjector class
-         display = plot_glass_brain(img, display_mode='yz')
+    .. code-block:: python
 
-     Attributes
-     ----------
-     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-         The axes used for plotting in each direction ('y' and 'z' here).
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_glass_brain
+        img = load_mni152_template()
+        # display is an instance of the YZProjector class
+        display = plot_glass_brain(img, display_mode='yz')
 
-     frame_axes : :class:`~matplotlib.axes.Axes`
-         The axes framing the whole set of views.
+    Attributes
+    ----------
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
+           The axes used for plotting in each direction ('y' and 'z' here).
 
-     See Also
-     --------
-     nilearn.plotting.displays.XZProjector : Sagittal + Axial views
-     nilearn.plotting.displays.YXProjector : Coronal + Sagittal views
+    frame_axes : :class:`~matplotlib.axes.Axes`
+                 The axes framing the whole set of views.
 
-     """
+    See Also
+    --------
+    nilearn.plotting.displays.XZProjector : Sagittal + Axial views
+    nilearn.plotting.displays.YXProjector : Coronal + Sagittal views
+
+    """
+
     _cut_displayed = 'yz'
 
 
 class LYRZProjector(OrthoProjector):
-    """The ``LYRZProjector`` class enables ? visualization
-     on the same figure through 2D projections with
-     :func:`~nilearn.plotting.plot_glass_brain`. This visualization mode
-     can be activated by setting ``display_mode='lyrz'``:
+    """The ``LYRZProjector`` class enables ? visualization \
+    on the same figure through 2D projections with \
+    :func:`~nilearn.plotting.plot_glass_brain`.
 
-     .. code-block:: python
+    This visualization mode
+    can be activated by setting ``display_mode='lyrz'``:
 
-         from nilearn.datasets import load_mni152_template
-         from nilearn.plotting import plot_glass_brain
-         img = load_mni152_template()
-         # display is an instance of the LYRZProjector class
-         display = plot_glass_brain(img, display_mode='lyrz')
+    .. code-block:: python
 
-     Attributes
-     ----------
-     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-         The axes used for plotting in each direction ('l', 'y', 'r',
-         and 'z' here).
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_glass_brain
+        img = load_mni152_template()
+        # display is an instance of the LYRZProjector class
+        display = plot_glass_brain(img, display_mode='lyrz')
 
-     frame_axes : :class:`~matplotlib.axes.Axes`
-         The axes framing the whole set of views.
+    Attributes
+    ----------
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
+     The axes used for plotting in each direction ('l', 'y', 'r',
+        and 'z' here).
 
-     See Also
-     --------
-     nilearn.plotting.displays.LZRYProjector : ?? views
+    frame_axes : :class:`~matplotlib.axes.Axes`
+        The axes framing the whole set of views.
 
-     """
+    See Also
+    --------
+    nilearn.plotting.displays.LZRYProjector : ?? views
+
+    """
+
     _cut_displayed = 'lyrz'
 
 
 class LZRYProjector(OrthoProjector):
-    """The ``LZRYProjector`` class enables ? visualization
-     on the same figure through 2D projections with
-     :func:`~nilearn.plotting.plot_glass_brain`. This visualization mode
-     can be activated by setting ``display_mode='lzry'``:
+    """The ``LZRYProjector`` class enables ? visualization \
+    on the same figure through 2D projections with \
+    :func:`~nilearn.plotting.plot_glass_brain`.
 
-     .. code-block:: python
+    This visualization mode
+    can be activated by setting ``display_mode='lzry'``:
 
-         from nilearn.datasets import load_mni152_template
-         from nilearn.plotting import plot_glass_brain
-         img = load_mni152_template()
-         # display is an instance of the LZRYProjector class
-         display = plot_glass_brain(img, display_mode='lzry')
+    .. code-block:: python
 
-     Attributes
-     ----------
-     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-         The axes used for plotting in each direction ('l', 'z', 'r',
-         and 'y' here).
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_glass_brain
+        img = load_mni152_template()
+        # display is an instance of the LZRYProjector class
+        display = plot_glass_brain(img, display_mode='lzry')
 
-     frame_axes : :class:`~matplotlib.axes.Axes`
-         The axes framing the whole set of views.
+    Attributes
+    ----------
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
+        The axes used for plotting in each direction ('l', 'z', 'r',
+        and 'y' here).
 
-     See Also
-     --------
-     nilearn.plotting.displays.LYRZProjector : ?? views
+    frame_axes : :class:`~matplotlib.axes.Axes`
+        The axes framing the whole set of views.
 
-     """
+    See Also
+    --------
+    nilearn.plotting.displays.LYRZProjector : ?? views
+
+    """
+
     _cut_displayed = 'lzry'
 
 
 class LZRProjector(OrthoProjector):
-    """The ``LZRProjector`` class enables hemispheric sagittal visualization
-     on the same figure through 2D projections with
-     :func:`~nilearn.plotting.plot_glass_brain`. This visualization mode
-     can be activated by setting ``display_mode='lzr'``:
+    """The ``LZRProjector`` class enables hemispheric sagittal visualization \
+    on the same figure through 2D projections with \
+    :func:`~nilearn.plotting.plot_glass_brain`.
 
-     .. code-block:: python
+    This visualization mode
+    can be activated by setting ``display_mode='lzr'``:
 
-         from nilearn.datasets import load_mni152_template
-         from nilearn.plotting import plot_glass_brain
-         img = load_mni152_template()
-         # display is an instance of the LZRProjector class
-         display = plot_glass_brain(img, display_mode='lzr')
+    .. code-block:: python
 
-     Attributes
-     ----------
-     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-         The axes used for plotting in each direction ('l', 'z' and 'r' here).
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_glass_brain
+        img = load_mni152_template()
+        # display is an instance of the LZRProjector class
+        display = plot_glass_brain(img, display_mode='lzr')
 
-     frame_axes : :class:`~matplotlib.axes.Axes`
-         The axes framing the whole set of views.
+    Attributes
+    ----------
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
+        The axes used for plotting in each direction ('l', 'z' and 'r' here).
 
-     See Also
-     --------
-     nilearn.plotting.displays.LYRProjector : ?? views
+    frame_axes : :class:`~matplotlib.axes.Axes`
+        The axes framing the whole set of views.
 
-     """
+    See Also
+    --------
+    nilearn.plotting.displays.LYRProjector : ?? views
+
+    """
+
     _cut_displayed = 'lzr'
 
 
 class LYRProjector(OrthoProjector):
-    """The ``LYRProjector`` class enables ? visualization
-     on the same figure through 2D projections with
-     :func:`~nilearn.plotting.plot_glass_brain`. This visualization mode
-     can be activated by setting ``display_mode='lyr'``:
+    """The ``LYRProjector`` class enables ? visualization \
+    on the same figure through 2D projections with \
+    :func:`~nilearn.plotting.plot_glass_brain`.
 
-     .. code-block:: python
+    This visualization mode
+    can be activated by setting ``display_mode='lyr'``:
 
-         from nilearn.datasets import load_mni152_template
-         from nilearn.plotting import plot_glass_brain
-         img = load_mni152_template()
-         # display is an instance of the LYRProjector class
-         display = plot_glass_brain(img, display_mode='lyr')
+    .. code-block:: python
 
-     Attributes
-     ----------
-     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-         The axes used for plotting in each direction ('l', 'y' and 'r' here).
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_glass_brain
+        img = load_mni152_template()
+        # display is an instance of the LYRProjector class
+        display = plot_glass_brain(img, display_mode='lyr')
 
-     frame_axes : :class:`~matplotlib.axes.Axes`
-         The axes framing the whole set of views.
+    Attributes
+    ----------
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
+        The axes used for plotting in each direction ('l', 'y' and 'r' here).
 
-     See Also
-     --------
-     nilearn.plotting.displays.LZRProjector : ?? views
+    frame_axes : :class:`~matplotlib.axes.Axes`
+        The axes framing the whole set of views.
 
-     """
+    See Also
+    --------
+    nilearn.plotting.displays.LZRProjector : ?? views
+
+    """
+
     _cut_displayed = 'lyr'
 
 
 class LRProjector(OrthoProjector):
-    """The ``LRProjector`` class enables left-right visualization
-     on the same figure through 2D projections with
-     :func:`~nilearn.plotting.plot_glass_brain`. This visualization mode
-     can be activated by setting ``display_mode='lr'``:
+    """The ``LRProjector`` class enables left-right visualization \
+    on the same figure through 2D projections with \
+    :func:`~nilearn.plotting.plot_glass_brain`.
 
-     .. code-block:: python
+    This visualization mode
+    can be activated by setting ``display_mode='lr'``:
 
-         from nilearn.datasets import load_mni152_template
-         from nilearn.plotting import plot_glass_brain
-         img = load_mni152_template()
-         # display is an instance of the LRProjector class
-         display = plot_glass_brain(img, display_mode='lr')
+    .. code-block:: python
 
-     Attributes
-     ----------
-     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-         The axes used for plotting in each direction ('l', and 'r' here).
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_glass_brain
+        img = load_mni152_template()
+        # display is an instance of the LRProjector class
+        display = plot_glass_brain(img, display_mode='lr')
 
-     frame_axes : :class:`~matplotlib.axes.Axes`
-         The axes framing the whole set of views.
+    Attributes
+    ----------
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
+        The axes used for plotting in each direction ('l', and 'r' here).
 
-     """
+    frame_axes : :class:`~matplotlib.axes.Axes`
+        The axes framing the whole set of views.
+
+    """
+
     _cut_displayed = 'lr'
 
 
 class LProjector(OrthoProjector):
-    """The ``LProjector`` class enables the visualization of left 2D
-    projection with :func:`~nilearn.plotting.plot_glass_brain`. This
+    """The ``LProjector`` class enables the visualization of left 2D \
+    projection with :func:`~nilearn.plotting.plot_glass_brain`.
+
+    This
     visualization mode can be activated by setting ``display_mode='l'``:
 
-     .. code-block:: python
+    .. code-block:: python
 
-         from nilearn.datasets import load_mni152_template
-         from nilearn.plotting import plot_glass_brain
-         img = load_mni152_template()
-         # display is an instance of the LProjector class
-         display = plot_glass_brain(img, display_mode='l')
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_glass_brain
+        img = load_mni152_template()
+        # display is an instance of the LProjector class
+        display = plot_glass_brain(img, display_mode='l')
 
-     Attributes
-     ----------
-     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-         The axes used for plotting in each direction ('l' here).
+    Attributes
+    ----------
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
+        The axes used for plotting in each direction ('l' here).
 
-     frame_axes : :class:`~matplotlib.axes.Axes`
-         The axes framing the whole set of views.
+    frame_axes : :class:`~matplotlib.axes.Axes`
+        The axes framing the whole set of views.
 
-     See Also
-     --------
-     nilearn.plotting.displays.RProjector : right projection view
+    See Also
+    --------
+    nilearn.plotting.displays.RProjector : right projection view
 
-     """
+    """
+
     _cut_displayed = 'l'
     _default_figsize = [2.6, 2.3]
 
 
 class RProjector(OrthoProjector):
-    """The ``RProjector`` class enables the visualization of right 2D
-    projection with :func:`~nilearn.plotting.plot_glass_brain`. This
-    visualization mode can be activated by setting ``display_mode='r'``:
+    """The ``RProjector`` class enables the visualization of right 2D \
+    projection with :func:`~nilearn.plotting.plot_glass_brain`.
 
-     .. code-block:: python
+    This visualization mode can be activated by setting ``display_mode='r'``:
 
-         from nilearn.datasets import load_mni152_template
-         from nilearn.plotting import plot_glass_brain
-         img = load_mni152_template()
-         # display is an instance of the RProjector class
-         display = plot_glass_brain(img, display_mode='r')
+    .. code-block:: python
 
-     Attributes
-     ----------
-     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
-         The axes used for plotting in each direction ('r' here).
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_glass_brain
+        img = load_mni152_template()
+        # display is an instance of the RProjector class
+        display = plot_glass_brain(img, display_mode='r')
 
-     frame_axes : :class:`~matplotlib.axes.Axes`
-         The axes framing the whole set of views.
+    Attributes
+    ----------
+    axes : :obj:`dict` of :class:`~nilearn.plotting.displays.GlassBrainAxes`
+        The axes used for plotting in each direction ('r' here).
 
-     See Also
-     --------
-     nilearn.plotting.displays.LProjector : left projection view
+    frame_axes : :class:`~matplotlib.axes.Axes`
+        The axes framing the whole set of views.
 
-     """
+    See Also
+    --------
+    nilearn.plotting.displays.LProjector : left projection view
+
+    """
+
     _cut_displayed = 'r'
     _default_figsize = [2.6, 2.3]
 

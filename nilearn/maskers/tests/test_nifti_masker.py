@@ -51,10 +51,43 @@ def test_detrend():
     img = nibabel.Nifti1Image(data, np.eye(4))
     mask = data.astype("uint8")
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
-    masker = NiftiMasker(mask_img=mask_img, detrend=True)
+
     # Smoke test the fit
+    masker = NiftiMasker(mask_img=mask_img, detrend=True)
     X = masker.fit_transform(img)
     assert np.any(X != 0)
+
+
+@pytest.mark.parametrize("y", [None, np.ones((9, 9, 9))])
+def test_fit_transform(y):
+    """Check fit_transform of BaseMasker with several input args."""
+    data = np.zeros((9, 9, 9))
+    data[3:-3, 3:-3, 3:-3] = 10
+    img = nibabel.Nifti1Image(data, np.eye(4))
+    mask = data.astype("uint8")
+
+    # Smoke test the fit
+
+    for mask_img in [nibabel.Nifti1Image(mask, np.eye(4)), None]:
+        masker = NiftiMasker(mask_img=mask_img)
+        X = masker.fit_transform(X=img, y=y)
+        assert np.any(X != 0)
+
+
+def test_fit_transform_warning():
+    data = np.zeros((9, 9, 9))
+    data[3:-3, 3:-3, 3:-3] = 10
+    img = nibabel.Nifti1Image(data, np.eye(4))
+    y = np.ones((9, 9, 9))
+    mask = data.astype("uint8")
+    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+    masker = NiftiMasker(mask_img=mask_img)
+    with pytest.warns(
+        UserWarning,
+        match=("Generation of a mask has been requested .*"
+               "while a mask has been provided at masker creation.")):
+        X = masker.fit_transform(X=img, y=y)
+        assert np.any(X != 0)
 
 
 def test_resample():
@@ -68,6 +101,30 @@ def test_resample():
     # Smoke test the fit
     X = masker.fit_transform(img)
     assert np.any(X != 0)
+
+
+def test_resample_to_mask_warning():
+    """Check that a warning is raised when data is
+    being resampled to mask's resolution.
+    """
+    data = np.zeros((9, 9, 9))
+    data[3:-3, 3:-3, 3:-3] = 10
+    img = nibabel.Nifti1Image(data, np.eye(4))
+    # defining a mask with different fov than img
+    mask = np.zeros((12, 12, 12))
+    mask[3:-3, 3:-3, 3:-3] = 10
+    mask = mask.astype("uint8")
+    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+    masker = NiftiMasker(mask_img=mask_img)
+    with pytest.warns(
+        UserWarning,
+        match='imgs are being resampled to the mask_img resolution. '
+            'This process is memory intensive. You might want to provide '
+            'a target_affine that is equal to the affine of the imgs '
+            'or resample the mask beforehand '
+            'to save memory and computation time.'
+    ):
+        masker.fit_transform(img)
 
 
 def test_with_files():
@@ -113,11 +170,11 @@ def test_matrix_orientation():
     fmri, mask = data_gen.generate_fake_fmri(shape=(40, 41, 42), kind="step")
     masker = NiftiMasker(mask_img=mask, standardize=True, detrend=True)
     timeseries = masker.fit_transform(fmri)
-    assert(timeseries.shape[0] == fmri.shape[3])
-    assert(timeseries.shape[1] == get_data(mask).sum())
+    assert (timeseries.shape[0] == fmri.shape[3])
+    assert (timeseries.shape[1] == get_data(mask).sum())
     std = timeseries.std(axis=0)
-    assert(std.shape[0] == timeseries.shape[1])  # paranoid
-    assert(not np.any(std < 0.1))
+    assert (std.shape[0] == timeseries.shape[1])  # paranoid
+    assert (not np.any(std < 0.1))
 
     # Test inverse transform
     masker = NiftiMasker(mask_img=mask, standardize=False, detrend=False)
@@ -193,7 +250,7 @@ def test_4d_single_scan():
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
     rng = np.random.RandomState(42)
-    data_5d = [rng.random_sample(shape_4d) for i in range(5)]
+    data_5d = [rng.random_sample(shape_4d) for _ in range(5)]
     data_4d = [d[..., 0] for d in data_5d]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
     data_4d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_4d]
@@ -226,7 +283,7 @@ def test_5d():
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
     rng = np.random.RandomState(42)
-    data_5d = [rng.random_sample(shape_4d) for i in range(5)]
+    data_5d = [rng.random_sample(shape_4d) for _ in range(5)]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
 
     masker = NiftiMasker(mask_img=mask_img)
@@ -355,18 +412,18 @@ def test_compute_epi_mask():
 def expected_mask(mask_args):
     """Create an expected mask."""
     mask = np.zeros((9, 9, 5))
-    if mask_args == dict():
+    if mask_args == {}:
         return mask
-    else:
-        mask[2:7, 2:7, 2] = 1
-        return mask
+
+    mask[2:7, 2:7, 2] = 1
+    return mask
 
 
 @pytest.mark.parametrize('strategy',
                          [f'{p}-template' for p in
                           ['whole-brain', 'gm', 'wm']])
 @pytest.mark.parametrize('mask_args',
-                         [dict(), dict(threshold=0.)])
+                         [{}, dict(threshold=0.)])
 def test_compute_brain_mask(strategy, mask_args, expected_mask):
     """Check masker for template masking strategy."""
     img, _ = data_gen.generate_random_img((9, 9, 5))
@@ -405,6 +462,7 @@ def test_filter_and_mask():
 
     masker = NiftiMasker()
     params = get_params(NiftiMasker, masker)
+    params["clean_kwargs"] = {}
 
     # Test return_affine = False
     data = _filter_and_mask(data_img, mask_img, params)
@@ -424,12 +482,12 @@ def test_dtype():
     img_64 = nibabel.Nifti1Image(data_64, affine_64)
 
     masker_1 = NiftiMasker(dtype='auto')
-    assert(masker_1.fit_transform(img_32).dtype == np.float32)
-    assert(masker_1.fit_transform(img_64).dtype == np.float32)
+    assert (masker_1.fit_transform(img_32).dtype == np.float32)
+    assert (masker_1.fit_transform(img_64).dtype == np.float32)
 
     masker_2 = NiftiMasker(dtype='float64')
-    assert(masker_2.fit_transform(img_32).dtype == np.float64)
-    assert(masker_2.fit_transform(img_64).dtype == np.float64)
+    assert (masker_2.fit_transform(img_32).dtype == np.float64)
+    assert (masker_2.fit_transform(img_64).dtype == np.float64)
 
 
 def test_standardization():

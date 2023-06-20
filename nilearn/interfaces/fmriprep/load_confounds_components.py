@@ -2,11 +2,9 @@
 import numpy as np
 import pandas as pd
 
-from .load_confounds_utils import (_add_suffix,
-                                   _check_params,
-                                   _find_confounds)
 from .load_confounds_compcor import _find_compcor
 from .load_confounds_scrub import _optimize_scrub
+from .load_confounds_utils import _add_suffix, _check_params, _find_confounds
 
 
 def _load_motion(confounds_raw, motion):
@@ -85,7 +83,7 @@ def _load_scrub(confounds_raw, scrub, fd_threshold, std_dvars_threshold):
         np.transpose(np.eye(n_scans)[motion_outliers_index]).astype(int)
     )
     column_names = [
-        "motion_outlier_" + str(num)
+        f"motion_outlier_{num}"
         for num in range(np.shape(motion_outlier_regressors)[1])
     ]
     motion_outlier_regressors.columns = column_names

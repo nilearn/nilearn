@@ -1,12 +1,13 @@
 """Tests for :func:`nilearn.plotting.plot_roi`."""
 
-import pytest
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import pytest
 from nibabel import Nifti1Image
-from nilearn.plotting import plot_roi
+
+from nilearn.conftest import MNI_AFFINE
 from nilearn.image.resampling import coord_transform
-from .testing_utils import MNI_AFFINE
+from nilearn.plotting import plot_roi
 
 
 def demo_plot_roi(**kwargs):
