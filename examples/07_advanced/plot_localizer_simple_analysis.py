@@ -82,7 +82,7 @@ masked_pvals = np.ma.masked_less(
 title = (
     "Negative $\\log_{10}$ p-values"
     "\n(Parametric + Bonferroni correction)"
-    "\n%d detections" % (~masked_pvals.mask).sum()
+    f"\n{(~masked_pvals.mask).sum()} detections"
 )
 
 display.title(title, y=1.1, alpha=0.8)
