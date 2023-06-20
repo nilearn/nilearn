@@ -2,10 +2,18 @@ import os
 from pathlib import Path
 
 import nibabel as nb
+import pytest
 
 from nilearn._coordimage import coordimage as ci
 
 from .test_pointset import FreeSurferHemisphere
+
+try:
+    import nibabel.caret
+except ImportError:
+    no_nibabel_caret = True
+else:
+    no_nibabel_caret = False
 
 CIFTI2_DATA = Path("nilearn/_coordimage/tests/data/cifti2")
 
@@ -47,7 +55,9 @@ class CaretSpec(ci.GeometryCollection):
         wbspec._specfile = csf
         return wbspec
 
-
+@pytest.mark.skipif(
+    no_nibabel_caret, reason="Newer version of nibabel is needed"
+)
 def test_Cifti2Image_as_CoordImage():
     ones = nb.load(CIFTI2_DATA / "ones.dscalar.nii")
     assert ones.shape == (1, 91282)

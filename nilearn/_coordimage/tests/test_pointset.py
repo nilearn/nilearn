@@ -2,16 +2,23 @@ from pathlib import Path
 from unittest import skipUnless
 
 import numpy as np
+import pytest
 from nibabel.arrayproxy import ArrayProxy
 from nibabel.onetime import auto_attr
 from nibabel.optpkg import optional_package
 
 from nilearn._coordimage import pointset as ps
 
+try:
+    import nibabel.caret
+except ImportError:
+    no_nibabel_caret = True
+else:
+    no_nibabel_caret = False
+
 h5, has_h5py, _ = optional_package("h5py")
 
 FS_DATA = Path("nilearn/_coordimage/tests/data/fsaverage")
-
 
 class H5ArrayProxy:
     def __init__(self, file_like, dataset_name):
@@ -150,6 +157,9 @@ class FreeSurferHemisphere(ps.TriMeshFamily):
         return hemi
 
 
+@pytest.mark.skipif(
+    no_nibabel_caret, reason="Newer version of nibabel is needed"
+)
 def test_FreeSurferHemisphere():
     lh = FreeSurferHemisphere.from_filename(
         FS_DATA / "surf/lh.white"
