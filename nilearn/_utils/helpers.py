@@ -70,13 +70,9 @@ def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
     for deprecated_param_ in used_deprecated_params:
         replacement_param = replacement_params[deprecated_param_]
         param_deprecation_msg = (
-            'The parameter "{}" will be removed in {} release of {}. '
-            'Please use the parameter "{}" instead.'.format(deprecated_param_,
-                                                            end_version,
-                                                            lib_name,
-                                                            replacement_param,
-                                                            )
-        )
+            f'The parameter "{deprecated_param_}" '
+            f'will be removed in {end_version} release of {lib_name}. '
+            f'Please use the parameter "{replacement_param}" instead.')
         warnings.warn(category=FutureWarning,
                       message=param_deprecation_msg,
                       stacklevel=3)
@@ -138,10 +134,9 @@ def remove_parameters(removed_params,
         def wrapper(*args, **kwargs):
             found = set(removed_params).intersection(kwargs)
             if found:
-                message = ('Parameter(s) {} will be removed in version {}; '
-                           '{}'.format(', '.join(found),
-                                       end_version, reason)
-                           )
+                message = (f'Parameter(s) {", ".join(found)} '
+                           f'will be removed in version {end_version}; '
+                           f'{reason}')
                 warnings.warn(category=DeprecationWarning,
                               message=message,
                               stacklevel=3)
