@@ -51,6 +51,7 @@ authors:
   - given-names: Alexis
     family-names: Thual
     website: https://github.com/alexisthual
+    affiliation: INRIA, France
   - given-names: Amadeus
     family-names: Kanaan
     website: https://github.com/amadeuskanaan
@@ -78,6 +79,8 @@ authors:
   - given-names: Bertrand
     family-names: Thirion
     website: https://pages.saclay.inria.fr/bertrand.thirion/
+    email: bertrand.thirion@inria.fr
+    affiliation: INRIA, France
   - given-names: Binh
     family-names: Nguyen
     website: https://www.imo.universite-paris-saclay.fr/~tbnguyen/
@@ -129,6 +132,7 @@ authors:
   - given-names: Elizabeth
     family-names: DuPre
     website: https://elizabeth-dupre.com/#/
+    affiliation:  Stanford University, USA
   - given-names: Elvis
     family-names: Dohmatob
     website: https://dohmatob.github.io/
@@ -162,6 +166,7 @@ authors:
   - given-names: Hao-Ting
     family-names: Wang
     website: https://wanghaoting.com/
+    affiliation:  Montreal Geriatrics Institute (CRIUGM), Montreal, Canada
   - given-names: Himanshu
     family-names: Aggarwal
     website: https://github.com/man-shu
@@ -198,6 +203,7 @@ authors:
   - given-names: Jerome
     family-names: Dockes
     website: https://jeromedockes.github.io/
+    affiliation: Origami lab, McGill University, Montreal, Canada
   - given-names: Jerome-Alexis
     family-names: Chevalier
     website: https://github.com/ja-che
@@ -303,6 +309,7 @@ authors:
   - given-names: Nicolas
     family-names: Gensollen
     website: https://nicolasgensollen.github.io/
+    affiliation: INRIA, Paris, France
   - given-names: Oscar
     family-names: Esteban
     website: https://github.com/oesteban
@@ -321,6 +328,8 @@ authors:
   - given-names: Pierre
     family-names: Bellec
     website: https://github.com/pbellec
+    affiliation: Psychology Department, University of Montréal, Montréal, Canada
+    orcid: https://orcid.org/0000-0002-9111-0699
   - given-names: Pierre
     family-names: Glaser
     website: https://pierreglaser.github.io/
@@ -351,6 +360,8 @@ authors:
   - given-names: Rémi
     family-names: Gau
     website: https://github.com/Remi-Gau
+    affiliation: Origami lab, McGill University, Montreal, Canada
+    orcid: https://orcid.org/0000-0002-1535-9767
   - given-names: Sachin
     family-names: Patalasingh
     website: https://github.com/sachin-bsai
@@ -384,6 +395,7 @@ authors:
   - given-names: Taylor
     family-names: Salo
     website: https://tsalo.github.io/
+    affiliation: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania, USA
   - given-names: Thomas
     family-names: Bazeille
     website: https://github.com/thomasbazeille
@@ -405,6 +417,7 @@ authors:
   - given-names: Yasmin
     family-names: Mzayek
     website: https://github.com/ymzayek
+    affiliation: INRIA, France
   - given-names: Zvi
     family-names: Baratz
     website: https://github.com/ZviBaratz
