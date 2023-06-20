@@ -1,8 +1,29 @@
 import nibabel as nib
 import numpy as np
+from nibabel.arrayproxy import ArrayProxy
 from nibabel.fileslice import fill_slicer
 
 import nilearn._coordimage.pointset as ps
+
+
+def _copy(img_data):
+    """Needs to be implemented in nibabel ArrayProxy.
+
+    See https://github.com/nipy/nibabel/pull/1090/files#diff-c073f9c619e3ce2da797bdf8fc2f792632525f9dc2ef474befb0de5faa30cfd9 # noqa: E501
+    """
+    spec = (
+        img_data._shape,
+        img_data._dtype,
+        img_data._offset,
+        img_data._slope,
+        img_data._inter,
+    )
+    return ArrayProxy(
+        img_data.file_like,
+        spec,
+        mmap=img_data._mmap,
+        keep_file_open=img_data._keep_file_open,
+    )
 
 
 class CoordinateImage:
@@ -54,7 +75,7 @@ class CoordinateImage:
                 ):
                     break
             # Reinterpret data ordering based on location of coordinate axis
-            data = img.dataobj.copy()
+            data = _copy(img.dataobj)
             data.order = ["F", "C"][i]
             if i == 1:
                 data._shape = data._shape[::-1]
