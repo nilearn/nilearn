@@ -12,7 +12,7 @@ from nilearn.coordimage import pointset as ps
 
 h5, has_h5py, _ = optional_package('h5py')
 
-FS_DATA = Path(get_nibabel_data()) / 'nitest-freesurfer'
+FS_DATA = Path("nilearn/coordimage/tests/data")
 
 
 class H5ArrayProxy:
@@ -151,8 +151,8 @@ class FreeSurferHemisphere(ps.TriMeshFamily):
 
 def test_FreeSurferHemisphere():
     lh = FreeSurferHemisphere.from_filename(FS_DATA / 'fsaverage/surf/lh.white')
-    assert lh.n_coords == 163842
-    assert lh.n_triangles == 327680
+    assert lh.n_coords == 10242
+    assert lh.n_triangles == 20480
 
 
 @skipUnless(has_h5py, reason='Test requires h5py')
