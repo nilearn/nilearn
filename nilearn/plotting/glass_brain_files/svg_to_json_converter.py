@@ -21,7 +21,7 @@ class SVGToJSONConverter:
         self.paths = self.svg.flatten()
 
     def _get_style_attr(self, style, attr):
-        pat = r'{}:([^;]+)'.format(attr)
+        pat = f'{attr}:([^;]+)'
         match = re.search(pat, style)
         return match.group(1) if match is not None else None
 
