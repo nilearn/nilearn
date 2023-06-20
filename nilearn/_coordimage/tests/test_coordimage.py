@@ -3,7 +3,7 @@ from pathlib import Path
 
 import nibabel as nb
 
-from nilearn._coordimage import coordimage as ci, pointset as ps
+from nilearn._coordimage import coordimage as ci
 
 from .test_pointset import FreeSurferHemisphere
 
@@ -74,6 +74,7 @@ def test_Cifti2Image_as_CoordImage():
     assert lh_img.shape == (29696, 1)
 
     # # Not working yet.
-    # cortex_img = cimg[["CIFTI_STRUCTURE_CORTEX_LEFT", "CIFTI_STRUCTURE_CORTEX_RIGHT"]]
+    # cortex_img = cimg[["CIFTI_STRUCTURE_CORTEX_LEFT",
+    #                    "CIFTI_STRUCTURE_CORTEX_RIGHT"]]
     # assert len(cortex_img.coordaxis.parcels) == 2
     # assert cortex_img.shape == (59412, 1)

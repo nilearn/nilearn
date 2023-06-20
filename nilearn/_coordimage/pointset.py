@@ -11,14 +11,14 @@ class Pointset:
 
     @property
     def n_coords(self):
-        """Number of coordinates
+        """Number of coordinates.
 
         Subclasses should override with more efficient implementations.
         """
         return self.get_coords().shape[0]
 
     def get_coords(self, name=None):
-        """Nx3 array of coordinates in RAS+ space"""
+        """Nx3 array of coordinates in RAS+ space."""
         return self._coords
 
 
@@ -37,27 +37,28 @@ class TriangularMesh(Pointset):
 
     @property
     def n_triangles(self):
-        """Number of faces
+        """Number of faces.
 
         Subclasses should override with more efficient implementations.
         """
         return self._triangles.shape[0]
 
     def get_triangles(self):
-        """Mx3 array of indices into coordinate table"""
+        """Mx3 array of indices into coordinate table."""
         return self._triangles
 
     def get_mesh(self, name=None):
         return self.get_coords(name=name), self.get_triangles()
 
     def get_names(self):
-        """List of surface names that can be passed to
-        ``get_{coords,triangles,mesh}``
+        """Get list of surface names.
+
+        These can be passed to ``get_{coords,triangles,mesh}``.
         """
         raise NotImplementedError
 
-    ## This method is called for by the BIAP, but it now seems simpler to wait to
-    ## provide it until there are any proposed implementations
+    # This method is called for by the BIAP, but it now seems simpler to wait
+    # to provide it until there are any proposed implementations
     # def decimate(self, *, n_coords=None, ratio=None):
     #     """ Return a TriangularMesh with a smaller number of vertices that
     #     preserves the geometry of the original """
@@ -89,7 +90,8 @@ class TriMeshFamily(TriangularMesh):
 
 
 class NdGrid(Pointset):
-    """
+    """.
+
     Attributes
     ----------
     shape : 3-tuple
@@ -106,7 +108,7 @@ class NdGrid(Pointset):
             self._affines["voxels"] = np.eye(4, dtype=np.uint8)
 
     def get_affine(self, name=None):
-        """4x4 array"""
+        """4x4 array."""
         if name is None:
             name = next(iter(self._affines))
         return self._affines[name]

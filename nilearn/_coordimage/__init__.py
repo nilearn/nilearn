@@ -1,4 +1,4 @@
-"""Experimental module implementing surface objects"""
+"""Experimental module implementing surface objects."""
 
 from .caretspec import (
     CaretSpecDataFile,

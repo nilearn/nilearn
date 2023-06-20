@@ -6,7 +6,8 @@ import nilearn._coordimage.pointset as ps
 
 
 class CoordinateImage:
-    """
+    """.
+
     Attributes
     ----------
     header : a file-specific header
@@ -61,7 +62,8 @@ class CoordinateImage:
 
 
 class CoordinateAxis:
-    """
+    """.
+
     Attributes
     ----------
     parcels : list of ``Parcel`` objects
@@ -71,15 +73,13 @@ class CoordinateAxis:
         self.parcels = parcels
 
     def load_structures(self, mapping):
-        """
-        Associate parcels to ``Pointset`` structures
-        """
+        """Associate parcels to ``Pointset`` structures."""
         raise NotImplementedError
 
     def __getitem__(self, slicer):
-        """
-        Return a sub-sampled CoordinateAxis containing structures
-        matching the indices provided.
+        """Return a sub-sampled CoordinateAxis.
+
+        Contains structures matching the indices provided.
         """
         if (
             slicer is Ellipsis
@@ -109,7 +109,8 @@ class CoordinateAxis:
         return CoordinateAxis(subparcels)
 
     def get_indices(self, parcel, indices=None):
-        """
+        """.
+
         Return the indices in the full axis that correspond to the
         requested parcel. If indices are provided, further subsample
         the requested parcel.
@@ -157,7 +158,8 @@ class CoordinateAxis:
 
 
 class Parcel:
-    """
+    """.
+
     Attributes
     ----------
     name : str
@@ -181,7 +183,8 @@ class Parcel:
 
 
 class GeometryCollection:
-    """
+    """.
+
     Attributes
     ----------
     structures : dict

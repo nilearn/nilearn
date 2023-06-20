@@ -1,4 +1,4 @@
-"""Read / write access to CaretSpecFile format
+"""Read / write access to CaretSpecFile format.
 
 The format of CaretSpecFiles does not seem to have any independent
 documentation.
@@ -6,7 +6,7 @@ documentation.
 Code can be found here [0], and a DTD was worked out in this email thread [1].
 
 [0]: https://github.com/Washington-University/workbench/tree/master/src/Files
-[1]: https://groups.google.com/a/humanconnectome.org/g/hcp-users/c/EGuwdaTVFuw/m/tg7a_-7mAQAJ
+[1]: https://groups.google.com/a/humanconnectome.org/g/hcp-users/c/EGuwdaTVFuw/m/tg7a_-7mAQAJ # noqa: E501
 """
 import xml.etree.ElementTree as et
 from urllib.parse import urlparse
@@ -19,7 +19,7 @@ from nilearn._coordimage import pointset as ps
 
 
 class CaretSpecDataFile(xml.XmlSerializable):
-    """DataFile
+    """DataFile.
 
     * Attributes
 
@@ -100,10 +100,10 @@ class SurfaceDataFile(ps.TriangularMesh, CaretSpecDataFile):
 
 
 class CaretSpecFile(xml.XmlSerializable):
-    """Class for CaretSpecFile XML documents
+    """Class for CaretSpecFile XML documents.
 
-    These are used to identify related surfaces and volumes for use with CIFTI-2
-    data files.
+    These are used to identify related surfaces and volumes for use with
+    CIFTI-2 data files.
     """
 
     def __init__(self, metadata=None, data_files=(), version="1.0"):
@@ -193,20 +193,20 @@ class CaretSpecParser(xml.XmlParser):
             self.write_to = None
 
     def CharacterDataHandler(self, data):
-        """Collect character data chunks pending collation
+        """Collect character data chunks pending collation.
 
         The parser breaks the data up into chunks of size depending on the
-        buffer_size of the parser.  A large bit of character data, with standard
-        parser buffer_size (such as 8K) can easily span many calls to this
-        function.  We thus collect the chunks and process them when we hit start
-        or end tags.
+        buffer_size of the parser.  A large bit of character data, with
+        standard parser buffer_size (such as 8K) can easily span many calls to
+        this function.  We thus collect the chunks and process them when we hit
+        start or end tags.
         """
         if self._char_blocks is None:
             self._char_blocks = []
         self._char_blocks.append(data)
 
     def flush_chardata(self):
-        """Collate and process collected character data"""
+        """Collate and process collected character data."""
         if self._char_blocks is None:
             return
 
