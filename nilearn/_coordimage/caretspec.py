@@ -15,7 +15,7 @@ import nibabel as nib
 from nibabel import xmlutils as xml
 from nibabel.caret import CaretMetaData
 
-from nilearn.coordimage import pointset as ps
+from nilearn._coordimage import pointset as ps
 
 
 class CaretSpecDataFile(xml.XmlSerializable):

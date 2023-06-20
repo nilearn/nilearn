@@ -6,7 +6,7 @@ from nibabel.arrayproxy import ArrayProxy
 from nibabel.onetime import auto_attr
 from nibabel.optpkg import optional_package
 
-from nilearn.coordimage import pointset as ps
+from nilearn._coordimage import pointset as ps
 
 h5, has_h5py, _ = optional_package("h5py")
 

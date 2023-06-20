@@ -3,7 +3,7 @@ from pathlib import Path
 
 import nibabel as nb
 
-from nilearn.coordimage import coordimage as ci, pointset as ps
+from nilearn._coordimage import coordimage as ci, pointset as ps
 
 from .test_pointset import FreeSurferHemisphere
 
@@ -35,7 +35,7 @@ class FreeSurferSubject(ci.GeometryCollection):
 class CaretSpec(ci.GeometryCollection):
     @classmethod
     def from_spec(klass, pathlike):
-        from nilearn.coordimage.caretspec import CaretSpecFile
+        from nilearn._coordimage.caretspec import CaretSpecFile
 
         csf = CaretSpecFile.from_filename(pathlike)
         structures = {
