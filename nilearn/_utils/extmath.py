@@ -63,7 +63,7 @@ def is_spd(M, decimal=15, verbose=1):
     """
     if not np.allclose(M, M.T, atol=0, rtol=10**-decimal):
         if verbose > 0:
-            print("matrix not symmetric to %d decimals" % decimal)
+            print(f"matrix not symmetric to {decimal:d} decimals")
         return False
     eigvalsh = np.linalg.eigvalsh(M)
     ispd = eigvalsh.min() > 0

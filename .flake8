@@ -10,6 +10,7 @@ exclude =
 	nilearn/externals/
 	nilearn_cache
 	venv,
+	doc/_build
 --select = D,E,F,W,C90
 docstring-convention = numpy
 max-line-length = 79

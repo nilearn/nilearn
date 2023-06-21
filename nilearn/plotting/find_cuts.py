@@ -65,8 +65,8 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     # when given image is empty, return (0., 0., 0.)
     if np.all(data == 0.):
         warnings.warn(
-            "Given img is empty. Returning default cut_coords={} instead."
-            .format(DEFAULT_CUT_COORDS))
+            "Given img is empty. "
+            f"Returning default cut_coords={DEFAULT_CUT_COORDS} instead.")
         x_map, y_map, z_map = DEFAULT_CUT_COORDS
         return np.asarray(coord_transform(x_map, y_map, z_map,
                                           img.affine)).tolist()
@@ -77,8 +77,8 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
         mask = _safe_get_data(mask_img)
         if not np.allclose(mask_img.affine, img.affine):
             raise ValueError(
-                'Mask affine: \n%s\n is different from img affine:'
-                '\n%s' % (str(mask_img.affine), str(img.affine)))
+                f"Mask affine: \n{mask_img.affine}\n "
+                f"is different from img affine: \n{img.affine}")
     else:
         mask = None
 
@@ -287,14 +287,14 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
     if not isinstance(n_cuts, numbers.Number):
         raise ValueError("The number of cuts (n_cuts) must be an integer "
                          "greater than or equal to 1. "
-                         "You provided a value of n_cuts=%s. " % n_cuts)
+                         f"You provided a value of n_cuts={n_cuts}.")
 
     # BF issue #575: Return all the slices along and axis if this axis
     # is the display mode and there are at least as many requested
     # n_slices as there are slices.
     if n_cuts > this_shape:
-        warnings.warn('Too many cuts requested for the data: '
-                      'n_cuts=%i, data size=%i' % (n_cuts, this_shape))
+        warnings.warn("Too many cuts requested for the data: "
+                      f"n_cuts={n_cuts}, data size={this_shape}.")
         return _transform_cut_coords(np.arange(this_shape), direction, affine)
 
     # To smooth data that might be np.int or np.uint,
@@ -310,10 +310,10 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
     epsilon = np.finfo(np.float32).eps
     difference = abs(round(n_cuts) - n_cuts)
     if round(n_cuts) < 1. or difference > epsilon:
-        message = ("Image has %d slices in direction %s. "
-                   "Therefore, the number of cuts must be between 1 and %d. "
-                   "You provided n_cuts=%s " % (
-                       this_shape, direction, this_shape, n_cuts))
+        message = (f"Image has {this_shape} slices in direction {direction}. "
+                   "Therefore, the number of cuts "
+                   f"must be between 1 and {this_shape}. "
+                   f"You provided n_cuts={n_cuts}.")
         raise ValueError(message)
     else:
         n_cuts = int(round(n_cuts))

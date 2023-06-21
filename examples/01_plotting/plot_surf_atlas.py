@@ -35,12 +35,12 @@ parcellation = destrieux_atlas['map_left']
 fsaverage = datasets.fetch_surf_fsaverage()
 
 # The fsaverage dataset contains file names pointing to the file locations
-print('Fsaverage5 pial surface of left hemisphere is at: %s' %
-      fsaverage['pial_left'])
-print('Fsaverage5 inflated surface of left hemisphere is at: %s' %
-      fsaverage['infl_left'])
-print('Fsaverage5 sulcal depth map of left hemisphere is at: %s' %
-      fsaverage['sulc_left'])
+print("Fsaverage5 pial surface of left hemisphere is at: "
+      f"{fsaverage['pial_left']}")
+print("Fsaverage5 inflated surface of left hemisphere is at: "
+      f"{fsaverage['infl_left']}")
+print("Fsaverage5 sulcal depth map of left hemisphere is at: "
+      f"{fsaverage['sulc_left']}")
 
 ###############################################################################
 # Visualization

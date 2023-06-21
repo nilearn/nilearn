@@ -559,11 +559,8 @@ def test_repr_niimgs(tmp_path):
         _utils._repr_niimgs(list_of_paths, shorten=True)
         == shortened_list_of_paths
     )
-
-    long_list_of_paths = "[%s]" % ",\n ".join(
-        _ for _ in [str(_) for _ in list_of_paths]
-    )
-
+    long_list_of_paths = ",\n ".join([str(_) for _ in list_of_paths])
+    long_list_of_paths = f"[{long_list_of_paths}]"
     assert (
         _utils._repr_niimgs(list_of_paths, shorten=False) == long_list_of_paths
     )

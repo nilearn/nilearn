@@ -57,9 +57,9 @@ nki_dataset = datasets.fetch_surf_nki_enhanced(n_subjects=1)
 
 # The nki dictionary contains file names for the data
 # of all downloaded subjects.
-print(('Resting state data of the first subjects on the '
-       'fsaverag5 surface left hemisphere is at: %s' %
-      nki_dataset['func_left'][0]))
+print('Resting state data of the first subjects on the '
+      f"fsaverag5 surface left hemisphere is at: {nki_dataset['func_left'][0]}"
+      )
 
 # Destrieux parcellation for left hemisphere in fsaverage5 space
 destrieux_atlas = datasets.fetch_atlas_surf_destrieux()

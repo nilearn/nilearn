@@ -59,11 +59,11 @@ class HTMLDocument:
             return
         if len(HTMLDocument._all_open_html_repr
                ) > MAX_IMG_VIEWS_BEFORE_WARNING - 1:
-            warnings.warn('It seems you have created more than {} '
+            warnings.warn("It seems you have created "
+                          f"more than {MAX_IMG_VIEWS_BEFORE_WARNING} "
                           'nilearn views. As each view uses dozens '
                           'of megabytes of RAM, you might want to '
-                          'delete some of them.'.format(
-                              MAX_IMG_VIEWS_BEFORE_WARNING))
+                          'delete some of them.')
 
     def resize(self, width, height):
         """Resize the plot displayed in a Jupyter notebook.
@@ -105,8 +105,9 @@ class HTMLDocument:
         if height is None:
             height = self.height
         escaped = escape(self.html, quote=True)
-        wrapped = ('<iframe srcdoc="{}" width="{}" height="{}" '
-                   'frameBorder="0"></iframe>').format(escaped, width, height)
+        wrapped = (f'<iframe srcdoc="{escaped}'
+                   f'width="{width}" height="{height}" '
+                   'frameBorder="0"></iframe>')
         return wrapped
 
     def get_standalone(self):
@@ -164,10 +165,10 @@ class HTMLDocument:
         if temp_file_lifetime is None:
             if not named_file:
                 warnings.warn(
-                    ("Saved HTML in temporary file: {}\n"
-                     "file size is {:.1f}M, delete it when you're done, "
-                     "for example by calling this.remove_temp_file").format(
-                         file_name, file_size))
+                    (f"Saved HTML in temporary file: {file_name}\n"
+                     f"file size is {file_size:.1f}M, "
+                     "delete it when you're done, "
+                     "for example by calling this.remove_temp_file"))
         else:
             self._temp_file_removing_proc = _remove_after_n_seconds(
                 self._temp_file, temp_file_lifetime)

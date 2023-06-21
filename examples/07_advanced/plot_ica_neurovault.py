@@ -11,11 +11,16 @@ documentation for more details.
 
 .. include:: ../../../examples/masker_note.rst
 
+..
+    Original authors:
+
+    - Ben Cipollini
+
+    Ported from code authored by Chris Filo Gorgolewski, Gael Varoquaux
+    https://github.com/NeuroVault/neurovault_analysis
+
 """
-# Author: Ben Cipollini
-# License: BSD
-# Ported from code authored by Chris Filo Gorgolewski, Gael Varoquaux
-# https://github.com/NeuroVault/neurovault_analysis
+
 import warnings
 
 import numpy as np

@@ -25,10 +25,7 @@ model with a random design matrix **X**:
 
 * **e** is random normal noise.
 
-
 """
-
-# Licence : BSD
 
 print(__doc__)
 
@@ -215,10 +212,9 @@ for name, estimator in estimators:
             coefs = estimator.coef_
         coefs = np.reshape(coefs, [size, size, size])
         score = estimator.score(X_test, y_test)
-        title = "{}: prediction score {:.3f}, training time: {:.2f}s".format(
-            name,
-            score,
-            elapsed_time,
+        title = (
+            f"{name}: prediction score {score:.3f}, "
+            f"training time: {elapsed_time:.2f}s"
         )
 
     else:  # Searchlight

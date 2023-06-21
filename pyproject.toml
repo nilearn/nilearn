@@ -183,3 +183,6 @@ junit_family = "xunit2"
 [tool.codespell]
 skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples"
 ignore-words = ".github/codespell_ignore_words.txt"
+
+[tool.flynt]
+exclude = "tempita"
