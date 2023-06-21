@@ -639,7 +639,9 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         if self.labels is not None:
             self.region_names_ = {
-                key: self.labels[region_id] for key, region_id in region_ids.items() if region_id!=self.background_label
+                key: self.labels[region_id]
+                for key, region_id in region_ids.items()
+                if region_id != self.background_label
             }
         else:
             self.region_names_ = None
