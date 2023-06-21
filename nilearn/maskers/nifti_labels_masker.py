@@ -111,6 +111,30 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         .. versionadded:: 0.9.2
 
+    region_ids_ : dict
+        A dictionary containing the region ids corresponding to each
+        column in region_signal. The region id corresponding to
+        region_signal[:,i] is region_ids_[i].
+        region_ids_['background'] is the background label.
+
+        .. versionadded:: 0.10.2.dev
+
+    region_names_ : dict
+        A dictionary containing the region names corresponding to each
+        column in region_signal. The region names correspond to the labels
+        provided in labels in input. The region name corresponding to
+        region_signal[:,i] is region_names_[i].
+
+        .. versionadded:: 0.10.2.dev
+
+    region_img_ : Niimg-like object
+        Regions definition as labels. The labels correspond to the
+        indices in region_ids_. The region in region_img that takes
+        the value region_ids_[i] is used to compute the signal in
+        region_signal[:,i].
+
+        .. versionadded:: 0.10.2.dev
+
     See Also
     --------
     nilearn.maskers.NiftiMasker
@@ -494,18 +518,6 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             Signal for each label.
             shape: (number of scans, number of labels)
 
-        region_ids : 2D numpy.ndarray
-            A dictionary containing the region ids corresponding to each
-            column in region_signal. The region id corresponding to
-            region_signal[:,i] is region_ids[i].
-            region_ids['background'] is the background label.
-
-        region_img : Niimg-like object
-            Regions definition as labels. The labels correspond to the
-            indices in region_ids. The region in region_img that takes
-            the value region_ids[i] is use to compute the signal in
-            region_signal[:,i].
-
         Warns
         -----
         DeprecationWarning
@@ -625,7 +637,16 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             # ids does not include background label
             region_ids[i] = ids[i]
 
-        return region_signals, region_ids, region_img
+        if self.labels is not None:
+            self.region_names_ = {
+                key: self.labels[region_id] for key, region_id in region_ids.items() if region_id!=self.background_label
+            }
+        else:
+            self.region_names_ = None
+        self.region_ids_ = region_ids
+        self.region_img_ = region_img
+
+        return region_signals
 
     def inverse_transform(self, signals):
         """Compute voxel signals from region signals.
