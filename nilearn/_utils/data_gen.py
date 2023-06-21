@@ -367,9 +367,8 @@ def generate_fake_fmri(shape=(10, 11, 12),
     target = np.zeros(length, dtype=int)
     rest_max_size = (length - (n_blocks * block_size)) // n_blocks
     if rest_max_size < 0:
-        raise ValueError('%s is too small '
-                         'to put %s blocks of size %s' %
-                         (length, n_blocks, block_size))
+        raise ValueError(f'{length} is too small '
+                         f'to put {n_blocks} blocks of size {block_size}')
     t_start = 0
     if rest_max_size > 0:
         t_start = rand_gen.randint(0, rest_max_size, 1)[0]
@@ -495,11 +494,11 @@ def write_fake_fmri_data_and_design(shapes,
     mask_file, fmri_files, design_files = 'mask.nii', [], []
     rand_gen = check_random_state(random_state)
     for i, shape in enumerate(shapes):
-        fmri_files.append('fmri_run%d.nii' % i)
+        fmri_files.append(f'fmri_run{i:d}.nii')
         data = rand_gen.randn(*shape)
         data[1:-1, 1:-1, 1:-1] += 100
         Nifti1Image(data, affine).to_filename(fmri_files[-1])
-        design_files.append('dmtx_%d.csv' % i)
+        design_files.append(f'dmtx_{i:d}.csv')
         pd.DataFrame(rand_gen.randn(shape[3], rk),
                      columns=['', '', '']).to_csv(design_files[-1])
     Nifti1Image((rand_gen.rand(*shape[:3]) > .5).astype(np.int8),
