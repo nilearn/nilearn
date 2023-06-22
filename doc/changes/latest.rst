@@ -20,6 +20,8 @@ Enhancements
 
 - Update Decoder objects to use the more efficient ``LogisticRegressionCV`` (:gh:`3736` by `Michelle Wang`_).
 
+- [DOC] Inconsistent description of return keys for fetch_atlas_surf_destrieux (:gh:`3774` bt `Tarun Samanta`_).
+
 Changes
 -------
 
