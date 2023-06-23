@@ -236,6 +236,8 @@
 
 .. _Sylvain Takerkart: https://github.com/SylvainTakerkart
 
+.. _Tarun Samanta: https://github.com/tarunsamanta2k20
+
 .. _Taylor Salo: https://tsalo.github.io/
 
 .. _Thomas Bazeille: https://github.com/thomasbazeille
@@ -253,5 +255,3 @@
 .. _Yasmin Mzayek: https://github.com/ymzayek
 
 .. _Zvi Baratz: https://github.com/ZviBaratz
-
-.. _Tarun Samanta: https://github.com/tarunsamanta2k20
