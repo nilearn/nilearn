@@ -129,12 +129,9 @@ extend-exclude =  """
   | examples/04_glm_first_level/plot_fixed_effects.py
   | examples/04_glm_first_level/plot_localizer_surface_analysis.py
   | examples/07_advanced/plot_surface_bids_analysis.py
-  | nilearn/interfaces/__init__.py
-  | nilearn/interfaces/bids/__init__.py
   | nilearn/interfaces/bids/_utils.py
   | nilearn/interfaces/bids/query.py
   | nilearn/interfaces/bids/glm.py
-  | nilearn/interfaces/fmriprep/__init__.py
   | nilearn/interfaces/fmriprep/load_confounds.py
   | nilearn/interfaces/fmriprep/load_confounds_compcor.py
   | nilearn/interfaces/fmriprep/load_confounds_components.py
@@ -149,7 +146,6 @@ extend-exclude =  """
   | nilearn/interfaces/fsl.py
   | nilearn/interfaces/tests/test_fsl.py
   | nilearn/interfaces/tests/test_bids.py
-  | nilearn/maskers/__init__.py
   | nilearn/maskers/tests/test_base_masker.py
   | nilearn/maskers/tests/test_input_data.py
   | nilearn/maskers/_masker_validation.py
@@ -173,7 +169,6 @@ extend-exclude =  """
   | nilearn/plotting/displays/_figures.py
   | nilearn/plotting/displays/__init__.py
   | nilearn/plotting/glass_brain_files/plot_align_svg.py
-  | nilearn/plotting/__init__.py
   | nilearn/plotting/edge_detect.py
   | nilearn/plotting/html_document.py
   | nilearn/plotting/glass_brain_files/svg_to_json_converter.py
