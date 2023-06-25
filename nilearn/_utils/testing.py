@@ -185,7 +185,7 @@ def write_tmp_imgs(*imgs, **kwargs):
                     del img
 
                 if use_wildcards:
-                    yield prefix + "*" + suffix
+                    yield f"{prefix}*{suffix}"
                 else:
                     if len(imgs) == 1:
                         yield filenames[0]

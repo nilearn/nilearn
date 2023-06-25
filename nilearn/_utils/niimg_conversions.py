@@ -537,9 +537,9 @@ def concat_niimgs(
     ):
         if verbose > 0:
             if isinstance(niimg, str):
-                nii_str = "image " + niimg
+                nii_str = f"image {niimg}"
             else:
-                nii_str = "image #" + str(index)
+                nii_str = f"image #{index}"
             print(f"Concatenating {index + 1}: {nii_str}")
 
         data[..., cur_4d_index : cur_4d_index + size] = _get_data(niimg)

@@ -786,10 +786,10 @@ def _compute_symmetric_split(source, atlas_niimg, names):
         for idx, name in enumerate(names):
             if name.endswith("L"):
                 names[idx] = re.sub(r" L$", "", name)
-                names[idx] = "Left " + name
+                names[idx] = f"Left {name}"
             if name.endswith("R"):
                 names[idx] = re.sub(r" R$", "", name)
-                names[idx] = "Right " + name
+                names[idx] = f"Right {name}"
 
     new_label = 0
     new_atlas = atlas_data.copy()
@@ -808,10 +808,10 @@ def _compute_symmetric_split(source, atlas_niimg, names):
             new_names.append(name)
             continue
         new_atlas[left_atlas == label] = new_label
-        new_names.append("Left " + name)
+        new_names.append(f"Left {name}")
         new_label += 1
         new_atlas[right_atlas == label] = new_label
-        new_names.append("Right " + name)
+        new_names.append(f"Right {name}")
     return new_atlas, new_names
 
 
@@ -1267,7 +1267,7 @@ def fetch_atlas_aal(
             f"Please choose one among {versions}."
         )
 
-    dataset_name = "aal_" + version
+    dataset_name = f"aal_{version}"
     opts = {"uncompress": True}
 
     if url is None:
@@ -1428,7 +1428,7 @@ def fetch_atlas_basc_multiscale_2015(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
-    folder_name = "template_cambridge_basc_multiscale_nii_" + version
+    folder_name = f"template_cambridge_basc_multiscale_nii_{version}"
     fdescr = _get_dataset_descr(dataset_name)
 
     if resolution:
