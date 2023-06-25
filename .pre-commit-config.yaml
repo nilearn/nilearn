@@ -7,21 +7,16 @@ exclude: |
         | nilearn/externals/.*
         | nilearn/plotting/data/js/.*js
         | nilearn/_version.py
-        | examples/01_plotting/plot_demo_glass_brain.py
+        | examples/01_plotting/plot_3d_map_to_surface_projection.py
+        | examples/01_plotting/plot_demo_more_plotting.py
         | examples/01_plotting/plot_demo_plotting.py
-        | examples/04_glm_first_level/plot_fixed_effects.py
-        | examples/01_plotting/plot_surface_projection_strategies.py
         | examples/01_plotting/plot_surf_atlas.py
         | examples/01_plotting/plot_surf_stat_map.py
+        | examples/01_plotting/plot_surface_projection_strategies.py
         | examples/04_glm_first_level/plot_fiac_analysis.py
+        | examples/04_glm_first_level/plot_fixed_effects.py
         | examples/04_glm_first_level/plot_localizer_surface_analysis.py
-        | examples/01_plotting/plot_3d_map_to_surface_projection.py
         | examples/07_advanced/plot_surface_bids_analysis.py
-        | examples/01_plotting/plot_demo_more_plotting.py
-        | examples/01_plotting/plot_demo_glass_brain_extensive.py
-        | nilearn/tests/test_init.py
-        | nilearn/tests/test_masking.py
-        | nilearn/tests/test_signal.py
         | nilearn/_utils/helpers.py
         | nilearn/_utils/docs.py
         | nilearn/_utils/tests/test_data_gen.py
@@ -34,26 +29,25 @@ exclude: |
         | nilearn/glm/tests/test_second_level.py
         | nilearn/glm/tests/test_first_level.py
         | nilearn/interfaces/__init__.py
-        | nilearn/interfaces/fmriprep/__init__.py
         | nilearn/interfaces/bids/__init__.py
-        | nilearn/interfaces/fmriprep/load_confounds_components.py
-        | nilearn/interfaces/fmriprep/load_confounds_compcor.py
-        | nilearn/interfaces/fmriprep/load_confounds_scrub.py
         | nilearn/interfaces/bids/_utils.py
-        | nilearn/interfaces/fsl.py
+        | nilearn/interfaces/bids/query.py
+        | nilearn/interfaces/bids/glm.py
+        | nilearn/interfaces/fmriprep/__init__.py
+        | nilearn/interfaces/fmriprep/load_confounds.py
+        | nilearn/interfaces/fmriprep/load_confounds_compcor.py
+        | nilearn/interfaces/fmriprep/load_confounds_components.py
+        | nilearn/interfaces/fmriprep/load_confounds_scrub.py
+        | nilearn/interfaces/fmriprep/load_confounds_strategy.py
+        | nilearn/interfaces/fmriprep/load_confounds_utils.py
         | nilearn/interfaces/fmriprep/tests/test_load_confounds_scrub.py
         | nilearn/interfaces/fmriprep/tests/test_load_confounds_utils.py
-        | nilearn/interfaces/fmriprep/load_confounds_strategy.py
-        | nilearn/interfaces/bids/query.py
-        | nilearn/interfaces/tests/test_fsl.py
-        | nilearn/interfaces/bids/glm.py
         | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
-        | nilearn/interfaces/fmriprep/load_confounds.py
         | nilearn/interfaces/fmriprep/tests/utils.py
-        | nilearn/interfaces/fmriprep/load_confounds_utils.py
-        | nilearn/interfaces/tests/test_bids.py
         | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
-        | nilearn/surface/__init__.py
+        | nilearn/interfaces/fsl.py
+        | nilearn/interfaces/tests/test_fsl.py
+        | nilearn/interfaces/tests/test_bids.py
         | nilearn/surface/surface.py
         | nilearn/surface/tests/test_surface.py
         | nilearn/maskers/__init__.py
@@ -120,6 +114,9 @@ exclude: |
         | nilearn/plotting/img_plotting.py
         | nilearn/plotting/displays/_slicers.py
         | nilearn/plotting/tests/test_surf_plotting.py
+        | nilearn/surface/surface.py
+        | nilearn/tests/test_masking.py
+        | nilearn/tests/test_signal.py
     )$
 
 repos:
