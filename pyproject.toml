@@ -165,7 +165,6 @@ extend-exclude =  """
   | nilearn/maskers/tests/test_nifti_labels_masker.py
   | nilearn/maskers/tests/test_nifti_maps_masker.py
   | nilearn/maskers/tests/test_nifti_masker.py
-  | nilearn/surface/tests/test_surface.py
   | nilearn/plotting/displays/_figures.py
   | nilearn/plotting/displays/__init__.py
   | nilearn/plotting/glass_brain_files/plot_align_svg.py
@@ -210,6 +209,7 @@ extend-exclude =  """
   | nilearn/plotting/displays/_slicers.py
   | nilearn/plotting/tests/test_surf_plotting.py
   | nilearn/surface/surface.py
+  | nilearn/surface/tests/test_surface.py
   | nilearn/tests/test_masking.py
   | nilearn/tests/test_signal.py
 )

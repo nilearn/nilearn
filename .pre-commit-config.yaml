@@ -45,8 +45,6 @@ exclude: |
         | nilearn/interfaces/fsl.py
         | nilearn/interfaces/tests/test_fsl.py
         | nilearn/interfaces/tests/test_bids.py
-        | nilearn/surface/surface.py
-        | nilearn/surface/tests/test_surface.py
         | nilearn/maskers/tests/test_base_masker.py
         | nilearn/maskers/tests/test_input_data.py
         | nilearn/maskers/_masker_validation.py
@@ -110,6 +108,7 @@ exclude: |
         | nilearn/plotting/displays/_slicers.py
         | nilearn/plotting/tests/test_surf_plotting.py
         | nilearn/surface/surface.py
+        | nilearn/surface/tests/test_surface.py
         | nilearn/tests/test_masking.py
         | nilearn/tests/test_signal.py
     )$
