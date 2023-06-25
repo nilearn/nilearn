@@ -62,7 +62,7 @@ class DimensionError(TypeError):
                 "list of " * self.stack_counter,
                 self.file_dimension,
                 "s" * (self.stack_counter != 0),
-                (" (%iD)" % (self.file_dimension + self.stack_counter))
+                f" ({self.file_dimension + self.stack_counter}D)"
                 * (self.stack_counter > 0),
             )
         )

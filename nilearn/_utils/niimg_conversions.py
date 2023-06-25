@@ -51,7 +51,7 @@ def _check_same_fov(*args, **kwargs):
     """
     raise_error = kwargs.pop("raise_error", False)
     for i, arg in enumerate(args):
-        kwargs["img_#%i" % i] = arg
+        kwargs[f"img_#{i}"] = arg
     errors = []
     for (a_name, a_img), (b_name, b_img) in itertools.combinations(
         kwargs.items(), 2
@@ -195,7 +195,7 @@ def _iter_check_niimg(
                 img_name = f" ({niimg}) "
 
             exc.args = (
-                "Error encountered while loading image #%d%s" % (i, img_name),
+                f"Error encountered while loading image #{i}{img_name}",
             ) + exc.args
             raise
 
@@ -504,7 +504,7 @@ def concat_niimgs(
     if ndim not in [3, 4]:
         raise TypeError(
             "Concatenated images must be 3D or 4D. You gave a "
-            "list of %dD images" % ndim
+            f"list of {ndim}D images"
         )
 
     lengths = [first_niimg.shape[-1] if ndim == 4 else 1]
