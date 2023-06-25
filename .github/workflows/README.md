@@ -97,8 +97,8 @@ Runs pytest in several environments including several Python and dependencies ve
 
 ### detect_test_pollution.yml
 
-Runs once a month. 
-Use pytest with the pytest-random-order plugin to run all tests in a random order. 
+Runs once a month.
+Use pytest with the pytest-random-order plugin to run all tests in a random order.
 This aims to detect tests that are not properly isolated from each other (test pollution).
 
 ## Update precommit hooks
