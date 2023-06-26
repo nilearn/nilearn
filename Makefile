@@ -66,7 +66,6 @@ pdf:
 	make -C doc pdf
 
 .PHONY : lint
-# TODO: add flynt when f strings are implemented in the whole codebase
 lint:
 	isort --profile black --settings-path pyproject.toml nilearn examples maint_tools
 	flynt .
