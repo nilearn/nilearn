@@ -93,7 +93,7 @@ dev = [
 	"isort",
 	"flynt",
 	"black",
-  "flake8-use-fstring",
+   "flake8-use-fstring",
 ]
 
 [tool.hatch.build.targets.wheel]
