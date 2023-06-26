@@ -64,7 +64,10 @@ def _check_same_fov(*args, **kwargs):
         raise ValueError(
             "Following field of view errors were detected:\n"
             + "\n".join(
-                ["- %s and %s do not have the same %s" % e for e in errors]
+                [
+                    f"- {e[0]} and {e[1]} do not have the same {e[2]}"
+                    for e in errors
+                ]
             )
         )
     return len(errors) == 0

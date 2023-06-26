@@ -60,6 +60,7 @@ doc = [
 	"coverage",
 	"flake8",
 	"flake8-docstrings",
+  "flake8-use-fstring",
 	"black",
 	"furo",
 	"isort",

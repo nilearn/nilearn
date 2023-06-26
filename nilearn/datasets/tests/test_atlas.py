@@ -740,9 +740,9 @@ def test_fetch_atlas_talairach(tmp_path, request_mocker):
 
 
 def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
-    labels = pd.DataFrame(
-        {"label": list(map("label_{}".format, range(16)))}
-    ).to_csv(sep="\t", header=False)
+    labels = pd.DataFrame({"label": [f"label_{i}" for i in range(16)]}).to_csv(
+        sep="\t", header=False
+    )
     det_atlas = data_gen.generate_labeled_regions((7, 6, 5), 16)
     prob_atlas, _ = data_gen.generate_maps((7, 6, 5), 16)
     request_mocker.url_mapping["*osf.io/6qrcb/*"] = labels

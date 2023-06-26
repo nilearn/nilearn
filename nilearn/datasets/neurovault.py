@@ -675,8 +675,9 @@ class Pattern(_SpecialValue):
         )
 
     def __repr__(self):
-        return "{}(pattern={!r}, flags={})".format(
-            self.__class__.__name__, self.pattern_, self.flags_
+        return (
+            f"{self.__class__.__name__}(pattern={self.pattern_!r}, "
+            f"flags={self.flags_})"
         )
 
 
@@ -1342,7 +1343,7 @@ def _add_absolute_paths(root_dir, metadata, force=True):
     for name, value in metadata.items():
         match = re.match(r"(.*)relative_path(.*)", name)
         if match is not None:
-            abs_name = "{}absolute_path{}".format(*match.groups())
+            abs_name = f"{match.groups()[0]}absolute_path{match.groups()[1]}"
             absolute_paths[abs_name] = os.path.join(root_dir, value)
     if not absolute_paths:
         return metadata
