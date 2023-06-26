@@ -25,6 +25,7 @@ from joblib import Parallel, delayed
 from sklearn import clone
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
+    LassoCV,
     LinearRegression,
     LogisticRegressionCV,
     RidgeClassifierCV,
@@ -60,6 +61,8 @@ SUPPORTED_ESTIMATORS = dict(
     ridge_classifier=RidgeClassifierCV(),
     ridge_regressor=RidgeCV(),
     ridge=RidgeCV(),
+    lasso=LassoCV(),
+    lasso_regressor=LassoCV(),
     svr=SVR(kernel="linear", max_iter=10000),
     dummy_classifier=DummyClassifier(strategy="stratified", random_state=0),
     dummy_regressor=DummyRegressor(strategy="mean"),
@@ -115,6 +118,8 @@ def _check_param_grid(estimator, X, y, param_grid=None):
         elif isinstance(estimator, LogisticRegressionCV):
             param_grid = _replace_param_grid_key(param_grid, "C", "Cs")
             param_grid = _wrap_param_grid(param_grid, "Cs")
+        elif isinstance(estimator, LassoCV):
+            param_grid = _wrap_param_grid(param_grid, "alphas")
 
     return param_grid
 
@@ -156,7 +161,14 @@ def _default_param_grid(estimator, X, y):
             raise NotImplementedError(message)
     elif not isinstance(
         estimator,
-        (LogisticRegressionCV, LinearSVC, RidgeCV, RidgeClassifierCV, SVR),
+        (
+            LogisticRegressionCV,
+            LinearSVC,
+            RidgeCV,
+            RidgeClassifierCV,
+            SVR,
+            LassoCV,
+        ),
     ):
         raise ValueError(
             "Invalid estimator. The supported estimators are:"
@@ -186,6 +198,11 @@ def _default_param_grid(estimator, X, y):
         # so for L2 penalty, param_grid["Cs"] is either 1e-3, ..., 1e4, and
         # for L1 penalty the values are obtained in a more data-driven way
         param_grid["Cs"] = [np.geomspace(2e-3, 2e4, 8) * min_c]
+    elif isinstance(estimator, LassoCV):
+        # the default is to generate 100 alphas based on the data
+        # (alpha values can also be set with the 'alphas' parameter, in which
+        # case 'n_alphas' is ignored)
+        param_grid["n_alphas"] = [100]
     elif isinstance(estimator, (LinearSVC, SVR)):
         # similar logic as above:
         # - for L2 penalty this is [1, 10, 100]
@@ -399,7 +416,7 @@ def _parallel_fit(
                 elif isinstance(estimator, DummyRegressor):
                     dummy_output = estimator.constant_
 
-            if isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
+            if isinstance(estimator, (RidgeCV, RidgeClassifierCV, LassoCV)):
                 params["best_alpha"] = estimator.alpha_
             elif isinstance(estimator, LogisticRegressionCV):
                 params["best_C"] = estimator.C_.item()
@@ -659,8 +676,8 @@ class _BaseDecoder(LinearRegression, CacheMixin):
             built-in cross-validation, this will include an additional key for
             the single best value estimated by the built-in cross-validation
             ('best_C' for LogisticRegressionCV and 'best_alpha' for
-            RidgeCV/RidgeClassifierCV), in addition to the input list of
-            values.
+            RidgeCV/RidgeClassifierCV/LassoCV), in addition to the input list
+            of values.
 
         'scorer_' : function
             Scorer function used on the held out data to choose the best
