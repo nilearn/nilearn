@@ -60,9 +60,7 @@ doc = [
 	"coverage",
 	"flake8",
 	"flake8-docstrings",
-	"black",
 	"furo",
-	"isort",
 	"memory_profiler",  # measuring memory during docs building
 	"mkl",
 	"myst-parser",
@@ -90,7 +88,12 @@ test = [
 	"pytest-cov",
 ]
 # A combination of dependencies useful for developers
-dev = ["nilearn[plotting,plotly,doc,test]"]
+dev = [
+	"nilearn[plotting,plotly,doc,test]",
+	"isort",
+	"flynt",
+	"black",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["nilearn"]
@@ -181,7 +184,7 @@ doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 
 [tool.codespell]
-skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples"
+skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,*/tmp,./doc/modules/generated/*"
 ignore-words = ".github/codespell_ignore_words.txt"
 
 [tool.flynt]
