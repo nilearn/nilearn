@@ -596,6 +596,17 @@ docdict['regressor_options'] = """
                 svr = SVR(kernel='linear',
                           max_iter=1e4)
 
+        - `lasso`: \
+            :class:`{Lasso regression} <sklearn.linear_model.LassoCV>`.
+            .. code-block:: python
+
+                lasso = LassoCV()
+
+        - `lasso_regressor`: \
+            :class:`{Lasso regression} <sklearn.linear_model.LassoCV>`.
+            .. note::
+                Same option as `lasso`.
+
         - `dummy_regressor`: \
             :class:`{Dummy regressor} <sklearn.dummy.DummyRegressor>`.
             .. code-block:: python
