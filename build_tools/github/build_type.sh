@@ -6,7 +6,7 @@ if [ "$GITHUB_REF_NAME" == "main" ] || [[ $GITLOG == *"[full doc]"* ]]; then
     echo html-strict > build.txt;
 else
     if [[ $GITLOG == *"[examples]"* ]]; then
-        echo "Building selected examples";
+        echo "Building selected example";
         COMMIT_MESSAGE=${GITLOG#*] };
         if [[ ${COMMIT_MESSAGE%%_*} =~ ^[0][0-7]$ ]]; then
             DIRECTORY="../examples/$COMMIT_MESSAGE";
