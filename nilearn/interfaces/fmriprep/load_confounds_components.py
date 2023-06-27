@@ -39,9 +39,7 @@ def _load_global_signal(confounds_raw, global_signal):
 
 def _load_compcor(confounds_raw, meta_json, compcor, n_compcor):
     """Load compcor regressors."""
-    compcor_cols = _find_compcor(
-        meta_json, compcor, n_compcor
-    )
+    compcor_cols = _find_compcor(meta_json, compcor, n_compcor)
     _check_params(confounds_raw, compcor_cols)
     return confounds_raw[compcor_cols]
 
@@ -76,8 +74,9 @@ def _load_scrub(confounds_raw, scrub, fd_threshold, std_dvars_threshold):
     # when motion outliers were detected, remove segments with too few
     # timeframes if desired
     if scrub > 0 and len(motion_outliers_index) > 0:
-        motion_outliers_index = _optimize_scrub(motion_outliers_index, n_scans,
-                                                scrub)
+        motion_outliers_index = _optimize_scrub(
+            motion_outliers_index, n_scans, scrub
+        )
     # Make one-hot encoded motion outlier regressors
     motion_outlier_regressors = pd.DataFrame(
         np.transpose(np.eye(n_scans)[motion_outliers_index]).astype(int)
