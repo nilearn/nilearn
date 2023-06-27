@@ -58,9 +58,8 @@ def _sanitize_figure_and_axes(figure, axes):
     """Help for plot_matrix."""
     if axes is not None and figure is not None:
         raise ValueError(
-            "Parameters figure and axes cannot be specified "
-            "together. You gave 'figure=%s, axes=%s'" % (figure, axes)
-        )
+            "Parameters figure and axes cannot be specified together. "
+            f"You gave 'figure={figure}, axes={axes}'.")
     if figure is not None:
         if isinstance(figure, plt.Figure):
             fig = figure

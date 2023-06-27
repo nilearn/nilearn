@@ -171,10 +171,10 @@ def test_validity_of_ncuts_error_in_find_cut_slices():
     direction = 'z'
     for n_cuts in (0, -2, -10.00034, 0.999999, 0.4, 0.11111111):
         message = (
-            "Image has %d slices in direction %s. Therefore, the number "
-            "of cuts must be between 1 and %d. You provided n_cuts=%s " % (
-                data.shape[0], direction, data.shape[0], n_cuts)
-        )
+            f"Image has {data.shape[0]} slices in direction {direction}. "
+            "Therefore, the number of cuts "
+            f"must be between 1 and {data.shape[0]}. "
+            f"You provided n_cuts={n_cuts}.")
         with pytest.raises(ValueError, match=message):
             find_cut_slices(img, n_cuts=n_cuts)
 

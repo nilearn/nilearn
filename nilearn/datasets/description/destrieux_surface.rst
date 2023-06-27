@@ -9,8 +9,8 @@ Fischl et al, 1999) in fsaverage5 standard surface space.
 
 Content
 -------
-    :'annot_left': parcellation on left hemisphere in freesurfer annot format
-    :'annot_right': parcellation on right hemisphere in freesurfer annot format
+    :'map_left': parcellation on left hemisphere in freesurfer annot format
+    :'map_right': parcellation on right hemisphere in freesurfer annot format
 
 
 References
