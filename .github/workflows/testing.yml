@@ -100,6 +100,8 @@ jobs:
         run: ./build_tools/github/test.sh
         name: 'Run tests'
       - uses: codecov/codecov-action@v3
+        with:
+          flags: ${{ matrix.os }}_${{ matrix.python-version }}
         if: success()
         name: 'Upload coverage to CodeCov'
 
