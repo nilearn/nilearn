@@ -30,7 +30,7 @@ else
         echo html-modified-examples-only > build.txt;
     elif [[ $DIRECTORY ]]; then
         PATTERN="$DIRECTORY";
-        echo html-modified-directory > build.txt;
+        echo html-examples-directory > build.txt;
     else
         echo html-noplot > build.txt;
     fi;
