@@ -19,10 +19,9 @@ def _set_mpl_backend():
             from .._utils.testing import skip_if_running_tests
 
             # No need to fail when running tests
-            skip_if_running_tests('matplotlib not installed')
+            skip_if_running_tests("matplotlib not installed")
         raise
     else:
-
         from .._utils import _compare_version
 
         # When matplotlib was successfully imported we need to check
@@ -93,16 +92,36 @@ from .surf_plotting import (
     plot_surf_stat_map,
 )
 
-__all__ = ['cm', 'plot_img', 'plot_anat', 'plot_epi',
-           'plot_roi', 'plot_stat_map', 'plot_glass_brain',
-           'plot_markers', 'plot_connectome', 'plot_prob_atlas',
-           'find_xyz_cut_coords', 'find_cut_slices',
-           'plot_img_comparison',
-           'show', 'plot_matrix',
-           'plot_design_matrix', 'plot_contrast_matrix', 'plot_event',
-           'view_surf', 'view_img_on_surf',
-           'view_img', 'view_connectome', 'view_markers',
-           'find_parcellation_cut_coords',
-           'find_probabilistic_atlas_cut_coords',
-           'plot_surf', 'plot_surf_stat_map', 'plot_surf_roi',
-           'plot_img_on_surf', 'plot_carpet', 'plot_surf_contours']
+__all__ = [
+    "cm",
+    "plot_img",
+    "plot_anat",
+    "plot_epi",
+    "plot_roi",
+    "plot_stat_map",
+    "plot_glass_brain",
+    "plot_markers",
+    "plot_connectome",
+    "plot_prob_atlas",
+    "find_xyz_cut_coords",
+    "find_cut_slices",
+    "plot_img_comparison",
+    "show",
+    "plot_matrix",
+    "plot_design_matrix",
+    "plot_contrast_matrix",
+    "plot_event",
+    "view_surf",
+    "view_img_on_surf",
+    "view_img",
+    "view_connectome",
+    "view_markers",
+    "find_parcellation_cut_coords",
+    "find_probabilistic_atlas_cut_coords",
+    "plot_surf",
+    "plot_surf_stat_map",
+    "plot_surf_roi",
+    "plot_img_on_surf",
+    "plot_carpet",
+    "plot_surf_contours",
+]

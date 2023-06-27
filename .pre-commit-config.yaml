@@ -1,76 +1,116 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 
-files: |
-    (?x)^(
-        .*binder
-        | .*circleci
-        | .*coverage
-        | .*github
-        | .*gitignore
-        | .*in
-        | .*toml
-        | .*yaml
-        | .*yml
-        | \.git-blame.*
-        | AUTHORS.rst
-        | CONTRIBUTING.rst
-        | LICENSE
-        | Makefile
-        | doc
-        | examples
-        | maint_tools/.*
-        | setup.*
-        | nilearn/__init__.py
-        | nilearn/datasets/.*
-        | nilearn/_utils/.*
-        | nilearn/de.*
-        | nilearn/connectome/.*py
-        | nilearn/glm/.*py
-        | nilearn/image/.*py
-        | nilearn/input_data/.*py
-        | nilearn/regions.*py
-        | nilearn/reporting/.*py
-        | nilearn/mass_univariate/.*py
-        | nilearn/signal.py
-        | nilearn/masking.py
-        | nilearn/conftest.py
-    )$
-
 exclude: |
     (?x)^(
-        | doc/glm/first_level_model\\.rst
-        | introduction\\.rst
-        | maintenance\\.rst
-        | manipulating_images/input_output\\.rst
-        | modules/datasets\\.rst
-        | references\\.bib
-        | examples/.*/.*3d_map_to_surface_projection.py
-        | examples/.*/.*demo_plotting.py
-        | examples/.*/.*fiac_analysis.py
-        | examples/.*/.*fixed_effects.py
-        | examples/.*/.*group_level_connectivity.py
-        | examples/.*/.*localizer_surface_analysis.py
-        | examples/.*/.*searchlight_surface.py
-        | examples/.*/.*surf_atlas.py
-        | examples/.*/.*surf_stat_map.py
-        | examples/.*/.*surface_bids_analysis.py
-        | examples/.*/.*surface_projection_strategies.py
-        | nilearn/reporting/data/html/report_body_template_niftispheresmasker.html
+        nilearn/datasets/tests/data/localizer_behavioural.tsv
+        | nilearn/externals/.*
+        | nilearn/plotting/data/js/.*js
+        | nilearn/_version.py
+        | examples/01_plotting/plot_3d_map_to_surface_projection.py
+        | examples/01_plotting/plot_demo_more_plotting.py
+        | examples/01_plotting/plot_demo_plotting.py
+        | examples/01_plotting/plot_surf_atlas.py
+        | examples/01_plotting/plot_surf_stat_map.py
+        | examples/01_plotting/plot_surface_projection_strategies.py
+        | examples/04_glm_first_level/plot_fiac_analysis.py
+        | examples/04_glm_first_level/plot_fixed_effects.py
+        | examples/04_glm_first_level/plot_localizer_surface_analysis.py
+        | examples/07_advanced/plot_surface_bids_analysis.py
+        | nilearn/_utils/helpers.py
+        | nilearn/_utils/docs.py
+        | nilearn/_utils/tests/test_data_gen.py
+        | nilearn/_utils/data_gen.py
         | nilearn/reporting/html_report.py
         | nilearn/reporting/tests/test_html_report.py
-        | nilearn/datasets/tests/data/localizer_behavioural.tsv
-        | nilearn/externals/tempita
-        | nilearn/_utils/__init__.py
-        | nilearn/_utils/data_gen.py
-        | nilearn/_utils/docs.py
-        | nilearn/_utils/helpers.py
-        | nilearn/_utils/tests/test_data_gen.py
+        | nilearn/glm/tests/test_contrasts.py
         | nilearn/glm/contrasts.py
         | nilearn/glm/first_level/first_level.py
-        | nilearn/glm/tests/test_contrasts.py
-        | nilearn/glm/tests/test_first_level.py
         | nilearn/glm/tests/test_second_level.py
+        | nilearn/glm/tests/test_first_level.py
+        | nilearn/interfaces/bids/_utils.py
+        | nilearn/interfaces/bids/query.py
+        | nilearn/interfaces/bids/glm.py
+        | nilearn/interfaces/fmriprep/load_confounds.py
+        | nilearn/interfaces/fmriprep/load_confounds_compcor.py
+        | nilearn/interfaces/fmriprep/load_confounds_components.py
+        | nilearn/interfaces/fmriprep/load_confounds_scrub.py
+        | nilearn/interfaces/fmriprep/load_confounds_strategy.py
+        | nilearn/interfaces/fmriprep/load_confounds_utils.py
+        | nilearn/interfaces/fmriprep/tests/test_load_confounds_scrub.py
+        | nilearn/interfaces/fmriprep/tests/test_load_confounds_utils.py
+        | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
+        | nilearn/interfaces/fmriprep/tests/utils.py
+        | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
+        | nilearn/interfaces/fsl.py
+        | nilearn/interfaces/tests/test_fsl.py
+        | nilearn/interfaces/tests/test_bids.py
+        | nilearn/maskers/tests/test_base_masker.py
+        | nilearn/maskers/tests/test_input_data.py
+        | nilearn/maskers/_masker_validation.py
+        | nilearn/maskers/multi_nifti_labels_masker.py
+        | nilearn/maskers/multi_nifti_maps_masker.py
+        | nilearn/maskers/base_masker.py
+        | nilearn/maskers/tests/test_masker_validation.py
+        | nilearn/maskers/multi_nifti_masker.py
+        | nilearn/maskers/nifti_masker.py
+        | nilearn/maskers/nifti_spheres_masker.py
+        | nilearn/maskers/tests/test_multi_nifti_masker.py
+        | nilearn/maskers/tests/test_multi_nifti_maps_masker.py
+        | nilearn/maskers/nifti_labels_masker.py
+        | nilearn/maskers/tests/test_multi_nifti_labels_masker.py
+        | nilearn/maskers/nifti_maps_masker.py
+        | nilearn/maskers/tests/test_nifti_spheres_masker.py
+        | nilearn/maskers/tests/test_nifti_labels_masker.py
+        | nilearn/maskers/tests/test_nifti_maps_masker.py
+        | nilearn/maskers/tests/test_nifti_masker.py
+        | nilearn/plotting/displays/_figures.py
+        | nilearn/plotting/displays/__init__.py
+        | nilearn/plotting/glass_brain_files/plot_align_svg.py
+        | nilearn/plotting/edge_detect.py
+        | nilearn/plotting/html_document.py
+        | nilearn/plotting/glass_brain_files/svg_to_json_converter.py
+        | nilearn/plotting/displays/_projectors.py
+        | nilearn/plotting/rm_file.py
+        | nilearn/plotting/glass_brain.py
+        | nilearn/plotting/tests/test_cm.py
+        | nilearn/plotting/js_plotting_utils.py
+        | nilearn/plotting/html_connectome.py
+        | nilearn/plotting/find_cuts.py
+        | nilearn/plotting/html_surface.py
+        | nilearn/plotting/tests/test_html_document.py
+        | nilearn/plotting/displays/_axes.py
+        | nilearn/plotting/cm.py
+        | nilearn/plotting/html_stat_map.py
+        | nilearn/plotting/tests/test_img_plotting/test_plot_anat.py
+        | nilearn/plotting/tests/test_img_plotting/test_get_colorbar_and_data_ranges.py
+        | nilearn/plotting/tests/test_html_surface.py
+        | nilearn/plotting/tests/test_html_connectome.py
+        | nilearn/plotting/tests/test_img_plotting/test_img_plotting.py
+        | nilearn/plotting/tests/test_img_plotting/test_plot_carpet.py
+        | nilearn/plotting/tests/test_img_plotting/test_plot_glass_brain.py
+        | nilearn/plotting/tests/test_img_plotting/test_plot_prob_atlas.py
+        | nilearn/plotting/tests/test_html_stat_map.py
+        | nilearn/plotting/tests/test_img_plotting/test_plot_img_comparisons.py
+        | nilearn/plotting/tests/test_find_cuts.py
+        | nilearn/plotting/tests/test_displays.py
+        | nilearn/plotting/tests/test_img_plotting/test_plot_roi.py
+        | nilearn/plotting/tests/test_img_plotting/test_plot_img.py
+        | nilearn/plotting/tests/test_matplotlib_backend.py
+        | nilearn/plotting/tests/test_img_plotting/test_plot_stat_map.py
+        | nilearn/plotting/matrix_plotting.py
+        | nilearn/plotting/tests/test_img_plotting/test_plot_markers.py
+        | nilearn/plotting/tests/test_img_plotting/test_plot_connectome.py
+        | nilearn/plotting/tests/test_matrix_plotting.py
+        | nilearn/plotting/tests/test_js_plotting_utils.py
+        | nilearn/plotting/surf_plotting.py
+        | nilearn/plotting/img_plotting.py
+        | nilearn/plotting/displays/_slicers.py
+        | nilearn/plotting/tests/test_surf_plotting.py
+        | nilearn/surface/surface.py
+        | nilearn/surface/tests/test_surface.py
+        | nilearn/tests/test_masking.py
+        | nilearn/tests/test_signal.py
     )$
 
 repos:
@@ -107,18 +147,18 @@ repos:
     rev: 23.3.0
     hooks:
       - id: black
-        args: [--config=pyproject.toml, --verbose]
+        args: ["--config", "pyproject.toml"]
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.5
     hooks:
       - id: codespell
-        args: [--toml=pyproject.toml]
+        args: ["--toml", "pyproject.toml"]
         additional_dependencies: [tomli]
 
   - repo: https://github.com/pyCQA/flake8
     rev: 6.0.0
     hooks:
       - id: flake8
-        args: [--verbose]
+        args: ["--config", ".flake8", "--verbose"]
         additional_dependencies: [flake8-docstrings]
