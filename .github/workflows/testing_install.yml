@@ -8,6 +8,10 @@ on:
     branches:
       - '*'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test_install:
     runs-on: ${{ matrix.os }}
