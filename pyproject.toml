@@ -107,52 +107,14 @@ version-file = "nilearn/_version.py"
 
 [tool.black]
 line-length = 79
-include = """
-(
-  examples/.*py
-  | maint_tools/.*py
-  | nilearn/connectome/.*py
-  | nilearn/datasets/.*py
-  | nilearn/dec.*
-  | nilearn/_utils/.*py$
-  | nilearn/glm/.*py
-  | nilearn/image/.*py
-  | nilearn/input_data/.*py
-  | nilearn/mass_univariate/.*py
-  | nilearn/regions/.*py
-  | nilearn/reporting/.*py
-  | nilearn/signal.py
-  | nilearn/masking.py
-  | nilearn/conftest.py
-)
-"""
 # 'extend-exclude' excludes files or directories in addition to the defaults
 extend-exclude =  """
 (
   nilearn/externals
-  | nilearn/_utils/__init__.py
   | nilearn/_utils/data_gen.py
   | nilearn/_utils/docs.py
   | nilearn/_utils/helpers.py
   | nilearn/_utils/tests/test_data_gen.py
-  | examples/.*/.*3d_map_to_surface_projection.py
-  | examples/.*/.*demo_glass_brain.py
-  | examples/.*/.*demo_glass_brain_extensive.py
-  | examples/.*/.*demo_more_plotting.py
-  | examples/.*/.*demo_plotting.py
-  | examples/.*/.*fiac_analysis.py
-  | examples/.*/.*fixed_effects.py
-  | examples/.*/.*frem.py
-  | examples/.*/.*group_level_connectivity.py
-  | examples/.*/.*negate_image.py
-  | examples/.*/.*localizer_surface_analysis.py
-  | examples/.*/.*searchlight_surface.py
-  | examples/.*/.*resample_to_template.py
-  | examples/.*/.*surf_atlas.py
-  | examples/.*/.*surf_stat_map.py
-  | examples/.*/.*surface_bids_analysis.py
-  | examples/.*/.*surface_projection_strategies.py
-  | nilearn/reporting/data/html/report_body_template_niftispheresmasker.html
   | nilearn/reporting/html_report.py
   | nilearn/reporting/tests/test_html_report.py
   | nilearn/glm/contrasts.py
@@ -160,6 +122,100 @@ extend-exclude =  """
   | nilearn/glm/tests/test_contrasts.py
   | nilearn/glm/tests/test_first_level.py
   | nilearn/glm/tests/test_second_level.py
+  | nilearn/glm/contrasts.py
+  | examples/01_plotting/plot_3d_map_to_surface_projection.py
+  | examples/01_plotting/plot_demo_more_plotting.py
+  | examples/01_plotting/plot_demo_plotting.py
+  | examples/01_plotting/plot_surf_atlas.py
+  | examples/01_plotting/plot_surf_stat_map.py
+  | examples/01_plotting/plot_surface_projection_strategies.py
+  | examples/04_glm_first_level/plot_fiac_analysis.py
+  | examples/04_glm_first_level/plot_fixed_effects.py
+  | examples/04_glm_first_level/plot_localizer_surface_analysis.py
+  | examples/07_advanced/plot_surface_bids_analysis.py
+  | nilearn/interfaces/bids/_utils.py
+  | nilearn/interfaces/bids/query.py
+  | nilearn/interfaces/bids/glm.py
+  | nilearn/interfaces/fmriprep/load_confounds.py
+  | nilearn/interfaces/fmriprep/load_confounds_compcor.py
+  | nilearn/interfaces/fmriprep/load_confounds_components.py
+  | nilearn/interfaces/fmriprep/load_confounds_scrub.py
+  | nilearn/interfaces/fmriprep/load_confounds_strategy.py
+  | nilearn/interfaces/fmriprep/load_confounds_utils.py
+  | nilearn/interfaces/fmriprep/tests/test_load_confounds_scrub.py
+  | nilearn/interfaces/fmriprep/tests/test_load_confounds_utils.py
+  | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
+  | nilearn/interfaces/fmriprep/tests/utils.py
+  | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
+  | nilearn/interfaces/fsl.py
+  | nilearn/interfaces/tests/test_fsl.py
+  | nilearn/interfaces/tests/test_bids.py
+  | nilearn/maskers/tests/test_base_masker.py
+  | nilearn/maskers/tests/test_input_data.py
+  | nilearn/maskers/_masker_validation.py
+  | nilearn/maskers/multi_nifti_labels_masker.py
+  | nilearn/maskers/multi_nifti_maps_masker.py
+  | nilearn/maskers/base_masker.py
+  | nilearn/maskers/tests/test_masker_validation.py
+  | nilearn/maskers/multi_nifti_masker.py
+  | nilearn/maskers/nifti_masker.py
+  | nilearn/maskers/nifti_spheres_masker.py
+  | nilearn/maskers/tests/test_multi_nifti_masker.py
+  | nilearn/maskers/tests/test_multi_nifti_maps_masker.py
+  | nilearn/maskers/nifti_labels_masker.py
+  | nilearn/maskers/tests/test_multi_nifti_labels_masker.py
+  | nilearn/maskers/nifti_maps_masker.py
+  | nilearn/maskers/tests/test_nifti_spheres_masker.py
+  | nilearn/maskers/tests/test_nifti_labels_masker.py
+  | nilearn/maskers/tests/test_nifti_maps_masker.py
+  | nilearn/maskers/tests/test_nifti_masker.py
+  | nilearn/plotting/displays/_figures.py
+  | nilearn/plotting/displays/__init__.py
+  | nilearn/plotting/glass_brain_files/plot_align_svg.py
+  | nilearn/plotting/edge_detect.py
+  | nilearn/plotting/html_document.py
+  | nilearn/plotting/glass_brain_files/svg_to_json_converter.py
+  | nilearn/plotting/displays/_projectors.py
+  | nilearn/plotting/rm_file.py
+  | nilearn/plotting/glass_brain.py
+  | nilearn/plotting/tests/test_cm.py
+  | nilearn/plotting/js_plotting_utils.py
+  | nilearn/plotting/html_connectome.py
+  | nilearn/plotting/find_cuts.py
+  | nilearn/plotting/html_surface.py
+  | nilearn/plotting/tests/test_html_document.py
+  | nilearn/plotting/displays/_axes.py
+  | nilearn/plotting/cm.py
+  | nilearn/plotting/html_stat_map.py
+  | nilearn/plotting/tests/test_img_plotting/test_plot_anat.py
+  | nilearn/plotting/tests/test_img_plotting/test_get_colorbar_and_data_ranges.py
+  | nilearn/plotting/tests/test_html_surface.py
+  | nilearn/plotting/tests/test_html_connectome.py
+  | nilearn/plotting/tests/test_img_plotting/test_img_plotting.py
+  | nilearn/plotting/tests/test_img_plotting/test_plot_carpet.py
+  | nilearn/plotting/tests/test_img_plotting/test_plot_glass_brain.py
+  | nilearn/plotting/tests/test_img_plotting/test_plot_prob_atlas.py
+  | nilearn/plotting/tests/test_html_stat_map.py
+  | nilearn/plotting/tests/test_img_plotting/test_plot_img_comparisons.py
+  | nilearn/plotting/tests/test_find_cuts.py
+  | nilearn/plotting/tests/test_displays.py
+  | nilearn/plotting/tests/test_img_plotting/test_plot_roi.py
+  | nilearn/plotting/tests/test_img_plotting/test_plot_img.py
+  | nilearn/plotting/tests/test_matplotlib_backend.py
+  | nilearn/plotting/tests/test_img_plotting/test_plot_stat_map.py
+  | nilearn/plotting/matrix_plotting.py
+  | nilearn/plotting/tests/test_img_plotting/test_plot_markers.py
+  | nilearn/plotting/tests/test_img_plotting/test_plot_connectome.py
+  | nilearn/plotting/tests/test_matrix_plotting.py
+  | nilearn/plotting/tests/test_js_plotting_utils.py
+  | nilearn/plotting/surf_plotting.py
+  | nilearn/plotting/img_plotting.py
+  | nilearn/plotting/displays/_slicers.py
+  | nilearn/plotting/tests/test_surf_plotting.py
+  | nilearn/surface/surface.py
+  | nilearn/surface/tests/test_surface.py
+  | nilearn/tests/test_masking.py
+  | nilearn/tests/test_signal.py
 )
 """
 
