@@ -5,14 +5,10 @@ if [ "$GITHUB_REF_NAME" == "main" ] || [[ $GITLOG == *"[full doc]"* ]]; then
     echo "Doing a full build";
     echo html-strict > build.txt;
 else
-    if [[ $GITLOG == *"[examples]"* ]]; then
+    if [[ $GITLOG == *"[example]"* ]]; then
         echo "Building selected example";
         COMMIT_MESSAGE=${GITLOG#*] };
-        if [[ ${COMMIT_MESSAGE%%_*} =~ ^[0][0-7]$ ]]; then
-            DIRECTORY="../examples/$COMMIT_MESSAGE";
-        else
-            FILENAMES="examples/*/$COMMIT_MESSAGE";
-        fi;
+        FILENAMES="examples/*/$COMMIT_MESSAGE";
     else
         FILENAMES=$(git diff --name-only $(git merge-base $COMMIT_SHA upstream/main) $COMMIT_SHA);
     fi;
@@ -28,9 +24,6 @@ else
         # Remove trailing \| introduced by the for loop above
         PATTERN="\(${PATTERN::-2}\)";
         echo html-modified-examples-only > build.txt;
-    elif [[ $DIRECTORY ]]; then
-        PATTERN="$DIRECTORY";
-        echo html-examples-directory > build.txt;
     else
         echo html-noplot > build.txt;
     fi;
