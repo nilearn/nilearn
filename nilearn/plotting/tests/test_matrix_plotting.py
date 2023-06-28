@@ -165,10 +165,9 @@ def test_matrix_plotting_reorder(mat, labels):
     reordered_labels = [int(lbl.get_text())
                         for lbl in ax.axes.get_xticklabels()]
     # block order does not matter
-    assert (  # noqa: F631
-        (reordered_labels[:3] == idx or reordered_labels[-3:] == idx),
-        'Clustering does not find block structure.'
-    )
+    assert (
+        reordered_labels[:3] == idx or reordered_labels[-3:] == idx
+    ), "Clustering does not find block structure."
     plt.close()
     # test if reordering with specific linkage works
     ax = plot_matrix(mat, labels=labels, reorder='complete')
