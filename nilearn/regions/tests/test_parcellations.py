@@ -148,7 +148,7 @@ def test_parcellations_transform_verbose(test_image_2, verbose):
     parcellator.transform(test_image_2)
 
 
-@pytest.skip("Skip to see if CI passes without it.")
+@pytest.mark.skip("Skip to see if CI passes without it.")
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_parcellations_transform_multi_nifti_images(
