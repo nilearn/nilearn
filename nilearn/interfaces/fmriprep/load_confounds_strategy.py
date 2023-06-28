@@ -16,40 +16,36 @@ from . import load_confounds
 #       strategy (as the value defines the other relevant parameters)
 preset_strategies = {
     "simple": {
-        "strategy":
-            ("high_pass", "motion", "wm_csf"),
+        "strategy": ("high_pass", "motion", "wm_csf"),
         "motion": "full",
         "wm_csf": "basic",
         "global_signal": None,
-        "demean": True
+        "demean": True,
     },
     "scrubbing": {
-        "strategy":
-            ("high_pass", "motion", "wm_csf", "scrub"),
+        "strategy": ("high_pass", "motion", "wm_csf", "scrub"),
         "motion": "full",
         "wm_csf": "full",
         "scrub": 5,
         "fd_threshold": 0.2,
         "std_dvars_threshold": 3,
         "global_signal": None,
-        "demean": True
+        "demean": True,
     },
     "compcor": {
-        "strategy":
-            ("high_pass", "motion", "compcor"),
+        "strategy": ("high_pass", "motion", "compcor"),
         "motion": "full",
         "n_compcor": "all",
         "compcor": "anat_combined",
-        "demean": True
+        "demean": True,
     },
     "ica_aroma": {
-        "strategy":
-            ("high_pass", "wm_csf", "ica_aroma"),
+        "strategy": ("high_pass", "wm_csf", "ica_aroma"),
         "wm_csf": "basic",
         "ica_aroma": "full",
         "global_signal": None,
-        "demean": True
-    }
+        "demean": True,
+    },
 }
 
 
@@ -196,10 +192,11 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
     """
     default_parameters = preset_strategies.get(denoise_strategy, False)
     if not default_parameters:
-        raise KeyError(f"Provided strategy '{denoise_strategy}' is not a "
-                       "preset strategy. Valid strategy: "
-                       f"{preset_strategies.keys()}"
-                       )
+        raise KeyError(
+            f"Provided strategy '{denoise_strategy}' is not a "
+            "preset strategy. Valid strategy: "
+            f"{preset_strategies.keys()}"
+        )
 
     check_parameters = list(default_parameters.keys())
     check_parameters.remove("strategy")
@@ -208,16 +205,17 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
     if "ica_aroma" in default_parameters:
         check_parameters.remove("ica_aroma")
 
-    user_parameters, not_needed = _update_user_inputs(kwargs,
-                                                      default_parameters,
-                                                      check_parameters)
+    user_parameters, not_needed = _update_user_inputs(
+        kwargs, default_parameters, check_parameters
+    )
 
     # raise warning about parameters not needed
     if not_needed:
-        warnings.warn("The following parameters are not needed for the "
-                      f"selected strategy '{denoise_strategy}': {not_needed}; "
-                      f"parameters accepted: {check_parameters}"
-                      )
+        warnings.warn(
+            "The following parameters are not needed for the "
+            f"selected strategy '{denoise_strategy}': {not_needed}; "
+            f"parameters accepted: {check_parameters}"
+        )
     return load_confounds(img_files, **user_parameters)
 
 
@@ -236,7 +234,7 @@ def _update_user_inputs(kwargs, default_parameters, check_parameters):
         # recognisable value to the global_signal parameter
         if key == "global_signal":
             if isinstance(value, str):
-                parameters["strategy"] += ("global_signal", )
+                parameters["strategy"] += ("global_signal",)
             else:  # remove global signal if not updated
                 parameters.pop("global_signal", None)
     # collect remaining parameters in kwargs that are not needed

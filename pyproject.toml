@@ -132,23 +132,11 @@ extend-exclude =  """
   | examples/04_glm_first_level/plot_fixed_effects.py
   | examples/04_glm_first_level/plot_localizer_surface_analysis.py
   | examples/07_advanced/plot_surface_bids_analysis.py
-  | nilearn/interfaces/bids/_utils.py
-  | nilearn/interfaces/bids/query.py
-  | nilearn/interfaces/bids/glm.py
-  | nilearn/interfaces/fmriprep/load_confounds.py
   | nilearn/interfaces/fmriprep/load_confounds_compcor.py
-  | nilearn/interfaces/fmriprep/load_confounds_components.py
-  | nilearn/interfaces/fmriprep/load_confounds_scrub.py
-  | nilearn/interfaces/fmriprep/load_confounds_strategy.py
-  | nilearn/interfaces/fmriprep/load_confounds_utils.py
-  | nilearn/interfaces/fmriprep/tests/test_load_confounds_scrub.py
   | nilearn/interfaces/fmriprep/tests/test_load_confounds_utils.py
   | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
   | nilearn/interfaces/fmriprep/tests/utils.py
   | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
-  | nilearn/interfaces/fsl.py
-  | nilearn/interfaces/tests/test_fsl.py
-  | nilearn/interfaces/tests/test_bids.py
   | nilearn/maskers/tests/test_base_masker.py
   | nilearn/maskers/tests/test_input_data.py
   | nilearn/maskers/_masker_validation.py
