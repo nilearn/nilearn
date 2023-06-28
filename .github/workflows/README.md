@@ -87,7 +87,7 @@ Uses flake8 tool to verify code is PEP8 compliant. Configured in [.flake8](/.fla
 
 ### f_strings.yml
 
-Checks for f strings in the codebase with [flynt](https://pypi.org/project/flynt/). 
+Checks for f strings in the codebase with [flynt](https://pypi.org/project/flynt/).
 Configured in [pyproject.toml](/pyproject.toml)
 Flynt will check if it automatically convert "format" or "%" strings to "f strings".
 This workflow will fail if it finds any potential target to be converted.
@@ -121,3 +121,9 @@ This aims to detect tests that are not properly isolated from each other (test p
 ### update_precommit_hooks.yml
 
 Runs weekly to check for updates in versions of precommit hooks and creates a pull request automatically to apply updates.
+
+## Update authors
+
+### update_authors.yml
+
+If the CITATION.CFF file is modified, this workflow will run to update the AUTHORS file.
