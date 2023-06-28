@@ -374,9 +374,6 @@ authors:
   - given-names: Sam Buck
     family-names: Johnson
     website: https://github.com/sambjohnson
-  - given-names: Samanta
-    family-names: Tarun
-    website: https://github.com/tarunsamanta2k20
   - given-names: Sami
     family-names: Jawhar
     website: https://github.com/sjawhar
@@ -395,6 +392,9 @@ authors:
   - given-names: Sylvain
     family-names: Takerkart
     website: https://github.com/SylvainTakerkart
+  - given-names: Tarun
+    family-names: Samanta
+    website: https://github.com/tarunsamanta2k20
   - given-names: Taylor
     family-names: Salo
     website: https://tsalo.github.io/

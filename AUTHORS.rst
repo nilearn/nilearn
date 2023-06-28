@@ -28,6 +28,9 @@ Additional credit goes to `Michael Hanke`_ and `Yaroslav Halchenko`_ for data an
 .. The Core developers section is added automatically
    and should not be edited manually.
 
+.. The Core developers section is added automatically
+   and should not be edited manually.
+
 .. _core_devs:
 
 Core developers
@@ -166,13 +169,13 @@ Some other past or present contributors are:
 * `Sage Hahn`_
 * `Salma Bougacha`_
 * `Sam Buck Johnson`_
-* `Samanta Tarun`_
 * `Sami Jawhar`_
 * `Simon Steinkamp`_
 * `Sourav Singh`_
 * `Steven Meisler`_
 * `Sylvain Lan`_
 * `Sylvain Takerkart`_
+* `Tarun Samanta`_
 * `Taylor Salo`_
 * `Thomas Bazeille`_
 * `Tom Vanasse`_

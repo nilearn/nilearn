@@ -228,8 +228,6 @@
 
 .. _Sam Buck Johnson: https://github.com/sambjohnson
 
-.. _Samanta Tarun: https://github.com/tarunsamanta2k20
-
 .. _Sami Jawhar: https://github.com/sjawhar
 
 .. _Simon Steinkamp: https://github.com/SRSteinkamp
@@ -241,6 +239,8 @@
 .. _Sylvain Lan: https://github.com/SylvainLan
 
 .. _Sylvain Takerkart: https://github.com/SylvainTakerkart
+
+.. _Tarun Samanta: https://github.com/tarunsamanta2k20
 
 .. _Taylor Salo: https://tsalo.github.io/
 
