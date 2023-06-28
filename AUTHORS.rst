@@ -19,6 +19,15 @@ Additional credit goes to `Michael Hanke`_ and `Yaroslav Halchenko`_ for data an
 .. The Core developers section is added automatically
    and should not be edited manually.
 
+.. The Core developers section is added automatically
+   and should not be edited manually.
+
+.. The Core developers section is added automatically
+   and should not be edited manually.
+
+.. The Core developers section is added automatically
+   and should not be edited manually.
+
 .. _core_devs:
 
 Core developers
