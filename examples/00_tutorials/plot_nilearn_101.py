@@ -17,7 +17,7 @@ print(f"Path to MNI152 template: {MNI152_FILE_PATH!r}")
 # ----------------------------------
 #
 # Let's quickly plot this file:
-from nilearn import plotting, datasets, surface
+from nilearn import plotting
 
 plotting.plot_img(MNI152_FILE_PATH)
 
