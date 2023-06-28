@@ -234,20 +234,26 @@ def test_parcellations_transform_with_multi_confounds_multi_images(
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_fit_transform(method, n_parcel, test_image_2):
-    rng = np.random.RandomState(42)
     fmri_imgs = [test_image_2] * 3
-    confounds = rng.standard_normal(size=(10, 3))
-    confounds_list = [confounds] * 3
 
     parcellator = Parcellations(method=method, n_parcels=n_parcel, verbose=0)
-    signals = parcellator.fit_transform(fmri_imgs)
+    parcellator.fit_transform(fmri_imgs)
 
     assert parcellator.labels_img_ is not None
     if method not in ["kmeans", "rena", "hierarchical_kmeans"]:
         assert parcellator.connectivity_ is not None
     assert parcellator.masker_ is not None
 
-    # fit_transform with confounds
+
+@pytest.mark.parametrize("method", METHODS)
+@pytest.mark.parametrize("n_parcel", [5])
+def test_fit_transform_with_condounds(method, n_parcel, test_image_2):
+    rng = np.random.RandomState(42)
+    fmri_imgs = [test_image_2] * 3
+    confounds = rng.standard_normal(size=(10, 3))
+    confounds_list = [confounds] * 3
+
+    parcellator = Parcellations(method=method, n_parcels=n_parcel, verbose=0)
     signals = parcellator.fit_transform(fmri_imgs, confounds=confounds_list)
 
     assert isinstance(signals, list)
