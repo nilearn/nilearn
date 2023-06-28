@@ -42,14 +42,19 @@ ____
 
 .. include:: ../../../examples/masker_note.rst
 
+..
+    Original authors:
+
+    - Elvis Dhomatob, Apr. 2014
+    - Virgile Fritsch, Apr 2014
+    - Gael Varoquaux, Apr 2014
+    - Andres Hoyos-Idrobo, Apr 2017
+
 """
-# Authors: Elvis Dhomatob, <elvis.dohmatob@inria.fr>, Apr. 2014
-#          Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
-#          Gael Varoquaux, Apr 2014
-#          Andres Hoyos-Idrobo, Apr 2017
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 from nilearn import datasets
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker

@@ -6,8 +6,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 from matplotlib.patches import FancyArrow
-from nilearn.plotting import plot_connectome
 from scipy import sparse
+
+from nilearn.plotting import plot_connectome
 
 
 @pytest.fixture

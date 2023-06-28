@@ -4,6 +4,12 @@ from math import cosh, exp, log, sinh, sqrt
 
 import numpy as np
 import pytest
+from numpy.testing import assert_array_almost_equal, assert_array_equal
+from pandas import DataFrame
+from scipy import linalg
+from sklearn.covariance import EmpiricalCovariance, LedoitWolf
+from sklearn.utils import check_random_state
+
 from nilearn._utils.extmath import is_spd
 from nilearn.connectome.connectivity_matrices import (
     ConnectivityMeasure,
@@ -17,11 +23,6 @@ from nilearn.connectome.connectivity_matrices import (
     vec_to_sym_matrix,
 )
 from nilearn.tests.test_signal import generate_signals
-from numpy.testing import assert_array_almost_equal, assert_array_equal
-from pandas import DataFrame
-from scipy import linalg
-from sklearn.covariance import EmpiricalCovariance, LedoitWolf
-from sklearn.utils import check_random_state
 
 CONNECTIVITY_KINDS = (
     "covariance",

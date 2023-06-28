@@ -9,6 +9,7 @@ from string import Template
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+
 from nilearn.plotting.html_document import (  # noqa: F401
     HTMLDocument,
     set_max_img_views_before_warning,
@@ -32,15 +33,15 @@ def add_js_lib(html, embed_js=True):
     with open(os.path.join(js_dir, 'surface-plot-utils.js')) as f:
         js_utils = f.read()
     if not embed_js:
-        js_lib = """
+        js_lib = f"""
         <script
         src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
         </script>
         <script src="https://cdn.plot.ly/plotly-gl3d-latest.min.js"></script>
         <script>
-        {}
+        {js_utils}
         </script>
-        """.format(js_utils)
+        """
     else:
         with open(os.path.join(js_dir, 'jquery.min.js')) as f:
             jquery = f.read()
@@ -108,7 +109,8 @@ def colorscale(cmap, values, threshold=None, symmetric_cmap=True,
     rgb = np.array(rgb, dtype=int)
     colors = []
     for i, col in zip(x, rgb):
-        colors.append([np.round(i, 3), "rgb({}, {}, {})".format(*col)])
+        colors.append([np.round(i, 3),
+                       f"rgb({col[0]}, {col[1]}, {col[2]})"])
     return {
         'colors': colors, 'vmin': vmin, 'vmax': vmax, 'cmap': our_cmap,
         'norm': norm, 'abs_threshold': abs_threshold,
@@ -152,5 +154,6 @@ def to_color_strings(colors):
     cmap = mpl.colors.ListedColormap(colors)
     colors = cmap(np.arange(cmap.N))[:, :3]
     colors = np.asarray(colors * 255, dtype='uint8')
-    colors = ['#{:02x}{:02x}{:02x}'.format(*row) for row in colors]
+    colors = [f'#{int(row[0]):02x}{int(row[1]):02x}{int(row[2]):02x}'
+              for row in colors]
     return colors

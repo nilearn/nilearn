@@ -4,6 +4,7 @@ import warnings
 
 import numpy as np
 from joblib import Memory
+
 from nilearn import _utils, image, masking
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
@@ -214,6 +215,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         """
         try:
             import matplotlib.pyplot as plt
+
             from nilearn import plotting
         except ImportError:
             with warnings.catch_warnings():
@@ -331,22 +333,16 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         All parameters are unused, they are for scikit-learn compatibility.
 
         """
-        _utils.logger.log(
-            'loading data from %s' % _utils._repr_niimgs(
-                self.labels_img,
-                shorten=(not self.verbose),
-            ),
-            verbose=self.verbose,
-        )
+        repr = _utils._repr_niimgs(self.labels_img,
+                                   shorten=(not self.verbose))
+        msg = f"loading data from {repr}"
+        _utils.logger.log(msg=msg, verbose=self.verbose)
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
         if self.mask_img is not None:
-            _utils.logger.log(
-                'loading data from %s' % _utils._repr_niimgs(
-                    self.mask_img,
-                    shorten=(not self.verbose),
-                ),
-                verbose=self.verbose,
-            )
+            repr = _utils._repr_niimgs(self.mask_img,
+                                       shorten=(not self.verbose))
+            msg = f"loading data from {repr}"
+            _utils.logger.log(msg=msg, verbose=self.verbose)
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
         else:

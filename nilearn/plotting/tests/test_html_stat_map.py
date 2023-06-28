@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 from matplotlib import pyplot as plt
 from nibabel import Nifti1Image
+
 from nilearn import datasets, image
 from nilearn.image import get_data, new_img_like
 from nilearn.plotting import html_stat_map
@@ -348,5 +349,5 @@ def test_view_img():
     expected_set = {FutureWarning, UserWarning,
                     DeprecationWarning}
     assert warnings_set.issubset(expected_set), (
-        "the following warnings were not expected: {}").format(
-        warnings_set.difference(expected_set))
+        "the following warnings were not expected: "
+        f"{warnings_set.difference(expected_set)}")

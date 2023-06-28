@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel.tmpdirs import InTemporaryDirectory
+
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
@@ -73,7 +74,7 @@ def test_sanitize_tri_error(tri):
         _sanitize_tri(tri)
 
 
-VALID_REORDER_VALUES = {True, False, 'single', 'complete', 'average'}
+VALID_REORDER_VALUES = (True, False, 'single', 'complete', 'average')
 
 
 @pytest.mark.parametrize("reorder", VALID_REORDER_VALUES)
@@ -88,15 +89,8 @@ def test_sanitize_reorder(reorder):
 @pytest.mark.parametrize("reorder", [None, "foo", 2])
 def test_sanitize_reorder_error(reorder):
     from ..matrix_plotting import _sanitize_reorder
-    param_to_print = []
-    for item in VALID_REORDER_VALUES:
-        if isinstance(item, str):
-            param_to_print.append(f'"{item}"')
-        else:
-            param_to_print.append(str(item))
     with pytest.raises(ValueError,
-                       match=("Parameter reorder needs to be one of:\n"
-                              f"{', '.join(param_to_print)}.")):
+                       match=("Parameter reorder needs to be one of")):
         _sanitize_reorder(reorder)
 
 

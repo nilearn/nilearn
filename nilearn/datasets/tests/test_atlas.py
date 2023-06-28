@@ -13,12 +13,13 @@ import nibabel
 import numpy as np
 import pandas as pd
 import pytest
+from numpy.testing import assert_array_equal
+
 from nilearn._utils import data_gen
 from nilearn._utils.testing import serialize_niimg
 from nilearn.datasets import atlas, utils
 from nilearn.datasets._testing import dict_to_archive
 from nilearn.image import get_data
-from numpy.testing import assert_array_equal
 
 
 def test_get_dataset_dir(tmp_path):
@@ -470,15 +471,12 @@ def test_fetch_atlas_difumo(tmp_path, request_mocker):
     resolutions = [2, 3]  # Valid resolution values
     dimensions = [64, 128, 256, 512, 1024]  # Valid dimension values
     dimension_urls = ["pqu9r", "wjvd5", "3vrct", "9b76y", "34792"]
-    url_mapping = {k: v for k, v in zip(dimensions, dimension_urls)}
-    url_count = 1
-
-    for dim in dimensions:
-        url_count += 1
+    url_mapping = dict(zip(dimensions, dimension_urls))
+    for url_count, dim in enumerate(dimensions, start=2):
         url = f"*osf.io/{url_mapping[dim]}/*"
         labels = pd.DataFrame(
             {
-                "Component": [_ for _ in range(1, dim + 1)],
+                "Component": list(range(1, dim + 1)),
                 "Difumo_names": ["" for _ in range(dim)],
                 "Yeo_networks7": ["" for _ in range(dim)],
                 "Yeo_networks17": ["" for _ in range(dim)],
@@ -567,7 +565,7 @@ def test_fetch_atlas_aal(
 
 def test_fetch_atlas_aal_version_error(tmp_path, request_mocker):
     with pytest.raises(
-        ValueError, match='The version of AAL requested "FLS33"'
+        ValueError, match="The version of AAL requested 'FLS33'"
     ):
         atlas.fetch_atlas_aal(version="FLS33", data_dir=tmp_path, verbose=0)
 
@@ -598,7 +596,7 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
 
     assert len(data_sym) == 2
     with pytest.raises(
-        ValueError, match='The version of Brain parcellations requested "aym"'
+        ValueError, match="The version of Brain parcellations requested 'aym'"
     ):
         atlas.fetch_atlas_basc_multiscale_2015(
             version="aym", data_dir=tmp_path, verbose=0
@@ -653,7 +651,7 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
 
     assert len(data_sym) == 10
     with pytest.raises(
-        ValueError, match='The version of Brain parcellations requested "aym"'
+        ValueError, match="The version of Brain parcellations requested 'aym'"
     ):
         atlas.fetch_atlas_basc_multiscale_2015(
             version="aym", data_dir=tmp_path, verbose=0

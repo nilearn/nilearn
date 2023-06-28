@@ -17,10 +17,11 @@ import nibabel as nib
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.utils import check_random_state
+
 from nilearn.datasets import func
 from nilearn.datasets._testing import dict_to_archive, list_to_archive
 from nilearn.datasets.utils import _get_dataset_dir
-from sklearn.utils import check_random_state
 
 
 def _load_localizer_index():
@@ -35,12 +36,13 @@ def _load_localizer_index():
         )
     localizer_index["/localizer/phenotype/behavioural.tsv"] = uuid.uuid4().hex
     localizer_index["/localizer/participants.tsv"] = uuid.uuid4().hex
-    tsv_files = {}
-    tsv_files["/localizer/phenotype/behavioural.tsv"] = pd.read_csv(
-        str(data_dir / "localizer_behavioural.tsv"), sep="\t"
-    )
+    tsv_files = {
+        "/localizer/phenotype/behavioural.tsv": pd.read_csv(
+            data_dir / "localizer_behavioural.tsv", sep="\t"
+        )
+    }
     tsv_files["/localizer/participants.tsv"] = pd.read_csv(
-        str(data_dir / "localizer_participants.tsv"), sep="\t"
+        data_dir / "localizer_participants.tsv", sep="\t"
     )
     return localizer_index, tsv_files
 
@@ -329,9 +331,9 @@ def test_fetch_abide_pcp(tmp_path, request_mocker, quality_checked):
     n_subjects = 800
     ids = list(range(n_subjects))
     filenames = ["no_filename"] * n_subjects
-    filenames[::2] = ["filename"] * int(n_subjects / 2)
+    filenames[::2] = ["filename"] * (n_subjects // 2)
     qc_rater_1 = ["OK"] * n_subjects
-    qc_rater_1[::4] = ["fail"] * int(n_subjects / 4)
+    qc_rater_1[::4] = ["fail"] * (n_subjects // 4)
     pheno = pd.DataFrame(
         {
             "subject_id": ids,
@@ -376,11 +378,10 @@ def test__load_mixed_gambles(request_mocker):
     n_trials = 48
     affine = np.eye(4)
     for n_subjects in [1, 5, 16]:
-        zmaps = []
-        for _ in range(n_subjects):
-            zmaps.append(
-                nibabel.Nifti1Image(rng.randn(3, 4, 5, n_trials), affine)
-            )
+        zmaps = [
+            nibabel.Nifti1Image(rng.randn(3, 4, 5, n_trials), affine)
+            for _ in range(n_subjects)
+        ]
         zmaps, gain, _ = func._load_mixed_gambles(zmaps)
         assert len(zmaps) == n_subjects * n_trials
         assert len(zmaps) == len(gain)
@@ -430,19 +431,17 @@ def test_check_parameters_megatrawls_datasets(request_mocker):
 def test_fetch_megatrawls_netmats(tmp_path, request_mocker):
     # smoke test to see that files are fetched and read properly
     # since we are loading data present in it
-    files_dir = str(
-        tmp_path / "Megatrawls" / "3T_Q1-Q6related468_MSMsulc_d100_ts3"
-    )
-    os.makedirs(files_dir)
-    with open(os.path.join(files_dir, "Znet2.txt"), "w") as net_file:
-        net_file.write("1")
-
-    files_dir2 = str(
-        tmp_path / "Megatrawls" / "3T_Q1-Q6related468_MSMsulc_d300_ts2"
-    )
-    os.makedirs(files_dir2)
-    with open(os.path.join(files_dir2, "Znet1.txt"), "w") as net_file2:
-        net_file2.write("1")
+    for file, folder in zip(
+        ["Znet2.txt", "Znet1.txt"],
+        [
+            "3T_Q1-Q6related468_MSMsulc_d100_ts3",
+            "3T_Q1-Q6related468_MSMsulc_d300_ts2",
+        ],
+    ):
+        files_dir = tmp_path / "Megatrawls" / folder
+        files_dir.mkdir(parents=True, exist_ok=True)
+        with open(files_dir / file, "w") as net_file:
+            net_file.write("1")
 
     megatrawl_netmats_data = func.fetch_megatrawls_netmats(data_dir=tmp_path)
 
@@ -639,7 +638,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
     data = func.fetch_development_fmri(
         n_subjects=2, reduce_confounds=False, verbose=1, age_group="child"
     )
-    assert all([x == "child" for x in data.phenotypic["Child_Adult"]])
+    assert all(x == "child" for x in data.phenotypic["Child_Adult"])
 
 
 def test_fetch_development_fmri_invalid_n_subjects(request_mocker):
@@ -686,15 +685,18 @@ def test_select_from_index(request_mocker):
     )
     # Prepare url files for subject and filter tests
     urls = [
-        data_prefix + "/stuff.html",
-        data_prefix + "/sub-xxx.html",
-        data_prefix + "/sub-yyy.html",
-        data_prefix + "/sub-xxx/ses-01_task-rest.txt",
-        data_prefix + "/sub-xxx/ses-01_task-other.txt",
-        data_prefix + "/sub-xxx/ses-02_task-rest.txt",
-        data_prefix + "/sub-xxx/ses-02_task-other.txt",
-        data_prefix + "/sub-yyy/ses-01.txt",
-        data_prefix + "/sub-yyy/ses-02.txt",
+        f"{data_prefix}/{f}"
+        for f in [
+            "stuff.html",
+            "sub-xxx.html",
+            "sub-yyy.html",
+            "sub-xxx/ses-01_task-rest.txt",
+            "sub-xxx/ses-01_task-other.txt",
+            "sub-xxx/ses-02_task-rest.txt",
+            "sub-xxx/ses-02_task-other.txt",
+            "sub-yyy/ses-01.txt",
+            "sub-yyy/ses-02.txt",
+        ]
     ]
 
     # Only 1 subject and not subject specific files get downloaded
@@ -845,7 +847,7 @@ def test_fetch_localizer(request_mocker, tmp_path):
 
 def _mock_original_spm_auditory_events_file():
     expected_events_data = {
-        "onset": [factor * 42.0 for factor in range(0, 16)],
+        "onset": [factor * 42.0 for factor in range(16)],
         "duration": [42.0] * 16,
         "trial_type": ["rest", "active"] * 8,
     }
@@ -861,8 +863,7 @@ def _mock_original_spm_auditory_events_file():
 def _mock_bids_compliant_spm_auditory_events_file():
     events_filepath = os.path.join(os.getcwd(), "tests_events.tsv")
     func._make_events_file_spm_auditory_data(events_filepath=events_filepath)
-    with open(events_filepath) as actual_events_file_obj:
-        actual_events_data_string = actual_events_file_obj.read()
+    actual_events_data_string = Path(events_filepath).read_text()
     return actual_events_data_string, events_filepath
 
 
@@ -909,8 +910,8 @@ def test_make_spm_auditory_events_file(request_mocker):
 
 
 def test_fetch_spm_auditory(request_mocker, tmp_path):
-    saf = ["fM00223/fM00223_%03i.img" % index for index in range(4, 100)]
-    saf_ = ["fM00223/fM00223_%03i.hdr" % index for index in range(4, 100)]
+    saf = [f"fM00223/fM00223_{int(index):03}.img" for index in range(4, 100)]
+    saf_ = [f"fM00223/fM00223_{int(index):03}.hdr" for index in range(4, 100)]
 
     data_dir = str(tmp_path / "spm_auditory")
     os.mkdir(data_dir)
@@ -946,16 +947,16 @@ def test_fetch_spm_multimodal(request_mocker, tmp_path):
     for session in [0, 1]:
         open(
             os.path.join(
-                subject_dir, "fMRI", "trials_ses%i.mat" % (session + 1)
+                subject_dir, "fMRI", f"trials_ses{int(session + 1)}.mat"
             ),
             "a",
         ).close()
-        dir_ = os.path.join(subject_dir, "fMRI", "Session%d" % (session + 1))
+        dir_ = os.path.join(subject_dir, "fMRI", f"Session{int(session + 1)}")
         os.mkdir(dir_)
         for i in range(390):
             open(
                 os.path.join(
-                    dir_, "fMETHODS-000%i-%i-01.img" % (session + 5, i)
+                    dir_, f"fMETHODS-000{int(session + 5)}-{int(i)}-01.img"
                 ),
                 "a",
             ).close()
@@ -980,9 +981,9 @@ def test_fiac(request_mocker, tmp_path):
     os.makedirs(fiac0_dir)
     for session in [1, 2]:
         # glob func data for session session + 1
-        session_func = os.path.join(fiac0_dir, "run%i.nii.gz" % session)
+        session_func = os.path.join(fiac0_dir, f"run{int(session)}.nii.gz")
         open(session_func, "a").close()
-        sess_dmtx = os.path.join(fiac0_dir, "run%i_design.npz" % session)
+        sess_dmtx = os.path.join(fiac0_dir, f"run{int(session)}_design.npz")
         open(sess_dmtx, "a").close()
     mask = os.path.join(fiac0_dir, "mask.nii.gz")
     open(mask, "a").close()

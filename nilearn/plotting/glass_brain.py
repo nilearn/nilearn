@@ -6,6 +6,7 @@ import os
 import matplotlib
 from matplotlib import colors, patches, transforms
 from matplotlib.path import Path
+
 from nilearn._utils import _compare_version
 
 
@@ -114,10 +115,10 @@ def _get_json_and_transform(direction):
     filename_and_transform = direction_to_json_and_transform.get(direction)
 
     if filename_and_transform is None:
-        message = ("No glass brain view associated with direction '{}'. "
-                   "Possible directions are {}").format(
-                       direction,
-                       list(direction_to_json_and_transform.keys()))
+        message = (
+            f"No glass brain view associated with direction '{direction}'. "
+            "Possible directions are "
+            f"{list(direction_to_json_and_transform.keys())}")
         raise ValueError(message)
 
     return filename_and_transform

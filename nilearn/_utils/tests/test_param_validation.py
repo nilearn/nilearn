@@ -6,6 +6,8 @@ import warnings
 import nibabel
 import numpy as np
 import pytest
+from sklearn.base import BaseEstimator
+
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.param_validation import (
     MNI152_BRAIN_VOLUME,
@@ -13,7 +15,6 @@ from nilearn._utils.param_validation import (
     check_feature_screening,
     check_threshold,
 )
-from sklearn.base import BaseEstimator
 
 mni152_brain_mask = (
     "/usr/share/fsl/data/standard/MNI152_T1_1mm_brain_mask.nii.gz"

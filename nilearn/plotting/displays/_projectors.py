@@ -3,6 +3,9 @@ import warnings
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import cm as mpl_cm
+from scipy.sparse import issparse
+from scipy.stats import scoreatpercentile
+
 from nilearn._utils.param_validation import check_threshold
 from nilearn.plotting import cm
 from nilearn.plotting.displays._axes import GlassBrainAxes
@@ -10,8 +13,6 @@ from nilearn.plotting.displays._slicers import (
     OrthoSlicer,
     _get_create_display_fun,
 )
-from scipy.sparse import issparse
-from scipy.stats import scoreatpercentile
 
 
 class OrthoProjector(OrthoSlicer):
@@ -138,7 +139,7 @@ class OrthoProjector(OrthoSlicer):
                 or adjacency_matrix_shape[0] != adjacency_matrix_shape[1]):
             raise ValueError(
                 "'adjacency_matrix' is supposed to have shape (n, n)."
-                ' Its shape was {}'.format(adjacency_matrix_shape))
+                f' Its shape was {adjacency_matrix_shape}')
 
         node_coords_shape = node_coords.shape
         if len(node_coords_shape) != 2 or node_coords_shape[1] != 3:
@@ -154,16 +155,16 @@ class OrthoProjector(OrthoSlicer):
         if isinstance(node_color, (list, np.ndarray)) and len(node_color) != 1:
             if len(node_color) != node_coords_shape[0]:
                 raise ValueError(
-                    "Mismatch between the number of nodes ({}) "
-                    "and the number of node colors ({})."
-                    .format(node_coords_shape[0], len(node_color)))
+                    "Mismatch between the number of nodes "
+                    f"({node_coords_shape[0]}) "
+                    f"and the number of node colors ({len(node_color)}).")
 
         if node_coords_shape[0] != adjacency_matrix_shape[0]:
             raise ValueError(
                 "Shape mismatch between 'adjacency_matrix' "
                 "and 'node_coords'"
-                "'adjacency_matrix' shape is {}, 'node_coords' shape is {}"
-                .format(adjacency_matrix_shape, node_coords_shape))
+                f"'adjacency_matrix' shape is {adjacency_matrix_shape}, "
+                f"'node_coords' shape is {node_coords_shape}")
 
         # If the adjacency matrix is not symmetric, give a warning
         symmetric = True

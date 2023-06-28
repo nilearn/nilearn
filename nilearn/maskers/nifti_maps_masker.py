@@ -3,6 +3,7 @@ import warnings
 
 import numpy as np
 from joblib import Memory
+
 from nilearn import _utils, image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
@@ -348,13 +349,10 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
 
         """
         # Load images
-        _utils.logger.log(
-            "loading regions from %s" % _utils._repr_niimgs(
-                self.maps_img,
-                shorten=(not self.verbose),
-            ),
-            verbose=self.verbose,
-        )
+        repr = _utils._repr_niimgs(self.mask_img,
+                                   shorten=(not self.verbose))
+        msg = f"loading regions from {repr}"
+        _utils.logger.log(msg=msg, verbose=self.verbose)
         self.maps_img_ = _utils.check_niimg(
             self.maps_img, dtype=self.dtype, atleast_4d=True
         )
@@ -366,13 +364,10 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         )
 
         if self.mask_img is not None:
-            _utils.logger.log(
-                "loading mask from %s" % _utils._repr_niimgs(
-                    self.mask_img,
-                    shorten=(not self.verbose),
-                ),
-                verbose=self.verbose,
-            )
+            repr = _utils._repr_niimgs(self.mask_img,
+                                       shorten=(not self.verbose))
+            msg = f"loading mask from {repr}"
+            _utils.logger.log(msg=msg, verbose=self.verbose)
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
         else:
             self.mask_img_ = None

@@ -2,9 +2,10 @@ import nibabel
 import numpy as np
 import pytest
 from joblib import Memory
+from sklearn.base import BaseEstimator
+
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
-from sklearn.base import BaseEstimator
 
 
 class OwningClass(BaseEstimator):

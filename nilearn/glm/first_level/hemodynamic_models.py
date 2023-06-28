@@ -10,8 +10,9 @@ import warnings
 from collections.abc import Iterable
 
 import numpy as np
-from nilearn._utils import fill_doc
 from scipy.stats import gamma
+
+from nilearn._utils import fill_doc
 
 
 def _gamma_difference_hrf(

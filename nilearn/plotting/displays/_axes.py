@@ -7,6 +7,7 @@ from matplotlib.font_manager import FontProperties
 from matplotlib.lines import Line2D
 from matplotlib.patches import FancyArrow
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
+
 from nilearn._utils.docs import fill_doc
 from nilearn.image import coord_transform
 from nilearn.plotting.glass_brain import plot_brain_schematics
@@ -312,8 +313,8 @@ def _get_index_from_direction(direction):
             index = directions.index(direction)
     except ValueError:
         message = (
-            '{} is not a valid direction. '
-            "Allowed values are 'l', 'r', 'x', 'y' and 'z'").format(direction)
+            f'{direction} is not a valid direction. '
+            "Allowed values are 'l', 'r', 'x', 'y' and 'z'")
         raise ValueError(message)
     return index
 

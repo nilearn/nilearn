@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+
 from nilearn.datasets import load_mni152_template
 from nilearn.plotting.displays import (
     BaseAxes,

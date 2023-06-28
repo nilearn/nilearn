@@ -9,6 +9,7 @@ import warnings
 from functools import partial
 
 from joblib import Memory, Parallel, delayed
+
 from nilearn import _utils, image, masking
 from nilearn.maskers.nifti_masker import NiftiMasker, _filter_and_mask
 

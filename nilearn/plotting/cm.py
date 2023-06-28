@@ -161,7 +161,7 @@ def _revcmap(data):
 _cmap_d = dict()
 
 for _cmapname in list(_cmaps_data.keys()):  # needed as dict changes in loop
-    _cmapname_r = _cmapname + '_r'
+    _cmapname_r = f'{_cmapname}_r'
     _cmapspec = _cmaps_data[_cmapname]
     _cmaps_data[_cmapname_r] = _revcmap(_cmapspec)
     _cmap_d[_cmapname] = _colors.LinearSegmentedColormap(
@@ -226,8 +226,8 @@ for k, v in _cmap_d.items():
 def dim_cmap(cmap, factor=.3, to_white=True):
     """Dim a colormap to white, or to black."""
     assert 0 <= factor <= 1, ValueError(
-        'Dimming factor must be larger than 0 and smaller than 1, %s was '
-        'passed.' % factor)
+        "Dimming factor must be larger than 0 and smaller than 1, "
+        f"{factor} was passed.")
     if to_white:
         def dimmer(c):
             return 1 - factor * (1 - c)

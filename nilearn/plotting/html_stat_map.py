@@ -10,6 +10,7 @@ import matplotlib
 import numpy as np
 from matplotlib.image import imsave
 from nibabel.affines import apply_affine
+
 from nilearn.plotting.html_document import HTMLDocument
 
 from .._utils import fill_doc
@@ -106,9 +107,9 @@ def _threshold_data(data, threshold=None):
 
     if not np.any(mask):
         warnings.warn(
-            "Threshold given was {}, but "
-            "the data has no values below {}. ".format(threshold,
-                                                       data.min()))
+            f"Threshold given was {threshold}, "
+            f"but the data has no values below {data.min()}. "
+        )
     return data, mask, threshold
 
 
@@ -408,14 +409,16 @@ def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
                                   cut_coords)
     except ValueError:
         raise ValueError(
-            "The input given for display_mode='ortho' needs to be "
-            "a list of 3d world coordinates in (x, y, z). "
-            "You provided cut_coords={}".format(cut_coords))
+            "The input given for display_mode='ortho' "
+            "needs to be a list of 3d world coordinates in (x, y, z). "
+            f"You provided cut_coords={cut_coords}"
+        )
     except IndexError:
         raise ValueError(
-            "The input given for display_mode='ortho' needs to be "
-            "a list of 3d world coordinates in (x, y, z). "
-            "You provided single cut, cut_coords={}".format(cut_coords))
+            "The input given for display_mode='ortho' "
+            "needs to be a list of 3d world coordinates in (x, y, z). "
+            f"You provided single cut, cut_coords={cut_coords}"
+        )
 
     return cut_slices
 

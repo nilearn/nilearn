@@ -58,9 +58,8 @@ def _sanitize_figure_and_axes(figure, axes):
     """Help for plot_matrix."""
     if axes is not None and figure is not None:
         raise ValueError(
-            "Parameters figure and axes cannot be specified "
-            "together. You gave 'figure=%s, axes=%s'" % (figure, axes)
-        )
+            "Parameters figure and axes cannot be specified together. "
+            f"You gave 'figure={figure}, axes={axes}'.")
     if figure is not None:
         if isinstance(figure, plt.Figure):
             fig = figure
@@ -93,12 +92,13 @@ def _sanitize_tri(tri):
     VALID_TRI_VALUES = ("full", "lower", "diag")
     if tri not in VALID_TRI_VALUES:
         raise ValueError(
-            f"Parameter tri needs to be one of: {', '.join(VALID_TRI_VALUES)}.")
+            "Parameter tri needs to be one of: "
+            f"{', '.join(VALID_TRI_VALUES)}.")
 
 
 def _sanitize_reorder(reorder):
     """Help for plot_matrix."""
-    VALID_REORDER_ARGS = {True, False, 'single', 'complete', 'average'}
+    VALID_REORDER_ARGS = (True, False, 'single', 'complete', 'average')
     if reorder not in VALID_REORDER_ARGS:
         param_to_print = []
         for item in VALID_REORDER_ARGS:
@@ -107,7 +107,8 @@ def _sanitize_reorder(reorder):
             else:
                 param_to_print.append(str(item))
         raise ValueError(
-            f"Parameter reorder needs to be one of:\n{', '.join(param_to_print)}."
+            "Parameter reorder needs to be one of:"
+            f"\n{', '.join(param_to_print)}."
         )
     reorder = 'average' if reorder is True else reorder
     return reorder

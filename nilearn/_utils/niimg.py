@@ -236,21 +236,21 @@ def _repr_niimgs(niimgs, shorten=True):
             )
         else:
             tmp = [_repr_niimgs(niimg, shorten=shorten) for niimg in niimgs]
-            return f"[{', '.join(x for x in tmp)}]"
+            return f"[{', '.join(tmp)}]"
     # Nibabel objects have a 'get_filename'
     try:
         filename = niimgs.get_filename()
         if filename is not None:
-            return "{}('{}')".format(
-                niimgs.__class__.__name__,
-                _short_repr(filename, shorten=shorten),
+            return (
+                f"{niimgs.__class__.__name__}"
+                f"('{_short_repr(filename, shorten=shorten)}')"
             )
         else:
             # No shortening in this case
-            return "{}(\nshape={},\naffine={}\n)".format(
-                niimgs.__class__.__name__,
-                repr(niimgs.shape),
-                repr(niimgs.affine),
+            return (
+                f"{niimgs.__class__.__name__}"
+                f"(\nshape={repr(niimgs.shape)},"
+                f"\naffine={repr(niimgs.affine)}\n)"
             )
     except Exception:
         pass
@@ -267,7 +267,7 @@ def _short_repr(niimg_rep, shorten=True, truncate=20):
     # If the name of the file itself is larger than
     # truncate, then shorten the name only
     if len(path_to_niimg.name) > truncate:
-        return path_to_niimg.name[: (truncate - 2)] + "..."
+        return f"{path_to_niimg.name[: (truncate - 2)]}..."
     # Else add some folder structure if available
     else:
         rep = path_to_niimg.name

@@ -83,6 +83,15 @@ Checks for spelling errors. Configured in [pyproject.toml](/pyproject.toml). Mor
 
 Uses flake8 tool to verify code is PEP8 compliant. Configured in [.flake8](/.flake8)
 
+## f strings
+
+### f_strings.yml
+
+Checks for f strings in the codebase with [flynt](https://pypi.org/project/flynt/). 
+Configured in [pyproject.toml](/pyproject.toml)
+Flynt will check if it automatically convert "format" or "%" strings to "f strings".
+This workflow will fail if it finds any potential target to be converted.
+
 ## Sort imports automatically
 
 ### isort.yml
@@ -95,10 +104,16 @@ Sorts Python imports alphabetically and by section. Configured in [pyproject.tom
 
 Runs pytest in several environments including several Python and dependencies versions as well as on different systems.
 
+## Test installation
+
+### testing_install.yml
+
+Tries to install Nilearn from wheel & check installation on all operating systems.
+
 ### detect_test_pollution.yml
 
-Runs once a month. 
-Use pytest with the pytest-random-order plugin to run all tests in a random order. 
+Runs once a month.
+Use pytest with the pytest-random-order plugin to run all tests in a random order.
 This aims to detect tests that are not properly isolated from each other (test pollution).
 
 ## Update precommit hooks

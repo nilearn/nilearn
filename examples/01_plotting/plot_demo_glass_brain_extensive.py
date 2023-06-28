@@ -61,8 +61,11 @@ plot_glass_brain(stat_img, threshold=3, colorbar=True)
 # :class:`~nilearn.plotting.displays.XZProjector`.
 
 plot_glass_brain(
-    stat_img, title='plot_glass_brain', black_bg=True,
-    display_mode='xz', threshold=3
+    stat_img,
+    title="plot_glass_brain",
+    black_bg=True,
+    display_mode="xz",
+    threshold=3,
 )
 
 
@@ -73,7 +76,7 @@ plot_glass_brain(
 # :class:`~nilearn.plotting.displays.YZProjector`.
 
 plot_glass_brain(
-    stat_img, threshold=0, colorbar=True, plot_abs=False, display_mode='yz'
+    stat_img, threshold=0, colorbar=True, plot_abs=False, display_mode="yz"
 )
 
 
@@ -82,7 +85,7 @@ plot_glass_brain(
 # :class:`~nilearn.plotting.displays.YXProjector`).
 
 plot_glass_brain(
-    stat_img, threshold=3, colorbar=True, plot_abs=False, display_mode='yx'
+    stat_img, threshold=3, colorbar=True, plot_abs=False, display_mode="yx"
 )
 
 
@@ -98,8 +101,11 @@ plot_glass_brain(
 # :class:`~nilearn.plotting.displays.LZRProjector`.
 
 plot_glass_brain(
-    stat_img, title='plot_glass_brain with display_mode="lzr"',
-    black_bg=True, display_mode='lzr', threshold=3
+    stat_img,
+    title='plot_glass_brain with display_mode="lzr"',
+    black_bg=True,
+    display_mode="lzr",
+    threshold=3,
 )
 
 
@@ -108,9 +114,12 @@ plot_glass_brain(
 # :class:`~nilearn.plotting.displays.LYRZProjector` object.
 
 plot_glass_brain(
-    stat_img, threshold=0, colorbar=True,
+    stat_img,
+    threshold=0,
+    colorbar=True,
     title='plot_glass_brain with display_mode="lyrz"',
-    plot_abs=False, display_mode='lyrz'
+    plot_abs=False,
+    display_mode="lyrz",
 )
 
 
@@ -124,8 +133,12 @@ plot_glass_brain(
 # :class:`~nilearn.plotting.displays.RProjector`).
 
 plot_glass_brain(
-    stat_img, threshold=0, colorbar=True, title='display_mode="x"',
-    plot_abs=False, display_mode='x'
+    stat_img,
+    threshold=0,
+    colorbar=True,
+    title='display_mode="x"',
+    plot_abs=False,
+    display_mode="x",
 )
 
 
@@ -146,7 +159,7 @@ plot_glass_brain(
 # want an empty glass brain to plot the statistical maps with
 # :meth:`~nilearn.plotting.displays.OrthoProjector.add_contours`.
 
-display = plot_glass_brain(None, display_mode='lzry')
+display = plot_glass_brain(None, display_mode="lzry")
 # Here, we project statistical maps
 display.add_contours(stat_img)
 # and add a title
@@ -157,11 +170,11 @@ display.title('"stat_img" on glass brain without threshold')
 # We can fill the contours by setting ``filled=True``. Note that we are not
 # specifying levels here
 
-display = plot_glass_brain(None, display_mode='lzry')
+display = plot_glass_brain(None, display_mode="lzry")
 # Here, we project statistical maps with filled=True
 display.add_contours(stat_img, filled=True)
 # and add a title
-display.title('Same map but with fillings in the contours')
+display.title("Same map but with fillings in the contours")
 
 
 ###############################################################################
@@ -172,8 +185,8 @@ display.title('Same map but with fillings in the contours')
 # :meth:`~nilearn.plotting.displays.OrthoProjector.add_contours` called
 # ``levels`` which value is given as a list and we choose the color to be red.
 
-display = plot_glass_brain(None, display_mode='lzry')
-display.add_contours(stat_img, levels=[3.], colors='r')
+display = plot_glass_brain(None, display_mode="lzry")
+display.add_contours(stat_img, levels=[3.0], colors="r")
 display.title('"stat_img" on glass brain with threshold')
 
 
@@ -181,9 +194,9 @@ display.title('"stat_img" on glass brain with threshold')
 # Plotting with same demonstration but fill the contours (by setting
 # ``filled=True``).
 
-display = plot_glass_brain(None, display_mode='lzry')
-display.add_contours(stat_img, filled=True, levels=[3.], colors='r')
-display.title('Same demonstration but using fillings inside contours')
+display = plot_glass_brain(None, display_mode="lzry")
+display.add_contours(stat_img, filled=True, levels=[3.0], colors="r")
+display.title("Same demonstration but using fillings inside contours")
 
 
 ##############################################################################
@@ -192,7 +205,7 @@ display.title('Same demonstration but using fillings inside contours')
 
 # We can set black background using black_bg=True
 display = plot_glass_brain(None, black_bg=True)
-display.add_contours(stat_img, levels=[3.], colors='g')
+display.add_contours(stat_img, levels=[3.0], colors="g")
 display.title('"stat_img" on glass brain with black background')
 
 
@@ -200,8 +213,8 @@ display.title('"stat_img" on glass brain with black background')
 # Black background plotting with filled in contours.
 
 display = plot_glass_brain(None, black_bg=True)
-display.add_contours(stat_img, filled=True, levels=[3.], colors='g')
-display.title('Glass brain with black background and filled in contours')
+display.add_contours(stat_img, filled=True, levels=[3.0], colors="g")
+display.title("Glass brain with black background and filled in contours")
 
 
 ##############################################################################
@@ -212,16 +225,16 @@ display.title('Glass brain with black background and filled in contours')
 # Here, we set ``display_mode='lr'`` for both hemispheric plots. Note that a
 # :class:`~nilearn.plotting.displays.LRProjector` is returned.
 
-display = plot_glass_brain(None, display_mode='lr')
-display.add_contours(stat_img, levels=[3.], colors='r')
+display = plot_glass_brain(None, display_mode="lr")
+display.add_contours(stat_img, levels=[3.0], colors="r")
 display.title('"stat_img" on glass brain only "l" "r" hemispheres')
 
 
 ##############################################################################
 # Filled contours in both hemispheric plotting, by adding ``filled=True``.
 
-display = plot_glass_brain(None, display_mode='lr')
-display.add_contours(stat_img, filled=True, levels=[3.], colors='r')
+display = plot_glass_brain(None, display_mode="lr")
+display.add_contours(stat_img, filled=True, levels=[3.0], colors="r")
 display.title('Filled contours on glass brain only "l" "r" hemispheres')
 
 
@@ -234,7 +247,7 @@ display.title('Filled contours on glass brain only "l" "r" hemispheres')
 # specify ``display_mode='lyr'`` which returns a
 # :class:`~nilearn.plotting.displays.LYRProjector` display object.
 
-display = plot_glass_brain(None, plot_abs=False, display_mode='lyr')
+display = plot_glass_brain(None, plot_abs=False, display_mode="lyr")
 display.add_contours(stat_img)
 display.title("Contours with both sign of activations without threshold")
 
@@ -243,7 +256,7 @@ display.title("Contours with both sign of activations without threshold")
 # Now, adding ``filled=True`` to get positive and negative sign activations
 # with fillings in the contours.
 
-display = plot_glass_brain(None, plot_abs=False, display_mode='lyr')
+display = plot_glass_brain(None, plot_abs=False, display_mode="lyr")
 display.add_contours(stat_img, filled=True)
 display.title(
     "Filled contours with both sign of activations without threshold"
@@ -264,11 +277,11 @@ display.title(
 
 import numpy as np
 
-display = plot_glass_brain(None, plot_abs=False, display_mode='lzry')
+display = plot_glass_brain(None, plot_abs=False, display_mode="lzry")
 display.add_contours(
-    stat_img, levels=[-2.8, 3.], colors=['b', 'r'], linewidths=4.
+    stat_img, levels=[-2.8, 3.0], colors=["b", "r"], linewidths=4.0
 )
-display.title('Contours with sign of activations with threshold')
+display.title("Contours with sign of activations with threshold")
 
 
 ##############################################################################
@@ -283,14 +296,10 @@ display.title('Contours with sign of activations with threshold')
 # activation value in a list. Upper bound should be kept to -infinity.
 # Next, using the same display object, we plot positive sign of activation.
 
-display = plot_glass_brain(None, plot_abs=False, display_mode='lzry')
-display.add_contours(
-    stat_img, filled=True, levels=[-np.inf, -2.8], colors='b'
-)
-display.add_contours(
-    stat_img, filled=True, levels=[3.], colors='r'
-)
-display.title('Now same plotting but with filled contours')
+display = plot_glass_brain(None, plot_abs=False, display_mode="lzry")
+display.add_contours(stat_img, filled=True, levels=[-np.inf, -2.8], colors="b")
+display.add_contours(stat_img, filled=True, levels=[3.0], colors="r")
+display.title("Now same plotting but with filled contours")
 # Finally, displaying them
 plotting.show()
 

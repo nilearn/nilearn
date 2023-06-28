@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pytest
 import sklearn
+
 from nilearn._utils import _compare_version
 
 # we use memory_profiler library for memory consumption checks
@@ -104,11 +105,9 @@ def assert_memory_less_than(
     if mem_used < 50:
         raise ValueError(
             "Memory profiler measured an untrustable memory "
-            "consumption ({:.2f} MiB). The expected memory "
-            "limit was {:.2f} MiB. Try to bench with larger "
-            "objects (at least 100MiB in memory).".format(
-                mem_used, memory_limit
-            )
+            f"consumption ({mem_used:.2f} MiB). The expected memory "
+            f"limit was {memory_limit:.2f} MiB. Try to bench with larger "
+            "objects (at least 100MiB in memory)."
         )
 
 

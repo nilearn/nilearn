@@ -9,9 +9,10 @@ to run a specific script and save time.
 """
 import os
 
-import nilearn
 import numpy as np
 import pandas as pd
+
+import nilearn
 from nilearn import datasets
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 from nilearn.glm.first_level.design_matrix import (
@@ -154,7 +155,7 @@ def _make_design_matrix_for_bids_feature(
     )
 
     design_columns = [
-        "cond_%02d" % i for i in range(len(design_matrix.columns))
+        f"cond_{i:02d}" for i in range(len(design_matrix.columns))
     ]
     design_columns[0] = "Go"
     design_columns[4] = "StopSuccess"

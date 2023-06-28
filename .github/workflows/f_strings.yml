@@ -1,5 +1,5 @@
 ---
-name: isort
+name: f strings
 
 on:
   push:
@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  isort:
+  f_strings:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -23,9 +23,9 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: "Install isort"
+      - name: "Install flynt"
         shell: bash {0}
-        run: python -m pip install --upgrade pip isort
+        run: python -m pip install --upgrade pip flynt
 
-      - name: "Run isort"
-        run: isort --diff --check --settings-path pyproject.toml .
+      - name: "Run flynt"
+        run: flynt .
