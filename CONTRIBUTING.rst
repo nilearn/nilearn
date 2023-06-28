@@ -242,6 +242,7 @@ Changelog entries in ``doc/changes/latest.rst`` should adhere to the following c
 - Single line per entry
 - Finish with a link to the PR and the author's profile
 - New contributors to add their profile to CITATION.cff
+  and run maint_tools/citation_cff_maint.py to update other files.
 
 Example entry:
 
