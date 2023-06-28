@@ -8,10 +8,9 @@ else
     if [[ $GITLOG == *"[example]"* ]]; then
         echo "Building selected example";
         COMMIT_MESSAGE=${GITLOG#*] };
-        FILENAMES="examples/*/$COMMIT_MESSAGE";
-    else
-        FILENAMES=$(git diff --name-only $(git merge-base $COMMIT_SHA upstream/main) $COMMIT_SHA);
+        EXAMPLE="examples/*/$COMMIT_MESSAGE";
     fi;
+    FILENAMES=$(git diff --name-only $(git merge-base $COMMIT_SHA upstream/main) $COMMIT_SHA) $EXAMPLE;
     echo FILENAMES="$FILENAMES";
     for FILENAME in $FILENAMES; do
         if [[ `expr match $FILENAME "\(examples\)/.*plot_.*\.py"` ]]; then
