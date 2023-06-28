@@ -92,10 +92,10 @@ def write_authors_file(authors: list[dict[str, str]]) -> None:
 def write_team_section(f, authors: list[dict[str, str]]) -> None:
     """Write team section."""
     f.write(
-        """.. _core_devs:
-
-.. The Core developers section is added automatically
+        """.. The Core developers section is added automatically
    and should not be edited manually.
+
+.. _core_devs:
 
 Core developers
 ...............

@@ -16,10 +16,10 @@ An up-to-date list of contributors can be seen in on
 
 Additional credit goes to `Michael Hanke`_ and `Yaroslav Halchenko`_ for data and packaging.
 
-.. _core_devs:
-
 .. The Core developers section is added automatically
-    and should not be edited manually.
+   and should not be edited manually.
+
+.. _core_devs:
 
 Core developers
 ...............
@@ -38,7 +38,7 @@ The nilearn core developers are:
 
 
 .. The Other contributors section is added automatically
-    and should not be edited manually.
+   and should not be edited manually.
 
 Other contributors
 ..................
@@ -157,6 +157,7 @@ Some other past or present contributors are:
 * `Sage Hahn`_
 * `Salma Bougacha`_
 * `Sam Buck Johnson`_
+* `Samanta Tarun`_
 * `Sami Jawhar`_
 * `Simon Steinkamp`_
 * `Sourav Singh`_

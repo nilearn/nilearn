@@ -132,7 +132,7 @@ authors:
   - given-names: Elizabeth
     family-names: DuPre
     website: https://elizabeth-dupre.com/#/
-    affiliation:  Stanford University, USA
+    affiliation: Stanford University, USA
   - given-names: Elvis
     family-names: Dohmatob
     website: https://dohmatob.github.io/
@@ -166,7 +166,7 @@ authors:
   - given-names: Hao-Ting
     family-names: Wang
     website: https://wanghaoting.com/
-    affiliation:  Montreal Geriatrics Institute (CRIUGM), Montreal, Canada
+    affiliation: Montreal Geriatrics Institute (CRIUGM), Montreal, Canada
   - given-names: Himanshu
     family-names: Aggarwal
     website: https://github.com/man-shu
@@ -374,6 +374,9 @@ authors:
   - given-names: Sam Buck
     family-names: Johnson
     website: https://github.com/sambjohnson
+  - given-names: Samanta
+    family-names: Tarun
+    website: https://github.com/tarunsamanta2k20
   - given-names: Sami
     family-names: Jawhar
     website: https://github.com/sjawhar
@@ -395,7 +398,8 @@ authors:
   - given-names: Taylor
     family-names: Salo
     website: https://tsalo.github.io/
-    affiliation: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania, USA
+    affiliation: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania,
+      USA
   - given-names: Thomas
     family-names: Bazeille
     website: https://github.com/thomasbazeille
