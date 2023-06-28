@@ -10,10 +10,7 @@ from nilearn import image
 from nilearn.datasets._testing import request_mocker  # noqa: F401
 from nilearn.datasets._testing import temp_nilearn_data_dir  # noqa: F401
 
-collect_ignore = [
-    "datasets/data/convert_templates.py",
-    "regions/tests/test_parcellations.py",
-]
+collect_ignore = ["datasets/data/convert_templates.py"]
 
 
 try:
