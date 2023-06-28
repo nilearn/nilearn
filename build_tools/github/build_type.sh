@@ -9,6 +9,8 @@ else
         echo "Building selected example";
         COMMIT_MESSAGE=${GITLOG#*] };
         EXAMPLE="examples/*/$COMMIT_MESSAGE";
+    else
+        EXAMPLE=""
     fi;
     FILENAMES=$(git diff --name-only $(git merge-base $COMMIT_SHA upstream/main) $COMMIT_SHA) $EXAMPLE;
     echo FILENAMES="$FILENAMES";
