@@ -97,17 +97,22 @@ def _get_file_name(nii_file):
 
     base_dir = os.path.dirname(nii_file)
 
-    # Build a list of potential confounds filenames using all combinations of the
-    # entities in the image file.
+    # Build a list of potential confounds filenames using all combinations of
+    # the entities in the image file.
     entities = parse_bids_filename(nii_file)
     file_fields = entities["file_fields"]
     entities = {k: v for k, v in entities.items() if k in file_fields}
     entities["desc"] = "confounds"
+    if "desc" not in file_fields:
+        file_fields.append("desc")
 
     all_subsets = []
     for n_entities in range(1, len(file_fields) + 1):
-        all_subsets.append(itertools.combinations(file_fields, n_entities))
+        all_subsets.append(
+            list(itertools.combinations(file_fields, n_entities))
+        )
 
+    # Flatten the list of lists
     all_subsets = [item for sublist in all_subsets for item in sublist]
     # https://stackoverflow.com/a/3724558/2589328
     unique_subsets = [list(x) for x in set(tuple(x) for x in all_subsets)]
@@ -146,7 +151,8 @@ def _get_file_name(nii_file):
         raise ValueError(
             "Could not find associated confound file. "
             "The functional derivatives should exist under the same parent "
-            "directory."
+            "directory.\n"
+            f"{os.listdir(base_dir)}\n\n{confounds_raw_candidates}"
         )
     elif len(found_candidates) != 1:
         found_str = "\n\t".join(found_candidates)
