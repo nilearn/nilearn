@@ -38,6 +38,8 @@ def test_sanitize_confounds(inputs, flag):
         (False, "_desc-confounds_timeseries", "cifti"),
         (True, "_desc-confounds_regressors", "den"),
         (False, "_desc-confounds_timeseries", "den"),
+        (True, "_desc-confounds_regressors", "part"),
+        (False, "_desc-confounds_timeseries", "part"),
         (True, "_desc-confounds_regressors", "gifti"),
         (False, "_desc-confounds_timeseries", "gifti"),
     ],
