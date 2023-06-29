@@ -105,13 +105,13 @@ def fetch_atlas_difumo(
     valid_resolution_mm = [2, 3]
     if dimension not in valid_dimensions:
         raise ValueError(
-            "Requested dimension={} is not available. Valid "
-            "options: {}".format(dimension, valid_dimensions)
+            f"Requested dimension={dimension} is not available. "
+            f"Valid options: {valid_dimensions}"
         )
     if resolution_mm not in valid_resolution_mm:
         raise ValueError(
-            "Requested resolution_mm={} is not available. Valid "
-            "options: {}".format(resolution_mm, valid_resolution_mm)
+            "Requested resolution_mm={resolution_mm} is not available. "
+            "Valid options: {valid_resolution_mm}"
         )
 
     url = f"https://osf.io/{dic[dimension]}/download"
@@ -338,8 +338,8 @@ def fetch_atlas_destrieux_2009(
     lat = "_lateralized" if lateralized else ""
 
     files = [
-        ("destrieux2009_rois_labels" + lat + ".csv", url, opts),
-        ("destrieux2009_rois" + lat + ".nii.gz", url, opts),
+        (f"destrieux2009_rois_labels{lat}.csv", url, opts),
+        (f"destrieux2009_rois{lat}.nii.gz", url, opts),
         ("destrieux2009.rst", url, opts),
     ]
 
@@ -355,9 +355,7 @@ def fetch_atlas_destrieux_2009(
         warnings.warn(_LEGACY_FORMAT_MSG)
         params["labels"] = params["labels"].to_records()
 
-    with open(files_[2]) as rst_file:
-        params["description"] = rst_file.read()
-
+    params["description"] = Path(files_[2]).read_text()
     return Bunch(**params)
 
 
@@ -480,9 +478,10 @@ def fetch_atlas_harvard_oxford(
         "sub-prob-2mm",
     ]
     if atlas_name not in atlases:
+        atlases = "\n".join(atlases)
         raise ValueError(
-            "Invalid atlas name: {}. Please choose "
-            "an atlas among:\n{}".format(atlas_name, "\n".join(atlases))
+            f"Invalid atlas name: {atlas_name}. "
+            f"Please choose an atlas among:\n{atlases}"
         )
     is_probabilistic = "-prob-" in atlas_name
     if is_probabilistic and symmetric_split:
@@ -614,9 +613,10 @@ def fetch_atlas_juelich(
         "prob-2mm",
     ]
     if atlas_name not in atlases:
+        atlases = "\n".join(atlases)
         raise ValueError(
-            "Invalid atlas name: {}. Please choose "
-            "an atlas among:\n{}".format(atlas_name, "\n".join(atlases))
+            f"Invalid atlas name: {atlas_name}. "
+            f"Please choose an atlas among:\n{atlases}"
         )
     is_probabilistic = atlas_name.startswith("prob-")
     if is_probabilistic and symmetric_split:
@@ -1263,15 +1263,15 @@ def fetch_atlas_aal(
     versions = ["SPM5", "SPM8", "SPM12"]
     if version not in versions:
         raise ValueError(
-            'The version of AAL requested "%s" does not exist.'
-            "Please choose one among %s." % (version, str(versions))
+            f"The version of AAL requested '{version}' does not exist."
+            f"Please choose one among {versions}."
         )
 
     dataset_name = "aal_" + version
     opts = {"uncompress": True}
 
-    base_url = "https://www.gin.cnrs.fr/"
     if url is None:
+        base_url = "https://www.gin.cnrs.fr/"
         if version == "SPM12":
             url = f"{base_url}AAL_files/aal_for_SPM12.tar.gz"
             basenames = ("AAL.nii", "AAL.xml")
@@ -1303,7 +1303,7 @@ def fetch_atlas_aal(
             labels.append(label.find("name").text)
     else:
         with open(labels_file) as fp:
-            for line in fp.readlines():
+            for line in fp:
                 _, label, index = line.strip().split("\t")
                 indices.append(index)
                 labels.append(label)
@@ -1401,9 +1401,9 @@ def fetch_atlas_basc_multiscale_2015(
     versions = ["sym", "asym"]
     if version not in versions:
         raise ValueError(
-            'The version of Brain parcellations requested "%s" '
-            "does not exist. Please choose one among them %s."
-            % (version, str(versions))
+            f"The version of Brain parcellations requested '{version}' "
+            "does not exist. "
+            f"Please choose one among them {versions}."
         )
 
     file_number = "1861819" if version == "sym" else "1861820"
@@ -1727,9 +1727,8 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
         ("description", fdescr),
         ("rsn_indices", labels),
         ("networks", networks),
+        *list(zip(keys, sub_files)),
     ]
-    params.extend(list(zip(keys, sub_files)))
-
     return Bunch(**dict(params))
 
 
@@ -1997,7 +1996,7 @@ def fetch_atlas_pauli_2017(version="prob", data_dir=None, verbose=1):
         filename = "pauli_2017_det.nii.gz"
     else:
         raise NotImplementedError(
-            f"{version} is no valid version for " + "the Pauli atlas"
+            f"{version} is no valid version for the Pauli atlas"
         )
 
     url_labels = "https://osf.io/6qrcb/download"
@@ -2124,13 +2123,13 @@ def fetch_atlas_schaefer_2018(
         )
     if yeo_networks not in valid_yeo_networks:
         raise ValueError(
-            "Requested yeo_networks={} not available. Valid "
-            "options: {}".format(yeo_networks, valid_yeo_networks)
+            f"Requested yeo_networks={yeo_networks} not available. "
+            f"Valid options: {valid_yeo_networks}"
         )
     if resolution_mm not in valid_resolution_mm:
         raise ValueError(
-            "Requested resolution_mm={} not available. Valid "
-            "options: {}".format(resolution_mm, valid_resolution_mm)
+            f"Requested resolution_mm={resolution_mm} not available. "
+            f"Valid options: {valid_resolution_mm}"
         )
 
     if base_url is None:

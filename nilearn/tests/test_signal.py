@@ -432,11 +432,11 @@ def test_clean_t_r():
                                          high_pass=high_cutoff)
 
             if not np.isclose(tr1, tr2, atol=0.3):
-                msg = ('results do not differ for different TRs: {} and {} '
-                       'at cutoffs: low_pass={}, high_pass={} '
-                       'n_samples={}, n_features={}'.format(
-                           tr1, tr2, low_cutoff, high_cutoff,
-                           n_samples, n_features))
+                msg = ('results do not differ '
+                       f'for different TRs: {tr1} and {tr2} '
+                       f'at cutoffs: low_pass={low_cutoff}, '
+                       f'high_pass={high_cutoff} '
+                       f'n_samples={n_samples}, n_features={n_features}')
                 np.testing.assert_(np.any(np.not_equal(det_one_tr,
                                                        det_diff_tr)),
                                    msg)
