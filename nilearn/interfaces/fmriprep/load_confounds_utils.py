@@ -148,13 +148,10 @@ def _get_file_name(nii_file):
     ]
 
     if not found_candidates:
-        base_dir_str = "\n".join(os.listdir(base_dir))
-        candidates_str = "\n".join([os.path.basename(f) for f in confounds_raw_candidates])
         raise ValueError(
             "Could not find associated confound file. "
             "The functional derivatives should exist under the same parent "
-            "directory.\n"
-            f"{base_dir_str}\n\n{candidates_str}"
+            "directory."
         )
     elif len(found_candidates) != 1:
         found_str = "\n\t".join(found_candidates)
