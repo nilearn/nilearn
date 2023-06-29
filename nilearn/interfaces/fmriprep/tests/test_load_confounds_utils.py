@@ -49,17 +49,19 @@ def test_sanitize_confounds(inputs, flag):
             "part",
             {"suffix": "sub-test01_task-test_part-mag_run-01"},
         ),
-        (False, "_desc-confounds_timeseries", "part", {}),
+        (
+            False,
+            "_desc-confounds_timeseries",
+            "part",
+            {"suffix": "sub-test01_task-test_part-mag_run-01"},
+        ),
         (True, "_desc-confounds_regressors", "gifti", {}),
         (False, "_desc-confounds_timeseries", "gifti", {}),
     ],
 )
 def test_get_file_name(tmp_path, flag, suffix, image_type, kwargs):
     img, _ = create_tmp_filepath(
-        tmp_path,
-        image_type=image_type,
-        old_derivative_suffix=flag,
-        **kwargs
+        tmp_path, image_type=image_type, old_derivative_suffix=flag, **kwargs
     )
     conf = _get_file_name(img)
     assert suffix in conf
