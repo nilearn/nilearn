@@ -15,6 +15,8 @@ Fixes
 
 - :bdg-dark:`Code` Fix bug where the `cv_params_` attribute of fitter Decoder objects sometimes had missing entries if `grid_param` is a sequence of dicts with different keys (:gh:`3733` by `Michelle Wang`_).
 
+- Make the :func:`~nilearn.interfaces.fmriprep.load_confounds` confounds file selection more generic (:gh:`3794` by `Taylor Salo`_).
+
 Enhancements
 ------------
 
