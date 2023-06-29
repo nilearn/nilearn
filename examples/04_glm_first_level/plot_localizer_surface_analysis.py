@@ -211,7 +211,7 @@ labels, estimates = run_glm(texture.T, design_matrix.values)
 ###############################################################################
 # Finally, we create contrast-specific maps and plot them.
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
-    print(f"  Contrast {index + 1:1}% i out of {len(contrasts)}: "
+    print(f"  Contrast {index + 1:1} out of {len(contrasts)}: "
           f"{contrast_id}, left hemisphere")
     # compute contrasts
     contrast = compute_contrast(labels, estimates, contrast_val,
