@@ -96,7 +96,7 @@ Uses flake8 tool to verify code is PEP8 compliant. Configured in [.flake8](/.fla
 
 ### f_strings.yml
 
-Checks for f strings in the codebase with [flynt](https://pypi.org/project/flynt/). 
+Checks for f strings in the codebase with [flynt](https://pypi.org/project/flynt/).
 Configured in [pyproject.toml](/pyproject.toml)
 Flynt will check if it automatically convert "format" or "%" strings to "f strings".
 This workflow will fail if it finds any potential target to be converted.

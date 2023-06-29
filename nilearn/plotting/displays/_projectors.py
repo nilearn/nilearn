@@ -46,7 +46,7 @@ class OrthoProjector(OrthoSlicer):
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
         """Find the coordinates of the cut."""
-        return (None, ) * len(cls._cut_displayed)
+        return (None,) * len(cls._cut_displayed)
 
     def draw_cross(self, cut_coords=None, **kwargs):
         """Do nothing.
@@ -56,13 +56,20 @@ class OrthoProjector(OrthoSlicer):
         """
         pass
 
-    def add_graph(self, adjacency_matrix, node_coords,
-                  node_color='auto', node_size=50,
-                  edge_cmap=cm.bwr,
-                  edge_vmin=None, edge_vmax=None,
-                  edge_threshold=None,
-                  edge_kwargs=None, node_kwargs=None, colorbar=False,
-                  ):
+    def add_graph(
+        self,
+        adjacency_matrix,
+        node_coords,
+        node_color="auto",
+        node_size=50,
+        edge_cmap=cm.bwr,
+        edge_vmin=None,
+        edge_vmax=None,
+        edge_threshold=None,
+        edge_kwargs=None,
+        node_kwargs=None,
+        colorbar=False,
+    ):
         """Plot undirected graph on each of the axes.
 
         Parameters
@@ -114,7 +121,7 @@ class OrthoProjector(OrthoSlicer):
             edge_kwargs = {}
         if node_kwargs is None:
             node_kwargs = {}
-        if isinstance(node_color, str) and node_color == 'auto':
+        if isinstance(node_color, str) and node_color == "auto":
             nb_nodes = len(node_coords)
             node_color = mpl_cm.Set2(np.linspace(0, 1, nb_nodes))
         node_coords = np.asarray(node_coords)
@@ -127,19 +134,26 @@ class OrthoProjector(OrthoSlicer):
         adjacency_matrix = np.nan_to_num(adjacency_matrix)
 
         # safety checks
-        if 's' in node_kwargs:
-            raise ValueError("Please use 'node_size' and not 'node_kwargs' "
-                             "to specify node sizes")
-        if 'c' in node_kwargs:
-            raise ValueError("Please use 'node_color' and not 'node_kwargs' "
-                             "to specify node colors")
+        if "s" in node_kwargs:
+            raise ValueError(
+                "Please use 'node_size' and not 'node_kwargs' "
+                "to specify node sizes"
+            )
+        if "c" in node_kwargs:
+            raise ValueError(
+                "Please use 'node_color' and not 'node_kwargs' "
+                "to specify node colors"
+            )
 
         adjacency_matrix_shape = adjacency_matrix.shape
-        if (len(adjacency_matrix_shape) != 2
-                or adjacency_matrix_shape[0] != adjacency_matrix_shape[1]):
+        if (
+            len(adjacency_matrix_shape) != 2
+            or adjacency_matrix_shape[0] != adjacency_matrix_shape[1]
+        ):
             raise ValueError(
                 "'adjacency_matrix' is supposed to have shape (n, n)."
-                f' Its shape was {adjacency_matrix_shape}')
+                f" Its shape was {adjacency_matrix_shape}"
+            )
 
         node_coords_shape = node_coords.shape
         if len(node_coords_shape) != 2 or node_coords_shape[1] != 3:
@@ -147,8 +161,8 @@ class OrthoProjector(OrthoSlicer):
                 "Invalid shape for 'node_coords'. You passed an "
                 "'adjacency_matrix' of shape {0} therefore "
                 "'node_coords' should be a array with shape ({0[0]}, 3) "
-                'while its shape was {1}').format(adjacency_matrix_shape,
-                                                  node_coords_shape)
+                "while its shape was {1}"
+            ).format(adjacency_matrix_shape, node_coords_shape)
 
             raise ValueError(message)
 
@@ -157,29 +171,35 @@ class OrthoProjector(OrthoSlicer):
                 raise ValueError(
                     "Mismatch between the number of nodes "
                     f"({node_coords_shape[0]}) "
-                    f"and the number of node colors ({len(node_color)}).")
+                    f"and the number of node colors ({len(node_color)})."
+                )
 
         if node_coords_shape[0] != adjacency_matrix_shape[0]:
             raise ValueError(
                 "Shape mismatch between 'adjacency_matrix' "
                 "and 'node_coords'"
                 f"'adjacency_matrix' shape is {adjacency_matrix_shape}, "
-                f"'node_coords' shape is {node_coords_shape}")
+                f"'node_coords' shape is {node_coords_shape}"
+            )
 
         # If the adjacency matrix is not symmetric, give a warning
         symmetric = True
         if not np.allclose(adjacency_matrix, adjacency_matrix.T, rtol=1e-3):
             symmetric = False
-            warnings.warn("'adjacency_matrix' is not symmetric. "
-                          "A directed graph will be plotted.")
+            warnings.warn(
+                "'adjacency_matrix' is not symmetric. "
+                "A directed graph will be plotted."
+            )
 
         # For a masked array, masked values are replaced with zeros
-        if hasattr(adjacency_matrix, 'mask'):
+        if hasattr(adjacency_matrix, "mask"):
             if not (adjacency_matrix.mask == adjacency_matrix.mask.T).all():
                 symmetric = False
-                warnings.warn("'adjacency_matrix' was masked with "
-                              "a non symmetric mask. A directed "
-                              "graph will be plotted.")
+                warnings.warn(
+                    "'adjacency_matrix' was masked with "
+                    "a non symmetric mask. A directed "
+                    "graph will be plotted."
+                )
             adjacency_matrix = adjacency_matrix.filled(0)
 
         if edge_threshold is not None:
@@ -187,17 +207,25 @@ class OrthoProjector(OrthoSlicer):
                 # Keep a percentile of edges with the highest absolute
                 # values, so only need to look at the covariance
                 # coefficients below the diagonal
-                lower_diagonal_indices = np.tril_indices_from(adjacency_matrix,
-                                                              k=-1)
+                lower_diagonal_indices = np.tril_indices_from(
+                    adjacency_matrix, k=-1
+                )
                 lower_diagonal_values = adjacency_matrix[
-                    lower_diagonal_indices]
+                    lower_diagonal_indices
+                ]
                 edge_threshold = check_threshold(
-                    edge_threshold, np.abs(lower_diagonal_values),
-                    scoreatpercentile, 'edge_threshold')
+                    edge_threshold,
+                    np.abs(lower_diagonal_values),
+                    scoreatpercentile,
+                    "edge_threshold",
+                )
             else:
                 edge_threshold = check_threshold(
-                    edge_threshold, np.abs(adjacency_matrix.ravel()),
-                    scoreatpercentile, 'edge_threshold')
+                    edge_threshold,
+                    np.abs(adjacency_matrix.ravel()),
+                    scoreatpercentile,
+                    "edge_threshold",
+                )
 
             adjacency_matrix = adjacency_matrix.copy()
             threshold_mask = np.abs(adjacency_matrix) < edge_threshold
@@ -209,20 +237,27 @@ class OrthoProjector(OrthoSlicer):
         else:
             non_zero_indices = adjacency_matrix.nonzero()
 
-        line_coords = [node_coords[list(index)]
-                       for index in zip(*non_zero_indices)]
+        line_coords = [
+            node_coords[list(index)] for index in zip(*non_zero_indices)
+        ]
 
         adjacency_matrix_values = adjacency_matrix[non_zero_indices]
         for ax in self.axes.values():
             ax._add_markers(node_coords, node_color, node_size, **node_kwargs)
             if line_coords:
-                ax._add_lines(line_coords, adjacency_matrix_values, edge_cmap,
-                              vmin=edge_vmin, vmax=edge_vmax,
-                              directed=(not symmetric),
-                              **edge_kwargs)
+                ax._add_lines(
+                    line_coords,
+                    adjacency_matrix_values,
+                    edge_cmap,
+                    vmin=edge_vmin,
+                    vmax=edge_vmax,
+                    directed=(not symmetric),
+                    **edge_kwargs,
+                )
             # To obtain the brain left view, we simply invert the x axis
-            if (ax.direction == 'l'
-               and not (ax.ax.get_xlim()[0] > ax.ax.get_xlim()[1])):
+            if ax.direction == "l" and not (
+                ax.ax.get_xlim()[0] > ax.ax.get_xlim()[1]
+            ):
                 ax.ax.invert_xaxis()
 
         if colorbar:
@@ -261,7 +296,7 @@ class XProjector(OrthoProjector):
 
     """
 
-    _cut_displayed = 'x'
+    _cut_displayed = "x"
     _default_figsize = [2.6, 2.3]
 
 
@@ -294,7 +329,7 @@ class YProjector(OrthoProjector):
 
     """
 
-    _cut_displayed = 'y'
+    _cut_displayed = "y"
     _default_figsize = [2.2, 2.3]
 
 
@@ -327,7 +362,7 @@ class ZProjector(OrthoProjector):
 
     """
 
-    _cut_displayed = 'z'
+    _cut_displayed = "z"
     _default_figsize = [2.2, 2.3]
 
 
@@ -363,7 +398,7 @@ class XZProjector(OrthoProjector):
 
     """
 
-    _cut_displayed = 'xz'
+    _cut_displayed = "xz"
 
 
 class YXProjector(OrthoProjector):
@@ -398,7 +433,7 @@ class YXProjector(OrthoProjector):
 
     """
 
-    _cut_displayed = 'yx'
+    _cut_displayed = "yx"
 
 
 class YZProjector(OrthoProjector):
@@ -432,7 +467,7 @@ class YZProjector(OrthoProjector):
 
     """
 
-    _cut_displayed = 'yz'
+    _cut_displayed = "yz"
 
 
 class LYRZProjector(OrthoProjector):
@@ -466,7 +501,7 @@ class LYRZProjector(OrthoProjector):
 
     """
 
-    _cut_displayed = 'lyrz'
+    _cut_displayed = "lyrz"
 
 
 class LZRYProjector(OrthoProjector):
@@ -500,7 +535,7 @@ class LZRYProjector(OrthoProjector):
 
     """
 
-    _cut_displayed = 'lzry'
+    _cut_displayed = "lzry"
 
 
 class LZRProjector(OrthoProjector):
@@ -533,7 +568,7 @@ class LZRProjector(OrthoProjector):
 
     """
 
-    _cut_displayed = 'lzr'
+    _cut_displayed = "lzr"
 
 
 class LYRProjector(OrthoProjector):
@@ -566,7 +601,7 @@ class LYRProjector(OrthoProjector):
 
     """
 
-    _cut_displayed = 'lyr'
+    _cut_displayed = "lyr"
 
 
 class LRProjector(OrthoProjector):
@@ -595,7 +630,7 @@ class LRProjector(OrthoProjector):
 
     """
 
-    _cut_displayed = 'lr'
+    _cut_displayed = "lr"
 
 
 class LProjector(OrthoProjector):
@@ -627,7 +662,7 @@ class LProjector(OrthoProjector):
 
     """
 
-    _cut_displayed = 'l'
+    _cut_displayed = "l"
     _default_figsize = [2.6, 2.3]
 
 
@@ -659,24 +694,26 @@ class RProjector(OrthoProjector):
 
     """
 
-    _cut_displayed = 'r'
+    _cut_displayed = "r"
     _default_figsize = [2.6, 2.3]
 
 
-PROJECTORS = dict(ortho=OrthoProjector,
-                  xz=XZProjector,
-                  yz=YZProjector,
-                  yx=YXProjector,
-                  x=XProjector,
-                  y=YProjector,
-                  z=ZProjector,
-                  lzry=LZRYProjector,
-                  lyrz=LYRZProjector,
-                  lyr=LYRProjector,
-                  lzr=LZRProjector,
-                  lr=LRProjector,
-                  l=LProjector,
-                  r=RProjector)
+PROJECTORS = dict(
+    ortho=OrthoProjector,
+    xz=XZProjector,
+    yz=YZProjector,
+    yx=YXProjector,
+    x=XProjector,
+    y=YProjector,
+    z=ZProjector,
+    lzry=LZRYProjector,
+    lyrz=LYRZProjector,
+    lyr=LYRProjector,
+    lzr=LZRProjector,
+    lr=LRProjector,
+    l=LProjector,
+    r=RProjector,
+)
 
 
 def get_projector(display_mode):
