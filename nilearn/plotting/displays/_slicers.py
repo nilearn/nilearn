@@ -300,7 +300,7 @@ class BaseSlicer:
         """
         if colorbar and self._colorbar:
             raise ValueError(
-                "This figure already has an overlay with a " "colorbar."
+                "This figure already has an overlay with a colorbar."
             )
         else:
             self._colorbar = colorbar
