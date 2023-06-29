@@ -98,7 +98,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             import kaleido  # noqa: F401
         except ImportError:
             raise ImportError(
-                "`kaleido` is required to save plotly " "figures to disk."
+                "`kaleido` is required to save plotly figures to disk."
             )
         self._check_output_file(output_file=output_file)
         if self.figure is not None:
