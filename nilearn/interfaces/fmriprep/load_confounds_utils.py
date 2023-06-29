@@ -140,9 +140,8 @@ def _get_file_name(nii_file):
             "directory."
         )
     elif len(found_candidates) != 1:
-        raise ValueError(
-            f"Found more than one confound file:\n\t{'\n\t'.join(found_candidates)}."
-        )
+        found_str = "\n\t".join(found_candidates)
+        raise ValueError(f"Found more than one confound file:\n\t{found_str}.")
     else:
         return found_candidates[0]
 
