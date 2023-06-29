@@ -90,46 +90,61 @@ def _add_suffix(params, model):
 
 def _get_file_name(nii_file):
     """Construct the raw confound file name from processed functional data."""
+    import itertools
+
     if isinstance(nii_file, list):  # catch gifti
         nii_file = nii_file[0]
+
+    base_dir = os.path.dirname(nii_file)
+
     entities = parse_bids_filename(nii_file)
-    subject_label = f"sub-{entities['sub']}"
-    if "ses" in entities:
-        subject_label = f"{subject_label}_ses-{entities['ses']}"
-    specifiers = f"task-{entities['task']}"
-    if "run" in entities:
-        specifiers = f"{specifiers}_run-{entities['run']}"
-    img_filename = nii_file.split(os.sep)[-1]
+    file_fields = entities["file_fields"]
+    entities = {k: v for k, v in entities.items() if k in file_fields}
+    entities["desc"] = "confounds"
+
+    all_subsets = []
+    for n_entities in range(1, len(file_fields) + 1):
+        all_subsets.append(itertools.combinations(file_fields, n_entities))
+
+    all_subsets = [item for sublist in all_subsets for item in sublist]
+    # https://stackoverflow.com/a/3724558/2589328
+    unique_subsets = [list(x) for x in set(tuple(x) for x in all_subsets)]
+
+    # Require "desc"
+    unique_subsets = [subset for subset in unique_subsets if "desc" in subset]
+
+    filenames = [
+        "_".join(["-".join([k, v]) for k, v in entities.items() if k in lst]) for lst in unique_subsets
+    ]
+
     # fmriprep has changed the file suffix between v20.1.1 and v20.2.0 with
     # respect to BEP 012.
     # cf. https://neurostars.org/t/naming-change-confounds-regressors-to-confounds-timeseries/17637 # noqa
     # Check file with new naming scheme exists or replace,
     # for backward compatibility.
-    confounds_raw_candidates = [
-        nii_file.replace(
-            img_filename,
-            f"{subject_label}_{specifiers}_desc-confounds_timeseries.tsv",
-        ),
-        nii_file.replace(
-            img_filename,
-            f"{subject_label}_{specifiers}_desc-confounds_regressors.tsv",
-        ),
-    ]
+    suffixes = ["_timeseries.tsv", "_regressors.tsv"]
 
-    confounds_raw = [
-        cr for cr in confounds_raw_candidates if os.path.exists(cr)
-    ]
+    confounds_raw_candidates = []
+    for suffix in suffixes:
+        confounds_raw_candidates += [f + suffix for f in filenames]
 
-    if not confounds_raw:
+    # https://www.geeksforgeeks.org/python-sort-list-of-lists-by-the-size-of-sublists/
+    confounds_raw_candidates = sorted(confounds_raw_candidates, key=len)[::-1]
+    confounds_raw_candidates = [os.path.join(base_dir, crc) for crc in confounds_raw_candidates]
+    found_candidates = [cr for cr in confounds_raw_candidates if os.path.isfile(cr)]
+
+    if not found_candidates:
         raise ValueError(
             "Could not find associated confound file. "
             "The functional derivatives should exist under the same parent "
             "directory."
         )
-    elif len(confounds_raw) != 1:
-        raise ValueError("Found more than one confound file.")
+    elif len(found_candidates) != 1:
+        raise ValueError(
+            f"Found more than one confound file:\n\t{'\n\t'.join(found_candidates)}."
+        )
     else:
-        return confounds_raw[0]
+        return found_candidates[0]
 
 
 def _get_confounds_file(image_file, flag_full_aroma):
