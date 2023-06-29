@@ -20,13 +20,19 @@ def _optimize_scrub(motion_outliers_index, n_scans, scrub):
     # Now do everything in between
     fd_outlier_ind_diffs = np.diff(motion_outliers_index)
     short_segments_inds = np.where(
-        np.logical_and(fd_outlier_ind_diffs > 1,
-                       fd_outlier_ind_diffs < (scrub + 1)))[0]
+        np.logical_and(
+            fd_outlier_ind_diffs > 1, fd_outlier_ind_diffs < (scrub + 1)
+        )
+    )[0]
     for ind in short_segments_inds:
         motion_outliers_index = np.asarray(
             list(motion_outliers_index)
-            + list(range(motion_outliers_index[ind] + 1,
-                         motion_outliers_index[ind + 1]))
+            + list(
+                range(
+                    motion_outliers_index[ind] + 1,
+                    motion_outliers_index[ind + 1],
+                )
+            )
         )
     motion_outliers_index = np.sort(np.unique(motion_outliers_index))
     return motion_outliers_index

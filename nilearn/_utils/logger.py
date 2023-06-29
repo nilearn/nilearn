@@ -106,6 +106,6 @@ def _compose_err_msg(msg, **kwargs):
     updated_msg = msg
     for k, v in sorted(kwargs.items()):
         if isinstance(v, str):  # print only str-like arguments
-            updated_msg += "\n" + k + ": " + v
+            updated_msg += f"\n{k}: {v}"
 
     return updated_msg

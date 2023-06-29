@@ -1151,7 +1151,7 @@ def fetch_abide_pcp(
     # Fetch the phenotypic file and load it
     csv = "Phenotypic_V1_0b_preprocessed1.csv"
     path_csv = _fetch_files(
-        data_dir, [(csv, url + "/" + csv, {})], verbose=verbose
+        data_dir, [(csv, f"{url}/{csv}", {})], verbose=verbose
     )[0]
 
     # Note: the phenotypic file contains string that contains comma which mess
@@ -1160,7 +1160,7 @@ def fetch_abide_pcp(
     # done simply with pandas but we don't want such dependency ATM
     # pheno = pandas.read_csv(path_csv).to_records()
     with open(path_csv) as pheno_f:
-        pheno = ["i" + pheno_f.readline()]
+        pheno = [f"i{pheno_f.readline()}"]
 
         # This regexp replaces commas between double quotes
         pheno.extend(
@@ -1202,9 +1202,9 @@ def fetch_abide_pcp(
         for file_id in file_ids:
             file_ = [
                 (
-                    file_id + "_" + derivative + ext,
+                    f"{file_id}_{derivative}{ext}",
                     "/".join(
-                        [url, derivative, file_id + "_" + derivative + ext]
+                        [url, derivative, f"{file_id}_{derivative}{ext}"]
                     ),
                     {},
                 )

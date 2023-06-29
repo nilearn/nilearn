@@ -27,7 +27,7 @@ all_confounds = [
     "compcor",
     "ica_aroma",
     "scrub",
-    "non_steady_state"
+    "non_steady_state",
 ]
 
 # extra parameters needed for each noise component
@@ -44,21 +44,27 @@ component_parameters = {
 def _check_strategy(strategy):
     """Ensure the denoising strategies are valid."""
     if (not isinstance(strategy, tuple)) and (not isinstance(strategy, list)):
-        raise ValueError("strategy needs to be a tuple or list of strings"
-                         f" A {type(strategy)} was provided instead.")
+        raise ValueError(
+            "strategy needs to be a tuple or list of strings"
+            f" A {type(strategy)} was provided instead."
+        )
     for conf in strategy:
         if conf == "non_steady_state":
-            warnings.warn("Non-steady state volumes are always detected. It "
-                          "doesn't need to be supplied as part of the "
-                          "strategy. Supplying non_steady_state in strategy "
-                          "will not have additional effect.")
+            warnings.warn(
+                "Non-steady state volumes are always detected. It "
+                "doesn't need to be supplied as part of the "
+                "strategy. Supplying non_steady_state in strategy "
+                "will not have additional effect."
+            )
         if conf not in all_confounds:
             raise ValueError(f"{conf} is not a supported type of confounds.")
 
     # high pass filtering must be present if using fmriprep compcor outputs
     if ("compcor" in strategy) and ("high_pass" not in strategy):
-        raise ValueError("When using compcor, `high_pass` must be included in "
-                         f"strategy. Current strategy: '{strategy}'")
+        raise ValueError(
+            "When using compcor, `high_pass` must be included in "
+            f"strategy. Current strategy: '{strategy}'"
+        )
 
 
 def _check_error(missing):
@@ -73,15 +79,20 @@ def _check_error(missing):
         raise ValueError(error_msg)
 
 
-def load_confounds(img_files,
-                   strategy=("motion", "high_pass", "wm_csf"),
-                   motion="full",
-                   scrub=5, fd_threshold=0.2, std_dvars_threshold=3,
-                   wm_csf="basic",
-                   global_signal="basic",
-                   compcor="anat_combined", n_compcor="all",
-                   ica_aroma="full",
-                   demean=True):
+def load_confounds(
+    img_files,
+    strategy=("motion", "high_pass", "wm_csf"),
+    motion="full",
+    scrub=5,
+    fd_threshold=0.2,
+    std_dvars_threshold=3,
+    wm_csf="basic",
+    global_signal="basic",
+    compcor="anat_combined",
+    n_compcor="all",
+    ica_aroma="full",
+    demean=True,
+):
     """
     Use confounds from :term:`fMRIPrep`.
 
@@ -277,15 +288,19 @@ def load_confounds(img_files,
     sample_mask_out = []
     for file in img_files:
         sample_mask, conf = _load_confounds_for_single_image_file(
-            file, strategy, demean,
+            file,
+            strategy,
+            demean,
             motion=motion,
             scrub=scrub,
             fd_threshold=fd_threshold,
             std_dvars_threshold=std_dvars_threshold,
             wm_csf=wm_csf,
             global_signal=global_signal,
-            compcor=compcor, n_compcor=n_compcor,
-            ica_aroma=ica_aroma)
+            compcor=compcor,
+            n_compcor=n_compcor,
+            ica_aroma=ica_aroma,
+        )
         confounds_out.append(conf)
         sample_mask_out.append(sample_mask)
 
@@ -297,27 +312,32 @@ def load_confounds(img_files,
     return confounds_out, sample_mask_out
 
 
-def _load_confounds_for_single_image_file(image_file, strategy, demean,
-                                          **kwargs):
+def _load_confounds_for_single_image_file(
+    image_file, strategy, demean, **kwargs
+):
     """Load confounds for a single image file."""
     # Check for ica_aroma in strategy, this will change the required image_file
     flag_full_aroma = ("ica_aroma" in strategy) and (
         kwargs.get("ica_aroma") == "full"
     )
 
-    confounds_file = _get_confounds_file(image_file,
-                                         flag_full_aroma=flag_full_aroma)
+    confounds_file = _get_confounds_file(
+        image_file, flag_full_aroma=flag_full_aroma
+    )
     confounds_json_file = _get_json(confounds_file)
 
-    return _load_single_confounds_file(confounds_file=confounds_file,
-                                       strategy=strategy,
-                                       demean=demean,
-                                       confounds_json_file=confounds_json_file,
-                                       **kwargs)
+    return _load_single_confounds_file(
+        confounds_file=confounds_file,
+        strategy=strategy,
+        demean=demean,
+        confounds_json_file=confounds_json_file,
+        **kwargs,
+    )
 
 
-def _load_single_confounds_file(confounds_file, strategy, demean=True,
-                                confounds_json_file=None, **kwargs):
+def _load_single_confounds_file(
+    confounds_file, strategy, demean=True, confounds_json_file=None, **kwargs
+):
     """Load and extract specified confounds from the confounds file."""
     flag_acompcor = ("compcor" in strategy) and (
         "anat" in kwargs.get("compcor")
@@ -329,22 +349,26 @@ def _load_single_confounds_file(confounds_file, strategy, demean=True,
         confounds_json_file = _get_json(confounds_file)
 
     # Read the associated json file
-    meta_json = _load_confounds_json(confounds_json_file,
-                                     flag_acompcor=flag_acompcor)
+    meta_json = _load_confounds_json(
+        confounds_json_file, flag_acompcor=flag_acompcor
+    )
 
     missing = {"confounds": [], "keywords": []}
     # always check non steady state volumes are loaded
-    confounds_select, missing = _load_noise_component(confounds_all,
-                                                      "non_steady_state",
-                                                      missing,
-                                                      meta_json=meta_json,
-                                                      **kwargs)
+    confounds_select, missing = _load_noise_component(
+        confounds_all,
+        "non_steady_state",
+        missing,
+        meta_json=meta_json,
+        **kwargs,
+    )
     for component in strategy:
         loaded_confounds, missing = _load_noise_component(
-            confounds_all, component, missing, meta_json=meta_json,
-            **kwargs)
-        confounds_select = pd.concat([confounds_select, loaded_confounds],
-                                     axis=1)
+            confounds_all, component, missing, meta_json=meta_json, **kwargs
+        )
+        confounds_select = pd.concat(
+            [confounds_select, loaded_confounds], axis=1
+        )
 
     _check_error(missing)  # raise any missing
     return _prepare_output(confounds_select, demean)
@@ -357,10 +381,12 @@ def _load_noise_component(confounds_raw, component, missing, **kargs):
         if need_params:
             params = {param: kargs.get(param) for param in need_params}
             loaded_confounds = getattr(components, f"_load_{component}")(
-                confounds_raw, **params)
+                confounds_raw, **params
+            )
         else:
             loaded_confounds = getattr(components, f"_load_{component}")(
-                confounds_raw)
+                confounds_raw
+            )
     except MissingConfound as exception:
         missing["confounds"] += exception.params
         missing["keywords"] += exception.keywords

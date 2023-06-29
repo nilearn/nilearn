@@ -20,7 +20,7 @@ jobs:
     # This prevents this workflow from running on a fork.
     # To test this workflow on a fork, uncomment the following line.
     if: github.repository == 'nilearn/nilearn'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     timeout-minutes: 360
     env:
       BROWSER: "/usr/bin/firefox"

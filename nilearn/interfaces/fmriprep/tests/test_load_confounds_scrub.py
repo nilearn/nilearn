@@ -77,9 +77,7 @@ def test_extract_outlier_regressors():
     # scrub only
     srub_conf = pd.concat([fake_confounds, scrub_vol], axis=1)
     make_mask = np.delete(np.arange(n_scans), idx_scrubbed)
-    sample_mask, confounds, outliers = _extract_outlier_regressors(
-        srub_conf
-    )
+    sample_mask, confounds, outliers = _extract_outlier_regressors(srub_conf)
     assert np.array_equal(sample_mask, make_mask) is True
     assert_frame_equal(outliers, scrub_vol)
     assert_frame_equal(confounds, fake_confounds)
@@ -93,9 +91,7 @@ def test_extract_outlier_regressors():
     )
     make_outliers = make_outliers.drop(columns="non_steady_state_outlier02")
 
-    sample_mask, confounds, outliers = _extract_outlier_regressors(
-        all_conf
-    )
+    sample_mask, confounds, outliers = _extract_outlier_regressors(all_conf)
     assert len(sample_mask) == 44
     assert np.array_equal(sample_mask, make_mask) is True
     assert_frame_equal(outliers, make_outliers)

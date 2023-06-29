@@ -93,10 +93,9 @@ def assert_memory_less_than(
 
     if mem_used > memory_limit * (1 + tolerance):
         raise ValueError(
-            "Memory consumption measured ({:.2f} MiB) is "
-            "greater than required memory limit ({} MiB) within "
-            "accepted tolerance ({:.2f}%)."
-            "".format(mem_used, memory_limit, tolerance * 100)
+            f"Memory consumption measured ({mem_used:.2f} MiB) is "
+            f"greater than required memory limit ({memory_limit} MiB) within "
+            f"accepted tolerance ({tolerance * 100:.2f}%)."
         )
 
     # We are confident in memory_profiler measures above 100MiB.
@@ -185,7 +184,7 @@ def write_tmp_imgs(*imgs, **kwargs):
                     del img
 
                 if use_wildcards:
-                    yield prefix + "*" + suffix
+                    yield f"{prefix}*{suffix}"
                 else:
                     if len(imgs) == 1:
                         yield filenames[0]

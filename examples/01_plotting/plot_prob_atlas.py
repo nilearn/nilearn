@@ -24,7 +24,7 @@ See :ref:`plotting` for more information to know how to tune the parameters.
 # Load 4D probabilistic atlases
 from nilearn import datasets, plotting
 
-# Harvard Oxford Atlasf
+# Harvard Oxford Atlas
 harvard_oxford = datasets.fetch_atlas_harvard_oxford("cort-prob-2mm")
 harvard_oxford_sub = datasets.fetch_atlas_harvard_oxford("sub-prob-2mm")
 
@@ -67,8 +67,8 @@ difumo = datasets.fetch_atlas_difumo(
     dimension=dim, resolution_mm=res, legacy_format=False
 )
 
+#########################################################################
 # Visualization
-
 atlas_types = {
     "Harvard_Oxford": harvard_oxford.maps,
     "Harvard_Oxford sub": harvard_oxford_sub.maps,
