@@ -312,7 +312,7 @@ def _get_dataset_dir(
 
     raise OSError(
         "Nilearn tried to store the dataset in the following "
-        "directories, but:" + "".join(errors)
+        f"directories, but: {''.join(errors)}"
     )
 
 

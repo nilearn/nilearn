@@ -48,26 +48,25 @@ def _check_memory(memory, verbose=0):
                 # Maybe the user want to enable expanded user path.
                 error_msg = (
                     "Given cache path parent directory doesn't "
-                    "exists, you gave '{}'. Enabling "
+                    f"exists, you gave '{split_cache_dir[0]}'. Enabling "
                     "nilearn.EXPAND_PATH_WILDCARDS could solve "
-                    "this issue.".format(split_cache_dir[0])
+                    "this issue."
                 )
             elif memory.startswith("~"):
                 # Path built on top of expanded user path doesn't exist.
                 error_msg = (
                     "Given cache path parent directory doesn't "
-                    "exists, you gave '{}' which was expanded "
-                    "as '{}' but doesn't exist either. Use "
-                    "nilearn.EXPAND_PATH_WILDCARDS to deactivate "
-                    "auto expand user path (~) behavior.".format(
-                        split_cache_dir[0], os.path.dirname(memory)
-                    )
+                    f"exists, you gave '{split_cache_dir[0]}' "
+                    "which was expanded as '{os.path.dirname(memory)}' "
+                    "but doesn't exist either. "
+                    "Use nilearn.EXPAND_PATH_WILDCARDS to deactivate "
+                    "auto expand user path (~) behavior."
                 )
             else:
                 # The given cache base path doesn't exist.
                 error_msg = (
                     "Given cache path parent directory doesn't "
-                    "exists, you gave '{}'.".format(split_cache_dir[0])
+                    "exists, you gave '{split_cache_dir[0]}'."
                 )
             raise ValueError(error_msg)
 
@@ -159,7 +158,7 @@ def cache(
             raise TypeError(
                 "'memory' argument must be a string or a "
                 "joblib.Memory object. "
-                "%s %s was given." % (memory, type(memory))
+                f"{memory} {type(memory)} was given."
             )
         if (
             memory.location is None
@@ -167,10 +166,10 @@ def cache(
             and memory_level > 1
         ):
             warnings.warn(
-                "Caching has been enabled (memory_level = %d) "
+                f"Caching has been enabled (memory_level = {memory_level}) "
                 "but no Memory object or path has been provided"
                 " (parameter memory). Caching deactivated for "
-                "function %s." % (memory_level, func.__name__),
+                f"function {func.__name__}.",
                 stacklevel=2,
             )
     else:

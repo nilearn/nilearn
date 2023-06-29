@@ -149,4 +149,4 @@ repos:
     hooks:
       - id: flake8
         args: ["--config", ".flake8", "--verbose"]
-        additional_dependencies: [flake8-docstrings]
+        additional_dependencies: [flake8-docstrings, flake8-use-fstring]
