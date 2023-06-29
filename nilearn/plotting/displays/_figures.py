@@ -65,7 +65,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             import plotly.graph_objects as go
         except ImportError:
             raise ImportError(
-                "Plotly is required to use " "`PlotlySurfaceFigure`."
+                "Plotly is required to use `PlotlySurfaceFigure`."
             )
         if figure is not None and not isinstance(figure, go.Figure):
             raise TypeError(
