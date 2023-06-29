@@ -97,6 +97,8 @@ def _get_file_name(nii_file):
 
     base_dir = os.path.dirname(nii_file)
 
+    # Build a list of potential confounds filenames using all combinations of the
+    # entities in the image file.
     entities = parse_bids_filename(nii_file)
     file_fields = entities["file_fields"]
     entities = {k: v for k, v in entities.items() if k in file_fields}
@@ -114,7 +116,8 @@ def _get_file_name(nii_file):
     unique_subsets = [subset for subset in unique_subsets if "desc" in subset]
 
     filenames = [
-        "_".join(["-".join([k, v]) for k, v in entities.items() if k in lst]) for lst in unique_subsets
+        "_".join(["-".join([k, v]) for k, v in entities.items() if k in lst])
+        for lst in unique_subsets
     ]
 
     # fmriprep has changed the file suffix between v20.1.1 and v20.2.0 with
@@ -128,10 +131,16 @@ def _get_file_name(nii_file):
     for suffix in suffixes:
         confounds_raw_candidates += [f + suffix for f in filenames]
 
+    # Sort the potential filenames by decreasing length,
+    # so earlier entries reflect more retained entities.
     # https://www.geeksforgeeks.org/python-sort-list-of-lists-by-the-size-of-sublists/
     confounds_raw_candidates = sorted(confounds_raw_candidates, key=len)[::-1]
-    confounds_raw_candidates = [os.path.join(base_dir, crc) for crc in confounds_raw_candidates]
-    found_candidates = [cr for cr in confounds_raw_candidates if os.path.isfile(cr)]
+    confounds_raw_candidates = [
+        os.path.join(base_dir, crc) for crc in confounds_raw_candidates
+    ]
+    found_candidates = [
+        cr for cr in confounds_raw_candidates if os.path.isfile(cr)
+    ]
 
     if not found_candidates:
         raise ValueError(
