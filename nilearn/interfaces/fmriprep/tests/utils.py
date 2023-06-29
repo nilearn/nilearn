@@ -15,7 +15,7 @@ img_file_patterns = {
     "cifti": "_space-fsLR_den-91k_bold.dtseries.nii",
     "den": "_space-fsLR_den-32k_desc-preproc_bold.nii.gz",
     "part": (
-        "_dir-ap_run-1_part-mag_space-MNI152NLin2009cAsym_"
+        "_part-mag_space-MNI152NLin2009cAsym_"
         "desc-preproc_bold.nii.gz"
     ),
     "gifti": (

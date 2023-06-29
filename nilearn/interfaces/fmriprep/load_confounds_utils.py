@@ -113,7 +113,7 @@ def _get_file_name(nii_file):
         )
 
     # Flatten the list of lists
-    all_subsets = [item for sublist in all_subsets for item in sublist]
+    all_subsets = [list(item) for sublist in all_subsets for item in sublist]
     # https://stackoverflow.com/a/3724558/2589328
     unique_subsets = [list(x) for x in set(tuple(x) for x in all_subsets)]
 
@@ -121,7 +121,7 @@ def _get_file_name(nii_file):
     unique_subsets = [subset for subset in unique_subsets if "desc" in subset]
 
     filenames = [
-        "_".join(["-".join([k, v]) for k, v in entities.items() if k in lst])
+        "_".join(["-".join([k, entities[k]]) for k in lst])
         for lst in unique_subsets
     ]
 
@@ -148,15 +148,17 @@ def _get_file_name(nii_file):
     ]
 
     if not found_candidates:
+        base_dir_str = "\n".join(os.listdir(base_dir))
+        candidates_str = "\n".join([os.path.basename(f) for f in confounds_raw_candidates])
         raise ValueError(
             "Could not find associated confound file. "
             "The functional derivatives should exist under the same parent "
             "directory.\n"
-            f"{os.listdir(base_dir)}\n\n{confounds_raw_candidates}"
+            f"{base_dir_str}\n\n{candidates_str}"
         )
     elif len(found_candidates) != 1:
         found_str = "\n\t".join(found_candidates)
-        raise ValueError(f"Found more than one confound file:\n\t{found_str}.")
+        raise ValueError(f"Found more than one confound file:\n\t{found_str}")
     else:
         return found_candidates[0]
 
