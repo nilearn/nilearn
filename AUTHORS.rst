@@ -16,19 +16,8 @@ An up-to-date list of contributors can be seen in on
 
 Additional credit goes to `Michael Hanke`_ and `Yaroslav Halchenko`_ for data and packaging.
 
-.. The Core developers section is added automatically
-   and should not be edited manually.
-
-.. The Core developers section is added automatically
-   and should not be edited manually.
-
-.. The Core developers section is added automatically
-   and should not be edited manually.
-
-.. The Core developers section is added automatically
-   and should not be edited manually.
-
-.. The Core developers section is added automatically
+.. CORE DEV SECTION STARTS HERE
+   The Core developers section is added automatically
    and should not be edited manually.
 
 .. _core_devs:
@@ -48,8 +37,10 @@ The nilearn core developers are:
 * `Taylor Salo`_
 * `Yasmin Mzayek`_
 
+.. CORE DEV SECTION ENDS HERE
 
-.. The Other contributors section is added automatically
+.. OTHER CONTRIBUTION SECTION STARTS HERE
+   The Other contributors section is added automatically
    and should not be edited manually.
 
 Other contributors
@@ -186,6 +177,8 @@ Some other past or present contributors are:
 * `Yasmin Mzayek`_
 * `Zvi Baratz`_
 * `Óscar Nájera`_
+
+.. OTHER CONTRIBUTION SECTION ENDS HERE
 
 Funding
 .......

@@ -65,6 +65,7 @@ doc = [
 	"mkl",
 	"myst-parser",
 	"numpydoc",
+  "ruamel.yaml",
 	"sphinx",
 	"sphinx-copybutton",
 	"sphinx-design",
