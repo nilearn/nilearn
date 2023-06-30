@@ -161,9 +161,9 @@ class BaseSlicer:
                 figsize[0] += 3.4
             figure = plt.figure(figure, figsize=figsize, facecolor=facecolor)
         if isinstance(axes, plt.Axes):
-            assert axes.figure is figure, (
-                "The axes passed are not in the figure"
-            )
+            assert (
+                axes.figure is figure
+            ), "The axes passed are not in the figure"
 
         if axes is None:
             axes = [0.0, 0.0, 1.0, 1.0]
