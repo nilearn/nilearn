@@ -1,4 +1,5 @@
 """Helper functions for the manipulation of fmriprep output confounds."""
+import itertools
 import json
 import os
 import re
@@ -88,17 +89,12 @@ def _add_suffix(params, model):
     return params_full
 
 
-def _get_file_name(nii_file):
-    """Construct the raw confound file name from processed functional data."""
-    import itertools
+def _generate_confounds_file_candidates(nii_file):
+    """Generate confounds file candidates.
 
-    if isinstance(nii_file, list):  # catch gifti
-        nii_file = nii_file[0]
-
-    base_dir = os.path.dirname(nii_file)
-
-    # Build a list of potential confounds filenames using all combinations of
-    # the entities in the image file.
+    Build a list of potential confounds filenames using all combinations of
+    the entities in the image file.
+    """
     entities = parse_bids_filename(nii_file)
     file_fields = entities["file_fields"]
     entities = {k: v for k, v in entities.items() if k in file_fields}
@@ -124,6 +120,17 @@ def _get_file_name(nii_file):
         "_".join(["-".join([k, entities[k]]) for k in lst])
         for lst in unique_subsets
     ]
+    return filenames
+
+
+def _get_file_name(nii_file):
+    """Identify the confounds file associated with a functional image."""
+    if isinstance(nii_file, list):  # catch gifti
+        nii_file = nii_file[0]
+
+    base_dir = os.path.dirname(nii_file)
+
+    filenames = _generate_confounds_file_candidates(nii_file)
 
     # fmriprep has changed the file suffix between v20.1.1 and v20.2.0 with
     # respect to BEP 012.
@@ -132,32 +139,30 @@ def _get_file_name(nii_file):
     # for backward compatibility.
     suffixes = ["_timeseries.tsv", "_regressors.tsv"]
 
-    confounds_raw_candidates = []
+    confound_file_candidates = []
     for suffix in suffixes:
-        confounds_raw_candidates += [f + suffix for f in filenames]
+        confound_file_candidates += [f + suffix for f in filenames]
 
     # Sort the potential filenames by decreasing length,
     # so earlier entries reflect more retained entities.
     # https://www.geeksforgeeks.org/python-sort-list-of-lists-by-the-size-of-sublists/
-    confounds_raw_candidates = sorted(confounds_raw_candidates, key=len)[::-1]
-    confounds_raw_candidates = [
-        os.path.join(base_dir, crc) for crc in confounds_raw_candidates
+    confound_file_candidates = sorted(confound_file_candidates, key=len)[::-1]
+    confound_file_candidates = [
+        os.path.join(base_dir, crc) for crc in confound_file_candidates
     ]
-    found_candidates = [
-        cr for cr in confounds_raw_candidates if os.path.isfile(cr)
-    ]
+    found_files = [cr for cr in confound_file_candidates if os.path.isfile(cr)]
 
-    if not found_candidates:
+    if not found_files:
         raise ValueError(
             "Could not find associated confound file. "
             "The functional derivatives should exist under the same parent "
             "directory."
         )
-    elif len(found_candidates) != 1:
-        found_str = "\n\t".join(found_candidates)
+    elif len(found_files) != 1:
+        found_str = "\n\t".join(found_files)
         raise ValueError(f"Found more than one confound file:\n\t{found_str}")
     else:
-        return found_candidates[0]
+        return found_files[0]
 
 
 def _get_confounds_file(image_file, flag_full_aroma):
