@@ -28,11 +28,7 @@ def test_auto_mask():
     pytest.raises(
         ValueError,
         masker.transform,
-        [
-            [
-                img,
-            ]
-        ],
+        [[img]],
     )
     # Check error return due to bad data format
     pytest.raises(ValueError, masker.fit, img)
@@ -47,13 +43,7 @@ def test_auto_mask():
     masker.fit([[img, img2]])
     assert_array_equal(get_data(masker.mask_img_), np.logical_or(data, data2))
     # Smoke test the transform
-    masker.transform(
-        [
-            [
-                img,
-            ]
-        ]
-    )
+    masker.transform([[img]])
     # It should also work with a 3D image
     masker.transform(img)
 
