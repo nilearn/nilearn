@@ -850,7 +850,7 @@ class OrthoSlicer(BaseSlicer):
 
     _cut_displayed = "yxz"
     _axes_class = CutAxes
-    _default_figsize = [2.2, 2.8]
+    _default_figsize = [2.2, 3.0]
 
     @fill_doc
     @classmethod
