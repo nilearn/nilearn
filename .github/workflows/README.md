@@ -135,4 +135,6 @@ Runs weekly to check for updates in versions of precommit hooks and creates a pu
 
 ### update_authors.yml
 
-If the CITATION.CFF file is modified, this workflow will run to update the AUTHORS file.
+If the CITATION.CFF file is modified,
+this workflow will run to update the AUTHORS file
+and the and doc/changes/names.rst file.

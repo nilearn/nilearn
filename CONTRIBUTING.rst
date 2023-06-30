@@ -241,14 +241,26 @@ Changelog entries in ``doc/changes/latest.rst`` should adhere to the following c
 - Entry in the appropriate category
 - Single line per entry
 - Finish with a link to the PR and the author's profile
-- New contributors to add their profile to CITATION.cff
-  and run maint_tools/citation_cff_maint.py to update other files.
+- New contributors to add their details to the ``authors`` section of the ``CITATION.cff``
 
-Example entry:
+Example entry in ``doc/changes/latest.rst``:
 
 .. code-block:: rst
 
     - Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
+
+Associated entry in ``CITATION.cff``:
+
+.. code-block:: yml
+
+      authors:
+
+        - given-names: Dimitri Papadopoulos
+          family-names: Orfanos
+          website: https://github.com/DimitriPapadopoulos
+          affiliation: NeuroSpin, C.E.A., Université Paris-Saclay, Gif-sur-Yvette, France
+          orcid: https://orcid.org/0000-0002-1242-8990
+
 
 Coding Style
 ------------
