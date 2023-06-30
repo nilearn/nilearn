@@ -1624,7 +1624,7 @@ class YSlicer(BaseStackedSlicer):
 
     """
 
-    _direction = 'y'
+    _direction = "y"
     _default_figsize = [2.2, 3.0]
 
 
@@ -1662,7 +1662,7 @@ class ZSlicer(BaseStackedSlicer):
 
     """
 
-    _direction = 'z'
+    _direction = "z"
     _default_figsize = [2.2, 3.2]
 
 
@@ -1774,7 +1774,7 @@ class YZSlicer(OrthoSlicer):
 
     """
 
-    _cut_displayed = 'yz'
+    _cut_displayed = "yz"
     _default_figsize = [2.2, 3.0]
 
 
