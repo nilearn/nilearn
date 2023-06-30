@@ -251,7 +251,7 @@ Example entry in ``doc/changes/latest.rst``:
 
 Associated entry in ``CITATION.cff``:
 
-.. code-block:: yml
+.. code-block:: yaml
 
       authors:
 
