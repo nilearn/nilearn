@@ -30,38 +30,18 @@ def test_sanitize_confounds(inputs, flag):
     assert singleflag is flag
 
 
-@pytest.mark.parametrize(
-    "flag,suffix,image_type,kwargs",
-    [
-        (True, "_desc-confounds_regressors", "regular", {}),
-        (False, "_desc-confounds_timeseries", "regular", {}),
-        (True, "_desc-confounds_regressors", "native", {}),
-        (False, "_desc-confounds_timeseries", "native", {}),
-        (True, "_desc-confounds_regressors", "res", {}),
-        (False, "_desc-confounds_timeseries", "res", {}),
-        (True, "_desc-confounds_regressors", "cifti", {}),
-        (False, "_desc-confounds_timeseries", "cifti", {}),
-        (True, "_desc-confounds_regressors", "den", {}),
-        (False, "_desc-confounds_timeseries", "den", {}),
-        (
-            True,
-            "_desc-confounds_regressors",
-            "part",
-            {"suffix": "sub-test01_task-test_part-mag_run-01"},
-        ),
-        (
-            False,
-            "_desc-confounds_timeseries",
-            "part",
-            {"suffix": "sub-test01_task-test_part-mag_run-01"},
-        ),
-        (True, "_desc-confounds_regressors", "gifti", {}),
-        (False, "_desc-confounds_timeseries", "gifti", {}),
-    ],
-)
-def test_get_file_name(tmp_path, flag, suffix, image_type, kwargs):
-    img, _ = create_tmp_filepath(
+@pytest.mark.parametrize("flag", [True, False])
+@pytest.mark.parametrize("suffix", ["_desc-confounds_regressors", "_desc-confounds_timeseries"])
+@pytest.mark.parametrize("image_type", ["regular", "native", "res", "cifti", "den", "part", "gifti"])
+def test_get_file_name(tmp_path, flag, suffix, image_type):
+    if image_type == "part":
+        kwargs = {"suffix": "sub-test01_task-test_part-mag_run-01"}
+    else:
+        kwargs = {}
+
+   img, _ = create_tmp_filepath(
         tmp_path, image_type=image_type, old_derivative_suffix=flag, **kwargs
     )
+
     conf = _get_file_name(img)
     assert suffix in conf
