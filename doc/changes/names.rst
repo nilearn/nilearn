@@ -3,7 +3,7 @@
     If you want to add to add yourself to the list of authors,
     please edit CITATION.cff and run maint_tools/citation_cff_maint.py.
 
-
+    
 .. _Ahmad Chamma: https://github.com/achamma723
 
 .. _Aina Frau-Pascual: https://github.com/ainafp
@@ -261,3 +261,4 @@
 .. _Zvi Baratz: https://github.com/ZviBaratz
 
 .. _Óscar Nájera: https://github.com/Titan-C
+
