@@ -53,7 +53,6 @@ exclude: |
         | nilearn/maskers/tests/test_nifti_maps_masker.py
         | nilearn/maskers/tests/test_nifti_masker.py
         | nilearn/plotting/glass_brain.py
-        | nilearn/plotting/tests/test_cm.py
         | nilearn/plotting/js_plotting_utils.py
         | nilearn/plotting/html_connectome.py
         | nilearn/plotting/find_cuts.py
@@ -64,7 +63,6 @@ exclude: |
         | nilearn/plotting/tests/test_img_plotting/test_plot_anat.py
         | nilearn/plotting/tests/test_img_plotting/test_get_colorbar_and_data_ranges.py
         | nilearn/plotting/tests/test_html_surface.py
-        | nilearn/plotting/tests/test_html_connectome.py
         | nilearn/plotting/tests/test_img_plotting/test_img_plotting.py
         | nilearn/plotting/tests/test_img_plotting/test_plot_carpet.py
         | nilearn/plotting/tests/test_img_plotting/test_plot_glass_brain.py

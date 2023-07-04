@@ -17,11 +17,14 @@ def test_prepare_line():
     assert (pe == [0, 0, 0, 1, 1, 0, 2, 2, 0, 3, 3, 0]).all()
 
 
-@pytest.mark.parametrize('node_color,expected_marker_colors', [
-    ('cyan', ['#00ffff', '#00ffff', '#00ffff']),
-    ('auto', ['#440154', '#20908c', '#fde724']),
-    (['cyan', 'red', 'blue'], ['#00ffff', '#ff0000', '#0000ff'])
-])
+@pytest.mark.parametrize(
+    "node_color,expected_marker_colors",
+    [
+        ("cyan", ["#00ffff", "#00ffff", "#00ffff"]),
+        ("auto", ["#440154", "#20908c", "#fde724"]),
+        (["cyan", "red", "blue"], ["#00ffff", "#ff0000", "#0000ff"]),
+    ],
+)
 def test_prepare_colors_for_markers(node_color, expected_marker_colors):
     number_of_nodes = 3
     marker_colors = html_connectome._prepare_colors_for_markers(
@@ -33,7 +36,7 @@ def test_prepare_colors_for_markers(node_color, expected_marker_colors):
 
 
 def _make_connectome():
-    adj = np.diag([1.5, .3, 2.5], 2)
+    adj = np.diag([1.5, 0.3, 2.5], 2)
     adj += adj.T
     adj += np.eye(5)
 
@@ -45,65 +48,94 @@ def _make_connectome():
 def test_get_connectome():
     adj, coord = _make_connectome()
     connectome = html_connectome._get_connectome(adj, coord)
-    con_x = decode(connectome['_con_x'], '<f4')
+    con_x = decode(connectome["_con_x"], "<f4")
     expected_x = np.asarray(
-        [0, 0, 0,
-         0, 20, 0,
-         10, 10, 0,
-         10, 30, 0,
-         20, 0, 0,
-         20, 20, 0,
-         20, 40, 0,
-         30, 10, 0,
-         30, 30, 0,
-         40, 20, 0,
-         40, 40, 0], dtype='<f4')
+        [
+            0,
+            0,
+            0,
+            0,
+            20,
+            0,
+            10,
+            10,
+            0,
+            10,
+            30,
+            0,
+            20,
+            0,
+            0,
+            20,
+            20,
+            0,
+            20,
+            40,
+            0,
+            30,
+            10,
+            0,
+            30,
+            30,
+            0,
+            40,
+            20,
+            0,
+            40,
+            40,
+            0,
+        ],
+        dtype="<f4",
+    )
     assert (con_x == expected_x).all()
-    assert {'_con_x', '_con_y', '_con_z', '_con_w'}.issubset(connectome.keys())
-    assert (connectome['line_cmin'], connectome['line_cmax']) == (-2.5, 2.5)
+    assert {"_con_x", "_con_y", "_con_z", "_con_w"}.issubset(connectome.keys())
+    assert (connectome["line_cmin"], connectome["line_cmax"]) == (-2.5, 2.5)
     adj[adj == 0] = np.nan
     connectome = html_connectome._get_connectome(adj, coord)
-    con_x = decode(connectome['_con_x'], '<f4')
+    con_x = decode(connectome["_con_x"], "<f4")
     assert (con_x == expected_x).all()
-    assert (connectome['line_cmin'], connectome['line_cmax']) == (-2.5, 2.5)
+    assert (connectome["line_cmin"], connectome["line_cmax"]) == (-2.5, 2.5)
 
 
 def test_view_connectome():
     adj, coord = _make_connectome()
     html = html_connectome.view_connectome(adj, coord)
-    check_html(html, False, 'connectome-plot')
-    html = html_connectome.view_connectome(adj, coord, '85.3%',
-                                           title="SOME_TITLE")
-    check_html(html, False, 'connectome-plot', title="SOME_TITLE")
-    assert "SOME_TITLE" in html.html
-    html = html_connectome.view_connectome(adj, coord, '85.3%',
-                                           linewidth=8.5, node_size=4.2)
-    check_html(html, False, 'connectome-plot', title="Connectome plot")
+    check_html(html, False, "connectome-plot")
     html = html_connectome.view_connectome(
-        adj, coord, '85.3%', linewidth=8.5, node_size=np.arange(len(coord)))
-    check_html(html, False, 'connectome-plot')
+        adj, coord, "85.3%", title="SOME_TITLE"
+    )
+    check_html(html, False, "connectome-plot", title="SOME_TITLE")
+    assert "SOME_TITLE" in html.html
+    html = html_connectome.view_connectome(
+        adj, coord, "85.3%", linewidth=8.5, node_size=4.2
+    )
+    check_html(html, False, "connectome-plot", title="Connectome plot")
+    html = html_connectome.view_connectome(
+        adj, coord, "85.3%", linewidth=8.5, node_size=np.arange(len(coord))
+    )
+    check_html(html, False, "connectome-plot")
 
 
 def test_view_markers():
     coords = np.arange(12).reshape((4, 3))
-    colors = ['r', 'g', 'black', 'white']
-    labels = ["red marker", "green marker",
-              "black marker", "white marker"]
+    colors = ["r", "g", "black", "white"]
+    labels = ["red marker", "green marker", "black marker", "white marker"]
     html = html_connectome.view_markers(coords, colors)
-    check_html(html, False, 'connectome-plot')
+    check_html(html, False, "connectome-plot")
     html = html_connectome.view_markers(coords)
-    check_html(html, False, 'connectome-plot')
+    check_html(html, False, "connectome-plot")
     html = html_connectome.view_markers(coords, marker_size=15)
-    check_html(html, False, 'connectome-plot')
+    check_html(html, False, "connectome-plot")
     html = html_connectome.view_markers(
-        coords, marker_size=np.arange(len(coords)))
-    check_html(html, False, 'connectome-plot')
+        coords, marker_size=np.arange(len(coords))
+    )
+    check_html(html, False, "connectome-plot")
     html = html_connectome.view_markers(
-        coords, marker_size=list(range(len(coords))))
-    check_html(html, False, 'connectome-plot')
-    html = html_connectome.view_markers(coords,
-                                        marker_size=5.0,
-                                        marker_color=colors,
-                                        marker_labels=labels)
+        coords, marker_size=list(range(len(coords)))
+    )
+    check_html(html, False, "connectome-plot")
+    html = html_connectome.view_markers(
+        coords, marker_size=5.0, marker_color=colors, marker_labels=labels
+    )
     labels_dict = {"marker_labels": labels}
     assert json.dumps(labels_dict)[1:-1] in html.html
