@@ -52,8 +52,6 @@ exclude: |
         | nilearn/maskers/tests/test_nifti_labels_masker.py
         | nilearn/maskers/tests/test_nifti_maps_masker.py
         | nilearn/maskers/tests/test_nifti_masker.py
-        | nilearn/plotting/glass_brain_files/plot_align_svg.py
-        | nilearn/plotting/glass_brain_files/svg_to_json_converter.py
         | nilearn/plotting/glass_brain.py
         | nilearn/plotting/tests/test_cm.py
         | nilearn/plotting/js_plotting_utils.py
