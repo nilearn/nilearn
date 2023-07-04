@@ -34,11 +34,7 @@ def test_auto_mask():
     masker.fit(img)
     # Smoke test the transform
     # With a 4D img
-    masker.transform(
-        [
-            img
-        ]
-    )
+    masker.transform([img])
     # With a 3D img
     masker.transform(img)
 
