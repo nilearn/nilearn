@@ -66,15 +66,17 @@ def write_names_rst(citation: list[dict[str, str]]) -> None:
     If you want to add to add yourself to the list of authors,
     please edit CITATION.cff and run maint_tools/citation_cff_maint.py.
 
-    """
+"""
         print(header, file=f)
 
-        for author in citation["authors"]:
+        for i, author in enumerate(citation["authors"]):
             line = (
                 f'.. _{author["given-names"]} {author["family-names"]}: '
-                f'{author["website"]}\n'
+                f'{author["website"]}'
             )
             print(line, file=f)
+            if i < len(citation["authors"]) - 1:
+                print("", file=f)
 
 
 def read_authors_file() -> list[str]:
