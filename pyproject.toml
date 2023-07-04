@@ -139,10 +139,6 @@ extend-exclude =  """
   | nilearn/interfaces/fmriprep/tests/utils.py
   | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
   | nilearn/maskers/base_masker.py
-  | nilearn/maskers/nifti_masker.py
-  | nilearn/maskers/nifti_labels_masker.py
-  | nilearn/maskers/nifti_maps_masker.py
-  | nilearn/maskers/nifti_spheres_masker.py
   | nilearn/maskers/tests/test_base_masker.py
   | nilearn/maskers/tests/test_masker_validation.py
   | nilearn/maskers/tests/test_input_data.py

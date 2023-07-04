@@ -6,6 +6,7 @@ or as weights in one image per region (maps).
 """
 # Author: Philippe Gervais
 # License: simplified BSD
+import warnings
 
 import numpy as np
 from scipy import linalg, ndimage
@@ -102,7 +103,12 @@ def _check_shape_and_affine_compatibility(img1, img2=None, dim=None):
 
 
 def _get_labels_data(
-    target_img, labels_img, mask_img=None, background_label=0, dim=None
+    target_img,
+    labels_img,
+    mask_img=None,
+    background_label=0,
+    dim=None,
+    keep_masked_labels=True,
 ):
     """Get the label data.
 
@@ -132,6 +138,7 @@ def _get_labels_data(
 
     dim : :obj:`int`, optional
         Integer slices mask for a specific dimension.
+    %(keep_masked_labels)s
 
     Returns
     -------
@@ -154,9 +161,20 @@ def _get_labels_data(
 
     labels_data = _safe_get_data(labels_img, ensure_finite=True)
 
-    labels = list(np.unique(labels_data))
-    if background_label in labels:
-        labels.remove(background_label)
+    if keep_masked_labels:
+        labels = list(np.unique(labels_data))
+        warnings.warn(
+            'Applying "mask_img" before '
+            "signal extraction may result in empty region signals in the "
+            "output. These are currently kept. "
+            "Starting from version 0.13, the default behavior will be "
+            "changed to remove them by setting "
+            '"keep_masked_labels=False". '
+            '"keep_masked_labels" parameter will be removed '
+            "in version 0.15.",
+            DeprecationWarning,
+            stacklevel=3,
+        )
 
     # Consider only data within the mask
     use_mask = _check_shape_and_affine_compatibility(target_img, mask_img, dim)
@@ -164,7 +182,29 @@ def _get_labels_data(
         mask_img = _utils.check_niimg_3d(mask_img)
         mask_data = _safe_get_data(mask_img, ensure_finite=True)
         labels_data = labels_data.copy()
+        labels_before_mask = set(np.unique(labels_data))
+        # Applying mask on labels_data
         labels_data[np.logical_not(mask_data)] = background_label
+        labels_after_mask = set(np.unique(labels_data))
+        labels_diff = labels_before_mask.difference(labels_after_mask)
+        # Raising a warning if any label is removed due to the mask
+        if len(labels_diff) > 0 and (not keep_masked_labels):
+            warnings.warn(
+                "After applying mask to the labels image, "
+                "the following labels were "
+                f"removed: {labels_diff}. "
+                f"Out of {len(labels_before_mask)} labels, the "
+                "masked labels image only contains "
+                f"{len(labels_after_mask)} labels "
+                "(including background).",
+                stacklevel=3,
+            )
+
+    if not keep_masked_labels:
+        labels = list(np.unique(labels_data))
+
+    if background_label in labels:
+        labels.remove(background_label)
 
     return labels, labels_data
 
@@ -206,6 +246,7 @@ def img_to_signals_labels(
     background_label=0,
     order="F",
     strategy="mean",
+    keep_masked_labels=True,
 ):
     """Extract region signals from image.
 
@@ -240,6 +281,7 @@ def img_to_signals_labels(
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, minimum, maximum, variance,
         standard_deviation. Default="mean".
+    %(keep_masked_labels)s
 
     Returns
     -------
@@ -269,7 +311,11 @@ def img_to_signals_labels(
     # (load one image at a time).
     imgs = _utils.check_niimg_4d(imgs)
     labels, labels_data = _get_labels_data(
-        imgs, labels_img, mask_img, background_label
+        imgs,
+        labels_img,
+        mask_img,
+        background_label,
+        keep_masked_labels=keep_masked_labels,
     )
 
     data = _safe_get_data(imgs, ensure_finite=True)
@@ -284,10 +330,11 @@ def img_to_signals_labels(
             reduction_function(img, labels=labels_data, index=labels)
         )
     # Set to zero signals for missing labels. Workaround for Scipy behaviour
-    missing_labels = set(labels) - set(np.unique(labels_data))
-    labels_index = {l: n for n, l in enumerate(labels)}
-    for this_label in missing_labels:
-        signals[:, labels_index[this_label]] = 0
+    if keep_masked_labels:
+        missing_labels = set(labels) - set(np.unique(labels_data))
+        labels_index = {l: n for n, l in enumerate(labels)}
+        for this_label in missing_labels:
+            signals[:, labels_index[this_label]] = 0
     return signals, labels
 
 
