@@ -141,10 +141,6 @@ extend-exclude =  """
   | nilearn/maskers/nifti_spheres_masker.py
   | nilearn/maskers/nifti_maps_masker.py
   | nilearn/maskers/nifti_labels_masker.py
-  | nilearn/maskers/tests/test_nifti_spheres_masker.py
-  | nilearn/maskers/tests/test_nifti_labels_masker.py
-  | nilearn/maskers/tests/test_nifti_maps_masker.py
-  | nilearn/maskers/tests/test_nifti_masker.py
   | nilearn/plotting/glass_brain_files/plot_align_svg.py
   | nilearn/plotting/edge_detect.py
   | nilearn/plotting/html_document.py
