@@ -36,7 +36,7 @@ def test_auto_mask():
     # With a 4D img
     masker.transform(
         [
-            img,
+            img
         ]
     )
     # With a 3D img
