@@ -111,7 +111,7 @@ class HTMLDocument:
             height = self.height
         escaped = escape(self.html, quote=True)
         wrapped = (
-            f'<iframe srcdoc="{escaped}'
+            f'<iframe srcdoc="{escaped}" '
             f'width="{width}" height="{height}" '
             'frameBorder="0"></iframe>'
         )
