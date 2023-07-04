@@ -158,10 +158,7 @@ extend-exclude =  """
   | nilearn/maskers/tests/test_nifti_maps_masker.py
   | nilearn/maskers/tests/test_nifti_masker.py
   | nilearn/plotting/glass_brain_files/plot_align_svg.py
-  | nilearn/plotting/edge_detect.py
-  | nilearn/plotting/html_document.py
   | nilearn/plotting/glass_brain_files/svg_to_json_converter.py
-  | nilearn/plotting/rm_file.py
   | nilearn/plotting/glass_brain.py
   | nilearn/plotting/tests/test_cm.py
   | nilearn/plotting/js_plotting_utils.py
@@ -170,7 +167,6 @@ extend-exclude =  """
   | nilearn/plotting/html_surface.py
   | nilearn/plotting/tests/test_html_document.py
   | nilearn/plotting/displays/_axes.py
-  | nilearn/plotting/cm.py
   | nilearn/plotting/html_stat_map.py
   | nilearn/plotting/tests/test_img_plotting/test_plot_anat.py
   | nilearn/plotting/tests/test_img_plotting/test_get_colorbar_and_data_ranges.py
