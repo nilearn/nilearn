@@ -4,6 +4,7 @@ import warnings
 
 import numpy as np
 from joblib import Memory
+
 from nilearn import _utils, image, masking
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
@@ -13,10 +14,11 @@ class _ExtractionFunctor:
     func_name = 'nifti_labels_masker_extractor'
 
     def __init__(self, _resampled_labels_img_, background_label, strategy,
-                 mask_img):
+                 keep_masked_labels, mask_img):
         self._resampled_labels_img_ = _resampled_labels_img_
         self.background_label = background_label
         self.strategy = strategy
+        self.keep_masked_labels = keep_masked_labels
         self.mask_img = mask_img
 
     def __call__(self, imgs):
@@ -25,7 +27,7 @@ class _ExtractionFunctor:
         return signal_extraction.img_to_signals_labels(
             imgs, self._resampled_labels_img_,
             background_label=self.background_label, strategy=self.strategy,
-            mask_img=self.mask_img)
+            keep_masked_labels=self.keep_masked_labels, mask_img=self.mask_img)
 
 
 @_utils.fill_doc
@@ -59,43 +61,16 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
     %(smoothing_fwhm)s
-    standardize : {False, True, 'zscore', 'psc'}, optional
-        Strategy to standardize the signal.
-        'zscore': the signal is z-scored. Timeseries are shifted
-        to zero mean and scaled to unit variance.
-        'psc':  Timeseries are shifted to zero mean value and scaled
-        to percent signal change (as compared to original mean signal).
-        True : the signal is z-scored. Timeseries are shifted
-        to zero mean and scaled to unit variance.
-        False : Do not standardize the data.
-        Default=False.
-
-    standardize_confounds : :obj:`bool`, optional
-        If standardize_confounds is True, the confounds are z-scored:
-        their mean is put to 0 and their variance to 1 in the time dimension.
-        Default=True.
-
+    %(standardize_maskers)s
+    %(standardize_confounds)s
     high_variance_confounds : :obj:`bool`, optional
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out. Default=False.
-
-    detrend : :obj:`bool`, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details. Default=False.
-
-    low_pass : None or :obj:`float`, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    high_pass : None or :obj:`float`, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
-    t_r : :obj:`float`, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
-
+    %(detrend)s
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
     dtype : {dtype, "auto"}, optional
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
@@ -108,26 +83,14 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         and images provided to fit() are resampled to the shape and
         affine of maps_img. "None" means no resampling: if shapes and
         affines do not match, a ValueError is raised. Default="data".
-
-    memory : :obj:`joblib.Memory` or :obj:`str`, optional
-        Used to cache the region extraction process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
-
-    memory_level : :obj:`int`, optional
-        Aggressiveness of memory caching. The higher the number, the higher
-        the number of functions that will be cached. Zero means no caching.
-        Default=1.
-
-    verbose : :obj:`int`, optional
-        Indicate the level of verbosity. By default, nothing is printed
-        Default=0.
-
+    %(memory)s
+    %(memory_level1)s
+    %(verbose0)s
     strategy : :obj:`str`, optional
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, minimum, maximum, variance,
         standard_deviation. Default='mean'.
-
+    %(keep_masked_labels)s
     reports : :obj:`bool`, optional
         If set to True, data is saved in order to produce a report.
         Default=True.
@@ -176,6 +139,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         memory_level=1,
         verbose=0,
         strategy='mean',
+        keep_masked_labels=True,
         reports=True,
         **kwargs,
     ):
@@ -208,11 +172,10 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         self.memory_level = memory_level
         self.verbose = verbose
         self.reports = reports
-        self._report_content = dict()
-        self._report_content['description'] = (
-            'This reports shows the regions defined by the labels of the mask.'
-        )
-        self._report_content['warning_message'] = None
+        self._report_content = {
+            'description': ('This reports shows the regions '
+                            'defined by the labels of the mask.'),
+            'warning_message': None}
 
         available_reduction_strategies = {
             'mean',
@@ -238,6 +201,8 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 f"parameter: {resampling_target}"
             )
 
+        self.keep_masked_labels = keep_masked_labels
+
     def generate_report(self):
         """Generate a report."""
         from nilearn.reporting.html_report import generate_report
@@ -254,6 +219,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         """
         try:
             import matplotlib.pyplot as plt
+
             from nilearn import plotting
         except ImportError:
             with warnings.catch_warnings():
@@ -371,22 +337,16 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         All parameters are unused, they are for scikit-learn compatibility.
 
         """
-        _utils.logger.log(
-            'loading data from %s' % _utils._repr_niimgs(
-                self.labels_img,
-                shorten=(not self.verbose),
-            ),
-            verbose=self.verbose,
-        )
+        repr = _utils._repr_niimgs(self.labels_img,
+                                   shorten=(not self.verbose))
+        msg = f"loading data from {repr}"
+        _utils.logger.log(msg=msg, verbose=self.verbose)
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
         if self.mask_img is not None:
-            _utils.logger.log(
-                'loading data from %s' % _utils._repr_niimgs(
-                    self.mask_img,
-                    shorten=(not self.verbose),
-                ),
-                verbose=self.verbose,
-            )
+            repr = _utils._repr_niimgs(self.mask_img,
+                                       shorten=(not self.verbose))
+            msg = f"loading data from {repr}"
+            _utils.logger.log(msg=msg, verbose=self.verbose)
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
         else:
@@ -630,6 +590,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 self._resampled_labels_img_,
                 self.background_label,
                 self.strategy,
+                self.keep_masked_labels,
                 self._resampled_mask_img,
             ),
             # Pre-processing

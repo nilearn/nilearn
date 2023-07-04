@@ -72,7 +72,7 @@ jobs:
     strategy:
         fail-fast: false
         matrix:
-            os: ["ubuntu-latest", "macos-latest"]
+            os: ["ubuntu-latest", "macos-latest", "windows-latest"]
             python-version: ["3.8", "3.9", "3.10", "3.11"]
     name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and latest package versions
     defaults:
@@ -100,6 +100,8 @@ jobs:
         run: ./build_tools/github/test.sh
         name: 'Run tests'
       - uses: codecov/codecov-action@v3
+        with:
+          flags: ${{ matrix.os }}_${{ matrix.python-version }}
         if: success()
         name: 'Upload coverage to CodeCov'
 

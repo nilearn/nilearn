@@ -19,6 +19,7 @@ from html import escape
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+
 from nilearn.plotting import plot_glass_brain, plot_roi, plot_stat_map
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.plotting.matrix_plotting import (
@@ -170,12 +171,6 @@ def make_glm_report(
     report_text : HTMLReport Object
         Contains the HTML code for the GLM Report.
 
-    """
-    """
-    Bug in Pandas 0.18 : https://github.com/pandas-dev/pandas/issues/13257
-    pd.set_option('display.precision', 2)
-    limits number of digits shown instead of precision.
-    Hence pd.option_context('display.precision', 2) has been used.
     """
     if bg_img == "MNI152TEMPLATE":
         bg_img = MNI152TEMPLATE

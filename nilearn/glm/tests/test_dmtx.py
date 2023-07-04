@@ -10,6 +10,12 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel.tmpdirs import InTemporaryDirectory
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
+
 from nilearn._utils.data_gen import basic_paradigm
 from nilearn.glm.first_level.design_matrix import (
     _convolve_regressors,
@@ -17,11 +23,6 @@ from nilearn.glm.first_level.design_matrix import (
     check_design_matrix,
     make_first_level_design_matrix,
     make_second_level_design_matrix,
-)
-from numpy.testing import (
-    assert_almost_equal,
-    assert_array_almost_equal,
-    assert_array_equal,
 )
 
 # load the spm file to test cosine basis
@@ -550,7 +551,7 @@ def test_fir_block():
         bp,
         hrf_model="fir",
         drift_model=None,
-        fir_delays=range(0, 4),
+        fir_delays=range(4),
     )
     idx = bp["onset"][bp["trial_type"] == 1].astype(int)
     assert X.shape == (128, 13)
@@ -585,7 +586,7 @@ def test_oversampling():
         events,
         hrf_model="fir",
         drift_model=None,
-        fir_delays=range(0, 4),
+        fir_delays=range(4),
         oversampling=1,
     )
     X5 = make_first_level_design_matrix(
@@ -593,7 +594,7 @@ def test_oversampling():
         events,
         hrf_model="fir",
         drift_model=None,
-        fir_delays=range(0, 4),
+        fir_delays=range(4),
         oversampling=10,
     )
     assert_almost_equal(X4.values, X5.values)

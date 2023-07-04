@@ -16,6 +16,10 @@ An up-to-date list of contributors can be seen in on
 
 Additional credit goes to `Michael Hanke`_ and `Yaroslav Halchenko`_ for data and packaging.
 
+.. CORE DEV SECTION STARTS HERE
+   The Core developers section is added automatically
+   and should not be edited manually.
+
 .. _core_devs:
 
 Core developers
@@ -33,36 +37,148 @@ The nilearn core developers are:
 * `Taylor Salo`_
 * `Yasmin Mzayek`_
 
+.. CORE DEV SECTION ENDS HERE
+
+.. OTHER CONTRIBUTION SECTION STARTS HERE
+   The Other contributors section is added automatically
+   and should not be edited manually.
+
 Other contributors
 ..................
 
 Some other past or present contributors are:
 
-* `Alexandre Gramfort`_
-* `Binh Nguyen`_
-* `Gael Varoquaux`_
-* `Julia Huntenburg`_
-* `Thomas Bazeille`_
+* `Ahmad Chamma`_
+* `Aina Frau-Pascual`_
+* `Alex Rothberg`_
 * `Alexandre Abadie`_
 * `Alexandre Abraham`_
+* `Alexandre Gramfort`_
+* `Alexandre Savio`_
+* `Alexis Thual`_
+* `Amadeus Kanaan`_
+* `Ana Luisa Pinho`_
 * `Andrés Hoyos Idrobo`_
+* `Anne-Sophie Kieslinger`_
+* `Ariel Rokem`_
+* `Arthur Mensch`_
+* `Audrey Duran`_
 * `Ben Cipollini`_
+* `Bertrand Thirion`_
+* `Binh Nguyen`_
+* `Caglar Cakan`_
 * `Chris Gorgolewski`_
+* `Chris Markiewicz`_
+* `Christian Horea`_
+* `Christian Gerloff`_
+* `Colin Reininger`_
+* `Connor Lane`_
+* `Céline Delettre`_
+* `Dan Gale`_
+* `Daniel Gomez`_
 * `Danilo Bzdok`_
+* `David G Ellis`_
+* `Demian Wassermann`_
+* `Derek Pisner`_
+* `Dimitri Papadopoulos Orfanos`_
+* `Elizabeth DuPre`_
 * `Elvis Dohmatob`_
+* `Eric Larson`_
+* `Evan Edmond`_
 * `Fabian Pedregosa`_
+* `Franz Liem`_
+* `Gael Varoquaux`_
+* `Gilles de Hollander`_
+* `Greg Kiar`_
+* `Greydon Gilmore`_
+* `Guillaume Lemaitre`_
+* `Hao-Ting Wang`_
+* `Himanshu Aggarwal`_
+* `Ian Abenes`_
+* `Jake Vogel`_
+* `Jan Margeta`_
+* `Jaques Grobler`_
+* `Jason Gors`_
+* `Javier Rasero`_
 * `Jean Kossaifi`_
+* `Jean-Rémi King`_
+* `Jelle Roelof Dalenberg`_
+* `Jeremy Lefort-Besnard`_
+* `Jerome Dockes`_
 * `Jerome-Alexis Chevalier`_
+* `Johannes Wiesner`_
+* `Jon Haitz Legarreta Gorrono`_
+* `Jona Sassenhagen`_
+* `Joshua Teves`_
+* `Julia Huntenburg`_
+* `Julio A Peraza`_
 * `Kamalakar Reddy Daddy`_
+* `Kevin Sitek`_
+* `Koen Helwegen`_
+* `Konstantin Shmelkov`_
 * `Kshitij Chawla`_
+* `Kun CHEN`_
+* `Leonard Sasse`_
 * `Loic Estève`_
+* `Loic Tetrel`_
+* `Luz Paz`_
+* `Manon Pietrantoni`_
 * `Martin Perez-Guevara`_
+* `Martin Wegrzyn`_
+* `Mathias Goncalves`_
+* `Matthias Ekman`_
+* `Matthieu Joulot`_
+* `Mehdi Rahim`_
 * `Michael Eickenberg`_
+* `Michael Hanke`_
+* `Michael Notter`_
+* `Michael Waskom`_
+* `Michelle Wang`_
+* `Mohammad Torabi`_
+* `Moritz Boos`_
+* `Myeong Seop Song`_
+* `Natasha Clarke`_
+* `Neelay Shah`_
+* `Nicolas Gensollen`_
+* `Oscar Esteban`_
+* `Paul Bogdan`_
+* `Paula Sanz-Leon`_
+* `Peer Herholz`_
 * `Philippe Gervais`_
 * `Pierre Bellec`_
+* `Pierre Glaser`_
+* `Pierre-Olivier Quirion`_
+* `Pradeep Reddy Raamana`_
+* `Raphael Meudec`_
+* `Robert Luke`_
+* `Robert Williamson`_
+* `Roberto Guidotti`_
+* `Ronald Phlypo`_
+* `Ryan Hammonds`_
+* `Rémi Gau`_
+* `Sachin Patalasingh`_
+* `Sage Hahn`_
 * `Salma Bougacha`_
+* `Sam Buck Johnson`_
+* `Sami Jawhar`_
+* `Simon Steinkamp`_
+* `Sourav Singh`_
+* `Steven Meisler`_
+* `Sylvain Lan`_
+* `Sylvain Takerkart`_
+* `Tarun Samanta`_
+* `Taylor Salo`_
+* `Thomas Bazeille`_
+* `Tom Vanasse`_
+* `Vasco Diogo`_
 * `Vincent Michel`_
 * `Virgile Fritsch`_
+* `Yaroslav Halchenko`_
+* `Yasmin Mzayek`_
+* `Zvi Baratz`_
+* `Óscar Nájera`_
+
+.. OTHER CONTRIBUTION SECTION ENDS HERE
 
 Funding
 .......

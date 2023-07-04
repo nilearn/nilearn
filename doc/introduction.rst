@@ -1,11 +1,3 @@
-.. for doc tests to run with recent NumPy 1.14, we need to set print options
-   to older versions. See issue #1593 for more details
-    >>> import numpy as np
-    >>> from nilearn.version import _compare_version
-    >>> if _compare_version(np.__version__, '>=', '1.14'):
-    ...     np.set_printoptions(legacy='1.13')
-
-============
 Introduction
 ============
 
@@ -56,7 +48,7 @@ or an IPython / Python session.  First, load ``nilearn`` with
 
 ``nilearn`` comes in with some data that are commonly used in neuroimaging.
 For instance, it comes with volumic template images of brains such as MNI:
-    
+
 .. code-block:: default
 
     print(nilearn.datasets.MNI152_FILE_PATH)
@@ -275,7 +267,7 @@ that could be of interest to new-comers:
 
 4. (For Python beginners) A quick and gentle introduction to scientific computing with Python with the `scipy lecture notes <http://scipy-lectures.github.io/>`_.
 Moreover, you can use ``nilearn`` with `Jupyter <http://jupyter.org>`_ notebooks or
-`IPython <http://ipython.org>`_ sessions. They provide an interactive 
+`IPython <http://ipython.org>`_ sessions. They provide an interactive
 environment that greatly facilitates debugging and visualisation.
 
 
@@ -293,7 +285,7 @@ Machine learning applications to Neuroimaging
 The interested reader can dive into the following articles for more content.
 
 We give a non-exhaustive list of such important applications.
-    
+
 **Diagnosis and prognosis**
 
 Predicting a clinical score or even treatment response
@@ -335,4 +327,3 @@ or movie-watching data as well as the discovery of connectionally coherent
 functional modules ("connectivity-based parcellation").
 For example,
 :ref:`extracting_rsn` or :ref:`parcellating_brain` with clustering.
-

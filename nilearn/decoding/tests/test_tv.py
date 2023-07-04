@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+
 from nilearn.decoding.objective_functions import _gradient_id, _squared_loss
 from nilearn.decoding.space_net_solvers import (
     _tvl1_objective,

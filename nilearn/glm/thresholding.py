@@ -8,10 +8,11 @@ Author: Bertrand Thirion, 2015 -- 2019
 import warnings
 
 import numpy as np
-from nilearn.image import get_data, math_img, threshold_img
-from nilearn.maskers import NiftiMasker
 from scipy.ndimage import label
 from scipy.stats import norm
+
+from nilearn.image import get_data, math_img, threshold_img
+from nilearn.maskers import NiftiMasker
 
 
 def _compute_hommel_value(z_vals, alpha, verbose=False):
@@ -103,10 +104,7 @@ def fdr_threshold(z_vals, alpha):
     p_vals = norm.sf(z_vals_)
     n_samples = len(p_vals)
     pos = p_vals < alpha * np.linspace(1 / n_samples, 1, n_samples)
-    if pos.any():
-        return z_vals_[pos][-1] - 1.0e-12
-
-    return np.infty
+    return z_vals_[pos][-1] - 1.0e-12 if pos.any() else np.infty
 
 
 def cluster_level_inference(

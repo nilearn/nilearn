@@ -174,7 +174,7 @@ We also need to write a "Highlights" section promoting the most important additi
 
    x.y.z
    =====
-   
+
    **Released MONTH YEAR**
 
    HIGHLIGHTS
@@ -204,7 +204,7 @@ Add these changes and submit a PR:
 
 .. code:: bash
 
-    git add doc/whats_new.rst nilearn/version.py
+    git add doc/whats_new.rst
     git commit -m "REL x.y.z"
     git push origin REL-x.y.z
 
@@ -213,8 +213,8 @@ Once the PR has been reviewed and merged, pull from master and tag the merge com
 
 .. code:: bash
 
-    git checkout master
-    git pull upstream master
+    git checkout main
+    git pull upstream main
     git tag x.y.z
     git push upstream --tags
 
@@ -335,12 +335,7 @@ This will build the documentation (beware, this is time consuming...) and push i
 Post-release
 ------------
 
-At this point, the release has been made. We can now update the file ``nilearn/version.py`` and update the version number by increasing the patch number and appending `.dev`:
-
-.. code-block:: python
-
-    __version__ = x.y.(z+1).dev
-
+At this point, the release has been made.
 
 We also need to create a new file ``doc/changes/latest.rst`` with a title and the usual ``New``, ``Enhancements``, ``Bug Fixes``, and ``Changes`` sections for the version currently under development:
 

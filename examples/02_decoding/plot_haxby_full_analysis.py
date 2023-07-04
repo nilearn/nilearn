@@ -65,10 +65,11 @@ task_data = index_img(func_filename, task_mask)
 # The classifier used here is a support vector classifier (svc). We use
 # class:`nilearn.decoding.Decoder` and specify the classifier.
 import numpy as np
-from nilearn.decoding import Decoder
 
 # Make a data splitting object for cross validation
 from sklearn.model_selection import LeaveOneGroupOut
+
+from nilearn.decoding import Decoder
 
 cv = LeaveOneGroupOut()
 
@@ -84,7 +85,7 @@ for mask_name in mask_names:
     print(f"Working on {mask_name}")
     # For decoding, standardizing is often very important
     mask_filename = haxby_dataset[mask_name][0]
-    masker = NiftiMasker(mask_img=mask_filename, standardize=True)
+    masker = NiftiMasker(mask_img=mask_filename, standardize="zscore_sample")
     mask_scores[mask_name] = {}
     mask_chance_scores[mask_name] = {}
 
@@ -95,7 +96,11 @@ for mask_name in mask_names:
         # With the decoder we can input the masker directly.
         # We are using the svc_l1 here because it is intra subject.
         decoder = Decoder(
-            estimator="svc_l1", cv=cv, mask=masker, scoring="roc_auc"
+            estimator="svc_l1",
+            cv=cv,
+            mask=masker,
+            scoring="roc_auc",
+            standardize="zscore_sample",
         )
         decoder.fit(task_data, classification_target, groups=session_labels)
         mask_scores[mask_name][category] = decoder.cv_scores_[1]
@@ -104,7 +109,11 @@ for mask_name in mask_names:
         print(f"Scores: {mean:1.2f} +- {std:1.2f}")
 
         dummy_classifier = Decoder(
-            estimator="dummy_classifier", cv=cv, mask=masker, scoring="roc_auc"
+            estimator="dummy_classifier",
+            cv=cv,
+            mask=masker,
+            scoring="roc_auc",
+            standardize="zscore_sample",
         )
         dummy_classifier.fit(
             task_data, classification_target, groups=session_labels
@@ -118,6 +127,7 @@ for mask_name in mask_names:
 # We make a simple bar plot to summarize the results
 # --------------------------------------------------
 import matplotlib.pyplot as plt
+
 from nilearn.plotting import show
 
 plt.figure()
@@ -156,3 +166,5 @@ plt.tight_layout()
 
 
 show()
+
+# sphinx_gallery_dummy_images=1

@@ -1,17 +1,23 @@
+import base64
 import os
 import re
-import base64
-import webbrowser
 import tempfile
+import webbrowser
+
 import numpy as np
 import pytest
 
+from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.js_plotting_utils import (
-    colorscale, get_html_template, add_js_lib, encode,
-    decode, mesh_to_plotly, to_color_strings
+    add_js_lib,
+    colorscale,
+    decode,
+    encode,
+    get_html_template,
+    mesh_to_plotly,
+    to_color_strings,
 )
 from nilearn.surface import load_surf_mesh
-from nilearn.datasets import fetch_surf_fsaverage
 
 try:
     from lxml import etree
@@ -129,7 +135,7 @@ def test_colorscale_asymmetric_cmap(values, vmax, vmin, threshold,
     assert (min(values) < 0) | (not colors['symmetric_cmap'])
     assert colors['cmap'].N == 256
     assert (int(colors['vmin']), int(colors['vmax'])) == expected_vmin_vmax
-    assert(
+    assert (
         (colors['norm'].vmax, colors['norm'].vmin) == expected_vmin_vmax[::-1]
     )
 
@@ -184,7 +190,7 @@ def check_html(html, check_selects=True, plot_div_id='surface-plot',
     assert 'width="3" height="17"' in html.get_iframe()
     assert 'width="33" height="37"' in html.get_iframe(33, 37)
     if title is not None:
-        assert "<title>{}</title>".format(title) in str(html)
+        assert f"<title>{title}</title>" in str(html)
     if not LXML_INSTALLED:
         return
     root = etree.HTML(html.html.encode('utf-8'),
@@ -210,7 +216,7 @@ def check_html(html, check_selects=True, plot_div_id='surface-plot',
 
 
 def _open_mock(f):
-    print('opened {}'.format(f))
+    print(f'opened {f}')
 
 
 def _check_open_in_browser(html):
@@ -253,5 +259,7 @@ def test_to_color_strings(colors):
 
 def test_import_html_document_from_js_plotting():
     """Smoke test importing HTMLDocument from js_plotting_utils."""
-    from nilearn.plotting.js_plotting_utils import (
-        HTMLDocument, set_max_img_views_before_warning)  #noqa
+    from nilearn.plotting.js_plotting_utils import (  # noqa: F401
+        HTMLDocument,
+        set_max_img_views_before_warning,
+    )

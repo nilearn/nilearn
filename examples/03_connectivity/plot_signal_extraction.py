@@ -55,7 +55,7 @@ from nilearn.maskers import NiftiLabelsMasker
 
 masker = NiftiLabelsMasker(
     labels_img=atlas_filename,
-    standardize=True,
+    standardize="zscore_sample",
     memory="nilearn_cache",
     verbose=5,
 )
@@ -75,6 +75,7 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 # Plot the correlation matrix
 import numpy as np
+
 from nilearn import plotting
 
 # Make a large figure
@@ -317,3 +318,5 @@ plotting.show()
 # ----------
 #
 # .. footbibliography::
+
+# sphinx_gallery_dummy_images=2

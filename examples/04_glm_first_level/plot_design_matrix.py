@@ -113,9 +113,4 @@ plot_design_matrix(X2, ax=ax2)
 ax2.set_title("Block design matrix", fontsize=12)
 plot_design_matrix(X3, ax=ax3)
 ax3.set_title("FIR design matrix", fontsize=12)
-
-#########################################################################
-# Let's improve the layout and show the result.
-
-plt.subplots_adjust(left=0.08, top=0.9, bottom=0.21, right=0.96, wspace=0.3)
-plt.show()
+fig.show()

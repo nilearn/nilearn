@@ -3,10 +3,10 @@ Tests for private function
 nilearn.plotting.img_plotting._get_colorbar_and_data_ranges.
 """
 
-import pytest
 import numpy as np
-from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges
+import pytest
 
+from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges
 
 data_pos_neg = np.array([[-.5, 1., np.nan],
                          [0., np.nan, -.2],
@@ -40,7 +40,7 @@ def test_get_colorbar_and_data_ranges_with_vmin():
 
 
 def _expected_results_pos_neg(symmetric_cbar, vmax, data):
-    """Helper function for expected_results.
+    """Help for expected_results.
 
     Return the expected `cbar_vmin`, `cbar_vmax`, `vmin`,
     and `vmax` for general case.
@@ -59,13 +59,13 @@ def _expected_results_pos_neg(symmetric_cbar, vmax, data):
 
 
 def _expected_results_pos(symmetric_cbar, vmax, data):
-    """Helper function for expected_results.
+    """Help for expected_results.
 
     Return the expected `cbar_vmin`, `cbar_vmax`, `vmin`,
     and `vmax` for positive data.
     """
     data_max = np.nanmax(data)
-    if symmetric_cbar == True:  # noqa:E712
+    if symmetric_cbar is True:
         if vmax is None:
             return (None, None, -data_max, data_max)
         else:
@@ -78,13 +78,13 @@ def _expected_results_pos(symmetric_cbar, vmax, data):
 
 
 def _expected_results_neg(symmetric_cbar, vmax, data):
-    """Helper function for expected_results.
+    """Help for expected_results.
 
     Return the expected `cbar_vmin`, `cbar_vmax`, `vmin`,
     and `vmax` for negative data.
     """
     data_min = np.nanmin(data)
-    if symmetric_cbar == True:  # noqa:E712
+    if symmetric_cbar is True:
         if vmax is None:
             return (None, None, data_min, -data_min)
         else:
@@ -125,7 +125,7 @@ def test_get_colorbar_and_data_ranges(case, data, symmetric_cbar, vmax,
         - masked data.
     """
     kwargs = {'aspect': 'auto', 'alpha': 0.9}
-    assert(_get_colorbar_and_data_ranges(
+    assert (_get_colorbar_and_data_ranges(
         data, vmax=vmax, symmetric_cbar=symmetric_cbar, kwargs=kwargs)
         == expected_results
     )

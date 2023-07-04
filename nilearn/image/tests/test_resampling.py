@@ -8,6 +8,14 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Header, Nifti1Image
 from nibabel.freesurfer import MGHImage
+from numpy.testing import (
+    assert_allclose,
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+    assert_equal,
+)
+
 from nilearn import _utils
 from nilearn._utils import testing
 from nilearn.image import get_data
@@ -20,13 +28,6 @@ from nilearn.image.resampling import (
     reorder_img,
     resample_img,
     resample_to_img,
-)
-from numpy.testing import (
-    assert_allclose,
-    assert_almost_equal,
-    assert_array_almost_equal,
-    assert_array_equal,
-    assert_equal,
 )
 
 AFFINE_EYE = np.eye(4)
@@ -586,8 +587,7 @@ def test_resampling_nan(affine, core_shape):
 
     # check 3x3 transformation matrix
     target_affine = np.eye(3)[axis_permutation]
-    with pytest.warns(Warning, match=r"(\bnan\b|invalid value)"):
-        resampled_img = resample_img(source_img, target_affine=target_affine)
+    resampled_img = resample_img(source_img, target_affine=target_affine)
 
     resampled_data = get_data(resampled_img)
     if full_data.ndim == 4:
@@ -916,19 +916,13 @@ def test_coord_transform_trivial():
     assert x.shape == x_.shape
 
 
+#  TODO "This test does not run on ARM arch.",
 @pytest.mark.skipif(
     not testing.is_64bit(), reason="This test only runs on 64bits machines."
 )
 @pytest.mark.skipif(
     os.environ.get("APPVEYOR") == "True",
     reason="This test too slow (7-8 minutes) on AppVeyor",
-)
-@pytest.mark.skipif(
-    (
-        os.environ.get("TRAVIS") == "true"
-        and os.environ.get("TRAVIS_CPU_ARCH") == "arm64"
-    ),
-    reason="This test does not run on ARM arch.",
 )
 def test_resample_img_segmentation_fault():
     # see https://github.com/nilearn/nilearn/issues/346

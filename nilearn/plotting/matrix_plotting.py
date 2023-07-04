@@ -1,13 +1,14 @@
-"""
-Miscellaneous matrix plotting utilities.
-"""
+"""Miscellaneous matrix plotting utilities."""
 import warnings
+
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 from .._utils import fill_doc
+
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", FutureWarning)
     from nilearn.glm.contrasts import expression_to_contrast_vector
@@ -15,7 +16,7 @@ with warnings.catch_warnings():
 
 
 def _fit_axes(ax):
-    """Helper function for plot_matrix.
+    """Help for plot_matrix.
 
     This function redimensions the given axes to have
     labels fitting.
@@ -39,8 +40,10 @@ def _fit_axes(ax):
         ax.set_position(new_position)
 
 
-def _sanitize_inputs_plot_matrix(mat_shape, tri, labels, reorder, figure, axes):  # noqa
-    """Helper function for plot_matrix.
+def _sanitize_inputs_plot_matrix(mat_shape, tri, labels, reorder,
+                                 figure,
+                                 axes):
+    """Help for plot_matrix.
 
     This function makes sure the inputs to plot_matrix are valid.
     """
@@ -52,12 +55,11 @@ def _sanitize_inputs_plot_matrix(mat_shape, tri, labels, reorder, figure, axes):
 
 
 def _sanitize_figure_and_axes(figure, axes):
-    """Helper function for plot_matrix."""
+    """Help for plot_matrix."""
     if axes is not None and figure is not None:
         raise ValueError(
-            "Parameters figure and axes cannot be specified "
-            "together. You gave 'figure=%s, axes=%s'" % (figure, axes)
-        )
+            "Parameters figure and axes cannot be specified together. "
+            f"You gave 'figure={figure}, axes={axes}'.")
     if figure is not None:
         if isinstance(figure, plt.Figure):
             fig = figure
@@ -76,7 +78,7 @@ def _sanitize_figure_and_axes(figure, axes):
 
 
 def _sanitize_labels(mat_shape, labels):
-    """Helper function for plot_matrix."""
+    """Help for plot_matrix."""
     # we need a list so an empty one will be cast to False
     if isinstance(labels, np.ndarray):
         labels = labels.tolist()
@@ -86,34 +88,45 @@ def _sanitize_labels(mat_shape, labels):
 
 
 def _sanitize_tri(tri):
-    """Helper function for plot_matrix."""
-    VALID_TRI_VALUES = set(["full", "lower", "diag"])
+    """Help for plot_matrix."""
+    VALID_TRI_VALUES = ("full", "lower", "diag")
     if tri not in VALID_TRI_VALUES:
-        raise ValueError("Parameter tri needs to be "
-                         "one of {}.".format(VALID_TRI_VALUES))
+        raise ValueError(
+            "Parameter tri needs to be one of: "
+            f"{', '.join(VALID_TRI_VALUES)}.")
 
 
 def _sanitize_reorder(reorder):
-    """Helper function for plot_matrix."""
-    VALID_REORDER_ARGS = set([True, False, 'single', 'complete', 'average'])
+    """Help for plot_matrix."""
+    VALID_REORDER_ARGS = (True, False, 'single', 'complete', 'average')
     if reorder not in VALID_REORDER_ARGS:
-        raise ValueError("Parameter reorder needs to be "
-                         "one of {}.".format(VALID_REORDER_ARGS))
+        param_to_print = []
+        for item in VALID_REORDER_ARGS:
+            if isinstance(item, str):
+                param_to_print.append(f'"{item}"')
+            else:
+                param_to_print.append(str(item))
+        raise ValueError(
+            "Parameter reorder needs to be one of:"
+            f"\n{', '.join(param_to_print)}."
+        )
     reorder = 'average' if reorder is True else reorder
     return reorder
 
 
 def _reorder_matrix(mat, labels, reorder):
-    """Helper function for plot_matrix.
+    """Help for plot_matrix.
 
     This function reorders the provided matrix.
     """
     if not labels:
         raise ValueError("Labels are needed to show the reordering.")
     try:
-        from scipy.cluster.hierarchy import (linkage,
-                                             optimal_leaf_ordering,
-                                             leaves_list)
+        from scipy.cluster.hierarchy import (
+            leaves_list,
+            linkage,
+            optimal_leaf_ordering,
+        )
     except ImportError:
         raise ImportError("A scipy version of at least 1.0 is needed for "
                           "ordering the matrix with optimal_leaf_ordering.")
@@ -130,7 +143,7 @@ def _reorder_matrix(mat, labels, reorder):
 
 
 def _mask_matrix(mat, tri):
-    """Helper function for plot_matrix.
+    """Help for plot_matrix.
 
     This function masks the matrix depending on the provided
     value of ``tri``.
@@ -144,7 +157,7 @@ def _mask_matrix(mat, tri):
 
 def _configure_axis(axes, labels, label_size,
                     x_label_rotation, y_label_rotation):
-    """Helper function for plot_matrix."""
+    """Help for plot_matrix."""
     if not labels:
         axes.xaxis.set_major_formatter(plt.NullFormatter())
         axes.yaxis.set_major_formatter(plt.NullFormatter())
@@ -163,7 +176,7 @@ def _configure_axis(axes, labels, label_size,
 
 
 def _configure_grid(axes, grid, tri, size):
-    """Helper function for plot_matrix."""
+    """Help for plot_matrix."""
     # Different grids for different layouts
     if tri == 'lower':
         for i in range(size):
@@ -269,8 +282,10 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
         mat, labels = _reorder_matrix(mat, labels, reorder)
     if tri != "full":
         mat = _mask_matrix(mat, tri)
-    display = axes.imshow(mat, aspect='equal', interpolation='nearest',
-                        cmap=cmap, **kwargs)
+    display = axes.imshow(
+        mat, aspect='equal',
+        interpolation='nearest',
+        cmap=cmap, **kwargs)
     axes.set_autoscale_on(False)
     ymin, ymax = axes.get_ylim()
     _configure_axis(axes, labels, label_size="x-small",
@@ -307,7 +322,7 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
 @fill_doc
 def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
                          output_file=None):
-    """Creates plot for contrast definition.
+    """Create plot for contrast definition.
 
     Parameters
     ----------
@@ -328,7 +343,8 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
     %(colorbar)s
         Default=False.
     ax : :class:`matplotlib.axes.Axes`, optional
-        Axis on which to plot the figure. If None, a new figure will be created.
+        Axis on which to plot the figure.
+        If None, a new figure will be created.
     %(output_file)s
 
     Returns
@@ -432,7 +448,7 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
 
 @fill_doc
 def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
-    """Creates plot for event visualization.
+    """Create plot for event visualization.
 
     Parameters
     ----------
@@ -472,13 +488,14 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     event_labels = pd.concat(event['trial_type'] for event in model_event)
     event_labels = np.unique(event_labels)
 
-    cmap_dictionary = {label:idx for idx, label in enumerate(event_labels)}
+    cmap_dictionary = {label : idx for idx, label in enumerate(event_labels)}
 
     if len(event_labels) > cmap.N:
         plt.close()
-        raise ValueError("The number of event types is greater than "+ \
-            " colors in colormap (%d > %d). Use a different colormap." \
-            % (len(event_labels), cmap.N))
+        raise ValueError(
+            "The number of event types is greater than "
+            f" colors in colormap ({len(event_labels)} > {cmap.N}). "
+            "Use a different colormap.")
 
     for idx_run, event_df in enumerate(model_event):
 

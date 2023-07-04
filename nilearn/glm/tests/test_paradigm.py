@@ -10,9 +10,10 @@ import os
 import numpy as np
 import pandas as pd
 import pytest
+from numpy.testing import assert_array_equal
+
 from nilearn._utils.data_gen import basic_paradigm
 from nilearn.glm.first_level import check_events
-from numpy.testing import assert_array_equal
 
 
 def duplicate_events_paradigm():
@@ -138,7 +139,7 @@ def test_check_events():
     events = events.drop(columns=["modulation"])
     events["foo"] = np.zeros(len(events))
     with pytest.warns(
-        UserWarning, match="Unexpected column `foo` in events data."
+        UserWarning, match="Unexpected column 'foo' in events data."
     ):
         ttype2, onset2, duration2, modulation2 = check_events(events)
     assert_array_equal(ttype, ttype2)

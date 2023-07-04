@@ -31,7 +31,7 @@ mask_filename = data.mask_img
 #
 from nilearn.decoding import FREMRegressor
 
-frem = FREMRegressor("svr", cv=10)
+frem = FREMRegressor("svr", cv=10, standardize="zscore_sample")
 
 frem.fit(zmap_filenames, behavioral_target)
 
@@ -82,3 +82,5 @@ tv_l1 = SpaceNetRegressor(
 # tv_l1.fit(zmap_filenames, behavioral_target)
 # plot_stat_map(tv_l1.coef_img_, title="TV-L1", display_mode="yz",
 #               cut_coords=[20, -2])
+
+# sphinx_gallery_dummy_images=1

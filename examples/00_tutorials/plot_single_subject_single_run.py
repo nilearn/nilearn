@@ -46,7 +46,7 @@ Acquisition of one scan took 6.05s, with the scan to scan repeat time
 from nilearn.datasets import fetch_spm_auditory
 
 subject_data = fetch_spm_auditory()
-subject_data.func  # print the list of names of functional images
+print(*subject_data.func[:5], sep="\n")  # print paths of first 5 func images
 
 ###############################################################################
 # We can display the first functional image and the subject's anatomy:
@@ -123,6 +123,7 @@ design_matrix = fmri_glm.design_matrices_[0]
 # Formally, we have taken the first design matrix, because the model is
 # implictily meant to for multiple runs.
 import matplotlib.pyplot as plt
+
 from nilearn.plotting import plot_design_matrix
 
 plot_design_matrix(design_matrix)
