@@ -72,10 +72,9 @@ def write_names_rst(citation: list[dict[str, str]]) -> None:
         for author in citation["authors"]:
             line = (
                 f'.. _{author["given-names"]} {author["family-names"]}: '
-                f'{author["website"]}'
+                f'{author["website"]}\n'
             )
             print(line, file=f)
-            print("", file=f)
 
 
 def read_authors_file() -> list[str]:
