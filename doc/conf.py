@@ -372,6 +372,15 @@ extlinks = {
     "nipy": ("https://nipy.org/%s", None),
 }
 
+# Check intersphinx reference targets exist
+nitpicky = True
+# Temporary solution to nilearn/nilearn#3800
+# See also scikit-learn/scikit-learn#26761
+nitpick_ignore = [
+    ("py:class", "pipeline.Pipeline"),
+    ("py:class", "utils.metadata_routing.MetadataRequest"),
+]
+
 binder_branch = "main" if "dev" in current_version else current_version
 
 sphinx_gallery_conf = {
