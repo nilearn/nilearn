@@ -1,33 +1,32 @@
+import base64
 import warnings
 from io import BytesIO
-import base64
 
 import numpy as np
-from matplotlib import pyplot as plt
 import pytest
-
+from matplotlib import pyplot as plt
 from nibabel import Nifti1Image
 
 from nilearn import datasets, image
+from nilearn.image import get_data, new_img_like
 from nilearn.plotting import html_stat_map
-from nilearn.image import new_img_like
-from nilearn.image import get_data
+
 from ..js_plotting_utils import colorscale
 
 
 def _check_html(html_view, title=None):
-    """ Check the presence of some expected code in the html viewer
-    """
+    """Check the presence of some expected code in the html viewer."""
     assert isinstance(html_view, html_stat_map.StatMapView)
     assert "var brain =" in str(html_view)
     assert "overlayImg" in str(html_view)
     if title is not None:
-        assert "<title>{}</title>".format(title) in str(html_view)
+        assert f"<title>{title}</title>" in str(html_view)
 
 
 def _simulate_img(affine=np.eye(4)):
-    """ Simulate data with one "spot"
-        Returns: img, data
+    """Simulate data with one "spot".
+
+    Returns: img, data
     """
     data = np.zeros([8, 8, 8])
     data[4, 4, 4] = 1
@@ -36,11 +35,10 @@ def _simulate_img(affine=np.eye(4)):
 
 
 def _check_affine(affine):
-    """ Check positive, isotropic, near-diagonal affine.
-    """
-    assert(affine[0, 0] == affine[1, 1])
-    assert(affine[2, 2] == affine[1, 1])
-    assert(affine[0, 0] > 0)
+    """Check positive, isotropic, near-diagonal affine."""
+    assert (affine[0, 0] == affine[1, 1])
+    assert (affine[2, 2] == affine[1, 1])
+    assert (affine[0, 0] > 0)
 
     A, b = image.resampling.to_matrix_vector(affine)
     assert np.all((np.abs(A) > 0.001).sum(axis=0) == 1), (
@@ -73,7 +71,8 @@ def test_threshold_data():
     data = np.arange(-3, 4)
 
     # Check that an 'auto' threshold leaves at least one element
-    data_t, mask, thresh = html_stat_map._threshold_data(data, threshold='auto')
+    data_t, mask, thresh = html_stat_map._threshold_data(data,
+                                                         threshold='auto')
     gtruth_m = np.array([False, True, True, True, True, True, False])
     gtruth_d = np.array([-3, 0, 0, 0, 0, 0, 3])
     assert (mask == gtruth_m).all()
@@ -102,9 +101,7 @@ def test_threshold_data():
 
 
 def test_save_sprite():
-    """This test covers _save_sprite as well as _bytesIO_to_base64
-    """
-
+    """Test covers _save_sprite as well as _bytesIO_to_base64."""
     # Generate a simulated volume with a square inside
     data = np.random.RandomState(42).uniform(size=140).reshape(7, 5, 4)
     mask = np.zeros((7, 5, 4), dtype=int)
@@ -131,8 +128,7 @@ def test_save_sprite():
 @pytest.mark.parametrize("cmap", ["tab10", "cold_hot"])
 @pytest.mark.parametrize("n_colors", [7, 20])
 def test_save_cmap(cmap, n_colors):
-    """This test covers _save_cmap as well as _bytesIO_to_base64
-    """
+    """Test covers _save_cmap as well as _bytesIO_to_base64."""
     # Save the cmap using BytesIO
     cmap_io = BytesIO()
     html_stat_map._save_cm(cmap_io, cmap, format='png', n_colors=n_colors)
@@ -349,9 +345,9 @@ def test_view_img():
         _check_html(html_view)
 
     # Check that all warnings were expected
-    warnings_set = set(warning_.category for warning_ in w)
-    expected_set = set([FutureWarning, UserWarning,
-                       DeprecationWarning])
+    warnings_set = {warning_.category for warning_ in w}
+    expected_set = {FutureWarning, UserWarning,
+                    DeprecationWarning}
     assert warnings_set.issubset(expected_set), (
-        "the following warnings were not expected: {}").format(
-        warnings_set.difference(expected_set))
+        "the following warnings were not expected: "
+        f"{warnings_set.difference(expected_set)}")

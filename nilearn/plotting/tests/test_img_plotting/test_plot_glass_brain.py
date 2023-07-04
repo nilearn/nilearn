@@ -1,28 +1,29 @@
 """Tests for :func:`nilearn.plotting.plot_glass_brain`."""
 
-import pytest
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import pytest
 from nibabel import Nifti1Image
+
 from nilearn.image import get_data
 from nilearn.plotting import plot_glass_brain
-from .testing_utils import testdata_3d  # noqa:F401
 
 
-def test_plot_glass_brain(testdata_3d, tmpdir):  # noqa:F811
+def test_plot_glass_brain(testdata_3d_for_plotting, tmpdir):
     """Smoke tests for plot_glass_brain with colorbar and negative values."""
-    img = testdata_3d['img']
+    img = testdata_3d_for_plotting['img']
     plot_glass_brain(img, colorbar=True, resampling_interpolation='nearest')
     # test plot_glass_brain with negative values
     plot_glass_brain(img, colorbar=True, plot_abs=False,
                      resampling_interpolation='nearest')
 
 
-def test_plot_glass_brain_file_output(testdata_3d, tmpdir):  # noqa:F811
+def test_plot_glass_brain_file_output(testdata_3d_for_plotting, tmpdir):
     """Smoke-test for hemispheric glass brain with file output."""
     filename = str(tmpdir.join('test.png'))
     plot_glass_brain(
-        testdata_3d['img'], output_file=filename, display_mode='lzry'
+        testdata_3d_for_plotting['img'], output_file=filename,
+        display_mode='lzry'
     )
     plt.close()
 
@@ -42,7 +43,7 @@ def test_plot_noncurrent_axes():
     slicer = plot_glass_brain(maps_img, axes=ax1, title='test')
     for ax_name, niax in slicer.axes.items():
         ax_fh = niax.ax.get_figure()
-        assert ax_fh == fh1, 'New axis %s should be in fh1.' % ax_name
+        assert ax_fh == fh1, f'New axis {ax_name} should be in fh1.'
     plt.close()
 
 
@@ -57,12 +58,12 @@ def test_add_markers_using_plot_glass_brain():
     display = plot_glass_brain(None, display_mode='lyrz')
     display.add_markers([[20, 20, 20]])
     # Check that Axe 'l' has no marker
-    assert(
+    assert (
         display.axes['l'].ax.collections[0].get_offsets().data.shape == (0, 2)
     )
     # Check that all other Axes have one marker
     for d in 'ryz':
-        assert(display.axes[d].ax.collections[0].get_offsets().data.shape
+        assert (display.axes[d].ax.collections[0].get_offsets().data.shape
                == (1, 2))
     # Add two markers in left hemisphere such that no marker
     # should appear in the right hemisphere when plotting
@@ -70,18 +71,18 @@ def test_add_markers_using_plot_glass_brain():
     display.add_markers([[-20, 20, 20], [-10, 10, 10]],
                         marker_color=['r', 'b'])
     # Check that Axe 'r' has no marker
-    assert(
+    assert (
         display.axes['r'].ax.collections[0].get_offsets().data.shape == (0, 2)
     )
     # Check that all other Axes have two markers
     for d in 'lyz':
-        assert(display.axes[d].ax.collections[0].get_offsets().data.shape
+        assert (display.axes[d].ax.collections[0].get_offsets().data.shape
                == (2, 2))
 
 
-def test_plot_glass_brain_colorbar_having_nans(testdata_3d):  # noqa:F811
+def test_plot_glass_brain_colorbar_having_nans(testdata_3d_for_plotting):
     """Smoke-test for plot_glass_brain and nans in the data image."""
-    data = get_data(testdata_3d['img'])
+    data = get_data(testdata_3d_for_plotting['img'])
     data[6, 5, 2] = np.inf
     plot_glass_brain(Nifti1Image(data, np.eye(4)), colorbar=True)
     plt.close()

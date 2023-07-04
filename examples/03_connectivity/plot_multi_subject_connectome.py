@@ -9,6 +9,7 @@ using the group sparse inverse covariance estimate.
 
 """
 import numpy as np
+
 from nilearn import plotting
 
 n_subjects = 4  # subjects to consider for group-sparse covariance (max: 40)
@@ -70,7 +71,7 @@ masker = NiftiMapsMasker(
     low_pass=None,
     high_pass=0.01,
     t_r=2,
-    standardize=True,
+    standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
     verbose=2,

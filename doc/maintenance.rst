@@ -174,7 +174,7 @@ We also need to write a "Highlights" section promoting the most important additi
 
    x.y.z
    =====
-   
+
    **Released MONTH YEAR**
 
    HIGHLIGHTS
@@ -213,8 +213,8 @@ Once the PR has been reviewed and merged, pull from master and tag the merge com
 
 .. code:: bash
 
-    git checkout master
-    git pull upstream master
+    git checkout main
+    git pull upstream main
     git tag x.y.z
     git push upstream --tags
 

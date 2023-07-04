@@ -1,10 +1,11 @@
 """Tests for :func:`nilearn.plotting.plot_markers`."""
 
 import os
-import pytest
-import numpy as np
-import matplotlib
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pytest
+
 from nilearn.plotting import plot_markers
 
 

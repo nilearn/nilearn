@@ -1,13 +1,13 @@
-"""
-Tests for :func:`nilearn.plotting.plot_connectome`.
-"""
+"""Tests for :func:`nilearn.plotting.plot_connectome`."""
 
 import os
-import pytest
-import numpy as np
+
 import matplotlib.pyplot as plt
-from scipy import sparse
+import numpy as np
+import pytest
 from matplotlib.patches import FancyArrow
+from scipy import sparse
+
 from nilearn.plotting import plot_connectome
 
 
@@ -115,8 +115,7 @@ def test_plot_connectome_colorbar(colorbar, adjacency, node_coords):
 
 @pytest.mark.parametrize("alpha", [0.0, 0.3, 0.7, 1.0])
 def test_plot_connectome_alpha(alpha, adjacency, node_coords):
-    """Smoke test for plot_connectome with various alpha values.
-    """
+    """Smoke test for plot_connectome with various alpha values."""
     plot_connectome(adjacency, node_coords, alpha=alpha)
     plt.close()
 
@@ -161,7 +160,7 @@ def test_plot_connectome_non_symmetric(node_coords, non_symmetric_matrix):
     # No thresholding was performed, we should get
     # as many arrows as we have edges
     for direction in ['x', 'y', 'z']:
-        assert(len([patch for patch in ax.axes[direction].ax.patches
+        assert (len([patch for patch in ax.axes[direction].ax.patches
                     if isinstance(patch, FancyArrow)])
                == np.prod(non_symmetric_matrix.shape))
 
@@ -173,10 +172,10 @@ def test_plot_connectome_non_symmetric(node_coords, non_symmetric_matrix):
                          node_coords,
                          display_mode='lzry')
     # No edge in direction 'l' because of node coords
-    assert(len([patch for patch in ax.axes['l'].ax.patches
+    assert (len([patch for patch in ax.axes['l'].ax.patches
                 if isinstance(patch, FancyArrow)]) == 0)
     for direction in ['z', 'r', 'y']:
-        assert(len([patch for patch in ax.axes[direction].ax.patches
+        assert (len([patch for patch in ax.axes[direction].ax.patches
                     if isinstance(patch, FancyArrow)])
                == np.prod(non_symmetric_matrix.shape) - 2)
 
@@ -189,22 +188,24 @@ def plot_connectome_edge_thresholding(node_coords, non_symmetric_matrix):
                          node_coords,
                          edge_threshold=thresh)
     for direction in ['x', 'y', 'z']:
-        assert(len([patch for patch in ax.axes[direction].ax.patches
-                    if isinstance(patch, FancyArrow)])
-               == np.sum(np.abs(non_symmetric_matrix) >= thresh)
-               )
+        assert (
+            len([patch for patch in ax.axes[direction].ax.patches
+                if isinstance(patch, FancyArrow)])
+            == np.sum(np.abs(non_symmetric_matrix) >= thresh)
+        )
     # Case 2: Threshold is a percentage
     thresh = 80
     ax = plot_connectome(non_symmetric_matrix,
                          node_coords,
-                         edge_threshold="{}%".format(thresh))
+                         edge_threshold=f"{thresh}%")
     for direction in ['x', 'y', 'z']:
-        assert(len([patch for patch in ax.axes[direction].ax.patches
-                    if isinstance(patch, FancyArrow)])
-               == np.sum(np.abs(non_symmetric_matrix)
-                         >= np.percentile(np.abs(
-                             non_symmetric_matrix.ravel()), thresh))
-               )
+        assert (
+            len([patch for patch in ax.axes[direction].ax.patches
+                if isinstance(patch, FancyArrow)])
+            == np.sum(np.abs(non_symmetric_matrix)
+                      >= np.percentile(np.abs(non_symmetric_matrix.ravel()),
+                                       thresh))
+        )
     plt.close()
 
 
@@ -240,7 +241,8 @@ def test_plot_connectome_exceptions_wrong_number_node_colors(node_color,
         )
 
 
-def test_plot_connectome_exception_wrong_edge_threshold(adjacency, node_coords):  # noqa
+def test_plot_connectome_exception_wrong_edge_threshold(adjacency,
+                                                        node_coords):
     """Tests that a TypeError is raised in plot_connectome when edge
     threshold is neither a number nor a string.
     """
@@ -307,4 +309,3 @@ def test_plot_connectome_exceptions_providing_node_info_with_kwargs(
         plot_connectome(
             adjacency, node_coords, node_kwargs=node_kwargs, display_mode='x'
         )
-

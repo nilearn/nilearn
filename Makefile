@@ -64,3 +64,11 @@ doc:
 .PHONY : pdf
 pdf:
 	make -C doc pdf
+
+.PHONY : lint
+lint:
+	isort --profile black --settings-path pyproject.toml nilearn examples maint_tools
+	flynt .
+	black --config pyproject.toml nilearn examples maint_tools
+	codespell --toml pyproject.toml
+	flake8 --config .flake8 --black-config pyproject.toml nilearn examples maint_tools

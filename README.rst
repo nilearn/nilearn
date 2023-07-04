@@ -14,10 +14,6 @@
    :target: https://codecov.io/gh/nilearn/nilearn
    :alt: Coverage Status
 
-.. image:: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=main
-   :target: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=main
-   :alt: Azure Build Status
-
 nilearn
 =======
 

@@ -17,6 +17,9 @@ import numpy as np
 import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
+from sklearn.base import clone
+from sklearn.cluster import KMeans
+
 from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import _check_run_sample_masks
@@ -45,8 +48,6 @@ from nilearn.interfaces.bids.query import (
     _infer_repetition_time_from_dataset,
     _infer_slice_timing_start_time_from_dataset,
 )
-from sklearn.base import clone
-from sklearn.cluster import KMeans
 
 
 def mean_scaling(Y, axis=0):
@@ -880,7 +881,7 @@ def first_level_from_bids(dataset_path,
     sub_labels : :obj:`list` of :obj:`str`, optional
         Specifies the subset of subject labels to model.
         If 'None', will model all subjects in the dataset.
-        .. versionadded:: 0.10.1.dev
+        .. versionadded:: 0.10.1
 
     img_filters : :obj:`list` of :obj:`tuple` (str, str), optional
         Filters are of the form (field, label). Only one filter per field
@@ -1333,16 +1334,9 @@ def _get_confounds(
         List of fullpath to the confounds.tsv files
 
     """
-    supported_filters = (
-        _bids_entities()["raw"]
-        + _bids_entities()["derivatives"]
-    )
-    # confounds use a desc-confounds,
-    # so we must remove desc if it was passed as a filter
-    supported_filters.remove("desc")
     filters = _make_bids_files_filter(
         task_label=task_label,
-        supported_filters=supported_filters,
+        supported_filters=_bids_entities()["raw"],
         extra_filter=img_filters,
         verbose=verbose,
     )

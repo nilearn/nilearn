@@ -1,23 +1,27 @@
+"""Handle plotting of surfaces for html rendering."""
+
 import collections.abc
 import json
-import warnings
 
-import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
 
-from nilearn._utils.niimg_conversions import check_niimg_3d
+from nilearn import datasets, surface
 from nilearn._utils import fill_doc
-from nilearn import surface
-from nilearn import datasets
-from nilearn.plotting.html_document import HTMLDocument
+from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn.plotting import cm
+from nilearn.plotting.html_document import HTMLDocument
 from nilearn.plotting.js_plotting_utils import (
-    colorscale, mesh_to_plotly, get_html_template, add_js_lib,
-    to_color_strings)
+    add_js_lib,
+    colorscale,
+    get_html_template,
+    mesh_to_plotly,
+    to_color_strings,
+)
 
 
-class SurfaceView(HTMLDocument):
+class SurfaceView(HTMLDocument):  # noqa: D101
     pass
 
 
@@ -130,14 +134,16 @@ def _check_mesh(mesh):
     if isinstance(mesh, str):
         return datasets.fetch_surf_fsaverage(mesh)
     if not isinstance(mesh, collections.abc.Mapping):
-        raise TypeError("The mesh should be a str or a dictionary, "
-                        "you provided: {}.".format(type(mesh).__name__))
+        raise TypeError(
+            "The mesh should be a str or a dictionary, "
+            f"you provided: {type(mesh).__name__}."
+        )
     missing = {'pial_left', 'pial_right', 'sulc_left', 'sulc_right',
                'infl_left', 'infl_right'}.difference(mesh.keys())
     if missing:
         raise ValueError(
-            "{} {} missing from the provided mesh dictionary".format(
-                missing, ('are' if len(missing) > 1 else 'is')))
+            f"{missing} {('are' if len(missing) > 1 else 'is')} "
+            "missing from the provided mesh dictionary")
     return mesh
 
 
@@ -155,8 +161,8 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
     info = {}
     mesh = surface.surface._check_mesh(mesh)
     surface_maps = {
-        h: surface.vol_to_surf(volume_img, mesh['pial_{}'.format(h)],
-                               inner_mesh=mesh.get('white_{}'.format(h), None),
+        h: surface.vol_to_surf(volume_img, mesh[f'pial_{h}'],
+                               inner_mesh=mesh.get(f'white_{h}', None),
                                **vol_to_surf_kwargs)
         for h in ['left', 'right']
     }
@@ -165,15 +171,15 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
         symmetric_cmap=symmetric_cmap, vmax=vmax, vmin=vmin)
 
     for hemi, surf_map in surface_maps.items():
-        curv_map = surface.load_surf_data(mesh["curv_{}".format(hemi)])
+        curv_map = surface.load_surf_data(mesh[f"curv_{hemi}"])
         bg_map = np.sign(curv_map)
 
-        info['pial_{}'.format(hemi)] = mesh_to_plotly(
-            mesh['pial_{}'.format(hemi)])
-        info['inflated_{}'.format(hemi)] = mesh_to_plotly(
-            mesh['infl_{}'.format(hemi)])
+        info[f'pial_{hemi}'] = mesh_to_plotly(
+            mesh[f'pial_{hemi}'])
+        info[f'inflated_{hemi}'] = mesh_to_plotly(
+            mesh[f'infl_{hemi}'])
 
-        info['vertexcolor_{}'.format(hemi)] = _get_vertexcolor(
+        info[f'vertexcolor_{hemi}'] = _get_vertexcolor(
             surf_map, colors['cmap'], colors['norm'],
             absolute_threshold=colors['abs_threshold'], bg_map=bg_map,
             bg_on_data=bg_on_data, darkness=darkness,

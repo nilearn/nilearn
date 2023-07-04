@@ -1,35 +1,33 @@
-"""
-Visualizing 3D stat maps in a Brainsprite viewer
-"""
-import os
-import json
+"""Visualizing 3D stat maps in a Brainsprite viewer."""
 import copy
+import json
+import os
 import warnings
-from io import BytesIO
 from base64 import b64encode
+from io import BytesIO
 
-import numpy as np
 import matplotlib
+import numpy as np
 from matplotlib.image import imsave
-
 from nibabel.affines import apply_affine
 
-from ..image import resample_to_img, new_img_like, reorder_img, get_data
-from .js_plotting_utils import get_html_template, colorscale
+from nilearn.plotting.html_document import HTMLDocument
+
+from .._utils import fill_doc
+from .._utils.extmath import fast_abs_percentile
+from .._utils.niimg import _safe_get_data
+from .._utils.niimg_conversions import check_niimg_3d
+from .._utils.param_validation import check_threshold
+from ..datasets import load_mni152_template
+from ..image import get_data, new_img_like, reorder_img, resample_to_img
 from ..plotting import cm
 from ..plotting.find_cuts import find_xyz_cut_coords
 from ..plotting.img_plotting import _load_anat
-from nilearn.plotting.html_document import HTMLDocument
-from .._utils import fill_doc
-from .._utils.niimg_conversions import check_niimg_3d
-from .._utils.param_validation import check_threshold
-from .._utils.extmath import fast_abs_percentile
-from .._utils.niimg import _safe_get_data
-from ..datasets import load_mni152_template
+from .js_plotting_utils import colorscale, get_html_template
 
 
 def _data_to_sprite(data):
-    """ Convert a 3D array into a sprite of sagittal slices.
+    """Convert a 3D array into a sprite of sagittal slices.
 
     Parameters
     ----------
@@ -108,9 +106,10 @@ def _threshold_data(data, threshold=None):
         data = data * np.logical_not(mask)
 
     if not np.any(mask):
-        warnings.warn("Threshold given was {0}, but "
-                      "the data has no values below {1}. ".format(threshold,
-                                                                  data.min()))
+        warnings.warn(
+            f"Threshold given was {threshold}, "
+            f"but the data has no values below {data.min()}. "
+        )
     return data, mask, threshold
 
 
@@ -160,9 +159,11 @@ def _save_sprite(data, output_sprite, vmax, vmin, mask=None, cmap='Greys',
 
 
 def _bytesIO_to_base64(handle_io):
-    """ Encode the content of a bytesIO virtual file as base64.
-        Also closes the file.
-        Returns: data
+    """Encode the content of a bytesIO virtual file as base64.
+
+    Also closes the file.
+
+    Returns: data
     """
     handle_io.seek(0)
     data = b64encode(handle_io.read()).decode('utf-8')
@@ -171,22 +172,21 @@ def _bytesIO_to_base64(handle_io):
 
 
 def _save_cm(output_cmap, cmap, format='png', n_colors=256):
-    """ Save the colormap of an image as an image file.
-    """
-
+    """Save the colormap of an image as an image file."""
     # save the colormap
     data = np.arange(0., n_colors) / (n_colors - 1.)
     data = data.reshape([1, n_colors])
     imsave(output_cmap, data, cmap=cmap, format=format)
 
 
-class StatMapView(HTMLDocument):
+class StatMapView(HTMLDocument):  # noqa: D101
     pass
 
 
 def _mask_stat_map(stat_map_img, threshold=None):
-    """ Load a stat map and apply a threshold.
-        Returns: mask_img, stat_map_img, data, threshold
+    """Load a stat map and apply a threshold.
+
+    Returns: mask_img, stat_map_img, data, threshold
     """
     # Load stat map
     stat_map_img = check_niimg_3d(stat_map_img, dtype='auto')
@@ -203,8 +203,9 @@ def _mask_stat_map(stat_map_img, threshold=None):
 
 
 def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
-    """Load and resample bg_img in an isotropic resolution,
+    """Load and resample bg_img in an isotropic resolution, \
     with a positive diagonal affine matrix.
+
     Returns: bg_img, bg_min, bg_max, black_bg
 
     """
@@ -232,6 +233,7 @@ def _load_bg_img(stat_map_img, bg_img='MNI152', black_bg='auto', dim='auto'):
 def _resample_stat_map(stat_map_img, bg_img, mask_img,
                        resampling_interpolation='continuous'):
     """Resample the stat map and mask to the background.
+
     Returns: stat_map_img, mask_img
 
     """
@@ -247,6 +249,7 @@ def _json_view_params(shape, affine, vmin, vmax, cut_slices, black_bg=False,
                       opacity=1, draw_cross=True, annotate=True, title=None,
                       colorbar=True, value=True):
     """Create a dictionary with all the brainsprite parameters.
+
     Returns: params
 
     """
@@ -294,6 +297,7 @@ def _json_view_params(shape, affine, vmin, vmax, cut_slices, black_bg=False,
 
 def _json_view_size(params):
     """Define the size of the viewer.
+
     Returns: width_view, height_view
 
     """
@@ -315,7 +319,7 @@ def _json_view_size(params):
 
 
 def _get_bg_mask_and_cmap(bg_img, black_bg):
-    """Helper function of _json_view_data."""
+    """Get background data for _json_view_data."""
     bg_mask = np.ma.getmaskarray(get_data(bg_img))
     bg_cmap = copy.copy(matplotlib.pyplot.get_cmap('gray'))
     if black_bg:
@@ -328,6 +332,7 @@ def _get_bg_mask_and_cmap(bg_img, black_bg):
 def _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max, black_bg,
                     colors, cmap, colorbar):
     """Create a json-like viewer object, and populate with base64 data.
+
     Returns: json_view
 
     """
@@ -363,6 +368,7 @@ def _json_view_data(bg_img, stat_map_img, mask_img, bg_min, bg_max, black_bg,
 
 def _json_view_to_html(json_view):
     """Fill a brainsprite html template with relevant parameters and data.
+
     Returns: html_view
 
     """
@@ -388,9 +394,9 @@ def _json_view_to_html(json_view):
 
 def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
     """For internal use.
+
     Find slice numbers for the cut.
     Based on find_xyz_cut_coords
-
     """
     # Select coordinates for the cut
     if cut_coords is None:
@@ -403,14 +409,16 @@ def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
                                   cut_coords)
     except ValueError:
         raise ValueError(
-            "The input given for display_mode='ortho' needs to be "
-            "a list of 3d world coordinates in (x, y, z). "
-            "You provided cut_coords={0}".format(cut_coords))
+            "The input given for display_mode='ortho' "
+            "needs to be a list of 3d world coordinates in (x, y, z). "
+            f"You provided cut_coords={cut_coords}"
+        )
     except IndexError:
         raise ValueError(
-            "The input given for display_mode='ortho' needs to be "
-            "a list of 3d world coordinates in (x, y, z). "
-            "You provided single cut, cut_coords={0}".format(cut_coords))
+            "The input given for display_mode='ortho' "
+            "needs to be a list of 3d world coordinates in (x, y, z). "
+            f"You provided single cut, cut_coords={cut_coords}"
+        )
 
     return cut_slices
 

@@ -11,6 +11,7 @@ import nibabel
 import numpy as np
 import pandas as pd
 import pytest
+
 from nilearn.datasets import struct, utils
 from nilearn.datasets._testing import dict_to_archive, list_to_archive
 
@@ -97,7 +98,7 @@ def _make_oasis_data(dartel=True):
     n_subjects = 457
     prefix = "mwrc" if dartel else "mwc"
     ids = pd.DataFrame(
-        {"ID": list(map("OAS1_{:04}".format, range(n_subjects)))}
+        {"ID": [f"OAS1_{i:04}" for i in range(n_subjects)]}
     ).to_csv(index=False, sep="\t")
     data = {"oasis_cross-sectional.csv": ids, "data_usage_agreement.txt": ""}
     path_pattern = str(

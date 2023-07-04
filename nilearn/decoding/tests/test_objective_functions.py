@@ -2,6 +2,10 @@
 
 import numpy as np
 import pytest
+from numpy.testing import assert_almost_equal, assert_array_equal
+from scipy.optimize import check_grad
+from sklearn.utils import check_random_state
+
 from nilearn.decoding.objective_functions import (
     _div_id,
     _gradient_id,
@@ -9,9 +13,6 @@ from nilearn.decoding.objective_functions import (
     _logistic_loss_grad,
 )
 from nilearn.decoding.space_net import BaseSpaceNet
-from numpy.testing import assert_almost_equal, assert_array_equal
-from scipy.optimize import check_grad
-from sklearn.utils import check_random_state
 
 L1_RATIO = [0.0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0]
 

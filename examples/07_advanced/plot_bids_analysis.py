@@ -102,6 +102,7 @@ p001_unc = norm.isf(0.001)
 ############################################################################
 # Prepare figure for concurrent plot of individual maps.
 import matplotlib.pyplot as plt
+
 from nilearn import plotting
 
 fig, axes = plt.subplots(nrows=2, ncols=5, figsize=(8, 4.5))

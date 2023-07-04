@@ -40,6 +40,7 @@ masker = NiftiMapsMasker(
     high_pass=0.01,
     memory="nilearn_cache",
     memory_level=1,
+    standardize="zscore_sample",
 ).fit()
 
 masked_data = [
@@ -57,11 +58,12 @@ masked_data = [
 # compare the different kinds of connectivity matrices.
 
 # prepare the classification pipeline
-from nilearn.connectome import ConnectivityMeasure
 from sklearn.dummy import DummyClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
+
+from nilearn.connectome import ConnectivityMeasure
 
 kinds = ["correlation", "partial correlation", "tangent"]
 

@@ -11,11 +11,12 @@ import pandas as pd
 import scipy.linalg
 import scipy.signal
 from nibabel import Nifti1Image
+from scipy.ndimage import binary_dilation
+from sklearn.utils import check_random_state
+
 from nilearn import datasets, image, maskers, masking
 from nilearn._utils import as_ndarray, logger
 from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
-from scipy.ndimage import binary_dilation
-from sklearn.utils import check_random_state
 
 
 def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
@@ -366,9 +367,8 @@ def generate_fake_fmri(shape=(10, 11, 12),
     target = np.zeros(length, dtype=int)
     rest_max_size = (length - (n_blocks * block_size)) // n_blocks
     if rest_max_size < 0:
-        raise ValueError('%s is too small '
-                         'to put %s blocks of size %s' %
-                         (length, n_blocks, block_size))
+        raise ValueError(f'{length} is too small '
+                         f'to put {n_blocks} blocks of size {block_size}')
     t_start = 0
     if rest_max_size > 0:
         t_start = rand_gen.randint(0, rest_max_size, 1)[0]
@@ -494,11 +494,11 @@ def write_fake_fmri_data_and_design(shapes,
     mask_file, fmri_files, design_files = 'mask.nii', [], []
     rand_gen = check_random_state(random_state)
     for i, shape in enumerate(shapes):
-        fmri_files.append('fmri_run%d.nii' % i)
+        fmri_files.append(f'fmri_run{i:d}.nii')
         data = rand_gen.randn(*shape)
         data[1:-1, 1:-1, 1:-1] += 100
         Nifti1Image(data, affine).to_filename(fmri_files[-1])
-        design_files.append('dmtx_%d.csv' % i)
+        design_files.append(f'dmtx_{i:d}.csv')
         pd.DataFrame(rand_gen.randn(shape[3], rk),
                      columns=['', '', '']).to_csv(design_files[-1])
     Nifti1Image((rand_gen.rand(*shape[:3]) > .5).astype(np.int8),
@@ -676,7 +676,7 @@ def generate_group_sparse_gaussian_graphs(n_subjects=5,
     topology = topology > 0
     assert (np.all(topology == topology.T))
     logger.log(
-        "Sparsity: {0:f}".format(1. * topology.sum() / (topology.shape[0]**2)),
+        f"Sparsity: {1.0 * topology.sum() / topology.shape[0] ** 2 :f}",
         verbose=verbose)
 
     # Generate temporal signals
@@ -1398,6 +1398,11 @@ def _write_bids_derivative_func(
 
     shape = [n_voxels, n_voxels, n_voxels, n_time_points]
 
+    entities_to_include = [
+        *_bids_entities()["raw"],
+        *_bids_entities()["derivatives"]
+    ]
+
     for space in ("MNI", "T1w"):
         for desc in ("preproc", "fmriprep"):
             # Only space 'T1w' include both descriptions.
@@ -1406,10 +1411,6 @@ def _write_bids_derivative_func(
 
             fields["entities"]["space"] = space
             fields["entities"]["desc"] = desc
-
-            entities_to_include = [
-                *_bids_entities()["raw"], *_bids_entities()["derivatives"]
-            ]
 
             bold_path = func_path / _create_bids_filename(
                 fields=fields, entities_to_include=entities_to_include

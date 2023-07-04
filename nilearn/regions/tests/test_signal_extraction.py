@@ -7,6 +7,8 @@ import warnings
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+from numpy.testing import assert_almost_equal, assert_equal
+
 from nilearn._utils.data_gen import (
     generate_fake_fmri,
     generate_labeled_regions,
@@ -25,7 +27,6 @@ from nilearn.regions.signal_extraction import (
     signals_to_img_labels,
     signals_to_img_maps,
 )
-from numpy.testing import assert_almost_equal, assert_equal
 
 _3D_EXPECTED_ERROR_MSG = (
     "Input data has incompatible dimensionality: "
@@ -460,6 +461,57 @@ def test_signal_extraction_with_maps_and_labels(labeled_regions, fmri_img):
 
     maps_img_r = signals_to_img_maps(maps_signals, maps_img, mask_img=mask_img)
     assert maps_img_r.shape == SHAPE + (N_TIMEPOINTS,)
+
+    # apply img_to_signals_labels with a masking,
+    # containing only 3 regions, but
+    # not keeping the masked labels
+    with pytest.warns(
+        UserWarning,
+        match="After applying mask to the labels image, "
+        "the following labels were "
+        r"removed: \{3, 4, 6, 7, 8\}. "
+        "Out of 9 labels, the "
+        "masked labels image only contains "
+        "4 labels "
+        r"\(including background\).",
+    ):
+        labels_signals, labels_labels = img_to_signals_labels(
+            imgs=fmri_img,
+            labels_img=labeled_regions,
+            mask_img=mask_img,
+            keep_masked_labels=False,
+        )
+
+    # only 3 regions must be kept, others must be removed
+    assert labels_signals.shape == (N_TIMEPOINTS, 3)
+    assert len(labels_labels) == 3
+
+    # apply img_to_signals_labels with a masking,
+    # containing only 3 regions, and
+    # keeping the masked labels
+    # test if the warning is raised
+
+    with pytest.warns(
+        DeprecationWarning,
+        match='Applying "mask_img" before '
+        "signal extraction may result in empty region signals in "
+        "the output. These are currently kept. "
+        "Starting from version 0.13, the default behavior will be "
+        "changed to remove them by setting "
+        '"keep_masked_labels=False". '
+        '"keep_masked_labels" parameter will be removed '
+        "in version 0.15.",
+    ):
+        labels_signals, labels_labels = img_to_signals_labels(
+            imgs=fmri_img,
+            labels_img=labeled_regions,
+            mask_img=mask_img,
+            keep_masked_labels=True,
+        )
+
+    # all regions must be kept
+    assert labels_signals.shape == (N_TIMEPOINTS, 8)
+    assert len(labels_labels) == 8
 
 
 def test_signal_extraction_nans_in_regions_are_replaced_with_zeros():

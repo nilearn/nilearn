@@ -66,7 +66,7 @@ seed_masker = NiftiSpheresMasker(
     pcc_coords,
     radius=8,
     detrend=True,
-    standardize=True,
+    standardize="zscore_sample",
     low_pass=0.1,
     high_pass=0.01,
     t_r=2,
@@ -92,7 +92,7 @@ from nilearn.maskers import NiftiMasker
 brain_masker = NiftiMasker(
     smoothing_fwhm=6,
     detrend=True,
-    standardize=True,
+    standardize="zscore_sample",
     low_pass=0.1,
     high_pass=0.01,
     t_r=2,
@@ -113,8 +113,8 @@ brain_time_series = brain_masker.fit_transform(
 # series** is an array with shape n_volumes, 1), while the
 # **brain time series** is an array with shape (n_volumes, n_voxels).
 
-print("Seed time series shape: (%s, %s)" % seed_time_series.shape)
-print("Brain time series shape: (%s, %s)" % brain_time_series.shape)
+print(f"Seed time series shape: ({seed_time_series.shape})")
+print(f"Brain time series shape: ({brain_time_series.shape})")
 
 ##########################################################################
 # We can plot the **seed time series**.

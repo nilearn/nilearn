@@ -5,12 +5,13 @@ import re
 
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import scale
+
 from nilearn._utils.fmriprep_confounds import (
     _flag_single_gifti,
     _is_camel_case,
 )
 from nilearn.interfaces.bids import parse_bids_filename
-from sklearn.preprocessing import scale
 
 from .load_confounds_scrub import _extract_outlier_regressors
 
@@ -25,7 +26,8 @@ img_file_error = {
     "aroma": (
         "Input must be desc-smoothAROMAnonaggr_bold for full ICA-AROMA"
         " strategy."
-    ), "nii.gz": "Invalid file type for the selected method.",
+    ),
+    "nii.gz": "Invalid file type for the selected method.",
     "dtseries.nii": "Invalid file type for the selected method.",
     "func.gii": "need fMRIprep output with extension func.gii",
 }
@@ -106,11 +108,11 @@ def _get_file_name(nii_file):
     confounds_raw_candidates = [
         nii_file.replace(
             img_filename,
-            f"{subject_label}_{specifiers}_desc-confounds_timeseries.tsv"
+            f"{subject_label}_{specifiers}_desc-confounds_timeseries.tsv",
         ),
         nii_file.replace(
             img_filename,
-            f"{subject_label}_{specifiers}_desc-confounds_regressors.tsv"
+            f"{subject_label}_{specifiers}_desc-confounds_regressors.tsv",
         ),
     ]
 

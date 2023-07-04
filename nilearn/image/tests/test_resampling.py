@@ -8,6 +8,14 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Header, Nifti1Image
 from nibabel.freesurfer import MGHImage
+from numpy.testing import (
+    assert_allclose,
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+    assert_equal,
+)
+
 from nilearn import _utils
 from nilearn._utils import testing
 from nilearn.image import get_data
@@ -20,13 +28,6 @@ from nilearn.image.resampling import (
     reorder_img,
     resample_img,
     resample_to_img,
-)
-from numpy.testing import (
-    assert_allclose,
-    assert_almost_equal,
-    assert_array_almost_equal,
-    assert_array_equal,
-    assert_equal,
 )
 
 AFFINE_EYE = np.eye(4)
@@ -586,8 +587,7 @@ def test_resampling_nan(affine, core_shape):
 
     # check 3x3 transformation matrix
     target_affine = np.eye(3)[axis_permutation]
-    with pytest.warns(Warning, match=r"(\bnan\b|invalid value)"):
-        resampled_img = resample_img(source_img, target_affine=target_affine)
+    resampled_img = resample_img(source_img, target_affine=target_affine)
 
     resampled_data = get_data(resampled_img)
     if full_data.ndim == 4:

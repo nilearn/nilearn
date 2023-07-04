@@ -7,8 +7,9 @@ except ImportError:
     MATPLOTLIB_INSTALLED = False
 else:
     MATPLOTLIB_INSTALLED = True
-import pytest
 import warnings
+
+import pytest
 
 from nilearn.plotting import _set_mpl_backend
 

@@ -125,17 +125,17 @@ dc = "Dummy classifier with stratified strategy"
 
 docdict['classifier_options'] = f"""
 
-        - `svc`: :class:`{svc} <sklearn.svm.SVC>` with L2 penalty.
+        - `svc`: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
             .. code-block:: python
 
                 svc = LinearSVC(penalty="l2",
                                 max_iter=1e4)
 
-        - `svc_l2`: :class:`{svc} <sklearn.svm.SVC>` with L2 penalty.
+        - `svc_l2`: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
             .. note::
                 Same as option `svc`.
 
-        - `svc_l1`: :class:`{svc} <sklearn.svm.SVC>` with L1 penalty.
+        - `svc_l1`: :class:`{svc} <sklearn.svm.LinearSVC>` with L1 penalty.
             .. code-block:: python
 
                 svc_l1 = LinearSVC(penalty="l1",
@@ -143,7 +143,7 @@ docdict['classifier_options'] = f"""
                                    max_iter=1e4)
 
         - `logistic`: \
-            :class:`{logistic} <sklearn.linear_model.LogisticRegression>` \
+            :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
             with L2 penalty.
             .. code-block:: python
 
@@ -151,7 +151,7 @@ docdict['classifier_options'] = f"""
                                               solver="liblinear")
 
         - `logistic_l1`: \
-            :class:`{logistic} <sklearn.linear_model.LogisticRegression>` \
+            :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
             with L1 penalty.
             .. code-block:: python
 
@@ -159,7 +159,7 @@ docdict['classifier_options'] = f"""
                                                  solver="liblinear")
 
         - `logistic_l2`: \
-            :class:`{logistic} <sklearn.linear_model.LogisticRegression>` \
+            :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
             with L2 penalty
             .. note::
                 Same as option `logistic`.
@@ -710,6 +710,23 @@ standardize : :obj:`bool`, default={}
 docdict['standardize'] = standardize.format('True')
 docdict['standardize_false'] = standardize.format('False')
 
+# standardize as used within maskers module
+docdict["standardize_maskers"] = """
+standardize : {'zscore_sample', 'zscore', 'psc', True, False}, default=False
+    Strategy to standardize the signal:
+
+        - 'zscore_sample': The signal is z-scored. Timeseries are shifted
+          to zero mean and scaled to unit variance. Uses sample std.
+        - 'zscore': The signal is z-scored. Timeseries are shifted
+          to zero mean and scaled to unit variance. Uses population std
+          by calling default :obj:`numpy.std` with N - ``ddof=0``.
+        - 'psc':  Timeseries are shifted to zero mean value and scaled
+          to percent signal change (as compared to original mean signal).
+        - True: The signal is z-scored (same as option `zscore`).
+          Timeseries are shifted to zero mean and scaled to unit variance.
+        - False: Do not standardize the data.
+"""
+
 # standardize_confounds
 docdict['standardize_confounds'] = """
 standardize_confounds : :obj:`bool`, default=True
@@ -829,6 +846,25 @@ vmin : :obj:`float`, optional
     Passed to :func:`matplotlib.pyplot.imshow`.
 """
 
+# keep_masked_labels
+docdict["keep_masked_labels"] = """
+keep_masked_labels : :obj:`bool`, optional
+    When a mask is supplied through the "mask_img" parameter, some
+    atlas regions may lie entirely outside of the brain mask, resulting
+    in empty time series for those regions.
+    If True, the masked atlas with these empty labels will be retained
+    in the output, resulting in corresponding time series containing
+    zeros only. If False, the empty labels will be removed from the
+    output, ensuring no empty time series are present.
+    Default=True.
+
+    .. deprecated:: 0.10.2.dev
+
+        The 'True' option for ``keep_masked_labels`` is deprecated.
+        The default value will change to 'False' in 0.13,
+        and the ``keep_masked_labels`` parameter will be removed in 0.15.
+"""
+
 ##############################################################################
 
 docdict_indented = {}
@@ -903,6 +939,5 @@ def fill_doc(f):
     except (TypeError, ValueError, KeyError) as exp:
         funcname = f.__name__
         funcname = docstring.split('\n')[0] if funcname is None else funcname
-        raise RuntimeError('Error documenting %s:\n%s'
-                           % (funcname, str(exp)))
+        raise RuntimeError(f'Error documenting {funcname}:\n{str(exp)}')
     return f

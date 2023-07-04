@@ -1,10 +1,11 @@
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
-from nilearn.decomposition._base import _fast_svd, _mask_and_reduce
-from nilearn.maskers import MultiNiftiMasker
 from numpy.testing import assert_array_almost_equal
 from scipy import linalg
+
+from nilearn.decomposition._base import _fast_svd, _mask_and_reduce
+from nilearn.maskers import MultiNiftiMasker
 
 AFFINE_EYE = np.eye(4)
 

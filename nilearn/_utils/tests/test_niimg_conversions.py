@@ -14,10 +14,12 @@ import tempfile
 from pathlib import Path
 
 import nibabel
-import nilearn as ni
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+from numpy.testing import assert_array_almost_equal, assert_array_equal
+
+import nilearn as ni
 from nilearn import _utils, image
 from nilearn._utils import niimg_conversions, testing
 from nilearn._utils.exceptions import DimensionError
@@ -27,7 +29,6 @@ from nilearn._utils.testing import (
     with_memory_profiler,
 )
 from nilearn.image import get_data
-from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 
 class PhonyNiimage(nibabel.spatialimages.SpatialImage):
@@ -558,11 +559,8 @@ def test_repr_niimgs(tmp_path):
         _utils._repr_niimgs(list_of_paths, shorten=True)
         == shortened_list_of_paths
     )
-
-    long_list_of_paths = "[%s]" % ",\n ".join(
-        _ for _ in [str(_) for _ in list_of_paths]
-    )
-
+    long_list_of_paths = ",\n ".join([str(_) for _ in list_of_paths])
+    long_list_of_paths = f"[{long_list_of_paths}]"
     assert (
         _utils._repr_niimgs(list_of_paths, shorten=False) == long_list_of_paths
     )

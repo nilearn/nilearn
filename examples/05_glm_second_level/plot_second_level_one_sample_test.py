@@ -42,6 +42,7 @@ data = fetch_localizer_contrasts(
 # visualization purposes. The button press effect is visible among all
 # subjects.
 import matplotlib.pyplot as plt
+
 from nilearn import plotting
 
 subjects = data["ext_vars"]["participant_id"].tolist()
@@ -116,6 +117,7 @@ plotting.show()
 # Next, we compute the (corrected) p-values with a parametric test to compare
 # them with the results from a nonparametric test.
 import numpy as np
+
 from nilearn.image import get_data, math_img
 
 p_val = second_level_model.compute_contrast(output_type="p_value")
