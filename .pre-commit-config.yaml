@@ -57,10 +57,8 @@ exclude: |
         | nilearn/plotting/html_connectome.py
         | nilearn/plotting/find_cuts.py
         | nilearn/plotting/html_surface.py
-        | nilearn/plotting/tests/test_html_document.py
         | nilearn/plotting/displays/_axes.py
         | nilearn/plotting/html_stat_map.py
-        | nilearn/plotting/tests/test_img_plotting/test_plot_anat.py
         | nilearn/plotting/tests/test_img_plotting/test_get_colorbar_and_data_ranges.py
         | nilearn/plotting/tests/test_html_surface.py
         | nilearn/plotting/tests/test_img_plotting/test_img_plotting.py
