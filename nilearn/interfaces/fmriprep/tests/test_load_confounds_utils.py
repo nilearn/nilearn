@@ -39,7 +39,7 @@ def test_get_file_name(tmp_path, flag, suffix, image_type):
     else:
         kwargs = {}
 
-   img, _ = create_tmp_filepath(
+    img, _ = create_tmp_filepath(
         tmp_path, image_type=image_type, old_derivative_suffix=flag, **kwargs
     )
 
