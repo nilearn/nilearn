@@ -60,12 +60,12 @@ doc = [
 	"coverage",
 	"flake8",
 	"flake8-docstrings",
-	"black",
 	"furo",
 	"memory_profiler",  # measuring memory during docs building
 	"mkl",
 	"myst-parser",
 	"numpydoc",
+  "ruamel.yaml",
 	"sphinx",
 	"sphinx-copybutton",
 	"sphinx-design",
@@ -89,7 +89,13 @@ test = [
 	"pytest-cov",
 ]
 # A combination of dependencies useful for developers
-dev = ["nilearn[plotting,plotly,doc,test]"]
+dev = [
+	"nilearn[plotting,plotly,doc,test]",
+	"isort",
+	"flynt",
+	"black",
+   "flake8-use-fstring",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["nilearn"]
@@ -102,53 +108,14 @@ version-file = "nilearn/_version.py"
 
 [tool.black]
 line-length = 79
-include = """
-(
-  examples/.*py
-  | maint_tools/.*py
-  | nilearn/connectome/.*py
-  | nilearn/dec.*
-  | nilearn/_utils/.*py$
-  | nilearn/glm/.*py
-  | nilearn/image/.*py
-  | nilearn/input_data/.*py
-  | nilearn/mass_univariate/.*py
-  | nilearn/regions/.*py
-  | nilearn/tests/.*py
-  | nilearn/reporting/.*py
-  | nilearn/signal.py
-  | nilearn/masking.py
-  | nilearn/conftest.py
-)
-"""
 # 'extend-exclude' excludes files or directories in addition to the defaults
 extend-exclude =  """
 (
   nilearn/externals
-  | nilearn/tests/test_masking.py
-  | nilearn/_utils/__init__.py
   | nilearn/_utils/data_gen.py
   | nilearn/_utils/docs.py
   | nilearn/_utils/helpers.py
   | nilearn/_utils/tests/test_data_gen.py
-  | examples/.*/.*3d_map_to_surface_projection.py
-  | examples/.*/.*demo_glass_brain.py
-  | examples/.*/.*demo_glass_brain_extensive.py
-  | examples/.*/.*demo_more_plotting.py
-  | examples/.*/.*demo_plotting.py
-  | examples/.*/.*fiac_analysis.py
-  | examples/.*/.*fixed_effects.py
-  | examples/.*/.*frem.py
-  | examples/.*/.*group_level_connectivity.py
-  | examples/.*/.*negate_image.py
-  | examples/.*/.*localizer_surface_analysis.py
-  | examples/.*/.*searchlight_surface.py
-  | examples/.*/.*resample_to_template.py
-  | examples/.*/.*surf_atlas.py
-  | examples/.*/.*surf_stat_map.py
-  | examples/.*/.*surface_bids_analysis.py
-  | examples/.*/.*surface_projection_strategies.py
-  | nilearn/reporting/data/html/report_body_template_niftispheresmasker.html
   | nilearn/reporting/html_report.py
   | nilearn/reporting/tests/test_html_report.py
   | nilearn/glm/contrasts.py
@@ -156,19 +123,71 @@ extend-exclude =  """
   | nilearn/glm/tests/test_contrasts.py
   | nilearn/glm/tests/test_first_level.py
   | nilearn/glm/tests/test_second_level.py
+  | nilearn/glm/contrasts.py
+  | examples/01_plotting/plot_3d_map_to_surface_projection.py
+  | examples/01_plotting/plot_demo_more_plotting.py
+  | examples/01_plotting/plot_demo_plotting.py
+  | examples/01_plotting/plot_surf_atlas.py
+  | examples/01_plotting/plot_surf_stat_map.py
+  | examples/01_plotting/plot_surface_projection_strategies.py
+  | examples/04_glm_first_level/plot_fiac_analysis.py
+  | examples/04_glm_first_level/plot_fixed_effects.py
+  | examples/04_glm_first_level/plot_localizer_surface_analysis.py
+  | examples/07_advanced/plot_surface_bids_analysis.py
+  | nilearn/interfaces/fmriprep/load_confounds_compcor.py
+  | nilearn/interfaces/fmriprep/tests/test_load_confounds_utils.py
+  | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
+  | nilearn/interfaces/fmriprep/tests/utils.py
+  | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
+  | nilearn/maskers/nifti_masker.py
+  | nilearn/maskers/nifti_spheres_masker.py
+  | nilearn/maskers/nifti_labels_masker.py
+  | nilearn/maskers/nifti_maps_masker.py
+  | nilearn/maskers/tests/test_nifti_spheres_masker.py
+  | nilearn/maskers/tests/test_nifti_labels_masker.py
+  | nilearn/maskers/tests/test_nifti_maps_masker.py
+  | nilearn/maskers/tests/test_nifti_masker.py
+  | nilearn/plotting/displays/_axes.py
+  | nilearn/plotting/glass_brain.py
+  | nilearn/plotting/html_connectome.py
+  | nilearn/plotting/html_surface.py
+  | nilearn/plotting/find_cuts.py
+  | nilearn/plotting/html_stat_map.py
+  | nilearn/plotting/img_plotting.py
+  | nilearn/plotting/matrix_plotting.py
+  | nilearn/plotting/js_plotting_utils.py
+  | nilearn/plotting/surf_plotting.py
+  | nilearn/plotting/tests/test_displays.py
+  | nilearn/plotting/tests/test_find_cuts.py
+  | nilearn/plotting/tests/test_html_stat_map.py
+  | nilearn/plotting/tests/test_html_surface.py
+  | nilearn/plotting/tests/test_img_plotting/test_get_colorbar_and_data_ranges.py
+  | nilearn/plotting/tests/test_img_plotting/test_img_plotting.py
+  | nilearn/plotting/tests/test_img_plotting/test_plot_glass_brain.py
+  | nilearn/plotting/tests/test_img_plotting/test_plot_stat_map.py
+  | nilearn/plotting/tests/test_img_plotting/test_plot_markers.py
+  | nilearn/plotting/tests/test_img_plotting/test_plot_connectome.py
+  | nilearn/plotting/tests/test_js_plotting_utils.py
+  | nilearn/plotting/tests/test_matplotlib_backend.py
+  | nilearn/plotting/tests/test_matrix_plotting.py
+  | nilearn/plotting/tests/test_surf_plotting.py
+  | nilearn/surface/surface.py
+  | nilearn/surface/tests/test_surface.py
+  | nilearn/tests/test_masking.py
+  | nilearn/tests/test_signal.py
 )
 """
 
 [tool.isort]
 profile = "black"
+skip_glob = [
+  "nilearn/externals/*",
+  "doc/auto_examples/*",
+]
 src_paths = [
   'maint_tools',
-  'nilearn/connectome/.*py',
-  'nilearn/dec.*',
-  'nilearn/image/.*py',
-  'nilearn/mass_univariate/.*py',
-  'nilearn/regions/.*py',
-  'nilearn/reporting/.*py'
+  'nilearn',
+  'doc',
 ]
 line_length = 79
 skip_gitignore = true
@@ -181,5 +200,8 @@ doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 
 [tool.codespell]
-skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv"
+skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,*/tmp,./doc/modules/generated/*"
 ignore-words = ".github/codespell_ignore_words.txt"
+
+[tool.flynt]
+exclude = "tempita"
