@@ -5,12 +5,13 @@ import warnings
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+from numpy.testing import assert_array_almost_equal
+
 from nilearn._utils.testing import write_tmp_imgs
 from nilearn.decomposition.canica import CanICA
 from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
 from nilearn.image import get_data, iter_img
 from nilearn.maskers import MultiNiftiMasker
-from numpy.testing import assert_array_almost_equal
 
 AFFINE_EYE = np.eye(4)
 

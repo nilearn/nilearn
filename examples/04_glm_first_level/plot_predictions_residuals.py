@@ -17,6 +17,7 @@ quality of the model fit.
 # Import modules
 # --------------
 import pandas as pd
+
 from nilearn import image, masking
 from nilearn.datasets import fetch_spm_auditory
 
@@ -189,3 +190,5 @@ z_map_ftest = fmri_glm.compute_contrast(
 plotting.plot_stat_map(
     z_map_ftest, bg_img=mean_img, threshold=3.1, display_mode="z", cut_coords=7
 )
+
+# sphinx_gallery_dummy_images=2

@@ -1,15 +1,14 @@
-
 import numbers
-from nilearn._utils.docs import fill_doc
-import numpy as np
 
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.colors import Normalize
-from matplotlib.patches import FancyArrow
-from matplotlib.lines import Line2D
 from matplotlib.font_manager import FontProperties
+from matplotlib.lines import Line2D
+from matplotlib.patches import FancyArrow
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
+from nilearn._utils.docs import fill_doc
 from nilearn.image import coord_transform
 from nilearn.plotting.glass_brain import plot_brain_schematics
 
@@ -36,11 +35,12 @@ class BaseAxes:
         self.shape = None
 
     def transform_to_2d(self, data, affine):
+        """Transform to a 2D."""
         raise NotImplementedError("'transform_to_2d' needs to be implemented "
                                   "in derived classes'")
 
     def add_object_bounds(self, bounds):
-        """Ensures that axes get rescaled when adding object bounds."""
+        """Ensure that axes get rescaled when adding object bounds."""
         old_object_bounds = self.get_object_bounds()
         self._object_bounds.append(bounds)
         new_object_bounds = self.get_object_bounds()
@@ -63,8 +63,7 @@ class BaseAxes:
             (xmin, xmax), (zmin, zmax), (_, _) = data_bounds
             (xmin_, xmax_), (zmin_, zmax_), (_, _) = bounding_box
         else:
-            raise ValueError('Invalid value for direction %s' %
-                             self.direction)
+            raise ValueError(f'Invalid value for direction {self.direction}')
         ax = self.ax
         # Here we need to do a copy to avoid having the image changing as
         # we change the data
@@ -131,7 +130,7 @@ class BaseAxes:
                        fontproperties=None, frameon=False, loc=4, pad=.1,
                        borderpad=.5, sep=5, size_vertical=0, label_top=False,
                        color='black', fontsize=None, **kwargs):
-        """Adds a scale bar annotation to the display.
+        """Add a scale bar annotation to the display.
 
         Parameters
         ----------
@@ -202,7 +201,7 @@ class BaseAxes:
         anchor_size_bar = AnchoredSizeBar(
             axis.transData,
             width_mm,
-            '%g%s' % (size, units),
+            f'{size:g}{units}',
             fontproperties=fontproperties,
             frameon=frameon,
             loc=loc,
@@ -220,9 +219,8 @@ class BaseAxes:
         axis.add_artist(anchor_size_bar)
 
     def draw_position(self, size, bg_color, **kwargs):
-        """``draw_position`` is not implemented in base class and
-        should be implemented in derived classes.
-        """
+        """``draw_position`` is not implemented in base class and \
+        should be implemented in derived classes."""
         raise NotImplementedError("'draw_position' should be implemented "
                                   "in derived classes")
 
@@ -255,14 +253,13 @@ class CutAxes(BaseAxes):
         """
         coords = [0, 0, 0]
         if self.direction not in ['x', 'y', 'z']:
-            raise ValueError('Invalid value for direction %s' %
-                             self.direction)
+            raise ValueError(f'Invalid value for direction {self.direction}')
         coords['xyz'.index(self.direction)] = self.coord
-        x_map, y_map, z_map = [int(np.round(c)) for c in
+        x_map, y_map, z_map = (int(np.round(c)) for c in
                                coord_transform(coords[0],
                                                coords[1],
                                                coords[2],
-                                               np.linalg.inv(affine))]
+                                               np.linalg.inv(affine)))
         if self.direction == 'y':
             cut = np.rot90(data[:, y_map, :])
         elif self.direction == 'x':
@@ -289,7 +286,7 @@ class CutAxes(BaseAxes):
 
         """
         if decimals:
-            text = '%s=%.{}f'.format(decimals)
+            text = f'%s=%.{decimals}f'
             coord = float(self.coord)
         else:
             text = '%s=%i'
@@ -306,7 +303,7 @@ class CutAxes(BaseAxes):
 
 
 def _get_index_from_direction(direction):
-    """Returns numerical index from direction."""
+    """Return numerical index from direction."""
     directions = ['x', 'y', 'z']
     try:
         # l and r are subcases of x
@@ -316,8 +313,8 @@ def _get_index_from_direction(direction):
             index = directions.index(direction)
     except ValueError:
         message = (
-            '{0} is not a valid direction. '
-            "Allowed values are 'l', 'r', 'x', 'y' and 'z'").format(direction)
+            f'{direction} is not a valid direction. '
+            "Allowed values are 'l', 'r', 'x', 'y' and 'z'")
         raise ValueError(message)
     return index
 
@@ -334,7 +331,7 @@ def _coords_3d_to_2d(coords_3d, direction, return_direction=False):
 
 @fill_doc
 class GlassBrainAxes(BaseAxes):
-    """An MPL axis-like object that displays a 2D projection of 3D
+    """An MPL axis-like object that displays a 2D projection of 3D \
     volumes with a schematic view of the brain.
 
     Parameters
@@ -351,15 +348,16 @@ class GlassBrainAxes(BaseAxes):
         Default=True.
 
     """
+
     def __init__(self, ax, direction, coord, plot_abs=True, **kwargs):
-        super(GlassBrainAxes, self).__init__(ax, direction, coord)
+        super().__init__(ax, direction, coord)
         self._plot_abs = plot_abs
         if ax is not None:
             object_bounds = plot_brain_schematics(ax, direction, **kwargs)
             self.add_object_bounds(object_bounds)
 
     def transform_to_2d(self, data, affine):
-        """Returns the maximum of the absolute value of the 3D volume
+        """Return the maximum of the absolute value of the 3D volume \
         along an axis.
 
         Parameters
@@ -419,9 +417,9 @@ class GlassBrainAxes(BaseAxes):
         return np.rot90(maximum_intensity_data)
 
     def draw_position(self, size, bg_color, **kwargs):
-        """Not implemented as it does not make sense to draw crosses for
-        the position of the cuts since we are taking the max along one axis.
-        """
+        """Not implemented as it does not make sense to draw crosses for \
+        the position of the cuts \
+        since we are taking the max along one axis."""
         pass
 
     def _add_markers(self, marker_coords, marker_color, marker_size, **kwargs):
@@ -469,7 +467,7 @@ class GlassBrainAxes(BaseAxes):
 
     def _add_lines(self, line_coords, line_values, cmap,
                    vmin=None, vmax=None, directed=False, **kwargs):
-        """Plot lines
+        """Plot lines.
 
         Parameters
         ----------

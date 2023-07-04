@@ -10,6 +10,7 @@ import warnings
 
 import numpy as np
 import scipy
+
 from nilearn import _utils
 from nilearn._utils import _compare_version, stringify_path
 from nilearn._utils.niimg import _get_data
@@ -572,7 +573,14 @@ def resample_img(
                 fill_value=fill_value,
             )
 
-    resampled_data = _clip_img(data, resampled_data, clip)
+    if clip:
+        # force resampled data to have a range contained in the original data
+        # preventing ringing artefact
+        # We need to add zero as a value considered for clipping, as it
+        # appears in padding images.
+        vmin = min(np.nanmin(data), 0)
+        vmax = max(np.nanmax(data), 0)
+        resampled_data.clip(vmin, vmax, out=resampled_data)
 
     return new_img_like(img, resampled_data, target_affine)
 

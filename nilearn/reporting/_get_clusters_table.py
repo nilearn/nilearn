@@ -9,10 +9,6 @@ from string import ascii_lowercase
 import nibabel as nib
 import numpy as np
 import pandas as pd
-from nilearn._utils import check_niimg_3d
-from nilearn._utils.niimg import _safe_get_data
-from nilearn.image import new_img_like, threshold_img
-from nilearn.image.resampling import coord_transform
 from scipy.ndimage import (
     center_of_mass,
     generate_binary_structure,
@@ -20,6 +16,11 @@ from scipy.ndimage import (
     maximum_filter,
     minimum_filter,
 )
+
+from nilearn._utils import check_niimg_3d
+from nilearn._utils.niimg import _safe_get_data
+from nilearn.image import new_img_like, threshold_img
+from nilearn.image.resampling import coord_transform
 
 
 def _local_max(data, affine, min_distance):
@@ -260,7 +261,7 @@ def get_clusters_table(
         Whether or not to additionally output cluster label map images.
         Default=False.
 
-        .. versionadded:: 0.10.1.dev
+        .. versionadded:: 0.10.1
 
     Returns
     -------
@@ -286,7 +287,7 @@ def get_clusters_table(
         If two_sided==True, first and second maps correspond
         to positive and negative tails.
 
-        .. versionadded:: 0.10.1.dev
+        .. versionadded:: 0.10.1
 
     """
     cols = ["Cluster ID", "X", "Y", "Z", "Peak Stat", "Cluster Size (mm3)"]

@@ -35,12 +35,12 @@ parcellation = destrieux_atlas['map_left']
 fsaverage = datasets.fetch_surf_fsaverage()
 
 # The fsaverage dataset contains file names pointing to the file locations
-print('Fsaverage5 pial surface of left hemisphere is at: %s' %
-      fsaverage['pial_left'])
-print('Fsaverage5 inflated surface of left hemisphere is at: %s' %
-      fsaverage['infl_left'])
-print('Fsaverage5 sulcal depth map of left hemisphere is at: %s' %
-      fsaverage['sulc_left'])
+print("Fsaverage5 pial surface of left hemisphere is at: "
+      f"{fsaverage['pial_left']}")
+print("Fsaverage5 inflated surface of left hemisphere is at: "
+      f"{fsaverage['infl_left']}")
+print("Fsaverage5 sulcal depth map of left hemisphere is at: "
+      f"{fsaverage['sulc_left']}")
 
 ###############################################################################
 # Visualization
@@ -93,6 +93,7 @@ plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
 # the mean location to obtain the coordinates.
 
 import numpy as np
+
 from nilearn import surface
 
 atlas = destrieux_atlas
@@ -148,3 +149,5 @@ view = plotting.view_connectome(corr, coordinates, edge_threshold='90%')
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 view
+
+# sphinx_gallery_dummy_images=1

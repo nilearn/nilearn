@@ -1,23 +1,23 @@
-"""
-Helper functions for views, i.e. interactive plots from html_surface and
-html_connectome.
-"""
+"""Helps for views, i.e. interactive plots from html_surface and \
+html_connectome."""
 
-import os
 import base64
+import os
 import warnings
 from string import Template
 
 import matplotlib as mpl
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
-# included here for backward compatibility
-from nilearn.plotting.html_document import (
-    HTMLDocument, set_max_img_views_before_warning,)  # noqa: F401
+from nilearn.plotting.html_document import (  # noqa: F401
+    HTMLDocument,
+    set_max_img_views_before_warning,
+)
+
+from .. import surface
 from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
-from .. import surface
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
 
@@ -33,34 +33,34 @@ def add_js_lib(html, embed_js=True):
     with open(os.path.join(js_dir, 'surface-plot-utils.js')) as f:
         js_utils = f.read()
     if not embed_js:
-        js_lib = """
+        js_lib = f"""
         <script
         src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
         </script>
         <script src="https://cdn.plot.ly/plotly-gl3d-latest.min.js"></script>
         <script>
-        {}
+        {js_utils}
         </script>
-        """.format(js_utils)
+        """
     else:
         with open(os.path.join(js_dir, 'jquery.min.js')) as f:
             jquery = f.read()
         with open(os.path.join(js_dir, 'plotly-gl3d-latest.min.js')) as f:
             plotly = f.read()
-        js_lib = """
-        <script>{}</script>
-        <script>{}</script>
+        js_lib = f"""
+        <script>{jquery}</script>
+        <script>{plotly}</script>
         <script>
-        {}
+        {js_utils}
         </script>
-        """.format(jquery, plotly, js_utils)
+        """
     if not isinstance(html, Template):
         html = Template(html)
     return html.safe_substitute({'INSERT_JS_LIBRARIES_HERE': js_lib})
 
 
 def get_html_template(template_name):
-    """Get an HTML file from package data"""
+    """Get an HTML file from package data."""
     template_path = os.path.join(
         os.path.dirname(__file__), 'data', 'html', template_name)
     with open(template_path, 'rb') as f:
@@ -109,7 +109,8 @@ def colorscale(cmap, values, threshold=None, symmetric_cmap=True,
     rgb = np.array(rgb, dtype=int)
     colors = []
     for i, col in zip(x, rgb):
-        colors.append([np.round(i, 3), "rgb({}, {}, {})".format(*col)])
+        colors.append([np.round(i, 3),
+                       f"rgb({col[0]}, {col[1]}, {col[2]})"])
     return {
         'colors': colors, 'vmin': vmin, 'vmax': vmax, 'cmap': our_cmap,
         'norm': norm, 'abs_threshold': abs_threshold,
@@ -118,7 +119,7 @@ def colorscale(cmap, values, threshold=None, symmetric_cmap=True,
 
 
 def encode(a):
-    """Base64 encode a numpy array"""
+    """Base64 encode a numpy array."""
     try:
         data = a.tobytes()
     except AttributeError:
@@ -128,11 +129,12 @@ def encode(a):
 
 
 def decode(b, dtype):
-    """Decode a numpy array encoded as Base64"""
+    """Decode a numpy array encoded as Base64."""
     return np.frombuffer(base64.b64decode(b.encode('utf-8')), dtype)
 
 
 def mesh_to_plotly(mesh):
+    """Convert a mesh to plotly format."""
     mesh = surface.load_surf_mesh(mesh)
     x, y, z = map(encode, np.asarray(mesh[0].T, dtype='<f4'))
     i, j, k = map(encode, np.asarray(mesh[1].T, dtype='<i4'))
@@ -148,8 +150,10 @@ def mesh_to_plotly(mesh):
 
 
 def to_color_strings(colors):
+    """Return a list of colors as hex strings."""
     cmap = mpl.colors.ListedColormap(colors)
     colors = cmap(np.arange(cmap.N))[:, :3]
     colors = np.asarray(colors * 255, dtype='uint8')
-    colors = ['#{:02x}{:02x}{:02x}'.format(*row) for row in colors]
+    colors = [f'#{int(row[0]):02x}{int(row[1]):02x}{int(row[2]):02x}'
+              for row in colors]
     return colors

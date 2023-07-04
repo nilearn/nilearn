@@ -28,8 +28,11 @@ References
     Australian & New Zealand Journal of Statistics, 43(1), 75-88.
     (http://avesbiodiv.mncn.csic.es/estadistica/permut2.pdf)
 
+..
+    Original authors:
+
+    - Virgile Fritsch, Feb. 2014
 """
-# Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
 
 ##############################################################################
 # Load Haxby dataset
@@ -142,6 +145,7 @@ neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
 ##############################################################################
 # Visualization
 import matplotlib.pyplot as plt
+
 from nilearn.image import get_data
 from nilearn.plotting import plot_stat_map, show
 
@@ -196,3 +200,5 @@ title = (
 display.title(title, y=1.1)
 
 show()
+
+# sphinx_gallery_dummy_images=1

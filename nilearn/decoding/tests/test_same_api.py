@@ -6,6 +6,14 @@ for computing image gradient, loss functions, etc.
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
+from sklearn.datasets import load_iris
+from sklearn.utils import check_random_state
+
 from nilearn.decoding.objective_functions import (
     _logistic_loss_lipschitz_constant,
     _squared_loss,
@@ -28,13 +36,6 @@ from nilearn.decoding.space_net_solvers import (
 )
 from nilearn.image import get_data
 from nilearn.masking import _unmask_from_to_3d_array
-from numpy.testing import (
-    assert_almost_equal,
-    assert_array_almost_equal,
-    assert_array_equal,
-)
-from sklearn.datasets import load_iris
-from sklearn.utils import check_random_state
 
 
 def _make_data(rng=None, masked=False, dim=(2, 2, 2)):

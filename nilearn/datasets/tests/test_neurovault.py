@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import requests
+
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.datasets import neurovault
 from nilearn.image import load_img
@@ -309,7 +310,7 @@ def test_scroll_server_results():
             local_filter=lambda r: False,
         )
     )
-    assert len(result) == 0
+    assert not result
     no_results = neurovault._scroll_server_results(
         "http://BAD_URL", max_results=3, local_filter=lambda r: True
     )
@@ -319,26 +320,14 @@ def test_scroll_server_results():
 def test_is_null():
     is_null = neurovault.IsNull()
     assert is_null != "a"
-    assert not is_null != ""
-    assert "a" != is_null
-    assert not "" != is_null
-    assert not is_null == "a"
     assert is_null == ""
-    assert not "a" == is_null
-    assert "" == is_null
     assert str(is_null) == "IsNull()"
 
 
 def test_not_null():
     not_null = neurovault.NotNull()
     assert not_null == "a"
-    assert not not_null == ""
-    assert "a" == not_null
-    assert not "" == not_null
-    assert not not_null != "a"
     assert not_null != ""
-    assert not "a" != not_null
-    assert "" != not_null
     assert str(not_null) == "NotNull()"
 
 
@@ -346,15 +335,7 @@ def test_not_equal():
     not_equal = neurovault.NotEqual("a")
     assert not_equal == "b"
     assert not_equal == 1
-    assert not not_equal == "a"
-    assert "b" == not_equal
-    assert 1 == not_equal
-    assert not "a" == not_equal
-    assert not not_equal != "b"
-    assert not not_equal != 1
     assert not_equal != "a"
-    assert not "b" != not_equal
-    assert not 1 != not_equal
     assert "a" != not_equal
     assert str(not_equal) == "NotEqual('a')"
 
@@ -365,77 +346,56 @@ def test_order_comp():
     assert "2016-06-12T11:29:12.263046Z" != geq
     assert str(geq) == "GreaterOrEqual('2016-07-12T11:29:12.263046Z')"
     gt = neurovault.GreaterThan("abc")
-    assert not gt == "abc"
+    assert gt != "abc"
     assert gt == "abd"
     assert str(gt) == "GreaterThan('abc')"
     lt = neurovault.LessThan(7)
-    assert not 7 == lt
-    assert not 5 != lt
-    assert not lt == "a"
+    assert lt != 7
+    assert lt == 5
+    assert lt != "a"
     assert str(lt) == "LessThan(7)"
     leq = neurovault.LessOrEqual(4.5)
-    assert 4.4 == leq
-    assert not 4.6 == leq
+    assert leq == 4.4
+    assert leq != 4.6
     assert str(leq) == "LessOrEqual(4.5)"
 
 
 def test_is_in():
     is_in = neurovault.IsIn(0, 1)
     assert is_in == 0
-    assert not is_in == 2
-    assert 0 == is_in
-    assert not 2 == is_in
-    assert not is_in != 0
     assert is_in != 2
-    assert not 0 != is_in
-    assert 2 != is_in
     assert str(is_in) == "IsIn(0, 1)"
     countable = neurovault.IsIn(*range(11))
     assert 7 == countable
-    assert not countable == 12
+    assert countable != 12
 
 
 def test_not_in():
     not_in = neurovault.NotIn(0, 1)
     assert not_in != 0
-    assert not not_in != 2
-    assert 0 != not_in
-    assert not 2 != not_in
-    assert not not_in == 0
     assert not_in == 2
-    assert not 0 == not_in
-    assert 2 == not_in
     assert str(not_in) == "NotIn(0, 1)"
 
 
 def test_contains():
     contains = neurovault.Contains("a", 0)
-    assert not contains == 10
+    assert contains != 10
     assert contains == ["b", 1, "a", 0]
-    assert ["b", 1, "a", 0] == contains
     assert contains != ["b", 1, 0]
-    assert ["b", 1, "a"] != contains
-    assert not contains != ["b", 1, "a", 0]
-    assert not ["b", 1, "a", 0] != contains
-    assert not contains == ["b", 1, 0]
-    assert not ["b", 1, "a"] == contains
+    assert contains != ["b", 1, "a"]
     assert str(contains) == "Contains('a', 0)"
     contains = neurovault.Contains("house", "face")
-    assert "face vs house" == contains
-    assert not "smiling face vs frowning face" == contains
+    assert contains == "face vs house"
+    assert contains != "smiling face vs frowning face"
 
 
 def test_not_contains():
     not_contains = neurovault.NotContains("ab")
     assert not_contains is not None
     assert not_contains == "a_b"
-    assert "bcd" == not_contains
+    assert not_contains == "bcd"
     assert not_contains != "_abcd"
-    assert "_abcd" != not_contains
-    assert not not_contains != "a_b"
-    assert not "bcd" != not_contains
-    assert not not_contains == "_abcd"
-    assert not "_abcd" == not_contains
+    assert not_contains != "_abcd"
     assert str(not_contains) == "NotContains('ab',)"
 
 
@@ -445,30 +405,11 @@ def test_pattern():
     assert str(pattern_0) == "Pattern(pattern='[0-9akqj]{5}$', flags=0)"
     pattern_1 = neurovault.Pattern(r"[0-9akqj]{5}$", re.I)
     assert pattern_0 == "ak05q"
-    assert not pattern_0 == "Ak05q"
-    assert not pattern_0 == "ak05e"
-    assert pattern_1 == "ak05q"
-    assert pattern_1 == "Ak05q"
-    assert not pattern_1 == "ak05e"
-    assert not pattern_0 != "ak05q"
     assert pattern_0 != "Ak05q"
     assert pattern_0 != "ak05e"
-    assert not pattern_1 != "ak05q"
-    assert not pattern_1 != "Ak05q"
+    assert pattern_1 == "ak05q"
+    assert pattern_1 == "Ak05q"
     assert pattern_1 != "ak05e"
-
-    assert "ak05q" == pattern_0
-    assert not "Ak05q" == pattern_0
-    assert not "ak05e" == pattern_0
-    assert "ak05q" == pattern_1
-    assert "Ak05q" == pattern_1
-    assert not "ak05e" == pattern_1
-    assert not "ak05q" != pattern_0
-    assert "Ak05q" != pattern_0
-    assert "ak05e" != pattern_0
-    assert not "ak05q" != pattern_1
-    assert not "Ak05q" != pattern_1
-    assert "ak05e" != pattern_1
 
 
 def test_result_filter():
@@ -567,9 +508,7 @@ def test_neurosynth_words_vectorized():
         for i, file_name in enumerate(words_files):
             word_weights = np.zeros(n_im)
             word_weights[i] = 1
-            words_dict = {
-                "data": {"values": {k: v for k, v in zip(words, word_weights)}}
-            }
+            words_dict = {"data": {"values": dict(zip(words, word_weights))}}
             with open(file_name, "wb") as words_file:
                 words_file.write(json.dumps(words_dict).encode("utf-8"))
         freq, _ = neurovault.neurosynth_words_vectorized(words_files)
@@ -753,12 +692,12 @@ def test_fetch_neurovault(tmp_path):
     for meta in data.images_meta:
         assert not meta["not_mni"]
         assert not meta["is_thresholded"]
-        assert not meta["map_type"] in [
+        assert meta["map_type"] not in [
             "ROI/mask",
             "anatomical",
             "parcellation",
         ]
-        assert not meta["image_type"] == "atlas"
+        assert meta["image_type"] != "atlas"
 
     # using a data directory we can't write into should raise a
     # warning unless mode is 'offline'
@@ -835,7 +774,7 @@ def test_fetch_neurovault_ids(tmp_path):
 def test_should_download_resampled_images_only_if_no_previous_download(
     tmp_path,
 ):
-    collections, images = _get_neurovault_data()
+    collections, _ = _get_neurovault_data()
 
     sample_collection = collections.iloc[0]
     sample_collection_id = sample_collection["id"]
@@ -876,7 +815,7 @@ def test_should_download_resampled_images_only_if_no_previous_download(
 def test_download_original_images_along_resamp_images_if_previously_downloaded(
     tmp_path,
 ):
-    collections, images = _get_neurovault_data()
+    collections, _ = _get_neurovault_data()
 
     sample_collection = collections.iloc[0]
     sample_collection_id = sample_collection["id"]

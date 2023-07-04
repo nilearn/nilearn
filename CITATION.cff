@@ -1,0 +1,432 @@
+# https://citation-file-format.github.io/
+# https://github.com/citation-file-format/citation-file-format/blob/main/schema-guide.md
+cff-version: 1.2.0
+
+title: nilearn
+
+abstract: |
+  Nilearn enables approachable and versatile analyses of brain volumes.
+  It provides statistical and machine-learning tools,
+  with instructive documentation & friendly community.
+
+message: If you use this software, please cite it as below.
+
+repository-code: https://github.com/nilearn/nilearn
+
+identifiers:
+  - description: Machine learning for neuroimaging with scikit-learn
+    type: doi
+    value: 10.3389/fninf.2014.00014
+
+contact:
+  - given-names: Bertrand
+    family-names: Thirion
+    email: bertrand.thirion@inria.fr
+    affiliation: INRIA, France
+
+license: BSD-4-Clause
+
+authors:
+  - given-names: Ahmad
+    family-names: Chamma
+    website: https://github.com/achamma723
+  - given-names: Aina
+    family-names: Frau-Pascual
+    website: https://github.com/ainafp
+  - given-names: Alex
+    family-names: Rothberg
+    website: https://github.com/cancan101
+  - given-names: Alexandre
+    family-names: Abadie
+    website: https://github.com/aabadie
+  - given-names: Alexandre
+    family-names: Abraham
+    website: https://twinee.fr/
+  - given-names: Alexandre
+    family-names: Gramfort
+    website: http://alexandre.gramfort.net/
+  - given-names: Alexandre
+    family-names: Savio
+    website: https://github.com/alex-savio
+  - given-names: Alexis
+    family-names: Thual
+    website: https://github.com/alexisthual
+    affiliation: INRIA, France
+  - given-names: Amadeus
+    family-names: Kanaan
+    website: https://github.com/amadeuskanaan
+  - given-names: Ana Luisa
+    family-names: Pinho
+    website: https://github.com/alpinho
+  - given-names: Andrés Hoyos
+    family-names: Idrobo
+    website: https://github.com/ahoyosid
+  - given-names: Anne-Sophie
+    family-names: Kieslinger
+    website: https://github.com/askieslinger
+  - given-names: Ariel
+    family-names: Rokem
+    website: http://arokem.org/
+  - given-names: Arthur
+    family-names: Mensch
+    website: https://www.amensch.fr/
+  - given-names: Audrey
+    family-names: Duran
+    website: https://github.com/AudreyDuran
+  - given-names: Ben
+    family-names: Cipollini
+    website: https://github.com/bcipolli
+  - given-names: Bertrand
+    family-names: Thirion
+    website: https://pages.saclay.inria.fr/bertrand.thirion/
+    email: bertrand.thirion@inria.fr
+    affiliation: INRIA, France
+  - given-names: Binh
+    family-names: Nguyen
+    website: https://www.imo.universite-paris-saclay.fr/~tbnguyen/
+  - given-names: Caglar
+    family-names: Cakan
+    website: https://github.com/caglorithm
+  - given-names: Chris
+    family-names: Gorgolewski
+    website: https://github.com/chrisgorgo
+  - given-names: Chris
+    family-names: Markiewicz
+    website: https://github.com/effigies
+  - given-names: Christian
+    family-names: Horea
+    website: http://chymera.eu/
+  - given-names: Christian
+    family-names: Gerloff
+    website: https://github.com/ChristianGerloff
+  - given-names: Colin
+    family-names: Reininger
+    website: https://github.com/reiningc
+  - given-names: Connor
+    family-names: Lane
+    website: https://github.com/clane9
+  - given-names: Céline
+    family-names: Delettre
+    website: https://github.com/celinede
+  - given-names: Dan
+    family-names: Gale
+    website: https://danjgale.github.io/
+  - given-names: Daniel
+    family-names: Gomez
+    website: https://github.com/dangom
+  - given-names: Danilo
+    family-names: Bzdok
+    website: https://github.com/banilo
+  - given-names: David G
+    family-names: Ellis
+    website: https://github.com/ellisdg
+  - given-names: Demian
+    family-names: Wassermann
+    website: https://github.com/demianw
+  - given-names: Derek
+    family-names: Pisner
+    website: https://github.com/dPys
+  - given-names: Dimitri Papadopoulos
+    family-names: Orfanos
+    website: https://github.com/DimitriPapadopoulos
+    affiliation: NeuroSpin, C.E.A., Université Paris-Saclay, Gif-sur-Yvette, France
+    orcid: https://orcid.org/0000-0002-1242-8990
+  - given-names: Elizabeth
+    family-names: DuPre
+    website: https://elizabeth-dupre.com/#/
+    affiliation: Stanford University, USA
+  - given-names: Elvis
+    family-names: Dohmatob
+    website: https://dohmatob.github.io/
+  - given-names: Eric
+    family-names: Larson
+    website: https://larsoner.com/
+  - given-names: Evan
+    family-names: Edmond
+    website: https://evan.science/
+  - given-names: Fabian
+    family-names: Pedregosa
+    website: https://github.com/fabianp
+  - given-names: Franz
+    family-names: Liem
+    website: https://github.com/fliem
+  - given-names: Gael
+    family-names: Varoquaux
+    website: http://gael-varoquaux.info/
+  - given-names: Gilles de
+    family-names: Hollander
+    website: https://github.com/Gilles86
+  - given-names: Greg
+    family-names: Kiar
+    website: https://gkiar.me/
+  - given-names: Greydon
+    family-names: Gilmore
+    website: https://www.greydongilmore.com/
+  - given-names: Guillaume
+    family-names: Lemaitre
+    website: https://glemaitre.github.io/
+  - given-names: Hao-Ting
+    family-names: Wang
+    website: https://wanghaoting.com/
+    affiliation: Montreal Geriatrics Institute (CRIUGM), Montreal, Canada
+  - given-names: Himanshu
+    family-names: Aggarwal
+    website: https://github.com/man-shu
+  - given-names: Ian
+    family-names: Abenes
+    website: https://github.com/boredStats
+  - given-names: Jake
+    family-names: Vogel
+    website: https://github.com/illdopejake
+  - given-names: Jan
+    family-names: Margeta
+    website: https://github.com/jmargeta
+  - given-names: Jaques
+    family-names: Grobler
+    website: https://github.com/jaquesgrobler
+  - given-names: Jason
+    family-names: Gors
+    website: http://jgors.com/
+  - given-names: Javier
+    family-names: Rasero
+    website: https://jrasero.github.io/
+  - given-names: Jean
+    family-names: Kossaifi
+    website: http://jeankossaifi.com/
+  - given-names: Jean-Rémi
+    family-names: King
+    website: https://github.com/kingjr
+  - given-names: Jelle Roelof
+    family-names: Dalenberg
+    website: https://github.com/jrdalenberg
+  - given-names: Jeremy
+    family-names: Lefort-Besnard
+    website: https://jlefortbesnard.github.io/
+  - given-names: Jerome
+    family-names: Dockes
+    website: https://jeromedockes.github.io/
+    affiliation: Origami lab, McGill University, Montreal, Canada
+  - given-names: Jerome-Alexis
+    family-names: Chevalier
+    website: https://github.com/ja-che
+  - given-names: Johannes
+    family-names: Wiesner
+    website: https://github.com/JohannesWiesner
+  - given-names: Jon Haitz Legarreta
+    family-names: Gorrono
+    website: https://github.com/jhlegarreta
+  - given-names: Jona
+    family-names: Sassenhagen
+    website: https://github.com/jona-sassenhagen
+  - given-names: Joshua
+    family-names: Teves
+    website: https://github.com/jbteves
+  - given-names: Julia
+    family-names: Huntenburg
+    website: https://github.com/juhuntenburg
+  - given-names: Julio A
+    family-names: Peraza
+    website: https://github.com/JulioAPeraza
+  - given-names: Kamalakar Reddy
+    family-names: Daddy
+    website: https://github.com/KamalakerDadi
+  - given-names: Kevin
+    family-names: Sitek
+    website: https://github.com/sitek
+  - given-names: Koen
+    family-names: Helwegen
+    website: https://github.com/koenhelwegen
+  - given-names: Konstantin
+    family-names: Shmelkov
+    website: https://github.com/kshmelkov
+  - given-names: Kshitij
+    family-names: Chawla
+    website: https://github.com/kchawla-pi
+  - given-names: Kun
+    family-names: CHEN
+    website: https://chenkun.me
+  - given-names: Leonard
+    family-names: Sasse
+    website: https://github.com/LeSasse
+  - given-names: Loic
+    family-names: Estève
+    website: https://github.com/lesteve
+  - given-names: Loic
+    family-names: Tetrel
+    website: https://ltetrel.github.io/
+  - given-names: Luz
+    family-names: Paz
+    website: https://github.com/luzpaz
+  - given-names: Manon
+    family-names: Pietrantoni
+    website: https://github.com/ManonP38
+  - given-names: Martin
+    family-names: Perez-Guevara
+    website: https://github.com/MartinPerez
+  - given-names: Martin
+    family-names: Wegrzyn
+    website: https://github.com/mwegrzyn
+  - given-names: Mathias
+    family-names: Goncalves
+    website: https://github.com/mgxd
+  - given-names: Matthias
+    family-names: Ekman
+    website: https://github.com/mekman
+  - given-names: Matthieu
+    family-names: Joulot
+    website: https://github.com/MatthieuJoulot
+  - given-names: Mehdi
+    family-names: Rahim
+    website: https://github.com/mrahim
+  - given-names: Michael
+    family-names: Eickenberg
+    website: https://github.com/eickenberg
+  - given-names: Michael
+    family-names: Hanke
+    website: https://github.com/mih
+  - given-names: Michael
+    family-names: Notter
+    website: https://github.com/miykael
+  - given-names: Michael
+    family-names: Waskom
+    website: https://mwaskom.github.io/
+  - given-names: Michelle
+    family-names: Wang
+    website: https://github.com/michellewang
+  - given-names: Mohammad
+    family-names: Torabi
+    website: https://github.com/mtorabi59
+  - given-names: Moritz
+    family-names: Boos
+    website: https://github.com/mjboos
+  - given-names: Myeong Seop
+    family-names: Song
+    website: https://github.com/NeuroVR-Song
+  - given-names: Natasha
+    family-names: Clarke
+    website: https://github.com/clarkenj
+  - given-names: Neelay
+    family-names: Shah
+    website: https://github.com/NeelayS
+  - given-names: Nicolas
+    family-names: Gensollen
+    website: https://nicolasgensollen.github.io/
+    affiliation: INRIA, Paris, France
+  - given-names: Oscar
+    family-names: Esteban
+    website: https://github.com/oesteban
+  - given-names: Paul
+    family-names: Bogdan
+    website: https://github.com/paulcbogdan
+  - given-names: Paula
+    family-names: Sanz-Leon
+    website: https://github.com/pausz
+  - given-names: Peer
+    family-names: Herholz
+    website: https://peerherholz.github.io/
+  - given-names: Philippe
+    family-names: Gervais
+    website: https://github.com/pgervais
+  - given-names: Pierre
+    family-names: Bellec
+    website: https://github.com/pbellec
+    affiliation: Psychology Department, University of Montréal, Montréal, Canada
+    orcid: https://orcid.org/0000-0002-9111-0699
+  - given-names: Pierre
+    family-names: Glaser
+    website: https://pierreglaser.github.io/
+  - given-names: Pierre-Olivier
+    family-names: Quirion
+    website: https://github.com/poquirion
+  - given-names: Pradeep Reddy
+    family-names: Raamana
+    website: https://github.com/raamana
+  - given-names: Raphael
+    family-names: Meudec
+    website: https://github.com/RaphaelMeudec
+  - given-names: Robert
+    family-names: Luke
+    website: https://github.com/rob-luke
+  - given-names: Robert
+    family-names: Williamson
+    website: https://github.com/RobWilliamson15
+  - given-names: Roberto
+    family-names: Guidotti
+    website: https://github.com/robbisg
+  - given-names: Ronald
+    family-names: Phlypo
+    website: https://github.com/rphlypo
+  - given-names: Ryan
+    family-names: Hammonds
+    website: https://github.com/ryanhammonds
+  - given-names: Rémi
+    family-names: Gau
+    website: https://github.com/Remi-Gau
+    affiliation: Origami lab, McGill University, Montreal, Canada
+    orcid: https://orcid.org/0000-0002-1535-9767
+  - given-names: Sachin
+    family-names: Patalasingh
+    website: https://github.com/sachin-bsai
+  - given-names: Sage
+    family-names: Hahn
+    website: https://www.sagehahn.com/
+  - given-names: Salma
+    family-names: Bougacha
+    website: https://github.com/salma1601
+  - given-names: Sam Buck
+    family-names: Johnson
+    website: https://github.com/sambjohnson
+  - given-names: Sami
+    family-names: Jawhar
+    website: https://github.com/sjawhar
+  - given-names: Simon
+    family-names: Steinkamp
+    website: https://github.com/SRSteinkamp
+  - given-names: Sourav
+    family-names: Singh
+    website: https://github.com/souravsingh
+  - given-names: Steven
+    family-names: Meisler
+    website: https://www.stevenmeisler.com
+  - given-names: Sylvain
+    family-names: Lan
+    website: https://github.com/SylvainLan
+  - given-names: Sylvain
+    family-names: Takerkart
+    website: https://github.com/SylvainTakerkart
+  - given-names: Tarun
+    family-names: Samanta
+    website: https://github.com/tarunsamanta2k20
+  - given-names: Taylor
+    family-names: Salo
+    website: https://tsalo.github.io/
+    affiliation: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania,
+      USA
+  - given-names: Thomas
+    family-names: Bazeille
+    website: https://github.com/thomasbazeille
+  - given-names: Tom
+    family-names: Vanasse
+    website: https://github.com/tvanasse
+  - given-names: Vasco
+    family-names: Diogo
+    website: https://github.com/vascosa
+  - given-names: Vincent
+    family-names: Michel
+    website: https://github.com/vmichel
+  - given-names: Virgile
+    family-names: Fritsch
+    website: https://github.com/VirgileFritsch
+  - given-names: Yaroslav
+    family-names: Halchenko
+    website: https://github.com/yarikoptic
+  - given-names: Yasmin
+    family-names: Mzayek
+    website: https://github.com/ymzayek
+    affiliation: INRIA, France
+  - given-names: Zvi
+    family-names: Baratz
+    website: https://github.com/ZviBaratz
+  - given-names: Óscar
+    family-names: Nájera
+    website: https://github.com/Titan-C

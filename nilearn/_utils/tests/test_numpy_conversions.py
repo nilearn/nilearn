@@ -10,6 +10,7 @@ import tempfile
 
 import numpy as np
 import pytest
+
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
 
 

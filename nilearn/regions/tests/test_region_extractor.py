@@ -3,6 +3,8 @@
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+from scipy.ndimage import label
+
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import get_data
@@ -15,7 +17,6 @@ from nilearn.regions.region_extractor import (
     _remove_small_regions,
     _threshold_maps_ratio,
 )
-from scipy.ndimage import label
 
 AFFINE_EYE = np.eye(4)
 

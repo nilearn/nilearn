@@ -5,8 +5,10 @@ Plot Haxby masks
 Small script to plot the masks of the Haxby dataset.
 """
 
+#########################################################################
+# Load Haxby dataset
+# ------------------
 
-import matplotlib.pyplot as plt
 from nilearn import datasets
 
 haxby_dataset = datasets.fetch_haxby()
@@ -27,9 +29,15 @@ mean_img = image.mean_img(func_filename)
 
 z_slice = -14
 
-fig = plt.figure(figsize=(4, 5.4), facecolor="k")
+#########################################################################
+# Plot the masks
+# --------------
+
+import matplotlib.pyplot as plt
 
 from nilearn.plotting import plot_anat, show
+
+fig = plt.figure(figsize=(4, 5.4), facecolor="k")
 
 display = plot_anat(
     mean_img, display_mode="z", cut_coords=[z_slice], figure=fig
@@ -59,3 +67,5 @@ p_f = Rectangle((0, 0), 1, 1, fc="limegreen")
 plt.legend([p_v, p_h, p_f], ["vt", "house", "face"])
 
 show()
+
+# sphinx_gallery_dummy_images=1

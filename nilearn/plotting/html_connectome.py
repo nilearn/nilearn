@@ -1,25 +1,31 @@
+"""Handle plotting of connectomes in html."""
+
 import json
 
 import numpy as np
 from matplotlib import cm as mpl_cm
 from scipy import sparse
 
-from .. import datasets
-from . import cm
-
-from .js_plotting_utils import (add_js_lib, mesh_to_plotly,
-                                encode, colorscale, get_html_template,
-                                to_color_strings)
 from nilearn.plotting.html_document import HTMLDocument
 
+from .. import datasets
+from . import cm
+from .js_plotting_utils import (
+    add_js_lib,
+    colorscale,
+    encode,
+    get_html_template,
+    mesh_to_plotly,
+    to_color_strings,
+)
 
-class ConnectomeView(HTMLDocument):
+
+class ConnectomeView(HTMLDocument): # noqa E101
     pass
 
 
 def _encode_coordinates(coords, prefix):
-    """
-    Transform a 2D-array of 3D data (x, y, z) into a dict of base64 values
+    """Transform a 2D-array of 3D data (x, y, z) into a dict of base64 values.
 
     Parameters
     ----------
@@ -27,7 +33,8 @@ def _encode_coordinates(coords, prefix):
         The coordinates of the nodes in MNI space.
 
     prefix : str
-        Prefix for the key value in the returned dict. Schema is {prefix}{x|y|z}
+        Prefix for the key value in the returned dict.
+        Schema is {prefix}{x|y|z}
 
     Returns
     -------
@@ -39,14 +46,15 @@ def _encode_coordinates(coords, prefix):
     coords = np.asarray(coords, dtype='<f4')
     marker_x, marker_y, marker_z = coords.T
     for coord, cname in [(marker_x, "x"), (marker_y, "y"), (marker_z, "z")]:
-        coordinates["{}{}".format(prefix, cname)] = encode(
+        coordinates[f"{prefix}{cname}"] = encode(
             np.asarray(coord, dtype='<f4'))
 
     return coordinates
 
 
 def _prepare_line(edges, nodes):
-    """prepare a plotly scatter3d line plot so that a set of disconnected edges
+    """Prepare a plotly scatter3d line plot \
+    so that a set of disconnected edges \
     can be drawn as a single line.
 
     `edges` are values associated with each edge (that get mapped to colors
@@ -78,8 +86,8 @@ def _prepare_line(edges, nodes):
 
 
 def _prepare_colors_for_markers(marker_color, number_of_nodes):
-    """
-    Generate "color" and "colorscale" attributes based on `marker_color` mode
+    """Generate "color" and "colorscale" attributes \
+    based on `marker_color` mode.
 
     Parameters
     ----------
@@ -106,8 +114,7 @@ def _prepare_colors_for_markers(marker_color, number_of_nodes):
 
 def _prepare_lines_metadata(adjacency_matrix, coords, threshold,
                             cmap, symmetric_cmap):
-    """
-    Generate metadata related to lines for _connectome_view plot
+    """Generate metadata related to lines for _connectome_view plot.
 
     Parameters
     ----------
@@ -153,7 +160,8 @@ def _prepare_lines_metadata(adjacency_matrix, coords, threshold,
     nodes = np.asarray([s.row, s.col], dtype=int).T
     edges = np.arange(len(nodes))
     path_edges, path_nodes = _prepare_line(edges, nodes)
-    lines_metadata["_con_w"] = encode(np.asarray(s.data, dtype='<f4')[path_edges])
+    lines_metadata["_con_w"] = encode(
+        np.asarray(s.data, dtype='<f4')[path_edges])
 
     line_coords = coords[path_nodes]
 

@@ -2,8 +2,9 @@ import itertools
 
 import numpy as np
 import pytest
-from nilearn.decoding.proximal_operators import _prox_l1, _prox_tvl1
 from numpy.testing import assert_almost_equal
+
+from nilearn.decoding.proximal_operators import _prox_l1, _prox_tvl1
 
 
 def test_prox_l1_nonexpansiveness(n_features=10):

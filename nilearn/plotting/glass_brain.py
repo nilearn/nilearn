@@ -1,23 +1,19 @@
-"""
-Brain schematics plotting for glass brain functionality
-"""
+"""Brain schematics plotting for glass brain functionality."""
 
 import json
 import os
 
-from nilearn._utils import _compare_version
-
 import matplotlib
+from matplotlib import colors, patches, transforms
 from matplotlib.path import Path
-from matplotlib import patches
-from matplotlib import colors
-from matplotlib import transforms
+
+from nilearn._utils import _compare_version
 
 
 def _codes_bezier(pts):
     bezier_num = len(pts)
     # Next two lines are meant to handle both Bezier 3 and 4
-    path_attr = 'CURVE{0}'.format(bezier_num)
+    path_attr = f'CURVE{bezier_num}'
     codes = [getattr(Path, path_attr)] * (bezier_num - 1)
     return [Path.MOVETO] + codes
 
@@ -34,7 +30,7 @@ def _codes(atype, pts):
 
 
 def _invert_color(color):
-    """Return inverted color
+    """Return inverted color.
 
     If color is (R, G, B) it returns (1 - R, 1 - G, 1 - B). If
     'color' can not be converted to a color it is returned
@@ -51,8 +47,7 @@ def _invert_color(color):
 
 def _get_mpl_patches(json_content, transform=None,
                      invert_color=False, **kwargs):
-    """Walks over the json content and builds a list of matplotlib patches
-    """
+    """Walk over the json content and build a list of matplotlib patches."""
     mpl_patches = []
     kwargs_edgecolor = kwargs.pop('edgecolor', None)
     kwargs_linewidth = kwargs.pop('linewidth', None)
@@ -85,9 +80,8 @@ def _get_mpl_patches(json_content, transform=None,
 
 
 def _get_json_and_transform(direction):
-    """Returns the json filename and an affine transform, which has
-    been tweaked by hand to fit the MNI template
-    """
+    """Return the json filename and an affine transform, which has \
+    been tweaked by hand to fit the MNI template."""
     direction_to_view_name = {'x': 'side',
                               'y': 'back',
                               'z': 'top',
@@ -103,28 +97,28 @@ def _get_json_and_transform(direction):
 
     dirname = os.path.dirname(os.path.abspath(__file__))
     dirname = os.path.join(dirname, 'glass_brain_files')
-    direction_to_filename = dict([
-        (_direction, os.path.join(
+    direction_to_filename = {
+        _direction: os.path.join(
             dirname,
-            'brain_schematics_{0}.json'.format(view_name)))
-        for _direction, view_name in direction_to_view_name.items()])
+            f'brain_schematics_{view_name}.json')
+        for _direction, view_name in direction_to_view_name.items()}
 
-    direction_to_transforms = dict([
-        (_direction, transforms.Affine2D.from_values(*params))
-        for _direction, params in direction_to_transform_params.items()])
+    direction_to_transforms = {
+        _direction: transforms.Affine2D.from_values(*params)
+        for _direction, params in direction_to_transform_params.items()}
 
-    direction_to_json_and_transform = dict([
-        (_direction, (direction_to_filename[_direction],
-                      direction_to_transforms[_direction]))
-        for _direction in direction_to_filename])
+    direction_to_json_and_transform = {
+        _direction: (direction_to_filename[_direction],
+                     direction_to_transforms[_direction])
+        for _direction in direction_to_filename}
 
     filename_and_transform = direction_to_json_and_transform.get(direction)
 
     if filename_and_transform is None:
-        message = ("No glass brain view associated with direction '{0}'. "
-                   "Possible directions are {1}").format(
-                       direction,
-                       list(direction_to_json_and_transform.keys()))
+        message = (
+            f"No glass brain view associated with direction '{direction}'. "
+            "Possible directions are "
+            f"{list(direction_to_json_and_transform.keys())}")
         raise ValueError(message)
 
     return filename_and_transform
@@ -146,7 +140,7 @@ def _get_object_bounds(json_content, transform):
 
 
 def plot_brain_schematics(ax, direction, **kwargs):
-    """Creates matplotlib patches from a json custom format and plots them
+    """Create matplotlib patches from a json custom format and plots them \
     on a matplotlib Axes.
 
     Parameters
@@ -172,7 +166,7 @@ def plot_brain_schematics(ax, direction, **kwargs):
         get_axis_bg_color = ax.get_axis_bgcolor()
 
     black_bg = colors.colorConverter.to_rgba(get_axis_bg_color) \
-                    == colors.colorConverter.to_rgba('k')
+        == colors.colorConverter.to_rgba('k')
 
     json_filename, transform = _get_json_and_transform(direction)
     with open(json_filename) as json_file:

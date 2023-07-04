@@ -6,6 +6,7 @@ Thanks to scikit image.
 
 import numpy as np
 import pytest
+
 from nilearn._utils.segmentation import _random_walker
 
 

@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
 from nibabel.tmpdirs import InTemporaryDirectory
+
 from nilearn.glm._utils import _check_events_file_uses_tab_separators
 
 

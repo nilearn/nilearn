@@ -16,10 +16,35 @@ Order of tests from top to bottom:
 #
 # License: simplified BSD
 
+import collections
+import numbers
 import warnings
 
 import numpy as np
 import pytest
+import sklearn
+from numpy.testing import assert_array_almost_equal
+from sklearn.datasets import load_iris, make_classification, make_regression
+from sklearn.dummy import DummyClassifier, DummyRegressor
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.exceptions import NotFittedError
+from sklearn.linear_model import (
+    LogisticRegressionCV,
+    RidgeClassifierCV,
+    RidgeCV,
+)
+from sklearn.metrics import (
+    accuracy_score,
+    check_scoring,
+    get_scorer,
+    r2_score,
+    roc_auc_score,
+)
+from sklearn.model_selection import KFold, LeaveOneGroupOut, ParameterGrid
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVR, LinearSVC
+
+from nilearn._utils import _compare_version
 from nilearn._utils.param_validation import check_feature_screening
 from nilearn.decoding.decoder import (
     Decoder,
@@ -30,25 +55,10 @@ from nilearn.decoding.decoder import (
     _check_estimator,
     _check_param_grid,
     _parallel_fit,
+    _wrap_param_grid,
 )
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.maskers import NiftiMasker
-from numpy.testing import assert_array_almost_equal
-from sklearn.datasets import load_iris, make_classification, make_regression
-from sklearn.dummy import DummyClassifier, DummyRegressor
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.exceptions import NotFittedError
-from sklearn.linear_model import LogisticRegression, RidgeClassifierCV, RidgeCV
-from sklearn.metrics import (
-    accuracy_score,
-    check_scoring,
-    get_scorer,
-    r2_score,
-    roc_auc_score,
-)
-from sklearn.model_selection import KFold, LeaveOneGroupOut
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVR, LinearSVC
 
 N_SAMPLES = 100
 
@@ -102,7 +112,7 @@ def tiny_binary_classification_data():
 
 @pytest.fixture
 def binary_classification_data():
-    """Use for test where classifcication is actually performed."""
+    """Use for test where classification is actually performed."""
     return _make_binary_classification_test_data(n_samples=N_SAMPLES)
 
 
@@ -131,7 +141,7 @@ def multiclass_data():
 
 
 @pytest.mark.parametrize(
-    "regressor, param", [(RidgeCV(), []), (SVR(kernel="linear"), "C")]
+    "regressor, param", [(RidgeCV(), ["alphas"]), (SVR(kernel="linear"), "C")]
 )
 def test_check_param_grid_regression(regressor, param):
     """Test several estimators.
@@ -150,9 +160,9 @@ def test_check_param_grid_regression(regressor, param):
 @pytest.mark.parametrize(
     "classifier, param",
     [
-        (LogisticRegression(penalty="l1"), "C"),
-        (LogisticRegression(penalty="l2"), "C"),
-        (RidgeClassifierCV(), []),
+        (LogisticRegressionCV(penalty="l1"), ["Cs"]),
+        (LogisticRegressionCV(penalty="l2"), ["Cs"]),
+        (RidgeClassifierCV(), ["alphas"]),
     ],
 )
 def test_check_param_grid_classification(rand_X_Y, classifier, param):
@@ -165,6 +175,30 @@ def test_check_param_grid_classification(rand_X_Y, classifier, param):
     param_grid = _check_param_grid(classifier, X, Y, None)
 
     assert list(param_grid.keys()) == list(param)
+
+
+@pytest.mark.parametrize(
+    "param_grid_input",
+    [
+        {"C": [1, 10, 100]},
+        {"Cs": [1, 10, 100]},
+        [{"C": [1, 10, 100]}, {"fit_intercept": [False]}],
+    ],
+)
+def test_check_param_grid_replacement(rand_X_Y, param_grid_input):
+    X, Y = rand_X_Y
+    param_to_replace = "C"
+    param_replaced = "Cs"
+    param_grid_output = _check_param_grid(
+        LogisticRegressionCV(),
+        X,
+        Y,
+        param_grid_input,
+    )
+    for params in ParameterGrid(param_grid_output):
+        assert param_to_replace not in params
+        if param_replaced not in params:
+            assert params in ParameterGrid(param_grid_input)
 
 
 @pytest.mark.parametrize("estimator", ["log_l1", RandomForestClassifier()])
@@ -185,6 +219,66 @@ def test_check_parameter_grid_is_empty(rand_X_Y):
     param_grid = _check_param_grid(dummy_classifier, X, Y, None)
 
     assert param_grid == {}
+
+
+@pytest.mark.parametrize(
+    "param_grid",
+    [
+        {"alphas": [1, 10, 100, 1000]},
+        {"alphas": [1, 10, 100, 1000], "fit_intercept": [True, False]},
+        {"fit_intercept": [True, False]},
+        {"alphas": [[1, 10, 100, 1000]]},
+        {"alphas": (1, 10, 100, 1000)},
+        {"alphas": [(1, 10, 100, 1000)]},
+        {"alphas": ((1, 10, 100, 1000),)},
+        {"alphas": np.array([1, 10, 100, 1000])},
+        {"alphas": [np.array([1, 10, 100, 1000])]},
+        [{"alphas": [1, 10]}, {"alphas": [[100, 1000]]}],
+        [{"alphas": [1, 10]}, {"fit_intercept": [True, False]}],
+    ],
+)
+def test_wrap_param_grid(param_grid):
+    param_name = "alphas"
+    original_grid = ParameterGrid(param_grid)
+    wrapped_grid = ParameterGrid(_wrap_param_grid(param_grid, param_name))
+    for grid_row in wrapped_grid:
+        if param_name in grid_row:
+            param_value = grid_row[param_name]
+            assert isinstance(param_value, collections.abc.Iterable)
+            assert all(
+                isinstance(item, numbers.Number) for item in param_value
+            )
+        else:
+            assert grid_row in original_grid
+
+
+@pytest.mark.parametrize(
+    "param_grid, need_wrap",
+    [
+        ({"alphas": [1, 10, 100, 1000]}, True),
+        ({"alphas": [[1, 10, 100, 1000]]}, False),
+    ],
+)
+def test_wrap_param_grid_warning(param_grid, need_wrap):
+    param_name = "alphas"
+    expected_warning_substring = "should be a sequence of iterables"
+
+    with warnings.catch_warnings(record=True) as raised_warnings:
+        _wrap_param_grid(param_grid, param_name)
+    warning_messages = [str(warning.message) for warning in raised_warnings]
+
+    found_warning = any(
+        expected_warning_substring in x for x in warning_messages
+    )
+
+    if need_wrap:
+        assert found_warning
+    else:
+        assert not found_warning
+
+
+def test_wrap_param_grid_is_none():
+    assert _wrap_param_grid(None, "alphas") is None
 
 
 @pytest.mark.parametrize(
@@ -306,6 +400,102 @@ def test_parallel_fit(rand_X_Y):
             assert_array_almost_equal(a, b)
         else:
             assert a == b
+
+
+@pytest.mark.parametrize(
+    "param_values",
+    (
+        [0.001, 0.01, 0.1, 1, 10, 100, 1000],
+        [[0.001, 0.01, 0.1, 1, 10, 100, 1000]],
+    ),
+)
+@pytest.mark.parametrize(
+    "estimator, param_name, fitted_param_name, is_classification",
+    [
+        (RidgeCV(), "alphas", "best_alpha", False),
+        (RidgeClassifierCV(), "alphas", "best_alpha", True),
+        (LogisticRegressionCV(), "Cs", "best_C", True),
+    ],
+)
+def test_parallel_fit_builtin_cv(
+    rand_X_Y,
+    estimator,
+    param_name,
+    fitted_param_name,
+    is_classification,
+    param_values,
+):
+    """Check that the `fitted_param_name` output of _parallel_fit is a single
+    value even if param_grid is wrapped in a list for models with built-in CV.
+    """
+    # y will be replaced if this is a classification
+    X, y = make_regression(
+        n_samples=N_SAMPLES,
+        n_features=20,
+        n_informative=5,
+        noise=0.2,
+        random_state=42,
+    )
+
+    # train/test indices
+    n_samples_train = int(0.8 * N_SAMPLES)
+    train = range(n_samples_train)
+    test = range(n_samples_train, N_SAMPLES)
+
+    # define a screening selector
+    selector = check_feature_screening(
+        screening_percentile=None, mask_img=None, is_classification=False
+    )
+
+    # create appropriate scorer and update y for classification
+    if is_classification:
+        scorer = check_scoring(estimator, "accuracy")
+        _, y = rand_X_Y
+    else:
+        scorer = check_scoring(estimator, "r2")
+
+    param_grid = {param_name: param_values}
+    _, _, _, best_param, _, _ = _parallel_fit(
+        estimator=estimator,
+        X=X,
+        y=y,
+        train=train,
+        test=test,
+        param_grid=param_grid,
+        is_classification=is_classification,
+        scorer=scorer,
+        mask_img=None,
+        class_index=1,
+        selector=selector,
+        clustering_percentile=100,
+    )
+
+    assert isinstance(best_param[fitted_param_name], numbers.Number)
+
+
+def test_decoder_param_grid_sequence(binary_classification_data):
+    X, y, _ = binary_classification_data
+    n_cv_folds = 10
+    param_grid = [
+        {
+            "penalty": ["l2"],
+            "C": [100, 1000],
+            "random_state": [42],  # fix the seed for consistent behaviour
+        },
+        {
+            "penalty": ["l1"],
+            "dual": [False],  # "dual" is not in the first dict
+            "C": [100, 10],
+            "random_state": [42],  # fix the seed for consistent behaviour
+        },
+    ]
+
+    model = Decoder(param_grid=param_grid, cv=n_cv_folds)
+    model.fit(X, y)
+
+    for best_params in model.cv_params_.values():
+        for param_list in best_params.values():
+            assert len(param_list) == n_cv_folds
 
 
 def test_decoder_binary_classification_with_masker_object(
@@ -493,8 +683,18 @@ def test_decoder_error_unknown_scoring_metrics(
 
     model = Decoder(estimator=dummy_classifier, mask=mask, scoring="foo")
 
-    with pytest.raises(ValueError, match="'foo' is not a valid scoring value"):
-        model.fit(X, y)
+    if _compare_version(sklearn.__version__, ">", "1.2.2"):
+        with pytest.raises(
+            ValueError,
+            match="The 'scoring' parameter of check_scoring "
+            "must be a str among",
+        ):
+            model.fit(X, y)
+    else:
+        with pytest.raises(
+            ValueError, match="'foo' is not a valid scoring value"
+        ):
+            model.fit(X, y)
 
 
 def test_decoder_dummy_classifier_default_scoring():

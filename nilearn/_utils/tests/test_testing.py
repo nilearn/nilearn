@@ -1,6 +1,7 @@
 import nibabel
 import numpy as np
 import pytest
+
 from nilearn._utils.testing import (
     assert_memory_less_than,
     with_memory_profiler,
