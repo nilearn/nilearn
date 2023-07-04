@@ -15,11 +15,11 @@ from nilearn.plotting import html_document
 
 
 def _open_mock(f):
-    print(f'opened {f}')
+    print(f"opened {f}")
 
 
 def test_temp_file_removing():
-    html = html_document.HTMLDocument('hello')
+    html = html_document.HTMLDocument("hello")
     wb_open = webbrowser.open
     webbrowser.open = _open_mock
     fd, tmpfile = tempfile.mkstemp()
@@ -52,12 +52,12 @@ def test_temp_file_removing():
 
 
 def _open_views():
-    return [html_document.HTMLDocument('') for i in range(12)]
+    return [html_document.HTMLDocument("") for i in range(12)]
 
 
 def _open_one_view():
     for i in range(12):
-        v = html_document.HTMLDocument('')
+        v = html_document.HTMLDocument("")
     return v
 
 
