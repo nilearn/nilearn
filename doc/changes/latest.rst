@@ -17,6 +17,9 @@ Fixes
 
 - Make the :func:`~nilearn.interfaces.fmriprep.load_confounds` confounds file selection more generic (:gh:`3794` by `Taylor Salo`_).
 
+- Relax the :func:`~nilearn.interfaces.fmriprep.load_confounds` confounds selection on `consine` as not all confound files contained the variables (:gh:`` by `Hao-Ting Wang`_).
+
+
 Enhancements
 ------------
 
