@@ -857,7 +857,7 @@ keep_masked_maps : :obj:`bool`, optional
     no empty time series in the output.
 
     .. deprecated:: 0.10.2.dev
-    
+
         The 'True' option for ``keep_masked_maps`` is deprecated.
         The default value will change to 'False' in 0.13,
         and the ``keep_masked_maps`` parameter will be removed in 0.15.

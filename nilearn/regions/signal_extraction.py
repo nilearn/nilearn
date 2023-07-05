@@ -8,8 +8,6 @@ or as weights in one image per region (maps).
 # License: simplified BSD
 import warnings
 
-import warnings
-
 import numpy as np
 from scipy import linalg, ndimage
 
