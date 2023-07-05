@@ -38,10 +38,7 @@ exclude: |
         | nilearn/maskers/nifti_labels_masker.py
         | nilearn/plotting/displays/_axes.py
         | nilearn/plotting/glass_brain.py
-        | nilearn/plotting/html_connectome.py
         | nilearn/plotting/html_surface.py
-        | nilearn/plotting/find_cuts.py
-        | nilearn/plotting/html_stat_map.py
         | nilearn/plotting/img_plotting.py
         | nilearn/plotting/matrix_plotting.py
         | nilearn/plotting/js_plotting_utils.py
@@ -56,9 +53,6 @@ exclude: |
         | nilearn/plotting/tests/test_img_plotting/test_plot_stat_map.py
         | nilearn/plotting/tests/test_img_plotting/test_plot_markers.py
         | nilearn/plotting/tests/test_img_plotting/test_plot_connectome.py
-        | nilearn/plotting/tests/test_js_plotting_utils.py
-        | nilearn/plotting/tests/test_matplotlib_backend.py
-        | nilearn/plotting/tests/test_matrix_plotting.py
         | nilearn/plotting/tests/test_surf_plotting.py
         | nilearn/surface/surface.py
         | nilearn/surface/tests/test_surface.py
