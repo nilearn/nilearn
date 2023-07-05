@@ -201,7 +201,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
             labels = np.array([str(val) for val in ar_coef_])
         else:  # AR(N>1) case
             n_clusters = np.min([bins, Y.shape[1]])
-            kmeans = KMeans(n_clusters=n_clusters,
+            kmeans = KMeans(n_clusters=n_clusters, n_init=10,
                             random_state=random_state).fit(ar_coef_)
             ar_coef_ = kmeans.cluster_centers_[kmeans.labels_]
 

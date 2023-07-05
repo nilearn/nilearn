@@ -415,6 +415,7 @@ def test_glm_random_state(random_state):
         spy_kmeans.assert_called_once_with(
             unittest.mock.ANY,
             n_clusters=unittest.mock.ANY,
+            n_init=unittest.mock.ANY,
             random_state=random_state)
 
 
