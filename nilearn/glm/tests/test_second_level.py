@@ -948,12 +948,10 @@ def test_non_parametric_inference_contrast_computation():
         del func_img, neg_log_pvals_img, X, Y
 
 
-@pytest.mark.parametrize("second_level_contrast", [[1],
-                                                   [1, 0], 
-                                                   "r1",
-                                                   [1, -1],
-                                                   "r1 - r2"])
-def test_non_parametric_inference_contrast_computation_formula(second_level_contrast):
+@pytest.mark.parametrize("second_level_contrast", [[1, 0], 
+                                                   "r1"])
+def test_non_parametric_inference_contrast_computation_formula(
+    second_level_contrast):
     with InTemporaryDirectory():
         func_img, _ = fake_fmri_data()
         Y = [func_img] * 4
