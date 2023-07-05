@@ -990,7 +990,7 @@ def first_level_from_bids(dataset_path,
     if t_r is not None:
         _check_repetition_time(t_r)
     else:
-        warn("'t_r' not provided and cannot be inferred from BIDS metadata. "
+        warn("'t_r' not provided and cannot be inferred from BIDS metadata.\n"
              "It will need to be set manually in the list of models, "
              "otherwise their fit will throw an exception.")
 
@@ -1015,12 +1015,13 @@ def first_level_from_bids(dataset_path,
         assert (StartTime < t_r)
         inferred_slice_time_ref = StartTime / t_r
     else:
-        warn("'slice_time_ref' not provided "
-             "and cannot be inferred from metadata."
-             "It will be assumed that the slice timing reference "
-             "is 0.0 percent of the repetition time. "
-             "If it is not the case it will need to "
-             "be set manually in the generated list of models.")
+        if slice_time_ref is None:
+            warn("'slice_time_ref' not provided "
+                "and cannot be inferred from metadata.\n"
+                "It will be assumed that the slice timing reference "
+                "is 0.0 percent of the repetition time.\n"
+                "If it is not the case it will need to "
+                "be set manually in the generated list of models.")
         inferred_slice_time_ref = 0.0
 
     if slice_time_ref is None and inferred_slice_time_ref is not None:
@@ -1087,7 +1088,7 @@ def first_level_from_bids(dataset_path,
                          for c in confounds]
         models_confounds.append(confounds)
 
-    return models, models_run_imgs, models_events, models_confounds
+    return models, models_run_imgs, models_events, models_confounds 
 
 
 def _list_valid_subjects(derivatives_path,
