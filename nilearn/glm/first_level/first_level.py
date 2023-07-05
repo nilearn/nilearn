@@ -1088,7 +1088,7 @@ def first_level_from_bids(dataset_path,
                          for c in confounds]
         models_confounds.append(confounds)
 
-    return models, models_run_imgs, models_events, models_confounds 
+    return models, models_run_imgs, models_events, models_confounds
 
 
 def _list_valid_subjects(derivatives_path,
