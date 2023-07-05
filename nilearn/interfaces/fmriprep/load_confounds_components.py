@@ -4,7 +4,12 @@ import pandas as pd
 
 from .load_confounds_compcor import _find_compcor
 from .load_confounds_scrub import _optimize_scrub
-from .load_confounds_utils import _add_suffix, _check_params, _find_confounds, MissingConfound
+from .load_confounds_utils import (
+    MissingConfound,
+    _add_suffix,
+    _check_params,
+    _find_confounds,
+)
 
 
 def _load_motion(confounds_raw, motion):
