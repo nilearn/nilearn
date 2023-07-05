@@ -233,9 +233,7 @@ from sklearn.preprocessing import StandardScaler
 
 # automatically estimate the sparsity by cross-validation
 
-lasso = make_pipeline(
-    StandardScaler(), LassoLarsCV(normalize=False, max_iter=10)
-)
+lasso = make_pipeline(StandardScaler(), LassoLarsCV(max_iter=10))
 
 # Mark the same pixel in each receptive field
 marked_pixel = (4, 2)
