@@ -502,7 +502,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
             if len(labels_diff) > 0:
                 warnings.warn(
                     "After applying mask to the maps image, "
-                    "the following maps were "
+                    "maps with the following indices were "
                     f"removed: {labels_diff}. "
                     f"Out of {len(labels_before_mask)} maps, the "
                     "masked map image only contains "

@@ -519,8 +519,8 @@ def test_signal_extraction_with_maps_and_labels(labeled_regions, fmri_img):
     with pytest.warns(
         UserWarning,
         match="After applying mask to the maps image, "
-        "the following maps were "
-        r"removed: \{3, 4, 6, 7, 8 \}. "
+        "maps with the following indices were "
+        r"removed: \{2, 3, 5, 6, 7\}. "
         "Out of 8 maps, the "
         "masked map image only contains "
         "3 maps.",
