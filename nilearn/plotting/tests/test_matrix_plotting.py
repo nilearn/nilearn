@@ -29,7 +29,7 @@ def test_sanitize_figure_and_axes_error(fig, axes):
 
     with pytest.raises(
         ValueError,
-        match=("Parameters figure and axes cannot " "be specified together."),
+        match=("Parameters figure and axes cannot be specified together."),
     ):
         _sanitize_figure_and_axes(fig, axes)
 
