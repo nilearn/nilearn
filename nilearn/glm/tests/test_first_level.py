@@ -1420,8 +1420,8 @@ def test_first_level_from_bids_no_tr(tmp_path_factory):
         os.remove(f)
 
     with pytest.warns(
-        UserWarning,
-        match="'t_r' not provided and cannot be inferred"):
+            UserWarning,
+            match="'t_r' not provided and cannot be inferred"):
         first_level_from_bids(
             dataset_path=bids_dataset,
             task_label="main",
@@ -1580,6 +1580,7 @@ def test_first_level_from_bids_deprecated_slice_time_default(bids_dataset):
             img_filters=[("desc", "preproc")],
             slice_time_ref=0,
         )
+
 
 def test_slice_time_ref_warning_only_when_not_provided(bids_dataset):
 

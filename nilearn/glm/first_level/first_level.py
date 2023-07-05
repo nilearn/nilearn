@@ -1017,11 +1017,11 @@ def first_level_from_bids(dataset_path,
     else:
         if slice_time_ref is None:
             warn("'slice_time_ref' not provided "
-                "and cannot be inferred from metadata.\n"
-                "It will be assumed that the slice timing reference "
-                "is 0.0 percent of the repetition time.\n"
-                "If it is not the case it will need to "
-                "be set manually in the generated list of models.")
+                 "and cannot be inferred from metadata.\n"
+                 "It will be assumed that the slice timing reference "
+                 "is 0.0 percent of the repetition time.\n"
+                 "If it is not the case it will need to "
+                 "be set manually in the generated list of models.")
         inferred_slice_time_ref = 0.0
 
     if slice_time_ref is None and inferred_slice_time_ref is not None:
