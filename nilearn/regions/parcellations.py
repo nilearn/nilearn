@@ -363,6 +363,7 @@ class Parcellations(_MultiPCA):
             kmeans = MiniBatchKMeans(
                 n_clusters=self.n_parcels,
                 init="k-means++",
+                n_init=3,
                 random_state=self.random_state,
                 verbose=max(0, self.verbose - 1),
             )

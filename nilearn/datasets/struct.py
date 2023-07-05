@@ -658,7 +658,7 @@ def fetch_oasis_vbm(
             )
             n_subjects = 415
     if n_subjects < 1:
-        raise ValueError("Incorrect number of subjects (%d)" % n_subjects)
+        raise ValueError(f"Incorrect number of subjects ({int(n_subjects)})")
 
     # pick the archive corresponding to preprocessings type
     if url is None:

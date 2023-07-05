@@ -25,12 +25,12 @@ def get_design_from_fslmat(fsl_design_matrix_path, column_names=None):
         # Conventions of FSL mat files should be verified in more detail for
         # a general case
         for line in design_matrix_file:
-            if '/Matrix' in line:
+            if "/Matrix" in line:
                 break
 
         design_matrix = np.array(
             [
-                [float(val) for val in line.replace('\t\n', '').split('\t')]
+                [float(val) for val in line.replace("\t\n", "").split("\t")]
                 for line in design_matrix_file
             ]
         )

@@ -9,15 +9,25 @@ from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
 
 
 class OwningClass(BaseEstimator):
-
-    def __init__(self, mask=None, smoothing_fwhm=None,
-                 standardize=False, detrend=False,
-                 low_pass=None, high_pass=None, t_r=None,
-                 target_affine=None, target_shape=None,
-                 mask_strategy='background', mask_args=None,
-                 memory=Memory(location=None), memory_level=0,
-                 n_jobs=1, verbose=0,
-                 dummy=None):
+    def __init__(
+        self,
+        mask=None,
+        smoothing_fwhm=None,
+        standardize=False,
+        detrend=False,
+        low_pass=None,
+        high_pass=None,
+        t_r=None,
+        target_affine=None,
+        target_shape=None,
+        mask_strategy="background",
+        mask_args=None,
+        memory=Memory(location=None),
+        memory_level=0,
+        n_jobs=1,
+        verbose=0,
+        dummy=None,
+    ):
         self.mask = mask
 
         self.smoothing_fwhm = smoothing_fwhm
@@ -38,7 +48,6 @@ class OwningClass(BaseEstimator):
 
 
 class DummyEstimator:
-
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -50,14 +59,15 @@ class DummyEstimator:
 def test_check_embedded_nifti_masker_defaults():
     dummy = DummyEstimator(memory=None, memory_level=1)
     with pytest.warns(
-            Warning,
-            match="Provided estimator has no verbose attribute set."):
+        Warning, match="Provided estimator has no verbose attribute set."
+    ):
         dummy.fit()
     assert dummy.masker.memory_level == 0
     assert dummy.masker.verbose == 0
     dummy = DummyEstimator(verbose=1)
-    with pytest.warns(Warning,
-                      match="Provided estimator has no memory attribute set."):
+    with pytest.warns(
+        Warning, match="Provided estimator has no memory attribute set."
+    ):
         dummy.fit()
     assert isinstance(dummy.masker.memory, Memory)
     assert dummy.masker.memory.location is None
@@ -71,19 +81,24 @@ def test_check_embedded_nifti_masker():
     assert type(masker) is MultiNiftiMasker
 
     for mask, multi_subject in (
-            (MultiNiftiMasker(), True), (NiftiMasker(), False)):
+        (MultiNiftiMasker(), True),
+        (NiftiMasker(), False),
+    ):
         owner = OwningClass(mask=mask)
-        masker = _check_embedded_nifti_masker(owner,
-                                              multi_subject=multi_subject)
+        masker = _check_embedded_nifti_masker(
+            owner, multi_subject=multi_subject
+        )
         assert type(masker) == type(mask)
         for param_key in masker.get_params():
-            if param_key not in ['memory', 'memory_level', 'n_jobs',
-                                 'verbose']:
-                assert (getattr(masker, param_key) ==
-                        getattr(mask, param_key))
+            if param_key not in [
+                "memory",
+                "memory_level",
+                "n_jobs",
+                "verbose",
+            ]:
+                assert getattr(masker, param_key) == getattr(mask, param_key)
             else:
-                assert (getattr(masker, param_key) ==
-                        getattr(owner, param_key))
+                assert getattr(masker, param_key) == getattr(owner, param_key)
 
     # Check use of mask as mask_img
     shape = (6, 8, 10, 5)
@@ -104,7 +119,7 @@ def test_check_embedded_nifti_masker():
     assert masker.mask_img is mask.mask_img_
 
     # Check conflict warning
-    mask = NiftiMasker(mask_strategy='epi')
+    mask = NiftiMasker(mask_strategy="epi")
     owner = OwningClass(mask=mask)
     with pytest.warns(UserWarning):
         _check_embedded_nifti_masker(owner)

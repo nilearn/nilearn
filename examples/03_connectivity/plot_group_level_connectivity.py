@@ -30,9 +30,8 @@ msdl_data = datasets.fetch_atlas_msdl()
 msdl_coords = msdl_data.region_coords
 n_regions = len(msdl_coords)
 print(
-    "MSDL has {0} ROIs, part of the following networks :\n{1}.".format(
-        n_regions, msdl_data.networks
-    )
+    f"MSDL has {n_regions} ROIs, "
+    f"part of the following networks:\n{msdl_data.networks}."
 )
 
 ###############################################################################
@@ -90,9 +89,8 @@ correlation_matrices = correlation_measure.fit_transform(children)
 
 # All individual coefficients are stacked in a unique 2D matrix.
 print(
-    "Correlations of children are stacked in an array of shape {0}".format(
-        correlation_matrices.shape
-    )
+    "Correlations of children are stacked "
+    f"in an array of shape {correlation_matrices.shape}"
 )
 
 ###############################################################################
@@ -219,7 +217,7 @@ for kind in kinds:
         # build vectorized connectomes for subjects in the train set
         connectomes = connectivity.fit_transform(pooled_subjects[train])
         # fit the classifier
-        classifier = LinearSVC().fit(connectomes, classes[train])
+        classifier = LinearSVC(dual=True).fit(connectomes, classes[train])
         # make predictions for the left-out test subjects
         predictions = classifier.predict(
             connectivity.transform(pooled_subjects[test])

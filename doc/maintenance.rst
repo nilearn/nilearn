@@ -174,7 +174,7 @@ We also need to write a "Highlights" section promoting the most important additi
 
    x.y.z
    =====
-   
+
    **Released MONTH YEAR**
 
    HIGHLIGHTS

@@ -18,10 +18,16 @@ from .._utils.class_inspect import enclosing_scope_name
 
 
 def _filter_and_extract(
-    imgs, extraction_function, parameters,
-    memory_level=0, memory=Memory(location=None),
-    verbose=0, confounds=None, sample_mask=None,
-    copy=True, dtype=None
+    imgs,
+    extraction_function,
+    parameters,
+    memory_level=0,
+    memory=Memory(location=None),
+    verbose=0,
+    confounds=None,
+    sample_mask=None,
+    copy=True,
+    dtype=None,
 ):
     """Extract representative time series using given function.
 
@@ -58,8 +64,10 @@ def _filter_and_extract(
         copy = False
 
     if verbose > 0:
-        print(f"[{class_name}] Loading data "
-              f"from {_utils._repr_niimgs(imgs, shorten=False)}")
+        print(
+            f"[{class_name}] Loading data "
+            f"from {_utils._repr_niimgs(imgs, shorten=False)}"
+        )
 
     # Convert input to niimg to check shape.
     # This must be repeated after the shape check because check_niimg will
@@ -69,43 +77,55 @@ def _filter_and_extract(
     # Raise warning if a 3D niimg is provided.
     if temp_imgs.ndim == 3:
         warnings.warn(
-            'Starting in version 0.12, 3D images will be transformed to '
-            '1D arrays. '
-            'Until then, 3D images will be coerced to 2D arrays, with a '
-            'singleton first dimension representing time.',
+            "Starting in version 0.12, 3D images will be transformed to "
+            "1D arrays. "
+            "Until then, 3D images will be coerced to 2D arrays, with a "
+            "singleton first dimension representing time.",
             DeprecationWarning,
         )
 
-    imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4,
-                              dtype=dtype)
+    imgs = _utils.check_niimg(
+        imgs, atleast_4d=True, ensure_ndim=4, dtype=dtype
+    )
 
-    target_shape = parameters.get('target_shape')
-    target_affine = parameters.get('target_affine')
+    target_shape = parameters.get("target_shape")
+    target_affine = parameters.get("target_affine")
     if target_shape is not None or target_affine is not None:
         if verbose > 0:
             print(f"[{class_name}] Resampling images")
         imgs = cache(
-            image.resample_img, memory, func_memory_level=2,
-            memory_level=memory_level, ignore=['copy'])(
-                imgs, interpolation="continuous",
-                target_shape=target_shape,
-                target_affine=target_affine,
-                copy=copy)
+            image.resample_img,
+            memory,
+            func_memory_level=2,
+            memory_level=memory_level,
+            ignore=["copy"],
+        )(
+            imgs,
+            interpolation="continuous",
+            target_shape=target_shape,
+            target_affine=target_affine,
+            copy=copy,
+        )
 
-    smoothing_fwhm = parameters.get('smoothing_fwhm')
+    smoothing_fwhm = parameters.get("smoothing_fwhm")
     if smoothing_fwhm is not None:
         if verbose > 0:
             print(f"[{class_name}] Smoothing images")
         imgs = cache(
-            image.smooth_img, memory, func_memory_level=2,
-            memory_level=memory_level)(
-                imgs, parameters['smoothing_fwhm'])
+            image.smooth_img,
+            memory,
+            func_memory_level=2,
+            memory_level=memory_level,
+        )(imgs, parameters["smoothing_fwhm"])
 
     if verbose > 0:
         print(f"[{class_name}] Extracting region signals")
-    region_signals, aux = cache(extraction_function, memory,
-                                func_memory_level=2,
-                                memory_level=memory_level)(imgs)
+    region_signals, aux = cache(
+        extraction_function,
+        memory,
+        func_memory_level=2,
+        memory_level=memory_level,
+    )(imgs)
 
     # Temporal
     # --------
@@ -115,7 +135,7 @@ def _filter_and_extract(
     # Normalizing
     if verbose > 0:
         print(f"[{class_name}] Cleaning extracted signals")
-    runs = parameters.get('runs', None)
+    runs = parameters.get("runs", None)
     region_signals = cache(
         signal.clean,
         memory=memory,
@@ -123,16 +143,16 @@ def _filter_and_extract(
         memory_level=memory_level,
     )(
         region_signals,
-        detrend=parameters['detrend'],
-        standardize=parameters['standardize'],
-        standardize_confounds=parameters['standardize_confounds'],
-        t_r=parameters['t_r'],
-        low_pass=parameters['low_pass'],
-        high_pass=parameters['high_pass'],
+        detrend=parameters["detrend"],
+        standardize=parameters["standardize"],
+        standardize_confounds=parameters["standardize_confounds"],
+        t_r=parameters["t_r"],
+        low_pass=parameters["low_pass"],
+        high_pass=parameters["high_pass"],
         confounds=confounds,
         sample_mask=sample_mask,
         runs=runs,
-        **parameters['clean_kwargs'],
+        **parameters["clean_kwargs"],
     )
 
     return region_signals, aux
@@ -142,8 +162,9 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """Base class for NiftiMaskers."""
 
     @abc.abstractmethod
-    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None,
-                              copy=True):
+    def transform_single_imgs(
+        self, imgs, confounds=None, sample_mask=None, copy=True
+    ):
         """Extract signals from a single 4D niimg.
 
         Parameters
@@ -229,15 +250,14 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         self._check_fitted()
 
         if confounds is None and not self.high_variance_confounds:
-            return self.transform_single_imgs(imgs,
-                                              confounds=confounds,
-                                              sample_mask=sample_mask)
+            return self.transform_single_imgs(
+                imgs, confounds=confounds, sample_mask=sample_mask
+            )
 
         # Compute high variance confounds if requested
         all_confounds = []
         if self.high_variance_confounds:
-            hv_confounds = self._cache(
-                high_variance_confounds)(imgs)
+            hv_confounds = self._cache(high_variance_confounds)(imgs)
             all_confounds.append(hv_confounds)
         if confounds is not None:
             if isinstance(confounds, list):
@@ -245,11 +265,13 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             else:
                 all_confounds.append(confounds)
 
-        return self.transform_single_imgs(imgs, confounds=all_confounds,
-                                          sample_mask=sample_mask)
+        return self.transform_single_imgs(
+            imgs, confounds=all_confounds, sample_mask=sample_mask
+        )
 
-    def fit_transform(self, X, y=None, confounds=None, sample_mask=None,
-                      **fit_params):
+    def fit_transform(
+        self, X, y=None, confounds=None, sample_mask=None, **fit_params
+    ):
         """Fit to data, then transform it.
 
         Parameters
@@ -281,29 +303,30 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         if y is None:
             # fit method of arity 1 (unsupervised transformation)
             if self.mask_img is None:
-                return self.fit(X, **fit_params
-                                ).transform(X, confounds=confounds,
-                                            sample_mask=sample_mask)
+                return self.fit(X, **fit_params).transform(
+                    X, confounds=confounds, sample_mask=sample_mask
+                )
 
-            return self.fit(**fit_params).transform(X,
-                                                    confounds=confounds,
-                                                    sample_mask=sample_mask
-                                                    )
+            return self.fit(**fit_params).transform(
+                X, confounds=confounds, sample_mask=sample_mask
+            )
 
         # fit method of arity 2 (supervised transformation)
         if self.mask_img is None:
-            return self.fit(X, y, **fit_params
-                            ).transform(X, confounds=confounds,
-                                        sample_mask=sample_mask)
+            return self.fit(X, y, **fit_params).transform(
+                X, confounds=confounds, sample_mask=sample_mask
+            )
 
-        warnings.warn(f'[{self.__class__.__name__}.fit] '
-                      'Generation of a mask has been'
-                      ' requested (y != None) while a mask has'
-                      ' been provided at masker creation. Given mask'
-                      ' will be used.')
-        return self.fit(**fit_params).transform(X, confounds=confounds,
-                                                sample_mask=sample_mask
-                                                )
+        warnings.warn(
+            f"[{self.__class__.__name__}.fit] "
+            "Generation of a mask has been"
+            " requested (y != None) while a mask has"
+            " been provided at masker creation. Given mask"
+            " will be used."
+        )
+        return self.fit(**fit_params).transform(
+            X, confounds=confounds, sample_mask=sample_mask
+        )
 
     def inverse_transform(self, X):
         """Transform the 2D data matrix back to an image in brain space.
@@ -341,6 +364,8 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     def _check_fitted(self):
         if not hasattr(self, "mask_img_"):
-            raise ValueError(f'It seems that {self.__class__.__name__} '
-                             'has not been fitted. '
-                             'You must call fit() before calling transform().')
+            raise ValueError(
+                f"It seems that {self.__class__.__name__} "
+                "has not been fitted. "
+                "You must call fit() before calling transform()."
+            )

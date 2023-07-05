@@ -556,7 +556,16 @@ def test_sample_mask(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "image_type", ["regular", "native", "ica_aroma", "gifti", "cifti"]
+    "image_type", [
+        "regular",
+        "native",
+        "ica_aroma",
+        "gifti",
+        "cifti",
+        "res",
+        "den",
+        "part",
+    ],
 )
 def test_inputs(tmp_path, image_type):
     """Test multiple images as input."""

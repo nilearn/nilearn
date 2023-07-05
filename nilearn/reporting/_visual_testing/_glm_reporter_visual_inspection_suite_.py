@@ -133,7 +133,7 @@ def _make_flm(data_dir):  # pragma: no cover
         models_events[0],
         models_confounds[0],
     )
-    subject = "sub-" + model.subject_label
+    subject = f"sub-{model.subject_label}"
     design_matrix = _make_design_matrix_for_bids_feature(data_dir, subject)
     model.fit(imgs, design_matrices=[design_matrix])
     return model, subject
@@ -155,7 +155,7 @@ def _make_design_matrix_for_bids_feature(
     )
 
     design_columns = [
-        "cond_%02d" % i for i in range(len(design_matrix.columns))
+        f"cond_{i:02d}" for i in range(len(design_matrix.columns))
     ]
     design_columns[0] = "Go"
     design_columns[4] = "StopSuccess"

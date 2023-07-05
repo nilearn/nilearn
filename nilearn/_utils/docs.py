@@ -828,6 +828,25 @@ vmin : :obj:`float`, optional
     Passed to :func:`matplotlib.pyplot.imshow`.
 """
 
+# keep_masked_labels
+docdict["keep_masked_labels"] = """
+keep_masked_labels : :obj:`bool`, optional
+    When a mask is supplied through the "mask_img" parameter, some
+    atlas regions may lie entirely outside of the brain mask, resulting
+    in empty time series for those regions.
+    If True, the masked atlas with these empty labels will be retained
+    in the output, resulting in corresponding time series containing
+    zeros only. If False, the empty labels will be removed from the
+    output, ensuring no empty time series are present.
+    Default=True.
+
+    .. deprecated:: 0.10.2.dev
+
+        The 'True' option for ``keep_masked_labels`` is deprecated.
+        The default value will change to 'False' in 0.13,
+        and the ``keep_masked_labels`` parameter will be removed in 0.15.
+"""
+
 # keep_masked_maps
 docdict["keep_masked_maps"] = """
 keep_masked_maps : :obj:`bool`, optional
@@ -838,6 +857,7 @@ keep_masked_maps : :obj:`bool`, optional
     no empty time series in the output.
 
     .. deprecated:: 0.10.2.dev
+    
         The 'True' option for ``keep_masked_maps`` is deprecated.
         The default value will change to 'False' in 0.13,
         and the ``keep_masked_maps`` parameter will be removed in 0.15.
@@ -917,6 +937,5 @@ def fill_doc(f):
     except (TypeError, ValueError, KeyError) as exp:
         funcname = f.__name__
         funcname = docstring.split('\n')[0] if funcname is None else funcname
-        raise RuntimeError('Error documenting %s:\n%s'
-                           % (funcname, str(exp)))
+        raise RuntimeError(f'Error documenting {funcname}:\n{str(exp)}')
     return f

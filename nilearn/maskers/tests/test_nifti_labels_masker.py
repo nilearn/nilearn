@@ -53,15 +53,17 @@ def test_nifti_labels_masker():
 
     # verify that 4D mask arguments are refused
     masker = NiftiLabelsMasker(labels11_img, mask_img=mask_img_4d)
-    with pytest.raises(DimensionError,
-                       match="Input data has incompatible dimensionality: "
-                             "Expected dimension is 3D and you provided "
-                             "a 4D image."):
+    with pytest.raises(
+        DimensionError,
+        match="Input data has incompatible dimensionality: "
+        "Expected dimension is 3D and you provided "
+        "a 4D image.",
+    ):
         masker.fit()
 
     # check exception when transform() called without prior fit()
     masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
-    with pytest.raises(ValueError, match='has not been fitted. '):
+    with pytest.raises(ValueError, match="has not been fitted. "):
         masker11.transform(fmri11_img)
 
     # No exception raised here
@@ -86,8 +88,9 @@ def test_nifti_labels_masker():
 
     masker11.inverse_transform(signals11)
 
-    masker11 = NiftiLabelsMasker(labels11_img, mask_img=mask11_img,
-                                 resampling_target=None)
+    masker11 = NiftiLabelsMasker(
+        labels11_img, mask_img=mask11_img, resampling_target=None
+    )
     signals11 = masker11.fit().transform(fmri11_img)
     assert signals11.shape == (length, n_regions)
 
@@ -97,26 +100,30 @@ def test_nifti_labels_masker():
     pytest.raises(ValueError, masker11.transform, fmri12_img)
     pytest.raises(ValueError, masker11.transform, fmri21_img)
 
-    masker11 = NiftiLabelsMasker(labels11_img, mask_img=mask12_img,
-                                 resampling_target=None)
+    masker11 = NiftiLabelsMasker(
+        labels11_img, mask_img=mask12_img, resampling_target=None
+    )
     pytest.raises(ValueError, masker11.fit)
 
-    masker11 = NiftiLabelsMasker(labels11_img, mask_img=mask21_img,
-                                 resampling_target=None)
+    masker11 = NiftiLabelsMasker(
+        labels11_img, mask_img=mask21_img, resampling_target=None
+    )
     pytest.raises(ValueError, masker11.fit)
 
     # Transform, with smoothing (smoke test)
-    masker11 = NiftiLabelsMasker(labels11_img, smoothing_fwhm=3,
-                                 resampling_target=None)
+    masker11 = NiftiLabelsMasker(
+        labels11_img, smoothing_fwhm=3, resampling_target=None
+    )
     signals11 = masker11.fit().transform(fmri11_img)
     assert signals11.shape == (length, n_regions)
 
-    masker11 = NiftiLabelsMasker(labels11_img, smoothing_fwhm=3,
-                                 resampling_target=None)
+    masker11 = NiftiLabelsMasker(
+        labels11_img, smoothing_fwhm=3, resampling_target=None
+    )
     signals11 = masker11.fit_transform(fmri11_img)
     assert signals11.shape == (length, n_regions)
 
-    with pytest.raises(ValueError, match='has not been fitted. '):
+    with pytest.raises(ValueError, match="has not been fitted. "):
         NiftiLabelsMasker(labels11_img).inverse_transform(signals11)
 
     # Call inverse transform (smoke test)
@@ -155,15 +162,15 @@ def test_nifti_labels_masker_io_shapes():
     masker.fit()
 
     # DeprecationWarning *should* be raised for 3D inputs
-    with pytest.warns(DeprecationWarning, match='Starting in version 0.12'):
+    with pytest.warns(DeprecationWarning, match="Starting in version 0.12"):
         test_data = masker.transform(img_3d)
         assert test_data.shape == (1, n_regions)
 
     # DeprecationWarning should *not* be raised for 4D inputs
     with warnings.catch_warnings():
         warnings.filterwarnings(
-            'error',
-            message='Starting in version 0.12',
+            "error",
+            message="Starting in version 0.12",
             category=DeprecationWarning,
         )
         test_data = masker.transform(img_4d)
@@ -172,8 +179,8 @@ def test_nifti_labels_masker_io_shapes():
     # DeprecationWarning should *not* be raised for 1D inputs
     with warnings.catch_warnings():
         warnings.filterwarnings(
-            'error',
-            message='Starting in version 0.12',
+            "error",
+            message="Starting in version 0.12",
             category=DeprecationWarning,
         )
         test_img = masker.inverse_transform(data_1d)
@@ -182,8 +189,8 @@ def test_nifti_labels_masker_io_shapes():
     # DeprecationWarning should *not* be raised for 2D inputs
     with warnings.catch_warnings():
         warnings.filterwarnings(
-            'error',
-            message='Starting in version 0.12',
+            "error",
+            message="Starting in version 0.12",
             category=DeprecationWarning,
         )
         test_img = masker.inverse_transform(data_2d)
@@ -300,26 +307,26 @@ def test_nifti_labels_masker_reduction_strategies():
     2. whether unrecognised strategies raise a ValueError
     3. whether the default option is backwards compatible (calls "mean")
     """
-    test_values = [-2., -1., 0., 1., 2]
+    test_values = [-2.0, -1.0, 0.0, 1.0, 2]
 
-    img_data = np.array([[test_values,
-                          test_values]])
+    img_data = np.array([[test_values, test_values]])
 
-    labels_data = np.array([[[0, 0, 0, 0, 0],
-                             [1, 1, 1, 1, 1]]], dtype=np.int8)
+    labels_data = np.array([[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1]]], dtype=np.int8)
 
     affine = np.eye(4)
     img = nibabel.Nifti1Image(img_data, affine)
     labels = nibabel.Nifti1Image(labels_data, affine)
 
     # What NiftiLabelsMasker should return for each reduction strategy?
-    expected_results = {"mean": np.mean(test_values),
-                        "median": np.median(test_values),
-                        "sum": np.sum(test_values),
-                        "minimum": np.min(test_values),
-                        "maximum": np.max(test_values),
-                        "standard_deviation": np.std(test_values),
-                        "variance": np.var(test_values)}
+    expected_results = {
+        "mean": np.mean(test_values),
+        "median": np.median(test_values),
+        "sum": np.sum(test_values),
+        "minimum": np.min(test_values),
+        "maximum": np.max(test_values),
+        "standard_deviation": np.std(test_values),
+        "variance": np.var(test_values),
+    }
 
     for strategy, expected_result in expected_results.items():
         masker = NiftiLabelsMasker(labels, strategy=strategy)
@@ -328,10 +335,7 @@ def test_nifti_labels_masker_reduction_strategies():
         assert result == expected_result
 
     with pytest.raises(ValueError, match="Invalid strategy 'TESTRAISE'"):
-        NiftiLabelsMasker(
-            labels,
-            strategy="TESTRAISE"
-        )
+        NiftiLabelsMasker(labels, strategy="TESTRAISE")
 
     default_masker = NiftiLabelsMasker(labels)
     assert default_masker.strategy == "mean"
@@ -368,31 +372,40 @@ def test_nifti_labels_masker_resampling():
     )
 
     # Test error checking
-    pytest.raises(ValueError, NiftiLabelsMasker, labels33_img,
-                  resampling_target="mask")
-    pytest.raises(ValueError, NiftiLabelsMasker, labels33_img,
-                  resampling_target="invalid")
+    pytest.raises(
+        ValueError, NiftiLabelsMasker, labels33_img, resampling_target="mask"
+    )
+    pytest.raises(
+        ValueError,
+        NiftiLabelsMasker,
+        labels33_img,
+        resampling_target="invalid",
+    )
 
     # Target: labels
-    masker = NiftiLabelsMasker(labels33_img, mask_img=mask22_img,
-                               resampling_target="labels")
+    masker = NiftiLabelsMasker(
+        labels33_img, mask_img=mask22_img, resampling_target="labels"
+    )
 
     masker.fit()
-    np.testing.assert_almost_equal(masker.labels_img_.affine,
-                                   labels33_img.affine)
+    np.testing.assert_almost_equal(
+        masker.labels_img_.affine, labels33_img.affine
+    )
     assert masker.labels_img_.shape == labels33_img.shape
 
-    np.testing.assert_almost_equal(masker.mask_img_.affine,
-                                   masker.labels_img_.affine)
+    np.testing.assert_almost_equal(
+        masker.mask_img_.affine, masker.labels_img_.affine
+    )
     assert masker.mask_img_.shape == masker.labels_img_.shape[:3]
 
     transformed = masker.transform(fmri11_img)
     assert transformed.shape == (length, n_regions)
 
     fmri11_img_r = masker.inverse_transform(transformed)
-    np.testing.assert_almost_equal(fmri11_img_r.affine,
-                                   masker.labels_img_.affine)
-    assert (fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,)))
+    np.testing.assert_almost_equal(
+        fmri11_img_r.affine, masker.labels_img_.affine
+    )
+    assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
 
     # Test with clipped labels: mask does not contain all labels.
     # Shapes do matter in that case, because there is some resampling
@@ -414,19 +427,23 @@ def test_nifti_labels_masker_resampling():
     )
 
     # Target: labels
-    labels33_img = data_gen.generate_labeled_regions(shape3, n_regions,
-                                                     affine=affine)
+    labels33_img = data_gen.generate_labeled_regions(
+        shape3, n_regions, affine=affine
+    )
 
-    masker = NiftiLabelsMasker(labels33_img, mask_img=mask22_img,
-                               resampling_target="labels")
+    masker = NiftiLabelsMasker(
+        labels33_img, mask_img=mask22_img, resampling_target="labels"
+    )
 
     masker.fit()
-    np.testing.assert_almost_equal(masker.labels_img_.affine,
-                                   labels33_img.affine)
+    np.testing.assert_almost_equal(
+        masker.labels_img_.affine, labels33_img.affine
+    )
     assert masker.labels_img_.shape == labels33_img.shape
 
-    np.testing.assert_almost_equal(masker.mask_img_.affine,
-                                   masker.labels_img_.affine)
+    np.testing.assert_almost_equal(
+        masker.mask_img_.affine, masker.labels_img_.affine
+    )
     assert masker.mask_img_.shape == masker.labels_img_.shape[:3]
 
     uniq_labels = np.unique(get_data(masker.labels_img_))
@@ -439,9 +456,10 @@ def test_nifti_labels_masker_resampling():
     assert (transformed.var(axis=0) == 0).sum() < n_regions
 
     fmri11_img_r = masker.inverse_transform(transformed)
-    np.testing.assert_almost_equal(fmri11_img_r.affine,
-                                   masker.labels_img_.affine)
-    assert (fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,)))
+    np.testing.assert_almost_equal(
+        fmri11_img_r.affine, masker.labels_img_.affine
+    )
+    assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
 
     # Test with data and atlas of different shape: the atlas should be
     # resampled to the data
@@ -456,12 +474,13 @@ def test_nifti_labels_masker_resampling():
     masker = NiftiLabelsMasker(labels33_img, mask_img=mask22_img)
 
     masker.fit_transform(fmri22_img)
-    np.testing.assert_array_equal(masker._resampled_labels_img_.affine,
-                                  affine2)
+    np.testing.assert_array_equal(
+        masker._resampled_labels_img_.affine, affine2
+    )
 
     # Test with filenames
     with testing.write_tmp_imgs(fmri22_img) as filename:
-        masker = NiftiLabelsMasker(labels33_img, resampling_target='data')
+        masker = NiftiLabelsMasker(labels33_img, resampling_target="data")
         masker.fit_transform(filename)
 
     # test labels masker with resampling target in 'data', 'labels' to return
@@ -471,16 +490,20 @@ def test_nifti_labels_masker_resampling():
     affine = np.eye(4) * 2
 
     fmri_img, _ = data_gen.generate_random_img(shape, affine=affine)
-    labels_img = data_gen.generate_labeled_regions((9, 8, 6), affine=np.eye(4),
-                                                   n_regions=10)
-    for resampling_target in ['data', 'labels']:
-        masker = NiftiLabelsMasker(labels_img=labels_img,
-                                   resampling_target=resampling_target)
-        if resampling_target == 'data':
-            with pytest.warns(UserWarning,
-                              match=("After resampling the label image "
-                                     "to the data image, the following "
-                                     "labels were removed")):
+    labels_img = data_gen.generate_labeled_regions(
+        (9, 8, 6), affine=np.eye(4), n_regions=10
+    )
+    for resampling_target in ["data", "labels"]:
+        masker = NiftiLabelsMasker(
+            labels_img=labels_img, resampling_target=resampling_target
+        )
+        if resampling_target == "data":
+            with pytest.warns(
+                UserWarning,
+                match="After resampling the label image "
+                "to the data image, the following "
+                "labels were removed",
+            ):
                 transformed = masker.fit_transform(fmri_img)
         else:
             transformed = masker.fit_transform(fmri_img)
@@ -495,8 +518,9 @@ def test_nifti_labels_masker_resampling():
         transformed2 = masker.fit_transform(fmri_img)
         # inverse transform again
         compressed_img2 = masker.inverse_transform(transformed2)
-        np.testing.assert_array_equal(get_data(compressed_img),
-                                      get_data(compressed_img2))
+        np.testing.assert_array_equal(
+            get_data(compressed_img), get_data(compressed_img2)
+        )
 
 
 def test_standardization():
@@ -519,21 +543,26 @@ def test_standardization():
     unstandarized_label_signals = masker.fit_transform(img)
 
     # z-score
-    masker = NiftiLabelsMasker(labels, standardize='zscore')
+    masker = NiftiLabelsMasker(labels, standardize="zscore")
     trans_signals = masker.fit_transform(img)
 
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)
     np.testing.assert_almost_equal(trans_signals.std(0), 1)
 
     # psc
-    masker = NiftiLabelsMasker(labels, standardize='psc')
+    masker = NiftiLabelsMasker(labels, standardize="psc")
     trans_signals = masker.fit_transform(img)
 
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)
-    np.testing.assert_almost_equal(trans_signals,
-                                   (unstandarized_label_signals /
-                                    unstandarized_label_signals.mean(0) *
-                                    100 - 100))
+    np.testing.assert_almost_equal(
+        trans_signals,
+        (
+            unstandarized_label_signals
+            / unstandarized_label_signals.mean(0)
+            * 100
+            - 100
+        ),
+    )
 
 
 def test_nifti_labels_masker_with_mask():
@@ -577,6 +606,6 @@ def test_3d_images():
     masker = NiftiLabelsMasker(labels33_img, mask_img=mask_img)
 
     epis = masker.fit_transform(epi_img1)
-    assert (epis.shape == (1, 3))
+    assert epis.shape == (1, 3)
     epis = masker.fit_transform([epi_img1, epi_img2])
-    assert (epis.shape == (2, 3))
+    assert epis.shape == (2, 3)
