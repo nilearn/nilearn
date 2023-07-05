@@ -149,10 +149,7 @@ extend-exclude =  """
   | nilearn/maskers/tests/test_nifti_masker.py
   | nilearn/plotting/displays/_axes.py
   | nilearn/plotting/glass_brain.py
-  | nilearn/plotting/html_connectome.py
   | nilearn/plotting/html_surface.py
-  | nilearn/plotting/find_cuts.py
-  | nilearn/plotting/html_stat_map.py
   | nilearn/plotting/img_plotting.py
   | nilearn/plotting/matrix_plotting.py
   | nilearn/plotting/js_plotting_utils.py

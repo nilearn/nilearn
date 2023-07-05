@@ -20,7 +20,7 @@ from .js_plotting_utils import (
 )
 
 
-class ConnectomeView(HTMLDocument): # noqa E101
+class ConnectomeView(HTMLDocument):  # noqa E101
     pass
 
 
@@ -43,11 +43,12 @@ def _encode_coordinates(coords, prefix):
     """
     coordinates = {}
 
-    coords = np.asarray(coords, dtype='<f4')
+    coords = np.asarray(coords, dtype="<f4")
     marker_x, marker_y, marker_z = coords.T
     for coord, cname in [(marker_x, "x"), (marker_y, "y"), (marker_z, "z")]:
         coordinates[f"{prefix}{cname}"] = encode(
-            np.asarray(coord, dtype='<f4'))
+            np.asarray(coord, dtype="<f4")
+        )
 
     return coordinates
 
@@ -102,7 +103,7 @@ def _prepare_colors_for_markers(marker_color, number_of_nodes):
     markers_colors: list
         List of `number_of_nodes` colors as hexadecimal values
     """
-    if isinstance(marker_color, str) and marker_color == 'auto':
+    if isinstance(marker_color, str) and marker_color == "auto":
         colors = mpl_cm.viridis(np.linspace(0, 1, number_of_nodes))
     elif isinstance(marker_color, str):
         colors = [marker_color] * number_of_nodes
@@ -112,8 +113,9 @@ def _prepare_colors_for_markers(marker_color, number_of_nodes):
     return to_color_strings(colors)
 
 
-def _prepare_lines_metadata(adjacency_matrix, coords, threshold,
-                            cmap, symmetric_cmap):
+def _prepare_lines_metadata(
+    adjacency_matrix, coords, threshold, cmap, symmetric_cmap
+):
     """Generate metadata related to lines for _connectome_view plot.
 
     Parameters
@@ -148,26 +150,31 @@ def _prepare_lines_metadata(adjacency_matrix, coords, threshold,
 
     adjacency_matrix = np.nan_to_num(adjacency_matrix, copy=True)
     colors = colorscale(
-        cmap, adjacency_matrix.ravel(), threshold=threshold,
-        symmetric_cmap=symmetric_cmap)
-    lines_metadata['line_colorscale'] = colors['colors']
-    lines_metadata['line_cmin'] = float(colors['vmin'])
-    lines_metadata['line_cmax'] = float(colors['vmax'])
+        cmap,
+        adjacency_matrix.ravel(),
+        threshold=threshold,
+        symmetric_cmap=symmetric_cmap,
+    )
+    lines_metadata["line_colorscale"] = colors["colors"]
+    lines_metadata["line_cmin"] = float(colors["vmin"])
+    lines_metadata["line_cmax"] = float(colors["vmax"])
     if threshold is not None:
         adjacency_matrix[
-            np.abs(adjacency_matrix) <= colors['abs_threshold']] = 0
+            np.abs(adjacency_matrix) <= colors["abs_threshold"]
+        ] = 0
     s = sparse.coo_matrix(adjacency_matrix)
     nodes = np.asarray([s.row, s.col], dtype=int).T
     edges = np.arange(len(nodes))
     path_edges, path_nodes = _prepare_line(edges, nodes)
     lines_metadata["_con_w"] = encode(
-        np.asarray(s.data, dtype='<f4')[path_edges])
+        np.asarray(s.data, dtype="<f4")[path_edges]
+    )
 
     line_coords = coords[path_nodes]
 
     lines_metadata = {
         **lines_metadata,
-        **_encode_coordinates(line_coords, prefix="_con_")
+        **_encode_coordinates(line_coords, prefix="_con_"),
     }
 
     return lines_metadata
@@ -175,17 +182,14 @@ def _prepare_lines_metadata(adjacency_matrix, coords, threshold,
 
 def _prepare_markers_metadata(coords, marker_size, marker_color, marker_only):
     markers_coordinates = _encode_coordinates(coords, prefix="_marker_")
-    markers_metadata = {
-        'markers_only': marker_only,
-        **markers_coordinates
-    }
+    markers_metadata = {"markers_only": marker_only, **markers_coordinates}
 
     if np.ndim(marker_size) > 0:
         marker_size = np.asarray(marker_size)
-    if hasattr(marker_size, 'tolist'):
+    if hasattr(marker_size, "tolist"):
         marker_size = marker_size.tolist()
-    markers_metadata['marker_size'] = marker_size
-    markers_metadata['marker_color'] = _prepare_colors_for_markers(
+    markers_metadata["marker_size"] = marker_size
+    markers_metadata["marker_color"] = _prepare_colors_for_markers(
         marker_color,
         len(coords),
     )
@@ -193,9 +197,15 @@ def _prepare_markers_metadata(coords, marker_size, marker_color, marker_only):
     return markers_metadata
 
 
-def _get_connectome(adjacency_matrix, coords, threshold=None,
-                    marker_size=None, marker_color='auto', cmap=cm.cold_hot,
-                    symmetric_cmap=True):
+def _get_connectome(
+    adjacency_matrix,
+    coords,
+    threshold=None,
+    marker_size=None,
+    marker_color="auto",
+    cmap=cm.cold_hot,
+    symmetric_cmap=True,
+):
     lines_metadata = _prepare_lines_metadata(
         adjacency_matrix,
         coords,
@@ -220,23 +230,38 @@ def _get_connectome(adjacency_matrix, coords, threshold=None,
 def _make_connectome_html(connectome_info, embed_js=True):
     plot_info = {"connectome": connectome_info}
     mesh = datasets.fetch_surf_fsaverage()
-    for hemi in ['pial_left', 'pial_right']:
+    for hemi in ["pial_left", "pial_right"]:
         plot_info[hemi] = mesh_to_plotly(mesh[hemi])
     as_json = json.dumps(plot_info)
     as_html = get_html_template(
-        'connectome_plot_template.html').safe_substitute(
-            {'INSERT_CONNECTOME_JSON_HERE': as_json,
-             'INSERT_PAGE_TITLE_HERE': (
-                 connectome_info["title"] or "Connectome plot")})
+        "connectome_plot_template.html"
+    ).safe_substitute(
+        {
+            "INSERT_CONNECTOME_JSON_HERE": as_json,
+            "INSERT_PAGE_TITLE_HERE": (
+                connectome_info["title"] or "Connectome plot"
+            ),
+        }
+    )
     as_html = add_js_lib(as_html, embed_js=embed_js)
     return ConnectomeView(as_html)
 
 
-def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
-                    edge_cmap=cm.bwr, symmetric_cmap=True,
-                    linewidth=6., node_color='auto', node_size=3.,
-                    colorbar=True, colorbar_height=.5, colorbar_fontsize=25,
-                    title=None, title_fontsize=25):
+def view_connectome(
+    adjacency_matrix,
+    node_coords,
+    edge_threshold=None,
+    edge_cmap=cm.bwr,
+    symmetric_cmap=True,
+    linewidth=6.0,
+    node_color="auto",
+    node_size=3.0,
+    colorbar=True,
+    colorbar_height=0.5,
+    colorbar_fontsize=25,
+    title=None,
+    title_fontsize=25,
+):
     """Insert a 3d plot of a connectome into an HTML page.
 
     Parameters
@@ -314,21 +339,31 @@ def view_connectome(adjacency_matrix, node_coords, edge_threshold=None,
     node_coords = np.asarray(node_coords)
 
     connectome_info = _get_connectome(
-        adjacency_matrix, node_coords,
-        threshold=edge_threshold, cmap=edge_cmap,
-        symmetric_cmap=symmetric_cmap, marker_size=node_size,
-        marker_color=node_color)
-    connectome_info['line_width'] = linewidth
-    connectome_info['colorbar'] = colorbar
-    connectome_info['cbar_height'] = colorbar_height
-    connectome_info['cbar_fontsize'] = colorbar_fontsize
-    connectome_info['title'] = title
-    connectome_info['title_fontsize'] = title_fontsize
+        adjacency_matrix,
+        node_coords,
+        threshold=edge_threshold,
+        cmap=edge_cmap,
+        symmetric_cmap=symmetric_cmap,
+        marker_size=node_size,
+        marker_color=node_color,
+    )
+    connectome_info["line_width"] = linewidth
+    connectome_info["colorbar"] = colorbar
+    connectome_info["cbar_height"] = colorbar_height
+    connectome_info["cbar_fontsize"] = colorbar_fontsize
+    connectome_info["title"] = title
+    connectome_info["title_fontsize"] = title_fontsize
     return _make_connectome_html(connectome_info)
 
 
-def view_markers(marker_coords, marker_color='auto', marker_size=5.,
-                 marker_labels=None, title=None, title_fontsize=25):
+def view_markers(
+    marker_coords,
+    marker_color="auto",
+    marker_size=5.0,
+    marker_labels=None,
+    title=None,
+    title_fontsize=25,
+):
     """Insert a 3d plot of markers in a brain into an HTML page.
 
     Parameters
@@ -378,7 +413,7 @@ def view_markers(marker_coords, marker_color='auto', marker_size=5.,
     """
     marker_coords = np.asarray(marker_coords)
     if marker_color is None:
-        marker_color = ['red' for _ in range(len(marker_coords))]
+        marker_color = ["red" for _ in range(len(marker_coords))]
     connectome_info = _prepare_markers_metadata(
         marker_coords,
         marker_size,
@@ -386,8 +421,8 @@ def view_markers(marker_coords, marker_color='auto', marker_size=5.,
         marker_only=True,
     )
     if marker_labels is None:
-        marker_labels = ['' for _ in range(marker_coords.shape[0])]
-    connectome_info['marker_labels'] = marker_labels
-    connectome_info['title'] = title
-    connectome_info['title_fontsize'] = title_fontsize
+        marker_labels = ["" for _ in range(marker_coords.shape[0])]
+    connectome_info["marker_labels"] = marker_labels
+    connectome_info["title"] = title
+    connectome_info["title_fontsize"] = title_fontsize
     return _make_connectome_html(connectome_info)
