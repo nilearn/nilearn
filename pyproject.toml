@@ -139,14 +139,9 @@ extend-exclude =  """
   | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
   | nilearn/interfaces/fmriprep/tests/utils.py
   | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
-  | nilearn/maskers/nifti_masker.py
   | nilearn/maskers/nifti_spheres_masker.py
-  | nilearn/maskers/nifti_labels_masker.py
   | nilearn/maskers/nifti_maps_masker.py
-  | nilearn/maskers/tests/test_nifti_spheres_masker.py
-  | nilearn/maskers/tests/test_nifti_labels_masker.py
-  | nilearn/maskers/tests/test_nifti_maps_masker.py
-  | nilearn/maskers/tests/test_nifti_masker.py
+  | nilearn/maskers/nifti_labels_masker.py
   | nilearn/plotting/displays/_axes.py
   | nilearn/plotting/glass_brain.py
   | nilearn/plotting/html_connectome.py
