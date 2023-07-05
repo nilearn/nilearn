@@ -19,7 +19,7 @@ from nilearn._utils.data_gen import (
     write_fake_fmri_data_and_design,
 )
 from nilearn.glm.first_level import FirstLevelModel, run_glm
-from nilearn.glm.second_level import (SecondLevelModel, 
+from nilearn.glm.second_level import (SecondLevelModel,
                                       non_parametric_inference)
 from nilearn.glm.second_level.second_level import (_get_contrast)
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
@@ -291,7 +291,7 @@ def test_get_contrast_errors():
     with pytest.raises(ValueError,
                        match="second_level_contrast must be "
                              "a list of 0s and 1s"):
-        _get_contrast([0, 0], design_matrix) 
+        _get_contrast([0, 0], design_matrix)
 
 
 def test_infer_effect_maps(tmp_path, monkeypatch):
@@ -822,7 +822,7 @@ def test_second_level_contrast_computation():
         rng = np.random.RandomState(42)
         X = pd.DataFrame(rng.uniform(size=(4, 2)), columns=["r1", "r2"])
         model = model.fit(Y, design_matrix=X)
-        model.compute_contrast(second_level_contrast="r1 - r2")        
+        model.compute_contrast(second_level_contrast="r1 - r2")
 
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
@@ -841,7 +841,7 @@ def test_second_level_contrast_computation_errors():
         # asking for contrast before model fit gives error
         with pytest.raises(ValueError, match="The model has not been fit yet"):
             model.compute_contrast(second_level_contrast='intercept')
-        
+
         # fit model
         Y = [func_img] * 4
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
@@ -857,7 +857,7 @@ def test_second_level_contrast_computation_errors():
         with pytest.raises(ValueError):
             model.compute_contrast(cnull)
         # passing wrong parameters
-        with pytest.raises(ValueError, 
+        with pytest.raises(ValueError,
                            match=("t contrasts should be length P=1, "
                                   "but this is length 0")):
             model.compute_contrast(second_level_contrast=[])
@@ -875,7 +875,7 @@ def test_second_level_contrast_computation_errors():
         rng = np.random.RandomState(42)
         X = pd.DataFrame(rng.uniform(size=(4, 2)), columns=["r1", "r2"])
         model = model.fit(Y, design_matrix=X)
-        with pytest.raises(ValueError, 
+        with pytest.raises(ValueError,
                            match="No second-level contrast is specified"):
             model.compute_contrast(None)
         # Delete objects attached to files to avoid WindowsError when deleting
@@ -934,17 +934,17 @@ def test_non_parametric_inference_contrast_computation_formula():
         rng = np.random.RandomState(42)
         X = pd.DataFrame(rng.uniform(size=(4, 2)), columns=["r1", "r2"])
         non_parametric_inference(second_level_input=Y,
-                                    design_matrix=X,
-                                    second_level_contrast=[1, 0])
+                                 design_matrix=X,
+                                 second_level_contrast=[1, 0])
         non_parametric_inference(second_level_input=Y,
-                                    design_matrix=X,
-                                    second_level_contrast="r1")
+                                 design_matrix=X,
+                                 second_level_contrast="r1")
         non_parametric_inference(second_level_input=Y,
-                                    design_matrix=X,
-                                    second_level_contrast=[1, -1])
+                                 design_matrix=X,
+                                 second_level_contrast=[1, -1])
         non_parametric_inference(second_level_input=Y,
-                                    design_matrix=X,
-                                    second_level_contrast="r1 - r2")                                      
+                                 design_matrix=X,
+                                 second_level_contrast="r1 - r2")
 
         del func_img, FUNCFILE, X, Y
 
@@ -959,8 +959,8 @@ def test_non_parametric_inference_contrast_computation_errors():
         # asking for contrast before model fit gives error
         with pytest.raises(TypeError,
                            match="second_level_input must be either"):
-            non_parametric_inference(second_level_input=None, 
-                                     second_level_contrast='intercept', 
+            non_parametric_inference(second_level_input=None,
+                                     second_level_contrast='intercept',
                                      mask=mask)
 
         # fit model
@@ -971,14 +971,14 @@ def test_non_parametric_inference_contrast_computation_errors():
         _, cnull = np.eye(ncol)[0, :], np.zeros(ncol)
 
         # passing null contrast should give back a value error
-        with pytest.raises(ValueError, 
+        with pytest.raises(ValueError,
                            match=("second_level_contrast "
                                   "must be a list of 0s and 1s.")):
             non_parametric_inference(second_level_input=Y,
                                      design_matrix=X,
                                      second_level_contrast=cnull,
                                      mask=mask)
-        with pytest.raises(ValueError, 
+        with pytest.raises(ValueError,
                            match=("second_level_contrast "
                                   "must be a list of 0s and 1s.")):
             non_parametric_inference(second_level_input=Y,
