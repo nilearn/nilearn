@@ -31,9 +31,6 @@ def test_sanitize_confounds(inputs, flag):
 
 
 @pytest.mark.parametrize("flag", [True, False])
-@pytest.mark.parametrize("suffix",
-                         ["_desc-confounds_regressors",
-                          "_desc-confounds_timeseries"])
 @pytest.mark.parametrize("image_type",
                          ["regular",
                           "native",
@@ -42,8 +39,13 @@ def test_sanitize_confounds(inputs, flag):
                           "den",
                           "part",
                           "gifti"])
-def test_get_file_name(tmp_path, flag, suffix, image_type):
+def test_get_file_name(tmp_path, flag, image_type):
     """Test _get_file_name."""
+    if flag:
+        suffix = "_desc-confounds_regressors"
+    else:
+        suffix = "_desc-confounds_timeseries"
+
     if image_type == "part":
         kwargs = {"suffix": "sub-test01_task-test_part-mag_run-01"}
     else:
