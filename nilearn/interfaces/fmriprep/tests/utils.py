@@ -9,12 +9,15 @@ from nilearn.interfaces.fmriprep import load_confounds_utils
 img_file_patterns = {
     "ica_aroma":
         "_space-MNI152NLin2009cAsym_desc-smoothAROMAnonaggr_bold.nii.gz",
-    "regular":
-        "_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
-    "native":
-        "_desc-preproc_bold.nii.gz",
-    "cifti":
-        "_space-fsLR_den-91k_bold.dtseries.nii",
+    "regular": "_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz",
+    "res": "_space-MNI152NLin2009cAsym_res-2_desc-preproc_bold.nii.gz",
+    "native": "_desc-preproc_bold.nii.gz",
+    "cifti": "_space-fsLR_den-91k_bold.dtseries.nii",
+    "den": "_space-fsLR_den-32k_desc-preproc_bold.nii.gz",
+    "part": (
+        "_part-mag_space-MNI152NLin2009cAsym_"
+        "desc-preproc_bold.nii.gz"
+    ),
     "gifti": (
         "_space-fsaverage5_hemi-L_bold.func.gii",
         "_space-fsaverage5_hemi-R_bold.func.gii",
