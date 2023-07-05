@@ -31,14 +31,9 @@ def test_sanitize_confounds(inputs, flag):
 
 
 @pytest.mark.parametrize("flag", [True, False])
-@pytest.mark.parametrize("image_type",
-                         ["regular",
-                          "native",
-                          "res",
-                          "cifti",
-                          "den",
-                          "part",
-                          "gifti"])
+@pytest.mark.parametrize(
+    "image_type", ["regular", "native", "res", "cifti", "den", "part", "gifti"]
+)
 def test_get_file_name(tmp_path, flag, image_type):
     """Test _get_file_name."""
     if flag:
