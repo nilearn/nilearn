@@ -19,7 +19,9 @@ from nilearn._utils.data_gen import (
     write_fake_fmri_data_and_design,
 )
 from nilearn.glm.first_level import FirstLevelModel, run_glm
-from nilearn.glm.second_level import SecondLevelModel, non_parametric_inference
+from nilearn.glm.second_level import (SecondLevelModel, 
+                                      non_parametric_inference)
+from nilearn.glm.second_level.second_level import (_get_contrast)
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker
 
@@ -266,12 +268,21 @@ def test_check_effect_maps():
 
 
 def test_get_contrast():
-    from nilearn.glm.second_level.second_level import _get_contrast
     design_matrix = pd.DataFrame([1, 2, 3], columns=['conf'])
     assert _get_contrast('conf', design_matrix) == 'conf'
+
+    design_matrix = pd.DataFrame({'conf1': [1, 2, 3],
+                                  'conf2': [4, 5, 6]})
+    assert _get_contrast([0, 1], design_matrix) == 'conf2'
+    assert _get_contrast([1, 0], design_matrix) == 'conf1'
+
+
+def test_get_contrast_errors():
+    design_matrix = pd.DataFrame([1, 2, 3], columns=['conf'])
     with pytest.raises(ValueError,
                        match='"foo" is not a valid contrast name'):
         _get_contrast('foo', design_matrix)
+
     design_matrix = pd.DataFrame({'conf1': [1, 2, 3],
                                   'conf2': [4, 5, 6]})
     with pytest.raises(ValueError,
@@ -280,9 +291,7 @@ def test_get_contrast():
     with pytest.raises(ValueError,
                        match="second_level_contrast must be "
                              "a list of 0s and 1s"):
-        _get_contrast([0, 0], design_matrix)
-    assert _get_contrast([0, 1], design_matrix) == 'conf2'
-    assert _get_contrast([1, 0], design_matrix) == 'conf1'
+        _get_contrast([0, 0], design_matrix) 
 
 
 def test_infer_effect_maps(tmp_path, monkeypatch):
@@ -621,9 +630,11 @@ def test_non_parametric_inference_permutation_computation():
         Y = [func_img] * 4
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
 
-        neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
+        neg_log_pvals_img = non_parametric_inference(Y,
+                                                     design_matrix=X,
                                                      model_intercept=False,
-                                                     mask=mask, n_perm=N_PERM)
+                                                     mask=mask,
+                                                     n_perm=N_PERM)
 
         assert get_data(neg_log_pvals_img).shape == shapes[0][:3]
         del func_img, FUNCFILE, neg_log_pvals_img, X, Y
@@ -767,26 +778,30 @@ def test_second_level_contrast_computation():
         func_img = load(FUNCFILE)
         # Ordinary Least Squares case
         model = SecondLevelModel(mask_img=mask)
-        # asking for contrast before model fit gives error
-        with pytest.raises(ValueError):
-            model.compute_contrast('intercept')
         # fit model
         Y = [func_img] * 4
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
         model = model.fit(Y, design_matrix=X)
         ncol = len(model.design_matrix_.columns)
-        c1, cnull = np.eye(ncol)[0, :], np.zeros(ncol)
+        c1, _ = np.eye(ncol)[0, :], np.zeros(ncol)
+
         # smoke test for different contrasts in fixed effects
-        model.compute_contrast(c1)
-        z_image = model.compute_contrast(c1, output_type='z_score')
-        stat_image = model.compute_contrast(c1, output_type='stat')
-        p_image = model.compute_contrast(c1, output_type='p_value')
-        effect_image = model.compute_contrast(c1, output_type='effect_size')
-        variance_image = \
-            model.compute_contrast(c1, output_type='effect_variance')
+        model.compute_contrast(second_level_contrast=c1)
+        z_image = model.compute_contrast(second_level_contrast=c1,
+                                         output_type='z_score')
+        stat_image = model.compute_contrast(second_level_contrast=c1,
+                                            output_type='stat')
+        p_image = model.compute_contrast(second_level_contrast=c1,
+                                         output_type='p_value')
+        effect_image = model.compute_contrast(second_level_contrast=c1,
+                                              output_type='effect_size')
+        variance_image = model.compute_contrast(
+            second_level_contrast=c1,
+            output_type='effect_variance')
 
         # Test output_type='all', and verify images are equivalent
-        all_images = model.compute_contrast(c1, output_type='all')
+        all_images = model.compute_contrast(second_level_contrast=c1,
+                                            output_type='all')
         assert_array_equal(get_data(all_images['z_score']),
                            get_data(z_image))
         assert_array_equal(get_data(all_images['stat']),
@@ -802,24 +817,66 @@ def test_second_level_contrast_computation():
         model.compute_contrast('intercept')
         # or simply pass nothing
         model.compute_contrast()
+
+        # formula as contrasts
+        rng = np.random.RandomState(42)
+        X = pd.DataFrame(rng.uniform(size=(4, 2)), columns=["r1", "r2"])
+        model = model.fit(Y, design_matrix=X)
+        model.compute_contrast(second_level_contrast="r1 - r2")        
+
+        # Delete objects attached to files to avoid WindowsError when deleting
+        # temporary directory (in Windows)
+        del func_img, FUNCFILE, model, X, Y
+
+
+def test_second_level_contrast_computation_errors():
+    with InTemporaryDirectory():
+        shapes = ((7, 8, 9, 1),)
+        mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
+        FUNCFILE = FUNCFILE[0]
+        func_img = load(FUNCFILE)
+        # Ordinary Least Squares case
+        model = SecondLevelModel(mask_img=mask)
+
+        # asking for contrast before model fit gives error
+        with pytest.raises(ValueError, match="The model has not been fit yet"):
+            model.compute_contrast(second_level_contrast='intercept')
+        
+        # fit model
+        Y = [func_img] * 4
+        X = pd.DataFrame([[1]] * 4, columns=['intercept'])
+        model = model.fit(Y, design_matrix=X)
+        ncol = len(model.design_matrix_.columns)
+        c1, cnull = np.eye(ncol)[0, :], np.zeros(ncol)
+
+        # formula should work (passing variable name directly)
+        model.compute_contrast(second_level_contrast='intercept')
+        # or simply pass nothing
+        model.compute_contrast()
         # passing null contrast should give back a value error
         with pytest.raises(ValueError):
             model.compute_contrast(cnull)
         # passing wrong parameters
-        with pytest.raises(ValueError):
-            model.compute_contrast([])
-        with pytest.raises(ValueError):
-            model.compute_contrast(c1, None, '')
-        with pytest.raises(ValueError):
-            model.compute_contrast(c1, None, [])
-        with pytest.raises(ValueError):
-            model.compute_contrast(c1, None, None, '')
+        with pytest.raises(ValueError, 
+                           match=("t contrasts should be length P=1, "
+                                  "but this is length 0")):
+            model.compute_contrast(second_level_contrast=[])
+        with pytest.raises(ValueError, match="Allowed types are .*'t', 'F'"):
+            model.compute_contrast(second_level_contrast=c1,
+                                   second_level_stat_type='')
+        with pytest.raises(ValueError, match="Allowed types are .*'t', 'F'"):
+            model.compute_contrast(second_level_contrast=c1,
+                                   second_level_stat_type=[])
+        with pytest.raises(ValueError, match="output_type must be one of "):
+            model.compute_contrast(second_level_contrast=c1,
+                                   output_type='')
         # check that passing no explicit contrast when the design
         # matrix has more than one columns raises an error
         rng = np.random.RandomState(42)
         X = pd.DataFrame(rng.uniform(size=(4, 2)), columns=["r1", "r2"])
         model = model.fit(Y, design_matrix=X)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, 
+                           match="No second-level contrast is specified"):
             model.compute_contrast(None)
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
@@ -832,44 +889,114 @@ def test_non_parametric_inference_contrast_computation():
         mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
-        # asking for contrast before model fit gives error
-        with pytest.raises(TypeError):
-            non_parametric_inference(None, None, None, 'intercept', mask)
+
         # fit model
         Y = [func_img] * 4
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
         # formula should work without second-level contrast
-        neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
+        neg_log_pvals_img = non_parametric_inference(Y,
+                                                     design_matrix=X,
                                                      model_intercept=False,
-                                                     mask=mask, n_perm=N_PERM)
+                                                     mask=mask,
+                                                     n_perm=N_PERM)
 
         ncol = len(X.columns)
-        c1, cnull = np.eye(ncol)[0, :], np.zeros(ncol)
+        c1, _ = np.eye(ncol)[0, :], np.zeros(ncol)
         # formula should work with second-level contrast
-        neg_log_pvals_img = non_parametric_inference(Y, design_matrix=X,
+        neg_log_pvals_img = non_parametric_inference(Y,
+                                                     design_matrix=X,
                                                      model_intercept=False,
                                                      second_level_contrast=c1,
-                                                     mask=mask, n_perm=N_PERM)
+                                                     mask=mask,
+                                                     n_perm=N_PERM)
         # formula should work passing variable name directly
         neg_log_pvals_img = \
-            non_parametric_inference(Y, design_matrix=X,
+            non_parametric_inference(Y,
+                                     design_matrix=X,
                                      second_level_contrast='intercept',
                                      model_intercept=False,
-                                     mask=mask, n_perm=N_PERM)
+                                     mask=mask,
+                                     n_perm=N_PERM)
+
+        del func_img, FUNCFILE, neg_log_pvals_img, X, Y
+
+
+def test_non_parametric_inference_contrast_computation_formula():
+    with InTemporaryDirectory():
+        shapes = ((7, 8, 9, 1),)
+        _, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
+        FUNCFILE = FUNCFILE[0]
+        func_img = load(FUNCFILE)
+
+        # fit model
+        Y = [func_img] * 4
+
+        rng = np.random.RandomState(42)
+        X = pd.DataFrame(rng.uniform(size=(4, 2)), columns=["r1", "r2"])
+        non_parametric_inference(second_level_input=Y,
+                                    design_matrix=X,
+                                    second_level_contrast=[1, 0])
+        non_parametric_inference(second_level_input=Y,
+                                    design_matrix=X,
+                                    second_level_contrast="r1")
+        non_parametric_inference(second_level_input=Y,
+                                    design_matrix=X,
+                                    second_level_contrast=[1, -1])
+        non_parametric_inference(second_level_input=Y,
+                                    design_matrix=X,
+                                    second_level_contrast="r1 - r2")                                      
+
+        del func_img, FUNCFILE, X, Y
+
+
+def test_non_parametric_inference_contrast_computation_errors():
+    with InTemporaryDirectory():
+        shapes = ((7, 8, 9, 1),)
+        mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
+        FUNCFILE = FUNCFILE[0]
+        func_img = load(FUNCFILE)
+
+        # asking for contrast before model fit gives error
+        with pytest.raises(TypeError,
+                           match="second_level_input must be either"):
+            non_parametric_inference(second_level_input=None, 
+                                     second_level_contrast='intercept', 
+                                     mask=mask)
+
+        # fit model
+        Y = [func_img] * 4
+        X = pd.DataFrame([[1]] * 4, columns=['intercept'])
+
+        ncol = len(X.columns)
+        _, cnull = np.eye(ncol)[0, :], np.zeros(ncol)
 
         # passing null contrast should give back a value error
-        with pytest.raises(ValueError):
-            non_parametric_inference(Y, X, cnull, 'intercept', mask)
-        # passing wrong parameters
-        with pytest.raises(ValueError):
-            non_parametric_inference(Y, X, [], 'intercept', mask)
+        with pytest.raises(ValueError, 
+                           match=("second_level_contrast "
+                                  "must be a list of 0s and 1s.")):
+            non_parametric_inference(second_level_input=Y,
+                                     design_matrix=X,
+                                     second_level_contrast=cnull,
+                                     mask=mask)
+        with pytest.raises(ValueError, 
+                           match=("second_level_contrast "
+                                  "must be a list of 0s and 1s.")):
+            non_parametric_inference(second_level_input=Y,
+                                     design_matrix=X,
+                                     second_level_contrast=[],
+                                     mask=mask)
+
         # check that passing no explicit contrast when the design
         # matrix has more than one columns raises an error
         rng = np.random.RandomState(42)
         X = pd.DataFrame(rng.uniform(size=(4, 2)), columns=["r1", "r2"])
-        with pytest.raises(ValueError):
-            non_parametric_inference(Y, X, None)
-        del func_img, FUNCFILE, neg_log_pvals_img, X, Y
+        with pytest.raises(ValueError,
+                           match="No second-level contrast is specified."):
+            non_parametric_inference(second_level_input=Y,
+                                     design_matrix=X,
+                                     second_level_contrast=None)
+
+        del func_img, FUNCFILE, X, Y
 
 
 def test_second_level_contrast_computation_with_memory_caching():
