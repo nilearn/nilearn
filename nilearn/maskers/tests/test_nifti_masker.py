@@ -84,10 +84,8 @@ def test_fit_transform_warning():
     masker = NiftiMasker(mask_img=mask_img)
     with pytest.warns(
         UserWarning,
-        match=(
-            "Generation of a mask has been requested .*"
-            "while a mask has been provided at masker creation."
-        ),
+        match="Generation of a mask has been requested .*"
+        "while a mask has been provided at masker creation.",
     ):
         X = masker.fit_transform(X=img, y=y)
         assert np.any(X != 0)

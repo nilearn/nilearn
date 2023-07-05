@@ -500,11 +500,9 @@ def test_nifti_labels_masker_resampling():
         if resampling_target == "data":
             with pytest.warns(
                 UserWarning,
-                match=(
-                    "After resampling the label image "
-                    "to the data image, the following "
-                    "labels were removed"
-                ),
+                match="After resampling the label image "
+                "to the data image, the following "
+                "labels were removed",
             ):
                 transformed = masker.fit_transform(fmri_img)
         else:
