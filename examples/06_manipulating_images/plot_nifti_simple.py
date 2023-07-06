@@ -29,6 +29,7 @@ from nilearn.maskers import NiftiMasker
 # one
 nifti_masker = NiftiMasker(
     standardize="zscore_sample",
+    standardize_confounds="zscore_sample",
     mask_strategy="epi",
     memory="nilearn_cache",
     memory_level=2,

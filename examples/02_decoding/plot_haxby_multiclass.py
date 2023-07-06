@@ -51,6 +51,7 @@ from nilearn.maskers import NiftiMasker
 nifti_masker = NiftiMasker(
     mask_img=mask_filename,
     standardize="zscore_sample",
+    standardize_confounds="zscore_sample",
     runs=session,
     smoothing_fwhm=4,
     memory="nilearn_cache",

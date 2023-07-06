@@ -86,6 +86,7 @@ masker = NiftiMasker(
     runs=session_label,
     smoothing_fwhm=4,
     standardize="zscore_sample",
+    standardize_confounds="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
 )
