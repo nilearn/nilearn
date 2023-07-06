@@ -19,6 +19,10 @@ from nilearn.interfaces.fmriprep.tests.utils import (
     get_leagal_confound,
 )
 from nilearn.maskers import NiftiMasker
+from nilearn._utils.data_gen import (
+    create_fake_bids_dataset,
+)
+from nilearn.interfaces.bids import get_bids_files
 
 
 def _simu_img(tmp_path, demean):
@@ -577,3 +581,22 @@ def test_inputs(tmp_path, image_type):
     else:
         conf, _ = load_confounds(files)
     assert len(conf) == 2
+
+
+def test_load_confounds_for_gifti_bug_3817(tmpdir):
+    # see https://github.com/nilearn/nilearn/issues/3817 
+    bids_path = create_fake_bids_dataset(base_dir=tmpdir)
+    selection = get_bids_files(
+        bids_path / "derivatives",
+        sub_label="01",
+        file_tag="bold",
+        file_type="func.gii",
+        filters=[("ses", "01"), ("task", "main"), ("run", "01"), ("hemi", "L")],
+        sub_folder=True,
+    )
+    assert len(selection) == 1
+    load_confounds(
+                selection[0],
+                strategy=['motion', 'wm_csf', 'global_signal', 'high_pass'],
+                motion='basic',
+                demean=False)
