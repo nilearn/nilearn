@@ -527,7 +527,7 @@ def test_standardization():
     unstandarized_label_signals = masker.fit_transform(img)
 
     # z-score
-    masker = NiftiMapsMasker(maps, standardize="zscore")
+    masker = NiftiMapsMasker(maps, standardize="zscore_sample")
     trans_signals = masker.fit_transform(img)
 
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)

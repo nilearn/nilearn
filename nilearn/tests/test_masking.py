@@ -57,7 +57,9 @@ def _cov_conf(tseries, conf):
     return cov_mat
 
 
-def _confounds_regression(standardize_signal=True, standardize_confounds=True):
+def _confounds_regression(
+        standardize_signal="zscore_sample", standardize_confounds=True
+):
     img, mask, conf = _simu_img()
     masker = NiftiMasker(standardize=standardize_signal,
                          standardize_confounds=standardize_confounds,
@@ -73,11 +75,11 @@ def _confounds_regression(standardize_signal=True, standardize_confounds=True):
 def test_high_variance_confounds():
     img, mask, conf = _simu_img()
     hv_confounds = high_variance_confounds(img)
-    masker1 = NiftiMasker(standardize=True, detrend=False,
+    masker1 = NiftiMasker(standardize="zscore_sample", detrend=False,
                           high_variance_confounds=False,
                           mask_img=mask).fit()
     tseries1 = masker1.transform(img, confounds=[hv_confounds, conf])
-    masker2 = NiftiMasker(standardize=True, detrend=False,
+    masker2 = NiftiMasker(standardize="zscore_sample", detrend=False,
                           high_variance_confounds=True,
                           mask_img=mask).fit()
     tseries2 = masker2.transform(img, confounds=conf)
@@ -98,12 +100,7 @@ def test_confounds_standardization():
 
     # Signal is z-scored with string arg
     # Explicit standardization of confounds
-    assert (_confounds_regression(standardize_signal='zscore',
-                                  standardize_confounds=True) < eps)
-
-    # Signal is z-scored with boolean arg
-    # Explicit standardization of confounds
-    assert (_confounds_regression(standardize_signal=True,
+    assert (_confounds_regression(standardize_signal='zscore_sample',
                                   standardize_confounds=True) < eps)
 
     # Signal is psc standardized
@@ -120,7 +117,7 @@ def test_confounds_standardization():
     # Signal is z-scored with string arg
     # Confounds are not standardized
     # In this case, the regression should fail...
-    assert (_confounds_regression(standardize_signal='zscore',
+    assert (_confounds_regression(standardize_signal='zscore_sample',
                                   standardize_confounds=False) > 100)
 
     # Signal is psc standardized
