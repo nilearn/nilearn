@@ -506,6 +506,24 @@ def write_fake_fmri_data_and_design(shapes,
     return mask_file, fmri_files, design_files
 
 
+def write_fake_bold_gifti(file_path):
+    """Generate a random gifti image and write it to disk.
+
+    Parameters
+    ----------
+    file_path : :obj:`str`
+        Output file path.
+
+    Returns
+    -------
+    file_path : :obj:`str`
+        Output file path.
+
+    """
+    Path(file_path).parent.mkdir(parents=True, exist_ok=True)
+    Path(file_path).touch()
+    return file_path
+
 def write_fake_bold_img(file_path,
                         shape,
                         affine=np.eye(4),
@@ -1097,7 +1115,8 @@ def _mock_bids_derivatives(
     n_voxels,
     rand_gen,
 ):
-    """Create a fake raw :term:`bids<BIDS>` dataset directory with dummy files.
+    """Create a fake derivatives :term:`bids<BIDS>` dataset directory \
+       with dummy files.
 
     Parameters
     ----------
@@ -1167,6 +1186,7 @@ def _mock_bids_derivatives(
                                 rand_gen=rand_gen,
                                 confounds_tag=confounds_tag,
                             )
+
 
                 else:
                     fields = _init_fields(
@@ -1416,3 +1436,13 @@ def _write_bids_derivative_func(
                 fields=fields, entities_to_include=entities_to_include
             )
             write_fake_bold_img(bold_path, shape=shape, random_state=rand_gen)
+
+    fields["entities"]["space"] = "fsaverage5"
+    fields["extension"] = "func.gii"
+    fields["entities"].pop("desc")
+    for hemi in ["L", "R"]:
+        fields["entities"]["hemi"] = hemi
+        gifti_path = func_path / _create_bids_filename(
+                    fields=fields, entities_to_include=entities_to_include
+                )
+        write_fake_bold_gifti(gifti_path)
