@@ -696,7 +696,7 @@ class RProjector(OrthoProjector):
     """
 
     _cut_displayed = "r"
-    _default_figsize = [2.6, 2.3]
+    _default_figsize = [2.6, 2.8]
 
 
 PROJECTORS = dict(
