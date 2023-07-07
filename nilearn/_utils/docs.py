@@ -42,6 +42,7 @@ avg_method : {"mean", "median", "min", "max", custom function}, default="mean"
 
                 def custom_function(vertices):
                     return vertices[0] * vertices[1] * vertices[2]
+
 """
 
 # ax
@@ -80,6 +81,7 @@ bg_on_data : :obj:`bool`, optional
         .. note::
             This non-uniformly changes the surf_data values according
             to e.g the sulcal depth.
+
 """
 
 # bg_vmax
@@ -175,6 +177,7 @@ docdict['classifier_options'] = f"""
 
                 dummy = DummyClassifier(strategy="stratified",
                                         random_state=0)
+
 """
 
 # cmap
@@ -275,6 +278,7 @@ display_mode : {"ortho", "tiled", "mosaic", "x", \
         - `"tiled"`: three cuts are performed and arranged in a 2x2 grid
         - `"mosaic"`: three cuts are performed along
           multiple rows and columns
+
 """
 
 # draw_cross
@@ -304,6 +308,7 @@ extractor : {"local_regions", "connected_components"}, default="local_regions"
           based on their maximum peak value to define a seed marker
           and then using random walker segmentation algorithm
           on these markers for region separation.
+
 """
 docdict['extract_type'] = docdict['extractor']
 
@@ -327,6 +332,7 @@ docdict['fsaverage_options'] = """
             .. note::
                 The high-resolution fsaverage will result in more computation
                 time and memory usage
+
 """
 
 # fwhm
@@ -351,6 +357,7 @@ or 'fast' or None, optional
 
         In corner case situations, `fwhm` is simply kept to `None`
         when `fwhm` is specified as `fwhm=0`.
+
 """
 
 # hemi
@@ -364,7 +371,6 @@ docdict['hemispheres'] = """
 hemispheres : :obj:`list` of :obj:`str`, default=["left", "right"]
     Hemispheres to display.
 """
-
 
 # high_pass
 docdict['high_pass'] = """
@@ -420,6 +426,7 @@ hrf_model : :obj:`str`, function, list of functions, or None
     .. note::
         In case of `"glover"` and `"spm"` models, the derived regressors
         are orthogonalized with respect to the main one.
+
 """
 
 # img
@@ -496,6 +503,7 @@ mask_strategy : {"background", "epi", "whole-brain-template",\
           data's field of view.
 
             .. versionadded:: 0.8.1
+
 """
 
 # mask_type
@@ -506,6 +514,7 @@ mask_type : {"whole-brain", "gm", "wm"}, default="whole-brain"
         - `"whole-brain"`: Computes the whole-brain mask.
         - `"gm"`: Computes the grey-matter mask.
         - `"wm"`: Computes the white-matter mask.
+
 """
 
 # keep_masked_labels
@@ -525,6 +534,7 @@ keep_masked_labels : :obj:`bool`, optional
         The 'True' option for ``keep_masked_labels`` is deprecated.
         The default value will change to 'False' in 0.13,
         and the ``keep_masked_labels`` parameter will be removed in 0.15.
+
 """
 
 # kwargs for Maskers
@@ -597,6 +607,7 @@ opening : :obj:`bool` or :obj:`int`, optional
 
         Turning off :term:`opening<Opening>` (`opening=False`) will also
         prevent any smoothing applied to the image during the mask computation.
+
 """
 
 # output_file
@@ -639,6 +650,7 @@ docdict['regressor_options'] = """
             .. code-block:: python
 
                 dummy = DummyRegressor(strategy='mean')
+
 """
 
 # resampling_interpolation
@@ -653,6 +665,7 @@ resampling_interpolation : :obj:`str`, optional
             .. note::
 
                 `"nearest"` is faster but can be noisier in some cases.
+
 """
 
 # resume
@@ -744,6 +757,7 @@ standardize : {'zscore_sample', 'zscore', 'psc', True, False}, default=False
         - True: The signal is z-scored (same as option `zscore`).
           Timeseries are shifted to zero mean and scaled to unit variance.
         - False: Do not standardize the data.
+
 """
 
 # standardize_confounds
@@ -764,6 +778,7 @@ symmetric_cbar : :obj:`bool`, or "auto", optional
     .. note::
 
         The colormap will always range from `-vmax` to `vmax`.
+
 """
 
 # t_r

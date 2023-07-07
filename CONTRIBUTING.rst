@@ -309,7 +309,6 @@ See the examples below:
 .. code-block:: python
 
       def good(x, y=1, z=None):
-``` Assuming that this is supposed to be a function.
       """Show how parameters are documented.
 
       Parameters
@@ -323,7 +322,6 @@ See the examples below:
       z : :obj:`str`, default=None
 
       """
-      ...
 
       def bad(x, y=1, z=None):
       """Show how parameters should not be documented.
@@ -340,7 +338,6 @@ See the examples below:
             Defaults=None.
             The default value should be described after the type.
       """
-      ...
 
 Additionally, we consider it best practice to write modular functions;
 i.e., functions should preferably be relatively short and do *one* thing.
