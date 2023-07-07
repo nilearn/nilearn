@@ -526,10 +526,7 @@ def test_signal_extraction_with_maps_and_labels(labeled_regions, fmri_img):
         "3 maps.",
     ):
         maps_signals, maps_labels = img_to_signals_maps(
-            fmri_img,
-            maps_img,
-            mask_img=mask_img,
-            keep_masked_maps=False
+            fmri_img, maps_img, mask_img=mask_img, keep_masked_maps=False
         )
 
     # only 3 regions must be kept, others must be removed
@@ -552,10 +549,7 @@ def test_signal_extraction_with_maps_and_labels(labeled_regions, fmri_img):
         "in version 0.15.",
     ):
         maps_signals, maps_labels = img_to_signals_maps(
-            fmri_img,
-            maps_img,
-            mask_img=mask_img,
-            keep_masked_maps=True
+            fmri_img, maps_img, mask_img=mask_img, keep_masked_maps=True
         )
 
     # all regions must be kept
