@@ -19,19 +19,20 @@ from nilearn._utils.data_gen import (
     write_fake_fmri_data_and_design,
 )
 from nilearn.glm.first_level import FirstLevelModel, run_glm
-from nilearn.glm.second_level import (SecondLevelModel,
-                                      non_parametric_inference)
+from nilearn.glm.second_level import SecondLevelModel, non_parametric_inference
 from nilearn.glm.second_level.second_level import (
-    _get_contrast,
-    _check_second_level_input,
-    _check_first_level_contrast,
-    _process_second_level_input_as_dataframe,
-    _sort_input_dataframe,
-    _process_second_level_input_as_firstlevelmodels,
-    _check_output_type,
-    _check_design_matrix,
     _check_confounds,
-    _check_effect_maps)
+    _check_design_matrix,
+    _check_effect_maps,
+    _check_first_level_contrast,
+    _check_output_type,
+    _check_second_level_input,
+    _get_contrast,
+    _infer_effect_maps,
+    _process_second_level_input_as_dataframe,
+    _process_second_level_input_as_firstlevelmodels,
+    _sort_input_dataframe,
+)
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker
 
@@ -106,6 +107,7 @@ def test_process_second_level_input_as_dataframe(input_df):
 def test_sort_input_dataframe(input_df):
     """Unit tests for function _sort_input_dataframe()."""
     output_df = _sort_input_dataframe(input_df)
+
     assert output_df['subject_label'].values.tolist() == ["bar", "baz", "foo"]
     assert (output_df['effects_map_path'].values.tolist()
             == ["bar.nii", "baz.nii", "foo.nii"])
@@ -171,6 +173,7 @@ def test_check_second_level_input():
             [FirstLevelModel(subject_label=f"sub_{i}") for i in range(1, 3)],
             pd.DataFrame(),
         )
+
     with InTemporaryDirectory():
         shapes, rk = [(7, 8, 9, 15)], 3
         mask, fmri_data, design_matrices = \
@@ -180,6 +183,7 @@ def test_check_second_level_input():
         obj = lambda: None # noqa : E731
         obj.results_ = "foo"
         obj.labels_ = "bar"
+
         with pytest.raises(
                 TypeError,
                 match="Got object type <class 'function'> at idx 1"):
@@ -195,6 +199,7 @@ def test_check_second_level_input():
                                  "require a design matrix to be provided"):
             _check_second_level_input(fmri_data * 2, None)
         _check_second_level_input(fmri_data[0], pd.DataFrame())
+
     with pytest.raises(TypeError,
                        match="Got object type <class 'int'> at idx 1"):
         _check_second_level_input(["foo", 1], pd.DataFrame())
@@ -231,10 +236,10 @@ def test_check_output_type():
 
 def test_check_design_matrix():
     _check_design_matrix(None)  # Should not do anything
+    _check_design_matrix(pd.DataFrame())
     with pytest.raises(ValueError,
                        match="design matrix must be a pandas DataFrame"):
         _check_design_matrix("foo")
-    _check_design_matrix(pd.DataFrame())
 
 
 def test_check_confounds():
@@ -257,10 +262,10 @@ def test_check_confounds():
 
 def test_check_first_level_contrast():
     _check_first_level_contrast(["foo"], None)  # Should not do anything
+    _check_first_level_contrast([FirstLevelModel()], "foo")
     with pytest.raises(ValueError,
                        match="If second_level_input was a list"):
         _check_first_level_contrast([FirstLevelModel()], None)
-    _check_first_level_contrast([FirstLevelModel()], "foo")
 
 
 def test_check_effect_maps():
@@ -300,7 +305,6 @@ def test_get_contrast_errors():
 
 def test_infer_effect_maps(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    from nilearn.glm.second_level.second_level import _infer_effect_maps
 
     shapes, rk = (SHAPE, (7, 8, 7, 16)), 3
     mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
@@ -310,16 +314,31 @@ def test_infer_effect_maps(tmp_path, monkeypatch):
     second_level_input = pd.DataFrame({'map_name': ["a", "b"],
                                        'effects_map_path': [fmri_data[0],
                                                             "bar"]})
+
     assert _infer_effect_maps(second_level_input, "a") == [fmri_data[0]]
-    with pytest.raises(ValueError, match="File not found: 'bar'"):
-        _infer_effect_maps(second_level_input, "b")
     assert _infer_effect_maps([fmri_data[0]], None) == [fmri_data[0]]
+
     contrast = np.eye(rk)[1]
     second_level_input = [FirstLevelModel(mask_img=mask)] * 2
     for i, model in enumerate(second_level_input):
         model.fit(fmri_data[i],
                   design_matrices=design_matrices[i])
+
     assert len(_infer_effect_maps(second_level_input, contrast)) == 2
+
+
+def test_infer_effect_maps_error(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    shapes, rk = (SHAPE, (7, 8, 7, 16)), 3
+    _, fmri_data, _ = write_fake_fmri_data_and_design(
+        shapes,
+        rk
+    )
+    second_level_input = pd.DataFrame({'map_name': ["a", "b"],
+                                       'effects_map_path': [fmri_data[0],
+                                                            "bar"]})
+    with pytest.raises(ValueError, match="File not found: 'bar'"):
+        _infer_effect_maps(second_level_input, "b")
 
 
 def test_high_level_glm_with_paths():
@@ -328,24 +347,16 @@ def test_high_level_glm_with_paths():
 
         # Ordinary Least Squares case
         model = SecondLevelModel(mask_img=mask)
-        # asking for contrast before model fit gives error
-        with pytest.raises(ValueError):
-            model.compute_contrast([])
+
         # fit model
         Y = [func_img] * 4
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
         model = model.fit(Y, design_matrix=X)
         c1 = np.eye(len(model.design_matrix_.columns))[0]
         z_image = model.compute_contrast(c1, output_type='z_score')
+
         assert isinstance(z_image, Nifti1Image)
         assert_array_equal(z_image.affine, load(mask).affine)
-
-        # Provide a masker as mask_img
-        masker = NiftiMasker(mask)
-        with pytest.warns(UserWarning,
-                          match="Parameter memory of the masker overridden"):
-            SecondLevelModel(mask_img=masker,
-                             verbose=1).fit(Y, design_matrix=X)
 
         # try with target_shape
         target_shape = (10, 10, 10)
@@ -354,8 +365,36 @@ def test_high_level_glm_with_paths():
         model = SecondLevelModel(mask_img=mask, target_shape=target_shape,
                                  target_affine=target_affine)
         z_image = model.fit(Y, design_matrix=X).compute_contrast(c1)
+
         assert_array_equal(z_image.shape, target_shape)
         assert_array_equal(z_image.affine, target_affine)
+
+        # Delete objects attached to files to avoid WindowsError when deleting
+        # temporary directory (in Windows)
+        del Y, func_img, model
+
+
+def test_high_level_glm_with_paths_errors():
+    with InTemporaryDirectory():
+        func_img, mask = fake_fmri_data()
+
+        # Ordinary Least Squares case
+        model = SecondLevelModel(mask_img=mask)
+
+        # asking for contrast before model fit gives error
+        with pytest.raises(ValueError):
+            model.compute_contrast([])
+
+        # fit model
+        Y = [func_img] * 4
+        X = pd.DataFrame([[1]] * 4, columns=['intercept'])
+
+        # Provide a masker as mask_img
+        masker = NiftiMasker(mask)
+        with pytest.warns(UserWarning,
+                          match="Parameter memory of the masker overridden"):
+            SecondLevelModel(mask_img=masker,
+                             verbose=1).fit(Y, design_matrix=X)
 
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
@@ -383,15 +422,27 @@ def test_high_level_non_parametric_inference_with_paths():
                 n_perm=N_PERM, verbose=1
             ) for second_level_input in [Y, df_input]
         ]
-        assert all(
-            [isinstance(img, Nifti1Image) for img in neg_log_pvals_imgs]
-        )
+
+        assert all(isinstance(img, Nifti1Image) for img in neg_log_pvals_imgs)
         for img in neg_log_pvals_imgs:
             assert_array_equal(img.affine, load(mask).affine)
+
         neg_log_pvals_list = [get_data(i) for i in neg_log_pvals_imgs]
         for neg_log_pvals in neg_log_pvals_list:
             assert np.all(neg_log_pvals <= - np.log10(1.0 / (N_PERM + 1)))
             assert np.all(0 <= neg_log_pvals)
+
+        # Delete objects attached to files to avoid WindowsError when deleting
+        # temporary directory
+        del X, Y, FUNCFILE, func_img, neg_log_pvals_imgs
+
+
+def test_high_level_non_parametric_inference_with_paths_warning():
+    with InTemporaryDirectory():
+        func_img, mask = fake_fmri_data()
+        Y = [func_img] * 4
+        X = pd.DataFrame([[1]] * 4, columns=['intercept'])
+        c1 = np.eye(len(X.columns))[0]
 
         masker = NiftiMasker(mask, smoothing_fwhm=2.0)
         with pytest.warns(UserWarning,
@@ -401,9 +452,10 @@ def test_high_level_non_parametric_inference_with_paths():
                                      second_level_contrast=c1,
                                      smoothing_fwhm=3.0,
                                      mask=masker, n_perm=N_PERM)
+
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory
-        del X, Y, FUNCFILE, func_img, neg_log_pvals_imgs
+        del X, Y, func_img
 
 
 def test_fmri_inputs():
@@ -591,7 +643,9 @@ def test_second_level_glm_computation():
         labels2, results2 = run_glm(
             model.masker_.transform(Y), X.values, 'ols')
         assert_almost_equal(labels1, labels2, decimal=1)
+
         assert len(results1) == len(results2)
+
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
         del func_img, model, X, Y
@@ -607,18 +661,23 @@ def test_second_level_voxelwise_attribute_errors(attribute):
     shapes = (SHAPE,)
     mask, fmri_data, _ = generate_fake_fmri_data_and_design(shapes)
     model = SecondLevelModel(mask_img=mask, minimize_memory=False)
+
     with pytest.raises(ValueError, match="The model has no results."):
         getattr(model, attribute)
+
     Y = fmri_data * 4
     X = pd.DataFrame([[1]] * 4, columns=['intercept'])
     model.fit(Y, design_matrix=X)
+
     with pytest.raises(ValueError, match="The model has no results."):
         getattr(model, attribute)
     with pytest.raises(ValueError, match="attribute must be one of"):
         model._get_voxelwise_model_attribute("foo", True)
+
     model = SecondLevelModel(mask_img=mask, minimize_memory=True)
     model.fit(Y, design_matrix=X)
     model.compute_contrast()
+
     with pytest.raises(ValueError,
                        match="To access voxelwise attributes"):
         getattr(model, attribute)
@@ -948,10 +1007,9 @@ def test_non_parametric_inference_contrast_computation():
         del func_img, neg_log_pvals_img, X, Y
 
 
-@pytest.mark.parametrize("second_level_contrast", [[1, 0], 
+@pytest.mark.parametrize("second_level_contrast", [[1, 0],
                                                    "r1"])
-def test_non_parametric_inference_contrast_computation_formula(
-    second_level_contrast):
+def test_non_parametric_inference_contrast_formula(second_level_contrast):
     with InTemporaryDirectory():
         func_img, _ = fake_fmri_data()
         Y = [func_img] * 4
