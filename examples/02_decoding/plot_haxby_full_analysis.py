@@ -85,10 +85,7 @@ for mask_name in mask_names:
     print(f"Working on {mask_name}")
     # For decoding, standardizing is often very important
     mask_filename = haxby_dataset[mask_name][0]
-    masker = NiftiMasker(
-        mask_img=mask_filename,
-        standardize="zscore_sample",
-    )
+    masker = NiftiMasker(mask_img=mask_filename, standardize="zscore_sample")
     mask_scores[mask_name] = {}
     mask_chance_scores[mask_name] = {}
 
