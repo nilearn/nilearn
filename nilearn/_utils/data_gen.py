@@ -524,6 +524,7 @@ def write_fake_bold_gifti(file_path):
     Path(file_path).touch()
     return file_path
 
+
 def write_fake_bold_img(file_path,
                         shape,
                         affine=np.eye(4),
@@ -752,13 +753,15 @@ def basic_confounds(length, random_state=0):
     -------
     confounds : :obj:`pandas.DataFrame`.
         Basic confounds.
-        This DataFrame will have six columns: 'rot_x', 'rot_y', 'rot_z', 
+        This DataFrame will have 9 columns:
+        'csf', 'white_matter', 'global_signal'
+        'rot_x', 'rot_y', 'rot_z',
         'trans_x', 'trans_y', 'trans_z'.
 
     """
     rand_gen = check_random_state(random_state)
     columns = ['csf', 'white_matter', 'global_signal',
-               'rot_x', 'rot_y', 'rot_z', 
+               'rot_x', 'rot_y', 'rot_z',
                'trans_x', 'trans_y', 'trans_z']
     data = rand_gen.rand(length, len(columns))
     confounds = pd.DataFrame(data, columns=columns)
@@ -1189,7 +1192,6 @@ def _mock_bids_derivatives(
                                 confounds_tag=confounds_tag,
                             )
 
-
                 else:
                     fields = _init_fields(
                         subject=subject, session=session, task=task, run=run
@@ -1445,6 +1447,7 @@ def _write_bids_derivative_func(
     for hemi in ["L", "R"]:
         fields["entities"]["hemi"] = hemi
         gifti_path = func_path / _create_bids_filename(
-                    fields=fields, entities_to_include=entities_to_include
-                )
+            fields=fields,
+            entities_to_include=entities_to_include
+        )
         write_fake_bold_gifti(gifti_path)

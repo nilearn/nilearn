@@ -373,7 +373,7 @@ def test_fake_bids_extra_raw_entity(tmpdir):
             )
 
     all_files = list(bids_path.glob("derivatives/sub-*/ses-*/*/*"))
-    # per subject: (1 confound + 3 bold + 2 gifti) 
+    # per subject: (1 confound + 3 bold + 2 gifti)
     #              per run per session per entity
     n_derivatives_files_expected = (
         n_sub * (6 * sum(n_runs) * n_ses) * len(entities["acq"])
