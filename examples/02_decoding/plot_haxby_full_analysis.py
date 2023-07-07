@@ -88,7 +88,6 @@ for mask_name in mask_names:
     masker = NiftiMasker(
         mask_img=mask_filename,
         standardize="zscore_sample",
-        standardize_confounds="zscore_sample",
     )
     mask_scores[mask_name] = {}
     mask_chance_scores[mask_name] = {}

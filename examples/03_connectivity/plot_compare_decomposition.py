@@ -54,7 +54,6 @@ canica = CanICA(
     mask_strategy="whole-brain-template",
     random_state=0,
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
 )
 canica.fit(func_filenames)
 

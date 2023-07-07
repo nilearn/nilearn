@@ -45,7 +45,6 @@ masker = NiftiLabelsMasker(
     atlas.maps,
     labels=atlas.labels,
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
 )
 
 # Visualize the atlas
