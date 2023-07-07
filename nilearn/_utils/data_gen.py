@@ -752,13 +752,15 @@ def basic_confounds(length, random_state=0):
     -------
     confounds : :obj:`pandas.DataFrame`.
         Basic confounds.
-        This DataFrame will have six columns: "RotX", "RotY", "RotZ", "X", "Y",
-        and "Z".
+        This DataFrame will have six columns: 'rot_x', 'rot_y', 'rot_z', 
+        'trans_x', 'trans_y', 'trans_z'.
 
     """
     rand_gen = check_random_state(random_state)
-    columns = ['RotX', 'RotY', 'RotZ', 'X', 'Y', 'Z']
-    data = rand_gen.rand(length, 6)
+    columns = ['csf', 'white_matter', 'global_signal',
+               'rot_x', 'rot_y', 'rot_z', 
+               'trans_x', 'trans_y', 'trans_z']
+    data = rand_gen.rand(length, len(columns))
     confounds = pd.DataFrame(data, columns=columns)
     return confounds
 

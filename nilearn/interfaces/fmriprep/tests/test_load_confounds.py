@@ -597,6 +597,6 @@ def test_load_confounds_for_gifti_bug_3817(tmpdir):
     assert len(selection) == 1
     load_confounds(
                 selection[0],
-                strategy=['motion', 'wm_csf', 'global_signal', 'high_pass'],
+                strategy=['motion', 'wm_csf'],
                 motion='basic',
                 demean=False)

@@ -19,7 +19,7 @@ img_file_patterns = {
     "aroma": "_desc-smoothAROMAnonaggr_bold",
     "nii.gz": "(_space-.*)?_desc-preproc_bold.nii.gz",
     "dtseries.nii": "(_space-.*)?_bold.dtseries.nii",
-    "func.gii": "(_space-.*)?_hemi-[LR]_bold.func.gii",
+    "func.gii": "_hemi-[LR](_space-.*)?_bold.func.gii",
 }
 
 img_file_error = {
