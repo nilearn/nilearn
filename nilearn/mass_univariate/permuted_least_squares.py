@@ -878,7 +878,10 @@ def _check_args_permuted_ols(
         if ``threshold`` is not None.
 
     """
-    if n_jobs == 0:  # invalid according to joblib's conventions
+    # n_jobs = 0 is invalid according to joblib's conventions
+    # but also required to avoid division by zero error
+    # when computing the number of permutations per job
+    if n_jobs == 0:
         raise ValueError(
             "'n_jobs == 0' is not a valid choice. "
             "Please provide a positive number of CPUs, or -1 for all CPUs, "
@@ -1030,7 +1033,9 @@ def _check_for_intercept_in_tested_var(tested_vars):
         Explanatory variates, fitted and tested independently from each others.
     """
     n_regressors = tested_vars.shape[1]
-    return n_regressors == np.unique(tested_vars).size == 1
+    return (n_regressors == np.unique(tested_vars).size) and (
+        np.unique(tested_vars).size == 1
+    )
 
 
 def _check_for_intercept_in_confounds(
