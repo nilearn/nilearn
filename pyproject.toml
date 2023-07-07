@@ -148,8 +148,6 @@ extend-exclude =  """
   | nilearn/plotting/img_plotting.py
   | nilearn/plotting/js_plotting_utils.py
   | nilearn/plotting/surf_plotting.py
-  | nilearn/plotting/tests/test_displays.py
-  | nilearn/plotting/tests/test_find_cuts.py
   | nilearn/plotting/tests/test_html_stat_map.py
   | nilearn/plotting/tests/test_html_surface.py
   | nilearn/plotting/tests/test_img_plotting/test_get_colorbar_and_data_ranges.py
