@@ -71,7 +71,7 @@ def test_find_cut_coords():
     mask_img = nibabel.Nifti1Image(mask_data, np.eye(4))
     with pytest.warns(
         UserWarning,
-        match=("Could not determine cut coords: " "All values were masked."),
+        match=("Could not determine cut coords: All values were masked."),
     ):
         cut_coords = find_xyz_cut_coords(img, mask_img=mask_img)
     np.testing.assert_array_equal(cut_coords, [4.5, 4.5, 4.5])
