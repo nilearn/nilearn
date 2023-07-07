@@ -187,6 +187,8 @@ minversion = "6.0"
 addopts = "--doctest-modules -s -vv --durations=0"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
+# TODO: Remove filter in release 0.13
+filterwarnings = "ignore:.*Please use 'zscore_sample' instead.:FutureWarning"
 
 [tool.codespell]
 skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,*/tmp,./doc/modules/generated/*"
