@@ -143,11 +143,9 @@ scores = []
 for train, test in cv.split(X=stimuli):
     # we train the Ridge estimator on the training set
     # and predict the fMRI activity for the test set
-    predictions = (
-        Ridge(alpha=100.0)
-        .fit(stimuli.reshape(-1, 100)[train], fmri_data[train])
-        .predict(stimuli.reshape(-1, 100)[test])
-    )
+    predictions = estimator.fit(
+        stimuli.reshape(-1, 100)[train], fmri_data[train]
+    ).predict(stimuli.reshape(-1, 100)[test])
     # we compute how much variance our encoding model explains in each voxel
     scores.append(
         r2_score(fmri_data[test], predictions, multioutput="raw_values")
@@ -235,9 +233,7 @@ from sklearn.preprocessing import StandardScaler
 
 # automatically estimate the sparsity by cross-validation
 
-lasso = make_pipeline(
-    StandardScaler(), LassoLarsCV(normalize=False, max_iter=10)
-)
+lasso = make_pipeline(StandardScaler(), LassoLarsCV(max_iter=10))
 
 # Mark the same pixel in each receptive field
 marked_pixel = (4, 2)

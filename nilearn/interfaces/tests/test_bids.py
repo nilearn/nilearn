@@ -275,7 +275,7 @@ def test_get_bids_files():
             n_ses=2,
             tasks=["localizer", "main"],
             n_runs=[1, 3],
-            confounds_tag="desc-confounds_" "regressors",
+            confounds_tag="desc-confounds_regressors",
         )
         # 80 counfonds (4 runs per ses & sub), testing `fmriprep` >= 20.2 path
         selection = get_bids_files(

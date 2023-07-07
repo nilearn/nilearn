@@ -2143,7 +2143,7 @@ def fetch_atlas_schaefer_2018(
     files = []
     labels_file_template = "Schaefer2018_{}Parcels_{}Networks_order.txt"
     img_file_template = (
-        "Schaefer2018_{}Parcels_" "{}Networks_order_FSLMNI152_{}mm.nii.gz"
+        "Schaefer2018_{}Parcels_{}Networks_order_FSLMNI152_{}mm.nii.gz"
     )
     for f in [
         labels_file_template.format(n_rois, yeo_networks),

@@ -34,13 +34,13 @@ def test_auto_mask():
     masker.fit(img)
     # Smoke test the transform
     # With a 4D img
-    masker.transform([img, ])
+    masker.transform([img])
     # With a 3D img
     masker.transform(img)
 
     # check exception when transform() called without prior fit()
     masker2 = NiftiMasker(mask_img=img)
-    with pytest.raises(ValueError, match='has not been fitted. '):
+    with pytest.raises(ValueError, match="has not been fitted. "):
         masker2.transform(img)
 
 
@@ -84,8 +84,9 @@ def test_fit_transform_warning():
     masker = NiftiMasker(mask_img=mask_img)
     with pytest.warns(
         UserWarning,
-        match=("Generation of a mask has been requested .*"
-               "while a mask has been provided at masker creation.")):
+        match="Generation of a mask has been requested .*"
+        "while a mask has been provided at masker creation.",
+    ):
         X = masker.fit_transform(X=img, y=y)
         assert np.any(X != 0)
 
@@ -118,11 +119,11 @@ def test_resample_to_mask_warning():
     masker = NiftiMasker(mask_img=mask_img)
     with pytest.warns(
         UserWarning,
-        match='imgs are being resampled to the mask_img resolution. '
-            'This process is memory intensive. You might want to provide '
-            'a target_affine that is equal to the affine of the imgs '
-            'or resample the mask beforehand '
-            'to save memory and computation time.'
+        match="imgs are being resampled to the mask_img resolution. "
+        "This process is memory intensive. You might want to provide "
+        "a target_affine that is equal to the affine of the imgs "
+        "or resample the mask beforehand "
+        "to save memory and computation time.",
     ):
         masker.fit_transform(img)
 
@@ -170,11 +171,11 @@ def test_matrix_orientation():
     fmri, mask = data_gen.generate_fake_fmri(shape=(40, 41, 42), kind="step")
     masker = NiftiMasker(mask_img=mask, standardize=True, detrend=True)
     timeseries = masker.fit_transform(fmri)
-    assert (timeseries.shape[0] == fmri.shape[3])
-    assert (timeseries.shape[1] == get_data(mask).sum())
+    assert timeseries.shape[0] == fmri.shape[3]
+    assert timeseries.shape[1] == get_data(mask).sum()
     std = timeseries.std(axis=0)
-    assert (std.shape[0] == timeseries.shape[1])  # paranoid
-    assert (not np.any(std < 0.1))
+    assert std.shape[0] == timeseries.shape[1]  # paranoid
+    assert not np.any(std < 0.1)
 
     # Test inverse transform
     masker = NiftiMasker(mask_img=mask, standardize=False, detrend=False)
@@ -191,8 +192,7 @@ def test_mask_3d():
     data[20, 20, 20] = 1
     data_img = nibabel.Nifti1Image(data, np.eye(4))
 
-    with testing.write_tmp_imgs(data_img, create_files=True)\
-            as filename:
+    with testing.write_tmp_imgs(data_img, create_files=True) as filename:
         masker = NiftiMasker(mask_img=filename)
         pytest.raises(TypeError, masker.fit)
 
@@ -211,8 +211,11 @@ def test_mask_4d():
     data[..., 1] = 2
     data[..., 2] = 3
     data_img_4d = nibabel.Nifti1Image(data, np.eye(4))
-    data_imgs = [index_img(data_img_4d, 0), index_img(data_img_4d, 1),
-                 index_img(data_img_4d, 2)]
+    data_imgs = [
+        index_img(data_img_4d, 0),
+        index_img(data_img_4d, 1),
+        index_img(data_img_4d, 2),
+    ]
 
     # check whether transform is indeed selecting niimgs subset
     sample_mask = np.array([0, 2])
@@ -235,9 +238,7 @@ def test_mask_4d():
     data_trans_direct_diff = np.swapaxes(data_trans_direct_diff, 0, 1)
     masker = NiftiMasker(mask_img=mask_img)
     masker.fit()
-    data_trans3 = masker.transform(
-        data_img_4d, sample_mask=diff_sample_mask
-    )
+    data_trans3 = masker.transform(data_img_4d, sample_mask=diff_sample_mask)
     assert_array_equal(data_trans3, data_trans_direct_diff)
 
 
@@ -290,10 +291,10 @@ def test_5d():
     masker.fit()
 
     with pytest.raises(
-            exceptions.DimensionError,
-            match="Input data has incompatible dimensionality: "
-                  "Expected dimension is 4D and you provided "
-                  "a list of 4D images \\(5D\\)."
+        exceptions.DimensionError,
+        match="Input data has incompatible dimensionality: "
+        "Expected dimension is 4D and you provided "
+        "a list of 4D images \\(5D\\).",
     ):
         masker.transform(data_5d)
 
@@ -317,6 +318,7 @@ def test_sessions():
 def test_joblib_cache():
     """Test using joblib cache."""
     from joblib import Memory, hash
+
     mask = np.zeros((40, 40, 40))
     mask[20, 20, 20] = 1
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
@@ -332,13 +334,12 @@ def test_joblib_cache():
         # imgs return by inverse_transform impossible to save
         cachedir = mkdtemp()
         try:
-            masker.memory = Memory(location=cachedir, mmap_mode='r',
-                                   verbose=0)
+            masker.memory = Memory(location=cachedir, mmap_mode="r", verbose=0)
             X = masker.transform(mask_img)
             # inverse_transform a first time, so that the result is cached
             out_img = masker.inverse_transform(X)
             out_img = masker.inverse_transform(X)
-            out_img.to_filename(os.path.join(cachedir, 'test.nii'))
+            out_img.to_filename(os.path.join(cachedir, "test.nii"))
         finally:
             # enables to delete "filename" on windows
             del masker
@@ -348,19 +349,18 @@ def test_joblib_cache():
 def test_mask_strategy_errors():
     """Check that mask_strategy errors are raised."""
     # Error with unknown mask_strategy
-    mask = NiftiMasker(mask_strategy='oops')
+    mask = NiftiMasker(mask_strategy="oops")
     with pytest.raises(
-            ValueError,
-            match="Unknown value of mask_strategy 'oops'"):
+        ValueError, match="Unknown value of mask_strategy 'oops'"
+    ):
         mask.fit()
     # Warning with deprecated 'template' strategy,
     # plus an exception because there's no resulting mask
     img = np.random.RandomState(42).uniform(size=(9, 9, 5))
     img = nibabel.Nifti1Image(img, np.eye(4))
-    mask = NiftiMasker(mask_strategy='template')
+    mask = NiftiMasker(mask_strategy="template")
     with pytest.warns(
-        UserWarning,
-        match="Masking strategy 'template' is deprecated."
+        UserWarning, match="Masking strategy 'template' is deprecated."
     ):
         mask.fit(img)
 
@@ -374,13 +374,13 @@ def test_compute_epi_mask():
     mean_image[5, 5, :] = 11
     mean_image = nibabel.Nifti1Image(mean_image.astype(float), np.eye(4))
 
-    masker = NiftiMasker(mask_strategy='epi',
-                         mask_args=dict(opening=False))
+    masker = NiftiMasker(mask_strategy="epi", mask_args=dict(opening=False))
     masker.fit(mean_image)
     mask1 = masker.mask_img_
 
-    masker2 = NiftiMasker(mask_strategy='epi',
-                          mask_args=dict(opening=False, exclude_zeros=True))
+    masker2 = NiftiMasker(
+        mask_strategy="epi", mask_args=dict(opening=False, exclude_zeros=True)
+    )
     masker2.fit(mean_image)
     mask2 = masker2.mask_img_
 
@@ -393,15 +393,15 @@ def test_compute_epi_mask():
     mean_image2[3:12, 3:12, :] = get_data(mean_image)
     mean_image2 = nibabel.Nifti1Image(mean_image2, np.eye(4))
 
-    masker3 = NiftiMasker(mask_strategy='epi',
-                          mask_args=dict(opening=False, exclude_zeros=True))
+    masker3 = NiftiMasker(
+        mask_strategy="epi", mask_args=dict(opening=False, exclude_zeros=True)
+    )
     masker3.fit(mean_image2)
     mask3 = masker3.mask_img_
-    np.testing.assert_array_equal(get_data(mask1),
-                                  get_data(mask3)[3:12, 3:12])
+    np.testing.assert_array_equal(get_data(mask1), get_data(mask3)[3:12, 3:12])
 
     # However, without exclude_zeros, it does
-    masker4 = NiftiMasker(mask_strategy='epi', mask_args=dict(opening=False))
+    masker4 = NiftiMasker(mask_strategy="epi", mask_args=dict(opening=False))
     masker4.fit(mean_image2)
     mask4 = masker4.mask_img_
 
@@ -419,11 +419,10 @@ def expected_mask(mask_args):
     return mask
 
 
-@pytest.mark.parametrize('strategy',
-                         [f'{p}-template' for p in
-                          ['whole-brain', 'gm', 'wm']])
-@pytest.mark.parametrize('mask_args',
-                         [{}, dict(threshold=0.)])
+@pytest.mark.parametrize(
+    "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
+)
+@pytest.mark.parametrize("mask_args", [{}, dict(threshold=0.0)])
 def test_compute_brain_mask(strategy, mask_args, expected_mask):
     """Check masker for template masking strategy."""
     img, _ = data_gen.generate_random_img((9, 9, 5))
@@ -446,10 +445,11 @@ def test_filter_and_mask_error():
     params = get_params(NiftiMasker, masker)
 
     with pytest.raises(
-            exceptions.DimensionError,
-            match="Input data has incompatible dimensionality: "
-                  "Expected dimension is 3D and you provided "
-                  "a 4D image."):
+        exceptions.DimensionError,
+        match="Input data has incompatible dimensionality: "
+        "Expected dimension is 3D and you provided "
+        "a 4D image.",
+    ):
         _filter_and_mask(data_img, mask_img, params)
 
 
@@ -481,13 +481,13 @@ def test_dtype():
     img_32 = nibabel.Nifti1Image(data_32, affine_32)
     img_64 = nibabel.Nifti1Image(data_64, affine_64)
 
-    masker_1 = NiftiMasker(dtype='auto')
-    assert (masker_1.fit_transform(img_32).dtype == np.float32)
-    assert (masker_1.fit_transform(img_64).dtype == np.float32)
+    masker_1 = NiftiMasker(dtype="auto")
+    assert masker_1.fit_transform(img_32).dtype == np.float32
+    assert masker_1.fit_transform(img_64).dtype == np.float32
 
-    masker_2 = NiftiMasker(dtype='float64')
-    assert (masker_2.fit_transform(img_32).dtype == np.float64)
-    assert (masker_2.fit_transform(img_64).dtype == np.float64)
+    masker_2 = NiftiMasker(dtype="float64")
+    assert masker_2.fit_transform(img_32).dtype == np.float64
+    assert masker_2.fit_transform(img_64).dtype == np.float64
 
 
 def test_standardization():
@@ -506,14 +506,14 @@ def test_standardization():
     mask = nibabel.Nifti1Image(np.ones(data_shape), np.eye(4))
 
     # z-score
-    masker = NiftiMasker(mask, standardize='zscore')
+    masker = NiftiMasker(mask, standardize="zscore")
     trans_signals = masker.fit_transform(img)
 
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)
     np.testing.assert_almost_equal(trans_signals.std(0), 1)
 
     # psc
-    masker = NiftiMasker(mask, standardize='psc')
+    masker = NiftiMasker(mask, standardize="psc")
     trans_signals = masker.fit_transform(img)
 
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)
@@ -550,15 +550,15 @@ def test_nifti_masker_io_shapes():
     masker.fit()
 
     # DeprecationWarning *should* be raised for 3D inputs
-    with pytest.warns(DeprecationWarning, match='Starting in version 0.12'):
+    with pytest.warns(DeprecationWarning, match="Starting in version 0.12"):
         test_data = masker.transform(img_3d)
         assert test_data.shape == (1, n_regions)
 
     # DeprecationWarning should *not* be raised for 4D inputs
     with warnings.catch_warnings():
         warnings.filterwarnings(
-            'error',
-            message='Starting in version 0.12',
+            "error",
+            message="Starting in version 0.12",
             category=DeprecationWarning,
         )
         test_data = masker.transform(img_4d)
@@ -567,8 +567,8 @@ def test_nifti_masker_io_shapes():
     # DeprecationWarning should *not* be raised for 1D inputs
     with warnings.catch_warnings():
         warnings.filterwarnings(
-            'error',
-            message='Starting in version 0.12',
+            "error",
+            message="Starting in version 0.12",
             category=DeprecationWarning,
         )
         test_img = masker.inverse_transform(data_1d)
@@ -577,8 +577,8 @@ def test_nifti_masker_io_shapes():
     # DeprecationWarning should *not* be raised for 2D inputs
     with warnings.catch_warnings():
         warnings.filterwarnings(
-            'error',
-            message='Starting in version 0.12',
+            "error",
+            message="Starting in version 0.12",
             category=DeprecationWarning,
         )
         test_img = masker.inverse_transform(data_2d)
