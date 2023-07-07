@@ -588,7 +588,7 @@ def test_load_confounds_for_gifti(tmpdir):
     https://github.com/nilearn/nilearn/issues/3817
     Wrong order of space and hemi entity in filename pattern
     lead to confounds not being found.
-    """ 
+    """
     bids_path = create_fake_bids_dataset(base_dir=tmpdir, n_sub=1, n_ses=1)
     selection = get_bids_files(
         bids_path / "derivatives",
