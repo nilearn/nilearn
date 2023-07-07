@@ -507,7 +507,9 @@ def write_fake_fmri_data_and_design(shapes,
 
 
 def write_fake_bold_gifti(file_path):
-    """Generate a random gifti image and write it to disk.
+    """Generate a gifti image and write it to disk.
+
+    Note this only generates an empty file for now.
 
     Parameters
     ----------
@@ -1379,10 +1381,12 @@ def _write_bids_derivative_func(
 ):
     """Create BIDS functional derivative and confounds files.
 
-    Files created come with two spaces and descriptions.
+    Nifti files created come with two spaces and descriptions.
     Spaces are: 'MNI' and 'T1w'.
     Descriptions are: 'preproc' and :term:`fMRIPrep`.
     Only space 'T1w' include both descriptions.
+
+    Gifti files are in "fsaverage5" space for both hemispheres.
 
     Parameters
     ----------
