@@ -52,8 +52,8 @@ from nilearn.regions.rena_clustering import ReNA
 
 SUPPORTED_ESTIMATORS = dict(
     svc_l1=LinearSVC(penalty="l1", dual=False, max_iter=10000),
-    svc_l2=LinearSVC(penalty="l2", max_iter=10000),
-    svc=LinearSVC(penalty="l2", max_iter=10000),
+    svc_l2=LinearSVC(penalty="l2", dual=True, max_iter=10000),
+    svc=LinearSVC(penalty="l2", dual=True, max_iter=10000),
     logistic_l1=LogisticRegressionCV(penalty="l1", solver="liblinear"),
     logistic_l2=LogisticRegressionCV(penalty="l2", solver="liblinear"),
     logistic=LogisticRegressionCV(penalty="l2", solver="liblinear"),
