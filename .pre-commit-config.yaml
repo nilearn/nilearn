@@ -40,7 +40,6 @@ exclude: |
         | nilearn/plotting/glass_brain.py
         | nilearn/plotting/html_surface.py
         | nilearn/plotting/img_plotting.py
-        | nilearn/plotting/matrix_plotting.py
         | nilearn/plotting/js_plotting_utils.py
         | nilearn/plotting/surf_plotting.py
         | nilearn/plotting/tests/test_displays.py
