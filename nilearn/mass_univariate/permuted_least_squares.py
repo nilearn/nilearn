@@ -358,43 +358,42 @@ def permuted_ols(
         descriptors will generally be images, such as run-wise z-statistic
         maps.
 
-    confounding_vars : array-like, shape=(n_samples, n_covars), optional
+    confounding_vars : array-like, shape=(n_samples, n_covars), default=None
         Confounding variates (covariates), fitted but not tested.
         If None, no confounding variate is added to the model
         (except maybe a constant column according to the value of
         ``model_intercept``).
 
-    model_intercept : :obj:`bool`, optional
+    model_intercept : :obj:`bool`, default=True
         If True, a constant column is added to the confounding variates
         unless the tested variate is already the intercept or when
         confounding variates already contain an intercept.
-        Default=True.
 
-    n_perm : :obj:`int`, optional
+
+    n_perm : :obj:`int`, default=10000
         Number of permutations to perform.
         Permutations are costly but the more are performed, the more precision
         one gets in the p-values estimation.
         If ``n_perm`` is set to 0, then no p-values will be estimated.
-        Default=10000.
 
-    two_sided_test : :obj:`bool`, optional
+    two_sided_test : :obj:`bool`, default=True
         If True, performs an unsigned t-test. Both positive and negative
         effects are considered; the null hypothesis is that the effect is zero.
         If False, only positive effects are considered as relevant. The null
-        hypothesis is that the effect is zero or negative. Default=True.
+        hypothesis is that the effect is zero or negative.
 
-    random_state : :obj:`int` or None, optional
+    random_state : :obj:`int` or None, default=None
         Seed for random number generator, to have the same permutations
         in each computing units.
 
-    n_jobs : :obj:`int`, optional
+    n_jobs : :obj:`int`, default=1
         Number of parallel workers.
         If -1 is provided, all CPUs are used.
         A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
-        ones will be used. Default=1.
+        ones will be used.
 
-    verbose : :obj:`int`, optional
-        verbosity level (0 means no message). Default=0.
+    verbose : :obj:`int`, default=0
+        verbosity level (0 means no message).
 
     masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
             :class:`~nilearn.maskers.MultiNiftiMasker`, optional
@@ -404,11 +403,10 @@ def permuted_ols(
 
         .. versionadded:: 0.9.2
 
-    threshold : None or :obj:`float`, optional
+    threshold : None or :obj:`float`, default=None
         Cluster-forming threshold in p-scale.
         This is only used for cluster-level inference.
         If None, cluster-level inference will not be performed.
-        Default=None.
 
         .. warning::
 
@@ -417,12 +415,11 @@ def permuted_ols(
 
         .. versionadded:: 0.9.2
 
-    tfce : :obj:`bool`, optional
+    tfce : :obj:`bool`, default=False
         Whether to calculate :term:`TFCE` as part of the permutation procedure
         or not.
         The TFCE calculation is implemented as described in
         :footcite:t:`Smith2009a`.
-        Default=False.
 
         .. warning::
 
@@ -434,7 +431,7 @@ def permuted_ols(
 
         .. versionadded:: 0.9.2
 
-    output_type : {'legacy', 'dict'}, optional
+    output_type : {'legacy', 'dict'}, default='legacy'
         Determines how outputs should be returned.
         The two options are:
 
@@ -626,16 +623,6 @@ def permuted_ols(
         masker,
     )
 
-    # make target_vars F-ordered to speed-up computation
-    n_descriptors = target_vars.shape[1]
-    target_vars = np.asfortranarray(target_vars)  # efficient for chunking
-    if np.any(np.all(target_vars == 0, axis=0)):
-        warnings.warn(
-            "Some descriptors in 'target_vars' have zeros across all samples. "
-            "These descriptors will be ignored during null distribution "
-            "generation."
-        )
-
     tested_var_has_intercept = _check_for_intercept_in_tested_var(tested_vars)
 
     (
@@ -682,6 +669,8 @@ def permuted_ols(
             out["tfce"] = tfce_original_data.T
 
         return out
+
+    n_descriptors = target_vars.shape[1]
 
     # Permutations
     # parallel computing units perform a reduced number of permutations each
@@ -919,6 +908,15 @@ def _check_args_permuted_ols(
         tested_vars,
         confounding_vars,
     )
+
+    target_vars = np.asfortranarray(target_vars)  # efficient for chunking
+
+    if np.any(np.all(target_vars == 0, axis=0)):
+        warnings.warn(
+            "Some descriptors in 'target_vars' have zeros across all samples. "
+            "These descriptors will be ignored during null distribution "
+            "generation."
+        )
 
     return output_type, n_jobs, tested_vars
 
