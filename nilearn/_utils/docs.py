@@ -519,7 +519,7 @@ mask_type : {"whole-brain", "gm", "wm"}, default="whole-brain"
 
 # keep_masked_labels
 docdict["keep_masked_labels"] = """
-keep_masked_labels : :obj:`bool`, optional
+keep_masked_labels : :obj:`bool`, default=True
     When a mask is supplied through the "mask_img" parameter, some
     atlas regions may lie entirely outside of the brain mask, resulting
     in empty time series for those regions.
@@ -527,7 +527,6 @@ keep_masked_labels : :obj:`bool`, optional
     in the output, resulting in corresponding time series containing
     zeros only. If False, the empty labels will be removed from the
     output, ensuring no empty time series are present.
-    Default=True.
 
     .. deprecated:: 0.10.2.dev
 
