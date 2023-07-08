@@ -69,7 +69,7 @@ bg_img : Niimg-like object, optional
 
 # bg_on_data
 docdict['bg_on_data'] = r"""
-bg_on_data : :obj:`bool`, optional
+bg_on_data : :obj:`bool`, default=False
     If `True` and a `bg_map` is specified,
     the `surf_data` data is multiplied by the background image,
     so that e.g. sulcal depth is jointly visible with `surf_data`.
