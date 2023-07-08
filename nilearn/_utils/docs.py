@@ -847,6 +847,22 @@ keep_masked_labels : :obj:`bool`, optional
         and the ``keep_masked_labels`` parameter will be removed in 0.15.
 """
 
+# keep_masked_maps
+docdict["keep_masked_maps"] = """
+keep_masked_maps : :obj:`bool`, optional
+    If True, masked atlas with invalid maps (maps that contain only
+    zeros after applying the mask) will be retained in the output, resulting
+    in corresponding time series containing zeros only. If False, the
+    invalid maps will be removed from the trimmed atlas, resulting in
+    no empty time series in the output.
+
+    .. deprecated:: 0.10.2.dev
+
+        The 'True' option for ``keep_masked_maps`` is deprecated.
+        The default value will change to 'False' in 0.13,
+        and the ``keep_masked_maps`` parameter will be removed in 0.15.
+"""
+
 ##############################################################################
 
 docdict_indented = {}
