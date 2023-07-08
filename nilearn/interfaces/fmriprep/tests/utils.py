@@ -12,54 +12,51 @@ img_file_patterns = {
     "ica_aroma":
         {"suffix": "bold",
          "entities": {"space": "MNI152NLin2009cAsym",
-                      "desc": "smoothAROMAnonaggr"}, 
+                      "desc": "smoothAROMAnonaggr"},
          "extension": "nii.gz"},
     "regular":
         {"suffix": "bold",
          "entities": {"space": "MNI152NLin2009cAsym",
-                      "desc": "preproc"}, 
+                      "desc": "preproc"},
          "extension": "nii.gz"},
     "res":
         {"suffix": "bold",
          "entities": {"space": "MNI152NLin2009cAsym",
                       "res": "2",
-                      "desc": "preproc"}, 
+                      "desc": "preproc"},
          "extension": "nii.gz"},
     "native":
         {"suffix": "bold",
-         "entities": {"desc": "preproc"}, 
+         "entities": {"desc": "preproc"},
          "extension": "nii.gz"},
     "cifti":
         {"suffix": "bold",
          "entities": {"desc": "preproc",
                       "space": "fsLR",
-                      "den": "91k"}, 
+                      "den": "91k"},
          "extension": "dtseries.nii"},
     "den":
         {"suffix": "bold",
          "entities": {"space": "fsLR",
                       "den": "32k",
-                      "desc": "preproc"}, 
+                      "desc": "preproc"},
          "extension": "nii.gz"},
     "part":
         {"suffix": "bold",
          "entities": {"part": "mag",
                       "space": "MNI152NLin2009cAsym",
                       "desc": "preproc",
-                      }, 
+                      },
          "extension": "nii.gz"},
-    "gifti":(
+    "gifti": (
         {"suffix": "bold",
          "entities": {"hemi": "L",
-                      "space": "fsaverage5",
-                      }, 
+                      "space": "fsaverage5"},
          "extension": "func.gii"},
         {"suffix": "bold",
          "entities": {"hemi": "R",
-                      "space": "fsaverage5",
-                      }, 
-         "extension": "func.gii"},
-    ),
+                      "space": "fsaverage5"},
+         "extension": "func.gii"})
 }
 
 
@@ -100,7 +97,7 @@ def create_tmp_filepath(
     ]
     if bids_fields is None:
         bids_fields = {"entities": {"sub": "test01",
-                               "task": "test"}}
+                                    "task": "test"}}
 
     """Create test files in temporary directory."""
     derivative = "regressors" if old_derivative_suffix else "timeseries"
@@ -110,9 +107,9 @@ def create_tmp_filepath(
     bids_fields["suffix"] = derivative
     bids_fields["extension"] = "tsv"
     confounds_filename = _create_bids_filename(
-                fields=bids_fields, 
-                entities_to_include=entities_to_include
-            )
+        fields=bids_fields,
+        entities_to_include=entities_to_include
+    )
     tmp_conf = base_path / confounds_filename
 
     if copy_confounds:
@@ -124,9 +121,9 @@ def create_tmp_filepath(
     if copy_json:
         bids_fields["extension"] = "json"
         confounds_sidecar = _create_bids_filename(
-                    fields=bids_fields, 
-                    entities_to_include=entities_to_include
-                )
+            fields=bids_fields,
+            entities_to_include=entities_to_include
+        )
         tmp_meta = base_path / confounds_sidecar
         conf, meta = get_legal_confound()
         with open(tmp_meta, "w") as file:
@@ -138,9 +135,9 @@ def create_tmp_filepath(
     if type(img_file_patterns_type) is dict:
         bids_fields = update_bids_fields(bids_fields, img_file_patterns_type)
         tmp_img = _create_bids_filename(
-                    fields=bids_fields, 
-                    entities_to_include=entities_to_include
-                )
+            fields=bids_fields,
+            entities_to_include=entities_to_include
+        )
         tmp_img = base_path / tmp_img
         tmp_img.touch()
         tmp_img = str(tmp_img)
@@ -149,9 +146,9 @@ def create_tmp_filepath(
         for root in img_file_patterns_type:
             bids_fields = update_bids_fields(bids_fields, root)
             tmp_gii = _create_bids_filename(
-                        fields=bids_fields, 
-                        entities_to_include=entities_to_include
-                    )
+                fields=bids_fields,
+                entities_to_include=entities_to_include
+            )
             tmp_gii = base_path / tmp_gii
             tmp_gii.touch()
             tmp_img.append(str(tmp_gii))

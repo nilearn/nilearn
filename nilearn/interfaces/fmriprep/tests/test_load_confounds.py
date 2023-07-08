@@ -391,8 +391,8 @@ def test_not_found_exception(tmp_path):
     # Aggressive ICA-AROMA strategy requires
     # default nifti
     aroma_nii, _ = create_tmp_filepath(
-        tmp_path, image_type="ica_aroma", bids_fields={"entities": 
-                                                  {"sub": "aro-ma"}}
+        tmp_path, image_type="ica_aroma", bids_fields={"entities":
+                                                       {"sub": "aro-ma"}}
     )
     with pytest.raises(ValueError) as exc_info:
         load_confounds(
@@ -577,9 +577,9 @@ def test_inputs(tmp_path, image_type):
         nii, _ = create_tmp_filepath(
             tmp_path,
             bids_fields={"entities": {"sub": f"test{i+1}",
-                                 "ses": "test",
-                               "task": "testimg",
-                               "run": "01"}},
+                                      "ses": "test",
+                                      "task": "testimg",
+                                      "run": "01"}},
             image_type=image_type,
             copy_confounds=True,
             copy_json=True,

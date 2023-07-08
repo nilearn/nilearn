@@ -43,9 +43,9 @@ def test_get_file_name(tmp_path, flag, image_type):
 
     if image_type == "part":
         kwargs = {"bids_fields": {"entities": {"sub": "test01",
-                                 "task": "test",
-                               "part": "mag",
-                               "run": "01"}}}
+                                               "task": "test",
+                                               "part": "mag",
+                                               "run": "01"}}}
     else:
         kwargs = {}
 
