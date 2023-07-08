@@ -663,8 +663,10 @@ def clean(
 
         Default="zscore".
     %(standardize_confounds)s
-    %(ensure_finite)s
-        Default=False.
+
+    ensure_finite : :obj:`bool`, default=False
+        If `True`, the non-finite values (NANs and infs) found in the data
+        will be replaced by zeros.
 
     kwargs : dict
         Keyword arguments to be passed to functions called within ``clean``.

@@ -1290,7 +1290,8 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
 
     %(bg_on_data)s
 
-    %(hemispheres)s
+    hemispheres : :obj:`list` of :obj:`str`, default=["left", "right"]
+        Hemispheres to display.
 
     inflate : bool, optional
         If True, display images in inflated brain.

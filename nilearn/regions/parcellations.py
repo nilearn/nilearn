@@ -141,7 +141,10 @@ class Parcellations(_MultiPCA):
         ward and rena are the best options. Ward will give higher quality
         parcels, but with increased computation time. ReNA is most useful as a
         fast data-reduction step, typically dividing the signal size by ten.
-    %(n_parcels)s
+
+    n_parcels : :obj:`int`, default=50
+        Number of parcels to divide the data into.
+
     %(random_state)s
         Default=0.
 
