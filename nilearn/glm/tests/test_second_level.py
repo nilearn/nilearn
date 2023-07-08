@@ -521,7 +521,7 @@ def test_fmri_inputs_errors():
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
         n_samples = func_img.shape[-1]
-        des = pd.DataFrame(np.ones((T, 1)), columns=['a'])
+        des = pd.DataFrame(np.ones((n_samples, 1)), columns=['a'])
         des_fname = 'design.csv'
         des.to_csv(des_fname)
 
