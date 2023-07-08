@@ -334,7 +334,8 @@ def test_infer_effect_maps_error(tmp_path, monkeypatch):
         shapes,
         rk
     )
-    second_level_input = pd.DataFrame({'map_name': ["a", "b"],
+    second_level_input = pd.DataFrame(
+        {'map_name': ["a", "b"],
                                        'effects_map_path': [fmri_data[0],
                                                             "bar"]})
     with pytest.raises(ValueError, match="File not found: 'bar'"):
@@ -519,7 +520,7 @@ def test_fmri_inputs_errors():
         _, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
         FUNCFILE = FUNCFILE[0]
         func_img = load(FUNCFILE)
-        T = func_img.shape[-1]
+        n_samples = func_img.shape[-1]
         des = pd.DataFrame(np.ones((T, 1)), columns=['a'])
         des_fname = 'design.csv'
         des.to_csv(des_fname)
@@ -871,7 +872,8 @@ def test_second_level_contrast_computation():
 
         # smoke test for different contrasts in fixed effects
         model.compute_contrast(second_level_contrast=c1)
-        z_image = model.compute_contrast(second_level_contrast=c1,
+        z_image = model.compute_contrast(
+            second_level_contrast=c1,
                                          output_type='z_score')
         stat_image = model.compute_contrast(second_level_contrast=c1,
                                             output_type='stat')
@@ -980,7 +982,8 @@ def test_non_parametric_inference_contrast_computation():
         Y = [func_img] * 4
         X = pd.DataFrame([[1]] * 4, columns=['intercept'])
         # formula should work without second-level contrast
-        neg_log_pvals_img = non_parametric_inference(Y,
+        neg_log_pvals_img = non_parametric_inference(
+            Y,
                                                      design_matrix=X,
                                                      model_intercept=False,
                                                      mask=mask,
