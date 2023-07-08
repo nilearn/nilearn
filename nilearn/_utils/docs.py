@@ -228,6 +228,7 @@ cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
             If `display_mode` is "x", "y" or "z",
             `cut_coords` can be an integer,
             in which case it specifies the number of cuts to perform.
+
 """
 
 # darkness
@@ -238,6 +239,7 @@ darkness : :obj:`float` between 0 and 1, optional
         - `1` indicates that the original values of the background are used
         - `0.5` indicates that the background values
           are reduced by half before being applied.
+
 """
 
 # data_dir
@@ -550,6 +552,7 @@ keep_masked_maps : :obj:`bool`, optional
         The 'True' option for ``keep_masked_maps`` is deprecated.
         The default value will change to 'False' in 0.13,
         and the ``keep_masked_maps`` parameter will be removed in 0.15.
+
 """
 
 # kwargs for Maskers
@@ -737,6 +740,7 @@ or :class:`pandas.DataFrame` or :obj:`list` of Niimg-like objects.
     - If a :obj:`list` of Niimg-like objects
       then this is taken literally as Y for the model fit
       and `design_matrix` must be provided.
+
 """
 
 # smoothing_fwhm
@@ -872,7 +876,7 @@ docdict['verbose0'] = verbose.format(0)
 docdict['view'] = """
 view : :obj:`str` or a pair of :obj:`float`, Default="lateral"
     If a string, must be in {"lateral", "medial", "dorsal", "ventral",\
-    "anterior", "posterior"}.
+"anterior", "posterior"}.
     If a sequence, must be a pair (elev, azim) of float
     angles in degrees that will manually set a custom view.
     E.g., view=[270.0, 90.0] or view=(0.0, -180.0).
