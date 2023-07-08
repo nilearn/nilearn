@@ -391,7 +391,8 @@ def test_not_found_exception(tmp_path):
     # Aggressive ICA-AROMA strategy requires
     # default nifti
     aroma_nii, _ = create_tmp_filepath(
-        tmp_path, image_type="ica_aroma", suffix="aroma"
+        tmp_path, image_type="ica_aroma", bids_fields={"entities": 
+                                                  {"sub": "aro-ma"}}
     )
     with pytest.raises(ValueError) as exc_info:
         load_confounds(
@@ -418,7 +419,7 @@ def test_non_steady_state(tmp_path):
     """Warn when 'non_steady_state' is in strategy."""
     # supplying 'non_steady_state' in strategy is not necessary
     # check warning is correctly raised
-    img, conf = create_tmp_filepath(
+    img, _ = create_tmp_filepath(
         tmp_path, copy_confounds=True
     )
     warning_message = (r"Non-steady state")
@@ -452,10 +453,9 @@ def test_load_non_nifti(tmp_path):
 def test_invalid_filetype(tmp_path):
     """Invalid file types/associated files for load method."""
     bad_nii, bad_conf = create_tmp_filepath(tmp_path,
-                                            suffix="sub-test01_task-test",
                                             copy_confounds=True,
                                             old_derivative_suffix=False)
-    conf, _ = load_confounds(bad_nii)
+    _, _ = load_confounds(bad_nii)
 
     # more than one legal filename for confounds
     add_conf = "sub-test01_task-test_desc-confounds_regressors.tsv"
@@ -576,7 +576,10 @@ def test_inputs(tmp_path, image_type):
     for i in range(2):  # gifti edge case
         nii, _ = create_tmp_filepath(
             tmp_path,
-            suffix=f"sub-test{i+1}_ses-test_task-testimg_run-01",
+            bids_fields={"entities": {"sub": f"test{i+1}",
+                                 "ses": "test",
+                               "task": "testimg",
+                               "run": "01"}},
             image_type=image_type,
             copy_confounds=True,
             copy_json=True,
