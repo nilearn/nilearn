@@ -338,7 +338,7 @@ def test_plot_connectome_exception_wrong_edge_threshold_format(
     """
     with pytest.raises(
         ValueError,
-        match=("should be a number followed " "by the percent sign"),
+        match=("should be a number followed by the percent sign"),
     ):
         plot_connectome(
             adjacency, node_coords, edge_threshold=threshold, display_mode="x"
