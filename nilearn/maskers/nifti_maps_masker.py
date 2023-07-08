@@ -12,16 +12,19 @@ class _ExtractionFunctor:
 
     func_name = 'nifti_maps_masker_extractor'
 
-    def __init__(self, _resampled_maps_img_, _resampled_mask_img_):
+    def __init__(self, _resampled_maps_img_, _resampled_mask_img_,
+                 keep_masked_maps):
         self._resampled_maps_img_ = _resampled_maps_img_
         self._resampled_mask_img_ = _resampled_mask_img_
+        self.keep_masked_maps = keep_masked_maps
 
     def __call__(self, imgs):
         from ..regions import signal_extraction
 
         return signal_extraction.img_to_signals_maps(
             imgs, self._resampled_maps_img_,
-            mask_img=self._resampled_mask_img_)
+            mask_img=self._resampled_mask_img_,
+            keep_masked_maps=self.keep_masked_maps)
 
 
 @_utils.fill_doc
@@ -75,6 +78,8 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
     %(memory)s
     %(memory_level)s
     %(verbose0)s
+    %(keep_masked_maps)s
+
     reports : :obj:`bool`, optional
         If set to True, data is saved in order to produce a report.
         Default=True.
@@ -122,6 +127,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
         t_r=None,
         dtype=None,
         resampling_target="data",
+        keep_masked_maps=True,
         memory=Memory(location=None, verbose=0),
         memory_level=0,
         verbose=0,
@@ -179,6 +185,8 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 "has been provided.\n"
                 "Set resampling_target to something else or provide a mask."
             )
+
+        self.keep_masked_maps = keep_masked_maps
 
     def generate_report(self, displayed_maps=10):
         """Generate an HTML report for the current ``NiftiMapsMasker`` object.
@@ -566,6 +574,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             imgs, _ExtractionFunctor(
                 self._resampled_maps_img_,
                 self._resampled_mask_img_,
+                self.keep_masked_maps,
             ),
             # Pre-treatments
             params,
