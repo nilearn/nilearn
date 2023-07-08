@@ -19,8 +19,8 @@ img_file_patterns = {
         "desc-preproc_bold.nii.gz"
     ),
     "gifti": (
-        "_space-fsaverage5_hemi-L_bold.func.gii",
-        "_space-fsaverage5_hemi-R_bold.func.gii",
+        "_hemi-L_space-fsaverage5_bold.func.gii",
+        "_hemi-R_space-fsaverage5_bold.func.gii",
     ),
 }
 
@@ -64,7 +64,7 @@ def create_tmp_filepath(
     tmp_conf = base_path / (suffix + confounds_root)
 
     if copy_confounds:
-        conf, meta = get_leagal_confound()
+        conf, meta = get_legal_confound()
         conf.to_csv(tmp_conf, sep="\t", index=False)
     else:
         tmp_conf.touch()
@@ -72,7 +72,7 @@ def create_tmp_filepath(
     if copy_json:
         meta_root = f"_desc-confounds_{derivative}.json"
         tmp_meta = base_path / (suffix + meta_root)
-        conf, meta = get_leagal_confound()
+        conf, meta = get_legal_confound()
         with open(tmp_meta, "w") as file:
             json.dump(meta, file, indent=2)
 
@@ -94,7 +94,7 @@ def create_tmp_filepath(
     return tmp_img, tmp_conf
 
 
-def get_leagal_confound(non_steady_state=True):
+def get_legal_confound(non_steady_state=True):
     """Load the valid confound files for manipulation."""
     conf, meta = get_testdata_path(non_steady_state=non_steady_state)
     conf = pd.read_csv(conf, delimiter="\t", encoding="utf-8")
