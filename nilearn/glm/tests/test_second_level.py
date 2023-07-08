@@ -336,8 +336,7 @@ def test_infer_effect_maps_error(tmp_path, monkeypatch):
     )
     second_level_input = pd.DataFrame(
         {'map_name': ["a", "b"],
-                                       'effects_map_path': [fmri_data[0],
-                                                            "bar"]})
+         'effects_map_path': [fmri_data[0], "bar"]})
     with pytest.raises(ValueError, match="File not found: 'bar'"):
         _infer_effect_maps(second_level_input, "b")
 
@@ -874,7 +873,7 @@ def test_second_level_contrast_computation():
         model.compute_contrast(second_level_contrast=c1)
         z_image = model.compute_contrast(
             second_level_contrast=c1,
-                                         output_type='z_score')
+            output_type='z_score')
         stat_image = model.compute_contrast(second_level_contrast=c1,
                                             output_type='stat')
         p_image = model.compute_contrast(second_level_contrast=c1,
@@ -984,10 +983,10 @@ def test_non_parametric_inference_contrast_computation():
         # formula should work without second-level contrast
         neg_log_pvals_img = non_parametric_inference(
             Y,
-                                                     design_matrix=X,
-                                                     model_intercept=False,
-                                                     mask=mask,
-                                                     n_perm=N_PERM)
+            design_matrix=X,
+            model_intercept=False,
+            mask=mask,
+            n_perm=N_PERM)
 
         ncol = len(X.columns)
         c1, _ = np.eye(ncol)[0, :], np.zeros(ncol)
