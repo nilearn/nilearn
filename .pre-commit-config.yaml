@@ -34,7 +34,6 @@ exclude: |
         | nilearn/interfaces/fmriprep/tests/utils.py
         | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
         | nilearn/maskers/nifti_spheres_masker.py
-        | nilearn/maskers/nifti_maps_masker.py
         | nilearn/maskers/nifti_labels_masker.py
         | nilearn/plotting/displays/_axes.py
         | nilearn/plotting/glass_brain.py
@@ -44,11 +43,8 @@ exclude: |
         | nilearn/plotting/surf_plotting.py
         | nilearn/plotting/tests/test_html_stat_map.py
         | nilearn/plotting/tests/test_html_surface.py
-         | nilearn/plotting/tests/test_img_plotting/test_img_plotting.py
+        | nilearn/plotting/tests/test_img_plotting/test_img_plotting.py
         | nilearn/plotting/tests/test_img_plotting/test_plot_glass_brain.py
-        | nilearn/plotting/tests/test_img_plotting/test_plot_stat_map.py
-        | nilearn/plotting/tests/test_img_plotting/test_plot_markers.py
-        | nilearn/plotting/tests/test_img_plotting/test_plot_connectome.py
         | nilearn/plotting/tests/test_surf_plotting.py
         | nilearn/surface/surface.py
         | nilearn/surface/tests/test_surface.py
