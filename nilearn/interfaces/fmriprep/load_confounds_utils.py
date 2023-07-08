@@ -111,7 +111,7 @@ def _generate_confounds_file_candidates(nii_file):
     # Flatten the list of lists
     all_subsets = [list(item) for sublist in all_subsets for item in sublist]
     # https://stackoverflow.com/a/3724558/2589328
-    unique_subsets = [list(x) for x in set(tuple(x) for x in all_subsets)]
+    unique_subsets = [list(x) for x in {tuple(x) for x in all_subsets}]
 
     # Require "desc"
     unique_subsets = [subset for subset in unique_subsets if "desc" in subset]

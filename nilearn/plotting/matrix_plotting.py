@@ -23,16 +23,22 @@ def _fit_axes(ax):
     """
     fig = ax.get_figure()
     renderer = fig.canvas.get_renderer()
-    ylabel_width = ax.yaxis.get_tightbbox(renderer).transformed(
-        ax.figure.transFigure.inverted()).width
+    ylabel_width = (
+        ax.yaxis.get_tightbbox(renderer)
+        .transformed(ax.figure.transFigure.inverted())
+        .width
+    )
     if ax.get_position().xmin < 1.1 * ylabel_width:
         # we need to move it over
         new_position = ax.get_position()
         new_position.x0 = 1.1 * ylabel_width  # pad a little
         ax.set_position(new_position)
 
-    xlabel_height = ax.xaxis.get_tightbbox(renderer).transformed(
-        ax.figure.transFigure.inverted()).height
+    xlabel_height = (
+        ax.xaxis.get_tightbbox(renderer)
+        .transformed(ax.figure.transFigure.inverted())
+        .height
+    )
     if ax.get_position().ymin < 1.1 * xlabel_height:
         # we need to move it over
         new_position = ax.get_position()
@@ -40,9 +46,9 @@ def _fit_axes(ax):
         ax.set_position(new_position)
 
 
-def _sanitize_inputs_plot_matrix(mat_shape, tri, labels, reorder,
-                                 figure,
-                                 axes):
+def _sanitize_inputs_plot_matrix(
+    mat_shape, tri, labels, reorder, figure, axes
+):
     """Help for plot_matrix.
 
     This function makes sure the inputs to plot_matrix are valid.
@@ -59,7 +65,8 @@ def _sanitize_figure_and_axes(figure, axes):
     if axes is not None and figure is not None:
         raise ValueError(
             "Parameters figure and axes cannot be specified together. "
-            f"You gave 'figure={figure}, axes={axes}'.")
+            f"You gave 'figure={figure}, axes={axes}'."
+        )
     if figure is not None:
         if isinstance(figure, plt.Figure):
             fig = figure
@@ -93,12 +100,13 @@ def _sanitize_tri(tri):
     if tri not in VALID_TRI_VALUES:
         raise ValueError(
             "Parameter tri needs to be one of: "
-            f"{', '.join(VALID_TRI_VALUES)}.")
+            f"{', '.join(VALID_TRI_VALUES)}."
+        )
 
 
 def _sanitize_reorder(reorder):
     """Help for plot_matrix."""
-    VALID_REORDER_ARGS = (True, False, 'single', 'complete', 'average')
+    VALID_REORDER_ARGS = (True, False, "single", "complete", "average")
     if reorder not in VALID_REORDER_ARGS:
         param_to_print = []
         for item in VALID_REORDER_ARGS:
@@ -110,7 +118,7 @@ def _sanitize_reorder(reorder):
             "Parameter reorder needs to be one of:"
             f"\n{', '.join(param_to_print)}."
         )
-    reorder = 'average' if reorder is True else reorder
+    reorder = "average" if reorder is True else reorder
     return reorder
 
 
@@ -128,8 +136,10 @@ def _reorder_matrix(mat, labels, reorder):
             optimal_leaf_ordering,
         )
     except ImportError:
-        raise ImportError("A scipy version of at least 1.0 is needed for "
-                          "ordering the matrix with optimal_leaf_ordering.")
+        raise ImportError(
+            "A scipy version of at least 1.0 is needed for "
+            "ordering the matrix with optimal_leaf_ordering."
+        )
     linkage_matrix = linkage(mat, method=reorder)
     ordered_linkage = optimal_leaf_ordering(linkage_matrix, mat)
     index = leaves_list(ordered_linkage)
@@ -148,15 +158,16 @@ def _mask_matrix(mat, tri):
     This function masks the matrix depending on the provided
     value of ``tri``.
     """
-    if tri == 'lower':
+    if tri == "lower":
         mask = np.tri(mat.shape[0], k=-1, dtype=bool) ^ True
     else:
         mask = np.tri(mat.shape[0], dtype=bool) ^ True
     return np.ma.masked_array(mat, mask)
 
 
-def _configure_axis(axes, labels, label_size,
-                    x_label_rotation, y_label_rotation):
+def _configure_axis(
+    axes, labels, label_size, x_label_rotation, y_label_rotation
+):
     """Help for plot_matrix."""
     if not labels:
         axes.xaxis.set_major_formatter(plt.NullFormatter())
@@ -165,43 +176,54 @@ def _configure_axis(axes, labels, label_size,
         axes.set_xticks(np.arange(len(labels)))
         axes.set_xticklabels(labels, size=label_size)
         for label in axes.get_xticklabels():
-            label.set_ha('right')
+            label.set_ha("right")
             label.set_rotation(x_label_rotation)
         axes.set_yticks(np.arange(len(labels)))
         axes.set_yticklabels(labels, size=label_size)
         for label in axes.get_yticklabels():
-            label.set_ha('right')
-            label.set_va('top')
+            label.set_ha("right")
+            label.set_va("top")
             label.set_rotation(y_label_rotation)
 
 
 def _configure_grid(axes, grid, tri, size):
     """Help for plot_matrix."""
     # Different grids for different layouts
-    if tri == 'lower':
+    if tri == "lower":
         for i in range(size):
             # Correct for weird mis-sizing
             i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5], color='grey')
-            axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5], color='grey')
-    elif tri == 'diag':
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5], color="grey")
+            axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5], color="grey")
+    elif tri == "diag":
         for i in range(size):
             # Correct for weird mis-sizing
             i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5], color='grey')
-            axes.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color='grey')
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5], color="grey")
+            axes.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color="grey")
     else:
         for i in range(size):
             # Correct for weird mis-sizing
             i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, -0.5], color='grey')
-            axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color='grey')
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, -0.5], color="grey")
+            axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color="grey")
 
 
 @fill_doc
-def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
-                colorbar=True, cmap=plt.cm.RdBu_r, tri='full',
-                auto_fit=True, grid=False, reorder=False, **kwargs):
+def plot_matrix(
+    mat,
+    title=None,
+    labels=None,
+    figure=None,
+    axes=None,
+    colorbar=True,
+    cmap=plt.cm.RdBu_r,
+    tri="full",
+    auto_fit=True,
+    grid=False,
+    reorder=False,
+    **kwargs,
+):
     """Plot the given matrix.
 
     Parameters
@@ -283,13 +305,17 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
     if tri != "full":
         mat = _mask_matrix(mat, tri)
     display = axes.imshow(
-        mat, aspect='equal',
-        interpolation='nearest',
-        cmap=cmap, **kwargs)
+        mat, aspect="equal", interpolation="nearest", cmap=cmap, **kwargs
+    )
     axes.set_autoscale_on(False)
     ymin, ymax = axes.get_ylim()
-    _configure_axis(axes, labels, label_size="x-small",
-                    x_label_rotation=50, y_label_rotation=10)
+    _configure_axis(
+        axes,
+        labels,
+        label_size="x-small",
+        x_label_rotation=50,
+        y_label_rotation=10,
+    )
     if grid is not False:
         _configure_grid(axes, grid, tri, len(mat))
     axes.set_ylim(ymin, ymax)
@@ -297,31 +323,36 @@ def plot_matrix(mat, title=None, labels=None, figure=None, axes=None,
         if labels:
             _fit_axes(axes)
         elif own_fig:
-            plt.tight_layout(pad=.1,
-                             rect=((0, 0, .95, 1) if colorbar
-                                   else (0, 0, 1, 1)))
+            plt.tight_layout(
+                pad=0.1, rect=((0, 0, 0.95, 1) if colorbar else (0, 0, 1, 1))
+            )
     if colorbar:
         divider = make_axes_locatable(axes)
-        cax = divider.append_axes("right", size="5%", pad=.0)
+        cax = divider.append_axes("right", size="5%", pad=0.0)
 
         plt.colorbar(display, cax=cax)
         fig.tight_layout()
 
     if title is not None:
         # Adjust the size
-        text_len = np.max([len(t) for t in title.split('\n')])
+        text_len = np.max([len(t) for t in title.split("\n")])
         size = axes.bbox.size[0] / text_len
-        axes.text(0.95, 0.95, title,
-                  horizontalalignment='right',
-                  verticalalignment='top',
-                  transform=axes.transAxes,
-                  size=size)
+        axes.text(
+            0.95,
+            0.95,
+            title,
+            horizontalalignment="right",
+            verticalalignment="top",
+            transform=axes.transAxes,
+            size=size,
+        )
     return display
 
 
 @fill_doc
-def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
-                         output_file=None):
+def plot_contrast_matrix(
+    contrast_def, design_matrix, colorbar=False, ax=None, output_file=None
+):
     """Create plot for contrast definition.
 
     Parameters
@@ -356,31 +387,37 @@ def plot_contrast_matrix(contrast_def, design_matrix, colorbar=False, ax=None,
     design_column_names = design_matrix.columns.tolist()
     if isinstance(contrast_def, str):
         contrast_def = expression_to_contrast_vector(
-            contrast_def, design_column_names)
+            contrast_def, design_column_names
+        )
     maxval = np.max(np.abs(contrast_def))
     con_matrix = np.asmatrix(contrast_def)
     max_len = np.max([len(str(name)) for name in design_column_names])
 
     if ax is None:
-        plt.figure(figsize=(.4 * len(design_column_names),
-                            1 + .5 * con_matrix.shape[0] + .04 * max_len))
+        plt.figure(
+            figsize=(
+                0.4 * len(design_column_names),
+                1 + 0.5 * con_matrix.shape[0] + 0.04 * max_len,
+            )
+        )
         ax = plt.gca()
 
-    mat = ax.matshow(con_matrix, aspect='equal',
-                     cmap='gray', vmin=-maxval, vmax=maxval)
+    mat = ax.matshow(
+        con_matrix, aspect="equal", cmap="gray", vmin=-maxval, vmax=maxval
+    )
 
-    ax.set_label('conditions')
-    ax.set_ylabel('')
+    ax.set_label("conditions")
+    ax.set_ylabel("")
     ax.set_yticks(())
 
     ax.xaxis.set(ticks=np.arange(len(design_column_names)))
-    ax.set_xticklabels(design_column_names, rotation=50, ha='left')
+    ax.set_xticklabels(design_column_names, rotation=50, ha="left")
 
     if colorbar:
         plt.colorbar(mat, fraction=0.025, pad=0.04)
 
     plt.tight_layout()
-    plt.subplots_adjust(top=np.min([.3 + .05 * con_matrix.shape[0], .55]))
+    plt.subplots_adjust(top=np.min([0.3 + 0.05 * con_matrix.shape[0], 0.55]))
 
     if output_file is not None:
         plt.savefig(output_file)
@@ -416,24 +453,25 @@ def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     # normalize the values per column for better visualization
     _, X, names = check_design_matrix(design_matrix)
     if rescale:
-        X = X / np.maximum(1.e-12, np.sqrt(
-            np.sum(X ** 2, 0)))  # pylint: disable=no-member
+        X = X / np.maximum(
+            1.0e-12, np.sqrt(np.sum(X**2, 0))
+        )  # pylint: disable=no-member
     if ax is None:
         max_len = np.max([len(str(name)) for name in names])
-        fig_height = 1 + .1 * X.shape[0] + .04 * max_len
+        fig_height = 1 + 0.1 * X.shape[0] + 0.04 * max_len
         if fig_height < 3:
             fig_height = 3
         elif fig_height > 10:
             fig_height = 10
-        plt.figure(figsize=(1 + .23 * len(names), fig_height))
+        plt.figure(figsize=(1 + 0.23 * len(names), fig_height))
         ax = plt.subplot(1, 1, 1)
 
-    ax.imshow(X, interpolation='nearest', aspect='auto')
-    ax.set_label('conditions')
-    ax.set_ylabel('scan number')
+    ax.imshow(X, interpolation="nearest", aspect="auto")
+    ax.set_label("conditions")
+    ax.set_ylabel("scan number")
 
     ax.set_xticks(range(len(names)))
-    ax.set_xticklabels(names, rotation=60, ha='left')
+    ax.set_xticklabels(names, rotation=60, ha="left")
     # Set ticks above, to have a display more similar to the display of a
     # corresponding dataframe
     ax.xaxis.tick_top()
@@ -485,30 +523,32 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     elif isinstance(cmap, str):
         cmap = plt.get_cmap(cmap)
 
-    event_labels = pd.concat(event['trial_type'] for event in model_event)
+    event_labels = pd.concat(event["trial_type"] for event in model_event)
     event_labels = np.unique(event_labels)
 
-    cmap_dictionary = {label : idx for idx, label in enumerate(event_labels)}
+    cmap_dictionary = {label: idx for idx, label in enumerate(event_labels)}
 
     if len(event_labels) > cmap.N:
         plt.close()
         raise ValueError(
             "The number of event types is greater than "
             f" colors in colormap ({len(event_labels)} > {cmap.N}). "
-            "Use a different colormap.")
+            "Use a different colormap."
+        )
 
     for idx_run, event_df in enumerate(model_event):
-
         for _, event in event_df.iterrows():
-            event_onset = event['onset']
-            event_end = event['onset'] + event['duration']
-            color = cmap.colors[cmap_dictionary[event['trial_type']]]
+            event_onset = event["onset"]
+            event_end = event["onset"] + event["duration"]
+            color = cmap.colors[cmap_dictionary[event["trial_type"]]]
 
-            ax.axvspan(event_onset,
-                       event_end,
-                       ymin=(idx_run + .25) / n_runs,
-                       ymax=(idx_run + .75) / n_runs,
-                       facecolor=color)
+            ax.axvspan(
+                event_onset,
+                event_end,
+                ymin=(idx_run + 0.25) / n_runs,
+                ymax=(idx_run + 0.75) / n_runs,
+                facecolor=color,
+            )
 
     handles = []
     for label, idx in cmap_dictionary.items():
@@ -520,7 +560,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     ax.set_xlabel("Time (sec.)")
     ax.set_ylabel("Runs")
     ax.set_ylim(0, n_runs)
-    ax.set_yticks(np.arange(n_runs) + .5)
+    ax.set_yticks(np.arange(n_runs) + 0.5)
     ax.set_yticklabels(np.arange(n_runs) + 1)
 
     plt.tight_layout()
