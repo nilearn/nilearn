@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
 from .._utils import fill_doc
 
@@ -129,17 +130,7 @@ def _reorder_matrix(mat, labels, reorder):
     """
     if not labels:
         raise ValueError("Labels are needed to show the reordering.")
-    try:
-        from scipy.cluster.hierarchy import (
-            leaves_list,
-            linkage,
-            optimal_leaf_ordering,
-        )
-    except ImportError:
-        raise ImportError(
-            "A scipy version of at least 1.0 is needed for "
-            "ordering the matrix with optimal_leaf_ordering."
-        )
+
     linkage_matrix = linkage(mat, method=reorder)
     ordered_linkage = optimal_leaf_ordering(linkage_matrix, mat)
     index = leaves_list(ordered_linkage)
