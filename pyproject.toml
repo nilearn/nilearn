@@ -122,8 +122,6 @@ extend-exclude =  """
   | nilearn/glm/first_level/first_level.py
   | nilearn/glm/tests/test_contrasts.py
   | nilearn/glm/tests/test_first_level.py
-  | nilearn/glm/tests/test_second_level.py
-  | nilearn/glm/contrasts.py
   | examples/01_plotting/plot_3d_map_to_surface_projection.py
   | examples/01_plotting/plot_demo_more_plotting.py
   | examples/01_plotting/plot_demo_plotting.py
@@ -149,8 +147,6 @@ extend-exclude =  """
   | nilearn/plotting/surf_plotting.py
   | nilearn/plotting/tests/test_html_stat_map.py
   | nilearn/plotting/tests/test_html_surface.py
-  | nilearn/plotting/tests/test_img_plotting/test_img_plotting.py
-  | nilearn/plotting/tests/test_img_plotting/test_plot_glass_brain.py
   | nilearn/plotting/tests/test_surf_plotting.py
   | nilearn/surface/surface.py
   | nilearn/surface/tests/test_surface.py
