@@ -310,7 +310,7 @@ def test_check_effect_maps():
     _check_effect_maps([1, 2, 3], np.array([[1, 2], [3, 4], [5, 6]]))
     with pytest.raises(
         ValueError,
-        match="design_matrix does not match " "the number of maps considered",
+        match="design_matrix does not match the number of maps considered",
     ):
         _check_effect_maps([1, 2], np.array([[1, 2], [3, 4], [5, 6]]))
 
@@ -336,7 +336,7 @@ def test_get_contrast_errors():
         _get_contrast(None, design_matrix)
     with pytest.raises(
         ValueError,
-        match="second_level_contrast must be " "a list of 0s and 1s",
+        match="second_level_contrast must be a list of 0s and 1s",
     ):
         _get_contrast([0, 0], design_matrix)
 
@@ -492,7 +492,7 @@ def test_high_level_non_parametric_inference_with_paths_warning():
         masker = NiftiMasker(mask, smoothing_fwhm=2.0)
         with pytest.warns(
             UserWarning,
-            match="Parameter smoothing_fwhm " "of the masker overridden",
+            match="Parameter smoothing_fwhm of the masker overridden",
         ):
             non_parametric_inference(
                 Y,
@@ -1012,9 +1012,7 @@ def test_second_level_contrast_computation_errors():
         # passing wrong parameters
         with pytest.raises(
             ValueError,
-            match=(
-                "t contrasts should be length P=1, " "but this is length 0"
-            ),
+            match=("t contrasts should be length P=1, but this is length 0"),
         ):
             model.compute_contrast(second_level_contrast=[])
         with pytest.raises(ValueError, match="Allowed types are .*'t', 'F'"):
@@ -1039,9 +1037,7 @@ def test_second_level_contrast_computation_errors():
             model.compute_contrast(None)
         with pytest.raises(
             ValueError,
-            match=(
-                "t contrasts should be length P=2, " "but this is length 1"
-            ),
+            match=("t contrasts should be length P=2, but this is length 1"),
         ):
             model.compute_contrast([1])
 
@@ -1127,7 +1123,7 @@ def test_non_parametric_inference_contrast_computation_errors():
         # passing null contrast should give back a value error
         with pytest.raises(
             ValueError,
-            match=("second_level_contrast " "must be a list of 0s and 1s."),
+            match=("second_level_contrast must be a list of 0s and 1s."),
         ):
             non_parametric_inference(
                 second_level_input=Y,
@@ -1137,7 +1133,7 @@ def test_non_parametric_inference_contrast_computation_errors():
             )
         with pytest.raises(
             ValueError,
-            match=("second_level_contrast " "must be a list of 0s and 1s."),
+            match=("second_level_contrast must be a list of 0s and 1s."),
         ):
             non_parametric_inference(
                 second_level_input=Y,
