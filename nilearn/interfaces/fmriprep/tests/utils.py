@@ -151,6 +151,10 @@ def get_legal_confound(non_steady_state=True):
 
 def update_bids_fields(bids_fields, img_file_patterns_type):
     """Update the bids_fields dictionary with the img_file_patterns_type."""
+    if "extension" not in img_file_patterns_type:
+        bids_fields["extension"] = "nii.gz"
+    if "suffix" not in img_file_patterns_type:
+        bids_fields["suffix"] = "bold"
     for key in img_file_patterns_type:
         if key == "entities":
             for entity in img_file_patterns_type["entities"]:
@@ -158,8 +162,4 @@ def update_bids_fields(bids_fields, img_file_patterns_type):
                     img_file_patterns_type["entities"][entity]
         else:
             bids_fields[key] = img_file_patterns_type[key]
-    if "extension" not in bids_fields:
-        bids_fields["extension"] = "nii.gz"
-    if "suffix" not in bids_fields:
-        bids_fields["suffix"] = "bold"
     return bids_fields
