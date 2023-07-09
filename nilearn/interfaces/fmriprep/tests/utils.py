@@ -10,51 +10,36 @@ from nilearn.interfaces.fmriprep import load_confounds_utils
 
 img_file_patterns = {
     "ica_aroma":
-        {"suffix": "bold",
-         "entities": {"space": "MNI152NLin2009cAsym",
-                      "desc": "smoothAROMAnonaggr"},
-         "extension": "nii.gz"},
+        {"entities": {"space": "MNI152NLin2009cAsym",
+                      "desc": "smoothAROMAnonaggr"}},
     "regular":
-        {"suffix": "bold",
-         "entities": {"space": "MNI152NLin2009cAsym",
-                      "desc": "preproc"},
-         "extension": "nii.gz"},
+        {"entities": {"space": "MNI152NLin2009cAsym",
+                      "desc": "preproc"}},
     "res":
-        {"suffix": "bold",
-         "entities": {"space": "MNI152NLin2009cAsym",
+        {"entities": {"space": "MNI152NLin2009cAsym",
                       "res": "2",
-                      "desc": "preproc"},
-         "extension": "nii.gz"},
+                      "desc": "preproc"}},
     "native":
-        {"suffix": "bold",
-         "entities": {"desc": "preproc"},
-         "extension": "nii.gz"},
+        {"entities": {"desc": "preproc"}},
     "cifti":
-        {"suffix": "bold",
-         "entities": {"desc": "preproc",
+        {"entities": {"desc": "preproc",
                       "space": "fsLR",
                       "den": "91k"},
          "extension": "dtseries.nii"},
     "den":
-        {"suffix": "bold",
-         "entities": {"space": "fsLR",
+        {"entities": {"space": "fsLR",
                       "den": "32k",
-                      "desc": "preproc"},
-         "extension": "nii.gz"},
+                      "desc": "preproc"}},
     "part":
-        {"suffix": "bold",
-         "entities": {"part": "mag",
+        {"entities": {"part": "mag",
                       "space": "MNI152NLin2009cAsym",
                       "desc": "preproc",
-                      },
-         "extension": "nii.gz"},
+                      }},
     "gifti": (
-        {"suffix": "bold",
-         "entities": {"hemi": "L",
+        {"entities": {"hemi": "L",
                       "space": "fsaverage5"},
          "extension": "func.gii"},
-        {"suffix": "bold",
-         "entities": {"hemi": "R",
+        {"entities": {"hemi": "R",
                       "space": "fsaverage5"},
          "extension": "func.gii"})
 }
@@ -173,4 +158,8 @@ def update_bids_fields(bids_fields, img_file_patterns_type):
                     img_file_patterns_type["entities"][entity]
         else:
             bids_fields[key] = img_file_patterns_type[key]
+    if "extension" not in bids_fields:
+        bids_fields["extension"] = "nii.gz"
+    if "suffix" not in bids_fields:
+        bids_fields["suffix"] = "bold"
     return bids_fields
