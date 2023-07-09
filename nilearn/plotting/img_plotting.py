@@ -134,8 +134,13 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
     ----------
     %(img)s
         Image to plot.
-    %(bg_vmin)s
-    %(bg_vmax)s
+
+    bg_vmin : :obj:`float`, optional
+        vmin for `bg_img`.
+
+    bg_vmax : :obj:`float`, optional
+        vmax for `bg_img`.
+
     interpolation : string, optional
         Passed to the add_overlay calls.
         Default='nearest'.

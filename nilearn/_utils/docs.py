@@ -69,7 +69,7 @@ bg_img : Niimg-like object, optional
 
 # bg_on_data
 docdict['bg_on_data'] = r"""
-bg_on_data : :obj:`bool`, optional
+bg_on_data : :obj:`bool`, default=False
     If `True` and a `bg_map` is specified,
     the `surf_data` data is multiplied by the background image,
     so that e.g. sulcal depth is jointly visible with `surf_data`.
@@ -82,18 +82,6 @@ bg_on_data : :obj:`bool`, optional
             This non-uniformly changes the surf_data values according
             to e.g the sulcal depth.
 
-"""
-
-# bg_vmax
-docdict['bg_vmax'] = """
-bg_vmin : :obj:`float`, optional
-    vmax for `bg_img`.
-"""
-
-# bg_vmin
-docdict['bg_vmin'] = """
-bg_vmin : :obj:`float`, optional
-    vmin for `bg_img`.
 """
 
 # black_bg
@@ -290,13 +278,6 @@ draw_cross : :obj:`bool`, default=True
     to indicate the cut position.
 """
 
-# ensure_finite
-docdict['ensure_finite'] = """
-ensure_finite : :obj:`bool`, optional
-    If `True`, the non-finite values (NANs and infs) found in the data
-    will be replaced by zeros.
-"""
-
 # extractor / extract_type
 docdict['extractor'] = """
 extractor : {"local_regions", "connected_components"}, default="local_regions"
@@ -366,12 +347,6 @@ or 'fast' or None, optional
 docdict['hemi'] = """
 hemi : {"left", "right"}, default="left"
     Hemisphere to display.
-"""
-
-# hemispheres
-docdict['hemispheres'] = """
-hemispheres : :obj:`list` of :obj:`str`, default=["left", "right"]
-    Hemispheres to display.
 """
 
 # high_pass
@@ -469,12 +444,6 @@ low_pass : :obj:`float` or None, default=None
 docdict['lower_cutoff'] = """
 lower_cutoff : :obj:`float`, optional
     Lower fraction of the histogram to be discarded.
-"""
-
-# mask_img
-docdict['mask_img'] = """
-mask_img : Niimg-like object
-    Object used for masking the data.
 """
 
 # mask_strategy
@@ -593,12 +562,6 @@ n_jobs : :obj:`int`, default={}
 """
 docdict['n_jobs'] = n_jobs.format("1")
 docdict['n_jobs_all'] = n_jobs.format("-1")
-
-# n_parcels
-docdict['n_parcels'] = """
-n_parcels : :obj:`int`, default=50
-    Number of parcels to divide the data into.
-"""
 
 # opening
 docdict['opening'] = """
