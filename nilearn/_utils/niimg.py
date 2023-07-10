@@ -1,6 +1,5 @@
 """Neuroimaging file input and output."""
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
-# License: simplified BSD
 
 import collections.abc
 import copy

@@ -1,7 +1,6 @@
 """Test the datasets module."""
 
 # Author: Alexandre Abraham
-# License: simplified BSD
 
 import itertools
 import os

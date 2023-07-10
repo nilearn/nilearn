@@ -6,7 +6,6 @@ Only matplotlib is required.
 """
 
 # Author: Gael Varoquaux, Chris Filo Gorgolewski
-# License: BSD
 
 import collections.abc
 import functools

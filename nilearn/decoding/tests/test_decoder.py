@@ -14,7 +14,6 @@ Order of tests from top to bottom:
 #         Binh Nguyen
 #         Thomas Bazeiile
 #
-# License: simplified BSD
 
 import collections
 import numbers

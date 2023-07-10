@@ -1,7 +1,6 @@
 """Tools to find activations and cut on maps."""
 
 # Author: Gael Varoquaux
-# License: BSD
 
 import numbers
 import warnings

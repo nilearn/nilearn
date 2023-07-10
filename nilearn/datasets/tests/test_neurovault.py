@@ -1,7 +1,6 @@
 """Test the neurovault module."""
 
 # Author: Jerome Dockes
-# License: simplified BSD
 
 import hashlib
 import json

@@ -1,6 +1,5 @@
 """Utilities for testing nilearn."""
 # Author: Alexandre Abraham, Philippe Gervais
-# License: simplified BSD
 import contextlib
 import functools
 import gc

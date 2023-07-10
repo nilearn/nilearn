@@ -1,6 +1,5 @@
 """Test the signals module."""
 # Author: Gael Varoquaux, Alexandre Abraham
-# License: simplified BSD
 
 import os.path
 
