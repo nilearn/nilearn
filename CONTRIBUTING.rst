@@ -280,22 +280,12 @@ The main conventions we enforce are :
 You can check that any code you may have edited follows these conventions
 by running `flake8 <https://flake8.pycqa.org/en/latest/user/invocation.html#invoking-flake8>`__.
 
-Additionally, we recommend using:
+Additionally, we use:
 
 - `black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_
-  to format your code,
+  to format our code,
 - `isort <https://pycqa.github.io/isort/index.html#using-isort>`_
   to organize the import statements.
-
-.. warning::
-
-      We are gradually transitioning to use `isort` and `black`
-      to format the codebase.
-      Only certain modules have been formatted so far,
-      and running `black` or `isort` may not affect the files you are working on,
-      because of how those formatter are currently configured.
-      See `issue #2528 <https://github.com/nilearn/nilearn/issues/2528>`_
-      for more details.
 
 Each function and class must come with a “docstring” at the top of the function code,
 using numpydoc_ formatting.
