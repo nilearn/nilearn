@@ -1,4 +1,4 @@
-"""Downloading NeuroImaging datasets: structural datasets"""
+"""Downloading NeuroImaging datasets: structural datasets."""
 
 import functools
 import os
