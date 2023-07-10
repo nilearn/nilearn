@@ -140,6 +140,7 @@ Some other past or present contributors are:
 * `Natasha Clarke`_
 * `Neelay Shah`_
 * `Nicolas Gensollen`_
+* `Oliver Warrington`_
 * `Oscar Esteban`_
 * `Paul Bogdan`_
 * `Paula Sanz-Leon`_

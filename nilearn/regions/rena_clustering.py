@@ -443,7 +443,9 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
     Parameters
     ----------
-    %(mask_img)s
+    mask_img : Niimg-like object
+        Object used for masking the data.
+
     n_clusters : :obj:`int`, optional
         The number of clusters to find. Default=2.
 
