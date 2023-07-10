@@ -23,7 +23,7 @@ Fixes
 
 - Change default figsizes to prevent titles from overlapping figure content (:gh:`3797` by `Yasmin Mzayek`_ and see also :gh:`2804` by `Oliver Warrington`_)
 
-- Relax the :func:`~nilearn.interfaces.fmriprep.load_confounds` confounds selection on `cosine` as not all confound files contained the variables (:gh:`` by `Hao-Ting Wang`_).
+- Relax the :func:`~nilearn.interfaces.fmriprep.load_confounds` confounds selection on `cosine` as not all confound files contained the variables (:gh:`3816` by `Hao-Ting Wang`_).
 
 
 Enhancements
