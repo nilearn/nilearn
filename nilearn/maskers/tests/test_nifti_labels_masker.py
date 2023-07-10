@@ -543,11 +543,11 @@ def test_standardization():
     unstandarized_label_signals = masker.fit_transform(img)
 
     # z-score
-    masker = NiftiLabelsMasker(labels, standardize="zscore")
+    masker = NiftiLabelsMasker(labels, standardize="zscore_sample")
     trans_signals = masker.fit_transform(img)
 
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)
-    np.testing.assert_almost_equal(trans_signals.std(0), 1)
+    np.testing.assert_almost_equal(trans_signals.std(0), 1, decimal=3)
 
     # psc
     masker = NiftiLabelsMasker(labels, standardize="psc")

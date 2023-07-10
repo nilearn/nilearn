@@ -242,12 +242,12 @@ def test_standardization():
     mask = Nifti1Image(np.ones(data_shape), np.eye(4))
 
     # z-score
-    masker = MultiNiftiMasker(mask, standardize="zscore")
+    masker = MultiNiftiMasker(mask, standardize="zscore_sample")
     trans_signals = masker.fit_transform([img1, img2])
 
     for ts in trans_signals:
         np.testing.assert_almost_equal(ts.mean(0), 0)
-        np.testing.assert_almost_equal(ts.std(0), 1)
+        np.testing.assert_almost_equal(ts.std(0), 1, decimal=3)
 
     # psc
     masker = MultiNiftiMasker(mask, standardize="psc")
