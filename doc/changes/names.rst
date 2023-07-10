@@ -188,6 +188,8 @@
 
 .. _Nicolas Gensollen: https://nicolasgensollen.github.io/
 
+.. _Oliver Warrington: https://github.com/OliverWarrington
+
 .. _Oscar Esteban: https://github.com/oesteban
 
 .. _Paul Bogdan: https://github.com/paulcbogdan
