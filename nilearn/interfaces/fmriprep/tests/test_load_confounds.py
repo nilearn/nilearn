@@ -392,7 +392,7 @@ def test_not_found_exception(tmp_path):
     # default nifti
     aroma_nii, _ = create_tmp_filepath(
         tmp_path, image_type="ica_aroma", bids_fields={"entities":
-                                                       {"sub": "aro-ma"}}
+                                                       {"sub": "icaAroma"}}
     )
     with pytest.raises(ValueError) as exc_info:
         load_confounds(
