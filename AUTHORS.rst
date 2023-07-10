@@ -73,6 +73,7 @@ Some other past or present contributors are:
 * `Christian Gerloff`_
 * `Colin Reininger`_
 * `Connor Lane`_
+* `Czarina Sy`_
 * `Céline Delettre`_
 * `Dan Gale`_
 * `Daniel Gomez`_

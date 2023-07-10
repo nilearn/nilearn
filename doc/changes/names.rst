@@ -54,6 +54,8 @@
 
 .. _Connor Lane: https://github.com/clane9
 
+.. _Czarina Sy: https://github.com/czarinasy
+
 .. _Céline Delettre: https://github.com/celinede
 
 .. _Dan Gale: https://danjgale.github.io/
