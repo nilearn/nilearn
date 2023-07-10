@@ -14,7 +14,6 @@ ensembling to achieve state of the art performance
 #          Binh Nguyen <tuan-binh.nguyen@inria.fr>
 #          Thomas Bazeille
 #
-# License: simplified BSD
 
 import itertools
 import warnings

@@ -5,7 +5,6 @@ See http://nilearn.github.io/stable/manipulating_images/input_output.html
 import numbers
 
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
-# License: simplified BSD
 import warnings
 
 import numpy as np

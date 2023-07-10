@@ -8,7 +8,6 @@ For example: TV-L1, Graph-Net, etc
 #         GRAMFORT Alexandre,
 #         EICKENBERG Michael,
 #         THIRION Bertrand
-# License: simplified BSD
 
 import collections
 import sys

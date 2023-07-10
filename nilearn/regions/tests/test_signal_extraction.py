@@ -1,6 +1,5 @@
 """Test for "region" module."""
 # Author: Ph. Gervais
-# License: simplified BSD
 
 import warnings
 

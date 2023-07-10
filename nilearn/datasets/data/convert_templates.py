@@ -15,7 +15,6 @@ This script outputs the templates that are loaded by the following Nilearn
 Compatibility: Nilearn 0.7.1, Python 3.7.3
 """
 # Authors: Ana Luisa Pinho, Nicolas Gensollen, Jerome Dockes
-# License: simplified BSD
 
 import gzip
 

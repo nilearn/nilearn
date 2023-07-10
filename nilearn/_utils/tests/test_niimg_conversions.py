@@ -6,7 +6,6 @@ which we historically used,
 ignores modules whose name starts with an underscore.
 """
 # Author: Gael Varoquaux, Alexandre Abraham
-# License: simplified BSD
 
 import os
 import re

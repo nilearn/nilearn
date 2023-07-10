@@ -1,7 +1,6 @@
 """Canonical Independent Component Analysis."""
 
 # Author: Alexandre Abraham, Gael Varoquaux,
-# License: BSD 3 clause
 
 import warnings as _warnings
 from operator import itemgetter

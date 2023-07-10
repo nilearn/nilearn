@@ -6,7 +6,6 @@ constitutes output maps
 """
 
 # Author: Arthur Mensch
-# License: BSD 3 clause
 
 import warnings
 

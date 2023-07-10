@@ -10,7 +10,6 @@ from sklearn.preprocessing import StandardScaler
 from nilearn import masking
 
 # Authors: Ana Luisa Pinho, Jerome Dockes, NicolasGensollen
-# License: simplified BSD
 from nilearn._utils import data_gen
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_tmp_imgs

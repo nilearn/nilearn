@@ -1,7 +1,6 @@
 """Test the multi_nifti_masker module."""
 
 # Author: Gael Varoquaux, Ana Luisa Pinho
-# License: simplified BSD
 import shutil
 from tempfile import mkdtemp
 

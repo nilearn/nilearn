@@ -3,7 +3,6 @@
 Fastclustering for approximation of structured signals
 """
 # Author: Andres Hoyos idrobo, Gael Varoquaux, Jonas Kahn and  Bertrand Thirion
-# License: simplified BSD
 
 import warnings
 

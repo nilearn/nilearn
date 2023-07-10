@@ -5,7 +5,6 @@ Two ways of defining regions are supported: as labels in a single 3D image,
 or as weights in one image per region (maps).
 """
 # Author: Philippe Gervais
-# License: simplified BSD
 import warnings
 
 import numpy as np
