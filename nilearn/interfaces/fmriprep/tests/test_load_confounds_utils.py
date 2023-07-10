@@ -42,7 +42,10 @@ def test_get_file_name(tmp_path, flag, image_type):
         suffix = "_desc-confounds_timeseries"
 
     if image_type == "part":
-        kwargs = {"suffix": "sub-test01_task-test_part-mag_run-01"}
+        kwargs = {"bids_fields": {"entities": {"sub": "test01",
+                                               "task": "test",
+                                               "part": "mag",
+                                               "run": "01"}}}
     else:
         kwargs = {}
 

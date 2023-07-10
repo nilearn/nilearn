@@ -1257,7 +1257,10 @@ def _create_bids_filename(
             value = fields["entities"][key]
             if value not in (None, ""):
                 filename += f"{key}-{value}_"
-    filename += f"{fields['suffix']}.{fields['extension']}"
+    if "suffix" in fields:
+        filename += f"{fields['suffix']}"
+    if "extension" in fields:
+        filename += f".{fields['extension']}"
 
     return filename
 
