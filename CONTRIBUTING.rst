@@ -301,6 +301,44 @@ Each function and class must come with a “docstring” at the top of the funct
 using numpydoc_ formatting.
 The docstring must summarize what the function does and document every parameter.
 
+If an argument takes in a default value, it should be described
+with the type definition of that argument.
+
+See the examples below:
+
+.. code-block:: python
+
+      def good(x, y=1, z=None):
+      """Show how parameters are documented.
+
+      Parameters
+      ----------
+      x : :obj:`int`
+            X
+
+      y : :obj:`int`, default=1
+            Note that "default=1" is preferred to "Defaults to 1".
+
+      z : :obj:`str`, default=None
+
+      """
+
+      def bad(x, y=1, z=None):
+      """Show how parameters should not be documented.
+
+      Parameters
+      ----------
+      x :
+            The type of X is not described
+
+      y : :obj:`int`
+            The default value of y is not described.
+
+      z : :obj:`str`
+            Defaults=None.
+            The default value should be described after the type.
+      """
+
 Additionally, we consider it best practice to write modular functions;
 i.e., functions should preferably be relatively short and do *one* thing.
 This is also useful for writing unit tests.

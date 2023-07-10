@@ -240,7 +240,6 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         white background. Default=False.
 
     %(bg_on_data)s
-        Default=False.
 
     %(darkness)s
         Default=1.
@@ -346,7 +345,6 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         Default=None.
 
     %(bg_on_data)s
-        Default=False.
 
     %(darkness)s
         Default=1.

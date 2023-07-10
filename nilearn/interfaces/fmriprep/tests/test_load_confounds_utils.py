@@ -15,8 +15,13 @@ from nilearn.interfaces.fmriprep.tests.utils import create_tmp_filepath
         (["image1.nii.gz", "image2.nii.gz"], False),
         (["image_L.func.gii", "image_R.func.gii"], True),
         ([["image_L.func.gii", "image_R.func.gii"]], True),
-        ([["image1_L.func.gii", "image1_R.func.gii"],
-          ["image2_L.func.gii", "image2_R.func.gii"]], False),
+        (
+            [
+                ["image1_L.func.gii", "image1_R.func.gii"],
+                ["image2_L.func.gii", "image2_R.func.gii"],
+            ],
+            False,
+        ),
     ],
 )
 def test_sanitize_confounds(inputs, flag):
@@ -25,10 +30,28 @@ def test_sanitize_confounds(inputs, flag):
     assert singleflag is flag
 
 
-@pytest.mark.parametrize("flag,suffix",
-                         [(True, "_desc-confounds_regressors"),
-                          (False, "_desc-confounds_timeseries")])
-def test_get_file_name(tmp_path, flag, suffix):
-    img, _ = create_tmp_filepath(tmp_path, old_derivative_suffix=flag)
+@pytest.mark.parametrize("flag", [True, False])
+@pytest.mark.parametrize(
+    "image_type", ["regular", "native", "res", "cifti", "den", "part", "gifti"]
+)
+def test_get_file_name(tmp_path, flag, image_type):
+    """Test _get_file_name."""
+    if flag:
+        suffix = "_desc-confounds_regressors"
+    else:
+        suffix = "_desc-confounds_timeseries"
+
+    if image_type == "part":
+        kwargs = {"suffix": "sub-test01_task-test_part-mag_run-01"}
+    else:
+        kwargs = {}
+
+    img, _ = create_tmp_filepath(
+        tmp_path,
+        image_type=image_type,
+        old_derivative_suffix=flag,
+        **kwargs,
+    )
+
     conf = _get_file_name(img)
     assert suffix in conf

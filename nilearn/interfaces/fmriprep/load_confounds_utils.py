@@ -1,4 +1,5 @@
 """Helper functions for the manipulation of fmriprep output confounds."""
+import itertools
 import json
 import os
 import re
@@ -19,7 +20,7 @@ img_file_patterns = {
     "aroma": "_desc-smoothAROMAnonaggr_bold",
     "nii.gz": "(_space-.*)?_desc-preproc_bold.nii.gz",
     "dtseries.nii": "(_space-.*)?_bold.dtseries.nii",
-    "func.gii": "(_space-.*)?_hemi-[LR]_bold.func.gii",
+    "func.gii": "_hemi-[LR](_space-.*)?_bold.func.gii",
 }
 
 img_file_error = {
@@ -88,48 +89,80 @@ def _add_suffix(params, model):
     return params_full
 
 
+def _generate_confounds_file_candidates(nii_file):
+    """Generate confounds file candidates.
+
+    Build a list of potential confounds filenames using all combinations of
+    the entities in the image file.
+    """
+    entities = parse_bids_filename(nii_file)
+    file_fields = entities["file_fields"]
+    entities = {k: v for k, v in entities.items() if k in file_fields}
+    entities["desc"] = "confounds"
+    if "desc" not in file_fields:
+        file_fields.append("desc")
+
+    all_subsets = []
+    for n_entities in range(1, len(file_fields) + 1):
+        all_subsets.append(
+            list(itertools.combinations(file_fields, n_entities))
+        )
+
+    # Flatten the list of lists
+    all_subsets = [list(item) for sublist in all_subsets for item in sublist]
+    # https://stackoverflow.com/a/3724558/2589328
+    unique_subsets = [list(x) for x in {tuple(x) for x in all_subsets}]
+
+    # Require "desc"
+    unique_subsets = [subset for subset in unique_subsets if "desc" in subset]
+
+    filenames = [
+        "_".join(["-".join([k, entities[k]]) for k in lst])
+        for lst in unique_subsets
+    ]
+    return filenames
+
+
 def _get_file_name(nii_file):
-    """Construct the raw confound file name from processed functional data."""
+    """Identify the confounds file associated with a functional image."""
     if isinstance(nii_file, list):  # catch gifti
         nii_file = nii_file[0]
-    entities = parse_bids_filename(nii_file)
-    subject_label = f"sub-{entities['sub']}"
-    if "ses" in entities:
-        subject_label = f"{subject_label}_ses-{entities['ses']}"
-    specifiers = f"task-{entities['task']}"
-    if "run" in entities:
-        specifiers = f"{specifiers}_run-{entities['run']}"
-    img_filename = nii_file.split(os.sep)[-1]
+
+    base_dir = os.path.dirname(nii_file)
+
+    filenames = _generate_confounds_file_candidates(nii_file)
+
     # fmriprep has changed the file suffix between v20.1.1 and v20.2.0 with
     # respect to BEP 012.
     # cf. https://neurostars.org/t/naming-change-confounds-regressors-to-confounds-timeseries/17637 # noqa
     # Check file with new naming scheme exists or replace,
     # for backward compatibility.
-    confounds_raw_candidates = [
-        nii_file.replace(
-            img_filename,
-            f"{subject_label}_{specifiers}_desc-confounds_timeseries.tsv",
-        ),
-        nii_file.replace(
-            img_filename,
-            f"{subject_label}_{specifiers}_desc-confounds_regressors.tsv",
-        ),
-    ]
+    suffixes = ["_timeseries.tsv", "_regressors.tsv"]
 
-    confounds_raw = [
-        cr for cr in confounds_raw_candidates if os.path.exists(cr)
-    ]
+    confound_file_candidates = []
+    for suffix in suffixes:
+        confound_file_candidates += [f + suffix for f in filenames]
 
-    if not confounds_raw:
+    # Sort the potential filenames by decreasing length,
+    # so earlier entries reflect more retained entities.
+    # https://www.geeksforgeeks.org/python-sort-list-of-lists-by-the-size-of-sublists/
+    confound_file_candidates = sorted(confound_file_candidates, key=len)[::-1]
+    confound_file_candidates = [
+        os.path.join(base_dir, crc) for crc in confound_file_candidates
+    ]
+    found_files = [cr for cr in confound_file_candidates if os.path.isfile(cr)]
+
+    if not found_files:
         raise ValueError(
             "Could not find associated confound file. "
             "The functional derivatives should exist under the same parent "
             "directory."
         )
-    elif len(confounds_raw) != 1:
-        raise ValueError("Found more than one confound file.")
+    elif len(found_files) != 1:
+        found_str = "\n\t".join(found_files)
+        raise ValueError(f"Found more than one confound file:\n\t{found_str}")
     else:
-        return confounds_raw[0]
+        return found_files[0]
 
 
 def _get_confounds_file(image_file, flag_full_aroma):

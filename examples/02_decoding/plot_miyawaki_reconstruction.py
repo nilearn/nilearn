@@ -160,7 +160,7 @@ for i in range(y_train.shape[1]):
         [
             ("selection", SelectKBest(f_classif, k=500)),
             ("scl", StandardScaler()),
-            ("clf", OMP(normalize=False, n_nonzero_coefs=10)),
+            ("clf", OMP(n_nonzero_coefs=10)),
         ]
     )
     clf.fit(X_train, y_train[:, i])

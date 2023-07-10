@@ -423,7 +423,7 @@ def signals_to_img_labels(
 
 
 @_utils.fill_doc
-def img_to_signals_maps(imgs, maps_img, mask_img=None):
+def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
     """Extract region signals from image.
 
     This function is applicable to regions defined by maps.
@@ -443,6 +443,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
         Mask to apply to regions before extracting signals.
         Every point outside the mask is considered
         as background (i.e. outside of any region).
+    %(keep_masked_maps)s
 
     Returns
     -------
@@ -474,12 +475,40 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
     use_mask = _check_shape_and_affine_compatibility(imgs, mask_img)
     if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
+        labels_before_mask = set(labels)
         maps_data, maps_mask, labels = _trim_maps(
             maps_data,
             _safe_get_data(mask_img, ensure_finite=True),
-            keep_empty=True,
+            keep_empty=keep_masked_maps,
         )
         maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
+        if keep_masked_maps:
+            warnings.warn(
+                'Applying "mask_img" before '
+                "signal extraction may result in empty region signals in the "
+                "output. These are currently kept. "
+                "Starting from version 0.13, the default behavior will be "
+                "changed to remove them by setting "
+                '"keep_masked_maps=False". '
+                '"keep_masked_maps" parameter will be removed '
+                "in version 0.15.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        else:
+            labels_after_mask = set(labels)
+            labels_diff = labels_before_mask.difference(labels_after_mask)
+            # Raising a warning if any map is removed due to the mask
+            if len(labels_diff) > 0:
+                warnings.warn(
+                    "After applying mask to the maps image, "
+                    "maps with the following indices were "
+                    f"removed: {labels_diff}. "
+                    f"Out of {len(labels_before_mask)} maps, the "
+                    "masked map image only contains "
+                    f"{len(labels_after_mask)} maps.",
+                    stacklevel=2,
+                )
 
     data = _safe_get_data(imgs, ensure_finite=True)
     region_signals = linalg.lstsq(maps_data[maps_mask, :], data[maps_mask, :])[

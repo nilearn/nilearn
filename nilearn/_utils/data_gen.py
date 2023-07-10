@@ -506,6 +506,27 @@ def write_fake_fmri_data_and_design(shapes,
     return mask_file, fmri_files, design_files
 
 
+def write_fake_bold_gifti(file_path):
+    """Generate a gifti image and write it to disk.
+
+    Note this only generates an empty file for now.
+
+    Parameters
+    ----------
+    file_path : :obj:`str`
+        Output file path.
+
+    Returns
+    -------
+    file_path : :obj:`str`
+        Output file path.
+
+    """
+    Path(file_path).parent.mkdir(parents=True, exist_ok=True)
+    Path(file_path).touch()
+    return file_path
+
+
 def write_fake_bold_img(file_path,
                         shape,
                         affine=np.eye(4),
@@ -734,13 +755,17 @@ def basic_confounds(length, random_state=0):
     -------
     confounds : :obj:`pandas.DataFrame`.
         Basic confounds.
-        This DataFrame will have six columns: "RotX", "RotY", "RotZ", "X", "Y",
-        and "Z".
+        This DataFrame will have 9 columns:
+        'csf', 'white_matter', 'global_signal'
+        'rot_x', 'rot_y', 'rot_z',
+        'trans_x', 'trans_y', 'trans_z'.
 
     """
     rand_gen = check_random_state(random_state)
-    columns = ['RotX', 'RotY', 'RotZ', 'X', 'Y', 'Z']
-    data = rand_gen.rand(length, 6)
+    columns = ['csf', 'white_matter', 'global_signal',
+               'rot_x', 'rot_y', 'rot_z',
+               'trans_x', 'trans_y', 'trans_z']
+    data = rand_gen.rand(length, len(columns))
     confounds = pd.DataFrame(data, columns=columns)
     return confounds
 
@@ -1097,7 +1122,8 @@ def _mock_bids_derivatives(
     n_voxels,
     rand_gen,
 ):
-    """Create a fake raw :term:`bids<BIDS>` dataset directory with dummy files.
+    """Create a fake derivatives :term:`bids<BIDS>` dataset directory \
+       with dummy files.
 
     Parameters
     ----------
@@ -1355,10 +1381,12 @@ def _write_bids_derivative_func(
 ):
     """Create BIDS functional derivative and confounds files.
 
-    Files created come with two spaces and descriptions.
+    Nifti files created come with two spaces and descriptions.
     Spaces are: 'MNI' and 'T1w'.
     Descriptions are: 'preproc' and :term:`fMRIPrep`.
     Only space 'T1w' include both descriptions.
+
+    Gifti files are in "fsaverage5" space for both hemispheres.
 
     Parameters
     ----------
@@ -1416,3 +1444,14 @@ def _write_bids_derivative_func(
                 fields=fields, entities_to_include=entities_to_include
             )
             write_fake_bold_img(bold_path, shape=shape, random_state=rand_gen)
+
+    fields["entities"]["space"] = "fsaverage5"
+    fields["extension"] = "func.gii"
+    fields["entities"].pop("desc")
+    for hemi in ["L", "R"]:
+        fields["entities"]["hemi"] = hemi
+        gifti_path = func_path / _create_bids_filename(
+            fields=fields,
+            entities_to_include=entities_to_include
+        )
+        write_fake_bold_gifti(gifti_path)

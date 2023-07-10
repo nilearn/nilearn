@@ -35,66 +35,92 @@ from nilearn.plotting.displays import (
     ZSlicer,
 )
 
-SLICER_KEYS = [
-    'ortho', 'tiled', 'x', 'y', 'z', 'yx', 'yz', 'mosaic', 'xz'
-]
+SLICER_KEYS = ["ortho", "tiled", "x", "y", "z", "yx", "yz", "mosaic", "xz"]
 SLICERS = [
-    OrthoSlicer, TiledSlicer, XSlicer, YSlicer, ZSlicer,
-    YXSlicer, YZSlicer, MosaicSlicer, XZSlicer
+    OrthoSlicer,
+    TiledSlicer,
+    XSlicer,
+    YSlicer,
+    ZSlicer,
+    YXSlicer,
+    YZSlicer,
+    MosaicSlicer,
+    XZSlicer,
 ]
 PROJECTOR_KEYS = [
-    'ortho', 'xz', 'yz', 'yx', 'lyrz', 'lyr', 'lzr', 'lr', 'l', 'r'
+    "ortho",
+    "xz",
+    "yz",
+    "yx",
+    "lyrz",
+    "lyr",
+    "lzr",
+    "lr",
+    "l",
+    "r",
 ]
 PROJECTORS = [
-    OrthoProjector, XZProjector, YZProjector, YXProjector, XProjector,
-    YProjector, ZProjector, LZRYProjector, LYRZProjector, LYRProjector,
-    LZRProjector, LRProjector, LProjector, RProjector
+    OrthoProjector,
+    XZProjector,
+    YZProjector,
+    YXProjector,
+    XProjector,
+    YProjector,
+    ZProjector,
+    LZRYProjector,
+    LYRZProjector,
+    LYRProjector,
+    LZRProjector,
+    LRProjector,
+    LProjector,
+    RProjector,
 ]
 
 
 def test_base_axes_exceptions():
     """Tests for exceptions raised by class ``BaseAxes``."""
-    axes = BaseAxes(None, 'foo', 3)
+    axes = BaseAxes(None, "foo", 3)
     # Constructor doesn't raise for invalid direction
-    assert axes.direction == 'foo'
+    assert axes.direction == "foo"
     assert axes.coord == 3
-    with pytest.raises(NotImplementedError,
-                       match="'transform_to_2d' needs to be"):
+    with pytest.raises(
+        NotImplementedError, match="'transform_to_2d' needs to be"
+    ):
         axes.transform_to_2d(None, None)
-    with pytest.raises(NotImplementedError,
-                       match="'draw_position' should be"):
+    with pytest.raises(NotImplementedError, match="'draw_position' should be"):
         axes.draw_position(None, None)
-    with pytest.raises(ValueError,
-                       match="Invalid value for direction"):
+    with pytest.raises(ValueError, match="Invalid value for direction"):
         axes.draw_2d(None, None, None)
 
 
 def test_cut_axes_exception():
     """Tests for exceptions raised by class ``CutAxes``."""
     from nilearn.plotting.displays import CutAxes
-    axes = CutAxes(None, 'foo', 2)
-    assert axes.direction == 'foo'
+
+    axes = CutAxes(None, "foo", 2)
+    assert axes.direction == "foo"
     assert axes.coord == 2
-    with pytest.raises(ValueError,
-                       match="Invalid value for direction"):
+    with pytest.raises(ValueError, match="Invalid value for direction"):
         axes.transform_to_2d(None, np.eye(4))
 
 
 def test_glass_brain_axes():
     """Tests for class ``GlassBrainAxes``."""
     from nilearn.plotting.displays import GlassBrainAxes
+
     ax = plt.subplot(111)
-    axes = GlassBrainAxes(ax, 'r', 2)
-    axes._add_markers(np.array([[0, 0, 0]]), 'g', [10])
-    line_coords = [np.array([[0, 0, 0],
-                             [1, 1, 1]])]
+    axes = GlassBrainAxes(ax, "r", 2)
+    axes._add_markers(np.array([[0, 0, 0]]), "g", [10])
+    line_coords = [np.array([[0, 0, 0], [1, 1, 1]])]
     line_values = np.array([1, 0, 6])
-    with pytest.raises(ValueError,
-                       match="If vmax is set to a non-positive number "):
+    with pytest.raises(
+        ValueError, match="If vmax is set to a non-positive number "
+    ):
         axes._add_lines(line_coords, line_values, None, vmin=None, vmax=-10)
     axes._add_lines(line_coords, line_values, None, vmin=None, vmax=10)
-    with pytest.raises(ValueError,
-                       match="If vmin is set to a non-negative number "):
+    with pytest.raises(
+        ValueError, match="If vmin is set to a non-negative number "
+    ):
         axes._add_lines(line_coords, line_values, None, vmin=10, vmax=None)
     axes._add_lines(line_coords, line_values, None, vmin=-10, vmax=None)
     axes._add_lines(line_coords, line_values, None, vmin=-10, vmax=-5)
@@ -105,8 +131,8 @@ def test_get_index_from_direction_exception():
     is given to function ``_get_index_from_direction``.
     """
     from nilearn.plotting.displays._axes import _get_index_from_direction
-    with pytest.raises(ValueError,
-                       match="foo is not a valid direction."):
+
+    with pytest.raises(ValueError, match="foo is not a valid direction."):
         _get_index_from_direction("foo")
 
 
@@ -119,20 +145,20 @@ def img():
 @pytest.fixture
 def cut_coords(name):
     """Selects appropriate cut coords."""
-    if name == 'mosaic':
+    if name == "mosaic":
         return 3
-    if name in ['yx', 'yz', 'xz']:
+    if name in ["yx", "yz", "xz"]:
         return (0,) * 2
-    if name in ['lyrz', 'lyr', 'lzr']:
+    if name in ["lyrz", "lyr", "lzr"]:
         return (0,)
-    if name in ['lr', 'l']:
+    if name in ["lr", "l"]:
         return (0,) * 4
     return (0,) * 3
 
 
-@pytest.mark.parametrize("display,name",
-                         zip(SLICERS + PROJECTORS,
-                             SLICER_KEYS + PROJECTOR_KEYS))
+@pytest.mark.parametrize(
+    "display,name", zip(SLICERS + PROJECTORS, SLICER_KEYS + PROJECTOR_KEYS)
+)
 def test_display_basics(display, name, img, cut_coords):
     """Basic smoke tests for all displays (slicers + projectors).
     Each object is instantiated, ``add_overlay``, ``title``,
@@ -147,9 +173,9 @@ def test_display_basics(display, name, img, cut_coords):
     display.close()
 
 
-@pytest.mark.parametrize("slicer",
-                         [XSlicer, YSlicer, ZSlicer,
-                          YXSlicer, YZSlicer, XZSlicer])
+@pytest.mark.parametrize(
+    "slicer", [XSlicer, YSlicer, ZSlicer, YXSlicer, YZSlicer, XZSlicer]
+)
 def test_stacked_slicer(slicer, img, tmp_path):
     """Tests for saving to file with stacked slicers."""
     cut_coords = 3 if slicer in [XSlicer, YSlicer, ZSlicer] else (3, 3)
@@ -181,7 +207,7 @@ def test_mosaic_slicer_integer_cut_coords(cut_coords, img):
     slicer = MosaicSlicer.init_with_figure(img=img, cut_coords=cut_coords)
     slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
     slicer.title("mosaic mode")
-    for d in ['x', 'y', 'z']:
+    for d in ["x", "y", "z"]:
         assert d in slicer.cut_coords
         assert len(slicer.cut_coords[d]) == cut_coords
     slicer.close()
@@ -192,8 +218,8 @@ def test_mosaic_slicer_tuple_cut_coords(cut_coords, img):
     """Tests for MosaicSlicer with cut_coords provided as a tuple."""
     slicer = MosaicSlicer.init_with_figure(img=img, cut_coords=cut_coords)
     slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
-    slicer.title('Showing mosaic mode')
-    for i, d in enumerate(['x', 'y', 'z']):
+    slicer.title("Showing mosaic mode")
+    for i, d in enumerate(["x", "y", "z"]):
         assert len(slicer.cut_coords[d]) == cut_coords[i]
     slicer.close()
 
@@ -211,10 +237,14 @@ def test_mosaic_slicer_img_none_false(cut_coords, img):
 @pytest.mark.parametrize("cut_coords", [(5, 4), (1, 2, 3, 4)])
 def test_mosaic_slicer_wrong_inputs(cut_coords):
     """Tests that providing wrong inputs raises a ``ValueError``."""
-    with pytest.raises(ValueError,
-                       match=("The number cut_coords passed does not "
-                              "match the display_mode. Mosaic plotting "
-                              "expects tuple of length 3.")):
+    with pytest.raises(
+        ValueError,
+        match=(
+            "The number cut_coords passed does not "
+            "match the display_mode. Mosaic plotting "
+            "expects tuple of length 3."
+        ),
+    ):
         MosaicSlicer.init_with_figure(img=None, cut_coords=cut_coords)
         MosaicSlicer(img=None, cut_coords=cut_coords)
 
@@ -223,21 +253,19 @@ def test_mosaic_slicer_wrong_inputs(cut_coords):
 def expected_cuts(cut_coords):
     """Expected cut with test_demo_mosaic_slicer."""
     if cut_coords == (1, 1, 1):
-        return {'x': [-40.0], 'y': [-30.0], 'z': [-30.0]}
+        return {"x": [-40.0], "y": [-30.0], "z": [-30.0]}
     if cut_coords == 5:
-        return {'x': [-40.0, -20.0, 0.0, 20.0, 40.0],
-                'y': [-30.0, -15.0, 0.0, 15.0, 30.0],
-                'z': [-30.0, -3.75, 22.5, 48.75, 75.0]
-                }
-    return {'x': [10, 20], 'y': [30, 40], 'z': [15, 16]}
+        return {
+            "x": [-40.0, -20.0, 0.0, 20.0, 40.0],
+            "y": [-30.0, -15.0, 0.0, 15.0, 30.0],
+            "z": [-30.0, -3.75, 22.5, 48.75, 75.0],
+        }
+    return {"x": [10, 20], "y": [30, 40], "z": [15, 16]}
 
 
-@pytest.mark.parametrize("cut_coords",
-                         [(1, 1, 1),
-                          5,
-                          {'x': [10, 20],
-                           'y': [30, 40],
-                           'z': [15, 16]}])
+@pytest.mark.parametrize(
+    "cut_coords", [(1, 1, 1), 5, {"x": [10, 20], "y": [30, 40], "z": [15, 16]}]
+)
 def test_demo_mosaic_slicer(cut_coords, img, expected_cuts):
     """Tests for MosaicSlicer with different cut_coords in constructor."""
     slicer = MosaicSlicer(cut_coords=cut_coords)
@@ -260,20 +288,18 @@ def test_contour_fillings_levels_in_add_contours(img):
     oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
     # levels should be at least 2
     # If single levels are passed then we force upper level to be inf
-    oslicer.add_contours(
-        img, filled=True, colors='r', alpha=0.2, levels=[0.]
-    )
+    oslicer.add_contours(img, filled=True, colors="r", alpha=0.2, levels=[0.0])
     # If two levels are passed, it should be increasing from zero index
     # In this case, we simply omit appending inf
     oslicer.add_contours(
-        img, filled=True, colors='b', alpha=0.1, levels=[0., 0.2]
+        img, filled=True, colors="b", alpha=0.1, levels=[0.0, 0.2]
     )
     # without passing colors and alpha. In this case, default values are
     # chosen from matplotlib
-    oslicer.add_contours(img, filled=True, levels=[0., 0.2])
+    oslicer.add_contours(img, filled=True, levels=[0.0, 0.2])
 
     # levels with only one value
-    oslicer.add_contours(img, filled=True, levels=[0.])
+    oslicer.add_contours(img, filled=True, levels=[0.0])
 
     # without passing levels, should work with default levels from
     # matplotlib
@@ -284,7 +310,7 @@ def test_contour_fillings_levels_in_add_contours(img):
 def test_user_given_cmap_with_colorbar(img):
     """Test cmap provided as a string with ``OrthoSlicer``."""
     oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
-    oslicer.add_overlay(img, cmap='Paired', colorbar=True)
+    oslicer.add_overlay(img, cmap="Paired", colorbar=True)
     oslicer.close()
 
 
@@ -321,9 +347,14 @@ def test_annotations():
     orthoslicer = OrthoSlicer(cut_coords=(None, None, None))
     orthoslicer.annotate(size=10, left_right=True, positions=False)
     orthoslicer.annotate(
-        size=12, left_right=False, positions=False,
-        scalebar=True, scale_size=2.5, scale_units='cm', scale_loc=3,
-        frameon=True
+        size=12,
+        left_right=False,
+        positions=False,
+        scalebar=True,
+        scale_size=2.5,
+        scale_units="cm",
+        scale_loc=3,
+        frameon=True,
     )
     orthoslicer.close()
 
@@ -335,7 +366,7 @@ def test_position_annotation_with_decimals():
     orthoslicer.close()
 
 
-@pytest.mark.parametrize("node_color", ['red', ['red', 'blue']])
+@pytest.mark.parametrize("node_color", ["red", ["red", "blue"]])
 def test_add_graph_with_node_color_as_string(node_color):
     """Tests for ``display.add_graph()``."""
     lzry_projector = LZRYProjector(cut_coords=(0, 0, 0, 0))

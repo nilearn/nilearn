@@ -333,7 +333,9 @@ class SearchLight(BaseEstimator):
         )
 
         estimator = self.estimator
-        if isinstance(estimator, str):
+        if estimator == "svc":
+            estimator = ESTIMATOR_CATALOG[estimator](dual=True)
+        elif isinstance(estimator, str):
             estimator = ESTIMATOR_CATALOG[estimator]()
 
         scores = search_light(
