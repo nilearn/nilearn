@@ -312,6 +312,9 @@ authors:
     family-names: Gensollen
     website: https://nicolasgensollen.github.io/
     affiliation: INRIA, Paris, France
+  - given-names: Oliver
+    family-names: Warrington
+    website: https://github.com/OliverWarrington
   - given-names: Oscar
     family-names: Esteban
     website: https://github.com/oesteban

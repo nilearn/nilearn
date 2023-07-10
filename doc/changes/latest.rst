@@ -21,6 +21,8 @@ Fixes
 
 - Make the :func:`~nilearn.interfaces.fmriprep.load_confounds` confounds file selection more generic (:gh:`3794` by `Taylor Salo`_).
 
+- Change default figsizes to prevent titles from overlapping figure content (:gh:`3797` by `Yasmin Mzayek`_ and see also :gh:`2804` by `Oliver Warrington`_)
+
 Enhancements
 ------------
 
