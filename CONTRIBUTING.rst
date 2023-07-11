@@ -182,6 +182,8 @@ with the tools we use for development and deployment.
 +--------------------+---------------+-----------------------------------------------------+
 |                    |               | - Variables, functions, arguments have clear names  |
 |                    |               | - Easy to read, PEP8_ compliant                     |
+|                    |               | - Code formatted with black_                         |
+|                    |               | - imports sorted with isort_                        |
 |                    |               | - Public functions have docstring (numpydoc_ format)|
 |                    |               | - Low redundancy                                    |
 |   `Coding Style`_  |    Any        | - No new dependency                                 |
@@ -211,6 +213,8 @@ with the tools we use for development and deployment.
 
 .. _PEP8: https://www.python.org/dev/peps/pep-0008/
 .. _numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
+.. _black: https://black.readthedocs.io/en/stable/getting_started.html#basic-usage
+.. _isort: https://pycqa.github.io/isort/index.html#using-isort
 
 PR Structure
 ------------
@@ -282,10 +286,8 @@ by running `flake8 <https://flake8.pycqa.org/en/latest/user/invocation.html#invo
 
 Additionally, we use:
 
-- `black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_
-  to format our code,
-- `isort <https://pycqa.github.io/isort/index.html#using-isort>`_
-  to organize the import statements.
+- black_ to format our code,
+- isort_  to organize the import statements.
 
 Each function and class must come with a “docstring” at the top of the function code,
 using numpydoc_ formatting.
