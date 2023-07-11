@@ -182,7 +182,7 @@ with the tools we use for development and deployment.
 +--------------------+---------------+-----------------------------------------------------+
 |                    |               | - Variables, functions, arguments have clear names  |
 |                    |               | - Easy to read, PEP8_ compliant                     |
-|                    |               | - Code formatted with black_                         |
+|                    |               | - Code formatted with black_                        |
 |                    |               | - imports sorted with isort_                        |
 |                    |               | - Public functions have docstring (numpydoc_ format)|
 |                    |               | - Low redundancy                                    |
