@@ -505,11 +505,11 @@ def test_standardization():
     mask = nibabel.Nifti1Image(np.ones(data_shape), np.eye(4))
 
     # z-score
-    masker = NiftiMasker(mask, standardize="zscore")
+    masker = NiftiMasker(mask, standardize="zscore_sample")
     trans_signals = masker.fit_transform(img)
 
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)
-    np.testing.assert_almost_equal(trans_signals.std(0), 1)
+    np.testing.assert_almost_equal(trans_signals.std(0), 1, decimal=3)
 
     # psc
     masker = NiftiMasker(mask, standardize="psc")

@@ -565,7 +565,9 @@ def test_decoder_binary_classification_cross_validation(
     # check cross-validation scheme and fit attribute with groups enabled
     rand_local = np.random.RandomState(42)
 
-    model = Decoder(estimator="svc", mask=mask, standardize=True, cv=cv)
+    model = Decoder(
+        estimator="svc", mask=mask, standardize="zscore_sample", cv=cv
+    )
     groups = None
     if isinstance(cv, LeaveOneGroupOut):
         groups = rand_local.binomial(2, 0.3, size=len(y))
@@ -887,7 +889,9 @@ def test_decoder_multiclass_classification_cross_validation(
     # check cross-validation scheme and fit attribute with groups enabled
     rand_local = np.random.RandomState(42)
 
-    model = Decoder(estimator="svc", mask=mask, standardize=True, cv=cv)
+    model = Decoder(
+        estimator="svc", mask=mask, standardize="zscore_sample", cv=cv
+    )
     groups = None
     if isinstance(cv, LeaveOneGroupOut):
         groups = rand_local.binomial(2, 0.3, size=len(y))
