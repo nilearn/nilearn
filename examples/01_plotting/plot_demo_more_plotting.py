@@ -118,7 +118,7 @@ plotting.plot_stat_map(stat_img, display_mode='x',
 
 plotting.plot_stat_map(stat_img, display_mode='y', cut_coords=1,
                        title="display_mode='y', cut_coords=1",
-                       figure=plt.figure(figsize=(4, 3)))
+                       figure=plt.figure(figsize=(5, 4)))
 
 ###############################################################################
 # Visualizing without a colorbar on the right side
@@ -130,7 +130,7 @@ plotting.plot_stat_map(stat_img, display_mode='y', cut_coords=1,
 plotting.plot_stat_map(stat_img, display_mode='z',
                        cut_coords=1, colorbar=False,
                        title="display_mode='z', cut_coords=1, colorbar=False",
-                       figure=plt.figure(figsize=(4, 3)))
+                       figure=plt.figure(figsize=(5, 7)))
 
 ###############################################################################
 # Visualize in - two views 'sagittal' and 'axial' with given coordinates
