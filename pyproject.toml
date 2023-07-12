@@ -65,6 +65,7 @@ doc = [
 	"mkl",
 	"myst-parser",
 	"numpydoc",
+  "ruamel.yaml",
 	"sphinx",
 	"sphinx-copybutton",
 	"sphinx-design",
@@ -121,8 +122,6 @@ extend-exclude =  """
   | nilearn/glm/first_level/first_level.py
   | nilearn/glm/tests/test_contrasts.py
   | nilearn/glm/tests/test_first_level.py
-  | nilearn/glm/tests/test_second_level.py
-  | nilearn/glm/contrasts.py
   | examples/01_plotting/plot_3d_map_to_surface_projection.py
   | examples/01_plotting/plot_demo_more_plotting.py
   | examples/01_plotting/plot_demo_plotting.py
@@ -138,63 +137,16 @@ extend-exclude =  """
   | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
   | nilearn/interfaces/fmriprep/tests/utils.py
   | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
-  | nilearn/maskers/tests/test_base_masker.py
-  | nilearn/maskers/tests/test_input_data.py
-  | nilearn/maskers/_masker_validation.py
-  | nilearn/maskers/multi_nifti_labels_masker.py
-  | nilearn/maskers/multi_nifti_maps_masker.py
-  | nilearn/maskers/base_masker.py
-  | nilearn/maskers/tests/test_masker_validation.py
-  | nilearn/maskers/multi_nifti_masker.py
-  | nilearn/maskers/nifti_masker.py
   | nilearn/maskers/nifti_spheres_masker.py
-  | nilearn/maskers/tests/test_multi_nifti_masker.py
-  | nilearn/maskers/tests/test_multi_nifti_maps_masker.py
   | nilearn/maskers/nifti_labels_masker.py
-  | nilearn/maskers/tests/test_multi_nifti_labels_masker.py
-  | nilearn/maskers/nifti_maps_masker.py
-  | nilearn/maskers/tests/test_nifti_spheres_masker.py
-  | nilearn/maskers/tests/test_nifti_labels_masker.py
-  | nilearn/maskers/tests/test_nifti_maps_masker.py
-  | nilearn/maskers/tests/test_nifti_masker.py
-  | nilearn/plotting/glass_brain_files/plot_align_svg.py
-  | nilearn/plotting/edge_detect.py
-  | nilearn/plotting/html_document.py
-  | nilearn/plotting/glass_brain_files/svg_to_json_converter.py
-  | nilearn/plotting/rm_file.py
-  | nilearn/plotting/glass_brain.py
-  | nilearn/plotting/tests/test_cm.py
-  | nilearn/plotting/js_plotting_utils.py
-  | nilearn/plotting/html_connectome.py
-  | nilearn/plotting/find_cuts.py
-  | nilearn/plotting/html_surface.py
-  | nilearn/plotting/tests/test_html_document.py
   | nilearn/plotting/displays/_axes.py
-  | nilearn/plotting/cm.py
-  | nilearn/plotting/html_stat_map.py
-  | nilearn/plotting/tests/test_img_plotting/test_plot_anat.py
-  | nilearn/plotting/tests/test_img_plotting/test_get_colorbar_and_data_ranges.py
-  | nilearn/plotting/tests/test_html_surface.py
-  | nilearn/plotting/tests/test_html_connectome.py
-  | nilearn/plotting/tests/test_img_plotting/test_img_plotting.py
-  | nilearn/plotting/tests/test_img_plotting/test_plot_carpet.py
-  | nilearn/plotting/tests/test_img_plotting/test_plot_glass_brain.py
-  | nilearn/plotting/tests/test_img_plotting/test_plot_prob_atlas.py
-  | nilearn/plotting/tests/test_html_stat_map.py
-  | nilearn/plotting/tests/test_img_plotting/test_plot_img_comparisons.py
-  | nilearn/plotting/tests/test_find_cuts.py
-  | nilearn/plotting/tests/test_displays.py
-  | nilearn/plotting/tests/test_img_plotting/test_plot_roi.py
-  | nilearn/plotting/tests/test_img_plotting/test_plot_img.py
-  | nilearn/plotting/tests/test_matplotlib_backend.py
-  | nilearn/plotting/tests/test_img_plotting/test_plot_stat_map.py
-  | nilearn/plotting/matrix_plotting.py
-  | nilearn/plotting/tests/test_img_plotting/test_plot_markers.py
-  | nilearn/plotting/tests/test_img_plotting/test_plot_connectome.py
-  | nilearn/plotting/tests/test_matrix_plotting.py
-  | nilearn/plotting/tests/test_js_plotting_utils.py
-  | nilearn/plotting/surf_plotting.py
+  | nilearn/plotting/glass_brain.py
+  | nilearn/plotting/html_surface.py
   | nilearn/plotting/img_plotting.py
+  | nilearn/plotting/js_plotting_utils.py
+  | nilearn/plotting/surf_plotting.py
+  | nilearn/plotting/tests/test_html_stat_map.py
+  | nilearn/plotting/tests/test_html_surface.py
   | nilearn/plotting/tests/test_surf_plotting.py
   | nilearn/surface/surface.py
   | nilearn/surface/tests/test_surface.py
@@ -223,9 +175,11 @@ minversion = "6.0"
 addopts = "--doctest-modules -s -vv --durations=0"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
+# TODO: Remove filter in release 0.13
+filterwarnings = "ignore:.*Please use 'zscore_sample' instead.:FutureWarning"
 
 [tool.codespell]
-skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,*/tmp,./doc/modules/generated/*"
+skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,*/tmp,./doc/modules/generated/*,./doc/_build"
 ignore-words = ".github/codespell_ignore_words.txt"
 
 [tool.flynt]

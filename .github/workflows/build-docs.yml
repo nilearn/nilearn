@@ -15,8 +15,21 @@ on:
     - cron: "0 6 * * *"
 
 jobs:
+
+  # Make citation metadata from CITATION.cff is valid.
+  # as it is used in the documentation build.
+  validate_cff:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Check whether the citation metadata from CITATION.cff is valid
+      uses: citation-file-format/cffconvert-github-action@2.0.0
+      with:
+        args: --validate
+
   # Steps to build the documentation.
   build_docs:
+    needs: validate_cff
     # This prevents this workflow from running on a fork.
     # To test this workflow on a fork, uncomment the following line.
     if: github.repository == 'nilearn/nilearn'
@@ -257,6 +270,12 @@ jobs:
           path: |
            nilearn_data/spm_multimodal_fmri
           key: v1-spm_multimodal_fmri-${{ hashFiles('week_num') }}
+
+      # Update the authors file and the names file
+      # in case a contributor has been added to citation.cff
+      # but did not run the maint_tools/citation_cff_maint.py script.
+      - name: update AUTHORS.rst and doc/changes/names.rst
+        run: python maint_tools/citation_cff_maint.py
 
       # Run the doc build. If no data is restored in previous steps, the data
       # will be downloaded during the build (this only applies for full builds;

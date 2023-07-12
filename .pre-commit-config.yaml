@@ -23,73 +23,25 @@ exclude: |
         | nilearn/_utils/data_gen.py
         | nilearn/reporting/html_report.py
         | nilearn/reporting/tests/test_html_report.py
-        | nilearn/glm/tests/test_contrasts.py
         | nilearn/glm/contrasts.py
         | nilearn/glm/first_level/first_level.py
-        | nilearn/glm/tests/test_second_level.py
+        | nilearn/glm/tests/test_contrasts.py
         | nilearn/glm/tests/test_first_level.py
         | nilearn/interfaces/fmriprep/load_confounds_compcor.py
         | nilearn/interfaces/fmriprep/tests/test_load_confounds_utils.py
         | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
         | nilearn/interfaces/fmriprep/tests/utils.py
         | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
-        | nilearn/maskers/tests/test_base_masker.py
-        | nilearn/maskers/tests/test_input_data.py
-        | nilearn/maskers/_masker_validation.py
-        | nilearn/maskers/multi_nifti_labels_masker.py
-        | nilearn/maskers/multi_nifti_maps_masker.py
-        | nilearn/maskers/base_masker.py
-        | nilearn/maskers/tests/test_masker_validation.py
-        | nilearn/maskers/multi_nifti_masker.py
-        | nilearn/maskers/nifti_masker.py
         | nilearn/maskers/nifti_spheres_masker.py
-        | nilearn/maskers/tests/test_multi_nifti_masker.py
-        | nilearn/maskers/tests/test_multi_nifti_maps_masker.py
         | nilearn/maskers/nifti_labels_masker.py
-        | nilearn/maskers/tests/test_multi_nifti_labels_masker.py
-        | nilearn/maskers/nifti_maps_masker.py
-        | nilearn/maskers/tests/test_nifti_spheres_masker.py
-        | nilearn/maskers/tests/test_nifti_labels_masker.py
-        | nilearn/maskers/tests/test_nifti_maps_masker.py
-        | nilearn/maskers/tests/test_nifti_masker.py
-        | nilearn/plotting/glass_brain_files/plot_align_svg.py
-        | nilearn/plotting/edge_detect.py
-        | nilearn/plotting/html_document.py
-        | nilearn/plotting/glass_brain_files/svg_to_json_converter.py
-        | nilearn/plotting/rm_file.py
-        | nilearn/plotting/glass_brain.py
-        | nilearn/plotting/tests/test_cm.py
-        | nilearn/plotting/js_plotting_utils.py
-        | nilearn/plotting/html_connectome.py
-        | nilearn/plotting/find_cuts.py
-        | nilearn/plotting/html_surface.py
-        | nilearn/plotting/tests/test_html_document.py
         | nilearn/plotting/displays/_axes.py
-        | nilearn/plotting/cm.py
-        | nilearn/plotting/html_stat_map.py
-        | nilearn/plotting/tests/test_img_plotting/test_plot_anat.py
-        | nilearn/plotting/tests/test_img_plotting/test_get_colorbar_and_data_ranges.py
-        | nilearn/plotting/tests/test_html_surface.py
-        | nilearn/plotting/tests/test_html_connectome.py
-        | nilearn/plotting/tests/test_img_plotting/test_img_plotting.py
-        | nilearn/plotting/tests/test_img_plotting/test_plot_carpet.py
-        | nilearn/plotting/tests/test_img_plotting/test_plot_glass_brain.py
-        | nilearn/plotting/tests/test_img_plotting/test_plot_prob_atlas.py
-        | nilearn/plotting/tests/test_html_stat_map.py
-        | nilearn/plotting/tests/test_img_plotting/test_plot_img_comparisons.py
-        | nilearn/plotting/tests/test_find_cuts.py
-        | nilearn/plotting/tests/test_displays.py
-        | nilearn/plotting/tests/test_img_plotting/test_plot_roi.py
-        | nilearn/plotting/tests/test_img_plotting/test_plot_img.py
-        | nilearn/plotting/tests/test_matplotlib_backend.py
-        | nilearn/plotting/tests/test_img_plotting/test_plot_stat_map.py
-        | nilearn/plotting/matrix_plotting.py
-        | nilearn/plotting/tests/test_img_plotting/test_plot_markers.py
-        | nilearn/plotting/tests/test_img_plotting/test_plot_connectome.py
-        | nilearn/plotting/tests/test_matrix_plotting.py
-        | nilearn/plotting/tests/test_js_plotting_utils.py
-        | nilearn/plotting/surf_plotting.py
+        | nilearn/plotting/glass_brain.py
+        | nilearn/plotting/html_surface.py
         | nilearn/plotting/img_plotting.py
+        | nilearn/plotting/js_plotting_utils.py
+        | nilearn/plotting/surf_plotting.py
+        | nilearn/plotting/tests/test_html_stat_map.py
+        | nilearn/plotting/tests/test_html_surface.py
         | nilearn/plotting/tests/test_surf_plotting.py
         | nilearn/surface/surface.py
         | nilearn/surface/tests/test_surface.py
@@ -122,7 +74,7 @@ repos:
     -   id: flynt
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.8.0
+    rev: v3.9.0
     hooks:
       - id: pyupgrade
         args: [--py36-plus]

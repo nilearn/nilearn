@@ -21,33 +21,37 @@ def test_multi_nifti_labels_masker():
     n_regions = 9
     length = 3
 
-    fmri11_img, mask11_img = data_gen.generate_fake_fmri(shape1,
-                                                         affine=affine1,
-                                                         length=length)
-    fmri12_img, mask12_img = data_gen.generate_fake_fmri(shape1,
-                                                         affine=affine2,
-                                                         length=length)
-    fmri21_img, mask21_img = data_gen.generate_fake_fmri(shape2,
-                                                         affine=affine1,
-                                                         length=length)
+    fmri11_img, mask11_img = data_gen.generate_fake_fmri(
+        shape1, affine=affine1, length=length
+    )
+    fmri12_img, mask12_img = data_gen.generate_fake_fmri(
+        shape1, affine=affine2, length=length
+    )
+    fmri21_img, mask21_img = data_gen.generate_fake_fmri(
+        shape2, affine=affine1, length=length
+    )
 
-    labels11_img = data_gen.generate_labeled_regions(shape1, affine=affine1,
-                                                     n_regions=n_regions)
+    labels11_img = data_gen.generate_labeled_regions(
+        shape1, affine=affine1, n_regions=n_regions
+    )
 
-    mask_img_4d = nibabel.Nifti1Image(np.ones((2, 2, 2, 2), dtype=np.int8),
-                                      affine=np.diag((4, 4, 4, 1)))
+    mask_img_4d = nibabel.Nifti1Image(
+        np.ones((2, 2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
+    )
 
     # verify that 4D mask arguments are refused
     masker = MultiNiftiLabelsMasker(labels11_img, mask_img=mask_img_4d)
-    with pytest.raises(DimensionError,
-                       match="Input data has incompatible dimensionality: "
-                             "Expected dimension is 3D and you provided "
-                             "a 4D image."):
+    with pytest.raises(
+        DimensionError,
+        match="Input data has incompatible dimensionality: "
+        "Expected dimension is 3D and you provided "
+        "a 4D image.",
+    ):
         masker.fit()
 
     # check exception when transform() called without prior fit()
     masker11 = MultiNiftiLabelsMasker(labels11_img, resampling_target=None)
-    with pytest.raises(ValueError, match='has not been fitted. '):
+    with pytest.raises(ValueError, match="has not been fitted. "):
         masker11.transform(fmri11_img)
 
     # No exception raised here
@@ -59,8 +63,9 @@ def test_multi_nifti_labels_masker():
     masker11.fit()
     masker11.inverse_transform(signals11)
 
-    masker11 = MultiNiftiLabelsMasker(labels11_img, mask_img=mask11_img,
-                                      resampling_target=None)
+    masker11 = MultiNiftiLabelsMasker(
+        labels11_img, mask_img=mask11_img, resampling_target=None
+    )
     signals11 = masker11.fit().transform(fmri11_img)
     assert signals11.shape == (length, n_regions)
 
@@ -83,28 +88,32 @@ def test_multi_nifti_labels_masker():
     pytest.raises(ValueError, masker11.transform, fmri12_img)
     pytest.raises(ValueError, masker11.transform, fmri21_img)
 
-    masker11 = MultiNiftiLabelsMasker(labels11_img, mask_img=mask12_img,
-                                      resampling_target=None)
+    masker11 = MultiNiftiLabelsMasker(
+        labels11_img, mask_img=mask12_img, resampling_target=None
+    )
     pytest.raises(ValueError, masker11.fit)
 
-    masker11 = MultiNiftiLabelsMasker(labels11_img, mask_img=mask21_img,
-                                      resampling_target=None)
+    masker11 = MultiNiftiLabelsMasker(
+        labels11_img, mask_img=mask21_img, resampling_target=None
+    )
     pytest.raises(ValueError, masker11.fit)
 
     # Transform, with smoothing (smoke test)
-    masker11 = MultiNiftiLabelsMasker(labels11_img, smoothing_fwhm=3,
-                                      resampling_target=None)
+    masker11 = MultiNiftiLabelsMasker(
+        labels11_img, smoothing_fwhm=3, resampling_target=None
+    )
     signals11_list = masker11.fit().transform(signals_input)
     for signals in signals11_list:
         assert signals.shape == (length, n_regions)
 
-    masker11 = MultiNiftiLabelsMasker(labels11_img, smoothing_fwhm=3,
-                                      resampling_target=None)
+    masker11 = MultiNiftiLabelsMasker(
+        labels11_img, smoothing_fwhm=3, resampling_target=None
+    )
     signals11_list = masker11.fit_transform(signals_input)
     for signals in signals11_list:
         assert signals.shape == (length, n_regions)
 
-        with pytest.raises(ValueError, match='has not been fitted. '):
+        with pytest.raises(ValueError, match="has not been fitted. "):
             MultiNiftiLabelsMasker(labels11_img).inverse_transform(signals)
 
     # Call inverse transform (smoke test)
@@ -120,26 +129,26 @@ def test_multi_nifti_labels_masker_reduction_strategies():
     2. whether unrecognised strategies raise a ValueError
     3. whether the default option is backwards compatible (calls "mean")
     """
-    test_values = [-2., -1., 0., 1., 2]
+    test_values = [-2.0, -1.0, 0.0, 1.0, 2]
 
-    img_data = np.array([[test_values,
-                          test_values]])
+    img_data = np.array([[test_values, test_values]])
 
-    labels_data = np.array([[[0, 0, 0, 0, 0],
-                             [1, 1, 1, 1, 1]]], dtype=np.int8)
+    labels_data = np.array([[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1]]], dtype=np.int8)
 
     affine = np.eye(4)
     img = nibabel.Nifti1Image(img_data, affine)
     labels = nibabel.Nifti1Image(labels_data, affine)
 
     # What MultiNiftiLabelsMasker should return for each reduction strategy?
-    expected_results = {"mean": np.mean(test_values),
-                        "median": np.median(test_values),
-                        "sum": np.sum(test_values),
-                        "minimum": np.min(test_values),
-                        "maximum": np.max(test_values),
-                        "standard_deviation": np.std(test_values),
-                        "variance": np.var(test_values)}
+    expected_results = {
+        "mean": np.mean(test_values),
+        "median": np.median(test_values),
+        "sum": np.sum(test_values),
+        "minimum": np.min(test_values),
+        "maximum": np.max(test_values),
+        "standard_deviation": np.std(test_values),
+        "variance": np.var(test_values),
+    }
 
     for strategy, expected_result in expected_results.items():
         masker = MultiNiftiLabelsMasker(labels, strategy=strategy)
@@ -150,10 +159,7 @@ def test_multi_nifti_labels_masker_reduction_strategies():
             assert result.squeeze() == expected_result
 
     with pytest.raises(ValueError, match="Invalid strategy 'TESTRAISE'"):
-        MultiNiftiLabelsMasker(
-            labels,
-            strategy="TESTRAISE"
-        )
+        MultiNiftiLabelsMasker(labels, strategy="TESTRAISE")
 
     default_masker = MultiNiftiLabelsMasker(labels)
     assert default_masker.strategy == "mean"
@@ -174,34 +180,48 @@ def test_multi_nifti_labels_masker_resampling():
     length = 3
 
     # With data of the same affine
-    fmri11_img, _ = data_gen.generate_fake_fmri(shape1, affine=affine,
-                                                length=length)
-    _, mask22_img = data_gen.generate_fake_fmri(shape2, affine=affine,
-                                                length=length)
+    fmri11_img, _ = data_gen.generate_fake_fmri(
+        shape1, affine=affine, length=length
+    )
+    _, mask22_img = data_gen.generate_fake_fmri(
+        shape2, affine=affine, length=length
+    )
 
-    labels33_img = data_gen.generate_labeled_regions(shape3, n_regions,
-                                                     affine=affine)
+    labels33_img = data_gen.generate_labeled_regions(
+        shape3, n_regions, affine=affine
+    )
 
     # Multi-subject example
     fmri11_img = [fmri11_img, fmri11_img]
 
     # Test error checking
-    pytest.raises(ValueError, MultiNiftiLabelsMasker, labels33_img,
-                  resampling_target="mask")
-    pytest.raises(ValueError, MultiNiftiLabelsMasker, labels33_img,
-                  resampling_target="invalid")
+    pytest.raises(
+        ValueError,
+        MultiNiftiLabelsMasker,
+        labels33_img,
+        resampling_target="mask",
+    )
+    pytest.raises(
+        ValueError,
+        MultiNiftiLabelsMasker,
+        labels33_img,
+        resampling_target="invalid",
+    )
 
     # Target: labels
-    masker = MultiNiftiLabelsMasker(labels33_img, mask_img=mask22_img,
-                                    resampling_target="labels")
+    masker = MultiNiftiLabelsMasker(
+        labels33_img, mask_img=mask22_img, resampling_target="labels"
+    )
 
     masker.fit()
-    np.testing.assert_almost_equal(masker.labels_img_.affine,
-                                   labels33_img.affine)
+    np.testing.assert_almost_equal(
+        masker.labels_img_.affine, labels33_img.affine
+    )
     assert masker.labels_img_.shape == labels33_img.shape
 
-    np.testing.assert_almost_equal(masker.mask_img_.affine,
-                                   masker.labels_img_.affine)
+    np.testing.assert_almost_equal(
+        masker.mask_img_.affine, masker.labels_img_.affine
+    )
     assert masker.mask_img_.shape == masker.labels_img_.shape[:3]
 
     transformed = masker.transform(fmri11_img)
@@ -209,10 +229,10 @@ def test_multi_nifti_labels_masker_resampling():
         assert t.shape == (length, n_regions)
 
         fmri11_img_r = masker.inverse_transform(t)
-        np.testing.assert_almost_equal(fmri11_img_r.affine,
-                                       masker.labels_img_.affine)
-        assert (fmri11_img_r.shape == (
-                masker.labels_img_.shape[:3] + (length,)))
+        np.testing.assert_almost_equal(
+            fmri11_img_r.affine, masker.labels_img_.affine
+        )
+        assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
 
     # Test with clipped labels: mask does not contain all labels.
     # Shapes do matter in that case, because there is some resampling
@@ -224,28 +244,34 @@ def test_multi_nifti_labels_masker_resampling():
     n_regions = 9
     length = 21
 
-    fmri11_img, _ = data_gen.generate_fake_fmri(shape1, affine=affine,
-                                                length=length)
-    _, mask22_img = data_gen.generate_fake_fmri(shape2, affine=affine,
-                                                length=length)
+    fmri11_img, _ = data_gen.generate_fake_fmri(
+        shape1, affine=affine, length=length
+    )
+    _, mask22_img = data_gen.generate_fake_fmri(
+        shape2, affine=affine, length=length
+    )
 
     # Multi-subject example
     fmri11_img = [fmri11_img, fmri11_img]
 
     # Target: labels
-    labels33_img = data_gen.generate_labeled_regions(shape3, n_regions,
-                                                     affine=affine)
+    labels33_img = data_gen.generate_labeled_regions(
+        shape3, n_regions, affine=affine
+    )
 
-    masker = MultiNiftiLabelsMasker(labels33_img, mask_img=mask22_img,
-                                    resampling_target="labels")
+    masker = MultiNiftiLabelsMasker(
+        labels33_img, mask_img=mask22_img, resampling_target="labels"
+    )
 
     masker.fit()
-    np.testing.assert_almost_equal(masker.labels_img_.affine,
-                                   labels33_img.affine)
+    np.testing.assert_almost_equal(
+        masker.labels_img_.affine, labels33_img.affine
+    )
     assert masker.labels_img_.shape == labels33_img.shape
 
-    np.testing.assert_almost_equal(masker.mask_img_.affine,
-                                   masker.labels_img_.affine)
+    np.testing.assert_almost_equal(
+        masker.mask_img_.affine, masker.labels_img_.affine
+    )
     assert masker.mask_img_.shape == masker.labels_img_.shape[:3]
 
     uniq_labels = np.unique(get_data(masker.labels_img_))
@@ -259,10 +285,10 @@ def test_multi_nifti_labels_masker_resampling():
         assert (t.var(axis=0) == 0).sum() < n_regions
 
         fmri11_img_r = masker.inverse_transform(t)
-        np.testing.assert_almost_equal(fmri11_img_r.affine,
-                                       masker.labels_img_.affine)
-        assert (fmri11_img_r.shape == (
-                masker.labels_img_.shape[:3] + (length,)))
+        np.testing.assert_almost_equal(
+            fmri11_img_r.affine, masker.labels_img_.affine
+        )
+        assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
 
     # Test with data and atlas of different shape: the atlas should be
     # resampled to the data
@@ -270,17 +296,19 @@ def test_multi_nifti_labels_masker_resampling():
     affine2 = 2 * np.eye(4)
     affine2[-1, -1] = 1
 
-    fmri22_img, _ = data_gen.generate_fake_fmri(shape22, affine=affine2,
-                                                length=length)
+    fmri22_img, _ = data_gen.generate_fake_fmri(
+        shape22, affine=affine2, length=length
+    )
     masker = MultiNiftiLabelsMasker(labels33_img, mask_img=mask22_img)
 
     masker.fit_transform(fmri22_img)
-    np.testing.assert_array_equal(masker._resampled_labels_img_.affine,
-                                  affine2)
+    np.testing.assert_array_equal(
+        masker._resampled_labels_img_.affine, affine2
+    )
 
     # Test with filenames
     with testing.write_tmp_imgs(fmri22_img) as filename:
-        masker = MultiNiftiLabelsMasker(labels33_img, resampling_target='data')
+        masker = MultiNiftiLabelsMasker(labels33_img, resampling_target="data")
         masker.fit_transform(filename)
 
     # test labels masker with resampling target in 'data', 'labels' to return
@@ -290,16 +318,22 @@ def test_multi_nifti_labels_masker_resampling():
     affine = np.eye(4) * 2
 
     fmri_img, _ = data_gen.generate_fake_fmri(shape, affine=affine, length=21)
-    labels_img = data_gen.generate_labeled_regions((9, 8, 6), affine=np.eye(4),
-                                                   n_regions=10)
-    for resampling_target in ['data', 'labels']:
-        masker = MultiNiftiLabelsMasker(labels_img=labels_img,
-                                        resampling_target=resampling_target)
-        if resampling_target == 'data':
-            with pytest.warns(UserWarning,
-                              match=("After resampling the label image "
-                                     "to the data image, the following "
-                                     "labels were removed")):
+    labels_img = data_gen.generate_labeled_regions(
+        (9, 8, 6), affine=np.eye(4), n_regions=10
+    )
+    for resampling_target in ["data", "labels"]:
+        masker = MultiNiftiLabelsMasker(
+            labels_img=labels_img, resampling_target=resampling_target
+        )
+        if resampling_target == "data":
+            with pytest.warns(
+                UserWarning,
+                match=(
+                    "After resampling the label image "
+                    "to the data image, the following "
+                    "labels were removed"
+                ),
+            ):
                 transformed = masker.fit_transform(fmri_img)
         else:
             transformed = masker.fit_transform(fmri_img)
@@ -314,5 +348,6 @@ def test_multi_nifti_labels_masker_resampling():
         transformed2 = masker.fit_transform(fmri_img)
         # inverse transform again
         compressed_img2 = masker.inverse_transform(transformed2)
-        np.testing.assert_array_equal(get_data(compressed_img),
-                                      get_data(compressed_img2))
+        np.testing.assert_array_equal(
+            get_data(compressed_img), get_data(compressed_img2)
+        )

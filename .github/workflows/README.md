@@ -130,3 +130,11 @@ This aims to detect tests that are not properly isolated from each other (test p
 ### update_precommit_hooks.yml
 
 Runs weekly to check for updates in versions of precommit hooks and creates a pull request automatically to apply updates.
+
+## Update authors
+
+### update_authors.yml
+
+If the CITATION.CFF file is modified,
+this workflow will run to update the AUTHORS file
+and the and doc/changes/names.rst file.

@@ -13,11 +13,11 @@ def test_dim_cmap():
 
 def test_replace_inside():
     # This is only a smoke test
-    replace_inside(plt.cm.jet, plt.cm.hsv, .2, .8)
+    replace_inside(plt.cm.jet, plt.cm.hsv, 0.2, 0.8)
     # We also test with gnuplot, which is defined using function
-    if hasattr(plt.cm, 'gnuplot'):
+    if hasattr(plt.cm, "gnuplot"):
         # gnuplot is only in recent version of MPL
-        replace_inside(plt.cm.gnuplot, plt.cm.gnuplot2, .2, .8)
+        replace_inside(plt.cm.gnuplot, plt.cm.gnuplot2, 0.2, 0.8)
 
 
 def test_cm_preload():

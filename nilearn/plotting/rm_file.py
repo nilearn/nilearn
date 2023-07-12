@@ -10,10 +10,10 @@ import os
 import time
 import warnings
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('file_name', type=str)
-    parser.add_argument('n_seconds', type=float)
+    parser.add_argument("file_name", type=str)
+    parser.add_argument("n_seconds", type=float)
     args = parser.parse_args()
 
     time.sleep(args.n_seconds)
@@ -21,4 +21,4 @@ if __name__ == '__main__':
         try:
             os.remove(args.file_name)
         except Exception as e:
-            warnings.warn(f'failed to remove {args.file_name}:\n{e}')
+            warnings.warn(f"failed to remove {args.file_name}:\n{e}")
