@@ -335,21 +335,24 @@ def test_not_found_exception(tmp_path):
         tmp_path, copy_confounds=True, copy_json=False
     )
     missing_params = ["trans_y", "trans_x_derivative1", "rot_z_power2"]
-    missing_keywords = ["cosine"]
+    missing_keywords = ["cosine", "global_signal"]
 
     leagal_confounds = pd.read_csv(bad_conf, delimiter="\t", encoding="utf-8")
-    cosine = [
-        col_name
-        for col_name in leagal_confounds.columns
-        if "cosine" in col_name
-    ]
+    remove_columns = []
+    for missing_kw in missing_keywords:
+        remove_columns += [
+            col_name
+            for col_name in leagal_confounds.columns
+            if missing_kw in col_name
+        ]
+
     aroma = [
         col_name
         for col_name in leagal_confounds.columns
         if "aroma" in col_name
     ]
     missing_confounds = leagal_confounds.drop(
-        columns=missing_params + cosine + aroma
+        columns=missing_params + remove_columns + aroma
     )
     missing_confounds.to_csv(bad_conf, sep="\t", index=False)
 
@@ -361,7 +364,8 @@ def test_not_found_exception(tmp_path):
             motion="full",
         )
     assert f"{missing_params}" in exc_info.value.args[0]
-    assert f"{missing_keywords}" in exc_info.value.args[0]
+    # missing cosine if it's not present in the file it's fine
+    assert f"{missing_keywords[-1:]}" in exc_info.value.args[0]
 
     # loading anat compcor should also raise an error, because the json file is
     # missing for that example dataset
@@ -386,7 +390,7 @@ def test_not_found_exception(tmp_path):
         load_confounds(
             img_missing_confounds, strategy=("ica_aroma", ), ica_aroma="basic"
         )
-    assert "aroma" in exc_info.value.args[0]
+    assert "ica_aroma" in exc_info.value.args[0]
 
     # Aggressive ICA-AROMA strategy requires
     # default nifti
