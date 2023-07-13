@@ -43,8 +43,6 @@ See :ref:`plotting` for more details.
 # First, we retrieve data from nilearn provided (general-purpose) datasets
 # ------------------------------------------------------------------------
 
-import matplotlib.pyplot as plt
-
 from nilearn import datasets
 
 # haxby dataset to have anatomical image, EPI images and masks
@@ -116,6 +114,7 @@ plotting.plot_stat_map(stat_img, display_mode='x',
 # :class:`~nilearn.plotting.displays.YSlicer` object.
 # ``cut_coords`` is provided as an integer (1), and the coordinates are,
 # again, selected automatically.
+import matplotlib.pyplot as plt
 
 plotting.plot_stat_map(stat_img, display_mode='y', cut_coords=1,
                        title="display_mode='y', cut_coords=1",
