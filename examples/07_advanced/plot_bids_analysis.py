@@ -159,5 +159,6 @@ plotting.plot_glass_brain(
     title="Group language network (unc p<0.001)",
     plot_abs=False,
     display_mode="x",
+    figure=plt.figure(figsize=(5, 4)),
 )
 plotting.show()
