@@ -44,6 +44,7 @@ See :ref:`plotting` for more details.
 # ------------------------------------------------------------------------
 
 import matplotlib.pyplot as plt
+
 from nilearn import datasets
 
 # haxby dataset to have anatomical image, EPI images and masks
