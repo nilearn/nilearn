@@ -130,7 +130,7 @@ plotting.plot_stat_map(stat_img, display_mode='y', cut_coords=1,
 
 plotting.plot_stat_map(stat_img, display_mode='z',
                        cut_coords=1, colorbar=False,
-                       title="display_mode='z', cut_coords=1, colorbar=False",
+                       title="display_mode='z', cut_coords=1,\ncolorbar=False",
                        figure=plt.figure(figsize=(5, 7)))
 
 ###############################################################################
