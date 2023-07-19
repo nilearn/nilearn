@@ -12,6 +12,8 @@ PolyData = Dict[str, np.ndarray]
 
 
 class Mesh:
+    """A surface mesh stored in a Gifti or Freesurfer file."""
+
     n_vertices: int
 
     _file: pathlib.Path
@@ -36,6 +38,8 @@ class Mesh:
 
 
 class InMemoryMesh(Mesh):
+    """A surface mesh stored as in-memory numpy arrays."""
+
     n_vertices: int
 
     _coordinates: np.ndarray
@@ -59,11 +63,14 @@ PolyMesh = Dict[str, Mesh]
 
 
 def _get_vertex_counts(mesh: PolyMesh) -> dict[str, int]:
+    """Get the total number of vertices across all mesh parts (hemispheres)."""
     return {part_name: part.n_vertices for (part_name, part) in mesh.items()}
 
 
 @dataclasses.dataclass
 class SurfaceImage:
+    """Surface image, usually containing meshes & data for both hemispheres."""
+
     data: PolyData
     mesh: PolyMesh
     shape: tuple[int, ...] = dataclasses.field(init=False)
