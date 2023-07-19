@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import abc
 import dataclasses
 import pathlib
 from typing import Dict
@@ -11,7 +12,22 @@ from nilearn.experimental.surface import _io
 PolyData = Dict[str, np.ndarray]
 
 
-class Mesh:
+class Mesh(abc.ABC):
+    """A surface mesh, having vertex coordinates and faces(triangles)."""
+
+    n_vertices: int
+
+    # TODO those are properties for now for compatibility with plot_surf_img
+    # for the demo but should become functions as they can take some time to
+    # return
+    coordinates: np.ndarray
+    faces: np.ndarray
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} with {self.n_vertices} vertices>"
+
+
+class FileMesh(Mesh):
     """A surface mesh stored in a Gifti or Freesurfer file."""
 
     n_vertices: int
@@ -22,12 +38,6 @@ class Mesh:
         self._file = pathlib.Path(file_path)
         self.n_vertices = _io.read_mesh(self._file)["coordinates"].shape[0]
 
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} with {self.n_vertices} vertices>"
-
-    # TODO those are properties for now for compatibility with plot_surf_img
-    # for the demo but should become functions as they can take some time to
-    # return
     @property
     def coordinates(self) -> np.ndarray:
         return _io.read_mesh(self._file)["coordinates"]
@@ -42,21 +52,13 @@ class InMemoryMesh(Mesh):
 
     n_vertices: int
 
-    _coordinates: np.ndarray
-    _faces: np.ndarray
+    coordinates: np.ndarray
+    faces: np.ndarray
 
     def __init__(self, coordinates: np.ndarray, faces: np.ndarray) -> None:
-        self._coordinates = coordinates
-        self._faces = faces
+        self.coordinates = coordinates
+        self.faces = faces
         self.n_vertices = coordinates.shape[0]
-
-    @property
-    def coordinates(self) -> np.ndarray:
-        return self._coordinates
-
-    @property
-    def faces(self) -> np.ndarray:
-        return self._faces
 
 
 PolyMesh = Dict[str, Mesh]

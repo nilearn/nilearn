@@ -7,6 +7,7 @@ from typing import Dict, Sequence, Tuple
 from nilearn import datasets
 from nilearn.experimental.surface import _io
 from nilearn.experimental.surface._surface_image import (
+    FileMesh,
     Mesh,
     PolyMesh,
     SurfaceImage,
@@ -20,7 +21,7 @@ def load_fsaverage(mesh_name: str = "fsaverage5") -> Dict[str, PolyMesh]:
     for mesh_type, mesh_name in renaming.items():
         meshes[mesh_name] = {}
         for hemisphere in "left", "right":
-            meshes[mesh_name][f"{hemisphere}_hemisphere"] = Mesh(
+            meshes[mesh_name][f"{hemisphere}_hemisphere"] = FileMesh(
                 fsaverage[f"{mesh_type}_{hemisphere}"]
             )
     return meshes
