@@ -22,6 +22,8 @@ from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
 from nilearn.surface.surface import _check_mesh
 
+from warnings import warn
+
 VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
 VALID_HEMISPHERES = "left", "right"
 
@@ -460,6 +462,12 @@ def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
 
     if darkness is not None:
         bg_faces *= darkness
+        warn(
+            (
+                "The `darkness` parameter will be deprecated in release 0.13. "
+                "We recommend setting `darkness` to None"
+            )
+        )
 
     face_colors = plt.cm.gray_r(bg_faces)
 
