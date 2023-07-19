@@ -447,6 +447,35 @@ This installs your local version of Nilearn, along with all dependencies necessa
 For more information about the dependency installation options, see ``pyproject.toml``.
 The installed version will also reflect any changes you make to your code.
 
+.. hint::
+
+      When you install nilearn, it will use the version stored in the version control system
+      (in this case git)
+      to get the version number you would see if you typed in your terminal:
+
+      .. code-block:: bash
+
+            pip show nilearn
+
+      or
+
+      .. code-block:: bash
+
+            python -c "import nilearn; print(nilearn.__version__)"
+
+      To make sure that you get the correct version number, you must fetch
+      all the git tags from the nilearn github repository,
+      by running the following commands:
+
+      .. code-block:: bash
+
+            # add the nilearn repo as an "upstream" remote
+            git remote add upstream https://github.com/nilearn/nilearn.git
+            # fetch all the tags
+            git fetch --all
+            # check that you got all the tags
+            git tag --list
+
 4. check that all tests pass with (this can take a while)::
 
       pytest nilearn
