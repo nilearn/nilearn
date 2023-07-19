@@ -72,7 +72,7 @@ class SurfaceImage:
         data_shapes = {k: v.shape for (k, v) in self.data.items()}
         vertex_counts = _get_vertex_counts(self.mesh)
         assert {k: v[-1] for (k, v) in data_shapes.items()} == vertex_counts
-        total_n_vertices = sum(s[-1] for s in data_shapes.values())
+        total_n_vertices = sum(vertex_counts.values())
         first_data_shape = list(data_shapes.values())[0]
         if len(first_data_shape) == 1:
             self.shape = (total_n_vertices,)
