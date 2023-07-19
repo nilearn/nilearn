@@ -60,8 +60,7 @@ def show():
 # Core, usage-agnostic functions
 
 
-def _get_colorbar_and_data_ranges(stat_map_data, vmax, symmetric_cbar, kwargs,
-                                  force_min_stat_map_value=None):
+def _get_colorbar_and_data_ranges(stat_map_data, vmax, symmetric_cbar, kwargs):
     """Set colormap and colorbar limits.
 
     Used by for plot_stat_map and plot_glass_brain.
@@ -83,11 +82,8 @@ def _get_colorbar_and_data_ranges(stat_map_data, vmax, symmetric_cbar, kwargs,
         if hasattr(stat_map_data, '_mask'):
             stat_map_data = np.asarray(
                 stat_map_data[np.logical_not(stat_map_data._mask)])
+        stat_map_min = np.nanmin(stat_map_data)
         stat_map_max = np.nanmax(stat_map_data)
-        if force_min_stat_map_value is None:
-            stat_map_min = np.nanmin(stat_map_data)
-        else:
-            stat_map_min = force_min_stat_map_value
 
     if symmetric_cbar == 'auto':
         symmetric_cbar = stat_map_min < 0 and stat_map_max > 0
