@@ -103,9 +103,9 @@ def _get_vertexcolor(surf_map, cmap, norm,
 
 
 def _one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
-                  black_bg=False, bg_map=None, symmetric_cmap=True,
-                  bg_on_data=False, darkness=.7,
-                  vmax=None, vmin=None):
+                    black_bg=False, bg_map=None, symmetric_cmap=True,
+                    bg_on_data=False, darkness=.7,
+                    vmax=None, vmin=None):
     """Prepare info for plotting one surface map on a single mesh.
 
     This computes the dictionary that gets inserted in the web page,
@@ -148,9 +148,9 @@ def _check_mesh(mesh):
 
 
 def _full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
-                    cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
-                    bg_on_data=False, darkness=.7,
-                    vmax=None, vmin=None, vol_to_surf_kwargs={}):
+                     cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
+                     bg_on_data=False, darkness=.7,
+                     vmax=None, vmin=None, vol_to_surf_kwargs={}):
     """Project 3D map on cortex; prepare info to plot both hemispheres.
 
     This computes the dictionary that gets inserted in the web page,
