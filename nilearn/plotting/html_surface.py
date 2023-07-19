@@ -298,7 +298,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
 
     """
     stat_map_img = check_niimg_3d(stat_map_img)
-    info = full_brain_info(
+    info = _full_brain_info(
         volume_img=stat_map_img, mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, vmax=vmax, vmin=vmin,
         bg_on_data=bg_on_data, darkness=darkness,
@@ -418,7 +418,7 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
             surf_mesh, surf_map)
     if bg_map is not None:
         _, bg_map = surface.check_mesh_and_data(surf_mesh, bg_map)
-    info = one_mesh_info(
+    info = _one_mesh_info(
         surf_map=surf_map, surf_mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, bg_map=bg_map,
         bg_on_data=bg_on_data, darkness=darkness,
