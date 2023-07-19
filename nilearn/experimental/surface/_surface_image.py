@@ -32,19 +32,19 @@ class FileMesh(Mesh):
 
     n_vertices: int
 
-    _file: pathlib.Path
+    file_path: pathlib.Path
 
     def __init__(self, file_path: pathlib.Path | str) -> None:
-        self._file = pathlib.Path(file_path)
-        self.n_vertices = _io.read_mesh(self._file)["coordinates"].shape[0]
+        self.file_path = pathlib.Path(file_path)
+        self.n_vertices = _io.read_mesh(self.file_path)["coordinates"].shape[0]
 
     @property
     def coordinates(self) -> np.ndarray:
-        return _io.read_mesh(self._file)["coordinates"]
+        return _io.read_mesh(self.file_path)["coordinates"]
 
     @property
     def faces(self) -> np.ndarray:
-        return _io.read_mesh(self._file)["faces"]
+        return _io.read_mesh(self.file_path)["faces"]
 
 
 class InMemoryMesh(Mesh):
