@@ -35,7 +35,8 @@ def test_rena_clustering():
 
     memory = Memory(location=None)
     rena = ReNA(mask_img, n_clusters=-2, memory=memory)
-    pytest.raises(ValueError, rena.fit, X)
+    with pytest.raises(ValueError):
+        rena.fit(X)
 
     rena = ReNA(mask_img, n_clusters=10, scaling=True)
     X_red = rena.fit_transform(X)
@@ -43,7 +44,8 @@ def test_rena_clustering():
 
     for n_iter in [-2, 0]:
         rena = ReNA(mask_img, n_iter=n_iter, memory=memory)
-        pytest.raises(ValueError, rena.fit, X)
+        with pytest.raises(ValueError):
+            rena.fit(X)
 
     for n_clusters in [1, 2, 4, 8]:
         rena = ReNA(

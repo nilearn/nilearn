@@ -91,13 +91,12 @@ def test_feature_screening():
                     is None
                 )
             elif screening_percentile == 101 or screening_percentile == -1:
-                pytest.raises(
-                    ValueError,
-                    check_feature_screening,
-                    screening_percentile,
-                    mask_img,
-                    is_classif,
-                )
+                with pytest.raises(ValueError):
+                    check_feature_screening(
+                        screening_percentile,
+                        mask_img,
+                        is_classif,
+                    )
             elif screening_percentile == 20:
                 assert isinstance(
                     check_feature_screening(
