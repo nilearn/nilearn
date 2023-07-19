@@ -4,9 +4,41 @@ copied from the nilearn sandbox discussion, to be transformed into tests &
 examples
 
 """
+from typing import Optional, Sequence
+
+from matplotlib import pyplot as plt
 
 from nilearn import plotting
 from nilearn.experimental import surface
+
+
+def plot_surf_img(
+    img: surface.SurfaceImage,
+    parts: Optional[Sequence[str]] = None,
+    mesh: Optional[surface.PolyMesh] = None,
+    **kwargs,
+) -> plt.Figure:
+    if mesh is None:
+        mesh = img.mesh
+    if parts is None:
+        parts = list(img.data.keys())
+    fig, axes = plt.subplots(
+        1,
+        len(parts),
+        subplot_kw={"projection": "3d"},
+        figsize=(4 * len(parts), 4),
+    )
+    for ax, mesh_part in zip(axes, parts):
+        plotting.plot_surf(
+            mesh[mesh_part],
+            img.data[mesh_part],
+            axes=ax,
+            title=mesh_part,
+            **kwargs,
+        )
+    assert isinstance(fig, plt.Figure)
+    return fig
+
 
 img = surface.fetch_nki()[0]
 print(f"NKI image: {img}")
@@ -19,7 +51,7 @@ mean_data = masked_data.mean(axis=0)
 mean_img = masker.inverse_transform(mean_data)
 print(f"Image mean: {mean_img}")
 
-surface.plot_surf_img(mean_img)
+plot_surf_img(mean_img)
 plotting.show()
 
 ###############################################################################
@@ -32,7 +64,7 @@ print(f"NKI image: {img}")
 
 labels_img, label_names = surface.fetch_destrieux()
 print(f"Destrieux image: {labels_img}")
-surface.plot_surf_img(labels_img, cmap="gist_ncar", avg_method="median")
+plot_surf_img(labels_img, cmap="gist_ncar", avg_method="median")
 
 labels_masker = surface.SurfaceLabelsMasker(labels_img, label_names).fit()
 masked_data = labels_masker.transform(img)
@@ -89,7 +121,7 @@ decoder = decoding.Decoder(
 decoder.fit(img, y)
 print("CV scores:", decoder.cv_scores_)
 
-surface.plot_surf_img(decoder.coef_img_[0], threshold=1e-6)
+plot_surf_img(decoder.coef_img_[0], threshold=1e-6)
 plotting.show()
 
 ###############################################################################
@@ -117,7 +149,7 @@ coef_img = decoder[:-1].inverse_transform(np.atleast_2d(decoder[-1].coef_))
 
 
 vmax = max([np.absolute(dp).max() for dp in coef_img.data.values()])
-surface.plot_surf_img(
+plot_surf_img(
     coef_img,
     cmap="cold_hot",
     vmin=-vmax,

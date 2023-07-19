@@ -7,15 +7,23 @@ from nilearn.experimental.surface._maskers import (
     SurfaceLabelsMasker,
     SurfaceMasker,
 )
-from nilearn.experimental.surface._plotting import plot_surf_img
-from nilearn.experimental.surface._surface_image import SurfaceImage
+from nilearn.experimental.surface._surface_image import (
+    SurfaceImage,
+    Mesh,
+    PolyMesh,
+    FileMesh,
+    InMemoryMesh,
+)
 
 __all__ = [
+    "FileMesh",
+    "InMemoryMesh",
+    "Mesh",
+    "PolyMesh",
     "SurfaceImage",
-    "SurfaceMasker",
     "SurfaceLabelsMasker",
-    "load_fsaverage",
-    "fetch_nki",
+    "SurfaceMasker",
     "fetch_destrieux",
-    "plot_surf_img",
+    "fetch_nki",
+    "load_fsaverage",
 ]
