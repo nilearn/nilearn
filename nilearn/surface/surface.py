@@ -964,7 +964,7 @@ def _check_mesh(mesh):
     or a dict with sufficient entries.
 
     Used by plotting.surf_plotting.plot_img_on_surf and
-    plotting.html_surface.full_brain_info
+    plotting.html_surface._full_brain_info
 
     """
     if isinstance(mesh, str):
