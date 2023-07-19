@@ -25,7 +25,7 @@ def plot_surf_img(
     for ax, mesh_part in zip(axes, parts):
         plotting.plot_surf(
             mesh[mesh_part],
-            img.data[mesh_part],
+            surf_map=img.data[mesh_part],
             axes=ax,
             title=mesh_part,
             **kwargs,
