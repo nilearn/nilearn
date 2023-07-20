@@ -140,7 +140,7 @@ def test_full_brain_info():
                 "‘full_brain_info()’ has been renamed ‘_full_brain_info()’ and will be removed in a future version"
             ),
         ):
-            html_surface.full_brain_info(img, surfaces)
+            html_surface.full_brain_info(img)
 
 
 def test_fill_html_template():
