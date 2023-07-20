@@ -465,7 +465,8 @@ def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
             (
                 "The `darkness` parameter will be deprecated in release 0.13. "
                 "We recommend setting `darkness` to None"
-            )
+            ),
+            DeprecationWarning,
         )
 
     face_colors = plt.cm.gray_r(bg_faces)
