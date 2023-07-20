@@ -650,7 +650,9 @@ def test_projection_matrix():
     assert_array_almost_equal(proj.sum(axis=1)[7:], np.ones(proj.shape[0] - 7))
     # mask and img should have the same shape
     with pytest.raises(ValueError):
-        surface._projection_matrix(mesh, np.eye(4), img.shape, mask=np.ones((3, 3, 2)))
+        surface._projection_matrix(
+            mesh, np.eye(4), img.shape, mask=np.ones((3, 3, 2))
+        )
 
 
 def test_sampling_affine():
