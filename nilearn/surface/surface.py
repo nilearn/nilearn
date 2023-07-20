@@ -147,12 +147,13 @@ def _ball_sample_locations(
         Number of samples to draw for each vertex. Default=20.
 
     depth : `None`
-        Raises a `ValueError` if not `None` because incompatible with this sampling
-        strategy.
+        Raises a `ValueError` if not `None` because incompatible with this
+        sampling strategy.
 
     Returns
     -------
-    sample_location_voxel_space : :obj:`numpy.ndarray`, shape (n_vertices, n_points, 3)
+    sample_location_voxel_space : :obj:`numpy.ndarray`,
+        shape (n_vertices, n_points, 3)
         The locations, in voxel space, from which to draw samples.
         First dimension iterates over mesh vertices, second dimension iterates
         over the sample points associated to a vertex, third dimension is x, y,
@@ -211,7 +212,8 @@ def _line_sample_locations(
 
     Returns
     -------
-    sample_location_voxel_space : :obj:`numpy.ndarray`, shape (n_vertices, n_points, 3)
+    sample_location_voxel_space : :obj:`numpy.ndarray`,
+        shape (n_vertices, n_points, 3)
         The locations, in voxel space, from which to draw samples.
         First dimension iterates over mesh vertices, second dimension iterates
         over the sample points associated to a vertex, third dimension is x, y,
@@ -830,7 +832,8 @@ def load_surf_mesh(surf_mesh):
 
     Parameters
     ----------
-    surf_mesh : :obj:`str`, :obj:`pathlib.Path`, or :obj:`numpy.ndarray` or Mesh
+    surf_mesh : :obj:`str`, :obj:`pathlib.Path`, or :obj:`numpy.ndarray`
+        or Mesh
         Either a file containing surface mesh geometry (valid formats
         are .gii .gii.gz or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or two Numpy arrays organized in a list,
