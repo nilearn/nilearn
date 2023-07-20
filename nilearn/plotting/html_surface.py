@@ -3,6 +3,8 @@
 import collections.abc
 import json
 
+import warnings
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -101,7 +103,6 @@ def _get_vertexcolor(surf_map, cmap, norm,
 
     return to_color_strings(vertex_colors)
 
-
 def _one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
                     black_bg=False, bg_map=None, symmetric_cmap=True,
                     bg_on_data=False, darkness=.7,
@@ -129,6 +130,16 @@ def _one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
     info['colorscale'] = colors['colors']
     return info
 
+def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
+                    black_bg=False, bg_map=None, symmetric_cmap=True,
+                    bg_on_data=False, darkness=.7,
+                    vmax=None, vmin=None):
+    warnings.warn(category=DeprecationWarning, message="'one_mesh_info() has been renamed _one_mesh_info() and will be removed in a future version")
+
+    return _one_mesh_info(surf_map, surf_mesh, threshold=threshold, cmap=cmap, 
+                          black_bg=black_bg, bg_map=bg_map, symmetric_cmap=symmetric_cmap,
+                          bg_on_data=bg_on_data, darkness=darkness,
+                          vmax=vmax, vmin=vmin)
 
 def _check_mesh(mesh):
     if isinstance(mesh, str):
@@ -145,7 +156,6 @@ def _check_mesh(mesh):
             f"{missing} {('are' if len(missing) > 1 else 'is')} "
             "missing from the provided mesh dictionary")
     return mesh
-
 
 def _full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
                      cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
@@ -190,6 +200,16 @@ def _full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
     info['colorscale'] = colors['colors']
     return info
 
+def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
+                     cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
+                     bg_on_data=False, darkness=.7,
+                     vmax=None, vmin=None, vol_to_surf_kwargs={}):
+    warnings.warn(category=DeprecationWarning, message="'full_brain_info() has been renamed _full_brain_info() and will be removed in a future version")
+
+    return _full_brain_info(volume_img, mesh=mesh, threshold=threshold,
+                     cmap=cmap, black_bg=black_bg, symmetric_cmap=symmetric_cmap,
+                     bg_on_data=bg_on_data, darkness=darkness,
+                     vmax=vmax, vmin=vmin, vol_to_surf_kwargs=vol_to_surf_kwargs)
 
 def _fill_html_template(info, embed_js=True):
     as_json = json.dumps(info)
