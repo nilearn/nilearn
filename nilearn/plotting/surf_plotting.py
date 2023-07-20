@@ -550,7 +550,7 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
 
     # plot mesh without data
     p3dcollec = axes.plot_trisurf(coords[:, 0], coords[:, 1], coords[:, 2],
-                                  triangles=faces, linewidth=0.,
+                                  triangles=faces, linewidth=0.1,
                                   antialiased=False,
                                   color='white')
 
@@ -600,6 +600,7 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
                 format=cbar_tick_format, orientation='vertical')
 
         p3dcollec.set_facecolors(face_colors)
+        p3dcollec.set_edgecolors(face_colors)
 
     if title is not None:
         axes.set_title(title)
