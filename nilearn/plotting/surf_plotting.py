@@ -2,6 +2,7 @@
 import itertools
 import math
 from collections.abc import Sequence
+from warnings import warn
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -21,8 +22,6 @@ from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges
 from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
 from nilearn.surface.surface import _check_mesh
-
-from warnings import warn
 
 VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
 VALID_HEMISPHERES = "left", "right"
