@@ -607,7 +607,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         params['target_affine'] = target_affine
         params['clean_kwargs'] = self.clean_kwargs
 
-        region_signals, ids, region_img = self._cache(
+        region_signals, ids = self._cache(
             _filter_and_extract,
             ignore=['verbose', 'memory', 'memory_level'],
         )(
