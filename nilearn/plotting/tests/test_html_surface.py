@@ -62,7 +62,7 @@ def test_get_vertexcolor():
     assert len(vertexcolors_manually_rescaled) == len(mesh[0])
     assert vertexcolors_manually_rescaled != vertexcolors_auto_normalized
     with pytest.warns(
-        UserWarning,
+        DeprecationWarning,
         match=(
             "The `darkness` parameter will be deprecated in release 0.13. "
             "We recommend setting `darkness` to None"
