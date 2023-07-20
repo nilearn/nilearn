@@ -98,6 +98,18 @@ def test_one_mesh_info():
     assert not info['full_brain_mesh']
     check_colors(info['colorscale'])
 
+    #public one_mesh_info was made private _one_mesh_info
+    #a new public one_mesh_info was made that provides a warnng and runs the private method
+    #this tests that
+    with pytest.warns(
+            UserWarning,
+            match=(
+                "'one_mesh_info()' has been renamed '_one_mesh_info()' and will be removed in a future version"
+            ),
+        ):
+            html_surface.one_mesh_info(
+                surf_map, mesh, '90%', black_bg=True,
+                bg_map=surf_map)
 
 def test_full_brain_info():
     surfaces = datasets.fetch_surf_fsaverage()
@@ -119,6 +131,17 @@ def test_full_brain_info():
             info[f'inflated_{hemi}']['_z'], '<f4')) == len(mesh[0])
         assert len(decode(
             info[f'pial_{hemi}']['_j'], '<i4')) == len(mesh[1])
+    
+    #public full_brain_info was made private _full_brain_info
+    #a new public full_brain_info was made that provides a warnng and runs the private method
+    #this tests that
+    with pytest.warns(
+            UserWarning,
+            match=(
+                "‘full_brain_info()’ has been renamed ‘_full_brain_info()’ and will be removed in a future version"
+            ),
+        ):
+            html_surface.full_brain_info(img, surfaces)
 
 
 def test_fill_html_template():
