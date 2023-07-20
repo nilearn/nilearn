@@ -622,7 +622,8 @@ def test_clean_confounds():
     with pytest.raises(ValueError, match="t_r='None'"):
         nisignal.clean(signals, filter='cosine', t_r=None, high_pass=0.008)
     with pytest.raises(ValueError):
-        nisignal.clean(signals, t_r=None, low_pass=.01)  # using butterworth filter here
+        # using butterworth filter here
+        nisignal.clean(signals, t_r=None, low_pass=.01)
     with pytest.raises(ValueError):
         nisignal.clean(signals, filter='not_implemented')
     with pytest.raises(ValueError):
