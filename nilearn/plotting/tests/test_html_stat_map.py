@@ -349,5 +349,5 @@ def test_view_img():
     expected_set = {FutureWarning, UserWarning,
                     DeprecationWarning}
     assert warnings_set.issubset(expected_set), (
-        "the following warnings were not expected: {}").format(
-        warnings_set.difference(expected_set))
+        "the following warnings were not expected: "
+        f"{warnings_set.difference(expected_set)}")

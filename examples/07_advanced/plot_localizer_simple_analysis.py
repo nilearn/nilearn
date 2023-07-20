@@ -13,8 +13,13 @@ variates.  The user can refer to the
 
 .. include:: ../../../examples/masker_note.rst
 
+..
+    Original authors:
+
+    - Virgile Fritsch, May. 2014
+
 """
-# Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -77,9 +82,9 @@ masked_pvals = np.ma.masked_less(
 title = (
     "Negative $\\log_{10}$ p-values"
     "\n(Parametric + Bonferroni correction)"
-    "\n%d detections" % (~masked_pvals.mask).sum()
+    f"\n{(~masked_pvals.mask).sum()} detections"
 )
 
-display.title(title, y=1.1, alpha=0.8)
+display.title(title, y=1, alpha=0.8)
 
 show()

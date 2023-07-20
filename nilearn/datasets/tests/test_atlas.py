@@ -1,7 +1,6 @@
 """Test the datasets module."""
 
 # Author: Alexandre Abraham
-# License: simplified BSD
 
 import itertools
 import os
@@ -155,7 +154,7 @@ def test_fetch_atlas_source(tmp_path, request_mocker):
 
 
 def _write_sample_atlas_metadata(ho_dir, filename, is_symm):
-    with open(os.path.join(ho_dir, filename + ".xml"), "w") as dm:
+    with open(os.path.join(ho_dir, f"{filename}.xml"), "w") as dm:
         if not is_symm:
             dm.write(
                 "<?xml version='1.0' encoding='us-ascii'?>\n"
@@ -397,7 +396,7 @@ def _destrieux_data():
     atlas = np.random.randint(0, 10, (10, 10, 10), dtype="int32")
     atlas_img = nibabel.Nifti1Image(atlas, np.eye(4))
     labels = "\n".join([f"{idx},label {idx}" for idx in range(10)])
-    labels = "index,name\n" + labels
+    labels = f"index,name\n{labels}"
     for lat in ["_lateralized", ""]:
         lat_data = {
             f"destrieux2009_rois_labels{lat}.csv": labels,
@@ -471,15 +470,12 @@ def test_fetch_atlas_difumo(tmp_path, request_mocker):
     resolutions = [2, 3]  # Valid resolution values
     dimensions = [64, 128, 256, 512, 1024]  # Valid dimension values
     dimension_urls = ["pqu9r", "wjvd5", "3vrct", "9b76y", "34792"]
-    url_mapping = {k: v for k, v in zip(dimensions, dimension_urls)}
-    url_count = 1
-
-    for dim in dimensions:
-        url_count += 1
+    url_mapping = dict(zip(dimensions, dimension_urls))
+    for url_count, dim in enumerate(dimensions, start=2):
         url = f"*osf.io/{url_mapping[dim]}/*"
         labels = pd.DataFrame(
             {
-                "Component": [_ for _ in range(1, dim + 1)],
+                "Component": list(range(1, dim + 1)),
                 "Difumo_names": ["" for _ in range(dim)],
                 "Yeo_networks7": ["" for _ in range(dim)],
                 "Yeo_networks17": ["" for _ in range(dim)],
@@ -568,7 +564,7 @@ def test_fetch_atlas_aal(
 
 def test_fetch_atlas_aal_version_error(tmp_path, request_mocker):
     with pytest.raises(
-        ValueError, match='The version of AAL requested "FLS33"'
+        ValueError, match="The version of AAL requested 'FLS33'"
     ):
         atlas.fetch_atlas_aal(version="FLS33", data_dir=tmp_path, verbose=0)
 
@@ -599,7 +595,7 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
 
     assert len(data_sym) == 2
     with pytest.raises(
-        ValueError, match='The version of Brain parcellations requested "aym"'
+        ValueError, match="The version of Brain parcellations requested 'aym'"
     ):
         atlas.fetch_atlas_basc_multiscale_2015(
             version="aym", data_dir=tmp_path, verbose=0
@@ -634,8 +630,7 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
     dataset_name = "basc_multiscale_2015"
     name_sym = "template_cambridge_basc_multiscale_nii_sym"
     basenames_sym = [
-        "template_cambridge_basc_multiscale_sym_" + key + ".nii.gz"
-        for key in keys
+        f"template_cambridge_basc_multiscale_sym_{key}.nii.gz" for key in keys
     ]
     for key, basename_sym in zip(keys, basenames_sym):
         assert data_sym[key] == str(
@@ -644,8 +639,7 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
 
     name_asym = "template_cambridge_basc_multiscale_nii_asym"
     basenames_asym = [
-        "template_cambridge_basc_multiscale_asym_" + key + ".nii.gz"
-        for key in keys
+        f"template_cambridge_basc_multiscale_asym_{key}.nii.gz" for key in keys
     ]
     for key, basename_asym in zip(keys, basenames_asym):
         assert data_asym[key] == str(
@@ -654,7 +648,7 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
 
     assert len(data_sym) == 10
     with pytest.raises(
-        ValueError, match='The version of Brain parcellations requested "aym"'
+        ValueError, match="The version of Brain parcellations requested 'aym'"
     ):
         atlas.fetch_atlas_basc_multiscale_2015(
             version="aym", data_dir=tmp_path, verbose=0
@@ -745,9 +739,9 @@ def test_fetch_atlas_talairach(tmp_path, request_mocker):
 
 
 def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
-    labels = pd.DataFrame(
-        {"label": list(map("label_{}".format, range(16)))}
-    ).to_csv(sep="\t", header=False)
+    labels = pd.DataFrame({"label": [f"label_{i}" for i in range(16)]}).to_csv(
+        sep="\t", header=False
+    )
     det_atlas = data_gen.generate_labeled_regions((7, 6, 5), 16)
     prob_atlas, _ = data_gen.generate_maps((7, 6, 5), 16)
     request_mocker.url_mapping["*osf.io/6qrcb/*"] = labels

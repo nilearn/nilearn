@@ -52,19 +52,16 @@ class DimensionError(TypeError):
     @property
     def message(self):
         """Format error message."""
+        expected_dim = self.required_dimension + self.stack_counter
+        total_file_dim = f" ({self.file_dimension + self.stack_counter}D)"
         return (
             "Input data has incompatible dimensionality: "
-            "Expected dimension is {}D and you provided a "
-            "{}{}D image{}{}. "
+            f"Expected dimension is {expected_dim}D and you provided a "
+            f"{'list of ' * self.stack_counter}{self.file_dimension}D "
+            f"image{'s' * (self.stack_counter > 0)}"
+            f"{total_file_dim * (self.stack_counter > 0)}. "
             "See https://nilearn.github.io/stable/manipulating_images/"
-            "input_output.html.".format(
-                self.required_dimension + self.stack_counter,
-                "list of " * self.stack_counter,
-                self.file_dimension,
-                "s" * (self.stack_counter != 0),
-                (" (%iD)" % (self.file_dimension + self.stack_counter))
-                * (self.stack_counter > 0),
-            )
+            "input_output.html."
         )
 
     def __str__(self):

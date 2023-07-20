@@ -180,7 +180,6 @@ decoder.fit(z_maps, conditions_label, groups=session_label)
 classification_accuracy = np.mean(list(decoder.cv_scores_.values()))
 chance_level = 1.0 / len(np.unique(conditions))
 print(
-    "Classification accuracy: {:.4f} / Chance level: {}".format(
-        classification_accuracy, chance_level
-    )
+    f"Classification accuracy: {classification_accuracy:.4f} / "
+    f"Chance level: {chance_level}"
 )

@@ -711,7 +711,6 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             ``matplotlib`` engine.
 
     %(bg_on_data)s
-        Default=False.
 
     %(darkness)s
         Default=1.
@@ -1065,7 +1064,6 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     %(symmetric_cbar)s
         Default='auto'.
     %(bg_on_data)s
-        Default=False.
 
     %(darkness)s
         Default=1.
@@ -1291,9 +1289,9 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         If ``None``, don't apply any mask.
 
     %(bg_on_data)s
-        Default=False.
 
-    %(hemispheres)s
+    hemispheres : :obj:`list` of :obj:`str`, default=["left", "right"]
+        Hemispheres to display.
 
     inflate : bool, optional
         If True, display images in inflated brain.
@@ -1345,8 +1343,8 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
 
     mesh_prefix = "infl" if inflate else "pial"
     surf = {
-        'left': surf_mesh[mesh_prefix + '_left'],
-        'right': surf_mesh[mesh_prefix + '_right'],
+        'left': surf_mesh[f'{mesh_prefix}_left'],
+        'right': surf_mesh[f'{mesh_prefix}_right'],
     }
 
     texture = {
@@ -1506,7 +1504,6 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
             ``matplotlib`` engine.
 
     %(bg_on_data)s
-        Default=False.
 
     %(darkness)s
         Default=1.
@@ -1564,7 +1561,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     if roi.ndim != 1:
         raise ValueError('roi_map can only have one dimension but has '
-                         '%i dimensions' % roi.ndim)
+                         f'{roi.ndim} dimensions')
     if roi.shape[0] != mesh[0].shape[0]:
         raise ValueError('roi_map does not have the same number of vertices '
                          'as the mesh. If you have a list of indices for the '

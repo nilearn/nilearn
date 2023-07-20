@@ -552,7 +552,7 @@ def test_index_img_error_4D(affine):
     ]:
         with pytest.raises(
             IndexError,
-            match="out of bounds|invalid index|out of range|" "boolean index",
+            match="out of bounds|invalid index|out of range|boolean index",
         ):
             index_img(img_4d, i)
 

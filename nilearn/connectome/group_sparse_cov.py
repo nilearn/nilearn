@@ -2,7 +2,6 @@
 graphical models."""
 
 # Authors: Philippe Gervais
-# License: simplified BSD
 
 import collections.abc
 import itertools

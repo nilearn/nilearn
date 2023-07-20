@@ -1,6 +1,5 @@
 """Test the signals module."""
 # Author: Gael Varoquaux, Alexandre Abraham
-# License: simplified BSD
 
 import os.path
 
@@ -257,12 +256,6 @@ def test_standardize():
 
     # transpose array to fit _standardize input.
     # Without trend removal
-    b = nisignal._standardize(a, standardize='zscore')
-    stds = np.std(b)
-    np.testing.assert_almost_equal(stds, np.ones(n_features))
-    np.testing.assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
-
-    # Repeating test above but for new correct strategy
     b = nisignal._standardize(a, standardize='zscore_sample')
     stds = np.std(b)
     np.testing.assert_almost_equal(stds, np.ones(n_features), decimal=1)
@@ -277,15 +270,10 @@ def test_standardize():
     np.testing.assert_almost_equal(b, np.zeros(b.shape))
 
     length_1_signal = np.atleast_2d(np.linspace(0, 2., n_features))
-    np.testing.assert_array_equal(length_1_signal,
-                                  nisignal._standardize(length_1_signal,
-                                                        standardize='zscore'))
-
-    # Repeating test above but for new correct strategy
-    length_1_signal = np.atleast_2d(np.linspace(0, 2., n_features))
     np.testing.assert_array_equal(
-        length_1_signal,
-        nisignal._standardize(length_1_signal, standardize="zscore_sample")
+        length_1_signal, nisignal._standardize(
+            length_1_signal, standardize='zscore_sample'
+        )
     )
 
 
@@ -432,11 +420,11 @@ def test_clean_t_r():
                                          high_pass=high_cutoff)
 
             if not np.isclose(tr1, tr2, atol=0.3):
-                msg = ('results do not differ for different TRs: {} and {} '
-                       'at cutoffs: low_pass={}, high_pass={} '
-                       'n_samples={}, n_features={}'.format(
-                           tr1, tr2, low_cutoff, high_cutoff,
-                           n_samples, n_features))
+                msg = ('results do not differ '
+                       f'for different TRs: {tr1} and {tr2} '
+                       f'at cutoffs: low_pass={low_cutoff}, '
+                       f'high_pass={high_cutoff} '
+                       f'n_samples={n_samples}, n_features={n_features}')
                 np.testing.assert_(np.any(np.not_equal(det_one_tr,
                                                        det_diff_tr)),
                                    msg)

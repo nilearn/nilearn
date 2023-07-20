@@ -20,32 +20,34 @@ def test_multi_nifti_maps_masker():
     n_regions = 9
     length = 3
 
-    fmri11_img, mask11_img = data_gen.generate_fake_fmri(shape1,
-                                                         affine=affine1,
-                                                         length=length)
-    fmri12_img, mask12_img = data_gen.generate_fake_fmri(shape1,
-                                                         affine=affine2,
-                                                         length=length)
-    fmri21_img, mask21_img = data_gen.generate_fake_fmri(shape2,
-                                                         affine=affine1,
-                                                         length=length)
+    fmri11_img, mask11_img = data_gen.generate_fake_fmri(
+        shape1, affine=affine1, length=length
+    )
+    fmri12_img, mask12_img = data_gen.generate_fake_fmri(
+        shape1, affine=affine2, length=length
+    )
+    fmri21_img, mask21_img = data_gen.generate_fake_fmri(
+        shape2, affine=affine1, length=length
+    )
 
     maps11_img, _ = data_gen.generate_maps(shape1, n_regions, affine=affine1)
 
     # No exception raised here
     for create_files in (True, False):
-        with testing.write_tmp_imgs(maps11_img,
-                                    create_files=create_files) as labels11:
+        with testing.write_tmp_imgs(
+            maps11_img, create_files=create_files
+        ) as labels11:
             masker11 = MultiNiftiMapsMasker(labels11, resampling_target=None)
             signals11 = masker11.fit().transform(fmri11_img)
             assert signals11.shape == (length, n_regions)
             # enables to delete "labels11" on windows
             del masker11
 
-    masker11 = MultiNiftiMapsMasker(maps11_img, mask_img=mask11_img,
-                                    resampling_target=None)
+    masker11 = MultiNiftiMapsMasker(
+        maps11_img, mask_img=mask11_img, resampling_target=None
+    )
 
-    with pytest.raises(ValueError, match='has not been fitted. '):
+    with pytest.raises(ValueError, match="has not been fitted. "):
         masker11.transform(fmri11_img)
     signals11 = masker11.fit().transform(fmri11_img)
     assert signals11.shape == (length, n_regions)
@@ -67,31 +69,35 @@ def test_multi_nifti_maps_masker():
 
     # Test all kinds of mismatches between shapes and between affines
     for create_files in (True, False):
-        with testing.write_tmp_imgs(maps11_img, mask12_img,
-                                    create_files=create_files) as images:
+        with testing.write_tmp_imgs(
+            maps11_img, mask12_img, create_files=create_files
+        ) as images:
             labels11, mask12 = images
             masker11 = MultiNiftiMapsMasker(labels11, resampling_target=None)
             masker11.fit()
             pytest.raises(ValueError, masker11.transform, fmri12_img)
             pytest.raises(ValueError, masker11.transform, fmri21_img)
 
-            masker11 = MultiNiftiMapsMasker(labels11, mask_img=mask12,
-                                            resampling_target=None)
+            masker11 = MultiNiftiMapsMasker(
+                labels11, mask_img=mask12, resampling_target=None
+            )
             pytest.raises(ValueError, masker11.fit)
             del masker11
 
-    masker11 = MultiNiftiMapsMasker(maps11_img, mask_img=mask21_img,
-                                    resampling_target=None)
+    masker11 = MultiNiftiMapsMasker(
+        maps11_img, mask_img=mask21_img, resampling_target=None
+    )
     pytest.raises(ValueError, masker11.fit)
 
     # Transform, with smoothing (smoke test)
-    masker11 = MultiNiftiMapsMasker(maps11_img, smoothing_fwhm=3,
-                                    resampling_target=None)
+    masker11 = MultiNiftiMapsMasker(
+        maps11_img, smoothing_fwhm=3, resampling_target=None
+    )
     signals11_list = masker11.fit().transform(signals_input)
     for signals in signals11_list:
         assert signals.shape == (length, n_regions)
 
-        with pytest.raises(ValueError, match='has not been fitted. '):
+        with pytest.raises(ValueError, match="has not been fitted. "):
             MultiNiftiMapsMasker(maps11_img).inverse_transform(signals)
 
     # Call inverse transform (smoke test)
@@ -111,13 +117,13 @@ def test_multi_nifti_maps_masker():
     affine2 = 2 * np.eye(4)
     affine2[-1, -1] = 1
 
-    fmri22_img, _ = data_gen.generate_fake_fmri(shape22, affine=affine2,
-                                                length=length)
+    fmri22_img, _ = data_gen.generate_fake_fmri(
+        shape22, affine=affine2, length=length
+    )
     masker = MultiNiftiMapsMasker(maps11_img, mask_img=mask21_img)
 
     masker.fit_transform(fmri22_img)
-    np.testing.assert_array_equal(masker._resampled_maps_img_.affine,
-                                  affine2)
+    np.testing.assert_array_equal(masker._resampled_maps_img_.affine, affine2)
 
 
 def test_multi_nifti_maps_masker_resampling():
@@ -131,44 +137,55 @@ def test_multi_nifti_maps_masker_resampling():
     n_regions = 9
     length = 3
 
-    fmri11_img, _ = data_gen.generate_fake_fmri(shape1, affine=affine,
-                                                length=length)
-    _, mask22_img = data_gen.generate_fake_fmri(shape2, affine=affine,
-                                                length=length)
+    fmri11_img, _ = data_gen.generate_fake_fmri(
+        shape1, affine=affine, length=length
+    )
+    _, mask22_img = data_gen.generate_fake_fmri(
+        shape2, affine=affine, length=length
+    )
 
     maps33_img, _ = data_gen.generate_maps(shape3, n_regions, affine=affine)
 
-    mask_img_4d = nibabel.Nifti1Image(np.ones((2, 2, 2, 2), dtype=np.int8),
-                                      affine=np.diag((4, 4, 4, 1)))
+    mask_img_4d = nibabel.Nifti1Image(
+        np.ones((2, 2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
+    )
 
     # verify that 4D mask arguments are refused
     masker = MultiNiftiMapsMasker(maps33_img, mask_img=mask_img_4d)
-    with pytest.raises(DimensionError,
-                       match="Input data has incompatible dimensionality: "
-                             "Expected dimension is 3D and you provided "
-                             "a 4D image."):
+    with pytest.raises(
+        DimensionError,
+        match="Input data has incompatible dimensionality: "
+        "Expected dimension is 3D and you provided "
+        "a 4D image.",
+    ):
         masker.fit()
 
     # Multi-subject example
     fmri11_img = [fmri11_img, fmri11_img]
 
     # Test error checking
-    pytest.raises(ValueError, MultiNiftiMapsMasker, maps33_img,
-                  resampling_target="mask")
-    pytest.raises(ValueError, MultiNiftiMapsMasker, maps33_img,
-                  resampling_target="invalid")
+    pytest.raises(
+        ValueError, MultiNiftiMapsMasker, maps33_img, resampling_target="mask"
+    )
+    pytest.raises(
+        ValueError,
+        MultiNiftiMapsMasker,
+        maps33_img,
+        resampling_target="invalid",
+    )
 
     # Target: mask
-    masker = MultiNiftiMapsMasker(maps33_img, mask_img=mask22_img,
-                                  resampling_target="mask")
+    masker = MultiNiftiMapsMasker(
+        maps33_img, mask_img=mask22_img, resampling_target="mask"
+    )
 
     masker.fit()
-    np.testing.assert_almost_equal(masker.mask_img_.affine,
-                                   mask22_img.affine)
+    np.testing.assert_almost_equal(masker.mask_img_.affine, mask22_img.affine)
     assert masker.mask_img_.shape == mask22_img.shape
 
-    np.testing.assert_almost_equal(masker.mask_img_.affine,
-                                   masker.maps_img_.affine)
+    np.testing.assert_almost_equal(
+        masker.mask_img_.affine, masker.maps_img_.affine
+    )
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
     transformed = masker.transform(fmri11_img)
@@ -176,22 +193,23 @@ def test_multi_nifti_maps_masker_resampling():
         assert t.shape == (length, n_regions)
 
         fmri11_img_r = masker.inverse_transform(t)
-        np.testing.assert_almost_equal(fmri11_img_r.affine,
-                                       masker.maps_img_.affine)
-        assert (fmri11_img_r.shape == (
-                masker.maps_img_.shape[:3] + (length,)))
+        np.testing.assert_almost_equal(
+            fmri11_img_r.affine, masker.maps_img_.affine
+        )
+        assert fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
 
     # Target: maps
-    masker = MultiNiftiMapsMasker(maps33_img, mask_img=mask22_img,
-                                  resampling_target="maps")
+    masker = MultiNiftiMapsMasker(
+        maps33_img, mask_img=mask22_img, resampling_target="maps"
+    )
 
     masker.fit()
-    np.testing.assert_almost_equal(masker.maps_img_.affine,
-                                   maps33_img.affine)
+    np.testing.assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
     assert masker.maps_img_.shape == maps33_img.shape
 
-    np.testing.assert_almost_equal(masker.mask_img_.affine,
-                                   masker.maps_img_.affine)
+    np.testing.assert_almost_equal(
+        masker.mask_img_.affine, masker.maps_img_.affine
+    )
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
     transformed = masker.transform(fmri11_img)
@@ -199,10 +217,10 @@ def test_multi_nifti_maps_masker_resampling():
         assert t.shape == (length, n_regions)
 
         fmri11_img_r = masker.inverse_transform(t)
-        np.testing.assert_almost_equal(fmri11_img_r.affine,
-                                       masker.maps_img_.affine)
-        assert (fmri11_img_r.shape == (
-                masker.maps_img_.shape[:3] + (length,)))
+        np.testing.assert_almost_equal(
+            fmri11_img_r.affine, masker.maps_img_.affine
+        )
+        assert fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
 
     # Test with clipped maps: mask does not contain all maps.
     # Shapes do matter in that case
@@ -215,26 +233,29 @@ def test_multi_nifti_maps_masker_resampling():
     n_regions = 9
     length = 21
 
-    fmri11_img, _ = data_gen.generate_fake_fmri(shape1, affine=affine1,
-                                                length=length)
-    _, mask22_img = data_gen.generate_fake_fmri(shape2, length=1,
-                                                affine=affine2)
+    fmri11_img, _ = data_gen.generate_fake_fmri(
+        shape1, affine=affine1, length=length
+    )
+    _, mask22_img = data_gen.generate_fake_fmri(
+        shape2, length=1, affine=affine2
+    )
     # Target: maps
     maps33_img, _ = data_gen.generate_maps(shape3, n_regions, affine=affine1)
 
     # Multi-subject example
     fmri11_img = [fmri11_img, fmri11_img]
 
-    masker = MultiNiftiMapsMasker(maps33_img, mask_img=mask22_img,
-                                  resampling_target="maps")
+    masker = MultiNiftiMapsMasker(
+        maps33_img, mask_img=mask22_img, resampling_target="maps"
+    )
 
     masker.fit()
-    np.testing.assert_almost_equal(masker.maps_img_.affine,
-                                   maps33_img.affine)
+    np.testing.assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
     assert masker.maps_img_.shape == maps33_img.shape
 
-    np.testing.assert_almost_equal(masker.mask_img_.affine,
-                                   masker.maps_img_.affine)
+    np.testing.assert_almost_equal(
+        masker.mask_img_.affine, masker.maps_img_.affine
+    )
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
     transformed = masker.transform(fmri11_img)
@@ -244,7 +265,7 @@ def test_multi_nifti_maps_masker_resampling():
         assert (t.var(axis=0) == 0).sum() < n_regions
 
         fmri11_img_r = masker.inverse_transform(t)
-        np.testing.assert_almost_equal(fmri11_img_r.affine,
-                                       masker.maps_img_.affine)
-        assert (fmri11_img_r.shape == (
-                masker.maps_img_.shape[:3] + (length,)))
+        np.testing.assert_almost_equal(
+            fmri11_img_r.affine, masker.maps_img_.affine
+        )
+        assert fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,))

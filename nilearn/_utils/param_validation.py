@@ -50,10 +50,10 @@ def check_threshold(threshold, data, percentile_func, name="threshold"):
     """
     if isinstance(threshold, str):
         message = (
-            'If "{}" is given as string it '
+            f'If "{name}" is given as string it '
             "should be a number followed by the percent "
             'sign, e.g. "25.3%"'
-        ).format(name)
+        )
         if not threshold.endswith("%"):
             raise ValueError(message)
 
@@ -70,15 +70,13 @@ def check_threshold(threshold, data, percentile_func, name="threshold"):
         value_check = abs(data).max()
         if abs(threshold) > value_check:
             warnings.warn(
-                "The given float value must not exceed {}. "
-                "But, you have given threshold={} ".format(
-                    value_check, threshold
-                )
+                f"The given float value must not exceed {value_check}. "
+                f"But, you have given threshold={threshold}."
             )
     else:
         raise TypeError(
-            "%s should be either a number "
-            "or a string finishing with a percent sign" % (name,)
+            f"{name} should be either a number "
+            "or a string finishing with a percent sign"
         )
     return threshold
 
@@ -156,9 +154,9 @@ def _adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
             f"Mask volume = {mask_volume:g}mm^3 = {mask_volume / 1000.0:g}cm^3"
         )
         print(
-            "Standard brain volume = {:g}mm^3 = {:g}cm^3".format(
-                MNI152_BRAIN_VOLUME, MNI152_BRAIN_VOLUME / 1.0e3
-            )
+            "Standard brain volume "
+            f"= {MNI152_BRAIN_VOLUME:g}mm^3 "
+            f"= {MNI152_BRAIN_VOLUME / 1.0e3:g}cm^3"
         )
         print(
             f"Original screening-percentile: {original_screening_percentile:g}"
@@ -208,7 +206,7 @@ def check_feature_screening(
     elif not (0.0 <= screening_percentile <= 100.0):
         raise ValueError(
             "screening_percentile should be in the interval"
-            " [0, 100], got %g" % screening_percentile
+            f" [0, 100], got {screening_percentile:g}"
         )
     else:
         # correct screening_percentile according to the volume of the data mask

@@ -28,8 +28,11 @@ References
     Australian & New Zealand Journal of Statistics, 43(1), 75-88.
     (http://avesbiodiv.mncn.csic.es/estadistica/permut2.pdf)
 
+..
+    Original authors:
+
+    - Virgile Fritsch, Feb. 2014
 """
-# Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
 
 ##############################################################################
 # Load Haxby dataset
@@ -173,7 +176,7 @@ title = (
     f"\n{n_detections} detections"
 )
 
-display.title(title, y=1.1)
+display.title(title, size=10)
 
 # Plot permutation p-values map
 display = plot_stat_map(
@@ -194,7 +197,7 @@ title = (
     f"\n{n_detections} detections"
 )
 
-display.title(title, y=1.1)
+display.title(title, size=10)
 
 show()
 

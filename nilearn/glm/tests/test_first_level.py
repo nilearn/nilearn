@@ -285,7 +285,7 @@ def test_high_level_glm_different_design_matrices_formulas():
 
     # Compute contrast with formulas
     cols_formula = tuple(design_matrices[0].columns[:2])
-    formula = "%s-%s" % cols_formula
+    formula = f"{cols_formula[0]}-{cols_formula[1]}"
     with pytest.warns(UserWarning, match='One contrast given, '
                                          'assuming it for all 2 runs'):
         multi_session_model.compute_contrast(formula,
@@ -415,6 +415,7 @@ def test_glm_random_state(random_state):
         spy_kmeans.assert_called_once_with(
             unittest.mock.ANY,
             n_clusters=unittest.mock.ANY,
+            n_init=unittest.mock.ANY,
             random_state=random_state)
 
 
@@ -1420,10 +1421,12 @@ def test_first_level_from_bids_no_tr(tmp_path_factory):
         os.remove(f)
 
     with pytest.warns(
-         UserWarning,
-         match="t_r.* will need to be set manually in the list of models"):
+            UserWarning,
+            match="'t_r' not provided and cannot be inferred"):
         first_level_from_bids(
-            dataset_path=bids_dataset, task_label="main", space_label="MNI",
+            dataset_path=bids_dataset,
+            task_label="main",
+            space_label="MNI",
             slice_time_ref=None, t_r=None
         )
 
@@ -1578,3 +1581,21 @@ def test_first_level_from_bids_deprecated_slice_time_default(bids_dataset):
             img_filters=[("desc", "preproc")],
             slice_time_ref=0,
         )
+
+
+def test_slice_time_ref_warning_only_when_not_provided(bids_dataset):
+
+    # catch all warnings
+    with pytest.warns() as record:
+        models, m_imgs, m_events, m_confounds = first_level_from_bids(
+            dataset_path=bids_dataset,
+            task_label="main",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            slice_time_ref=0.6,
+            verbose=0,
+        )
+
+    # check that no warnings were raised
+    for r in record:
+        assert "'slice_time_ref' not provided" not in r.message.args[0]

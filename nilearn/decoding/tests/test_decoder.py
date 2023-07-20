@@ -14,7 +14,6 @@ Order of tests from top to bottom:
 #         Binh Nguyen
 #         Thomas Bazeiile
 #
-# License: simplified BSD
 
 import collections
 import numbers
@@ -22,6 +21,7 @@ import warnings
 
 import numpy as np
 import pytest
+import sklearn
 from numpy.testing import assert_array_almost_equal
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
@@ -43,6 +43,7 @@ from sklearn.model_selection import KFold, LeaveOneGroupOut, ParameterGrid
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
 
+from nilearn._utils import _compare_version
 from nilearn._utils.param_validation import check_feature_screening
 from nilearn.decoding.decoder import (
     Decoder,
@@ -564,7 +565,9 @@ def test_decoder_binary_classification_cross_validation(
     # check cross-validation scheme and fit attribute with groups enabled
     rand_local = np.random.RandomState(42)
 
-    model = Decoder(estimator="svc", mask=mask, standardize=True, cv=cv)
+    model = Decoder(
+        estimator="svc", mask=mask, standardize="zscore_sample", cv=cv
+    )
     groups = None
     if isinstance(cv, LeaveOneGroupOut):
         groups = rand_local.binomial(2, 0.3, size=len(y))
@@ -681,8 +684,18 @@ def test_decoder_error_unknown_scoring_metrics(
 
     model = Decoder(estimator=dummy_classifier, mask=mask, scoring="foo")
 
-    with pytest.raises(ValueError, match="'foo' is not a valid scoring value"):
-        model.fit(X, y)
+    if _compare_version(sklearn.__version__, ">", "1.2.2"):
+        with pytest.raises(
+            ValueError,
+            match="The 'scoring' parameter of check_scoring "
+            "must be a str among",
+        ):
+            model.fit(X, y)
+    else:
+        with pytest.raises(
+            ValueError, match="'foo' is not a valid scoring value"
+        ):
+            model.fit(X, y)
 
 
 def test_decoder_dummy_classifier_default_scoring():
@@ -876,7 +889,9 @@ def test_decoder_multiclass_classification_cross_validation(
     # check cross-validation scheme and fit attribute with groups enabled
     rand_local = np.random.RandomState(42)
 
-    model = Decoder(estimator="svc", mask=mask, standardize=True, cv=cv)
+    model = Decoder(
+        estimator="svc", mask=mask, standardize="zscore_sample", cv=cv
+    )
     groups = None
     if isinstance(cv, LeaveOneGroupOut):
         groups = rand_local.binomial(2, 0.3, size=len(y))
@@ -952,7 +967,7 @@ def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
     """Check whether ValueError is raised when cv is not set correctly."""
     X, y, _ = multiclass_data
 
-    for cv in ["abc", LinearSVC()]:
+    for cv in ["abc", LinearSVC(dual=True)]:
         model = Decoder(mask=NiftiMasker(), cv=cv)
         with pytest.raises(ValueError, match="Expected cv as an integer"):
             model.fit(X, y)

@@ -6,7 +6,6 @@ which we historically used,
 ignores modules whose name starts with an underscore.
 """
 # Author: Gael Varoquaux, Alexandre Abraham
-# License: simplified BSD
 
 import os
 import re
@@ -479,9 +478,7 @@ def test_repr_niimgs(tmp_path):
     # Lists longer than 3
     # Small names - Explicit shortening
     long_list_small_names = ["test", "retest", "reretest", "rereretest"]
-    shortened_rep_long_list_small_names = (
-        "[test,\n" "         ...\n" " rereretest]"
-    )
+    shortened_rep_long_list_small_names = "[test,\n         ...\n rereretest]"
 
     assert (
         _utils._repr_niimgs(long_list_small_names, shorten=True)
@@ -490,7 +487,7 @@ def test_repr_niimgs(tmp_path):
 
     # Small names - Force full display
     long_rep_long_list_small_names = (
-        "[test,\n" " retest,\n" " reretest,\n" " rereretest]"
+        "[test,\n retest,\n reretest,\n rereretest]"
     )
 
     assert (
@@ -559,11 +556,8 @@ def test_repr_niimgs(tmp_path):
         _utils._repr_niimgs(list_of_paths, shorten=True)
         == shortened_list_of_paths
     )
-
-    long_list_of_paths = "[%s]" % ",\n ".join(
-        _ for _ in [str(_) for _ in list_of_paths]
-    )
-
+    long_list_of_paths = ",\n ".join([str(_) for _ in list_of_paths])
+    long_list_of_paths = f"[{long_list_of_paths}]"
     assert (
         _utils._repr_niimgs(list_of_paths, shorten=False) == long_list_of_paths
     )

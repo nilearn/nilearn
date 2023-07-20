@@ -46,7 +46,7 @@ Acquisition of one scan took 6.05s, with the scan to scan repeat time
 from nilearn.datasets import fetch_spm_auditory
 
 subject_data = fetch_spm_auditory()
-subject_data.func  # print the list of names of functional images
+print(*subject_data.func[:5], sep="\n")  # print paths of first 5 func images
 
 ###############################################################################
 # We can display the first functional image and the subject's anatomy:

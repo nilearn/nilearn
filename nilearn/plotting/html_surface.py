@@ -134,14 +134,16 @@ def _check_mesh(mesh):
     if isinstance(mesh, str):
         return datasets.fetch_surf_fsaverage(mesh)
     if not isinstance(mesh, collections.abc.Mapping):
-        raise TypeError("The mesh should be a str or a dictionary, "
-                        "you provided: {}.".format(type(mesh).__name__))
+        raise TypeError(
+            "The mesh should be a str or a dictionary, "
+            f"you provided: {type(mesh).__name__}."
+        )
     missing = {'pial_left', 'pial_right', 'sulc_left', 'sulc_right',
                'infl_left', 'infl_right'}.difference(mesh.keys())
     if missing:
         raise ValueError(
-            "{} {} missing from the provided mesh dictionary".format(
-                missing, ('are' if len(missing) > 1 else 'is')))
+            f"{missing} {('are' if len(missing) > 1 else 'is')} "
+            "missing from the provided mesh dictionary")
     return mesh
 
 
@@ -238,7 +240,6 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         white background. Default=False.
 
     %(bg_on_data)s
-        Default=False.
 
     %(darkness)s
         Default=1.
@@ -344,7 +345,6 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         Default=None.
 
     %(bg_on_data)s
-        Default=False.
 
     %(darkness)s
         Default=1.

@@ -182,6 +182,8 @@ with the tools we use for development and deployment.
 +--------------------+---------------+-----------------------------------------------------+
 |                    |               | - Variables, functions, arguments have clear names  |
 |                    |               | - Easy to read, PEP8_ compliant                     |
+|                    |               | - Code formatted with black_                        |
+|                    |               | - Imports sorted with isort_                        |
 |                    |               | - Public functions have docstring (numpydoc_ format)|
 |                    |               | - Low redundancy                                    |
 |   `Coding Style`_  |    Any        | - No new dependency                                 |
@@ -211,6 +213,8 @@ with the tools we use for development and deployment.
 
 .. _PEP8: https://www.python.org/dev/peps/pep-0008/
 .. _numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
+.. _black: https://black.readthedocs.io/en/stable/getting_started.html#basic-usage
+.. _isort: https://pycqa.github.io/isort/index.html#using-isort
 
 PR Structure
 ------------
@@ -241,13 +245,26 @@ Changelog entries in ``doc/changes/latest.rst`` should adhere to the following c
 - Entry in the appropriate category
 - Single line per entry
 - Finish with a link to the PR and the author's profile
-- New contributors to add their profile to doc/changes/names.rst
+- New contributors to add their details to the ``authors`` section of the ``CITATION.cff``
 
-Example entry:
+Example entry in ``doc/changes/latest.rst``:
 
 .. code-block:: rst
 
     - Fix off-by-one error when setting ticks in :func:`~plotting.plot_surf` (:gh:`3105` by `Dimitri Papadopoulos Orfanos`_).
+
+Associated entry in ``CITATION.cff``:
+
+.. code-block:: yaml
+
+      authors:
+
+        - given-names: Dimitri Papadopoulos
+          family-names: Orfanos
+          website: https://github.com/DimitriPapadopoulos
+          affiliation: NeuroSpin, C.E.A., Université Paris-Saclay, Gif-sur-Yvette, France
+          orcid: https://orcid.org/0000-0002-1242-8990
+
 
 Coding Style
 ------------
@@ -267,26 +284,52 @@ The main conventions we enforce are :
 You can check that any code you may have edited follows these conventions
 by running `flake8 <https://flake8.pycqa.org/en/latest/user/invocation.html#invoking-flake8>`__.
 
-Additionally, we recommend using:
+Additionally, we use:
 
-- `black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_
-  to format your code,
-- `isort <https://pycqa.github.io/isort/index.html#using-isort>`_
-  to organize the import statements.
-
-.. warning::
-
-      We are gradually transitioning to use `isort` and `black`
-      to format the codebase.
-      Only certain modules have been formatted so far,
-      and running `black` or `isort` may not affect the files you are working on,
-      because of how those formatter are currently configured.
-      See `issue #2528 <https://github.com/nilearn/nilearn/issues/2528>`_
-      for more details.
+- black_ to format our code,
+- isort_  to organize the import statements.
 
 Each function and class must come with a “docstring” at the top of the function code,
 using numpydoc_ formatting.
 The docstring must summarize what the function does and document every parameter.
+
+If an argument takes in a default value, it should be described
+with the type definition of that argument.
+
+See the examples below:
+
+.. code-block:: python
+
+      def good(x, y=1, z=None):
+      """Show how parameters are documented.
+
+      Parameters
+      ----------
+      x : :obj:`int`
+            X
+
+      y : :obj:`int`, default=1
+            Note that "default=1" is preferred to "Defaults to 1".
+
+      z : :obj:`str`, default=None
+
+      """
+
+      def bad(x, y=1, z=None):
+      """Show how parameters should not be documented.
+
+      Parameters
+      ----------
+      x :
+            The type of X is not described
+
+      y : :obj:`int`
+            The default value of y is not described.
+
+      z : :obj:`str`
+            Defaults=None.
+            The default value should be described after the type.
+      """
 
 Additionally, we consider it best practice to write modular functions;
 i.e., functions should preferably be relatively short and do *one* thing.
