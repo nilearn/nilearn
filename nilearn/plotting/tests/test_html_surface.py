@@ -108,8 +108,7 @@ def test_one_mesh_info():
             ),
         ):
             html_surface.one_mesh_info(
-                surf_map, mesh, '90%', black_bg=True,
-                bg_map=surf_map)
+                surf_map, mesh)
 
 def test_full_brain_info():
     surfaces = datasets.fetch_surf_fsaverage()
