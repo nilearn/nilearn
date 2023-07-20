@@ -140,11 +140,11 @@ different heuristics to find cutting coordinates.
 
    To avoid this, you must close the plot as follow:
 
-     .. code-block:: default
+   .. code-block:: default
 
-          from nilearn import plotting
-          display = plotting.plot_stat_map(img)
-          display.close()
+     from nilearn import plotting
+     display = plotting.plot_stat_map(img)
+     display.close()
 
 
 .. seealso::
@@ -554,8 +554,7 @@ a cortical mesh:
      destrieux = datasets.fetch_atlas_surf_destrieux()
      fsaverage = datasets.fetch_surf_fsaverage()
      view = plotting.view_surf(fsaverage['infl_left'], destrieux['map_left'],
-     ...                           cmap='gist_ncar', symmetric_cmap=False)
-     ...
+                               cmap='gist_ncar', symmetric_cmap=False)
      view.open_in_browser()
 
 
@@ -577,8 +576,10 @@ cortical mesh:
      mesh = surface.load_surf_mesh(fsaverage.pial_right)
      map = surface.vol_to_surf(motor_images.images[0], mesh)
      fig = plotting.plot_surf_stat_map(mesh, map, hemi='right',
-     ...     view='lateral', colorbar=True, threshold=1.2,
-     ...     bg_map=fsaverage.sulc_right, engine='plotly')
+                                       view='lateral', colorbar=True,
+                                       threshold=1.2,
+                                       bg_map=fsaverage.sulc_right,
+                                       engine='plotly')
      fig.show()
 
 .. image:: ../images/plotly_plot_surf_stat_map.png
@@ -613,8 +614,8 @@ use :func:`view_markers`.
 
      from nilearn import plotting
      dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (1, 50, -5)]
-     view = plotting.view_markers(
-          dmn_coords, ['red', 'cyan', 'magenta', 'orange'], marker_size=10)
+     view = plotting.view_markers(dmn_coords, ['red', 'cyan', 'magenta', 'orange'],
+                                  marker_size=10)
      view.open_in_browser()
 
 
@@ -632,8 +633,9 @@ Interactive visualization of statistical map slices
 
      from nilearn import plotting, datasets
      img = datasets.fetch_localizer_button_task()['tmap']
-     html_view = plotting.view_img(img, threshold=2, vmax=4, cut_coords=[-42, -16, 52],
-     ...                                     title="Motor contrast")
+     html_view = plotting.view_img(img, threshold=2, vmax=4,
+                                   cut_coords=[-42, -16, 52],
+                                   title="Motor contrast")
 
 in a Jupyter notebook, if `html_view` is not requested, the viewer will be inserted in the notebook:
 

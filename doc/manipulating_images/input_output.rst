@@ -59,24 +59,24 @@ shell):
    subject_01.nii, subject_03.nii, and subject_03.nii;
    ``dataset/subject_*.nii`` is a glob expression matching all filenames:
 
-.. code-block:: default
+ .. code-block:: default
 
-     # Example with a smoothing process:
-     from nilearn.image import smooth_img
-     result_img = smooth_img("dataset/subject_*.nii")
+    # Example with a smoothing process:
+    from nilearn.image import smooth_img
+    result_img = smooth_img("dataset/subject_*.nii")
 
-   Note that the resulting is a 4D image.
+ Note that the resulting is a 4D image.
 
  * **Expanding the home directory** ``~`` is expanded to your home
    directory:
 
-.. code-block:: default
+ .. code-block:: default
 
-     result_img = smooth_img("~/dataset/subject_01.nii")
+    result_img = smooth_img("~/dataset/subject_01.nii")
 
-   Using ``~`` rather than specifying the details of the path is good
-   practice, as it will make it more likely that your script work on
-   different computers.
+ Using ``~`` rather than specifying the details of the path is good
+ practice, as it will make it more likely that your script work on
+ different computers.
 
 
 .. topic:: **Python globbing**
@@ -120,8 +120,8 @@ file names on hard disk:
 
      # The different files
      print(sorted(list(haxby_dataset.keys())))
-     # ['anat', 'description', 'func', 'mask', 'mask_face',
-     # ... 'mask_face_little', 'mask_house', 'mask_house_little', 'mask_vt', 'session_target']
+     # ['anat', 'description', 'func', 'mask', 'mask_face', 'mask_face_little',
+     # 'mask_house', 'mask_house_little', 'mask_vt', 'session_target']
      # Path to first functional file
      print(haxby_dataset.func[0])
      # /.../nilearn_data/haxby2001/subj1/bold.nii.gz
