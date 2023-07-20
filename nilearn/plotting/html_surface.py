@@ -85,7 +85,8 @@ def _get_vertexcolor(surf_map, cmap, norm,
             (
                 "The `darkness` parameter will be deprecated in release 0.13. "
                 "We recommend setting `darkness` to None"
-            )
+            ),
+            DeprecationWarning,
         )
 
     bg_colors = plt.get_cmap('Greys')(bg_data)
