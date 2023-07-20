@@ -61,6 +61,17 @@ def test_get_vertexcolor():
         bg_map=bg_map_scaled)
     assert len(vertexcolors_manually_rescaled) == len(mesh[0])
     assert vertexcolors_manually_rescaled != vertexcolors_auto_normalized
+    with pytest.warns(
+        UserWarning,
+        match=(
+            "The `darkness` parameter will be deprecated in release 0.13. "
+            "We recommend setting `darkness` to None"
+        ),
+    ):
+        vertexcolors = html_surface._get_vertexcolor(
+            surf_map, colors['cmap'], colors['norm'],
+            absolute_threshold=colors['abs_threshold'],
+            bg_map=bg_map, darkness=0.5)
 
 
 def test_check_mesh():

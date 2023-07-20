@@ -2,6 +2,7 @@
 
 import collections.abc
 import json
+from warnings import warn
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -80,6 +81,12 @@ def _get_vertexcolor(surf_map, cmap, norm,
 
     if darkness is not None:
         bg_data *= darkness
+        warn(
+            (
+                "The `darkness` parameter will be deprecated in release 0.13. "
+                "We recommend setting `darkness` to None"
+            )
+        )
 
     bg_colors = plt.get_cmap('Greys')(bg_data)
 
