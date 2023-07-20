@@ -205,7 +205,7 @@ def _line_sample_locations(
     n_points : :obj:`int`, optional
         Number of samples to draw for each vertex. Default=10.
 
-    depth : sequence of :obj:`floats` or None, optional
+    depth : sequence of :obj:`float` or None, optional
         Cortical depth, expressed as a fraction of segment_half_width.
         Overrides n_points.
 
@@ -360,7 +360,7 @@ def _projection_matrix(mesh, affine, img_shape, kind='auto', radius=3.,
         are then sampled along the line joining these two points (if `kind` is
         'auto' or 'depth').
 
-    depth : sequence of :obj:`floats` or `None`, optional
+    depth : sequence of :obj:`float` or `None`, optional
         Cortical depth, expressed as a fraction of segment_half_width.
         overrides n_points. Should be None if kind is 'ball'
 
