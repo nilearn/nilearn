@@ -1107,7 +1107,7 @@ def test_compute_facecolors_matplotlib():
     )
 
     with pytest.warns(
-        UserWarning,
+        DeprecationWarning,
         match=(
             "The `darkness` parameter will be deprecated in release 0.13. "
             "We recommend setting `darkness` to None"
