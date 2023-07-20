@@ -441,12 +441,6 @@ Here are the key steps you need to go through to copy the repo before contributi
 
 3. install the forked version of `nilearn`::
 
-      pip install -e '.[dev]'
-
-This installs your local version of Nilearn, along with all dependencies necessary for developers (hence the ``[dev]`` tag).
-For more information about the dependency installation options, see ``pyproject.toml``.
-The installed version will also reflect any changes you make to your code.
-
 .. hint::
 
       When you install nilearn, it will use the version stored in the version control system
@@ -475,6 +469,18 @@ The installed version will also reflect any changes you make to your code.
             git fetch --all
             # check that you got all the tags
             git tag --list
+
+You can then install nilearn in editable mode:
+
+.. code-block:: bash
+
+      pip install -e '.[dev]'
+
+This installs your local version of Nilearn,
+along with all dependencies necessary for developers (hence the ``[dev]`` tag).
+For more information about the dependency installation options, see ``pyproject.toml``.
+The installed version will also reflect any changes you make to your code.
+
 
 4. check that all tests pass with (this can take a while)::
 
