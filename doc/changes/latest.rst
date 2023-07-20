@@ -42,4 +42,4 @@ Changes
 - :bdg-danger:`Deprecation` Empty region signals resulting from applying `mask_img` in :class:`~maskers.NiftiMapsMasker` will no longer be kept in release 0.15. Meanwhile, use `keep_masked_maps` parameter when initializing the :class:`~maskers.NiftiMapsMasker` object to enable/disable this behavior. (:gh:`3732` by `Mohammad Torabi`_).
 - Removed mention of license in "header" (:gh:`3838` by `Czarina Sy`_).
 - Configure plots in example gallery for better rendering  (:gh:`3753` by `Yasmin Mzayek`_)
-- Added warning to deprecate `darkness` in :func: `_compute_facecolors_matplotlib` (:gh`3855` by `Alisha Kodibagkar`)
+- Added warning to deprecate `darkness` in ``surf_plotting._compute_facecolors_matplotlib`` and ``html_surface._get_vertexcolor`` (:gh`3855` by `Alisha Kodibagkar`_)
