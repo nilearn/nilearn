@@ -102,7 +102,7 @@ def test_one_mesh_info():
     #a new public one_mesh_info was made that provides a warnng and runs the private method
     #this tests that
     with pytest.warns(
-            UserWarning,
+            DeprecationWarning,
             match=(
                 "'one_mesh_info()' has been renamed '_one_mesh_info()' and will be removed in a future version"
             ),
@@ -136,7 +136,7 @@ def test_full_brain_info():
     #a new public full_brain_info was made that provides a warnng and runs the private method
     #this tests that
     with pytest.warns(
-            UserWarning,
+            DeprecationWarning,
             match=(
                 "‘full_brain_info()’ has been renamed ‘_full_brain_info()’ and will be removed in a future version"
             ),
