@@ -486,14 +486,19 @@ def _threshold_and_rescale(data, threshold, vmin, vmax):
     This function thresholds and rescales the provided data.
     """
     data_copy, vmin, vmax = _rescale(data, vmin, vmax)
-    return data_copy, _threshold(data, threshold), vmin, vmax
+    return data_copy, _threshold(data, threshold, vmin), vmin, vmax
 
 
-def _threshold(data, threshold):
+def _threshold(data, threshold, vmin):
     """Thresholds the data."""
     # If no thresholding and nans, filter them out
-    return (np.logical_not(np.isnan(data)) if threshold is None
-            else np.abs(data) >= threshold)
+    if threshold is None:
+        mask = np.logical_not(np.isnan(data))
+    else:
+        mask = np.abs(data) >= threshold
+        if vmin > -threshold:
+            mask = np.logical_and(mask, data >= vmin)
+    return mask
 
 
 def _rescale(data, vmin=None, vmax=None):
@@ -979,7 +984,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
 @fill_doc
 def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        hemi='left', view='lateral', engine='matplotlib',
-                       threshold=None, alpha='auto', vmax=None,
+                       threshold=None, alpha='auto', vmin=None, vmax=None,
                        cmap='cold_hot', colorbar=True,
                        symmetric_cbar="auto", cbar_tick_format="auto",
                        bg_on_data=False, darkness=.7,
@@ -1123,13 +1128,13 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     # Call _get_colorbar_and_data_ranges to derive symmetric vmin, vmax
     # And colorbar limits depending on symmetric_cbar settings
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        loaded_stat_map, vmax, symmetric_cbar, kwargs)
-
+        loaded_stat_map, vmin, vmax, symmetric_cbar)
+    
     display = plot_surf(
         surf_mesh, surf_map=loaded_stat_map,
         bg_map=bg_map, hemi=hemi,
         view=view, engine=engine, avg_method='mean', threshold=threshold,
-        cmap=cmap, symmetric_cmap=True, colorbar=colorbar,
+        cmap=cmap, symmetric_cmap=symmetric_cbar, colorbar=colorbar,
         cbar_tick_format=cbar_tick_format, alpha=alpha,
         bg_on_data=bg_on_data, darkness=darkness,
         vmax=vmax, vmin=vmin,
@@ -1211,7 +1216,7 @@ def _check_views(views) -> list:
     return views
 
 
-def _colorbar_from_array(array, vmax, threshold, kwargs,
+def _colorbar_from_array(array, vmin, vmax, threshold, symmetric_cbar=True,
                          cmap='cold_hot'):
     """Generate a custom colorbar for an array.
 
@@ -1236,8 +1241,8 @@ def _colorbar_from_array(array, vmax, threshold, kwargs,
         Default='cold_hot'.
 
     """
-    cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        array, vmax, True, kwargs
+    _, _, vmin, vmax = _get_colorbar_and_data_ranges(
+        array, vmin, vmax, symmetric_cbar,
     )
     norm = Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [cmap(i) for i in range(cmap.N)]
@@ -1252,8 +1257,8 @@ def _colorbar_from_array(array, vmax, threshold, kwargs,
         cmaplist[i] = (0.5, 0.5, 0.5, 1.)
     our_cmap = LinearSegmentedColormap.from_list('Custom cmap',
                                                  cmaplist, cmap.N)
-    sm = plt.cm.ScalarMappable(cmap=our_cmap,
-                               norm=plt.Normalize(vmin=vmin, vmax=vmax))
+    sm = plt.cm.ScalarMappable(cmap=our_cmap, norm=norm)
+                            #    norm=plt.Normalize(vmin=vmin, vmax=vmax))
     # fake up the array of the scalar mappable.
     sm._A = []
 
@@ -1266,8 +1271,8 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
                      bg_on_data=False, inflate=False,
                      views=['lateral', 'medial'],
                      output_file=None, title=None, colorbar=True,
-                     vmax=None, threshold=None,
-                     cmap='cold_hot', **kwargs):
+                     vmin=None, vmax=None, threshold=None,
+                     symmetric_cbar=True, cmap='cold_hot', **kwargs):
     """Plot multiple views of plot_surf_stat_map \
     in a single figure.
 
@@ -1374,6 +1379,12 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         height_ratios=height_ratios, hspace=0.0, wspace=0.0)
     axes = []
 
+    # get vmin and vmax for entire data (all hemis)
+    _, _, vmin, vmax = _get_colorbar_and_data_ranges(
+        image.get_data(stat_map), vmin, vmax, symmetric_cbar)
+
+    # print(f'vmin: {vmin}\tvmax: {vmax}')
+
     for i, (mode, hemi) in enumerate(itertools.product(modes, hemis)):
         bg_map = None
         # By default, add curv sign background map if mesh is inflated,
@@ -1390,25 +1401,45 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
 
         ax = fig.add_subplot(grid[i + len(hemis)], projection="3d")
         axes.append(ax)
-        plot_surf_stat_map(surf[hemi], texture[hemi],
-                           view=mode, hemi=hemi,
-                           bg_map=bg_map,
-                           bg_on_data=bg_on_data,
-                           axes=ax,
-                           colorbar=False,  # Colorbar created externally.
-                           vmax=vmax,
-                           threshold=threshold,
-                           cmap=cmap,
-                           **kwargs)
-        # ax.set_facecolor("#e0e0e0")
+
+        # if (threshold is not None) and (vmin < threshold) and (vmin > -threshold) and (not symmetric_cbar):
+        #     vmin_hemi = threshold
+        # else:
+        #     vmin_hemi = vmin
+        vmin_hemi = vmin
+
+        # print(f'vmin: {vmin:.2f}\tvmax: {vmax:.2f}\themi: {hemi}\tvmin_hemi: {vmin_hemi:.2f}\tthreshold: {threshold}')
+
+        plot_surf_stat_map(
+            surf[hemi],
+            texture[hemi],
+            view=mode,
+            hemi=hemi,
+            bg_map=bg_map,
+            bg_on_data=bg_on_data,
+            axes=ax,
+            colorbar=False,  # Colorbar created externally.
+            vmin=vmin_hemi,
+            vmax=vmax,
+            threshold=threshold,
+            cmap=cmap,
+            symmetric_cbar=symmetric_cbar,
+            **kwargs,
+        )
+
         # We increase this value to better position the camera of the
         # 3D projection plot. The default value makes meshes look too small.
         ax.set_box_aspect(None, zoom=1.3)
 
     if colorbar:
-        sm = _colorbar_from_array(image.get_data(stat_map),
-                                  vmax, threshold, kwargs,
-                                  cmap=plt.get_cmap(cmap))
+        sm = _colorbar_from_array(
+            image.get_data(stat_map),
+            vmin,
+            vmax,
+            threshold,
+            symmetric_cbar=symmetric_cbar,
+            cmap=plt.get_cmap(cmap),
+        )
 
         cbar_grid = gridspec.GridSpecFromSubplotSpec(3, 3, grid[-1, :])
         cbar_ax = fig.add_subplot(cbar_grid[1])

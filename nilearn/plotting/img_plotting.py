@@ -60,7 +60,7 @@ def show():
 # Core, usage-agnostic functions
 
 
-def _get_colorbar_and_data_ranges(stat_map_data, vmax, symmetric_cbar, kwargs):
+def _get_colorbar_and_data_ranges(stat_map_data, vmin, vmax, symmetric_cbar):
     """Set colormap and colorbar limits.
 
     Used by for plot_stat_map and plot_glass_brain.
@@ -70,28 +70,38 @@ def _get_colorbar_and_data_ranges(stat_map_data, vmax, symmetric_cbar, kwargs):
     refer to docstring of plot_stat_map.
 
     """
-    if 'vmin' in kwargs:
-        raise ValueError('this function does not accept a "vmin" '
-                         'argument, as it uses a symmetrical range '
-                         'defined via the vmax argument. To threshold '
-                         'the plotted map, use the "threshold" argument')
-
-    # make sure that the color range is symmetrical
-    if vmax is None or symmetric_cbar in ['auto', False]:
-        # Avoid dealing with masked_array:
-        if hasattr(stat_map_data, '_mask'):
-            stat_map_data = np.asarray(
-                stat_map_data[np.logical_not(stat_map_data._mask)])
-        stat_map_min = np.nanmin(stat_map_data)
-        stat_map_max = np.nanmax(stat_map_data)
+    # avoid dealing with masked_array:
+    if hasattr(stat_map_data, '_mask'):
+        stat_map_data = np.asarray(
+            stat_map_data[np.logical_not(stat_map_data._mask)])
+    
+    stat_map_min = np.nanmin(stat_map_data)
+    stat_map_max = np.nanmax(stat_map_data)
+    
+    # check compatibility between vmin, vmax and symmetric_cbar
+    if symmetric_cbar:
+        if vmin is None and vmax is None:
+            vmax = max(-stat_map_min, stat_map_max)
+            vmin = -vmax
+        elif vmin is None:
+            vmin = -vmax
+        elif vmax is None:
+            vmax = -vmin
+        elif not np.isclose(vmin, -vmax):
+            raise ValueError(
+                'vmin must be equal to -vmax unless symmetric_cbar is False.'
+            )
+    
+    # set vmin/vmax based on data if they are not already set
+    if vmin is None:
+        vmin = stat_map_min
+    if vmax is None:
+        vmax = stat_map_max
 
     if symmetric_cbar == 'auto':
-        symmetric_cbar = stat_map_min < 0 and stat_map_max > 0
+        symmetric_cbar = (vmin == -vmax)
 
-    if vmax is None:
-        vmax = max(-stat_map_min, stat_map_max)
-    vmin = -vmax
-
+    # set colorbar limits # TODO check how this affects glass brain function
     if not symmetric_cbar:
         negative_range = stat_map_max <= 0
         positive_range = stat_map_min >= 0
@@ -106,6 +116,7 @@ def _get_colorbar_and_data_ranges(stat_map_data, vmax, symmetric_cbar, kwargs):
             cbar_vmax = stat_map_max
     else:
         cbar_vmin, cbar_vmax = None, None
+
     return cbar_vmin, cbar_vmax, vmin, vmax
 
 
