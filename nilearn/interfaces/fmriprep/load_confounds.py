@@ -42,7 +42,19 @@ component_parameters = {
 
 
 def _check_strategy(strategy):
-    """Ensure the denoising strategies are valid."""
+    """Ensure the denoising strategies combinations are valid.
+
+    Parameters
+    ----------
+    strategy : tuple or list of strings.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    Raises
+    ------
+    ValueError
+        If any of the confounds specified in the strategy are not supported,
+        or the combination of the strategies are not valid.
+    """
     if (not isinstance(strategy, tuple)) and (not isinstance(strategy, list)):
         raise ValueError(
             "strategy needs to be a tuple or list of strings"
@@ -315,7 +327,31 @@ def load_confounds(
 def _load_confounds_for_single_image_file(
     image_file, strategy, demean, **kwargs
 ):
-    """Load confounds for a single image file."""
+    """Load confounds for a single image file.
+
+    Parameters
+    ----------
+    image_file : str
+        Path to processed image file.
+
+    strategy : tuple or list of strings.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    demean : boolean, default True
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    kwargs : dict
+        Extra relevant parameters for the given `strategy`.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    Returns
+    -------
+    sample_mask : None, numpy.ndarray, or list of
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    confounds : pandas.DataFrame, or list of
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+    """
     # Check for ica_aroma in strategy, this will change the required image_file
     flag_full_aroma = ("ica_aroma" in strategy) and (
         kwargs.get("ica_aroma") == "full"
@@ -338,7 +374,37 @@ def _load_confounds_for_single_image_file(
 def _load_single_confounds_file(
     confounds_file, strategy, demean=True, confounds_json_file=None, **kwargs
 ):
-    """Load and extract specified confounds from the confounds file."""
+    """Load and extract specified confounds from the confounds file.
+
+    Parameters
+    ----------
+    confounds_file : str
+        Path to confounds file.
+
+    strategy : tuple or list of strings.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    demean : boolean, default True
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    confounds_json_file : str, default None
+        Path to confounds json file.
+
+    kwargs : dict
+        Extra relevant parameters for the given `strategy`.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    Returns
+    -------
+    confounds : pandas.DataFrame
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    Raises
+    ------
+    ValueError
+        If any of the confounds specified in the strategy are not found in the
+        confounds file or confounds json file.
+    """
     flag_acompcor = ("compcor" in strategy) and (
         "anat" in kwargs.get("compcor")
     )
@@ -375,7 +441,37 @@ def _load_single_confounds_file(
 
 
 def _load_noise_component(confounds_raw, component, missing, **kargs):
-    """Load confound of a single noise component."""
+    """Load confound of a single noise component.
+
+    Parameters
+    ----------
+    confounds_raw : pandas.DataFrame
+        The confounds loaded from the confounds file.
+
+    component : str
+        The noise component to be loaded. The item from the strategy list.
+
+    missing : dict
+        A dictionary of missing confounds and noise component keywords.
+
+    kargs : dict
+        Extra relevant parameters for the given `component`.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    Returns
+    -------
+    loaded_confounds : pandas.DataFrame
+        The confounds loaded from the confounds file for the given component.
+
+    missing : dict
+        A dictionary of missing confounds and noise component keywords.
+
+    Raises
+    ------
+    MissingConfound
+        If any of the confounds specified in the strategy are not found in the
+        confounds file or confounds json file.
+    """
     try:
         need_params = component_parameters.get(component)
         if need_params:

@@ -220,7 +220,20 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
 
 
 def _update_user_inputs(kwargs, default_parameters, check_parameters):
-    """Update keyword parameters with user inputs if applicable."""
+    """Update keyword parameters with user inputs if applicable.
+
+    Parameters
+    ----------
+    kwargs : dict
+        Keyword parameters passed to `load_confounds_strategy`.
+
+    default_parameters : dict
+        Default parameters for the selected pre-set strategy.
+
+    check_parameters : list
+        List of parameters that are applicable to the selected pre-set
+        strategy.
+    """
     parameters = default_parameters.copy()
     # update the parameter with user input
     not_needed = []
