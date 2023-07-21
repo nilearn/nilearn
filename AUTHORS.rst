@@ -143,6 +143,7 @@ Some other past or present contributors are:
 * `Nicolas Gensollen`_
 * `Oliver Warrington`_
 * `Oscar Esteban`_
+* `Patrick Sadil`_
 * `Paul Bogdan`_
 * `Paula Sanz-Leon`_
 * `Peer Herholz`_
