@@ -194,6 +194,8 @@
 
 .. _Oscar Esteban: https://github.com/oesteban
 
+.. _Patrick Sadil: https://psadil.github.io/psadil
+
 .. _Paul Bogdan: https://github.com/paulcbogdan
 
 .. _Paula Sanz-Leon: https://github.com/pausz
