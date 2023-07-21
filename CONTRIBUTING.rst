@@ -439,9 +439,9 @@ Here are the key steps you need to go through to copy the repo before contributi
       conda create -n nilearn
       conda activate nilearn
 
-3. install the forked version of `nilearn`::
+3. install the forked version of `nilearn`
 
-.. hint::
+.. admonition:: Recommendation
 
       When you install nilearn, it will use the version stored in the version control system
       (in this case git)
@@ -451,9 +451,7 @@ Here are the key steps you need to go through to copy the repo before contributi
 
             pip show nilearn
 
-      or
-
-      .. code-block:: bash
+      or::
 
             python -c "import nilearn; print(nilearn.__version__)"
 
