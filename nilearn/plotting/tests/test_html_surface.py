@@ -103,7 +103,9 @@ def test_one_mesh_info():
     #this tests that
     with pytest.warns(
             DeprecationWarning,
-            match=("one_mesh_info is a private function and is renamed to _one_mesh_info. Using the deprecated name will raise an error in release 0.13"),
+            match=("one_mesh_info is a private function and is renamed to" 
+                   "_one_mesh_info. Using the deprecated name will raise" 
+                   "an error in release 0.13"),
         ):
             html_surface.one_mesh_info(
                 surf_map, mesh)
@@ -134,7 +136,9 @@ def test_full_brain_info():
     #this tests that
     with pytest.warns(
             DeprecationWarning,
-            match=("full_brain_info is a private function and is renamed to _full_brain_info. Using the deprecated name will raise an error in release 0.13"),
+            match=("full_brain_info is a private function and is renamed to" 
+                   "_full_brain_info. Using the deprecated name will raise" 
+                   "an error in release 0.13"),
         ):
             html_surface.full_brain_info(img)
 
