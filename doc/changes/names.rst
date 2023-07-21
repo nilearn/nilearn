@@ -20,6 +20,8 @@
 
 .. _Alexis Thual: https://github.com/alexisthual
 
+.. _Alisha Kodibagkar: https://github.com/alishakodibagkar/
+
 .. _Amadeus Kanaan: https://github.com/amadeuskanaan
 
 .. _Ana Luisa Pinho: https://github.com/alpinho
@@ -83,6 +85,8 @@
 .. _Fabian Pedregosa: https://github.com/fabianp
 
 .. _Franz Liem: https://github.com/fliem
+
+.. _François Paugam: https://github.com/FrancoisPgm
 
 .. _Gael Varoquaux: http://gael-varoquaux.info/
 

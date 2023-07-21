@@ -89,6 +89,7 @@ Some other past or present contributors are:
 * `Evan Edmond`_
 * `Fabian Pedregosa`_
 * `Franz Liem`_
+* `François Paugam`_
 * `Gael Varoquaux`_
 * `Gilles de Hollander`_
 * `Greg Kiar`_
