@@ -56,6 +56,7 @@ Some other past or present contributors are:
 * `Alexandre Gramfort`_
 * `Alexandre Savio`_
 * `Alexis Thual`_
+* `Alisha Kodibagkar`_
 * `Amadeus Kanaan`_
 * `Ana Luisa Pinho`_
 * `Andrés Hoyos Idrobo`_
