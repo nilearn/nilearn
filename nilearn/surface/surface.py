@@ -152,7 +152,7 @@ def _ball_sample_locations(
 
     Returns
     -------
-    sample_location_voxel_space : :obj:`numpy.ndarray`,
+    sample_location_voxel_space : :obj:`numpy.ndarray`, \
         shape (n_vertices, n_points, 3)
         The locations, in voxel space, from which to draw samples.
         First dimension iterates over mesh vertices, second dimension iterates
@@ -212,8 +212,8 @@ def _line_sample_locations(
 
     Returns
     -------
-    sample_location_voxel_space : :obj:`numpy.ndarray`,
-        shape (n_vertices, n_points, 3)
+    sample_location_voxel_space : :obj:`numpy.ndarray`, \
+            shape (n_vertices, n_points, 3)
         The locations, in voxel space, from which to draw samples.
         First dimension iterates over mesh vertices, second dimension iterates
         over the sample points associated to a vertex, third dimension is x, y,
@@ -671,7 +671,7 @@ def _load_surf_files_gifti_gzip(surf_file):
 
 def _gifti_img_to_data(gifti_img):
     """Load surface image e.g. sulcal depth or statistical map \
-    in nibabel.gifti.GiftiImage to data.
+        in nibabel.gifti.GiftiImage to data.
 
     Used by load_surf_data function in common to surface sulcal data
     acceptable to .gii or .gii.gz
@@ -832,8 +832,8 @@ def load_surf_mesh(surf_mesh):
 
     Parameters
     ----------
-    surf_mesh : :obj:`str`, :obj:`pathlib.Path`, or :obj:`numpy.ndarray`
-        or Mesh
+    surf_mesh : :obj:`str`, :obj:`pathlib.Path`, or \
+        :obj:`numpy.ndarray` or Mesh
         Either a file containing surface mesh geometry (valid formats
         are .gii .gii.gz or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or two Numpy arrays organized in a list,
@@ -964,7 +964,7 @@ def load_surface(surface):
 
 def _check_mesh(mesh):
     """Check that mesh data is either a :obj:`str`, \
-    or a :obj:`dict` with sufficient entries.
+        or a :obj:`dict` with sufficient entries.
 
     Used by :func:`plotting.surf_plotting.plot_img_on_surf` and
     :func:`plotting.html_surface.full_brain_info`
