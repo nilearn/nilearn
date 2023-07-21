@@ -223,11 +223,6 @@ with :term:`MNI` coordinates for each region (see for instance example:
 .. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_probabilistic_atlas_extraction_002.png
    :target: ../auto_examples/03_connectivity/plot_probabilistic_atlas_extraction.html
 
-..
-    For doctesting
-
-    >>> from nilearn import datasets
-    >>> atlas_filename = datasets.fetch_atlas_msdl().maps # doctest: +SKIP
 
 As you can see, the correlation matrix gives a very "full" graph: every
 node is connected to every other one. This is because it also captures
@@ -246,11 +241,12 @@ can be computed for each region on hard parcellation or probabilistic atlases.
 
  * For probabilistic atlases (eg. :func:`nilearn.datasets.fetch_atlas_msdl`), use the
    :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` function.
-   See example: :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`::
+   See example: :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`:
 
-        >>> from nilearn import plotting
-        >>> atlas_region_coords = plotting.find_probabilistic_atlas_cut_coords(atlas_filename) # doctest: +SKIP
+   .. code-block:: default
 
+           from nilearn import plotting
+           atlas_region_coords = plotting.find_probabilistic_atlas_cut_coords(atlas_filename)
 
 |
 
