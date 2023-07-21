@@ -544,7 +544,7 @@ def vol_to_surf(img, surf_mesh,
         values for index i are then sampled along the line joining these two
         points (if `kind` is 'auto' or 'depth').
 
-    depth : sequence of :obj:`floats` or `None`, optional
+    depth : sequence of :obj:`float` or `None`, optional
         The cortical depth of samples. If provided, n_samples is ignored.
         When `inner_mesh` is provided, each element of `depth` is a fraction of
         the distance from `mesh` to `inner_mesh`: 0 is exactly on the outer
