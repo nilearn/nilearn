@@ -158,6 +158,9 @@ authors:
   - given-names: Franz
     family-names: Liem
     website: https://github.com/fliem
+  - given-names: François
+    family-names: Paugam
+    website: https://github.com/FrancoisPgm
   - given-names: Gael
     family-names: Varoquaux
     website: http://gael-varoquaux.info/
@@ -446,6 +449,3 @@ authors:
   - given-names: Óscar
     family-names: Nájera
     website: https://github.com/Titan-C
-  - given-names: François
-    family-names: Paugam
-    website: https://github.com/FrancoisPgm
