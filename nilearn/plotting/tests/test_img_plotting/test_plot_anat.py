@@ -45,4 +45,5 @@ def test_plot_img_invalid():
     """Check that we get a meaningful error message when
     we give a wrong display_mode argument.
     """
-    pytest.raises(Exception, plot_anat, display_mode="zzz")
+    with pytest.raises(Exception):
+        plot_anat(display_mode="zzz")

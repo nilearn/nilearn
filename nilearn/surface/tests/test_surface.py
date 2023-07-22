@@ -544,8 +544,8 @@ def test_sample_locations():
         true_locations = np.asarray([vertex + offsets for vertex in mesh[0]])
         assert_array_equal(locations.shape, true_locations.shape)
         assert_array_almost_equal(true_locations, locations)
-    pytest.raises(ValueError, surface._sample_locations,
-                  mesh, affine, 1., kind='bad_kind')
+    with pytest.raises(ValueError):
+        surface._sample_locations(mesh, affine, 1., kind='bad_kind')
 
 
 @pytest.mark.parametrize("depth", [(0.,), (-1.,), (1.,), (-1., 0., .5)])
@@ -649,8 +649,10 @@ def test_projection_matrix():
     assert_array_almost_equal(proj.sum(axis=1)[:7], np.zeros(7))
     assert_array_almost_equal(proj.sum(axis=1)[7:], np.ones(proj.shape[0] - 7))
     # mask and img should have the same shape
-    pytest.raises(ValueError, surface._projection_matrix,
-                  mesh, np.eye(4), img.shape, mask=np.ones((3, 3, 2)))
+    with pytest.raises(ValueError):
+        surface._projection_matrix(
+            mesh, np.eye(4), img.shape, mask=np.ones((3, 3, 2))
+        )
 
 
 def test_sampling_affine():

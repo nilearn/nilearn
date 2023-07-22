@@ -1105,3 +1105,18 @@ def test_compute_facecolors_matplotlib():
     assert not np.allclose(
         facecolors_manually_rescaled, facecolors_auto_normalized
     )
+
+    with pytest.warns(
+        DeprecationWarning,
+        match=(
+            "The `darkness` parameter will be deprecated in release 0.13. "
+            "We recommend setting `darkness` to None"
+        ),
+    ):
+        facecolors_manually_rescaled = _compute_facecolors_matplotlib(
+            bg_map_scaled,
+            mesh[1],
+            len(mesh[0]),
+            0.5,
+            alpha,
+        )

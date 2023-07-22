@@ -2,6 +2,7 @@
 import itertools
 import math
 from collections.abc import Sequence
+from warnings import warn
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -460,6 +461,13 @@ def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
 
     if darkness is not None:
         bg_faces *= darkness
+        warn(
+            (
+                "The `darkness` parameter will be deprecated in release 0.13. "
+                "We recommend setting `darkness` to None"
+            ),
+            DeprecationWarning,
+        )
 
     face_colors = plt.cm.gray_r(bg_faces)
 

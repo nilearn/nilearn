@@ -56,6 +56,7 @@ Some other past or present contributors are:
 * `Alexandre Gramfort`_
 * `Alexandre Savio`_
 * `Alexis Thual`_
+* `Alisha Kodibagkar`_
 * `Amadeus Kanaan`_
 * `Ana Luisa Pinho`_
 * `Andrés Hoyos Idrobo`_
@@ -88,6 +89,7 @@ Some other past or present contributors are:
 * `Evan Edmond`_
 * `Fabian Pedregosa`_
 * `Franz Liem`_
+* `François Paugam`_
 * `Gael Varoquaux`_
 * `Gilles de Hollander`_
 * `Greg Kiar`_
@@ -143,6 +145,7 @@ Some other past or present contributors are:
 * `Nicolas Gensollen`_
 * `Oliver Warrington`_
 * `Oscar Esteban`_
+* `Patrick Sadil`_
 * `Paul Bogdan`_
 * `Paula Sanz-Leon`_
 * `Peer Herholz`_
