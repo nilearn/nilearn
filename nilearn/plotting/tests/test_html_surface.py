@@ -110,7 +110,7 @@ def test_one_mesh_info():
     check_colors(info['colorscale'])
 
     #public one_mesh_info was made private _one_mesh_info
-    #a new public one_mesh_info was made that provides a warnng and runs the private method
+    #a new public one_mesh_info was made that provides a warning and runs the private method
     #this tests that
     with pytest.warns(
             DeprecationWarning,
