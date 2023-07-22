@@ -559,7 +559,7 @@ Here are the key steps you need to go through to contribute code to `nilearn`:
 4. commit your changes on this branch (don't forget to write tests!)
 
 5. run the tests locally (to go faster, only run tests which are relevant to what
-   you work on with, for example)::
+   you work on with, for example):
 
 .. code-block:: bash
 
@@ -617,7 +617,7 @@ if you don't need the plots, a quicker option is:
 
 5. You can now open a Pull Request from Nilearn's Pull Request page.
 
-6. Request the CI builds the full documentation from your branch::
+6. Request the CI builds the full documentation from your branch:
 
 .. code-block:: bash
 
