@@ -29,6 +29,8 @@ Fixes
 Enhancements
 ------------
 
+- Add cross-reference links to type definitions in public surface functions (:gh:`3857` by `Hao-Ting Wang`_).
+
 - Update Decoder objects to use the more efficient ``LogisticRegressionCV`` (:gh:`3736` by `Michelle Wang`_).
 
 - Make return key names in the description file of destrieux surface consistent with :func:`~datasets.fetch_atlas_surf_destrieux` (:gh:`3774` by `Tarun Samanta`_).
