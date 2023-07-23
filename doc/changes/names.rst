@@ -166,6 +166,8 @@
 
 .. _Mathias Goncalves: https://github.com/mgxd
 
+.. _Mathieu Dugré: https://mathdugre.me
+
 .. _Matthias Ekman: https://github.com/mekman
 
 .. _Matthieu Joulot: https://github.com/MatthieuJoulot

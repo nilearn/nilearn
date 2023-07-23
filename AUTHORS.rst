@@ -129,6 +129,7 @@ Some other past or present contributors are:
 * `Martin Perez-Guevara`_
 * `Martin Wegrzyn`_
 * `Mathias Goncalves`_
+* `Mathieu Dugré`_
 * `Matthias Ekman`_
 * `Matthieu Joulot`_
 * `Mehdi Rahim`_
