@@ -966,8 +966,8 @@ def _check_mesh(mesh):
     """Check that mesh data is either a :obj:`str`, \
         or a :obj:`dict` with sufficient entries.
 
-    Used by :func:`plotting.surf_plotting.plot_img_on_surf` and
-    :func:`plotting.html_surface.full_brain_info`
+    Used by plotting.surf_plotting.plot_img_on_surf and
+    plotting.html_surface._full_brain_info
 
     """
     if isinstance(mesh, str):
