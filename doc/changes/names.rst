@@ -218,6 +218,8 @@
 
 .. _Pradeep Reddy Raamana: https://github.com/raamana
 
+.. _Rahul Brito: https://github.com/Rahul-Brito
+
 .. _Raphael Meudec: https://github.com/RaphaelMeudec
 
 .. _Robert Luke: https://github.com/rob-luke

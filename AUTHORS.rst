@@ -155,6 +155,7 @@ Some other past or present contributors are:
 * `Pierre Glaser`_
 * `Pierre-Olivier Quirion`_
 * `Pradeep Reddy Raamana`_
+* `Rahul Brito`_
 * `Raphael Meudec`_
 * `Robert Luke`_
 * `Robert Williamson`_
