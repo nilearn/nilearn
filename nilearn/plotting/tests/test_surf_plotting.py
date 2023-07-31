@@ -710,12 +710,6 @@ def test_plot_surf_stat_map_error():
     rng = np.random.RandomState(42)
     data = 10 * rng.standard_normal(size=mesh[0].shape[0])
 
-    # Try to input vmin
-    with pytest.raises(
-            ValueError,
-            match='this function does not accept a "vmin" argument'):
-        plot_surf_stat_map(mesh, stat_map=data, vmin=0)
-
     # Wrong size of stat map data
     with pytest.raises(
             ValueError,
