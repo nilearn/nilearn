@@ -52,6 +52,7 @@ masker = NiftiMapsMasker(
     memory="nilearn_cache",
     memory_level=1,
     standardize="zscore_sample",
+    standardize_confounds="zscore_sample",
 ).fit()
 
 ###############################################################################
@@ -217,7 +218,7 @@ for kind in kinds:
         # build vectorized connectomes for subjects in the train set
         connectomes = connectivity.fit_transform(pooled_subjects[train])
         # fit the classifier
-        classifier = LinearSVC().fit(connectomes, classes[train])
+        classifier = LinearSVC(dual=True).fit(connectomes, classes[train])
         # make predictions for the left-out test subjects
         predictions = classifier.predict(
             connectivity.transform(pooled_subjects[test])

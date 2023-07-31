@@ -1,7 +1,6 @@
 """Test the datasets module."""
 
 # Author: Alexandre Abraham
-# License: simplified BSD
 
 import itertools
 import os
@@ -125,13 +124,12 @@ def test_downloader(tmp_path, request_mocker):
         ("bald.nii.gz", url, opts),
     ]
 
-    pytest.raises(
-        IOError,
-        utils._fetch_files,
-        str(tmp_path / "craddock_2012"),
-        files,
-        verbose=0,
-    )
+    with pytest.raises(IOError):
+        utils._fetch_files(
+            str(tmp_path / "craddock_2012"),
+            files,
+            verbose=0,
+        )
     with dummy_file.open("r") as f:
         stuff = f.read(5)
     assert stuff == "stuff"
@@ -736,7 +734,8 @@ def test_fetch_atlas_talairach(tmp_path, request_mocker):
     assert_array_equal(talairach.labels, ["Background", "b", "a"])
     talairach = atlas.fetch_atlas_talairach("ba", data_dir=tmp_path)
     assert_array_equal(get_data(talairach.maps).ravel(), level_values.ravel())
-    pytest.raises(ValueError, atlas.fetch_atlas_talairach, "bad_level")
+    with pytest.raises(ValueError):
+        atlas.fetch_atlas_talairach("bad_level")
 
 
 def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
@@ -795,9 +794,12 @@ def test_fetch_atlas_schaefer_2018(tmp_path, request_mocker):
     valid_yeo_networks = [7, 17]
     valid_resolution_mm = [1, 2]
 
-    pytest.raises(ValueError, atlas.fetch_atlas_schaefer_2018, n_rois=44)
-    pytest.raises(ValueError, atlas.fetch_atlas_schaefer_2018, yeo_networks=10)
-    pytest.raises(ValueError, atlas.fetch_atlas_schaefer_2018, resolution_mm=3)
+    with pytest.raises(ValueError):
+        atlas.fetch_atlas_schaefer_2018(n_rois=44)
+    with pytest.raises(ValueError):
+        atlas.fetch_atlas_schaefer_2018(yeo_networks=10)
+    with pytest.raises(ValueError):
+        atlas.fetch_atlas_schaefer_2018(resolution_mm=3)
 
     for n_rois, yeo_networks, resolution_mm in itertools.product(
         valid_n_rois, valid_yeo_networks, valid_resolution_mm

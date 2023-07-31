@@ -850,6 +850,7 @@ class OrthoSlicer(BaseSlicer):
 
     _cut_displayed = "yxz"
     _axes_class = CutAxes
+    _default_figsize = [2.2, 3.5]
 
     @fill_doc
     @classmethod
@@ -1079,7 +1080,7 @@ class TiledSlicer(BaseSlicer):
 
     _cut_displayed = "yxz"
     _axes_class = CutAxes
-    _default_figsize = [2.0, 6.0]
+    _default_figsize = [2.0, 7.6]
 
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
@@ -1624,7 +1625,7 @@ class YSlicer(BaseStackedSlicer):
     """
 
     _direction = "y"
-    _default_figsize = [2.2, 2.3]
+    _default_figsize = [2.2, 3.0]
 
 
 class ZSlicer(BaseStackedSlicer):
@@ -1662,7 +1663,7 @@ class ZSlicer(BaseStackedSlicer):
     """
 
     _direction = "z"
-    _default_figsize = [2.2, 2.3]
+    _default_figsize = [2.2, 3.2]
 
 
 class XZSlicer(OrthoSlicer):
@@ -1774,6 +1775,7 @@ class YZSlicer(OrthoSlicer):
     """
 
     _cut_displayed = "yz"
+    _default_figsize = [2.2, 3.0]
 
 
 class MosaicSlicer(BaseSlicer):
@@ -1816,7 +1818,7 @@ class MosaicSlicer(BaseSlicer):
 
     _cut_displayed = "yxz"
     _axes_class = CutAxes
-    _default_figsize = [11.1, 7.2]
+    _default_figsize = [11.1, 20.0]
 
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):

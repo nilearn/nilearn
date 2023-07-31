@@ -52,6 +52,11 @@ authors:
     family-names: Thual
     website: https://github.com/alexisthual
     affiliation: INRIA, France
+  - given-names: Alisha
+    family-names: Kodibagkar
+    website: https://github.com/alishakodibagkar/
+    affiliation: MIT McGovern Institute, Cambridge, MA, United States
+    orcid: https://orcid.org/0000-0002-0951-242X
   - given-names: Amadeus
     family-names: Kanaan
     website: https://github.com/amadeuskanaan
@@ -105,6 +110,9 @@ authors:
   - given-names: Connor
     family-names: Lane
     website: https://github.com/clane9
+  - given-names: Czarina
+    family-names: Sy
+    website: https://github.com/czarinasy
   - given-names: Céline
     family-names: Delettre
     website: https://github.com/celinede
@@ -150,6 +158,9 @@ authors:
   - given-names: Franz
     family-names: Liem
     website: https://github.com/fliem
+  - given-names: François
+    family-names: Paugam
+    website: https://github.com/FrancoisPgm
   - given-names: Gael
     family-names: Varoquaux
     website: http://gael-varoquaux.info/
@@ -269,6 +280,9 @@ authors:
   - given-names: Mathias
     family-names: Goncalves
     website: https://github.com/mgxd
+  - given-names: Mathieu
+    family-names: Dugré
+    website: https://mathdugre.me
   - given-names: Matthias
     family-names: Ekman
     website: https://github.com/mekman
@@ -312,9 +326,17 @@ authors:
     family-names: Gensollen
     website: https://nicolasgensollen.github.io/
     affiliation: INRIA, Paris, France
+  - given-names: Oliver
+    family-names: Warrington
+    website: https://github.com/OliverWarrington
   - given-names: Oscar
     family-names: Esteban
     website: https://github.com/oesteban
+  - given-names: Patrick
+    family-names: Sadil
+    website: https://psadil.github.io/psadil
+    affiliation: Department of Biostatistics, Johns Hopkins Bloomberg School of Public
+      Health
   - given-names: Paul
     family-names: Bogdan
     website: https://github.com/paulcbogdan
@@ -341,6 +363,9 @@ authors:
   - given-names: Pradeep Reddy
     family-names: Raamana
     website: https://github.com/raamana
+  - given-names: Rahul
+    family-names: Brito
+    website: https://github.com/Rahul-Brito
   - given-names: Raphael
     family-names: Meudec
     website: https://github.com/RaphaelMeudec

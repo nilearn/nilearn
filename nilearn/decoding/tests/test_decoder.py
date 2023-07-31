@@ -14,7 +14,6 @@ Order of tests from top to bottom:
 #         Binh Nguyen
 #         Thomas Bazeiile
 #
-# License: simplified BSD
 
 import collections
 import numbers
@@ -566,7 +565,9 @@ def test_decoder_binary_classification_cross_validation(
     # check cross-validation scheme and fit attribute with groups enabled
     rand_local = np.random.RandomState(42)
 
-    model = Decoder(estimator="svc", mask=mask, standardize=True, cv=cv)
+    model = Decoder(
+        estimator="svc", mask=mask, standardize="zscore_sample", cv=cv
+    )
     groups = None
     if isinstance(cv, LeaveOneGroupOut):
         groups = rand_local.binomial(2, 0.3, size=len(y))
@@ -888,7 +889,9 @@ def test_decoder_multiclass_classification_cross_validation(
     # check cross-validation scheme and fit attribute with groups enabled
     rand_local = np.random.RandomState(42)
 
-    model = Decoder(estimator="svc", mask=mask, standardize=True, cv=cv)
+    model = Decoder(
+        estimator="svc", mask=mask, standardize="zscore_sample", cv=cv
+    )
     groups = None
     if isinstance(cv, LeaveOneGroupOut):
         groups = rand_local.binomial(2, 0.3, size=len(y))
@@ -964,7 +967,7 @@ def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
     """Check whether ValueError is raised when cv is not set correctly."""
     X, y, _ = multiclass_data
 
-    for cv in ["abc", LinearSVC()]:
+    for cv in ["abc", LinearSVC(dual=True)]:
         model = Decoder(mask=NiftiMasker(), cv=cv)
         with pytest.raises(ValueError, match="Expected cv as an integer"):
             model.fit(X, y)

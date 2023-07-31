@@ -85,6 +85,6 @@ title = (
     f"\n{(~masked_pvals.mask).sum()} detections"
 )
 
-display.title(title, y=1.1, alpha=0.8)
+display.title(title, y=1, alpha=0.8)
 
 show()

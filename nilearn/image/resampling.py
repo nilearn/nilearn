@@ -5,7 +5,6 @@ See http://nilearn.github.io/stable/manipulating_images/input_output.html
 import numbers
 
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
-# License: simplified BSD
 import warnings
 
 import numpy as np
@@ -552,10 +551,6 @@ def resample_img(
         # If A is diagonal, ndimage.affine_transform is clever enough
         # to use a better algorithm.
         if np.all(np.diag(np.diag(A)) == A):
-            if _compare_version(scipy.__version__, "<", "0.18"):
-                # Before scipy 0.18, ndimage.affine_transform was applying
-                # a different logic to the offset for diagonal affine
-                b = np.dot(linalg.inv(A), b)
             A = np.diag(A)
 
         # Iterate over a set of 3D volumes, as the interpolation problem

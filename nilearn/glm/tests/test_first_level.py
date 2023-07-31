@@ -323,7 +323,7 @@ def test_run_glm():
     assert results[0.0].theta.shape == (q, n)
     assert_almost_equal(results[0.0].theta.mean(), 0, 1)
     assert_almost_equal(results[0.0].theta.var(), 1. / p, 1)
-    assert type(results[labels[0]].model) == OLSModel
+    assert isinstance(results[labels[0]].model, OLSModel)
 
     # ar(1) case
     labels, results = run_glm(Y, X, 'ar1')
@@ -332,7 +332,7 @@ def test_run_glm():
     tmp = sum([val.theta.shape[1] for val in results.values()])
     assert tmp == n
     assert results[labels[0]].model.order == 1
-    assert type(results[labels[0]].model) == ARModel
+    assert isinstance(results[labels[0]].model, ARModel)
 
     # ar(3) case
     labels_ar3, results_ar3 = run_glm(Y, X, 'ar3', bins=10)
@@ -340,7 +340,7 @@ def test_run_glm():
     assert len(results_ar3.keys()) > 1
     tmp = sum([val.theta.shape[1] for val in results_ar3.values()])
     assert tmp == n
-    assert type(results_ar3[labels_ar3[0]].model) == ARModel
+    assert isinstance(results_ar3[labels_ar3[0]].model, ARModel)
     assert results_ar3[labels_ar3[0]].model.order == 3
     assert len(results_ar3[labels_ar3[0]].model.rho) == 3
 
@@ -415,6 +415,7 @@ def test_glm_random_state(random_state):
         spy_kmeans.assert_called_once_with(
             unittest.mock.ANY,
             n_clusters=unittest.mock.ANY,
+            n_init=unittest.mock.ANY,
             random_state=random_state)
 
 
@@ -1420,10 +1421,12 @@ def test_first_level_from_bids_no_tr(tmp_path_factory):
         os.remove(f)
 
     with pytest.warns(
-         UserWarning,
-         match="t_r.* will need to be set manually in the list of models"):
+            UserWarning,
+            match="'t_r' not provided and cannot be inferred"):
         first_level_from_bids(
-            dataset_path=bids_dataset, task_label="main", space_label="MNI",
+            dataset_path=bids_dataset,
+            task_label="main",
+            space_label="MNI",
             slice_time_ref=None, t_r=None
         )
 
@@ -1578,3 +1581,21 @@ def test_first_level_from_bids_deprecated_slice_time_default(bids_dataset):
             img_filters=[("desc", "preproc")],
             slice_time_ref=0,
         )
+
+
+def test_slice_time_ref_warning_only_when_not_provided(bids_dataset):
+
+    # catch all warnings
+    with pytest.warns() as record:
+        models, m_imgs, m_events, m_confounds = first_level_from_bids(
+            dataset_path=bids_dataset,
+            task_label="main",
+            space_label="MNI",
+            img_filters=[("desc", "preproc")],
+            slice_time_ref=0.6,
+            verbose=0,
+        )
+
+    # check that no warnings were raised
+    for r in record:
+        assert "'slice_time_ref' not provided" not in r.message.args[0]

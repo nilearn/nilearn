@@ -61,6 +61,17 @@ def test_get_vertexcolor():
         bg_map=bg_map_scaled)
     assert len(vertexcolors_manually_rescaled) == len(mesh[0])
     assert vertexcolors_manually_rescaled != vertexcolors_auto_normalized
+    with pytest.warns(
+        DeprecationWarning,
+        match=(
+            "The `darkness` parameter will be deprecated in release 0.13. "
+            "We recommend setting `darkness` to None"
+        ),
+    ):
+        vertexcolors = html_surface._get_vertexcolor(
+            surf_map, colors['cmap'], colors['norm'],
+            absolute_threshold=colors['abs_threshold'],
+            bg_map=bg_map, darkness=0.5)
 
 
 def test_check_mesh():
@@ -82,7 +93,7 @@ def test_one_mesh_info():
     mesh = fsaverage["pial_left"]
     surf_map = surface.load_surf_data(fsaverage["sulc_left"])
     mesh = surface.load_surf_mesh(mesh)
-    info = html_surface.one_mesh_info(
+    info = html_surface._one_mesh_info(
         surf_map, mesh, '90%', black_bg=True,
         bg_map=surf_map)
     assert {'_x', '_y', '_z', '_i', '_j', '_k'}.issubset(
@@ -92,17 +103,25 @@ def test_one_mesh_info():
     assert len(info['vertexcolor_left']) == len(surf_map)
     cmax = np.max(np.abs(surf_map))
     assert (info['cmin'], info['cmax']) == (-cmax, cmax)
-    assert type(info['cmax']) == float
+    assert isinstance(info['cmax'], float)
     json.dumps(info)
     assert info['black_bg']
     assert not info['full_brain_mesh']
     check_colors(info['colorscale'])
 
+    with pytest.warns(
+        DeprecationWarning,
+        match="one_mesh_info is a private function and is renamed "
+        "to _one_mesh_info. Using the deprecated name will "
+        "raise an error in release 0.13",
+    ):
+        html_surface.one_mesh_info(surf_map, mesh)
+
 
 def test_full_brain_info():
     surfaces = datasets.fetch_surf_fsaverage()
     img = _get_img()
-    info = html_surface.full_brain_info(img, surfaces)
+    info = html_surface._full_brain_info(img, surfaces)
     check_colors(info['colorscale'])
     assert {'pial_left', 'pial_right',
             'inflated_left', 'inflated_right',
@@ -110,7 +129,7 @@ def test_full_brain_info():
     assert info['cmin'] == - info['cmax']
     assert info['full_brain_mesh']
     assert not info['black_bg']
-    assert type(info['cmax']) == float
+    assert isinstance(info['cmax'], float)
     json.dumps(info)
     for hemi in ['left', 'right']:
         mesh = surface.load_surf_mesh(surfaces[f'pial_{hemi}'])
@@ -120,20 +139,28 @@ def test_full_brain_info():
         assert len(decode(
             info[f'pial_{hemi}']['_j'], '<i4')) == len(mesh[1])
 
+    with pytest.warns(
+        DeprecationWarning,
+        match="full_brain_info is a private function and is renamed to "
+        "_full_brain_info. Using the deprecated name will raise an error "
+        "in release 0.13",
+    ):
+        html_surface.full_brain_info(img)
+
 
 def test_fill_html_template():
     fsaverage = fetch_surf_fsaverage()
     mesh = surface.load_surf_mesh(fsaverage['pial_right'])
     surf_map = mesh[0][:, 0]
     img = _get_img()
-    info = html_surface.one_mesh_info(
+    info = html_surface._one_mesh_info(
         surf_map, fsaverage['pial_right'], '90%', black_bg=True,
         bg_map=fsaverage['sulc_right'])
     info["title"] = None
     html = html_surface._fill_html_template(info, embed_js=False)
     check_html(html)
     assert "jquery.min.js" in html.html
-    info = html_surface.full_brain_info(img)
+    info = html_surface._full_brain_info(img)
     info["title"] = None
     html = html_surface._fill_html_template(info)
     check_html(html)

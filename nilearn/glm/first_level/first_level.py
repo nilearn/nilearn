@@ -201,7 +201,7 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
             labels = np.array([str(val) for val in ar_coef_])
         else:  # AR(N>1) case
             n_clusters = np.min([bins, Y.shape[1]])
-            kmeans = KMeans(n_clusters=n_clusters,
+            kmeans = KMeans(n_clusters=n_clusters, n_init=10,
                             random_state=random_state).fit(ar_coef_)
             ar_coef_ = kmeans.cluster_centers_[kmeans.labels_]
 
@@ -990,7 +990,7 @@ def first_level_from_bids(dataset_path,
     if t_r is not None:
         _check_repetition_time(t_r)
     else:
-        warn("'t_r' not provided and cannot be inferred from BIDS metadata. "
+        warn("'t_r' not provided and cannot be inferred from BIDS metadata.\n"
              "It will need to be set manually in the list of models, "
              "otherwise their fit will throw an exception.")
 
@@ -1015,12 +1015,13 @@ def first_level_from_bids(dataset_path,
         assert (StartTime < t_r)
         inferred_slice_time_ref = StartTime / t_r
     else:
-        warn("'slice_time_ref' not provided "
-             "and cannot be inferred from metadata."
-             "It will be assumed that the slice timing reference "
-             "is 0.0 percent of the repetition time. "
-             "If it is not the case it will need to "
-             "be set manually in the generated list of models.")
+        if slice_time_ref is None:
+            warn("'slice_time_ref' not provided "
+                 "and cannot be inferred from metadata.\n"
+                 "It will be assumed that the slice timing reference "
+                 "is 0.0 percent of the repetition time.\n"
+                 "If it is not the case it will need to "
+                 "be set manually in the generated list of models.")
         inferred_slice_time_ref = 0.0
 
     if slice_time_ref is None and inferred_slice_time_ref is not None:

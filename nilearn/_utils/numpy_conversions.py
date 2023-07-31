@@ -1,6 +1,5 @@
 """Validation and conversion utilities for numpy."""
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
-# License: simplified BSD
 
 import csv
 

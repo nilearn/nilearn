@@ -20,6 +20,8 @@
 
 .. _Alexis Thual: https://github.com/alexisthual
 
+.. _Alisha Kodibagkar: https://github.com/alishakodibagkar/
+
 .. _Amadeus Kanaan: https://github.com/amadeuskanaan
 
 .. _Ana Luisa Pinho: https://github.com/alpinho
@@ -54,6 +56,8 @@
 
 .. _Connor Lane: https://github.com/clane9
 
+.. _Czarina Sy: https://github.com/czarinasy
+
 .. _Céline Delettre: https://github.com/celinede
 
 .. _Dan Gale: https://danjgale.github.io/
@@ -81,6 +85,8 @@
 .. _Fabian Pedregosa: https://github.com/fabianp
 
 .. _Franz Liem: https://github.com/fliem
+
+.. _François Paugam: https://github.com/FrancoisPgm
 
 .. _Gael Varoquaux: http://gael-varoquaux.info/
 
@@ -160,6 +166,8 @@
 
 .. _Mathias Goncalves: https://github.com/mgxd
 
+.. _Mathieu Dugré: https://mathdugre.me
+
 .. _Matthias Ekman: https://github.com/mekman
 
 .. _Matthieu Joulot: https://github.com/MatthieuJoulot
@@ -188,7 +196,11 @@
 
 .. _Nicolas Gensollen: https://nicolasgensollen.github.io/
 
+.. _Oliver Warrington: https://github.com/OliverWarrington
+
 .. _Oscar Esteban: https://github.com/oesteban
+
+.. _Patrick Sadil: https://psadil.github.io/psadil
 
 .. _Paul Bogdan: https://github.com/paulcbogdan
 
@@ -205,6 +217,8 @@
 .. _Pierre-Olivier Quirion: https://github.com/poquirion
 
 .. _Pradeep Reddy Raamana: https://github.com/raamana
+
+.. _Rahul Brito: https://github.com/Rahul-Brito
 
 .. _Raphael Meudec: https://github.com/RaphaelMeudec
 

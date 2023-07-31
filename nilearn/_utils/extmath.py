@@ -1,6 +1,5 @@
 """Extended math utilities."""
 # Author: Gael Varoquaux
-# License: BSD
 
 import numpy as np
 

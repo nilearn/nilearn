@@ -1,7 +1,6 @@
 """Test the neurovault module."""
 
 # Author: Jerome Dockes
-# License: simplified BSD
 
 import hashlib
 import json
@@ -280,20 +279,21 @@ def test_get_batch():
     batch = neurovault._get_batch(neurovault._NEUROVAULT_COLLECTIONS_URL)
     assert "results" in batch
     assert "count" in batch
-    pytest.raises(requests.RequestException, neurovault._get_batch, "http://")
+    with pytest.raises(requests.RequestException):
+        neurovault._get_batch("http://")
     with tempfile.TemporaryDirectory() as temp_dir:
         with open(os.path.join(temp_dir, "test_nv.txt"), "w"):
             pass
-        pytest.raises(
-            ValueError,
-            neurovault._get_batch,
-            f"file://{os.path.join(temp_dir, 'test_nv.txt')}",
-        )
+        with pytest.raises(ValueError):
+            neurovault._get_batch(
+                f"file://{os.path.join(temp_dir, 'test_nv.txt')}",
+            )
     no_results_url = (
         "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
         "esearch.fcgi?db=pmc&retmode=json&term=fmri"
     )
-    pytest.raises(ValueError, neurovault._get_batch, no_results_url)
+    with pytest.raises(ValueError):
+        neurovault._get_batch(no_results_url)
 
 
 def test_scroll_server_results():
@@ -488,13 +488,12 @@ def test_simple_download(request_mocker):
         )
         assert os.path.isfile(downloaded_file)
         request_mocker.url_mapping["*"] = requests.RequestException()
-        pytest.raises(
-            requests.RequestException,
-            neurovault._simple_download,
-            "http://",
-            os.path.join(temp_dir, "bad.nii.gz"),
-            temp_dir,
-        )
+        with pytest.raises(requests.RequestException):
+            neurovault._simple_download(
+                "http://",
+                os.path.join(temp_dir, "bad.nii.gz"),
+                temp_dir,
+            )
 
 
 def test_neurosynth_words_vectorized():
@@ -644,13 +643,12 @@ def test_download_image_terms(request_mocker):
             image_info, collection, download_params
         )
         download_params["allow_neurosynth_failure"] = False
-        pytest.raises(
-            RuntimeError,
-            neurovault._download_image_terms,
-            image_info,
-            collection,
-            download_params,
-        )
+        with pytest.raises(RuntimeError):
+            neurovault._download_image_terms(
+                image_info,
+                collection,
+                download_params,
+            )
         with open(
             os.path.join(
                 collection["absolute_path"],
@@ -725,7 +723,8 @@ def test_fetch_neurovault_ids(tmp_path):
     img_from_cols_ids = images[images["collection_id"].isin(col_ids)][
         "id"
     ].values
-    pytest.raises(ValueError, neurovault.fetch_neurovault_ids, mode="bad")
+    with pytest.raises(ValueError):
+        neurovault.fetch_neurovault_ids(mode="bad")
     data = neurovault.fetch_neurovault_ids(
         image_ids=img_ids, collection_ids=col_ids, data_dir=tmp_path
     )

@@ -41,6 +41,7 @@ masker = NiftiMapsMasker(
     memory="nilearn_cache",
     memory_level=1,
     standardize="zscore_sample",
+    standardize_confounds="zscore_sample",
 ).fit()
 
 masked_data = [
@@ -72,7 +73,7 @@ pipe = Pipeline(
         ("connectivity", ConnectivityMeasure(vectorize=True)),
         (
             "classifier",
-            GridSearchCV(LinearSVC(), {"C": [0.1, 1.0, 10.0]}, cv=5),
+            GridSearchCV(LinearSVC(dual=True), {"C": [0.1, 1.0, 10.0]}, cv=5),
         ),
     ]
 )

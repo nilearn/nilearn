@@ -14,7 +14,8 @@ from nilearn._utils.ndimage import _peak_local_max, largest_connected_component
 def test_largest_cc():
     """Check the extraction of the largest connected component."""
     a = np.zeros((6, 6, 6))
-    pytest.raises(ValueError, largest_connected_component, a)
+    with pytest.raises(ValueError):
+        largest_connected_component(a)
     a[1:3, 1:3, 1:3] = 1
     np.testing.assert_equal(a, largest_connected_component(a))
     # A simple test with non-native dtype
@@ -31,8 +32,10 @@ def test_largest_cc():
     # Tests for correct errors, when an image or string are passed.
     img = data_gen.generate_labeled_regions(shape=(10, 11, 12), n_regions=2)
 
-    pytest.raises(ValueError, largest_connected_component, img)
-    pytest.raises(ValueError, largest_connected_component, "Test String")
+    with pytest.raises(ValueError):
+        largest_connected_component(img)
+    with pytest.raises(ValueError):
+        largest_connected_component("Test String")
 
 
 def test_empty_peak_local_max():

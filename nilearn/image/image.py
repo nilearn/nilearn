@@ -4,7 +4,6 @@ Preprocessing functions for images.
 See also nilearn.signal.
 """
 # Authors: Philippe Gervais, Alexandre Abraham
-# License: simplified BSD
 
 import collections.abc
 import copy

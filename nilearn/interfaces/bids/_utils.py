@@ -186,7 +186,7 @@ def _bids_entities():
             "echo",
             "part",
         ],
-        "derivatives": ["space", "res", "den", "desc"],
+        "derivatives": ["hemi", "space", "res", "den", "desc"],
     }
 
 
