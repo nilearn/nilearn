@@ -323,7 +323,7 @@ def test_run_glm():
     assert results[0.0].theta.shape == (q, n)
     assert_almost_equal(results[0.0].theta.mean(), 0, 1)
     assert_almost_equal(results[0.0].theta.var(), 1. / p, 1)
-    assert type(results[labels[0]].model) == OLSModel
+    assert isinstance(results[labels[0]].model, OLSModel)
 
     # ar(1) case
     labels, results = run_glm(Y, X, 'ar1')
@@ -332,7 +332,7 @@ def test_run_glm():
     tmp = sum([val.theta.shape[1] for val in results.values()])
     assert tmp == n
     assert results[labels[0]].model.order == 1
-    assert type(results[labels[0]].model) == ARModel
+    assert isinstance(results[labels[0]].model, ARModel)
 
     # ar(3) case
     labels_ar3, results_ar3 = run_glm(Y, X, 'ar3', bins=10)
@@ -340,7 +340,7 @@ def test_run_glm():
     assert len(results_ar3.keys()) > 1
     tmp = sum([val.theta.shape[1] for val in results_ar3.values()])
     assert tmp == n
-    assert type(results_ar3[labels_ar3[0]].model) == ARModel
+    assert isinstance(results_ar3[labels_ar3[0]].model, ARModel)
     assert results_ar3[labels_ar3[0]].model.order == 3
     assert len(results_ar3[labels_ar3[0]].model.rho) == 3
 

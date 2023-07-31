@@ -289,7 +289,7 @@ class _MNI152Template(SpatialImage):
     """Constant pointing to the MNI152 Template provided by nilearn."""
 
     data = None
-    affine = None
+    _affine = None
     vmax = None
     _shape = None
     # Having a header is required by the load_niimg function
