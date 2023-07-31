@@ -4,7 +4,7 @@ from nilearn.experimental.surface import load_fsaverage
 
 
 def test_load_fsaverage():
-    """Call default function smoke test."""
+    """Call default function smoke test and assert return."""
     result = load_fsaverage()
     assert isinstance(result, dict)
 
