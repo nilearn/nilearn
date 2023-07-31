@@ -8,11 +8,11 @@ from nilearn.experimental.surface._maskers import (
     SurfaceMasker,
 )
 from nilearn.experimental.surface._surface_image import (
-    SurfaceImage,
-    Mesh,
-    PolyMesh,
     FileMesh,
     InMemoryMesh,
+    Mesh,
+    PolyMesh,
+    SurfaceImage,
 )
 
 __all__ = [
