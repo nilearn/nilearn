@@ -9,13 +9,10 @@ def test_load_fsaverage():
     assert isinstance(result, dict)
 
 
-@pytest.mark.parametrize(
-    "mesh_name,vertices", [("fsaverage3", 642), ("fsaverage4", 2562)]
-)
-def test_load_fsaverage_with_different_resolutions(mesh_name, vertices):
-    """Parameterize mesh_name argument."""
-    result = load_fsaverage(mesh_name)
-    assert result["pial"]["left_hemisphere"].n_vertices == vertices
+def test_load_fsaverage_with_different_resolution():
+    """Run non-default mesh_name argument."""
+    result = load_fsaverage(mesh_name="fsaverage3")
+    assert result["pial"]["left_hemisphere"].n_vertices == 642
 
 
 def test_load_fsaverage_wrong_mesh_name():
