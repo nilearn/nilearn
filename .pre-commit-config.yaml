@@ -69,12 +69,12 @@ repos:
         args: ["--profile", "black"]
 
   - repo: https://github.com/ikamensh/flynt/
-    rev: "1.0.0"
+    rev: "1.0.1"
     hooks:
     -   id: flynt
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.9.0
+    rev: v3.10.1
     hooks:
       - id: pyupgrade
         args: [--py36-plus]
@@ -93,7 +93,7 @@ repos:
         additional_dependencies: [tomli]
 
   - repo: https://github.com/pyCQA/flake8
-    rev: 6.0.0
+    rev: 6.1.0
     hooks:
       - id: flake8
         args: ["--config", ".flake8", "--verbose"]
