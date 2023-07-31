@@ -30,7 +30,7 @@ def test_get_colorbar_and_data_ranges_with_vmin():
     """
     with pytest.raises(ValueError, match='does not accept a "vmin" argument'):
         _get_colorbar_and_data_ranges(
-            data_pos_neg, vmax=None, symmetric_cbar=True, kwargs={"vmin": 1.0}
+            data_pos_neg, vmax=None, symmetric_cbar=True, vmin=1.0,
         )
 
 
@@ -126,10 +126,9 @@ def test_get_colorbar_and_data_ranges(
         - data having only positive values.
         - masked data.
     """
-    kwargs = {"aspect": "auto", "alpha": 0.9}
     assert (
         _get_colorbar_and_data_ranges(
-            data, vmax=vmax, symmetric_cbar=symmetric_cbar, kwargs=kwargs
+            data, vmax=vmax, symmetric_cbar=symmetric_cbar,
         )
         == expected_results
     )

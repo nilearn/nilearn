@@ -1128,7 +1128,12 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     # Call _get_colorbar_and_data_ranges to derive symmetric vmin, vmax
     # And colorbar limits depending on symmetric_cbar settings
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
-        loaded_stat_map, vmin, vmax, symmetric_cbar)
+        loaded_stat_map,
+        vmin=vmin,
+        vmax=vmax,
+        symmetric_cbar=symmetric_cbar,
+        symmetric_data_range=False,
+    )
     
     display = plot_surf(
         surf_mesh, surf_map=loaded_stat_map,
@@ -1242,7 +1247,11 @@ def _colorbar_from_array(array, vmin, vmax, threshold, symmetric_cbar=True,
 
     """
     _, _, vmin, vmax = _get_colorbar_and_data_ranges(
-        array, vmin, vmax, symmetric_cbar,
+        array,
+        vmin=vmin,
+        vmax=vmax,
+        symmetric_cbar=symmetric_cbar,
+        symmetric_data_range=False,
     )
     norm = Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [cmap(i) for i in range(cmap.N)]
@@ -1326,8 +1335,11 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
             This function uses a symmetric colorbar for the statistical map.
 
         Default=True.
+    %(vmin)s
     %(vmax)s
     %(threshold)s
+    %(symmetric_cbar)s
+        Default=True.
     %(cmap)s
         Default='cold_hot'.
     kwargs : dict, optional
@@ -1381,9 +1393,12 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
 
     # get vmin and vmax for entire data (all hemis)
     _, _, vmin, vmax = _get_colorbar_and_data_ranges(
-        image.get_data(stat_map), vmin, vmax, symmetric_cbar)
-
-    # print(f'vmin: {vmin}\tvmax: {vmax}')
+        image.get_data(stat_map),
+        vmin=vmin,
+        vmax=vmax,
+        symmetric_cbar=symmetric_cbar,
+        symmetric_data_range=False,
+    )
 
     for i, (mode, hemi) in enumerate(itertools.product(modes, hemis)):
         bg_map = None
@@ -1402,14 +1417,6 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         ax = fig.add_subplot(grid[i + len(hemis)], projection="3d")
         axes.append(ax)
 
-        # if (threshold is not None) and (vmin < threshold) and (vmin > -threshold) and (not symmetric_cbar):
-        #     vmin_hemi = threshold
-        # else:
-        #     vmin_hemi = vmin
-        vmin_hemi = vmin
-
-        # print(f'vmin: {vmin:.2f}\tvmax: {vmax:.2f}\themi: {hemi}\tvmin_hemi: {vmin_hemi:.2f}\tthreshold: {threshold}')
-
         plot_surf_stat_map(
             surf[hemi],
             texture[hemi],
@@ -1419,7 +1426,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
             bg_on_data=bg_on_data,
             axes=ax,
             colorbar=False,  # Colorbar created externally.
-            vmin=vmin_hemi,
+            vmin=vmin,
             vmax=vmax,
             threshold=threshold,
             cmap=cmap,
