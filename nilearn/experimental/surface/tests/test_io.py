@@ -17,4 +17,3 @@ def test_read_mesh():
     result = _io.read_mesh([expected_coordinates, expected_faces])
     assert np.all(result["coordinates"] == expected_coordinates)
     assert np.all(result["faces"] == expected_faces)
-    print(result["faces"].shape)
