@@ -88,7 +88,7 @@ def test_check_embedded_nifti_masker():
         masker = _check_embedded_nifti_masker(
             owner, multi_subject=multi_subject
         )
-        assert type(masker) == type(mask)
+        assert type(masker) == type(mask)  # noqa : E721
         for param_key in masker.get_params():
             if param_key not in [
                 "memory",

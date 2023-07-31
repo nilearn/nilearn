@@ -103,7 +103,7 @@ def test_one_mesh_info():
     assert len(info['vertexcolor_left']) == len(surf_map)
     cmax = np.max(np.abs(surf_map))
     assert (info['cmin'], info['cmax']) == (-cmax, cmax)
-    assert type(info['cmax']) == float
+    assert isinstance(info['cmax'], float)
     json.dumps(info)
     assert info['black_bg']
     assert not info['full_brain_mesh']
@@ -129,7 +129,7 @@ def test_full_brain_info():
     assert info['cmin'] == - info['cmax']
     assert info['full_brain_mesh']
     assert not info['black_bg']
-    assert type(info['cmax']) == float
+    assert isinstance(info['cmax'], float)
     json.dumps(info)
     for hemi in ['left', 'right']:
         mesh = surface.load_surf_mesh(surfaces[f'pial_{hemi}'])
