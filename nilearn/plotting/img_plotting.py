@@ -945,6 +945,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         Default='auto'.
     %(dim)s
         Default='auto'.
+    %(vmin)s
     %(vmax)s
     %(resampling_interpolation)s
         Default='continuous'.

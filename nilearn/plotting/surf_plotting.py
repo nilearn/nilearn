@@ -630,8 +630,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               hemi='left', view='lateral', engine='matplotlib',
               cmap=None, symmetric_cmap=False, colorbar=False,
               avg_method='mean', threshold=None, alpha='auto',
-              bg_on_data=False, darkness=.7,
-              vmin=None, vmax=None,
+              bg_on_data=False, darkness=.7, vmin=None, vmax=None,
               cbar_vmin=None, cbar_vmax=None, cbar_tick_format="auto",
               title=None, title_font_size=18, output_file=None, axes=None,
               figure=None, **kwargs):
@@ -803,8 +802,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
         fig = _plot_surf_matplotlib(
             coords, faces, surf_map=surf_map, bg_map=bg_map, hemi=hemi,
             view=view, cmap=cmap, colorbar=colorbar, avg_method=avg_method,
-            threshold=threshold, alpha=alpha,
-            bg_on_data=bg_on_data,
+            threshold=threshold, alpha=alpha, bg_on_data=bg_on_data,
             darkness=darkness, vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin,
             cbar_vmax=cbar_vmax, cbar_tick_format=cbar_tick_format,
             title=title, title_font_size=title_font_size,
@@ -985,9 +983,8 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
 def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        hemi='left', view='lateral', engine='matplotlib',
                        threshold=None, alpha='auto', vmin=None, vmax=None,
-                       cmap='cold_hot', colorbar=True,
-                       symmetric_cbar="auto", cbar_tick_format="auto",
-                       bg_on_data=False, darkness=.7,
+                       cmap='cold_hot', colorbar=True, symmetric_cbar="auto", 
+                       cbar_tick_format="auto", bg_on_data=False, darkness=.7,
                        title=None, title_font_size=18, output_file=None,
                        axes=None, figure=None, **kwargs):
     """Plot a stats map on a surface mesh with optional background.
@@ -1074,6 +1071,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
+    %(vmin)s
     %(vmax)s
     %(symmetric_cbar)s
         Default='auto'.
@@ -1230,6 +1228,9 @@ def _colorbar_from_array(array, vmin, vmax, threshold, symmetric_cbar=True,
     array : np.ndarray
         Any 3D array.
 
+    vmin : float
+        lower bound for plotting of stat_map values.
+
     vmax : float
         upper bound for plotting of stat_map values.
 
@@ -1267,7 +1268,7 @@ def _colorbar_from_array(array, vmin, vmax, threshold, symmetric_cbar=True,
     our_cmap = LinearSegmentedColormap.from_list('Custom cmap',
                                                  cmaplist, cmap.N)
     sm = plt.cm.ScalarMappable(cmap=our_cmap, norm=norm)
-                            #    norm=plt.Normalize(vmin=vmin, vmax=vmax))
+
     # fake up the array of the scalar mappable.
     sm._A = []
 
@@ -1276,9 +1277,8 @@ def _colorbar_from_array(array, vmin, vmax, threshold, symmetric_cbar=True,
 
 @fill_doc
 def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
-                     hemispheres=['left', 'right'],
-                     bg_on_data=False, inflate=False,
-                     views=['lateral', 'medial'],
+                     hemispheres=['left', 'right'], bg_on_data=False,
+                     inflate=False, views=['lateral', 'medial'],
                      output_file=None, title=None, colorbar=True,
                      vmin=None, vmax=None, threshold=None,
                      symmetric_cbar=True, cmap='cold_hot', **kwargs):
