@@ -357,8 +357,9 @@ class GlassBrainAxes(BaseAxes):
 
     """
 
-    def __init__(self, ax, direction, coord, plot_abs=True, **kwargs):
-        super().__init__(ax, direction, coord)
+    def __init__(self, ax, direction, coord, plot_abs=True,
+                 radiological=False, **kwargs):
+        super().__init__(ax, direction, coord, radiological=radiological)
         self._plot_abs = plot_abs
         if ax is not None:
             object_bounds = plot_brain_schematics(ax, direction, **kwargs)
