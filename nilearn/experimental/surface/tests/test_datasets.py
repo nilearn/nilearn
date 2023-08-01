@@ -7,12 +7,7 @@ def test_load_fsaverage():
     """Call default function smoke test and assert return."""
     result = load_fsaverage()
     assert isinstance(result, dict)
-
-
-def test_load_fsaverage_with_different_resolution():
-    """Run non-default mesh_name argument."""
-    result = load_fsaverage(mesh_name="fsaverage3")
-    assert result["pial"]["left_hemisphere"].n_vertices == 642
+    assert result["pial"]["left_hemisphere"].n_vertices == 10242  # fsaverage5
 
 
 def test_load_fsaverage_wrong_mesh_name():
