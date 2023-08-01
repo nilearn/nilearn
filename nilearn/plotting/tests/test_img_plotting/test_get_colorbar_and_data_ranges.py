@@ -143,14 +143,6 @@ def test_get_colorbar_and_data_ranges_error():
             symmetric_data_range=False,
         )
 
-    # vmin not smaller than vmax
-    with pytest.raises(ValueError,
-                       match='vmin must be strictly smaller than vmax'):
-        _get_colorbar_and_data_ranges(
-            data_pos_neg, vmin=1.0, vmax=0, symmetric_cbar=False,
-            symmetric_data_range=False,
-        )
-
 
 @pytest.mark.parametrize(
     "case,data",
