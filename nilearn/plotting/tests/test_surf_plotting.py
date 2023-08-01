@@ -844,7 +844,10 @@ def test_plot_img_on_surf_hemispheres_and_orientations():
 def test_plot_img_on_surf_colorbar():
     nii = _generate_img()
     plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
-                     colorbar=True, vmax=5, threshold=3)
+                     colorbar=True, vmin=-5, vmax=5, threshold=3)
+    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
+                     colorbar=True, vmin=-1, vmax=5, symmetric_cbar=False,
+                     threshold=3)
     plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
                      colorbar=False)
     plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
