@@ -1,27 +1,9 @@
 [build-system]
-requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
+requires = ["hatchling", "hatch-vcs"]
 
 [project]
-name = "nilearn"
-description = "Statistical learning for neuroimaging in Python"
-long_description = { file = "README.rst" }
-authors = [{ name = "Nilearn developers" }]
-maintainers = [{ name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr" }]
-readme = "README.rst"
-license = { text = "new BSD" }
-requires-python = ">=3.7"
-dependencies = [
-  "joblib>=1.0.0",
-  "lxml",
-  "nibabel>=3.2.0",
-  "numpy>=1.19.0",
-  "pandas>=1.1.5",
-  "requests>=2.25.0",
-  "scikit-learn>=1.0.0",
-  "scipy>=1.6.0",
-  "packaging"
-]
+authors = [{name = "Nilearn developers"}]
 classifiers = [
   "Intended Audience :: Science/Research",
   "Intended Audience :: Developers",
@@ -38,78 +20,86 @@ classifiers = [
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.11"
 ]
+dependencies = [
+  "joblib>=1.0.0",
+  "lxml",
+  "nibabel>=3.2.0",
+  "numpy>=1.19.0",
+  "pandas>=1.1.5",
+  "requests>=2.25.0",
+  "scikit-learn>=1.0.0",
+  "scipy>=1.6.0",
+  "packaging"
+]
+description = "Statistical learning for neuroimaging in Python"
 # Version from setuptools_scm
 dynamic = ["version"]
-
-[project.urls]
-Homepage = "https://nilearn.github.io"
-Development = "https://github.com/nilearn/nilearn"
-Discussions = "https://neurostars.org/tag/nilearn"
-Changelog = "https://nilearn.github.io/stable/changes/whats_new.html"
+license = {text = "new BSD"}
+long_description = {file = "README.rst"}
+maintainers = [{name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}]
+name = "nilearn"
+readme = "README.rst"
+requires-python = ">=3.7"
 
 [project.optional-dependencies]
-# Necessary req to use nilearn's plotting module
-plotting = ["matplotlib>=3.3.0"]
-# For surface plotting mostly
-plotly = ["kaleido", "plotly"]
+# A combination of dependencies useful for developers
+dev = [
+  "nilearn[plotting,plotly,doc,test]",
+  "isort",
+  "flynt",
+  "black",
+  "flake8-use-fstring"
+]
 # Requirements necessary for building the documentation
 doc = [
-	"nilearn[plotly]",
-	"coverage",
-	"flake8",
-	"flake8-docstrings",
-	"furo",
-	"memory_profiler",  # measuring memory during docs building
-	"mkl",
-	"myst-parser",
-	"numpydoc",
+  "nilearn[plotly]",
+  "coverage",
+  "flake8",
+  "flake8-docstrings",
+  "furo",
+  "memory_profiler",  # measuring memory during docs building
+  "mkl",
+  "myst-parser",
+  "numpydoc",
   "ruamel.yaml",
-	"sphinx",
-	"sphinx-copybutton",
-	"sphinx-design",
-	"sphinx-gallery",
-	"sphinxcontrib-bibtex",
-	"sphinxext-opengraph",
+  "sphinx",
+  "sphinx-copybutton",
+  "sphinx-design",
+  "sphinx-gallery",
+  "sphinxcontrib-bibtex",
+  "sphinxext-opengraph"
 ]
 # For testing of oldest usable versions of dependencies.
 min = [
-	"joblib==1.0.0",
-	"nibabel==3.2.0",
-	"numpy==1.19.0",
-	"pandas==1.1.5",
-	"scikit-learn==1.0.0",
-	"scipy==1.6.0",
+  "joblib==1.0.0",
+  "nibabel==3.2.0",
+  "numpy==1.19.0",
+  "pandas==1.1.5",
+  "scikit-learn==1.0.0",
+  "scipy==1.6.0"
 ]
+# For surface plotting mostly
+plotly = ["kaleido", "plotly"]
+# Necessary req to use nilearn's plotting module
+plotting = ["matplotlib>=3.3.0"]
 # For running unit and docstring tests
 test = [
-	"coverage",
-	"pytest>=6.0.0",
-	"pytest-cov",
-]
-# A combination of dependencies useful for developers
-dev = [
-	"nilearn[plotting,plotly,doc,test]",
-	"isort",
-	"flynt",
-	"black",
-   "flake8-use-fstring",
+  "coverage",
+  "pytest>=6.0.0",
+  "pytest-cov"
 ]
 
-[tool.hatch.build.targets.wheel]
-packages = ["nilearn"]
-
-[tool.hatch.version]
-source = "vcs"
-
-[tool.hatch.build.hooks.vcs]
-version-file = "nilearn/_version.py"
+[project.urls]
+Changelog = "https://nilearn.github.io/stable/changes/whats_new.html"
+Development = "https://github.com/nilearn/nilearn"
+Discussions = "https://neurostars.org/tag/nilearn"
+Homepage = "https://nilearn.github.io"
 
 [tool.black]
-line-length = 79
 # 'extend-exclude' excludes files or directories in addition to the defaults
-extend-exclude =  """
+extend-exclude = """
 (
   nilearn/externals
   | nilearn/_utils/data_gen.py
@@ -154,33 +144,43 @@ extend-exclude =  """
   | nilearn/tests/test_signal.py
 )
 """
+line-length = 79
+
+[tool.codespell]
+ignore-words = ".github/codespell_ignore_words.txt"
+skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,*/tmp,./doc/modules/generated/*,./doc/_build"
+
+[tool.flynt]
+exclude = "tempita"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "nilearn/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["nilearn"]
+
+[tool.hatch.version]
+source = "vcs"
 
 [tool.isort]
+combine_as_imports = true
+line_length = 79
 profile = "black"
+skip_gitignore = true
 skip_glob = [
   "nilearn/externals/*",
-  "doc/auto_examples/*",
+  "doc/auto_examples/*"
 ]
 src_paths = [
   'maint_tools',
   'nilearn',
-  'doc',
+  'doc'
 ]
-line_length = 79
-skip_gitignore = true
-combine_as_imports = true
 
 [tool.pytest.ini_options]
-minversion = "6.0"
 addopts = "--doctest-modules -s -vv --durations=0"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
-junit_family = "xunit2"
 # TODO: Remove filter in release 0.13
 filterwarnings = "ignore:.*Please use 'zscore_sample' instead.:FutureWarning"
-
-[tool.codespell]
-skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,*/tmp,./doc/modules/generated/*,./doc/_build"
-ignore-words = ".github/codespell_ignore_words.txt"
-
-[tool.flynt]
-exclude = "tempita"
+junit_family = "xunit2"
+minversion = "6.0"
