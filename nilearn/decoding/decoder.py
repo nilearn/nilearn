@@ -198,10 +198,10 @@ def _default_param_grid(estimator, X, y):
         # for L1 penalty the values are obtained in a more data-driven way
         param_grid["Cs"] = [np.geomspace(2e-3, 2e4, 8) * min_c]
     elif isinstance(estimator, LassoCV):
-        # the default is to generate 100 alphas based on the data
+        # the default is to generate 30 alphas based on the data
         # (alpha values can also be set with the 'alphas' parameter, in which
         # case 'n_alphas' is ignored)
-        param_grid["n_alphas"] = [100]
+        param_grid["n_alphas"] = [30]
     elif isinstance(estimator, (LinearSVC, SVR)):
         # similar logic as above:
         # - for L2 penalty this is [1, 10, 100]
