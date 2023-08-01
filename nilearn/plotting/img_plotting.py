@@ -115,7 +115,7 @@ def _get_colorbar_and_data_ranges(
     if vmax is None:
         vmax = stat_map_max
 
-    if not (vmin < vmax):
+    if not (vmin <= vmax):
         raise ValueError(
             f'vmin must be strictly smaller than vmax, got {vmin} and {vmax}'
         )
