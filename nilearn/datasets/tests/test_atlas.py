@@ -1,7 +1,6 @@
 """Test the datasets module."""
 
 # Author: Alexandre Abraham
-# License: simplified BSD
 
 import itertools
 import os
@@ -125,13 +124,12 @@ def test_downloader(tmp_path, request_mocker):
         ("bald.nii.gz", url, opts),
     ]
 
-    pytest.raises(
-        IOError,
-        utils._fetch_files,
-        str(tmp_path / "craddock_2012"),
-        files,
-        verbose=0,
-    )
+    with pytest.raises(IOError):
+        utils._fetch_files(
+            str(tmp_path / "craddock_2012"),
+            files,
+            verbose=0,
+        )
     with dummy_file.open("r") as f:
         stuff = f.read(5)
     assert stuff == "stuff"
@@ -155,7 +153,7 @@ def test_fetch_atlas_source(tmp_path, request_mocker):
 
 
 def _write_sample_atlas_metadata(ho_dir, filename, is_symm):
-    with open(os.path.join(ho_dir, filename + ".xml"), "w") as dm:
+    with open(os.path.join(ho_dir, f"{filename}.xml"), "w") as dm:
         if not is_symm:
             dm.write(
                 "<?xml version='1.0' encoding='us-ascii'?>\n"
@@ -397,7 +395,7 @@ def _destrieux_data():
     atlas = np.random.randint(0, 10, (10, 10, 10), dtype="int32")
     atlas_img = nibabel.Nifti1Image(atlas, np.eye(4))
     labels = "\n".join([f"{idx},label {idx}" for idx in range(10)])
-    labels = "index,name\n" + labels
+    labels = f"index,name\n{labels}"
     for lat in ["_lateralized", ""]:
         lat_data = {
             f"destrieux2009_rois_labels{lat}.csv": labels,
@@ -631,8 +629,7 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
     dataset_name = "basc_multiscale_2015"
     name_sym = "template_cambridge_basc_multiscale_nii_sym"
     basenames_sym = [
-        "template_cambridge_basc_multiscale_sym_" + key + ".nii.gz"
-        for key in keys
+        f"template_cambridge_basc_multiscale_sym_{key}.nii.gz" for key in keys
     ]
     for key, basename_sym in zip(keys, basenames_sym):
         assert data_sym[key] == str(
@@ -641,8 +638,7 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
 
     name_asym = "template_cambridge_basc_multiscale_nii_asym"
     basenames_asym = [
-        "template_cambridge_basc_multiscale_asym_" + key + ".nii.gz"
-        for key in keys
+        f"template_cambridge_basc_multiscale_asym_{key}.nii.gz" for key in keys
     ]
     for key, basename_asym in zip(keys, basenames_asym):
         assert data_asym[key] == str(
@@ -738,13 +734,14 @@ def test_fetch_atlas_talairach(tmp_path, request_mocker):
     assert_array_equal(talairach.labels, ["Background", "b", "a"])
     talairach = atlas.fetch_atlas_talairach("ba", data_dir=tmp_path)
     assert_array_equal(get_data(talairach.maps).ravel(), level_values.ravel())
-    pytest.raises(ValueError, atlas.fetch_atlas_talairach, "bad_level")
+    with pytest.raises(ValueError):
+        atlas.fetch_atlas_talairach("bad_level")
 
 
 def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
-    labels = pd.DataFrame(
-        {"label": list(map("label_{}".format, range(16)))}
-    ).to_csv(sep="\t", header=False)
+    labels = pd.DataFrame({"label": [f"label_{i}" for i in range(16)]}).to_csv(
+        sep="\t", header=False
+    )
     det_atlas = data_gen.generate_labeled_regions((7, 6, 5), 16)
     prob_atlas, _ = data_gen.generate_maps((7, 6, 5), 16)
     request_mocker.url_mapping["*osf.io/6qrcb/*"] = labels
@@ -797,9 +794,12 @@ def test_fetch_atlas_schaefer_2018(tmp_path, request_mocker):
     valid_yeo_networks = [7, 17]
     valid_resolution_mm = [1, 2]
 
-    pytest.raises(ValueError, atlas.fetch_atlas_schaefer_2018, n_rois=44)
-    pytest.raises(ValueError, atlas.fetch_atlas_schaefer_2018, yeo_networks=10)
-    pytest.raises(ValueError, atlas.fetch_atlas_schaefer_2018, resolution_mm=3)
+    with pytest.raises(ValueError):
+        atlas.fetch_atlas_schaefer_2018(n_rois=44)
+    with pytest.raises(ValueError):
+        atlas.fetch_atlas_schaefer_2018(yeo_networks=10)
+    with pytest.raises(ValueError):
+        atlas.fetch_atlas_schaefer_2018(resolution_mm=3)
 
     for n_rois, yeo_networks, resolution_mm in itertools.product(
         valid_n_rois, valid_yeo_networks, valid_resolution_mm

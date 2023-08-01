@@ -2,7 +2,6 @@
 # Author: DOHMATOB Elvis Dopgima,
 #         VAROQUAUX Gael,
 #         GRAMFORT Alexandre,
-# License: simplified BSD
 
 from math import sqrt
 

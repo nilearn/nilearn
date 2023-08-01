@@ -42,7 +42,9 @@ from nilearn.maskers import NiftiLabelsMasker
 
 # Instantiate the masker with label image and label values
 masker = NiftiLabelsMasker(
-    atlas.maps, labels=atlas.labels, standardize="zscore_sample"
+    atlas.maps,
+    labels=atlas.labels,
+    standardize="zscore_sample",
 )
 
 # Visualize the atlas

@@ -5,7 +5,6 @@ See http://nilearn.github.io/stable/manipulating_images/input_output.html
 import numbers
 
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
-# License: simplified BSD
 import warnings
 
 import numpy as np
@@ -584,11 +583,6 @@ def resample_img(
         target_shape = target_shape.tolist()
     target_shape = tuple(target_shape)
 
-    if _compare_version(scipy.__version__, "<", "0.20"):
-        # Before scipy 0.20, force native data types due to endian issues
-        # that caused instability.
-        data = data.astype(data.dtype.newbyteorder("N"))
-
     if interpolation == "continuous" and data.dtype.kind == "i":
         # cast unsupported data types to closest support dtype
         aux = data.dtype.name.replace("int", "float")
@@ -662,10 +656,6 @@ def resample_img(
         # If A is diagonal, ndimage.affine_transform is clever enough to use a
         # better algorithm.
         if np.all(np.diag(np.diag(A)) == A):
-            if _compare_version(scipy.__version__, "<", "0.18"):
-                # Before scipy 0.18, ndimage.affine_transform was applying a
-                # different logic to the offset for diagonal affine
-                b = np.dot(linalg.inv(A), b)
             A = np.diag(A)
         # Iterate over a set of 3D volumes, as the interpolation problem is
         # separable in the extra dimensions. This reduces the

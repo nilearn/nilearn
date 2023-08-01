@@ -10,7 +10,6 @@ of smoothing for a given analysis depends on the spatial extent of the
 effects that are expected.
 
 """
-
 from nilearn import datasets, image, plotting
 
 data = datasets.fetch_development_fmri(n_subjects=1)
@@ -22,14 +21,14 @@ print(
 
 first_epi_file = data.func[0]
 
-# First the compute the mean image, from the 4D series of image
+# First compute the mean image, from the 4D series of image
 mean_func = image.mean_img(first_epi_file)
 
+#########################################################################
 # Then we smooth, with a varying amount of smoothing, from none to 20mm
 # by increments of 5mm
 for smoothing in range(0, 25, 5):
     smoothed_img = image.smooth_img(mean_func, smoothing)
     plotting.plot_epi(smoothed_img, title=f"Smoothing {int(smoothing)}mm")
-
 
 plotting.show()

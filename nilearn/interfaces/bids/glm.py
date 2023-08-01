@@ -14,7 +14,7 @@ def save_glm_to_bids(
     model,
     contrasts,
     contrast_types=None,
-    out_dir='.',
+    out_dir=".",
     prefix=None,
 ):
     """Save GLM results to BIDS-like files.
@@ -94,10 +94,10 @@ def save_glm_to_bids(
     )
     from nilearn.reporting.glm_reporter import _make_stat_maps
 
-    if isinstance(prefix, str) and not prefix.endswith('_'):
-        prefix += '_'
+    if isinstance(prefix, str) and not prefix.endswith("_"):
+        prefix += "_"
     elif not isinstance(prefix, str):
-        prefix = ''
+        prefix = ""
 
     if isinstance(contrasts, list):
         contrasts = {c: c for c in contrasts}
@@ -106,12 +106,12 @@ def save_glm_to_bids(
 
     for k, v in contrasts.items():
         if not isinstance(k, str):
-            raise ValueError(f'contrast names must be strings, not {type(k)}')
+            raise ValueError(f"contrast names must be strings, not {type(k)}")
 
         if not isinstance(v, (str, np.ndarray, list)):
             raise ValueError(
-                'contrast definitions must be strings or array_likes, '
-                f'not {type(v)}'
+                "contrast definitions must be strings or array_likes, "
+                f"not {type(v)}"
             )
 
     out_dir = os.path.abspath(out_dir)
@@ -125,7 +125,7 @@ def save_glm_to_bids(
         contrast_types = {}
 
     # Write out design matrices to files.
-    if hasattr(model, 'design_matrices_'):
+    if hasattr(model, "design_matrices_"):
         design_matrices = model.design_matrices_
     else:
         design_matrices = [model.design_matrix_]
@@ -133,22 +133,22 @@ def save_glm_to_bids(
     # TODO: Assuming that cases of multiple design matrices correspond to
     # different runs. Not sure if this is correct. Need to check.
     for i_run, design_matrix in enumerate(design_matrices):
-        run_str = f'run-{i_run + 1}_' if len(design_matrices) > 1 else ''
+        run_str = f"run-{i_run + 1}_" if len(design_matrices) > 1 else ""
 
         # Save design matrix and associated figure
         dm_file = os.path.join(
             out_dir,
-            f'{prefix}{run_str}design.tsv',
+            f"{prefix}{run_str}design.tsv",
         )
         design_matrix.to_csv(
             dm_file,
-            sep='\t',
+            sep="\t",
             index=False,
         )
 
         dm_fig_file = os.path.join(
             out_dir,
-            f'{prefix}{run_str}design.svg',
+            f"{prefix}{run_str}design.svg",
         )
         dm_fig = plot_design_matrix(design_matrix)
         dm_fig.figure.savefig(dm_fig_file)
@@ -166,18 +166,18 @@ def save_glm_to_bids(
             contrast_name = _clean_contrast_name(contrast_name)
             constrast_fig_file = os.path.join(
                 out_dir,
-                f'{prefix}{run_str}contrast-{contrast_name}_design.svg',
+                f"{prefix}{run_str}contrast-{contrast_name}_design.svg",
             )
             contrast_plot.figure.savefig(constrast_fig_file)
 
-    statistical_maps = _make_stat_maps(model, contrasts, output_type='all')
+    statistical_maps = _make_stat_maps(model, contrasts, output_type="all")
 
     # Model metadata
     # TODO: Determine optimal mapping of model metadata to BIDS fields.
-    metadata_file = os.path.join(out_dir, f'{prefix}statmap.json')
+    metadata_file = os.path.join(out_dir, f"{prefix}statmap.json")
     _generate_model_metadata(metadata_file, model)
 
-    dset_desc_file = os.path.join(out_dir, 'dataset_description.json')
+    dset_desc_file = os.path.join(out_dir, "dataset_description.json")
     _generate_dataset_description(dset_desc_file, model_level)
 
     # Write out contrast-level statistical maps
@@ -186,9 +186,9 @@ def save_glm_to_bids(
         contrast_matrix = contrasts[contrast_name]
         # Strings and 1D arrays are assumed to be t-contrasts
         if isinstance(contrast_matrix, str) or (contrast_matrix.ndim == 1):
-            stat_type = 't'
+            stat_type = "t"
         else:
-            stat_type = 'F'
+            stat_type = "F"
 
         # Override automatic detection with explicit type if provided
         stat_type = contrast_types.get(contrast_name, stat_type)
@@ -198,22 +198,22 @@ def save_glm_to_bids(
 
         # Contrast-level images
         contrast_level_mapping = {
-            'effect_size': (
-                f'{prefix}contrast-{contrast_name}_stat-effect_statmap.nii.gz'
+            "effect_size": (
+                f"{prefix}contrast-{contrast_name}_stat-effect_statmap.nii.gz"
             ),
-            'stat': (
-                f'{prefix}contrast-{contrast_name}_stat-{stat_type}_statmap'
-                '.nii.gz'
+            "stat": (
+                f"{prefix}contrast-{contrast_name}_stat-{stat_type}_statmap"
+                ".nii.gz"
             ),
-            'effect_variance': (
-                f'{prefix}contrast-{contrast_name}_stat-variance_statmap'
-                '.nii.gz'
+            "effect_variance": (
+                f"{prefix}contrast-{contrast_name}_stat-variance_statmap"
+                ".nii.gz"
             ),
-            'z_score': (
-                f'{prefix}contrast-{contrast_name}_stat-z_statmap.nii.gz'
+            "z_score": (
+                f"{prefix}contrast-{contrast_name}_stat-z_statmap.nii.gz"
             ),
-            'p_value': (
-                f'{prefix}contrast-{contrast_name}_stat-p_statmap.nii.gz'
+            "p_value": (
+                f"{prefix}contrast-{contrast_name}_stat-p_statmap.nii.gz"
             ),
         }
         # Rename keys
@@ -228,11 +228,11 @@ def save_glm_to_bids(
 
     # Write out model-level statistical maps
     model_level_mapping = {
-        'residuals': f'{prefix}stat-errorts_statmap.nii.gz',
-        'r_square': f'{prefix}stat-rSquare_statmap.nii.gz',
+        "residuals": f"{prefix}stat-errorts_statmap.nii.gz",
+        "r_square": f"{prefix}stat-rSquare_statmap.nii.gz",
     }
     for attr, map_name in model_level_mapping.items():
-        print(f'Extracting and saving {attr}')
+        print(f"Extracting and saving {attr}")
         img = getattr(model, attr)
         if isinstance(img, list):
             img = img[0]

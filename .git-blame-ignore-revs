@@ -20,6 +20,26 @@
 # Most recently merged PRs are at the top
 #
 # ---------------------------------------------------------------------------- #
+# [FMT] apply black (#3836)
+1b8c6ed6028e3ecf880597539f1de0910eb8d230
+# [FMT] apply black to plotting - part 4 (#3833)
+34613ab01d219924a8ed34677f48779d5d0b0cd1
+# [FMT] apply black to plotting - part 3 (#3827)
+ea375e01b35208f26aae9e66183fab245dd9862e
+# [FMT] apply black to plotting - part 2 (#3810)
+787d662116a0808d074b0dd40c9b4c2498712819
+# [FMT] apply black to maskers - part 2 (#3803)
+3f2628ffd016c9504c62db8560c5c4cc06d024c8
+# [FMT] apply black to plotting - part 1 (#3802)
+90dd16e20afafd2f9628bd5e08d3db3fe50353f2
+# [FMT] apply black to maskers - part 1 (#3795)
+aece81bb22bff7ad84427bda8d777eb072ade0b0
+# [FMT] apply black nilearn.plotting.display (#3790)
+186845cc04cb8c13c2dd5aa50eff2b426ec2329c
+# apply black to interface (#3783)
+43ff123df9e3849019c12d1c4125ed5fc8d21328
+# [MAINT] Update config black and pre-commit (#3777)
+caa8da8172c2ea56929ef6ecd3b592b963384370
 # run isort and flake8 on the whole nilearn code base in CI (#3651)
 44933309ecd09add795ce1c3ea5edaab4294da87
 # Format nilearn/plotting: apply isort and fix flake8 errors (#3648)

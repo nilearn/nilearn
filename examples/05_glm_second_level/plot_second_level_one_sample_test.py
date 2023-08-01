@@ -107,6 +107,7 @@ display = plotting.plot_glass_brain(
     display_mode="z",
     plot_abs=False,
     title="group left-right button press (unc p<0.001)",
+    figure=plt.figure(figsize=(5, 5)),
 )
 plotting.show()
 

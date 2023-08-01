@@ -2,6 +2,7 @@
 
 import collections.abc
 import json
+from warnings import warn
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -80,6 +81,13 @@ def _get_vertexcolor(surf_map, cmap, norm,
 
     if darkness is not None:
         bg_data *= darkness
+        warn(
+            (
+                "The `darkness` parameter will be deprecated in release 0.13. "
+                "We recommend setting `darkness` to None"
+            ),
+            DeprecationWarning,
+        )
 
     bg_colors = plt.get_cmap('Greys')(bg_data)
 
@@ -102,10 +110,11 @@ def _get_vertexcolor(surf_map, cmap, norm,
     return to_color_strings(vertex_colors)
 
 
-def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
-                  black_bg=False, bg_map=None, symmetric_cmap=True,
-                  bg_on_data=False, darkness=.7,
-                  vmax=None, vmin=None):
+def _one_mesh_info(
+        surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot, black_bg=False,
+        bg_map=None, symmetric_cmap=True, bg_on_data=False, darkness=.7,
+        vmax=None, vmin=None
+):
     """Prepare info for plotting one surface map on a single mesh.
 
     This computes the dictionary that gets inserted in the web page,
@@ -130,6 +139,26 @@ def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
     return info
 
 
+def one_mesh_info(
+        surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot, black_bg=False,
+        bg_map=None, symmetric_cmap=True, bg_on_data=False, darkness=.7,
+        vmax=None, vmin=None,
+):
+    """Deprecate public function. See _one_mesh_info."""
+    warn(
+        category=DeprecationWarning,
+        message="one_mesh_info is a private function and is renamed "
+        "to _one_mesh_info. Using the deprecated name will "
+        "raise an error in release 0.13",
+    )
+
+    return _one_mesh_info(surf_map, surf_mesh, threshold=threshold, cmap=cmap,
+                          black_bg=black_bg, bg_map=bg_map,
+                          symmetric_cmap=symmetric_cmap,
+                          bg_on_data=bg_on_data, darkness=darkness,
+                          vmax=vmax, vmin=vmin)
+
+
 def _check_mesh(mesh):
     if isinstance(mesh, str):
         return datasets.fetch_surf_fsaverage(mesh)
@@ -147,10 +176,10 @@ def _check_mesh(mesh):
     return mesh
 
 
-def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
-                    cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
-                    bg_on_data=False, darkness=.7,
-                    vmax=None, vmin=None, vol_to_surf_kwargs={}):
+def _full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
+                     cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
+                     bg_on_data=False, darkness=.7,
+                     vmax=None, vmin=None, vol_to_surf_kwargs={}):
     """Project 3D map on cortex; prepare info to plot both hemispheres.
 
     This computes the dictionary that gets inserted in the web page,
@@ -189,6 +218,26 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
     info['full_brain_mesh'] = True
     info['colorscale'] = colors['colors']
     return info
+
+
+def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
+                    cmap=cm.cold_hot, black_bg=False, symmetric_cmap=True,
+                    bg_on_data=False, darkness=.7,
+                    vmax=None, vmin=None, vol_to_surf_kwargs={}):
+    """Deprecate public function. See _full_brain_info."""
+    warn(
+        category=DeprecationWarning,
+        message="full_brain_info is a private function and is renamed to "
+        "_full_brain_info. Using the deprecated name will raise an error "
+        "in release 0.13",
+    )
+
+    return _full_brain_info(
+        volume_img, mesh=mesh, threshold=threshold, cmap=cmap,
+        black_bg=black_bg, symmetric_cmap=symmetric_cmap,
+        bg_on_data=bg_on_data, darkness=darkness, vmax=vmax, vmin=vmin,
+        vol_to_surf_kwargs=vol_to_surf_kwargs
+    )
 
 
 def _fill_html_template(info, embed_js=True):
@@ -240,7 +289,6 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
         white background. Default=False.
 
     %(bg_on_data)s
-        Default=False.
 
     %(darkness)s
         Default=1.
@@ -299,7 +347,7 @@ def view_img_on_surf(stat_map_img, surf_mesh='fsaverage5',
 
     """
     stat_map_img = check_niimg_3d(stat_map_img)
-    info = full_brain_info(
+    info = _full_brain_info(
         volume_img=stat_map_img, mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, vmax=vmax, vmin=vmin,
         bg_on_data=bg_on_data, darkness=darkness,
@@ -346,7 +394,6 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
         Default=None.
 
     %(bg_on_data)s
-        Default=False.
 
     %(darkness)s
         Default=1.
@@ -420,7 +467,7 @@ def view_surf(surf_mesh, surf_map=None, bg_map=None, threshold=None,
             surf_mesh, surf_map)
     if bg_map is not None:
         _, bg_map = surface.check_mesh_and_data(surf_mesh, bg_map)
-    info = one_mesh_info(
+    info = _one_mesh_info(
         surf_map=surf_map, surf_mesh=surf_mesh, threshold=threshold,
         cmap=cmap, black_bg=black_bg, bg_map=bg_map,
         bg_on_data=bg_on_data, darkness=darkness,

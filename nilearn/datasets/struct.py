@@ -1,7 +1,4 @@
-"""Downloading NeuroImaging datasets: structural datasets.
-
-# License: simplified BSD
-"""
+"""Downloading NeuroImaging datasets: structural datasets."""
 
 import functools
 import os

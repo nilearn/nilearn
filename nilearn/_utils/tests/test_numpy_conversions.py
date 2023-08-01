@@ -222,8 +222,10 @@ def test_as_ndarray():
     assert not are_arrays_identical(arr1[0], arr2[0])
 
     # Unhandled cases
-    pytest.raises(ValueError, as_ndarray, "test string")
-    pytest.raises(ValueError, as_ndarray, [], order="invalid")
+    with pytest.raises(ValueError):
+        as_ndarray("test_string")
+    with pytest.raises(ValueError):
+        as_ndarray([], order="invalid")
 
 
 def test_csv_to_array(tmp_path):
@@ -236,6 +238,7 @@ def test_csv_to_array(tmp_path):
         assert np.allclose(
             csv_to_array(filename), np.asarray([1.0, 2.0, 3.0, 4.0, 5.0])
         )
-        pytest.raises(TypeError, csv_to_array, filename, delimiters="?!")
+        with pytest.raises(TypeError):
+            csv_to_array(filename, delimiters="?!")
     finally:
         os.remove(filename)

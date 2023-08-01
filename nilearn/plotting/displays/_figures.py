@@ -29,8 +29,10 @@ class SurfaceFigure:
         """
         if output_file is None:
             if self.output_file is None:
-                raise ValueError("You must provide an output file "
-                                 "name to save the figure.")
+                raise ValueError(
+                    "You must provide an output file "
+                    "name to save the figure."
+                )
         else:
             self.output_file = output_file
 
@@ -62,11 +64,13 @@ class PlotlySurfaceFigure(SurfaceFigure):
         try:
             import plotly.graph_objects as go
         except ImportError:
-            raise ImportError("Plotly is required to use "
-                              "`PlotlySurfaceFigure`.")
+            raise ImportError(
+                "Plotly is required to use `PlotlySurfaceFigure`."
+            )
         if figure is not None and not isinstance(figure, go.Figure):
-            raise TypeError("`PlotlySurfaceFigure` accepts only "
-                            "plotly figure objects.")
+            raise TypeError(
+                "`PlotlySurfaceFigure` accepts only plotly figure objects."
+            )
         super().__init__(figure=figure, output_file=output_file)
 
     def show(self, renderer="browser"):
@@ -93,8 +97,9 @@ class PlotlySurfaceFigure(SurfaceFigure):
         try:
             import kaleido  # noqa: F401
         except ImportError:
-            raise ImportError("`kaleido` is required to save plotly "
-                              "figures to disk.")
+            raise ImportError(
+                "`kaleido` is required to save plotly figures to disk."
+            )
         self._check_output_file(output_file=output_file)
         if self.figure is not None:
             self.figure.write_image(self.output_file)

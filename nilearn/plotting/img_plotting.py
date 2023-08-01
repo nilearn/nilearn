@@ -6,7 +6,6 @@ Only matplotlib is required.
 """
 
 # Author: Gael Varoquaux, Chris Filo Gorgolewski
-# License: BSD
 
 import collections.abc
 import functools
@@ -134,8 +133,13 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
     ----------
     %(img)s
         Image to plot.
-    %(bg_vmin)s
-    %(bg_vmax)s
+
+    bg_vmin : :obj:`float`, optional
+        vmin for `bg_img`.
+
+    bg_vmax : :obj:`float`, optional
+        vmax for `bg_img`.
+
     interpolation : string, optional
         Passed to the add_overlay calls.
         Default='nearest'.
@@ -285,7 +289,7 @@ class _MNI152Template(SpatialImage):
     """Constant pointing to the MNI152 Template provided by nilearn."""
 
     data = None
-    affine = None
+    _affine = None
     vmax = None
     _shape = None
     # Having a header is required by the load_niimg function

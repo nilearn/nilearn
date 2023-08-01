@@ -6,7 +6,6 @@
 #         Virgile Fritsch,
 #         Bertrand Thirion,
 #         and others.
-# License: simplified BSD
 
 from math import sqrt
 

@@ -6,7 +6,6 @@ which we historically used,
 ignores modules whose name starts with an underscore.
 """
 # Author: Gael Varoquaux, Alexandre Abraham
-# License: simplified BSD
 
 import os
 import re
@@ -479,9 +478,7 @@ def test_repr_niimgs(tmp_path):
     # Lists longer than 3
     # Small names - Explicit shortening
     long_list_small_names = ["test", "retest", "reretest", "rereretest"]
-    shortened_rep_long_list_small_names = (
-        "[test,\n" "         ...\n" " rereretest]"
-    )
+    shortened_rep_long_list_small_names = "[test,\n         ...\n rereretest]"
 
     assert (
         _utils._repr_niimgs(long_list_small_names, shorten=True)
@@ -490,7 +487,7 @@ def test_repr_niimgs(tmp_path):
 
     # Small names - Force full display
     long_rep_long_list_small_names = (
-        "[test,\n" " retest,\n" " reretest,\n" " rereretest]"
+        "[test,\n retest,\n reretest,\n rereretest]"
     )
 
     assert (

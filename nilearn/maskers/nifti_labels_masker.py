@@ -14,10 +14,11 @@ class _ExtractionFunctor:
     func_name = 'nifti_labels_masker_extractor'
 
     def __init__(self, _resampled_labels_img_, background_label, strategy,
-                 mask_img):
+                 keep_masked_labels, mask_img):
         self._resampled_labels_img_ = _resampled_labels_img_
         self.background_label = background_label
         self.strategy = strategy
+        self.keep_masked_labels = keep_masked_labels
         self.mask_img = mask_img
 
     def __call__(self, imgs):
@@ -26,7 +27,7 @@ class _ExtractionFunctor:
         return signal_extraction.img_to_signals_labels(
             imgs, self._resampled_labels_img_,
             background_label=self.background_label, strategy=self.strategy,
-            mask_img=self.mask_img)
+            keep_masked_labels=self.keep_masked_labels, mask_img=self.mask_img)
 
 
 @_utils.fill_doc
@@ -89,7 +90,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, minimum, maximum, variance,
         standard_deviation. Default='mean'.
-
+    %(keep_masked_labels)s
     reports : :obj:`bool`, optional
         If set to True, data is saved in order to produce a report.
         Default=True.
@@ -138,6 +139,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         memory_level=1,
         verbose=0,
         strategy='mean',
+        keep_masked_labels=True,
         reports=True,
         **kwargs,
     ):
@@ -198,6 +200,8 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 "invalid value for 'resampling_target' "
                 f"parameter: {resampling_target}"
             )
+
+        self.keep_masked_labels = keep_masked_labels
 
     def generate_report(self):
         """Generate a report."""
@@ -586,6 +590,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 self._resampled_labels_img_,
                 self.background_label,
                 self.strategy,
+                self.keep_masked_labels,
                 self._resampled_mask_img,
             ),
             # Pre-processing

@@ -47,7 +47,7 @@ def no_int64_nifti(monkeypatch):
     """
     forbidden_types = (np.int64, np.uint64)
     error_msg = (
-        "Creating or saving an image " "containing 64-bit ints is forbidden."
+        "Creating or saving an image containing 64-bit ints is forbidden."
     )
 
     to_filename = nibabel.nifti1.Nifti1Image.to_filename

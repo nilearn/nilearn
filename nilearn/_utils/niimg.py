@@ -1,6 +1,5 @@
 """Neuroimaging file input and output."""
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
-# License: simplified BSD
 
 import collections.abc
 import copy
@@ -226,14 +225,16 @@ def _repr_niimgs(niimgs, shorten=True):
     # Collection case
     if isinstance(niimgs, collections.abc.Iterable):
         if shorten and len(niimgs) > list_max_display:
-            return "[%s]" % ",\n         ...\n ".join(
+            tmp = ",\n         ...\n ".join(
                 _repr_niimgs(niimg, shorten=shorten)
                 for niimg in [niimgs[0], niimgs[-1]]
             )
+            return f"[{tmp}]"
         elif len(niimgs) > list_max_display:
-            return "[%s]" % ",\n ".join(
+            tmp = ",\n ".join(
                 _repr_niimgs(niimg, shorten=shorten) for niimg in niimgs
             )
+            return f"[{tmp}]"
         else:
             tmp = [_repr_niimgs(niimg, shorten=shorten) for niimg in niimgs]
             return f"[{', '.join(tmp)}]"

@@ -8,7 +8,9 @@ from nibabel import Nifti1Image
 from scipy.stats import pearsonr
 from sklearn.preprocessing import scale
 
+from nilearn._utils.data_gen import create_fake_bids_dataset
 from nilearn._utils.fmriprep_confounds import _to_camel_case
+from nilearn.interfaces.bids import get_bids_files
 from nilearn.interfaces.fmriprep import load_confounds
 from nilearn.interfaces.fmriprep.load_confounds import (
     _check_strategy,
@@ -16,7 +18,7 @@ from nilearn.interfaces.fmriprep.load_confounds import (
 )
 from nilearn.interfaces.fmriprep.tests.utils import (
     create_tmp_filepath,
-    get_leagal_confound,
+    get_legal_confound,
 )
 from nilearn.maskers import NiftiMasker
 
@@ -333,21 +335,24 @@ def test_not_found_exception(tmp_path):
         tmp_path, copy_confounds=True, copy_json=False
     )
     missing_params = ["trans_y", "trans_x_derivative1", "rot_z_power2"]
-    missing_keywords = ["cosine"]
+    missing_keywords = ["cosine", "global_signal"]
 
     leagal_confounds = pd.read_csv(bad_conf, delimiter="\t", encoding="utf-8")
-    cosine = [
-        col_name
-        for col_name in leagal_confounds.columns
-        if "cosine" in col_name
-    ]
+    remove_columns = []
+    for missing_kw in missing_keywords:
+        remove_columns += [
+            col_name
+            for col_name in leagal_confounds.columns
+            if missing_kw in col_name
+        ]
+
     aroma = [
         col_name
         for col_name in leagal_confounds.columns
         if "aroma" in col_name
     ]
     missing_confounds = leagal_confounds.drop(
-        columns=missing_params + cosine + aroma
+        columns=missing_params + remove_columns + aroma
     )
     missing_confounds.to_csv(bad_conf, sep="\t", index=False)
 
@@ -359,7 +364,8 @@ def test_not_found_exception(tmp_path):
             motion="full",
         )
     assert f"{missing_params}" in exc_info.value.args[0]
-    assert f"{missing_keywords}" in exc_info.value.args[0]
+    # missing cosine if it's not present in the file it's fine
+    assert f"{missing_keywords[-1:]}" in exc_info.value.args[0]
 
     # loading anat compcor should also raise an error, because the json file is
     # missing for that example dataset
@@ -384,12 +390,13 @@ def test_not_found_exception(tmp_path):
         load_confounds(
             img_missing_confounds, strategy=("ica_aroma", ), ica_aroma="basic"
         )
-    assert "aroma" in exc_info.value.args[0]
+    assert "ica_aroma" in exc_info.value.args[0]
 
     # Aggressive ICA-AROMA strategy requires
     # default nifti
     aroma_nii, _ = create_tmp_filepath(
-        tmp_path, image_type="ica_aroma", suffix="aroma"
+        tmp_path, image_type="ica_aroma", bids_fields={"entities":
+                                                       {"sub": "icaAroma"}}
     )
     with pytest.raises(ValueError) as exc_info:
         load_confounds(
@@ -416,7 +423,7 @@ def test_non_steady_state(tmp_path):
     """Warn when 'non_steady_state' is in strategy."""
     # supplying 'non_steady_state' in strategy is not necessary
     # check warning is correctly raised
-    img, conf = create_tmp_filepath(
+    img, _ = create_tmp_filepath(
         tmp_path, copy_confounds=True
     )
     warning_message = (r"Non-steady state")
@@ -450,14 +457,13 @@ def test_load_non_nifti(tmp_path):
 def test_invalid_filetype(tmp_path):
     """Invalid file types/associated files for load method."""
     bad_nii, bad_conf = create_tmp_filepath(tmp_path,
-                                            suffix="sub-test01_task-test",
                                             copy_confounds=True,
                                             old_derivative_suffix=False)
-    conf, _ = load_confounds(bad_nii)
+    _, _ = load_confounds(bad_nii)
 
     # more than one legal filename for confounds
     add_conf = "sub-test01_task-test_desc-confounds_regressors.tsv"
-    leagal_confounds, _ = get_leagal_confound()
+    leagal_confounds, _ = get_legal_confound()
     leagal_confounds.to_csv(tmp_path / add_conf, sep="\t", index=False)
     with pytest.raises(ValueError) as info:
         load_confounds(bad_nii)
@@ -472,7 +478,7 @@ def test_invalid_filetype(tmp_path):
     assert "The confound file contains no header." in str(error_log.value)
 
     # invalid fmriprep version: old camel case header (<1.2)
-    leagal_confounds, _ = get_leagal_confound()
+    leagal_confounds, _ = get_legal_confound()
     camel_confounds = leagal_confounds.copy()
     camel_confounds.columns = [
         _to_camel_case(col_name) for col_name in leagal_confounds.columns
@@ -543,7 +549,7 @@ def test_sample_mask(tmp_path):
     assert reg.shape[0] - len(mask) == 1
 
     # When no non-steady state volumes are present
-    conf_data, _ = get_leagal_confound(non_steady_state=False)
+    conf_data, _ = get_legal_confound(non_steady_state=False)
     conf_data.to_csv(regular_conf, sep="\t", index=False)  # save to tmp
     reg, mask = load_confounds(regular_nii, strategy=("motion", ))
     assert mask is None
@@ -556,7 +562,16 @@ def test_sample_mask(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "image_type", ["regular", "native", "ica_aroma", "gifti", "cifti"]
+    "image_type", [
+        "regular",
+        "native",
+        "ica_aroma",
+        "gifti",
+        "cifti",
+        "res",
+        "den",
+        "part",
+    ],
 )
 def test_inputs(tmp_path, image_type):
     """Test multiple images as input."""
@@ -565,7 +580,10 @@ def test_inputs(tmp_path, image_type):
     for i in range(2):  # gifti edge case
         nii, _ = create_tmp_filepath(
             tmp_path,
-            suffix=f"sub-test{i+1}_ses-test_task-testimg_run-01",
+            bids_fields={"entities": {"sub": f"test{i+1}",
+                                      "ses": "test",
+                                      "task": "testimg",
+                                      "run": "01"}},
             image_type=image_type,
             copy_confounds=True,
             copy_json=True,
@@ -577,3 +595,31 @@ def test_inputs(tmp_path, image_type):
     else:
         conf, _ = load_confounds(files)
     assert len(conf) == 2
+
+
+def test_load_confounds_for_gifti(tmpdir):
+    """Ensure that confounds are found for gifti files.
+
+    Regression test for
+    https://github.com/nilearn/nilearn/issues/3817
+    Wrong order of space and hemi entity in filename pattern
+    lead to confounds not being found.
+    """
+    bids_path = create_fake_bids_dataset(base_dir=tmpdir, n_sub=1, n_ses=1)
+    selection = get_bids_files(
+        bids_path / "derivatives",
+        sub_label="01",
+        file_tag="bold",
+        file_type="func.gii",
+        filters=[("ses", "01"),
+                 ("task", "main"),
+                 ("run", "01"),
+                 ("hemi", "L")],
+        sub_folder=True,
+    )
+    assert len(selection) == 1
+    load_confounds(
+        selection[0],
+        strategy=['motion', 'wm_csf'],
+        motion='basic',
+        demean=False)
