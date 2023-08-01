@@ -1338,7 +1338,10 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     %(vmin)s
     %(vmax)s
     %(threshold)s
-    %(symmetric_cbar)s
+    symmetric_cbar : :obj:`bool`, or "auto", optional
+        Specifies whether the colorbar should range from `-vmax` to `vmax`
+        (or from `vmin` to `-vmin` if `-vmin` is greater than `vmax`) or 
+        from `vmin` to `vmax`.
         Default=True.
     %(cmap)s
         Default='cold_hot'.
