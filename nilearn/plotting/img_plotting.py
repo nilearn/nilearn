@@ -195,7 +195,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         colorbar=colorbar,
         brain_color=brain_color,
         radiological=radiological,
-        )
+    )
     if bg_img is not None:
         bg_img = _utils.check_niimg_3d(bg_img)
         display.add_overlay(bg_img,
@@ -279,7 +279,8 @@ def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
         resampling_interpolation=resampling_interpolation,
         black_bg=black_bg, colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
-        bg_img=bg_img, vmin=vmin, vmax=vmax, radiological=radiological, **kwargs)
+        bg_img=bg_img, vmin=vmin, vmax=vmax, radiological=radiological,
+        **kwargs)
 
     return display
 
@@ -421,8 +422,8 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
               output_file=None, display_mode='ortho', figure=None,
               axes=None, title=None, annotate=True, threshold=None,
               draw_cross=True, black_bg='auto', dim='auto', cmap=plt.cm.gray,
-              colorbar=False, cbar_tick_format="%.2g", radiological=False, vmin=None,
-              vmax=None, **kwargs):
+              colorbar=False, cbar_tick_format="%.2g", radiological=False,
+              vmin=None, vmax=None, **kwargs):
     """Plot cuts of an anatomical image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -456,7 +457,7 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
         Default is '%%.2g' for scientific notation.
-    %(radiological)s 
+    %(radiological)s
     %(vmin)s
     %(vmax)s
 
@@ -483,8 +484,8 @@ def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
                        threshold=threshold, annotate=annotate,
                        draw_cross=draw_cross, black_bg=black_bg,
                        colorbar=colorbar, cbar_tick_format=cbar_tick_format,
-                       vmin=vmin, vmax=vmax, cmap=cmap, radiological=radiological, 
-                       **kwargs)
+                       vmin=vmin, vmax=vmax, cmap=cmap,
+                       radiological=radiological, **kwargs)
     return display
 
 
@@ -524,8 +525,8 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
         Default=`plt.cm.nipy_spectral`.
     %(vmin)s
     %(vmax)s
-    %(radiological)s 
-        
+    %(radiological)s
+
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
@@ -537,7 +538,8 @@ def plot_epi(epi_img=None, cut_coords=None, output_file=None,
                        threshold=None, annotate=annotate,
                        draw_cross=draw_cross, black_bg=black_bg,
                        colorbar=colorbar, cbar_tick_format=cbar_tick_format,
-                       cmap=cmap, vmin=vmin, vmax=vmax, radiological=radiological, **kwargs)
+                       cmap=cmap, vmin=vmin, vmax=vmax,
+                       radiological=radiological, **kwargs)
     return display
 
 
@@ -649,7 +651,7 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         Default='continuous'.
     %(linewidths)s
         Default=2.5.
-    %(radiological)s 
+    %(radiological)s
 
     Notes
     -----
@@ -685,8 +687,8 @@ def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         threshold=threshold, bg_vmin=bg_vmin, bg_vmax=bg_vmax,
         resampling_interpolation=resampling_interpolation,
         colorbar=colorbar, cbar_tick_format=cbar_tick_format,
-        alpha=alpha, cmap=cmap, vmin=vmin, vmax=vmax, radiological=radiological, 
-        **kwargs)
+        alpha=alpha, cmap=cmap, vmin=vmin, vmax=vmax,
+        radiological=radiological, **kwargs)
 
     if view_type == 'contours':
         display = _plot_roi_contours(display, img, cmap=cmap, alpha=alpha,
@@ -771,7 +773,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
     alpha : float between 0 and 1, optional
         Alpha sets the transparency of the color inside the filled contours.
         Default=0.7.
-    %(radiological)s 
+    %(radiological)s
 
     See Also
     --------
@@ -782,7 +784,7 @@ def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
                         display_mode=display_mode,
                         figure=figure, axes=axes, title=title,
                         annotate=annotate, draw_cross=draw_cross,
-                        black_bg=black_bg, dim=dim, radiological=radiological, 
+                        black_bg=black_bg, dim=dim, radiological=radiological,
                         **kwargs)
 
     maps_img = _utils.check_niimg_4d(maps_img)
@@ -927,7 +929,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
     %(vmax)s
     %(resampling_interpolation)s
         Default='continuous'.
-    %(radiological)s 
+    %(radiological)s
 
     Notes
     -----
@@ -1077,7 +1079,8 @@ def plot_glass_brain(stat_map_img,
         black_bg=black_bg, threshold=threshold, cmap=cmap, colorbar=colorbar,
         cbar_tick_format=cbar_tick_format, display_factory=display_factory,
         vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
-        resampling_interpolation=resampling_interpolation, radiological=radiological, **kwargs)
+        resampling_interpolation=resampling_interpolation,
+        radiological=radiological, **kwargs)
 
     if stat_map_img is None and 'l' in display.axes:
         display.axes['l'].ax.invert_xaxis()
@@ -1164,7 +1167,7 @@ def plot_connectome(adjacency_matrix, node_coords,
         the nodes in one go.
     %(colorbar)s
         Default=False.
-    %(radiological)s 
+    %(radiological)s
 
     See Also
     --------
@@ -1259,7 +1262,7 @@ def plot_markers(node_values, node_coords, node_size='auto',
         the nodes in one go
     %(colorbar)s
         Default=True.
-    %(radiological)s 
+    %(radiological)s
 
     """
     node_values = np.array(node_values).flatten()

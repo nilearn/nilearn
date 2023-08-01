@@ -107,8 +107,6 @@ mean_haxby_img = image.mean_img(haxby_func_filename)
 # Visualizing mean image (3D)
 plotting.plot_epi(mean_haxby_img, title="plot_epi")
 
-
-
 # It's also possible to visualize volumes in a LR-flipped "radiological" view
 # Just set radiological=True
 plotting.plot_stat_map(stat_img,
