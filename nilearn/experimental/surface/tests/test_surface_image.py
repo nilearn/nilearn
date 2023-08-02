@@ -15,8 +15,10 @@ from nilearn.experimental.surface._surface_image import _get_vertex_counts
 def fake_mesh_testing_data():
     """Create fake mesh data for testing."""
     mesh_data = {
-        "coordinates": np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2]]),
-        "faces": np.array([[0, 1, 2]]),
+        "coordinates": np.array(
+            [[0, 0, 0], [1, 1, 1], [2, 2, 2]], dtype="uint8"
+        ),
+        "faces": np.array([[0, 1, 2]], dtype="uint8"),
     }
     fake_mesh = {
         "left": InMemoryMesh(mesh_data["coordinates"], mesh_data["faces"]),
