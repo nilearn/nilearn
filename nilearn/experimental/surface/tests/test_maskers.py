@@ -14,7 +14,7 @@ def pial_surface_mesh():
     return load_fsaverage()["pial"]
 
 
-def test_SurfaceMasker(pial_surface_mesh):
+def test_surface_masker(pial_surface_mesh):
     """Test fit_transform method"""
     masker = SurfaceMasker()
     data_array = np.arange(1, 5 * 10242 + 1).reshape((5, 10242))
