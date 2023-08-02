@@ -30,10 +30,12 @@ def test_plot_prob_atlas(params):
     plt.close()
 
 
-def test_plot_prob_atlas_radiological_view(testdata_4d_for_plotting):
+def test_plot_prob_atlas_radiological_view():
     """Smoke test for radiological view."""
+    rng = np.random.RandomState(42)
+    data_rng = rng.normal(size=(6, 8, 10, 5))
     result = plot_prob_atlas(
-        testdata_4d_for_plotting["img_4d"], radiological=True
+        Nifti1Image(data_rng, np.eye(4)), radiological=True
     )
     assert result.axes.get("y").radiological is True
     plt.close()
