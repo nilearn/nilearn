@@ -27,12 +27,12 @@ def _expected_results_pos_neg(symmetric_cbar, vmin, vmax,
     """Help for expected_results.
 
     Return the expected `cbar_vmin`, `cbar_vmax`, `vmin`,
-    and `vmax` for general case.
+    and `vmax` for general case (masked or unmasked).
     """
     data_min = np.nanmin(data)
     data_max = np.nanmax(data)
     if symmetric_cbar:
-        if vmax is None:
+        if vmax is None and vmin is None:
             return (None, None, -data_max, data_max)
         else:
             return (None, None, -2, 2)
@@ -62,7 +62,7 @@ def _expected_results_pos(symmetric_cbar, vmin, vmax,
     data_min = np.nanmin(data)
     data_max = np.nanmax(data)
     if symmetric_cbar is True:
-        if vmax is None:
+        if vmax is None and vmin is None:
             return (None, None, -data_max, data_max)
         else:
             return (None, None, -2, 2)
@@ -92,7 +92,7 @@ def _expected_results_neg(symmetric_cbar, vmin, vmax,
     data_min = np.nanmin(data)
     data_max = np.nanmax(data)
     if symmetric_cbar is True:
-        if vmax is None:
+        if vmax is None and vmin is None:
             return (None, None, data_min, -data_min)
         else:
             return (None, None, -2, 2)
@@ -160,7 +160,8 @@ def test_get_colorbar_and_data_ranges_error():
         ("auto", None, True),
         (False, None, False),
         (False, -1, False),
-    ]
+        (True, -2, False),
+    ],
 )
 @pytest.mark.parametrize("vmax", [None, 2])
 def test_get_colorbar_and_data_ranges(
