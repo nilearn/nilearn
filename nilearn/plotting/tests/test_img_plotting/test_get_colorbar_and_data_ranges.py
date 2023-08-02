@@ -22,8 +22,9 @@ data_neg = np.array([[-0.5, 0, np.nan], [0.0, np.nan, -0.2], [0, 0, 0]])
 data_masked = np.ma.masked_greater(data_pos_neg, 2.0)
 
 
-def _expected_results_pos_neg(symmetric_cbar, vmin, vmax, 
-                              symmetric_data_range, data):
+def _expected_results_pos_neg(
+    symmetric_cbar, vmin, vmax, symmetric_data_range, data
+):
     """Help for expected_results.
 
     Return the expected `cbar_vmin`, `cbar_vmax`, `vmin`,
@@ -52,8 +53,9 @@ def _expected_results_pos_neg(symmetric_cbar, vmin, vmax,
             return (data_min, data_max, vmin, vmax)
 
 
-def _expected_results_pos(symmetric_cbar, vmin, vmax, 
-                          symmetric_data_range, data):
+def _expected_results_pos(
+    symmetric_cbar, vmin, vmax, symmetric_data_range, data
+):
     """Help for expected_results.
 
     Return the expected `cbar_vmin`, `cbar_vmax`, `vmin`,
@@ -82,8 +84,9 @@ def _expected_results_pos(symmetric_cbar, vmin, vmax,
             return (0, None, vmin, vmax)
 
 
-def _expected_results_neg(symmetric_cbar, vmin, vmax, 
-                          symmetric_data_range, data):
+def _expected_results_neg(
+    symmetric_cbar, vmin, vmax, symmetric_data_range, data
+):
     """Help for expected_results.
 
     Return the expected `cbar_vmin`, `cbar_vmax`, `vmin`,
@@ -113,8 +116,9 @@ def _expected_results_neg(symmetric_cbar, vmin, vmax,
 
 
 @pytest.fixture
-def expected_results(case, data, symmetric_cbar, vmin, vmax, 
-                     symmetric_data_range):
+def expected_results(
+    case, data, symmetric_cbar, vmin, vmax, symmetric_data_range
+):
     """Fixture to retrieve expected results."""
     expected = {
         "pos_neg": _expected_results_pos_neg,
@@ -122,24 +126,29 @@ def expected_results(case, data, symmetric_cbar, vmin, vmax,
         "neg": _expected_results_neg,
         "masked": _expected_results_pos_neg,
     }
-    return expected[case](symmetric_cbar, vmin, vmax, 
-                          symmetric_data_range, data)
+    return expected[case](
+        symmetric_cbar, vmin, vmax, symmetric_data_range, data
+    )
 
 
 def test_get_colorbar_and_data_ranges_error():
-    """Tests for _get_colorbar_and_data_ranges.
-    """
-
+    """Tests for _get_colorbar_and_data_ranges."""
     # vmin not accepted by default
     with pytest.raises(ValueError, match='does not accept a "vmin" argument'):
         _get_colorbar_and_data_ranges(
-            data_pos_neg, vmax=None, symmetric_cbar=True, vmin=1.0,
+            data_pos_neg,
+            vmax=None,
+            symmetric_cbar=True,
+            vmin=1.0,
         )
 
     # incompatible vmin and vmax if symmetric_cbar is True
-    with pytest.raises(ValueError, match='vmin must be equal to -vmax'):
+    with pytest.raises(ValueError, match="vmin must be equal to -vmax"):
         _get_colorbar_and_data_ranges(
-            data_pos_neg, vmin=0, vmax=1.0, symmetric_cbar=True,
+            data_pos_neg,
+            vmin=0,
+            vmax=1.0,
+            symmetric_cbar=True,
             symmetric_data_range=False,
         )
 
@@ -154,7 +163,7 @@ def test_get_colorbar_and_data_ranges_error():
     ],
 )
 @pytest.mark.parametrize(
-    "symmetric_cbar,vmin,symmetric_data_range", 
+    "symmetric_cbar,vmin,symmetric_data_range",
     [
         (True, None, True),
         ("auto", None, True),
@@ -165,8 +174,13 @@ def test_get_colorbar_and_data_ranges_error():
 )
 @pytest.mark.parametrize("vmax", [None, 2])
 def test_get_colorbar_and_data_ranges(
-    case, data, symmetric_cbar, vmin, vmax, symmetric_data_range, 
-    expected_results
+    case,
+    data,
+    symmetric_cbar,
+    vmin,
+    vmax,
+    symmetric_data_range,
+    expected_results,
 ):
     """Tests for _get_colorbar_and_data_ranges.
 
@@ -179,7 +193,10 @@ def test_get_colorbar_and_data_ranges(
     """
     assert (
         _get_colorbar_and_data_ranges(
-            data, vmin=vmin, vmax=vmax, symmetric_cbar=symmetric_cbar,
+            data,
+            vmin=vmin,
+            vmax=vmax,
+            symmetric_cbar=symmetric_cbar,
             symmetric_data_range=symmetric_data_range,
         )
         == expected_results

@@ -926,6 +926,7 @@ def test_plot_img_on_surf_with_axes_kwarg():
             axes="something",
         )
 
+
 def test_plot_img_on_surf_with_engine_kwarg():
     nii = _generate_img()
     with pytest.raises(ValueError):

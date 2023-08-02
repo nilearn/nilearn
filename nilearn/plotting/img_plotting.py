@@ -61,19 +61,18 @@ def show():
 
 
 def _get_colorbar_and_data_ranges(
-        stat_map_data, vmin=None, vmax=None, symmetric_cbar=True, 
-        force_min_stat_map_value=None, symmetric_data_range=True,
-    ):
+    stat_map_data, vmin=None, vmax=None, symmetric_cbar=True,
+    force_min_stat_map_value=None, symmetric_data_range=True,
+):
     """Set colormap and colorbar limits.
 
     Used by plot_stat_map, plot_glass_brain and plot_img_on_surf.
 
-    If symmetric_data_range is True, the limits for the colormap will 
-    always be set to range from -vmax to vmax. The limits for the colorbar 
-    depend on the symmetric_cbar argument, please refer to docstring of 
+    If symmetric_data_range is True, the limits for the colormap will
+    always be set to range from -vmax to vmax. The limits for the colorbar
+    depend on the symmetric_cbar argument, please refer to docstring of
     plot_stat_map.
     """
-
     if symmetric_data_range and (vmin is not None):
         raise ValueError('this function does not accept a "vmin" '
                          'argument, as it uses a symmetrical range '
@@ -84,7 +83,7 @@ def _get_colorbar_and_data_ranges(
     if hasattr(stat_map_data, '_mask'):
         stat_map_data = np.asarray(
             stat_map_data[np.logical_not(stat_map_data._mask)])
-    
+
     if force_min_stat_map_value is None:
         stat_map_min = np.nanmin(stat_map_data)
     else:
@@ -105,7 +104,7 @@ def _get_colorbar_and_data_ranges(
                 "vmin must be equal to -vmax unless symmetric_cbar"
                 " and symmetric_data_range are False."
             )
-    
+
     # force vmin to be -vmax
     if symmetric_data_range:
         vmin = -vmax
@@ -898,7 +897,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                   cbar_tick_format="%.2g", figure=None, axes=None,
                   title=None, threshold=1e-6, annotate=True, draw_cross=True,
                   black_bg='auto', cmap=cm.cold_hot, symmetric_cbar="auto",
-                  dim='auto', vmin=None, vmax=None, 
+                  dim='auto', vmin=None, vmax=None,
                   resampling_interpolation='continuous', **kwargs):
     """Plot cuts of an ROI/mask image.
 

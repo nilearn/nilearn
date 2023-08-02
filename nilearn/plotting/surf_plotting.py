@@ -983,7 +983,7 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
 def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        hemi='left', view='lateral', engine='matplotlib',
                        threshold=None, alpha='auto', vmin=None, vmax=None,
-                       cmap='cold_hot', colorbar=True, symmetric_cbar="auto", 
+                       cmap='cold_hot', colorbar=True, symmetric_cbar="auto",
                        cbar_tick_format="auto", bg_on_data=False, darkness=.7,
                        title=None, title_font_size=18, output_file=None,
                        axes=None, figure=None, **kwargs):
@@ -1132,7 +1132,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
         symmetric_cbar=symmetric_cbar,
         symmetric_data_range=False,
     )
-    
+
     display = plot_surf(
         surf_mesh, surf_map=loaded_stat_map,
         bg_map=bg_map, hemi=hemi,
@@ -1340,7 +1340,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     %(threshold)s
     symmetric_cbar : :obj:`bool`, or "auto", optional
         Specifies whether the colorbar should range from `-vmax` to `vmax`
-        (or from `vmin` to `-vmin` if `-vmin` is greater than `vmax`) or 
+        (or from `vmin` to `-vmin` if `-vmin` is greater than `vmax`) or
         from `vmin` to `vmax`.
         Default=True.
     %(cmap)s
