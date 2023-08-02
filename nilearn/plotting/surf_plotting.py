@@ -1359,7 +1359,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         accepted by plot_img_on_surf.
 
     """
-    for arg in ('figure', 'axes'):
+    for arg in ("figure", "axes", "engine"):
         if arg in kwargs:
             raise ValueError(
                 'plot_img_on_surf does not accept '

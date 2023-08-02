@@ -926,6 +926,17 @@ def test_plot_img_on_surf_with_axes_kwarg():
             axes="something",
         )
 
+def test_plot_img_on_surf_with_engine_kwarg():
+    nii = _generate_img()
+    with pytest.raises(ValueError):
+        plot_img_on_surf(
+            nii,
+            views=["anterior"],
+            hemispheres=["right"],
+            inflat=True,
+            engine="something",
+        )
+
 
 def test_plot_img_on_surf_title():
     nii = _generate_img()
