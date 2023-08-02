@@ -241,5 +241,6 @@ def test_plotting_functions_radiological_view(
     testdata_3d_for_plotting, plotting_func
 ):
     """Smoke test for radiological view."""
-    plotting_func(testdata_3d_for_plotting["img"], radiological=True)
+    result = plotting_func(testdata_3d_for_plotting["img"], radiological=True)
+    assert result.axes.get("y").radiological is True
     plt.close()

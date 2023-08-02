@@ -28,3 +28,12 @@ def test_plot_prob_atlas(params):
     data_rng = rng.normal(size=(6, 8, 10, 5))
     plot_prob_atlas(Nifti1Image(data_rng, np.eye(4)), **params)
     plt.close()
+
+
+def test_plot_prob_atlas_radiological_view(testdata_4d_for_plotting):
+    """Smoke test for radiological view."""
+    result = plot_prob_atlas(
+        testdata_4d_for_plotting["img_4d"], radiological=True
+    )
+    assert result.axes.get("y").radiological is True
+    plt.close()
