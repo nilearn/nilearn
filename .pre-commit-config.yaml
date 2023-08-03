@@ -96,7 +96,7 @@ repos:
     rev: v2.10.0
     hooks:
     - id: pretty-format-toml
-      args: [--autofix, --indent, '2']
+      args: [--autofix, --indent, '4']
 
   - repo: https://github.com/pyCQA/flake8
     rev: 6.1.0

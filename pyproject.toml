@@ -5,33 +5,33 @@ requires = ["hatchling", "hatch-vcs"]
 [project]
 authors = [{name = "Nilearn developers"}]
 classifiers = [
-  "Intended Audience :: Science/Research",
-  "Intended Audience :: Developers",
-  "License :: OSI Approved",
-  "Programming Language :: C",
-  "Programming Language :: Python",
-  "Topic :: Software Development",
-  "Topic :: Scientific/Engineering",
-  "Operating System :: Microsoft :: Windows",
-  "Operating System :: POSIX",
-  "Operating System :: Unix",
-  "Operating System :: MacOS",
-  "Programming Language :: Python :: 3.7",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11"
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved",
+    "Programming Language :: C",
+    "Programming Language :: Python",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11"
 ]
 dependencies = [
-  "joblib>=1.0.0",
-  "lxml",
-  "nibabel>=3.2.0",
-  "numpy>=1.19.0",
-  "pandas>=1.1.5",
-  "requests>=2.25.0",
-  "scikit-learn>=1.0.0",
-  "scipy>=1.6.0",
-  "packaging"
+    "joblib>=1.0.0",
+    "lxml",
+    "nibabel>=3.2.0",
+    "numpy>=1.19.0",
+    "pandas>=1.1.5",
+    "requests>=2.25.0",
+    "scikit-learn>=1.0.0",
+    "scipy>=1.6.0",
+    "packaging"
 ]
 description = "Statistical learning for neuroimaging in Python"
 # Version from setuptools_scm
@@ -46,39 +46,39 @@ requires-python = ">=3.7"
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
 dev = [
-  "nilearn[plotting,plotly,doc,test]",
-  "isort",
-  "flynt",
-  "black",
-  "flake8-use-fstring"
+    "nilearn[plotting,plotly,doc,test]",
+    "isort",
+    "flynt",
+    "black",
+    "flake8-use-fstring"
 ]
 # Requirements necessary for building the documentation
 doc = [
-  "nilearn[plotly]",
-  "coverage",
-  "flake8",
-  "flake8-docstrings",
-  "furo",
-  "memory_profiler",  # measuring memory during docs building
-  "mkl",
-  "myst-parser",
-  "numpydoc",
-  "ruamel.yaml",
-  "sphinx",
-  "sphinx-copybutton",
-  "sphinx-design",
-  "sphinx-gallery",
-  "sphinxcontrib-bibtex",
-  "sphinxext-opengraph"
+    "nilearn[plotly]",
+    "coverage",
+    "flake8",
+    "flake8-docstrings",
+    "furo",
+    "memory_profiler",  # measuring memory during docs building
+    "mkl",
+    "myst-parser",
+    "numpydoc",
+    "ruamel.yaml",
+    "sphinx",
+    "sphinx-copybutton",
+    "sphinx-design",
+    "sphinx-gallery",
+    "sphinxcontrib-bibtex",
+    "sphinxext-opengraph"
 ]
 # For testing of oldest usable versions of dependencies.
 min = [
-  "joblib==1.0.0",
-  "nibabel==3.2.0",
-  "numpy==1.19.0",
-  "pandas==1.1.5",
-  "scikit-learn==1.0.0",
-  "scipy==1.6.0"
+    "joblib==1.0.0",
+    "nibabel==3.2.0",
+    "numpy==1.19.0",
+    "pandas==1.1.5",
+    "scikit-learn==1.0.0",
+    "scipy==1.6.0"
 ]
 # For surface plotting mostly
 plotly = ["kaleido", "plotly"]
@@ -86,9 +86,9 @@ plotly = ["kaleido", "plotly"]
 plotting = ["matplotlib>=3.3.0"]
 # For running unit and docstring tests
 test = [
-  "coverage",
-  "pytest>=6.0.0",
-  "pytest-cov"
+    "coverage",
+    "pytest>=6.0.0",
+    "pytest-cov"
 ]
 
 [project.urls]
@@ -168,13 +168,13 @@ line_length = 79
 profile = "black"
 skip_gitignore = true
 skip_glob = [
-  "nilearn/externals/*",
-  "doc/auto_examples/*"
+    "nilearn/externals/*",
+    "doc/auto_examples/*"
 ]
 src_paths = [
-  'maint_tools',
-  'nilearn',
-  'doc'
+    'maint_tools',
+    'nilearn',
+    'doc'
 ]
 
 [tool.pytest.ini_options]
