@@ -55,22 +55,22 @@ Fixes
 
 - Fix number of attributes returned by the `nilearn.glm.first_level.FirstLevelModel._get_voxelwise_model_attribute` method in the :class:`~glm.first_level.FirstLevelModel`. It used to return only the first attribute, and now returns as many attributes as design matrices (:gh:`2792` by `Raphael Meudec`_).
 
-- Plotting functions that show a stack of slices from a 3D image (e.g. :func:`~plotting.plot_stat_map`) will now plot the slices in the user specified order, rather than automatically sorting into ascending order (see :gh:`1155`) (:gh:`2831` by `Evan Edmond`_).
+- :bdg-info:`Plotting` Plotting functions that show a stack of slices from a 3D image (e.g. :func:`~plotting.plot_stat_map`) will now plot the slices in the user specified order, rather than automatically sorting into ascending order (see :gh:`1155`) (:gh:`2831` by `Evan Edmond`_).
 
-- Fix the axes zoom in function :func:`~plotting.plot_img_on_surf` so brain would not be cutoff, and edited function so less white space surrounds brain views and smaller colorbar using gridspec (:gh:`2798` by `Tom Vanasse`_).
+- :bdg-info:`Plotting` Fix the axes zoom in function :func:`~plotting.plot_img_on_surf` so brain would not be cutoff, and edited function so less white space surrounds brain views and smaller colorbar using gridspec (:gh:`2798` by `Tom Vanasse`_).
 
 - Fix inconsistency in prediction values of :class:`sklearn.dummy.DummyClassifier` for :class:`~decoding.Decoder` (see :gh:`2767`) (:gh:`2826` by `Binh Nguyen`_).
 
 Enhancements
 ------------
 
-- Function :func:`~plotting.view_markers` now accepts an optional argument ``marker_labels`` to provide labels to each marker (:gh:`2745` by `Greydon Gilmore`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.view_markers` now accepts an optional argument ``marker_labels`` to provide labels to each marker (:gh:`2745` by `Greydon Gilmore`_).
 
-- Function :func:`~plotting.plot_surf` now accepts new values for ``avg_method`` argument, such as ``min``, ``max``, or even a custom python function to compute the value displayed for each face of the plotted mesh (:gh:`2790` by `Alexis Thual`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_surf` now accepts new values for ``avg_method`` argument, such as ``min``, ``max``, or even a custom python function to compute the value displayed for each face of the plotted mesh (:gh:`2790` by `Alexis Thual`_).
 
-- Function :func:`~plotting.view_img_on_surf` can now optionally pass through parameters to function :func:`~surface.vol_to_surf` using the ``vol_to_surf_kwargs`` argument. One application is better HTML visualization of atlases (https://nilearn.github.io/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html) (:gh:`2805` by `Evan Edmond`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.view_img_on_surf` can now optionally pass through parameters to function :func:`~surface.vol_to_surf` using the ``vol_to_surf_kwargs`` argument. One application is better HTML visualization of atlases (https://nilearn.github.io/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html) (:gh:`2805` by `Evan Edmond`_).
 
-- Function :func:`~plotting.view_connectome` now accepts an optional argument ``node_color`` to provide a single color for all nodes, or one color per node. It defaults to ``auto`` which colors markers according to the viridis colormap (:gh:`2810` by `Raphael Meudec`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.view_connectome` now accepts an optional argument ``node_color`` to provide a single color for all nodes, or one color per node. It defaults to ``auto`` which colors markers according to the viridis colormap (:gh:`2810` by `Raphael Meudec`_).
 
 - Function :func:`~signal.clean` has been refactored to clarify the data flow (:gh:`2821` by `Hao-Ting Wang`_).
 

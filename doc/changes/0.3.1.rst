@@ -27,7 +27,7 @@ Fixes
 
 - The helper function ``largest_connected_component`` should now work with inputs of non-native data ``dtypes``.
 
-- Fix plotting issues when non-finite values are present in background anatomical image.
+- :bdg-info:`Plotting` Fix plotting issues when non-finite values are present in background anatomical image.
 
 - A workaround to handle non-native endianness in :class:`~nibabel.nifti1.Nifti1Image` passed to resampling the image.
 
