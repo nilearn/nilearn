@@ -240,7 +240,7 @@ def _check_trial_type(events):
 
     parameters
     ----------
-    events : :obj:`list` of path of events.tsv files
+    events : :obj:`list` of path of events.tsv files.
 
     """
     file_names = []
