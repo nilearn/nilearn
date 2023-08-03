@@ -13,7 +13,6 @@ from numpy.testing import assert_array_equal
 
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.displays import PlotlySurfaceFigure
-from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.plotting.surf_plotting import (
     VALID_HEMISPHERES,
     VALID_VIEWS,
@@ -820,8 +819,7 @@ def test_plot_surf_roi_error(engine):
         plot_surf_roi(mesh, roi_map=roi_idx, engine=engine)
 
 
-def _generate_img():
-    mni_affine = MNI152TEMPLATE.get_affine()
+def _generate_img(mni_affine):
     data_positive = np.zeros((7, 7, 3))
     rng = np.random.RandomState(42)
     data_rng = rng.uniform(size=(7, 7, 3))

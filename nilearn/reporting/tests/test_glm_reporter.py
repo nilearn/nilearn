@@ -8,6 +8,7 @@ from nibabel import load
 from nibabel.tmpdirs import InTemporaryDirectory
 
 from nilearn._utils.data_gen import write_fake_fmri_data_and_design
+from nilearn.conftest import MNI_AFFINE
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
@@ -220,21 +221,12 @@ def test_make_headings_with_contrasts_none_title_custom():
 
 
 def _generate_img():
-    mni_affine = np.array(
-        [
-            [-2.0, 0.0, 0.0, 90.0],
-            [0.0, 2.0, 0.0, -126.0],
-            [0.0, 0.0, 2.0, -72.0],
-            [0.0, 0.0, 0.0, 1.0],
-        ]
-    )
-
     data_positive = np.zeros((7, 7, 3))
     rng = np.random.RandomState(42)
     data_rng = rng.rand(7, 7, 3)
     data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
 
-    return nib.Nifti1Image(data_positive, mni_affine)
+    return nib.Nifti1Image(data_positive, MNI_AFFINE)
 
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
