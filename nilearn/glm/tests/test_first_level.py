@@ -34,7 +34,7 @@ from nilearn.glm.first_level.design_matrix import (
     check_design_matrix,
     make_first_level_design_matrix,
 )
-from nilearn.glm.first_level.first_level import _yule_walker
+from nilearn.glm.first_level.first_level import _yule_walker, _check_trial_type
 from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
@@ -1599,3 +1599,34 @@ def test_slice_time_ref_warning_only_when_not_provided(bids_dataset):
     # check that no warnings were raised
     for r in record:
         assert "'slice_time_ref' not provided" not in r.message.args[0]
+
+
+def test_check_trial_type_warning(tmp_path):
+    """Check that warning is thrown when an events file has no trial_type."""
+    events = pd.DataFrame({"onset": [0, 1, 2], "duration": [1, 1, 1]})
+    event_file = tmp_path / "events.tsv"
+    events.to_csv(event_file, sep="\t", index=False)
+    with pytest.warns(UserWarning, match="No column named 'trial_type' found"):
+        _check_trial_type([event_file])
+
+
+def test_missing_trial_type_column_warning(tmp_path_factory):
+    """Check that warning is thrown when an events file has no trial_type.
+    
+    Ensure that the warning is thrown when running first_level_from_bids.
+    """
+    bids_dataset = _new_bids_dataset(
+        tmp_path_factory.mktemp("one_event_missing")
+    )
+    events_files = get_bids_files(main_path=bids_dataset, file_tag="events")
+    # remove trial type column from one events.tsv file
+    events = pd.read_csv(events_files[0], sep="\t")
+    events.drop(columns="trial_type", inplace=True)
+    events.to_csv(events_files[0], sep="\t", index=False)
+
+    with pytest.warns() as record:
+        first_level_from_bids(
+            dataset_path=bids_dataset, task_label="main", space_label="MNI",
+            slice_time_ref=None,
+        )
+        assert(any("No column named 'trial_type' found" in r.message.args[0] for r in record))
