@@ -19,8 +19,8 @@ def test_surface_masker(pial_surface_mesh):
     masker = SurfaceMasker()
     data_array = np.arange(1, 5 * 10242 + 1).reshape((5, 10242))
     surf_img = SurfaceImage(
-        data={"left_hemisphere": data_array, "right_hemisphere": data_array},
         mesh=pial_surface_mesh,
+        data={"left_hemisphere": data_array, "right_hemisphere": data_array},
     )
     masked_data = masker.fit_transform(surf_img)
     assert masked_data.ndim == 2

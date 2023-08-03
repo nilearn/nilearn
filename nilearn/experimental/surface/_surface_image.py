@@ -64,7 +64,7 @@ class InMemoryMesh(Mesh):
 PolyMesh = Dict[str, Mesh]
 
 
-def _check_data_and_mesh_compat(data: PolyData, mesh: PolyMesh):
+def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
     data_keys, mesh_keys = set(data.keys()), set(mesh.keys())
     if data_keys != mesh_keys:
         diff = data_keys.symmetric_difference(mesh_keys)
@@ -86,12 +86,12 @@ def _check_data_and_mesh_compat(data: PolyData, mesh: PolyMesh):
 class SurfaceImage:
     """Surface image, usually containing meshes & data for both hemispheres."""
 
-    data: PolyData
     mesh: PolyMesh
+    data: PolyData
     shape: tuple[int, ...] = dataclasses.field(init=False)
 
     def __post_init__(self) -> None:
-        _check_data_and_mesh_compat(self.data, self.mesh)
+        _check_data_and_mesh_compat(self.mesh, self.data)
         total_n_vertices = sum(
             mesh_part.n_vertices for mesh_part in self.mesh.values()
         )

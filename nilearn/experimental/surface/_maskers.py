@@ -21,7 +21,7 @@ class SurfaceMasker:
             k: np.ones(v.shape[-1], dtype=bool) for (k, v) in img.data.items()
         }
         self.mask_img_ = SurfaceImage(
-            data=mask_data, mesh=img.mesh
+            mesh=img.mesh, data=mask_data
         )  # type: ignore
 
     def fit(self, img: SurfaceImage, y: Any = None) -> SurfaceMasker:
@@ -68,7 +68,7 @@ class SurfaceMasker:
             if not is_2d:
                 data[part_name] = data[part_name].squeeze()
         return SurfaceImage(
-            data=data, mesh=self.mask_img_.mesh
+            mesh=self.mask_img_.mesh, data=data
         )  # type: ignore
 
 
@@ -132,5 +132,5 @@ class SurfaceLabelsMasker:
             if not is_2d:
                 data[part_name] = data[part_name].squeeze()
         return SurfaceImage(
-            data=data, mesh=self.labels_img.mesh
+            mesh=self.labels_img.mesh, data=data
         )  # type: ignore

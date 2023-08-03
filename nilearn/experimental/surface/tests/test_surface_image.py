@@ -71,5 +71,5 @@ def test_surface_image(fake_mesh_testing_data):
         "right": np.arange(1, 10).reshape(3, 3),
     }
     _, fake_mesh = fake_mesh_testing_data
-    surface_image = SurfaceImage(data=fake_data, mesh=fake_mesh)
+    surface_image = SurfaceImage(mesh=fake_mesh, data=fake_data)
     assert surface_image.shape == (3, 6)

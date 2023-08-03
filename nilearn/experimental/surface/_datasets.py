@@ -37,8 +37,8 @@ def fetch_nki(n_subjects=1) -> Sequence[SurfaceImage]:
         left_data = _io.read_array(left).T
         right_data = _io.read_array(right).T
         img = SurfaceImage(
-            {"left_hemisphere": left_data, "right_hemisphere": right_data},
             mesh=fsaverage["pial"],
+            data={"left_hemisphere": left_data, "right_hemisphere": right_data},
         )
         images.append(img)
     return images
@@ -52,11 +52,11 @@ def fetch_destrieux() -> Tuple[SurfaceImage, Dict[int, str]]:
     }
     return (
         SurfaceImage(
-            {
+            mesh=fsaverage["pial"],
+            data={
                 "left_hemisphere": destrieux["map_left"],
                 "right_hemisphere": destrieux["map_right"],
             },
-            mesh=fsaverage["pial"],
         ),
         label_names,
     )
