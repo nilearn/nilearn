@@ -194,7 +194,7 @@ def test_check_affine_first_level_models():
         shapes, rk, affine=np.eye(4) * 2
     )
     list_of_flm.append(
-        FirstLevelModel(mask_img=mask).fit(
+        FirstLevelModel(mask_img=mask, subject_label="sub-4").fit(
             fmri_data[0], design_matrices=design_matrices[0]
         )
     )
@@ -243,8 +243,7 @@ def test_check_second_level_input():
         with pytest.raises(
             ValueError,
             match="In case confounds are provided, first level "
-            "objects need to provide the attribute "
-            "subject_label",
+            "objects need to provide the attribute 'subject_label'",
         ):
             _check_second_level_input(
                 input_models * 2, pd.DataFrame(), confounds=pd.DataFrame()

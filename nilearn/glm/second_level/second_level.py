@@ -111,6 +111,9 @@ def _check_input_as_type(
         _check_input_as_dataframe(second_level_input)
 
 
+INF = 1000 * np.finfo(np.float32).eps
+
+
 def _check_input_as_first_level_model(second_level_input, none_confounds):
     """Check that all all first level models are valid.
 
@@ -121,6 +124,7 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
 
     """
     ref_affine = None
+
     for model_idx, first_level in enumerate(second_level_input):
         if first_level.labels_ is None or first_level.results_ is None:
             raise ValueError(
@@ -137,18 +141,22 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
             )
 
         # take as reference the affine of the first model
-        if not ref_affine:
-            ref_affine = first_level.mask_img.affine_
-        if ref_affine is not None and np.allclose(
-            ref_affine, first_level.mask_img.affine_
-        ):
+        affine = None
+        if first_level.mask_img is not None:
+            if isinstance(first_level.mask_img, NiftiMasker):
+                affine = first_level.mask_img.affine_
+            elif isinstance(first_level.mask_img, Nifti1Image):
+                affine = first_level.mask_img.affine
+
+        if ref_affine is None:
+            ref_affine = affine
+
+        if ref_affine is not None and abs(ref_affine - affine).max() > INF:
             raise ValueError(
                 "All first level models must have the same affine.\n"
                 f"Model {first_level.subject_label} "
                 f"at index {model_idx} has a different affine "
                 "from the previous ones."
-                f"{ref_affine}"
-                f"{first_level.mask_img.affine_}"
             )
 
 
