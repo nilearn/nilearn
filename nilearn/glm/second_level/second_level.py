@@ -120,16 +120,8 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
     - must all have a subject label in case confounds are passed
 
     """
+    ref_affine = None
     for model_idx, first_level in enumerate(second_level_input):
-        if model_idx == 0:
-            ref_affine = first_level.mask_img.affine
-        if not np.allclose(ref_affine, first_level.mask_img.affine):
-            raise ValueError(
-                "All first level models must have the same affine.\n"
-                f"Model {first_level.subject_label} "
-                f"at index {model_idx} has a different affine "
-                "from the previous ones."
-            )
         if first_level.labels_ is None or first_level.results_ is None:
             raise ValueError(
                 f"Model {first_level.subject_label} "
@@ -142,6 +134,21 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
                 "the attribute 'subject_label' to match rows appropriately.\n"
                 f"Model at idx {model_idx} does not provide it. "
                 "To set it, you can do first_level.subject_label = '01'"
+            )
+
+        # take as reference the affine of the first model
+        if not ref_affine:
+            ref_affine = first_level.mask_img.affine_
+        if ref_affine is not None and np.allclose(
+            ref_affine, first_level.mask_img.affine_
+        ):
+            raise ValueError(
+                "All first level models must have the same affine.\n"
+                f"Model {first_level.subject_label} "
+                f"at index {model_idx} has a different affine "
+                "from the previous ones."
+                f"{ref_affine}"
+                f"{first_level.mask_img.affine_}"
             )
 
 
