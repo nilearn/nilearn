@@ -25,14 +25,16 @@ class BaseAxes:
 
     coord : :obj:`float`
         The coordinate along the direction of the cut.
+    %(radiological)s
     """
 
-    def __init__(self, ax, direction, coord):
+    def __init__(self, ax, direction, coord, radiological=False):
         self.ax = ax
         self.direction = direction
         self.coord = coord
         self._object_bounds = list()
         self.shape = None
+        self.radiological = radiological
 
     def transform_to_2d(self, data, affine):
         """Transform to a 2D."""
@@ -109,7 +111,13 @@ class BaseAxes:
         if self.direction in 'xlr':
             return
         ax = self.ax
-        ax.text(.1, .95, 'L',
+        annotation_on_left = "L"
+        annotation_on_right = "R"
+        if self.radiological:
+            ax.invert_xaxis()
+            annotation_on_left = "R"
+            annotation_on_right = "L"
+        ax.text(.1, .95, annotation_on_left,
                 transform=ax.transAxes,
                 horizontalalignment='left',
                 verticalalignment='top',
@@ -118,7 +126,7 @@ class BaseAxes:
                           ec=bg_color, fc=bg_color, alpha=1),
                 **kwargs)
 
-        ax.text(.9, .95, 'R',
+        ax.text(.9, .95, annotation_on_right,
                 transform=ax.transAxes,
                 horizontalalignment='right',
                 verticalalignment='top',
@@ -349,8 +357,9 @@ class GlassBrainAxes(BaseAxes):
 
     """
 
-    def __init__(self, ax, direction, coord, plot_abs=True, **kwargs):
-        super().__init__(ax, direction, coord)
+    def __init__(self, ax, direction, coord, plot_abs=True,
+                 radiological=False, **kwargs):
+        super().__init__(ax, direction, coord, radiological=radiological)
         self._plot_abs = plot_abs
         if ax is not None:
             object_bounds = plot_brain_schematics(ax, direction, **kwargs)

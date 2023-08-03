@@ -140,7 +140,7 @@ def _get_object_bounds(json_content, transform):
 
 
 def plot_brain_schematics(ax, direction, **kwargs):
-    """Create matplotlib patches from a json custom format and plots them \
+    """Create matplotlib patches from a json custom format and plot them \
     on a matplotlib Axes.
 
     Parameters

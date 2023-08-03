@@ -8,6 +8,8 @@
 NEW
 ---
 
+- Volume plotting functions like :func:`~plotting.plot_img` now have an optional ``radiological`` parameter, defaulting to ``False``. If ``True``, this will invert the x-axis and ``L`` and ``R`` annotations to confirm to radiological conventional view. (:gh:`3172` by `Konrad Wagstyl`_ and `Yasmin Mzayek`_).
+
 Fixes
 -----
 - Fix bug in ``nilearn.plotting.surf_plotting._plot_surf_matplotlib`` that would make vertices transparent when saving in PDF or SVG format (:gh:`3860` by `Mathieu Dugré`_).
