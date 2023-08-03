@@ -34,7 +34,7 @@ from nilearn.glm.first_level.design_matrix import (
     check_design_matrix,
     make_first_level_design_matrix,
 )
-from nilearn.glm.first_level.first_level import _yule_walker, _check_trial_type
+from nilearn.glm.first_level.first_level import _check_trial_type, _yule_walker
 from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
@@ -1612,7 +1612,7 @@ def test_check_trial_type_warning(tmp_path):
 
 def test_missing_trial_type_column_warning(tmp_path_factory):
     """Check that warning is thrown when an events file has no trial_type.
-    
+
     Ensure that the warning is thrown when running first_level_from_bids.
     """
     bids_dataset = _new_bids_dataset(
@@ -1629,4 +1629,5 @@ def test_missing_trial_type_column_warning(tmp_path_factory):
             dataset_path=bids_dataset, task_label="main", space_label="MNI",
             slice_time_ref=None,
         )
-        assert(any("No column named 'trial_type' found" in r.message.args[0] for r in record))
+        assert (any("No column named 'trial_type' found" in r.message.args[0]
+                    for r in record))

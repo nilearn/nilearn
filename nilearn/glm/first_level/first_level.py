@@ -233,12 +233,12 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
         results = {0.0: ols_result}
 
     return labels, results
-  
-  
+
+
 def _check_trial_type(events):
     """Check that the event files contain a "trial_type" column.
 
-    parameters
+    Parameters
     ----------
     events : :obj:`list` of path of events.tsv files.
 
@@ -248,17 +248,17 @@ def _check_trial_type(events):
     for event_ in events:
         df = pd.read_csv(event_, sep='\t')
         if 'trial_type' not in df.columns:
-           file_names.append(os.path.basename(event_))
+            file_names.append(os.path.basename(event_))
 
     if file_names:
-       file_names = "\n -".join(file_names)
-       warn(
-        f"No column named 'trial_type' found in:{file_names}.\n "
-         "All rows in those files will be treated "
-         "as if they are instances of same experimental condition.\n"
-         "If there is a column in the dataframe "
-         "corresponding to trial information, "
-         "consider renaming it to 'trial_type'.")
+        file_names = "\n -".join(file_names)
+        warn(
+            f"No column named 'trial_type' found in:{file_names}.\n "
+            "All rows in those files will be treated "
+            "as if they are instances of same experimental condition.\n"
+            "If there is a column in the dataframe "
+            "corresponding to trial information, "
+            "consider renaming it to 'trial_type'.")
 
 
 @fill_doc
