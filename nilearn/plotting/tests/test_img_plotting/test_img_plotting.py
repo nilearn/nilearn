@@ -224,3 +224,23 @@ def test_plotting_functions_with_display_mode_tiled(
     else:
         plot_func(testdata_3d_for_plotting["img"], display_mode="tiled")
     plt.close()
+
+
+@pytest.mark.parametrize(
+    "plotting_func",
+    [
+        plot_img,
+        plot_anat,
+        plot_stat_map,
+        plot_roi,
+        plot_epi,
+        plot_glass_brain,
+    ],
+)
+def test_plotting_functions_radiological_view(
+    testdata_3d_for_plotting, plotting_func
+):
+    """Smoke test for radiological view."""
+    result = plotting_func(testdata_3d_for_plotting["img"], radiological=True)
+    assert result.axes.get("y").radiological is True
+    plt.close()

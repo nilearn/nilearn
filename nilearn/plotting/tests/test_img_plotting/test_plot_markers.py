@@ -181,3 +181,10 @@ def test_plot_markers_single_node_value():
     """Regression test for Issue #3253."""
     plot_markers([1], [[1, 1, 1]])
     plt.close()
+
+
+def test_plot_markers_radiological_view():
+    """Smoke test for radiological view."""
+    result = plot_markers([1], [[1, 1, 1]], radiological=True)
+    assert result.axes.get("y").radiological is True
+    plt.close()

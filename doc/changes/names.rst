@@ -144,6 +144,8 @@
 
 .. _Koen Helwegen: https://github.com/koenhelwegen
 
+.. _Konrad Wagstyl: https://github.com/kwagstyl
+
 .. _Konstantin Shmelkov: https://github.com/kshmelkov
 
 .. _Kshitij Chawla: https://github.com/kchawla-pi

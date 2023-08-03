@@ -92,6 +92,12 @@ repos:
         args: ["--toml", "pyproject.toml"]
         additional_dependencies: [tomli]
 
+  - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+    rev: v2.10.0
+    hooks:
+    - id: pretty-format-toml
+      args: [--autofix, --indent, '4']
+
   - repo: https://github.com/pyCQA/flake8
     rev: 6.1.0
     hooks:
