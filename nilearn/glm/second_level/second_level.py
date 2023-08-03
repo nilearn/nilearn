@@ -118,9 +118,9 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
     """Check that all all first level models are valid.
 
     - must have been fit
+    - must all have a subject label in case confounds are passed
     - must all have the same affine
       (checking all against the affine of the first model)
-    - must all have a subject label in case confounds are passed
 
     """
     ref_affine = None
