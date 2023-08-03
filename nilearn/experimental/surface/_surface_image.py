@@ -64,9 +64,22 @@ class InMemoryMesh(Mesh):
 PolyMesh = Dict[str, Mesh]
 
 
-def _get_vertex_counts(mesh: PolyMesh) -> dict[str, int]:
-    """Get the total number of vertices across all mesh parts (hemispheres)."""
-    return {part_name: part.n_vertices for (part_name, part) in mesh.items()}
+def _check_data_and_mesh_compat(data: PolyData, mesh: PolyMesh):
+    data_keys, mesh_keys = set(data.keys()), set(mesh.keys())
+    if data_keys != mesh_keys:
+        diff = data_keys.symmetric_difference(mesh_keys)
+        raise ValueError(
+            "Data and mesh do not have the same keys. "
+            f"Offending keys: {diff}"
+        )
+    for key in mesh_keys:
+        if data[key].shape[-1] != mesh[key].n_vertices:
+            raise ValueError(
+                "Data shape does not match number of vertices"
+                f" for '{key}':"
+                f"\ndata shape: {data[key].shape}",
+                f"\nn vertices: {mesh[key].n_vertices}",
+            )
 
 
 @dataclasses.dataclass
@@ -78,16 +91,20 @@ class SurfaceImage:
     shape: tuple[int, ...] = dataclasses.field(init=False)
 
     def __post_init__(self) -> None:
-        data_shapes = {k: v.shape for (k, v) in self.data.items()}
-        vertex_counts = _get_vertex_counts(self.mesh)
-        assert {k: v[-1] for (k, v) in data_shapes.items()} == vertex_counts
-        total_n_vertices = sum(vertex_counts.values())
-        first_data_shape = list(data_shapes.values())[0]
+        _check_data_and_mesh_compat(self.data, self.mesh)
+        total_n_vertices = sum(
+            mesh_part.n_vertices for mesh_part in self.mesh.values()
+        )
+        first_data_shape = list(self.data.values())[0].shape
         if len(first_data_shape) == 1:
             self.shape = (total_n_vertices,)
-        else:
-            assert len(first_data_shape) == 2
+        elif len(first_data_shape) == 2:
             self.shape = (first_data_shape[0], total_n_vertices)
+        else:
+            raise ValueError(
+                "Expected 1 or 2 dimensional SurfaceImage data; "
+                f"got shape: {first_data_shape}"
+            )
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.shape}>"

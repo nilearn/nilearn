@@ -8,7 +8,6 @@ from nilearn.experimental.surface import (
     Mesh,
     SurfaceImage,
 )
-from nilearn.experimental.surface._surface_image import _get_vertex_counts
 
 
 @pytest.fixture
@@ -63,15 +62,6 @@ def test_file_mesh_coordinates_and_faces_properties(
     mesh = FileMesh(f"{tmp_path}test.gii")
     assert np.array_equal(mesh.coordinates, mesh_data["coordinates"])
     assert np.array_equal(mesh.faces, mesh_data["faces"])
-
-
-def test_get_vertex_counts(fake_mesh_testing_data):
-    """Test helper function for SurfaceImage."""
-    # Create a mock PolyMesh with two parts (hemispheres)
-    _, fake_mesh = fake_mesh_testing_data
-    vertex_counts = _get_vertex_counts(fake_mesh)
-    assert vertex_counts["left"] == 3
-    assert vertex_counts["right"] == 3
 
 
 def test_surface_image(fake_mesh_testing_data):
