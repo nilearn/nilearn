@@ -563,7 +563,6 @@ class SecondLevelModel(BaseGLM):
         ]
         _check_output_type(output_type, valid_types)
 
-        print(first_level_contrast)
         # Get effect_maps appropriate for chosen contrast
         effect_maps = _infer_effect_maps(
             self.second_level_input_, first_level_contrast
