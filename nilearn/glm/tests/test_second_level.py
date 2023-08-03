@@ -1178,3 +1178,25 @@ def test_second_level_contrast_computation_with_memory_caching():
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
         del func_img, model, X, Y
+
+
+def test_second_lvl_dataframe_computation():
+    """Check that contrast can be computed when using dataframes as input.
+
+    See bug https://github.com/nilearn/nilearn/issues/3871
+    """
+    shapes = ((7, 8, 9, 10),)
+    _, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
+    FUNCFILE = FUNCFILE[0]
+
+    dfcols = ["subject_label", "map_name", "effects_map_path"]
+    dfrows = [
+        ["01", "a", FUNCFILE],
+        ["02", "a", FUNCFILE],
+        ["03", "a", FUNCFILE],
+    ]
+    niidf = pd.DataFrame(dfrows, columns=dfcols)
+
+    # dataframes as input
+    model = SecondLevelModel().fit(niidf)
+    model.compute_contrast(first_level_contrast="a")
