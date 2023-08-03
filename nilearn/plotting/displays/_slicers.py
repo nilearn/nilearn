@@ -1,14 +1,13 @@
 import collections
 import numbers
 
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.transforms import Bbox
 
-from nilearn._utils import _compare_version, check_niimg_3d
+from nilearn._utils import check_niimg_3d
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.niimg import _is_binary_niimg, _safe_get_data
 from nilearn.image import get_data, new_img_like, reorder_img
@@ -523,10 +522,7 @@ class BaseSlicer:
             - (self._colorbar_margin["top"] + self._colorbar_margin["bottom"]),
         ]
         self._colorbar_ax = figure.add_axes(lt_wid_top_ht)
-        if _compare_version(matplotlib.__version__, ">=", "1.6"):
-            self._colorbar_ax.set_facecolor("w")
-        else:
-            self._colorbar_ax.set_axis_bgcolor("w")
+        self._colorbar_ax.set_facecolor("w")
 
         our_cmap = plt.get_cmap(cmap)
         # edge case where the data has a single value
@@ -902,10 +898,7 @@ class OrthoSlicer(BaseSlicer):
                 [0.3 * index * (x1 - x0) + x0, y0, 0.3 * (x1 - x0), y1 - y0],
                 aspect="equal",
             )
-            if _compare_version(matplotlib.__version__, ">=", "1.6"):
-                ax.set_facecolor(facecolor)
-            else:
-                ax.set_axis_bgcolor(facecolor)
+            ax.set_facecolor(facecolor)
 
             ax.axis("off")
             coord = self.cut_coords[
@@ -1173,10 +1166,7 @@ class TiledSlicer(BaseSlicer):
             axes_coords = self._find_initial_axes_coord(index)
             ax = fh.add_axes(axes_coords, aspect="equal")
 
-            if _compare_version(matplotlib.__version__, ">=", "1.6"):
-                ax.set_facecolor(facecolor)
-            else:
-                ax.set_axis_bgcolor(facecolor)
+            ax.set_facecolor(facecolor)
 
             ax.axis("off")
             coord = self.cut_coords[

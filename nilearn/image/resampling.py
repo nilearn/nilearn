@@ -8,11 +8,8 @@ import numbers
 import warnings
 
 import numpy as np
-import scipy
 from scipy import linalg
 from scipy.ndimage import affine_transform, find_objects
-
-from nilearn._utils import _compare_version
 
 from .. import _utils
 from .._utils import stringify_path
@@ -300,8 +297,7 @@ def _resample_one_img(
 
     # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
     with warnings.catch_warnings():
-        if _compare_version(scipy.__version__, ">=", "0.18"):
-            warnings.simplefilter("ignore", UserWarning)
+        warnings.simplefilter("ignore", UserWarning)
         # The resampling itself
         affine_transform(
             data,
@@ -316,8 +312,7 @@ def _resample_one_img(
     if has_not_finite:
         # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
         with warnings.catch_warnings():
-            if _compare_version(scipy.__version__, ">=", "0.18"):
-                warnings.simplefilter("ignore", UserWarning)
+            warnings.simplefilter("ignore", UserWarning)
             # We need to resample the mask of not_finite values
             not_finite = affine_transform(
                 not_finite,
