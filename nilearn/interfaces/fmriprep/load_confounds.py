@@ -337,7 +337,7 @@ def _load_confounds_for_single_image_file(
     strategy : tuple or list of strings.
         See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
 
-    demean : boolean, default True
+    demean : :obj:`bool`,, default True
         See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
 
     kwargs : dict
@@ -384,7 +384,7 @@ def _load_single_confounds_file(
     strategy : tuple or list of strings.
         See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
 
-    demean : boolean, default True
+    demean : :obj:`bool`,, default True
         See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
 
     confounds_json_file : str, default None
