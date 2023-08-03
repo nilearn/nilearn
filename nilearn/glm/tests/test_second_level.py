@@ -1185,7 +1185,9 @@ def test_second_lvl_dataframe_computation():
 
     See bug https://github.com/nilearn/nilearn/issues/3871
     """
-    shapes = ((7, 8, 9, 10),)
+    # 'abusing' write_fake_fmri_data_and_design
+    # to just generate a 3D image
+    shapes = ((7, 8, 9, 1),)
     _, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
     FUNCFILE = FUNCFILE[0]
 
@@ -1197,6 +1199,5 @@ def test_second_lvl_dataframe_computation():
     ]
     niidf = pd.DataFrame(dfrows, columns=dfcols)
 
-    # dataframes as input
     model = SecondLevelModel().fit(niidf)
     model.compute_contrast(first_level_contrast="a")
