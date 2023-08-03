@@ -189,7 +189,9 @@ def test_check_affine_first_level_models():
     _check_input_as_first_level_model(
         second_level_input=list_of_flm, none_confounds=False
     )
+
     # add a model with a different affine
+    # should raise an error
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk, affine=np.eye(4) * 2
     )
@@ -198,9 +200,43 @@ def test_check_affine_first_level_models():
             fmri_data[0], design_matrices=design_matrices[0]
         )
     )
-    # should raise an error
     with pytest.raises(
         ValueError, match="All first level models must have the same affine"
+    ):
+        _check_input_as_first_level_model(
+            second_level_input=list_of_flm, none_confounds=False
+        )
+
+
+def test_check_shape_first_level_models():
+    shapes, rk = [(7, 8, 9, 15)], 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk
+    )
+    list_of_flm = [
+        FirstLevelModel(mask_img=mask, subject_label=f"sub-{i}").fit(
+            fmri_data[0], design_matrices=design_matrices[0]
+        )
+        for i in range(3)
+    ]
+    # should pass
+    _check_input_as_first_level_model(
+        second_level_input=list_of_flm, none_confounds=False
+    )
+
+    # add a model with a different shape
+    # should raise an error
+    shapes, rk = [(8, 9, 10, 15)], 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk
+    )
+    list_of_flm.append(
+        FirstLevelModel(mask_img=mask, subject_label="sub-4").fit(
+            fmri_data[0], design_matrices=design_matrices[0]
+        )
+    )
+    with pytest.raises(
+        ValueError, match="All first level models must have the same shape"
     ):
         _check_input_as_first_level_model(
             second_level_input=list_of_flm, none_confounds=False

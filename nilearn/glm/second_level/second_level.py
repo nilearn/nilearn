@@ -119,11 +119,12 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
 
     - must have been fit
     - must all have a subject label in case confounds are passed
-    - must all have the same affine
-      (checking all against the affine of the first model)
+    - must all have the same affine / shape
+      (checking all against those of the first model)
 
     """
     ref_affine = None
+    ref_shape = None
 
     for model_idx, first_level in enumerate(second_level_input):
         if first_level.labels_ is None or first_level.results_ is None:
@@ -140,22 +141,34 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
                 "To set it, you can do first_level.subject_label = '01'"
             )
 
-        # take as reference the affine of the first model
         affine = None
+        shape = None
         if first_level.mask_img is not None:
             if isinstance(first_level.mask_img, NiftiMasker):
                 affine = first_level.mask_img.affine_
             elif isinstance(first_level.mask_img, Nifti1Image):
                 affine = first_level.mask_img.affine
+                shape = first_level.mask_img.shape
 
+        # take as reference the first values we found
         if ref_affine is None:
             ref_affine = affine
+        if ref_shape is None:
+            ref_shape = shape
 
-        if ref_affine is not None and abs(ref_affine - affine).max() > INF:
+        if ref_affine is not None and abs(affine - ref_affine).max() > INF:
             raise ValueError(
                 "All first level models must have the same affine.\n"
                 f"Model {first_level.subject_label} "
                 f"at index {model_idx} has a different affine "
+                "from the previous ones."
+            )
+
+        if shape != ref_shape:
+            raise ValueError(
+                "All first level models must have the same shape.\n"
+                f"Model {first_level.subject_label} "
+                f"at index {model_idx} has a different shape "
                 "from the previous ones."
             )
 
