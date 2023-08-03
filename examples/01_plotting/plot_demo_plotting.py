@@ -47,6 +47,7 @@ plotting.plot_stat_map(stat_img,
                        threshold=3, title="plot_stat_map",
                        cut_coords=[36, -27, 66])
 
+
 ###############################################################################
 # Making interactive visualizations with function `view_img`
 # ----------------------------------------------------------
@@ -106,7 +107,16 @@ mean_haxby_img = image.mean_img(haxby_func_filename)
 # Visualizing mean image (3D)
 plotting.plot_epi(mean_haxby_img, title="plot_epi")
 
+# It's also possible to visualize volumes in a LR-flipped "radiological" view
+# Just set radiological=True
+plotting.plot_stat_map(stat_img,
+                       threshold=3, title="plot_stat_map",
+                       cut_coords=[36, -27, 66],
+                       radiological=True)
+
 ###############################################################################
 # A call to plotting.show is needed to display the plots when running
 # in script mode (ie outside IPython)
 plotting.show()
+
+# sphinx_gallery_dummy_images=5

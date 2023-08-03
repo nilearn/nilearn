@@ -14,6 +14,7 @@ See also the documentation: :ref:`space_net`.
 # Load the Oasis VBM dataset
 # --------------------------
 import numpy as np
+
 from nilearn import datasets
 
 n_subjects = 200  # increase this number if you have more RAM on your box
@@ -58,6 +59,7 @@ decoder = SpaceNetRegressor(
     penalty="graph-net",
     screening_percentile=5.0,
     memory_level=2,
+    standardize="zscore_sample",
 )
 decoder.fit(gm_imgs_train, age_train)  # fit
 coef_img = decoder.coef_img_

@@ -9,10 +9,13 @@ dataset and seek association between the contrast values and a variate
 that measures the speed of pseudo-word reading. No confounding variate
 is included in the model.
 
+..
+    Original authors:
+
+    - Virgile Fritsch, Bertrand Thirion, 2014 -- 2018
+    - Jerome-Alexis Chevalier, 2019
 
 """
-# Author: Virgile Fritsch, Bertrand Thirion, 2014 -- 2018
-#         Jerome-Alexis Chevalier, 2019
 
 ##############################################################################
 # At first, we need to load the Localizer contrasts.

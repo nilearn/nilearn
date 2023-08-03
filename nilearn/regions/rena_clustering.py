@@ -3,20 +3,20 @@
 Fastclustering for approximation of structured signals
 """
 # Author: Andres Hoyos idrobo, Gael Varoquaux, Jonas Kahn and  Bertrand Thirion
-# License: simplified BSD
 
 import warnings
 
 import numpy as np
 from joblib import Memory
 from nibabel import Nifti1Image
-from nilearn._utils import fill_doc
-from nilearn.image import get_data
-from nilearn.masking import _unmask_from_to_3d_array
 from scipy.sparse import coo_matrix, csgraph, dia_matrix
 from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
+
+from nilearn._utils import fill_doc
+from nilearn.image import get_data
+from nilearn.masking import _unmask_from_to_3d_array
 
 
 def _compute_weights(X, mask_img):
@@ -442,7 +442,9 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
     Parameters
     ----------
-    %(mask_img)s
+    mask_img : Niimg-like object
+        Object used for masking the data.
+
     n_clusters : :obj:`int`, optional
         The number of clusters to find. Default=2.
 

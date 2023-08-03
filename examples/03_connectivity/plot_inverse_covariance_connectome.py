@@ -47,7 +47,8 @@ from nilearn.maskers import NiftiMapsMasker
 
 masker = NiftiMapsMasker(
     maps_img=atlas_filename,
-    standardize=True,
+    standardize="zscore_sample",
+    standardize_confounds="zscore_sample",
     memory="nilearn_cache",
     verbose=5,
 )
@@ -132,3 +133,5 @@ view
 
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
+
+# sphinx_gallery_dummy_images=4

@@ -102,6 +102,7 @@ p001_unc = norm.isf(0.001)
 ############################################################################
 # Prepare figure for concurrent plot of individual maps.
 import matplotlib.pyplot as plt
+
 from nilearn import plotting
 
 fig, axes = plt.subplots(nrows=2, ncols=5, figsize=(8, 4.5))
@@ -158,5 +159,6 @@ plotting.plot_glass_brain(
     title="Group language network (unc p<0.001)",
     plot_abs=False,
     display_mode="x",
+    figure=plt.figure(figsize=(5, 4)),
 )
 plotting.show()

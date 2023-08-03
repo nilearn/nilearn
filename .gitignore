@@ -5,15 +5,19 @@
 *.nt.bz2
 *.swp
 *.swo
-*.tar.gz
-*.tgz
-*.zip
 *#
+
+.mypy_cache
+
+# ignore python type annotation stubs for now
+*.pyi
 
 nilearn_cache
 nilearn_data
 
 pip-log.txt
+
+.pytest_cache
 
 .ropeproject/
 
@@ -32,6 +36,7 @@ tmp
 nilearn.egg-info/
 build
 dist/
+nilearn/_version.py
 
 # virtual environment
 env/
@@ -56,3 +61,6 @@ doc/themes/nilearn/static/jquery.js
 examples/**/*.pdf
 examples/**/results/
 examples/results/
+examples/*.nii
+examples/*.nii.gz
+examples/*.png

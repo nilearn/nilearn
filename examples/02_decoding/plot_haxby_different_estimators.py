@@ -77,8 +77,9 @@ classifiers = [
 # classifiers
 import time
 
-from nilearn.decoding import Decoder
 from sklearn.model_selection import LeaveOneGroupOut
+
+from nilearn.decoding import Decoder
 
 cv = LeaveOneGroupOut()
 classifiers_data = {}
@@ -88,7 +89,10 @@ for classifier_name in sorted(classifiers):
 
     # The decoder has as default score the `roc_auc`
     decoder = Decoder(
-        estimator=classifier_name, mask=mask_filename, standardize=True, cv=cv
+        estimator=classifier_name,
+        mask=mask_filename,
+        standardize="zscore_sample",
+        cv=cv,
     )
     t0 = time.time()
     decoder.fit(fmri_niimgs, classification_target, groups=session_labels)
@@ -112,7 +116,7 @@ for classifier_name in sorted(classifiers):
 # Then we make a rudimentary diagram
 import matplotlib.pyplot as plt
 
-plt.figure(figsize=(6, 6))
+plt.figure(figsize=(8, 6))
 
 all_categories = np.sort(np.hstack([categories, "AVERAGE"]))
 tick_position = np.arange(len(all_categories))
@@ -137,7 +141,7 @@ for color, classifier_name in zip(["b", "m", "k", "r", "g"], classifiers):
 plt.xlabel("Classification accuracy (AUC score)")
 plt.ylabel("Visual stimuli category")
 plt.xlim(xmin=0.5)
-plt.legend(loc="lower left", ncol=1)
+plt.legend(ncol=1, bbox_to_anchor=(1.3, 0.2))
 plt.title(
     "Category-specific classification accuracy for different classifiers"
 )
@@ -165,7 +169,10 @@ assert len(categories) == 2
 
 for classifier_name in sorted(classifiers):
     decoder = Decoder(
-        estimator=classifier_name, mask=mask_filename, standardize=True, cv=cv
+        estimator=classifier_name,
+        mask=mask_filename,
+        standardize="zscore_sample",
+        cv=cv,
     )
     decoder.fit(fmri_niimgs_condition, stimuli, groups=session_labels)
     classifiers_data[classifier_name] = {}
@@ -191,6 +198,9 @@ for classifier_name in sorted(classifiers):
         cut_coords=[-15],
         threshold=threshold,
         title=f"{classifier_name.replace('_', ' ')}: face vs house",
+        figure=plt.figure(figsize=(3, 4)),
     )
 
 show()
+
+# sphinx_gallery_dummy_images=6

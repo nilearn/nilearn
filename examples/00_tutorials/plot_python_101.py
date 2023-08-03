@@ -1,10 +1,10 @@
 """
 Basic numerics and plotting with Python
 =======================================
-
-A simple example of basic Python numerics and how to
-plot it.
 """
+
+#########################################################################
+# A simple example of basic Python numerics and how to plot it.
 
 # import numpy: the module providing numerical arrays
 import numpy as np

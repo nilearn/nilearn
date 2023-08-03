@@ -85,7 +85,7 @@ masker = NiftiMasker(
     mask_img=mask_filename,
     runs=session_label,
     smoothing_fwhm=4,
-    standardize=True,
+    standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
 )
@@ -172,7 +172,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.svm import LinearSVC
 
 feature_selection = SelectPercentile(f_classif, percentile=10)
-anova_svc = Pipeline([("anova", feature_selection), ("svc", LinearSVC())])
+linear_svc = LinearSVC(dual=True)
+anova_svc = Pipeline([("anova", feature_selection), ("svc", linear_svc)])
 
 # We can use our ``anova_svc`` object exactly as we were using our ``svc``
 # object previously.

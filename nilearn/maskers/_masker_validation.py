@@ -1,16 +1,18 @@
 import warnings
-
-import numpy as np
 from string import Template
 
-from .._utils.class_inspect import get_params
+import numpy as np
+
 from .._utils.cache_mixin import _check_memory
+from .._utils.class_inspect import get_params
 from .multi_nifti_masker import MultiNiftiMasker
 from .nifti_masker import NiftiMasker
 
 
 def _check_embedded_nifti_masker(estimator, multi_subject=True):
-    """Base function for using a masker within a BaseEstimator class
+    """Create a masker from instance parameters.
+
+    Base function for using a masker within a BaseEstimator class
 
     This creates a masker from instance parameters :
     - If instance contains a mask image in mask parameter,
@@ -39,7 +41,7 @@ def _check_embedded_nifti_masker(estimator, multi_subject=True):
     """
     masker_type = MultiNiftiMasker if multi_subject else NiftiMasker
     estimator_params = get_params(masker_type, estimator)
-    mask = getattr(estimator, 'mask', None)
+    mask = getattr(estimator, "mask", None)
 
     if isinstance(mask, (NiftiMasker, MultiNiftiMasker)):
         # Creating (Multi)NiftiMasker from provided masker
@@ -49,56 +51,64 @@ def _check_embedded_nifti_masker(estimator, multi_subject=True):
         # Creating (Multi)NiftiMasker
         # with parameters extracted from estimator
         new_masker_params = estimator_params
-        new_masker_params['mask_img'] = mask
+        new_masker_params["mask_img"] = mask
     # Forwarding system parameters of instance to new masker in all case
-    if multi_subject and hasattr(estimator, 'n_jobs'):
+    if multi_subject and hasattr(estimator, "n_jobs"):
         # For MultiNiftiMasker only
-        new_masker_params['n_jobs'] = estimator.n_jobs
+        new_masker_params["n_jobs"] = estimator.n_jobs
 
-    warning_msg = Template("Provided estimator has no $attribute attribute set."
-                           "Setting $attribute to $default_value by default.")
+    warning_msg = Template(
+        "Provided estimator has no $attribute attribute set."
+        "Setting $attribute to $default_value by default."
+    )
 
-    if hasattr(estimator, 'memory'):
-        new_masker_params['memory'] = _check_memory(estimator.memory)
+    if hasattr(estimator, "memory"):
+        new_masker_params["memory"] = _check_memory(estimator.memory)
     else:
-        warnings.warn(warning_msg.substitute(attribute='memory',
-                                             default_value='Memory(location=None)'))
-        new_masker_params['memory'] = _check_memory(None)
+        warnings.warn(
+            warning_msg.substitute(
+                attribute="memory", default_value="Memory(location=None)"
+            )
+        )
+        new_masker_params["memory"] = _check_memory(None)
 
-    if hasattr(estimator, 'memory_level'):
-        new_masker_params['memory_level'] = max(0, estimator.memory_level - 1)
+    if hasattr(estimator, "memory_level"):
+        new_masker_params["memory_level"] = max(0, estimator.memory_level - 1)
     else:
-        warnings.warn(warning_msg.substitute(attribute='memory_level',
-                                             default_value='0'))
-        new_masker_params['memory_level'] = 0
+        warnings.warn(
+            warning_msg.substitute(attribute="memory_level", default_value="0")
+        )
+        new_masker_params["memory_level"] = 0
 
-    if hasattr(estimator, 'verbose'):
-        new_masker_params['verbose'] = estimator.verbose
+    if hasattr(estimator, "verbose"):
+        new_masker_params["verbose"] = estimator.verbose
     else:
-        warnings.warn(warning_msg.substitute(attribute='verbose',
-                                             default_value='0'))
-        new_masker_params['verbose'] = 0
+        warnings.warn(
+            warning_msg.substitute(attribute="verbose", default_value="0")
+        )
+        new_masker_params["verbose"] = 0
 
     # Raising warning if masker override parameters
     conflict_string = ""
     for param_key in sorted(estimator_params):
         if np.any(new_masker_params[param_key] != estimator_params[param_key]):
-            conflict_string += ("Parameter {0} :\n"
-                                "    Masker parameter {1}"
-                                " - overriding estimator parameter {2}\n"
-                                ).format(param_key,
-                                         new_masker_params[param_key],
-                                         estimator_params[param_key])
+            conflict_string += (
+                f"Parameter {param_key} :\n"
+                f"    Masker parameter {new_masker_params[param_key]}"
+                " - overriding estimator parameter "
+                f"{estimator_params[param_key]}\n"
+            )
 
     if conflict_string != "":
-        warn_str = ("Overriding provided-default estimator parameters with"
-                    " provided masker parameters :\n"
-                    "{0:s}").format(conflict_string)
+        warn_str = (
+            "Overriding provided-default estimator parameters with"
+            f" provided masker parameters :\n{conflict_string}"
+        )
         warnings.warn(warn_str)
     masker = masker_type(**new_masker_params)
 
     # Forwarding potential attribute of provided masker
-    if hasattr(mask, 'mask_img_'):
+    if hasattr(mask, "mask_img_"):
         # Allow free fit of returned mask
         masker.mask_img = mask.mask_img_
 

@@ -5,14 +5,14 @@ See http://nilearn.github.io/stable/manipulating_images/input_output.html
 import numbers
 
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
-# License: simplified BSD
 import warnings
 
 import numpy as np
 import scipy
-from nilearn.version import _compare_version
 from scipy import linalg
 from scipy.ndimage import affine_transform, find_objects
+
+from nilearn._utils import _compare_version
 
 from .. import _utils
 from .._utils import stringify_path
@@ -452,8 +452,8 @@ def resample_img(
     if target_shape is not None and not len(target_shape) == 3:
         raise ValueError(
             "The shape specified should be the shape of "
-            "the 3D grid, and thus of length 3. %s was specified"
-            % str(target_shape)
+            "the 3D grid, and thus of length 3. "
+            f"{target_shape} was specified."
         )
 
     if target_shape is not None and target_affine.shape == (3, 3):
@@ -476,12 +476,11 @@ def resample_img(
     elif interpolation == "nearest":
         interpolation_order = 0
 
+    input_img_is_string = False
     img = stringify_path(img)
     if isinstance(img, str):
         # Avoid a useless copy
         input_img_is_string = True
-    else:
-        input_img_is_string = False
 
     img = _utils.check_niimg(img)
     shape = img.shape
@@ -584,11 +583,6 @@ def resample_img(
         target_shape = target_shape.tolist()
     target_shape = tuple(target_shape)
 
-    if _compare_version(scipy.__version__, "<", "0.20"):
-        # Before scipy 0.20, force native data types due to endian issues
-        # that caused instability.
-        data = data.astype(data.dtype.newbyteorder("N"))
-
     if interpolation == "continuous" and data.dtype.kind == "i":
         # cast unsupported data types to closest support dtype
         aux = data.dtype.name.replace("int", "float")
@@ -662,10 +656,6 @@ def resample_img(
         # If A is diagonal, ndimage.affine_transform is clever enough to use a
         # better algorithm.
         if np.all(np.diag(np.diag(A)) == A):
-            if _compare_version(scipy.__version__, "<", "0.18"):
-                # Before scipy 0.18, ndimage.affine_transform was applying a
-                # different logic to the offset for diagonal affine
-                b = np.dot(linalg.inv(A), b)
             A = np.diag(A)
         # Iterate over a set of 3D volumes, as the interpolation problem is
         # separable in the extra dimensions. This reduces the
@@ -687,8 +677,8 @@ def resample_img(
         # preventing ringing artefact
         # We need to add zero as a value considered for clipping, as it
         # appears in padding images.
-        vmin = min(data.min(), 0)
-        vmax = max(data.max(), 0)
+        vmin = min(np.nanmin(data), 0)
+        vmax = max(np.nanmax(data), 0)
         resampled_data.clip(vmin, vmax, out=resampled_data)
 
     return new_img_like(img, resampled_data, target_affine)
@@ -809,22 +799,19 @@ def reorder_img(img, resample=None):
     A, b = to_matrix_vector(affine)
 
     if not np.all((np.abs(A) > 0.001).sum(axis=0) == 1):
-        # The affine is not nearly diagonal
         if resample is None:
             raise ValueError(
                 "Cannot reorder the axes: "
                 "the image affine contains rotations"
             )
-        else:
-            # Identify the voxel size using a QR decomposition of the
-            # affine
-            Q, R = np.linalg.qr(affine[:3, :3])
-            target_affine = np.diag(
-                np.abs(np.diag(R))[np.abs(Q).argmax(axis=1)]
-            )
-            return resample_img(
-                img, target_affine=target_affine, interpolation=resample
-            )
+
+        # Identify the voxel size using a QR decomposition of the
+        # affine
+        Q, R = np.linalg.qr(affine[:3, :3])
+        target_affine = np.diag(np.abs(np.diag(R))[np.abs(Q).argmax(axis=1)])
+        return resample_img(
+            img, target_affine=target_affine, interpolation=resample
+        )
 
     axis_numbers = np.argmax(np.abs(A), axis=0)
     data = _get_data(img)

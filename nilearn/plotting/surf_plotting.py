@@ -1,68 +1,50 @@
-"""
-Functions for surface visualization.
-"""
+"""Functions for surface visualization."""
 import itertools
-import warnings
+import math
+from collections.abc import Sequence
+from warnings import warn
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-
 from matplotlib import gridspec
-from matplotlib.colorbar import make_axes
 from matplotlib.cm import ScalarMappable
-from matplotlib.colors import Normalize, LinearSegmentedColormap
-from mpl_toolkits.mplot3d import Axes3D  # noqa
-from nilearn import image, surface
-from nilearn.plotting.cm import cold_hot
-from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges
-from nilearn.surface import (load_surf_data,
-                             load_surf_mesh,
-                             vol_to_surf)
-from nilearn.surface.surface import _check_mesh
-from nilearn._utils import check_niimg_3d, fill_doc
-from nilearn.plotting.js_plotting_utils import colorscale
-from nilearn.plotting.html_surface import (
-    _get_vertexcolor,
-    _mix_colormaps
-)
-
-from matplotlib.colors import to_rgba
+from matplotlib.colorbar import make_axes
+from matplotlib.colors import LinearSegmentedColormap, Normalize, to_rgba
 from matplotlib.patches import Patch
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+from nilearn import image, surface
+from nilearn._utils import check_niimg_3d, fill_doc
+from nilearn.plotting.cm import cold_hot
+from nilearn.plotting.html_surface import _get_vertexcolor, _mix_colormaps
+from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges
+from nilearn.plotting.js_plotting_utils import colorscale
+from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
+from nilearn.surface.surface import _check_mesh
 
 VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
 VALID_HEMISPHERES = "left", "right"
 
 
-AXIS_CONFIG = {
-    "showgrid": False,
-    "showline": False,
-    "ticks": "",
-    "title": "",
-    "showticklabels": False,
-    "zeroline": False,
-    "showspikes": False,
-    "spikesides": False,
-    "showbackground": False,
+MATPLOTLIB_VIEWS = {
+    "left": {
+        "lateral": (0, 180),
+        "medial": (0, 0),
+        "dorsal": (90, 0),
+        "ventral": (270, 0),
+        "anterior": (0, 90),
+        "posterior": (0, 270)
+    },
+    "right": {
+        "lateral": (0, 0),
+        "medial": (0, 180),
+        "dorsal": (90, 0),
+        "ventral": (270, 0),
+        "anterior": (0, 90),
+        "posterior": (0, 270)
+    }
 }
-
-
-MATPLOTLIB_VIEWS = {"right": {"lateral": (0, 0),
-                              "medial": (0, 180),
-                              "dorsal": (90, 0),
-                              "ventral": (270, 0),
-                              "anterior": (0, 90),
-                              "posterior": (0, 270)
-                              },
-                    "left": {"medial": (0, 0),
-                             "lateral": (0, 180),
-                             "dorsal": (90, 0),
-                             "ventral": (270, 0),
-                             "anterior": (0, 90),
-                             "posterior": (0, 270)
-                             }
-                    }
 
 
 CAMERAS = {
@@ -78,12 +60,12 @@ CAMERAS = {
     },
     "dorsal": {
         "eye": {"x": 0, "y": 0, "z": 1.5},
-        "up": {"x": 0, "y": 1, "z": 0},
+        "up": {"x": -1, "y": 0, "z": 0},
         "center": {"x": 0, "y": 0, "z": 0},
     },
     "ventral": {
         "eye": {"x": 0, "y": 0, "z": -1.5},
-        "up": {"x": 0, "y": 1, "z": 0},
+        "up": {"x": 1, "y": 0, "z": 0},
         "center": {"x": 0, "y": 0, "z": 0},
     },
     "anterior": {
@@ -99,35 +81,104 @@ CAMERAS = {
 }
 
 
+AXIS_CONFIG = {
+    "showgrid": False,
+    "showline": False,
+    "ticks": "",
+    "title": "",
+    "showticklabels": False,
+    "zeroline": False,
+    "showspikes": False,
+    "spikesides": False,
+    "showbackground": False,
+}
+
+
 LAYOUT = {
-    "scene": {f"{dim}axis": AXIS_CONFIG for dim in ("x", "y", "z")},
+    "scene": {
+        "dragmode": "orbit",
+        **{f"{dim}axis": AXIS_CONFIG for dim in ("x", "y", "z")}
+    },
     "paper_bgcolor": "#fff",
     "hovermode": False,
     "margin": {"l": 0, "r": 0, "b": 0, "t": 0, "pad": 0},
 }
 
 
-def _set_view_plot_surf_plotly(hemi, view):
-    """Helper function for plot_surf with plotly engine.
+def _get_camera_view_from_string_view(hemi, view):
+    """Return plotly camera parameters from string view."""
+    if view == 'lateral':
+        return CAMERAS[hemi]
+    elif view == 'medial':
+        return CAMERAS[
+            VALID_HEMISPHERES[0]
+            if hemi == VALID_HEMISPHERES[1]
+            else VALID_HEMISPHERES[1]
+        ]
+    else:
+        return CAMERAS[view]
+
+
+def _get_camera_view_from_elevation_and_azimut(view):
+    """Compute plotly camera parameters from elevation and azimut."""
+    elev, azim = view
+    # The radius is useful only when using a "perspective" projection,
+    # otherwise, if projection is "orthographic",
+    # one should tweak the "aspectratio" to emulate zoom
+    r = 1.5
+    # The camera position and orientation is set by three 3d vectors,
+    # whose coordinates are independent of the plotted data.
+    return {
+        # Where the camera should look at
+        # (it should always be looking at the center of the scene)
+        "center": {"x": 0, "y": 0, "z": 0},
+        # Where the camera should be located
+        "eye": {
+            "x": (
+                r
+                * math.cos(azim / 360 * 2 * math.pi)
+                * math.cos(elev / 360 * 2 * math.pi)
+            ),
+            "y": (
+                r
+                * math.sin(azim / 360 * 2 * math.pi)
+                * math.cos(elev / 360 * 2 * math.pi)
+            ),
+            "z": r * math.sin(elev / 360 * 2 * math.pi),
+        },
+        # How the camera should be rotated.
+        # It is determined by a 3d vector indicating which direction
+        # should look up in the generated plot
+        "up": {
+            "x": math.sin(elev / 360 * 2 * math.pi) * math.cos(
+                azim / 360 * 2 * math.pi + math.pi
+            ),
+            "y": math.sin(elev / 360 * 2 * math.pi) * math.sin(
+                azim / 360 * 2 * math.pi + math.pi
+            ),
+            "z": math.cos(elev / 360 * 2 * math.pi),
+        },
+        # "projection": {"type": "perspective"},
+        "projection": {"type": "orthographic"},
+    }
+
+
+def _get_view_plot_surf_plotly(hemi, view):
+    """
+    Get camera parameters from hemi and view for the plotly engine.
 
     This function checks the selected hemisphere and view, and
     returns the cameras view.
     """
-    if hemi not in VALID_HEMISPHERES:
-        raise ValueError(f"hemi must be one of {VALID_HEMISPHERES}")
-    if view == 'lateral':
-        view = hemi
-    elif view == 'medial':
-        view = (VALID_HEMISPHERES[0]
-                if hemi == VALID_HEMISPHERES[1]
-                else VALID_HEMISPHERES[1])
-    if view not in CAMERAS:
-        raise ValueError(f"view must be one of {VALID_VIEWS}")
-    return view
+    _check_views([view])
+    _check_hemispheres([hemi])
+    if isinstance(view, str):
+        return _get_camera_view_from_string_view(hemi, view)
+    return _get_camera_view_from_elevation_and_azimut(view)
 
 
 def _configure_title_plotly(title, font_size, color="black"):
-    """Helper function for plot_surf with plotly engine.
+    """Help for plot_surf with plotly engine.
 
     This function configures the title if provided.
     """
@@ -145,7 +196,7 @@ def _configure_title_plotly(title, font_size, color="black"):
 
 def _get_cbar_plotly(colorscale, vmin, vmax, cbar_tick_format,
                      fontsize=25, color="black", height=0.5):
-    """Helper function for _plot_surf_plotly.
+    """Help for _plot_surf_plotly.
 
     This function configures the colorbar and creates a small
     invisible plot that uses the appropriate cmap to trigger
@@ -182,7 +233,7 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
                       cbar_vmin=None, cbar_vmax=None,
                       cbar_tick_format=".1f", title=None,
                       title_font_size=18, output_file=None):
-    """Helper function for plot_surf.
+    """Help for plot_surf.
 
     .. versionadded:: 0.9.0
 
@@ -200,10 +251,11 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
     """
     try:
         import plotly.graph_objects as go
+
         from nilearn.plotting.displays import PlotlySurfaceFigure
     except ImportError:
         msg = "Using engine='plotly' requires that ``plotly`` is installed."
-        raise ImportError(msg)  # noqa
+        raise ImportError(msg)
 
     x, y, z = coords.T
     i, j, k = faces.T
@@ -249,9 +301,9 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
         fig_data.append(dummy)
 
     # instantiate plotly figure
-    cameras_view = _set_view_plot_surf_plotly(hemi, view)
+    camera_view = _get_view_plot_surf_plotly(hemi, view)
     fig = go.Figure(data=fig_data)
-    fig.update_layout(scene_camera=CAMERAS[cameras_view],
+    fig.update_layout(scene_camera=camera_view,
                       title=_configure_title_plotly(title, title_font_size),
                       **LAYOUT)
 
@@ -262,7 +314,7 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
         except ImportError:
             msg = ("Saving figures to file with engine='plotly' requires "
                    "that ``kaleido`` is installed.")
-            raise ImportError(msg)  # noqa
+            raise ImportError(msg)
     plotly_figure = PlotlySurfaceFigure(figure=fig, output_file=output_file)
     if output_file is not None:
         plotly_figure.savefig()
@@ -270,21 +322,21 @@ def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
     return plotly_figure
 
 
-def _set_view_plot_surf_matplotlib(hemi, view):
-    """Helper function for plot_surf with matplotlib engine.
+def _get_view_plot_surf_matplotlib(hemi, view):
+    """Help function for plot_surf with matplotlib engine.
 
     This function checks the selected hemisphere and view, and
     returns elev and azim.
     """
-    if hemi not in VALID_HEMISPHERES:
-        raise ValueError(f"hemi must be one of {VALID_HEMISPHERES}")
-    if view not in MATPLOTLIB_VIEWS[hemi]:
-        raise ValueError(f"view must be one of {VALID_VIEWS}")
-    return MATPLOTLIB_VIEWS[hemi][view]
+    _check_views([view])
+    _check_hemispheres([hemi])
+    if isinstance(view, str):
+        return MATPLOTLIB_VIEWS[hemi][view]
+    return view
 
 
 def _check_surf_map(surf_map, n_vertices):
-    """Helper function for plot_surf.
+    """Help for plot_surf.
 
     This function checks the dimensions of provided surf_map.
     """
@@ -300,7 +352,7 @@ def _check_surf_map(surf_map, n_vertices):
 
 def _compute_surf_map_faces_matplotlib(surf_map, faces, avg_method,
                                        n_vertices, face_colors_size):
-    """Helper function for plot_surf.
+    """Help for plot_surf.
 
     This function computes the surf map faces using the
     provided averaging method.
@@ -351,7 +403,7 @@ def _compute_surf_map_faces_matplotlib(surf_map, faces, avg_method,
 
 
 def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format):
-    """Helper function for plot_surf with matplotlib engine.
+    """Help for plot_surf with matplotlib engine.
 
     This function computes the tick values for the colorbar.
     """
@@ -368,7 +420,7 @@ def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format):
 
 
 def _get_cmap_matplotlib(cmap, vmin, vmax, threshold=None):
-    """Helper function for plot_surf with matplotlib engine.
+    """Help for plot_surf with matplotlib engine.
 
     This function returns the colormap.
     """
@@ -388,7 +440,7 @@ def _get_cmap_matplotlib(cmap, vmin, vmax, threshold=None):
 
 def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
                                    darkness, alpha):
-    """Helper function for plot_surf with matplotlib engine.
+    """Help for plot_surf with matplotlib engine.
 
     This function computes the facecolors.
     """
@@ -409,6 +461,13 @@ def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
 
     if darkness is not None:
         bg_faces *= darkness
+        warn(
+            (
+                "The `darkness` parameter will be deprecated in release 0.13. "
+                "We recommend setting `darkness` to None"
+            ),
+            DeprecationWarning,
+        )
 
     face_colors = plt.cm.gray_r(bg_faces)
 
@@ -422,7 +481,7 @@ def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
 
 
 def _threshold_and_rescale(data, threshold, vmin, vmax):
-    """Helper function for plot_surf.
+    """Help for plot_surf.
 
     This function thresholds and rescales the provided data.
     """
@@ -448,7 +507,7 @@ def _rescale(data, vmin=None, vmax=None):
 
 
 def _get_bounds(data, vmin=None, vmax=None):
-    """Helper function returning the data bounds."""
+    """Help returning the data bounds."""
     vmin = np.nanmin(data) if vmin is None else vmin
     vmax = np.nanmax(data) if vmax is None else vmax
     return vmin, vmax
@@ -462,7 +521,7 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
                           cbar_vmax=None, cbar_tick_format='%.2g',
                           title=None, title_font_size=18, output_file=None,
                           axes=None, figure=None, **kwargs):
-    """Helper function for plot_surf.
+    """Help for plot_surf.
 
     This function handles surface plotting when the selected
     engine is matplotlib.
@@ -470,8 +529,8 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
     _default_figsize = [4, 4]
     limits = [coords.min(), coords.max()]
 
-    # set view
-    elev, azim = _set_view_plot_surf_matplotlib(hemi, view)
+    # Get elevation and azimut from view
+    elev, azim = _get_view_plot_surf_matplotlib(hemi, view)
 
     # if no cmap is given, set to matplotlib default
     if cmap is None:
@@ -499,12 +558,12 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
 
     # plot mesh without data
     p3dcollec = axes.plot_trisurf(coords[:, 0], coords[:, 1], coords[:, 2],
-                                  triangles=faces, linewidth=0.,
+                                  triangles=faces, linewidth=0.1,
                                   antialiased=False,
                                   color='white')
 
     # reduce viewing distance to remove space around mesh
-    axes.dist = 8
+    axes.set_box_aspect(None, zoom=1.3)
 
     bg_face_colors = _compute_facecolors_matplotlib(
         bg_map, faces, coords.shape[0], darkness, alpha
@@ -549,6 +608,7 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
                 format=cbar_tick_format, orientation='vertical')
 
         p3dcollec.set_facecolors(face_colors)
+        p3dcollec.set_edgecolors(face_colors)
 
     if title is not None:
         axes.set_title(title)
@@ -570,7 +630,7 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
               cbar_vmin=None, cbar_vmax=None, cbar_tick_format="auto",
               title=None, title_font_size=18, output_file=None, axes=None,
               figure=None, **kwargs):
-    """Plotting of surfaces with optional background and data
+    """Plot surfaces with optional background and data.
 
     .. versionadded:: 0.3
 
@@ -660,7 +720,6 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             ``matplotlib`` engine.
 
     %(bg_on_data)s
-        Default=False.
 
     %(darkness)s
         Default=1.
@@ -764,9 +823,8 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
 
 
 def _get_faces_on_edge(faces, parc_idx):
-    '''
-    Internal function for identifying which faces lie on the outer
-    edge of the parcellation defined by the indices in parc_idx.
+    """Identify which faces lie on the outeredge of the parcellation \
+    defined by the indices in parc_idx.
 
     Parameters
     ----------
@@ -775,7 +833,7 @@ def _get_faces_on_edge(faces, parc_idx):
     parc_idx : numpy.ndarray, indices of the vertices
         of the region to be plotted
 
-    '''
+    """
     # count how many vertices belong to the given parcellation in each face
     verts_per_face = np.isin(faces, parc_idx).sum(axis=1)
 
@@ -794,7 +852,8 @@ def _get_faces_on_edge(faces, parc_idx):
 def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
                        labels=None, colors=None, legend=False, cmap='tab20',
                        title=None, output_file=None, **kwargs):
-    """Plotting contours of ROIs on a surface, optionally over a statistical map.
+    """Plot contours of ROIs on a surface, \
+    optionally over a statistical map.
 
     Parameters
     ----------
@@ -926,7 +985,7 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
                        bg_on_data=False, darkness=.7,
                        title=None, title_font_size=18, output_file=None,
                        axes=None, figure=None, **kwargs):
-    """Plotting a stats map on a surface mesh with optional background
+    """Plot a stats map on a surface mesh with optional background.
 
     .. versionadded:: 0.3
 
@@ -1014,7 +1073,6 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     %(symmetric_cbar)s
         Default='auto'.
     %(bg_on_data)s
-        Default=False.
 
     %(darkness)s
         Default=1.
@@ -1082,34 +1140,74 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     return display
 
 
+def _check_hemisphere_is_valid(hemi):
+    return hemi in VALID_HEMISPHERES
+
+
 def _check_hemispheres(hemispheres):
-    """Checks whether the hemispheres passed to in plot_img_on_surf are
+    """Check whether the hemispheres passed to in plot_img_on_surf are \
     correct.
 
     hemispheres : list
         Any combination of 'left' and 'right'.
 
     """
-    invalid_hemi = any([hemi not in VALID_HEMISPHERES for hemi in hemispheres])
-    if invalid_hemi:
-        supported = "Supported hemispheres:\n" + str(VALID_HEMISPHERES)
-        raise ValueError("Invalid hemispheres definition!\n" + supported)
+    invalid_hemis = [
+        not _check_hemisphere_is_valid(hemi) for hemi in hemispheres
+    ]
+    if any(invalid_hemis):
+        raise ValueError(
+            "Invalid hemispheres definition!\n"
+            f"Got: {str(np.array(hemispheres)[invalid_hemis])}\n"
+            f"Supported values are: {str(VALID_HEMISPHERES)}"
+        )
     return hemispheres
 
 
-def _check_views(views) -> list:
-    """Checks whether the views passed to in plot_img_on_surf are
-    correct.
+def _check_view_is_valid(view) -> bool:
+    """Check whether a single view is one of two valid input types.
 
-    views : list
-        Any combination of "anterior", "posterior", "medial", "lateral",
-        "dorsal", "ventral".
+    Parameters
+    ----------
+    view: string in {"anterior", "posterior", "medial", "lateral",
+        "dorsal", "ventral" or pair of floats (elev, azim).
 
+    Returns
+    -------
+    valid: True if view is valid, False otherwise.
     """
-    invalid_view = any([view not in VALID_VIEWS for view in views])
-    if invalid_view:
-        supported = "Supported views:\n" + str(VALID_VIEWS)
-        raise ValueError("Invalid view definition!\n" + supported)
+    if isinstance(view, str) and (view in VALID_VIEWS):
+        return True
+    if isinstance(view, Sequence) and len(view) == 2:
+        return True
+    return False
+
+
+def _check_views(views) -> list:
+    """Check whether the views passed to in plot_img_on_surf are correct.
+
+    Parameters
+    ----------
+    views : list
+        Any combination of strings in {"anterior", "posterior", "medial",
+        "lateral", "dorsal", "ventral"} and / or pair of floats (elev, azim).
+
+    Returns
+    -------
+    views: list
+        Views given as inputs.
+    """
+    invalid_views = [not _check_view_is_valid(view) for view in views]
+
+    if any(invalid_views):
+        raise ValueError(
+            "Invalid view definition!\n"
+            f"Got: {str(np.array(views)[invalid_views])}\n"
+            f"Supported values are: {str(VALID_VIEWS)}"
+            " or a sequence of length 2"
+            " setting the elevation and azimut of the camera."
+        )
+
     return views
 
 
@@ -1170,8 +1268,10 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
                      output_file=None, title=None, colorbar=True,
                      vmax=None, threshold=None,
                      cmap='cold_hot', **kwargs):
-    """Convenience function to plot multiple views of plot_surf_stat_map
-    in a single figure. It projects stat_map into meshes and plots views of
+    """Plot multiple views of plot_surf_stat_map \
+    in a single figure.
+
+    It projects stat_map into meshes and plots views of
     left and right hemispheres. The *views* argument defines the views
     that are shown. This function returns the fig, axes elements from
     matplotlib unless kwargs sets and output_file, in which case nothing
@@ -1198,9 +1298,9 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         If ``None``, don't apply any mask.
 
     %(bg_on_data)s
-        Default=False.
 
-    %(hemispheres)s
+    hemispheres : :obj:`list` of :obj:`str`, default=["left", "right"]
+        Hemispheres to display.
 
     inflate : bool, optional
         If True, display images in inflated brain.
@@ -1241,8 +1341,9 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     """
     for arg in ('figure', 'axes'):
         if arg in kwargs:
-            raise ValueError(('plot_img_on_surf does not'
-                              ' accept %s as an argument' % arg))
+            raise ValueError(
+                'plot_img_on_surf does not accept '
+                f'{arg} as an argument')
 
     stat_map = check_niimg_3d(stat_map, dtype='auto')
     modes = _check_views(views)
@@ -1251,8 +1352,8 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
 
     mesh_prefix = "infl" if inflate else "pial"
     surf = {
-        'left': surf_mesh[mesh_prefix + '_left'],
-        'right': surf_mesh[mesh_prefix + '_right'],
+        'left': surf_mesh[f'{mesh_prefix}_left'],
+        'right': surf_mesh[f'{mesh_prefix}_right'],
     }
 
     texture = {
@@ -1279,12 +1380,12 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         # sulc depth background map otherwise
         if inflate:
             curv_map = surface.load_surf_data(
-                surf_mesh["curv_{}".format(hemi)]
+                surf_mesh[f"curv_{hemi}"]
             )
             curv_sign_map = (np.sign(curv_map) + 1) / 4 + 0.25
             bg_map = curv_sign_map
         else:
-            sulc_map = surf_mesh['sulc_%s' % hemi]
+            sulc_map = surf_mesh[f'sulc_{hemi}']
             bg_map = sulc_map
 
         ax = fig.add_subplot(grid[i + len(hemis)], projection="3d")
@@ -1302,7 +1403,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         # ax.set_facecolor("#e0e0e0")
         # We increase this value to better position the camera of the
         # 3D projection plot. The default value makes meshes look too small.
-        ax.dist = 7
+        ax.set_box_aspect(None, zoom=1.3)
 
     if colorbar:
         sm = _colorbar_from_array(image.get_data(stat_map),
@@ -1333,7 +1434,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
                   title=None, title_font_size=18,
                   output_file=None, axes=None,
                   figure=None, **kwargs):
-    """ Plotting ROI on a surface mesh with optional background
+    """Plot ROI on a surface mesh with optional background.
 
     .. versionadded:: 0.3
 
@@ -1412,7 +1513,6 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
             ``matplotlib`` engine.
 
     %(bg_on_data)s
-        Default=False.
 
     %(darkness)s
         Default=1.
@@ -1470,7 +1570,7 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     if roi.ndim != 1:
         raise ValueError('roi_map can only have one dimension but has '
-                         '%i dimensions' % roi.ndim)
+                         f'{roi.ndim} dimensions')
     if roi.shape[0] != mesh[0].shape[0]:
         raise ValueError('roi_map does not have the same number of vertices '
                          'as the mesh. If you have a list of indices for the '

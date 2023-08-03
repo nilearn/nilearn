@@ -42,7 +42,7 @@ def _select_compcor(compcor_cols, n_compcor):
     # only select if not "all", or less components are requested than there
     # actually is
     if (n_compcor != "all") and (n_compcor < len(compcor_cols)):
-        compcor_cols = compcor_cols[0:n_compcor]
+        compcor_cols = compcor_cols[:n_compcor]
     return compcor_cols
 
 

@@ -2,74 +2,52 @@
 
 .. include:: names.rst
 
-0.10.1.dev
+0.10.2.dev
 ==========
 
 NEW
 ---
 
-- New function :func:`~datasets.load_sample_motor_activation_image` to load example contrast map (:gh:`3498` by `Michelle Wang`_).
+- Volume plotting functions like :func:`~plotting.plot_img` now have an optional ``radiological`` parameter, defaulting to ``False``. If ``True``, this will invert the x-axis and ``L`` and ``R`` annotations to confirm to radiological conventional view. (:gh:`3172` by `Konrad Wagstyl`_ and `Yasmin Mzayek`_).
 
 Fixes
 -----
+- Fix bug in ``nilearn.plotting.surf_plotting._plot_surf_matplotlib`` that would make vertices transparent when saving in PDF or SVG format (:gh:`3860` by `Mathieu Dugré`_).
 
-- Change calculation of TR in :func:`~.glm.first_level.compute_regressor` to be more precise (:gh:`3362` by `Anne-Sophie Kieslinger`_)
+- Fix bug that would prevent loading the confounds of a gifti file in actual fmriprep datasets (:gh:`3819` by `Rémi Gau`_).
 
-- :func:`~nilearn.interfaces.fmriprep.load_confounds` can support searching preprocessed data in native space. (:gh:`3531` by `Hao-Ting Wang`_)
+- Fix bug in :func:`~glm.first_level.first_level_from_bids` that returned no confound files if the corresponding bold files contained derivatives BIDS entities (:gh:`3742` by `Rémi Gau`_).
 
+- Fix bug in :func:`~glm.first_level.first_level_from_bids` that would throw a warning about ``slice_time_ref`` not being provided even when it was (:gh:`3811` by `Rémi Gau`_).
 
-Enhancements
-------------
-- Updated example :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py` to include section on plotting a confusion matrix from a decoder family object (:gh:`3483` by `Michelle Wang`_).
+- :bdg-dark:`Code` Fix bug where the `cv_params_` attribute of fitter Decoder objects sometimes had missing entries if `grid_param` is a sequence of dicts with different keys (:gh:`3733` by `Michelle Wang`_).
 
-- Surface plotting methods no longer automatically rescale background maps, which, among other things, allows to use curvature sign as a background map (:gh:`3173` by `Alexis Thual`_).
+- Make the :func:`~nilearn.interfaces.fmriprep.load_confounds` confounds file selection more generic (:gh:`3794` by `Taylor Salo`_).
 
-- :func:`~glm.first_level.first_level_from_bids` now takes an optional ``sub_labels`` argument and warns users of given subject labels that are not present in the dataset (:gh:`3351` by `Kevin Sitek`_).
+- Change default figsizes to prevent titles from overlapping figure content (:gh:`3797` by `Yasmin Mzayek`_ and see also :gh:`2804` by `Oliver Warrington`_)
 
-
-Changes
--------
-- The behavior of :func:`~nilearn.datasets.fetch_atlas_craddock_2012`, :func:`~nilearn.datasets.fetch_atlas_smith_2009` and :func:`~nilearn.datasets.fetch_atlas_basc_multiscale_2015` is updated with their new parameters to return one map along with a deprecation cycle (:gh:`3353` by `Ahmad Chamma`_).
-
-- Modules :mod:`~nilearn.image` code and docstrings have been reformatted using black. Changes resulted in improved readability overall and increased consistency (:gh:`3548` by `Rémi Gau`_).
-
-- Examples have been made PEP8 compliant and reformatted using black. (:gh:`3549`, :gh:`3550`, :gh:`3551`, :gh:`3552`, :gh:`3553`, :gh:`3554`, :gh:`3555`,  by `Rémi Gau`_).
-
-- Extract helper-functions for input-image validation from :func:`~regions.img_to_signals_labels`, :func:`~regions.signals_to_img_labels`, :func:`~regions.img_to_signals_maps` :func:`~regions.signals_to_img_maps` (:gh:`3523` by `Rémi Gau`_ and `Christian Gerloff`_).
-
-
-0.10.1rc1
-=========
-
-**Released February 2023**
-
-This is a pre-release.
-
-
-Fixes
------
-
-- :bdg-dark:`Code` Restore :func:`~image.resample_img` compatibility with all :class:`nibabel.spatialimages.SpatialImage` objects (:gh:`3462` by `Mathias Goncalves`_).
-
-- :bdg-success:`API` :func:`~nilearn.glm.second_level.non_parametric_inference` now supports confounding variates when they are available in the input design matrix :func:`~nilearn.mass_univariate.permuted_ols` (:gh:`3465` by `Jelle Roelof Dalenberg`_).
-
-- :bdg-success:`API` :func:`~nilearn.mass_univariate.permuted_ols` now checks if confounding variates contain a intercept and raises an warning when multiple intercepts are defined across target and confounding variates (:gh:`3465` by `Jelle Roelof Dalenberg`_).
-
-- The label of the clusters in the label maps returned by :func:`~nilearn.reporting.get_clusters_table` now matches the Cluster IDs in the clusters table (:gh:`3563` by `Julio A Peraza`_).
+- Relax the :func:`~nilearn.interfaces.fmriprep.load_confounds` confounds selection on `cosine` as not all confound files contained the variables (:gh:`3816` by `Hao-Ting Wang`_).
 
 Enhancements
 ------------
 
-- :bdg-primary:`Doc` Addition to docs to note that :meth:`~maskers.BaseMasker.inverse_transform` only performs spatial unmasking (:gh:`3445` by `Robert Williamson`_).
+- Add cross-reference links to type definitions in public surface functions (:gh:`3857` by `Hao-Ting Wang`_).
 
-- :bdg-success:`API` Give users control over Butterworth filter (:func:`~signal.butterworth`) parameters in :func:`~signal.clean` and Masker objects as kwargs (:gh:`3478` by `Taylor Salo`_).
+- Update Decoder objects to use the more efficient ``LogisticRegressionCV`` (:gh:`3736` by `Michelle Wang`_).
 
-- :bdg-success:`API` Allow users to output label maps from :func:`~reporting.get_clusters_table` (:gh:`3477` by `Steven Meisler`_).
+- Make return key names in the description file of destrieux surface consistent with :func:`~datasets.fetch_atlas_surf_destrieux` (:gh:`3774` by `Tarun Samanta`_).
 
 Changes
 -------
 
-- :bdg-primary:`Doc` The documentation for :func:`~image.threshold_img` has been improved, with more information about which voxels are set to 0 and which ones keep their original values (:gh:`3485` by `Rémi Gau`_).
-
-- :bdg-secondary:`Maint` Modules :mod:`~nilearn.decomposition` and :mod:`~nilearn.decoding` code and docstrings have been reformatted using black. Changes resulted in improved readability overall and increased consistency (:gh:`3491` and :gh:`3484` by `Rémi Gau`_).
-
+- Removed old files and test code from deprecated datasets COBRE and NYU resting state (:gh:`3743` by `Michelle Wang`_).
+- :bdg-secondary:`Maint` PEP8 and isort compliance extended to the whole nilearn codebase. (:gh:`3538`, :gh:`3566`, :gh:`3548`, :gh:`3556`, :gh:`3601`, :gh:`3609`, :gh:`3646`, :gh:`3650`, :gh:`3647`, :gh:`3640`, :gh:`3615`, :gh:`3614`, :gh:`3648`,  :gh:`#3651`  by `Rémi Gau`_).
+- :bdg-secondary:`Maint` Finish applying black formatting to most of the codebase. (:gh:`3836`, :gh:`3833`, :gh:`3827`, :gh:`3810`, :gh:`3803`, :gh:`3802`, :gh:`3795`, :gh:`3790`, :gh:`3783`, :gh:`3777` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` Empty region signals resulting from applying `mask_img` in :class:`~maskers.NiftiLabelsMasker` will no longer be kept in release 0.15. Meanwhile, use `keep_masked_labels` parameter when initializing the :class:`~maskers.NiftiLabelsMasker` object to enable/disable this behavior. (:gh:`3722` by `Mohammad Torabi`_).
+- :bdg-danger:`Deprecation` Empty region signals resulting from applying `mask_img` in :class:`~maskers.NiftiMapsMasker` will no longer be kept in release 0.15. Meanwhile, use `keep_masked_maps` parameter when initializing the :class:`~maskers.NiftiMapsMasker` object to enable/disable this behavior. (:gh:`3732` by `Mohammad Torabi`_).
+- Removed mention of license in "header" (:gh:`3838` by `Czarina Sy`_).
+- Configure plots in example gallery for better rendering  (:gh:`3753` by `Yasmin Mzayek`_)
+- Make one_mesh_info and full_brain_info into private functions _one_mesh_info and _full_brain_info (:gh:`3847` by `Rahul Brito`_)
+- Refactor error raising tests using context managers (:gh:`3854` BY `François Paugam`_)
+- Added warning to deprecate `darkness` in ``surf_plotting._compute_facecolors_matplotlib`` and ``html_surface._get_vertexcolor`` (:gh`3855` by `Alisha Kodibagkar`_)
+- :bdg-secondary:`Doc` Replace skipped doctests with default code-blocks (:gh:`3681` in by `Patrick Sadil`_)

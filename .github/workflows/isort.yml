@@ -25,9 +25,7 @@ jobs:
 
       - name: "Install isort"
         shell: bash {0}
-        run: |
-          python -m pip install --upgrade pip isort
+        run: python -m pip install --upgrade pip isort
 
       - name: "Run isort"
-        run: isort --diff --check --settings-path pyproject.toml nilearn/de* nilearn/image nilearn/regions maint_tools setup.py examples/0[0234567]*
-
+        run: isort --diff --check --settings-path pyproject.toml .

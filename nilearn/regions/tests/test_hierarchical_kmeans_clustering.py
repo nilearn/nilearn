@@ -1,5 +1,7 @@
 import numpy as np
 import pytest
+from numpy.testing import assert_array_almost_equal
+
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.input_data import NiftiMasker
 from nilearn.regions.hierarchical_kmeans_clustering import (
@@ -7,28 +9,28 @@ from nilearn.regions.hierarchical_kmeans_clustering import (
     _adjust_small_clusters,
     hierarchical_k_means,
 )
-from numpy.testing import assert_array_almost_equal
-
-525.25 / 2
 
 
-def test_adjust_small_clusters():
-    test_lists = [
-        [2.4, 2.6],
-        [2.7, 3.0, 3.3],
-        [10 / 3, 10 / 3, 10 / 3],
-        [1 / 3, 11 / 3, 11 / 3, 10 / 3],
-    ]
-    n_clusters_list = [5, 9, 10, 11]
+@pytest.mark.parametrize(
+    "test_list, n_clusters",
+    [
+        ([2.4, 2.6], 5),
+        ([2.7, 3.0, 3.3], 9),
+        ([10 / 3, 10 / 3, 10 / 3], 10),
+        ([1 / 3, 11 / 3, 11 / 3, 10 / 3], 11),
+    ],
+)
+def test_adjust_small_clusters(test_list, n_clusters):
+    test_list = np.asarray(test_list)
 
-    for test_list_, n_clusters in zip(test_lists, n_clusters_list):
-        test_list_ = np.asarray(test_list_)
-        assert np.sum(test_list_) == n_clusters
-        list_round = _adjust_small_clusters(test_list_, n_clusters)
-        assert np.all(list_round != 0)
-        assert np.sum(list_round) == n_clusters
-        for a in list_round:
-            assert isinstance(a, (int, np.integer))
+    assert np.sum(test_list) == n_clusters
+
+    list_round = _adjust_small_clusters(test_list, n_clusters)
+
+    assert np.all(list_round != 0)
+    assert np.sum(list_round) == n_clusters
+    for a in list_round:
+        assert isinstance(a, (int, np.integer))
 
 
 def test_hierarchical_k_means():

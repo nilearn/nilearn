@@ -6,16 +6,17 @@ import glob
 import itertools
 from math import ceil
 
-import nilearn
 import numpy as np
 from joblib import Memory, Parallel, delayed
-from nilearn.maskers import NiftiMapsMasker
-from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
 from scipy import linalg
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.linear_model import LinearRegression
 from sklearn.utils import check_random_state
 from sklearn.utils.extmath import randomized_svd, svd_flip
+
+import nilearn
+from nilearn.maskers import NiftiMapsMasker
+from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
 
 from .._utils import fill_doc
 from .._utils.cache_mixin import CacheMixin, cache
@@ -215,7 +216,7 @@ def _mask_and_reduce_single(
     memory_level=0,
     random_state=None,
 ):
-    """Utility function for multiprocessing from MaskReducer."""  # noqa
+    """Implement multiprocessing from MaskReducer."""
     this_data = masker.transform(img, confound)
     # Now get rid of the img as fast as possible, to free a
     # reference count on it, and possibly free the corresponding

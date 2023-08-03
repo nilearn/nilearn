@@ -1,6 +1,4 @@
-"""
-Transformer for computing ROI signals of multiple 4D images
-"""
+"""Transformer for computing ROI signals of multiple 4D images."""
 
 import itertools
 
@@ -38,19 +36,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel). Default=True.
     %(smoothing_fwhm)s
-    standardize : {False, True, 'zscore', 'psc'}, optional
-        Strategy to standardize the signal.
-
-            - 'zscore': the signal is z-scored. Timeseries are shifted
-              to zero mean and scaled to unit variance.
-            - 'psc':  Timeseries are shifted to zero mean value and scaled
-              to percent signal change (as compared to original mean signal).
-            - True : the signal is z-scored. Timeseries are shifted
-              to zero mean and scaled to unit variance.
-            - False : Do not standardize the data.
-
-        Default=False.
-
+    %(standardize_maskers)s
     %(standardize_confounds)s
     high_variance_confounds : :obj:`bool`, optional
         If True, high variance confounds are computed on provided image with
@@ -86,8 +72,18 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
     reports : :obj:`bool`, optional
         If set to True, data is saved in order to produce a report.
         Default=True.
-
     %(masker_kwargs)s
+
+    Attributes
+    ----------
+    maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
+        The maps mask of the data.
+
+    n_elements_ : :obj:`int`
+        The number of overlapping maps in the mask.
+        This is equivalent to the number of volumes in the mask image.
+
+        .. versionadded:: 0.9.2
 
     Notes
     -----
@@ -95,13 +91,14 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
     transform() will be resampled to the shape of maps_img. It may lead to a
     very large memory consumption if the voxel number in maps_img is large.
 
-    See also
+    See Also
     --------
     nilearn.maskers.NiftiMasker
     nilearn.maskers.NiftiLabelsMasker
     nilearn.maskers.NiftiMapsMasker
 
     """
+
     # memory and memory_level are used by CacheMixin.
 
     def __init__(
@@ -148,8 +145,9 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             **kwargs,
         )
 
-    def transform_imgs(self, imgs_list, confounds=None, n_jobs=1,
-                       sample_mask=None):
+    def transform_imgs(
+        self, imgs_list, confounds=None, n_jobs=1, sample_mask=None
+    ):
         """Extract signals from a list of 4D niimgs.
 
         Parameters
@@ -172,11 +170,14 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
         self._check_fitted()
 
-        niimg_iter = _iter_check_niimg(imgs_list, ensure_ndim=None,
-                                       atleast_4d=False,
-                                       memory=self.memory,
-                                       memory_level=self.memory_level,
-                                       verbose=self.verbose)
+        niimg_iter = _iter_check_niimg(
+            imgs_list,
+            ensure_ndim=None,
+            atleast_4d=False,
+            memory=self.memory,
+            memory_level=self.memory_level,
+            verbose=self.verbose,
+        )
 
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs_list))
@@ -185,11 +186,12 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
         region_signals = Parallel(n_jobs=n_jobs)(
             delayed(func)(imgs=imgs, confounds=cfs, sample_mask=sample_mask)
-            for imgs, cfs in zip(niimg_iter, confounds))
+            for imgs, cfs in zip(niimg_iter, confounds)
+        )
         return region_signals
 
     def transform(self, imgs, confounds=None, sample_mask=None):
-        """ Apply mask, spatial and temporal preprocessing
+        """Apply mask, spatial and temporal preprocessing.
 
         Parameters
         ----------
@@ -205,10 +207,9 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             shape: list of (number of scans, number of maps)
 
         """
-
         self._check_fitted()
-        if (not hasattr(imgs, '__iter__')
-                or isinstance(imgs, str)):
+        if not hasattr(imgs, "__iter__") or isinstance(imgs, str):
             return self.transform_single_imgs(imgs)
-        return self.transform_imgs(imgs, confounds, n_jobs=self.n_jobs,
-                                   sample_mask=sample_mask)
+        return self.transform_imgs(
+            imgs, confounds, n_jobs=self.n_jobs, sample_mask=sample_mask
+        )

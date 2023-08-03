@@ -15,7 +15,8 @@ import re
 import sys
 
 import sphinx
-from nilearn.version import _compare_version
+
+from nilearn._utils import _compare_version
 
 # ----------------------------------------------------------------------------
 
@@ -157,6 +158,8 @@ pygments_dark_style = "stata-dark"
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
 
+# A list of warning types to suppress arbitrary warning messages
+suppress_warnings = ["image.not_readable"]
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -368,6 +371,15 @@ extlinks = {
     "neurostars": ("https://neurostars.org/tag/nilearn/%s", None),
     "nipy": ("https://nipy.org/%s", None),
 }
+
+# Check intersphinx reference targets exist
+nitpicky = True
+# Temporary solution to nilearn/nilearn#3800
+# See also scikit-learn/scikit-learn#26761
+nitpick_ignore = [
+    ("py:class", "pipeline.Pipeline"),
+    ("py:class", "utils.metadata_routing.MetadataRequest"),
+]
 
 binder_branch = "main" if "dev" in current_version else current_version
 

@@ -1,24 +1,26 @@
 """Canonical Independent Component Analysis."""
 
 # Author: Alexandre Abraham, Gael Varoquaux,
-# License: BSD 3 clause
 
 import warnings as _warnings
 from operator import itemgetter
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
-from nilearn._utils import fill_doc
 from scipy.stats import scoreatpercentile
 from sklearn.decomposition import fastica
 from sklearn.utils import check_random_state
+
+from nilearn._utils import fill_doc
 
 from ._multi_pca import _MultiPCA
 
 
 @fill_doc
 class CanICA(_MultiPCA):
-    """Perform Canonical Independent Component Analysis [1]_ [2]_.
+    """Perform :term:`Canonical Independent Component Analysis<CanICA>`.
+
+    See :footcite:`Varoquaux2010c` and :footcite:`Varoquaux2010d`.
 
     Parameters
     ----------
@@ -151,11 +153,7 @@ class CanICA(_MultiPCA):
 
     References
     ----------
-    .. [1] G. Varoquaux et al. "A group model for stable multi-subject ICA on
-       fMRI datasets", NeuroImage Vol 51 (2010), p. 288-299
-
-    .. [2] G. Varoquaux et al. "ICA-based sparse features recovery from fMRI
-       datasets", IEEE ISBI 2010, p. 1177
+    .. footbibliography::
 
     """
 
@@ -209,8 +207,8 @@ class CanICA(_MultiPCA):
             raise ValueError(
                 "Threshold must not be higher than number "
                 "of maps. "
-                "Number of maps is %s and you provided "
-                "threshold=%s" % (str(n_components), str(threshold))
+                f"Number of maps is {n_components} and you provided "
+                f"threshold={threshold}"
             )
         self.threshold = threshold
         self.n_init = n_init
@@ -225,7 +223,7 @@ class CanICA(_MultiPCA):
         results = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
             delayed(self._cache(fastica, func_memory_level=2))(
                 components.astype(np.float64),
-                whiten=True,
+                whiten="arbitrary-variance",
                 fun="cube",
                 random_state=seed,
             )
@@ -248,7 +246,7 @@ class CanICA(_MultiPCA):
         elif self.threshold is not None:
             raise ValueError(
                 "Threshold must be None, "
-                "'auto' or float. You provided %s." % str(self.threshold)
+                f"'auto' or float. You provided {self.threshold}."
             )
         if ratio is not None:
             abs_ica_maps = np.abs(ica_maps)
@@ -257,11 +255,10 @@ class CanICA(_MultiPCA):
                 _warnings.warn(
                     "Nilearn's decomposition module "
                     "obtained a critical threshold "
-                    "(= %s percentile).\n"
+                    f"(= {percentile} percentile).\n"
                     "No threshold will be applied. "
                     "Threshold should be decreased or "
-                    "number of components should be adjusted."
-                    % str(percentile),
+                    "number of components should be adjusted.",
                     UserWarning,
                     stacklevel=4,
                 )

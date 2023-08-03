@@ -4,9 +4,10 @@ import warnings
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
-from nilearn.maskers import NiftiLabelsMasker
 from sklearn.base import clone
 from sklearn.feature_extraction import image
+
+from nilearn.maskers import NiftiLabelsMasker
 
 from .._utils import fill_doc, stringify_path
 from .._utils.niimg import _safe_get_data
@@ -140,7 +141,10 @@ class Parcellations(_MultiPCA):
         ward and rena are the best options. Ward will give higher quality
         parcels, but with increased computation time. ReNA is most useful as a
         fast data-reduction step, typically dividing the signal size by ten.
-    %(n_parcels)s
+
+    n_parcels : :obj:`int`, default=50
+        Number of parcels to divide the data into.
+
     %(random_state)s
         Default=0.
 
@@ -362,6 +366,7 @@ class Parcellations(_MultiPCA):
             kmeans = MiniBatchKMeans(
                 n_clusters=self.n_parcels,
                 init="k-means++",
+                n_init=3,
                 random_state=self.random_state,
                 verbose=max(0, self.verbose - 1),
             )

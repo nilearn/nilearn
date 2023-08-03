@@ -1,4 +1,4 @@
-# Helper functions for testing surface code
+"""Helper functions for testing surface code."""
 
 import numpy as np
 from scipy.spatial import Delaunay
@@ -7,6 +7,7 @@ from scipy.spatial import Delaunay
 def generate_surf():
     """
     Generate random surface object for testing input output functions.
+
     This does not generate meaningful surfaces.
     """
     rng = np.random.RandomState(42)
@@ -16,7 +17,7 @@ def generate_surf():
 
 
 def flat_mesh(x_s, y_s, z=0):
-    """Create a flat horizontal mesh"""
+    """Create a flat horizontal mesh."""
     x, y = np.mgrid[:x_s, :y_s]
     x, y = x.ravel(), y.ravel()
     z = np.ones(len(x)) * z
@@ -27,6 +28,6 @@ def flat_mesh(x_s, y_s, z=0):
 
 
 def z_const_img(x_s, y_s, z_s):
-    """Create an image that is constant in z direction"""
+    """Create an image that is constant in z direction."""
     hslice = np.arange(x_s * y_s).reshape((x_s, y_s))
     return np.ones((x_s, y_s, z_s)) * hslice[:, :, np.newaxis]

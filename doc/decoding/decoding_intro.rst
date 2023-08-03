@@ -1,6 +1,3 @@
-.. Remove doctest: +SKIP at LDA while dropping support for sklearn older than
-    versions 0.17
-
 .. _decoding_intro:
 
 
@@ -190,12 +187,16 @@ two lines. The additional `standardize=True` argument adds a normalization
 of images signal to a zero mean and unit variance, which will improve
 performance of most estimators.
 
-    >>> from nilearn.decoding import Decoder # doctest: +SKIP
-    >>> decoder = Decoder(estimator='svc', mask=mask_filename) # doctest: +SKIP
+.. code-block:: default
+
+     from nilearn.decoding import Decoder
+     decoder = Decoder(estimator='svc', mask=mask_filename)
 
 Then we can fit it on the images and the conditions we chose before.
 
-    >>> decoder.fit(fmri_niimgs, conditions) # doctest: +SKIP
+.. code-block:: default
+
+     decoder.fit(fmri_niimgs, conditions)
 
 This decoder can now be used to predict conditions for new images !
 Be careful though, as we warned you, predicting on images that were used to
@@ -231,7 +232,9 @@ During the `fit`, :class:`nilearn.decoding.Decoder` object implicitly used a
 cross-validation: Stratified K-fold by default. You can easily inspect
 the prediction "score" it got in each fold.
 
-    >>> print(decoder.cv_scores_) # doctest: +SKIP
+.. code-block:: default
+
+     print(decoder.cv_scores_)
 
 
 Choosing a good cross-validation strategy

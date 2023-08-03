@@ -1,8 +1,53 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 
-files: "(nilearn/de.*)|(.*binder/)|(.*circleci/)|(.*github/)|(maint_tools/.*)|(setup.*)|(.*coverage)|(.*toml$)|(.*in$)|(.*yml)|(.*yaml)|(CONTRIBUTING.rst)|(AUTHORS.rst)|(LICENSE)|(Makefile)|(.*gitignore)|(doc/.*)|(nilearn/image|regions/.*py)|(examples/.*py)"
-exclude: "^(doc/whats_new.rst)|(doc/changes/(names|latest|0\\.9\\.[0-2]|0\\.10\\.0).rst)|(doc/(glm/first_level_model\\.rst|introduction\\.rst|maintenance\\.rst|manipulating_images/input_output\\.rst|modules/datasets\\.rst|modules/reference\\.rst|references\\.bib|themes/nilearn/static/nature\\.css_t))|(nilearn/externals/tempita)|(examples/.*/.*(3d_map_to_surface_projection|demo_glass_brain|demo_glass_brain_extensive|demo_more_plotting|demo_plotting|surf_atlas|surf_stat_map|surface_projection_strategies|fiac_analysis|fixed_effects|localizer_surface_analysis|two_session_model|searchlight_surface|compare_shrunk_connectome|group_level_connectivity|negate_image|resample_to_template|surface_bids_analysis).py)"
+exclude: |
+    (?x)^(
+        nilearn/datasets/tests/data/localizer_behavioural.tsv
+        | nilearn/externals/.*
+        | nilearn/plotting/data/js/.*js
+        | nilearn/_version.py
+        | examples/01_plotting/plot_3d_map_to_surface_projection.py
+        | examples/01_plotting/plot_demo_more_plotting.py
+        | examples/01_plotting/plot_demo_plotting.py
+        | examples/01_plotting/plot_surf_atlas.py
+        | examples/01_plotting/plot_surf_stat_map.py
+        | examples/01_plotting/plot_surface_projection_strategies.py
+        | examples/04_glm_first_level/plot_fiac_analysis.py
+        | examples/04_glm_first_level/plot_fixed_effects.py
+        | examples/04_glm_first_level/plot_localizer_surface_analysis.py
+        | examples/07_advanced/plot_surface_bids_analysis.py
+        | nilearn/_utils/helpers.py
+        | nilearn/_utils/docs.py
+        | nilearn/_utils/tests/test_data_gen.py
+        | nilearn/_utils/data_gen.py
+        | nilearn/reporting/html_report.py
+        | nilearn/reporting/tests/test_html_report.py
+        | nilearn/glm/contrasts.py
+        | nilearn/glm/first_level/first_level.py
+        | nilearn/glm/tests/test_contrasts.py
+        | nilearn/glm/tests/test_first_level.py
+        | nilearn/interfaces/fmriprep/load_confounds_compcor.py
+        | nilearn/interfaces/fmriprep/tests/test_load_confounds_utils.py
+        | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
+        | nilearn/interfaces/fmriprep/tests/utils.py
+        | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
+        | nilearn/maskers/nifti_spheres_masker.py
+        | nilearn/maskers/nifti_labels_masker.py
+        | nilearn/plotting/displays/_axes.py
+        | nilearn/plotting/glass_brain.py
+        | nilearn/plotting/html_surface.py
+        | nilearn/plotting/img_plotting.py
+        | nilearn/plotting/js_plotting_utils.py
+        | nilearn/plotting/surf_plotting.py
+        | nilearn/plotting/tests/test_html_stat_map.py
+        | nilearn/plotting/tests/test_html_surface.py
+        | nilearn/plotting/tests/test_surf_plotting.py
+        | nilearn/surface/surface.py
+        | nilearn/surface/tests/test_surface.py
+        | nilearn/tests/test_masking.py
+        | nilearn/tests/test_signal.py
+    )$
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -15,6 +60,7 @@ repos:
       - id: check-yaml
       - id: end-of-file-fixer
       - id: trailing-whitespace
+      - id: check-toml
 
   - repo: https://github.com/pycqa/isort
     rev: 5.12.0
@@ -22,27 +68,39 @@ repos:
       - id: isort
         args: ["--profile", "black"]
 
-  - repo: https://github.com/psf/black
-    rev: 23.1.0
+  - repo: https://github.com/ikamensh/flynt/
+    rev: "1.0.1"
     hooks:
-      - id: black
-        args: [--config=pyproject.toml, --verbose]
-
-  - repo: https://github.com/pyCQA/flake8
-    rev: 6.0.0
-    hooks:
-      - id: flake8
-        args: [--config=setup.cfg, --verbose]
-        additional_dependencies: [flake8-docstrings]
-
-  - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.4
-    hooks:
-      - id: codespell
-        args: [--config=setup.cfg]
+    -   id: flynt
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.3.1
+    rev: v3.10.1
     hooks:
       - id: pyupgrade
         args: [--py36-plus]
+
+  - repo: https://github.com/psf/black
+    rev: 23.7.0
+    hooks:
+      - id: black
+        args: ["--config", "pyproject.toml"]
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.5
+    hooks:
+      - id: codespell
+        args: ["--toml", "pyproject.toml"]
+        additional_dependencies: [tomli]
+
+  - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+    rev: v2.10.0
+    hooks:
+    - id: pretty-format-toml
+      args: [--autofix, --indent, '4']
+
+  - repo: https://github.com/pyCQA/flake8
+    rev: 6.1.0
+    hooks:
+      - id: flake8
+        args: ["--config", ".flake8", "--verbose"]
+        additional_dependencies: [flake8-docstrings, flake8-use-fstring]

@@ -1,38 +1,35 @@
-"""
-Tools to find activations and cut on maps
-"""
+"""Tools to find activations and cut on maps."""
 
 # Author: Gael Varoquaux
-# License: BSD
 
-import warnings
 import numbers
+import warnings
+
 import numpy as np
-from scipy.ndimage import (
-    center_of_mass,
-    find_objects,
-    label,
-)
-# Local imports
-from ..image import new_img_like, reorder_img, iter_img
-from ..image.resampling import get_mask_bounds, coord_transform
-from ..image.image import _smooth_array
-from .._utils.ndimage import largest_connected_component
-from .._utils.extmath import fast_abs_percentile
-from .._utils.numpy_conversions import as_ndarray
-from .._utils import check_niimg_3d, check_niimg_4d
-from .._utils.niimg import _safe_get_data
+from scipy.ndimage import center_of_mass, find_objects, label
+
 from nilearn.image import get_data
 
-################################################################################
-# Functions for automatic choice of cuts coordinates
-################################################################################
+from .._utils import check_niimg_3d, check_niimg_4d
+from .._utils.extmath import fast_abs_percentile
+from .._utils.ndimage import largest_connected_component
+from .._utils.niimg import _safe_get_data
+from .._utils.numpy_conversions import as_ndarray
 
-DEFAULT_CUT_COORDS = (0., 0., 0.)
+# Local imports
+from ..image import iter_img, new_img_like, reorder_img
+from ..image.image import _smooth_array
+from ..image.resampling import coord_transform, get_mask_bounds
+
+###############################################################################
+# Functions for automatic choice of cuts coordinates
+###############################################################################
+
+DEFAULT_CUT_COORDS = (0.0, 0.0, 0.0)
 
 
 def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
-    """ Find the center of the largest activation connected component.
+    """Find the center of the largest activation connected component.
 
     Parameters
     ----------
@@ -65,22 +62,25 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     data = _safe_get_data(img)
 
     # when given image is empty, return (0., 0., 0.)
-    if np.all(data == 0.):
+    if np.all(data == 0.0):
         warnings.warn(
-            "Given img is empty. Returning default cut_coords={0} instead."
-            .format(DEFAULT_CUT_COORDS))
+            "Given img is empty. "
+            f"Returning default cut_coords={DEFAULT_CUT_COORDS} instead."
+        )
         x_map, y_map, z_map = DEFAULT_CUT_COORDS
-        return np.asarray(coord_transform(x_map, y_map, z_map,
-                                          img.affine)).tolist()
+        return np.asarray(
+            coord_transform(x_map, y_map, z_map, img.affine)
+        ).tolist()
 
     # Retrieve optional mask
     if mask_img is not None:
         mask_img = check_niimg_3d(mask_img)
         mask = _safe_get_data(mask_img)
         if not np.allclose(mask_img.affine, img.affine):
-            raise ValueError('Mask affine: \n%s\n is different from img affine:'
-                             '\n%s' % (str(mask_img.affine),
-                                       str(img.affine)))
+            raise ValueError(
+                f"Mask affine: \n{mask_img.affine}\n "
+                f"is different from img affine: \n{img.affine}"
+            )
     else:
         mask = None
 
@@ -89,7 +89,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     offset = np.zeros(3)
 
     # Deal with masked arrays:
-    if hasattr(data, 'mask'):
+    if hasattr(data, "mask"):
         not_mask = np.logical_not(data.mask)
         if mask is None:
             mask = not_mask
@@ -102,15 +102,17 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     my_map = data.copy()
     if mask is not None:
         # check against empty mask
-        if mask.sum() == 0.:
+        if mask.sum() == 0.0:
             warnings.warn(
                 "Could not determine cut coords: "
                 "Provided mask is empty. "
-                "Returning center of mass instead.")
+                "Returning center of mass instead."
+            )
             cut_coords = center_of_mass(np.abs(my_map)) + offset
             x_map, y_map, z_map = cut_coords
-            return np.asarray(coord_transform(x_map, y_map, z_map,
-                                              img.affine)).tolist()
+            return np.asarray(
+                coord_transform(x_map, y_map, z_map, img.affine)
+            ).tolist()
         slice_x, slice_y, slice_z = find_objects(mask.astype(int))[0]
         my_map = my_map[slice_x, slice_y, slice_z]
         mask = mask[slice_x, slice_y, slice_z]
@@ -121,16 +123,19 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
         warnings.warn(
             "Could not determine cut coords: "
             "All values were masked. "
-            "Returning center of mass of unmasked data instead.")
+            "Returning center of mass of unmasked data instead."
+        )
         # Call center of mass on initial data since my_map is zero.
         # Therefore, do not add offset to cut_coords.
         cut_coords = center_of_mass(np.abs(data))
         x_map, y_map, z_map = cut_coords
-        return np.asarray(coord_transform(x_map, y_map, z_map,
-                                          img.affine)).tolist()
+        return np.asarray(
+            coord_transform(x_map, y_map, z_map, img.affine)
+        ).tolist()
     if activation_threshold is None:
-        activation_threshold = fast_abs_percentile(my_map[my_map != 0].ravel(),
-                                                   80)
+        activation_threshold = fast_abs_percentile(
+            my_map[my_map != 0].ravel(), 80
+        )
     try:
         eps = 2 * np.finfo(activation_threshold).eps
     except ValueError:
@@ -143,11 +148,13 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
         warnings.warn(
             "Could not determine cut coords: "
             "All voxels were masked by the thresholding. "
-            "Returning the center of mass instead.")
+            "Returning the center of mass instead."
+        )
         cut_coords = center_of_mass(np.abs(my_map)) + offset
         x_map, y_map, z_map = cut_coords
-        return np.asarray(coord_transform(x_map, y_map, z_map,
-                                          img.affine)).tolist()
+        return np.asarray(
+            coord_transform(x_map, y_map, z_map, img.affine)
+        ).tolist()
 
     mask = largest_connected_component(mask)
     slice_x, slice_y, slice_z = find_objects(mask.astype(int))[0]
@@ -159,42 +166,48 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     # For the second threshold, we use a mean, as it is much faster,
     # although it is less robust
     second_threshold = np.abs(np.mean(my_map[mask]))
-    second_mask = (np.abs(my_map) > second_threshold)
+    second_mask = np.abs(my_map) > second_threshold
     if second_mask.sum() > 50:
         my_map *= largest_connected_component(second_mask)
     cut_coords = center_of_mass(np.abs(my_map))
     x_map, y_map, z_map = cut_coords + offset
 
     # Return as a list of scalars
-    return np.asarray(coord_transform(x_map, y_map, z_map,
-                                      img.affine)).tolist()
+    return np.asarray(
+        coord_transform(x_map, y_map, z_map, img.affine)
+    ).tolist()
 
 
 def _get_auto_mask_bounds(img):
-    """ Compute the bounds of the data with an automatically computed mask
-    """
+    """Compute the bounds of the data with an automatically computed mask."""
     data = _safe_get_data(img)
     affine = img.affine
-    if hasattr(data, 'mask'):
+    if hasattr(data, "mask"):
         # Masked array
         mask = np.logical_not(data.mask)
     else:
         # The mask will be anything that is fairly different
         # from the values in the corners
-        edge_value = float(data[0, 0, 0] + data[0, -1, 0]
-                            + data[-1, 0, 0] + data[0, 0, -1]
-                            + data[-1, -1, 0] + data[-1, 0, -1]
-                            + data[0, -1, -1] + data[-1, -1, -1]
-                        )
+        edge_value = float(
+            data[0, 0, 0]
+            + data[0, -1, 0]
+            + data[-1, 0, 0]
+            + data[0, 0, -1]
+            + data[-1, -1, 0]
+            + data[-1, 0, -1]
+            + data[0, -1, -1]
+            + data[-1, -1, -1]
+        )
         edge_value /= 6
-        mask = np.abs(data - edge_value) > .005*data.ptp()
-    xmin, xmax, ymin, ymax, zmin, zmax = \
-            get_mask_bounds(new_img_like(img, mask, affine))
+        mask = np.abs(data - edge_value) > 0.005 * data.ptp()
+    xmin, xmax, ymin, ymax, zmin, zmax = get_mask_bounds(
+        new_img_like(img, mask, affine)
+    )
     return (xmin, xmax), (ymin, ymax), (zmin, zmax)
 
 
 def _transform_cut_coords(cut_coords, direction, affine):
-    """Transforms cut_coords back in image space
+    """Transform cut_coords back in image space.
 
     Parameters
     ----------
@@ -214,12 +227,12 @@ def _transform_cut_coords(cut_coords, direction, affine):
 
     """
     # make kwargs
-    axis = 'xyz'.index(direction)
+    axis = "xyz".index(direction)
     kwargs = {}
-    for name in 'xyz':
+    for name in "xyz":
         kwargs[name] = np.zeros(len(cut_coords))
     kwargs[direction] = cut_coords
-    kwargs['affine'] = affine
+    kwargs["affine"] = affine
 
     # We need atleast_1d to make sure that when n_cuts is 1 we do
     # get an iterable
@@ -227,8 +240,8 @@ def _transform_cut_coords(cut_coords, direction, affine):
     return np.atleast_1d(cut_coords)
 
 
-def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
-    """ Find 'good' cross-section slicing positions along a given axis.
+def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
+    """Find 'good' cross-section slicing positions along a given axis.
 
     Parameters
     ----------
@@ -268,61 +281,70 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
 
     """
     # misc
-    if not direction in 'xyz':
+    if direction not in "xyz":
         raise ValueError(
-            "'direction' must be one of 'x', 'y', or 'z'. Got '%s'" % (
-                direction))
-    axis = 'xyz'.index(direction)
+            f"'direction' must be one of 'x', 'y', or 'z'. Got '{direction}'"
+        )
+    axis = "xyz".index(direction)
     img = check_niimg_3d(img)
     affine = img.affine
     if not np.alltrue(np.diag(affine)[:3]):
-        warnings.warn('A non-diagonal affine is found in the given '
-                      'image. Reordering the image to get diagonal affine '
-                      'for finding cuts in the slices.', stacklevel=2)
+        warnings.warn(
+            "A non-diagonal affine is found in the given "
+            "image. Reordering the image to get diagonal affine "
+            "for finding cuts in the slices.",
+            stacklevel=2,
+        )
         # resample is set to avoid issues with an image having a non-diagonal
         # affine and rotation.
-        img = reorder_img(img, resample='nearest')
+        img = reorder_img(img, resample="nearest")
         affine = img.affine
     # note: orig_data is a copy of img._data_cache thanks to np.abs
     orig_data = np.abs(_safe_get_data(img))
     this_shape = orig_data.shape[axis]
 
     if not isinstance(n_cuts, numbers.Number):
-        raise ValueError("The number of cuts (n_cuts) must be an integer "
-                         "greater than or equal to 1. "
-                         "You provided a value of n_cuts=%s. " % n_cuts)
+        raise ValueError(
+            "The number of cuts (n_cuts) must be an integer "
+            "greater than or equal to 1. "
+            f"You provided a value of n_cuts={n_cuts}."
+        )
 
     # BF issue #575: Return all the slices along and axis if this axis
     # is the display mode and there are at least as many requested
     # n_slices as there are slices.
     if n_cuts > this_shape:
-        warnings.warn('Too many cuts requested for the data: '
-                      'n_cuts=%i, data size=%i' % (n_cuts, this_shape))
+        warnings.warn(
+            "Too many cuts requested for the data: "
+            f"n_cuts={n_cuts}, data size={this_shape}."
+        )
         return _transform_cut_coords(np.arange(this_shape), direction, affine)
 
     # To smooth data that might be np.int or np.uint,
     # first convert it to float.
     data = orig_data.copy()
-    if data.dtype.kind in ('i', 'u'):
+    if data.dtype.kind in ("i", "u"):
         data = data.astype(np.float64)
 
-    data = _smooth_array(data, affine, fwhm='fast')
+    data = _smooth_array(data, affine, fwhm="fast")
 
     # to control floating point error problems
     # during given input value "n_cuts"
     epsilon = np.finfo(np.float32).eps
     difference = abs(round(n_cuts) - n_cuts)
-    if round(n_cuts) < 1. or difference > epsilon:
-        message = ("Image has %d slices in direction %s. "
-                   "Therefore, the number of cuts must be between 1 and %d. "
-                   "You provided n_cuts=%s " % (
-                       this_shape, direction, this_shape, n_cuts))
+    if round(n_cuts) < 1.0 or difference > epsilon:
+        message = (
+            f"Image has {this_shape} slices in direction {direction}. "
+            "Therefore, the number of cuts "
+            f"must be between 1 and {this_shape}. "
+            f"You provided n_cuts={n_cuts}."
+        )
         raise ValueError(message)
     else:
         n_cuts = int(round(n_cuts))
 
-    if spacing == 'auto':
-        spacing = max(int(.5 / n_cuts * data.shape[axis]), 1)
+    if spacing == "auto":
+        spacing = max(int(0.5 / n_cuts * data.shape[axis]), 1)
 
     slices = [slice(None, None), slice(None, None), slice(None, None)]
 
@@ -330,8 +352,9 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
 
     for _ in range(n_cuts):
         # Find a peak
-        max_along_axis = np.unravel_index(np.abs(data).argmax(),
-                                          data.shape)[axis]
+        max_along_axis = np.unravel_index(np.abs(data).argmax(), data.shape)[
+            axis
+        ]
 
         # cancel out the surroundings of the peak
         start = max(0, max_along_axis - spacing)
@@ -340,7 +363,7 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
         # We don't actually fully zero the neighborhood, to avoid ending
         # up with fully zeros if n_cuts is too big: we can do multiple
         # passes on the data
-        data[tuple(slices)] *= 1.e-3
+        data[tuple(slices)] *= 1.0e-3
 
         cut_coords.append(max_along_axis)
 
@@ -356,9 +379,10 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
         # cut_coords
         if len(cut_coords) > 1:
             middle_idx = np.argmax(np.diff(cut_coords))
-            slice_middle = int(.5 * (cut_coords[middle_idx]
-                                    + cut_coords[middle_idx + 1]))
-            if not slice_middle in cut_coords:
+            slice_middle = int(
+                0.5 * (cut_coords[middle_idx] + cut_coords[middle_idx + 1])
+            )
+            if slice_middle not in cut_coords:
                 candidates.append(slice_middle)
         if slice_below >= 0:
             # We need positive slice to avoid having negative
@@ -383,8 +407,12 @@ def find_cut_slices(img, direction='z', n_cuts=7, spacing='auto'):
     return _transform_cut_coords(cut_coords, direction, affine)
 
 
-def find_parcellation_cut_coords(labels_img, background_label=0, return_label_names=False,
-                                 label_hemisphere='left'):
+def find_parcellation_cut_coords(
+    labels_img,
+    background_label=0,
+    return_label_names=False,
+    label_hemisphere="left",
+):
     """Return coordinates of center of mass of 3D parcellation atlas.
 
     Parameters
@@ -420,9 +448,11 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
 
     """
     # check label_hemisphere input
-    if label_hemisphere not in ['left', 'right']:
-        raise ValueError("Invalid label_hemisphere name:{0}. Should be one "
-                         "of these 'left' or 'right'.".format(label_hemisphere))
+    if label_hemisphere not in ["left", "right"]:
+        raise ValueError(
+            f"Invalid label_hemisphere name:{label_hemisphere}.\n"
+            "Should be one of these 'left' or 'right'."
+        )
     # Grab data and affine
     labels_img = reorder_img(check_niimg_3d(labels_img))
     labels_data = get_data(labels_img)
@@ -444,14 +474,16 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
         x, y, z = coord_transform(0, 0, 0, np.linalg.inv(labels_affine))
         left_hemi = get_data(labels_img).copy() == cur_label
         right_hemi = get_data(labels_img).copy() == cur_label
-        left_hemi[int(x):] = 0
-        right_hemi[:int(x)] = 0
+        left_hemi[int(x) :] = 0
+        right_hemi[: int(x)] = 0
 
         # Two connected component in both hemispheres
-        if not np.all(left_hemi == False) or np.all(right_hemi == False):
-            if label_hemisphere == 'left':
+        if not np.all(left_hemi == False) or np.all(  # noqa: E712
+            right_hemi == False  # noqa: E712
+        ):
+            if label_hemisphere == "left":
                 cur_img = left_hemi.astype(int)
-            elif label_hemisphere == 'right':
+            elif label_hemisphere == "right":
                 cur_img = right_hemi.astype(int)
 
         # Take the largest connected component
@@ -468,7 +500,10 @@ def find_parcellation_cut_coords(labels_img, background_label=0, return_label_na
         coord_list.append((x, y, z))
 
         # Transform coordinates
-        coords = [coord_transform(i[0], i[1], i[2], labels_affine) for i in coord_list]
+        coords = [
+            coord_transform(i[0], i[1], i[2], labels_affine)
+            for i in coord_list
+        ]
 
     if return_label_names:
         return np.array(coords), label_list
