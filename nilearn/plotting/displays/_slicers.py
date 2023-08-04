@@ -461,13 +461,9 @@ class BaseSlicer:
         ims = []
         to_iterate_over = zip(self.axes.values(), data_2d_list)
         for display_ax, data_2d in to_iterate_over:
-            if data_2d is not None and data_2d.min() is not np.ma.masked:
+            if data_2d is not None:
                 # If data_2d is completely masked, then there is nothing to
-                # plot. Hence, no point to do imshow(). Moreover, we see
-                # problem came up with matplotlib 2.1.0 (issue #9280) when
-                # data is completely masked or with numpy < 1.14
-                # (issue #4595). This work around can be removed when bumping
-                # matplotlib version above 2.1.0
+                # plot. Hence, no point to do imshow().
                 im = display_ax.draw_2d(
                     data_2d, data_bounds, bounding_box, type=type, **kwargs
                 )
