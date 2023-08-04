@@ -1,15 +1,13 @@
 """Functions for surface visualization."""
 import itertools
 import math
+import warnings
 from collections.abc import Sequence
 from warnings import warn
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-import warnings
-
-
 from matplotlib import gridspec
 from matplotlib.cm import ScalarMappable
 from matplotlib.colorbar import make_axes
@@ -22,6 +20,7 @@ from nilearn._utils import check_niimg_3d, fill_doc
 from nilearn.plotting.cm import cold_hot
 from nilearn.plotting.html_surface import _get_vertexcolor, _mix_colormaps
 from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges
+from nilearn.plotting.displays._slicers import _get_cbar_ticks
 from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
 from nilearn.surface.surface import _check_mesh
@@ -405,7 +404,7 @@ def _compute_surf_map_faces_matplotlib(surf_map, faces, avg_method,
     return surf_map_faces
 
 
-def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format):
+def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold):
     """Help for plot_surf with matplotlib engine.
 
     This function computes the tick values for the colorbar.
@@ -415,14 +414,12 @@ def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format):
     # ...unless we are dealing with integers with a small range
     # in this case, we reduce the number of ticks
     if cbar_tick_format == "%i" and vmax - vmin < n_ticks - 1:
-        ticks = np.arange(vmin, vmax + 1)
+        return np.arange(vmin, vmax + 1)
     else:
-        from nilearn.plotting.displays import _get_cbar_ticks
-        ticks = _get_cbar_ticks(vmin, vmax, threshold, nb_ticks)
-    return ticks
+        return _get_cbar_ticks(vmin, vmax, threshold, n_ticks)
 
 
-def _get_cmap_matplotlib(cmap, vmin, vmax, threshold=None):
+def _get_cmap_matplotlib(cmap, vmin, vmax, cbar_tick_format, threshold=None):
     """Help for plot_surf with matplotlib engine.
 
     This function returns the colormap.
@@ -433,8 +430,8 @@ def _get_cmap_matplotlib(cmap, vmin, vmax, threshold=None):
     if threshold is not None:
         if cbar_tick_format == "%i" and int(threshold) != threshold:
             warnings.warn("You provided a non integer threshold "
-                            "but configured the colorbar to use "
-                            "integer formatting.")
+                          "but configured the colorbar to use "
+                          "integer formatting.")
         # set colors to grey for absolute values < threshold
         istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
         istop = int(norm(threshold, clip=True) * (our_cmap.N - 1))
@@ -601,8 +598,12 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
             cbar_vmin = cbar_vmin if cbar_vmin is not None else vmin
             cbar_vmax = cbar_vmax if cbar_vmax is not None else vmax
             ticks = _get_ticks_matplotlib(cbar_vmin, cbar_vmax,
-                                          cbar_tick_format)
-            our_cmap, norm = _get_cmap_matplotlib(cmap, vmin, vmax, threshold)
+                                          cbar_tick_format, threshold)
+            our_cmap, norm = _get_cmap_matplotlib(cmap,
+                                                  vmin,
+                                                  vmax,
+                                                  cbar_tick_format,
+                                                  threshold)
             bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
 
             # we need to create a proxy mappable

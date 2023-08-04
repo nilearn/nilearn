@@ -223,42 +223,6 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
     return display
 
 
-def _get_cropped_cbar_ticks(cbar_vmin, cbar_vmax,
-                            threshold=None, n_ticks=5):
-    """Helper function for _crop_colobar.
-    Returns ticks for cropped colorbars.
-
-        cbar_tick_locs = cbar.locator.locs
-        new_tick_locs = _get_cropped_cbar_ticks(
-        cbar_vmin, cbar_vmax, threshold,
-        n_ticks=len(cbar_tick_locs))
-        cbar.set_ticks(new_tick_locs, update_ticks=True)
-    """
-    new_tick_locs = np.linspace(cbar_vmin, cbar_vmax, n_ticks)
-    if threshold is not None:
-        # Case where cbar is either all positive or all negative
-        if 0 <= cbar_vmin <= cbar_vmax or cbar_vmin <= cbar_vmax <= 0:
-            idx_closest = np.argmin([abs(abs(new_tick_locs) - threshold)
-                                     for tick in new_tick_locs])
-            new_tick_locs[idx_closest] = threshold
-        else:
-            # Case where we do a symmetric thresholding within an
-            # asymmetric cbar and both threshold values are within bounds
-            if cbar_vmin <= -threshold <= threshold <= cbar_vmax:
-                from .displays import _get_cbar_ticks
-                new_tick_locs = _get_cbar_ticks(
-                    cbar_vmin, cbar_vmax, threshold,
-                    nb_ticks=len(new_tick_locs))
-            # Case where one of the threshold values is out of bounds
-            else:
-                idx_closest = np.argmin([abs(new_tick_locs - threshold)
-                                         for tick in new_tick_locs])
-                new_tick_locs[idx_closest] = (
-                    -threshold if threshold > cbar_vmax else threshold)
-    return new_tick_locs
-
-
-
 @fill_doc
 def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
              figure=None, axes=None, title=None, threshold=None,
