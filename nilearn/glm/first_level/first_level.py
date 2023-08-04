@@ -240,7 +240,7 @@ def _check_trial_type(events):
 
     Parameters
     ----------
-    events : :obj:`list` of :obj:`str` or :obj:`pathlib.Path``. 
+    events : :obj:`list` of :obj:`str` or :obj:`pathlib.Path``.
               A list of paths of events.tsv files.
 
     """
