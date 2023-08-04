@@ -214,13 +214,47 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         display.annotate(decimals=decimals)
     if draw_cross:
         display.draw_cross()
-    if title is not None and not title == '':
+    if title is not None and title != '':
         display.title(title)
+    if hasattr(display, '_cbar'):
+        cbar = display._cbar
+        new_tick_locs = _get_cropped_cbar_ticks(cbar.vmin,
+                                                cbar.vmax,
+                                                threshold,        
+                                                n_ticks=len(cbar.locator.locs))
+        cbar.set_ticks(new_tick_locs, update_ticks=True)
     if output_file is not None:
         display.savefig(output_file)
         display.close()
         display = None
     return display
+
+
+def _get_cropped_cbar_ticks(cbar_vmin, cbar_vmax, threshold=None, n_ticks=5):
+    """Helper function for _crop_colobar.
+    Returns ticks for cropped colorbars.
+    """
+    new_tick_locs = np.linspace(cbar_vmin, cbar_vmax, n_ticks)
+    if threshold is not None:
+        # Case where cbar is either all positive or all negative
+        if 0 <= cbar_vmin <= cbar_vmax or cbar_vmin <= cbar_vmax <= 0:
+            idx_closest = np.argmin([abs(abs(new_tick_locs) - threshold)
+                                     for _ in new_tick_locs])
+            new_tick_locs[idx_closest] = threshold
+        # Case where we do a symmetric thresholding within an
+        # asymmetric cbar and both threshold values are within bounds
+        elif cbar_vmin <= -threshold <= threshold <= cbar_vmax:
+                from .displays._slicers import _get_cbar_ticks
+                new_tick_locs = _get_cbar_ticks(
+                    cbar_vmin, cbar_vmax, threshold,
+                    nb_ticks=len(new_tick_locs))
+        # Case where one of the threshold values is out of bounds
+        else:
+            idx_closest = np.argmin([abs(new_tick_locs - threshold)
+                                     for _ in new_tick_locs])
+            new_tick_locs[idx_closest] = (
+                -threshold if threshold > cbar_vmax else threshold)
+    return new_tick_locs
 
 
 @fill_doc

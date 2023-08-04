@@ -529,7 +529,11 @@ class BaseSlicer:
             self._colorbar_ax.set_axis_bgcolor("w")
 
         our_cmap = plt.get_cmap(cmap)
-        ticks = _get_cbar_ticks(norm.vmin, norm.vmax, offset, nb_ticks=5)
+        # edge case where the data has a single value
+        # yields a cryptic matplotlib error message
+        # when trying to plot the color bar
+        nb_ticks = 5 if cbar_vmin != cbar_vmax else 1
+        ticks = _get_cbar_ticks(cbar_vmin, cbar_vmax, offset, nb_ticks)
         bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
 
         # some colormap hacking
