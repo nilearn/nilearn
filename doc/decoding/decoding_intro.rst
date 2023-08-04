@@ -1,6 +1,3 @@
-.. Remove doctest: +SKIP at LDA while dropping support for sklearn older than
-    versions 0.17
-
 .. _decoding_intro:
 
 
@@ -23,12 +20,7 @@ to capture diffusion mapping.
 .. note::
   This documentation only aims at explaining the necessary concepts and common
   pitfalls of decoding analysis. For an introduction on the code to use please
-  refer to : :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
-
-
-.. contents:: **Contents**
-    :local:
-    :depth: 1
+  refer to : :ref:`sphx_glr_auto_examples_00_tutorials_plot_decoding_tutorial.py`
 
 
 Loading and preparing the data
@@ -43,14 +35,14 @@ seeing from the :term:`fMRI` activity recorded in regions of the ventral visual 
 Significant prediction shows that the signal in the region contains
 information on the corresponding category.
 
-.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_004.png
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_007.png
    :target: ../auto_examples/02_decoding/plot_haxby_stimuli.html
    :scale: 30
    :align: left
 
    Face stimuli
 
-.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_002.png
+.. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_004.png
    :target: ../auto_examples/02_decoding/plot_haxby_stimuli.html
    :scale: 30
    :align: left
@@ -104,7 +96,7 @@ Loading the data into nilearn
 
    The documentation here just gives the big idea. A full code example,
    with explanation, can be found on
-   :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
+   :ref:`sphx_glr_auto_examples_00_tutorials_plot_decoding_tutorial.py`
 
 * **Starting an environment**: Launch IPython via "ipython --matplotlib"
   in a terminal, or use the Jupyter notebook.
@@ -133,7 +125,7 @@ Loading the data into nilearn
   * :ref:`masking`
     To better control this process of spatial masking and add additional signal
     processing steps (smoothing, filtering, standardizing...), we could
-    explicitly define a masker :  :class:`nilearn.input_data.NiftiMasker`.
+    explicitly define a masker :  :class:`nilearn.maskers.NiftiMasker`.
     This object extracts :term:`voxels<voxel>` belonging to a given spatial mask and converts
     their signal to a 2D data matrix with a shape (n_timepoints, n_voxels)
     (see :ref:`mask_4d_2_3d` for a discussion on using
@@ -195,12 +187,16 @@ two lines. The additional `standardize=True` argument adds a normalization
 of images signal to a zero mean and unit variance, which will improve
 performance of most estimators.
 
-    >>> from nilearn.decoding import Decoder # doctest: +SKIP
-    >>> decoder = Decoder(estimator='svc', mask=mask_filename) # doctest: +SKIP
+.. code-block:: default
+
+     from nilearn.decoding import Decoder
+     decoder = Decoder(estimator='svc', mask=mask_filename)
 
 Then we can fit it on the images and the conditions we chose before.
 
-    >>> decoder.fit(fmri_niimgs, conditions) # doctest: +SKIP
+.. code-block:: default
+
+     decoder.fit(fmri_niimgs, conditions)
 
 This decoder can now be used to predict conditions for new images !
 Be careful though, as we warned you, predicting on images that were used to
@@ -232,11 +228,13 @@ use 4 folds to `fit` your estimator, and 1 to `predict` and measure the errors
 made by your estimators. You repeat this for every combination of folds, and get
 5 prediction "scores", one for each fold.
 
-During the `fit`, :class:`nilearn.decoding.Decoder` object implicitely used a
+During the `fit`, :class:`nilearn.decoding.Decoder` object implicitly used a
 cross-validation: Stratified K-fold by default. You can easily inspect
 the prediction "score" it got in each fold.
 
-    >>> print(decoder.cv_scores_) # doctest: +SKIP
+.. code-block:: default
+
+     print(decoder.cv_scores_)
 
 
 Choosing a good cross-validation strategy
@@ -268,7 +266,7 @@ groups=`session_labels` will use one session as test set.
 
 .. note::
   Full code example can be found at :
-  :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
+  :ref:`sphx_glr_auto_examples_00_tutorials_plot_decoding_tutorial.py`
 
 
 Choice of the prediction accuracy measure
@@ -282,8 +280,8 @@ the number of total errors. It is not always a sensible metric,
 especially in the case of very imbalanced classes, as in such situations
 choosing the dominant class can achieve a low number of errors.
 
-Other metrics, such as the :term:`AUC` (Area Under the Curve, for the 
-:term:`ROC`: the Receiver Operating Characteristic), can be used through the 
+Other metrics, such as the :term:`AUC` (Area Under the Curve, for the
+:term:`ROC`: the Receiver Operating Characteristic), can be used through the
 `scoring` argument of :class:`nilearn.decoding.Decoder`.
 
 .. seealso::
@@ -343,7 +341,7 @@ coefficients of best models for each class in `decoder.coef_img_`.
 
 .. note::
   Full code for the above can be found on
-  :ref:`sphx_glr_auto_examples_plot_decoding_tutorial.py`
+  :ref:`sphx_glr_auto_examples_00_tutorials_plot_decoding_tutorial.py`
 
 
 .. seealso::

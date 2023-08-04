@@ -1,0 +1,31 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.2.4
+=====
+
+**Released April 2016**
+
+The ``0.2.4`` is a small release focused on documentation for teaching.
+
+New
+---
+
+- The path given to the ``memory`` argument of object now have their "~" expanded to the homedir.
+
+- Display object created by plotting now uniformly expose an ``add_markers`` method.
+
+- Function :func:`~plotting.plot_connectome` now plots connectome with colorbars.
+
+- New function :func:`~image.resample_to_img` to resample one image on another one (just resampling / interpolation, no coregistration).
+
+Changes
+-------
+
+- Atlas fetcher :func:`~datasets.fetch_atlas_msdl` now returns directly labels of the regions in output variable ``labels`` and its coordinates in output variable ``region_coords`` and its type of network in ``networks``.
+
+- The output variable name ``regions`` is now changed to ``maps`` in AAL atlas fetcher :func:`~datasets.fetch_atlas_aal`.
+
+- AAL atlas now returns directly its labels in variable ``labels`` and its index values in variable ``indices``.

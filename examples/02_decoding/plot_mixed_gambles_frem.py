@@ -1,6 +1,6 @@
 """
-FREM on Jimura et al "mixed gambles" dataset.
-==================================================
+FREM on Jimura et al "mixed gambles" dataset
+============================================
 
 In this example, we use fast ensembling of regularized models (FREM) to
 solve a regression problem, predicting the gain level corresponding to each
@@ -15,8 +15,9 @@ To have more details, see: :ref:`frem`.
 
 #############################################################################
 # Load the data from the Jimura mixed-gamble experiment
-# ---------------------------------------------------------------------------
+# -----------------------------------------------------
 from nilearn.datasets import fetch_mixed_gambles
+
 data = fetch_mixed_gambles(n_subjects=16)
 
 zmap_filenames = data.zmaps
@@ -25,20 +26,27 @@ mask_filename = data.mask_img
 
 #############################################################################
 # Fit FREM
-# ---------------------------------------------------------------------------
+# --------
 # We compare both of these models to a pipeline ensembling many models
 #
 from nilearn.decoding import FREMRegressor
-frem = FREMRegressor('svr', cv=10)
+
+frem = FREMRegressor("svr", cv=10, standardize="zscore_sample")
 
 frem.fit(zmap_filenames, behavioral_target)
 
 # Visualize FREM weights
-# ---------------------------------------------------------------------------
+# ----------------------
 
 from nilearn.plotting import plot_stat_map
-plot_stat_map(frem.coef_img_['beta'], title="FREM", display_mode="yz",
-              cut_coords=[20, -2], threshold=.2)
+
+plot_stat_map(
+    frem.coef_img_["beta"],
+    title="FREM",
+    display_mode="yz",
+    cut_coords=[20, -2],
+    threshold=0.2,
+)
 
 #############################################################################
 # We can observe that the coefficients map learnt by FREM is structured,
@@ -51,7 +59,7 @@ plot_stat_map(frem.coef_img_['beta'], title="FREM", display_mode="yz",
 
 #############################################################################
 # Example use of TV-L1 SpaceNet
-# ---------------------------------------------------------------------------
+# -----------------------------
 # :ref:`SpaceNet<space_net>` is another method available in Nilearn to decode
 # with spatially sparse models. Depending on the penalty that is used,
 # it yields either very structured maps (TV-L1) or unstructured maps
@@ -65,9 +73,14 @@ from nilearn.decoding import SpaceNetRegressor
 # We use the regressor object since the task is to predict a continuous
 # variable (gain of the gamble).
 
-tv_l1 = SpaceNetRegressor(mask=mask_filename, penalty="tv-l1",
-                          eps=1e-1,  # prefer large alphas
-                          memory="nilearn_cache")
+tv_l1 = SpaceNetRegressor(
+    mask=mask_filename,
+    penalty="tv-l1",
+    eps=1e-1,  # prefer large alphas
+    memory="nilearn_cache",
+)
 # tv_l1.fit(zmap_filenames, behavioral_target)
 # plot_stat_map(tv_l1.coef_img_, title="TV-L1", display_mode="yz",
 #               cut_coords=[20, -2])
+
+# sphinx_gallery_dummy_images=1

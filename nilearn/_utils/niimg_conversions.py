@@ -1,39 +1,36 @@
-"""
-Conversion utilities.
-"""
-# Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
-# License: simplified BSD
-import warnings
-import os.path
+"""Conversion utilities."""
 import glob
-
-import nilearn as ni
-import numpy as np
 import itertools
+import os.path
 
+# Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
+import warnings
+
+import numpy as np
 from joblib import Memory
 
-from .cache_mixin import cache
-from .niimg import _safe_get_data, load_niimg
-from .path_finding import _resolve_globbing
+import nilearn as ni
 
+from .cache_mixin import cache
 from .exceptions import DimensionError
-from .niimg import _get_data
+from .helpers import stringify_path
+from .niimg import _get_data, _safe_get_data, load_niimg
+from .path_finding import _resolve_globbing
 
 
 def _check_fov(img, affine, shape):
-    """ Return True if img's field of view correspond to given
-        shape and affine, False elsewhere.
-    """
+    """Return True if img's field of view correspond to given \
+    shape and affine, False elsewhere."""
     img = check_niimg(img)
-    return (img.shape[:3] == shape and
-            np.allclose(img.affine, affine))
+    return img.shape[:3] == shape and np.allclose(img.affine, affine)
 
 
 def _check_same_fov(*args, **kwargs):
-    """Returns True if provided images has the same field of view (shape and
-    affine). Returns False or raise an error elsewhere, depending on the
-    `raise_error` argument. This function can take an unlimited number of
+    """Return True if provided images have the same field of view (shape and \
+    affine) and return False or raise an error elsewhere, depending on the \
+    `raise_error` argument.
+
+    This function can take an unlimited number of
     images as arguments or keyword arguments and raise a user-friendly
     ValueError if asked.
 
@@ -51,21 +48,28 @@ def _check_same_fov(*args, **kwargs):
         If True, an error will be raised in case of error.
 
     """
-    raise_error = kwargs.pop('raise_error', False)
+    raise_error = kwargs.pop("raise_error", False)
     for i, arg in enumerate(args):
-        kwargs['img_#%i' % i] = arg
+        kwargs[f"img_#{i}"] = arg
     errors = []
     for (a_name, a_img), (b_name, b_img) in itertools.combinations(
-            kwargs.items(), 2):
+        kwargs.items(), 2
+    ):
         if not a_img.shape[:3] == b_img.shape[:3]:
-            errors.append((a_name, b_name, 'shape'))
+            errors.append((a_name, b_name, "shape"))
         if not np.allclose(a_img.affine, b_img.affine):
-            errors.append((a_name, b_name, 'affine'))
+            errors.append((a_name, b_name, "affine"))
     if len(errors) > 0 and raise_error:
-        raise ValueError('Following field of view errors were detected:\n' +
-                         '\n'.join(['- %s and %s do not have the same %s' % e
-                                    for e in errors]))
-    return (len(errors) == 0)
+        raise ValueError(
+            "Following field of view errors were detected:\n"
+            + "\n".join(
+                [
+                    f"- {e[0]} and {e[1]} do not have the same {e[2]}"
+                    for e in errors
+                ]
+            )
+        )
+    return len(errors) == 0
 
 
 def _index_img(img, index):
@@ -73,15 +77,21 @@ def _index_img(img, index):
 
     """Helper function for check_niimg_4d."""
     return new_img_like(
-        img, _get_data(img)[:, :, :, index], img.affine,
-        copy_header=True)
+        img, _get_data(img)[:, :, :, index], img.affine, copy_header=True
+    )
 
 
-def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
-                      target_fov=None, dtype=None,
-                      memory=Memory(location=None),
-                      memory_level=0, verbose=0):
-    """Iterate over a list of niimgs and do sanity checks and resampling
+def _iter_check_niimg(
+    niimgs,
+    ensure_ndim=None,
+    atleast_4d=False,
+    target_fov=None,
+    dtype=None,
+    memory=Memory(location=None),
+    memory_level=0,
+    verbose=0,
+):
+    """Iterate over a list of niimgs and do sanity checks and resampling.
 
     Parameters
     ----------
@@ -118,7 +128,7 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
         Indicate the level of verbosity. By default, nothing is printed.
         Default=0.
 
-    See also
+    See Also
     --------
         check_niimg, check_niimg_3d, check_niimg_4d
 
@@ -135,8 +145,11 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
     for i, niimg in enumerate(niimgs):
         try:
             niimg = check_niimg(
-                niimg, ensure_ndim=ndim_minus_one, atleast_4d=atleast_4d,
-                dtype=dtype)
+                niimg,
+                ensure_ndim=ndim_minus_one,
+                atleast_4d=atleast_4d,
+                dtype=dtype,
+            )
             if i == 0:
                 ndim_minus_one = len(niimg.shape)
                 if ref_fov is None:
@@ -146,35 +159,46 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
             if not _check_fov(niimg, ref_fov[0], ref_fov[1]):
                 if target_fov is not None:
                     from nilearn import image  # we avoid a circular import
+
                     if resample_to_first_img:
-                        warnings.warn('Affine is different across subjects.'
-                                      ' Realignement on first subject '
-                                      'affine forced')
-                    niimg = cache(image.resample_img, memory,
-                                  func_memory_level=2,
-                                  memory_level=memory_level)(
-                            niimg, target_affine=ref_fov[0],
-                            target_shape=ref_fov[1])
+                        warnings.warn(
+                            "Affine is different across subjects."
+                            " Realignement on first subject "
+                            "affine forced"
+                        )
+                    niimg = cache(
+                        image.resample_img,
+                        memory,
+                        func_memory_level=2,
+                        memory_level=memory_level,
+                    )(niimg, target_affine=ref_fov[0], target_shape=ref_fov[1])
                 else:
                     raise ValueError(
                         "Field of view of image #%d is different from "
                         "reference FOV.\n"
                         "Reference affine:\n%r\nImage affine:\n%r\n"
                         "Reference shape:\n%r\nImage shape:\n%r\n"
-                        % (i, ref_fov[0], niimg.affine, ref_fov[1],
-                           niimg.shape))
+                        % (
+                            i,
+                            ref_fov[0],
+                            niimg.affine,
+                            ref_fov[1],
+                            niimg.shape,
+                        )
+                    )
             yield niimg
         except DimensionError as exc:
             # Keep track of the additional dimension in the error
             exc.increment_stack_counter()
             raise
         except TypeError as exc:
-            img_name = ''
+            img_name = ""
             if isinstance(niimg, str):
-                img_name = " (%s) " % niimg
+                img_name = f" ({niimg}) "
 
-            exc.args = (('Error encountered while loading image #%d%s'
-                         % (i, img_name),) + exc.args)
+            exc.args = (
+                f"Error encountered while loading image #{i}{img_name}",
+            ) + exc.args
             raise
 
     # Raising an error if input generator is empty.
@@ -182,18 +206,25 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
         raise ValueError("Input niimgs list is empty.")
 
 
-def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
-                return_iterator=False,
-                wildcards=True):
-    """Check that niimg is a proper 3D/4D niimg. Turn filenames into objects.
+def check_niimg(
+    niimg,
+    ensure_ndim=None,
+    atleast_4d=False,
+    dtype=None,
+    return_iterator=False,
+    wildcards=True,
+):
+    """Check that niimg is a proper 3D/4D niimg.
+
+    Turn filenames into objects.
 
     Parameters
     ----------
     niimg : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
-        If niimg is a string, consider it as a path to Nifti image and
-        call nibabel.load on it. The '~' symbol is expanded to the user home
-        folder.
+        See :ref:`extracting_data`.
+        If niimg is a string or pathlib.Path, consider it as a path to
+        Nifti image and call nibabel.load on it. The '~' symbol is expanded to
+        the user home folder.
         If it is an object, check if the affine attribute present and that
         nilearn.image.get_data returns a result, raise TypeError otherwise.
 
@@ -240,12 +271,14 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
 
     Its application is idempotent.
 
-    See also
+    See Also
     --------
         _iter_check_niimg, check_niimg_3d, check_niimg_4d
 
     """
     from ..image import new_img_like  # avoid circular imports
+
+    niimg = stringify_path(niimg)
 
     if isinstance(niimg, str):
         if wildcards and ni.EXPAND_PATH_WILDCARDS:
@@ -261,22 +294,25 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
             # No files found by glob
             elif glob.has_magic(niimg):
                 # No files matching the glob expression, warn the user
-                message = ("No files matching the entered niimg expression: "
-                            "'%s'.\n You may have left wildcards usage "
-                           "activated: please set the global constant "
-                           "'nilearn.EXPAND_PATH_WILDCARDS' to False to "
-                           "deactivate this behavior.") % niimg
+                message = (
+                    "No files matching the entered niimg expression: "
+                    "'%s'.\n You may have left wildcards usage "
+                    "activated: please set the global constant "
+                    "'nilearn.EXPAND_PATH_WILDCARDS' to False to "
+                    "deactivate this behavior."
+                ) % niimg
                 raise ValueError(message)
             else:
-                raise ValueError("File not found: '%s'" % niimg)
+                raise ValueError(f"File not found: '{niimg}'")
         elif not os.path.exists(niimg):
-            raise ValueError("File not found: '%s'" % niimg)
+            raise ValueError(f"File not found: '{niimg}'")
 
     # in case of an iterable
     if hasattr(niimg, "__iter__") and not isinstance(niimg, str):
         if return_iterator:
-            return _iter_check_niimg(niimg, ensure_ndim=ensure_ndim,
-                                     dtype=dtype)
+            return _iter_check_niimg(
+                niimg, ensure_ndim=ensure_ndim, dtype=dtype
+            )
         return concat_niimgs(niimg, ensure_ndim=ensure_ndim, dtype=dtype)
 
     # Otherwise, it should be a filename or a SpatialImage, we load it
@@ -289,7 +325,7 @@ def check_niimg(niimg, ensure_ndim=None, atleast_4d=False, dtype=None,
         niimg = new_img_like(niimg, data[:, :, :, 0], affine)
     if atleast_4d and len(niimg.shape) == 3:
         data = _get_data(niimg).view()
-        data.shape = data.shape + (1, )
+        data.shape = data.shape + (1,)
         niimg = new_img_like(niimg, data, niimg.affine)
 
     if ensure_ndim is not None and len(niimg.shape) != ensure_ndim:
@@ -307,7 +343,7 @@ def check_niimg_3d(niimg, dtype=None):
     Parameters
     ----------
     niimg : Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it.
         If it is an object, check if the affine attribute present and that
@@ -344,7 +380,7 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
     Parameters
     ----------
     niimg : 4D Niimg-like object
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         If niimgs is an iterable, checks if data is really 4D. Then,
         considering that it is a list of niimg and load them one by one.
         If niimg is a string, consider it as a path to Nifti image and
@@ -376,13 +412,20 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
     Its application is idempotent.
 
     """
-    return check_niimg(niimg, ensure_ndim=4, return_iterator=return_iterator,
-                       dtype=dtype)
+    return check_niimg(
+        niimg, ensure_ndim=4, return_iterator=return_iterator, dtype=dtype
+    )
 
 
-def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
-                  memory=Memory(location=None), memory_level=0,
-                  auto_resample=False, verbose=0):
+def concat_niimgs(
+    niimgs,
+    dtype=np.float32,
+    ensure_ndim=None,
+    memory=Memory(location=None),
+    memory_level=0,
+    auto_resample=False,
+    verbose=0,
+):
     """Concatenate a list of 3D/4D niimgs of varying lengths.
 
     The niimgs list can contain niftis/paths to images of varying dimensions
@@ -392,7 +435,7 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
     Parameters
     ----------
     niimgs : iterable of Niimg-like objects or glob pattern
-        See http://nilearn.github.io/manipulating_images/input_output.html
+        See :ref:`extracting_data`.
         Niimgs to concatenate.
 
     dtype : numpy dtype, optional
@@ -432,7 +475,7 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
     """
     from ..image import new_img_like  # avoid circular imports
 
-    target_fov = 'first' if auto_resample else None
+    target_fov = "first" if auto_resample else None
 
     # We remove one to the dimensionality because of the list is one dimension.
     ndim = None
@@ -449,7 +492,7 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
     try:
         first_niimg = check_niimg(next(literator), ensure_ndim=ndim)
     except StopIteration:
-        raise TypeError('Cannot concatenate empty objects')
+        raise TypeError("Cannot concatenate empty objects")
     except DimensionError as exc:
         # Keep track of the additional dimension in the error
         exc.increment_stack_counter()
@@ -461,8 +504,10 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
         ndim = len(first_niimg.shape)
 
     if ndim not in [3, 4]:
-        raise TypeError('Concatenated images must be 3D or 4D. You gave a '
-                        'list of %dD images' % ndim)
+        raise TypeError(
+            "Concatenated images must be 3D or 4D. You gave a "
+            f"list of {ndim}D images"
+        )
 
     lengths = [first_niimg.shape[-1] if ndim == 4 else 1]
     for niimg in literator:
@@ -476,23 +521,32 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
         lengths.append(niimg.shape[-1] if ndim == 4 else 1)
 
     target_shape = first_niimg.shape[:3]
-    if dtype == None:
+    if dtype is None:
         dtype = _get_data(first_niimg).dtype
-    data = np.ndarray(target_shape + (sum(lengths), ),
-                      order="F", dtype=dtype)
+    data = np.ndarray(target_shape + (sum(lengths),), order="F", dtype=dtype)
     cur_4d_index = 0
-    for index, (size, niimg) in enumerate(zip(lengths, _iter_check_niimg(
-            iterator, atleast_4d=True, target_fov=target_fov,
-            memory=memory, memory_level=memory_level))):
-
+    for index, (size, niimg) in enumerate(
+        zip(
+            lengths,
+            _iter_check_niimg(
+                iterator,
+                atleast_4d=True,
+                target_fov=target_fov,
+                memory=memory,
+                memory_level=memory_level,
+            ),
+        )
+    ):
         if verbose > 0:
             if isinstance(niimg, str):
-                nii_str = "image " + niimg
+                nii_str = f"image {niimg}"
             else:
-                nii_str = "image #" + str(index)
-            print("Concatenating {0}: {1}".format(index + 1, nii_str))
+                nii_str = f"image #{index}"
+            print(f"Concatenating {index + 1}: {nii_str}")
 
-        data[..., cur_4d_index:cur_4d_index + size] = _get_data(niimg)
+        data[..., cur_4d_index : cur_4d_index + size] = _get_data(niimg)
         cur_4d_index += size
 
-    return new_img_like(first_niimg, data, first_niimg.affine, copy_header=True)
+    return new_img_like(
+        first_niimg, data, first_niimg.affine, copy_header=True
+    )

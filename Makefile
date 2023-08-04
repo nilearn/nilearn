@@ -1,4 +1,4 @@
-# simple makefile to simplify repetetive build env management tasks under posix
+# simple makefile to simplify repetitive build env management tasks under posix
 
 # caution: testing won't work on windows, see README
 
@@ -64,3 +64,11 @@ doc:
 .PHONY : pdf
 pdf:
 	make -C doc pdf
+
+.PHONY : lint
+lint:
+	isort --profile black --settings-path pyproject.toml nilearn examples maint_tools
+	flynt .
+	black --config pyproject.toml nilearn examples maint_tools
+	codespell --toml pyproject.toml
+	flake8 --config .flake8 --black-config pyproject.toml nilearn examples maint_tools

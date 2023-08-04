@@ -1,6 +1,6 @@
 """
 Understanding NiftiMasker and mask computation
-==================================================
+==============================================
 
 In this example, the Nifti masker is used to automatically compute a mask.
 
@@ -15,11 +15,9 @@ In addition, we show here how to tweak the different parameters of the
 underlying routine that extract masks from EPI
 :func:`nilearn.masking.compute_epi_mask`.
 
-"""
+.. include:: ../../../examples/masker_note.rst
 
-from nilearn.input_data import NiftiMasker
-import nilearn.image as image
-from nilearn.plotting import plot_roi, plot_epi, show
+"""
 
 ###############################################################################
 # Computing a mask from the background
@@ -30,26 +28,31 @@ from nilearn.plotting import plot_roi, plot_epi, show
 #
 # With data that has already been masked, this will work well, as it lies
 # on a homogeneous background
-
-# Load Miyawaki dataset
+import nilearn.image as image
 from nilearn import datasets
+from nilearn.maskers import NiftiMasker
+from nilearn.plotting import plot_epi, plot_roi, show
+
 miyawaki_dataset = datasets.fetch_miyawaki2008()
 
 # print basic information on the dataset
-print('First functional nifti image (4D) is located at: %s' %
-      miyawaki_dataset.func[0])  # 4D data
+print(
+    "First functional nifti image (4D) is located "
+    f"at: {miyawaki_dataset.func[0]}"
+)
 
 miyawaki_filename = miyawaki_dataset.func[0]
 miyawaki_mean_img = image.mean_img(miyawaki_filename)
-plot_epi(miyawaki_mean_img, title='Mean EPI image')
+plot_epi(miyawaki_mean_img, title="Mean EPI image")
 ###############################################################################
 # A NiftiMasker with the default strategy
 masker = NiftiMasker()
 masker.fit(miyawaki_filename)
 
 # Plot the generated mask using the mask_img_ attribute
-plot_roi(masker.mask_img_, miyawaki_mean_img,
-         title="Mask from already masked data")
+plot_roi(
+    masker.mask_img_, miyawaki_mean_img, title="Mask from already masked data"
+)
 
 ###############################################################################
 # Plot the generated mask using the .generate_report method
@@ -70,16 +73,17 @@ epi_filename = dataset.func[0]
 
 # Restrict to 100 frames to speed up computation
 from nilearn.image import index_img
+
 epi_img = index_img(epi_filename, slice(0, 100))
 
 # To display the background
 mean_img = image.mean_img(epi_img)
-plot_epi(mean_img, title='Mean EPI image')
+plot_epi(mean_img, title="Mean EPI image")
 
 ###############################################################################
 # Simple mask extraction from EPI images
 # We need to specify an 'epi' mask_strategy, as this is raw EPI data
-masker = NiftiMasker(mask_strategy='epi')
+masker = NiftiMasker(mask_strategy="epi")
 masker.fit(epi_img)
 report = masker.generate_report()
 report
@@ -93,7 +97,7 @@ report
 # operations on the outer voxel layers of the mask, which can for example
 # remove remaining
 # skull parts in the image.
-masker = NiftiMasker(mask_strategy='epi', mask_args=dict(opening=10))
+masker = NiftiMasker(mask_strategy="epi", mask_args=dict(opening=10))
 masker.fit(epi_img)
 report = masker.generate_report()
 report
@@ -109,9 +113,10 @@ report
 # lower cutoff to enforce selection of those voxels that appear as bright
 # in the EPI image.
 
-masker = NiftiMasker(mask_strategy='epi',
-                     mask_args=dict(upper_cutoff=.9, lower_cutoff=.8,
-                                    opening=False))
+masker = NiftiMasker(
+    mask_strategy="epi",
+    mask_args=dict(upper_cutoff=0.9, lower_cutoff=0.8, opening=False),
+)
 masker.fit(epi_img)
 report = masker.generate_report()
 report
@@ -120,10 +125,12 @@ report
 # Computing the mask from the MNI template
 ###############################################################################
 #
-# A mask can also be computed from the MNI gray matter template. In this
-# case, it is resampled to the target image
+# A mask can also be computed from the MNI template. In this case, it is
+# resampled to the target image. Three options are available:
+# 'whole-brain-template', 'gm-template', and 'wm-template' depending on whether
+# the whole-brain, gray matter, or white matter template should be used.
 
-masker = NiftiMasker(mask_strategy='template')
+masker = NiftiMasker(mask_strategy="whole-brain-template")
 masker.fit(epi_img)
 report = masker.generate_report()
 report
@@ -142,7 +149,7 @@ report
 
 import numpy as np
 
-masker = NiftiMasker(mask_strategy='epi', target_affine=np.eye(3) * 8)
+masker = NiftiMasker(mask_strategy="epi", target_affine=np.eye(3) * 8)
 masker.fit(epi_img)
 report = masker.generate_report()
 report
@@ -154,16 +161,22 @@ report
 # Extract time series
 
 # trended vs detrended
-trended = NiftiMasker(mask_strategy='epi')
-detrended = NiftiMasker(mask_strategy='epi', detrend=True)
+trended = NiftiMasker(mask_strategy="epi")
+detrended = NiftiMasker(mask_strategy="epi", detrend=True)
 trended_data = trended.fit_transform(epi_img)
 detrended_data = detrended.fit_transform(epi_img)
 
 # The timeseries are numpy arrays, so we can manipulate them with numpy
 
-print("Trended: mean %.2f, std %.2f" %
-      (np.mean(trended_data), np.std(trended_data)))
-print("Detrended: mean %.2f, std %.2f" %
-      (np.mean(detrended_data), np.std(detrended_data)))
+print(
+    f"Trended: mean {np.mean(trended_data):.2f}, "
+    f"std {np.std(trended_data):.2f}"
+)
+print(
+    f"Detrended: mean {np.mean(detrended_data):.2f}, "
+    f"std {np.std(detrended_data):.2f}"
+)
 
 show()
+
+# sphinx_gallery_dummy_images=2

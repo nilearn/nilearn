@@ -1,5 +1,4 @@
-"""
-This module is for contrast computation and operation on contrast to
+"""Contrast computation and operation on contrast to \
 obtain fixed effect results.
 
 Author: Bertrand Thirion, Martin Perez-Guevara, Ana Luisa Pinho 2020
@@ -8,18 +7,18 @@ Author: Bertrand Thirion, Martin Perez-Guevara, Ana Luisa Pinho 2020
 from warnings import warn
 
 import numpy as np
-import scipy.stats as sps
 import pandas as pd
+import scipy.stats as sps
 
-from nilearn.input_data import NiftiMasker
-from nilearn._utils.glm import z_score
+from nilearn.glm._utils import z_score
+from nilearn.maskers import NiftiMasker
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
 
 
 def expression_to_contrast_vector(expression, design_columns):
-    """ Converts a string describing a contrast to a contrast vector
+    """Convert a string describing a contrast to a contrast vector.
 
     Parameters
     ----------
@@ -29,23 +28,26 @@ def expression_to_contrast_vector(expression, design_columns):
     design_columns : list or array of strings
         The column names of the design matrix.
 
-    Notes
-    -----
-    This function is experimental.
-    It may change in any future release of Nilearn.
-
     """
     if expression in design_columns:
         contrast_vector = np.zeros(len(design_columns))
         contrast_vector[list(design_columns).index(expression)] = 1.
         return contrast_vector
     df = pd.DataFrame(np.eye(len(design_columns)), columns=design_columns)
-    contrast_vector = df.eval(expression, engine="python").values
+    try:
+        contrast_vector = df.eval(expression, engine="python").values
+    except Exception:
+        raise ValueError(
+            f'The expression ({expression}) is not valid. '
+            'This could be due to '
+            'defining the contrasts using design matrix columns that are '
+            'invalid python identifiers.'
+        )
     return contrast_vector
 
 
 def compute_contrast(labels, regression_result, con_val, contrast_type=None):
-    """ Compute the specified contrast given an estimated glm
+    """Compute the specified contrast given an estimated glm.
 
     Parameters
     ----------
@@ -66,12 +68,8 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     Returns
     -------
     con : Contrast instance,
-        Yields the statistics of the contrast (effects, variance, p-values)
-
-    Notes
-    -----
-    This function is experimental.
-    It may change in any future release of Nilearn.
+        Yields the statistics of the contrast
+        (:term:`effects<Parameter Estimate>`, variance, p-values).
 
     """
     con_val = np.asarray(con_val)
@@ -85,8 +83,8 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
     acceptable_contrast_types = ['t', 'F']
     if contrast_type not in acceptable_contrast_types:
         raise ValueError(
-            '"{0}" is not a known contrast type. Allowed types are {1}'.
-                format(contrast_type, acceptable_contrast_types))
+            f"'{contrast_type}' is not a known contrast type. "
+            f"Allowed types are {acceptable_contrast_types}.")
 
     if contrast_type == 't':
         effect_ = np.zeros((1, labels.size))
@@ -118,7 +116,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
 
 def _compute_fixed_effect_contrast(labels, results, con_vals,
                                    contrast_type=None):
-    """Computes the summary contrast assuming fixed effects.
+    """Compute the summary contrast assuming fixed effects.
 
     Adds the same contrast applied to all labels and results lists.
 
@@ -127,7 +125,7 @@ def _compute_fixed_effect_contrast(labels, results, con_vals,
     n_contrasts = 0
     for i, (lab, res, con_val) in enumerate(zip(labels, results, con_vals)):
         if np.all(con_val == 0):
-            warn('Contrast for session %d is null' % i)
+            warn(f'Contrast for session {int(i)} is null')
             continue
         contrast_ = compute_contrast(lab, res, con_val, contrast_type)
         if contrast is None:
@@ -140,20 +138,22 @@ def _compute_fixed_effect_contrast(labels, results, con_vals,
     return contrast * (1. / n_contrasts)
 
 
-class Contrast(object):
-    """ The contrast class handles the estimation of statistical contrasts
+class Contrast:
+    """The contrast class handles the estimation of statistical contrasts \
     on a given model: student (t) or Fisher (F).
+
     The important feature is that it supports addition,
     thus opening the possibility of fixed-effects models.
 
     The current implementation is meant to be simple,
     and could be enhanced in the future on the computational side
-    (high-dimensional F constrasts may lead to memory breakage).
-
+    (high-dimensional F contrasts may lead to memory breakage).
     """
+
     def __init__(self, effect, variance, dim=None, dof=DEF_DOFMAX,
                  contrast_type='t', tiny=DEF_TINY, dofmax=DEF_DOFMAX):
-        """
+        """Construct instance.
+
         Parameters
         ----------
         effect : array of shape (contrast_dim, n_voxels)
@@ -181,11 +181,6 @@ class Contrast(object):
             The maximum degrees of freedom of the residuals.
             Default=DEF_DOFMAX.
 
-        Warnings
-        --------
-        This class is experimental.
-        It may change in any future release of Nilearn.
-
         """
         if variance.ndim != 1:
             raise ValueError('Variance array should have 1 dimension')
@@ -211,18 +206,18 @@ class Contrast(object):
         self.dofmax = dofmax
 
     def effect_size(self):
-        """Make access to summary statistics more straightforward when
-        computing contrasts"""
+        """Make access to summary statistics more straightforward \
+        when computing contrasts."""
         return self.effect[0, :]
 
     def effect_variance(self):
-        """Make access to summary statistics more straightforward when
-        computing contrasts"""
+        """Make access to summary statistics more straightforward \
+        when computing contrasts."""
         return self.variance
 
     def stat(self, baseline=0.0):
-        """Return the decision statistic associated with the test of the
-        null hypothesis: (H0) 'contrast equals baseline'
+        """Return the decision statistic associated with the test of the \
+        null hypothesis: (H0) 'contrast equals baseline'.
 
         Parameters
         ----------
@@ -240,8 +235,8 @@ class Contrast(object):
 
         # Case: one-dimensional contrast ==> t or t**2
         if self.contrast_type == 'F':
-            stat = np.sum((self.effect - baseline) ** 2, 0) / self.dim / \
-                   np.maximum(self.variance, self.tiny)
+            stat = np.sum((self.effect - baseline) ** 2, 0) / \
+                self.dim / np.maximum(self.variance, self.tiny)
         elif self.contrast_type == 't':
             # avoids division by zero
             stat = (self.effect - baseline) / np.sqrt(
@@ -252,9 +247,9 @@ class Contrast(object):
         return self.stat_
 
     def p_value(self, baseline=0.0):
-        """Return a parametric estimate of the p-value associated with
-        the null hypothesis (H0): 'contrast equals baseline',
-        using the survival function
+        """Return a parametric estimate of the p-value associated with \
+        the null hypothesis (H0): 'contrast equals baseline', \
+        using the survival function.
 
         Parameters
         ----------
@@ -282,10 +277,10 @@ class Contrast(object):
         return p_values
 
     def one_minus_pvalue(self, baseline=0.0):
-        """Return a parametric estimate of the 1 - p-value associated with
-        the null hypothesis (H0): 'contrast equals baseline',
-        using the cumulative distribution function,
-        to ensure numerical stability
+        """Return a parametric estimate of the 1 - p-value associated \
+        with the null hypothesis (H0): 'contrast equals baseline', \
+        using the cumulative distribution function, \
+        to ensure numerical stability.
 
         Parameters
         ----------
@@ -313,8 +308,8 @@ class Contrast(object):
         return one_minus_pvalues
 
     def z_score(self, baseline=0.0):
-        """Return a parametric estimation of the z-score associated
-        with the null hypothesis: (H0) 'contrast equals baseline'
+        """Return a parametric estimation of the z-score associated \
+        with the null hypothesis: (H0) 'contrast equals baseline'.
 
         Parameters
         ----------
@@ -339,11 +334,13 @@ class Contrast(object):
         return self.z_score_
 
     def __add__(self, other):
-        """Addition of selfwith others, Yields an new Contrast instance
-        This should be used only on indepndent contrasts"""
+        """Add two contrast, Yields an new Contrast instance.
+
+        This should be used only on indepndent contrasts.
+        """
         if self.contrast_type != other.contrast_type:
             raise ValueError(
-                'The two contrasts do not have consistant type dimensions')
+                'The two contrasts do not have consistent type dimensions')
         if self.dim != other.dim:
             raise ValueError(
                 'The two contrasts do not have compatible dimensions')
@@ -356,7 +353,7 @@ class Contrast(object):
                         dof=dof_, contrast_type=self.contrast_type)
 
     def __rmul__(self, scalar):
-        """Multiplication of the contrast by a scalar"""
+        """Multiply a contrast by a scalar."""
         scalar = float(scalar)
         effect_ = self.effect * scalar
         variance_ = self.variance * scalar ** 2
@@ -372,7 +369,7 @@ class Contrast(object):
 
 def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
                           precision_weighted=False):
-    """Compute the fixed effects, given images of effects and variance
+    """Compute the fixed effects, given images of effects and variance.
 
     Parameters
     ----------
@@ -400,17 +397,11 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
     fixed_fx_t_img : Nifti1Image
         The fixed effects t-test computed within the mask.
 
-    Notes
-    -----
-    This function is experimental.
-    It may change in any future release of Nilearn.
-
     """
     if len(contrast_imgs) != len(variance_imgs):
         raise ValueError(
-            'The number of contrast images (%d) '
-            'differs from the number of variance images (%d). '
-            % (len(contrast_imgs), len(variance_imgs))
+            f'The number of contrast images ({len(contrast_imgs)}) differs '
+            f'from the number of variance images ({len(variance_imgs)}). '
         )
 
     if isinstance(mask, NiftiMasker):
@@ -434,9 +425,8 @@ def compute_fixed_effects(contrast_imgs, variance_imgs, mask=None,
 
 
 def _compute_fixed_effects_params(contrasts, variances, precision_weighted):
-    """ Computes the fixed effects t-statistic, contrast, variance,
-    given arrays of effects and variance.
-    """
+    """Compute the fixed effects t-statistic, contrast, variance, \
+    given arrays of effects and variance."""
     tiny = 1.e-16
     contrasts, variances = np.asarray(contrasts), np.asarray(variances)
     variances = np.maximum(variances, tiny)

@@ -1,15 +1,13 @@
-""" Testing models module
-"""
+"""Testing models module."""
 
 import numpy as np
 import pytest
-
 from numpy.testing import assert_array_almost_equal
+
 from nilearn.glm import OLSModel
 
-
 N = 10
-X = np.c_[np.linspace(- 1, 1, N), np.ones((N,))]
+X = np.c_[np.linspace(-1, 1, N), np.ones((N,))]
 Y = np.r_[range(5), range(1, 6)]
 MODEL = OLSModel(X)
 RESULTS = MODEL.fit(Y)
@@ -56,12 +54,12 @@ def test_model():
     # Check we get the same as R
     assert_array_almost_equal(RESULTS.theta, [1.773, 2.5], 3)
     percentile = np.percentile
-    pcts = percentile(RESULTS.resid, [0, 25, 50, 75, 100])
+    pcts = percentile(RESULTS.residuals, [0, 25, 50, 75, 100])
     assert_array_almost_equal(pcts, [-1.6970, -0.6667, 0, 0.6667, 1.6970], 4)
 
 
 def test_t_contrast():
-    # Test indivudual t against R
+    # Test individual t against R
     assert_array_almost_equal(RESULTS.t(0), 3.25)
     assert_array_almost_equal(RESULTS.t(1), 7.181, 3)
     # And contrast
@@ -86,19 +84,19 @@ def test_t_output():
     assert_array_almost_equal(res.t, exp_t)
     assert_array_almost_equal(res.effect, exp_effect)
     assert_array_almost_equal(res.sd, exp_sd)
-    res = RESULTS.Tcontrast([1, 0], store=('effect',))
+    res = RESULTS.Tcontrast([1, 0], store=("effect",))
     assert res.t is None
     assert_array_almost_equal(res.effect, exp_effect)
     assert res.sd is None
-    res = RESULTS.Tcontrast([1, 0], store=('t',))
+    res = RESULTS.Tcontrast([1, 0], store=("t",))
     assert_array_almost_equal(res.t, exp_t)
     assert res.effect is None
     assert res.sd is None
-    res = RESULTS.Tcontrast([1, 0], store=('sd',))
+    res = RESULTS.Tcontrast([1, 0], store=("sd",))
     assert res.t is None
     assert res.effect is None
     assert_array_almost_equal(res.sd, exp_sd)
-    res = RESULTS.Tcontrast([1, 0], store=('effect', 'sd'))
+    res = RESULTS.Tcontrast([1, 0], store=("effect", "sd"))
     assert res.t is None
     assert_array_almost_equal(res.effect, exp_effect)
     assert_array_almost_equal(res.sd, exp_sd)

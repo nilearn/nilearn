@@ -1,0 +1,24 @@
+
+.. currentmodule:: nilearn
+
+.. include:: names.rst
+
+0.1.1
+=====
+
+**Released February 2015**
+
+Changelog
+---------
+
+The main change compared to ``0.1.0`` is the addition of connectome plotting
+via the function :func:`~plotting.plot_connectome`.
+See the `plotting documentation <building_blocks/plotting.html>`_ for more details.
+
+Contributors (from ``git shortlog -ns 0.1..0.1.1``):
+
+    * `Loic Estève`_ (81)
+    * `Alexandre Abraham`_ (18)
+    * `Danilo Bzdok`_ (18)
+    * `Ben Cipollini`_ (14)
+    * `Gael Varoquaux`_ (2)

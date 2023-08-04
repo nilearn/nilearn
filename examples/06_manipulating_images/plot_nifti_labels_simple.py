@@ -3,9 +3,13 @@ Extracting signals from brain regions using the NiftiLabelsMasker
 =================================================================
 
 This simple example shows how to extract signals from functional
-fmri data and brain regions defined through an atlas.
-More precisely, this example shows how to use the NiftiLabelsMasker
-object to perform this operation in just a few lines of code.
+:term:`fMRI` data and brain regions defined through an atlas.
+More precisely, this example shows how to use the
+:class:`~nilearn.maskers.NiftiLabelsMasker` object to perform this
+operation in just a few lines of code.
+
+.. include:: ../../../examples/masker_note.rst
+
 """
 
 ###########################################################################
@@ -15,31 +19,33 @@ object to perform this operation in just a few lines of code.
 # and we restrict the example to one subject only.
 
 from nilearn import datasets
+
 dataset = datasets.fetch_development_fmri(n_subjects=1)
 func_filename = dataset.func[0]
 
 # print basic information on the dataset
-print('First functional nifti image (4D) is at: %s' % func_filename)
+print(f"First functional nifti image (4D) is at: {func_filename}")
 
 ###########################################################################
 # Load an atlas
 #
 # We then load the Harvard-Oxford atlas to define the brain regions
-atlas = datasets.fetch_atlas_harvard_oxford('cort-maxprob-thr25-2mm')
+atlas = datasets.fetch_atlas_harvard_oxford("cort-maxprob-thr25-2mm")
 
 # The first label correspond to the background
-print('The atlas contains {} non-overlapping regions'.format(
-    len(atlas.labels) - 1))
+print(f"The atlas contains {len(atlas.labels) - 1} non-overlapping regions")
 
 ###########################################################################
 # Instantiate the mask and visualize atlas
 #
-from nilearn.input_data import NiftiLabelsMasker
+from nilearn.maskers import NiftiLabelsMasker
 
 # Instantiate the masker with label image and label values
-masker = NiftiLabelsMasker(atlas.maps,
-                           labels=atlas.labels,
-                           standardize=True)
+masker = NiftiLabelsMasker(
+    atlas.maps,
+    labels=atlas.labels,
+    standardize="zscore_sample",
+)
 
 # Visualize the atlas
 # Note that we need to call fit prior to generating the mask
@@ -48,7 +54,7 @@ masker.fit()
 # At this point, no functional image has been provided to the masker.
 # We can still generate a report which can be displayed in a Jupyter
 # Notebook, opened in a browser using the .open_in_browser() method,
-# or saved to a file using the .save_as_html(output_filepath) mathod.
+# or saved to a file using the .save_as_html(output_filepath) method.
 report = masker.generate_report()
 report
 
@@ -78,9 +84,9 @@ import matplotlib.pyplot as plt
 fig = plt.figure(figsize=(15, 5))
 ax = fig.add_subplot(111)
 for label_idx in range(3):
-    ax.plot(signals[:, label_idx],
-            linewidth=2,
-            label=atlas.labels[label_idx + 1])  # 0 is background
+    ax.plot(
+        signals[:, label_idx], linewidth=2, label=atlas.labels[label_idx + 1]
+    )  # 0 is background
 ax.legend(loc=2)
 ax.set_title("Signals for first 3 regions")
 plt.show()

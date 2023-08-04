@@ -33,7 +33,7 @@ that the brain is asymmetric), while with the sym flavor they have been
 registered in the symmetric version of the MNI template. The symmetric
 template has been forced to be symmetric anatomically, and is therefore
 ideally suited to study homotopic functional connections in fMRI: finding
-homotopic regions simply consists of flipping the x-axis of the template. 
+homotopic regions simply consists of flipping the x-axis of the template.
 
 
 Preprocessing
@@ -77,7 +77,7 @@ hierarchical clustering with Ward's criterion on resampled individual time
 series, using circular block bootstrap. A consensus clustering (hierarchical
 with Ward's criterion) was generated across all the individual clustering
 replications pooled together, hence generating group clusters. The generation
-of group clusters was itself replicated by bootstraping subjects 500 times,
+of group clusters was itself replicated by bootstrapping subjects 500 times,
 and a (final) consensus clustering (hierarchical Ward's criterion) was
 generated on the replicated group clusters. The MSTEPS procedure (Bellec et
 al., 2013) was implemented to select a data-driven subset of scales in the
@@ -128,6 +128,6 @@ of Sciences 106 (48), 20499-20503.
 URL http://dx.doi.org/10.1073/pnas.0908073106
 
 Power J D, Barnes K A, Snyder A Z, Schlaggar B L, Petersen S E, Feb 2012
-Spurious but systematic correlations in functional connectivity 
+Spurious but systematic correlations in functional connectivity
 MRI networks arise from subject motion. NeuroImage 59 (3), 2142-2154.
 URL http://dx.doi.org/10.1016/j.neuroimage.2011.10.018

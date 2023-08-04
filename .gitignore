@@ -2,41 +2,65 @@
 *.so
 *~
 .#*
+*.nt.bz2
 *.swp
 *.swo
-.DS_Store
-build
-#*
 *#
 
-nilearn.egg-info/
-env/
-dist/
-doc/.nojekyll
-doc/building_blocks/generated/
+.mypy_cache
+
+# ignore python type annotation stubs for now
+*.pyi
+
 nilearn_cache
 nilearn_data
-doc/_build/
-doc/auto_examples/
-doc/modules/generated/
-doc/datasets/generated/
-doc/generated/
+
 pip-log.txt
+
+.pytest_cache
+
+.ropeproject/
+
+tags
+
+tmp
+
+# Mac OS X
+.DS_Store
+
+# IDE related
+.idea/
+.vscode/
+
+# build related
+nilearn.egg-info/
+build
+dist/
+nilearn/_version.py
+
+# virtual environment
+env/
+venv/
+
+# coverage
 .coverage
 coverage
 nosetests_coverage/
-.ropeproject/
-tags
 
-*.zip
-*.nt.bz2
-*.tar.gz
-*.tgz
-
-.idea/
-venv/
-
+# documentation
+doc/.nojekyll
+doc/_build/
+doc/auto_examples/
+doc/building_blocks/generated/
+doc/datasets/generated/
+doc/generated/
+doc/modules/generated/
 doc/themes/nilearn/static/jquery.js
-.vscode/
-examples/results/
+
+# examples
 examples/**/*.pdf
+examples/**/results/
+examples/results/
+examples/*.nii
+examples/*.nii.gz
+examples/*.png

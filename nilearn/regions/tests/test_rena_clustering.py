@@ -5,10 +5,11 @@ try:
     from joblib import Memory
 except ImportError:
     from joblib import Memory
+
 from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn.regions.rena_clustering import ReNA
-from nilearn.input_data import NiftiMasker
 from nilearn.image import get_data
+from nilearn.maskers import NiftiMasker
+from nilearn.regions.rena_clustering import ReNA
 
 
 def test_rena_clustering():
@@ -32,9 +33,10 @@ def test_rena_clustering():
     assert 10 == rena.n_clusters_
     assert X.shape == X_compress.shape
 
-    memory = Memory(cachedir=None)
+    memory = Memory(location=None)
     rena = ReNA(mask_img, n_clusters=-2, memory=memory)
-    pytest.raises(ValueError, rena.fit, X)
+    with pytest.raises(ValueError):
+        rena.fit(X)
 
     rena = ReNA(mask_img, n_clusters=10, scaling=True)
     X_red = rena.fit_transform(X)
@@ -42,11 +44,13 @@ def test_rena_clustering():
 
     for n_iter in [-2, 0]:
         rena = ReNA(mask_img, n_iter=n_iter, memory=memory)
-        pytest.raises(ValueError, rena.fit, X)
+        with pytest.raises(ValueError):
+            rena.fit(X)
 
     for n_clusters in [1, 2, 4, 8]:
-        rena = ReNA(mask_img, n_clusters=n_clusters, n_iter=1,
-                    memory=memory).fit(X)
+        rena = ReNA(
+            mask_img, n_clusters=n_clusters, n_iter=1, memory=memory
+        ).fit(X)
         assert n_clusters != rena.n_clusters_
 
     del n_voxels, X_red, X_compress

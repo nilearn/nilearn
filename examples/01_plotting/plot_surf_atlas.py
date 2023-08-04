@@ -1,6 +1,6 @@
 """
 Loading and plotting of a cortical surface atlas
-=================================================
+================================================
 
 The Destrieux parcellation (Destrieux et al, 2010) in fsaverage5 space as
 distributed with Freesurfer is used as the chosen atlas.
@@ -12,7 +12,6 @@ See :ref:`plotting` for more details.
 
 References
 ----------
-
 Destrieux et al, (2010). Automatic parcellation of human cortical gyri and
 sulci using standard anatomical nomenclature. NeuroImage, 53, 1.
 URL http://dx.doi.org/10.1016/j.neuroimage.2010.06.010.
@@ -36,12 +35,12 @@ parcellation = destrieux_atlas['map_left']
 fsaverage = datasets.fetch_surf_fsaverage()
 
 # The fsaverage dataset contains file names pointing to the file locations
-print('Fsaverage5 pial surface of left hemisphere is at: %s' %
-      fsaverage['pial_left'])
-print('Fsaverage5 inflated surface of left hemisphere is at: %s' %
-      fsaverage['infl_left'])
-print('Fsaverage5 sulcal depth map of left hemisphere is at: %s' %
-      fsaverage['sulc_left'])
+print("Fsaverage5 pial surface of left hemisphere is at: "
+      f"{fsaverage['pial_left']}")
+print("Fsaverage5 inflated surface of left hemisphere is at: "
+      f"{fsaverage['infl_left']}")
+print("Fsaverage5 sulcal depth map of left hemisphere is at: "
+      f"{fsaverage['sulc_left']}")
 
 ###############################################################################
 # Visualization
@@ -78,6 +77,14 @@ plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
 plotting.show()
 
 ###############################################################################
+# Display Destrieux parcellation with custom view: explicitly set angle
+elev, azim = 210.0, 90.0  # appropriate for visualizing, e.g., the OTS
+plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
+                       hemi='left', view=(elev, azim),
+                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
+                       darkness=.5)
+
+###############################################################################
 # Display connectome from surface parcellation
 #
 # The following code extracts 3D coordinates of surface parcels (a.k.a. labels
@@ -86,14 +93,15 @@ plotting.show()
 # the mean location to obtain the coordinates.
 
 import numpy as np
+
 from nilearn import surface
 
 atlas = destrieux_atlas
 coordinates = []
 labels = destrieux_atlas['labels']
 for hemi in ['left', 'right']:
-    vert = destrieux_atlas['map_%s' % hemi]
-    rr, _ = surface.load_surf_mesh(fsaverage['pial_%s' % hemi])
+    vert = destrieux_atlas[f'map_{hemi}']
+    rr, _ = surface.load_surf_mesh(fsaverage[f'pial_{hemi}'])
     for k, label in enumerate(labels):
         if "Unknown" not in str(label):  # Omit the Unknown label.
             # Compute mean location of vertices in label of index k
@@ -141,3 +149,5 @@ view = plotting.view_connectome(corr, coordinates, edge_threshold='90%')
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 view
+
+# sphinx_gallery_dummy_images=1

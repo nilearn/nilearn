@@ -1,4 +1,5 @@
-"""Technical point: Illustration of the volume to surface sampling schemes
+"""
+Technical point: Illustration of the volume to surface sampling schemes
 =======================================================================
 
 In nilearn, :func:`nilearn.surface.vol_to_surf` allows us to measure values of
@@ -21,15 +22,12 @@ passing both to `vol_to_surf`.
 
 """
 
-import numpy as np
-
 import matplotlib
+import numpy as np
 from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
-from nilearn.surface import surface
 from nilearn.plotting import show
-
+from nilearn.surface import surface
 
 ######################################################################
 # Build a mesh (of a cylinder)
@@ -82,7 +80,7 @@ for sample_points in [line_sample_points, ball_sample_points]:
 ######################################################################
 # Adjust the sample locations
 ######################################################################
-# For "line" and nested surfaces, the depth parameter allows ajusting the
+# For "line" and nested surfaces, the depth parameter allows adjusting the
 # position of samples along the line
 
 nested_sample_points = surface._sample_locations_between_surfaces(
