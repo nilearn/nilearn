@@ -297,7 +297,9 @@ def _resample_one_img(
 
     # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
     with warnings.catch_warnings():
-        warnings.simplefilter("ignore", UserWarning)
+        warnings.filterwarnings(
+            "ignore", message=".*has changed in SciPy 0.18.*"
+        )
         # The resampling itself
         affine_transform(
             data,
@@ -312,7 +314,9 @@ def _resample_one_img(
     if has_not_finite:
         # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
         with warnings.catch_warnings():
-            warnings.simplefilter("ignore", UserWarning)
+            warnings.filterwarnings(
+                "ignore", message=".*has changed in SciPy 0.18.*"
+            )
             # We need to resample the mask of not_finite values
             not_finite = affine_transform(
                 not_finite,
