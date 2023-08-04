@@ -1,6 +1,5 @@
 import warnings
 
-import nibabel as nib
 import numpy as np
 import pandas as pd
 import pytest
@@ -8,7 +7,6 @@ from nibabel import load
 from nibabel.tmpdirs import InTemporaryDirectory
 
 from nilearn._utils.data_gen import write_fake_fmri_data_and_design
-from nilearn.conftest import MNI_AFFINE
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
@@ -220,19 +218,10 @@ def test_make_headings_with_contrasts_none_title_custom():
     assert actual_output == expected_output
 
 
-def _generate_img():
-    data_positive = np.zeros((7, 7, 3))
-    rng = np.random.RandomState(42)
-    data_rng = rng.rand(7, 7, 3)
-    data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
-
-    return nib.Nifti1Image(data_positive, MNI_AFFINE)
-
-
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
-def test_stat_map_to_svg_slice_z(cut_coords):
+def test_stat_map_to_svg_slice_z(generate_img, cut_coords):
     with InTemporaryDirectory():
-        img = _generate_img()
+        img = generate_img
         table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
         glmr._stat_map_to_svg(
             stat_img=img,
@@ -245,9 +234,9 @@ def test_stat_map_to_svg_slice_z(cut_coords):
 
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
-def test_stat_map_to_svg_glass_z(cut_coords):
+def test_stat_map_to_svg_glass_z(generate_img, cut_coords):
     with InTemporaryDirectory():
-        img = _generate_img()
+        img = generate_img
         table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
         glmr._stat_map_to_svg(
             stat_img=img,
@@ -260,9 +249,9 @@ def test_stat_map_to_svg_glass_z(cut_coords):
 
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
-def test_stat_map_to_svg_invalid_plot_type(cut_coords):
+def test_stat_map_to_svg_invalid_plot_type(generate_img, cut_coords):
     with InTemporaryDirectory():
-        img = _generate_img()
+        img = generate_img
         expected_error = ValueError(
             "Invalid plot type provided. Acceptable options are"
             "'slice' or 'glass'."

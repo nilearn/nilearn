@@ -19,6 +19,8 @@ from nilearn._utils import as_ndarray, logger
 from nilearn.interfaces.bids._utils import _bids_entities, _check_bids_label
 
 
+
+
 def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
     """Generate mni space img.
 

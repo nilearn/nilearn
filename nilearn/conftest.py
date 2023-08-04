@@ -89,6 +89,14 @@ MNI_AFFINE = np.array(
 )
 
 
+def _generate_img(affine=MNI_AFFINE):
+    data_positive = np.zeros((7, 7, 3))
+    rng = np.random.RandomState(42)
+    data_rng = rng.rand(7, 7, 3)
+    data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
+    return Nifti1Image(data_positive, affine)
+
+
 @pytest.fixture()
 def mni_affine():
     """Return an affine corresponding to 2mm isotropic MNI template."""
@@ -98,13 +106,14 @@ def mni_affine():
 @pytest.fixture()
 def testdata_3d_for_plotting():
     """A random 3D image for testing figures."""
-    data_positive = np.zeros((7, 7, 3))
-    rng = np.random.RandomState(42)
-    data_rng = rng.uniform(size=(7, 7, 3))
-    data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
-    img_3d = Nifti1Image(data_positive, MNI_AFFINE)
     # TODO: return img_3D directly and not a dict
-    return {"img": img_3d}
+    return {"img": _generate_img()}
+
+
+@pytest.fixture()
+def generate_img():
+    """Generate a random 3D image."""
+    return _generate_img()
 
 
 @pytest.fixture()
