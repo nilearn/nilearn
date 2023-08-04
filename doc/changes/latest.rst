@@ -35,6 +35,8 @@ Enhancements
 
 - Update Decoder objects to use the more efficient ``LogisticRegressionCV`` (:gh:`3736` by `Michelle Wang`_).
 
+- Throw warning in :func:`~glm.first_level.first_level_from_bids` when using event.tsv files with no trial type column (:gh:`3597` by `Aswin Vijayan`_, `Rémi Gau`_).
+
 - Make return key names in the description file of destrieux surface consistent with :func:`~datasets.fetch_atlas_surf_destrieux` (:gh:`3774` by `Tarun Samanta`_).
 
 Changes
