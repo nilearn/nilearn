@@ -104,13 +104,6 @@ def mni_affine():
 
 
 @pytest.fixture()
-def testdata_3d_for_plotting():
-    """A random 3D image for testing figures."""
-    # TODO: return img_3D directly and not a dict
-    return {"img": _mni_3d_img()}
-
-
-@pytest.fixture()
 def mni_3d_img():
     """Fixture for a random 3D image in MNI space."""
     return _mni_3d_img()

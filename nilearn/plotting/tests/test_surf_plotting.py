@@ -5,13 +5,11 @@ import tempfile
 import unittest.mock as mock
 
 import matplotlib.pyplot as plt
-import nibabel
 import numpy as np
 import pytest
 from matplotlib.figure import Figure
 from numpy.testing import assert_array_equal
 
-from nilearn.conftest import MNI_AFFINE
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.surf_plotting import (
