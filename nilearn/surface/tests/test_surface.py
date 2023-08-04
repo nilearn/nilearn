@@ -562,8 +562,12 @@ def test_sample_locations_depth(depth, n_points):
 
 @pytest.mark.parametrize(
     "depth,n_points",
-    [(None, 1), (None, 7), ([0.], 8), ([-1.], 8),
-     ([1.], 8), ([-1., 0., .5], 8)])
+    [(None, 1),
+     (None, 7),
+     ([0.], 8),
+     ([-1.], 8),
+     ([1.], 8),
+     ([-1., 0., .5], 8)])
 def test_sample_locations_between_surfaces(depth, n_points):
     inner = flat_mesh(5, 7)
     outer = inner[0] + [0., 0., 1.], inner[1]
