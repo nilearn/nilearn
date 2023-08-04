@@ -60,8 +60,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
 
     Parameters
     ----------
-    img_files : :obj:`str`, path to processed image files, \
-        optionally as a :obj:`list` of :obj:`str`.
+    img_files : :obj:`str` or :obj:`list` of :obj:`str`.
         Processed nii.gz/dtseries.nii/func.gii file reside in a
         :term:`fMRIPrep` generated functional derivative directory (i.e.The
         associated confound files should be in the same directory as the image
@@ -74,8 +73,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
         - `func.gii`: list of a pair of paths to files, optionally as a list
           of lists.
 
-    denoise_strategy : :obj:`str`, {'simple', 'scrubbing', 'compcor', \
-        'ica_aroma'}
+    denoise_strategy : :obj:`str`, default="simple"
         Name of preset denoising strategies. Each strategy has a set of
         associated configurable parameters. For customiseable parameters,
         please see the table in Notes.

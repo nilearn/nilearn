@@ -122,8 +122,7 @@ def load_confounds(
 
     Parameters
     ----------
-    img_files : :obj:`str`, path to processed image files, \
-        optionally as a :obj:`list` of :obj:`str`.
+    img_files : :obj:`str` or :obj:`list` of :obj:`str`
         Processed nii.gz/dtseries.nii/func.gii file reside in a
         :term:`fMRIPrep` generated functional derivative directory (i.e.The
         associated confound files should be in the same directory as the image
@@ -170,7 +169,7 @@ def load_confounds(
         Non-steady-state volumes will always be checked. There's no need to
         supply this component to the strategy.
 
-    motion : :obj:`str`, {'basic', 'power2', 'derivatives', 'full'}
+    motion : :obj:`str`, default="full"
         Type of confounds extracted from head motion estimates.
 
         - "basic" translation/rotation (6 parameters)
@@ -179,7 +178,7 @@ def load_confounds(
         - "full" translation/rotation + derivatives + quadratic terms + power2d
           derivatives (24 parameters)
 
-    wm_csf : :obj:`str`, {'basic', 'power2', 'derivatives', 'full'}
+    wm_csf : :obj:`str`, default="basic"
         Type of confounds extracted from masks of white matter and
         cerebrospinal fluids.
 
@@ -189,7 +188,7 @@ def load_confounds(
         - "full" averages + derivatives + quadratic terms + power2d derivatives
           (8 parameters)
 
-    global_signal : :obj:`str`, {'basic', 'power2', 'derivatives', 'full'}
+    global_signal : :obj:`str`, default="basic"
         Type of confounds extracted from the global signal.
 
         - "basic" just the global signal (1 parameter)
@@ -207,7 +206,7 @@ def load_confounds(
         scrubbed frame.
 
     fd_threshold : :obj:`float`, default 0.2
-        Framewise displacement threshold for scrub (default = 0.2 mm)
+        Framewise displacement threshold for scrub in mm
 
     std_dvars_threshold : :obj:`float`, default 3
         Standardized DVARS threshold for scrub (default = 3).
@@ -234,7 +233,7 @@ def load_confounds(
         - "temporal_anat_separated" components of "temporal" and
           "anat_separated"
 
-    n_compcor : :obj:`str` "all" or :obj:`int`, default "all"
+    n_compcor : :obj:`str` or :obj:`int`, default "all"
         The number of noise components to be extracted.
         For acompcor_combined=False, and/or compcor="full", this is the number
         of components per mask.
