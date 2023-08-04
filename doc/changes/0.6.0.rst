@@ -34,7 +34,7 @@ NEW
 
 - New class :class:`~regions.ReNA` implementing parcellation method :term:`ReNA`: Fast agglomerative clustering based on recursive nearest neighbor grouping. Yields very fast & accurate models, without creation of giant clusters (:gh:`1336` by `Andrés Hoyos Idrobo`_).
 
-- New function ``nilearn.plotting.plot_connectome_strength`` to plot the strength of a connectome on a glass brain.  Strength is absolute sum of the edges at a node (:gh:`2028` by `Guillaume Lemaitre`_).
+- :bdg-info:`Plotting` New function ``nilearn.plotting.plot_connectome_strength`` to plot the strength of a connectome on a glass brain.  Strength is absolute sum of the edges at a node (:gh:`2028` by `Guillaume Lemaitre`_).
 
 - Function :func:`~image.resample_img` has been optimized to pad rather than resample images in the special case when there is only a translation between two spaces. This is a common case in class :class:`~maskers.NiftiMasker` when using the ``mask_strategy="template"`` option for brains in :term:`MNI` space (:gh:`2025` by `Greg Kiar`_).
 
@@ -43,18 +43,18 @@ NEW
 ENHANCEMENTS
 ------------
 
-- Functions :func:`~plotting.view_img_on_surf`, :func:`~plotting.view_surf` and :func:`~plotting.view_connectome` can display a title, and allow disabling the colorbar, and setting its height and the fontsize of its ticklabels (:gh:`1951` by `Jerome Dockes`_).
+- :bdg-info:`Plotting` Functions :func:`~plotting.view_img_on_surf`, :func:`~plotting.view_surf` and :func:`~plotting.view_connectome` can display a title, and allow disabling the colorbar, and setting its height and the fontsize of its ticklabels (:gh:`1951` by `Jerome Dockes`_).
 
 - Rework of the standardize-options of function :func:`~signal.clean` and the various Maskers in :mod:`nilearn.maskers`. You can now set ``standardize`` to ``zscore`` or ``psc``. ``psc`` stands for ``Percent Signal Change``, which can be a meaningful metric for :term:`BOLD` (:gh:`1952` by `Gilles de Hollander`_).
 
 - Class :class:`~maskers.NiftiLabelsMasker` now accepts an optional ``strategy`` parameter which allows it to change the function used to reduce values within each labelled ROI. Available functions include ``mean``, ``median``, ``minimum``, ``maximum``, ``standard_deviation`` and ``variance``. This change is also introduced in function :func:`~regions.img_to_signals_labels` (:gh:`2221` by `Daniel Gomez`_).
 
-- Function :func:`~plotting.view_surf` now accepts surface data provided as a file path (:gh:`2057` by `Jerome Dockes`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.view_surf` now accepts surface data provided as a file path (:gh:`2057` by `Jerome Dockes`_).
 
 CHANGES
 -------
 
-- Function :func:`~plotting.plot_img` now has explicit keyword arguments ``bg_img``, ``vmin`` and ``vmax`` to control the background image and the bounds of the colormap. These arguments were already accepted in ``kwargs`` but not documented before (:gh:`2157` by `Jerome Dockes`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_img` now has explicit keyword arguments ``bg_img``, ``vmin`` and ``vmax`` to control the background image and the bounds of the colormap. These arguments were already accepted in ``kwargs`` but not documented before (:gh:`2157` by `Jerome Dockes`_).
 
 FIXES
 -----
@@ -74,9 +74,9 @@ NEW
 ---
 .. warning::
 
-  - Function :func:`~plotting.view_connectome` no longer accepts old parameter names. Instead of ``coords``, ``threshold``, ``cmap``, and ``marker_size``, use ``node_coords``, ``edge_threshold``, ``edge_cmap``, and ``node_size`` respectively (:gh:`2255` by `Kshitij Chawla`_).
+  - :bdg-info:`Plotting` Function :func:`~plotting.view_connectome` no longer accepts old parameter names. Instead of ``coords``, ``threshold``, ``cmap``, and ``marker_size``, use ``node_coords``, ``edge_threshold``, ``edge_cmap``, and ``node_size`` respectively (:gh:`2255` by `Kshitij Chawla`_).
 
-  - Function :func:`~plotting.view_markers` no longer accepts old parameter names. Instead of ``coord`` and ``color``, use ``marker_coords`` and ``marker_color`` respectively (:gh:`2255` by `Kshitij Chawla`_).
+  - :bdg-info:`Plotting` Function :func:`~plotting.view_markers` no longer accepts old parameter names. Instead of ``coord`` and ``color``, use ``marker_coords`` and ``marker_color`` respectively (:gh:`2255` by `Kshitij Chawla`_).
 
   - **Support for Python3.5 will be removed in the 0.7.x release.** Users with a Python3.5 environment will be warned at their first Nilearn import (:gh:`2214` by `Kshitij Chawla`_).
 
@@ -190,7 +190,7 @@ NEW
 
 - New class :class:`~regions.ReNA` implementing parcellation method :term:`ReNA`: Fast agglomerative clustering based on recursive nearest neighbor grouping. Yields very fast & accurate models, without creation of giant clusters (:gh:`1336` by `Andrés Hoyos Idrobo`_).
 
-- New function ``nilearn.plotting.plot_connectome_strength`` to plot the strength of a connectome on a glass brain.  Strength is absolute sum of the edges at a node (:gh:`2028` by `Guillaume Lemaitre`_).
+- :bdg-info:`Plotting` New function ``nilearn.plotting.plot_connectome_strength`` to plot the strength of a connectome on a glass brain.  Strength is absolute sum of the edges at a node (:gh:`2028` by `Guillaume Lemaitre`_).
 
 - Function :func:`~image.resample_img` has been optimized to pad rather than resample images in the special case when there is only a translation between two spaces. This is a common case in class :class:`~maskers.NiftiMasker` when using the ``mask_strategy="template"`` option for brains in :term:`MNI` space (:gh:`2025` by `Greg Kiar`_).
 
@@ -215,30 +215,30 @@ Changes
 
 - Rework of the standardize-options of function :func:`~signal.clean` and the various Maskers in :mod:`nilearn.maskers`. You can now set ``standardize`` to ``zscore`` or ``psc``. ``psc`` stands for ``Percent Signal Change``, which can be a meaningful metric for :term:`BOLD` (:gh:`1952` by `Gilles de Hollander`_).
 
-- Function :func:`~plotting.plot_img` now has explicit keyword arguments ``bg_img``, ``vmin`` and ``vmax`` to control the background image and the bounds of the colormap. These arguments were already accepted in ``kwargs`` but not documented before (:gh:`2157` by `Jerome Dockes`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_img` now has explicit keyword arguments ``bg_img``, ``vmin`` and ``vmax`` to control the background image and the bounds of the colormap. These arguments were already accepted in ``kwargs`` but not documented before (:gh:`2157` by `Jerome Dockes`_).
 
-- Function :func:`~plotting.view_connectome` now converts ``NaNs`` in the adjacency matrix to 0 (:gh:`2166` by `Jerome Dockes`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.view_connectome` now converts ``NaNs`` in the adjacency matrix to 0 (:gh:`2166` by `Jerome Dockes`_).
 
 - Removed the plotting connectomes example which used the Seitzman atlas from ``examples/03_connectivity/plot_sphere_based_connectome.py``. The atlas data is unsuitable for the method & the example is redundant (:gh:`2177` by `Kshitij Chawla`_).
 
 Fixes
 -----
 
-- Function :func:`~plotting.plot_glass_brain` with ``colorbar=True`` does not crash when images have ``NaNs`` (:gh:`1953` by `Kamalakar Reddy Daddy`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_glass_brain` with ``colorbar=True`` does not crash when images have ``NaNs`` (:gh:`1953` by `Kamalakar Reddy Daddy`_).
 
 - Function ``add_contours`` now accepts ``threshold`` argument for ``filled=False``. Now ``threshold`` is equally applied when asked for fillings in the contours.
 
-- Functions :func:`~plotting.plot_surf` and :func:`~plotting.plot_surf_stat_map` no longer threshold zero values when no threshold is given (:gh:`1997` by `Julia Huntenburg`_).
+- :bdg-info:`Plotting` Functions :func:`~plotting.plot_surf` and :func:`~plotting.plot_surf_stat_map` no longer threshold zero values when no threshold is given (:gh:`1997` by `Julia Huntenburg`_).
 
-- Function :func:`~plotting.plot_surf_stat_map` used with a thresholded map but without a background map results in the surface mesh being displayed in half-transparent grey to maintain a 3D perception (:gh:`1997` by `Julia Huntenburg`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_surf_stat_map` used with a thresholded map but without a background map results in the surface mesh being displayed in half-transparent grey to maintain a 3D perception (:gh:`1997` by `Julia Huntenburg`_).
 
-- Function :func:`~plotting.view_surf` now accepts surface data provided as a file path.
+- :bdg-info:`Plotting` Function :func:`~plotting.view_surf` now accepts surface data provided as a file path.
 
-- Function :func:`~plotting.plot_glass_brain` now correctly displays the left 'l' orientation even when the given images are completely masked (empty images) (:gh:`1888` by `Kamalakar Reddy Daddy`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_glass_brain` now correctly displays the left 'l' orientation even when the given images are completely masked (empty images) (:gh:`1888` by `Kamalakar Reddy Daddy`_).
 
-- Function :func:`~plotting.plot_matrix` with providing ``labels=None``, ``False``, or an empty list now correctly disables labels (:gh:`2083` by `Moritz Boos`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_matrix` with providing ``labels=None``, ``False``, or an empty list now correctly disables labels (:gh:`2083` by `Moritz Boos`_).
 
-- Function :func:`~plotting.plot_surf_roi` now takes ``vmin``, and ``vmax`` parameters (:gh:`2052` by `Ian Abenes`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_surf_roi` now takes ``vmin``, and ``vmax`` parameters (:gh:`2052` by `Ian Abenes`_).
 
 - Function :func:`~datasets.fetch_surf_nki_enhanced` is now downloading the correct left and right functional surface data for each subject (:gh:`2118` by `Julia Huntenburg`_).
 

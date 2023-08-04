@@ -13,14 +13,14 @@ Highlights
 
 - New function :func:`~surface.vol_to_surf` to project volume data to the surface.
 
-- New function :func:`~plotting.plot_matrix` to display matrices, eg connectomes.
+- :bdg-info:`Plotting` New function :func:`~plotting.plot_matrix` to display matrices, eg connectomes.
 
 Enhancements
 ------------
 
 - New function :func:`~surface.vol_to_surf` to project a 3d or 4d brain volume on the cortical surface.
 
-- New function :func:`~plotting.plot_matrix` to display connectome matrices.
+- :bdg-info:`Plotting` New function :func:`~plotting.plot_matrix` to display connectome matrices.
 
 - Expose function :func:`~image.coord_transform` for end users. Useful to transform coordinates (x, y, z) from one image space to another space.
 
@@ -28,11 +28,11 @@ Enhancements
 
 - Function :func:`~datasets.fetch_atlas_talairach` to fetch the `Talairach atlas <http://talairach.org>`_ (:gh:`1523` by `Jerome Dockes`_).
 
-- Enhancing new surface plotting functions, added new parameters ``axes`` and ``figure`` to accept user-specified instances in :func:`~plotting.plot_surf`, :func:`~plotting.plot_surf_stat_map`, and :func:`~plotting.plot_surf_roi`.
+- :bdg-info:`Plotting` Enhancing new surface plotting functions, added new parameters ``axes`` and ``figure`` to accept user-specified instances in :func:`~plotting.plot_surf`, :func:`~plotting.plot_surf_stat_map`, and :func:`~plotting.plot_surf_roi`.
 
 - Class :class:`~decoding.SearchLight` has new parameter ``groups`` to do ``LeaveOneGroupOut`` type cv with new scikit-learn module model selection.
 
-- Enhancing the glass brain plotting in back view 'y' direction.
+- :bdg-info:`Plotting` Enhancing the glass brain plotting in back view 'y' direction.
 
 - New parameter ``resampling_interpolation`` is added in most used plotting functions to have user control for faster visualizations.
 

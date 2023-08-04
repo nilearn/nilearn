@@ -30,9 +30,9 @@ Changes
 Bug fixes
 ---------
 
-- Fix issues using function :func:`~plotting.plot_connectome` when string is passed in ``node_color`` with display modes left and right hemispheric cuts in the glass brain.
+- :bdg-info:`Plotting` Fix issues using function :func:`~plotting.plot_connectome` when string is passed in ``node_color`` with display modes left and right hemispheric cuts in the glass brain.
 
-- Fix bug while plotting only coordinates using ``add_markers`` on glass brain (:gh:`1595` by `Kamalakar Reddy Daddy`_).
+- :bdg-info:`Plotting` Fix bug while plotting only coordinates using ``add_markers`` on glass brain (:gh:`1595` by `Kamalakar Reddy Daddy`_).
 
 - Fix issues with estimators in decomposition module when input images are given in glob patterns.
 
