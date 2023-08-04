@@ -18,8 +18,9 @@ class Mesh(abc.ABC):
     n_vertices: int
 
     # TODO those are properties for now for compatibility with plot_surf_img
-    # for the demo but should become functions as they can take some time to
-    # return
+    # for the demo.
+    # But they should probably become functions as they can take some time to
+    # return or even fail
     coordinates: np.ndarray
     faces: np.ndarray
 
@@ -64,7 +65,27 @@ class InMemoryMesh(Mesh):
 PolyMesh = Dict[str, Mesh]
 
 
+def _check_data_consistent_shape(data: PolyData):
+    """Check that shapes of PolyData parts match.
+
+    They must match in all but the last dimension (which is the number of
+    vertices, and can be different for each part).
+
+    """
+    if len(data) == 0:
+        raise ValueError("Surface image data must have at least one item.")
+    first_name = next(iter(data.keys()))
+    first_shape = data[first_name].shape
+    for part_name, part_data in data.values():
+        if part_data.shape[:-1] != first_shape[:-1]:
+            raise ValueError(
+                f"Data arrays for keys '{first_name}' and '{part_name}' "
+                f"have incompatible shapes: {first_shape} and {part_data.shape}"
+            )
+
+
 def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
+    """Check that mesh and data have the same keys and that shapes match."""
     data_keys, mesh_keys = set(data.keys()), set(mesh.keys())
     if data_keys != mesh_keys:
         diff = data_keys.symmetric_difference(mesh_keys)
@@ -91,6 +112,7 @@ class SurfaceImage:
     shape: tuple[int, ...] = dataclasses.field(init=False)
 
     def __post_init__(self) -> None:
+        _check_data_consistent_shape(self.data)
         _check_data_and_mesh_compat(self.mesh, self.data)
         total_n_vertices = sum(
             mesh_part.n_vertices for mesh_part in self.mesh.values()
