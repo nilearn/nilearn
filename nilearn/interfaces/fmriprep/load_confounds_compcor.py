@@ -14,18 +14,18 @@ def _find_compcor(confounds_json, compcor, n_compcor):
 
     Parameters
     ----------
-    confounds_json : dict
+    confounds_json : :obj:`dict`
         Dictionary of confounds from the confounds.json file.
-    compcor : str
+    compcor : :obj:`str`
         Compcor strategy to use. Options are "temporal_anat", "temporal",
         "anat", or "combined".
-    n_compcor : int or str
+    n_compcor : :obj:`int` or :obj:`str`
         Number of compcor components to retain. If "all", all components
         are retained.
 
     Returns
     -------
-    collector : list
+    collector : :obj:`list`
         List of compcor components to retain.
     """
     prefix_set, anat_mask = _check_compcor_method(compcor)
@@ -59,16 +59,16 @@ def _select_compcor(compcor_cols, n_compcor):
 
     Parameters
     ----------
-    compcor_cols : list
+    compcor_cols : :obj:`list`
         List of compcor components column names filtered by user
         selected CompCor strategy.
-    n_compcor : int or str
+    n_compcor : :obj:`int` or :obj:`str`
         Number of compcor components to retain. If "all", all components
         are retained.
 
     Returns
     -------
-    compcor_cols : list
+    compcor_cols : :obj:`list`
         List of compcor components column names to retain.
     """
     # only select if not "all", or less components are requested than there
@@ -89,9 +89,9 @@ def _check_compcor_method(compcor):
 
     Returns
     -------
-    prefix_set : list
+    prefix_set : :obj:`list`
         List of prefixes to use for compcor components.
-    anat_mask : list
+    anat_mask : :obj:`list`
         List of anatomical masks to use for acompcor.
     """
     compcor_type = compcor.split("_")
@@ -113,20 +113,20 @@ def _acompcor_mask(confounds_json, anat_mask, compcor_cols_filt, n_compcor):
 
     Parameters
     ----------
-    confounds_json : :obj: `dict
+    confounds_json : :obj: `dict`
         Dictionary of confounds from the confounds.json file.
-    anat_mask : list
+    anat_mask : :obj:`list`
         List of anatomical masks to use for acompcor.
-    compcor_cols_filt : list
+    compcor_cols_filt : :obj:`list`
         List of compcor components column names filtered by user
         selected CompCor strategy.
-    n_compcor : int or str
+    n_compcor : :obj:`int` or :obj:`str`
         Number of compcor components to retain. If "all", all components
         are retained.
 
     Returns
     -------
-    collector : list
+    collector : :obj:`list`
         List of compcor components column names to retain.
     """
     collector = []
@@ -142,17 +142,17 @@ def _json_mask(compcor_cols_filt, confounds_json, mask):
 
     Parameters
     ----------
-    compcor_cols_filt : list
+    compcor_cols_filt : :obj:`list`
         List of compcor components column names filtered by user
         selected CompCor strategy.
-    confounds_json : dict
+    confounds_json : :obj:`dict`
         Dictionary of confounds from the confounds.json file.
-    mask : str
+    mask : :obj:`str`
         Mask to use for acompcor.
 
     Returns
     -------
-    compcor_cols_filt : list
+    compcor_cols_filt : :obj:`list`
         List of compcor components column names filtered by type of
         acompcor mask.
     """
@@ -168,14 +168,14 @@ def _prefix_confound_filter(prefix, all_compcor_name):
 
     Parameters
     ----------
-    prefix : str
+    prefix : :obj:`str`
         Prefix to use for compcor components.
-    all_compcor_name : list
+    all_compcor_name : :obj:`list`
         List of all compcor components column names.
 
     Returns
     -------
-    compcor_cols_filt : list
+    compcor_cols_filt : :obj:`list`
         List of compcor components column names filtered by prefix.
     """
     compcor_cols_filt = []

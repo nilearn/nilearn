@@ -235,6 +235,15 @@ def _update_user_inputs(kwargs, default_parameters, check_parameters):
     check_parameters : :obj:`list`
         List of parameters that are applicable to the selected pre-set
         strategy.
+
+    Returns
+    -------
+    parameters : :obj:`dict`
+        Updated valid parameters for `load_confounds`.
+
+    not_needed : :obj:`list`
+        List of parameters that are not applicable to the selected
+        pre-set strategy.
     """
     parameters = default_parameters.copy()
     # update the parameter with user input

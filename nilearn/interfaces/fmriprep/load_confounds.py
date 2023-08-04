@@ -123,7 +123,7 @@ def load_confounds(
     Parameters
     ----------
     img_files : :obj:`str` or :obj:`list` of :obj:`str`
-        Processed nii.gz/dtseries.nii/func.gii file reside in a
+        Path of processed nii.gz/dtseries.nii/func.gii file reside in a
         :term:`fMRIPrep` generated functional derivative directory (i.e.The
         associated confound files should be in the same directory as the image
         file). As long as the image file, confound related tsv and json are in
@@ -199,14 +199,13 @@ def load_confounds(
 
     scrub : :obj:`int`, default 5
         After accounting for time frames with excessive motion, further remove
-        segments shorter than the given number. The default value is 5
-        (referred as full scrubbing in :footcite:`Power2014`). When the value
-        is 0, temove time frames based on excessive framewise displacement and
-        DVARS only. One-hot encoding vectors are added as regressors for each
-        scrubbed frame.
+        segments shorter than the given number. The default value is referred
+        as full scrubbing in :footcite:`Power2014`. When the value is 0,
+        remove time frames based on excessive framewise displacement and
+        DVARS only.
 
     fd_threshold : :obj:`float`, default 0.2
-        Framewise displacement threshold for scrub in mm
+        Framewise displacement threshold for scrub in mm.
 
     std_dvars_threshold : :obj:`float`, default 3
         Standardized DVARS threshold for scrub (default = 3).
@@ -215,8 +214,7 @@ def load_confounds(
         of timecourses, VARS referring to root mean squared variance over
         voxels.
 
-    compcor : :obj:`str`, {'anat_combined', 'anat_separated', 'temporal',\
-    'temporal_anat_combined', 'temporal_anat_separated'}
+    compcor : :obj:`str`, default "anat_combined"
 
         .. warning::
             Require fmriprep >= v:1.4.0.
@@ -240,7 +238,7 @@ def load_confounds(
         "all": select all components (50% variance explained by
         :term:`fMRIPrep` defaults)
 
-    ica_aroma : :obj:`str`, {'full', 'basic'}
+    ica_aroma : :obj:`str`, default "full"
 
         - "full": use :term:`fMRIPrep` output
           `~desc-smoothAROMAnonaggr_bold.nii.gz`.
