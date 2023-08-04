@@ -83,7 +83,7 @@ def _check_compcor_method(compcor):
 
     Parameters
     ----------
-    compcor : str
+    compcor : :obj: `str`
         Compcor strategy to use. Options are "temporal_anat", "temporal",
         "anat", or "combined".
 
@@ -113,7 +113,7 @@ def _acompcor_mask(confounds_json, anat_mask, compcor_cols_filt, n_compcor):
 
     Parameters
     ----------
-    confounds_json : dict
+    confounds_json : :obj: `dict
         Dictionary of confounds from the confounds.json file.
     anat_mask : list
         List of anatomical masks to use for acompcor.
