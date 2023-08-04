@@ -219,9 +219,9 @@ def test_make_headings_with_contrasts_none_title_custom():
 
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
-def test_stat_map_to_svg_slice_z(generate_img, cut_coords):
+def test_stat_map_to_svg_slice_z(mni_3d_img, cut_coords):
     with InTemporaryDirectory():
-        img = generate_img
+        img = mni_3d_img
         table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
         glmr._stat_map_to_svg(
             stat_img=img,
@@ -234,9 +234,9 @@ def test_stat_map_to_svg_slice_z(generate_img, cut_coords):
 
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
-def test_stat_map_to_svg_glass_z(generate_img, cut_coords):
+def test_stat_map_to_svg_glass_z(mni_3d_img, cut_coords):
     with InTemporaryDirectory():
-        img = generate_img
+        img = mni_3d_img
         table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
         glmr._stat_map_to_svg(
             stat_img=img,
@@ -249,9 +249,9 @@ def test_stat_map_to_svg_glass_z(generate_img, cut_coords):
 
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
-def test_stat_map_to_svg_invalid_plot_type(generate_img, cut_coords):
+def test_stat_map_to_svg_invalid_plot_type(mni_3d_img, cut_coords):
     with InTemporaryDirectory():
-        img = generate_img
+        img = mni_3d_img
         expected_error = ValueError(
             "Invalid plot type provided. Acceptable options are"
             "'slice' or 'glass'."

@@ -820,8 +820,8 @@ def test_plot_surf_roi_error(engine):
         plot_surf_roi(mesh, roi_map=roi_idx, engine=engine)
 
 
-def test_plot_img_on_surf_hemispheres_and_orientations(generate_img):
-    nii = generate_img
+def test_plot_img_on_surf_hemispheres_and_orientations(mni_3d_img):
+    nii = mni_3d_img
     # Check that all combinations of 1D or 2D hemis and orientations work.
     plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'])
     plot_img_on_surf(nii, hemispheres=['left', 'right'], views=['lateral'])
@@ -837,8 +837,8 @@ def test_plot_img_on_surf_hemispheres_and_orientations(generate_img):
                      views=[(210.0, 90.0), (15.0, -45.0)])
 
 
-def test_plot_img_on_surf_colorbar(generate_img):
-    nii = generate_img
+def test_plot_img_on_surf_colorbar(mni_3d_img):
+    nii = mni_3d_img
     plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
                      colorbar=True, vmax=5, threshold=3)
     plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
@@ -849,14 +849,14 @@ def test_plot_img_on_surf_colorbar(generate_img):
                      colorbar=True, cmap='roy_big_bl', vmax=2)
 
 
-def test_plot_img_on_surf_inflate(generate_img):
-    nii = generate_img
+def test_plot_img_on_surf_inflate(mni_3d_img):
+    nii = mni_3d_img
     plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
                      inflate=True)
 
 
-def test_plot_img_on_surf_surf_mesh(generate_img):
-    nii = generate_img
+def test_plot_img_on_surf_surf_mesh(mni_3d_img):
+    nii = mni_3d_img
     plot_img_on_surf(nii, hemispheres=['right', 'left'], views=['lateral'])
     plot_img_on_surf(nii, hemispheres=['right', 'left'], views=['lateral'],
                      surf_mesh='fsaverage5')
@@ -865,9 +865,9 @@ def test_plot_img_on_surf_surf_mesh(generate_img):
                      surf_mesh=surf_mesh)
 
 
-def test_plot_img_on_surf_with_invalid_orientation(generate_img):
+def test_plot_img_on_surf_with_invalid_orientation(mni_3d_img):
     kwargs = {"hemisphere": ["right"], "inflate": True}
-    nii = generate_img
+    nii = mni_3d_img
     with pytest.raises(ValueError):
         plot_img_on_surf(nii, views=['latral'], **kwargs)
     with pytest.raises(ValueError):
@@ -878,8 +878,8 @@ def test_plot_img_on_surf_with_invalid_orientation(generate_img):
         plot_img_on_surf(nii, views=['medial', {'a': 'a'}], **kwargs)
 
 
-def test_plot_img_on_surf_with_invalid_hemisphere(generate_img):
-    nii = generate_img
+def test_plot_img_on_surf_with_invalid_hemisphere(mni_3d_img):
+    nii = mni_3d_img
     with pytest.raises(ValueError):
         plot_img_on_surf(
             nii, views=['lateral'], inflate=True, hemispheres=["lft]"]
@@ -897,8 +897,8 @@ def test_plot_img_on_surf_with_invalid_hemisphere(generate_img):
         )
 
 
-def test_plot_img_on_surf_with_figure_kwarg(generate_img):
-    nii = generate_img
+def test_plot_img_on_surf_with_figure_kwarg(mni_3d_img):
+    nii = mni_3d_img
     with pytest.raises(ValueError):
         plot_img_on_surf(
             nii,
@@ -908,8 +908,8 @@ def test_plot_img_on_surf_with_figure_kwarg(generate_img):
         )
 
 
-def test_plot_img_on_surf_with_axes_kwarg(generate_img):
-    nii = generate_img
+def test_plot_img_on_surf_with_axes_kwarg(mni_3d_img):
+    nii = mni_3d_img
     with pytest.raises(ValueError):
         plot_img_on_surf(
             nii,
@@ -920,8 +920,8 @@ def test_plot_img_on_surf_with_axes_kwarg(generate_img):
         )
 
 
-def test_plot_img_on_surf_title(generate_img):
-    nii = generate_img
+def test_plot_img_on_surf_title(mni_3d_img):
+    nii = mni_3d_img
     title = "Title"
     fig, axes = plot_img_on_surf(
         nii, hemispheres=['right'], views=['lateral']
@@ -934,8 +934,8 @@ def test_plot_img_on_surf_title(generate_img):
     assert fig._suptitle.get_text() == title, "Title text not assigned."
 
 
-def test_plot_img_on_surf_output_file(tmp_path, generate_img):
-    nii = generate_img
+def test_plot_img_on_surf_output_file(tmp_path, mni_3d_img):
+    nii = mni_3d_img
     fname = tmp_path / 'tmp.png'
     return_value = plot_img_on_surf(nii,
                                     hemispheres=['right'],

@@ -89,7 +89,7 @@ MNI_AFFINE = np.array(
 )
 
 
-def _generate_img(affine=MNI_AFFINE):
+def _mni_3d_img(affine=MNI_AFFINE):
     data_positive = np.zeros((7, 7, 3))
     rng = np.random.RandomState(42)
     data_rng = rng.rand(7, 7, 3)
@@ -107,13 +107,13 @@ def mni_affine():
 def testdata_3d_for_plotting():
     """A random 3D image for testing figures."""
     # TODO: return img_3D directly and not a dict
-    return {"img": _generate_img()}
+    return {"img": _mni_3d_img()}
 
 
 @pytest.fixture()
-def generate_img():
-    """Generate a random 3D image."""
-    return _generate_img()
+def mni_3d_img():
+    """Fixture for a random 3D image in MNI space."""
+    return _mni_3d_img()
 
 
 @pytest.fixture()
