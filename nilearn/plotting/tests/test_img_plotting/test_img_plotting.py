@@ -38,7 +38,7 @@ PLOTTING_FUNCS_4D = {plot_prob_atlas, plot_carpet}
 PLOTTING_FUNCS_3D = ALL_PLOTTING_FUNCS.difference(PLOTTING_FUNCS_4D)
 
 
-def _test_data_with_nans(img, mni_affine=MNI_AFFINE):
+def _add_nans_to_img(img, mni_affine=MNI_AFFINE):
     """Add nans in test image data."""
     data = get_data(img)
     data[6, 5, 1] = np.nan
@@ -182,7 +182,7 @@ def test_invalid_cut_coords_with_display_mode(
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_with_nans(plot_func, mni_3d_img):
     """Smoke test for plotting functions with nans in data image."""
-    plot_func(_test_data_with_nans(mni_3d_img))
+    plot_func(_add_nans_to_img(mni_3d_img))
 
 
 @pytest.mark.parametrize(
@@ -198,7 +198,7 @@ def test_plotting_functions_with_cmaps(plot_func, cmap):
 @pytest.mark.parametrize("plot_func", [plot_anat, plot_roi, plot_stat_map])
 def test_plotting_functions_with_nans_in_bg_img(plot_func, mni_3d_img):
     """Smoke test for plotting functions with nans in background image."""
-    bg_img = _test_data_with_nans(mni_3d_img)
+    bg_img = _add_nans_to_img(mni_3d_img)
     if plot_func == plot_anat:
         plot_func(bg_img)
     else:
