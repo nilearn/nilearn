@@ -34,6 +34,8 @@
 
 .. _Arthur Mensch: https://www.amensch.fr/
 
+.. _Aswin Vijayan: https://github.com/vaswin0
+
 .. _Audrey Duran: https://github.com/AudreyDuran
 
 .. _Ben Cipollini: https://github.com/bcipolli
