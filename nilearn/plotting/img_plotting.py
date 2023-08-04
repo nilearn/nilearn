@@ -216,9 +216,6 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
         display.draw_cross()
     if title is not None and not title == '':
         display.title(title)
-    if hasattr(display, '_cbar'):
-        cbar = display._cbar
-        _crop_colorbar(cbar, cbar_vmin, cbar_vmax, threshold)
     if output_file is not None:
         display.savefig(output_file)
         display.close()
@@ -230,6 +227,12 @@ def _get_cropped_cbar_ticks(cbar_vmin, cbar_vmax,
                             threshold=None, n_ticks=5):
     """Helper function for _crop_colobar.
     Returns ticks for cropped colorbars.
+
+        cbar_tick_locs = cbar.locator.locs
+        new_tick_locs = _get_cropped_cbar_ticks(
+        cbar_vmin, cbar_vmax, threshold,
+        n_ticks=len(cbar_tick_locs))
+        cbar.set_ticks(new_tick_locs, update_ticks=True)
     """
     new_tick_locs = np.linspace(cbar_vmin, cbar_vmax, n_ticks)
     if threshold is not None:
@@ -254,51 +257,6 @@ def _get_cropped_cbar_ticks(cbar_vmin, cbar_vmax,
                     -threshold if threshold > cbar_vmax else threshold)
     return new_tick_locs
 
-
-def _crop_colorbar(cbar, cbar_vmin, cbar_vmax, threshold=None):
-    """Crop a colorbar to show from cbar_vmin to cbar_vmax.
-    Used when symmetric_cbar=False is used.
-
-    """
-    if (cbar_vmin is None) and (cbar_vmax is None):
-        return
-    cbar_tick_locs = cbar.locator.locs
-    if cbar_vmax is None:
-        cbar_vmax = cbar.norm.vmax
-    if cbar_vmin is None:
-        cbar_vmin = cbar.norm.vmin
-
-    new_tick_locs = _get_cropped_cbar_ticks(
-        cbar_vmin, cbar_vmax, threshold,
-        n_ticks=len(cbar_tick_locs))
-
-    # matplotlib >= 3.2.0 no longer normalizes axes between 0 and 1
-    # See https://matplotlib.org/3.2.1/api/prev_api_changes/api_changes_3.2.0.html
-    # _outline was removed in
-    # https://github.com/matplotlib/matplotlib/commit/03a542e875eba091a027046d5ec652daa8be6863
-    # so we use the code from there
-    if LooseVersion(matplotlib.__version__) >= LooseVersion("3.2.0"):
-        cbar.ax.set_ylim(cbar_vmin, cbar_vmax)
-        X, _ = cbar._mesh()
-        X = np.array([X[0], X[-1]])
-        Y = np.array([[cbar_vmin, cbar_vmin], [cbar_vmax, cbar_vmax]])
-        N = X.shape[0]
-        ii = [0, 1, N - 2, N - 1, 2 * N - 1, 2 * N - 2, N + 1, N, 0]
-        x = X.T.reshape(-1)[ii]
-        y = Y.T.reshape(-1)[ii]
-        xy = (np.column_stack([y, x])
-              if cbar.orientation == 'horizontal' else
-              np.column_stack([x, y]))
-        cbar.outline.set_xy(xy)
-    else:
-        cbar.ax.set_ylim(cbar.norm(cbar_vmin), cbar.norm(cbar_vmax))
-        outline = cbar.outline.get_xy()
-        outline[:2, 1] += cbar.norm(cbar_vmin)
-        outline[2:6, 1] -= (1. - cbar.norm(cbar_vmax))
-        outline[6:, 1] += cbar.norm(cbar_vmin)
-        cbar.outline.set_xy(outline)
-
-    cbar.set_ticks(new_tick_locs, update_ticks=True)
 
 
 @fill_doc
