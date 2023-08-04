@@ -63,6 +63,7 @@ Some other past or present contributors are:
 * `Anne-Sophie Kieslinger`_
 * `Ariel Rokem`_
 * `Arthur Mensch`_
+* `Aswin Vijayan`_
 * `Audrey Duran`_
 * `Ben Cipollini`_
 * `Bertrand Thirion`_
