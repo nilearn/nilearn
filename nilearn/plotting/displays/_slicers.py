@@ -807,20 +807,20 @@ class BaseSlicer:
 
 def _get_cbar_ticks(vmin, vmax, offset, nb_ticks=5):
     """Help for BaseSlicer."""
-    # edge case where the data has a single value yields a cryptic
-    # matplotlib error message when trying to plot the color bar
+    # edge case where the data has a single value yields
+    # a cryptic matplotlib error message when trying to plot the color bar
     if vmin == vmax:
         return np.linspace(vmin, vmax, 1)
 
-    # If a threshold is specified, we want two of the ticks to
-    # correspond to -thresold and +threshold on the colorbar.
-    # If the threshold is very small compared to vmax, we use
-    # a simple linspace as the result would be very difficult to see.
+    # If a threshold is specified, we want two of the tick
+    # to correspond to -thresold and +threshold on the colorbar.
+    # If the threshold is very small compared to vmax,
+    # we use a simple linspace as the result would be very difficult to see.
     ticks = np.linspace(vmin, vmax, nb_ticks)
     if offset is not None and offset / vmax > 0.12:
         diff = [abs(abs(tick) - offset) for tick in ticks]
-        # Edge case where the thresholds are exactly at
-        # the same distance to 4 ticks
+        # Edge case where the thresholds are exactl
+        # at the same distance to 4 ticks
         if diff.count(min(diff)) == 4:
             idx_closest = np.sort(np.argpartition(diff, 4)[:4])
             idx_closest = np.in1d(ticks, np.sort(ticks[idx_closest])[1:3])

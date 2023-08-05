@@ -1,7 +1,6 @@
 """Functions for surface visualization."""
 import itertools
 import math
-import warnings
 from collections.abc import Sequence
 from warnings import warn
 
@@ -429,9 +428,8 @@ def _get_cmap_matplotlib(cmap, vmin, vmax, cbar_tick_format, threshold=None):
     cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
     if threshold is not None:
         if cbar_tick_format == "%i" and int(threshold) != threshold:
-            warnings.warn("You provided a non integer threshold "
-                          "but configured the colorbar to use "
-                          "integer formatting.")
+            warn("You provided a non integer threshold "
+                 "but configured the colorbar to use integer formatting.")
         # set colors to grey for absolute values < threshold
         istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
         istop = int(norm(threshold, clip=True) * (our_cmap.N - 1))

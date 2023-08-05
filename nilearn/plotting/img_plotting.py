@@ -240,8 +240,9 @@ def _get_cropped_cbar_ticks(cbar_vmin, cbar_vmax, threshold=None, n_ticks=5):
             idx_closest = np.argmin([abs(abs(new_tick_locs) - threshold)
                                      for _ in new_tick_locs])
             new_tick_locs[idx_closest] = threshold
-        # Case where we do a symmetric thresholding within an
-        # asymmetric cbar and both threshold values are within bounds
+        # Case where we do a symmetric thresholding
+        # within an asymmetric cbar
+        # and both threshold values are within bounds
         elif cbar_vmin <= -threshold <= threshold <= cbar_vmax:
             new_tick_locs = _get_cbar_ticks(cbar_vmin,
                                             cbar_vmax,
