@@ -1,144 +1,145 @@
-name: 'build'
+---
+name: build
 
 on:
-  push:
-    branches:
-      - "main"
-  pull_request:
-    branches:
-      - '*'
+    push:
+        branches:
+        -   main
+    pull_request:
+        branches:
+        -   '*'
 
 jobs:
-  min_requirements:
-    runs-on: "ubuntu-20.04"
-    name: Python 3.7, minimal requirements without Matplotlib
-    defaults:
-      run:
-        shell: bash
-    env:
-        MIN_REQUIREMENTS: true
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.7"
-        name: 'Setup python'
-      - shell: bash -l {0}
-        name: 'Display Python version'
-        run: python -c "import sys; print(sys.version)"
-      - shell: bash -l {0}
-        run: ./build_tools/github/dependencies.sh
-        name: 'Install dependencies'
-      - shell: bash -l {0}
-        run: ./build_tools/github/install.sh
-        name: 'Install nilearn'
-      - shell: bash -l {0}
-        run: ./build_tools/github/test.sh
-        name: 'Run tests'
-      - uses: codecov/codecov-action@v3
-        if: success()
-        name: 'Upload coverage to CodeCov'
+    min_requirements:
+        runs-on: ubuntu-20.04
+        name: Python 3.7, minimal requirements without Matplotlib
+        defaults:
+            run:
+                shell: bash
+        env:
+            MIN_REQUIREMENTS: true
+        steps:
+        -   uses: actions/checkout@v3
+        -   uses: actions/setup-python@v4
+            with:
+                python-version: '3.7'
+            name: Setup python
+        -   shell: bash -l {0}
+            name: Display Python version
+            run: python -c "import sys; print(sys.version)"
+        -   shell: bash -l {0}
+            run: ./build_tools/github/dependencies.sh
+            name: Install dependencies
+        -   shell: bash -l {0}
+            run: ./build_tools/github/install.sh
+            name: Install nilearn
+        -   shell: bash -l {0}
+            run: ./build_tools/github/test.sh
+            name: Run tests
+        -   uses: codecov/codecov-action@v3
+            if: success()
+            name: Upload coverage to CodeCov
 
-  min_requirements_matplotlib:
-    runs-on: "ubuntu-20.04"
-    name: Python 3.7, minimal requirements with Matplotlib
-    defaults:
-      run:
-        shell: bash
-    env:
-        MIN_REQUIREMENTS: true
-        MATPLOTLIB: true
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.7"
-        name: 'Setup python'
-      - shell: bash -l {0}
-        name: 'Display Python version'
-        run: python -c "import sys; print(sys.version)"
-      - shell: bash -l {0}
-        run: ./build_tools/github/dependencies.sh
-        name: 'Install dependencies'
-      - shell: bash -l {0}
-        run: ./build_tools/github/install.sh
-        name: 'Install nilearn'
-      - shell: bash -l {0}
-        run: ./build_tools/github/test.sh
-        name: 'Run tests'
+    min_requirements_matplotlib:
+        runs-on: ubuntu-20.04
+        name: Python 3.7, minimal requirements with Matplotlib
+        defaults:
+            run:
+                shell: bash
+        env:
+            MIN_REQUIREMENTS: true
+            MATPLOTLIB: true
+        steps:
+        -   uses: actions/checkout@v3
+        -   uses: actions/setup-python@v4
+            with:
+                python-version: '3.7'
+            name: Setup python
+        -   shell: bash -l {0}
+            name: Display Python version
+            run: python -c "import sys; print(sys.version)"
+        -   shell: bash -l {0}
+            run: ./build_tools/github/dependencies.sh
+            name: Install dependencies
+        -   shell: bash -l {0}
+            run: ./build_tools/github/install.sh
+            name: Install nilearn
+        -   shell: bash -l {0}
+            run: ./build_tools/github/test.sh
+            name: Run tests
 
-  latest:
-    runs-on: ${{ matrix.os }}
-    strategy:
-        fail-fast: false
-        matrix:
-            os: ["ubuntu-latest", "macos-latest", "windows-latest"]
-            python-version: ["3.8", "3.9", "3.10", "3.11"]
-    name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and latest package versions
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-            python-version: ${{ matrix.python-version }}
-        name: 'Setup python'
-      - shell: bash {0}
-        name: 'Display Python version'
-        run: python -c "import sys; print(sys.version)"
-      - shell: bash {0}
-        run: ./build_tools/github/dependencies.sh
-        name: 'Install dependencies'
-      - shell: bash {0}
-        run: ./build_tools/github/install.sh
-        name: 'Install nilearn'
-      - shell: bash {0}
-        run: ./build_tools/github/test_docs.sh
-        name: 'Run doctests'
-      - shell: bash {0}
-        run: ./build_tools/github/test.sh
-        name: 'Run tests'
-      - uses: codecov/codecov-action@v3
-        with:
-          flags: ${{ matrix.os }}_${{ matrix.python-version }}
-        if: success()
-        name: 'Upload coverage to CodeCov'
+    latest:
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, macos-latest, windows-latest]
+                python-version: ['3.8', '3.9', '3.10', '3.11']
+        name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and latest package versions
+        defaults:
+            run:
+                shell: bash
+        steps:
+        -   uses: actions/checkout@v3
+        -   uses: actions/setup-python@v4
+            with:
+                python-version: ${{ matrix.python-version }}
+            name: Setup python
+        -   shell: bash {0}
+            name: Display Python version
+            run: python -c "import sys; print(sys.version)"
+        -   shell: bash {0}
+            run: ./build_tools/github/dependencies.sh
+            name: Install dependencies
+        -   shell: bash {0}
+            run: ./build_tools/github/install.sh
+            name: Install nilearn
+        -   shell: bash {0}
+            run: ./build_tools/github/test_docs.sh
+            name: Run doctests
+        -   shell: bash {0}
+            run: ./build_tools/github/test.sh
+            name: Run tests
+        -   uses: codecov/codecov-action@v3
+            with:
+                flags: ${{ matrix.os }}_${{ matrix.python-version }}
+            if: success()
+            name: Upload coverage to CodeCov
 
-  prerelease:
-    runs-on: ${{ matrix.os }}
-    strategy:
-        fail-fast: false
-        matrix:
-            os: ["ubuntu-latest"]
-            python-version: ["3.11"]
-    env:
-        PIP_FLAGS: "--pre"
-    name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and pre-release dependencies
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-            python-version: ${{ matrix.python-version }}
-        name: 'Setup python'
-      - shell: bash {0}
-        name: 'Display Python version'
-        run: python -c "import sys; print(sys.version)"
-      - shell: bash {0}
-        run: ./build_tools/github/dependencies.sh
-        name: 'Install dependencies'
-      - shell: bash {0}
-        run: ./build_tools/github/install.sh
-        name: 'Install nilearn'
-      - shell: bash {0}
-        run: ./build_tools/github/test_docs.sh
-        name: 'Run doctests'
-      - shell: bash {0}
-        run: ./build_tools/github/test.sh
-        name: 'Run tests'
-      - uses: codecov/codecov-action@v3
-        if: success()
-        name: 'Upload coverage to CodeCov'
+    prerelease:
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest]
+                python-version: ['3.11']
+        env:
+            PIP_FLAGS: --pre
+        name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and pre-release dependencies
+        defaults:
+            run:
+                shell: bash
+        steps:
+        -   uses: actions/checkout@v3
+        -   uses: actions/setup-python@v4
+            with:
+                python-version: ${{ matrix.python-version }}
+            name: Setup python
+        -   shell: bash {0}
+            name: Display Python version
+            run: python -c "import sys; print(sys.version)"
+        -   shell: bash {0}
+            run: ./build_tools/github/dependencies.sh
+            name: Install dependencies
+        -   shell: bash {0}
+            run: ./build_tools/github/install.sh
+            name: Install nilearn
+        -   shell: bash {0}
+            run: ./build_tools/github/test_docs.sh
+            name: Run doctests
+        -   shell: bash {0}
+            run: ./build_tools/github/test.sh
+            name: Run tests
+        -   uses: codecov/codecov-action@v3
+            if: success()
+            name: Upload coverage to CodeCov

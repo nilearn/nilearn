@@ -1,4 +1,5 @@
-name: 'detect test pollution'
+---
+name: detect test pollution
 
 # Runs once a month.
 # Use pytest with the pytest-random-order plugin to run all tests
@@ -21,37 +22,37 @@ on:
 #            │ │ │ │ │
 #            │ │ │ │ │
 #            * * * * *
-  schedule:
-    - cron: "0 0 25 * *" # on the 25th of every monday
+    schedule:
+    -   cron: 0 0 25 * * # on the 25th of every monday
 
   # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+    workflow_dispatch:
 
 jobs:
 
-  latest:
+    latest:
 
-    runs-on: ubuntu-latest
+        runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v3
+        steps:
+        -   uses: actions/checkout@v3
 
-      - name: Setup python
-        uses: actions/setup-python@v4
-        with:
-            python-version: 3.11
+        -   name: Setup python
+            uses: actions/setup-python@v4
+            with:
+                python-version: 3.11
 
-      - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
+        -   name: Display Python version
+            run: python -c "import sys; print(sys.version)"
 
-      - name: Install dependencies
-        run: ./build_tools/github/dependencies.sh
+        -   name: Install dependencies
+            run: ./build_tools/github/dependencies.sh
 
-      - name: Install nilearn
-        run: ./build_tools/github/install.sh
+        -   name: Install nilearn
+            run: ./build_tools/github/install.sh
 
-      - name: Install extra dependencies
-        run: pip install pytest-random-order
+        -   name: Install extra dependencies
+            run: pip install pytest-random-order
 
-      - name: Run tests
-        run: python -m pytest --pyargs nilearn --cov=nilearn --random-order
+        -   name: Run tests
+            run: python -m pytest --pyargs nilearn --cov=nilearn --random-order
