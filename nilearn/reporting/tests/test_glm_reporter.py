@@ -57,17 +57,12 @@ def test_flm_reporting(tmp_path, use_method):
         )
     """
     catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
-    Python2's limited unicode support causes  HTMLDocument.get_iframe() to
-    mishandle certain unicode characters, like the greek alpha symbol
-    and raises this error.
-    Calling HTMLDocument.get_iframe() here causes the tests
-    to fail on Python2, alerting us if such a situation arises
-    due to future modifications.
+    in case certain unicode characters are mishandled,
+    like the greek alpha symbol.
     """
     report_iframe = report_flm.get_iframe()
     # So flake8 doesn't complain about not using variable (F841)
     report_iframe
-    del mask, flm, fmri_data
 
 
 @pytest.mark.skipif(
@@ -94,9 +89,6 @@ def test_slm_reporting(tmp_path, use_method):
     report_iframe = report_slm.get_iframe()
     # So flake8 doesn't complain about not using variable (F841)
     report_iframe
-    # Delete objects attached to files to avoid WindowsError when deleting
-    # temporary directory (in Windows)
-    del Y, FUNCFILE, func_img, model
 
 
 def test_check_report_dims():
@@ -330,5 +322,3 @@ def test_masking_first_level_model(tmp_path):
     report_iframe = report_flm.get_iframe()
     # So flake8 doesn't complain about not using variable (F841)
     report_iframe
-
-    del mask, flm, fmri_data, masker
