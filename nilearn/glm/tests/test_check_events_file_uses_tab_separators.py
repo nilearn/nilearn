@@ -86,7 +86,7 @@ def test_for_pandas_dataframe():
     assert result is None
 
 
-def test_binary_opening_an_image(tmp_path):
+def test_binary_opening_an_image_error(tmp_path):
     img_data = bytearray(
         b"GIF87a\x01\x00\x01\x00\xe7*\x00\x00\x00\x00\x01\x01\x01\x02\x02"
         b"\x07\x08\x08\x08\x0b\x0b\x0b\x0c\x0c\x0c\r;"
@@ -98,35 +98,10 @@ def test_binary_opening_an_image(tmp_path):
         _check_events_file_uses_tab_separators(events_files=temp_img_file)
 
 
-def test_binary_bytearray_of_ints_data(tmp_path):
+def test_binary_bytearray_of_ints_data_error(tmp_path):
     temp_data_bytearray_from_ints = bytearray([0, 1, 0, 11, 10])
     temp_bin_file = tmp_path / "temp_bin.bin"
     with open(temp_bin_file, "wb") as temp_bin_obj:
         temp_bin_obj.write(temp_data_bytearray_from_ints)
     with pytest.raises(ValueError):
         _check_events_file_uses_tab_separators(events_files=temp_bin_file)
-
-
-if __name__ == "__main__":
-
-    def _run_tests_print_test_messages(test_func):
-        from pprint import pprint
-
-        pprint(["Running", test_func.__name__])
-        test_func()
-        pprint("... complete")
-
-    def run_test_suite():
-        tests = [
-            test_for_invalid_filepath,
-            test_with_2D_dataframe,
-            test_with_1D_dataframe,
-            test_for_invalid_filepath,
-            test_for_pandas_dataframe,
-            test_binary_opening_an_image,
-            test_binary_bytearray_of_ints_data,
-        ]
-        for test_ in tests:
-            _run_tests_print_test_messages(test_func=test_)
-
-    run_test_suite()

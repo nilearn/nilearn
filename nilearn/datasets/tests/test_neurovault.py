@@ -278,10 +278,13 @@ def test_get_batch(tmp_path):
     batch = neurovault._get_batch(neurovault._NEUROVAULT_COLLECTIONS_URL)
     assert "results" in batch
     assert "count" in batch
-    with pytest.raises(requests.RequestException):
-        neurovault._get_batch("http://")
     with open(tmp_path / "test_nv.txt", "w"):
         pass
+
+
+def test_get_batch_error(tmp_path):
+    with pytest.raises(requests.RequestException):
+        neurovault._get_batch("http://")
     with pytest.raises(ValueError):
         neurovault._get_batch(
             f"file://{str(tmp_path / 'test_nv.txt')}",
@@ -477,13 +480,16 @@ def test_result_filter_combinations():
     assert not filt({"a": 0, "b": 0})
 
 
-def test_simple_download(tmp_path, request_mocker):
+def test_simple_download(tmp_path):
     downloaded_file = neurovault._simple_download(
         "http://neurovault.org/media/images/35/Fig3B_zstat1.nii.gz",
         tmp_path / "image_35.nii.gz",
         tmp_path,
     )
     assert os.path.isfile(downloaded_file)
+
+
+def test_simple_download_error(tmp_path, request_mocker):
     request_mocker.url_mapping["*"] = requests.RequestException()
     with pytest.raises(requests.RequestException):
         neurovault._simple_download(
@@ -495,7 +501,6 @@ def test_simple_download(tmp_path, request_mocker):
 
 def test_neurosynth_words_vectorized(tmp_path):
     n_im = 5
-
     words_files = [tmp_path / f"words_for_image_{i}.json" for i in range(n_im)]
     words = [str(i) for i in range(n_im)]
     for i, file_name in enumerate(words_files):
@@ -507,6 +512,9 @@ def test_neurosynth_words_vectorized(tmp_path):
     freq, _ = neurovault.neurosynth_words_vectorized(words_files)
     assert freq.shape == (n_im, n_im)
     assert (freq.sum(axis=0) == np.ones(n_im)).all()
+
+
+def test_neurosynth_words_vectorized_warning(tmp_path):
     with pytest.warns(UserWarning):
         neurovault.neurosynth_words_vectorized(
             ((tmp_path, "no_words_here.json"),)
@@ -629,6 +637,21 @@ def test_download_image_terms(tmp_path, request_mocker):
     }
     request_mocker.url_mapping["*"] = requests.RequestException()
     neurovault._download_image_terms(image_info, collection, download_params)
+
+
+def test_download_image_terms_error(tmp_path, request_mocker):
+    image_info = {"id": "a"}
+    collection = {
+        "relative_path": "collection",
+        "absolute_path": tmp_path / "collection",
+    }
+    os.makedirs(collection["absolute_path"])
+    download_params = {
+        "temp_dir": tmp_path,
+        "verbose": 3,
+        "fetch_neurosynth_words": True,
+    }
+    request_mocker.url_mapping["*"] = requests.RequestException()
     download_params["allow_neurosynth_failure"] = False
     with pytest.raises(RuntimeError):
         neurovault._download_image_terms(
@@ -636,6 +659,7 @@ def test_download_image_terms(tmp_path, request_mocker):
             collection,
             download_params,
         )
+    # no fail if file already exists
     with open(
         os.path.join(
             collection["absolute_path"],
