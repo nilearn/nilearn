@@ -461,7 +461,7 @@ class BaseSlicer:
         ims = []
         to_iterate_over = zip(self.axes.values(), data_2d_list)
         for display_ax, data_2d in to_iterate_over:
-            if data_2d is not None:
+            if data_2d is not None and data_2d.min() is not np.ma.masked:
                 # If data_2d is completely masked, then there is nothing to
                 # plot. Hence, no point to do imshow().
                 im = display_ax.draw_2d(
