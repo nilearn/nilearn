@@ -223,7 +223,7 @@ def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
                                                 cbar.vmax,
                                                 threshold,
                                                 n_ticks=len(cbar.locator.locs))
-        cbar.set_ticks(new_tick_locs, update_ticks=True)
+        cbar.set_ticks(new_tick_locs)
     if output_file is not None:
         display.savefig(output_file)
         display.close()
