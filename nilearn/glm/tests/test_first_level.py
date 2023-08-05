@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image, load
-from nibabel.tmpdirs import InTemporaryDirectory
 from numpy.testing import (
     assert_almost_equal,
     assert_array_almost_equal,
@@ -89,137 +88,134 @@ def test_high_level_glm_one_session():
     assert isinstance(z1, Nifti1Image)
 
 
-def test_explicit_fixed_effects():
+def test_explicit_fixed_effects(tmp_path):
     """Test the fixed effects performed manually/explicitly."""
-    with InTemporaryDirectory():
-        shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
-        mask, fmri_data, design_matrices =\
-            write_fake_fmri_data_and_design(shapes, rk)
-        contrast = np.eye(rk)[1]
-        # session 1
-        multi_session_model = FirstLevelModel(mask_img=mask).fit(
-            fmri_data[0], design_matrices=design_matrices[:1])
-        dic1 = multi_session_model.compute_contrast(
-            contrast, output_type='all')
+    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
+    mask, fmri_data, design_matrices =\
+        write_fake_fmri_data_and_design(shapes, rk, file_path=tmp_path)
+    contrast = np.eye(rk)[1]
+    # session 1
+    multi_session_model = FirstLevelModel(mask_img=mask).fit(
+        fmri_data[0], design_matrices=design_matrices[:1])
+    dic1 = multi_session_model.compute_contrast(
+        contrast, output_type='all')
 
-        # session 2
-        multi_session_model.fit(
-            fmri_data[1], design_matrices=design_matrices[1:])
-        dic2 = multi_session_model.compute_contrast(
-            contrast, output_type='all')
+    # session 2
+    multi_session_model.fit(
+        fmri_data[1], design_matrices=design_matrices[1:])
+    dic2 = multi_session_model.compute_contrast(
+        contrast, output_type='all')
 
-        # fixed effects model
-        multi_session_model.fit(
-            fmri_data, design_matrices=design_matrices)
-        fixed_fx_dic = multi_session_model.compute_contrast(
-            contrast, output_type='all')
+    # fixed effects model
+    multi_session_model.fit(
+        fmri_data, design_matrices=design_matrices)
+    fixed_fx_dic = multi_session_model.compute_contrast(
+        contrast, output_type='all')
 
-        # manual version
-        contrasts = [dic1['effect_size'], dic2['effect_size']]
-        variance = [dic1['effect_variance'], dic2['effect_variance']]
-        (
-            fixed_fx_contrast,
-            fixed_fx_variance,
-            fixed_fx_stat,
-        ) = compute_fixed_effects(contrasts, variance, mask)
+    # manual version
+    contrasts = [dic1['effect_size'], dic2['effect_size']]
+    variance = [dic1['effect_variance'], dic2['effect_variance']]
+    (
+        fixed_fx_contrast,
+        fixed_fx_variance,
+        fixed_fx_stat,
+    ) = compute_fixed_effects(contrasts, variance, mask)
 
-        assert_almost_equal(
-            get_data(fixed_fx_contrast),
-            get_data(fixed_fx_dic['effect_size']))
-        assert_almost_equal(
-            get_data(fixed_fx_variance),
-            get_data(fixed_fx_dic['effect_variance']))
-        assert_almost_equal(
-            get_data(fixed_fx_stat), get_data(fixed_fx_dic['stat']))
+    assert_almost_equal(
+        get_data(fixed_fx_contrast),
+        get_data(fixed_fx_dic['effect_size']))
+    assert_almost_equal(
+        get_data(fixed_fx_variance),
+        get_data(fixed_fx_dic['effect_variance']))
+    assert_almost_equal(
+        get_data(fixed_fx_stat), get_data(fixed_fx_dic['stat']))
 
-        # test without mask variable
-        (
-            fixed_fx_contrast,
-            fixed_fx_variance,
-            fixed_fx_stat,
-        ) = compute_fixed_effects(contrasts, variance)
-        assert_almost_equal(
-            get_data(fixed_fx_contrast),
-            get_data(fixed_fx_dic['effect_size']))
-        assert_almost_equal(
-            get_data(fixed_fx_variance),
-            get_data(fixed_fx_dic['effect_variance']))
-        assert_almost_equal(
-            get_data(fixed_fx_stat), get_data(fixed_fx_dic['stat']))
+    # test without mask variable
+    (
+        fixed_fx_contrast,
+        fixed_fx_variance,
+        fixed_fx_stat,
+    ) = compute_fixed_effects(contrasts, variance)
+    assert_almost_equal(
+        get_data(fixed_fx_contrast),
+        get_data(fixed_fx_dic['effect_size']))
+    assert_almost_equal(
+        get_data(fixed_fx_variance),
+        get_data(fixed_fx_dic['effect_variance']))
+    assert_almost_equal(
+        get_data(fixed_fx_stat), get_data(fixed_fx_dic['stat']))
 
-        # ensure that using unbalanced effects size and variance images
-        # raises an error
-        with pytest.raises(ValueError):
-            compute_fixed_effects(contrasts * 2, variance, mask)
-        del mask, multi_session_model
-
-
-def test_high_level_glm_with_data():
-    with InTemporaryDirectory():
-        shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
-        mask, fmri_data, design_matrices =\
-            write_fake_fmri_data_and_design(shapes, rk)
-        multi_session_model = FirstLevelModel(mask_img=None).fit(
-            fmri_data, design_matrices=design_matrices)
-        n_voxels = get_data(multi_session_model.masker_.mask_img_).sum()
-        z_image = multi_session_model.compute_contrast(np.eye(rk)[1])
-        assert np.sum(get_data(z_image) != 0) == n_voxels
-        assert get_data(z_image).std() < 3.
-        # with mask
-        multi_session_model = FirstLevelModel(mask_img=mask).fit(
-            fmri_data, design_matrices=design_matrices)
-        z_image = multi_session_model.compute_contrast(
-            np.eye(rk)[:2], output_type='z_score')
-        p_value = multi_session_model.compute_contrast(
-            np.eye(rk)[:2], output_type='p_value')
-        stat_image = multi_session_model.compute_contrast(
-            np.eye(rk)[:2], output_type='stat')
-        effect_image = multi_session_model.compute_contrast(
-            np.eye(rk)[:2], output_type='effect_size')
-        variance_image = multi_session_model.compute_contrast(
-            np.eye(rk)[:2], output_type='effect_variance')
-        assert_array_equal(get_data(z_image) == 0., get_data(load(mask)) == 0.)
-        assert (get_data(variance_image)[get_data(load(mask)) > 0] > .001
-                ).all()
-        all_images = multi_session_model.compute_contrast(
-            np.eye(rk)[:2], output_type='all')
-        assert_array_equal(get_data(all_images['z_score']), get_data(z_image))
-        assert_array_equal(get_data(all_images['p_value']), get_data(p_value))
-        assert_array_equal(get_data(all_images['stat']), get_data(stat_image))
-        assert_array_equal(get_data(all_images['effect_size']),
-                           get_data(effect_image))
-        assert_array_equal(get_data(all_images['effect_variance']),
-                           get_data(variance_image))
-        # Delete objects attached to files to avoid WindowsError when deleting
-        # temporary directory (in Windows)
-        del (all_images,
-             design_matrices,
-             effect_image,
-             fmri_data,
-             mask,
-             multi_session_model,
-             n_voxels,
-             p_value,
-             rk,
-             shapes,
-             stat_image,
-             variance_image,
-             z_image)
+    # ensure that using unbalanced effects size and variance images
+    # raises an error
+    with pytest.raises(ValueError):
+        compute_fixed_effects(contrasts * 2, variance, mask)
+    del mask, multi_session_model
 
 
-def test_high_level_glm_with_paths():
+def test_high_level_glm_with_data(tmp_path):
+    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
+    mask, fmri_data, design_matrices =\
+        write_fake_fmri_data_and_design(shapes, rk, file_path=tmp_path)
+    multi_session_model = FirstLevelModel(mask_img=None).fit(
+        fmri_data, design_matrices=design_matrices)
+    n_voxels = get_data(multi_session_model.masker_.mask_img_).sum()
+    z_image = multi_session_model.compute_contrast(np.eye(rk)[1])
+    assert np.sum(get_data(z_image) != 0) == n_voxels
+    assert get_data(z_image).std() < 3.
+    # with mask
+    multi_session_model = FirstLevelModel(mask_img=mask).fit(
+        fmri_data, design_matrices=design_matrices)
+    z_image = multi_session_model.compute_contrast(
+        np.eye(rk)[:2], output_type='z_score')
+    p_value = multi_session_model.compute_contrast(
+        np.eye(rk)[:2], output_type='p_value')
+    stat_image = multi_session_model.compute_contrast(
+        np.eye(rk)[:2], output_type='stat')
+    effect_image = multi_session_model.compute_contrast(
+        np.eye(rk)[:2], output_type='effect_size')
+    variance_image = multi_session_model.compute_contrast(
+        np.eye(rk)[:2], output_type='effect_variance')
+    assert_array_equal(get_data(z_image) == 0., get_data(load(mask)) == 0.)
+    assert (get_data(variance_image)[get_data(load(mask)) > 0] > .001
+            ).all()
+    all_images = multi_session_model.compute_contrast(
+        np.eye(rk)[:2], output_type='all')
+    assert_array_equal(get_data(all_images['z_score']), get_data(z_image))
+    assert_array_equal(get_data(all_images['p_value']), get_data(p_value))
+    assert_array_equal(get_data(all_images['stat']), get_data(stat_image))
+    assert_array_equal(get_data(all_images['effect_size']),
+                       get_data(effect_image))
+    assert_array_equal(get_data(all_images['effect_variance']),
+                       get_data(variance_image))
+    # Delete objects attached to files to avoid WindowsError when deleting
+    # temporary directory (in Windows)
+    del (all_images,
+         design_matrices,
+         effect_image,
+         fmri_data,
+         mask,
+         multi_session_model,
+         n_voxels,
+         p_value,
+         rk,
+         shapes,
+         stat_image,
+         variance_image,
+         z_image)
+
+
+def test_high_level_glm_with_paths(tmp_path):
     shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 14)), 3
-    with InTemporaryDirectory():
-        mask_file, fmri_files, design_files =\
-            write_fake_fmri_data_and_design(shapes, rk)
-        multi_session_model = FirstLevelModel(mask_img=None).fit(
-            fmri_files, design_matrices=design_files)
-        z_image = multi_session_model.compute_contrast(np.eye(rk)[1])
-        assert_array_equal(z_image.affine, load(mask_file).affine)
-        assert get_data(z_image).std() < 3.
-        # Delete objects attached to files to avoid WindowsError when deleting
-        # temporary directory (in Windows)
-        del z_image, fmri_files, multi_session_model
+    mask_file, fmri_files, design_files =\
+        write_fake_fmri_data_and_design(shapes, rk, file_path=tmp_path)
+    multi_session_model = FirstLevelModel(mask_img=None).fit(
+        fmri_files, design_matrices=design_files)
+    z_image = multi_session_model.compute_contrast(np.eye(rk)[1])
+    assert_array_equal(z_image.affine, load(mask_file).affine)
+    assert get_data(z_image).std() < 3.
+    # Delete objects attached to files to avoid WindowsError when deleting
+    # temporary directory (in Windows)
+    del z_image, fmri_files, multi_session_model
 
 
 def test_high_level_glm_null_contrasts():
@@ -432,149 +428,152 @@ def test_scaling():
     assert Y.std() > 1
 
 
-def test_fmri_inputs():
+def test_fmri_inputs(tmp_path):
     # Test processing of FMRI inputs
-    with InTemporaryDirectory():
-        shapes = ((7, 8, 9, 10),)
-        mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
-        FUNCFILE = FUNCFILE[0]
-        func_img = load(FUNCFILE)
-        T = func_img.shape[-1]
-        conf = pd.DataFrame([0, 0])
-        des = pd.DataFrame(np.ones((T, 1)), columns=[''])
-        des_fname = 'design.csv'
-        des.to_csv(des_fname)
-        events = basic_paradigm()
-        for fi in func_img, FUNCFILE:
-            for d in des, des_fname:
-                FirstLevelModel().fit(fi, design_matrices=d)
-                FirstLevelModel(mask_img=None).fit([fi], design_matrices=d)
-                FirstLevelModel(mask_img=mask).fit(fi, design_matrices=[d])
-                FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d])
-                with pytest.warns(UserWarning, match="If design matrices "
-                                                     "are supplied"):
-                    # test with confounds
-                    FirstLevelModel(mask_img=mask).fit([fi],
-                                                       design_matrices=[d],
-                                                       confounds=conf)
+    shapes = ((7, 8, 9, 10),)
+    mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes,
+                                                        file_path=tmp_path)
+    FUNCFILE = FUNCFILE[0]
+    func_img = load(FUNCFILE)
 
-                # Provide t_r, confounds, and events but no design matrix
+    T = func_img.shape[-1]
+    des = pd.DataFrame(np.ones((T, 1)), columns=[''])
+    des_fname = str(tmp_path / 'design.csv')
+    des.to_csv(des_fname)
+
+    conf = pd.DataFrame([0, 0])
+
+    events = basic_paradigm()
+    for fi in func_img, FUNCFILE:
+        for d in des, des_fname:
+            FirstLevelModel().fit(fi, design_matrices=d)
+            FirstLevelModel(mask_img=None).fit([fi], design_matrices=d)
+            FirstLevelModel(mask_img=mask).fit(fi, design_matrices=[d])
+            FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d])
+            with pytest.warns(UserWarning, match="If design matrices "
+                                                 "are supplied"):
+                # test with confounds
+                FirstLevelModel(mask_img=mask).fit([fi],
+                                                   design_matrices=[d],
+                                                   confounds=conf)
+
+            # Provide t_r, confounds, and events but no design matrix
+            FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+                fi,
+                confounds=pd.DataFrame([0] * 10, columns=['conf']),
+                events=events)
+
+            # Same, but check that an error is raised if there is a
+            # mismatch in the dimensions of the inputs
+            with pytest.raises(ValueError,
+                               match="Rows in confounds does not match"):
                 FirstLevelModel(mask_img=mask, t_r=2.0).fit(
-                    fi,
-                    confounds=pd.DataFrame([0] * 10, columns=['conf']),
-                    events=events)
+                    fi, confounds=conf, events=events)
 
-                # Same, but check that an error is raised if there is a
-                # mismatch in the dimensions of the inputs
-                with pytest.raises(ValueError,
-                                   match="Rows in confounds does not match"):
-                    FirstLevelModel(mask_img=mask, t_r=2.0).fit(
-                        fi, confounds=conf, events=events)
+            # test with confounds as numpy array
+            FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d],
+                                               confounds=conf.values)
 
-                # test with confounds as numpy array
-                FirstLevelModel(mask_img=mask).fit([fi], design_matrices=[d],
-                                                   confounds=conf.values)
-
-                FirstLevelModel(mask_img=mask).fit([fi, fi],
-                                                   design_matrices=[d, d])
-                FirstLevelModel(mask_img=None).fit((fi, fi),
-                                                   design_matrices=(d, d))
-                with pytest.raises(ValueError):
-                    FirstLevelModel(mask_img=None).fit([fi, fi], d)
-                with pytest.raises(ValueError):
-                    FirstLevelModel(mask_img=None).fit(fi, [d, d])
-                # At least paradigms or design have to be given
-                with pytest.raises(ValueError):
-                    FirstLevelModel(mask_img=None).fit(fi)
-                # If paradigms are given then both tr and slice time ref were
-                # required
-                with pytest.raises(ValueError):
-                    FirstLevelModel(mask_img=None).fit(fi, d)
-                with pytest.raises(ValueError):
-                    FirstLevelModel(mask_img=None, t_r=1.0).fit(fi, d)
-                with pytest.raises(ValueError):
-                    FirstLevelModel(mask_img=None,
-                                    slice_time_ref=0.).fit(fi, d)
-            # confounds rows do not match n_scans
+            FirstLevelModel(mask_img=mask).fit([fi, fi],
+                                               design_matrices=[d, d])
+            FirstLevelModel(mask_img=None).fit((fi, fi),
+                                               design_matrices=(d, d))
             with pytest.raises(ValueError):
-                FirstLevelModel(mask_img=None).fit(fi, d, conf)
-        # Delete objects attached to files to avoid WindowsError when deleting
-        # temporary directory (in Windows)
-        del fi, func_img, mask, d, des, FUNCFILE, _
+                FirstLevelModel(mask_img=None).fit([fi, fi], d)
+            with pytest.raises(ValueError):
+                FirstLevelModel(mask_img=None).fit(fi, [d, d])
+            # At least paradigms or design have to be given
+            with pytest.raises(ValueError):
+                FirstLevelModel(mask_img=None).fit(fi)
+            # If paradigms are given then both tr and slice time ref were
+            # required
+            with pytest.raises(ValueError):
+                FirstLevelModel(mask_img=None).fit(fi, d)
+            with pytest.raises(ValueError):
+                FirstLevelModel(mask_img=None, t_r=1.0).fit(fi, d)
+            with pytest.raises(ValueError):
+                FirstLevelModel(mask_img=None,
+                                slice_time_ref=0.).fit(fi, d)
+        # confounds rows do not match n_scans
+        with pytest.raises(ValueError):
+            FirstLevelModel(mask_img=None).fit(fi, d, conf)
+    # Delete objects attached to files to avoid WindowsError when deleting
+    # temporary directory (in Windows)
+    del fi, func_img, mask, d, des, FUNCFILE, _
 
 
-def test_first_level_design_creation():
+def test_first_level_design_creation(tmp_path):
     # Test processing of FMRI inputs
-    with InTemporaryDirectory():
-        shapes = ((7, 8, 9, 10),)
-        mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
-        FUNCFILE = FUNCFILE[0]
-        func_img = load(FUNCFILE)
-        # basic test based on basic_paradigm and glover hrf
-        t_r = 10.0
-        slice_time_ref = 0.
-        events = basic_paradigm()
-        model = FirstLevelModel(t_r, slice_time_ref, mask_img=mask,
-                                drift_model='polynomial', drift_order=3)
-        model = model.fit(func_img, events)
-        frame1, X1, names1 = check_design_matrix(model.design_matrices_[0])
-        # check design computation is identical
-        n_scans = get_data(func_img).shape[3]
-        start_time = slice_time_ref * t_r
-        end_time = (n_scans - 1 + slice_time_ref) * t_r
-        frame_times = np.linspace(start_time, end_time, n_scans)
-        design = make_first_level_design_matrix(frame_times, events,
-                                                drift_model='polynomial',
-                                                drift_order=3)
-        frame2, X2, names2 = check_design_matrix(design)
-        assert_array_equal(frame1, frame2)
-        assert_array_equal(X1, X2)
-        assert_array_equal(names1, names2)
-        # Delete objects attached to files to avoid WindowsError when deleting
-        # temporary directory (in Windows)
-        del FUNCFILE, mask, model, func_img
+    shapes = ((7, 8, 9, 10),)
+    mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes,
+                                                        file_path=tmp_path)
+    FUNCFILE = FUNCFILE[0]
+    func_img = load(FUNCFILE)
+    # basic test based on basic_paradigm and glover hrf
+    t_r = 10.0
+    slice_time_ref = 0.
+    events = basic_paradigm()
+    model = FirstLevelModel(t_r, slice_time_ref, mask_img=mask,
+                            drift_model='polynomial', drift_order=3)
+    model = model.fit(func_img, events)
+    frame1, X1, names1 = check_design_matrix(model.design_matrices_[0])
+    # check design computation is identical
+    n_scans = get_data(func_img).shape[3]
+    start_time = slice_time_ref * t_r
+    end_time = (n_scans - 1 + slice_time_ref) * t_r
+    frame_times = np.linspace(start_time, end_time, n_scans)
+    design = make_first_level_design_matrix(frame_times, events,
+                                            drift_model='polynomial',
+                                            drift_order=3)
+    frame2, X2, names2 = check_design_matrix(design)
+    assert_array_equal(frame1, frame2)
+    assert_array_equal(X1, X2)
+    assert_array_equal(names1, names2)
+    # Delete objects attached to files to avoid WindowsError when deleting
+    # temporary directory (in Windows)
+    del FUNCFILE, mask, model, func_img
 
 
-def test_first_level_glm_computation():
-    with InTemporaryDirectory():
-        shapes = ((7, 8, 9, 10),)
-        mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
-        FUNCFILE = FUNCFILE[0]
-        func_img = load(FUNCFILE)
-        # basic test based on basic_paradigm and glover hrf
-        t_r = 10.0
-        slice_time_ref = 0.
-        events = basic_paradigm()
-        # Ordinary Least Squares case
-        model = FirstLevelModel(t_r, slice_time_ref, mask_img=mask,
-                                drift_model='polynomial', drift_order=3,
-                                minimize_memory=False)
-        model = model.fit(func_img, events)
+def test_first_level_glm_computation(tmp_path):
+    shapes = ((7, 8, 9, 10),)
+    mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes,
+                                                        file_path=tmp_path)
+    FUNCFILE = FUNCFILE[0]
+    func_img = load(FUNCFILE)
+    # basic test based on basic_paradigm and glover hrf
+    t_r = 10.0
+    slice_time_ref = 0.
+    events = basic_paradigm()
+    # Ordinary Least Squares case
+    model = FirstLevelModel(t_r, slice_time_ref, mask_img=mask,
+                            drift_model='polynomial', drift_order=3,
+                            minimize_memory=False)
+    model = model.fit(func_img, events)
 
-        # Delete objects attached to files to avoid WindowsError when deleting
-        # temporary directory (in Windows)
-        del mask, FUNCFILE, func_img, model
+    # Delete objects attached to files to avoid WindowsError when deleting
+    # temporary directory (in Windows)
+    del mask, FUNCFILE, func_img, model
 
 
-def test_first_level_glm_computation_with_memory_caching():
-    with InTemporaryDirectory():
-        shapes = ((7, 8, 9, 10),)
-        mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
-        FUNCFILE = FUNCFILE[0]
-        func_img = load(FUNCFILE)
-        # initialize FirstLevelModel with memory option enabled
-        t_r = 10.0
-        slice_time_ref = 0.
-        events = basic_paradigm()
-        # Ordinary Least Squares case
-        model = FirstLevelModel(t_r, slice_time_ref, mask_img=mask,
-                                drift_model='polynomial', drift_order=3,
-                                memory='nilearn_cache', memory_level=1,
-                                minimize_memory=False)
-        model.fit(func_img, events)
-        # Delete objects attached to files to avoid WindowsError when deleting
-        # temporary directory (in Windows)
-        del mask, func_img, FUNCFILE, model
+def test_first_level_glm_computation_with_memory_caching(tmp_path):
+    shapes = ((7, 8, 9, 10),)
+    mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes,
+                                                        file_path=tmp_path)
+    FUNCFILE = FUNCFILE[0]
+    func_img = load(FUNCFILE)
+    # initialize FirstLevelModel with memory option enabled
+    t_r = 10.0
+    slice_time_ref = 0.
+    events = basic_paradigm()
+    # Ordinary Least Squares case
+    model = FirstLevelModel(t_r, slice_time_ref, mask_img=mask,
+                            drift_model='polynomial', drift_order=3,
+                            memory='nilearn_cache', memory_level=1,
+                            minimize_memory=False)
+    model.fit(func_img, events)
+    # Delete objects attached to files to avoid WindowsError when deleting
+    # temporary directory (in Windows)
+    del mask, func_img, FUNCFILE, model
 
 
 def test_first_level_from_bids_set_repetition_time_warnings(tmp_path):
@@ -773,66 +772,65 @@ def test_first_level_from_bids_get_StartTime_from_derivatives(tmp_path):
         assert models[0].slice_time_ref == StartTime / 1.5
 
 
-def test_first_level_contrast_computation():
-    with InTemporaryDirectory():
-        shapes = ((7, 8, 9, 10),)
-        mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
-        FUNCFILE = FUNCFILE[0]
-        func_img = load(FUNCFILE)
-        # basic test based on basic_paradigm and glover hrf
-        t_r = 10.0
-        slice_time_ref = 0.
-        events = basic_paradigm()
-        # Ordinary Least Squares case
-        model = FirstLevelModel(t_r, slice_time_ref, mask_img=mask,
-                                drift_model='polynomial', drift_order=3,
-                                minimize_memory=False)
-        c1, c2, cnull = np.eye(7)[0], np.eye(7)[1], np.zeros(7)
-        # asking for contrast before model fit gives error
-        with pytest.raises(ValueError):
-            model.compute_contrast(c1)
-        # fit model
-        model = model.fit([func_img, func_img], [events, events])
-        # Check that an error is raised for invalid contrast_def
-        with pytest.raises(ValueError,
-                           match="contrast_def must be an "
-                                 "array or str or list"):
-            model.compute_contrast(37)
-        # smoke test for different contrasts in fixed effects
-        model.compute_contrast([c1, c2])
-        # smoke test for same contrast in fixed effects
-        model.compute_contrast([c2, c2])
-        # smoke test for contrast that will be repeated
-        model.compute_contrast(c2)
-        model.compute_contrast(c2, 'F')
-        model.compute_contrast(c2, 't', 'z_score')
-        model.compute_contrast(c2, 't', 'stat')
-        model.compute_contrast(c2, 't', 'p_value')
-        model.compute_contrast(c2, None, 'effect_size')
-        model.compute_contrast(c2, None, 'effect_variance')
-        # formula should work (passing variable name directly)
-        model.compute_contrast('c0')
-        model.compute_contrast('c1')
-        model.compute_contrast('c2')
-        # smoke test for one null contrast in group
-        model.compute_contrast([c2, cnull])
-        # only passing null contrasts should give back a value error
-        with pytest.raises(ValueError):
-            model.compute_contrast(cnull)
-        with pytest.raises(ValueError):
-            model.compute_contrast([cnull, cnull])
-        # passing wrong parameters
-        with pytest.raises(ValueError):
-            model.compute_contrast([])
-        with pytest.raises(ValueError):
-            model.compute_contrast([c1, []])
-        with pytest.raises(ValueError):
-            model.compute_contrast(c1, '', '')
-        with pytest.raises(ValueError):
-            model.compute_contrast(c1, '', [])
-        # Delete objects attached to files to avoid WindowsError when deleting
-        # temporary directory (in Windows)
-        del func_img, FUNCFILE, model
+def test_first_level_contrast_computation(tmp_path):
+    shapes = ((7, 8, 9, 10),)
+    mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes,
+                                                        file_path=tmp_path)
+    FUNCFILE = FUNCFILE[0]
+    func_img = load(FUNCFILE)
+    # basic test based on basic_paradigm and glover hrf
+    t_r = 10.0
+    slice_time_ref = 0.
+    events = basic_paradigm()
+    # Ordinary Least Squares case
+    model = FirstLevelModel(t_r, slice_time_ref, mask_img=mask,
+                            drift_model='polynomial', drift_order=3,
+                            minimize_memory=False)
+    c1, c2, cnull = np.eye(7)[0], np.eye(7)[1], np.zeros(7)
+    # asking for contrast before model fit gives error
+    with pytest.raises(ValueError):
+        model.compute_contrast(c1)
+    # fit model
+    model = model.fit([func_img, func_img], [events, events])
+    # Check that an error is raised for invalid contrast_def
+    with pytest.raises(ValueError,
+                       match="contrast_def must be an array or str or list"):
+        model.compute_contrast(37)
+    # smoke test for different contrasts in fixed effects
+    model.compute_contrast([c1, c2])
+    # smoke test for same contrast in fixed effects
+    model.compute_contrast([c2, c2])
+    # smoke test for contrast that will be repeated
+    model.compute_contrast(c2)
+    model.compute_contrast(c2, 'F')
+    model.compute_contrast(c2, 't', 'z_score')
+    model.compute_contrast(c2, 't', 'stat')
+    model.compute_contrast(c2, 't', 'p_value')
+    model.compute_contrast(c2, None, 'effect_size')
+    model.compute_contrast(c2, None, 'effect_variance')
+    # formula should work (passing variable name directly)
+    model.compute_contrast('c0')
+    model.compute_contrast('c1')
+    model.compute_contrast('c2')
+    # smoke test for one null contrast in group
+    model.compute_contrast([c2, cnull])
+    # only passing null contrasts should give back a value error
+    with pytest.raises(ValueError):
+        model.compute_contrast(cnull)
+    with pytest.raises(ValueError):
+        model.compute_contrast([cnull, cnull])
+    # passing wrong parameters
+    with pytest.raises(ValueError):
+        model.compute_contrast([])
+    with pytest.raises(ValueError):
+        model.compute_contrast([c1, []])
+    with pytest.raises(ValueError):
+        model.compute_contrast(c1, '', '')
+    with pytest.raises(ValueError):
+        model.compute_contrast(c1, '', [])
+    # Delete objects attached to files to avoid WindowsError when deleting
+    # temporary directory (in Windows)
+    del func_img, FUNCFILE, model
 
 
 def test_first_level_with_scaling():
