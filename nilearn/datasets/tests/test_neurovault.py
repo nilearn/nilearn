@@ -7,7 +7,6 @@ import json
 import os
 import re
 import stat
-import tempfile
 from urllib import parse
 
 import numpy as np
@@ -275,19 +274,18 @@ def test_append_filters_to_query():
     assert query == "https://neurovault.org/api/collections/40"
 
 
-def test_get_batch():
+def test_get_batch(tmp_path):
     batch = neurovault._get_batch(neurovault._NEUROVAULT_COLLECTIONS_URL)
     assert "results" in batch
     assert "count" in batch
     with pytest.raises(requests.RequestException):
         neurovault._get_batch("http://")
-    with tempfile.TemporaryDirectory() as temp_dir:
-        with open(os.path.join(temp_dir, "test_nv.txt"), "w"):
-            pass
-        with pytest.raises(ValueError):
-            neurovault._get_batch(
-                f"file://{os.path.join(temp_dir, 'test_nv.txt')}",
-            )
+    with open(tmp_path / "test_nv.txt", "w"):
+        pass
+    with pytest.raises(ValueError):
+        neurovault._get_batch(
+            f"file://{str(tmp_path / 'test_nv.txt')}",
+        )
     no_results_url = (
         "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
         "esearch.fcgi?db=pmc&retmode=json&term=fmri"
@@ -479,63 +477,57 @@ def test_result_filter_combinations():
     assert not filt({"a": 0, "b": 0})
 
 
-def test_simple_download(request_mocker):
-    with tempfile.TemporaryDirectory() as temp_dir:
-        downloaded_file = neurovault._simple_download(
-            "http://neurovault.org/media/images/35/Fig3B_zstat1.nii.gz",
-            os.path.join(temp_dir, "image_35.nii.gz"),
-            temp_dir,
+def test_simple_download(tmp_path, request_mocker):
+    downloaded_file = neurovault._simple_download(
+        "http://neurovault.org/media/images/35/Fig3B_zstat1.nii.gz",
+        tmp_path / "image_35.nii.gz",
+        tmp_path,
+    )
+    assert os.path.isfile(downloaded_file)
+    request_mocker.url_mapping["*"] = requests.RequestException()
+    with pytest.raises(requests.RequestException):
+        neurovault._simple_download(
+            "http://",
+            tmp_path / "bad.nii.gz",
+            tmp_path,
         )
-        assert os.path.isfile(downloaded_file)
-        request_mocker.url_mapping["*"] = requests.RequestException()
-        with pytest.raises(requests.RequestException):
-            neurovault._simple_download(
-                "http://",
-                os.path.join(temp_dir, "bad.nii.gz"),
-                temp_dir,
-            )
 
 
-def test_neurosynth_words_vectorized():
+def test_neurosynth_words_vectorized(tmp_path):
     n_im = 5
-    with tempfile.TemporaryDirectory() as temp_dir:
-        words_files = [
-            os.path.join(temp_dir, f"words_for_image_{i}.json")
-            for i in range(n_im)
-        ]
-        words = [str(i) for i in range(n_im)]
-        for i, file_name in enumerate(words_files):
-            word_weights = np.zeros(n_im)
-            word_weights[i] = 1
-            words_dict = {"data": {"values": dict(zip(words, word_weights))}}
-            with open(file_name, "wb") as words_file:
-                words_file.write(json.dumps(words_dict).encode("utf-8"))
-        freq, _ = neurovault.neurosynth_words_vectorized(words_files)
-        assert freq.shape == (n_im, n_im)
-        assert (freq.sum(axis=0) == np.ones(n_im)).all()
-        with pytest.warns(UserWarning):
-            neurovault.neurosynth_words_vectorized(
-                (os.path.join(temp_dir, "no_words_here.json"),)
-            )
+
+    words_files = [tmp_path / f"words_for_image_{i}.json" for i in range(n_im)]
+    words = [str(i) for i in range(n_im)]
+    for i, file_name in enumerate(words_files):
+        word_weights = np.zeros(n_im)
+        word_weights[i] = 1
+        words_dict = {"data": {"values": dict(zip(words, word_weights))}}
+        with open(file_name, "wb") as words_file:
+            words_file.write(json.dumps(words_dict).encode("utf-8"))
+    freq, _ = neurovault.neurosynth_words_vectorized(words_files)
+    assert freq.shape == (n_im, n_im)
+    assert (freq.sum(axis=0) == np.ones(n_im)).all()
+    with pytest.warns(UserWarning):
+        neurovault.neurosynth_words_vectorized(
+            ((tmp_path, "no_words_here.json"),)
+        )
 
 
-def test_write_read_metadata():
+def test_write_read_metadata(tmp_path):
     metadata = {
         "relative_path": "collection_1",
         "absolute_path": os.path.join("tmp", "collection_1"),
     }
-    with tempfile.TemporaryDirectory() as temp_dir:
-        neurovault._write_metadata(
-            metadata, os.path.join(temp_dir, "metadata.json")
-        )
-        with open(os.path.join(temp_dir, "metadata.json"), "rb") as meta_file:
-            written_metadata = json.loads(meta_file.read().decode("utf-8"))
-        assert "relative_path" in written_metadata
-        assert "absolute_path" not in written_metadata
-        read_metadata = neurovault._add_absolute_paths("tmp", written_metadata)
-        assert read_metadata["absolute_path"] == os.path.join(
-            "tmp", "collection_1"
-        )
+
+    neurovault._write_metadata(metadata, tmp_path / "metadata.json")
+    with open(tmp_path / "metadata.json", "rb") as meta_file:
+        written_metadata = json.loads(meta_file.read().decode("utf-8"))
+    assert "relative_path" in written_metadata
+    assert "absolute_path" not in written_metadata
+    read_metadata = neurovault._add_absolute_paths("tmp", written_metadata)
+    assert read_metadata["absolute_path"] == os.path.join(
+        "tmp", "collection_1"
+    )
 
 
 def test_add_absolute_paths():
@@ -564,30 +556,28 @@ def test_add_absolute_paths():
     assert meta == meta_transformed
 
 
-def test_json_add_collection_dir():
-    with tempfile.TemporaryDirectory() as data_temp_dir:
-        coll_dir = os.path.join(data_temp_dir, "collection_1")
-        os.makedirs(coll_dir)
-        coll_file_name = os.path.join(coll_dir, "collection_1.json")
-        with open(coll_file_name, "wb") as coll_file:
-            coll_file.write(json.dumps({"id": 1}).encode("utf-8"))
-        loaded = neurovault._json_add_collection_dir(coll_file_name)
-        assert loaded["absolute_path"] == coll_dir
-        assert loaded["relative_path"] == "collection_1"
+def test_json_add_collection_dir(tmp_path):
+    coll_dir = tmp_path / "collection_1"
+    coll_dir.mkdir()
+    coll_file_name = coll_dir / "collection_1.json"
+    with open(coll_file_name, "wb") as coll_file:
+        coll_file.write(json.dumps({"id": 1}).encode("utf-8"))
+    loaded = neurovault._json_add_collection_dir(coll_file_name)
+    assert loaded["absolute_path"] == str(coll_dir)
+    assert loaded["relative_path"] == "collection_1"
 
 
-def test_json_add_im_files_paths():
-    with tempfile.TemporaryDirectory() as data_temp_dir:
-        coll_dir = os.path.join(data_temp_dir, "collection_1")
-        os.makedirs(coll_dir)
-        im_file_name = os.path.join(coll_dir, "image_1.json")
-        with open(im_file_name, "wb") as im_file:
-            im_file.write(json.dumps({"id": 1}).encode("utf-8"))
-        loaded = neurovault._json_add_im_files_paths(im_file_name)
-        assert loaded["relative_path"] == os.path.join(
-            "collection_1", "image_1.nii.gz"
-        )
-        assert loaded.get("neurosynth_words_relative_path") is None
+def test_json_add_im_files_paths(tmp_path):
+    coll_dir = tmp_path / "collection_1"
+    coll_dir.mkdir()
+    im_file_name = coll_dir / "image_1.json"
+    with open(im_file_name, "wb") as im_file:
+        im_file.write(json.dumps({"id": 1}).encode("utf-8"))
+    loaded = neurovault._json_add_im_files_paths(im_file_name)
+    assert loaded["relative_path"] == os.path.join(
+        "collection_1", "image_1.nii.gz"
+    )
+    assert loaded.get("neurosynth_words_relative_path") is None
 
 
 def test_split_terms():
@@ -625,41 +615,36 @@ def test_move_col_id():
         )
 
 
-def test_download_image_terms(request_mocker):
-    with tempfile.TemporaryDirectory() as temp_dir:
-        image_info = {"id": "a"}
-        collection = {
-            "relative_path": "collection",
-            "absolute_path": os.path.join(temp_dir, "collection"),
-        }
-        os.makedirs(collection["absolute_path"])
-        download_params = {
-            "temp_dir": temp_dir,
-            "verbose": 3,
-            "fetch_neurosynth_words": True,
-        }
-        request_mocker.url_mapping["*"] = requests.RequestException()
+def test_download_image_terms(tmp_path, request_mocker):
+    image_info = {"id": "a"}
+    collection = {
+        "relative_path": "collection",
+        "absolute_path": tmp_path / "collection",
+    }
+    os.makedirs(collection["absolute_path"])
+    download_params = {
+        "temp_dir": tmp_path,
+        "verbose": 3,
+        "fetch_neurosynth_words": True,
+    }
+    request_mocker.url_mapping["*"] = requests.RequestException()
+    neurovault._download_image_terms(image_info, collection, download_params)
+    download_params["allow_neurosynth_failure"] = False
+    with pytest.raises(RuntimeError):
         neurovault._download_image_terms(
-            image_info, collection, download_params
+            image_info,
+            collection,
+            download_params,
         )
-        download_params["allow_neurosynth_failure"] = False
-        with pytest.raises(RuntimeError):
-            neurovault._download_image_terms(
-                image_info,
-                collection,
-                download_params,
-            )
-        with open(
-            os.path.join(
-                collection["absolute_path"],
-                "neurosynth_words_for_image_a.json",
-            ),
-            "w",
-        ):
-            pass
-        neurovault._download_image_terms(
-            image_info, collection, download_params
-        )
+    with open(
+        os.path.join(
+            collection["absolute_path"],
+            "neurosynth_words_for_image_a.json",
+        ),
+        "w",
+    ):
+        pass
+    neurovault._download_image_terms(image_info, collection, download_params)
 
 
 def test_download_image():
