@@ -107,7 +107,7 @@ def _sample_locations_between_surfaces(
     # when we drop support for np 1.5 replace the next 2 lines with
     # sample_locations = np.linspace(inner_vertices, outer_vertices, n_points)
     if depth is None:
-        steps = np.linspace(inner_vertices, outer_vertices, n_points)
+        steps = np.linspace(0, 1, n_points)[:, None, None]
     else:
         steps = np.asarray(depth)[:, None, None]
     sample_locations = outer_vertices + steps * (
