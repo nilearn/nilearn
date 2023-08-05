@@ -505,7 +505,7 @@ def write_fake_fmri_data_and_design(shapes,
         fmri_files.append(str(file_path / f'fmri_run{i:d}.nii'))
         Nifti1Image(data, affine).to_filename(fmri_files[-1])
 
-        design_files.append(file_path / f'dmtx_{i:d}.csv')
+        design_files.append(str(file_path / f'dmtx_{i:d}.csv'))
         pd.DataFrame(rand_gen.randn(shape[3], rk),
                      columns=['', '', '']).to_csv(design_files[-1])
 

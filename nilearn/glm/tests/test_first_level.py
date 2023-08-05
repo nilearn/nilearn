@@ -435,11 +435,14 @@ def test_fmri_inputs(tmp_path):
                                                         file_path=tmp_path)
     FUNCFILE = FUNCFILE[0]
     func_img = load(FUNCFILE)
+
     T = func_img.shape[-1]
-    conf = pd.DataFrame([0, 0])
     des = pd.DataFrame(np.ones((T, 1)), columns=[''])
     des_fname = str(tmp_path / 'design.csv')
     des.to_csv(des_fname)
+
+    conf = pd.DataFrame([0, 0])
+
     events = basic_paradigm()
     for fi in func_img, FUNCFILE:
         for d in des, des_fname:
