@@ -508,7 +508,7 @@ def test_high_level_non_parametric_inference_with_paths_warning():
         del X, Y, func_img
 
 
-def test_fmri_inputs():
+def test_fmri_inputs(tmp_path):
     # Test processing of FMRI inputs
     with InTemporaryDirectory():
         # prepare fake data
@@ -521,7 +521,7 @@ def test_fmri_inputs():
         func_img = load(FUNCFILE)
         T = func_img.shape[-1]
         des = pd.DataFrame(np.ones((T, 1)), columns=["a"])
-        des_fname = "design.csv"
+        des_fname = str(tmp_path / "design.csv")
         des.to_csv(des_fname)
 
         # prepare correct input first level models
@@ -567,7 +567,7 @@ def test_fmri_inputs():
         SecondLevelModel().fit(niimg_4d, None, sdes)
 
 
-def test_fmri_inputs_errors():
+def test_fmri_inputs_errors(tmp_path):
     # Test processing of FMRI inputs
     with InTemporaryDirectory():
         # prepare fake data
@@ -577,7 +577,7 @@ def test_fmri_inputs_errors():
         func_img = load(FUNCFILE)
         n_samples = func_img.shape[-1]
         des = pd.DataFrame(np.ones((n_samples, 1)), columns=["a"])
-        des_fname = "design.csv"
+        des_fname = str(tmp_path / "design.csv")
         des.to_csv(des_fname)
 
         # prepare correct input first level models
@@ -629,7 +629,7 @@ def test_fmri_inputs_errors():
             SecondLevelModel().fit(flms, None, [])
 
 
-def test_fmri_inputs_for_non_parametric_inference_errors():
+def test_fmri_inputs_for_non_parametric_inference_errors(tmp_path):
     # Test processing of FMRI inputs
     with InTemporaryDirectory():
         # prepare fake data
@@ -642,7 +642,7 @@ def test_fmri_inputs_for_non_parametric_inference_errors():
         func_img = load(func_file)
         T = func_img.shape[-1]
         des = pd.DataFrame(np.ones((T, 1)), columns=["a"])
-        des_fname = "design.csv"
+        des_fname = str(tmp_path / "design.csv")
         des.to_csv(des_fname)
 
         # prepare correct input first level models

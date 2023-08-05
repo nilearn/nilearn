@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel import load
-from nibabel.tmpdirs import InTemporaryDirectory
 
 from nilearn._utils.data_gen import write_fake_fmri_data_and_design
 from nilearn.glm.first_level import FirstLevelModel
@@ -28,76 +27,76 @@ else:
     not_have_mpl, reason="Matplotlib not installed; required for this test"
 )
 @pytest.mark.parametrize("use_method", [True, False])
-def test_flm_reporting(use_method):
-    with InTemporaryDirectory():
-        shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
-        mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
-            shapes, rk
+def test_flm_reporting(tmp_path, use_method):
+    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
+    mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
+        shapes, rk, file_path=tmp_path
+    )
+    flm = FirstLevelModel(mask_img=mask).fit(
+        fmri_data, design_matrices=design_matrices
+    )
+    contrast = np.eye(3)[1]
+    if use_method:
+        report_flm = flm.generate_report(
+            contrast,
+            plot_type="glass",
+            height_control=None,
+            min_distance=15,
+            alpha=0.001,
+            threshold=2.78,
         )
-        flm = FirstLevelModel(mask_img=mask).fit(
-            fmri_data, design_matrices=design_matrices
+    else:
+        report_flm = glmr.make_glm_report(
+            flm,
+            contrast,
+            plot_type="glass",
+            height_control=None,
+            min_distance=15,
+            alpha=0.001,
+            threshold=2.78,
         )
-        contrast = np.eye(3)[1]
-        if use_method:
-            report_flm = flm.generate_report(
-                contrast,
-                plot_type="glass",
-                height_control=None,
-                min_distance=15,
-                alpha=0.001,
-                threshold=2.78,
-            )
-        else:
-            report_flm = glmr.make_glm_report(
-                flm,
-                contrast,
-                plot_type="glass",
-                height_control=None,
-                min_distance=15,
-                alpha=0.001,
-                threshold=2.78,
-            )
-        """
-        catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
-        Python2's limited unicode support causes  HTMLDocument.get_iframe() to
-        mishandle certain unicode characters, like the greek alpha symbol
-        and raises this error.
-        Calling HTMLDocument.get_iframe() here causes the tests
-        to fail on Python2, alerting us if such a situation arises
-        due to future modifications.
-        """
-        report_iframe = report_flm.get_iframe()
-        # So flake8 doesn't complain about not using variable (F841)
-        report_iframe
-        del mask, flm, fmri_data
+    """
+    catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
+    Python2's limited unicode support causes  HTMLDocument.get_iframe() to
+    mishandle certain unicode characters, like the greek alpha symbol
+    and raises this error.
+    Calling HTMLDocument.get_iframe() here causes the tests
+    to fail on Python2, alerting us if such a situation arises
+    due to future modifications.
+    """
+    report_iframe = report_flm.get_iframe()
+    # So flake8 doesn't complain about not using variable (F841)
+    report_iframe
+    del mask, flm, fmri_data
 
 
 @pytest.mark.skipif(
     not_have_mpl, reason="Matplotlib not installed; required for this test"
 )
 @pytest.mark.parametrize("use_method", [True, False])
-def test_slm_reporting(use_method):
-    with InTemporaryDirectory():
-        shapes = ((7, 8, 9, 1),)
-        _, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
-        FUNCFILE = FUNCFILE[0]
-        func_img = load(FUNCFILE)
-        model = SecondLevelModel()
-        Y = [func_img] * 4
-        X = pd.DataFrame([[1]] * 4, columns=["intercept"])
-        model = model.fit(Y, design_matrix=X)
-        c1 = np.eye(len(model.design_matrix_.columns))[0]
-        if use_method:
-            report_slm = glmr.make_glm_report(model, c1)
-        else:
-            report_slm = model.generate_report(c1)
-        # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
-        report_iframe = report_slm.get_iframe()
-        # So flake8 doesn't complain about not using variable (F841)
-        report_iframe
-        # Delete objects attached to files to avoid WindowsError when deleting
-        # temporary directory (in Windows)
-        del Y, FUNCFILE, func_img, model
+def test_slm_reporting(tmp_path, use_method):
+    shapes = ((7, 8, 9, 1),)
+    _, FUNCFILE, _ = write_fake_fmri_data_and_design(
+        shapes, file_path=tmp_path
+    )
+    FUNCFILE = FUNCFILE[0]
+    func_img = load(FUNCFILE)
+    model = SecondLevelModel()
+    Y = [func_img] * 4
+    X = pd.DataFrame([[1]] * 4, columns=["intercept"])
+    model = model.fit(Y, design_matrix=X)
+    c1 = np.eye(len(model.design_matrix_.columns))[0]
+    if use_method:
+        report_slm = glmr.make_glm_report(model, c1)
+    else:
+        report_slm = model.generate_report(c1)
+    # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
+    report_iframe = report_slm.get_iframe()
+    # So flake8 doesn't complain about not using variable (F841)
+    report_iframe
+    # Delete objects attached to files to avoid WindowsError when deleting
+    # temporary directory (in Windows)
+    del Y, FUNCFILE, func_img, model
 
 
 def test_check_report_dims():
@@ -239,53 +238,50 @@ def _generate_img():
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
 def test_stat_map_to_svg_slice_z(cut_coords):
-    with InTemporaryDirectory():
-        img = _generate_img()
-        table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
-        glmr._stat_map_to_svg(
-            stat_img=img,
-            bg_img=None,
-            cut_coords=cut_coords,
-            display_mode="ortho",
-            plot_type="slice",
-            table_details=table_details,
-        )
+    img = _generate_img()
+    table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
+    glmr._stat_map_to_svg(
+        stat_img=img,
+        bg_img=None,
+        cut_coords=cut_coords,
+        display_mode="ortho",
+        plot_type="slice",
+        table_details=table_details,
+    )
 
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
 def test_stat_map_to_svg_glass_z(cut_coords):
-    with InTemporaryDirectory():
-        img = _generate_img()
-        table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
+    img = _generate_img()
+    table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
+    glmr._stat_map_to_svg(
+        stat_img=img,
+        bg_img=None,
+        cut_coords=cut_coords,
+        display_mode="z",
+        plot_type="glass",
+        table_details=table_details,
+    )
+
+
+@pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
+def test_stat_map_to_svg_invalid_plot_type(cut_coords):
+    img = _generate_img()
+    expected_error = ValueError(
+        "Invalid plot type provided. Acceptable options are"
+        "'slice' or 'glass'."
+    )
+    try:
         glmr._stat_map_to_svg(
             stat_img=img,
             bg_img=None,
             cut_coords=cut_coords,
             display_mode="z",
-            plot_type="glass",
-            table_details=table_details,
+            plot_type="junk",
+            table_details={"junk": 0},
         )
-
-
-@pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
-def test_stat_map_to_svg_invalid_plot_type(cut_coords):
-    with InTemporaryDirectory():
-        img = _generate_img()
-        expected_error = ValueError(
-            "Invalid plot type provided. Acceptable options are"
-            "'slice' or 'glass'."
-        )
-        try:
-            glmr._stat_map_to_svg(
-                stat_img=img,
-                bg_img=None,
-                cut_coords=cut_coords,
-                display_mode="z",
-                plot_type="junk",
-                table_details={"junk": 0},
-            )
-        except ValueError as raised_exception:
-            assert str(raised_exception) == str(expected_error)
+    except ValueError as raised_exception:
+        assert str(raised_exception) == str(expected_error)
 
 
 def _make_dummy_contrasts_dmtx():
@@ -307,35 +303,34 @@ def test_plot_contrasts():
     )
 
 
-def test_masking_first_level_model():
+def test_masking_first_level_model(tmp_path):
     """
     Checks that using NiftiMasker when instantiating
     FirstLevelModel doesn't raise Error when calling
     generate_report().
     """
-    with InTemporaryDirectory():
-        shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
-        mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
-            shapes, rk
-        )
-        masker = NiftiMasker(mask_img=mask)
-        masker.fit(fmri_data)
-        flm = FirstLevelModel(mask_img=masker).fit(
-            fmri_data, design_matrices=design_matrices
-        )
-        contrast = np.eye(3)[1]
+    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
+    mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
+        shapes, rk, file_path=tmp_path
+    )
+    masker = NiftiMasker(mask_img=mask)
+    masker.fit(fmri_data)
+    flm = FirstLevelModel(mask_img=masker).fit(
+        fmri_data, design_matrices=design_matrices
+    )
+    contrast = np.eye(3)[1]
 
-        report_flm = flm.generate_report(
-            contrast,
-            plot_type="glass",
-            height_control=None,
-            min_distance=15,
-            alpha=0.001,
-            threshold=2.78,
-        )
+    report_flm = flm.generate_report(
+        contrast,
+        plot_type="glass",
+        height_control=None,
+        min_distance=15,
+        alpha=0.001,
+        threshold=2.78,
+    )
 
-        report_iframe = report_flm.get_iframe()
-        # So flake8 doesn't complain about not using variable (F841)
-        report_iframe
+    report_iframe = report_flm.get_iframe()
+    # So flake8 doesn't complain about not using variable (F841)
+    report_iframe
 
-        del mask, flm, fmri_data, masker
+    del mask, flm, fmri_data, masker
