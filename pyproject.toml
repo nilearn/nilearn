@@ -52,7 +52,8 @@ dev = [
     "black",
     "flake8-use-fstring",
     'codespell',
-    'tomli'
+    'tomli',
+    'pre-commit'
 ]
 # Requirements necessary for building the documentation
 doc = [
