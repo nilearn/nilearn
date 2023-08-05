@@ -146,6 +146,7 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
         if first_level.mask_img is not None:
             if isinstance(first_level.mask_img, NiftiMasker):
                 affine = first_level.mask_img.affine_
+                shape = first_level.mask_img.mask_img_.shape
             elif isinstance(first_level.mask_img, Nifti1Image):
                 affine = first_level.mask_img.affine
                 shape = first_level.mask_img.shape
