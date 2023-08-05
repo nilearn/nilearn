@@ -1,5 +1,6 @@
 """Test the second level model."""
 import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -62,9 +63,13 @@ def input_df():
     )
 
 
-def fake_fmri_data(shape=SHAPE):
+def fake_fmri_data(shape=SHAPE, file_path=None):
+    if file_path is None:
+        file_path = Path.cwd()
     shapes = (shape,)
-    mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
+    mask, FUNCFILE, _ = write_fake_fmri_data_and_design(
+        shapes, file_path=file_path
+    )
     FUNCFILE = FUNCFILE[0]
     func_img = load(FUNCFILE)
     return func_img, mask
