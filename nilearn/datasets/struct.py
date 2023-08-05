@@ -546,6 +546,53 @@ def fetch_icbm152_brain_gm_mask(
     return gm_mask_img
 
 
+def oasis_missing_subjects():
+    """Return list of missing subjects in OASIS dataset."""
+    return [
+        8,
+        24,
+        36,
+        48,
+        89,
+        93,
+        100,
+        118,
+        128,
+        149,
+        154,
+        171,
+        172,
+        175,
+        187,
+        194,
+        196,
+        215,
+        219,
+        225,
+        242,
+        245,
+        248,
+        251,
+        252,
+        257,
+        276,
+        297,
+        306,
+        320,
+        324,
+        334,
+        347,
+        360,
+        364,
+        391,
+        393,
+        412,
+        414,
+        427,
+        436,
+    ]
+
+
 @fill_doc
 def fetch_oasis_vbm(
     n_subjects=None,
@@ -689,49 +736,7 @@ def fetch_oasis_vbm(
     opts = {"uncompress": True}
 
     # missing subjects create shifts in subjects ids
-    missing_subjects = [
-        8,
-        24,
-        36,
-        48,
-        89,
-        93,
-        100,
-        118,
-        128,
-        149,
-        154,
-        171,
-        172,
-        175,
-        187,
-        194,
-        196,
-        215,
-        219,
-        225,
-        242,
-        245,
-        248,
-        251,
-        252,
-        257,
-        276,
-        297,
-        306,
-        320,
-        324,
-        334,
-        347,
-        360,
-        364,
-        391,
-        393,
-        412,
-        414,
-        427,
-        436,
-    ]
+    missing_subjects = oasis_missing_subjects()
 
     if dartel_version:
         # DARTEL produces outliers that are hidden by nilearn API
