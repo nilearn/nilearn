@@ -103,9 +103,9 @@ Fixes
 Changes
 -------
 
-- Function ``nilearn.datasets.fetch_cobre`` has been deprecated and will be
+- :bdg-danger:`Deprecation` Function ``nilearn.datasets.fetch_cobre`` has been deprecated and will be
   removed in release 0.9 .
-- Function ``nilearn.plotting.plot_connectome_strength`` has been deprecated and will
+- :bdg-danger:`Deprecation` Function ``nilearn.plotting.plot_connectome_strength`` has been deprecated and will
   be removed in release 0.9 .
 
 - :class:`nilearn.connectome.ConnectivityMeasure` can now remove
