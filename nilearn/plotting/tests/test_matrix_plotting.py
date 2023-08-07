@@ -1,11 +1,8 @@
-import os
-
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
-from nibabel.tmpdirs import InTemporaryDirectory
 
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
@@ -194,7 +191,7 @@ def test_matrix_plotting_reorder(mat, labels):
     plt.close()
 
 
-def test_show_design_matrix():
+def test_show_design_matrix(tmp_path):
     # test that the show code indeed (formally) runs
     frame_times = np.linspace(0, 127 * 1.0, 128)
     dmtx = make_first_level_design_matrix(
@@ -202,15 +199,15 @@ def test_show_design_matrix():
     )
     ax = plot_design_matrix(dmtx)
     assert ax is not None
-    with InTemporaryDirectory():
-        ax = plot_design_matrix(dmtx, output_file="dmtx.png")
-        assert os.path.exists("dmtx.png")
-        assert ax is None
-        plot_design_matrix(dmtx, output_file="dmtx.pdf")
-        assert os.path.exists("dmtx.pdf")
+
+    ax = plot_design_matrix(dmtx, output_file=tmp_path / "dmtx.png")
+    assert (tmp_path / "dmtx.png").exists()
+    assert ax is None
+    plot_design_matrix(dmtx, output_file=tmp_path / "dmtx.pdf")
+    assert (tmp_path / "dmtx.pdf").exists()
 
 
-def test_show_event_plot():
+def test_show_event_plot(tmp_path):
     # test that the show code indeed (formally) runs
     onset = np.linspace(0, 19.0, 20)
     duration = np.full(20, 0.5)
@@ -237,15 +234,14 @@ def test_show_event_plot():
         fig = plot_event(model_event, cmap="tab10")
 
     # Test save
-    with InTemporaryDirectory():
-        fig = plot_event(model_event, output_file="event.png")
-        assert os.path.exists("event.png")
-        assert fig is None
-        plot_event(model_event, output_file="event.pdf")
-        assert os.path.exists("event.pdf")
+    fig = plot_event(model_event, output_file=tmp_path / "event.png")
+    assert (tmp_path / "event.png").exists()
+    assert fig is None
+    plot_event(model_event, output_file=tmp_path / "event.pdf")
+    assert (tmp_path / "event.pdf").exists()
 
 
-def test_show_contrast_matrix():
+def test_show_contrast_matrix(tmp_path):
     # test that the show code indeed (formally) runs
     frame_times = np.linspace(0, 127 * 1.0, 128)
     dmtx = make_first_level_design_matrix(
@@ -254,9 +250,11 @@ def test_show_contrast_matrix():
     contrast = np.ones(4)
     ax = plot_contrast_matrix(contrast, dmtx)
     assert ax is not None
-    with InTemporaryDirectory():
-        ax = plot_contrast_matrix(contrast, dmtx, output_file="contrast.png")
-        assert os.path.exists("contrast.png")
-        assert ax is None
-        plot_contrast_matrix(contrast, dmtx, output_file="contrast.pdf")
-        assert os.path.exists("contrast.pdf")
+
+    ax = plot_contrast_matrix(
+        contrast, dmtx, output_file=tmp_path / "contrast.png"
+    )
+    assert (tmp_path / "contrast.png").exists()
+    assert ax is None
+    plot_contrast_matrix(contrast, dmtx, output_file=tmp_path / "contrast.pdf")
+    assert (tmp_path / "contrast.pdf").exists()

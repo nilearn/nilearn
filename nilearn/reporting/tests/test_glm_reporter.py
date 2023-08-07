@@ -220,53 +220,47 @@ def test_make_headings_with_contrasts_none_title_custom():
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
 def test_stat_map_to_svg_slice_z(mni_3d_img, cut_coords):
-    with InTemporaryDirectory():
-        img = mni_3d_img
-        table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
-        glmr._stat_map_to_svg(
-            stat_img=img,
-            bg_img=None,
-            cut_coords=cut_coords,
-            display_mode="ortho",
-            plot_type="slice",
-            table_details=table_details,
-        )
+    table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
+    glmr._stat_map_to_svg(
+        stat_img=mni_3d_img,
+        bg_img=None,
+        cut_coords=cut_coords,
+        display_mode="ortho",
+        plot_type="slice",
+        table_details=table_details,
+    )
 
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
 def test_stat_map_to_svg_glass_z(mni_3d_img, cut_coords):
-    with InTemporaryDirectory():
-        img = mni_3d_img
-        table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
-        glmr._stat_map_to_svg(
-            stat_img=img,
-            bg_img=None,
-            cut_coords=cut_coords,
-            display_mode="z",
-            plot_type="glass",
-            table_details=table_details,
-        )
+    table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
+    glmr._stat_map_to_svg(
+        stat_img=mni_3d_img,
+        bg_img=None,
+        cut_coords=cut_coords,
+        display_mode="z",
+        plot_type="glass",
+        table_details=table_details,
+    )
 
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
 def test_stat_map_to_svg_invalid_plot_type(mni_3d_img, cut_coords):
-    with InTemporaryDirectory():
-        img = mni_3d_img
-        expected_error = ValueError(
-            "Invalid plot type provided. Acceptable options are"
-            "'slice' or 'glass'."
+    expected_error = ValueError(
+        "Invalid plot type provided. Acceptable options are"
+        "'slice' or 'glass'."
+    )
+    try:
+        glmr._stat_map_to_svg(
+            stat_img=mni_3d_img,
+            bg_img=None,
+            cut_coords=cut_coords,
+            display_mode="z",
+            plot_type="junk",
+            table_details={"junk": 0},
         )
-        try:
-            glmr._stat_map_to_svg(
-                stat_img=img,
-                bg_img=None,
-                cut_coords=cut_coords,
-                display_mode="z",
-                plot_type="junk",
-                table_details={"junk": 0},
-            )
-        except ValueError as raised_exception:
-            assert str(raised_exception) == str(expected_error)
+    except ValueError as raised_exception:
+        assert str(raised_exception) == str(expected_error)
 
 
 def _make_dummy_contrasts_dmtx():

@@ -5,7 +5,6 @@ import nibabel as nb
 import numpy as np
 import pytest
 from nibabel import Nifti1Header, Nifti1Image
-from nibabel.tmpdirs import InTemporaryDirectory
 
 from nilearn._utils import load_niimg, niimg, testing
 from nilearn.image import get_data, new_img_like
@@ -60,7 +59,7 @@ def test_get_target_dtype():
 
 
 @pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
-def test_img_data_dtype():
+def test_img_data_dtype(tmp_path):
     # Ignoring complex, binary, 128+ bit, RGBA
     nifti1_dtypes = (
         np.uint8,
@@ -77,22 +76,21 @@ def test_img_data_dtype():
     # Passing dtype or header is required when using int64
     # https://nipy.org/nibabel/changelog.html#api-changes-and-deprecations
     hdr = Nifti1Header()
-    with InTemporaryDirectory():
-        rng = np.random.RandomState(42)
-        for logical_dtype in nifti1_dtypes:
-            dataobj = rng.uniform(0, 255, (2, 2, 2)).astype(logical_dtype)
-            for on_disk_dtype in nifti1_dtypes:
-                hdr.set_data_dtype(on_disk_dtype)
-                img = Nifti1Image(dataobj, np.eye(4), header=hdr)
-                img.to_filename("test.nii")
-                loaded = nb.load("test.nii")
-                # To verify later that sometimes these differ meaningfully
-                dtype_matches.append(
-                    loaded.get_data_dtype() == niimg.img_data_dtype(loaded)
-                )
-                assert np.array(loaded.dataobj).dtype == niimg.img_data_dtype(
-                    loaded
-                )
+    rng = np.random.RandomState(42)
+    for logical_dtype in nifti1_dtypes:
+        dataobj = rng.uniform(0, 255, (2, 2, 2)).astype(logical_dtype)
+        for on_disk_dtype in nifti1_dtypes:
+            hdr.set_data_dtype(on_disk_dtype)
+            img = Nifti1Image(dataobj, np.eye(4), header=hdr)
+            img.to_filename(tmp_path / "test.nii")
+            loaded = nb.load(tmp_path / "test.nii")
+            # To verify later that sometimes these differ meaningfully
+            dtype_matches.append(
+                loaded.get_data_dtype() == niimg.img_data_dtype(loaded)
+            )
+            assert np.array(loaded.dataobj).dtype == niimg.img_data_dtype(
+                loaded
+            )
     # Verify that the distinction is worth making
     assert any(dtype_matches)
     assert not all(dtype_matches)
