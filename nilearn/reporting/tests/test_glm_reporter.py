@@ -252,6 +252,7 @@ def test_stat_map_to_svg_invalid_plot_type(mni_3d_img, cut_coords):
         )
 
 
+
 def _make_dummy_contrasts_dmtx():
     frame_times = np.linspace(0, 127 * 1.0, 128)
     dmtx = make_first_level_design_matrix(
