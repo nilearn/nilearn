@@ -208,7 +208,7 @@ def load_confounds(
         Framewise displacement threshold for scrub in mm.
 
     std_dvars_threshold : :obj:`float`, default 3
-        Standardized DVARS threshold for scrub (default = 3).
+        Standardized DVARS threshold for scrub.
         DVARs is defined as root mean squared intensity difference of volume N
         to volume N+1 :footcite:`Power2012`. D referring to temporal derivative
         of timecourses, VARS referring to root mean squared variance over
