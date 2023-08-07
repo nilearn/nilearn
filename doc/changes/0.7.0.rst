@@ -50,27 +50,27 @@ NEW
   decoding pipeline at a low computational cost.
   These two objects also leverage the `NiftiMaskers` to provide a direct
   interface with the Nifti files on disk.
-- Plot events file
+- :bdg-info:`Plotting` Plot events file
   Use :func:`nilearn.plotting.plot_event` to visualize events file.
   The function accepts the :term:`BIDS` events file read using `pandas`
   utilities.
-- Plotting function :func:`nilearn.plotting.plot_roi` can now plot ROIs
+- :bdg-info:`Plotting` Plotting function :func:`nilearn.plotting.plot_roi` can now plot ROIs
   in contours with `view_type` argument.
-- New plotting function
+- :bdg-info:`Plotting` New plotting function
   :func:`nilearn.plotting.plot_carpet` generates a "carpet plot" (also known
   as a "Power plot" or a "grayplot"), for visualizing global patterns in
   4D functional data over time.
-- New plotting function
+- :bdg-info:`Plotting` New plotting function
   :func:`nilearn.plotting.plot_img_on_surf` generates multiple views of
   :func:`nilearn.plotting.plot_surf_stat_map` in a single figure.
-- :func:`nilearn.plotting.plot_markers` shows network nodes (markers) on a glass
+- :bdg-info:`Plotting` :func:`nilearn.plotting.plot_markers` shows network nodes (markers) on a glass
   brain template and color code them according to provided nodal measure (i.e.
   connection strength). This function will replace
   ``nilearn.plotting.plot_connectome_strength``.
-- New plotting function
+- :bdg-info:`Plotting` New plotting function
   :func:`nilearn.plotting.plot_surf_contours` plots the contours of regions of
   interest on the surface, optionally overlaid on top of a statistical map.
-- The position annotation on the plot methods now implements the `decimals` option
+- :bdg-info:`Plotting` The position annotation on the plot methods now implements the `decimals` option
   to enable annotation of a slice coordinate position with the float.
 - New example in
   :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight_surface.py`
@@ -103,9 +103,9 @@ Fixes
 Changes
 -------
 
-- Function ``nilearn.datasets.fetch_cobre`` has been deprecated and will be
+- :bdg-danger:`Deprecation` Function ``nilearn.datasets.fetch_cobre`` has been deprecated and will be
   removed in release 0.9 .
-- Function ``nilearn.plotting.plot_connectome_strength`` has been deprecated and will
+- :bdg-danger:`Deprecation` Function ``nilearn.plotting.plot_connectome_strength`` has been deprecated and will
   be removed in release 0.9 .
 
 - :class:`nilearn.connectome.ConnectivityMeasure` can now remove

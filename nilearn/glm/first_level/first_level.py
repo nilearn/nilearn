@@ -235,6 +235,33 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
     return labels, results
 
 
+def _check_trial_type(events):
+    """Check that the event files contain a "trial_type" column.
+
+    Parameters
+    ----------
+    events : :obj:`list` of :obj:`str` or :obj:`pathlib.Path``.
+              A list of paths of events.tsv files.
+
+    """
+    file_names = []
+
+    for event_ in events:
+        df = pd.read_csv(event_, sep='\t')
+        if 'trial_type' not in df.columns:
+            file_names.append(os.path.basename(event_))
+
+    if file_names:
+        file_names = "\n -".join(file_names)
+        warn(
+            f"No column named 'trial_type' found in:{file_names}.\n "
+            "All rows in those files will be treated "
+            "as if they are instances of same experimental condition.\n"
+            "If there is a column in the dataframe "
+            "corresponding to trial information, "
+            "consider renaming it to 'trial_type'.")
+
+
 @fill_doc
 class FirstLevelModel(BaseGLM):
     """Implement the General Linear Model for single session fMRI data.
@@ -1665,6 +1692,7 @@ def _check_bids_events_list(
             "Same number of event files "
             "as the number of runs is expected."
         )
+    _check_trial_type(events=events)
 
     supported_filters = [
         "sub",

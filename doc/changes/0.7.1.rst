@@ -14,9 +14,9 @@ HIGHLIGHTS
 
 - :class:`~decoding.Decoder` and :class:`~decoding.DecoderRegressor` are now implemented with random predictions to estimate a chance level (:gh:`2622` by `Kamalakar Reddy Daddy`_).
 
-- Functions :func:`~plotting.plot_epi`, :func:`~plotting.plot_roi`, :func:`~plotting.plot_stat_map`, :func:`~plotting.plot_prob_atlas` are now implemented with new display mode ``Mosaic``. That implies plotting 3D maps in multiple columns and rows in a single axes (:gh:`2684` by `Kamalakar Reddy Daddy`_).
+- :bdg-info:`Plotting` Functions :func:`~plotting.plot_epi`, :func:`~plotting.plot_roi`, :func:`~plotting.plot_stat_map`, :func:`~plotting.plot_prob_atlas` are now implemented with new display mode ``Mosaic``. That implies plotting 3D maps in multiple columns and rows in a single axes (:gh:`2684` by `Kamalakar Reddy Daddy`_).
 
-- Function :func:`~plotting.plot_carpet` now supports discrete atlases. When an atlas is used, a colorbar is added to the figure, optionally with labels corresponding to the different values in the atlas (:gh:`2702` by `Taylor Salo`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_carpet` now supports discrete atlases. When an atlas is used, a colorbar is added to the figure, optionally with labels corresponding to the different values in the atlas (:gh:`2702` by `Taylor Salo`_).
 
 NEW
 ---
@@ -39,9 +39,9 @@ Enhancements
 
 - :class:`~decoding.Decoder`, :class:`~decoding.DecoderRegressor`, :class:`~decoding.FREMRegressor`, and :class:`~decoding.FREMClassifier` now override the ``score`` method to use whatever scoring strategy was defined through the ``scoring`` attribute instead of the sklearn default. If the ``scoring`` attribute of the decoder is set to ``None``, the scoring strategy will default to accuracy for classifiers and to r2 score for regressors (:gh:`2669` by `Nicolas Gensollen`_).
 
-- Function :func:`~plotting.plot_surf` and deriving functions like :func:`~plotting.plot_surf_roi` now accept an optional argument ``cbar_tick_format`` to specify how numbers should be displayed on the colorbar of surface plots. The default format is scientific notation except for function :func:`~plotting.plot_surf_roi` for which it is set as integers (:gh:`2643` by `Nicolas Gensollen`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_surf` and deriving functions like :func:`~plotting.plot_surf_roi` now accept an optional argument ``cbar_tick_format`` to specify how numbers should be displayed on the colorbar of surface plots. The default format is scientific notation except for function :func:`~plotting.plot_surf_roi` for which it is set as integers (:gh:`2643` by `Nicolas Gensollen`_).
 
-- Function :func:`~plotting.plot_carpet` now supports discrete atlases. When an atlas is used, a colorbar is added to the figure, optionally with labels corresponding to the different values in the atlas (:gh:`2702` by `Taylor Salo`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_carpet` now supports discrete atlases. When an atlas is used, a colorbar is added to the figure, optionally with labels corresponding to the different values in the atlas (:gh:`2702` by `Taylor Salo`_).
 
 - :class:`~maskers.NiftiMasker`, :class:`~maskers.NiftiLabelsMasker`, :class:`~maskers.MultiNiftiMasker`, :class:`~maskers.NiftiMapsMasker`, and :class:`~maskers.NiftiSpheresMasker` can now compute high variance confounds on the images provided to ``transform`` and regress them out automatically. This behaviour is controlled through the ``high_variance_confounds`` boolean parameter of these maskers which default to ``False`` (:gh:`2697` by `Nicolas Gensollen`_).
 
@@ -49,7 +49,7 @@ Enhancements
 
 - Function :func:`~datasets.fetch_neurovault` now implements a ``resample`` boolean argument to either perform a fixed resampling during download or keep original images. This can be handy to reduce disk usage. By default, the downloaded images are not resampled (:gh:`2696` by `Raphael Meudec`_).
 
-- Functions :func:`~plotting.plot_epi`, :func:`~plotting.plot_roi`, :func:`~plotting.plot_stat_map`, :func:`~plotting.plot_prob_atlas` are now implemented with new display mode ``Mosaic``. That implies plotting 3D maps in multiple columns and rows in a single axes (:gh:`2684` by `Kamalakar Reddy Daddy`_).
+- :bdg-info:`Plotting` Functions :func:`~plotting.plot_epi`, :func:`~plotting.plot_roi`, :func:`~plotting.plot_stat_map`, :func:`~plotting.plot_prob_atlas` are now implemented with new display mode ``Mosaic``. That implies plotting 3D maps in multiple columns and rows in a single axes (:gh:`2684` by `Kamalakar Reddy Daddy`_).
 
 - Function :func:`~signal.clean` now has a ``psc`` standardization option which allows time series with negative mean values (:gh:`2714` by `Hao-Ting Wang`_).
 

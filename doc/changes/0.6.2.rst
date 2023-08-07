@@ -23,7 +23,7 @@ Fixes
 Changes
 -------
 
-- Function ``nilearn.datasets.fetch_nyu_rest`` has been deprecated and will be removed in Nilearn ``0.8.0`` (:gh:`2308` by `Joshua Teves`_).
+- :bdg-danger:`Deprecation` Function ``nilearn.datasets.fetch_nyu_rest`` has been deprecated and will be removed in Nilearn ``0.8.0`` (:gh:`2308` by `Joshua Teves`_).
 
 Contributors
 ------------
