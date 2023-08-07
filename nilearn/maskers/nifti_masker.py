@@ -386,7 +386,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         final_display = plotting.plot_img(
             resampl_img,
             black_bg=False,
-            cmap="CMRmap_r",
+            cmap="RdBu",
         )
         plt.close()
         final_display.add_contours(

@@ -343,7 +343,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 img,
                 cut_coords=cut_coords[idx],
                 black_bg=False,
-                cmap="CMRmap_r",
+                cmap="RdBu",
             )
             display.add_overlay(
                 image.index_img(maps_image, idx),

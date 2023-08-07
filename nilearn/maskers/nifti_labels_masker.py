@@ -4,6 +4,7 @@ import warnings
 
 import numpy as np
 from joblib import Memory
+import matplotlib as mpl
 
 from nilearn import _utils, image, masking
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
@@ -299,7 +300,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 display = plotting.plot_img(
                     img,
                     black_bg=False,
-                    cmap='CMRmap_r',
+                    cmap='RdBu',
                 )
                 plt.close()
                 display.add_contours(labels_image, filled=False, linewidths=3)
