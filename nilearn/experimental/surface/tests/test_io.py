@@ -1,19 +1,24 @@
 import numpy as np
+import nibabel as nib
 
 from nilearn.experimental.surface import _io
 
 
-def test_read_array():
-    """Smoke test."""
-    expected_data = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-    result = _io.read_array(expected_data)
-    assert np.all(result == expected_data)
+def test_read_array(tmp_path):
+    gifti_img = nib.gifti.GiftiImage()
+    a = np.arange(5)
+    gifti_array = nib.gifti.GiftiDataArray(a)
+    gifti_img.add_gifti_data_array(gifti_array)
+    gifti_file = tmp_path / "a.gii"
+    nib.save(gifti_img, gifti_file)
+    read_a = _io.read_array(gifti_file)
+    assert np.array_equal(a, read_a)
 
 
-def test_read_mesh():
-    """Smoke test."""
-    expected_coordinates = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-    expected_faces = np.array([[0, 1, 2]])
-    result = _io.read_mesh([expected_coordinates, expected_faces])
-    assert np.all(result["coordinates"] == expected_coordinates)
-    assert np.all(result["faces"] == expected_faces)
+def test_read_mesh(tmp_path, mini_mesh):
+    left = mini_mesh["left_hemisphere"]
+    gifti_file = tmp_path / "img.gii"
+    _io.mesh_to_gifti(left.coordinates, left.faces, gifti_file)
+    read_mesh = _io.read_mesh(gifti_file)
+    assert np.array_equal(left.coordinates, read_mesh["coordinates"])
+    assert np.array_equal(left.faces, read_mesh["faces"])
