@@ -35,9 +35,9 @@ def test_surface_image_shape(make_mini_img):
     assert img.shape == (7, 3, 9)
 
 
-def test_data_shape_not_matching_mesh(mini_mesh, flipped_mini_img):
+def test_data_shape_not_matching_mesh(mini_img, flip):
     with pytest.raises(ValueError, match="shape.*vertices"):
-        SurfaceImage(mini_mesh, flipped_mini_img.data)
+        SurfaceImage(mini_img.mesh, flip(mini_img.data))
 
 
 def test_data_shape_inconsistent(make_mini_img):

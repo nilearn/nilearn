@@ -55,7 +55,9 @@ class SurfaceMasker:
             mesh=img.mesh, data=mask_data
         )  # type: ignore
 
-    def fit(self, img: SurfaceImage | None, y: Any = None) -> SurfaceMasker:
+    def fit(
+        self, img: SurfaceImage | None = None, y: Any = None
+    ) -> SurfaceMasker:
         del y
         self._fit_mask_img(img)
         assert self.mask_img_ is not None

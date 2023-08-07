@@ -35,18 +35,6 @@ def mini_mesh() -> PolyMesh:
     }
 
 
-def _flip(parts):
-    return {
-        "right_hemisphere": parts["left_hemisphere"],
-        "left_hemisphere": parts["right_hemisphere"],
-    }
-
-
-@pytest.fixture
-def flipped_mini_mesh(mini_mesh) -> PolyMesh:
-    return _flip(mini_mesh)
-
-
 @pytest.fixture
 def make_mini_img(mini_mesh) -> Callable:
     """Small surface image for tests"""
@@ -65,12 +53,9 @@ def make_mini_img(mini_mesh) -> Callable:
 
 
 @pytest.fixture
-def make_flipped_mini_img(make_mini_img) -> Callable:
-    def f(shape=()):
-        img = make_mini_img(shape)
-        return SurfaceImage(_flip(img.mesh), _flip(img.data))
-
-    return f
+def mini_mask(mini_img) -> SurfaceImage:
+    data = {k: (v > v.ravel()[0]) for k, v in mini_img.data.items()}
+    return SurfaceImage(mini_img.mesh, data)
 
 
 @pytest.fixture
@@ -79,11 +64,48 @@ def mini_img(make_mini_img) -> SurfaceImage:
 
 
 @pytest.fixture
-def flipped_mini_img(make_flipped_mini_img) -> SurfaceImage:
-    return make_flipped_mini_img()
+def flip():
+    def f(parts):
+        if not parts:
+            return {}
+        keys = list(parts.keys())
+        keys = [keys[-1]] + keys[:-1]
+        return dict(zip(keys, parts.values()))
+
+    return f
+
+
+@pytest.fixture
+def flip_img(flip):
+    def f(img):
+        return SurfaceImage(flip(img.mesh), flip(img.data))
+
+    return f
 
 
 @pytest.fixture
 def pial_surface_mesh():
     """Get fsaverage mesh for testing."""
     return load_fsaverage()["pial"]
+
+
+@pytest.fixture
+def assert_img_equal():
+    def f(img_1, img_2):
+        assert set(img_1.data.keys()) == set(img_2.data.keys())
+        for key in img_1.data:
+            assert np.array_equal(img_1.data[key], img_2.data[key])
+
+    return f
+
+
+@pytest.fixture
+def drop_img_part():
+    def f(img, part_name="right_hemisphere"):
+        mesh = img.mesh.copy()
+        mesh.pop(part_name)
+        data = img.data.copy()
+        data.pop(part_name)
+        return SurfaceImage(mesh, data)
+
+    return f

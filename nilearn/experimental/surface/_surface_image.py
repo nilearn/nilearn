@@ -25,7 +25,10 @@ class Mesh(abc.ABC):
     faces: np.ndarray
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} with {self.n_vertices} vertices>"
+        return (
+            f"<{self.__class__.__name__} "
+            f"with {getattr(self, 'n_vertices', '??')} vertices>"
+        )
 
     def to_gifti(self, gifti_file: Union[pathlib.Path, str]):
         _io.mesh_to_gifti(self.coordinates, self.faces, gifti_file)
@@ -130,4 +133,4 @@ class SurfaceImage:
         self.shape = (*first_data_shape[:-1], total_n_vertices)
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} {self.shape}>"
+        return f"<{self.__class__.__name__} {getattr(self, 'shape', '')}>"
