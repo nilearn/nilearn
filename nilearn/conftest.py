@@ -81,12 +81,20 @@ def close_all():
 
 MNI_AFFINE = np.array(
     [
-        [-2.0, 0.0, 0.0, 90.0],
-        [0.0, 2.0, 0.0, -126.0],
+        [2.0, 0.0, 0.0, -98.0],
+        [0.0, 2.0, 0.0, -134.0],
         [0.0, 0.0, 2.0, -72.0],
         [0.0, 0.0, 0.0, 1.0],
     ]
 )
+
+
+def _mni_3d_img(affine=MNI_AFFINE):
+    data_positive = np.zeros((7, 7, 3))
+    rng = np.random.RandomState(42)
+    data_rng = rng.rand(7, 7, 3)
+    data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
+    return Nifti1Image(data_positive, affine)
 
 
 @pytest.fixture()
@@ -96,15 +104,9 @@ def mni_affine():
 
 
 @pytest.fixture()
-def testdata_3d_for_plotting():
-    """A random 3D image for testing figures."""
-    data_positive = np.zeros((7, 7, 3))
-    rng = np.random.RandomState(42)
-    data_rng = rng.uniform(size=(7, 7, 3))
-    data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
-    img_3d = Nifti1Image(data_positive, MNI_AFFINE)
-    # TODO: return img_3D directly and not a dict
-    return {"img": img_3d}
+def mni_3d_img():
+    """Fixture for a random 3D image in MNI space."""
+    return _mni_3d_img()
 
 
 @pytest.fixture()

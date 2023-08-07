@@ -50,7 +50,10 @@ dev = [
     "isort",
     "flynt",
     "black",
-    "flake8-use-fstring"
+    "flake8-use-fstring",
+    'codespell',
+    'tomli',
+    'pre-commit'
 ]
 # Requirements necessary for building the documentation
 doc = [

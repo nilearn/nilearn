@@ -18,7 +18,7 @@ Highlights
 Changes
 -------
 
-- The function ``sym_to_vec`` is deprecated and will be removed in release ``0.4``. Use function :func:`~connectome.sym_matrix_to_vec` instead.
+- :bdg-danger:`Deprecation` The function ``sym_to_vec`` is deprecated and will be removed in release ``0.4``. Use function :func:`~connectome.sym_matrix_to_vec` instead.
 
 - Added argument ``smoothing_fwhm`` to :class:`~regions.RegionExtractor` to control smoothing according to the resolution of atlas images.
 
