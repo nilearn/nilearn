@@ -292,10 +292,6 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             img = self._reporting_data['img']
             # If we have a func image to show in the report, use it
             if img is not None:
-                dim = image.load_img(img).shape
-                if len(dim) == 4:
-                    # compute middle image from 4D series for plotting
-                    img = image.index_img(img, dim[-1] // 2)
                 display = plotting.plot_img(
                     img,
                     black_bg=False,
@@ -410,6 +406,11 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             self._resampled_labels_img_ = self.labels_img_
 
         if self.reports:
+            if imgs is not None:
+                dim = image.load_img(imgs).shape
+                if len(dim) == 4:
+                    # compute middle image from 4D series for plotting
+                    imgs = image.index_img(imgs, dim[-1] // 2)
             self._reporting_data = {
                 'labels_image': self._resampled_labels_img_,
                 'mask': self.mask_img_,

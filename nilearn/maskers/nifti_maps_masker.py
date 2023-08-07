@@ -327,11 +327,6 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 display.close()
             return embeded_images
 
-        dim = image.load_img(img).shape
-        if len(dim) == 4:
-            # compute middle image from 4D series for plotting
-            img = image.index_img(img, dim[-1] // 2)
-
         # Find the cut coordinates
         cut_coords = [
             plotting.find_xyz_cut_coords(image.index_img(maps_image, i))
@@ -423,6 +418,11 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
             )
 
         if self.reports:
+            if imgs is not None:
+                dim = image.load_img(imgs).shape
+                if len(dim) == 4:
+                    # compute middle image from 4D series for plotting
+                    imgs = image.index_img(imgs, dim[-1] // 2)
             self._reporting_data = {
                 "maps_image": self.maps_img_,
                 "mask": self.mask_img_,
