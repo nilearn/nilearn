@@ -356,8 +356,15 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
-        All parameters are unused, they are for scikit-learn compatibility.
+        Parameters
+        ----------
+        imgs : :obj:`list` of Niimg-like objects
+            See :ref:`extracting_data`.
+            Image data passed to the reporter.
 
+        y : None
+            This parameter is unused. It is solely included for scikit-learn
+            compatibility.
         """
         # Load images
         repr = _utils._repr_niimgs(self.mask_img, shorten=(not self.verbose))
