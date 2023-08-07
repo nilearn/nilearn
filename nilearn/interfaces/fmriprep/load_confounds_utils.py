@@ -35,7 +35,26 @@ img_file_error = {
 
 
 def _check_params(confounds_raw, params):
-    """Check that specified parameters can be found in the confounds."""
+    """Check that specified parameters can be found in the confounds.
+
+    Used for motion, wm_csf, global_signal, and compcor regressors.
+
+    Parameters
+    ----------
+    confounds_raw : pandas.DataFrame
+        Raw confounds loaded from the confounds file.
+
+    params : list of str
+        List of parameters constructed based on users choices.
+
+    Returns
+    -------
+    bool
+        True if all parameters are found in the confounds.
+        False if none of the parameters are found in the confounds.
+        list of str
+            List of parameters that are not found in the confounds.
+    """
     not_found_params = [
         par for par in params if par not in confounds_raw.columns
     ]
@@ -48,7 +67,23 @@ def _check_params(confounds_raw, params):
 
 
 def _find_confounds(confounds_raw, keywords):
-    """Find confounds that contain certain keywords."""
+    """Find confounds that contain certain keywords.
+
+    Used for cosine regressors and ICA-AROMA regressors.
+
+    Parameters
+    ----------
+    confounds_raw : pandas.DataFrame
+        Raw confounds loaded from the confounds file.
+
+    keywords : list of str
+        List of keywords to search for in the confounds.
+
+    Returns
+    -------
+    list of str
+        List of confounds that contain the keywords.
+    """
     list_confounds = []
     for key in keywords:
         key_found = [col for col in confounds_raw.columns if key in col]
@@ -58,7 +93,21 @@ def _find_confounds(confounds_raw, keywords):
 
 
 def _sanitize_confounds(img_files):
-    """Make sure the inputs are in the correct format."""
+    """Make sure the inputs are in the correct format.
+
+    Parameters
+    ----------
+    img_files : str or list of str
+        Path to the functional image file(s).
+
+    Returns
+    -------
+    img_files : list of str
+        List of functional image file(s).
+    flag_single : bool
+        True if the input is a single file, False if it is a list of
+        files.
+    """
     # we want to support loading a single set of confounds, instead of a list
     # so we hack it
     if len(img_files) == 1:
@@ -74,7 +123,23 @@ def _sanitize_confounds(img_files):
 
 
 def _add_suffix(params, model):
-    """Add derivative suffixes to a list of parameters."""
+    """Add derivative suffixes to a list of parameters.
+
+    Used from motion, wm_csf, global_signal.
+
+    Parameters
+    ----------
+    params : list of str
+        List of parameters to add suffixes to.
+    model : str
+        Model to use. Options are "basic", "derivatives", "power2", or
+        "full".
+
+    Returns
+    -------
+    params_full : list of str
+        List of parameters with suffixes added.
+    """
     params_full = params.copy()
     suffix = {
         "basic": {},
@@ -93,6 +158,16 @@ def _generate_confounds_file_candidates(nii_file):
 
     Build a list of potential confounds filenames using all combinations of
     the entities in the image file.
+
+    Parameters
+    ----------
+    nii_file : str
+        Path to the functional image file.
+
+    Returns
+    -------
+    filenames : list of str
+        List of potential confounds filenames.
     """
     entities = parse_bids_filename(nii_file)
     file_fields = entities["file_fields"]
@@ -123,7 +198,18 @@ def _generate_confounds_file_candidates(nii_file):
 
 
 def _get_file_name(nii_file):
-    """Identify the confounds file associated with a functional image."""
+    """Identify the confounds file associated with a functional image.
+
+    Parameters
+    ----------
+    nii_file : str
+        Path to the functional image file.
+
+    Returns
+    -------
+    confound_file : str
+        Path to the associated confounds file.
+    """
     if isinstance(nii_file, list):  # catch gifti
         nii_file = nii_file[0]
 
@@ -165,6 +251,21 @@ def _get_file_name(nii_file):
 
 
 def _get_confounds_file(image_file, flag_full_aroma):
+    """Return the confounds file associated with a functional image.
+
+    Parameters
+    ----------
+    image_file : str
+        Path to the functional image file.
+
+    flag_full_aroma : bool
+        True if the input is a full ICA-AROMA output, False otherwise.
+
+    Returns
+    -------
+    confounds_raw_path : str
+        Path to the associated confounds file.
+    """
     _check_images(image_file, flag_full_aroma)
     confounds_raw_path = _get_file_name(image_file)
     return confounds_raw_path
@@ -177,7 +278,28 @@ def _get_json(confounds_raw_path):
 
 
 def _load_confounds_json(confounds_json, flag_acompcor):
-    """Load json data companion to the confounds tsv file."""
+    """Load json data companion to the confounds tsv file.
+
+    Parameters
+    ----------
+    confounds_json : str
+        Path to the json file.
+
+    flag_acompcor : bool
+        True if user selected anatomical compcor for denoising strategy,
+        False otherwise.
+
+    Returns
+    -------
+    confounds_json : dict
+        Dictionary of confounds meta data from the confounds.json file.
+
+    Raises
+    ------
+    ValueError
+        If the json file is not found. This should not be the case for
+        fMRIprep >= 1.4.0.
+    """
     try:
         with open(confounds_json, "rb") as f:
             confounds_json = json.load(f)
@@ -193,7 +315,20 @@ def _load_confounds_json(confounds_json, flag_acompcor):
 
 
 def _load_confounds_file_as_dataframe(confounds_raw_path):
-    """Load raw confounds as a pandas DataFrame."""
+    """Load raw confounds as a pandas DataFrame.
+
+    Meanwhile detect if the fMRIPrep version is supported.
+
+    Parameters
+    ----------
+    confounds_raw_path : str
+        Path to the confounds file.
+
+    Returns
+    -------
+    confounds_raw : pandas.DataFrame
+        Raw confounds loaded from the confounds file.
+    """
     confounds_raw = pd.read_csv(
         confounds_raw_path, delimiter="\t", encoding="utf-8"
     )
@@ -227,7 +362,24 @@ def _load_confounds_file_as_dataframe(confounds_raw_path):
 
 
 def _ext_validator(image_file, ext):
-    """Check image is valid based on extension."""
+    """Check image is valid based on extension.
+
+    Parameters
+    ----------
+    image_file : str
+        Path to the functional image file.
+
+    ext : str
+        Extension to check.
+
+    Returns
+    -------
+    valid_img : bool
+        True if the image is valid, False otherwise.
+
+    error_message : str
+        Error message to raise if the image is invalid.
+    """
     try:
         valid_img = all(
             bool(re.search(img_file_patterns[ext], img)) for img in image_file
@@ -240,7 +392,21 @@ def _ext_validator(image_file, ext):
 
 
 def _check_images(image_file, flag_full_aroma):
-    """Validate input file and ICA AROMA related file."""
+    """Validate input file and ICA AROMA related file.
+
+    Parameters
+    ----------
+    image_file : str
+        Path to the functional image file.
+
+    flag_full_aroma : bool
+        True if the input is a full ICA-AROMA output, False otherwise.
+
+    Raises
+    ------
+    ValueError
+        If the image is not valid.
+    """
     if len(image_file) == 2:  # must be gifti
         valid_img, error_message = _ext_validator(image_file, "func.gii")
     elif flag_full_aroma:
@@ -253,8 +419,29 @@ def _check_images(image_file, flag_full_aroma):
 
 
 def _prepare_output(confounds, demean):
-    """Demean and create sample mask for the selected confounds."""
-    sample_mask, confounds, outliers = _extract_outlier_regressors(confounds)
+    """Demean and create sample mask for the selected confounds.
+
+    Parameters
+    ----------
+    confounds : pandas.DataFrame
+        Confound regressors loaded based on user's choice.
+
+    demean : bool
+        True if the confounds should be demeaned, False otherwise.
+
+    Returns
+    -------
+    sample_mask : None numpy.ndarray
+        When no volumns require removal, the value is None.
+        Otherwise, the shape is \
+            (number of scans - number of volumes removed, )
+        The index of the niimgs along time/fourth dimension for valid
+        volumes for subsequent analysis.
+
+    confounds : pandas.DataFrame
+        Demeaned confounds ready for subsequent analysis.
+    """
+    sample_mask, confounds, _ = _extract_outlier_regressors(confounds)
     if confounds.size != 0:  # ica_aroma = "full" generate empty output
         # Derivatives have NaN on the first row
         # Replace them by estimates at second time point,
@@ -267,7 +454,27 @@ def _prepare_output(confounds, demean):
 
 
 def _demean_confounds(confounds, sample_mask):
-    """Demean the confounds. The mean is calculated on non-outlier values."""
+    """Demean the confounds.
+
+    The mean is calculated on non-outlier values.
+
+    Parameters
+    ----------
+    confounds : pandas.DataFrame
+        Confound regressors loaded based on user's choice.
+
+    sample_mask : None numpy.ndarray
+        When no volumns require removal, the value is None.
+        Otherwise, the shape is \
+            (number of scans - number of volumes removed, )
+        The index of the niimgs along time/fourth dimension for valid
+        volumes for subsequent analysis.
+
+    Returns
+    -------
+    confounds : pandas.DataFrame
+        Demeaned confounds.
+    """
     confound_cols = confounds.columns
     if sample_mask is None:
         confounds = scale(confounds, axis=0, with_std=False)
