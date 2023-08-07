@@ -104,15 +104,16 @@ def _sample_locations_between_surfaces(
         mesh, inner_mesh, affine, n_points=10, depth=None):
     outer_vertices, _ = mesh
     inner_vertices, _ = inner_mesh
-    # when we drop support for np 1.5 replace the next 2 lines with
-    # sample_locations = np.linspace(inner_vertices, outer_vertices, n_points)
+
     if depth is None:
         steps = np.linspace(0, 1, n_points)[:, None, None]
     else:
         steps = np.asarray(depth)[:, None, None]
+
     sample_locations = outer_vertices + steps * (
         inner_vertices - outer_vertices)
     sample_locations = np.rollaxis(sample_locations, 1)
+    
     sample_locations_voxel_space = np.asarray(
         resampling.coord_transform(
             *np.vstack(sample_locations).T,
