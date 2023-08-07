@@ -1,17 +1,16 @@
 import numpy as np
-import pytest
 
 from nilearn.experimental.surface import (
     SurfaceImage,
     SurfaceMasker,
-    load_fsaverage,
 )
 
 
-@pytest.fixture
-def pial_surface_mesh():
-    """Get fsaverage mesh for testing."""
-    return load_fsaverage()["pial"]
+def test_f(make_mini_img):
+    mini_img = make_mini_img((2, 3))
+    print(mini_img.mesh)
+    print(mini_img.data)
+    print(mini_img)
 
 
 def test_surface_masker(pial_surface_mesh):

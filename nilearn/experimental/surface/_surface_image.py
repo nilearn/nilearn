@@ -3,7 +3,7 @@ from __future__ import annotations
 import abc
 import dataclasses
 import pathlib
-from typing import Dict
+from typing import Dict, Union
 
 import numpy as np
 
@@ -27,6 +27,23 @@ class Mesh(abc.ABC):
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} with {self.n_vertices} vertices>"
 
+    def to_gifti(self, gifti_file: Union[pathlib.Path, str]):
+        _io.mesh_to_gifti(self.coordinates, self.faces, gifti_file)
+
+
+class InMemoryMesh(Mesh):
+    """A surface mesh stored as in-memory numpy arrays."""
+
+    n_vertices: int
+
+    coordinates: np.ndarray
+    faces: np.ndarray
+
+    def __init__(self, coordinates: np.ndarray, faces: np.ndarray) -> None:
+        self.coordinates = coordinates
+        self.faces = faces
+        self.n_vertices = coordinates.shape[0]
+
 
 class FileMesh(Mesh):
     """A surface mesh stored in a Gifti or Freesurfer file."""
@@ -47,19 +64,11 @@ class FileMesh(Mesh):
     def faces(self) -> np.ndarray:
         return _io.read_mesh(self.file_path)["faces"]
 
-
-class InMemoryMesh(Mesh):
-    """A surface mesh stored as in-memory numpy arrays."""
-
-    n_vertices: int
-
-    coordinates: np.ndarray
-    faces: np.ndarray
-
-    def __init__(self, coordinates: np.ndarray, faces: np.ndarray) -> None:
-        self.coordinates = coordinates
-        self.faces = faces
-        self.n_vertices = coordinates.shape[0]
+    def loaded(self) -> InMemoryMesh:
+        loaded_arrays = _io.read_mesh(self.file_path)
+        return InMemoryMesh(
+            loaded_arrays["coordinates"], loaded_arrays["faces"]
+        )
 
 
 PolyMesh = Dict[str, Mesh]
@@ -76,7 +85,7 @@ def _check_data_consistent_shape(data: PolyData):
         raise ValueError("Surface image data must have at least one item.")
     first_name = next(iter(data.keys()))
     first_shape = data[first_name].shape
-    for part_name, part_data in data.values():
+    for part_name, part_data in data.items():
         if part_data.shape[:-1] != first_shape[:-1]:
             raise ValueError(
                 f"Data arrays for keys '{first_name}' and '{part_name}' "
@@ -118,15 +127,7 @@ class SurfaceImage:
             mesh_part.n_vertices for mesh_part in self.mesh.values()
         )
         first_data_shape = list(self.data.values())[0].shape
-        if len(first_data_shape) == 1:
-            self.shape = (total_n_vertices,)
-        elif len(first_data_shape) == 2:
-            self.shape = (first_data_shape[0], total_n_vertices)
-        else:
-            raise ValueError(
-                "Expected 1 or 2 dimensional SurfaceImage data; "
-                f"got shape: {first_data_shape}"
-            )
+        self.shape = (*first_data_shape[:-1], total_n_vertices)
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.shape}>"

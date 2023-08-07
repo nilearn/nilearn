@@ -80,6 +80,7 @@ class SurfaceMasker:
         self._check_fitted()
         assert self.mask_img_ is not None
         assert self.output_dimension_ is not None
+        check_same_n_vertices(self.mask_img_.mesh, img.mesh)
         output = np.empty((*img.shape[:-1], self.output_dimension_))
         for part_name, (start, stop) in self.slices.items():
             mask = self.mask_img_.data[part_name]
@@ -91,18 +92,23 @@ class SurfaceMasker:
         del y
         return self.fit(img).transform(img)
 
-    def inverse_transform(self, masked_images: np.ndarray) -> SurfaceImage:
+    def inverse_transform(self, masked_img: np.ndarray) -> SurfaceImage:
         self._check_fitted()
         assert self.mask_img_ is not None
+        if masked_img.shape[-1] != self.output_dimension_:
+            raise ValueError(
+                "Input to inverse_transform has wrong shape; "
+                f"last dimension should be {self.output_dimension_}"
+            )
         data = {}
         for part_name, mask in self.mask_img_.data.items():
             assert isinstance(mask, np.ndarray)
             data[part_name] = np.zeros(
-                (*masked_images.shape[:-1], mask.shape[0]),
-                dtype=masked_images.dtype,
+                (*masked_img.shape[:-1], mask.shape[0]),
+                dtype=masked_img.dtype,
             )
             start, stop = self.slices[part_name]
-            data[part_name][..., mask] = masked_images[..., start:stop]
+            data[part_name][..., mask] = masked_img[..., start:stop]
         return SurfaceImage(
             mesh=self.mask_img_.mesh, data=data
         )  # type: ignore
@@ -147,6 +153,7 @@ class SurfaceLabelsMasker:
         return self
 
     def transform(self, img: SurfaceImage) -> np.ndarray:
+        check_same_n_vertices(self.labels_img.mesh, img.mesh)
         img_data = np.concatenate(list(img.data.values()), axis=-1)
         output = np.empty((*img_data.shape[:-1], len(self.labels_)))
         for i, label in enumerate(self.labels_):
@@ -159,15 +166,15 @@ class SurfaceLabelsMasker:
         del y
         return self.fit(img).transform(img)
 
-    def inverse_transform(self, masked_images: np.ndarray) -> SurfaceImage:
+    def inverse_transform(self, masked_img: np.ndarray) -> SurfaceImage:
         data = {}
         for part_name, labels_part in self.labels_img.data.items():
             data[part_name] = np.zeros(
-                (*masked_images.shape[:-1], labels_part.shape[0]),
-                dtype=masked_images.dtype,
+                (*masked_img.shape[:-1], labels_part.shape[0]),
+                dtype=masked_img.dtype,
             )
             for label_idx, label in enumerate(self.labels_):
-                data[part_name][..., labels_part == label] = masked_images[
+                data[part_name][..., labels_part == label] = masked_img[
                     ..., label_idx
                 ]
         return SurfaceImage(
