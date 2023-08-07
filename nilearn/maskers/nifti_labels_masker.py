@@ -451,8 +451,9 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             shape: (number of scans, number of labels)
 
         """
-        return self.fit().transform(imgs, confounds=confounds,
-                                    sample_mask=sample_mask)
+        return self.fit(imgs).transform(
+            imgs, confounds=confounds, sample_mask=sample_mask
+        )
 
     def _check_fitted(self):
         if not hasattr(self, 'labels_img_'):
