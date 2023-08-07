@@ -4,7 +4,6 @@ import warnings
 
 import numpy as np
 from joblib import Memory
-import matplotlib as mpl
 
 from nilearn import _utils, image, masking
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
