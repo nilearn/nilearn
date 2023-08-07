@@ -927,18 +927,6 @@ def test_plot_img_on_surf_with_engine_kwarg(mni_3d_img):
         )
 
 
-def test_plot_img_on_surf_with_engine_kwarg(mni_3d_img):
-    nii = mni_3d_img
-    with pytest.raises(ValueError):
-        plot_img_on_surf(
-            nii,
-            views=["anterior"],
-            hemispheres=["right"],
-            inflat=True,
-            engine="something",
-        )
-
-
 def test_plot_img_on_surf_title(mni_3d_img):
     nii = mni_3d_img
     title = "Title"
