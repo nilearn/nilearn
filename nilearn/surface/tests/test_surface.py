@@ -571,17 +571,17 @@ def test_sample_locations_depth(depth, n_points):
 def test_sample_locations_between_surfaces(depth, n_points):
     inner = flat_mesh(5, 7)
     outer = inner[0] + [0., 0., 1.], inner[1]
-    
+
     locations = surface._sample_locations_between_surfaces(
         outer, inner, np.eye(4), n_points=n_points, depth=depth)
-    
+
     if depth is None:
         expected = np.asarray(
             [np.linspace(b, a, n_points)
              for (a, b) in zip(inner[0].ravel(), outer[0].ravel())])
         expected = np.rollaxis(
             expected.reshape((*outer[0].shape, n_points)), 2, 1)
-        
+
     else:
         offsets = ([[0., 0., - z] for z in depth])
         expected = np.asarray([vertex + offsets for vertex in outer[0]])

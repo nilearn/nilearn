@@ -113,7 +113,7 @@ def _sample_locations_between_surfaces(
     sample_locations = outer_vertices + steps * (
         inner_vertices - outer_vertices)
     sample_locations = np.rollaxis(sample_locations, 1)
-    
+
     sample_locations_voxel_space = np.asarray(
         resampling.coord_transform(
             *np.vstack(sample_locations).T,
