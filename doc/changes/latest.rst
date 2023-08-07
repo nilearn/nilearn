@@ -16,6 +16,8 @@ Fixes
 
 - Fix bug that would prevent loading the confounds of a gifti file in actual fmriprep datasets (:gh:`3819` by `Rémi Gau`_).
 
+- Fix bug that prevented using dataframes as input for second level GLM when computing contrasts (:gh:`3879` by `Rémi Gau`_).
+
 - Fix bug in :func:`~glm.first_level.first_level_from_bids` that returned no confound files if the corresponding bold files contained derivatives BIDS entities (:gh:`3742` by `Rémi Gau`_).
 
 - Fix bug in :func:`~glm.first_level.first_level_from_bids` that would throw a warning about ``slice_time_ref`` not being provided even when it was (:gh:`3811` by `Rémi Gau`_).

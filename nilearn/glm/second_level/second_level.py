@@ -179,15 +179,17 @@ def _check_confounds(confounds):
 
 
 def _check_first_level_contrast(second_level_input, first_level_contrast):
-    if isinstance(second_level_input[0], FirstLevelModel):
-        if first_level_contrast is None:
-            raise ValueError(
-                "If second_level_input was a list of "
-                "FirstLevelModel, then first_level_contrast "
-                "is mandatory. It corresponds to the "
-                "second_level_contrast argument of the "
-                "compute_contrast method of FirstLevelModel"
-            )
+    if (
+        isinstance(second_level_input, list)
+        and isinstance(second_level_input[0], FirstLevelModel)
+        and first_level_contrast is None
+    ):
+        raise ValueError(
+            "If second_level_input was a list of FirstLevelModel,"
+            " then first_level_contrast is mandatory. "
+            "It corresponds to the second_level_contrast argument "
+            "of the compute_contrast method of FirstLevelModel."
+        )
 
 
 def _check_output_type(output_type, valid_types):

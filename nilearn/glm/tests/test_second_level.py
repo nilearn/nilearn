@@ -16,6 +16,7 @@ from scipy import stats
 from nilearn._utils import testing
 from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
+    write_fake_bold_img,
     write_fake_fmri_data_and_design,
 )
 from nilearn.glm.first_level import FirstLevelModel, run_glm
@@ -1178,3 +1179,25 @@ def test_second_level_contrast_computation_with_memory_caching():
         # Delete objects attached to files to avoid WindowsError when deleting
         # temporary directory (in Windows)
         del func_img, model, X, Y
+
+
+def test_second_lvl_dataframe_computation(tmp_path):
+    """Check that contrast can be computed when using dataframes as input.
+
+    See bug https://github.com/nilearn/nilearn/issues/3871
+    """
+    shape = (7, 8, 9, 1)
+    file_path = write_fake_bold_img(
+        file_path=tmp_path / "img.nii.gz", shape=shape
+    )
+
+    dfcols = ["subject_label", "map_name", "effects_map_path"]
+    dfrows = [
+        ["01", "a", file_path],
+        ["02", "a", file_path],
+        ["03", "a", file_path],
+    ]
+    niidf = pd.DataFrame(dfrows, columns=dfcols)
+
+    model = SecondLevelModel().fit(niidf)
+    model.compute_contrast(first_level_contrast="a")
