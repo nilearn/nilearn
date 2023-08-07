@@ -1,5 +1,6 @@
 """Test the second level model."""
 import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -15,6 +16,7 @@ from scipy import stats
 from nilearn._utils import testing
 from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
+    write_fake_bold_img,
     write_fake_fmri_data_and_design,
 )
 from nilearn.glm.first_level import FirstLevelModel, run_glm
@@ -24,6 +26,7 @@ from nilearn.glm.second_level.second_level import (
     _check_design_matrix,
     _check_effect_maps,
     _check_first_level_contrast,
+    _check_input_as_first_level_model,
     _check_output_type,
     _check_second_level_input,
     _get_contrast,
@@ -61,9 +64,13 @@ def input_df():
     )
 
 
-def fake_fmri_data(shape=SHAPE):
+def fake_fmri_data(shape=SHAPE, file_path=None):
+    if file_path is None:
+        file_path = Path.cwd()
     shapes = (shape,)
-    mask, FUNCFILE, _ = write_fake_fmri_data_and_design(shapes)
+    mask, FUNCFILE, _ = write_fake_fmri_data_and_design(
+        shapes, file_path=file_path
+    )
     FUNCFILE = FUNCFILE[0]
     func_img = load(FUNCFILE)
     return func_img, mask
@@ -171,6 +178,75 @@ def test_process_second_level_input_as_firstlevelmodels():
     assert sample_map.shape == (7, 8, 9)
 
 
+def test_check_affine_first_level_models():
+    shapes, rk = [(7, 8, 9, 15)], 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk
+    )
+    list_of_flm = [
+        FirstLevelModel(mask_img=mask, subject_label=f"sub-{i}").fit(
+            fmri_data[0], design_matrices=design_matrices[0]
+        )
+        for i in range(3)
+    ]
+    # should pass
+    _check_input_as_first_level_model(
+        second_level_input=list_of_flm, none_confounds=False
+    )
+
+    # add a model with a different affine
+    # should raise an error
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk, affine=np.eye(4) * 2
+    )
+    list_of_flm.append(
+        FirstLevelModel(mask_img=mask, subject_label="sub-4").fit(
+            fmri_data[0], design_matrices=design_matrices[0]
+        )
+    )
+    with pytest.raises(
+        ValueError, match="All first level models must have the same affine"
+    ):
+        _check_input_as_first_level_model(
+            second_level_input=list_of_flm, none_confounds=False
+        )
+
+
+def test_check_shape_first_level_models():
+    shapes, rk = [(7, 8, 9, 15)], 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk
+    )
+    list_of_flm = [
+        FirstLevelModel(mask_img=mask, subject_label=f"sub-{i}").fit(
+            fmri_data[0], design_matrices=design_matrices[0]
+        )
+        for i in range(3)
+    ]
+    # should pass
+    _check_input_as_first_level_model(
+        second_level_input=list_of_flm, none_confounds=False
+    )
+
+    # add a model with a different shape
+    # should raise an error
+    shapes, rk = [(8, 9, 10, 15)], 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk
+    )
+    list_of_flm.append(
+        FirstLevelModel(mask_img=mask, subject_label="sub-4").fit(
+            fmri_data[0], design_matrices=design_matrices[0]
+        )
+    )
+    with pytest.raises(
+        ValueError, match="All first level models must have the same shape"
+    ):
+        _check_input_as_first_level_model(
+            second_level_input=list_of_flm, none_confounds=False
+        )
+
+
 def test_check_second_level_input():
     with pytest.raises(
         TypeError,
@@ -206,8 +282,7 @@ def test_check_second_level_input():
     with pytest.raises(
         ValueError,
         match="In case confounds are provided, first level "
-        "objects need to provide the attribute "
-        "subject_label",
+        "objects need to provide the attribute 'subject_label'",
     ):
         _check_second_level_input(
             input_models * 2, pd.DataFrame(), confounds=pd.DataFrame()
@@ -1125,11 +1200,11 @@ def test_non_parametric_inference_contrast_computation_errors(tmp_path):
         )
 
 
-def test_second_level_contrast_computation_with_memory_caching(tmp_path):
-    func_img, mask = fake_fmri_data(file_path=tmp_path)
+def test_second_level_contrast_computation_with_memory_caching():
+    func_img, mask = fake_fmri_data()
 
-    # Ordinary Least Squares case
     model = SecondLevelModel(mask_img=mask, memory="nilearn_cache")
+
     # fit model
     Y = [func_img] * 4
     X = pd.DataFrame([[1]] * 4, columns=["intercept"])
@@ -1140,3 +1215,25 @@ def test_second_level_contrast_computation_with_memory_caching(tmp_path):
     model.compute_contrast(c1, output_type="z_score")
     # or simply pass nothing
     model.compute_contrast()
+
+
+def test_second_lvl_dataframe_computation(tmp_path):
+    """Check that contrast can be computed when using dataframes as input.
+
+    See bug https://github.com/nilearn/nilearn/issues/3871
+    """
+    shape = (7, 8, 9, 1)
+    file_path = write_fake_bold_img(
+        file_path=tmp_path / "img.nii.gz", shape=shape
+    )
+
+    dfcols = ["subject_label", "map_name", "effects_map_path"]
+    dfrows = [
+        ["01", "a", file_path],
+        ["02", "a", file_path],
+        ["03", "a", file_path],
+    ]
+    niidf = pd.DataFrame(dfrows, columns=dfcols)
+
+    model = SecondLevelModel().fit(niidf)
+    model.compute_contrast(first_level_contrast="a")
