@@ -130,9 +130,9 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         .. versionadded:: 0.10.2.dev
 
-    region_img_ : Niimg-like object
+    region_atlas_ : Niimg-like object
         Regions definition as labels. The labels correspond to the
-        indices in region_ids_. The region in region_img that takes
+        indices in region_ids_. The region in region_atlas_ that takes
         the value region_ids_[i] is used to compute the signal in
         region_signal[:,i].
 
