@@ -34,6 +34,8 @@
 
 .. _Arthur Mensch: https://www.amensch.fr/
 
+.. _Aswin Vijayan: https://github.com/vaswin0
+
 .. _Audrey Duran: https://github.com/AudreyDuran
 
 .. _Ben Cipollini: https://github.com/bcipolli
@@ -143,6 +145,8 @@
 .. _Kevin Sitek: https://github.com/sitek
 
 .. _Koen Helwegen: https://github.com/koenhelwegen
+
+.. _Konrad Wagstyl: https://github.com/kwagstyl
 
 .. _Konstantin Shmelkov: https://github.com/kshmelkov
 

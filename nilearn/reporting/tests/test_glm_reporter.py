@@ -1,6 +1,5 @@
 import warnings
 
-import nibabel as nib
 import numpy as np
 import pandas as pd
 import pytest
@@ -219,73 +218,49 @@ def test_make_headings_with_contrasts_none_title_custom():
     assert actual_output == expected_output
 
 
-def _generate_img():
-    mni_affine = np.array(
-        [
-            [-2.0, 0.0, 0.0, 90.0],
-            [0.0, 2.0, 0.0, -126.0],
-            [0.0, 0.0, 2.0, -72.0],
-            [0.0, 0.0, 0.0, 1.0],
-        ]
+@pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
+def test_stat_map_to_svg_slice_z(mni_3d_img, cut_coords):
+    table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
+    glmr._stat_map_to_svg(
+        stat_img=mni_3d_img,
+        bg_img=None,
+        cut_coords=cut_coords,
+        display_mode="ortho",
+        plot_type="slice",
+        table_details=table_details,
     )
 
-    data_positive = np.zeros((7, 7, 3))
-    rng = np.random.RandomState(42)
-    data_rng = rng.rand(7, 7, 3)
-    data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
 
-    return nib.Nifti1Image(data_positive, mni_affine)
+@pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
+def test_stat_map_to_svg_glass_z(mni_3d_img, cut_coords):
+    table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
+    glmr._stat_map_to_svg(
+        stat_img=mni_3d_img,
+        bg_img=None,
+        cut_coords=cut_coords,
+        display_mode="z",
+        plot_type="glass",
+        table_details=table_details,
+    )
 
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
-def test_stat_map_to_svg_slice_z(cut_coords):
-    with InTemporaryDirectory():
-        img = _generate_img()
-        table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
+def test_stat_map_to_svg_invalid_plot_type(mni_3d_img, cut_coords):
+    expected_error = ValueError(
+        "Invalid plot type provided. Acceptable options are"
+        "'slice' or 'glass'."
+    )
+    try:
         glmr._stat_map_to_svg(
-            stat_img=img,
-            bg_img=None,
-            cut_coords=cut_coords,
-            display_mode="ortho",
-            plot_type="slice",
-            table_details=table_details,
-        )
-
-
-@pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
-def test_stat_map_to_svg_glass_z(cut_coords):
-    with InTemporaryDirectory():
-        img = _generate_img()
-        table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
-        glmr._stat_map_to_svg(
-            stat_img=img,
+            stat_img=mni_3d_img,
             bg_img=None,
             cut_coords=cut_coords,
             display_mode="z",
-            plot_type="glass",
-            table_details=table_details,
+            plot_type="junk",
+            table_details={"junk": 0},
         )
-
-
-@pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
-def test_stat_map_to_svg_invalid_plot_type(cut_coords):
-    with InTemporaryDirectory():
-        img = _generate_img()
-        expected_error = ValueError(
-            "Invalid plot type provided. Acceptable options are"
-            "'slice' or 'glass'."
-        )
-        try:
-            glmr._stat_map_to_svg(
-                stat_img=img,
-                bg_img=None,
-                cut_coords=cut_coords,
-                display_mode="z",
-                plot_type="junk",
-                table_details={"junk": 0},
-            )
-        except ValueError as raised_exception:
-            assert str(raised_exception) == str(expected_error)
+    except ValueError as raised_exception:
+        assert str(raised_exception) == str(expected_error)
 
 
 def _make_dummy_contrasts_dmtx():

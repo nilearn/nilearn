@@ -111,7 +111,21 @@ def _check_input_as_type(
         _check_input_as_dataframe(second_level_input)
 
 
+INF = 1000 * np.finfo(np.float32).eps
+
+
 def _check_input_as_first_level_model(second_level_input, none_confounds):
+    """Check that all all first level models are valid.
+
+    - must have been fit
+    - must all have a subject label in case confounds are passed
+    - must all have the same affine / shape
+      (checking all against those of the first model)
+
+    """
+    ref_affine = None
+    ref_shape = None
+
     for model_idx, first_level in enumerate(second_level_input):
         if first_level.labels_ is None or first_level.results_ is None:
             raise ValueError(
@@ -120,12 +134,43 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
             )
         if not none_confounds and first_level.subject_label is None:
             raise ValueError(
-                "In case confounds are provided, first level "
-                "objects need to provide the attribute "
-                "subject_label to match rows appropriately."
+                "In case confounds are provided, "
+                "first level objects need to provide "
+                "the attribute 'subject_label' to match rows appropriately.\n"
                 f"Model at idx {model_idx} does not provide it. "
-                "To set it, you can do "
-                "first_level.subject_label = '01'"
+                "To set it, you can do first_level.subject_label = '01'"
+            )
+
+        affine = None
+        shape = None
+        if first_level.mask_img is not None:
+            if isinstance(first_level.mask_img, NiftiMasker):
+                affine = first_level.mask_img.affine_
+                shape = first_level.mask_img.mask_img_.shape
+            elif isinstance(first_level.mask_img, Nifti1Image):
+                affine = first_level.mask_img.affine
+                shape = first_level.mask_img.shape
+
+        # take as reference the first values we found
+        if ref_affine is None:
+            ref_affine = affine
+        if ref_shape is None:
+            ref_shape = shape
+
+        if ref_affine is not None and abs(affine - ref_affine).max() > INF:
+            raise ValueError(
+                "All first level models must have the same affine.\n"
+                f"Model {first_level.subject_label} "
+                f"at index {model_idx} has a different affine "
+                "from the previous ones."
+            )
+
+        if shape != ref_shape:
+            raise ValueError(
+                "All first level models must have the same shape.\n"
+                f"Model {first_level.subject_label} "
+                f"at index {model_idx} has a different shape "
+                "from the previous ones."
             )
 
 
@@ -179,15 +224,17 @@ def _check_confounds(confounds):
 
 
 def _check_first_level_contrast(second_level_input, first_level_contrast):
-    if isinstance(second_level_input[0], FirstLevelModel):
-        if first_level_contrast is None:
-            raise ValueError(
-                "If second_level_input was a list of "
-                "FirstLevelModel, then first_level_contrast "
-                "is mandatory. It corresponds to the "
-                "second_level_contrast argument of the "
-                "compute_contrast method of FirstLevelModel"
-            )
+    if (
+        isinstance(second_level_input, list)
+        and isinstance(second_level_input[0], FirstLevelModel)
+        and first_level_contrast is None
+    ):
+        raise ValueError(
+            "If second_level_input was a list of FirstLevelModel,"
+            " then first_level_contrast is mandatory. "
+            "It corresponds to the second_level_contrast argument "
+            "of the compute_contrast method of FirstLevelModel."
+        )
 
 
 def _check_output_type(output_type, valid_types):

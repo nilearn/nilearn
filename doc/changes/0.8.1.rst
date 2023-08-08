@@ -43,9 +43,9 @@ Fixes
 
 - Function :func:`~masking.compute_multi_brain_mask` has replaced ``nilearn.masking.compute_multi_grey_matter_mask``. A ``mask`` parameter has been added; it accepts three types of masks---i.e. ``whole-brain``, ``grey-matter``, and ``white-matter``---following the enhancements made in the function :func:`nilearn.masking.compute_brain_mask` in this release (:gh:`2738` by `Ana Luisa Pinho`_).
 
-- Fix colorbar of function :func:`~plotting.view_img` which was not visible for some combinations of `black_bg` and `bg_img` parameters (:gh:`2876` by `Nicolas Gensollen`_).
+- :bdg-info:`Plotting` Fix colorbar of function :func:`~plotting.view_img` which was not visible for some combinations of `black_bg` and `bg_img` parameters (:gh:`2876` by `Nicolas Gensollen`_).
 
-- Fix missing title with function :func:`~plotting.plot_surf` and deriving functions (:gh:`2941` by `Nicolas Gensollen`_).
+- :bdg-info:`Plotting` Fix missing title with function :func:`~plotting.plot_surf` and deriving functions (:gh:`2941` by `Nicolas Gensollen`_).
 
 Enhancements
 ------------

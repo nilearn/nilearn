@@ -1,8 +1,6 @@
 """Test image pre-processing functions"""
-import os
 import platform
 import sys
-import tempfile
 import warnings
 from pathlib import Path
 
@@ -173,7 +171,7 @@ def stat_img_test_data():
     return stat_img
 
 
-def test_get_data():
+def test_get_data(tmp_path):
     img, *_ = generate_fake_fmri(shape=SHAPE_3D)
 
     data = get_data(img)
@@ -187,18 +185,18 @@ def test_get_data():
     assert data.dtype == np.dtype("uint8")
 
     img_3d = index_img(img, 0)
-    with tempfile.TemporaryDirectory() as tempdir:
-        filename = os.path.join(tempdir, "img_{}.nii.gz")
-        img_3d.to_filename(filename.format("a"))
-        img_3d.to_filename(filename.format("b"))
 
-        data = get_data(filename.format("a"))
+    filename = str(tmp_path / "img_{}.nii.gz")
+    img_3d.to_filename(filename.format("a"))
+    img_3d.to_filename(filename.format("b"))
 
-        assert len(data.shape) == 3
+    data = get_data(filename.format("a"))
 
-        data = get_data(filename.format("*"))
+    assert len(data.shape) == 3
 
-        assert len(data.shape) == 4
+    data = get_data(filename.format("*"))
+
+    assert len(data.shape) == 4
 
 
 def test_high_variance_confounds():

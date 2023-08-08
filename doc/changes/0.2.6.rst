@@ -34,7 +34,7 @@ Enhancements
 
 - Better ordering of regions in function :func:`~datasets.fetch_coords_dosenbach_2010`.
 
-- Remove outdated power atlas example.
+- :bdg-danger:`Deprecation` Remove outdated power atlas example.
 
 
 Changes
@@ -44,4 +44,4 @@ Changes
 
 - The function :func:`~datasets.fetch_haxby` will now fetch the data accepting input given in ``subjects`` as a list than integer.
 
-- Replace ``get_affine`` by ``affine`` with recent versions of ``nibabel``.
+- :bdg-danger:`Deprecation` Replace ``get_affine`` by ``affine`` with recent versions of ``nibabel``.

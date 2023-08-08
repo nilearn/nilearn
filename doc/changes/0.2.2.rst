@@ -38,7 +38,7 @@ Fixes
 
 - Fix matplotlib backend choice on Mac OS X.
 
-- Function :func:`~plotting.find_xyz_cut_coords` raises a meaningful error when 4D data is provided instead of 3D.
+- :bdg-info:`Plotting` Function :func:`~plotting.find_xyz_cut_coords` raises a meaningful error when 4D data is provided instead of 3D.
 
 - Class :class:`~maskers.NiftiSpheresMasker` handles radius smaller than the size of a :term:`voxel`.
 

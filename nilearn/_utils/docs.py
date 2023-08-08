@@ -600,6 +600,14 @@ output_file : :obj:`str`, or None, optional
     and the display is closed.
 """
 
+# radiological
+docdict['radiological'] = """
+radiological : :obj:`bool`, default=False
+    Invert x axis and R L labels to plot sections as a radiological view.
+    If False (default), the left hemisphere is on the left of a coronal image.
+    If True, left hemisphere is on the right.
+"""
+
 # random_state
 docdict['random_state'] = """
 random_state : :obj:`int` or RandomState, optional
