@@ -148,7 +148,10 @@ age_pred_svr = decoder_svr.predict(gm_imgs_test)
 prediction_score_svr = -np.mean(decoder_svr.cv_scores_["beta"])
 
 print("=== DECODER ===")
-print(f"explained variance for the cross-validation (SVR estimator): {prediction_score_svr:f}")
+print(
+    "explained variance for the cross-validation (SVR estimator): "
+    f"{prediction_score_svr:f}"
+)
 print()
 
 ###############################################################################
@@ -174,7 +177,9 @@ plt.figure(figsize=(6, 4.5))
 plt.suptitle(f"Decoder: Mean Absolute Error {prediction_score_svr:.2f} years")
 linewidth = 3
 plt.plot(age_test, label="True age", linewidth=linewidth)
-plt.plot(age_pred_svr, "--", c="g", label="Predicted age (SVR)", linewidth=linewidth)
+plt.plot(
+    age_pred_svr, "--", c="g", label="Predicted age (SVR)", linewidth=linewidth
+)
 plt.ylabel("age")
 plt.xlabel("subject")
 plt.legend(loc="best")
@@ -211,7 +216,10 @@ age_pred_lasso = decoder_lasso.predict(gm_imgs_test)
 prediction_score_lasso = -np.mean(decoder_lasso.cv_scores_["beta"])
 
 print("=== DECODER ===")
-print(f"explained variance for the cross-validation (lasso estimator): {prediction_score_lasso:f}")
+print(
+    "explained variance for the cross-validation (lasso estimator): "
+    f"{prediction_score_lasso:f}"
+)
 print()
 
 ###############################################################################
@@ -221,7 +229,10 @@ weight_img_lasso = decoder_lasso.coef_img_["beta"]
 
 # Create the figure
 display_lasso = plot_stat_map(
-    weight_img_lasso, bg_img=bg_filename, display_mode="z", cut_coords=[z_slice]
+    weight_img_lasso,
+    bg_img=bg_filename,
+    display_mode="z",
+    cut_coords=[z_slice],
 )
 display_lasso.title("Lasso regression weights")
 show()
@@ -230,10 +241,18 @@ show()
 # Visualize the quality of predictions
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 plt.figure(figsize=(6, 4.5))
-plt.suptitle(f"Decoder: Mean Absolute Error {prediction_score_lasso:.2f} years")
+plt.suptitle(
+    f"Decoder: Mean Absolute Error {prediction_score_lasso:.2f} years"
+)
 linewidth = 3
 plt.plot(age_test, label="True age", linewidth=linewidth)
-plt.plot(age_pred_lasso, "--", c="g", label="Predicted age (lasso)", linewidth=linewidth)
+plt.plot(
+    age_pred_lasso,
+    "--",
+    c="g",
+    label="Predicted age (lasso)",
+    linewidth=linewidth,
+)
 plt.ylabel("age")
 plt.xlabel("subject")
 plt.legend(loc="best")
