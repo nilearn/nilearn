@@ -105,10 +105,6 @@ def _get_colorbar_and_data_ranges(
                 " and symmetric_data_range are False."
             )
 
-    # force vmin to be -vmax
-    if symmetric_data_range:
-        vmin = -vmax
-
     # set vmin/vmax based on data if they are not already set
     if vmin is None:
         vmin = stat_map_min
