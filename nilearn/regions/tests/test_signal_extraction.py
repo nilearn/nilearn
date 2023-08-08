@@ -340,6 +340,22 @@ def test_signals_extraction_with_labels_without_mask(
         assert_almost_equal(signals_r, signals)
         assert labels_r == list(range(1, 9))
 
+    # test return_masked_atlas
+    signals_r, labels_r, masked_atlas_r = img_to_signals_labels(
+        imgs=data_img, labels_img=labels_img,
+        return_masked_atlas=True
+    )
+
+    labels_data = get_data(labels_img)
+    labels_data_r = get_data(masked_atlas_r)
+
+    # masked_atlas_r should be the same as labels_img
+    assert_almost_equal(labels_data_r, labels_data)
+
+    # labels should be the same as before
+    # the labels_img does not contain background
+    assert list(np.unique(labels_data_r)) == list(range(1, 9))
+
 
 def test_signals_extraction_with_labels_with_mask(
     signals, labels_img, labels_data, mask_img
@@ -385,6 +401,22 @@ def test_signals_extraction_with_labels_with_mask(
 
     assert_almost_equal(signals_r, signals)
     assert labels_r == list(range(1, 9))
+
+    # test return_masked_atlas
+    # create a mask_img with only 3 regions
+    mask_img = _create_mask_with_3_regions_from_labels_data(
+        get_data(labels_img), labels_img.affine)
+
+    signals_r, labels_r, masked_atlas_r = img_to_signals_labels(
+        imgs=data_img, labels_img=labels_img, mask_img=mask_img,
+        return_masked_atlas=True
+    )
+
+    labels_data_r = get_data(masked_atlas_r)
+
+    # labels should be masked and only contain 3 regions
+    # and the background
+    assert list(np.unique(labels_data_r)) == [0, 1, 2, 5]
 
 
 def test_signal_extraction_with_maps():

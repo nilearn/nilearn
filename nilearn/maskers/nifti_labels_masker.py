@@ -22,12 +22,14 @@ class _ExtractionFunctor:
         self.mask_img = mask_img
 
     def __call__(self, imgs):
-        from ..regions import signal_extraction
+        from ..regions.signal_extraction import img_to_signals_labels
 
-        return signal_extraction.img_to_signals_labels(
+        signals, labels, masked_labels_img = img_to_signals_labels(
             imgs, self._resampled_labels_img_,
             background_label=self.background_label, strategy=self.strategy,
-            keep_masked_labels=self.keep_masked_labels, mask_img=self.mask_img)
+            keep_masked_labels=self.keep_masked_labels, mask_img=self.mask_img,
+            return_masked_atlas=True)
+        return signals, (labels, masked_labels_img)
 
 
 @_utils.fill_doc
@@ -525,6 +527,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
             inputs.
 
         """
+
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
 
@@ -605,7 +608,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         params['target_affine'] = target_affine
         params['clean_kwargs'] = self.clean_kwargs
 
-        region_signals, ids = self._cache(
+        region_signals, (ids, masked_atlas) = self._cache(
             _filter_and_extract,
             ignore=['verbose', 'memory', 'memory_level'],
         )(
@@ -645,7 +648,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         else:
             self.region_names_ = None
         self.region_ids_ = region_ids
-        # self.region_img_ = region_img
+        self.region_atlas_ = masked_atlas
 
         return region_signals
 

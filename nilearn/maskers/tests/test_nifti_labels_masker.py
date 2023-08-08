@@ -589,6 +589,11 @@ def test_nifti_labels_masker_with_mask():
     masked_signals = masked_masker.fit().transform(fmri_img)
     assert np.allclose(signals, masked_signals)
 
+    #  masker.region_atlas_ should be the same as the masked_labels
+    # masked_labels is a 4D image with shape (13,11,12,1)
+    masked_labels_data = get_data(masked_labels)[:, :, :, 0]
+    assert np.allclose(get_data(masker.region_atlas_), masked_labels_data)
+
 
 def test_3d_images():
     # Test that the NiftiLabelsMasker works with 3D images
