@@ -59,9 +59,7 @@ def test_flm_reporting(tmp_path, use_method):
     in case certain unicode characters are mishandled,
     like the greek alpha symbol.
     """
-    report_iframe = report_flm.get_iframe()
-    # So flake8 doesn't complain about not using variable (F841)
-    report_iframe
+    report_flm.get_iframe()
 
 
 @pytest.mark.skipif(
@@ -85,9 +83,7 @@ def test_slm_reporting(tmp_path, use_method):
     else:
         report_slm = model.generate_report(c1)
     # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
-    report_iframe = report_slm.get_iframe()
-    # So flake8 doesn't complain about not using variable (F841)
-    report_iframe
+    report_slm.get_iframe()
 
 
 def test_check_report_dims():
@@ -297,6 +293,4 @@ def test_masking_first_level_model(tmp_path):
         threshold=2.78,
     )
 
-    report_iframe = report_flm.get_iframe()
-    # So flake8 doesn't complain about not using variable (F841)
-    report_iframe
+    report_flm.get_iframe()
