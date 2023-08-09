@@ -337,7 +337,13 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         img = self._reporting_data["images"]
         mask = self._reporting_data["mask"]
 
-        if img is None:  # images were not provided to fit
+        if img is not None:
+            dim = image.load_img(img).shape
+            if len(dim) == 4:
+                # compute middle image from 4D series for plotting
+                img = image.index_img(img, dim[-1] // 2)
+
+        else:  # images were not provided to fit
             msg = (
                 "No image provided to fit in NiftiMasker. "
                 "Setting image to mask for reporting."
@@ -371,7 +377,6 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         # create display of resampled NiftiImage and mask
         # assuming that resampl_img has same dim as img
         resampl_img, resampl_mask = self._reporting_data["transform"]
-        dim = self._reporting_data["dim"]
         if resampl_img is None:  # images were not provided to fit
             resampl_img = resampl_mask
         elif len(dim) == 4:
@@ -436,14 +441,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
         if self.reports:  # save inputs for reporting
-            self._reporting_data = {"mask": self.mask_img_}
-            if imgs is not None:
-                dim = image.load_img(imgs).shape
-                if len(dim) == 4:
-                    # compute middle image from 4D series for plotting
-                    imgs = image.index_img(imgs, dim[-1] // 2)
-                self._reporting_data["dim"] = dim
-            self._reporting_data["images"] = imgs
+            self._reporting_data = {"images": imgs, "mask": self.mask_img_}
         else:
             self._reporting_data = None
 
