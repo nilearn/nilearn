@@ -21,7 +21,7 @@ def _load_motion(confounds_raw, motion):
         DataFrame of confounds.
 
     motion : str
-        Motion strategy to use. Options are Options are "basic",
+        Motion strategy to use. Options are "basic",
         "derivatives", "power2", or "full".
 
     Returns
@@ -79,7 +79,7 @@ def _load_wm_csf(confounds_raw, wm_csf):
         DataFrame of confounds.
 
     wm_csf : str
-        White matter and CSF strategy to use. Options are Options are "basic",
+        White matter and CSF strategy to use. Options are "basic",
         "derivatives", "power2", or "full".
 
     Returns
@@ -109,7 +109,7 @@ def _load_global_signal(confounds_raw, global_signal):
         DataFrame of confounds.
 
     global_signal : str
-        Global signal strategy to use. Options are Options are "basic",
+        Global signal strategy to use. Options are "basic",
         "derivatives", "power2", or "full".
 
     Returns

@@ -49,11 +49,11 @@ def _check_params(confounds_raw, params):
 
     Returns
     -------
-    bool
+    bool or list of str
         True if all parameters are found in the confounds.
         False if none of the parameters are found in the confounds.
-        list of str
-            List of parameters that are not found in the confounds.
+        List of parameters that are not found in the confounds
+        if only some parameters are found.
     """
     not_found_params = [
         par for par in params if par not in confounds_raw.columns
@@ -431,7 +431,7 @@ def _prepare_output(confounds, demean):
 
     Returns
     -------
-    sample_mask : None numpy.ndarray
+    sample_mask : None or numpy.ndarray
         When no volumns require removal, the value is None.
         Otherwise, the shape is \
             (number of scans - number of volumes removed, )
@@ -463,7 +463,7 @@ def _demean_confounds(confounds, sample_mask):
     confounds : pandas.DataFrame
         Confound regressors loaded based on user's choice.
 
-    sample_mask : None numpy.ndarray
+    sample_mask : None or numpy.ndarray
         When no volumns require removal, the value is None.
         Otherwise, the shape is \
             (number of scans - number of volumes removed, )
