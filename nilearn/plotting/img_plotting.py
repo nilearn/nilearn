@@ -101,8 +101,7 @@ def _get_colorbar_and_data_ranges(
             vmax = -vmin
         elif not np.isclose(vmin, -vmax):
             raise ValueError(
-                "vmin must be equal to -vmax unless symmetric_cbar"
-                " and symmetric_data_range are False."
+                "vmin must be equal to -vmax unless symmetric_cbar is False."
             )
 
     # set vmin/vmax based on data if they are not already set
