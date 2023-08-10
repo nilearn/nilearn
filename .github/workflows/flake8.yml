@@ -16,7 +16,6 @@ concurrency:
 jobs:
     flake8:
         name: run flake8
-        if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
 
         defaults:
