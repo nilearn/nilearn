@@ -180,7 +180,7 @@ def all_classes(
     Returns
     -------
     all_classes : List of Tuples (:obj:`str`, callable)
-        List of classes. 
+        List of classes.
         Each element is a length 2 tuple
         where the first element is the class name as a string,
         and the second element is the class itself.
