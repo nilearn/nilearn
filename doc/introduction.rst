@@ -250,7 +250,6 @@ To loop over each individual volume of a 4D image, use :func:`image.iter_img`::
 
    More tutorials can be found :ref:`here <tutorial_examples>`
 
-
 ____
 
 Now, if you want out-of-the-box methods to process neuroimaging data, jump
