@@ -32,6 +32,8 @@ jobs:
 
     latest:
 
+        if: github.repository == 'nilearn/nilearn'
+
         runs-on: ubuntu-latest
 
         steps:
