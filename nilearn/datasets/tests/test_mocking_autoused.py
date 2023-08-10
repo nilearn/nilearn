@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
+from urllib import request
 
 import requests
-from urllib import request
 
 
 def test_request_mocking_autoused_requests():
@@ -36,11 +36,9 @@ def test_temp_nilearn_home_autoused():
     home_dir = Path("~").expanduser()
     assert home_dir.name.startswith("temp_nilearn_home")
     nilearn_data = Path(os.environ.get("NILEARN_DATA"))
-    assert nilearn_data.parent.name.startswith(
-        "temp_nilearn_home")
+    assert nilearn_data.parent.name.startswith("temp_nilearn_home")
     nilearn_shared_data = Path(os.environ.get("NILEARN_SHARED_DATA"))
-    assert nilearn_shared_data.parent.name.startswith(
-        "temp_nilearn_home")
+    assert nilearn_shared_data.parent.name.startswith("temp_nilearn_home")
 
 
 def check_doctest_fixture():

@@ -13,10 +13,6 @@ is well suited to your problem and how to implement it easily with Nilearn.
 This builds on concepts introduced in this :ref:`didactic
 introduction to decoding with nilearn <decoding_intro>`.
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
 
 Predictions: regression, classification and multi-class
 =======================================================

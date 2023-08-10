@@ -77,7 +77,7 @@ hierarchical clustering with Ward's criterion on resampled individual time
 series, using circular block bootstrap. A consensus clustering (hierarchical
 with Ward's criterion) was generated across all the individual clustering
 replications pooled together, hence generating group clusters. The generation
-of group clusters was itself replicated by bootstraping subjects 500 times,
+of group clusters was itself replicated by bootstrapping subjects 500 times,
 and a (final) consensus clustering (hierarchical Ward's criterion) was
 generated on the replicated group clusters. The MSTEPS procedure (Bellec et
 al., 2013) was implemented to select a data-driven subset of scales in the

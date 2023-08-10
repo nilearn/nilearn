@@ -8,3 +8,5 @@ sepulcre
 mapp
 nin
 serie
+fwe
+coo

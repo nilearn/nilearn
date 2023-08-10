@@ -98,14 +98,14 @@ signal. As a result, it finds functional networks, but also patterns of
 non neural activity, ie confounding signals. Both are visible in the
 plots of the components.
 
-An alternative to ICA: Dictionary learning
-===========================================
-Recent work has shown that dictionary learning based techniques outperform
-:term:`ICA` in term of stability and constitutes a better first step in a statistical
-analysis pipeline.
-Dictionary learning in neuro-imaging seeks to extract a few representative
-temporal elements along with their sparse spatial loadings, which constitute
-good extracted maps.
+An alternative to :term:`ICA`: :term:`Dictionary learning`
+==========================================================
+Recent work has shown that :term:`Dictionary learning` based techniques
+outperform :term:`ICA` in term of stability and constitutes a better first
+step in a statistical analysis pipeline.
+:term:`Dictionary learning` in neuro-imaging seeks to extract a few
+representative temporal elements along with their sparse spatial loadings,
+which constitute good extracted maps.
 
 .. topic:: **References**
 
@@ -129,7 +129,7 @@ compare both resulting outputs.
    :align: center
 
 
-Maps obtained with dictionary learning are often easier to exploit as they are
+Maps obtained with :term:`Dictionary learning` are often easier to exploit as they are
 more contrasted than :term:`ICA` maps, with blobs usually better defined. Typically,
 *smoothing can be lower than when doing ICA*.
 
@@ -147,8 +147,9 @@ more contrasted than :term:`ICA` maps, with blobs usually better defined. Typica
 
 .. centered:: |dl1| |dl2| |dl3| |dl4|
 
-While dictionary learning computation time is comparable to :term:`CanICA`, obtained
-atlases have been shown to outperform :term:`ICA` in a variety of classification tasks.
+While :term:`Dictionary learning` computation time is comparable to
+:term:`CanICA`, obtained atlases have been shown to outperform :term:`ICA`
+in a variety of classification tasks.
 
 .. seealso::
 
@@ -157,6 +158,6 @@ atlases have been shown to outperform :term:`ICA` in a variety of classification
 
 .. seealso::
 
-   Learn how to extract fMRI data from regions created with
-   dictionary learning with this example:
+   Learn how to extract :term:`fMRI` data from regions created with
+   :term:`Dictionary learning` with this example:
    :ref:`sphx_glr_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py`

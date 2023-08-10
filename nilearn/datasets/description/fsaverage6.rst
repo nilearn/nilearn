@@ -11,6 +11,8 @@ Content
     :'area_right': Gifti file, right hemisphere area data
     :'curv_left': Gifti file, left hemisphere curvature data
     :'curv_right': Gifti file, right hemisphere curvature data
+    :'flat_left': Gifti file, left hemisphere flat surface mesh
+    :'flat_right': Gifti file, right hemisphere flat surface mesh
     :'pial_left': Gifti file, left hemisphere pial surface mesh
     :'pial_right': Gifti file, right hemisphere pial surface mesh
     :'infl_left': Gifti file, left hemisphere inflated pial surface mesh

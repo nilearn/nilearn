@@ -1,14 +1,16 @@
 import numpy as np
-
+import pytest
 from numpy.testing import assert_almost_equal
 from sklearn.datasets import make_regression
 from sklearn.linear_model import LinearRegression
 
-from nilearn.glm.contrasts import (Contrast,
-                                   _compute_fixed_effect_contrast,
-                                   _compute_fixed_effects_params,
-                                   compute_contrast,
-                                   expression_to_contrast_vector)
+from nilearn.glm.contrasts import (
+    Contrast,
+    _compute_fixed_effect_contrast,
+    _compute_fixed_effects_params,
+    compute_contrast,
+    expression_to_contrast_vector,
+)
 from nilearn.glm.first_level import run_glm
 
 
@@ -25,6 +27,13 @@ def test_expression_to_contrast_vector():
     cols = ["column_1"]
     contrast = expression_to_contrast_vector("column_1", cols)
     assert np.allclose(contrast, [1.])
+    cols = ['0', '1']
+    exp = '0-1'
+    with pytest.raises(
+            ValueError,
+            match='invalid python identifiers'
+    ):
+        expression_to_contrast_vector(exp, cols)
 
 
 def test_Tcontrast():
@@ -161,8 +170,8 @@ def test_low_level_fixed_effects():
     assert_almost_equal(tf, Xf / np.sqrt(Vf))
 
     # Same thing, but now there is no precision weighting
-    Xw, Vw, tw = _compute_fixed_effects_params([X1, X2], [V1, V2],
-                                               precision_weighted=True)
+    Xw, Vw, _ = _compute_fixed_effects_params([X1, X2], [V1, V2],
+                                              precision_weighted=True)
     assert_almost_equal(Xw, 1.2 * X1)
     assert_almost_equal(Vw, .8 * V1)
 

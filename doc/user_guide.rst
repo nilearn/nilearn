@@ -1,19 +1,21 @@
-
 .. _user_guide:
 
-User guide: table of contents
-==============================
+==========
+User guide
+==========
 
-.. sidebar:: **Download for offline viewing**
+.. note::
+  You can download the `user guide and examples <https://github.com/nilearn/nilearn.github.io/archive/master.zip>`_
+  for offline viewing.
 
-   Download the `user guide and examples
-   <https://github.com/nilearn/nilearn.github.io/archive/master.zip>`_.
+This user guide is especially directed towards grad students
+with a background in computer science, machine learning,
+computational biology or neuroscience.
+However, less or more advanced readers can also find interesting
+pieces of information throughout the guide.
 
-.. include:: includes/big_toc_css.rst
-
-.. nice layout in the toc
-
-.. include:: tune_toc.rst
+Table of contents
+=================
 
 .. toctree::
    :numbered:
@@ -25,5 +27,3 @@ User guide: table of contents
    glm/index.rst
    manipulating_images/index.rst
    building_blocks/index.rst
-   modules/reference.rst
-   auto_examples/index.rst

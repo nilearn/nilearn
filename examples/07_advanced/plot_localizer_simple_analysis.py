@@ -11,68 +11,80 @@ The Localizer dataset contains many contrasts and subject-related
 variates.  The user can refer to the
 `plot_localizer_mass_univariate_methods.py` example to see how to use these.
 
+.. include:: ../../../examples/masker_note.rst
+
+..
+    Original authors:
+
+    - Virgile Fritsch, May. 2014
 
 """
-# Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
-import numpy as np
-import matplotlib.pyplot as plt
-from nilearn import datasets
-from nilearn.input_data import NiftiMasker
-from nilearn.image import get_data
 
+import matplotlib.pyplot as plt
+import numpy as np
+
+from nilearn import datasets
+from nilearn.image import get_data
+from nilearn.maskers import NiftiMasker
 
 ############################################################################
 # Load Localizer contrast
 n_samples = 20
 localizer_dataset = datasets.fetch_localizer_calculation_task(
-    n_subjects=n_samples)
+    n_subjects=n_samples, legacy_format=False
+)
 tested_var = np.ones((n_samples, 1))
-
 
 ############################################################################
 # Mask data
 nifti_masker = NiftiMasker(
-    smoothing_fwhm=5,
-    memory='nilearn_cache', memory_level=1)  # cache options
+    smoothing_fwhm=5, memory="nilearn_cache", memory_level=1
+)
 cmap_filenames = localizer_dataset.cmaps
 fmri_masked = nifti_masker.fit_transform(cmap_filenames)
-
 
 ############################################################################
 # Anova (parametric F-scores)
 from sklearn.feature_selection import f_regression
-_, pvals_anova = f_regression(fmri_masked, tested_var,
-                              center=False)  # do not remove intercept
+
+# Center=False is used to not remove intercept
+_, pvals_anova = f_regression(fmri_masked, tested_var, center=False)
 pvals_anova *= fmri_masked.shape[1]
 pvals_anova[np.isnan(pvals_anova)] = 1
 pvals_anova[pvals_anova > 1] = 1
-neg_log_pvals_anova = - np.log10(pvals_anova)
+neg_log_pvals_anova = -np.log10(pvals_anova)
 neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
-    neg_log_pvals_anova)
+    neg_log_pvals_anova
+)
 
 ############################################################################
 # Visualization
 from nilearn.plotting import plot_stat_map, show
 
 # Various plotting parameters
-z_slice = 45  # plotted slice
-
-threshold = - np.log10(0.1)  # 10% corrected
+plotted_slice = 45
+threshold = -np.log10(0.1)  # 10% corrected
 
 # Plot Anova p-values
-fig = plt.figure(figsize=(5, 6), facecolor='w')
-display = plot_stat_map(neg_log_pvals_anova_unmasked,
-                        threshold=threshold,
-                        display_mode='z', cut_coords=[z_slice],
-                        figure=fig)
+fig = plt.figure(figsize=(5, 6), facecolor="w")
+display = plot_stat_map(
+    neg_log_pvals_anova_unmasked,
+    threshold=threshold,
+    display_mode="z",
+    cut_coords=[plotted_slice],
+    figure=fig,
+)
 
-masked_pvals = np.ma.masked_less(get_data(neg_log_pvals_anova_unmasked),
-                                 threshold)
+masked_pvals = np.ma.masked_less(
+    get_data(neg_log_pvals_anova_unmasked), threshold
+)
 
-title = ('Negative $\\log_{10}$ p-values'
-         '\n(Parametric + Bonferroni correction)'
-         '\n%d detections' % (~masked_pvals.mask).sum())
+title = (
+    "Negative $\\log_{10}$ p-values"
+    "\n(Parametric + Bonferroni correction)"
+    f"\n{(~masked_pvals.mask).sum()} detections"
+)
 
-display.title(title, y=1.1, alpha=0.8)
+display.title(title, y=1, alpha=0.8)
 
 show()
