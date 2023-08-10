@@ -433,7 +433,7 @@ def test_infer_effect_maps(tmp_path):
     assert len(_infer_effect_maps(second_level_input, contrast)) == 2
 
 
-def test_infer_effect_maps_error(tmp_path, monkeypatch):
+def test_infer_effect_maps_error(tmp_path):
     shapes, rk = (SHAPE, (7, 8, 7, 16)), 3
     _, fmri_data, _ = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path
@@ -1200,8 +1200,8 @@ def test_non_parametric_inference_contrast_computation_errors(tmp_path):
         )
 
 
-def test_second_level_contrast_computation_with_memory_caching():
-    func_img, mask = fake_fmri_data()
+def test_second_level_contrast_computation_with_memory_caching(tmp_path):
+    func_img, mask = fake_fmri_data(file_path=tmp_path)
 
     model = SecondLevelModel(mask_img=mask, memory="nilearn_cache")
 
