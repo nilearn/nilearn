@@ -30,6 +30,9 @@ Fixes
 
 - Relax the :func:`~nilearn.interfaces.fmriprep.load_confounds` confounds selection on `cosine` as not all confound files contained the variables (:gh:`3816` by `Hao-Ting Wang`_).
 
+- Fix pathlib.Path not being counted as Niimg-like object in :func:`~image.new_img_like` (:gh:`3723` by `Maximilian Cosmo Sitter`_).
+
+
 Enhancements
 ------------
 
