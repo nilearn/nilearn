@@ -1513,7 +1513,8 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
             ax0.set_yticks([])
 
         # Carpet plot
-        axes = plt.subplot(gs[1])  # overwrite axes
+        axes.remove()
+        axes = plt.subplot(gs[1])
         axes.imshow(
             data.T,
             interpolation='nearest',
