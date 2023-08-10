@@ -33,27 +33,27 @@ def all_modules(modules_to_ignore=None, modules_to_consider=None):
 
     .. note::
 
-        ``modules_to_ignore`` and ``modules_to_consider`` cannot
-        be specified simultaneously.
+        ``modules_to_ignore`` and ``modules_to_consider``
+        cannot be specified simultaneously.
 
     Parameters
     ----------
-    modules_to_ignore : List/Set of :obj:`str` or None
+    modules_to_ignore : :obj:`list` or :obj:`set` of :obj:`str` or None,\
+                        default=None
         List of modules to exclude from the listing.
-        Default=None.
 
         .. note::
 
-            This function will ignore ``tests``,
-            ``externals``, and ``data`` by default.
+            This function will ignore ``tests``, ``externals``, and ``data``
+            by default.
 
-    modules_to_consider : List/Set of :obj:`str` or None
+    modules_to_consider : :obj:`list` or :obj:`set` of :obj:`str` or None,\
+                          default=None
         List of modules to include in the listing.
-        Default=None.
 
     Returns
     -------
-    all_modules : List of :obj:`str`
+    all_modules : :obj:`list` of :obj:`str`
         List of modules.
     """
     if modules_to_ignore is not None and modules_to_consider is not None:
@@ -75,16 +75,13 @@ def all_modules(modules_to_ignore=None, modules_to_consider=None):
             path=[root], prefix="nilearn."
         ):
             mod_parts = modname.split(".")
-            if modules_to_consider is not None:
-                if mod_parts[-2] in modules_to_consider:
-                    all_modules.append(modname)
-                    continue
-            else:
+            if modules_to_consider is None:
                 if (
-                    any(part in modules_to_ignore for part in mod_parts)
-                    or "._" in modname
+                    all(part not in modules_to_ignore for part in mod_parts)
+                    and "._" not in modname
                 ):
-                    continue
+                    all_modules.append(modname)
+            elif mod_parts[-2] in modules_to_consider:
                 all_modules.append(modname)
     return all_modules
 
@@ -107,18 +104,19 @@ def all_functions(
         Whether to return also private functions or not.
         Default=False.
 
-    modules_to_ignore : List/Set of :obj:`str` or None
+    modules_to_ignore : :obj:`list` or :obj:`set` of :obj:`str` or None,\
+                        default=None
         List of modules to exclude from the listing.
-        Default=None.
 
         .. note::
 
-            This function will not list functions from
-            ``tests``, ``externals``, and ``data`` by default.
+            This function will not list functions
+            from ``tests``, ``externals``, and ``data`` by default.
 
-    modules_to_consider : List/Set of :obj:`str` or None
+    modules_to_consider : :obj:`list` or :obj:`set` of :obj:`str` or None,\
+                          default=None
         List of modules to consider for the listing.
-        Default=None.
+
 
     Returns
     -------
@@ -163,27 +161,27 @@ def all_classes(
 
     Parameters
     ----------
-    return_private : :obj:`bool`
+    return_private : :obj:`bool`, default=False
         Whether to return also private classes or not.
-        Default=False.
 
-    modules_to_ignore : List/Set of :obj:`str` or None
+    modules_to_ignore : :obj:`list` or :obj:`set` of :obj:`str` or None,\
+                        default=None
         List of modules to exclude from the listing.
-        Default=None.
 
         .. note::
 
             This function will not list classes from
             ``tests``, ``externals``, and ``data`` by default.
 
-    modules_to_consider : List/Set of :obj:`str` or None
+    modules_to_consider : :obj:`list` or :obj:`set` of :obj:`str` or None,\
+                          default=None
         List of modules to consider for the listing.
-        Default=None.
 
     Returns
     -------
     all_classes : List of Tuples (:obj:`str`, callable)
-        List of classes. Each element is a length 2 tuple
+        List of classes. 
+        Each element is a length 2 tuple
         where the first element is the class name as a string,
         and the second element is the class itself.
     """
