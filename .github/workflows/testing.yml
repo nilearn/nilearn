@@ -71,6 +71,7 @@ jobs:
             name: Run tests
 
     latest:
+        if: github.repository == 'nilearn/nilearn'
         runs-on: ${{ matrix.os }}
         strategy:
             fail-fast: false
@@ -109,6 +110,7 @@ jobs:
             name: Upload coverage to CodeCov
 
     prerelease:
+        if: github.repository == 'nilearn/nilearn'
         runs-on: ${{ matrix.os }}
         strategy:
             fail-fast: false
