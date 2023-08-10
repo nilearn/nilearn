@@ -60,7 +60,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
 
     Parameters
     ----------
-    img_files : path to processed image files, optionally as a list.
+    img_files : :obj:`str` or :obj:`list` of :obj:`str`.
         Processed nii.gz/dtseries.nii/func.gii file reside in a
         :term:`fMRIPrep` generated functional derivative directory (i.e.The
         associated confound files should be in the same directory as the image
@@ -73,7 +73,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
         - `func.gii`: list of a pair of paths to files, optionally as a list
           of lists.
 
-    denoise_strategy : {'simple', 'scrubbing', 'compcor', 'ica_aroma'}
+    denoise_strategy : :obj:`str`, default="simple"
         Name of preset denoising strategies. Each strategy has a set of
         associated configurable parameters. For customiseable parameters,
         please see the table in Notes.
@@ -116,12 +116,14 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
 
     Returns
     -------
-    confounds : pandas.DataFrame, or list of
+    confounds : :class:`pandas.DataFrame`, or :obj:`list` of \
+        :class:`pandas.DataFrame`
         A reduced version of :term:`fMRIPrep` confounds based on selected
         strategy and flags.
         The columns contains the labels of the regressors.
 
-    sample_mask : None, numpy.ndarray, or list of
+    sample_mask : None, :class:`numpy.ndarray` or, :obj:`list` of \
+        :class:`numpy.ndarray` or None
         When no volume requires removal, the value is None.
         Otherwise, shape: (number of scans - number of volumes removed, )
         The index of the niimgs along time/fourth dimension for valid volumes
@@ -220,7 +222,29 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
 
 
 def _update_user_inputs(kwargs, default_parameters, check_parameters):
-    """Update keyword parameters with user inputs if applicable."""
+    """Update keyword parameters with user inputs if applicable.
+
+    Parameters
+    ----------
+    kwargs : :obj:`dict`
+        Keyword parameters passed to `load_confounds_strategy`.
+
+    default_parameters : :obj:`dict`
+        Default parameters for the selected pre-set strategy.
+
+    check_parameters : :obj:`list`
+        List of parameters that are applicable to the selected pre-set
+        strategy.
+
+    Returns
+    -------
+    parameters : :obj:`dict`
+        Updated valid parameters for `load_confounds`.
+
+    not_needed : :obj:`list`
+        List of parameters that are not applicable to the selected
+        pre-set strategy.
+    """
     parameters = default_parameters.copy()
     # update the parameter with user input
     not_needed = []
