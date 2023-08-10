@@ -1,4 +1,3 @@
-.. _reference:
 
 ===============================================
  Reference documentation: all nilearn functions
