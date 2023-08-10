@@ -666,7 +666,7 @@ def test_new_img_like_accepts_paths(tmp_path):
     new_data = np.random.rand(10, 10, 10)
     new_img = new_img_like(nifti_path, new_data)
     assert new_img.shape == (10, 10, 10)
-    
+
     # Check that list of pathlib.Path also accepted
     new_img = new_img_like([nifti_path], new_data)
     assert new_img.shape == (10, 10, 10)
