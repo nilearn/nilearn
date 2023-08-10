@@ -1,21 +1,10 @@
 """The :mod:`nilearn._utils` module provides utilities for developers."""
 
-import pkgutil
 import inspect
+import pkgutil
 import warnings
-from pathlib import Path
 from importlib import import_module
-
-from .niimg_conversions import (check_niimg,
-                                check_niimg_3d,
-                                concat_niimgs,
-                                check_niimg_4d)
-
-from .niimg import _repr_niimgs, copy_img, load_niimg
-
-from .docs import fill_doc
-
-from .numpy_conversions import as_ndarray
+from pathlib import Path
 
 from nilearn._utils.helpers import (
     _compare_version,
@@ -23,7 +12,6 @@ from nilearn._utils.helpers import (
     rename_parameters,
     stringify_path,
 )
-
 
 from .cache_mixin import CacheMixin
 from .docs import fill_doc
@@ -68,9 +56,7 @@ def all_modules(modules_to_ignore=None, modules_to_consider=None):
     all_modules : List of :obj:`str`
         List of modules.
     """
-    if(
-        modules_to_ignore is not None and modules_to_consider is not None
-    ):
+    if modules_to_ignore is not None and modules_to_consider is not None:
         raise ValueError(
             "`modules_to_ignore` and `modules_to_consider` "
             "cannot be both specified."
@@ -94,7 +80,7 @@ def all_modules(modules_to_ignore=None, modules_to_consider=None):
                     all_modules.append(modname)
                     continue
             else:
-                if(
+                if (
                     any(part in modules_to_ignore for part in mod_parts)
                     or "._" in modname
                 ):
@@ -103,9 +89,9 @@ def all_modules(modules_to_ignore=None, modules_to_consider=None):
     return all_modules
 
 
-def all_functions(return_private=False,
-                  modules_to_ignore=None,
-                  modules_to_consider=None):
+def all_functions(
+    return_private=False, modules_to_ignore=None, modules_to_consider=None
+):
     """Get a list of all functions from nilearn.
 
     This function returns a list of all functions defined in Nilearn.
@@ -149,23 +135,23 @@ def all_functions(return_private=False,
     for modname in modules:
         module = import_module(modname)
         functions = [
-            (name, func) for name, func in inspect.getmembers(
-                module, inspect.isfunction
-            )
+            (name, func)
+            for name, func in inspect.getmembers(module, inspect.isfunction)
             if func.__module__ == module.__name__
         ]
         if not return_private:
             functions = [
-                (name, func) for name, func in functions
+                (name, func)
+                for name, func in functions
                 if not name.startswith("_")
             ]
         all_functions.extend(functions)
     return all_functions
 
 
-def all_classes(return_private=False,
-                modules_to_ignore=None,
-                modules_to_consider=None):
+def all_classes(
+    return_private=False, modules_to_ignore=None, modules_to_consider=None
+):
     """Get a list of all classes from nilearn.
 
     This function returns a list of all classes defined in Nilearn.
@@ -209,20 +195,18 @@ def all_classes(return_private=False,
     for modname in modules:
         module = import_module(modname)
         classes = [
-            (name, cls) for name, cls in inspect.getmembers(
-                module, inspect.isclass
-            )
+            (name, cls)
+            for name, cls in inspect.getmembers(module, inspect.isclass)
             if cls.__module__ == module.__name__
         ]
         if not return_private:
             classes = [
-                (name, cls) for name, cls in classes
+                (name, cls)
+                for name, cls in classes
                 if not name.startswith("_")
             ]
         all_classes.extend(classes)
     return all_classes
-
-
 
 
 __all__ = [
@@ -240,6 +224,7 @@ __all__ = [
     "remove_parameters",
     "fill_doc",
     "stringify_path",
-    "_compare_version", 'all_functions', 'all_classes'
+    "_compare_version",
+    "all_functions",
+    "all_classes",
 ]
-
