@@ -111,10 +111,14 @@ def affine_eye():
 SHAPE_3D_DEFAULT = (10, 10, 10)
 
 
+def _shape_3d_default():
+    return SHAPE_3D_DEFAULT
+
+
 @pytest.fixture()
 def shape_3d_default():
     """Return default shape for a 3D image."""
-    return SHAPE_3D_DEFAULT
+    return _shape_3d_default()
 
 
 SHAPE_4D_DEFAULT = (10, 10, 10, 10)
@@ -124,6 +128,10 @@ SHAPE_4D_DEFAULT = (10, 10, 10, 10)
 def shape_4d_default():
     """Return default shape for a 4D image."""
     return SHAPE_4D_DEFAULT
+
+
+def _img_zeros(shape, affine):
+    return Nifti1Image(np.zeros(shape), affine)
 
 
 # ------------------------ 3D IMAGES ------------------------#
@@ -155,13 +163,27 @@ def img_3d_mni():
     return _img_3d_mni()
 
 
+def _img_3d_zeros(shape=SHAPE_3D_DEFAULT, affine=AFFINE_EYE):
+    return _img_zeros(shape, affine)
+
+
+@pytest.fixture
+def img_3d_zeros_eye():
+    """Return a default zeros filled 3D Nifti1Image (identity affine)."""
+    return _img_3d_zeros()
+
+
 # ------------------------ 4D IMAGES ------------------------#
+
+
+def _img_4d_zeros(shape=SHAPE_4D_DEFAULT, affine=AFFINE_EYE):
+    return _img_zeros(shape, affine)
 
 
 @pytest.fixture
 def img_4d_zeros_eye():
     """Return a default zeros filled 4D Nifti1Image (identity affine)."""
-    return Nifti1Image(np.zeros(SHAPE_4D_DEFAULT), AFFINE_EYE)
+    return _img_4d_zeros()
 
 
 @pytest.fixture
