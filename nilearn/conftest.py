@@ -89,7 +89,59 @@ AFFINE_MNI = np.array(
 )
 
 
-def _mni_3d_img(affine=AFFINE_MNI):
+@pytest.fixture()
+def affine_mni():
+    """Return an affine corresponding to 2mm isotropic MNI template."""
+    return AFFINE_MNI
+
+
+AFFINE_EYE = np.eye(4)
+
+
+def _affine_eye():
+    return AFFINE_EYE
+
+
+@pytest.fixture()
+def affine_eye():
+    """Return an identity matrix affine."""
+    return _affine_eye()
+
+
+SHAPE_3D_DEFAULT = (10, 10, 10)
+
+
+@pytest.fixture()
+def shape_3d_default():
+    """Return default shape for a 3D image."""
+    return SHAPE_3D_DEFAULT
+
+
+SHAPE_4D_DEFAULT = (10, 10, 10, 10)
+
+
+@pytest.fixture()
+def shape_4d_default():
+    """Return default shape for a 4D image."""
+    return SHAPE_4D_DEFAULT
+
+
+# ------------------------ 3D IMAGES ------------------------#
+
+
+def _img_3d_rand(affine=AFFINE_EYE):
+    rng = np.random.RandomState(42)
+    data = rng.rand(*SHAPE_3D_DEFAULT)
+    return Nifti1Image(data, affine)
+
+
+@pytest.fixture()
+def img_3d_rand_eye():
+    """Return random 3D Nifti1Image in MNI space."""
+    return _img_3d_rand()
+
+
+def _img_3d_mni(affine=AFFINE_MNI):
     data_positive = np.zeros((7, 7, 3))
     rng = np.random.RandomState(42)
     data_rng = rng.rand(7, 7, 3)
@@ -98,15 +150,32 @@ def _mni_3d_img(affine=AFFINE_MNI):
 
 
 @pytest.fixture()
-def affine_mni():
-    """Return an affine corresponding to 2mm isotropic MNI template."""
-    return AFFINE_MNI
+def img_3d_mni():
+    """Return a default random 3D Nifti1Image in MNI space."""
+    return _img_3d_mni()
 
 
-@pytest.fixture()
-def mni_3d_img():
-    """Fixture for a random 3D image in MNI space."""
-    return _mni_3d_img()
+# ------------------------ 4D IMAGES ------------------------#
+
+
+@pytest.fixture
+def img_4d_zeros_eye():
+    """Return a default zeros filled 4D Nifti1Image (identity affine)."""
+    return Nifti1Image(np.zeros(SHAPE_4D_DEFAULT), AFFINE_EYE)
+
+
+@pytest.fixture
+def img_4d_ones_eye():
+    """Return a default ones filled 4D Nifti1Image (identity affine)."""
+    return Nifti1Image(np.ones(SHAPE_4D_DEFAULT), AFFINE_EYE)
+
+
+@pytest.fixture
+def img_4D_rand_eye():
+    """Return a default random filled 4D Nifti1Image (identity affine)."""
+    rng = np.random.RandomState(42)
+    data = rng.rand(*SHAPE_4D_DEFAULT)
+    return Nifti1Image(data, AFFINE_EYE)
 
 
 @pytest.fixture()

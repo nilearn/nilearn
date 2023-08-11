@@ -9,25 +9,25 @@ from nilearn.image import get_data
 from nilearn.plotting import plot_glass_brain
 
 
-def test_plot_glass_brain(mni_3d_img):
+def test_plot_glass_brain(img_3d_mni):
     """Smoke tests for plot_glass_brain with colorbar and negative values."""
     plot_glass_brain(
-        mni_3d_img, colorbar=True, resampling_interpolation="nearest"
+        img_3d_mni, colorbar=True, resampling_interpolation="nearest"
     )
     # test plot_glass_brain with negative values
     plot_glass_brain(
-        mni_3d_img,
+        img_3d_mni,
         colorbar=True,
         plot_abs=False,
         resampling_interpolation="nearest",
     )
 
 
-def test_plot_glass_brain_file_output(mni_3d_img, tmpdir):
+def test_plot_glass_brain_file_output(img_3d_mni, tmpdir):
     """Smoke-test for hemispheric glass brain with file output."""
     filename = str(tmpdir.join("test.png"))
     plot_glass_brain(
-        mni_3d_img,
+        img_3d_mni,
         output_file=filename,
         display_mode="lzry",
     )
@@ -93,9 +93,9 @@ def test_add_markers_using_plot_glass_brain():
         )
 
 
-def test_plot_glass_brain_colorbar_having_nans(mni_3d_img):
+def test_plot_glass_brain_colorbar_having_nans(img_3d_mni):
     """Smoke-test for plot_glass_brain and nans in the data image."""
-    data = get_data(mni_3d_img)
+    data = get_data(img_3d_mni)
     data[6, 5, 2] = np.inf
     plot_glass_brain(Nifti1Image(data, np.eye(4)), colorbar=True)
     plt.close()

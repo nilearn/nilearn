@@ -29,22 +29,22 @@ def _testdata_3d_for_plotting_for_resampling(img, binary):
     return Nifti1Image(data, affine)
 
 
-def test_display_methods(mni_3d_img):
+def test_display_methods(img_3d_mni):
     """Tests display methods."""
-    display = plot_img(mni_3d_img)
-    display.add_overlay(mni_3d_img, threshold=0)
-    display.add_edges(mni_3d_img, color="c")
+    display = plot_img(img_3d_mni)
+    display.add_overlay(img_3d_mni, threshold=0)
+    display.add_edges(img_3d_mni, color="c")
     display.add_contours(
-        mni_3d_img, contours=2, linewidth=4, colors=["limegreen", "yellow"]
+        img_3d_mni, contours=2, linewidth=4, colors=["limegreen", "yellow"]
     )
 
 
-def test_plot_with_axes_or_figure(mni_3d_img):
+def test_plot_with_axes_or_figure(img_3d_mni):
     """Smoke tests for plot_img with providing figure or Axes."""
     figure = plt.figure()
-    plot_img(mni_3d_img, figure=figure)
+    plot_img(img_3d_mni, figure=figure)
     ax = plt.subplot(111)
-    plot_img(mni_3d_img, axes=ax)
+    plot_img(img_3d_mni, axes=ax)
     plt.close()
 
 
@@ -68,9 +68,9 @@ def test_plot_img_with_auto_cut_coords(display_mode):
 
 
 @pytest.mark.parametrize("binary_img", [True, False])
-def test_plot_img_with_resampling(binary_img, mni_3d_img):
+def test_plot_img_with_resampling(binary_img, img_3d_mni):
     """Tests for plot_img with resampling of the data image."""
-    img = _testdata_3d_for_plotting_for_resampling(mni_3d_img, binary_img)
+    img = _testdata_3d_for_plotting_for_resampling(img_3d_mni, binary_img)
     if binary_img:
         assert _is_binary_niimg(img)
     else:
@@ -84,11 +84,11 @@ def test_plot_img_with_resampling(binary_img, mni_3d_img):
     plt.close()
 
 
-def test_display_methods_with_display_mode_tiled(mni_3d_img):
+def test_display_methods_with_display_mode_tiled(img_3d_mni):
     """Smoke tests for display methods with tiled display mode."""
-    display = plot_img(mni_3d_img, display_mode="tiled")
-    display.add_overlay(mni_3d_img, threshold=0)
-    display.add_edges(mni_3d_img, color="c")
+    display = plot_img(img_3d_mni, display_mode="tiled")
+    display.add_overlay(img_3d_mni, threshold=0)
+    display.add_edges(img_3d_mni, color="c")
     display.add_contours(
-        mni_3d_img, contours=2, linewidth=4, colors=["limegreen", "yellow"]
+        img_3d_mni, contours=2, linewidth=4, colors=["limegreen", "yellow"]
     )
