@@ -79,6 +79,8 @@ def close_all():
         plt.close("all")  # takes < 1 us so just always do it
 
 
+# ------------------------ AFFINES ------------------------#
+
 AFFINE_MNI = np.array(
     [
         [2.0, 0.0, 0.0, -98.0],
@@ -108,6 +110,8 @@ def affine_eye():
     return _affine_eye()
 
 
+# ------------------------ SHAPES ------------------------#
+
 SHAPE_3D_DEFAULT = (10, 10, 10)
 
 
@@ -132,6 +136,10 @@ def shape_4d_default():
 
 def _img_zeros(shape, affine):
     return Nifti1Image(np.zeros(shape), affine)
+
+
+def _img_ones(shape, affine):
+    return Nifti1Image(np.ones(shape), affine)
 
 
 # ------------------------ 3D IMAGES ------------------------#
@@ -173,6 +181,10 @@ def img_3d_zeros_eye():
     return _img_3d_zeros()
 
 
+def _img_3d_ones(shape=SHAPE_3D_DEFAULT, affine=AFFINE_EYE):
+    return _img_ones(shape, affine)
+
+
 # ------------------------ 4D IMAGES ------------------------#
 
 
@@ -189,7 +201,7 @@ def img_4d_zeros_eye():
 @pytest.fixture
 def img_4d_ones_eye():
     """Return a default ones filled 4D Nifti1Image (identity affine)."""
-    return Nifti1Image(np.ones(SHAPE_4D_DEFAULT), AFFINE_EYE)
+    return _img_ones(SHAPE_4D_DEFAULT, AFFINE_EYE)
 
 
 @pytest.fixture
