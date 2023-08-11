@@ -751,6 +751,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     """
     # Hand-written loading code to avoid too much memory consumption
     orig_ref_niimg = ref_niimg
+    ref_niimg = stringify_path(ref_niimg)
     is_str = isinstance(ref_niimg, str)
     has_get_data = hasattr(ref_niimg, "get_data")
     has_get_fdata = hasattr(ref_niimg, "get_fdata")
@@ -758,6 +759,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     has_affine = hasattr(ref_niimg, "affine")
     if has_iter and not any([is_str, has_get_data, has_get_fdata]):
         ref_niimg = ref_niimg[0]
+        ref_niimg = stringify_path(ref_niimg)
         is_str = isinstance(ref_niimg, str)
         has_get_data = hasattr(ref_niimg, "get_data")
         has_get_fdata = hasattr(ref_niimg, "get_fdata")
