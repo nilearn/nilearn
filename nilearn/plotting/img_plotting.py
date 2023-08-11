@@ -90,6 +90,12 @@ def _get_colorbar_and_data_ranges(
         stat_map_min = force_min_stat_map_value
     stat_map_max = np.nanmax(stat_map_data)
 
+    if symmetric_cbar == "auto":
+        if symmetric_data_range or (vmin is None) or (vmax is None):
+            symmetric_cbar = stat_map_min < 0 and stat_map_max > 0
+        else:
+            symmetric_cbar = np.isclose(vmin, -vmax)
+
     # check compatibility between vmin, vmax and symmetric_cbar
     if symmetric_cbar or symmetric_data_range:
         if vmin is None and vmax is None:
@@ -109,12 +115,6 @@ def _get_colorbar_and_data_ranges(
         vmin = stat_map_min
     if vmax is None:
         vmax = stat_map_max
-
-    if symmetric_cbar == "auto":
-        if symmetric_data_range:
-            symmetric_cbar = stat_map_min < 0 and stat_map_max > 0
-        else:
-            symmetric_cbar = np.isclose(vmin, -vmax)
 
     # set colorbar limits
     if not symmetric_cbar:
