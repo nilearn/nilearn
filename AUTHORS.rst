@@ -134,6 +134,7 @@ Some other past or present contributors are:
 * `Mathieu Dugré`_
 * `Matthias Ekman`_
 * `Matthieu Joulot`_
+* `Maximilian Cosmo Sitter`_
 * `Mehdi Rahim`_
 * `Michael Eickenberg`_
 * `Michael Hanke`_

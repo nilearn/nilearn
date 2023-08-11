@@ -317,7 +317,6 @@ def test_user_given_cmap_with_colorbar(img):
 @pytest.mark.parametrize("display", [OrthoSlicer, LYRZProjector])
 def test_data_complete_mask(display):
     """Test for a special case due to matplotlib 2.1.0.
-
     When the data is completely masked, then we have plotting issues
     See similar issue #9280 reported in matplotlib. This function
     tests the patch added for this particular issue.
