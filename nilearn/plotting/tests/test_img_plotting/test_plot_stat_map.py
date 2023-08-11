@@ -59,11 +59,11 @@ def test_plot_stat_map_cut_coords_and_display_mode(
     plt.close()
 
 
-def test_plot_stat_map_with_masked_image(mni_3d_img, mni_affine):
+def test_plot_stat_map_with_masked_image(mni_3d_img, affine_mni):
     """Smoke test coordinate finder with mask."""
     masked_img = Nifti1Image(
         np.ma.masked_equal(get_data(mni_3d_img), 0),
-        mni_affine,
+        affine_mni,
     )
     plot_stat_map(masked_img, display_mode="x")
     plt.close()
@@ -123,7 +123,7 @@ def test_plot_stat_map_threshold_for_affine_with_rotation():
         {"colorbar": False},
     ],
 )
-def test_plot_stat_map_colorbar_variations(params, mni_3d_img, mni_affine):
+def test_plot_stat_map_colorbar_variations(params, mni_3d_img, affine_mni):
     """Smoke test for plot_stat_map with different colorbar configurations."""
     data_positive = get_data(mni_3d_img)
     rng = np.random.RandomState(42)
@@ -131,8 +131,8 @@ def test_plot_stat_map_colorbar_variations(params, mni_3d_img, mni_affine):
     data_heterogeneous = data_positive * rng.standard_normal(
         size=data_positive.shape
     )
-    img_negative = Nifti1Image(data_negative, mni_affine)
-    img_heterogeneous = Nifti1Image(data_heterogeneous, mni_affine)
+    img_negative = Nifti1Image(data_negative, affine_mni)
+    img_heterogeneous = Nifti1Image(data_heterogeneous, affine_mni)
     for img in [mni_3d_img, img_negative, img_heterogeneous]:
         plot_stat_map(img, cut_coords=(80, -120, -60), **params)
         plt.close()

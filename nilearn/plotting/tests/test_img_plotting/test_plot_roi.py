@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn.conftest import MNI_AFFINE
+from nilearn.conftest import AFFINE_MNI
 from nilearn.image.resampling import coord_transform
 from nilearn.plotting import plot_roi
 
@@ -15,13 +15,13 @@ def demo_plot_roi(**kwargs):
     data = np.zeros((91, 109, 91))
     # Color a asymmetric rectangle around Broca area.
     x, y, z = -52, 10, 22
-    x_map, y_map, z_map = coord_transform(x, y, z, np.linalg.inv(MNI_AFFINE))
+    x_map, y_map, z_map = coord_transform(x, y, z, np.linalg.inv(AFFINE_MNI))
     data[
         int(x_map) - 5 : int(x_map) + 5,
         int(y_map) - 3 : int(y_map) + 3,
         int(z_map) - 10 : int(z_map) + 10,
     ] = 1
-    img = Nifti1Image(data, MNI_AFFINE)
+    img = Nifti1Image(data, AFFINE_MNI)
     return plot_roi(img, title="Broca's area", **kwargs)
 
 

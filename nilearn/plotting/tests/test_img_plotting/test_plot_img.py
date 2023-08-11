@@ -48,11 +48,11 @@ def test_plot_with_axes_or_figure(mni_3d_img):
     plt.close()
 
 
-def test_plot_empty_slice(mni_affine):
+def test_plot_empty_slice(affine_mni):
     """Test that things don't crash when we give a map with
     nothing above threshold. This is only a smoke test.
     """
-    img = Nifti1Image(np.zeros((20, 20, 20)), mni_affine)
+    img = Nifti1Image(np.zeros((20, 20, 20)), affine_mni)
     plot_img(img, display_mode="y", threshold=1)
     plt.close()
 

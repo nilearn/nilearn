@@ -79,7 +79,7 @@ def close_all():
         plt.close("all")  # takes < 1 us so just always do it
 
 
-MNI_AFFINE = np.array(
+AFFINE_MNI = np.array(
     [
         [2.0, 0.0, 0.0, -98.0],
         [0.0, 2.0, 0.0, -134.0],
@@ -89,7 +89,7 @@ MNI_AFFINE = np.array(
 )
 
 
-def _mni_3d_img(affine=MNI_AFFINE):
+def _mni_3d_img(affine=AFFINE_MNI):
     data_positive = np.zeros((7, 7, 3))
     rng = np.random.RandomState(42)
     data_rng = rng.rand(7, 7, 3)
@@ -98,9 +98,9 @@ def _mni_3d_img(affine=MNI_AFFINE):
 
 
 @pytest.fixture()
-def mni_affine():
+def affine_mni():
     """Return an affine corresponding to 2mm isotropic MNI template."""
-    return MNI_AFFINE
+    return AFFINE_MNI
 
 
 @pytest.fixture()
@@ -113,13 +113,13 @@ def mni_3d_img():
 def testdata_4d_for_plotting():
     """Random 4D images for testing figures for multivolume data."""
     rng = np.random.RandomState(42)
-    img_4d = Nifti1Image(rng.uniform(size=(7, 7, 3, 10)), MNI_AFFINE)
-    img_4d_long = Nifti1Image(rng.uniform(size=(7, 7, 3, 1777)), MNI_AFFINE)
-    img_mask = Nifti1Image(np.ones((7, 7, 3), dtype="uint8"), MNI_AFFINE)
+    img_4d = Nifti1Image(rng.uniform(size=(7, 7, 3, 10)), AFFINE_MNI)
+    img_4d_long = Nifti1Image(rng.uniform(size=(7, 7, 3, 1777)), AFFINE_MNI)
+    img_mask = Nifti1Image(np.ones((7, 7, 3), dtype="uint8"), AFFINE_MNI)
     atlas = np.ones((7, 7, 3), dtype="int32")
     atlas[2:5, :, :] = 2
     atlas[5:8, :, :] = 3
-    img_atlas = Nifti1Image(atlas, MNI_AFFINE)
+    img_atlas = Nifti1Image(atlas, AFFINE_MNI)
     atlas_labels = {
         "gm": 1,
         "wm": 2,
