@@ -15,30 +15,23 @@ NewSegment) to create VBM maps, which we study here.
 Predictive modeling analysis: VBM bio-markers of aging?
 -------------------------------------------------------
 
-We run a standard SVM-ANOVA Nilearn pipeline to predict age from the VBM
+We run a standard SVM-ANOVA nilearn pipeline to predict age from the VBM
 data. We use only 100 subjects from the OASIS dataset to limit the memory
 usage.
 
 Note that for an actual predictive modeling study of aging, the study
-should be run on the full set of subjects. Also, all parameters should be set
+should be ran on the full set of subjects. Also, all parameters should be set
 by cross-validation. This includes the smoothing applied to the data and the
 number of features selected by the ANOVA step. Indeed, even these
 data-preparation parameter impact significantly the prediction score.
+
 
 Also, parameters such as the smoothing should be applied to the data and the
 number of features selected by the ANOVA step should be set by nested
 cross-validation, as they impact significantly the prediction score.
 
-SVR vs Lasso regression
------------------------
-
-Nilearn offers the possibility to use different estimators in predictive
-pipelines. Here we repeat the predictive modeling analysis using Lasso
-regression instead of SVR to show how the choice of estimator can influence
-results.
-
-Brain mapping with mass univariate GLM
---------------------------------------
+Brain mapping with mass univariate
+----------------------------------
 
 SVM weights are very noisy, partly because heavy smoothing is detrimental
 for the prediction here. A standard analysis using mass-univariate GLM
@@ -114,21 +107,21 @@ variance_threshold.fit_transform(gm_maps_masked)
 mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 
 ############################################################################
-# Prediction pipeline with ANOVA and SVR
-# -------------------------------------------------
-# In Nilearn, we can benefit from the built-in
-# :class:`nilearn.decoding.DecoderRegressor` object to do ANOVA with SVR
-# instead of manually defining the whole pipeline. This estimator also uses
-# Cross Validation to select best models and ensemble them. Furthermore, you
-# can pass `n_jobs=<some_high_value>` to the DecoderRegressor class to take
-# advantage of a multi-core system. To save time (because these are anat images
-# with many voxels), we include only the 1-percent voxels most correlated with
-# the age variable to fit. We also want to set mask hyperparameter to be the
-# mask we just obtained above.
+# Prediction pipeline with ANOVA and SVR using
+# :class:`nilearn.decoding.DecoderRegressor` Object
+
+# In nilearn we can benefit from the built-in DecoderRegressor object to
+# do ANOVA with SVR instead of manually defining the whole pipeline.
+# This estimator also uses Cross Validation to select best models and ensemble
+# them. Furthermore, you can pass n_jobs=<some_high_value> to the
+# DecoderRegressor class to take advantage of a multi-core system.
+# To save time (because these are anat images with many voxels), we include
+# only the 1-percent voxels most correlated with the age variable to fit. We
+# also want to set mask hyperparameter to be the mask we just obtained above.
 
 from nilearn.decoding import DecoderRegressor
 
-decoder_svr = DecoderRegressor(
+decoder = DecoderRegressor(
     estimator="svr",
     mask=mask,
     scoring="neg_mean_absolute_error",
@@ -137,134 +130,53 @@ decoder_svr = DecoderRegressor(
     standardize="zscore_sample",
 )
 # Fit and predict with the decoder
-decoder_svr.fit(gm_imgs_train, age_train)
+decoder.fit(gm_imgs_train, age_train)
 
 # Sort test data for better visualization (trend, etc.)
 perm = np.argsort(age_test)[::-1]
 age_test = age_test[perm]
 gm_imgs_test = np.array(gm_imgs_test)[perm]
-age_pred_svr = decoder_svr.predict(gm_imgs_test)
+age_pred = decoder.predict(gm_imgs_test)
 
-prediction_score_svr = -np.mean(decoder_svr.cv_scores_["beta"])
+prediction_score = -np.mean(decoder.cv_scores_["beta"])
 
 print("=== DECODER ===")
-print(
-    "explained variance for the cross-validation (SVR estimator): "
-    f"{prediction_score_svr:f}"
-)
+print(f"explained variance for the cross-validation: {prediction_score:f}")
 print()
 
 ###############################################################################
 # Visualization
-# ^^^^^^^^^^^^^
-weight_img_svr = decoder_svr.coef_img_["beta"]
+# -------------
+weight_img = decoder.coef_img_["beta"]
 
 # Create the figure
 from nilearn.plotting import plot_stat_map, show
 
 bg_filename = gray_matter_map_filenames[0]
 z_slice = 0
-display_svr = plot_stat_map(
-    weight_img_svr, bg_img=bg_filename, display_mode="z", cut_coords=[z_slice]
+display = plot_stat_map(
+    weight_img, bg_img=bg_filename, display_mode="z", cut_coords=[z_slice]
 )
-display_svr.title("SVM weights")
+display.title("SVM weights")
 show()
 
 ###############################################################################
 # Visualize the quality of predictions
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ------------------------------------
 plt.figure(figsize=(6, 4.5))
-plt.suptitle(f"Decoder: Mean Absolute Error {prediction_score_svr:.2f} years")
+plt.suptitle(f"Decoder: Mean Absolute Error {prediction_score:.2f} years")
 linewidth = 3
 plt.plot(age_test, label="True age", linewidth=linewidth)
-plt.plot(
-    age_pred_svr, "--", c="g", label="Predicted age (SVR)", linewidth=linewidth
-)
+plt.plot(age_pred, "--", c="g", label="Predicted age", linewidth=linewidth)
 plt.ylabel("age")
 plt.xlabel("subject")
 plt.legend(loc="best")
 plt.figure(figsize=(6, 4.5))
 plt.plot(
-    age_test - age_pred_svr,
-    label="True age - predicted age (SVR)",
-    linewidth=linewidth,
+    age_test - age_pred, label="True age - predicted age", linewidth=linewidth
 )
 plt.xlabel("subject")
 plt.legend(loc="best")
-show()
-
-############################################################################
-# Prediction pipeline with ANOVA and Lasso regression
-# ---------------------------------------------------
-# In the above section, we used the SVR support vector regression model as our
-# underlying estimator. The :class:`nilearn.decoding.DecoderRegressor` object
-# also supports other estimators, such as the Lasso regressor. Here we repeat
-# the same analysis and visualizations using Lasso regression instead of SVR.
-
-decoder_lasso = DecoderRegressor(
-    estimator="lasso",
-    mask=mask,
-    scoring="neg_mean_absolute_error",
-    screening_percentile=1,
-    n_jobs=1,
-    standardize="zscore_sample",
-)
-# Fit and predict with the decoder
-decoder_lasso.fit(gm_imgs_train, age_train)
-
-age_pred_lasso = decoder_lasso.predict(gm_imgs_test)
-prediction_score_lasso = -np.mean(decoder_lasso.cv_scores_["beta"])
-
-print("=== DECODER ===")
-print(
-    "explained variance for the cross-validation (lasso estimator): "
-    f"{prediction_score_lasso:f}"
-)
-print()
-
-###############################################################################
-# Visualization
-# ^^^^^^^^^^^^^
-weight_img_lasso = decoder_lasso.coef_img_["beta"]
-
-# Create the figure
-display_lasso = plot_stat_map(
-    weight_img_lasso,
-    bg_img=bg_filename,
-    display_mode="z",
-    cut_coords=[z_slice],
-)
-display_lasso.title("Lasso regression weights")
-show()
-
-###############################################################################
-# Visualize the quality of predictions
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-plt.figure(figsize=(6, 4.5))
-plt.suptitle(
-    f"Decoder: Mean Absolute Error {prediction_score_lasso:.2f} years"
-)
-linewidth = 3
-plt.plot(age_test, label="True age", linewidth=linewidth)
-plt.plot(
-    age_pred_lasso,
-    "--",
-    c="g",
-    label="Predicted age (lasso)",
-    linewidth=linewidth,
-)
-plt.ylabel("age")
-plt.xlabel("subject")
-plt.legend(loc="best")
-plt.figure(figsize=(6, 4.5))
-plt.plot(
-    age_test - age_pred_lasso,
-    label="True age - predicted age (lasso)",
-    linewidth=linewidth,
-)
-plt.xlabel("subject")
-plt.legend(loc="best")
-show()
 
 ###############################################################################
 # Inference with massively univariate model
@@ -295,7 +207,7 @@ threshold = -np.log10(0.1)  # 10% corrected
 
 fig = plt.figure(figsize=(5.5, 7.5), facecolor="k")
 
-display_glm = plot_stat_map(
+display = plot_stat_map(
     signed_neg_log_pvals_unmasked,
     bg_img=bg_filename,
     threshold=threshold,
@@ -307,7 +219,7 @@ display_glm = plot_stat_map(
 title = (
     "Negative $\\log_{10}$ p-values" "\n(Non-parametric + max-type correction)"
 )
-display_glm.title(title)
+display.title(title)
 
 n_detections = (get_data(signed_neg_log_pvals_unmasked) > threshold).sum()
 print(f"\n{int(n_detections)} detections")
