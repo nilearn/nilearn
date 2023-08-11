@@ -284,7 +284,7 @@ extractor : {"local_regions", "connected_components"}, default="local_regions"
     This option can take two values:
 
         - `"connected_components"`: each component/region in the image
-          is extracted automatically by labelling each region based
+          is extracted automatically by labeling each region based
           upon the presence of unique features in their respective regions.
 
         - `"local_regions"`: each component/region is extracted
