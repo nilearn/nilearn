@@ -31,7 +31,7 @@ from nilearn.maskers import NiftiMasker
 from nilearn.plotting.displays import get_projector, get_slicer
 
 from .. import _utils
-from .._utils import fill_doc, _compare_version
+from .._utils import _compare_version, fill_doc
 from .._utils.extmath import fast_abs_percentile
 from .._utils.ndimage import get_border_data
 from .._utils.niimg import _safe_get_data
