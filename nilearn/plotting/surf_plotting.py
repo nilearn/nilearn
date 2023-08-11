@@ -1281,7 +1281,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
                      inflate=False, views=['lateral', 'medial'],
                      output_file=None, title=None, colorbar=True,
                      vmin=None, vmax=None, threshold=None,
-                     symmetric_cbar=True, cmap='cold_hot', **kwargs):
+                     symmetric_cbar='auto', cmap='cold_hot', **kwargs):
     """Plot multiple views of plot_surf_stat_map \
     in a single figure.
 
