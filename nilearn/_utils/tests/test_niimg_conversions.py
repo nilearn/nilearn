@@ -54,18 +54,22 @@ class PhonyNiimage(nibabel.spatialimages.SpatialImage):
         return self.data
 
 
-def test_check_same_fov():
-    affine_a = np.eye(4)
-    affine_b = np.eye(4) * 2
+@pytest.fixture
+def affine_eye():
+    return np.eye(4)
+
+
+def test_check_same_fov(affine_eye):
+    affine_b = affine_eye * 2
 
     shape_a = (2, 2, 2)
     shape_b = (3, 3, 3)
 
-    shape_a_affine_a = nibabel.Nifti1Image(np.empty(shape_a), affine_a)
-    shape_a_affine_a_2 = nibabel.Nifti1Image(np.empty(shape_a), affine_a)
-    shape_a_affine_b = nibabel.Nifti1Image(np.empty(shape_a), affine_b)
-    shape_b_affine_a = nibabel.Nifti1Image(np.empty(shape_b), affine_a)
-    shape_b_affine_b = nibabel.Nifti1Image(np.empty(shape_b), affine_b)
+    shape_a_affine_a = Nifti1Image(np.empty(shape_a), affine_eye)
+    shape_a_affine_a_2 = Nifti1Image(np.empty(shape_a), affine_eye)
+    shape_a_affine_b = Nifti1Image(np.empty(shape_a), affine_b)
+    shape_b_affine_a = Nifti1Image(np.empty(shape_b), affine_eye)
+    shape_b_affine_b = Nifti1Image(np.empty(shape_b), affine_b)
 
     niimg_conversions._check_same_fov(
         a=shape_a_affine_a, b=shape_a_affine_a_2, raise_error=True
@@ -101,7 +105,7 @@ def test_check_same_fov():
         )
 
 
-def test_check_niimg_3d():
+def test_check_niimg_3d(affine_eye):
     # check error for non-forced but necessary resampling
     with pytest.raises(TypeError, match="nibabel format"):
         _utils.check_niimg(0)
@@ -111,7 +115,7 @@ def test_check_niimg_3d():
         _utils.check_niimg([])
 
     # Test dimensionality error
-    img = Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
+    img = Nifti1Image(np.zeros((10, 10, 10)), affine_eye)
     with pytest.raises(
         TypeError,
         match="Input data has incompatible dimensionality: "
@@ -123,7 +127,7 @@ def test_check_niimg_3d():
     # Check that a filename does not raise an error
     data = np.zeros((40, 40, 40, 1))
     data[20, 20, 20] = 1
-    data_img = Nifti1Image(data, np.eye(4))
+    data_img = Nifti1Image(data, affine_eye)
 
     with testing.write_tmp_imgs(data_img, create_files=True) as filename:
         _utils.check_niimg_3d(filename)
@@ -133,20 +137,48 @@ def test_check_niimg_3d():
     assert get_data(img).dtype.kind == get_data(img_check).dtype.kind
 
 
-def test_check_niimg_4d():
+def test_check_niimg_4d_errors(affine_eye):
     with pytest.raises(TypeError, match="nibabel format"):
         _utils.check_niimg_4d(0)
 
     with pytest.raises(TypeError, match="empty object"):
         _utils.check_niimg_4d([])
 
-    affine = np.eye(4)
-    img_3d = Nifti1Image(np.ones((10, 10, 10)), affine)
+    img_3d = Nifti1Image(np.ones((10, 10, 10)), affine_eye)
+
+    # This should raise an error: a 3D img is given and we want a 4D
+    with pytest.raises(
+        DimensionError,
+        match="Input data has incompatible dimensionality: "
+        "Expected dimension is 4D and you provided a "
+        "3D image.",
+    ):
+        _utils.check_niimg_4d(img_3d)
+
+    a = Nifti1Image(np.zeros((10, 10, 10)), affine_eye)
+    b = np.zeros((10, 10, 10))
+    c = _utils.check_niimg_4d([a, b], return_iterator=True)
+    with pytest.raises(
+        TypeError, match="Error encountered while loading image #1"
+    ):
+        list(c)
+
+    b = Nifti1Image(np.zeros((10, 20, 10)), affine_eye)
+    c = _utils.check_niimg_4d([a, b], return_iterator=True)
+    with pytest.raises(
+        ValueError,
+        match="Field of view of image #1 is different from reference FOV",
+    ):
+        list(c)
+
+
+def test_check_niimg_4d(affine_eye):
+    img_3d = Nifti1Image(np.ones((10, 10, 10)), affine_eye)
 
     # Tests with return_iterator=False
     img_4d_1 = _utils.check_niimg_4d([img_3d, img_3d])
     assert get_data(img_4d_1).shape == (10, 10, 10, 2)
-    assert_array_equal(img_4d_1.affine, affine)
+    assert_array_equal(img_4d_1.affine, affine_eye)
 
     img_4d_2 = _utils.check_niimg_4d(img_4d_1)
     assert_array_equal(get_data(img_4d_2), get_data(img_4d_2))
@@ -179,40 +211,14 @@ def test_check_niimg_4d():
         assert_array_equal(get_data(img_1), get_data(img_2))
         assert_array_equal(img_1.affine, img_2.affine)
 
-    # This should raise an error: a 3D img is given and we want a 4D
-    with pytest.raises(
-        DimensionError,
-        match="Input data has incompatible dimensionality: "
-        "Expected dimension is 4D and you provided a "
-        "3D image.",
-    ):
-        _utils.check_niimg_4d(img_3d)
-
     # Test a Niimg-like object that does not hold a shape attribute
     phony_img = PhonyNiimage()
     _utils.check_niimg_4d(phony_img)
 
-    a = nibabel.Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
-    b = np.zeros((10, 10, 10))
-    c = _utils.check_niimg_4d([a, b], return_iterator=True)
-    with pytest.raises(
-        TypeError, match="Error encountered while loading image #1"
-    ):
-        list(c)
 
-    b = nibabel.Nifti1Image(np.zeros((10, 20, 10)), np.eye(4))
-    c = _utils.check_niimg_4d([a, b], return_iterator=True)
-    with pytest.raises(
-        ValueError,
-        match="Field of view of image #1 is different from reference FOV",
-    ):
-        list(c)
-
-
-def test_check_niimg():
-    affine = np.eye(4)
-    img_3d = Nifti1Image(np.ones((10, 10, 10)), affine)
-    img_4d = Nifti1Image(np.ones((10, 10, 10, 4)), affine)
+def test_check_niimg(affine_eye):
+    img_3d = Nifti1Image(np.ones((10, 10, 10)), affine_eye)
+    img_4d = Nifti1Image(np.ones((10, 10, 10, 4)), affine_eye)
     img_3_3d = [[[img_3d, img_3d]]]
     img_2_4d = [[img_4d, img_4d]]
 
@@ -240,15 +246,15 @@ def test_check_niimg():
     assert get_data(img_4d).dtype.kind == get_data(img_4d_check).dtype.kind
 
 
-def test_check_niimg_pathlike():
-    img = Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
+def test_check_niimg_pathlike(affine_eye):
+    img = Nifti1Image(np.zeros((10, 10, 10)), affine_eye)
 
     with testing.write_tmp_imgs(img, create_files=True) as filename:
         filename = Path(filename)
         _utils.check_niimg_3d(filename)
 
 
-def test_check_niimg_wildcards():
+def test_check_niimg_wildcards(affine_eye):
     tmp_dir = tempfile.tempdir + os.sep
     nofile_path = "/tmp/nofile"
     nofile_path_wildcards = "/tmp/no*file"
@@ -276,11 +282,11 @@ def test_check_niimg_wildcards():
     # First create some testing data
     data_3d = np.zeros((40, 40, 40))
     data_3d[20, 20, 20] = 1
-    img_3d = Nifti1Image(data_3d, np.eye(4))
+    img_3d = Nifti1Image(data_3d, affine_eye)
 
     data_4d = np.zeros((40, 40, 40, 3))
     data_4d[20, 20, 20] = 1
-    img_4d = Nifti1Image(data_4d, np.eye(4))
+    img_4d = Nifti1Image(data_4d, affine_eye)
 
     #######
     # Testing with an existing filename
@@ -369,11 +375,8 @@ def test_check_niimg_wildcards():
     ni.EXPAND_PATH_WILDCARDS = True
 
 
-def test_iter_check_niimgs(tmp_path):
+def test_iter_check_niimgs_error(tmp_path, affine_eye):
     no_file_matching = "No files matching path: %s"
-    affine = np.eye(4)
-    img_4d = Nifti1Image(np.ones((10, 10, 10, 4)), affine)
-    img_2_4d = [[img_4d, img_4d]]
 
     for empty in ((), [], (i for i in ()), [i for i in ()]):
         with pytest.raises(ValueError, match="Input niimgs list is empty."):
@@ -382,6 +385,11 @@ def test_iter_check_niimgs(tmp_path):
     nofile_path = "/tmp/nofile"
     with pytest.raises(ValueError, match=no_file_matching % nofile_path):
         list(_iter_check_niimg(nofile_path))
+
+
+def test_iter_check_niimgs(tmp_path, affine_eye):
+    img_4d = Nifti1Image(np.ones((10, 10, 10, 4)), affine_eye)
+    img_2_4d = [[img_4d, img_4d]]
 
     # Create a test file
     fd, filename = tempfile.mkstemp(
@@ -420,11 +428,11 @@ def test_iter_check_niimgs_memory():
         100,
         0.1,
         _check_memory,
-        [Nifti1Image(np.ones((100, 100, 200)), np.eye(4)) for i in range(10)],
+        [Nifti1Image(np.ones((100, 100, 200)), np.eye(4)) for _ in range(10)],
     )
 
 
-def test_repr_niimgs(tmp_path):
+def test_repr_niimgs(tmp_path, affine_eye):
     # Tests with file path
     assert _utils._repr_niimgs("test") == "test"
     assert _utils._repr_niimgs("test", shorten=False) == "test"
@@ -563,16 +571,15 @@ def test_repr_niimgs(tmp_path):
     )
 
     # Create phony Niimg without filename
-    affine = np.eye(4)
     shape = (10, 10, 10)
-    img1 = Nifti1Image(np.ones(shape), affine)
+    img1 = Nifti1Image(np.ones(shape), affine_eye)
     # Shorten has no effect in this case
     for shorten in [True, False]:
         assert _utils._repr_niimgs(img1, shorten=shorten).replace(
             "10L", "10"
         ) == (
             "%s(\nshape=%s,\naffine=%s\n)"
-            % (img1.__class__.__name__, repr(shape), repr(affine))
+            % (img1.__class__.__name__, repr(shape), repr(affine_eye))
         )
 
     # Add filename long enough to qualify for shortening
@@ -591,28 +598,18 @@ def test_repr_niimgs(tmp_path):
     )
 
 
-def _remove_if_exists(file):
-    if os.path.exists(file):
-        os.remove(file)
-
-
-def test_concat_niimgs():
-    # create images different in affine and 3D/4D shape
+def test_concat_niimgs_errors(affine_eye):
     shape = (10, 11, 12)
-    affine = np.eye(4)
-    img1 = Nifti1Image(np.ones(shape), affine)
-    img2 = Nifti1Image(np.ones(shape), 2 * affine)
-    img3 = Nifti1Image(np.zeros(shape), affine)
-    img4d = Nifti1Image(np.ones(shape + (2,)), affine)
+    img1 = Nifti1Image(np.ones(shape), affine_eye)
+    img2 = Nifti1Image(np.ones(shape), 2 * affine_eye)
+    img4d = Nifti1Image(np.ones(shape + (2,)), affine_eye)
 
-    shape2 = (12, 11, 10)
-    img1b = Nifti1Image(np.ones(shape2), affine)
+    # check error for non-forced but necessary resampling
+    with pytest.raises(ValueError, match="Field of view of image"):
+        _utils.concat_niimgs([img1, img2], auto_resample=False)
 
-    shape3 = (11, 22, 33)
-    img1c = Nifti1Image(np.ones(shape3), affine)
-
-    # Regression test for #601. Dimensionality of first image was not checked
-    # properly
+    # Regression test for #601.
+    # Dimensionality of first image was not checked properly.
     _dimension_error_msg = (
         "Input data has incompatible dimensionality: "
         "Expected dimension is 4D and you provided "
@@ -621,39 +618,10 @@ def test_concat_niimgs():
     with pytest.raises(DimensionError, match=_dimension_error_msg):
         _utils.concat_niimgs([img4d], ensure_ndim=4)
 
-    # check basic concatenation with equal shape/affine
-    concatenated = _utils.concat_niimgs((img1, img3, img1))
-
     with pytest.raises(DimensionError, match=_dimension_error_msg):
         _utils.concat_niimgs([img1, img4d])
 
-    # smoke-test auto_resample
-    concatenated = _utils.concat_niimgs(
-        (img1, img1b, img1c), auto_resample=True
-    )
-    assert concatenated.shape == img1.shape + (3,)
-
-    # check error for non-forced but necessary resampling
-    with pytest.raises(ValueError, match="Field of view of image"):
-        _utils.concat_niimgs([img1, img2], auto_resample=False)
-
-    # test list of 4D niimgs as input
-    tempdir = tempfile.mkdtemp()
-    tmpimg1 = os.path.join(tempdir, "1.nii")
-    tmpimg2 = os.path.join(tempdir, "2.nii")
-    try:
-        nibabel.save(img1, tmpimg1)
-        nibabel.save(img3, tmpimg2)
-        concatenated = _utils.concat_niimgs(os.path.join(tempdir, "*"))
-        assert_array_equal(get_data(concatenated)[..., 0], get_data(img1))
-        assert_array_equal(get_data(concatenated)[..., 1], get_data(img3))
-    finally:
-        _remove_if_exists(tmpimg1)
-        _remove_if_exists(tmpimg2)
-        if os.path.exists(tempdir):
-            os.removedirs(tempdir)
-
-    img5d = Nifti1Image(np.ones((2, 2, 2, 2, 2)), affine)
+    img5d = Nifti1Image(np.ones((2, 2, 2, 2, 2)), affine_eye)
     with pytest.raises(
         TypeError,
         match="Concatenated images must be 3D or 4D. "
@@ -662,12 +630,39 @@ def test_concat_niimgs():
         _utils.concat_niimgs([img5d, img5d])
 
 
+def test_concat_niimgs(affine_eye, tmp_path):
+    # create images different in affine and 3D/4D shape
+    shape = (10, 11, 12)
+    img1 = Nifti1Image(np.ones(shape), affine_eye)
+    img2 = Nifti1Image(np.zeros(shape), affine_eye)
+
+    shape2 = (12, 11, 10)
+    img1b = Nifti1Image(np.ones(shape2), affine_eye)
+
+    shape3 = (11, 22, 33)
+    img1c = Nifti1Image(np.ones(shape3), affine_eye)
+
+    # check basic concatenation with equal shape/affine
+    concatenated = _utils.concat_niimgs((img1, img2, img1))
+
+    # smoke-test auto_resample
+    concatenated = _utils.concat_niimgs(
+        (img1, img1b, img1c), auto_resample=True
+    )
+    assert concatenated.shape == img1.shape + (3,)
+
+    # test list of 4D niimgs as input
+    nibabel.save(img1, tmp_path / "1.nii")
+    nibabel.save(img2, tmp_path / "2.nii")
+    concatenated = _utils.concat_niimgs(tmp_path / "*")
+    assert_array_equal(get_data(concatenated)[..., 0], get_data(img1))
+    assert_array_equal(get_data(concatenated)[..., 1], get_data(img2))
+
+
 def test_concat_niimg_dtype():
     shape = [2, 3, 4]
     vols = [
-        nibabel.Nifti1Image(
-            np.zeros(shape + [n_scans]).astype(np.int16), np.eye(4)
-        )
+        Nifti1Image(np.zeros(shape + [n_scans]).astype(np.int16), np.eye(4))
         for n_scans in [1, 5]
     ]
     nimg = _utils.concat_niimgs(vols)
@@ -678,17 +673,17 @@ def test_concat_niimg_dtype():
 
 def nifti_generator(buffer):
     rng = np.random.RandomState(42)
-    for i in range(10):
+    for _ in range(10):
         buffer.append(Nifti1Image(rng.random_sample((10, 10, 10)), np.eye(4)))
         yield buffer[-1]
 
 
-def test_iterator_generator():
+def test_iterator_generator(affine_eye):
     # Create a list of random images
     rng = np.random.RandomState(42)
     list_images = [
-        Nifti1Image(rng.random_sample((10, 10, 10)), np.eye(4))
-        for i in range(10)
+        Nifti1Image(rng.random_sample((10, 10, 10)), affine_eye)
+        for _ in range(10)
     ]
     cc = _utils.concat_niimgs(list_images)
     assert cc.shape[-1] == 10
