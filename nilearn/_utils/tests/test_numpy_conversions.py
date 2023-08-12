@@ -135,7 +135,7 @@ def test_as_ndarray(in_dtype, in_order, copy, out_dtype, out_order, copied):
     # in_dtype, in_order, copy, out_dtype, out_order, copied = case
     arr1 = np.ones(shape, dtype=in_dtype, order=in_order)
     arr2 = as_ndarray(arr1, copy=copy, dtype=out_dtype, order=out_order)
-    assert not are_arrays_identical(arr1[0], arr2[0])
+    assert are_arrays_identical(arr1[0], arr2[0]) != copied
     if out_dtype is None:
         assert arr2.dtype == in_dtype
     else:
