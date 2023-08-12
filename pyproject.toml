@@ -144,7 +144,6 @@ extend-exclude = """
   | nilearn/surface/surface.py
   | nilearn/surface/tests/test_surface.py
   | nilearn/tests/test_masking.py
-  | nilearn/tests/test_signal.py
 )
 """
 line-length = 79
