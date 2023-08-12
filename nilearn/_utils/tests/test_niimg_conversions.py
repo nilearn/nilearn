@@ -254,8 +254,7 @@ def test_check_niimg_pathlike(affine_eye):
         _utils.check_niimg_3d(filename)
 
 
-def test_check_niimg_wildcards(affine_eye):
-    tmp_dir = tempfile.tempdir + os.sep
+def test_check_niimg_wildcards_errors():
     nofile_path = "/tmp/nofile"
     nofile_path_wildcards = "/tmp/no*file"
     wildcards_msg = (
@@ -268,7 +267,6 @@ def test_check_niimg_wildcards(affine_eye):
 
     file_not_found_msg = "File not found: '%s'"
 
-    assert ni.EXPAND_PATH_WILDCARDS is True
     # Check bad filename
     # Non existing file (with no magic) raise a ValueError exception
     with pytest.raises(ValueError, match=file_not_found_msg % nofile_path):
@@ -279,42 +277,34 @@ def test_check_niimg_wildcards(affine_eye):
     ):
         _utils.check_niimg(nofile_path_wildcards)
 
+
+@pytest.mark.parametrize("shape", [(10, 10, 10), (10, 10, 10, 3)])
+@pytest.mark.parametrize(
+    "wildcards", [True, False]
+)  # (With globbing behavior or not)
+def test_check_niimg_wildcards(affine_eye, shape, wildcards):
+    # First create some testing data
+    img = Nifti1Image(np.zeros(shape), affine_eye)
+
+    with testing.write_tmp_imgs(img, create_files=True) as filename:
+        assert_array_equal(
+            get_data(_utils.check_niimg(filename, wildcards=wildcards)),
+            get_data(img),
+        )
+
+
+def test_check_niimg_wildcards_one_file_name(affine_eye):
+    tmp_dir = tempfile.tempdir + os.sep
+
+    file_not_found_msg = "File not found: '%s'"
+
     # First create some testing data
     data_3d = np.zeros((40, 40, 40))
-    data_3d[20, 20, 20] = 1
     img_3d = Nifti1Image(data_3d, affine_eye)
 
     data_4d = np.zeros((40, 40, 40, 3))
-    data_4d[20, 20, 20] = 1
     img_4d = Nifti1Image(data_4d, affine_eye)
 
-    #######
-    # Testing with an existing filename
-    with testing.write_tmp_imgs(img_3d, create_files=True) as filename:
-        assert_array_equal(
-            get_data(_utils.check_niimg(filename)), get_data(img_3d)
-        )
-    # No globbing behavior
-    with testing.write_tmp_imgs(img_3d, create_files=True) as filename:
-        assert_array_equal(
-            get_data(_utils.check_niimg(filename, wildcards=False)),
-            get_data(img_3d),
-        )
-
-    #######
-    # Testing with an existing filename
-    with testing.write_tmp_imgs(img_4d, create_files=True) as filename:
-        assert_array_equal(
-            get_data(_utils.check_niimg(filename)), get_data(img_4d)
-        )
-    # No globbing behavior
-    with testing.write_tmp_imgs(img_4d, create_files=True) as filename:
-        assert_array_equal(
-            get_data(_utils.check_niimg(filename, wildcards=False)),
-            get_data(img_4d),
-        )
-
-    #######
     # Testing with a glob matching exactly one filename
     # Using a glob matching one file containing a 3d image returns a 4d image
     # with 1 as last dimension.
@@ -335,7 +325,6 @@ def test_check_niimg_wildcards(affine_eye):
         ):
             _utils.check_niimg(glob_input, wildcards=False)
 
-    #######
     # Testing with a glob matching multiple filenames
     img_4d = _utils.check_niimg_4d((img_3d, img_3d))
     with testing.write_tmp_imgs(
@@ -344,6 +333,12 @@ def test_check_niimg_wildcards(affine_eye):
         assert_array_equal(
             get_data(_utils.check_niimg(glob_input)), get_data(img_4d)
         )
+
+
+def test_check_niimg_wildcards_no_expand_wildcards(affine_eye):
+    nofile_path = "/tmp/nofile"
+
+    file_not_found_msg = "File not found: '%s'"
 
     #######
     # Test when global variable is set to False => no globbing allowed
@@ -359,11 +354,17 @@ def test_check_niimg_wildcards(affine_eye):
     with pytest.raises(ValueError, match=file_not_found_msg % nofile_path):
         _utils.check_niimg(nofile_path, wildcards=False)
 
+    data_3d = np.zeros((40, 40, 40))
+    img_3d = Nifti1Image(data_3d, affine_eye)
+
     # Testing with an exact filename matching (3d case)
     with testing.write_tmp_imgs(img_3d, create_files=True) as filename:
         assert_array_equal(
             get_data(_utils.check_niimg(filename)), get_data(img_3d)
         )
+
+    data_4d = np.zeros((40, 40, 40, 3))
+    img_4d = Nifti1Image(data_4d, affine_eye)
 
     # Testing with an exact filename matching (4d case)
     with testing.write_tmp_imgs(img_4d, create_files=True) as filename:
@@ -375,7 +376,7 @@ def test_check_niimg_wildcards(affine_eye):
     ni.EXPAND_PATH_WILDCARDS = True
 
 
-def test_iter_check_niimgs_error(tmp_path, affine_eye):
+def test_iter_check_niimgs_error():
     no_file_matching = "No files matching path: %s"
 
     for empty in ((), [], (i for i in ()), [i for i in ()]):
@@ -421,18 +422,18 @@ def _check_memory(list_img_3d):
 
 
 @with_memory_profiler
-def test_iter_check_niimgs_memory():
+def test_iter_check_niimgs_memory(affine_eye):
     # Verify that iterating over a list of images doesn't consume extra
     # memory.
     assert_memory_less_than(
         100,
         0.1,
         _check_memory,
-        [Nifti1Image(np.ones((100, 100, 200)), np.eye(4)) for _ in range(10)],
+        [Nifti1Image(np.ones((100, 100, 200)), affine_eye) for _ in range(10)],
     )
 
 
-def test_repr_niimgs(tmp_path, affine_eye):
+def test_repr_niimgs():
     # Tests with file path
     assert _utils._repr_niimgs("test") == "test"
     assert _utils._repr_niimgs("test", shorten=False) == "test"
@@ -443,15 +444,6 @@ def test_repr_niimgs(tmp_path, affine_eye):
     assert _utils._repr_niimgs(long_name) == short_name
     # Explicit shortening of long names
     assert _utils._repr_niimgs(long_name, shorten=True) == short_name
-    # Force long display of long names
-    assert _utils._repr_niimgs(long_name, shorten=False) == long_name
-
-    # Tests with list of file paths
-    assert _utils._repr_niimgs(["test", "retest"]) == "[test, retest]"
-    assert (
-        _utils._repr_niimgs(["test", "retest"], shorten=False)
-        == "[test, retest]"
-    )
 
     # Lists of long names up to length 3
     list_of_size_3 = [
@@ -471,18 +463,6 @@ def test_repr_niimgs(tmp_path, affine_eye):
         == shortened_rep_list_of_size_3
     )
 
-    # Force display, all 3 names are displayed
-    long_rep_list_of_size_3 = (
-        "[this-is-a-very-long-name-for-a-nifti-file.nii,"
-        " this-is-another-very-long-name-for-a-nifti-file.nii,"
-        " this-is-again-another-very-long-name-for-a-nifti-file.nii]"
-    )
-
-    assert (
-        _utils._repr_niimgs(list_of_size_3, shorten=False)
-        == long_rep_list_of_size_3
-    )
-
     # Lists longer than 3
     # Small names - Explicit shortening
     long_list_small_names = ["test", "retest", "reretest", "rereretest"]
@@ -491,16 +471,6 @@ def test_repr_niimgs(tmp_path, affine_eye):
     assert (
         _utils._repr_niimgs(long_list_small_names, shorten=True)
         == shortened_rep_long_list_small_names
-    )
-
-    # Small names - Force full display
-    long_rep_long_list_small_names = (
-        "[test,\n retest,\n reretest,\n rereretest]"
-    )
-
-    assert (
-        _utils._repr_niimgs(long_list_small_names, shorten=False)
-        == long_rep_long_list_small_names
     )
 
     # Long names - Explicit shortening
@@ -516,8 +486,49 @@ def test_repr_niimgs(tmp_path, affine_eye):
         == shortened_rep_long_list_long_names
     )
 
-    # Long names - Force full display in pretty print style for readability
 
+def test_repr_niimgs_force_long_names():
+    long_name = "this-is-a-very-long-name-for-a-nifti-file.nii"
+    # Force long display of long names
+    assert _utils._repr_niimgs(long_name, shorten=False) == long_name
+
+    # Tests with list of file paths
+    assert _utils._repr_niimgs(["test", "retest"]) == "[test, retest]"
+    assert (
+        _utils._repr_niimgs(["test", "retest"], shorten=False)
+        == "[test, retest]"
+    )
+
+    # Force display, all 3 names are displayed
+    list_of_size_3 = [
+        "this-is-a-very-long-name-for-a-nifti-file.nii",
+        "this-is-another-very-long-name-for-a-nifti-file.nii",
+        "this-is-again-another-very-long-name-for-a-nifti-file.nii",
+    ]
+    long_rep_list_of_size_3 = (
+        "[this-is-a-very-long-name-for-a-nifti-file.nii,"
+        " this-is-another-very-long-name-for-a-nifti-file.nii,"
+        " this-is-again-another-very-long-name-for-a-nifti-file.nii]"
+    )
+    assert (
+        _utils._repr_niimgs(list_of_size_3, shorten=False)
+        == long_rep_list_of_size_3
+    )
+
+    long_list_small_names = ["test", "retest", "reretest", "rereretest"]
+    long_rep_long_list_small_names = (
+        "[test,\n retest,\n reretest,\n rereretest]"
+    )
+
+    assert (
+        _utils._repr_niimgs(long_list_small_names, shorten=False)
+        == long_rep_long_list_small_names
+    )
+
+    # Long names - Force full display in pretty print style for readability
+    list_of_size_4 = list_of_size_3 + [
+        "this-is-again-another-super-very-long-name-for-a-nifti-file.nii"
+    ]
     long_rep_long_list_long_names = (
         long_rep_list_of_size_3[:-1].replace(",", ",\n")
         + ",\n "
@@ -529,6 +540,8 @@ def test_repr_niimgs(tmp_path, affine_eye):
         == long_rep_long_list_long_names
     )
 
+
+def test_repr_niimgs_with_niimg_pathlib():
     # Tests with pathlib
     # Case with very long path and small filename
     long_path = Path("/this/is/a/fake/long/path/to/file.nii")
@@ -570,17 +583,18 @@ def test_repr_niimgs(tmp_path, affine_eye):
         _utils._repr_niimgs(list_of_paths, shorten=False) == long_list_of_paths
     )
 
+
+@pytest.mark.parametrize("shorten", [True, False])
+def test_repr_niimgs_with_niimg(shorten, tmp_path, affine_eye):
     # Create phony Niimg without filename
     shape = (10, 10, 10)
     img1 = Nifti1Image(np.ones(shape), affine_eye)
+
     # Shorten has no effect in this case
-    for shorten in [True, False]:
-        assert _utils._repr_niimgs(img1, shorten=shorten).replace(
-            "10L", "10"
-        ) == (
-            "%s(\nshape=%s,\naffine=%s\n)"
-            % (img1.__class__.__name__, repr(shape), repr(affine_eye))
-        )
+    assert _utils._repr_niimgs(img1, shorten=shorten).replace("10L", "10") == (
+        "%s(\nshape=%s,\naffine=%s\n)"
+        % (img1.__class__.__name__, repr(shape), repr(affine_eye))
+    )
 
     # Add filename long enough to qualify for shortening
     fd, tmpimg1 = tempfile.mkstemp(suffix="_very_long.nii", dir=str(tmp_path))
@@ -659,10 +673,10 @@ def test_concat_niimgs(affine_eye, tmp_path):
     assert_array_equal(get_data(concatenated)[..., 1], get_data(img2))
 
 
-def test_concat_niimg_dtype():
+def test_concat_niimg_dtype(affine_eye):
     shape = [2, 3, 4]
     vols = [
-        Nifti1Image(np.zeros(shape + [n_scans]).astype(np.int16), np.eye(4))
+        Nifti1Image(np.zeros(shape + [n_scans]).astype(np.int16), affine_eye)
         for n_scans in [1, 5]
     ]
     nimg = _utils.concat_niimgs(vols)
