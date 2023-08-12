@@ -110,7 +110,6 @@ extend-exclude = """
   | nilearn/_utils/helpers.py
   | nilearn/_utils/tests/test_data_gen.py
   | nilearn/reporting/html_report.py
-  | nilearn/reporting/tests/test_html_report.py
   | nilearn/glm/contrasts.py
   | nilearn/glm/first_level/first_level.py
   | nilearn/glm/tests/test_contrasts.py
