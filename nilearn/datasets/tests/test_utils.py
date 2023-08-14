@@ -77,8 +77,7 @@ def test_get_dataset_descr(name):
     assert len(descr) > 0
 
 
-@pytest.mark.parametrize("should_cast_path_to_string", [False, True])
-def test_get_dataset_dir(should_cast_path_to_string, tmp_path):
+def test_get_dataset_dir(tmp_path):
     # testing folder creation under different environments, enforcing
     # a custom clean install
     os.environ.pop("NILEARN_DATA", None)
@@ -104,6 +103,21 @@ def test_get_dataset_dir(should_cast_path_to_string, tmp_path):
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
 
+    # Verify exception for a path which exists and is a file
+    test_file = str(tmp_path / "some_file")
+    with open(test_file, "w") as out:
+        out.write("abcfeg")
+
+    with pytest.raises(
+        OSError,
+        match="Nilearn tried to store the dataset in the following "
+        "directories, but",
+    ):
+        datasets.utils._get_dataset_dir("test", test_file, verbose=0)
+
+
+@pytest.mark.parametrize("should_cast_path_to_string", [False, True])
+def test_get_dataset_dir_path_as_str(should_cast_path_to_string, tmp_path):
     expected_base_dir = tmp_path / "env_data"
     expected_dataset_dir = expected_base_dir / "test"
     if should_cast_path_to_string:
@@ -114,6 +128,10 @@ def test_get_dataset_dir(should_cast_path_to_string, tmp_path):
     assert data_dir == str(expected_dataset_dir)
     assert os.path.exists(data_dir)
     shutil.rmtree(data_dir)
+
+
+def test_get_dataset_dir_write_access(tmp_path):
+    os.environ.pop("NILEARN_SHARED_DATA", None)
 
     no_write = str(tmp_path / "no_write")
     os.makedirs(no_write)
@@ -129,18 +147,6 @@ def test_get_dataset_dir(should_cast_path_to_string, tmp_path):
     assert os.path.exists(data_dir)
     os.chmod(no_write, 0o600)
     shutil.rmtree(data_dir)
-
-    # Verify exception for a path which exists and is a file
-    test_file = str(tmp_path / "some_file")
-    with open(test_file, "w") as out:
-        out.write("abcfeg")
-
-    with pytest.raises(
-        OSError,
-        match="Nilearn tried to store the dataset in the following "
-        "directories, but",
-    ):
-        datasets.utils._get_dataset_dir("test", test_file, verbose=0)
 
 
 def test_md5_sum_file():
