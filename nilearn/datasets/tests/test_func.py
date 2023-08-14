@@ -230,7 +230,10 @@ def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):
     assert len(dataset.cmaps) == 2
     assert len(dataset["ext_vars"]) == 2
 
-    # Multiple contrasts
+
+def test_fetch_localizer_contrasts_multiple_contrasts(
+    tmp_path, localizer_mocker
+):
     dataset = func.fetch_localizer_contrasts(
         ["checkerboard", "horizontal checkerboard"],
         n_subjects=2,
@@ -243,6 +246,8 @@ def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):
     assert len(dataset.cmaps) == 2 * 2  # two contrasts are fetched
     assert len(dataset["ext_vars"]) == 2
 
+
+def test_fetch_localizer_contrasts_get_all(tmp_path, localizer_mocker):
     # all get_*=True
     dataset = func.fetch_localizer_contrasts(
         ["checkerboard"],
@@ -266,6 +271,8 @@ def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):
     assert len(dataset.tmaps) == 1
     assert dataset.description != ""
 
+
+def test_fetch_localizer_contrasts_list_subjects(tmp_path, localizer_mocker):
     # grab a given list of subjects
     dataset2 = func.fetch_localizer_contrasts(
         ["checkerboard"],
@@ -812,14 +819,6 @@ def test_fetch_openneuro_dataset(tmp_path):
     assert isinstance(dl_files, list)
     assert len(dl_files) == 9
 
-    # URLs do not contain the data_prefix, which should raise a ValueError
-    urls = [
-        "https://example.com/stuff.html",
-        "https://example.com/sub-yyy/ses-01.txt",
-    ]
-    with pytest.raises(ValueError, match="This indicates that the URLs"):
-        func.fetch_openneuro_dataset(urls, tmp_path, dataset_version)
-
     # Try downloading a different dataset without providing URLs
     # This should raise a warning and download ds000030.
     with pytest.warns(
@@ -832,6 +831,17 @@ def test_fetch_openneuro_dataset(tmp_path):
             dataset_version="ds500_v2",
             verbose=1,
         )
+
+
+def test_fetch_openneuro_dataset_errors(tmp_path):
+    dataset_version = "ds000030_R1.0.4"
+    # URLs do not contain the data_prefix, which should raise a ValueError
+    urls = [
+        "https://example.com/stuff.html",
+        "https://example.com/sub-yyy/ses-01.txt",
+    ]
+    with pytest.raises(ValueError, match="This indicates that the URLs"):
+        func.fetch_openneuro_dataset(urls, tmp_path, dataset_version)
 
 
 def test_fetch_localizer(tmp_path):
