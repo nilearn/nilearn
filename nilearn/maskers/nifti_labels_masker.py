@@ -117,8 +117,8 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
     region_ids_ : dict
         A dictionary containing the region ids corresponding to each
         column in region_signal. The region id corresponding to
-        region_signal[:,i] is region_ids_[i].
-        region_ids_['background'] is the background label.
+        ``region_signal[:,i]`` is ``region_ids_[i]``.
+        ``region_ids_['background']`` is the background label.
 
         .. versionadded:: 0.10.2.dev
 
@@ -126,15 +126,15 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
         A dictionary containing the region names corresponding to each
         column in region_signal. The region names correspond to the labels
         provided in labels in input. The region name corresponding to
-        region_signal[:,i] is region_names_[i].
+        ``region_signal[:,i]`` is ``region_names_[i]``.
 
         .. versionadded:: 0.10.2.dev
 
     region_atlas_ : Niimg-like object
         Regions definition as labels. The labels correspond to the
-        indices in region_ids_. The region in region_atlas_ that takes
-        the value region_ids_[i] is used to compute the signal in
-        region_signal[:,i].
+        indices in ``region_ids_``. The region in ``region_atlas_`` that takes
+        the value ``region_ids_[i]`` is used to compute the signal in
+        ``region_signal[:,i]``.
 
         .. versionadded:: 0.10.2.dev
 
