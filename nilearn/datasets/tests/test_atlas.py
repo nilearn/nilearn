@@ -5,7 +5,6 @@
 import itertools
 import os
 import re
-import shutil
 from pathlib import Path
 
 import nibabel
@@ -16,74 +15,10 @@ from numpy.testing import assert_array_equal
 
 from nilearn._utils import data_gen
 from nilearn._utils.testing import serialize_niimg
-from nilearn.datasets import atlas, utils
+from nilearn.datasets import atlas
 from nilearn.datasets._testing import dict_to_archive
+from nilearn.datasets.utils import _fetch_files
 from nilearn.image import get_data
-
-
-def test_get_dataset_dir(tmp_path):
-    # testing folder creation under different environments, enforcing
-    # a custom clean install
-    os.environ.pop("NILEARN_DATA", None)
-    os.environ.pop("NILEARN_SHARED_DATA", None)
-
-    expected_base_dir = os.path.expanduser("~/nilearn_data")
-    data_dir = utils._get_dataset_dir("test", verbose=0)
-    assert data_dir == os.path.join(expected_base_dir, "test")
-    assert os.path.exists(data_dir)
-    shutil.rmtree(data_dir)
-
-    expected_base_dir = str(tmp_path / "test_nilearn_data")
-    os.environ["NILEARN_DATA"] = expected_base_dir
-    data_dir = utils._get_dataset_dir("test", verbose=0)
-    assert data_dir == os.path.join(expected_base_dir, "test")
-    assert os.path.exists(data_dir)
-    shutil.rmtree(data_dir)
-
-    expected_base_dir = str(tmp_path / "nilearn_shared_data")
-    os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
-    data_dir = utils._get_dataset_dir("test", verbose=0)
-    assert data_dir == os.path.join(expected_base_dir, "test")
-    assert os.path.exists(data_dir)
-    shutil.rmtree(data_dir)
-
-    expected_base_dir = str(tmp_path / "env_data")
-    expected_dataset_dir = os.path.join(expected_base_dir, "test")
-    data_dir = utils._get_dataset_dir(
-        "test", default_paths=[expected_dataset_dir], verbose=0
-    )
-    assert data_dir == os.path.join(expected_base_dir, "test")
-    assert os.path.exists(data_dir)
-    shutil.rmtree(data_dir)
-
-    no_write = str(tmp_path / "no_write")
-    os.makedirs(no_write)
-    os.chmod(no_write, 0o400)
-
-    expected_base_dir = str(tmp_path / "nilearn_shared_data")
-    os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
-    data_dir = utils._get_dataset_dir(
-        "test", default_paths=[no_write], verbose=0
-    )
-    # Non writeable dir is returned because dataset may be in there.
-    assert data_dir == no_write
-    assert os.path.exists(data_dir)
-    # Set back write permissions in order to be able to remove the file
-    os.chmod(no_write, 0o600)
-    shutil.rmtree(data_dir)
-
-    # Verify exception for a path which exists and is a file
-    test_file = str(tmp_path / "some_file")
-    with open(test_file, "w") as out:
-        out.write("abcfeg")
-    with pytest.raises(
-        OSError,
-        match=(
-            "Nilearn tried to store the dataset "
-            "in the following directories, but"
-        ),
-    ):
-        utils._get_dataset_dir("test", test_file, verbose=0)
 
 
 def test_downloader(tmp_path, request_mocker):
@@ -125,7 +60,7 @@ def test_downloader(tmp_path, request_mocker):
     ]
 
     with pytest.raises(IOError):
-        utils._fetch_files(
+        _fetch_files(
             str(tmp_path / "craddock_2012"),
             files,
             verbose=0,
@@ -146,7 +81,7 @@ def test_downloader(tmp_path, request_mocker):
     assert stuff == ""
 
 
-def test_fetch_atlas_source(tmp_path, request_mocker):
+def test_fetch_atlas_source():
     # specify non-existing atlas source
     with pytest.raises(ValueError, match="Atlas source"):
         atlas._get_atlas_data_and_labels("new_source", "not_inside")
@@ -209,9 +144,7 @@ def fsl_fetcher(name):
 @pytest.mark.parametrize(
     "name,prob", [("HarvardOxford", "cortl-prob-1mm"), ("Juelich", "prob-1mm")]
 )
-def test_fetch_atlas_fsl_errors(
-    name, prob, fsl_fetcher, tmp_path, request_mocker
-):
+def test_fetch_atlas_fsl_errors(prob, fsl_fetcher, tmp_path):
     # specify non-existing atlas item
     with pytest.raises(ValueError, match="Invalid atlas name"):
         fsl_fetcher("not_inside")
@@ -262,7 +195,6 @@ def test_fetch_atlas_fsl(
     atlas_data,
     fsl_fetcher,
     tmp_path,
-    request_mocker,
 ):
     # Create directory which will contain fake atlas data
     atlas_dir = tmp_path / "fsl" / "data" / "atlases"
@@ -366,13 +298,13 @@ def test_fetch_atlas_smith_2009(tmp_path, request_mocker):
     assert bunch.description != ""
 
 
-def test_fetch_coords_power_2011(request_mocker):
+def test_fetch_coords_power_2011():
     bunch = atlas.fetch_coords_power_2011()
     assert len(bunch.rois) == 264
     assert bunch.description != ""
 
 
-def test_fetch_coords_seitzman_2018(request_mocker):
+def test_fetch_coords_seitzman_2018():
     bunch = atlas.fetch_coords_seitzman_2018()
     assert len(bunch.rois) == 300
     assert len(bunch.radius) == 300
@@ -561,7 +493,7 @@ def test_fetch_atlas_aal(
     assert dataset.description != ""
 
 
-def test_fetch_atlas_aal_version_error(tmp_path, request_mocker):
+def test_fetch_atlas_aal_version_error(tmp_path):
     with pytest.raises(
         ValueError, match="The version of AAL requested 'FLS33'"
     ):
@@ -658,7 +590,7 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
     assert data_asym.description != ""
 
 
-def test_fetch_coords_dosenbach_2010(request_mocker):
+def test_fetch_coords_dosenbach_2010():
     bunch = atlas.fetch_coords_dosenbach_2010()
     assert len(bunch.rois) == 160
     assert len(bunch.labels) == 160
@@ -689,7 +621,7 @@ def test_fetch_atlas_allen_2011(tmp_path, request_mocker):
     assert bunch.description != ""
 
 
-def test_fetch_atlas_surf_destrieux(tmp_path, request_mocker, verbose=0):
+def test_fetch_atlas_surf_destrieux(tmp_path):
     data_dir = str(tmp_path / "destrieux_surface")
     os.mkdir(data_dir)
     # Create mock annots
@@ -762,14 +694,16 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
         atlas.fetch_atlas_pauli_2017("junk for testing", data_dir)
 
 
-def _schaefer_labels(match, request):
+def _schaefer_labels(match, requests):
+    # fails if requests is not passed
     info = match.groupdict()
     label_names = [f"{info['network']}Networks"] * int(info["n_rois"])
     labels = pd.DataFrame({"label": label_names})
     return labels.to_csv(sep="\t", header=False).encode("utf-8")
 
 
-def _schaefer_img(match, request):
+def _schaefer_img(match, requests):
+    # fails if requests is not passed
     info = match.groupdict()
     shape = (15, 14, 13)
     affine = np.eye(4) * float(info["res"])

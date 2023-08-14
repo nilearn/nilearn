@@ -143,6 +143,133 @@ def test_get_dataset_dir(should_cast_path_to_string, tmp_path):
         datasets.utils._get_dataset_dir("test", test_file, verbose=0)
 
 
+def test_get_dataset_dir_2(tmp_path):
+    # testing folder creation under different environments, enforcing
+    # a custom clean install
+    os.environ.pop("NILEARN_DATA", None)
+    os.environ.pop("NILEARN_SHARED_DATA", None)
+
+    expected_base_dir = os.path.expanduser("~/nilearn_data")
+    data_dir = utils._get_dataset_dir("test", verbose=0)
+    assert data_dir == os.path.join(expected_base_dir, "test")
+    assert os.path.exists(data_dir)
+    shutil.rmtree(data_dir)
+
+    expected_base_dir = str(tmp_path / "test_nilearn_data")
+    os.environ["NILEARN_DATA"] = expected_base_dir
+    data_dir = utils._get_dataset_dir("test", verbose=0)
+    assert data_dir == os.path.join(expected_base_dir, "test")
+    assert os.path.exists(data_dir)
+    shutil.rmtree(data_dir)
+
+    expected_base_dir = str(tmp_path / "nilearn_shared_data")
+    os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
+    data_dir = utils._get_dataset_dir("test", verbose=0)
+    assert data_dir == os.path.join(expected_base_dir, "test")
+    assert os.path.exists(data_dir)
+    shutil.rmtree(data_dir)
+
+    expected_base_dir = str(tmp_path / "env_data")
+    expected_dataset_dir = os.path.join(expected_base_dir, "test")
+    data_dir = utils._get_dataset_dir(
+        "test", default_paths=[expected_dataset_dir], verbose=0
+    )
+    assert data_dir == os.path.join(expected_base_dir, "test")
+    assert os.path.exists(data_dir)
+    shutil.rmtree(data_dir)
+
+    no_write = str(tmp_path / "no_write")
+    os.makedirs(no_write)
+    os.chmod(no_write, 0o400)
+
+    expected_base_dir = str(tmp_path / "nilearn_shared_data")
+    os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
+    data_dir = utils._get_dataset_dir(
+        "test", default_paths=[no_write], verbose=0
+    )
+    # Non writeable dir is returned because dataset may be in there.
+    assert data_dir == no_write
+    assert os.path.exists(data_dir)
+    os.chmod(no_write, 0o600)
+    shutil.rmtree(data_dir)
+
+    # Verify exception for a path which exists and is a file
+    test_file = str(tmp_path / "some_file")
+    with open(test_file, "w") as out:
+        out.write("abcfeg")
+    with pytest.raises(
+        OSError,
+        match="Nilearn tried to store the dataset "
+        "in the following directories, but",
+    ):
+        utils._get_dataset_dir("test", test_file, verbose=0)
+
+
+def test_get_dataset_dir_3(tmp_path):
+    # testing folder creation under different environments, enforcing
+    # a custom clean install
+    os.environ.pop("NILEARN_DATA", None)
+    os.environ.pop("NILEARN_SHARED_DATA", None)
+
+    expected_base_dir = os.path.expanduser("~/nilearn_data")
+    data_dir = utils._get_dataset_dir("test", verbose=0)
+    assert data_dir == os.path.join(expected_base_dir, "test")
+    assert os.path.exists(data_dir)
+    shutil.rmtree(data_dir)
+
+    expected_base_dir = str(tmp_path / "test_nilearn_data")
+    os.environ["NILEARN_DATA"] = expected_base_dir
+    data_dir = utils._get_dataset_dir("test", verbose=0)
+    assert data_dir == os.path.join(expected_base_dir, "test")
+    assert os.path.exists(data_dir)
+    shutil.rmtree(data_dir)
+
+    expected_base_dir = str(tmp_path / "nilearn_shared_data")
+    os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
+    data_dir = utils._get_dataset_dir("test", verbose=0)
+    assert data_dir == os.path.join(expected_base_dir, "test")
+    assert os.path.exists(data_dir)
+    shutil.rmtree(data_dir)
+
+    expected_base_dir = str(tmp_path / "env_data")
+    expected_dataset_dir = os.path.join(expected_base_dir, "test")
+    data_dir = utils._get_dataset_dir(
+        "test", default_paths=[expected_dataset_dir], verbose=0
+    )
+    assert data_dir == os.path.join(expected_base_dir, "test")
+    assert os.path.exists(data_dir)
+    shutil.rmtree(data_dir)
+
+    no_write = str(tmp_path / "no_write")
+    os.makedirs(no_write)
+    os.chmod(no_write, 0o400)
+
+    expected_base_dir = str(tmp_path / "nilearn_shared_data")
+    os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
+    data_dir = utils._get_dataset_dir(
+        "test", default_paths=[no_write], verbose=0
+    )
+    # Non writeable dir is returned because dataset may be in there.
+    assert data_dir == no_write
+    assert os.path.exists(data_dir)
+    # Set back write permissions in order to be able to remove the file
+    os.chmod(no_write, 0o600)
+    shutil.rmtree(data_dir)
+
+    # Verify exception for a path which exists and is a file
+    test_file = str(tmp_path / "some_file")
+    with open(test_file, "w") as out:
+        out.write("abcfeg")
+    with pytest.raises(
+        OSError,
+        match=(
+            "Nilearn tried to store the dataset "
+            "in the following directories, but"
+        ),
+    ):
+        utils._get_dataset_dir("test", test_file, verbose=0)
+
+
 def test_md5_sum_file():
     # Create dummy temporary file
     out, f = mkstemp()

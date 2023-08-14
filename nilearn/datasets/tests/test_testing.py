@@ -11,7 +11,7 @@ from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.datasets import _testing
 
 
-def test_sender_key_order(request_mocker, tmp_path):
+def test_sender_key_order(request_mocker):
     request_mocker.url_mapping["*message.txt"] = "message"
     resp = requests.get("https://example.org/message.txt")
     assert resp.text == "message"
