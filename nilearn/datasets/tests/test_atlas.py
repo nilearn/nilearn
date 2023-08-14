@@ -525,6 +525,13 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
     )
 
     assert len(data_sym) == 2
+
+    assert request_mocker.url_count == 2
+    assert data_sym.description != ""
+    assert data_asym.description != ""
+
+
+def test_fetch_atlas_basc_multiscale_2015_error(tmp_path):
     with pytest.raises(
         ValueError, match="The version of Brain parcellations requested 'aym'"
     ):
@@ -532,10 +539,24 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
             version="aym", data_dir=tmp_path, verbose=0
         )
 
-    assert request_mocker.url_count == 2
-    assert data_sym.description != ""
-    assert data_asym.description != ""
 
+@pytest.mark.parametrize(
+    "key",
+    [
+        "scale007",
+        "scale012",
+        "scale020",
+        "scale036",
+        "scale064",
+        "scale122",
+        "scale197",
+        "scale325",
+        "scale444",
+    ],
+)
+def test_fetch_atlas_basc_multiscale_2015_old_code(
+    key, tmp_path, request_mocker
+):
     # Old code
     # default version='sym',
     data_sym = atlas.fetch_atlas_basc_multiscale_2015(
@@ -546,44 +567,22 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
         version="asym", verbose=0, data_dir=tmp_path
     )
 
-    keys = [
-        "scale007",
-        "scale012",
-        "scale020",
-        "scale036",
-        "scale064",
-        "scale122",
-        "scale197",
-        "scale325",
-        "scale444",
-    ]
-
     dataset_name = "basc_multiscale_2015"
     name_sym = "template_cambridge_basc_multiscale_nii_sym"
-    basenames_sym = [
-        f"template_cambridge_basc_multiscale_sym_{key}.nii.gz" for key in keys
-    ]
-    for key, basename_sym in zip(keys, basenames_sym):
-        assert data_sym[key] == str(
-            tmp_path / dataset_name / name_sym / basename_sym
-        )
+    basename_sym = f"template_cambridge_basc_multiscale_sym_{key}.nii.gz"
+
+    assert data_sym[key] == str(
+        tmp_path / dataset_name / name_sym / basename_sym
+    )
 
     name_asym = "template_cambridge_basc_multiscale_nii_asym"
-    basenames_asym = [
-        f"template_cambridge_basc_multiscale_asym_{key}.nii.gz" for key in keys
-    ]
-    for key, basename_asym in zip(keys, basenames_asym):
-        assert data_asym[key] == str(
-            tmp_path / dataset_name / name_asym / basename_asym
-        )
+    basename_sym = f"template_cambridge_basc_multiscale_asym_{key}.nii.gz"
+
+    assert data_asym[key] == str(
+        tmp_path / dataset_name / name_asym / basename_sym
+    )
 
     assert len(data_sym) == 10
-    with pytest.raises(
-        ValueError, match="The version of Brain parcellations requested 'aym'"
-    ):
-        atlas.fetch_atlas_basc_multiscale_2015(
-            version="aym", data_dir=tmp_path, verbose=0
-        )
 
     assert request_mocker.url_count == 2
     assert data_sym.description != ""

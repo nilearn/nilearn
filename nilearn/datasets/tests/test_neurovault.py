@@ -732,11 +732,14 @@ def test_fetch_neurovault_ids(tmp_path):
     img_from_cols_ids = images[images["collection_id"].isin(col_ids)][
         "id"
     ].values
+
     with pytest.raises(ValueError):
         neurovault.fetch_neurovault_ids(mode="bad")
+
     data = neurovault.fetch_neurovault_ids(
         image_ids=img_ids, collection_ids=col_ids, data_dir=tmp_path
     )
+
     expected_images = list(img_ids) + list(img_from_cols_ids)
     assert len(data.images) == len(expected_images)
     assert {img["id"] for img in data["images_meta"]} == set(expected_images)
@@ -744,11 +747,13 @@ def test_fetch_neurovault_ids(tmp_path):
         os.path.dirname(data["images"][0])
         == data["collections_meta"][0]["absolute_path"]
     )
+
     # check image can be loaded again from disk
     data = neurovault.fetch_neurovault_ids(
         image_ids=[img_ids[0]], data_dir=tmp_path, mode="offline"
     )
     assert len(data.images) == 1
+
     # check that download_new mode forces overwrite
     modified_meta = data["images_meta"][0]
     assert modified_meta["some_key"] == "some_value"
@@ -760,6 +765,7 @@ def test_fetch_neurovault_ids(tmp_path):
     )
     with open(meta_path, "wb") as meta_f:
         meta_f.write(json.dumps(modified_meta).encode("UTF-8"))
+
     # fresh download
     data = neurovault.fetch_neurovault_ids(
         image_ids=[img_ids[0]], data_dir=tmp_path, mode="download_new"
@@ -769,6 +775,7 @@ def test_fetch_neurovault_ids(tmp_path):
     )
     # should not have changed
     assert data["images_meta"][0]["some_key"] == "some_other_value"
+
     data = neurovault.fetch_neurovault_ids(
         image_ids=[img_ids[0]], data_dir=tmp_path, mode="overwrite"
     )
