@@ -804,27 +804,11 @@ def test_should_download_resampled_images_only_if_no_previous_download(
     # Check the expected size of the dataset
     assert (len(data["images_meta"])) == expected_number_of_images
 
-    # Check that the resampled version is here
-    assert np.all(
-        [
-            os.path.isfile(im_meta["resampled_absolute_path"])
-            for im_meta in data["images_meta"]
-        ]
-    )
+    _check_resampled_version_is_here(data)
 
-    # Load images that are fetched and check the affines
-    affines = [load_img(cur_im).affine for cur_im in data["images"]]
-    assert np.all(
-        [np.all(affine == neurovault.STD_AFFINE) for affine in affines]
-    )
+    _check_all_affines_match_neurovault_affine(data)
 
-    # Check that the original version is NOT here
-    assert not np.any(
-        [
-            os.path.isfile(im_meta["absolute_path"])
-            for im_meta in data["images_meta"]
-        ]
-    )
+    _check_original_version_is_not_here(data)
 
 
 def test_download_original_images_along_resamp_images_if_previously_downloaded(
@@ -843,18 +827,8 @@ def test_download_original_images_along_resamp_images_if_previously_downloaded(
     )
 
     # Check that only the resampled version is here
-    assert np.all(
-        [
-            os.path.isfile(im_meta["resampled_absolute_path"])
-            for im_meta in data["images_meta"]
-        ]
-    )
-    assert not np.any(
-        [
-            os.path.isfile(im_meta["absolute_path"])
-            for im_meta in data["images_meta"]
-        ]
-    )
+    _check_resampled_version_is_here(data)
+    _check_original_version_is_not_here(data)
 
     # Get the time of the last access to the resampled data
     access_time_resampled = os.path.getatime(
@@ -878,21 +852,11 @@ def test_download_original_images_along_resamp_images_if_previously_downloaded(
     # to the resampled data
     assert access_time - access_time_resampled > 0
 
-    # Check that the original version is now here (previous test
-    # should have failed anyway if not)
-    assert np.all(
-        [
-            os.path.isfile(im_meta["absolute_path"])
-            for im_meta in data_orig["images_meta"]
-        ]
-    )
+    # Check that the original version is now here
+    # (previous test should have failed anyway if not)
+    _check_original_version_is_here(data_orig)
 
-    # Check that the affines of the original version do not correspond
-    # to the resampled one
-    affines_orig = [load_img(cur_im).affine for cur_im in data_orig["images"]]
-    assert not np.any(
-        [np.all(affine == neurovault.STD_AFFINE) for affine in affines_orig]
-    )
+    _check_no_affine_match_neurovault_affine(data_orig)
 
 
 def test_download_resamp_images_along_original_images_if_previously_downloaded(
@@ -910,21 +874,9 @@ def test_download_resamp_images_along_original_images_if_previously_downloaded(
         resample=False,
     )
 
-    # Check that the original version is here
-    assert np.all(
-        [
-            os.path.isfile(im_meta["absolute_path"])
-            for im_meta in data_orig["images_meta"]
-        ]
-    )
+    _check_original_version_is_here(data_orig)
 
-    # Check that the resampled version is NOT here
-    assert not np.any(
-        [
-            os.path.isfile(im_meta["resampled_absolute_path"])
-            for im_meta in data_orig["images_meta"]
-        ]
-    )
+    _check_resampled_version_is_not_here(data_orig)
 
     # Asks for the resampled version. This should only resample, not download.
 
@@ -948,7 +900,16 @@ def test_download_resamp_images_along_original_images_if_previously_downloaded(
     # The time difference should be 0
     assert np.isclose(modif_time_original, modif_time_original_after)
 
-    # Check that the resampled version is here
+    _check_resampled_version_is_here(data)
+    # And the original version should still be here as well
+    _check_original_version_is_here(data)
+
+    _check_all_affines_match_neurovault_affine(data)
+
+    _check_no_affine_match_neurovault_affine(data_orig)
+
+
+def _check_resampled_version_is_here(data):
     assert np.all(
         [
             os.path.isfile(im_meta["resampled_absolute_path"])
@@ -956,7 +917,17 @@ def test_download_resamp_images_along_original_images_if_previously_downloaded(
         ]
     )
 
-    # And the original version should still be here as well
+
+def _check_resampled_version_is_not_here(data):
+    assert not np.any(
+        [
+            os.path.isfile(im_meta["resampled_absolute_path"])
+            for im_meta in data["images_meta"]
+        ]
+    )
+
+
+def _check_original_version_is_here(data):
     assert np.all(
         [
             os.path.isfile(im_meta["absolute_path"])
@@ -964,15 +935,25 @@ def test_download_resamp_images_along_original_images_if_previously_downloaded(
         ]
     )
 
-    # Load resampled images and check the affines
+
+def _check_original_version_is_not_here(data):
+    assert not np.any(
+        [
+            os.path.isfile(im_meta["absolute_path"])
+            for im_meta in data["images_meta"]
+        ]
+    )
+
+
+def _check_all_affines_match_neurovault_affine(data):
     affines = [load_img(cur_im).affine for cur_im in data["images"]]
     assert np.all(
         [np.all(affine == neurovault.STD_AFFINE) for affine in affines]
     )
 
-    # Check that the affines of the original version do not correspond
-    # to the resampled one
-    affines_orig = [load_img(cur_im).affine for cur_im in data_orig["images"]]
+
+def _check_no_affine_match_neurovault_affine(data):
+    affines = [load_img(cur_im).affine for cur_im in data["images"]]
     assert not np.any(
-        [np.all(affine == neurovault.STD_AFFINE) for affine in affines_orig]
+        [np.all(affine == neurovault.STD_AFFINE) for affine in affines]
     )
