@@ -37,8 +37,7 @@ def test_full_rank():
     assert_array_almost_equal(X, X_)
 
 
-def test_z_score():
-    # ################# Check z-scores computed from t-values #################
+def test_z_score_t_values():
     # Randomly draw samples from the standard Student’s t distribution
     tval = np.random.RandomState(42).standard_t(10, size=10)
     # Estimate the p-values using the Survival Function (SF)
@@ -59,12 +58,16 @@ def test_z_score():
     zval[np.atleast_1d(zval_sf < 0)] = zval_cdf[zval_sf < 0]
     # ... and z-scores >=0 estimated from SF are kept.
     zval[np.atleast_1d(zval_sf >= 0)] = zval_sf[zval_sf >= 0]
+
     # Test 'z_score' function in 'nilearn/glm/contrasts.py'
     assert_array_almost_equal(z_score(pval, one_minus_pvalue=cdfval), zval)
+
     # Test 'z_score' function in 'nilearn/glm/contrasts.py',
     # when one_minus_pvalue is None
     assert_array_almost_equal(norm.sf(z_score(pval)), pval)
-    # ################# Check z-scores computed from F-values #################
+
+
+def test_z_score_f_values():
     # Randomly draw samples from the F distribution
     fval = np.random.RandomState(42).f(1, 48, size=10)
     # Estimate the p-values using the Survival Function (SF)
@@ -87,11 +90,14 @@ def test_z_score():
     z_val[np.atleast_1d(z_val_sf < 0)] = z_val_cdf[z_val_sf < 0]
     # ... and z-scores >=0 estimated from SF are kept.
     z_val[np.atleast_1d(z_val_sf >= 0)] = z_val_sf[z_val_sf >= 0]
+
     # Test 'z_score' function in 'nilearn/glm/contrasts.py'
     assert_array_almost_equal(z_score(p_val, one_minus_pvalue=cdf_val), z_val)
+
     # Test 'z_score' function in 'nilearn/glm/contrasts.py',
     # when one_minus_pvalue is None
     assert_array_almost_equal(norm.sf(z_score(p_val)), p_val)
+
     # ##################### Check the numerical precision #####################
     for t in [33.75, -8.3]:
         p = sps.t.sf(t, 1e10)
