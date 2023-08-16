@@ -80,6 +80,24 @@ def write_events(events, tmpdir):
 
 
 def test_check_events():
+    events = basic_paradigm()
+    ttype, onset, duration, modulation = check_events(events)
+
+    # Check that given trial type is right
+    assert_array_equal(
+        ttype, ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"]
+    )
+
+    # Check that missing modulation yields an array one ones
+    assert_array_equal(modulation, np.ones(len(events)))
+
+    # Modulation is provided
+    events["modulation"] = np.ones(len(events))
+    _, _, _, mod = check_events(events)
+    assert_array_equal(mod, events["modulation"])
+
+
+def test_check_events_errors():
     """Test the function which tests that the events
     data describes a valid experimental paradigm.
     """
@@ -90,6 +108,7 @@ def test_check_events():
         TypeError, match="Events should be a Pandas DataFrame."
     ):
         check_events([])
+
     # Missing onset
     missing_onset = events.drop(columns=["onset"])
     with pytest.raises(
@@ -110,38 +129,29 @@ def test_check_events():
     with pytest.raises(ValueError, match="Could not cast duration to float"):
         check_events(wrong_duration)
 
+
+def test_check_events_warnings():
+    """Test the function which tests that the events
+    data describes a valid experimental paradigm.
+    """
+    events = basic_paradigm()
     # Warnings checkins
     # Missing trial type
-    missing_ttype = events.drop(columns=["trial_type"])
+    events = events.drop(columns=["trial_type"])
     with pytest.warns(UserWarning, match="'trial_type' column not found"):
-        ttype, onset, duration, modulation = check_events(missing_ttype)
+        ttype, onset, duration, modulation = check_events(events)
 
     # Check that missing trial type yields a 'dummy' array
     assert len(np.unique(ttype)) == 1
     assert ttype[0] == "dummy"
 
-    ttype, onset, duration, modulation = check_events(events)
-
-    # Check that given trial type is right
-    assert_array_equal(
-        ttype, ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"]
-    )
-
-    # Check that missing modulation yields an array one ones
-    assert_array_equal(modulation, np.ones(len(events)))
-
-    # Modulation is provided
-    events["modulation"] = np.ones(len(events))
-    _, _, _, mod = check_events(events)
-    assert_array_equal(mod, events["modulation"])
-
     # An unexpected field is provided
-    events = events.drop(columns=["modulation"])
     events["foo"] = np.zeros(len(events))
     with pytest.warns(
         UserWarning, match="Unexpected column 'foo' in events data."
     ):
         ttype2, onset2, duration2, modulation2 = check_events(events)
+
     assert_array_equal(ttype, ttype2)
     assert_array_equal(onset, onset2)
     assert_array_equal(duration, duration2)
