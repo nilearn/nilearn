@@ -67,7 +67,7 @@ doc = [
     "myst-parser",
     "numpydoc",
     "ruamel.yaml",
-    "sphinx",
+    "sphinx<7.2.0",
     "sphinx-copybutton",
     "sphinx-design",
     "sphinx-gallery",
