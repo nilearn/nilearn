@@ -58,5 +58,6 @@ Changes
 - Configure plots in example gallery for better rendering  (:gh:`3753` by `Yasmin Mzayek`_)
 - Make one_mesh_info and full_brain_info into private functions _one_mesh_info and _full_brain_info (:gh:`3847` by `Rahul Brito`_)
 - Refactor error raising tests using context managers (:gh:`3854` BY `François Paugam`_)
+- Refactor ``mass_univariate.permuted_least_squares``` (:gh:`3666` BY `Rémi Gau`_)
 - Added warning to deprecate `darkness` in ``surf_plotting._compute_facecolors_matplotlib`` and ``html_surface._get_vertexcolor`` (:gh`3855` by `Alisha Kodibagkar`_)
 - :bdg-secondary:`Doc` Replace skipped doctests with default code-blocks (:gh:`3681` in by `Patrick Sadil`_)

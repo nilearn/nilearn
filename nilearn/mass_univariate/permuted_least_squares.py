@@ -248,7 +248,7 @@ def _permuted_ols_on_chunk(
                 np.fabs(
                     _calculate_tfce(
                         arr4d,
-                        bin_struct=_binary_structure(),
+                        bin_struct=generate_binary_structure(3, 1),
                         two_sided_test=two_sided_test,
                     )
                 ),
@@ -265,7 +265,7 @@ def _permuted_ols_on_chunk(
             ) = _calculate_cluster_measures(
                 arr4d,
                 threshold,
-                bin_struct=_binary_structure(),
+                bin_struct=generate_binary_structure(3, 1),
                 two_sided_test=two_sided_test,
             )
 
@@ -295,10 +295,6 @@ def _permuted_ols_on_chunk(
         tfce_scores_as_ranks_part,
         h0_tfce_part,
     )
-
-
-def _binary_structure():
-    return generate_binary_structure(3, 1)
 
 
 def permuted_ols(
@@ -1262,7 +1258,7 @@ def _get_tfce_original_data(
     scores_4d = masker.inverse_transform(scores_original_data.T).get_fdata()
     tfce_original_data = _calculate_tfce(
         scores_4d,
-        bin_struct=_binary_structure(),
+        bin_struct=generate_binary_structure(3, 1),
         two_sided_test=two_sided_test,
     )
     tfce_original_data = apply_mask(
@@ -1403,7 +1399,7 @@ def _label_clusters(scores_original_data_3d, threshold_t, two_sided_test):
     """
     labeled_arr3d, _ = label(
         input=scores_original_data_3d > threshold_t,
-        structure=_binary_structure(),
+        structure=generate_binary_structure(3, 1),
     )
 
     if not two_sided_test:
@@ -1412,7 +1408,7 @@ def _label_clusters(scores_original_data_3d, threshold_t, two_sided_test):
     # Add negative cluster labels
     temp_labeled_arr3d, _ = label(
         input=scores_original_data_3d < -threshold_t,
-        structure=_binary_structure(),
+        structure=generate_binary_structure(3, 1),
     )
     n_negative_clusters = np.max(temp_labeled_arr3d)
     labeled_arr3d[labeled_arr3d > 0] += n_negative_clusters
