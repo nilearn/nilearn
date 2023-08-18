@@ -630,6 +630,24 @@ def test_new_img_like():
     assert_array_equal(get_data(img_nifti2), get_data(img2_nifti2))
 
 
+def test_new_img_like_accepts_paths(tmp_path):
+    """Check that new_img_like can accept instances of pathlib.Path."""
+    nifti_path = tmp_path / "sample.nii"
+    assert isinstance(nifti_path, Path)
+
+    data = np.random.rand(10, 10, 10)
+    img = Nifti1Image(data, np.eye(4))
+    nibabel.save(img, nifti_path)
+
+    new_data = np.random.rand(10, 10, 10)
+    new_img = new_img_like(nifti_path, new_data)
+    assert new_img.shape == (10, 10, 10)
+
+    # Check that list of pathlib.Path also accepted
+    new_img = new_img_like([nifti_path], new_data)
+    assert new_img.shape == (10, 10, 10)
+
+
 def test_new_img_like_non_iterable_header():
     """
     Tests that when an niimg's header is not iterable

@@ -176,6 +176,8 @@
 
 .. _Matthieu Joulot: https://github.com/MatthieuJoulot
 
+.. _Maximilian Cosmo Sitter: https://github.com/mcsitter
+
 .. _Mehdi Rahim: https://github.com/mrahim
 
 .. _Michael Eickenberg: https://github.com/eickenberg

@@ -30,6 +30,9 @@ Fixes
 
 - Relax the :func:`~nilearn.interfaces.fmriprep.load_confounds` confounds selection on `cosine` as not all confound files contained the variables (:gh:`3816` by `Hao-Ting Wang`_).
 
+- Fix pathlib.Path not being counted as Niimg-like object in :func:`~image.new_img_like` (:gh:`3723` by `Maximilian Cosmo Sitter`_).
+
+
 Enhancements
 ------------
 
@@ -40,6 +43,8 @@ Enhancements
 - Throw warning in :func:`~glm.first_level.first_level_from_bids` when using event.tsv files with no trial type column (:gh:`3597` by `Aswin Vijayan`_, `Rémi Gau`_).
 
 - Make return key names in the description file of destrieux surface consistent with :func:`~datasets.fetch_atlas_surf_destrieux` (:gh:`3774` by `Tarun Samanta`_).
+
+- Add ``LassoCV`` as a new estimator option for Decoder objects (:gh: `3781` by `Michelle Wang`_)
 
 Changes
 -------

@@ -3,11 +3,8 @@
 import json
 import os
 
-import matplotlib
 from matplotlib import colors, patches, transforms
 from matplotlib.path import Path
-
-from nilearn._utils import _compare_version
 
 
 def _codes_bezier(pts):
@@ -160,10 +157,7 @@ def plot_brain_schematics(ax, direction, **kwargs):
         Useful for the caller to be able to set axes limits.
 
     """
-    if _compare_version(matplotlib.__version__, '>=', "2.0"):
-        get_axis_bg_color = ax.get_facecolor()
-    else:
-        get_axis_bg_color = ax.get_axis_bgcolor()
+    get_axis_bg_color = ax.get_facecolor()
 
     black_bg = colors.colorConverter.to_rgba(get_axis_bg_color) \
         == colors.colorConverter.to_rgba('k')

@@ -20,6 +20,7 @@ jobs:
   # Make citation metadata from CITATION.cff is valid.
   # as it is used in the documentation build.
     validate_cff:
+        if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
         steps:
         -   uses: actions/checkout@v3
