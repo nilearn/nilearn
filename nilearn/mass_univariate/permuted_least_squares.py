@@ -1115,7 +1115,7 @@ def _remove_all_intercepts_from_confounds(confounding_vars):
     """
     # remove all constant columns
     if confounding_vars is None:
-        return (None, 0)
+        return None
 
     constants = _find_intercept_columns(confounding_vars)
     confounding_vars = np.delete(confounding_vars, constants, axis=1)
