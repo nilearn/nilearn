@@ -94,14 +94,21 @@ AFFINE_MNI = np.array(
 @pytest.fixture()
 def affine_mni():
     """Return an affine corresponding to 2mm isotropic MNI template."""
-    return AFFINE_MNI
+    return np.array(
+        [
+            [2.0, 0.0, 0.0, -98.0],
+            [0.0, 2.0, 0.0, -134.0],
+            [0.0, 0.0, 2.0, -72.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ]
+    )
 
 
 AFFINE_EYE = np.eye(4)
 
 
 def _affine_eye():
-    return AFFINE_EYE
+    return np.eye(4)
 
 
 @pytest.fixture()
@@ -116,7 +123,7 @@ SHAPE_3D_DEFAULT = (10, 10, 10)
 
 
 def _shape_3d_default():
-    return SHAPE_3D_DEFAULT
+    return (10, 10, 10)
 
 
 @pytest.fixture()
@@ -128,10 +135,14 @@ def shape_3d_default():
 SHAPE_4D_DEFAULT = (10, 10, 10, 10)
 
 
+def _shape_4d_default():
+    return (10, 10, 10, 10)
+
+
 @pytest.fixture()
 def shape_4d_default():
     """Return default shape for a 4D image."""
-    return SHAPE_4D_DEFAULT
+    return _shape_4d_default()
 
 
 def _img_zeros(shape, affine):

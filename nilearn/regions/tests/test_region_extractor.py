@@ -271,9 +271,9 @@ def test_region_extractor_high_resolution_image(affine_eye):
     assert extract_ratio.regions_img_.shape[-1] >= 9
 
 
-def test_region_extractor_zeros_affine_diagonal():
+def test_region_extractor_zeros_affine_diagonal(affine_eye):
     n_regions = 9
-    affine = np.eye(4)
+    affine = affine_eye
     affine[[0, 1]] = affine[[1, 0]]  # permutes first and second lines
     maps, _ = generate_maps(
         shape=[40, 40, 40], n_regions=n_regions, affine=affine
