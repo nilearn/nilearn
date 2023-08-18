@@ -6,7 +6,6 @@ in the neighborhood of each location of a domain."""
 #           Alexandre Gramfort (alexandre.gramfort@inria.fr)
 #           Philippe Gervais (philippe.gervais@inria.fr)
 #
-# License: simplified BSD
 
 import sys
 import time

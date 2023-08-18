@@ -189,12 +189,12 @@ def test_standardization():
     img = nibabel.Nifti1Image(data, np.eye(4))
 
     # test zscore
-    masker = NiftiSpheresMasker([(1, 1, 1)], standardize="zscore")
+    masker = NiftiSpheresMasker([(1, 1, 1)], standardize="zscore_sample")
     # Test the fit
     s = masker.fit_transform(img)
 
     np.testing.assert_almost_equal(s.mean(), 0)
-    np.testing.assert_almost_equal(s.std(), 1)
+    np.testing.assert_almost_equal(s.std(), 1, decimal=1)
 
     # test psc
     masker = NiftiSpheresMasker([(1, 1, 1)], standardize="psc")

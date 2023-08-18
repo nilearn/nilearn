@@ -227,7 +227,7 @@ display.title("Glass brain with black background and filled in contours")
 
 display = plot_glass_brain(None, display_mode="lr")
 display.add_contours(stat_img, levels=[3.0], colors="r")
-display.title('"stat_img" on glass brain only "l" "r" hemispheres')
+display.title('"stat_img" on glass brain only\n"l" "r" hemispheres')
 
 
 ##############################################################################
@@ -235,7 +235,7 @@ display.title('"stat_img" on glass brain only "l" "r" hemispheres')
 
 display = plot_glass_brain(None, display_mode="lr")
 display.add_contours(stat_img, filled=True, levels=[3.0], colors="r")
-display.title('Filled contours on glass brain only "l" "r" hemispheres')
+display.title('Filled contours on glass brain only\n"l" "r" hemispheres')
 
 
 ##############################################################################

@@ -1,7 +1,6 @@
 """Test the multi_nifti_masker module."""
 
 # Author: Gael Varoquaux, Ana Luisa Pinho
-# License: simplified BSD
 import shutil
 from tempfile import mkdtemp
 
@@ -25,13 +24,13 @@ def test_auto_mask():
     masker = MultiNiftiMasker(mask_args=dict(opening=0))
     # Check that if we have not fit the masker we get a intelligible
     # error
-    pytest.raises(
-        ValueError,
-        masker.transform,
-        [[img]],
-    )
+    with pytest.raises(ValueError):
+        masker.transform(
+            [[img]],
+        )
     # Check error return due to bad data format
-    pytest.raises(ValueError, masker.fit, img)
+    with pytest.raises(ValueError):
+        masker.fit(img)
     # Smoke test the fit
     masker.fit([[img]])
 
@@ -242,12 +241,12 @@ def test_standardization():
     mask = Nifti1Image(np.ones(data_shape), np.eye(4))
 
     # z-score
-    masker = MultiNiftiMasker(mask, standardize="zscore")
+    masker = MultiNiftiMasker(mask, standardize="zscore_sample")
     trans_signals = masker.fit_transform([img1, img2])
 
     for ts in trans_signals:
         np.testing.assert_almost_equal(ts.mean(0), 0)
-        np.testing.assert_almost_equal(ts.std(0), 1)
+        np.testing.assert_almost_equal(ts.std(0), 1, decimal=3)
 
     # psc
     masker = MultiNiftiMasker(mask, standardize="psc")

@@ -116,7 +116,7 @@ def plot_slices(data, title=None):
         hspace=0.05, wspace=0.05, left=0.03, right=0.97, top=0.9
     )
     if title is not None:
-        plt.suptitle(title, y=0.95)
+        plt.suptitle(title)
 
 
 ###############################################################################

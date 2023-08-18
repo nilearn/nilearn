@@ -1,6 +1,5 @@
 """Mixin for cache with joblib."""
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
-# License: simplified BSD
 
 import os
 import warnings

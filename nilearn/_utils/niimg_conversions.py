@@ -4,7 +4,6 @@ import itertools
 import os.path
 
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
-# License: simplified BSD
 import warnings
 
 import numpy as np

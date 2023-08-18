@@ -1,6 +1,5 @@
 """Test the searchlight module."""
 # Author: Alexandre Abraham
-# License: simplified BSD
 
 import numpy as np
 from nibabel import Nifti1Image

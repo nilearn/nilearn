@@ -1,6 +1,5 @@
 """Utilities for testing nilearn."""
 # Author: Alexandre Abraham, Philippe Gervais
-# License: simplified BSD
 import contextlib
 import functools
 import gc
@@ -11,9 +10,6 @@ import warnings
 from pathlib import Path
 
 import pytest
-import sklearn
-
-from nilearn._utils import _compare_version
 
 # we use memory_profiler library for memory consumption checks
 try:
@@ -57,15 +53,8 @@ def check_deprecation(func, match=None):
 
     @functools.wraps(func)
     def wrapped(*args, **kwargs):
-        # --- CAN BE REMOVED --- #
-        if _compare_version(sklearn.__version__, "<", "0.22"):
-            with pytest.deprecated_call():
-                result = func(*args, **kwargs)
-        # --- CAN BE REMOVED --- #
-
-        else:
-            with pytest.warns(FutureWarning, match=match):
-                result = func(*args, **kwargs)
+        with pytest.warns(FutureWarning, match=match):
+            result = func(*args, **kwargs)
         return result
 
     return wrapped

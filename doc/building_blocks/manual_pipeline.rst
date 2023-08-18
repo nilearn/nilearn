@@ -32,21 +32,27 @@ which downloads a dataset and returns a bunch of paths to the dataset
 files (more details in :ref:`loading_data`). We can then proceed
 loading them as if they were just any other files on our disk. For
 example, we can download the data from the
-`Haxby 2001 paper <http://dx.doi.org/10.1126/science.1063736>`_ ::
+`Haxby 2001 paper <http://dx.doi.org/10.1126/science.1063736>`_ :
 
-    >>> from nilearn import datasets
-    >>> dataset = datasets.fetch_haxby() # doctest: +SKIP
+.. code-block:: default
 
-`dataset.func` contains filenames referring to dataset files on the disk::
+     from nilearn import datasets
+     dataset = datasets.fetch_haxby()
 
-  >>> list(sorted(dataset.keys())) # doctest: +SKIP
-  ['anat', 'description', 'func', 'mask', 'mask_face', 'mask_face_little', 'mask_house', 'mask_house_little', 'mask_vt', 'session_target']
-  >>> dataset.func # doctest: +ELLIPSIS +SKIP
-  ['.../haxby2001/subj2/bold.nii.gz']
+`dataset.func` contains filenames referring to dataset files on the disk:
+
+.. code-block:: default
+
+     list(sorted(dataset.keys()))
+     # ['anat', 'description', 'func', 'mask', 'mask_face', 'mask_face_little', 'mask_house', 'mask_house_little', 'mask_vt', 'session_target']
+     dataset.func
+     # ['.../haxby2001/subj2/bold.nii.gz']
 
 Access supplementary information on the dataset:
 
-  >>> print(haxby_dataset['description']) # doctest: +SKIP
+.. code-block:: default
+
+     print(haxby_dataset['description'])
 
 The complete list of the data-downloading functions can be found in the
 :ref:`reference documentation for the datasets <datasets_ref>`.

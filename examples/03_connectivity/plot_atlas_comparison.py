@@ -72,6 +72,7 @@ from nilearn import plotting
 masker = MultiNiftiLabelsMasker(
     labels_img=yeo["thick_17"],
     standardize="zscore_sample",
+    standardize_confounds="zscore_sample",
     memory="nilearn_cache",
     n_jobs=2,
 )
@@ -156,6 +157,7 @@ from nilearn.maskers import MultiNiftiMapsMasker
 masker = MultiNiftiMapsMasker(
     maps_img=difumo.maps,
     standardize="zscore_sample",
+    standardize_confounds="zscore_sample",
     memory="nilearn_cache",
     n_jobs=2,
 )

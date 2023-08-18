@@ -9,7 +9,6 @@ we approximate the prox using an inner FISTA loop.
 #         VAROQUAUX Gael,
 #         GRAMFORT Alexandre,
 #         THIRION Bertrand
-# License: simplified BSD
 
 from math import sqrt
 

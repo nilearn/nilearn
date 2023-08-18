@@ -6,7 +6,6 @@ not the underlying functions used (e.g. clean()). See test_masking.py and
 test_signal.py for this.
 """
 # Author: Gael Varoquaux, Philippe Gervais
-# License: simplified BSD
 import os
 import shutil
 import warnings
@@ -194,7 +193,8 @@ def test_mask_3d():
 
     with testing.write_tmp_imgs(data_img, create_files=True) as filename:
         masker = NiftiMasker(mask_img=filename)
-        pytest.raises(TypeError, masker.fit)
+        with pytest.raises(TypeError):
+            masker.fit()
 
 
 def test_mask_4d():
@@ -312,7 +312,8 @@ def test_sessions():
     data[20, 20, 20] = 1
     data_img = nibabel.Nifti1Image(data, np.eye(4))
     masker = NiftiMasker(runs=np.ones(3, dtype=int))
-    pytest.raises(ValueError, masker.fit_transform, data_img)
+    with pytest.raises(ValueError):
+        masker.fit_transform(data_img)
 
 
 def test_joblib_cache():
@@ -506,11 +507,11 @@ def test_standardization():
     mask = nibabel.Nifti1Image(np.ones(data_shape), np.eye(4))
 
     # z-score
-    masker = NiftiMasker(mask, standardize="zscore")
+    masker = NiftiMasker(mask, standardize="zscore_sample")
     trans_signals = masker.fit_transform(img)
 
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)
-    np.testing.assert_almost_equal(trans_signals.std(0), 1)
+    np.testing.assert_almost_equal(trans_signals.std(0), 1, decimal=3)
 
     # psc
     masker = NiftiMasker(mask, standardize="psc")

@@ -1,14 +1,13 @@
 import collections
 import numbers
 
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.transforms import Bbox
 
-from nilearn._utils import _compare_version, check_niimg_3d
+from nilearn._utils import check_niimg_3d
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.niimg import _is_binary_niimg, _safe_get_data
 from nilearn.image import get_data, new_img_like, reorder_img
@@ -462,13 +461,9 @@ class BaseSlicer:
         ims = []
         to_iterate_over = zip(self.axes.values(), data_2d_list)
         for display_ax, data_2d in to_iterate_over:
-            if data_2d is not None and data_2d.min() is not np.ma.masked:
+            if data_2d is not None:
                 # If data_2d is completely masked, then there is nothing to
-                # plot. Hence, no point to do imshow(). Moreover, we see
-                # problem came up with matplotlib 2.1.0 (issue #9280) when
-                # data is completely masked or with numpy < 1.14
-                # (issue #4595). This work around can be removed when bumping
-                # matplotlib version above 2.1.0
+                # plot. Hence, no point to do imshow().
                 im = display_ax.draw_2d(
                     data_2d, data_bounds, bounding_box, type=type, **kwargs
                 )
@@ -523,10 +518,7 @@ class BaseSlicer:
             - (self._colorbar_margin["top"] + self._colorbar_margin["bottom"]),
         ]
         self._colorbar_ax = figure.add_axes(lt_wid_top_ht)
-        if _compare_version(matplotlib.__version__, ">=", "1.6"):
-            self._colorbar_ax.set_facecolor("w")
-        else:
-            self._colorbar_ax.set_axis_bgcolor("w")
+        self._colorbar_ax.set_facecolor("w")
 
         our_cmap = plt.get_cmap(cmap)
         # edge case where the data has a single value
@@ -850,6 +842,7 @@ class OrthoSlicer(BaseSlicer):
 
     _cut_displayed = "yxz"
     _axes_class = CutAxes
+    _default_figsize = [2.2, 3.5]
 
     @fill_doc
     @classmethod
@@ -901,10 +894,7 @@ class OrthoSlicer(BaseSlicer):
                 [0.3 * index * (x1 - x0) + x0, y0, 0.3 * (x1 - x0), y1 - y0],
                 aspect="equal",
             )
-            if _compare_version(matplotlib.__version__, ">=", "1.6"):
-                ax.set_facecolor(facecolor)
-            else:
-                ax.set_axis_bgcolor(facecolor)
+            ax.set_facecolor(facecolor)
 
             ax.axis("off")
             coord = self.cut_coords[
@@ -1079,7 +1069,7 @@ class TiledSlicer(BaseSlicer):
 
     _cut_displayed = "yxz"
     _axes_class = CutAxes
-    _default_figsize = [2.0, 6.0]
+    _default_figsize = [2.0, 7.6]
 
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
@@ -1172,10 +1162,7 @@ class TiledSlicer(BaseSlicer):
             axes_coords = self._find_initial_axes_coord(index)
             ax = fh.add_axes(axes_coords, aspect="equal")
 
-            if _compare_version(matplotlib.__version__, ">=", "1.6"):
-                ax.set_facecolor(facecolor)
-            else:
-                ax.set_axis_bgcolor(facecolor)
+            ax.set_facecolor(facecolor)
 
             ax.axis("off")
             coord = self.cut_coords[
@@ -1624,7 +1611,7 @@ class YSlicer(BaseStackedSlicer):
     """
 
     _direction = "y"
-    _default_figsize = [2.2, 2.3]
+    _default_figsize = [2.2, 3.0]
 
 
 class ZSlicer(BaseStackedSlicer):
@@ -1662,7 +1649,7 @@ class ZSlicer(BaseStackedSlicer):
     """
 
     _direction = "z"
-    _default_figsize = [2.2, 2.3]
+    _default_figsize = [2.2, 3.2]
 
 
 class XZSlicer(OrthoSlicer):
@@ -1774,6 +1761,7 @@ class YZSlicer(OrthoSlicer):
     """
 
     _cut_displayed = "yz"
+    _default_figsize = [2.2, 3.0]
 
 
 class MosaicSlicer(BaseSlicer):
@@ -1816,7 +1804,7 @@ class MosaicSlicer(BaseSlicer):
 
     _cut_displayed = "yxz"
     _axes_class = CutAxes
-    _default_figsize = [11.1, 7.2]
+    _default_figsize = [11.1, 20.0]
 
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):

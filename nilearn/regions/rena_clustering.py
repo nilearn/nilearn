@@ -3,7 +3,6 @@
 Fastclustering for approximation of structured signals
 """
 # Author: Andres Hoyos idrobo, Gael Varoquaux, Jonas Kahn and  Bertrand Thirion
-# License: simplified BSD
 
 import warnings
 
@@ -443,7 +442,9 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
     Parameters
     ----------
-    %(mask_img)s
+    mask_img : Niimg-like object
+        Object used for masking the data.
+
     n_clusters : :obj:`int`, optional
         The number of clusters to find. Default=2.
 

@@ -75,19 +75,23 @@ def test_nifti_maps_masker():
             labels11, mask12 = images
             masker11 = NiftiMapsMasker(labels11, resampling_target=None)
             masker11.fit()
-            pytest.raises(ValueError, masker11.transform, fmri12_img)
-            pytest.raises(ValueError, masker11.transform, fmri21_img)
+            with pytest.raises(ValueError):
+                masker11.transform(fmri12_img)
+            with pytest.raises(ValueError):
+                masker11.transform(fmri21_img)
 
             masker11 = NiftiMapsMasker(
                 labels11, mask_img=mask12, resampling_target=None
             )
-            pytest.raises(ValueError, masker11.fit)
+            with pytest.raises(ValueError):
+                masker11.fit()
             del masker11
 
     masker11 = NiftiMapsMasker(
         labels11_img, mask_img=mask21_img, resampling_target=None
     )
-    pytest.raises(ValueError, masker11.fit)
+    with pytest.raises(ValueError):
+        masker11.fit()
 
     # Transform, with smoothing (smoke test)
     masker11 = NiftiMapsMasker(
@@ -365,12 +369,10 @@ def test_nifti_maps_masker_2():
         masker.fit()
 
     # Test error checking
-    pytest.raises(
-        ValueError, NiftiMapsMasker, maps33_img, resampling_target="mask"
-    )
-    pytest.raises(
-        ValueError, NiftiMapsMasker, maps33_img, resampling_target="invalid"
-    )
+    with pytest.raises(ValueError):
+        NiftiMapsMasker(maps33_img, resampling_target="mask")
+    with pytest.raises(ValueError):
+        NiftiMapsMasker(maps33_img, resampling_target="invalid")
 
     # Target: mask
     masker = NiftiMapsMasker(
@@ -527,11 +529,11 @@ def test_standardization():
     unstandarized_label_signals = masker.fit_transform(img)
 
     # z-score
-    masker = NiftiMapsMasker(maps, standardize="zscore")
+    masker = NiftiMapsMasker(maps, standardize="zscore_sample")
     trans_signals = masker.fit_transform(img)
 
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)
-    np.testing.assert_almost_equal(trans_signals.std(0), 1)
+    np.testing.assert_almost_equal(trans_signals.std(0), 1, decimal=3)
 
     # psc
     masker = NiftiMapsMasker(maps, standardize="psc")

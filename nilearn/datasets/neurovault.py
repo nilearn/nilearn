@@ -2,7 +2,6 @@
 on Neurovault (http://neurovault.org)."""
 
 # Author: Jerome Dockes
-# License: simplified BSD
 
 import json
 import os

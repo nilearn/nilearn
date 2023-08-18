@@ -2,6 +2,7 @@
 import itertools
 import math
 from collections.abc import Sequence
+from warnings import warn
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -460,6 +461,13 @@ def _compute_facecolors_matplotlib(bg_map, faces, n_vertices,
 
     if darkness is not None:
         bg_faces *= darkness
+        warn(
+            (
+                "The `darkness` parameter will be deprecated in release 0.13. "
+                "We recommend setting `darkness` to None"
+            ),
+            DeprecationWarning,
+        )
 
     face_colors = plt.cm.gray_r(bg_faces)
 
@@ -550,7 +558,7 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
 
     # plot mesh without data
     p3dcollec = axes.plot_trisurf(coords[:, 0], coords[:, 1], coords[:, 2],
-                                  triangles=faces, linewidth=0.,
+                                  triangles=faces, linewidth=0.1,
                                   antialiased=False,
                                   color='white')
 
@@ -600,6 +608,7 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
                 format=cbar_tick_format, orientation='vertical')
 
         p3dcollec.set_facecolors(face_colors)
+        p3dcollec.set_edgecolors(face_colors)
 
     if title is not None:
         axes.set_title(title)
@@ -711,7 +720,6 @@ def plot_surf(surf_mesh, surf_map=None, bg_map=None,
             ``matplotlib`` engine.
 
     %(bg_on_data)s
-        Default=False.
 
     %(darkness)s
         Default=1.
@@ -1065,7 +1073,6 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     %(symmetric_cbar)s
         Default='auto'.
     %(bg_on_data)s
-        Default=False.
 
     %(darkness)s
         Default=1.
@@ -1291,9 +1298,9 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         If ``None``, don't apply any mask.
 
     %(bg_on_data)s
-        Default=False.
 
-    %(hemispheres)s
+    hemispheres : :obj:`list` of :obj:`str`, default=["left", "right"]
+        Hemispheres to display.
 
     inflate : bool, optional
         If True, display images in inflated brain.
@@ -1506,7 +1513,6 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
             ``matplotlib`` engine.
 
     %(bg_on_data)s
-        Default=False.
 
     %(darkness)s
         Default=1.

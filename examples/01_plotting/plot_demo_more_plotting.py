@@ -114,9 +114,11 @@ plotting.plot_stat_map(stat_img, display_mode='x',
 # :class:`~nilearn.plotting.displays.YSlicer` object.
 # ``cut_coords`` is provided as an integer (1), and the coordinates are,
 # again, selected automatically.
+import matplotlib.pyplot as plt
 
 plotting.plot_stat_map(stat_img, display_mode='y', cut_coords=1,
-                       title="display_mode='y', cut_coords=1")
+                       title="display_mode='y', cut_coords=1",
+                       figure=plt.figure(figsize=(5, 4)))
 
 ###############################################################################
 # Visualizing without a colorbar on the right side
@@ -127,7 +129,8 @@ plotting.plot_stat_map(stat_img, display_mode='y', cut_coords=1,
 
 plotting.plot_stat_map(stat_img, display_mode='z',
                        cut_coords=1, colorbar=False,
-                       title="display_mode='z', cut_coords=1, colorbar=False")
+                       title="display_mode='z', cut_coords=1,\ncolorbar=False",
+                       figure=plt.figure(figsize=(5, 7)))
 
 ###############################################################################
 # Visualize in - two views 'sagittal' and 'axial' with given coordinates

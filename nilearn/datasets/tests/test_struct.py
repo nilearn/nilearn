@@ -1,7 +1,6 @@
 """Test the datasets module."""
 
 # Authors: Alexandre Abraham, Ana Luisa Pinho
-# License: simplified BSD
 
 import os
 import shutil

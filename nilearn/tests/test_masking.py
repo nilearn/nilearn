@@ -10,7 +10,6 @@ from sklearn.preprocessing import StandardScaler
 from nilearn import masking
 
 # Authors: Ana Luisa Pinho, Jerome Dockes, NicolasGensollen
-# License: simplified BSD
 from nilearn._utils import data_gen
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_tmp_imgs
@@ -57,7 +56,9 @@ def _cov_conf(tseries, conf):
     return cov_mat
 
 
-def _confounds_regression(standardize_signal=True, standardize_confounds=True):
+def _confounds_regression(
+        standardize_signal="zscore_sample", standardize_confounds=True
+):
     img, mask, conf = _simu_img()
     masker = NiftiMasker(standardize=standardize_signal,
                          standardize_confounds=standardize_confounds,
@@ -73,11 +74,11 @@ def _confounds_regression(standardize_signal=True, standardize_confounds=True):
 def test_high_variance_confounds():
     img, mask, conf = _simu_img()
     hv_confounds = high_variance_confounds(img)
-    masker1 = NiftiMasker(standardize=True, detrend=False,
+    masker1 = NiftiMasker(standardize="zscore_sample", detrend=False,
                           high_variance_confounds=False,
                           mask_img=mask).fit()
     tseries1 = masker1.transform(img, confounds=[hv_confounds, conf])
-    masker2 = NiftiMasker(standardize=True, detrend=False,
+    masker2 = NiftiMasker(standardize="zscore_sample", detrend=False,
                           high_variance_confounds=True,
                           mask_img=mask).fit()
     tseries2 = masker2.transform(img, confounds=conf)
@@ -98,12 +99,7 @@ def test_confounds_standardization():
 
     # Signal is z-scored with string arg
     # Explicit standardization of confounds
-    assert (_confounds_regression(standardize_signal='zscore',
-                                  standardize_confounds=True) < eps)
-
-    # Signal is z-scored with boolean arg
-    # Explicit standardization of confounds
-    assert (_confounds_regression(standardize_signal=True,
+    assert (_confounds_regression(standardize_signal='zscore_sample',
                                   standardize_confounds=True) < eps)
 
     # Signal is psc standardized
@@ -120,7 +116,7 @@ def test_confounds_standardization():
     # Signal is z-scored with string arg
     # Confounds are not standardized
     # In this case, the regression should fail...
-    assert (_confounds_regression(standardize_signal='zscore',
+    assert (_confounds_regression(standardize_signal='zscore_sample',
                                   standardize_confounds=False) > 100)
 
     # Signal is psc standardized
@@ -159,7 +155,8 @@ def test_compute_epi_mask():
     mean_image[3:-3, 3:-3] = 10
     mean_image[5, 5] = 100
     mean_image = Nifti1Image(mean_image, np.eye(4))
-    pytest.raises(ValueError, compute_epi_mask, mean_image)
+    with pytest.raises(ValueError):
+        compute_epi_mask(mean_image)
 
     # Check that we get a useful warning for empty masks
     mean_image = np.zeros((9, 9, 9))
@@ -186,7 +183,8 @@ def test_compute_background_mask():
     mean_image[3:-3, 3:-3] = 10
     mean_image[5, 5] = 100
     mean_image = Nifti1Image(mean_image, np.eye(4))
-    pytest.raises(ValueError, compute_background_mask, mean_image)
+    with pytest.raises(ValueError):
+        compute_background_mask(mean_image)
 
     # Check that we get a useful warning for empty masks
     mean_image = np.zeros((9, 9, 9))
@@ -280,20 +278,19 @@ def test_apply_mask():
 
     # Check data shape and affine
     with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG % "2D"):
-        masking.apply_mask(data_img,
-                           Nifti1Image(mask[20, ...], affine))
-    pytest.raises(ValueError, masking.apply_mask,
-                  data_img, Nifti1Image(mask, affine / 2.))
+        masking.apply_mask(data_img, Nifti1Image(mask[20, ...], affine))
+    with pytest.raises(ValueError):
+        masking.apply_mask(data_img, Nifti1Image(mask, affine / 2.))
     # Check that full masking raises error
-    pytest.raises(ValueError, masking.apply_mask,
-                  data_img, full_mask_img)
+    with pytest.raises(ValueError):
+        masking.apply_mask(data_img, full_mask_img)
     # Check weird values in data
     mask[10, 10, 10] = 2
-    pytest.raises(ValueError, masking.apply_mask,
-                  data_img, Nifti1Image(mask, affine))
+    with pytest.raises(ValueError):
+        masking.apply_mask(data_img, Nifti1Image(mask, affine))
     mask[15, 15, 15] = 3
-    pytest.raises(ValueError, masking.apply_mask,
-                  Nifti1Image(data, affine), mask_img)
+    with pytest.raises(ValueError):
+        masking.apply_mask(Nifti1Image(data, affine), mask_img)
 
 
 def test_unmask():
@@ -345,12 +342,16 @@ def test_unmask():
 
     # Error test: shape
     vec_1D = np.empty((500,), dtype=int)
-    pytest.raises(TypeError, unmask, vec_1D, mask_img)
-    pytest.raises(TypeError, unmask, [vec_1D], mask_img)
+    with pytest.raises(TypeError):
+        unmask(vec_1D, mask_img)
+    with pytest.raises(TypeError):
+        unmask([vec_1D], mask_img)
 
     vec_2D = np.empty((500, 500), dtype=np.float64)
-    pytest.raises(TypeError, unmask, vec_2D, mask_img)
-    pytest.raises(TypeError, unmask, [vec_2D], mask_img)
+    with pytest.raises(TypeError):
+        unmask(vec_2D, mask_img)
+    with pytest.raises(TypeError):
+        unmask([vec_2D], mask_img)
 
     # Error test: mask type
     with pytest.raises(TypeError, match='mask must be a boolean array'):
@@ -487,7 +488,8 @@ def test_intersect_masks():
 
 def test_compute_multi_epi_mask():
     # Check that an empty list of images creates a meaningful error
-    pytest.raises(TypeError, compute_multi_epi_mask, [])
+    with pytest.raises(TypeError):
+        compute_multi_epi_mask([])
     # As it calls intersect_masks, we only test resampling here.
     # Same masks as test_intersect_masks
     mask_a = np.zeros((4, 4, 1), dtype=bool)
@@ -500,8 +502,8 @@ def test_compute_multi_epi_mask():
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", MaskWarning)
-        pytest.raises(ValueError, compute_multi_epi_mask,
-                      [mask_a_img, mask_b_img])
+        with pytest.raises(ValueError):
+            compute_multi_epi_mask([mask_a_img, mask_b_img])
     mask_ab = np.zeros((4, 4, 1), dtype=bool)
     mask_ab[2, 2] = 1
     mask_ab_ = compute_multi_epi_mask([mask_a_img, mask_b_img], threshold=1.,
@@ -512,12 +514,14 @@ def test_compute_multi_epi_mask():
 
 
 def test_compute_multi_brain_mask():
-    pytest.raises(TypeError, compute_multi_brain_mask, [])
+    with pytest.raises(TypeError):
+        compute_multi_brain_mask([])
 
     # Check error raised if images with different shapes are given as input
     imgs = [data_gen.generate_mni_space_img(res=8, random_state=0)[0],
             data_gen.generate_mni_space_img(res=12, random_state=0)[0]]
-    pytest.raises(ValueError, compute_multi_brain_mask, imgs)
+    with pytest.raises(ValueError):
+        compute_multi_brain_mask(imgs)
 
     # Check results are the same if affine is the same
     imgs1 = [data_gen.generate_mni_space_img(res=9, random_state=0)[0],
@@ -544,11 +548,13 @@ def test_error_shape(random_state=42, shape=(3, 5, 7, 11)):
 
     X = rng.standard_normal(size=(n_samples, n_features, 2))
     # 3D X (unmask should raise a TypeError)
-    pytest.raises(TypeError, unmask, X, mask_img)
+    with pytest.raises(TypeError):
+        unmask(X, mask_img)
 
     X = rng.standard_normal(size=(n_samples, n_features))
     # Raises an error because the mask is 4D
-    pytest.raises(TypeError, unmask, X, mask_img)
+    with pytest.raises(TypeError):
+        unmask(X, mask_img)
 
 
 def test_nifti_masker_empty_mask_warning():

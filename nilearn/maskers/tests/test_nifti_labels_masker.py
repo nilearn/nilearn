@@ -97,18 +97,22 @@ def test_nifti_labels_masker():
     # Test all kinds of mismatch between shapes and between affines
     masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
     masker11.fit()
-    pytest.raises(ValueError, masker11.transform, fmri12_img)
-    pytest.raises(ValueError, masker11.transform, fmri21_img)
+    with pytest.raises(ValueError):
+        masker11.transform(fmri12_img)
+    with pytest.raises(ValueError):
+        masker11.transform(fmri21_img)
 
     masker11 = NiftiLabelsMasker(
         labels11_img, mask_img=mask12_img, resampling_target=None
     )
-    pytest.raises(ValueError, masker11.fit)
+    with pytest.raises(ValueError):
+        masker11.fit()
 
     masker11 = NiftiLabelsMasker(
         labels11_img, mask_img=mask21_img, resampling_target=None
     )
-    pytest.raises(ValueError, masker11.fit)
+    with pytest.raises(ValueError):
+        masker11.fit()
 
     # Transform, with smoothing (smoke test)
     masker11 = NiftiLabelsMasker(
@@ -372,15 +376,13 @@ def test_nifti_labels_masker_resampling():
     )
 
     # Test error checking
-    pytest.raises(
-        ValueError, NiftiLabelsMasker, labels33_img, resampling_target="mask"
-    )
-    pytest.raises(
-        ValueError,
-        NiftiLabelsMasker,
-        labels33_img,
-        resampling_target="invalid",
-    )
+    with pytest.raises(ValueError):
+        NiftiLabelsMasker(labels33_img, resampling_target="mask")
+    with pytest.raises(ValueError):
+        NiftiLabelsMasker(
+            labels33_img,
+            resampling_target="invalid",
+        )
 
     # Target: labels
     masker = NiftiLabelsMasker(
@@ -543,11 +545,11 @@ def test_standardization():
     unstandarized_label_signals = masker.fit_transform(img)
 
     # z-score
-    masker = NiftiLabelsMasker(labels, standardize="zscore")
+    masker = NiftiLabelsMasker(labels, standardize="zscore_sample")
     trans_signals = masker.fit_transform(img)
 
     np.testing.assert_almost_equal(trans_signals.mean(0), 0)
-    np.testing.assert_almost_equal(trans_signals.std(0), 1)
+    np.testing.assert_almost_equal(trans_signals.std(0), 1, decimal=3)
 
     # psc
     masker = NiftiLabelsMasker(labels, standardize="psc")

@@ -14,7 +14,6 @@ Order of tests from top to bottom:
 #         Binh Nguyen
 #         Thomas Bazeiile
 #
-# License: simplified BSD
 
 import collections
 import numbers
@@ -29,6 +28,7 @@ from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import (
+    LassoCV,
     LogisticRegressionCV,
     RidgeClassifierCV,
     RidgeCV,
@@ -141,7 +141,12 @@ def multiclass_data():
 
 
 @pytest.mark.parametrize(
-    "regressor, param", [(RidgeCV(), ["alphas"]), (SVR(kernel="linear"), "C")]
+    "regressor, param",
+    [
+        (RidgeCV(), ["alphas"]),
+        (SVR(kernel="linear"), ["C"]),
+        (LassoCV(), ["n_alphas"]),
+    ],
 )
 def test_check_param_grid_regression(regressor, param):
     """Test several estimators.
@@ -415,6 +420,7 @@ def test_parallel_fit(rand_X_Y):
         (RidgeCV(), "alphas", "best_alpha", False),
         (RidgeClassifierCV(), "alphas", "best_alpha", True),
         (LogisticRegressionCV(), "Cs", "best_C", True),
+        (LassoCV(), "alphas", "best_alpha", False),
     ],
 )
 def test_parallel_fit_builtin_cv(
@@ -566,7 +572,9 @@ def test_decoder_binary_classification_cross_validation(
     # check cross-validation scheme and fit attribute with groups enabled
     rand_local = np.random.RandomState(42)
 
-    model = Decoder(estimator="svc", mask=mask, standardize=True, cv=cv)
+    model = Decoder(
+        estimator="svc", mask=mask, standardize="zscore_sample", cv=cv
+    )
     groups = None
     if isinstance(cv, LeaveOneGroupOut):
         groups = rand_local.binomial(2, 0.3, size=len(y))
@@ -888,7 +896,9 @@ def test_decoder_multiclass_classification_cross_validation(
     # check cross-validation scheme and fit attribute with groups enabled
     rand_local = np.random.RandomState(42)
 
-    model = Decoder(estimator="svc", mask=mask, standardize=True, cv=cv)
+    model = Decoder(
+        estimator="svc", mask=mask, standardize="zscore_sample", cv=cv
+    )
     groups = None
     if isinstance(cv, LeaveOneGroupOut):
         groups = rand_local.binomial(2, 0.3, size=len(y))

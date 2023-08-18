@@ -219,7 +219,7 @@ display = plot_stat_map(
 title = (
     "Negative $\\log_{10}$ p-values" "\n(Non-parametric + max-type correction)"
 )
-display.title(title, y=1.2)
+display.title(title)
 
 n_detections = (get_data(signed_neg_log_pvals_unmasked) > threshold).sum()
 print(f"\n{int(n_detections)} detections")

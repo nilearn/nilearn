@@ -4,7 +4,6 @@
 #         VAROQUAUX Gael,
 #         GRAMFORT Alexandre,
 #         PEDREGOSA Fabian
-# License: simplified BSD
 
 from functools import partial
 

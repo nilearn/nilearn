@@ -64,7 +64,7 @@ from matplotlib.patches import Rectangle
 p_v = Rectangle((0, 0), 1, 1, fc="red")
 p_h = Rectangle((0, 0), 1, 1, fc="blue")
 p_f = Rectangle((0, 0), 1, 1, fc="limegreen")
-plt.legend([p_v, p_h, p_f], ["vt", "house", "face"])
+plt.legend([p_v, p_h, p_f], ["vt", "house", "face"], loc="lower right")
 
 show()
 

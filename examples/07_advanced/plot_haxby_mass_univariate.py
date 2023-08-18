@@ -176,7 +176,7 @@ title = (
     f"\n{n_detections} detections"
 )
 
-display.title(title, y=1.1)
+display.title(title, size=10)
 
 # Plot permutation p-values map
 display = plot_stat_map(
@@ -197,7 +197,7 @@ title = (
     f"\n{n_detections} detections"
 )
 
-display.title(title, y=1.1)
+display.title(title, size=10)
 
 show()
 
