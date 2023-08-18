@@ -619,6 +619,16 @@ def permuted_ols(
         masker,
     )
 
+    # make target_vars F-ordered to speed-up computation
+    n_descriptors = target_vars.shape[1]
+    target_vars = np.asfortranarray(target_vars)  # efficient for chunking
+    if np.any(np.all(target_vars == 0, axis=0)):
+        warnings.warn(
+            "Some descriptors in 'target_vars' have zeros across all samples. "
+            "These descriptors will be ignored during null distribution "
+            "generation."
+        )
+
     tested_var_has_intercept = _check_for_intercept_in_tested_var(tested_vars)
 
     (
@@ -665,8 +675,6 @@ def permuted_ols(
             out["tfce"] = tfce_original_data.T
 
         return out
-
-    n_descriptors = target_vars.shape[1]
 
     # Permutations
     # parallel computing units perform a reduced number of permutations each
@@ -907,15 +915,6 @@ def _check_args_permuted_ols(
         tested_vars,
         confounding_vars,
     )
-
-    target_vars = np.asfortranarray(target_vars)  # efficient for chunking
-
-    if np.any(np.all(target_vars == 0, axis=0)):
-        warnings.warn(
-            "Some descriptors in 'target_vars' have zeros across all samples. "
-            "These descriptors will be ignored during null distribution "
-            "generation."
-        )
 
     return output_type, n_jobs, tested_vars
 
