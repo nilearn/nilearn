@@ -629,22 +629,42 @@ def permuted_ols(
             "generation."
         )
 
-    tested_var_has_intercept = _check_for_intercept_in_tested_var(tested_vars)
+    tested_var_has_intercept = _intercept_present_in_tested_var(tested_vars)
 
-    (
-        confounding_vars,
-        intercept_test,
-        model_intercept,
-    ) = _check_for_intercept_in_confounds(
-        confounding_vars, tested_var_has_intercept, model_intercept
+    nb_intercept_in_confounds = _return_nb_intercept_in_confounds(
+        confounding_vars
     )
 
-    confounding_vars = _add_intercept_optionally(
-        confounding_vars,
-        model_intercept,
-        intercept_test,
-        n_samples=tested_vars.shape[0],
-    )
+    intercept_test = True
+    if not tested_var_has_intercept and (
+        nb_intercept_in_confounds == 0 or nb_intercept_in_confounds > 1
+    ):
+        intercept_test = False
+
+    # ensure confounding_vars has 1 or 0 intercept
+    if nb_intercept_in_confounds > 1:
+        confounding_vars = _remove_all_intercepts_from_confounds(
+            confounding_vars
+        )
+        nb_intercept_in_confounds = 0
+
+    # ensure we only have one intercept between tested_vars and confuunds
+    if tested_var_has_intercept and nb_intercept_in_confounds == 1:
+        confounding_vars = _remove_all_intercepts_from_confounds(
+            confounding_vars
+        )
+        nb_intercept_in_confounds = 0
+
+    # ensure we have at least one intercept if we need to model intercept
+    if (
+        model_intercept
+        and not tested_var_has_intercept
+        and nb_intercept_in_confounds == 0
+    ):
+        confounding_vars = _add_intercept_to_confounds(
+            confounding_vars, n_samples=tested_vars.shape[0]
+        )
+        nb_intercept_in_confounds = 1
 
     # OLS regression on original data
     # original regression (= regression on residuals + adjust t-score)
@@ -1019,13 +1039,17 @@ def _check_vars_dimensions(
     return tested_vars
 
 
-def _check_for_intercept_in_tested_var(tested_vars):
+def _intercept_present_in_tested_var(tested_vars):
     """Check if explanatory variates contain an intercept (constant) or not.
 
     Parameters
     ----------
     tested_vars : array-like, shape=(n_samples, n_regressors)
         Explanatory variates, fitted and tested independently from each others.
+
+    Returns
+    -------
+    tested_var_has_intercept : :obj:`bool`
     """
     n_regressors = tested_vars.shape[1]
     return (n_regressors == np.unique(tested_vars).size) and (
@@ -1033,73 +1057,60 @@ def _check_for_intercept_in_tested_var(tested_vars):
     )
 
 
-def _check_for_intercept_in_confounds(
-    confounding_vars, tested_var_has_intercept, model_intercept
-):
-    """Check if confounding variates contain an intercept (constant) or not.
-
-    If the tested var has an intercept, only this one is kept
-    and all other intercept are removed from the confounds.
-
-    Parameters
-    ----------
-    confounding_vars : array-like, shape=(n_samples, n_covars)
-        Confounding variates (covariates), fitted but not tested.
-
-    tested_var_has_intercept : :obj:`bool`
-        Whether the tested variate already contains an intercept or not.
-
-    model_intercept : :obj:`bool`
-        If True, a constant column will be added to the confounding variates.
-        This value may be updated if all intercepts were removed.
-
-    """
-    if confounding_vars is None:
-        test_intercept = tested_var_has_intercept
-        return confounding_vars, test_intercept, model_intercept
-
+def _find_intercept_columns(confounding_vars):
     # Search for all constant columns
     constants = [
         column
         for column in range(confounding_vars.shape[1])
         if np.unique(confounding_vars[:, column]).size == 1
     ]
+    return constants
+
+
+def _return_nb_intercept_in_confounds(confounding_vars):
+    """Return the number of intercepts (constant) present in confounding vars.
+
+    Parameters
+    ----------
+    confounding_vars : array-like, shape=(n_samples, n_covars)
+        Confounding variates (covariates), fitted but not tested.
+
+    Returns
+    -------
+    confounds_has_intercept : :obj:`int`
+    """
+    if confounding_vars is None:
+        return 0
     # check if multiple intercepts are defined across all variates
-    if (tested_var_has_intercept and len(constants) == 1) or len(
-        constants
-    ) > 1:
-        # remove all constant columns
-        confounding_vars = np.delete(confounding_vars, constants, axis=1)
-        # warn user if multiple intercepts are found
-        warnings.warn(
-            category=UserWarning,
-            message=(
-                "Multiple columns across 'confounding_vars' and/or "
-                "'target_vars' are constant.\n"
-                "Only one will be used as intercept."
-            ),
-        )
-        # In case tested vars has no intercept,
-        # and len(constants) > 1,
-        # we will need to add an intercept (see _add_intercept_optionally)
-        # because by now have removed all intercepts from confounding_vars.
-        model_intercept = True
-
-        # Remove confounding vars variable if it is empty
-        if confounding_vars.size == 0:
-            confounding_vars = None
-
-    # intercept is only defined in confounding vars
-    if not tested_var_has_intercept and len(constants) == 1:
-        tested_var_has_intercept = True
-
-    test_intercept = tested_var_has_intercept
-    return confounding_vars, test_intercept, model_intercept
+    return len(_find_intercept_columns(confounding_vars))
 
 
-def _add_intercept_optionally(
-    confounding_vars, model_intercept, intercept_test, n_samples
-):
+def _remove_all_intercepts_from_confounds(confounding_vars):
+    """Remove all intercepts (constant) present in confounding vars.
+
+    Parameters
+    ----------
+    confounding_vars : array-like, shape=(n_samples, n_covars)
+        Confounding variates (covariates), fitted but not tested.
+
+    Returns
+    -------
+    confounding_vars : array-like, shape=(n_samples, n_covars) or None
+    """
+    # remove all constant columns
+    if confounding_vars is None:
+        return (None, 0)
+
+    constants = _find_intercept_columns(confounding_vars)
+    confounding_vars = np.delete(confounding_vars, constants, axis=1)
+
+    assert _return_nb_intercept_in_confounds(confounding_vars) == 0
+
+    # Remove confounding vars variable if it is empty
+    return None if confounding_vars.size == 0 else confounding_vars
+
+
+def _add_intercept_to_confounds(confounding_vars, n_samples):
     """Add intercept to confounding variates if necessary.
 
     May be done because:
@@ -1112,23 +1123,18 @@ def _add_intercept_optionally(
     confounding_vars : array-like, shape=(n_samples, n_covars)
         Confounding variates (covariates), fitted but not tested.
 
-    model_intercept : :obj:`bool`
-        If True, a constant column will be added to the confounding variates.
-        This value may be updated if all intercepts were removed.
-
-    intercept_test : :obj:`bool`
-        Whether an intercept is already present.
-
     n_samples : :obj:`int`
         number of samples
     """
-    if model_intercept and not intercept_test:
-        if confounding_vars is not None:
-            confounding_vars = np.hstack(
-                (confounding_vars, np.ones((n_samples, 1)))
-            )
-        else:
-            confounding_vars = np.ones((n_samples, 1))
+    if confounding_vars is not None:
+        confounding_vars = np.hstack(
+            (confounding_vars, np.ones((n_samples, 1)))
+        )
+    else:
+        confounding_vars = np.ones((n_samples, 1))
+
+    assert _return_nb_intercept_in_confounds(confounding_vars) == 1
+
     return confounding_vars
 
 
