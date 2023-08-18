@@ -647,9 +647,8 @@ def permuted_ols(
         warnings.warn(
             category=UserWarning,
             message=(
-                'Multiple columns across "confounding_vars" and/or '
-                '"target_vars" are constant. Only one will be used '
-                "as intercept."
+                "Multiple columns across 'confounding_vars' are constant. "
+                "Only one will be used as intercept."
             ),
         )
         confounding_vars = _remove_all_intercepts_from_confounds(
@@ -657,15 +656,15 @@ def permuted_ols(
         )
         nb_intercept_in_confounds = 0
 
-    # ensure we only have one intercept between tested_vars and confuunds
+    # ensure we only have one intercept between tested_vars and confounds
     if tested_var_has_intercept and nb_intercept_in_confounds == 1:
         # warn user if multiple intercepts are found
         warnings.warn(
             category=UserWarning,
             message=(
-                'Multiple columns across "confounding_vars" and/or '
-                '"target_vars" are constant. Only one will be used '
-                "as intercept."
+                "Multiple columns across 'confounding_vars' and "
+                "'target_vars' are constant. "
+                "Only one will be used as intercept."
             ),
         )
         confounding_vars = _remove_all_intercepts_from_confounds(
@@ -682,7 +681,6 @@ def permuted_ols(
         confounding_vars = _add_intercept_to_confounds(
             confounding_vars, n_samples=tested_vars.shape[0]
         )
-        nb_intercept_in_confounds = 1
 
     # OLS regression on original data
     # original regression (= regression on residuals + adjust t-score)
