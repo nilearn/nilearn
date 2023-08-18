@@ -32,6 +32,7 @@ Fixes
 
 - Fix pathlib.Path not being counted as Niimg-like object in :func:`~image.new_img_like` (:gh:`3723` by `Maximilian Cosmo Sitter`_).
 
+- Fix ``fit_transform`` behavior to match when ``fit`` method is passed image data (:gh:`3897` by `Yasmin Mzayek`_)
 
 Enhancements
 ------------
@@ -47,6 +48,8 @@ Enhancements
 - Add ``LassoCV`` as a new estimator option for Decoder objects (:gh: `3781` by `Michelle Wang`_)
 
 - Add ``vmin`` and ``symmetric_cbar`` arguments to :func:`~nilearn.plotting.plot_img_on_surf` (:gh:`3873` by `Michelle Wang`_).
+
+- Improve ``generate_report`` method of maskers by allowing users to pass a cmap argument for plotting image (:gh:`3897` by `Yasmin Mzayek`_)
 
 Changes
 -------
