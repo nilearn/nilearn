@@ -17,7 +17,6 @@ exclude: |
         | examples/04_glm_first_level/plot_localizer_surface_analysis.py
         | examples/07_advanced/plot_surface_bids_analysis.py
         | nilearn/_utils/helpers.py
-        | nilearn/_utils/docs.py
         | nilearn/_utils/data_gen.py
         | nilearn/reporting/html_report.py
         | nilearn/reporting/tests/test_html_report.py
