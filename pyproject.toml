@@ -106,7 +106,6 @@ extend-exclude = """
 (
   nilearn/externals
   | nilearn/_utils/data_gen.py
-  | nilearn/_utils/docs.py
   | nilearn/_utils/helpers.py
   | nilearn/_utils/tests/test_data_gen.py
   | nilearn/reporting/html_report.py
