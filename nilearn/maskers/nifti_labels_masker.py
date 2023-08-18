@@ -203,6 +203,8 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
 
         self.keep_masked_labels = keep_masked_labels
 
+        self.cmap = kwargs.get("cmap", "CMRmap_r")
+
     def generate_report(self):
         """Generate a report."""
         from nilearn.reporting.html_report import generate_report
@@ -299,7 +301,7 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                 display = plotting.plot_img(
                     img,
                     black_bg=False,
-                    cmap='RdBu',
+                    cmap=self.cmap,
                 )
                 plt.close()
                 display.add_contours(labels_image, filled=False, linewidths=3)

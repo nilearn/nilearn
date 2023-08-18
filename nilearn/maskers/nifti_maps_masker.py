@@ -190,6 +190,8 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
 
         self.keep_masked_maps = keep_masked_maps
 
+        self.cmap = kwargs.get("cmap", "CMRmap_r")
+
     def generate_report(self, displayed_maps=10):
         """Generate an HTML report for the current ``NiftiMapsMasker`` object.
 
@@ -343,7 +345,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 img,
                 cut_coords=cut_coords[idx],
                 black_bg=False,
-                cmap="RdBu",
+                cmap=self.cmap,
             )
             display.add_overlay(
                 image.index_img(maps_image, idx),
