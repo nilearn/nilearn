@@ -34,6 +34,8 @@
 
 .. _Arthur Mensch: https://www.amensch.fr/
 
+.. _Aswin Vijayan: https://github.com/vaswin0
+
 .. _Audrey Duran: https://github.com/AudreyDuran
 
 .. _Ben Cipollini: https://github.com/bcipolli
@@ -144,6 +146,8 @@
 
 .. _Koen Helwegen: https://github.com/koenhelwegen
 
+.. _Konrad Wagstyl: https://github.com/kwagstyl
+
 .. _Konstantin Shmelkov: https://github.com/kshmelkov
 
 .. _Kshitij Chawla: https://github.com/kchawla-pi
@@ -171,6 +175,8 @@
 .. _Matthias Ekman: https://github.com/mekman
 
 .. _Matthieu Joulot: https://github.com/MatthieuJoulot
+
+.. _Maximilian Cosmo Sitter: https://github.com/mcsitter
 
 .. _Mehdi Rahim: https://github.com/mrahim
 

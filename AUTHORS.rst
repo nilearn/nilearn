@@ -63,6 +63,7 @@ Some other past or present contributors are:
 * `Anne-Sophie Kieslinger`_
 * `Ariel Rokem`_
 * `Arthur Mensch`_
+* `Aswin Vijayan`_
 * `Audrey Duran`_
 * `Ben Cipollini`_
 * `Bertrand Thirion`_
@@ -118,6 +119,7 @@ Some other past or present contributors are:
 * `Kamalakar Reddy Daddy`_
 * `Kevin Sitek`_
 * `Koen Helwegen`_
+* `Konrad Wagstyl`_
 * `Konstantin Shmelkov`_
 * `Kshitij Chawla`_
 * `Kun CHEN`_
@@ -132,6 +134,7 @@ Some other past or present contributors are:
 * `Mathieu Dugré`_
 * `Matthias Ekman`_
 * `Matthieu Joulot`_
+* `Maximilian Cosmo Sitter`_
 * `Mehdi Rahim`_
 * `Michael Eickenberg`_
 * `Michael Hanke`_

@@ -9,7 +9,6 @@ from os import path as osp
 import numpy as np
 import pandas as pd
 import pytest
-from nibabel.tmpdirs import InTemporaryDirectory
 from numpy.testing import (
     assert_almost_equal,
     assert_array_almost_equal,
@@ -611,7 +610,7 @@ def test_high_pass():
     assert X.shape[1] == n_frames
 
 
-def test_csv_io():
+def test_csv_io(tmp_path):
     # test the csv io on design matrices
     tr = 1.0
     frame_times = np.linspace(0, 127 * tr, 128)
@@ -623,10 +622,9 @@ def test_csv_io():
         drift_model="polynomial",
         drift_order=3,
     )
-    path = "design_matrix.csv"
-    with InTemporaryDirectory():
-        DM.to_csv(path)
-        DM2 = pd.read_csv(path, index_col=0)
+    path = tmp_path / "design_matrix.csv"
+    DM.to_csv(path)
+    DM2 = pd.read_csv(path, index_col=0)
 
     _, matrix, names = check_design_matrix(DM)
     _, matrix_, names_ = check_design_matrix(DM2)
