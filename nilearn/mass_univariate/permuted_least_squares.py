@@ -643,6 +643,15 @@ def permuted_ols(
 
     # ensure confounding_vars has 1 or 0 intercept
     if nb_intercept_in_confounds > 1:
+        # warn user if multiple intercepts are found
+        warnings.warn(
+            category=UserWarning,
+            message=(
+                'Multiple columns across "confounding_vars" and/or '
+                '"target_vars" are constant. Only one will be used '
+                "as intercept."
+            ),
+        )
         confounding_vars = _remove_all_intercepts_from_confounds(
             confounding_vars
         )
@@ -650,6 +659,15 @@ def permuted_ols(
 
     # ensure we only have one intercept between tested_vars and confuunds
     if tested_var_has_intercept and nb_intercept_in_confounds == 1:
+        # warn user if multiple intercepts are found
+        warnings.warn(
+            category=UserWarning,
+            message=(
+                'Multiple columns across "confounding_vars" and/or '
+                '"target_vars" are constant. Only one will be used '
+                "as intercept."
+            ),
+        )
         confounding_vars = _remove_all_intercepts_from_confounds(
             confounding_vars
         )
