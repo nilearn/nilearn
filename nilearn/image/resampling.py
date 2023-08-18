@@ -9,13 +9,13 @@ import warnings
 
 import numpy as np
 import scipy
+from scipy import linalg
+from scipy.ndimage import affine_transform, find_objects
 
 from nilearn import _utils
 from nilearn._utils import _compare_version, stringify_path
 from nilearn._utils.niimg import _get_data
 from nilearn.image import crop_img
-from scipy import linalg
-from scipy.ndimage import affine_transform, find_objects
 
 ALLOWED_INTERPOLATIONS = ("continuous", "linear", "nearest")
 
