@@ -17,8 +17,6 @@ from nilearn._utils import _compare_version, stringify_path
 from nilearn._utils.niimg import _get_data
 from nilearn.image import crop_img
 
-ALLOWED_INTERPOLATIONS = ("continuous", "linear", "nearest")
-
 ###############################################################################
 # Affine utils
 
@@ -478,7 +476,7 @@ def resample_img(
     # output is always a separate array.
     data = _get_data(img)
 
-    target_affine, target_shape = _get_bounding_box(
+    target_affine, target_shape = _check_target_affine_and_shape(
         target_affine, target_shape, affine, data
     )
 
@@ -611,7 +609,7 @@ def _get_resampled_datatype(interpolation, data, transform_affine):
     return resampled_data_dtype
 
 
-def _get_bounding_box(target_affine, target_shape, affine, data):
+def _check_target_affine_and_shape(target_affine, target_shape, affine, data):
     """Get a bounding box for the transformed data.
 
     If necessary:
@@ -636,6 +634,12 @@ def _get_bounding_box(target_affine, target_shape, affine, data):
 
     data : numpy.ndarray
         data of the input image.
+
+    Returns
+    -------
+    target_affine : numpy.ndarray
+
+    target_shape
     """
     if target_affine.shape == (3, 3):
         # Embed target_affine in 4x4 shape
@@ -752,6 +756,7 @@ def _check_param_resample_img(img, target_shape, target_affine, interpolation):
             "Affine shape should be (4, 4) and not (3, 3)"
         )
 
+    ALLOWED_INTERPOLATIONS = ("continuous", "linear", "nearest")
     if interpolation not in ALLOWED_INTERPOLATIONS:
         message = (
             f"interpolation must be one of: {ALLOWED_INTERPOLATIONS} "
