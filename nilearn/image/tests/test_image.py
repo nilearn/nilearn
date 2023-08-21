@@ -25,7 +25,7 @@ from nilearn._utils.data_gen import (
     generate_maps,
 )
 from nilearn._utils.exceptions import DimensionError
-from nilearn.conftest import SHAPE_4D_DEFAULT, _affine_eye
+from nilearn.conftest import _affine_eye, _shape_4d_default
 from nilearn.image import (
     binarize_img,
     clean_img,
@@ -654,7 +654,7 @@ def test_new_img_like_non_iterable_header():
     & it is set to be copied, an error is not raised.
     """
     rng = np.random.RandomState(42)
-    fake_fmri_data = rng.uniform(size=SHAPE_4D_DEFAULT)
+    fake_fmri_data = rng.uniform(size=_shape_4d_default())
     fake_affine = rng.uniform(size=(4, 4))
     fake_spatial_image = nibabel.spatialimages.SpatialImage(
         fake_fmri_data, fake_affine
@@ -777,9 +777,9 @@ def test_threshold_img_copy(img_4d_ones_eye):
     thresholded = threshold_img(img_4d_ones_eye, 2)  # threshold 2 > 1
 
     # Original img_ones should have all ones.
-    assert_array_equal(get_data(img_4d_ones_eye), np.ones(SHAPE_4D_DEFAULT))
+    assert_array_equal(get_data(img_4d_ones_eye), np.ones(_shape_4d_default()))
     # Thresholded should have all zeros.
-    assert_array_equal(get_data(thresholded), np.zeros(SHAPE_4D_DEFAULT))
+    assert_array_equal(get_data(thresholded), np.zeros(_shape_4d_default()))
 
     # Check that not copying does mutate.
     img_to_mutate = img_4d_ones_eye
@@ -787,7 +787,7 @@ def test_threshold_img_copy(img_4d_ones_eye):
     thresholded = threshold_img(img_to_mutate, 2, copy=False)
 
     # Check that original mutates
-    assert_array_equal(get_data(img_to_mutate), np.zeros(SHAPE_4D_DEFAULT))
+    assert_array_equal(get_data(img_to_mutate), np.zeros(_shape_4d_default()))
     # And that returned value is also thresholded.
     assert_array_equal(get_data(img_to_mutate), get_data(thresholded))
 
@@ -807,7 +807,7 @@ def test_math_img_exceptions(affine_eye, img_4d_ones_eye):
     img1 = img_4d_ones_eye
     img2 = Nifti1Image(np.zeros((10, 20, 10, 10)), affine_eye)
     img3 = img_4d_ones_eye
-    img4 = Nifti1Image(np.ones(SHAPE_4D_DEFAULT), affine_eye * 2)
+    img4 = Nifti1Image(np.ones(_shape_4d_default()), affine_eye * 2)
 
     formula = "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)"
     # Images with different shapes should raise a ValueError exception.

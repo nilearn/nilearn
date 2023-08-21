@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn.conftest import AFFINE_MNI
+from nilearn.conftest import _affine_mni
 from nilearn.datasets import load_mni152_template
 from nilearn.image import get_data, reorder_img
 from nilearn.plotting import (
@@ -38,7 +38,7 @@ PLOTTING_FUNCS_4D = {plot_prob_atlas, plot_carpet}
 PLOTTING_FUNCS_3D = ALL_PLOTTING_FUNCS.difference(PLOTTING_FUNCS_4D)
 
 
-def _add_nans_to_img(img, affine_mni=AFFINE_MNI):
+def _add_nans_to_img(img, affine_mni=_affine_mni()):
     """Add nans in test image data."""
     data = get_data(img)
     data[6, 5, 1] = np.nan
