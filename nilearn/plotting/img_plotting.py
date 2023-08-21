@@ -31,7 +31,7 @@ from nilearn.maskers import NiftiMasker
 from nilearn.plotting.displays import get_projector, get_slicer
 
 from .. import _utils
-from .._utils import fill_doc
+from .._utils import _compare_version, fill_doc
 from .._utils.extmath import fast_abs_percentile
 from .._utils.ndimage import get_border_data
 from .._utils.niimg import _safe_get_data
@@ -1513,7 +1513,9 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
             ax0.set_yticks([])
 
         # Carpet plot
-        axes = plt.subplot(gs[1])  # overwrite axes
+        if _compare_version(matplotlib.__version__, ">", "3.7.2"):
+            axes.remove()  # remove axes for newer versions of mpl
+        axes = plt.subplot(gs[1])  # overwrites axes with older versions of mpl
         axes.imshow(
             data.T,
             interpolation='nearest',
