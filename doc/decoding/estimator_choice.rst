@@ -127,6 +127,8 @@ In :class:`nilearn.decoding.DecoderRegressor` you can use some of these objects 
 
 * `ridge_regressor` (same as `ridge`) : `Ridge regression <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeCV.html>`_.
 
+* `lasso_regressor` (same as `lasso`) : `Lasso regression <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LassoCV.html>`_.
+
 * `dummy_regressor` : A `dummy regressor <https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyRegressor.html>`_ is a regressor that makes predictions using simple rules. It is useful as a simple baseline to compare with other regressors.
 
 .. note::
