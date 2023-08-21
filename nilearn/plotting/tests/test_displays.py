@@ -299,7 +299,9 @@ def test_contour_fillings_levels_in_add_contours(img):
     oslicer.add_contours(img, filled=True, levels=[0.0, 0.2])
 
     # levels with only one value
-    oslicer.add_contours(img, filled=True, levels=[0.0])
+    # vmin argument is not needed but added because of matplotlib 3.8.0rc1 bug
+    # see https://github.com/matplotlib/matplotlib/issues/26531
+    oslicer.add_contours(img, filled=True, levels=[0.0], vmin=0.0)
 
     # without passing levels, should work with default levels from
     # matplotlib
