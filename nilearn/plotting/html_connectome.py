@@ -45,7 +45,11 @@ def _encode_coordinates(coords, prefix):
 
     coords = np.asarray(coords, dtype="<f4")
     marker_x, marker_y, marker_z = coords.T
-    for coord, cname in [(marker_x, "x"), (marker_y, "y"), (marker_z, "z")]:
+    for coord, cname in [
+        (marker_x, "x"),
+        (marker_y, "y"),
+        (marker_z, "z"),
+    ]:
         coordinates[f"{prefix}{cname}"] = encode(
             np.asarray(coord, dtype="<f4")
         )
@@ -180,7 +184,9 @@ def _prepare_lines_metadata(
     return lines_metadata
 
 
-def _prepare_markers_metadata(coords, marker_size, marker_color, marker_only):
+def _prepare_markers_metadata(
+    coords, marker_size, marker_color, marker_only
+):
     markers_coordinates = _encode_coordinates(coords, prefix="_marker_")
     markers_metadata = {"markers_only": marker_only, **markers_coordinates}
 

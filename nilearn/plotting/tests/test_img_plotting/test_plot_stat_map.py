@@ -78,7 +78,9 @@ def test_plot_stat_map_with_masked_image(mni_3d_img, mni_affine):
 )
 def test_plot_stat_map_threshold(data):
     """Tests plot_stat_map with threshold (see #510)."""
-    plot_stat_map(Nifti1Image(data, np.eye(4)), threshold=1000, colorbar=True)
+    plot_stat_map(
+        Nifti1Image(data, np.eye(4)), threshold=1000, colorbar=True
+    )
     plt.close()
 
 
@@ -139,12 +141,15 @@ def test_plot_stat_map_colorbar_variations(params, mni_3d_img, mni_affine):
 
 
 @pytest.mark.parametrize(
-    "shape,direction", [((1, 6, 7), "x"), ((5, 1, 7), "y"), ((5, 6, 1), "z")]
+    "shape,direction",
+    [((1, 6, 7), "x"), ((5, 1, 7), "y"), ((5, 6, 1), "z")],
 )
 def test_plot_stat_map_singleton_ax_dim(shape, direction):
     """Tests for plot_stat_map and singleton display mode."""
     plot_stat_map(
-        Nifti1Image(np.ones(shape), np.eye(4)), None, display_mode=direction
+        Nifti1Image(np.ones(shape), np.eye(4)),
+        None,
+        display_mode=direction,
     )
     plt.close()
 
@@ -165,13 +170,15 @@ def test_outlier_cut_coords():
     x, y, z = 20, 22, 60
     x_map, y_map, z_map = coord_transform(x, y, z, np.linalg.inv(affine))
     data[
-        int(x_map) - 1 : int(x_map) + 1,
-        int(y_map) - 1 : int(y_map) + 1,
-        int(z_map) - 1 : int(z_map) + 1,
+        int(x_map) - 1:int(x_map) + 1,
+        int(y_map) - 1:int(y_map) + 1,
+        int(z_map) - 1:int(z_map) + 1,
     ] = 1
     img = Nifti1Image(data, affine)
     cuts = find_cut_slices(img, n_cuts=20, direction="z")
-    plot_stat_map(img, display_mode="z", cut_coords=cuts[-4:], bg_img=bg_img)
+    plot_stat_map(
+        img, display_mode="z", cut_coords=cuts[-4:], bg_img=bg_img
+    )
 
 
 def test_plotting_functions_with_dim_invalid_input(mni_3d_img):

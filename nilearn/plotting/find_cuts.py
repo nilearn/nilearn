@@ -318,7 +318,9 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
             "Too many cuts requested for the data: "
             f"n_cuts={n_cuts}, data size={this_shape}."
         )
-        return _transform_cut_coords(np.arange(this_shape), direction, affine)
+        return _transform_cut_coords(
+            np.arange(this_shape), direction, affine
+        )
 
     # To smooth data that might be np.int or np.uint,
     # first convert it to float.
@@ -352,9 +354,9 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
 
     for _ in range(n_cuts):
         # Find a peak
-        max_along_axis = np.unravel_index(np.abs(data).argmax(), data.shape)[
-            axis
-        ]
+        max_along_axis = np.unravel_index(
+            np.abs(data).argmax(), data.shape
+        )[axis]
 
         # cancel out the surroundings of the peak
         start = max(0, max_along_axis - spacing)
@@ -393,7 +395,9 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
             if candidate >= this_shape:
                 this_weight = 0
             else:
-                this_weight = np.sum(np.rollaxis(orig_data, axis)[candidate])
+                this_weight = np.sum(
+                    np.rollaxis(orig_data, axis)[candidate]
+                )
             if this_weight > best_weight:
                 best_candidate = candidate
                 best_weight = this_weight

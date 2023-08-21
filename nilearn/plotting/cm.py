@@ -7,14 +7,58 @@ from matplotlib import cm as _cm, colors as _colors, rcParams as _rcParams
 # Custom colormaps for two-tailed symmetric statistics
 
 
+def _mix_colormaps(fg, bg):
+    """Mixes foreground and background arrays of RGBA colors.
+
+    Parameters
+    ----------
+    fg : numpy.ndarray
+        Array of shape (n, 4), foreground RGBA colors
+        represented as floats in [0, 1]
+    bg : numpy.ndarray
+        Array of shape (n, 4), background RGBA colors
+        represented as floats in [0, 1]
+
+    Returns
+    -------
+    mix : numpy.ndarray
+        Array of shape (n, 4), mixed colors
+        represented as floats in [0, 1]
+    """
+    # Adapted from https://stackoverflow.com/questions/726549/algorithm-for-additive-color-mixing-for-rgb-values/727339#727339 # noqa: E501
+    if fg.shape != bg.shape:
+        raise ValueError(
+            "Trying to mix colormaps with different shapes: "
+            f"{fg.shape}, {bg.shape}"
+        )
+
+    mix = _np.empty_like(fg)
+
+    mix[:, 3] = 1 - (1 - fg[:, 3]) * (1 - bg[:, 3])
+
+    for color_index in range(0, 3):
+        mix[:, color_index] = (
+            fg[:, color_index] * fg[:, 3]
+            + bg[:, color_index] * bg[:, 3] * (1 - fg[:, 3])
+        ) / mix[:, 3]
+
+    return mix
+
+
 def _rotate_cmap(cmap, swap_order=("green", "red", "blue")):
     """Swap the colors of a colormap."""
     orig_cdict = cmap._segmentdata.copy()
 
     cdict = dict()
-    cdict["green"] = [(p, c1, c2) for (p, c1, c2) in orig_cdict[swap_order[0]]]
-    cdict["blue"] = [(p, c1, c2) for (p, c1, c2) in orig_cdict[swap_order[1]]]
-    cdict["red"] = [(p, c1, c2) for (p, c1, c2) in orig_cdict[swap_order[2]]]
+    cdict["green"] = [
+        (p, c1, c2) for (p, c1, c2) in orig_cdict[swap_order[0]]
+    ]
+    cdict["blue"] = [
+        (p, c1, c2) for (p, c1, c2) in orig_cdict[swap_order[1]]
+    ]
+    cdict["red"] = [
+        (p, c1, c2) for (p, c1, c2) in orig_cdict[swap_order[2]]
+    ]
 
     return cdict
 
@@ -106,7 +150,9 @@ def alpha_cmap(color, name="", alpha_min=0.5, alpha_max=1.0):
         f"{name}_transparent", cmapspec, _rcParams["image.lut"]
     )
     cmap._init()
-    cmap._lut[:, -1] = _np.linspace(alpha_min, alpha_max, cmap._lut.shape[0])
+    cmap._lut[:, -1] = _np.linspace(
+        alpha_min, alpha_max, cmap._lut.shape[0]
+    )
     cmap._lut[-1, -1] = 0
     return cmap
 
@@ -133,7 +179,9 @@ _cmaps_data = dict(
         _cm.Oranges_r, swap_order=("green", "red", "blue")
     ),
     black_blue=_rotate_cmap(_cm.hot),
-    black_purple=_rotate_cmap(_cm.hot, swap_order=("blue", "red", "green")),
+    black_purple=_rotate_cmap(
+        _cm.hot, swap_order=("blue", "red", "green")
+    ),
     black_pink=_rotate_cmap(_cm.hot, swap_order=("blue", "green", "red")),
     black_green=_rotate_cmap(_cm.hot, swap_order=("red", "blue", "green")),
     black_red=_cm.hot._segmentdata.copy(),
@@ -167,7 +215,9 @@ def _revcmap(data):
 
 _cmap_d = dict()
 
-for _cmapname in list(_cmaps_data.keys()):  # needed as dict changes in loop
+for _cmapname in list(
+    _cmaps_data.keys()
+):  # needed as dict changes in loop
     _cmapname_r = f"{_cmapname}_r"
     _cmapspec = _cmaps_data[_cmapname]
     _cmaps_data[_cmapname_r] = _revcmap(_cmapspec)

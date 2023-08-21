@@ -15,11 +15,13 @@ def demo_plot_roi(**kwargs):
     data = np.zeros((91, 109, 91))
     # Color a asymmetric rectangle around Broca area.
     x, y, z = -52, 10, 22
-    x_map, y_map, z_map = coord_transform(x, y, z, np.linalg.inv(MNI_AFFINE))
+    x_map, y_map, z_map = coord_transform(
+        x, y, z, np.linalg.inv(MNI_AFFINE)
+    )
     data[
-        int(x_map) - 5 : int(x_map) + 5,
-        int(y_map) - 3 : int(y_map) + 3,
-        int(z_map) - 10 : int(z_map) + 10,
+        int(x_map) - 5:int(x_map) + 5,
+        int(y_map) - 3:int(y_map) + 3,
+        int(z_map) - 10:int(z_map) + 10,
     ] = 1
     img = Nifti1Image(data, MNI_AFFINE)
     return plot_roi(img, title="Broca's area", **kwargs)
@@ -30,7 +32,8 @@ def demo_plot_roi(**kwargs):
 @pytest.mark.parametrize("threshold", [0.5, 0.2])
 @pytest.mark.parametrize("alpha", [0.7, 0.1])
 @pytest.mark.parametrize(
-    "display_mode,cut_coords", [("ortho", None), ("z", 3), ("x", [2.0, 10])]
+    "display_mode,cut_coords",
+    [("ortho", None), ("z", 3), ("x", [2.0, 10])],
 )
 def test_plot_roi_view_types(
     view_type, black_bg, threshold, alpha, display_mode, cut_coords

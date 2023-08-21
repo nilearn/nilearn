@@ -67,7 +67,9 @@ class BaseAxes:
             (xmin, xmax), (zmin, zmax), (_, _) = data_bounds
             (xmin_, xmax_), (zmin_, zmax_), (_, _) = bounding_box
         else:
-            raise ValueError(f"Invalid value for direction {self.direction}")
+            raise ValueError(
+                f"Invalid value for direction {self.direction}"
+            )
         ax = self.ax
         # Here we need to do a copy to avoid having the image changing as
         # we change the data
@@ -81,7 +83,9 @@ class BaseAxes:
         # The bounds of the object do not take into account a possible
         # inversion of the axis. As such, we check that the axis is properly
         # inverted when direction is left
-        if self.direction == "l" and not (ax.get_xlim()[0] > ax.get_xlim()[1]):
+        if self.direction == "l" and not (
+            ax.get_xlim()[0] > ax.get_xlim()[1]
+        ):
             ax.invert_xaxis()
         return im
 
@@ -287,7 +291,9 @@ class CutAxes(BaseAxes):
         """
         coords = [0, 0, 0]
         if self.direction not in ["x", "y", "z"]:
-            raise ValueError(f"Invalid value for direction {self.direction}")
+            raise ValueError(
+                f"Invalid value for direction {self.direction}"
+            )
         coords["xyz".index(self.direction)] = self.coord
         x_map, y_map, z_map = (
             int(np.round(c))
@@ -391,7 +397,13 @@ class GlassBrainAxes(BaseAxes):
     """
 
     def __init__(
-        self, ax, direction, coord, plot_abs=True, radiological=False, **kwargs
+        self,
+        ax,
+        direction,
+        coord,
+        plot_abs=True,
+        radiological=False,
+        **kwargs,
     ):
         super().__init__(ax, direction, coord, radiological=radiological)
         self._plot_abs = plot_abs
@@ -445,13 +457,17 @@ class GlassBrainAxes(BaseAxes):
             # current projection
             a1, a2 = np.indices(new_shape)
             inds = [a1, a2]
-            inds.insert(max_axis, np.abs(data_selection).argmax(axis=max_axis))
+            inds.insert(
+                max_axis, np.abs(data_selection).argmax(axis=max_axis)
+            )
 
             # take the values where the absolute value of the projection
             # is the highest
             maximum_intensity_data = data_selection[tuple(inds)]
         else:
-            maximum_intensity_data = np.abs(data_selection).max(axis=max_axis)
+            maximum_intensity_data = np.abs(data_selection).max(
+                axis=max_axis
+            )
 
         # This work around can be removed bumping matplotlib > 2.1.0. See #1815
         # in nilearn for the invention of this work around
@@ -470,7 +486,9 @@ class GlassBrainAxes(BaseAxes):
         since we are taking the max along one axis."""
         pass
 
-    def _add_markers(self, marker_coords, marker_color, marker_size, **kwargs):
+    def _add_markers(
+        self, marker_coords, marker_color, marker_size, **kwargs
+    ):
         """Plot markers.
 
         In the case of 'l' and 'r' directions (for hemispheric projections),
@@ -499,7 +517,10 @@ class GlassBrainAxes(BaseAxes):
             # making any selection in 'l' or 'r' color.
             # More likely that user wants to display all nodes to be in
             # same color.
-            if not isinstance(marker_color, str) and len(marker_color) != 1:
+            if (
+                not isinstance(marker_color, str)
+                and len(marker_color) != 1
+            ):
                 marker_color = marker_color[relevant_coords]
 
             if not isinstance(marker_size, numbers.Number):
@@ -509,7 +530,9 @@ class GlassBrainAxes(BaseAxes):
         for k, v in defaults.items():
             kwargs.setdefault(k, v)
 
-        self.ax.scatter(xdata, ydata, s=marker_size, c=marker_color, **kwargs)
+        self.ax.scatter(
+            xdata, ydata, s=marker_size, c=marker_color, **kwargs
+        )
 
     def _add_lines(
         self,
@@ -576,7 +599,9 @@ class GlassBrainAxes(BaseAxes):
         # normalization useful for colorbar
         self.norm = norm
         abs_norm = Normalize(vmin=0, vmax=max(abs(vmax), abs(vmin)))
-        value_to_color = plt.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
+        value_to_color = plt.cm.ScalarMappable(
+            norm=norm, cmap=cmap
+        ).to_rgba
 
         # Allow lines only in their respective hemisphere when appropriate
         if self.direction in "lr":
@@ -591,7 +616,9 @@ class GlassBrainAxes(BaseAxes):
             line_coords = np.array(line_coords)[relevant_lines]
             line_values = line_values[relevant_lines]
 
-        for start_end_point_3d, line_value in zip(line_coords, line_values):
+        for start_end_point_3d, line_value in zip(
+            line_coords, line_values
+        ):
             start_end_point_2d = _coords_3d_to_2d(
                 start_end_point_3d, self.direction
             )

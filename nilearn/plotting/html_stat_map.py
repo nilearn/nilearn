@@ -53,8 +53,8 @@ def _data_to_sprite(data):
     for xx in range(nx):
         # we need to flip the image in the x axis
         sprite[
-            (indrow[xx] * nz) : ((indrow[xx] + 1) * nz),
-            (indcol[xx] * ny) : ((indcol[xx] + 1) * ny),
+            (indrow[xx] * nz):((indrow[xx] + 1) * nz),
+            (indcol[xx] * ny):((indcol[xx] + 1) * ny),
         ] = data[xx, :, ::-1].transpose()
 
     return sprite
@@ -96,7 +96,10 @@ def _threshold_data(data, threshold=None):
 
     # Threshold
     threshold = check_threshold(
-        threshold, data, percentile_func=fast_abs_percentile, name="threshold"
+        threshold,
+        data,
+        percentile_func=fast_abs_percentile,
+        name="threshold",
     )
 
     # Mask data
@@ -156,7 +159,12 @@ def _save_sprite(
 
     # Save the sprite
     imsave(
-        output_sprite, sprite, vmin=vmin, vmax=vmax, cmap=cmap, format=format
+        output_sprite,
+        sprite,
+        vmin=vmin,
+        vmax=vmax,
+        cmap=cmap,
+        format=format,
     )
 
     return sprite
@@ -207,7 +215,9 @@ def _mask_stat_map(stat_map_img, threshold=None):
     return mask_img, stat_map_img, data, threshold
 
 
-def _load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
+def _load_bg_img(
+    stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"
+):
     """Load and resample bg_img in an isotropic resolution, \
     with a positive diagonal affine matrix.
 
@@ -227,7 +237,10 @@ def _load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
         else:
             bg_img = check_niimg_3d(bg_img)
         masked_data = np.ma.masked_inside(
-            _safe_get_data(bg_img, ensure_finite=True), -1e-6, 1e-6, copy=False
+            _safe_get_data(bg_img, ensure_finite=True),
+            -1e-6,
+            1e-6,
+            copy=False,
         )
         bg_img = new_img_like(bg_img, masked_data)
         bg_img, black_bg, bg_min, bg_max = _load_anat(
@@ -328,7 +341,9 @@ def _json_view_size(params):
     # slices_height = max of sagittal_height (z), coronal_height (z), and
     # axial_height (y).
     # Also add 20% extra height for annotation and margin
-    slices_height = np.max([params["nbSlice"]["Y"], params["nbSlice"]["Z"]])
+    slices_height = np.max(
+        [params["nbSlice"]["Y"], params["nbSlice"]["Z"]]
+    )
     slices_height = 1.20 * slices_height
 
     # Get the final size of the viewer
@@ -382,7 +397,9 @@ def _json_view_data(
     bg_sprite = BytesIO()
     bg_data = _safe_get_data(bg_img, ensure_finite=True).astype(float)
     bg_mask, bg_cmap = _get_bg_mask_and_cmap(bg_img, black_bg)
-    _save_sprite(bg_data, bg_sprite, bg_max, bg_min, bg_mask, bg_cmap, "png")
+    _save_sprite(
+        bg_data, bg_sprite, bg_max, bg_min, bg_mask, bg_cmap, "png"
+    )
     json_view["bg_base64"] = _bytesIO_to_base64(bg_sprite)
 
     # Create a base64 sprite for the stat map
