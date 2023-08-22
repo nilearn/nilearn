@@ -1198,7 +1198,7 @@ def _get_processed_imgs(
     space_label,
     img_filters,
     verbose
-):
+) :
     """Get images for a given subject, task and filters.
 
     Also checks that there is only one images per run / session.
@@ -1512,7 +1512,7 @@ def _make_bids_files_filter(
     supported_filters=None,
     extra_filter=None,
     verbose=0
-):
+) :
     """Return a filter to specific files from a BIDS dataset.
 
     Parameters
