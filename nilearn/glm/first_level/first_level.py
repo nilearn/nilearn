@@ -455,7 +455,7 @@ class FirstLevelModel(BaseGLM):
             self.standardize = False
         else:
             raise ValueError(
-                'signal_scaling must be "False", "0", "1"' ' or "(0, 1)"'
+                'signal_scaling must be "False", "0", "1" or "(0, 1)"'
             )
 
         self.noise_model = noise_model
