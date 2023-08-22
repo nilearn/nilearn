@@ -63,7 +63,6 @@ doc = [
     "flake8-docstrings",
     "furo",
     "memory_profiler",  # measuring memory during docs building
-    "mkl",
     "myst-parser",
     "numpydoc",
     "ruamel.yaml",
