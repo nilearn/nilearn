@@ -16,8 +16,8 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from nilearn import image, surface
 from nilearn._utils import check_niimg_3d, fill_doc
-from nilearn.plotting.cm import cold_hot
-from nilearn.plotting.html_surface import _get_vertexcolor, _mix_colormaps
+from nilearn.plotting.cm import _mix_colormaps, cold_hot
+from nilearn.plotting.html_surface import _get_vertexcolor
 from nilearn.plotting.img_plotting import _get_colorbar_and_data_ranges
 from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
