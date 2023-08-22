@@ -14,7 +14,6 @@ Author: Bertrand Thirion, 2015
 """
 import warnings
 
-import numpy as np
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 
