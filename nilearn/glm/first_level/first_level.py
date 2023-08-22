@@ -915,7 +915,7 @@ def _check_repetition_time(t_r):
     """Check that the repetition time is a positive number."""
     if not isinstance(t_r, (float, int)):
         raise TypeError(
-            "'t_r' must be a float or an integer. " f"Got {type(t_r)} instead."
+            f"'t_r' must be a float or an integer. Got {type(t_r)} instead."
         )
     if t_r <= 0:
         raise ValueError("'t_r' must be positive. " f"Got {t_r} instead.")
