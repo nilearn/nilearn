@@ -39,7 +39,6 @@ exclude: |
         | nilearn/plotting/tests/test_surf_plotting.py
         | nilearn/surface/surface.py
         | nilearn/surface/tests/test_surface.py
-        | nilearn/tests/test_signal.py
     )$
 
 repos:
