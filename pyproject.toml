@@ -109,7 +109,6 @@ extend-exclude = """
   | nilearn/reporting/html_report.py
   | nilearn/reporting/tests/test_html_report.py
   | nilearn/glm/contrasts.py
-  | nilearn/glm/first_level/first_level.py
   | nilearn/glm/tests/test_contrasts.py
   | nilearn/glm/tests/test_first_level.py
   | examples/01_plotting/plot_3d_map_to_surface_projection.py
