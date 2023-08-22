@@ -373,7 +373,7 @@ Pre-commit will then run all those hooks on the files you have staged for commit
 Note that if some of those hooks fail you may have to edit some files and stage them again.
 
 Tests
-------
+-----
 
 When fixing a bug, the first step is to write a minimal test that fails because
 of it, and then write the bugfix to make this test pass.
@@ -388,26 +388,70 @@ They should run on small mocked data, cover a representative range of parameters
       For more information about this coding approach,
       see `test-driven development <https://en.wikipedia.org/wiki/Test-driven_development>`_.
 
-Tests must be seeded to avoid random failures.
-For objects using random seeds (e.g. scikit-learn estimators), pass either
-a  `np.random.RandomState` or an `int` as the seed.
-When your test use random numbers,  those must be generated through:
+We use `pytest <https://docs.pytest.org/en/6.2.x/contents.html>`_ to run our tests.
 
-.. code-block:: python
+If you are not familiar with pytest,
+have a look at this `introductory video <https://www.youtube.com/watch?v=mzlH8lp4ISA>`_
+by one of the pytest core developer.
 
-    rng = np.random.RandomState(0)
-    my_number = rng.normal()
+In general tests for a specific module (say `nilearn/image/image.py`)
+are kept in a `tests` folder in separate module
+with a name that matches the module being tested
+(so in this case `nilearn/image/tests/test_image.py`).
 
-To check your changes worked and didn't break anything run `pytest nilearn`.
+When you have added a test you can check your changes worked
+and didn't break anything run `pytest nilearn`.
 To do quicker checks it's possible to run only a subset of tests:
 
 .. code-block:: bash
 
-      pytest -v test_module.py
+      pytest -v nilearn/module/tests/test_module.py
+
+Fixtures
+########
+
+If you need to some special "set up" for your tests
+(for example you need to generate some data, or a NiftiImage object or a file...)
+you can use `pytest fixtures <https://docs.pytest.org/en/6.2.x/fixture.html>`_
+to help you mock this data
+(more information on pytest fixtures in `this video <https://www.youtube.com/watch?v=ScEQRKwUePI>`_).
+
+Fixture are recognizable because they have a `@pytest.fixture` decorator.
+Fixtures that are shared by many tests modules can be found in `nilearn/conftest.py`
+but some fixures specific to certain modules can also be kept in that testing module.
+
+Seending
+########
+
+Tests must be seeded to avoid random failures.
+For objects using random seeds (e.g. scikit-learn estimators), pass either
+a `np.random.RandomState` or an `int` as the seed.
+When your test use random numbers,
+those must be generated
+like in the following examples:
+
+.. code-block:: python
+
+      def test_something():
+            # set up
+            rng = np.random.RandomState(0)
+            my_number = rng.normal()
+
+            # the rest of the test
+
+You can also use the `rng` fixture.
+
+.. code-block:: python
+
+      def test_something(rng):
+            # set up
+            my_number = rng.normal()
+
+            # the rest of the test
 
 
 Documentation
----------------
+-------------
 
 Documentation must be understandable by people from different backgrounds.
 The “narrative” documentation should be an introduction to the concepts of
