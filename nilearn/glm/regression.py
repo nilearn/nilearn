@@ -17,8 +17,6 @@ General reference for regression models:
 
 __docformat__ = "restructuredtext en"
 
-import functools
-import warnings
 
 import numpy as np
 import scipy.linalg as spl
