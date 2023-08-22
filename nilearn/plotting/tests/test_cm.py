@@ -4,7 +4,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
-from nilearn.plotting.cm import dim_cmap, replace_inside, _mix_colormaps
+
+from nilearn.plotting.cm import _mix_colormaps, dim_cmap, replace_inside
 
 
 def test_dim_cmap():

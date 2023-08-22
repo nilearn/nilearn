@@ -184,9 +184,7 @@ def _prepare_lines_metadata(
     return lines_metadata
 
 
-def _prepare_markers_metadata(
-    coords, marker_size, marker_color, marker_only
-):
+def _prepare_markers_metadata(coords, marker_size, marker_color, marker_only):
     markers_coordinates = _encode_coordinates(coords, prefix="_marker_")
     markers_metadata = {"markers_only": marker_only, **markers_coordinates}
 

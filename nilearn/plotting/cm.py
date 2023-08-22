@@ -50,15 +50,9 @@ def _rotate_cmap(cmap, swap_order=("green", "red", "blue")):
     orig_cdict = cmap._segmentdata.copy()
 
     cdict = dict()
-    cdict["green"] = [
-        (p, c1, c2) for (p, c1, c2) in orig_cdict[swap_order[0]]
-    ]
-    cdict["blue"] = [
-        (p, c1, c2) for (p, c1, c2) in orig_cdict[swap_order[1]]
-    ]
-    cdict["red"] = [
-        (p, c1, c2) for (p, c1, c2) in orig_cdict[swap_order[2]]
-    ]
+    cdict["green"] = [(p, c1, c2) for (p, c1, c2) in orig_cdict[swap_order[0]]]
+    cdict["blue"] = [(p, c1, c2) for (p, c1, c2) in orig_cdict[swap_order[1]]]
+    cdict["red"] = [(p, c1, c2) for (p, c1, c2) in orig_cdict[swap_order[2]]]
 
     return cdict
 
@@ -150,9 +144,7 @@ def alpha_cmap(color, name="", alpha_min=0.5, alpha_max=1.0):
         f"{name}_transparent", cmapspec, _rcParams["image.lut"]
     )
     cmap._init()
-    cmap._lut[:, -1] = _np.linspace(
-        alpha_min, alpha_max, cmap._lut.shape[0]
-    )
+    cmap._lut[:, -1] = _np.linspace(alpha_min, alpha_max, cmap._lut.shape[0])
     cmap._lut[-1, -1] = 0
     return cmap
 
@@ -179,9 +171,7 @@ _cmaps_data = dict(
         _cm.Oranges_r, swap_order=("green", "red", "blue")
     ),
     black_blue=_rotate_cmap(_cm.hot),
-    black_purple=_rotate_cmap(
-        _cm.hot, swap_order=("blue", "red", "green")
-    ),
+    black_purple=_rotate_cmap(_cm.hot, swap_order=("blue", "red", "green")),
     black_pink=_rotate_cmap(_cm.hot, swap_order=("blue", "green", "red")),
     black_green=_rotate_cmap(_cm.hot, swap_order=("red", "blue", "green")),
     black_red=_cm.hot._segmentdata.copy(),
@@ -215,9 +205,7 @@ def _revcmap(data):
 
 _cmap_d = dict()
 
-for _cmapname in list(
-    _cmaps_data.keys()
-):  # needed as dict changes in loop
+for _cmapname in list(_cmaps_data.keys()):  # needed as dict changes in loop
     _cmapname_r = f"{_cmapname}_r"
     _cmapspec = _cmaps_data[_cmapname]
     _cmaps_data[_cmapname_r] = _revcmap(_cmapspec)

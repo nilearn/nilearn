@@ -6,11 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from scipy.cluster.hierarchy import (
-    leaves_list,
-    linkage,
-    optimal_leaf_ordering,
-)
+from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
 from .._utils import fill_doc
 
@@ -188,17 +184,13 @@ def _configure_grid(axes, grid, tri, size):
         for i in range(size):
             # Correct for weird mis-sizing
             i = 1.001 * i
-            axes.plot(
-                [i + 0.5, i + 0.5], [size - 0.5, i + 0.5], color="grey"
-            )
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5], color="grey")
             axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5], color="grey")
     elif tri == "diag":
         for i in range(size):
             # Correct for weird mis-sizing
             i = 1.001 * i
-            axes.plot(
-                [i + 0.5, i + 0.5], [size - 0.5, i - 0.5], color="grey"
-            )
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5], color="grey")
             axes.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color="grey")
     else:
         for i in range(size):
@@ -408,9 +400,7 @@ def plot_contrast_matrix(
         plt.colorbar(mat, fraction=0.025, pad=0.04)
 
     plt.tight_layout()
-    plt.subplots_adjust(
-        top=np.min([0.3 + 0.05 * con_matrix.shape[0], 0.55])
-    )
+    plt.subplots_adjust(top=np.min([0.3 + 0.05 * con_matrix.shape[0], 0.55]))
 
     if output_file is not None:
         plt.savefig(output_file)
@@ -421,9 +411,7 @@ def plot_contrast_matrix(
 
 
 @fill_doc
-def plot_design_matrix(
-    design_matrix, rescale=True, ax=None, output_file=None
-):
+def plot_design_matrix(design_matrix, rescale=True, ax=None, output_file=None):
     """Plot a design matrix provided as a :class:`pandas.DataFrame`.
 
     Parameters
@@ -521,9 +509,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     event_labels = pd.concat(event["trial_type"] for event in model_event)
     event_labels = np.unique(event_labels)
 
-    cmap_dictionary = {
-        label: idx for idx, label in enumerate(event_labels)
-    }
+    cmap_dictionary = {label: idx for idx, label in enumerate(event_labels)}
 
     if len(event_labels) > cmap.N:
         plt.close()

@@ -114,9 +114,7 @@ def _edge_detect(image, high_threshold=0.75, low_threshold=0.4):
     high = thinned_grad > fast_abs_percentile(
         grad_values, 100 * high_threshold
     )
-    low = thinned_grad > fast_abs_percentile(
-        grad_values, 100 * low_threshold
-    )
+    low = thinned_grad > fast_abs_percentile(grad_values, 100 * low_threshold)
     edge_mask = binary_dilation(
         high, structure=np.ones((3, 3)), iterations=-1, mask=low
     )

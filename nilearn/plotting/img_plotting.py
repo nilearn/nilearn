@@ -38,13 +38,7 @@ from .._utils.niimg import _safe_get_data
 from .._utils.numpy_conversions import as_ndarray
 from .._utils.param_validation import check_threshold
 from ..datasets import load_mni152_template
-from ..image import (
-    get_data,
-    iter_img,
-    math_img,
-    new_img_like,
-    resample_to_img,
-)
+from ..image import get_data, iter_img, math_img, new_img_like, resample_to_img
 from ..masking import apply_mask, compute_epi_mask
 from ..signal import clean
 from . import cm

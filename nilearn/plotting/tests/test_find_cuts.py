@@ -16,9 +16,9 @@ def test_find_cut_coords():
     data = np.zeros((100, 100, 100))
     x_map, y_map, z_map = 50, 10, 40
     data[
-        x_map - 30:x_map + 30,
-        y_map - 3:y_map + 3,
-        z_map - 10:z_map + 10,
+        x_map - 30 : x_map + 30,
+        y_map - 3 : y_map + 3,
+        z_map - 10 : z_map + 10,
     ] = 1
 
     # identity affine
@@ -119,9 +119,9 @@ def test_find_cut_slices():
     data = np.zeros((50, 50, 50))
     x_map, y_map, z_map = 25, 5, 20
     data[
-        x_map - 15:x_map + 15,
-        y_map - 3:y_map + 3,
-        z_map - 10:z_map + 10,
+        x_map - 15 : x_map + 15,
+        y_map - 3 : y_map + 3,
+        z_map - 10 : z_map + 10,
     ] = 1
     img = nibabel.Nifti1Image(data, np.eye(4))
     for n_cuts in (2, 4):
@@ -190,9 +190,9 @@ def test_validity_of_ncuts_error_in_find_cut_slices():
     affine = np.eye(4)
     x_map, y_map, z_map = 25, 5, 20
     data[
-        x_map - 15:x_map + 15,
-        y_map - 3:y_map + 3,
-        z_map - 10:z_map + 10,
+        x_map - 15 : x_map + 15,
+        y_map - 3 : y_map + 3,
+        z_map - 10 : z_map + 10,
     ] = 1
     img = nibabel.Nifti1Image(data, affine)
     direction = "z"
@@ -212,9 +212,9 @@ def test_passing_of_ncuts_in_find_cut_slices():
     affine = np.eye(4)
     x_map, y_map, z_map = 25, 5, 20
     data[
-        x_map - 15:x_map + 15,
-        y_map - 3:y_map + 3,
-        z_map - 10:z_map + 10,
+        x_map - 15 : x_map + 15,
+        y_map - 3 : y_map + 3,
+        z_map - 10 : z_map + 10,
     ] = 1
     img = nibabel.Nifti1Image(data, affine)
     # smoke test to check if it rounds the floating point inputs
@@ -246,8 +246,7 @@ def test_tranform_cut_coords():
     cut_coords = np.arange(n_cuts)
     for direction in "xyz":
         assert (
-            len(_transform_cut_coords(cut_coords, direction, affine))
-            == n_cuts
+            len(_transform_cut_coords(cut_coords, direction, affine)) == n_cuts
         )
 
 
@@ -273,19 +272,19 @@ def test_find_parcellation_cut_coords():
     x_map_c, y_map_c, z_map_c = (50, 50, 50)
     # Defining 3 parcellations
     data[
-        x_map_a - 10:x_map_a + 10,
-        y_map_a - 10:y_map_a + 10,
-        z_map_a - 10:z_map_a + 10,
+        x_map_a - 10 : x_map_a + 10,
+        y_map_a - 10 : y_map_a + 10,
+        z_map_a - 10 : z_map_a + 10,
     ] = 2301
     data[
-        x_map_b - 10:x_map_b + 10,
-        y_map_b - 10:y_map_b + 10,
-        z_map_b - 10:z_map_b + 10,
+        x_map_b - 10 : x_map_b + 10,
+        y_map_b - 10 : y_map_b + 10,
+        z_map_b - 10 : z_map_b + 10,
     ] = 4001
     data[
-        x_map_c - 10:x_map_c + 10,
-        y_map_c - 10:y_map_c + 10,
-        z_map_c - 10:z_map_c + 10,
+        x_map_c - 10 : x_map_c + 10,
+        y_map_c - 10 : y_map_c + 10,
+        z_map_c - 10 : z_map_c + 10,
     ] = 6201
 
     # Number of labels
@@ -350,9 +349,7 @@ def test_find_parcellation_cut_coords():
         "these 'left' or 'right'."
     )
     with pytest.raises(ValueError, match=error_msg):
-        find_parcellation_cut_coords(
-            labels_img=img, label_hemisphere="lft"
-        )
+        find_parcellation_cut_coords(labels_img=img, label_hemisphere="lft")
 
 
 def test_find_probabilistic_atlas_cut_coords():
@@ -360,17 +357,17 @@ def test_find_probabilistic_atlas_cut_coords():
     arr1 = np.zeros((100, 100, 100))
     x_map_a, y_map_a, z_map_a = 30, 40, 50
     arr1[
-        x_map_a - 10:x_map_a + 10,
-        y_map_a - 20:y_map_a + 20,
-        z_map_a - 30:z_map_a + 30,
+        x_map_a - 10 : x_map_a + 10,
+        y_map_a - 20 : y_map_a + 20,
+        z_map_a - 30 : z_map_a + 30,
     ] = 1
 
     arr2 = np.zeros((100, 100, 100))
     x_map_b, y_map_b, z_map_b = 40, 50, 60
     arr2[
-        x_map_b - 10:x_map_b + 10,
-        y_map_b - 20:y_map_b + 20,
-        z_map_b - 30:z_map_b + 30,
+        x_map_b - 10 : x_map_b + 10,
+        y_map_b - 20 : y_map_b + 20,
+        z_map_b - 30 : z_map_b + 30,
     ] = 1
 
     # make data with empty in between non-empty maps to make sure that
