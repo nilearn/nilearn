@@ -918,7 +918,7 @@ def _check_repetition_time(t_r):
             f"'t_r' must be a float or an integer. Got {type(t_r)} instead."
         )
     if t_r <= 0:
-        raise ValueError("'t_r' must be positive. " f"Got {t_r} instead.")
+        raise ValueError(f"'t_r' must be positive. Got {t_r} instead.")
 
 
 def _check_slice_time_ref(slice_time_ref):
