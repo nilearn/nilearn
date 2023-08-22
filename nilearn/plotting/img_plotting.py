@@ -52,7 +52,7 @@ def show():
     than to emit a warning.
 
     """
-    if matplotlib.get_backend().lower() != "agg":  # avoid warnings
+    if matplotlib.get_backend().lower() != 'agg':  # avoid warnings
         plt.show()
 
 
@@ -60,13 +60,8 @@ def show():
 # Core, usage-agnostic functions
 
 
-def _get_colorbar_and_data_ranges(
-    stat_map_data,
-    vmax,
-    symmetric_cbar,
-    kwargs,
-    force_min_stat_map_value=None,
-):
+def _get_colorbar_and_data_ranges(stat_map_data, vmax, symmetric_cbar, kwargs,
+                                  force_min_stat_map_value=None):
     """Set colormap and colorbar limits.
 
     Used by for plot_stat_map and plot_glass_brain.
@@ -76,28 +71,25 @@ def _get_colorbar_and_data_ranges(
     refer to docstring of plot_stat_map.
 
     """
-    if "vmin" in kwargs:
-        raise ValueError(
-            'this function does not accept a "vmin" '
-            "argument, as it uses a symmetrical range "
-            "defined via the vmax argument. To threshold "
-            'the plotted map, use the "threshold" argument'
-        )
+    if 'vmin' in kwargs:
+        raise ValueError('this function does not accept a "vmin" '
+                         'argument, as it uses a symmetrical range '
+                         'defined via the vmax argument. To threshold '
+                         'the plotted map, use the "threshold" argument')
 
     # make sure that the color range is symmetrical
-    if vmax is None or symmetric_cbar in ["auto", False]:
+    if vmax is None or symmetric_cbar in ['auto', False]:
         # Avoid dealing with masked_array:
-        if hasattr(stat_map_data, "_mask"):
+        if hasattr(stat_map_data, '_mask'):
             stat_map_data = np.asarray(
-                stat_map_data[np.logical_not(stat_map_data._mask)]
-            )
+                stat_map_data[np.logical_not(stat_map_data._mask)])
         stat_map_max = np.nanmax(stat_map_data)
         if force_min_stat_map_value is None:
             stat_map_min = np.nanmin(stat_map_data)
         else:
             stat_map_min = force_min_stat_map_value
 
-    if symmetric_cbar == "auto":
+    if symmetric_cbar == 'auto':
         symmetric_cbar = stat_map_min < 0 and stat_map_max > 0
 
     if vmax is None:
@@ -122,34 +114,20 @@ def _get_colorbar_and_data_ranges(
 
 
 @fill_doc
-def _plot_img_with_bg(
-    img,
-    bg_img=None,
-    cut_coords=None,
-    output_file=None,
-    display_mode="ortho",
-    colorbar=False,
-    figure=None,
-    axes=None,
-    title=None,
-    threshold=None,
-    annotate=True,
-    draw_cross=True,
-    black_bg=False,
-    vmin=None,
-    vmax=None,
-    bg_vmin=None,
-    bg_vmax=None,
-    interpolation="nearest",
-    display_factory=get_slicer,
-    cbar_vmin=None,
-    cbar_vmax=None,
-    cbar_tick_format="%.2g",
-    brain_color=(0.5, 0.5, 0.5),
-    decimals=False,
-    radiological=False,
-    **kwargs,
-):
+def _plot_img_with_bg(img, bg_img=None, cut_coords=None,
+                      output_file=None, display_mode='ortho',
+                      colorbar=False, figure=None, axes=None, title=None,
+                      threshold=None, annotate=True,
+                      draw_cross=True, black_bg=False,
+                      vmin=None, vmax=None,
+                      bg_vmin=None, bg_vmax=None, interpolation="nearest",
+                      display_factory=get_slicer,
+                      cbar_vmin=None, cbar_vmax=None,
+                      cbar_tick_format="%.2g",
+                      brain_color=(0.5, 0.5, 0.5),
+                      decimals=False,
+                      radiological=False,
+                      **kwargs):
     """Refer to the docstring of plot_img for parameters not listed below.
 
     Parameters
@@ -180,25 +158,20 @@ def _plot_img_with_bg(
         vmin = None
         show_nan_msg = True
     if show_nan_msg:
-        nan_msg = (
-            "NaN is not permitted for the vmax and vmin arguments.\n"
-            "Tip: Use np.nanmax() instead of np.max()."
-        )
+        nan_msg = ('NaN is not permitted for the vmax and vmin arguments.\n'
+                   'Tip: Use np.nanmax() instead of np.max().')
         warnings.warn(nan_msg)
 
-    if isinstance(cut_coords, numbers.Number) and display_mode in (
-        "ortho",
-        "tiled",
-    ):
+    if (isinstance(cut_coords, numbers.Number) and
+            display_mode in ('ortho', 'tiled')):
         raise ValueError(
             f"The input given for display_mode='{display_mode}' "
             "needs to be a list of 3d world coordinates in (x, y, z). "
             "You provided single cut, "
-            f"cut_coords={cut_coords}"
-        )
+            f"cut_coords={cut_coords}")
 
     if img is not False and img is not None:
-        img = _utils.check_niimg_3d(img, dtype="auto")
+        img = _utils.check_niimg_3d(img, dtype='auto')
         data = _safe_get_data(img, ensure_finite=True)
         affine = img.affine
 
@@ -206,7 +179,7 @@ def _plot_img_with_bg(
             data = np.nan_to_num(data)
 
         # Deal with automatic settings of plot parameters
-        if threshold == "auto":
+        if threshold == 'auto':
             # Threshold epsilon below a percentile value, to be sure that some
             # voxels pass the threshold
             threshold = fast_abs_percentile(data) - 1e-5
@@ -217,8 +190,7 @@ def _plot_img_with_bg(
         img,
         threshold=threshold,
         cut_coords=cut_coords,
-        figure=figure,
-        axes=axes,
+        figure=figure, axes=axes,
         black_bg=black_bg,
         colorbar=colorbar,
         brain_color=brain_color,
@@ -226,33 +198,23 @@ def _plot_img_with_bg(
     )
     if bg_img is not None:
         bg_img = _utils.check_niimg_3d(bg_img)
-        display.add_overlay(
-            bg_img,
-            vmin=bg_vmin,
-            vmax=bg_vmax,
-            cmap=plt.cm.gray,
-            interpolation=interpolation,
-        )
+        display.add_overlay(bg_img,
+                            vmin=bg_vmin, vmax=bg_vmax,
+                            cmap=plt.cm.gray, interpolation=interpolation)
 
     if img is not None and img is not False:
-        display.add_overlay(
-            new_img_like(img, data, affine),
-            threshold=threshold,
-            interpolation=interpolation,
-            colorbar=colorbar,
-            vmin=vmin,
-            vmax=vmax,
-            cbar_vmin=cbar_vmin,
-            cbar_vmax=cbar_vmax,
-            cbar_tick_format=cbar_tick_format,
-            **kwargs,
-        )
+        display.add_overlay(new_img_like(img, data, affine),
+                            threshold=threshold, interpolation=interpolation,
+                            colorbar=colorbar, vmin=vmin, vmax=vmax,
+                            cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
+                            cbar_tick_format=cbar_tick_format,
+                            **kwargs)
 
     if annotate:
         display.annotate(decimals=decimals)
     if draw_cross:
         display.draw_cross()
-    if title is not None and not title == "":
+    if title is not None and not title == '':
         display.title(title)
     if output_file is not None:
         display.savefig(output_file)
@@ -262,27 +224,12 @@ def _plot_img_with_bg(
 
 
 @fill_doc
-def plot_img(
-    img,
-    cut_coords=None,
-    output_file=None,
-    display_mode="ortho",
-    figure=None,
-    axes=None,
-    title=None,
-    threshold=None,
-    annotate=True,
-    draw_cross=True,
-    black_bg=False,
-    colorbar=False,
-    cbar_tick_format="%.2g",
-    resampling_interpolation="continuous",
-    bg_img=None,
-    vmin=None,
-    vmax=None,
-    radiological=False,
-    **kwargs,
-):
+def plot_img(img, cut_coords=None, output_file=None, display_mode='ortho',
+             figure=None, axes=None, title=None, threshold=None,
+             annotate=True, draw_cross=True, black_bg=False, colorbar=False,
+             cbar_tick_format="%.2g",
+             resampling_interpolation='continuous',
+             bg_img=None, vmin=None, vmax=None, radiological=False, **kwargs):
     """Plot cuts of a given image.
 
     By default Frontal, Axial, and Lateral.
@@ -324,33 +271,22 @@ def plot_img(
 
     """
     display = _plot_img_with_bg(
-        img,
-        cut_coords=cut_coords,
-        output_file=output_file,
-        display_mode=display_mode,
-        figure=figure,
-        axes=axes,
-        title=title,
-        threshold=threshold,
-        annotate=annotate,
+        img, cut_coords=cut_coords,
+        output_file=output_file, display_mode=display_mode,
+        figure=figure, axes=axes, title=title,
+        threshold=threshold, annotate=annotate,
         draw_cross=draw_cross,
         resampling_interpolation=resampling_interpolation,
-        black_bg=black_bg,
-        colorbar=colorbar,
+        black_bg=black_bg, colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
-        bg_img=bg_img,
-        vmin=vmin,
-        vmax=vmax,
-        radiological=radiological,
-        **kwargs,
-    )
+        bg_img=bg_img, vmin=vmin, vmax=vmax, radiological=radiological,
+        **kwargs)
 
     return display
 
 
 ###############################################################################
 # Anatomy image for background
-
 
 # A constant class to serve as a sentinel for the default MNI template
 class _MNI152Template(SpatialImage):
@@ -423,12 +359,12 @@ class _MNI152Template(SpatialImage):
 MNI152TEMPLATE = _MNI152Template()
 
 
-def _load_anat(anat_img=MNI152TEMPLATE, dim="auto", black_bg="auto"):
+def _load_anat(anat_img=MNI152TEMPLATE, dim='auto', black_bg='auto'):
     """Load anatomy, for optional diming."""
     vmin = None
     vmax = None
     if anat_img is False or anat_img is None:
-        if black_bg == "auto":
+        if black_bg == 'auto':
             # No anatomy given: no need to turn black_bg on
             black_bg = False
         return anat_img, black_bg, vmin, vmax
@@ -439,7 +375,7 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim="auto", black_bg="auto"):
         # to do a few transforms to it.
         vmin = 0
         vmax = anat_img.vmax
-        if black_bg == "auto":
+        if black_bg == 'auto':
             black_bg = False
     else:
         anat_img = _utils.check_niimg_3d(anat_img)
@@ -447,34 +383,33 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim="auto", black_bg="auto"):
         # border data values.
         data = _safe_get_data(anat_img, ensure_finite=True)
         anat_img = new_img_like(anat_img, data, affine=anat_img.affine)
-        if dim or black_bg == "auto":
+        if dim or black_bg == 'auto':
             # We need to inspect the values of the image
             vmin = np.nanmin(data)
             vmax = np.nanmax(data)
-        if black_bg == "auto":
+        if black_bg == 'auto':
             # Guess if the background is rather black or light based on
             # the values of voxels near the border
             background = np.median(get_border_data(data, 2))
-            if background > 0.5 * (vmin + vmax):
+            if background > .5 * (vmin + vmax):
                 black_bg = False
             else:
                 black_bg = True
     if dim:
-        if dim != "auto" and not isinstance(dim, numbers.Number):
+        if dim != 'auto' and not isinstance(dim, numbers.Number):
             raise ValueError(
                 "The input given for 'dim' needs to be a float. "
-                f"You provided dim={dim} in {type(dim)}."
-            )
-        vmean = 0.5 * (vmin + vmax)
-        ptp = 0.5 * (vmax - vmin)
+                f"You provided dim={dim} in {type(dim)}.")
+        vmean = .5 * (vmin + vmax)
+        ptp = .5 * (vmax - vmin)
         if black_bg:
             if not isinstance(dim, numbers.Number):
-                dim = 0.8
+                dim = .8
             vmax = vmean + (1 + dim) * ptp
         else:
             if not isinstance(dim, numbers.Number):
-                dim = 0.6
-            vmin = 0.5 * (2 - dim) * vmean - (1 + dim) * ptp
+                dim = .6
+            vmin = .5 * (2 - dim) * vmean - (1 + dim) * ptp
     return anat_img, black_bg, vmin, vmax
 
 
@@ -483,27 +418,12 @@ def _load_anat(anat_img=MNI152TEMPLATE, dim="auto", black_bg="auto"):
 
 
 @fill_doc
-def plot_anat(
-    anat_img=MNI152TEMPLATE,
-    cut_coords=None,
-    output_file=None,
-    display_mode="ortho",
-    figure=None,
-    axes=None,
-    title=None,
-    annotate=True,
-    threshold=None,
-    draw_cross=True,
-    black_bg="auto",
-    dim="auto",
-    cmap=plt.cm.gray,
-    colorbar=False,
-    cbar_tick_format="%.2g",
-    radiological=False,
-    vmin=None,
-    vmax=None,
-    **kwargs,
-):
+def plot_anat(anat_img=MNI152TEMPLATE, cut_coords=None,
+              output_file=None, display_mode='ortho', figure=None,
+              axes=None, title=None, annotate=True, threshold=None,
+              draw_cross=True, black_bg='auto', dim='auto', cmap=plt.cm.gray,
+              colorbar=False, cbar_tick_format="%.2g", radiological=False,
+              vmin=None, vmax=None, **kwargs):
     """Plot cuts of an anatomical image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -550,57 +470,32 @@ def plot_anat(
 
     """
     anat_img, black_bg, anat_vmin, anat_vmax = _load_anat(
-        anat_img, dim=dim, black_bg=black_bg
-    )
+        anat_img,
+        dim=dim, black_bg=black_bg)
 
     if vmin is None:
         vmin = anat_vmin
     if vmax is None:
         vmax = anat_vmax
 
-    display = plot_img(
-        anat_img,
-        cut_coords=cut_coords,
-        output_file=output_file,
-        display_mode=display_mode,
-        figure=figure,
-        axes=axes,
-        title=title,
-        threshold=threshold,
-        annotate=annotate,
-        draw_cross=draw_cross,
-        black_bg=black_bg,
-        colorbar=colorbar,
-        cbar_tick_format=cbar_tick_format,
-        vmin=vmin,
-        vmax=vmax,
-        cmap=cmap,
-        radiological=radiological,
-        **kwargs,
-    )
+    display = plot_img(anat_img, cut_coords=cut_coords,
+                       output_file=output_file, display_mode=display_mode,
+                       figure=figure, axes=axes, title=title,
+                       threshold=threshold, annotate=annotate,
+                       draw_cross=draw_cross, black_bg=black_bg,
+                       colorbar=colorbar, cbar_tick_format=cbar_tick_format,
+                       vmin=vmin, vmax=vmax, cmap=cmap,
+                       radiological=radiological, **kwargs)
     return display
 
 
 @fill_doc
-def plot_epi(
-    epi_img=None,
-    cut_coords=None,
-    output_file=None,
-    display_mode="ortho",
-    figure=None,
-    axes=None,
-    title=None,
-    annotate=True,
-    draw_cross=True,
-    black_bg=True,
-    colorbar=False,
-    cbar_tick_format="%.2g",
-    cmap=plt.cm.nipy_spectral,
-    vmin=None,
-    vmax=None,
-    radiological=False,
-    **kwargs,
-):
+def plot_epi(epi_img=None, cut_coords=None, output_file=None,
+             display_mode='ortho', figure=None, axes=None, title=None,
+             annotate=True, draw_cross=True, black_bg=True,
+             colorbar=False, cbar_tick_format="%.2g",
+             cmap=plt.cm.nipy_spectral, vmin=None, vmax=None,
+             radiological=False, **kwargs):
     """Plot cuts of an EPI image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -637,26 +532,14 @@ def plot_epi(
     Arrays should be passed in numpy convention: (x, y, z) ordered.
 
     """
-    display = plot_img(
-        epi_img,
-        cut_coords=cut_coords,
-        output_file=output_file,
-        display_mode=display_mode,
-        figure=figure,
-        axes=axes,
-        title=title,
-        threshold=None,
-        annotate=annotate,
-        draw_cross=draw_cross,
-        black_bg=black_bg,
-        colorbar=colorbar,
-        cbar_tick_format=cbar_tick_format,
-        cmap=cmap,
-        vmin=vmin,
-        vmax=vmax,
-        radiological=radiological,
-        **kwargs,
-    )
+    display = plot_img(epi_img, cut_coords=cut_coords,
+                       output_file=output_file, display_mode=display_mode,
+                       figure=figure, axes=axes, title=title,
+                       threshold=None, annotate=annotate,
+                       draw_cross=draw_cross, black_bg=black_bg,
+                       colorbar=colorbar, cbar_tick_format=cbar_tick_format,
+                       cmap=cmap, vmin=vmin, vmax=vmax,
+                       radiological=radiological, **kwargs)
     return display
 
 
@@ -698,47 +581,23 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
     for idx, label in enumerate(labels):
         if label == 0:
             continue
-        data = roi_data == label
+        data = (roi_data == label)
         data = data.astype(int)
         img = new_img_like(roi_img, data, affine=roi_img.affine)
-        display.add_contours(
-            img,
-            levels=[0.5],
-            colors=[color_list[idx - 1]],
-            alpha=alpha,
-            linewidths=linewidths,
-            linestyles="solid",
-        )
+        display.add_contours(img, levels=[0.5], colors=[color_list[idx - 1]],
+                             alpha=alpha, linewidths=linewidths,
+                             linestyles='solid')
     return display
 
 
 @fill_doc
-def plot_roi(
-    roi_img,
-    bg_img=MNI152TEMPLATE,
-    cut_coords=None,
-    output_file=None,
-    display_mode="ortho",
-    figure=None,
-    axes=None,
-    title=None,
-    annotate=True,
-    draw_cross=True,
-    black_bg="auto",
-    threshold=0.5,
-    alpha=0.7,
-    cmap=plt.cm.gist_ncar,
-    dim="auto",
-    colorbar=False,
-    cbar_tick_format="%i",
-    vmin=None,
-    vmax=None,
-    resampling_interpolation="nearest",
-    view_type="continuous",
-    linewidths=2.5,
-    radiological=False,
-    **kwargs,
-):
+def plot_roi(roi_img, bg_img=MNI152TEMPLATE, cut_coords=None,
+             output_file=None, display_mode='ortho', figure=None, axes=None,
+             title=None, annotate=True, draw_cross=True, black_bg='auto',
+             threshold=0.5, alpha=0.7, cmap=plt.cm.gist_ncar, dim='auto',
+             colorbar=False, cbar_tick_format="%i", vmin=None, vmax=None,
+             resampling_interpolation='nearest', view_type='continuous',
+             linewidths=2.5, radiological=False, **kwargs):
     """Plot cuts of an ROI/mask image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -808,79 +667,45 @@ def plot_roi(
         (4D images)
 
     """
-    valid_view_types = ["continuous", "contours"]
+    valid_view_types = ['continuous', 'contours']
     if view_type not in valid_view_types:
         raise ValueError(
             f"Unknown view type: {view_type}. "
-            f"Valid view types are {valid_view_types}."
-        )
-    elif view_type == "contours":
+            f"Valid view types are {valid_view_types}.")
+    elif view_type == 'contours':
         img = roi_img
         roi_img = None
 
-    bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(
-        bg_img, dim=dim, black_bg=black_bg
-    )
+    bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
+                                                    black_bg=black_bg)
 
     display = _plot_img_with_bg(
-        img=roi_img,
-        bg_img=bg_img,
-        cut_coords=cut_coords,
-        output_file=output_file,
-        display_mode=display_mode,
-        figure=figure,
-        axes=axes,
-        title=title,
-        annotate=annotate,
-        draw_cross=draw_cross,
-        black_bg=black_bg,
-        threshold=threshold,
-        bg_vmin=bg_vmin,
-        bg_vmax=bg_vmax,
+        img=roi_img, bg_img=bg_img, cut_coords=cut_coords,
+        output_file=output_file, display_mode=display_mode,
+        figure=figure, axes=axes, title=title, annotate=annotate,
+        draw_cross=draw_cross, black_bg=black_bg,
+        threshold=threshold, bg_vmin=bg_vmin, bg_vmax=bg_vmax,
         resampling_interpolation=resampling_interpolation,
-        colorbar=colorbar,
-        cbar_tick_format=cbar_tick_format,
-        alpha=alpha,
-        cmap=cmap,
-        vmin=vmin,
-        vmax=vmax,
-        radiological=radiological,
-        **kwargs,
-    )
+        colorbar=colorbar, cbar_tick_format=cbar_tick_format,
+        alpha=alpha, cmap=cmap, vmin=vmin, vmax=vmax,
+        radiological=radiological, **kwargs)
 
-    if view_type == "contours":
-        display = _plot_roi_contours(
-            display, img, cmap=cmap, alpha=alpha, linewidths=linewidths
-        )
+    if view_type == 'contours':
+        display = _plot_roi_contours(display, img, cmap=cmap, alpha=alpha,
+                                     linewidths=linewidths)
 
     return display
 
 
 @fill_doc
-def plot_prob_atlas(
-    maps_img,
-    bg_img=MNI152TEMPLATE,
-    view_type="auto",
-    threshold="auto",
-    linewidths=2.5,
-    cut_coords=None,
-    output_file=None,
-    display_mode="ortho",
-    figure=None,
-    axes=None,
-    title=None,
-    annotate=True,
-    draw_cross=True,
-    black_bg="auto",
-    dim="auto",
-    colorbar=False,
-    cmap=plt.cm.gist_rainbow,
-    vmin=None,
-    vmax=None,
-    alpha=0.7,
-    radiological=False,
-    **kwargs,
-):
+def plot_prob_atlas(maps_img, bg_img=MNI152TEMPLATE, view_type='auto',
+                    threshold='auto', linewidths=2.5, cut_coords=None,
+                    output_file=None, display_mode='ortho',
+                    figure=None, axes=None, title=None, annotate=True,
+                    draw_cross=True, black_bg='auto', dim='auto',
+                    colorbar=False,
+                    cmap=plt.cm.gist_rainbow, vmin=None, vmax=None,
+                    alpha=0.7, radiological=False, **kwargs):
     """Plot the probabilistic atlases onto the anatomical image \
     by default MNI template.
 
@@ -955,137 +780,95 @@ def plot_prob_atlas(
     nilearn.plotting.plot_roi : To simply plot max-prob atlases (3D images)
 
     """
-    display = plot_anat(
-        bg_img,
-        cut_coords=cut_coords,
-        display_mode=display_mode,
-        figure=figure,
-        axes=axes,
-        title=title,
-        annotate=annotate,
-        draw_cross=draw_cross,
-        black_bg=black_bg,
-        dim=dim,
-        radiological=radiological,
-        **kwargs,
-    )
+    display = plot_anat(bg_img, cut_coords=cut_coords,
+                        display_mode=display_mode,
+                        figure=figure, axes=axes, title=title,
+                        annotate=annotate, draw_cross=draw_cross,
+                        black_bg=black_bg, dim=dim, radiological=radiological,
+                        **kwargs)
 
     maps_img = _utils.check_niimg_4d(maps_img)
     n_maps = maps_img.shape[3]
 
-    valid_view_types = [
-        "auto",
-        "contours",
-        "filled_contours",
-        "continuous",
-    ]
+    valid_view_types = ['auto', 'contours', 'filled_contours', 'continuous']
     if view_type not in valid_view_types:
         raise ValueError(
             f"Unknown view type: {view_type}. "
-            f"Valid view types are {valid_view_types}."
-        )
+            f"Valid view types are {valid_view_types}.")
 
     cmap = plt.get_cmap(cmap)
     color_list = cmap(np.linspace(0, 1, n_maps))
 
-    if view_type == "auto":
+    if view_type == 'auto':
         if n_maps > 20:
-            view_type = "contours"
+            view_type = 'contours'
         elif n_maps > 10:
-            view_type = "filled_contours"
+            view_type = 'filled_contours'
         else:
-            view_type = "continuous"
+            view_type = 'continuous'
 
     if threshold is None:
         threshold = 1e-6
-    elif threshold == "auto":
+    elif threshold == 'auto':
         # it will use default percentage,
         # strategy is to avoid maximum overlaps as possible
-        if view_type == "contours":
+        if view_type == 'contours':
             correction_factor = 1
-        elif view_type == "filled_contours":
-            correction_factor = 0.8
+        elif view_type == 'filled_contours':
+            correction_factor = .8
         else:
-            correction_factor = 0.5
+            correction_factor = .5
         threshold = f"{100 * (1 - 0.2 * correction_factor / n_maps):f}%"
 
-    if isinstance(threshold, collections.abc.Iterable) and not isinstance(
-        threshold, str
-    ):
+    if (isinstance(threshold, collections.abc.Iterable) and
+            not isinstance(threshold, str)):
         threshold = [thr for thr in threshold]
         if len(threshold) != n_maps:
-            raise TypeError(
-                "The list of values to threshold "
-                "should be equal to number of maps"
-            )
+            raise TypeError('The list of values to threshold '
+                            'should be equal to number of maps')
     else:
         threshold = [threshold] * n_maps
 
-    filled = view_type.startswith("filled")
-    for map_img, color, thr in zip(
-        iter_img(maps_img), color_list, threshold
-    ):
+    filled = view_type.startswith('filled')
+    for (map_img, color, thr) in zip(iter_img(maps_img), color_list,
+                                     threshold):
         data = get_data(map_img)
         # To threshold or choose the level of the contours
-        thr = check_threshold(
-            thr,
-            data,
-            percentile_func=fast_abs_percentile,
-            name="threshold",
-        )
+        thr = check_threshold(thr, data,
+                              percentile_func=fast_abs_percentile,
+                              name='threshold')
         # Get rid of background values in all cases
         thr = max(thr, 1e-6)
 
-        if view_type == "continuous":
-            display.add_overlay(
-                map_img,
-                threshold=thr,
-                cmap=cm.alpha_cmap(color),
-                alpha=alpha,
-            )
+        if view_type == 'continuous':
+            display.add_overlay(map_img, threshold=thr,
+                                cmap=cm.alpha_cmap(color), alpha=alpha)
         else:
-            display.add_contours(
-                map_img,
-                levels=[thr],
-                linewidths=linewidths,
-                colors=[color],
-                filled=filled,
-                alpha=alpha,
-                linestyles="solid",
-            )
+            display.add_contours(map_img, levels=[thr],
+                                 linewidths=linewidths,
+                                 colors=[color], filled=filled,
+                                 alpha=alpha, linestyles='solid', )
     if colorbar:
         display._colorbar = True
         # Create a colormap from color list to feed display
         cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
-            "segmented colors", color_list, n_maps + 1
-        )
-        display._show_colorbar(
-            cmap, matplotlib.colors.Normalize(1, n_maps + 1)
-        )
+            'segmented colors', color_list, n_maps + 1)
+        display._show_colorbar(cmap, matplotlib.colors.Normalize(1,
+                                                                 n_maps + 1))
         tick_locator = matplotlib.ticker.MaxNLocator(nbins=10)
         display.locator = tick_locator
         display._cbar.update_ticks()
-        tick_location = np.round(
-            np.linspace(1, n_maps, min(n_maps, 10))
-        ).astype("int")
-        display._cbar.set_ticks(tick_location + 0.5)
+        tick_location = np.round(np.linspace(1,
+                                             n_maps,
+                                             min(n_maps, 10))).astype('int')
+        display._cbar.set_ticks(tick_location + .5)
         display._cbar.set_ticklabels(tick_location)
-        (
-            left,
-            bottom,
-            width,
-            height,
-        ) = display._colorbar_ax.get_position().bounds
-        display._colorbar_ax.set_position(
-            [left, bottom, width, height * 0.95]
-        )
-        display._colorbar_ax.annotate(
-            "Map #",
-            xy=(1, 1.03),
-            ha="right",
-            va="bottom",
-            xycoords="axes fraction",
-        )
+        left, bottom, width, height = display._colorbar_ax.\
+            get_position().bounds
+        display._colorbar_ax.set_position([left, bottom, width, height * 0.95])
+        display._colorbar_ax.annotate('Map #', xy=(1, 1.03), ha='right',
+                                      va='bottom',
+                                      xycoords='axes fraction')
     if output_file is not None:
         display.savefig(output_file)
         display.close()
@@ -1095,29 +878,13 @@ def plot_prob_atlas(
 
 
 @fill_doc
-def plot_stat_map(
-    stat_map_img,
-    bg_img=MNI152TEMPLATE,
-    cut_coords=None,
-    output_file=None,
-    display_mode="ortho",
-    colorbar=True,
-    cbar_tick_format="%.2g",
-    figure=None,
-    axes=None,
-    title=None,
-    threshold=1e-6,
-    annotate=True,
-    draw_cross=True,
-    black_bg="auto",
-    cmap=cm.cold_hot,
-    symmetric_cbar="auto",
-    dim="auto",
-    vmax=None,
-    resampling_interpolation="continuous",
-    radiological=False,
-    **kwargs,
-):
+def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
+                  output_file=None, display_mode='ortho', colorbar=True,
+                  cbar_tick_format="%.2g", figure=None, axes=None,
+                  title=None, threshold=1e-6, annotate=True, draw_cross=True,
+                  black_bg='auto', cmap=cm.cold_hot, symmetric_cbar="auto",
+                  dim='auto', vmax=None, resampling_interpolation='continuous',
+                  radiological=False, **kwargs):
     """Plot cuts of an ROI/mask image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -1179,72 +946,46 @@ def plot_stat_map(
 
     """
     # dim the background
-    bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(
-        bg_img, dim=dim, black_bg=black_bg
-    )
+    bg_img, black_bg, bg_vmin, bg_vmax = _load_anat(bg_img, dim=dim,
+                                                    black_bg=black_bg)
 
-    stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype="auto")
+    stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
 
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         _safe_get_data(stat_map_img, ensure_finite=True),
         vmax,
         symmetric_cbar,
-        kwargs,
-    )
+        kwargs)
 
     display = _plot_img_with_bg(
-        img=stat_map_img,
-        bg_img=bg_img,
-        cut_coords=cut_coords,
-        output_file=output_file,
-        display_mode=display_mode,
-        figure=figure,
-        axes=axes,
-        title=title,
-        annotate=annotate,
-        draw_cross=draw_cross,
-        black_bg=black_bg,
-        threshold=threshold,
-        bg_vmin=bg_vmin,
-        bg_vmax=bg_vmax,
-        cmap=cmap,
-        vmin=vmin,
-        vmax=vmax,
-        colorbar=colorbar,
-        cbar_tick_format=cbar_tick_format,
-        cbar_vmin=cbar_vmin,
-        cbar_vmax=cbar_vmax,
+        img=stat_map_img, bg_img=bg_img, cut_coords=cut_coords,
+        output_file=output_file, display_mode=display_mode,
+        figure=figure, axes=axes, title=title, annotate=annotate,
+        draw_cross=draw_cross, black_bg=black_bg, threshold=threshold,
+        bg_vmin=bg_vmin, bg_vmax=bg_vmax, cmap=cmap, vmin=vmin, vmax=vmax,
+        colorbar=colorbar, cbar_tick_format=cbar_tick_format,
+        cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
         resampling_interpolation=resampling_interpolation,
-        radiological=radiological,
-        **kwargs,
-    )
+        radiological=radiological, **kwargs)
 
     return display
 
 
 @fill_doc
-def plot_glass_brain(
-    stat_map_img,
-    output_file=None,
-    display_mode="ortho",
-    colorbar=False,
-    cbar_tick_format="%.2g",
-    figure=None,
-    axes=None,
-    title=None,
-    threshold="auto",
-    annotate=True,
-    black_bg=False,
-    cmap=None,
-    alpha=0.7,
-    vmin=None,
-    vmax=None,
-    plot_abs=True,
-    symmetric_cbar="auto",
-    resampling_interpolation="continuous",
-    radiological=False,
-    **kwargs,
-):
+def plot_glass_brain(stat_map_img,
+                     output_file=None, display_mode='ortho', colorbar=False,
+                     cbar_tick_format="%.2g",
+                     figure=None, axes=None, title=None, threshold='auto',
+                     annotate=True,
+                     black_bg=False,
+                     cmap=None,
+                     alpha=0.7,
+                     vmin=None, vmax=None,
+                     plot_abs=True,
+                     symmetric_cbar="auto",
+                     resampling_interpolation='continuous',
+                     radiological=False,
+                     **kwargs):
     """Plot 2d projections of an ROI/mask image (by default 3 projections:
     Frontal, Axial, and Lateral). The brain glass schematics
     are added on top of the image.
@@ -1300,8 +1041,8 @@ def plot_glass_brain(
         Default='auto'.
     %(resampling_interpolation)s
         Default='continuous'.
-    %(radiological)s
-
+    %(radiological)s 
+        
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
@@ -1311,92 +1052,54 @@ def plot_glass_brain(
         cmap = cm.cold_hot if black_bg else cm.cold_white_hot
 
     if stat_map_img:
-        stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype="auto")
+        stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype='auto')
         if plot_abs:
-            (
-                cbar_vmin,
-                cbar_vmax,
-                vmin,
-                vmax,
-            ) = _get_colorbar_and_data_ranges(
+            cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
                 _safe_get_data(stat_map_img, ensure_finite=True),
                 vmax,
                 symmetric_cbar,
                 kwargs,
-                0,
-            )
+                0)
         else:
-            (
-                cbar_vmin,
-                cbar_vmax,
-                vmin,
-                vmax,
-            ) = _get_colorbar_and_data_ranges(
+            cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
                 _safe_get_data(stat_map_img, ensure_finite=True),
                 vmax,
                 symmetric_cbar,
-                kwargs,
-            )
+                kwargs)
     else:
         cbar_vmin, cbar_vmax = None, None
 
     def display_factory(display_mode):
-        return functools.partial(
-            get_projector(display_mode), alpha=alpha, plot_abs=plot_abs
-        )
+        return functools.partial(get_projector(display_mode),
+                                 alpha=alpha, plot_abs=plot_abs)
 
     display = _plot_img_with_bg(
-        img=stat_map_img,
-        output_file=output_file,
-        display_mode=display_mode,
-        figure=figure,
-        axes=axes,
-        title=title,
-        annotate=annotate,
-        black_bg=black_bg,
-        threshold=threshold,
-        cmap=cmap,
-        colorbar=colorbar,
-        cbar_tick_format=cbar_tick_format,
-        display_factory=display_factory,
-        vmin=vmin,
-        vmax=vmax,
-        cbar_vmin=cbar_vmin,
-        cbar_vmax=cbar_vmax,
+        img=stat_map_img, output_file=output_file, display_mode=display_mode,
+        figure=figure, axes=axes, title=title, annotate=annotate,
+        black_bg=black_bg, threshold=threshold, cmap=cmap, colorbar=colorbar,
+        cbar_tick_format=cbar_tick_format, display_factory=display_factory,
+        vmin=vmin, vmax=vmax, cbar_vmin=cbar_vmin, cbar_vmax=cbar_vmax,
         resampling_interpolation=resampling_interpolation,
-        radiological=radiological,
-        **kwargs,
-    )
+        radiological=radiological, **kwargs)
 
-    if stat_map_img is None and "l" in display.axes:
-        display.axes["l"].ax.invert_xaxis()
+    if stat_map_img is None and 'l' in display.axes:
+        display.axes['l'].ax.invert_xaxis()
 
     return display
 
 
 @fill_doc
-def plot_connectome(
-    adjacency_matrix,
-    node_coords,
-    node_color="auto",
-    node_size=50,
-    edge_cmap=cm.bwr,
-    edge_vmin=None,
-    edge_vmax=None,
-    edge_threshold=None,
-    output_file=None,
-    display_mode="ortho",
-    figure=None,
-    axes=None,
-    title=None,
-    annotate=True,
-    black_bg=False,
-    alpha=0.7,
-    edge_kwargs=None,
-    node_kwargs=None,
-    colorbar=False,
-    radiological=False,
-):
+def plot_connectome(adjacency_matrix, node_coords,
+                    node_color='auto', node_size=50,
+                    edge_cmap=cm.bwr,
+                    edge_vmin=None, edge_vmax=None,
+                    edge_threshold=None,
+                    output_file=None, display_mode='ortho',
+                    figure=None, axes=None, title=None,
+                    annotate=True, black_bg=False,
+                    alpha=0.7,
+                    edge_kwargs=None, node_kwargs=None,
+                    colorbar=False, radiological=False):
     """Plot connectome on top of the brain glass schematics.
 
     The plotted image should be in MNI space for this function to work
@@ -1474,31 +1177,20 @@ def plot_connectome(
         node coords on brain probabilistic atlases.
 
     """
-    display = plot_glass_brain(
-        None,
-        display_mode=display_mode,
-        figure=figure,
-        axes=axes,
-        title=title,
-        annotate=annotate,
-        black_bg=black_bg,
-        alpha=alpha,
-        radiological=radiological,
-    )
+    display = plot_glass_brain(None,
+                               display_mode=display_mode,
+                               figure=figure, axes=axes, title=title,
+                               annotate=annotate,
+                               black_bg=black_bg,
+                               alpha=alpha, radiological=radiological)
 
-    display.add_graph(
-        adjacency_matrix,
-        node_coords,
-        node_color=node_color,
-        node_size=node_size,
-        edge_cmap=edge_cmap,
-        edge_vmin=edge_vmin,
-        edge_vmax=edge_vmax,
-        edge_threshold=edge_threshold,
-        edge_kwargs=edge_kwargs,
-        node_kwargs=node_kwargs,
-        colorbar=colorbar,
-    )
+    display.add_graph(adjacency_matrix, node_coords,
+                      node_color=node_color, node_size=node_size,
+                      edge_cmap=edge_cmap,
+                      edge_vmin=edge_vmin, edge_vmax=edge_vmax,
+                      edge_threshold=edge_threshold,
+                      edge_kwargs=edge_kwargs, node_kwargs=node_kwargs,
+                      colorbar=colorbar)
 
     if output_file is not None:
         display.savefig(output_file)
@@ -1509,26 +1201,12 @@ def plot_connectome(
 
 
 @fill_doc
-def plot_markers(
-    node_values,
-    node_coords,
-    node_size="auto",
-    node_cmap=plt.cm.viridis_r,
-    node_vmin=None,
-    node_vmax=None,
-    node_threshold=None,
-    alpha=0.7,
-    output_file=None,
-    display_mode="ortho",
-    figure=None,
-    axes=None,
-    title=None,
-    annotate=True,
-    black_bg=False,
-    node_kwargs=None,
-    colorbar=True,
-    radiological=False,
-):
+def plot_markers(node_values, node_coords, node_size='auto',
+                 node_cmap=plt.cm.viridis_r, node_vmin=None, node_vmax=None,
+                 node_threshold=None, alpha=0.7, output_file=None,
+                 display_mode="ortho", figure=None, axes=None, title=None,
+                 annotate=True, black_bg=False, node_kwargs=None,
+                 colorbar=True, radiological=False):
     """Plot network nodes (markers) on top of the brain glass schematics.
 
     Nodes are color coded according to provided nodal measure. Nodal measure
@@ -1591,27 +1269,19 @@ def plot_markers(
     node_coords = np.array(node_coords)
 
     # Validate node_values
-    if node_values.shape != (node_coords.shape[0],):
-        msg = (
-            "Dimension mismatch: 'node_values' should be vector of length "
-            f"{len(node_coords)}, "
-            f"but current shape is {node_values.shape} "
-            f"instead of {(node_coords.shape[0], )}"
-        )
+    if node_values.shape != (node_coords.shape[0], ):
+        msg = ("Dimension mismatch: 'node_values' should be vector of length "
+               f"{len(node_coords)}, "
+               f"but current shape is {node_values.shape} "
+               f"instead of {(node_coords.shape[0], )}")
         raise ValueError(msg)
 
-    display = plot_glass_brain(
-        None,
-        display_mode=display_mode,
-        figure=figure,
-        axes=axes,
-        title=title,
-        annotate=annotate,
-        black_bg=black_bg,
-        radiological=radiological,
-    )
+    display = plot_glass_brain(None, display_mode=display_mode,
+                               figure=figure, axes=axes, title=title,
+                               annotate=annotate, black_bg=black_bg,
+                               radiological=radiological)
 
-    if isinstance(node_size, str) and node_size == "auto":
+    if isinstance(node_size, str) and node_size == 'auto':
         node_size = min(1e4 / len(node_coords), 100)
 
     # Filter out nodes with node values below threshold
@@ -1620,19 +1290,15 @@ def plot_markers(
             msg = (
                 f"Provided 'node_threshold' value: {node_threshold} "
                 "should not exceed "
-                f"highest node value: {np.max(node_values)}"
-            )
+                f"highest node value: {np.max(node_values)}")
             raise ValueError(msg)
 
         retained_nodes = node_values > node_threshold
         node_values = node_values[retained_nodes]
         node_coords = node_coords[retained_nodes]
         if isinstance(node_size, collections.abc.Iterable):
-            node_size = [
-                size
-                for ok_retain, size in zip(retained_nodes, node_size)
-                if ok_retain
-            ]
+            node_size = [size for ok_retain, size in
+                         zip(retained_nodes, node_size) if ok_retain]
 
     # Calculate node colors based on value
     node_vmin = np.min(node_values) if node_vmin is None else node_vmin
@@ -1641,24 +1307,19 @@ def plot_markers(
         node_vmin = 0.9 * node_vmin
         node_vmax = 1.1 * node_vmax
     norm = matplotlib.colors.Normalize(vmin=node_vmin, vmax=node_vmax)
-    node_cmap = (
-        plt.get_cmap(node_cmap)
-        if isinstance(node_cmap, str)
-        else node_cmap
-    )
-    node_color = [
-        node_cmap(norm(node_value)) for node_value in node_values
-    ]
+    node_cmap = (plt.get_cmap(node_cmap) if isinstance(node_cmap, str)
+                 else node_cmap)
+    node_color = [node_cmap(norm(node_value)) for node_value in node_values]
 
     # Prepare additional parameters for plt.scatter
     node_kwargs = {} if node_kwargs is None else node_kwargs
-    node_kwargs.update([("alpha", alpha)])
+    node_kwargs.update([('alpha', alpha)])
 
     display.add_markers(
         marker_coords=node_coords,
         marker_color=node_color,
         marker_size=node_size,
-        **node_kwargs,
+        **node_kwargs
     )
 
     if colorbar:
@@ -1674,21 +1335,10 @@ def plot_markers(
 
 
 @fill_doc
-def plot_carpet(
-    img,
-    mask_img=None,
-    mask_labels=None,
-    t_r=None,
-    detrend=True,
-    output_file=None,
-    figure=None,
-    axes=None,
-    vmin=None,
-    vmax=None,
-    title=None,
-    cmap="gray",
-    cmap_labels=plt.cm.gist_ncar,
-):
+def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
+                detrend=True, output_file=None,
+                figure=None, axes=None, vmin=None, vmax=None, title=None,
+                cmap="gray", cmap_labels=plt.cm.gist_ncar):
     """Plot an image representation of voxel intensities across time.
 
     This figure is also known as a "grayplot" or "Power plot".
@@ -1756,7 +1406,7 @@ def plot_carpet(
     .. footbibliography::
 
     """
-    img = _utils.check_niimg_4d(img, dtype="auto")
+    img = _utils.check_niimg_4d(img, dtype='auto')
 
     # Define TR and number of frames
     t_r = t_r or img.header.get_zooms()[-1]
@@ -1765,7 +1415,7 @@ def plot_carpet(
     if mask_img is None:
         mask_img = compute_epi_mask(img)
     else:
-        mask_img = _utils.check_niimg_3d(mask_img, dtype="auto")
+        mask_img = _utils.check_niimg_3d(mask_img, dtype='auto')
 
     is_atlas = len(np.unique(mask_img.get_fdata())) > 2
     if is_atlas:
@@ -1774,10 +1424,10 @@ def plot_carpet(
         atlas_img_res = resample_to_img(
             mask_img,
             img,
-            interpolation="nearest",
+            interpolation='nearest',
         )
         atlas_bin = math_img(
-            f"img != {background_label}",
+            f'img != {background_label}',
             img=atlas_img_res,
         )
         masker = NiftiMasker(atlas_bin, target_affine=img.affine)
@@ -1789,7 +1439,7 @@ def plot_carpet(
         if mask_labels:
             label_dtype = type(list(mask_labels.values())[0])
             if label_dtype != atlas_values.dtype:
-                print(f"Coercing atlas_values to {label_dtype}")
+                print(f'Coercing atlas_values to {label_dtype}')
                 atlas_values = atlas_values.astype(label_dtype)
 
         # Sort data and atlas by atlas values
@@ -1802,7 +1452,7 @@ def plot_carpet(
 
     # Detrend and standardize data
     if detrend:
-        data = clean(data, t_r=t_r, detrend=True, standardize="zscore")
+        data = clean(data, t_r=t_r, detrend=True, standardize='zscore')
 
     if figure is None:
         if not axes:
@@ -1814,9 +1464,7 @@ def plot_carpet(
     if axes is None:
         axes = figure.add_subplot(1, 1, 1)
     else:
-        assert (
-            axes.figure is figure
-        ), "The axes passed are not in the figure"
+        assert axes.figure is figure, ('The axes passed are not in the figure')
 
     # Determine vmin and vmax based on the full data
     std = np.mean(data.std(axis=0))
@@ -1828,7 +1476,7 @@ def plot_carpet(
     # Get smallest power of 2 greater than the number of volumes divided by the
     # cutoff, to determine how much to decimate (downsample) the data.
     n_decimations = int(np.ceil(np.log2(np.ceil(n_tsteps / LONG_CUTOFF))))
-    data = data[:: 2**n_decimations, :]
+    data = data[::2 ** n_decimations, :]
 
     if is_atlas:
         # Define nested GridSpec
@@ -1846,9 +1494,9 @@ def plot_carpet(
         ax0.set_xticks([])
         ax0.imshow(
             atlas_values[:, np.newaxis],
-            interpolation="none",
-            aspect="auto",
-            cmap=cmap_labels,
+            interpolation='none',
+            aspect='auto',
+            cmap=cmap_labels
         )
         if mask_labels:
             # Add labels to middle of each associated band
@@ -1858,32 +1506,30 @@ def plot_carpet(
                 for i in np.unique(atlas_values)
             ]
             ax0.set_yticks(ytick_locs)
-            ax0.set_yticklabels(
-                [mask_labels_inv[i] for i in np.unique(atlas_values)]
-            )
+            ax0.set_yticklabels([
+                mask_labels_inv[i] for i in np.unique(atlas_values)
+            ])
         else:
             ax0.set_yticks([])
 
         # Carpet plot
         if _compare_version(matplotlib.__version__, ">", "3.7.2"):
             axes.remove()  # remove axes for newer versions of mpl
-        axes = plt.subplot(
-            gs[1]
-        )  # overwrites axes with older versions of mpl
+        axes = plt.subplot(gs[1])  # overwrites axes with older versions of mpl
         axes.imshow(
             data.T,
-            interpolation="nearest",
-            aspect="auto",
+            interpolation='nearest',
+            aspect='auto',
             cmap=cmap,
             vmin=vmin or default_vmin,
             vmax=vmax or default_vmax,
         )
-        ax0.tick_params(axis="both", which="both", length=0)
+        ax0.tick_params(axis='both', which='both', length=0)
     else:
         axes.imshow(
             data.T,
-            interpolation="nearest",
-            aspect="auto",
+            interpolation='nearest',
+            aspect='auto',
             cmap=cmap,
             vmin=vmin or default_vmin,
             vmax=vmax or default_vmax,
@@ -1895,33 +1541,32 @@ def plot_carpet(
 
     # Set 10 frame markers in X axis
     interval = max(
-        (int(data.shape[0] + 1) // 10, int(data.shape[0] + 1) // 5, 1)
-    )
+        (int(data.shape[0] + 1) // 10, int(data.shape[0] + 1) // 5, 1))
     xticks = list(range(0, data.shape[0])[::interval])
     axes.set_xticks(xticks)
-    axes.set_xlabel("time (s)")
+    axes.set_xlabel('time (s)')
 
     if title:
         axes.set_title(title)
 
     labels = t_r * (np.array(xticks))
-    labels *= 2**n_decimations
-    axes.set_xticklabels([f"{t:.02f}" for t in labels.tolist()])
+    labels *= (2 ** n_decimations)
+    axes.set_xticklabels([f'{t:.02f}' for t in labels.tolist()])
 
     # Remove and redefine spines
-    for side in ["top", "right"]:
+    for side in ['top', 'right']:
         # Toggle the spine objects
-        axes.spines[side].set_color("none")
+        axes.spines[side].set_color('none')
         axes.spines[side].set_visible(False)
 
-    axes.xaxis.set_ticks_position("bottom")
-    axes.spines["bottom"].set_position(("outward", 10))
+    axes.xaxis.set_ticks_position('bottom')
+    axes.spines['bottom'].set_position(('outward', 10))
 
     if not mask_labels:
-        axes.yaxis.set_ticks_position("left")
+        axes.yaxis.set_ticks_position('left')
         buffer = 20 if is_atlas else 10
-        axes.spines["left"].set_position(("outward", buffer))
-        axes.set_ylabel("voxels")
+        axes.spines['left'].set_position(('outward', buffer))
+        axes.set_ylabel('voxels')
 
     if output_file is not None:
         figure.savefig(output_file)
@@ -1931,17 +1576,9 @@ def plot_carpet(
     return figure
 
 
-def plot_img_comparison(
-    ref_imgs,
-    src_imgs,
-    masker,
-    plot_hist=True,
-    log=True,
-    ref_label="image set 1",
-    src_label="image set 2",
-    output_dir=None,
-    axes=None,
-):
+def plot_img_comparison(ref_imgs, src_imgs, masker, plot_hist=True, log=True,
+                        ref_label="image set 1", src_label="image set 2",
+                        output_dir=None, axes=None):
     """Create plots to compare two lists of images and measure correlation.
 
     The first plot displays linear correlation between voxel values.
@@ -2004,12 +1641,8 @@ def plot_img_comparison(
 
         if plot_hist:
             ax1.scatter(
-                ref_data,
-                src_data,
-                label=f"Pearsonr: {corr:.2f}",
-                c="g",
-                alpha=0.6,
-            )
+                ref_data, src_data, label=f"Pearsonr: {corr:.2f}", c="g",
+                alpha=.6)
             x = np.linspace(*ax1.get_xlim(), num=100)
             ax1.plot(x, x, linestyle="--", c="k")
             ax1.grid("on")
@@ -2017,12 +1650,8 @@ def plot_img_comparison(
             ax1.set_ylabel(src_label)
             ax1.legend(loc="best")
 
-            ax2.hist(
-                ref_data, alpha=0.6, bins=128, log=log, label=ref_label
-            )
-            ax2.hist(
-                src_data, alpha=0.6, bins=128, log=log, label=src_label
-            )
+            ax2.hist(ref_data, alpha=.6, bins=128, log=log, label=ref_label)
+            ax2.hist(src_data, alpha=.6, bins=128, log=log, label=src_label)
             ax2.set_title("Histogram of imgs values")
             ax2.grid("on")
             ax2.legend(loc="best")

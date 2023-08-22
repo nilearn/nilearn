@@ -16,9 +16,7 @@ def test_find_cut_coords():
     data = np.zeros((100, 100, 100))
     x_map, y_map, z_map = 50, 10, 40
     data[
-        x_map - 30 : x_map + 30,
-        y_map - 3 : y_map + 3,
-        z_map - 10 : z_map + 10,
+        x_map - 30 : x_map + 30, y_map - 3 : y_map + 3, z_map - 10 : z_map + 10
     ] = 1
 
     # identity affine
@@ -119,9 +117,7 @@ def test_find_cut_slices():
     data = np.zeros((50, 50, 50))
     x_map, y_map, z_map = 25, 5, 20
     data[
-        x_map - 15 : x_map + 15,
-        y_map - 3 : y_map + 3,
-        z_map - 10 : z_map + 10,
+        x_map - 15 : x_map + 15, y_map - 3 : y_map + 3, z_map - 10 : z_map + 10
     ] = 1
     img = nibabel.Nifti1Image(data, np.eye(4))
     for n_cuts in (2, 4):
@@ -190,9 +186,7 @@ def test_validity_of_ncuts_error_in_find_cut_slices():
     affine = np.eye(4)
     x_map, y_map, z_map = 25, 5, 20
     data[
-        x_map - 15 : x_map + 15,
-        y_map - 3 : y_map + 3,
-        z_map - 10 : z_map + 10,
+        x_map - 15 : x_map + 15, y_map - 3 : y_map + 3, z_map - 10 : z_map + 10
     ] = 1
     img = nibabel.Nifti1Image(data, affine)
     direction = "z"
@@ -212,9 +206,7 @@ def test_passing_of_ncuts_in_find_cut_slices():
     affine = np.eye(4)
     x_map, y_map, z_map = 25, 5, 20
     data[
-        x_map - 15 : x_map + 15,
-        y_map - 3 : y_map + 3,
-        z_map - 10 : z_map + 10,
+        x_map - 15 : x_map + 15, y_map - 3 : y_map + 3, z_map - 10 : z_map + 10
     ] = 1
     img = nibabel.Nifti1Image(data, affine)
     # smoke test to check if it rounds the floating point inputs
@@ -375,11 +367,7 @@ def test_find_probabilistic_atlas_cut_coords():
     arr3 = np.zeros((100, 100, 100))
 
     data = np.concatenate(
-        (
-            arr1[..., np.newaxis],
-            arr3[..., np.newaxis],
-            arr2[..., np.newaxis],
-        ),
+        (arr1[..., np.newaxis], arr3[..., np.newaxis], arr2[..., np.newaxis]),
         axis=3,
     )
 

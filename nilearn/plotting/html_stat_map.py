@@ -96,10 +96,7 @@ def _threshold_data(data, threshold=None):
 
     # Threshold
     threshold = check_threshold(
-        threshold,
-        data,
-        percentile_func=fast_abs_percentile,
-        name="threshold",
+        threshold, data, percentile_func=fast_abs_percentile, name="threshold"
     )
 
     # Mask data
@@ -159,12 +156,7 @@ def _save_sprite(
 
     # Save the sprite
     imsave(
-        output_sprite,
-        sprite,
-        vmin=vmin,
-        vmax=vmax,
-        cmap=cmap,
-        format=format,
+        output_sprite, sprite, vmin=vmin, vmax=vmax, cmap=cmap, format=format
     )
 
     return sprite
@@ -235,10 +227,7 @@ def _load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
         else:
             bg_img = check_niimg_3d(bg_img)
         masked_data = np.ma.masked_inside(
-            _safe_get_data(bg_img, ensure_finite=True),
-            -1e-6,
-            1e-6,
-            copy=False,
+            _safe_get_data(bg_img, ensure_finite=True), -1e-6, 1e-6, copy=False
         )
         bg_img = new_img_like(bg_img, masked_data)
         bg_img, black_bg, bg_min, bg_max = _load_anat(

@@ -139,15 +139,12 @@ def test_plot_stat_map_colorbar_variations(params, mni_3d_img, mni_affine):
 
 
 @pytest.mark.parametrize(
-    "shape,direction",
-    [((1, 6, 7), "x"), ((5, 1, 7), "y"), ((5, 6, 1), "z")],
+    "shape,direction", [((1, 6, 7), "x"), ((5, 1, 7), "y"), ((5, 6, 1), "z")]
 )
 def test_plot_stat_map_singleton_ax_dim(shape, direction):
     """Tests for plot_stat_map and singleton display mode."""
     plot_stat_map(
-        Nifti1Image(np.ones(shape), np.eye(4)),
-        None,
-        display_mode=direction,
+        Nifti1Image(np.ones(shape), np.eye(4)), None, display_mode=direction
     )
     plt.close()
 

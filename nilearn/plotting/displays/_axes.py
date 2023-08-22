@@ -391,13 +391,7 @@ class GlassBrainAxes(BaseAxes):
     """
 
     def __init__(
-        self,
-        ax,
-        direction,
-        coord,
-        plot_abs=True,
-        radiological=False,
-        **kwargs,
+        self, ax, direction, coord, plot_abs=True, radiological=False, **kwargs
     ):
         super().__init__(ax, direction, coord, radiological=radiological)
         self._plot_abs = plot_abs

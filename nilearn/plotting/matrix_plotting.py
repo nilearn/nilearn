@@ -315,8 +315,7 @@ def plot_matrix(
             _fit_axes(axes)
         elif own_fig:
             plt.tight_layout(
-                pad=0.1,
-                rect=((0, 0, 0.95, 1) if colorbar else (0, 0, 1, 1)),
+                pad=0.1, rect=((0, 0, 0.95, 1) if colorbar else (0, 0, 1, 1))
             )
     if colorbar:
         divider = make_axes_locatable(axes)
