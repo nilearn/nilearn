@@ -486,10 +486,10 @@ def _threshold_and_rescale(data, threshold, vmin, vmax):
     This function thresholds and rescales the provided data.
     """
     data_copy, vmin, vmax = _rescale(data, vmin, vmax)
-    return data_copy, _threshold(data, threshold, vmin), vmin, vmax
+    return data_copy, _threshold(data, threshold, vmin, vmax), vmin, vmax
 
 
-def _threshold(data, threshold, vmin):
+def _threshold(data, threshold, vmin, vmax):
     """Thresholds the data."""
     # If no thresholding and nans, filter them out
     if threshold is None:
@@ -498,6 +498,8 @@ def _threshold(data, threshold, vmin):
         mask = np.abs(data) >= threshold
         if vmin > -threshold:
             mask = np.logical_and(mask, data >= vmin)
+        if vmax < threshold:
+            mask = np.logical_and(mask, data <= vmax)
     return mask
 
 
