@@ -962,7 +962,7 @@ def test_create_cosine_drift_terms():
 
     # raise warning if cosine drift term is not created
     high_pass_fail = 0.002
-    with pytest.warns(UserWarning, match="Cosine filter was not create"):
+    with pytest.warns(UserWarning, match="Cosine filter was not created"):
         cosine_confounds = nisignal._create_cosine_drift_terms(
             signals, confounds, high_pass_fail, t_r
         )
