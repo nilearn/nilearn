@@ -79,6 +79,19 @@ def close_all():
         plt.close("all")  # takes < 1 us so just always do it
 
 
+# ------------------------   RNG   ------------------------#
+
+
+def _rng():
+    return np.random.RandomState(42)
+
+
+@pytest.fixture()
+def rng():
+    """Return a seeded random number generator."""
+    return _rng()
+
+
 # ------------------------ AFFINES ------------------------#
 
 
@@ -164,8 +177,7 @@ def _img_3d_rand(affine=_affine_eye()):
 
     Mostly used for set up in other fixtures in other testing modules.
     """
-    rng = np.random.RandomState(42)
-    data = rng.rand(*_shape_3d_default())
+    data = _rng().rand(*_shape_3d_default())
     return Nifti1Image(data, affine)
 
 
@@ -177,7 +189,7 @@ def img_3d_rand_eye():
 
 def _img_3d_mni(affine=_affine_mni()):
     data_positive = np.zeros((7, 7, 3))
-    rng = np.random.RandomState(42)
+    rng = _rng()
     data_rng = rng.rand(7, 7, 3)
     data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
     return Nifti1Image(data_positive, affine)
@@ -237,15 +249,14 @@ def img_4d_ones_eye():
 @pytest.fixture
 def img_4D_rand_eye():
     """Return a default random filled 4D Nifti1Image (identity affine)."""
-    rng = np.random.RandomState(42)
-    data = rng.rand(*_shape_4d_default())
+    data = _rng().rand(*_shape_4d_default())
     return Nifti1Image(data, _affine_eye())
 
 
 @pytest.fixture()
 def testdata_4d_for_plotting():
     """Random 4D images for testing figures for multivolume data."""
-    rng = np.random.RandomState(42)
+    rng = _rng()
     img_4d = Nifti1Image(rng.uniform(size=(7, 7, 3, 10)), _affine_mni())
     img_4d_long = Nifti1Image(rng.uniform(size=(7, 7, 3, 1777)), _affine_mni())
     img_mask = Nifti1Image(np.ones((7, 7, 3), dtype="uint8"), _affine_mni())
