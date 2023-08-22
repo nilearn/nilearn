@@ -107,7 +107,7 @@ def check_events(events):
 
     # Duplicate handling strategy
     # Sum the modulation values of duplicate events
-    STRATEGY = {"modulation": np.sum}
+    STRATEGY = {"modulation": "sum"}
 
     cleaned_events = (
         events_copy.groupby(COLUMN_DEFINING_EVENT_IDENTITY, sort=False)
