@@ -146,7 +146,7 @@ def test_load_mni152_wm_mask():
     assert wm_mask_2mm.shape == (99, 117, 95)
 
 
-def test_fetch_icbm152_brain_gm_mask(tmp_path, request_mocker):
+def test_fetch_icbm152_brain_gm_mask(tmp_path):
     dataset = struct.fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
     struct.load_mni152_template(resolution=2).to_filename(dataset.gm)
     grey_matter_img = struct.fetch_icbm152_brain_gm_mask(
