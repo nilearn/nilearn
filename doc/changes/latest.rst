@@ -63,3 +63,4 @@ Changes
 - Added warning to deprecate `darkness` in ``surf_plotting._compute_facecolors_matplotlib`` and ``html_surface._get_vertexcolor`` (:gh`3855` by `Alisha Kodibagkar`_)
 - :bdg-secondary:`Doc` Replace skipped doctests with default code-blocks (:gh:`3681` in by `Patrick Sadil`_)
 - Move the `~nilearn.plotting.html_surface._mix_colormaps` to `cm.py` in :mod:`~nilearn.plotting` (:gh:`3919` by `Ahmad Chamma`_)
+- Remove deprecation decorator from `~nilearn.glm.regression` (:gh:`3921` by `Ahmad Chamma`_)
