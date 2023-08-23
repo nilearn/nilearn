@@ -1079,14 +1079,12 @@ def plot_glass_brain(stat_map_img,
         if plot_abs:
             cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
                 _safe_get_data(stat_map_img, ensure_finite=True),
-                vmin=vmin,
                 vmax=vmax,
                 symmetric_cbar=symmetric_cbar,
                 force_min_stat_map_value=0)
         else:
             cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
                 _safe_get_data(stat_map_img, ensure_finite=True),
-                vmin=vmin,
                 vmax=vmax,
                 symmetric_cbar=symmetric_cbar)
     else:
