@@ -576,10 +576,10 @@ def test_fetch_atlas_basc_multiscale_2015_old_code(
     )
 
     name_asym = "template_cambridge_basc_multiscale_nii_asym"
-    basename_sym = f"template_cambridge_basc_multiscale_asym_{key}.nii.gz"
+    basename_asym = f"template_cambridge_basc_multiscale_asym_{key}.nii.gz"
 
     assert data_asym[key] == str(
-        tmp_path / dataset_name / name_asym / basename_sym
+        tmp_path / dataset_name / name_asym / basename_asym
     )
 
     assert len(data_sym) == 10
