@@ -708,12 +708,6 @@ def test_plot_surf_stat_map_error():
     rng = np.random.RandomState(42)
     data = 10 * rng.standard_normal(size=mesh[0].shape[0])
 
-    # Try to input vmin
-    with pytest.raises(
-            ValueError,
-            match='this function does not accept a "vmin" argument'):
-        plot_surf_stat_map(mesh, stat_map=data, vmin=0)
-
     # Wrong size of stat map data
     with pytest.raises(
             ValueError,
@@ -838,7 +832,10 @@ def test_plot_img_on_surf_hemispheres_and_orientations(mni_3d_img):
 def test_plot_img_on_surf_colorbar(mni_3d_img):
     nii = mni_3d_img
     plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
-                     colorbar=True, vmax=5, threshold=3)
+                     colorbar=True, vmin=-5, vmax=5, threshold=3)
+    plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
+                     colorbar=True, vmin=-1, vmax=5, symmetric_cbar=False,
+                     threshold=3)
     plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
                      colorbar=False)
     plot_img_on_surf(nii, hemispheres=['right'], views=['lateral'],
@@ -915,6 +912,18 @@ def test_plot_img_on_surf_with_axes_kwarg(mni_3d_img):
             hemispheres=["right"],
             inflat=True,
             axes="something",
+        )
+
+
+def test_plot_img_on_surf_with_engine_kwarg(mni_3d_img):
+    nii = mni_3d_img
+    with pytest.raises(ValueError):
+        plot_img_on_surf(
+            nii,
+            views=["anterior"],
+            hemispheres=["right"],
+            inflat=True,
+            engine="something",
         )
 
 

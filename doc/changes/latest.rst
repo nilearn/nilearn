@@ -46,6 +46,8 @@ Enhancements
 
 - Add ``LassoCV`` as a new estimator option for Decoder objects (:gh: `3781` by `Michelle Wang`_)
 
+- Add ``vmin`` and ``symmetric_cbar`` arguments to :func:`~nilearn.plotting.plot_img_on_surf` (:gh:`3873` by `Michelle Wang`_).
+
 Changes
 -------
 
