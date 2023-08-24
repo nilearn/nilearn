@@ -18,6 +18,7 @@ from numpy.testing import (
 
 from nilearn import _utils
 from nilearn._utils import testing
+from nilearn.conftest import _affine_eye
 from nilearn.image import get_data
 from nilearn.image.image import _pad_array, crop_img
 from nilearn.image.resampling import (
@@ -30,8 +31,6 @@ from nilearn.image.resampling import (
     resample_to_img,
 )
 
-AFFINE_EYE = np.eye(4)
-
 ANGLES_TO_TEST = (0, np.pi, np.pi / 2.0, np.pi / 4.0, np.pi / 3.0)
 
 SHAPE = (3, 2, 5, 2)
@@ -40,7 +39,7 @@ SHAPE = (3, 2, 5, 2)
 def _make_resampling_test_data():
     rng = np.random.RandomState(42)
     shape = SHAPE
-    affine = AFFINE_EYE
+    affine = _affine_eye()
     data = rng.randint(0, 10, shape, dtype="int32")
     img = Nifti1Image(data, affine)
     return img, affine, data

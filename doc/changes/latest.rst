@@ -46,6 +46,8 @@ Enhancements
 
 - Add ``LassoCV`` as a new estimator option for Decoder objects (:gh: `3781` by `Michelle Wang`_)
 
+- Add ``vmin`` and ``symmetric_cbar`` arguments to :func:`~nilearn.plotting.plot_img_on_surf` (:gh:`3873` by `Michelle Wang`_).
+
 Changes
 -------
 
@@ -60,3 +62,5 @@ Changes
 - Refactor error raising tests using context managers (:gh:`3854` BY `François Paugam`_)
 - Added warning to deprecate `darkness` in ``surf_plotting._compute_facecolors_matplotlib`` and ``html_surface._get_vertexcolor`` (:gh`3855` by `Alisha Kodibagkar`_)
 - :bdg-secondary:`Doc` Replace skipped doctests with default code-blocks (:gh:`3681` in by `Patrick Sadil`_)
+- Move the `~nilearn.plotting.html_surface._mix_colormaps` to `cm.py` in :mod:`~nilearn.plotting` (:gh:`3919` by `Ahmad Chamma`_)
+- Remove deprecation decorator from `~nilearn.glm.regression` (:gh:`3921` by `Ahmad Chamma`_)

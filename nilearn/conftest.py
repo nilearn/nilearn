@@ -79,47 +79,191 @@ def close_all():
         plt.close("all")  # takes < 1 us so just always do it
 
 
-MNI_AFFINE = np.array(
-    [
-        [2.0, 0.0, 0.0, -98.0],
-        [0.0, 2.0, 0.0, -134.0],
-        [0.0, 0.0, 2.0, -72.0],
-        [0.0, 0.0, 0.0, 1.0],
-    ]
-)
+# ------------------------   RNG   ------------------------#
 
 
-def _mni_3d_img(affine=MNI_AFFINE):
+def _rng():
+    return np.random.RandomState(42)
+
+
+@pytest.fixture()
+def rng():
+    """Return a seeded random number generator."""
+    return _rng()
+
+
+# ------------------------ AFFINES ------------------------#
+
+
+def _affine_mni():
+    """Return an affine corresponding to 2mm isotropic MNI template.
+
+    Mostly used for set up in other fixtures in other testing modules.
+    """
+    return np.array(
+        [
+            [2.0, 0.0, 0.0, -98.0],
+            [0.0, 2.0, 0.0, -134.0],
+            [0.0, 0.0, 2.0, -72.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ]
+    )
+
+
+@pytest.fixture()
+def affine_mni():
+    """Return an affine corresponding to 2mm isotropic MNI template."""
+    return _affine_mni()
+
+
+def _affine_eye():
+    """Return an identity matrix affine.
+
+    Mostly used for set up in other fixtures in other testing modules.
+    """
+    return np.eye(4)
+
+
+@pytest.fixture()
+def affine_eye():
+    """Return an identity matrix affine."""
+    return _affine_eye()
+
+
+# ------------------------ SHAPES ------------------------#
+
+
+def _shape_3d_default():
+    """Return default shape for a 3D image.
+
+    Mostly used for set up in other fixtures in other testing modules.
+    """
+    return (10, 10, 10)
+
+
+def _shape_4d_default():
+    """Return default shape for a 4D image.
+
+    Mostly used for set up in other fixtures in other testing modules.
+    """
+    return (10, 10, 10, 10)
+
+
+@pytest.fixture()
+def shape_3d_default():
+    """Return default shape for a 3D image."""
+    return _shape_3d_default()
+
+
+@pytest.fixture()
+def shape_4d_default():
+    """Return default shape for a 4D image."""
+    return _shape_4d_default()
+
+
+def _img_zeros(shape, affine):
+    return Nifti1Image(np.zeros(shape), affine)
+
+
+def _img_ones(shape, affine):
+    return Nifti1Image(np.ones(shape), affine)
+
+
+# ------------------------ 3D IMAGES ------------------------#
+
+
+def _img_3d_rand(affine=_affine_eye()):
+    """Return random 3D Nifti1Image in MNI space.
+
+    Mostly used for set up in other fixtures in other testing modules.
+    """
+    data = _rng().rand(*_shape_3d_default())
+    return Nifti1Image(data, affine)
+
+
+@pytest.fixture()
+def img_3d_rand_eye():
+    """Return random 3D Nifti1Image in MNI space."""
+    return _img_3d_rand()
+
+
+def _img_3d_mni(affine=_affine_mni()):
     data_positive = np.zeros((7, 7, 3))
-    rng = np.random.RandomState(42)
+    rng = _rng()
     data_rng = rng.rand(7, 7, 3)
     data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
     return Nifti1Image(data_positive, affine)
 
 
 @pytest.fixture()
-def mni_affine():
-    """Return an affine corresponding to 2mm isotropic MNI template."""
-    return MNI_AFFINE
+def img_3d_mni():
+    """Return a default random 3D Nifti1Image in MNI space."""
+    return _img_3d_mni()
 
 
-@pytest.fixture()
-def mni_3d_img():
-    """Fixture for a random 3D image in MNI space."""
-    return _mni_3d_img()
+def _img_3d_zeros(shape=_shape_3d_default(), affine=_affine_eye()):
+    """Return a default zeros filled 3D Nifti1Image (identity affine).
+
+    Mostly used for set up in other fixtures in other testing modules.
+    """
+    return _img_zeros(shape, affine)
+
+
+@pytest.fixture
+def img_3d_zeros_eye():
+    """Return a zeros-filled 3D Nifti1Image (identity affine)."""
+    return _img_3d_zeros()
+
+
+def _img_3d_ones(shape=_shape_3d_default(), affine=_affine_eye()):
+    """Return a ones-filled 3D Nifti1Image (identity affine).
+
+    Mostly used for set up in other fixtures in other testing modules.
+    """
+    return _img_ones(shape, affine)
+
+
+# ------------------------ 4D IMAGES ------------------------#
+
+
+def _img_4d_zeros(shape=_shape_4d_default(), affine=_affine_eye()):
+    """Return a default zeros filled 4D Nifti1Image (identity affine).
+
+    Mostly used for set up in other fixtures in other testing modules.
+    """
+    return _img_zeros(shape, affine)
+
+
+@pytest.fixture
+def img_4d_zeros_eye():
+    """Return a default zeros filled 4D Nifti1Image (identity affine)."""
+    return _img_4d_zeros()
+
+
+@pytest.fixture
+def img_4d_ones_eye():
+    """Return a default ones filled 4D Nifti1Image (identity affine)."""
+    return _img_ones(_shape_4d_default(), _affine_eye())
+
+
+@pytest.fixture
+def img_4D_rand_eye():
+    """Return a default random filled 4D Nifti1Image (identity affine)."""
+    data = _rng().rand(*_shape_4d_default())
+    return Nifti1Image(data, _affine_eye())
 
 
 @pytest.fixture()
 def testdata_4d_for_plotting():
     """Random 4D images for testing figures for multivolume data."""
-    rng = np.random.RandomState(42)
-    img_4d = Nifti1Image(rng.uniform(size=(7, 7, 3, 10)), MNI_AFFINE)
-    img_4d_long = Nifti1Image(rng.uniform(size=(7, 7, 3, 1777)), MNI_AFFINE)
-    img_mask = Nifti1Image(np.ones((7, 7, 3), dtype="uint8"), MNI_AFFINE)
+    rng = _rng()
+    img_4d = Nifti1Image(rng.uniform(size=(7, 7, 3, 10)), _affine_mni())
+    img_4d_long = Nifti1Image(rng.uniform(size=(7, 7, 3, 1777)), _affine_mni())
+    img_mask = Nifti1Image(np.ones((7, 7, 3), dtype="uint8"), _affine_mni())
     atlas = np.ones((7, 7, 3), dtype="int32")
     atlas[2:5, :, :] = 2
     atlas[5:8, :, :] = 3
-    img_atlas = Nifti1Image(atlas, MNI_AFFINE)
+    img_atlas = Nifti1Image(atlas, _affine_mni())
     atlas_labels = {
         "gm": 1,
         "wm": 2,
