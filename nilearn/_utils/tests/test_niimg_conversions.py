@@ -27,6 +27,7 @@ from nilearn._utils.testing import (
     assert_memory_less_than,
     with_memory_profiler,
 )
+from nilearn.conftest import _img_3d_rand
 from nilearn.image import get_data
 
 
@@ -679,9 +680,8 @@ def test_concat_niimg_dtype(affine_eye):
 
 
 def nifti_generator(buffer):
-    rng = np.random.RandomState(42)
     for _ in range(10):
-        buffer.append(Nifti1Image(rng.random_sample((10, 10, 10)), np.eye(4)))
+        buffer.append(_img_3d_rand())
         yield buffer[-1]
 
 
