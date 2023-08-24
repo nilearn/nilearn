@@ -114,3 +114,8 @@ def test_plot_glass_brain_with_completely_masked_img(display_mode):
     img = Nifti1Image(np.zeros((10, 20, 30)), np.eye(4))
     plot_glass_brain(img, display_mode=display_mode)
     plt.close()
+
+
+def test_plot_glass_brain_vmin_vmax(mni_3d_img):
+    """Smoke tests for plot_glass_brain being passed vmin and vmax."""
+    plot_glass_brain(mni_3d_img, vmin=-2, vmax=2)
