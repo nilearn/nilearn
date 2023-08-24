@@ -6,12 +6,11 @@ import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 
+from nilearn.conftest import _affine_eye
 from nilearn.regions.parcellations import (
     Parcellations,
     _check_parameters_transform,
 )
-
-AFFINE_EYE = np.eye(4)
 
 METHODS = [
     "kmeans",
@@ -28,7 +27,7 @@ def test_image():
     data = np.zeros((10, 11, 12, 5))
     data[9, 10, 2] = 1
     data[4, 9, 3] = 2
-    return Nifti1Image(data, affine=AFFINE_EYE)
+    return Nifti1Image(data, affine=_affine_eye())
 
 
 @pytest.fixture
@@ -36,13 +35,7 @@ def test_image_2():
     data = np.ones((10, 11, 12, 10))
     data[6, 7, 8] = 2
     data[9, 10, 11] = 3
-    return Nifti1Image(data, affine=AFFINE_EYE)
-
-
-@pytest.fixture
-def empty_image():
-    data = np.zeros((10, 11, 12, 5))
-    return Nifti1Image(data, affine=AFFINE_EYE)
+    return Nifti1Image(data, affine=_affine_eye())
 
 
 def test_error_parcellation_method_none(test_image):
@@ -86,22 +79,24 @@ def test_parcellations_fit_on_single_nifti_image(method, n_parcel, test_image):
         assert parcellator.connectivity_ is not None
 
 
-def test_parcellations_warnings(empty_image):
+def test_parcellations_warnings(img_4d_zeros_eye):
     parcellator = Parcellations(method="kmeans", n_parcels=7, verbose=0)
 
     with pytest.warns(UserWarning):
-        parcellator.fit(empty_image)
+        parcellator.fit(img_4d_zeros_eye)
 
 
-def test_parcellations_no_warnings(empty_image):
+def test_parcellations_no_warnings(img_4d_zeros_eye):
     parcellator = Parcellations(method="kmeans", n_parcels=1, verbose=0)
     with warnings.catch_warnings(record=True) as record:
-        parcellator.fit(empty_image)
+        parcellator.fit(img_4d_zeros_eye)
     assert all([r.category is not UserWarning for r in record])
 
 
 @pytest.mark.parametrize("method", METHODS)
-def test_parcellations_fit_on_multi_nifti_images(method, test_image):
+def test_parcellations_fit_on_multi_nifti_images(
+    method, test_image, affine_eye
+):
     fmri_imgs = [test_image] * 3
 
     parcellator = Parcellations(method=method, n_parcels=5, verbose=0)
@@ -111,7 +106,7 @@ def test_parcellations_fit_on_multi_nifti_images(method, test_image):
 
     # Smoke test with explicit mask image
     mask_img = np.ones((10, 11, 12))
-    mask_img = Nifti1Image(mask_img, AFFINE_EYE)
+    mask_img = Nifti1Image(mask_img, affine_eye)
     parcellator = Parcellations(
         method=method, n_parcels=5, mask=mask_img, verbose=0
     )
@@ -287,12 +282,12 @@ def test_inverse_transform_single_nifti_image(method, n_parcel, test_image_2):
     assert fmri_compressed.shape == test_image_2.shape
 
 
-def test_transform_3d_input_images():
+def test_transform_3d_input_images(affine_eye):
     # test list of 3D images
     data = np.ones((10, 11, 12))
     data[6, 7, 8] = 2
     data[9, 10, 11] = 3
-    img = Nifti1Image(data, affine=AFFINE_EYE)
+    img = Nifti1Image(data, affine=affine_eye)
     imgs = [img] * 3
 
     parcellate = Parcellations(method="ward", n_parcels=20, verbose=0)

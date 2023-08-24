@@ -26,44 +26,6 @@ class SurfaceView(HTMLDocument):  # noqa: D101
     pass
 
 
-def _mix_colormaps(fg, bg):
-    """Mixes foreground and background arrays of RGBA colors.
-
-    Parameters
-    ----------
-    fg : numpy.ndarray
-        Array of shape (n, 4), foreground RGBA colors
-        represented as floats in [0, 1]
-    bg : numpy.ndarray
-        Array of shape (n, 4), background RGBA colors
-        represented as floats in [0, 1]
-
-    Returns
-    -------
-    mix : numpy.ndarray
-        Array of shape (n, 4), mixed colors
-        represented as floats in [0, 1]
-    """
-    # Adapted from https://stackoverflow.com/questions/726549/algorithm-for-additive-color-mixing-for-rgb-values/727339#727339 # noqa: E501
-    if fg.shape != bg.shape:
-        raise ValueError(
-            "Trying to mix colormaps with different shapes: "
-            f"{fg.shape}, {bg.shape}"
-        )
-
-    mix = np.empty_like(fg)
-
-    mix[:, 3] = 1 - (1 - fg[:, 3]) * (1 - bg[:, 3])
-
-    for color_index in range(0, 3):
-        mix[:, color_index] = (
-            fg[:, color_index] * fg[:, 3]
-            + bg[:, color_index] * bg[:, 3] * (1 - fg[:, 3])
-        ) / mix[:, 3]
-
-    return mix
-
-
 def _get_vertexcolor(surf_map, cmap, norm,
                      absolute_threshold=None, bg_map=None,
                      bg_on_data=None, darkness=None):
@@ -105,7 +67,7 @@ def _get_vertexcolor(surf_map, cmap, norm,
         # so that background map becomes visible
         surf_colors[~under_threshold, 3] = 0.7
 
-    vertex_colors = _mix_colormaps(surf_colors, bg_colors)
+    vertex_colors = cm._mix_colormaps(surf_colors, bg_colors)
 
     return to_color_strings(vertex_colors)
 

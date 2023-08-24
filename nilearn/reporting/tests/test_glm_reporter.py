@@ -206,10 +206,10 @@ def test_make_headings_with_contrasts_none_title_custom():
 
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
-def test_stat_map_to_svg_slice_z(mni_3d_img, cut_coords):
+def test_stat_map_to_svg_slice_z(img_3d_mni, cut_coords):
     table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
     glmr._stat_map_to_svg(
-        stat_img=mni_3d_img,
+        stat_img=img_3d_mni,
         bg_img=None,
         cut_coords=cut_coords,
         display_mode="ortho",
@@ -219,10 +219,10 @@ def test_stat_map_to_svg_slice_z(mni_3d_img, cut_coords):
 
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
-def test_stat_map_to_svg_glass_z(mni_3d_img, cut_coords):
+def test_stat_map_to_svg_glass_z(img_3d_mni, cut_coords):
     table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
     glmr._stat_map_to_svg(
-        stat_img=mni_3d_img,
+        stat_img=img_3d_mni,
         bg_img=None,
         cut_coords=cut_coords,
         display_mode="z",
@@ -232,14 +232,14 @@ def test_stat_map_to_svg_glass_z(mni_3d_img, cut_coords):
 
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
-def test_stat_map_to_svg_invalid_plot_type(mni_3d_img, cut_coords):
+def test_stat_map_to_svg_invalid_plot_type(img_3d_mni, cut_coords):
     expected_error = (
         "Invalid plot type provided. "
         "Acceptable options are 'slice' or 'glass'."
     )
     with pytest.raises(ValueError, match=expected_error):
         glmr._stat_map_to_svg(
-            stat_img=mni_3d_img,
+            stat_img=img_3d_mni,
             bg_img=None,
             cut_coords=cut_coords,
             display_mode="z",
