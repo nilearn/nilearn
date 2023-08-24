@@ -13,6 +13,7 @@ import pytest
 from numpy.testing import assert_array_equal
 
 from nilearn._utils.data_gen import basic_paradigm
+from nilearn.conftest import _rng
 from nilearn.glm.first_level import check_events
 
 
@@ -26,11 +27,11 @@ def duplicate_events_paradigm():
     return events
 
 
-def modulated_block_paradigm(rng):
+def modulated_block_paradigm():
     conditions = ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"]
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    durations = 5 + 5 * rng.uniform(size=len(onsets))
-    values = rng.uniform(size=len(onsets))
+    durations = 5 + 5 * _rng().uniform(size=len(onsets))
+    values = _rng().uniform(size=len(onsets))
     events = pd.DataFrame(
         {
             "trial_type": conditions,
@@ -42,11 +43,11 @@ def modulated_block_paradigm(rng):
     return events
 
 
-def modulated_event_paradigm(rng):
+def modulated_event_paradigm():
     conditions = ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"]
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     durations = 1 * np.ones(9)
-    values = rng.uniform(size=len(onsets))
+    values = _rng().uniform(size=len(onsets))
     events = pd.DataFrame(
         {
             "trial_type": conditions,
