@@ -8,10 +8,9 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 
 from nilearn._utils.testing import write_tmp_imgs
+from nilearn.conftest import _affine_eye
 from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker
-
-AFFINE_EYE = np.eye(4)
 
 SHAPE = (6, 8, 10)
 
@@ -30,7 +29,7 @@ def img_4D():
 def _make_multi_pca_test_data(with_activation=True):
     """Create a multi-subject dataset with or without activation."""
     shape = (6, 8, 10, 5)
-    affine = AFFINE_EYE
+    affine = _affine_eye()
     rng = np.random.RandomState(0)
     n_sub = 4
 
@@ -48,7 +47,7 @@ def _make_multi_pca_test_data(with_activation=True):
 
 @pytest.fixture(scope="module")
 def mask_img():
-    return Nifti1Image(np.ones(SHAPE, dtype=np.int8), AFFINE_EYE)
+    return Nifti1Image(np.ones(SHAPE, dtype=np.int8), _affine_eye())
 
 
 @pytest.fixture(scope="module")
