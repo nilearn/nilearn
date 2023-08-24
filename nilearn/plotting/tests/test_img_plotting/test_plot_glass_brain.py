@@ -117,5 +117,5 @@ def test_plot_glass_brain_with_completely_masked_img(display_mode):
 
 
 def test_plot_glass_brain_vmin_vmax(mni_3d_img):
-    """Smoke tests for plot_glass_brain beaing passed vmin and vmax."""
+    """Smoke tests for plot_glass_brain being passed vmin and vmax."""
     plot_glass_brain(mni_3d_img, vmin=-2, vmax=2)
