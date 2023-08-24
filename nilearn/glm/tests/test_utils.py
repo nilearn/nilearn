@@ -105,6 +105,7 @@ def test_z_score_f_values():
         z_sf = norm.isf(p)
         z_cdf = norm.ppf(cdf)
         z = z_sf if p <= 0.5 else z_cdf
+
         assert_array_almost_equal(z_score(p, one_minus_pvalue=cdf), z)
 
 
@@ -160,6 +161,7 @@ def test_mahalanobis():
     A = rng.uniform(size=(n, n)) / n
     A = np.dot(A.transpose(), A) + np.eye(n)
     mah = np.dot(x, np.dot(spl.inv(A), x))
+
     assert_almost_equal(mah, multiple_mahalanobis(x, A), decimal=1)
 
 
@@ -175,16 +177,19 @@ def test_mahalanobis2():
     i = rng.randint(3)
     mah = np.dot(x[:, i], np.dot(spl.inv(Aa[:, :, i]), x[:, i]))
     f_mah = (multiple_mahalanobis(x, Aa))[i]
+
     assert np.allclose(mah, f_mah)
 
 
 def test_mahalanobis_errors():
     effect = np.zeros((1, 2, 3))
     cov = np.zeros((3, 3, 3))
+
     with pytest.raises(ValueError):
         multiple_mahalanobis(effect, cov)
 
     cov = np.zeros((1, 2, 3))
+
     with pytest.raises(ValueError):
         multiple_mahalanobis(effect, cov)
 
@@ -198,17 +203,20 @@ def test_multiple_fast_inv():
         X[i] = np.dot(X[i], X[i].T)
         X_inv_ref[i] = spl.inv(X[i])
     X_inv = multiple_fast_inverse(X)
+
     assert_almost_equal(X_inv_ref, X_inv)
 
 
 def test_multiple_fast_inverse_errors():
     shape = (2, 2, 2)
     X = np.zeros(shape)
+
     with pytest.raises(ValueError):
         multiple_fast_inverse(X)
 
     shape = (10, 20, 20)
     X = np.zeros(shape)
+
     with pytest.raises(ValueError):
         multiple_fast_inverse(X)
 
@@ -217,13 +225,18 @@ def test_pos_recipr():
     X = np.array([2, 1, -1, 0], dtype=np.int8)
     eX = np.array([0.5, 1, 0, 0])
     Y = positive_reciprocal(X)
+
     assert_array_almost_equal, Y, eX
     assert Y.dtype.type == np.float64
+
     X2 = X.reshape((2, 2))
     Y2 = positive_reciprocal(X2)
+
     assert_array_almost_equal, Y2, eX.reshape((2, 2))
+
     # check that lists have arrived
     XL = [0, 1, -1]
+
     assert_array_almost_equal, positive_reciprocal(XL), [0, 1, 0]
     # scalars
     assert positive_reciprocal(-1) == 0
@@ -235,6 +248,7 @@ def test_img_table_checks():
     # check matching lengths
     with pytest.raises(ValueError):
         _check_list_length_match([""] * 2, [""], "", "")
+
     # check tables type and that can be loaded
     with pytest.raises(ValueError):
         _check_and_load_tables([".csv", ".csv"], "")
@@ -242,6 +256,7 @@ def test_img_table_checks():
         _check_and_load_tables([[], pd.DataFrame()], "")  # np.array([0]),
     with pytest.raises(ValueError):
         _check_and_load_tables([".csv", pd.DataFrame()], "")
+
     # check high level wrapper keeps behavior
     with pytest.raises(ValueError):
         _check_run_tables([""] * 2, [""], "")

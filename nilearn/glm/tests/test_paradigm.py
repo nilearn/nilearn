@@ -81,7 +81,7 @@ def write_events(events, tmpdir):
 
 def test_check_events():
     events = basic_paradigm()
-    ttype, onset, duration, modulation = check_events(events)
+    ttype, _, _, modulation = check_events(events)
 
     # Check that given trial type is right
     assert_array_equal(
@@ -164,6 +164,7 @@ def test_duplicate_events():
 
     """
     events = duplicate_events_paradigm()
+
     # Check that a warning is given to the user
     with pytest.warns(UserWarning, match="Duplicated events were detected."):
         ttype, onset, duration, modulation = check_events(events)
@@ -174,17 +175,18 @@ def test_duplicate_events():
     assert_array_equal(modulation, [1, 1, 2, 1, 1])
 
 
-def test_read_events():
-    """Test that a events for an experimental paradigm are correctly read."""
-    import tempfile
-
-    tmpdir = tempfile.mkdtemp()
-    for events in (
+@pytest.mark.parametrize(
+    "events",
+    [
         block_paradigm(),
         modulated_event_paradigm(),
         modulated_block_paradigm(),
         basic_paradigm(),
-    ):
-        csvfile = write_events(events, tmpdir)
-        read_paradigm = pd.read_table(csvfile)
-        assert (read_paradigm["onset"] == events["onset"]).all()
+    ],
+)
+def test_read_events(events, tmp_path):
+    """Test that a events for an experimental paradigm are correctly read."""
+    csvfile = write_events(events, tmp_path)
+    read_paradigm = pd.read_table(csvfile)
+
+    assert (read_paradigm["onset"] == events["onset"]).all()

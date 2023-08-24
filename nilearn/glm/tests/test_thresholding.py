@@ -5,6 +5,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_equal
 from scipy.stats import norm
 
+from nilearn.conftest import _shape_3d_default
 from nilearn.glm import (
     cluster_level_inference,
     fdr_threshold,
@@ -14,24 +15,6 @@ from nilearn.glm.thresholding import _compute_hommel_value
 from nilearn.image import get_data
 
 
-def _shape_3d_default():
-    return (10, 10, 10)
-
-
-@pytest.fixture
-def shape_3d_default():
-    return _shape_3d_default()
-
-
-def _affine_eye():
-    return np.eye(4)
-
-
-@pytest.fixture
-def affine_eye():
-    return _affine_eye()
-
-
 def test_fdr():
     rng = np.random.RandomState(42)
     n = 100
@@ -39,16 +22,19 @@ def test_fdr():
     x[:10] = 0.0005
     x = norm.isf(x)
     rng.shuffle(x)
+
     assert_almost_equal(fdr_threshold(x, 0.1), norm.isf(0.0005))
     assert fdr_threshold(x, 0.001) == np.infty
     with pytest.raises(ValueError):
         fdr_threshold(x, -0.1)
     with pytest.raises(ValueError):
         fdr_threshold(x, 1.5)
+
     # addresses #2879
     n = 10
     pvals = np.linspace(1 / n, 1, n)
     pvals[0] = 0.007
+
     assert np.isfinite(fdr_threshold(norm.isf(pvals), 0.1))
 
 
@@ -60,13 +46,8 @@ def data_norm_isf():
     )
 
 
-@pytest.fixture
-def img_3d_ones():
-    return Nifti1Image(np.ones(_shape_3d_default()), _affine_eye())
-
-
 def test_threshold_stats_img_no_height_control(
-    data_norm_isf, img_3d_ones, affine_eye
+    data_norm_isf, img_3d_ones_eye, affine_eye
 ):
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
@@ -75,23 +56,25 @@ def test_threshold_stats_img_no_height_control(
     # excessive cluster forming threshold
     th_map, _ = threshold_stats_img(
         stat_img,
-        mask_img=img_3d_ones,
+        mask_img=img_3d_ones_eye,
         threshold=100,
         height_control=None,
         cluster_threshold=0,
     )
     vals = get_data(th_map)
+
     assert np.sum(vals > 0) == 0
 
     # direct threshold
     th_map, _ = threshold_stats_img(
         stat_img,
-        mask_img=img_3d_ones,
+        mask_img=img_3d_ones_eye,
         threshold=4.0,
         height_control=None,
         cluster_threshold=0,
     )
     vals = get_data(th_map)
+
     assert np.sum(vals > 0) == 8
 
     # without mask
@@ -99,40 +82,44 @@ def test_threshold_stats_img_no_height_control(
         stat_img, None, threshold=4.0, height_control=None, cluster_threshold=0
     )
     vals = get_data(th_map)
+
     assert np.sum(vals > 0) == 8
 
     # without a map
     th_map, threshold = threshold_stats_img(
         None, None, threshold=3.0, height_control=None, cluster_threshold=0
     )
+
     assert threshold == 3.0
     assert th_map is None
 
 
-def test_threshold_stats_img(data_norm_isf, img_3d_ones, affine_eye):
+def test_threshold_stats_img(data_norm_isf, img_3d_ones_eye, affine_eye):
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
 
     th_map, _ = threshold_stats_img(
         stat_img,
-        mask_img=img_3d_ones,
+        mask_img=img_3d_ones_eye,
         alpha=0.001,
         height_control="fpr",
         cluster_threshold=0,
     )
     vals = get_data(th_map)
+
     assert np.sum(vals > 0) == 8
 
     # excessive size threshold
     th_map, z_th = threshold_stats_img(
         stat_img,
-        mask_img=img_3d_ones,
+        mask_img=img_3d_ones_eye,
         alpha=0.001,
         height_control="fpr",
         cluster_threshold=10,
     )
     vals = get_data(th_map)
+
     assert np.sum(vals > 0) == 0
     assert z_th == norm.isf(0.0005)
 
@@ -140,18 +127,20 @@ def test_threshold_stats_img(data_norm_isf, img_3d_ones, affine_eye):
     for control in ["fdr", "bonferroni"]:
         th_map, _ = threshold_stats_img(
             stat_img,
-            mask_img=img_3d_ones,
+            mask_img=img_3d_ones_eye,
             alpha=0.05,
             height_control=control,
             cluster_threshold=5,
         )
         vals = get_data(th_map)
+
         assert np.sum(vals > 0) == 8
 
     # without a map or mask
     th_map, threshold = threshold_stats_img(
         None, None, alpha=0.05, height_control="fpr", cluster_threshold=0
     )
+
     assert threshold > 1.64
     assert th_map is None
 
@@ -193,6 +182,7 @@ def test_hommel(alpha, expected):
     https://arxiv.org/abs/1710.08273
     """
     z = norm.isf([1.0e-8, 0.01, 0.08, 0.1, 0.5, 0.7, 0.9])
+
     assert _compute_hommel_value(z, alpha=alpha) == expected
 
 
@@ -204,16 +194,19 @@ def test_all_resolution_inference(data_norm_isf, affine_eye):
     # standard case
     th_map = cluster_level_inference(stat_img, threshold=3, alpha=0.05)
     vals = get_data(th_map)
+
     assert np.sum(vals > 0) == 8
 
     # high threshold
     th_map = cluster_level_inference(stat_img, threshold=6, alpha=0.05)
     vals = get_data(th_map)
+
     assert np.sum(vals > 0) == 0
 
     # list of thresholds
     th_map = cluster_level_inference(stat_img, threshold=[3, 6], alpha=0.05)
     vals = get_data(th_map)
+
     assert np.sum(vals > 0) == 8
 
     # verbose mode
@@ -223,16 +216,17 @@ def test_all_resolution_inference(data_norm_isf, affine_eye):
 
 
 def test_all_resolution_inference_with_mask(
-    img_3d_ones, affine_eye, data_norm_isf
+    img_3d_ones_eye, affine_eye, data_norm_isf
 ):
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
 
     th_map = cluster_level_inference(
-        stat_img, mask_img=img_3d_ones, threshold=3, alpha=0.05
+        stat_img, mask_img=img_3d_ones_eye, threshold=3, alpha=0.05
     )
     vals = get_data(th_map)
+
     assert np.sum(vals > 0) == 8
 
 
@@ -243,11 +237,12 @@ def test_all_resolution_inference_one_voxel(data_norm_isf, affine_eye):
 
     th_map = cluster_level_inference(stat_img, threshold=7, alpha=0.05)
     vals = get_data(th_map)
+
     assert np.sum(vals > 0) == 1
 
 
 def test_all_resolution_inference_one_sided(
-    data_norm_isf, img_3d_ones, affine_eye
+    data_norm_isf, img_3d_ones_eye, affine_eye
 ):
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
@@ -255,7 +250,7 @@ def test_all_resolution_inference_one_sided(
 
     _, z_th = threshold_stats_img(
         stat_img,
-        mask_img=img_3d_ones,
+        mask_img=img_3d_ones_eye,
         alpha=0.001,
         height_control="fpr",
         cluster_threshold=10,
@@ -276,7 +271,7 @@ def test_all_resolution_inference_errors(alpha, data_norm_isf, affine_eye):
 
 @pytest.mark.parametrize("control", ["fdr", "bonferroni"])
 def test_all_resolution_inference_height_control(
-    control, affine_eye, img_3d_ones, data_norm_isf
+    control, affine_eye, img_3d_ones_eye, data_norm_isf
 ):
     # two-side fdr threshold + bonferroni
     data = data_norm_isf
@@ -286,7 +281,7 @@ def test_all_resolution_inference_height_control(
 
     th_map, _ = threshold_stats_img(
         stat_img,
-        mask_img=img_3d_ones,
+        mask_img=img_3d_ones_eye,
         alpha=0.05,
         height_control=control,
         cluster_threshold=5,
@@ -296,12 +291,13 @@ def test_all_resolution_inference_height_control(
     assert_equal(np.sum(vals < 0), 8)
     th_map, _ = threshold_stats_img(
         stat_img,
-        mask_img=img_3d_ones,
+        mask_img=img_3d_ones_eye,
         alpha=0.05,
         height_control=control,
         cluster_threshold=5,
         two_sided=False,
     )
     vals = get_data(th_map)
+
     assert_equal(np.sum(vals > 0), 8)
     assert_equal(np.sum(vals < 0), 0)
