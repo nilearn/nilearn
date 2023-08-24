@@ -782,6 +782,11 @@ def test_fetch_neurovault(tmp_path):
 
 
 def test_fetch_neurovault_errors(request_mocker):
+    """Test that errors are raised when the server returns an error code.
+
+    May "spam" your standard output with requests exceptions,
+    but that's expected.
+    """
     request_mocker.url_mapping["*"] = 500
     data = neurovault.fetch_neurovault()
 
