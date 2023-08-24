@@ -80,6 +80,7 @@ def test_fetch_haxby(tmp_path, request_mocker):
     for i in range(1, 6):
         haxby = func.fetch_haxby(data_dir=tmp_path, subjects=[i], verbose=0)
         # subject_data + (md5 + mask if first subj)
+
         assert request_mocker.url_count == i + 2
         assert len(haxby.func) == 1
         assert len(haxby.anat) == 1
@@ -95,6 +96,7 @@ def test_fetch_haxby(tmp_path, request_mocker):
     # subjects with list
     subjects = [1, 2, 6]
     haxby = func.fetch_haxby(data_dir=tmp_path, subjects=subjects, verbose=0)
+
     assert len(haxby.func) == len(subjects)
     assert len(haxby.mask_house_little) == len(subjects)
     assert len(haxby.anat) == len(subjects)
@@ -181,6 +183,7 @@ def test_fetch_adhd(tmp_path, request_mocker):
         re.compile(r".*adhd40_([0-9]+)\.tgz")
     ] = _adhd_example_subject
     adhd = func.fetch_adhd(data_dir=tmp_path, n_subjects=12, verbose=0)
+
     assert len(adhd.func) == 12
     assert len(adhd.confounds) == 12
     assert request_mocker.url_count == 13  # Subjects + phenotypic
@@ -189,6 +192,7 @@ def test_fetch_adhd(tmp_path, request_mocker):
 
 def test_miyawaki2008(tmp_path, request_mocker):
     dataset = func.fetch_miyawaki2008(data_dir=tmp_path, verbose=0)
+
     assert len(dataset.func) == 32
     assert len(dataset.label) == 32
     assert isinstance(dataset.mask, str)
@@ -207,6 +211,7 @@ def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):
         verbose=1,
         legacy_format=True,
     )
+
     assert not hasattr(dataset, "anats")
     assert not hasattr(dataset, "tmaps")
     assert not hasattr(dataset, "masks")
@@ -222,6 +227,7 @@ def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):
         verbose=1,
         legacy_format=False,
     )
+
     assert not hasattr(dataset, "anats")
     assert not hasattr(dataset, "tmaps")
     assert not hasattr(dataset, "masks")
@@ -241,6 +247,7 @@ def test_fetch_localizer_contrasts_multiple_contrasts(
         verbose=1,
         legacy_format=False,
     )
+
     assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.cmaps[0], str)
     assert len(dataset.cmaps) == 2 * 2  # two contrasts are fetched
@@ -259,6 +266,7 @@ def test_fetch_localizer_contrasts_get_all(tmp_path, localizer_mocker):
         verbose=1,
         legacy_format=False,
     )
+
     assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.anats[0], str)
     assert isinstance(dataset.cmaps[0], str)
@@ -281,6 +289,7 @@ def test_fetch_localizer_contrasts_list_subjects(tmp_path, localizer_mocker):
         verbose=1,
         legacy_format=False,
     )
+
     assert len(dataset2["ext_vars"]) == 3
     assert len(dataset2.cmaps) == 3
     assert list(dataset2["ext_vars"]["participant_id"].values) == [
@@ -295,6 +304,7 @@ def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):
     dataset = func.fetch_localizer_calculation_task(
         n_subjects=2, data_dir=tmp_path, verbose=1, legacy_format=False
     )
+
     assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.cmaps[0], str)
     assert len(dataset["ext_vars"]) == 2
@@ -304,6 +314,7 @@ def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):
     dataset = func.fetch_localizer_calculation_task(
         n_subjects=2, data_dir=tmp_path, verbose=1, legacy_format=True
     )
+
     assert isinstance(dataset.ext_vars, np.recarray)
     assert isinstance(dataset.cmaps[0], str)
     assert dataset.ext_vars.size == 2
@@ -363,6 +374,7 @@ def test_fetch_abide_pcp(tmp_path, request_mocker, quality_checked):
         data_dir=tmp_path, quality_checked=quality_checked, verbose=0
     )
     div = 4 if quality_checked else 2
+
     assert len(dataset.func_preproc) == n_subjects / div
     assert dataset.description != ""
 
@@ -385,6 +397,7 @@ def test__load_mixed_gambles():
             for _ in range(n_subjects)
         ]
         zmaps, gain, _ = func._load_mixed_gambles(zmaps)
+
         assert len(zmaps) == n_subjects * n_trials
         assert len(zmaps) == len(gain)
 
@@ -398,6 +411,7 @@ def test_fetch_mixed_gambles(tmp_path):
             return_raw_data=True,
         )
         datasetdir = tmp_path / "jimura_poldrack_2012_zmaps"
+
         assert mgambles["zmaps"][0] == str(
             datasetdir / "zmaps" / "sub001_zmaps.nii.gz"
         )
@@ -469,6 +483,7 @@ def test_fetch_megatrawls_netmats(tmp_path):
         timeseries="multiple_spatial_regression",
         matrices="full_correlation",
     )
+
     assert netmats_data.dimensions == 300
     assert netmats_data.timeseries == "multiple_spatial_regression"
     assert netmats_data.matrices == "full_correlation"
@@ -572,6 +587,7 @@ def test_fetch_development_fmri_participants(tmp_path, request_mocker):
     participants = func._fetch_development_fmri_participants(
         data_dir=tmp_path, url=None, verbose=1
     )
+
     assert isinstance(participants, np.ndarray)
     assert participants.shape == (5,)
 
@@ -581,6 +597,7 @@ def test_fetch_development_fmri_functional(tmp_path):
     funcs, confounds = func._fetch_development_fmri_functional(
         mock_participants, data_dir=tmp_path, url=None, resume=True, verbose=1
     )
+
     assert len(funcs) == 8
     assert len(confounds) == 8
 
@@ -597,6 +614,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
     data = func.fetch_development_fmri(
         n_subjects=2, data_dir=tmp_path, verbose=1
     )
+
     assert len(data.func) == 2
     assert len(data.confounds) == 2
     assert isinstance(data.phenotypic, np.ndarray)
@@ -605,6 +623,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
 
     # check reduced confounds
     confounds = np.recfromcsv(data.confounds[0], delimiter="\t")
+
     assert len(confounds[0]) == 15
 
     # check full confounds
@@ -612,6 +631,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
         n_subjects=2, reduce_confounds=False, verbose=1
     )
     confounds = np.recfromcsv(data.confounds[0], delimiter="\t")
+
     assert len(confounds[0]) == 28
 
     # check first subject is an adult
@@ -619,6 +639,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
         n_subjects=1, reduce_confounds=False, verbose=1
     )
     age_group = data.phenotypic["Child_Adult"][0]
+
     assert age_group == "adult"
 
     # check first subject is an child if requested with age_group
@@ -626,6 +647,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
         n_subjects=1, reduce_confounds=False, verbose=1, age_group="child"
     )
     age_group = data.phenotypic["Child_Adult"][0]
+
     assert age_group == "child"
 
     # check one of each age group returned if n_subject == 2
@@ -634,12 +656,14 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
         n_subjects=2, reduce_confounds=False, verbose=1, age_group="both"
     )
     age_group = data.phenotypic["Child_Adult"]
+
     assert all(age_group == ["adult", "child"])
 
     # check age_group
     data = func.fetch_development_fmri(
         n_subjects=2, reduce_confounds=False, verbose=1, age_group="child"
     )
+
     assert all(x == "child" for x in data.phenotypic["Child_Adult"])
 
 
@@ -648,6 +672,7 @@ def test_fetch_development_fmri_invalid_n_subjects():
     n_subjects = func._set_invalid_n_subjects_to_max(
         n_subjects=None, max_subjects=max_subjects, age_group="adult"
     )
+
     assert n_subjects == max_subjects
     with pytest.warns(UserWarning, match="Wrong value for n_subjects="):
         func._set_invalid_n_subjects_to_max(
@@ -703,24 +728,30 @@ def test_select_from_index():
 
     # Only 1 subject and not subject specific files get downloaded
     new_urls = func.select_from_index(urls, n_subjects=1)
+
     assert len(new_urls) == 6
     assert data_prefix + "/sub-yyy.html" not in new_urls
 
     # 2 subjects and not subject specific files get downloaded
     new_urls = func.select_from_index(urls, n_subjects=2)
+
     assert len(new_urls) == 9
     assert data_prefix + "/sub-yyy.html" in new_urls
+
     # ALL subjects and not subject specific files get downloaded
     new_urls = func.select_from_index(urls, n_subjects=None)
+
     assert len(new_urls) == 9
 
     # test inclusive filters. Only files with task-rest
     new_urls = func.select_from_index(urls, inclusion_filters=["*task-rest*"])
+
     assert len(new_urls) == 2
     assert data_prefix + "/stuff.html" not in new_urls
 
     # test exclusive filters. only files without ses-01
     new_urls = func.select_from_index(urls, exclusion_filters=["*ses-01*"])
+
     assert len(new_urls) == 6
     assert data_prefix + "/stuff.html" in new_urls
 
@@ -728,6 +759,7 @@ def test_select_from_index():
     new_urls = func.select_from_index(
         urls, inclusion_filters=["*task-rest*"], exclusion_filters=["*ses-01*"]
     )
+
     assert len(new_urls) == 1
     assert data_prefix + "/sub-xxx/ses-02_task-rest.txt" in new_urls
 
@@ -753,6 +785,7 @@ def test_fetch_ds000030_urls():
             verbose=1,
         )
         urls_path = urls_path.replace("/", os.sep)
+
         assert urls_path == filepath
         assert urls == mock_json_content
 
@@ -765,6 +798,7 @@ def test_fetch_ds000030_urls():
             )
 
         urls_path = urls_path.replace("/", os.sep)
+
         assert urls_path == filepath
         assert urls == mock_json_content
 
@@ -781,6 +815,7 @@ def test_fetch_ds000030_urls():
             )
 
         urls_path = urls_path.replace("/", os.sep)
+
         assert urls_path == filepath
         assert urls == mock_json_content
 
@@ -815,6 +850,7 @@ def test_fetch_openneuro_dataset(tmp_path):
     datadir, dl_files = func.fetch_openneuro_dataset(
         urls, tmp_path, dataset_version
     )
+
     assert isinstance(datadir, str)
     assert isinstance(dl_files, list)
     assert len(dl_files) == 9
@@ -825,7 +861,7 @@ def test_fetch_openneuro_dataset(tmp_path):
         UserWarning,
         match='Downloading "ds000030_R1.0.4".',
     ):
-        urls_path, urls = func.fetch_openneuro_dataset(
+        _, urls = func.fetch_openneuro_dataset(
             urls=None,
             data_dir=tmp_path,
             dataset_version="ds500_v2",
@@ -846,6 +882,7 @@ def test_fetch_openneuro_dataset_errors(tmp_path):
 
 def test_fetch_localizer(tmp_path):
     dataset = func.fetch_localizer_first_level(data_dir=tmp_path)
+
     assert isinstance(dataset["events"], str)
     assert isinstance(dataset.epi_img, str)
 
@@ -885,6 +922,7 @@ def test_fetch_language_localizer_demo_dataset(tmp_path):
     actual_dir, actual_subdirs = func.fetch_language_localizer_demo_dataset(
         data_dir
     )
+
     assert actual_dir == str(expected_data_dir)
     assert actual_subdirs == sorted(expected_files)
 
@@ -936,6 +974,7 @@ def test_fetch_spm_auditory(tmp_path):
         shutil.copy(path_hdr, os.path.join(subject_dir, file_))
 
     dataset = func.fetch_spm_auditory(data_dir=tmp_path)
+
     assert isinstance(dataset.anat, str)
     assert isinstance(dataset.func[0], str)
     assert len(dataset.func) == 96
@@ -967,6 +1006,7 @@ def test_fetch_spm_multimodal(tmp_path):
             ).close()
 
     dataset = func.fetch_spm_multimodal_fmri(data_dir=tmp_path)
+
     assert isinstance(dataset.anat, str)
     assert isinstance(dataset.func1[0], str)
     assert len(dataset.func1) == 390
@@ -994,6 +1034,7 @@ def test_fiac(tmp_path):
     open(mask, "a").close()
 
     dataset = func.fetch_fiac_first_level(data_dir=tmp_path)
+
     assert isinstance(dataset.func1, str)
     assert isinstance(dataset.func2, str)
     assert isinstance(dataset.design_matrix1, str)

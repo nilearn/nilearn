@@ -4,10 +4,10 @@
 
 from pathlib import Path
 
-import nibabel
 import numpy as np
 import pandas as pd
 import pytest
+from nibabel import Nifti1Image
 
 from nilearn.datasets import struct
 from nilearn.datasets._testing import dict_to_archive, list_to_archive
@@ -15,6 +15,7 @@ from nilearn.datasets._testing import dict_to_archive, list_to_archive
 
 def test_fetch_icbm152_2009(tmp_path, request_mocker):
     dataset = struct.fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
+
     assert isinstance(dataset.csf, str)
     assert isinstance(dataset.eye_mask, str)
     assert isinstance(dataset.face_mask, str)
@@ -56,6 +57,7 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker, legacy_format):
     dataset = struct.fetch_oasis_vbm(
         data_dir=str(tmp_path), verbose=0, legacy_format=legacy_format
     )
+
     assert len(dataset.gray_matter_maps) == 403
     assert len(dataset.white_matter_maps) == 403
     assert isinstance(dataset.gray_matter_maps[0], str)
@@ -73,6 +75,7 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker, legacy_format):
         verbose=0,
         legacy_format=legacy_format,
     )
+
     assert len(dataset.gray_matter_maps) == 415
     assert len(dataset.white_matter_maps) == 415
     assert isinstance(dataset.gray_matter_maps[0], str)
@@ -86,64 +89,32 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker, legacy_format):
     assert dataset.description != ""
 
 
-def test_load_mni152_template():
-    # All subjects
-    template_nii_1mm = struct.load_mni152_template()
-    template_nii_2mm = struct.load_mni152_template(resolution=2)
-    assert template_nii_1mm.shape == (197, 233, 189)
-    assert template_nii_2mm.shape == (99, 117, 95)
-    assert template_nii_1mm.header.get_zooms() == (1.0, 1.0, 1.0)
-    assert template_nii_2mm.header.get_zooms() == (2.0, 2.0, 2.0)
+@pytest.mark.parametrize(
+    "func",
+    [
+        struct.load_mni152_brain_mask,
+        struct.load_mni152_gm_mask,
+        struct.load_mni152_gm_template,
+        struct.load_mni152_template,
+        struct.load_mni152_wm_mask,
+        struct.load_mni152_wm_template,
+    ],
+)
+@pytest.mark.parametrize("resolution", [None, 2])
+def test_load_mni152(func, resolution):
+    img = func(resolution=resolution)
 
+    assert isinstance(img, Nifti1Image)
 
-def test_load_mni152_gm_template():
-    # All subjects
-    gm_template_nii_1mm = struct.load_mni152_gm_template()
-    gm_template_nii_2mm = struct.load_mni152_gm_template(resolution=2)
-    assert gm_template_nii_1mm.shape == (197, 233, 189)
-    assert gm_template_nii_2mm.shape == (99, 117, 95)
-    assert gm_template_nii_1mm.header.get_zooms() == (1.0, 1.0, 1.0)
-    assert gm_template_nii_2mm.header.get_zooms() == (2.0, 2.0, 2.0)
+    if resolution is None:
+        expected_shape = (197, 233, 189)
+        expected_zooms = (1.0, 1.0, 1.0)
+    elif resolution == 2:
+        expected_shape = (99, 117, 95)
+        expected_zooms = (2.0, 2.0, 2.0)
 
-
-def test_load_mni152_wm_template():
-    # All subjects
-    wm_template_nii_1mm = struct.load_mni152_wm_template()
-    wm_template_nii_2mm = struct.load_mni152_wm_template(resolution=2)
-    assert wm_template_nii_1mm.shape == (197, 233, 189)
-    assert wm_template_nii_2mm.shape == (99, 117, 95)
-    assert wm_template_nii_1mm.header.get_zooms() == (1.0, 1.0, 1.0)
-    assert wm_template_nii_2mm.header.get_zooms() == (2.0, 2.0, 2.0)
-
-
-def test_load_mni152_brain_mask():
-    brain_mask_1mm = struct.load_mni152_brain_mask()
-    brain_mask_2mm = struct.load_mni152_brain_mask(resolution=2)
-    assert isinstance(brain_mask_1mm, nibabel.Nifti1Image)
-    assert isinstance(brain_mask_2mm, nibabel.Nifti1Image)
-    # standard MNI template shape
-    assert brain_mask_1mm.shape == (197, 233, 189)
-    assert brain_mask_2mm.shape == (99, 117, 95)
-
-
-def test_load_mni152_gm_mask():
-    gm_mask_1mm = struct.load_mni152_gm_mask()
-    gm_mask_2mm = struct.load_mni152_gm_mask(resolution=2)
-    assert isinstance(gm_mask_1mm, nibabel.Nifti1Image)
-    assert isinstance(gm_mask_2mm, nibabel.Nifti1Image)
-    # standard MNI template shape
-    assert gm_mask_1mm.shape == (197, 233, 189)
-    assert gm_mask_2mm.shape == (99, 117, 95)
-
-
-def test_load_mni152_wm_mask():
-    wm_mask_1mm = struct.load_mni152_wm_mask()
-    wm_mask_2mm = struct.load_mni152_wm_mask(resolution=2)
-    assert isinstance(wm_mask_1mm, nibabel.Nifti1Image)
-    assert isinstance(wm_mask_2mm, nibabel.Nifti1Image)
-    # standard MNI template shape
-    assert wm_mask_1mm.shape == (197, 233, 189)
-    assert wm_mask_2mm.shape == (99, 117, 95)
+    assert img.shape == expected_shape
+    assert img.header.get_zooms() == expected_zooms
 
 
 def test_fetch_icbm152_brain_gm_mask(tmp_path):
@@ -152,7 +123,8 @@ def test_fetch_icbm152_brain_gm_mask(tmp_path):
     grey_matter_img = struct.fetch_icbm152_brain_gm_mask(
         data_dir=str(tmp_path), verbose=0
     )
-    assert isinstance(grey_matter_img, nibabel.Nifti1Image)
+
+    assert isinstance(grey_matter_img, Nifti1Image)
 
 
 @pytest.mark.parametrize(
@@ -199,5 +171,6 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
         )
 
     dataset = struct.fetch_surf_fsaverage(mesh, data_dir=str(tmp_path))
+
     assert mesh_attributes.issubset(set(dataset.keys()))
     assert dataset.description != ""

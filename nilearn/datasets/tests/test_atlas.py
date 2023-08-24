@@ -236,6 +236,7 @@ def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
     bunch_no_mean = atlas.fetch_atlas_craddock_2012(
         data_dir=tmp_path, verbose=0, grp_mean=False, homogeneity="spatial"
     )
+
     assert request_mocker.url_count == 1
     assert bunch["map"] == str(
         tmp_path / "craddock_2012" / "scorr05_mean_all.nii.gz"
@@ -265,6 +266,7 @@ def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
         "tcorr05_2level_all.nii.gz",
         "random_all.nii.gz",
     ]
+
     assert request_mocker.url_count == 1
     for key, fn in zip(keys, filenames):
         assert bunch[key] == str(tmp_path / "craddock_2012" / fn)
@@ -300,21 +302,22 @@ def test_fetch_atlas_smith_2009(tmp_path, request_mocker):
 
 def test_fetch_coords_power_2011():
     bunch = atlas.fetch_coords_power_2011()
+
     assert len(bunch.rois) == 264
     assert bunch.description != ""
 
 
 def test_fetch_coords_seitzman_2018():
     bunch = atlas.fetch_coords_seitzman_2018()
+
     assert len(bunch.rois) == 300
     assert len(bunch.radius) == 300
     assert len(bunch.networks) == 300
     assert len(bunch.regions) == 300
     assert len(np.unique(bunch.networks)) == 14
     assert len(np.unique(bunch.regions)) == 8
-    np.testing.assert_array_equal(bunch.networks, np.sort(bunch.networks))
+    assert_array_equal(bunch.networks, np.sort(bunch.networks))
     assert bunch.description != ""
-
     assert bunch.regions[0] == "cortexL"
 
     bunch = atlas.fetch_coords_seitzman_2018(ordered_regions=False)
@@ -346,13 +349,18 @@ def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, lateralized):
     bunch = atlas.fetch_atlas_destrieux_2009(
         lateralized=lateralized, data_dir=tmp_path, verbose=0
     )
+
     assert request_mocker.url_count == 1
+
     name = "_lateralized" if lateralized else ""
+
     assert bunch["maps"] == str(
         tmp_path / "destrieux_2009" / f"destrieux2009_rois{name}.nii.gz"
     )
+
     labels_img = set(np.unique(get_data(bunch.maps)))
     labels = {label.index for label in bunch.labels}
+
     assert labels_img.issubset(labels)
 
 
@@ -376,6 +384,7 @@ def test_fetch_atlas_msdl(tmp_path, request_mocker):
         archive, "zip"
     )
     dataset = atlas.fetch_atlas_msdl(data_dir=tmp_path, verbose=0)
+
     assert isinstance(dataset.labels, list)
     assert isinstance(dataset.region_coords, list)
     assert isinstance(dataset.networks, list)
@@ -386,6 +395,7 @@ def test_fetch_atlas_msdl(tmp_path, request_mocker):
 
 def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
     dataset = atlas.fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0)
+
     assert isinstance(dataset.anat, str)
     assert isinstance(dataset.colors_17, str)
     assert isinstance(dataset.colors_7, str)
@@ -427,6 +437,7 @@ def test_fetch_atlas_difumo(tmp_path, request_mocker):
             dataset = atlas.fetch_atlas_difumo(
                 data_dir=tmp_path, dimension=dim, resolution_mm=res, verbose=0
             )
+
             assert len(dataset.keys()) == 3
             assert len(dataset.labels) == dim
             assert isinstance(dataset.maps, str)
@@ -486,6 +497,7 @@ def test_fetch_atlas_aal(
     dataset = atlas.fetch_atlas_aal(
         version=version, data_dir=tmp_path, verbose=0
     )
+
     assert isinstance(dataset.maps, str)
     assert isinstance(dataset.labels, list)
     assert isinstance(dataset.indices, list)
@@ -520,12 +532,11 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
 
     name_asym = "template_cambridge_basc_multiscale_nii_asym"
     basename_asym = "template_cambridge_basc_multiscale_asym_scale007.nii.gz"
+
     assert data_asym["map"] == str(
         tmp_path / dataset_name / name_asym / basename_asym
     )
-
     assert len(data_sym) == 2
-
     assert request_mocker.url_count == 2
     assert data_sym.description != ""
     assert data_asym.description != ""
@@ -591,13 +602,15 @@ def test_fetch_atlas_basc_multiscale_2015_old_code(
 
 def test_fetch_coords_dosenbach_2010():
     bunch = atlas.fetch_coords_dosenbach_2010()
+
     assert len(bunch.rois) == 160
     assert len(bunch.labels) == 160
     assert len(np.unique(bunch.networks)) == 6
     assert bunch.description != ""
-    np.testing.assert_array_equal(bunch.networks, np.sort(bunch.networks))
+    assert_array_equal(bunch.networks, np.sort(bunch.networks))
 
     bunch = atlas.fetch_coords_dosenbach_2010(ordered_regions=False)
+
     assert np.any(bunch.networks != np.sort(bunch.networks))
 
 
@@ -633,6 +646,7 @@ def test_fetch_atlas_surf_destrieux(tmp_path):
         )
 
     bunch = atlas.fetch_atlas_surf_destrieux(data_dir=tmp_path, verbose=0)
+
     # Our mock annots have 4 labels
     assert len(bunch.labels) == 4
     assert bunch.map_left.shape == (4,)
@@ -659,12 +673,16 @@ def test_fetch_atlas_talairach(tmp_path, request_mocker):
     request_mocker.url_mapping["*talairach.nii"] = _get_small_fake_talairach()
     level_values = np.ones((81, 3)) * [0, 1, 2]
     talairach = atlas.fetch_atlas_talairach("hemisphere", data_dir=tmp_path)
+
     assert_array_equal(
         get_data(talairach.maps).ravel(), level_values.T.ravel()
     )
     assert_array_equal(talairach.labels, ["Background", "b", "a"])
+
     talairach = atlas.fetch_atlas_talairach("ba", data_dir=tmp_path)
+
     assert_array_equal(get_data(talairach.maps).ravel(), level_values.ravel())
+
     with pytest.raises(ValueError):
         atlas.fetch_atlas_talairach("bad_level")
 
@@ -681,12 +699,15 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
     data_dir = str(tmp_path / "pauli_2017")
 
     data = atlas.fetch_atlas_pauli_2017("det", data_dir)
+
     assert len(data.labels) == 16
 
     values = get_data(nibabel.load(data.maps))
+
     assert len(np.unique(values)) == 17
 
     data = atlas.fetch_atlas_pauli_2017("prob", data_dir)
+
     assert nibabel.load(data.maps).shape[-1] == 16
 
     with pytest.raises(NotImplementedError):
@@ -744,11 +765,14 @@ def test_fetch_atlas_schaefer_2018(tmp_path, request_mocker):
             data_dir=tmp_path,
             verbose=0,
         )
+
         assert data.description != ""
         assert isinstance(data.maps, str)
         assert isinstance(data.labels, np.ndarray)
         assert len(data.labels) == n_rois
         assert data.labels[0].astype(str).startswith(f"{yeo_networks}Networks")
+
         img = nibabel.load(data.maps)
+
         assert img.header.get_zooms()[0] == resolution_mm
         assert np.array_equal(np.unique(img.dataobj), np.arange(n_rois + 1))
