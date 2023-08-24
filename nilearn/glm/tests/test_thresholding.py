@@ -15,8 +15,7 @@ from nilearn.glm.thresholding import _compute_hommel_value
 from nilearn.image import get_data
 
 
-def test_fdr():
-    rng = np.random.RandomState(42)
+def test_fdr(rng):
     n = 100
     x = np.linspace(0.5 / n, 1.0 - 0.5 / n, n)
     x[:10] = 0.0005

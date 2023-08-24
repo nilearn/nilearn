@@ -25,8 +25,7 @@ from nilearn.glm.first_level import (
 from nilearn.maskers import NiftiMasker
 
 
-def test_full_rank():
-    rng = np.random.RandomState(42)
+def test_full_rank(rng):
     n, p = 10, 5
     X = rng.standard_normal(size=(n, p))
     X_, _ = full_rank(X)
@@ -37,9 +36,9 @@ def test_full_rank():
     assert_array_almost_equal(X, X_)
 
 
-def test_z_score_t_values():
+def test_z_score_t_values(rng):
     # Randomly draw samples from the standard Student’s t distribution
-    tval = np.random.RandomState(42).standard_t(10, size=10)
+    tval = rng.standard_t(10, size=10)
     # Estimate the p-values using the Survival Function (SF)
     pval = sps.t.sf(tval, 1e10)
     # Estimate the p-values using the Cumulative Distribution Function (CDF)
@@ -67,9 +66,9 @@ def test_z_score_t_values():
     assert_array_almost_equal(norm.sf(z_score(pval)), pval)
 
 
-def test_z_score_f_values():
+def test_z_score_f_values(rng):
     # Randomly draw samples from the F distribution
-    fval = np.random.RandomState(42).f(1, 48, size=10)
+    fval = rng.f(1, 48, size=10)
     # Estimate the p-values using the Survival Function (SF)
     p_val = sps.f.sf(fval, 42, 1e10)
     # Estimate the p-values using the Cumulative Distribution Function (CDF)
@@ -154,8 +153,7 @@ def test_z_score_opposite_contrast():
         )
 
 
-def test_mahalanobis():
-    rng = np.random.RandomState(42)
+def test_mahalanobis(rng):
     n = 50
     x = rng.uniform(size=n) / n
     A = rng.uniform(size=(n, n)) / n
@@ -165,8 +163,7 @@ def test_mahalanobis():
     assert_almost_equal(mah, multiple_mahalanobis(x, A), decimal=1)
 
 
-def test_mahalanobis2():
-    rng = np.random.RandomState(42)
+def test_mahalanobis2(rng):
     n = 50
     x = rng.standard_normal(size=(n, 3))
     Aa = np.zeros([n, n, 3])
@@ -194,8 +191,7 @@ def test_mahalanobis_errors():
         multiple_mahalanobis(effect, cov)
 
 
-def test_multiple_fast_inv():
-    rng = np.random.RandomState(42)
+def test_multiple_fast_inv(rng):
     shape = (10, 20, 20)
     X = rng.standard_normal(size=shape)
     X_inv_ref = np.zeros(shape)
