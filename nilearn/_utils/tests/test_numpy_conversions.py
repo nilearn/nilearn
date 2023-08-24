@@ -77,7 +77,7 @@ def test_are_array_identical():
 
 
 @pytest.mark.parametrize(
-    "in_dtype, in_order, copy, out_dtype, out_order, copied",
+    "input_dtype, input_order, copy, output_dtype, output_order, was_copied",
     [
         # no-op
         (float, "C", False, None, None, False),
@@ -127,21 +127,23 @@ def test_are_array_identical():
         (bool, "F", True, np.int8, "F", True),
     ],
 )
-def test_as_ndarray(in_dtype, in_order, copy, out_dtype, out_order, copied):
-    # All test cases
-    # input dtype, input order, should copy, output dtype, output order, copied
+def test_as_ndarray(
+    input_dtype, input_order, copy, output_dtype, output_order, was_copied
+):
     shape = (10, 11)
-    # for case in test_cases:
-    # in_dtype, in_order, copy, out_dtype, out_order, copied = case
-    arr1 = np.ones(shape, dtype=in_dtype, order=in_order)
-    arr2 = as_ndarray(arr1, copy=copy, dtype=out_dtype, order=out_order)
-    assert are_arrays_identical(arr1[0], arr2[0]) != copied
-    if out_dtype is None:
-        assert arr2.dtype == in_dtype
-    else:
-        assert arr2.dtype == out_dtype
+    arr1 = np.ones(shape, dtype=input_dtype, order=input_order)
+    arr2 = as_ndarray(arr1, copy=copy, dtype=output_dtype, order=output_order)
 
-    result_order = out_order if out_order is not None else in_order
+    # check if nd_array copied the original array or not
+    assert are_arrays_identical(arr1[0], arr2[0]) != was_copied
+
+    if output_dtype is None:
+        assert arr2.dtype == input_dtype
+    else:
+        assert arr2.dtype == output_dtype
+
+    result_order = output_order if output_order is not None else input_order
+
     if result_order == "F":
         assert arr2.flags["F_CONTIGUOUS"]
     else:
