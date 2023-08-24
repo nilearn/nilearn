@@ -395,12 +395,12 @@ have a look at this `introductory video <https://www.youtube.com/watch?v=mzlH8lp
 by one of the pytest core developer.
 
 In general tests for a specific module (say `nilearn/image/image.py`)
-are kept in a `tests` folder in separate module
+are kept in a `tests` folder in a separate module
 with a name that matches the module being tested
 (so in this case `nilearn/image/tests/test_image.py`).
 
-When you have added a test you can check your changes worked
-and didn't break anything run `pytest nilearn`.
+When you have added a test you can check that your changes worked
+and didn't break anything by running `pytest nilearn`.
 To do quicker checks it's possible to run only a subset of tests:
 
 .. code-block:: bash
@@ -410,7 +410,7 @@ To do quicker checks it's possible to run only a subset of tests:
 Fixtures
 ########
 
-If you need to some special "set up" for your tests
+If you need to do some special "set up" for your tests
 (for example you need to generate some data, or a NiftiImage object or a file...)
 you can use `pytest fixtures <https://docs.pytest.org/en/6.2.x/fixture.html>`_
 to help you mock this data
@@ -420,13 +420,13 @@ Fixture are recognizable because they have a `@pytest.fixture` decorator.
 Fixtures that are shared by many tests modules can be found in `nilearn/conftest.py`
 but some fixures specific to certain modules can also be kept in that testing module.
 
-Seending
+Seeding
 ########
 
 Tests must be seeded to avoid random failures.
 For objects using random seeds (e.g. scikit-learn estimators), pass either
 a `np.random.RandomState` or an `int` as the seed.
-When your test use random numbers,
+When your tests use random numbers,
 those must be generated
 like in the following examples:
 
