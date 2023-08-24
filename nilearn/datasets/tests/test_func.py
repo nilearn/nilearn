@@ -16,7 +16,6 @@ import nibabel as nib
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.utils import check_random_state
 
 from nilearn.datasets import func
 from nilearn.datasets._testing import dict_to_archive, list_to_archive
@@ -387,8 +386,7 @@ def test_fetch_abide_pcp(tmp_path, request_mocker, quality_checked):
     )
 
 
-def test__load_mixed_gambles():
-    rng = check_random_state(42)
+def test__load_mixed_gambles(rng):
     n_trials = 48
     affine = np.eye(4)
     for n_subjects in [1, 5, 16]:
