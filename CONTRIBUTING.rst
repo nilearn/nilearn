@@ -408,7 +408,7 @@ To do quicker checks it's possible to run only a subset of tests:
       pytest -v nilearn/module/tests/test_module.py
 
 Fixtures
-########
+^^^^^^^^
 
 If you need to some special "set up" for your tests
 (for example you need to generate some data, or a NiftiImage object or a file...)
@@ -420,21 +420,22 @@ Fixture are recognizable because they have a `@pytest.fixture` decorator.
 Fixtures that are shared by many tests modules can be found in `nilearn/conftest.py`
 but some fixures specific to certain modules can also be kept in that testing module.
 
-Seending
-########
+Before adding new fixtures, first check those that exist in the current test modules
+or in `nilearn/conftest.py`.
 
-Tests must be seeded to avoid random failures.
-For objects using random seeds (e.g. scikit-learn estimators), pass either
-a `np.random.RandomState` or an `int` as the seed.
+Seending
+^^^^^^^^
+
+Many tests must be seeded to avoid random failures.
 When your test use random numbers,
-those must be generated
+you can seed a random number generator with `numpy.random.default_rng`
 like in the following examples:
 
 .. code-block:: python
 
       def test_something():
             # set up
-            rng = np.random.RandomState(0)
+            rng = np.random.default_rng(0)
             my_number = rng.normal()
 
             # the rest of the test
@@ -448,7 +449,6 @@ You can also use the `rng` fixture.
             my_number = rng.normal()
 
             # the rest of the test
-
 
 Documentation
 -------------
