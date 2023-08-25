@@ -40,7 +40,12 @@ import matplotlib.pyplot as plt
 
 from nilearn.plotting import plot_carpet
 
-display = plot_carpet(adhd_dataset.func[0], mask_img, t_r=t_r)
+display = plot_carpet(
+    adhd_dataset.func[0],
+    mask_img,
+    t_r=t_r,
+    standardize="zscore_sample",
+)
 
 display.show()
 
@@ -77,6 +82,7 @@ display = plot_carpet(
     mask_labels=map_labels,
     axes=ax,
     cmap="gray",
+    standardize="zscore_sample",
 )
 
 fig.show()
