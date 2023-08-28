@@ -368,43 +368,50 @@ def test_multi_nifti_labels_masker_data_atlas_different_shape(
         masker = MultiNiftiLabelsMasker(labels33_img, resampling_target="data")
         masker.fit_transform(filename)
 
-    # test labels masker with resampling target in 'data', 'labels' to return
-    # resampled labels having number of labels equal with transformed shape of
-    # 2nd dimension. This tests are added based on issue #1673 in Nilearn
-    shape = (13, 11, 12)
-    affine = np.eye(4) * 2
 
-    fmri_img, _ = data_gen.generate_fake_fmri(shape, affine=affine, length=21)
-    labels_img = data_gen.generate_labeled_regions(
-        (9, 8, 6), affine=np.eye(4), n_regions=10
+@pytest.mark.parametrize("resampling_target", ["data", "labels"])
+def test_multi_nifti_labels_masker_resampling_target(
+    resampling_target, shape_3d_default, affine_eye
+):
+    """Test labels masker with resampling target in 'data', 'labels' to return
+    resampled labels having number of labels equal
+    with transformed shape of 2nd dimension.
+
+    These tests are added based on issue #1673 in Nilearn.
+    """
+    fmri_img, _ = data_gen.generate_fake_fmri(
+        shape=shape_3d_default, affine=affine_eye * 2, length=21
     )
-    for resampling_target in ["data", "labels"]:
-        masker = MultiNiftiLabelsMasker(
-            labels_img=labels_img, resampling_target=resampling_target
-        )
-        if resampling_target == "data":
-            with pytest.warns(
-                UserWarning,
-                match=(
-                    "After resampling the label image "
-                    "to the data image, the following "
-                    "labels were removed"
-                ),
-            ):
-                transformed = masker.fit_transform(fmri_img)
-        else:
-            transformed = masker.fit_transform(fmri_img)
-        resampled_labels_img = masker._resampled_labels_img_
-        n_resampled_labels = len(np.unique(get_data(resampled_labels_img)))
-        assert n_resampled_labels - 1 == transformed.shape[1]
-        # inverse transform
-        compressed_img = masker.inverse_transform(transformed)
 
-        # Test that compressing the image a second time should yield an image
-        # with the same data as compressed_img.
-        transformed2 = masker.fit_transform(fmri_img)
-        # inverse transform again
-        compressed_img2 = masker.inverse_transform(transformed2)
-        np.testing.assert_array_equal(
-            get_data(compressed_img), get_data(compressed_img2)
-        )
+    labels_img = data_gen.generate_labeled_regions(
+        (9, 8, 6), affine=affine_eye, n_regions=10
+    )
+
+    masker = MultiNiftiLabelsMasker(
+        labels_img=labels_img, resampling_target=resampling_target
+    )
+    if resampling_target == "data":
+        with pytest.warns(
+            UserWarning,
+            match=(
+                "After resampling the label image to the data image, "
+                "the following labels were removed"
+            ),
+        ):
+            transformed = masker.fit_transform(fmri_img)
+    else:
+        transformed = masker.fit_transform(fmri_img)
+    resampled_labels_img = masker._resampled_labels_img_
+    n_resampled_labels = len(np.unique(get_data(resampled_labels_img)))
+    assert n_resampled_labels - 1 == transformed.shape[1]
+    # inverse transform
+    compressed_img = masker.inverse_transform(transformed)
+
+    # Test that compressing the image a second time should yield an image
+    # with the same data as compressed_img.
+    transformed2 = masker.fit_transform(fmri_img)
+    # inverse transform again
+    compressed_img2 = masker.inverse_transform(transformed2)
+    np.testing.assert_array_equal(
+        get_data(compressed_img), get_data(compressed_img2)
+    )
