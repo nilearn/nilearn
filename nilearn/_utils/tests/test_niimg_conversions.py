@@ -384,13 +384,18 @@ def test_iter_check_niimgs_error():
 def test_iter_check_niimgs(tmp_path, img_4d_zeros_eye):
     img_2_4d = [[img_4d_zeros_eye, img_4d_zeros_eye]]
 
-    with testing.write_tmp_imgs(
-        img_4d_zeros_eye, create_files=True
-    ) as filename:
-        niimgs = list(_iter_check_niimg([filename]))
-        assert_array_equal(
-            get_data(niimgs[0]), get_data(_utils.check_niimg(img_4d_zeros_eye))
-        )
+    # Create a test file
+    fd, filename = tempfile.mkstemp(
+        prefix="nilearn_test", suffix=".nii", dir=str(tmp_path)
+    )
+    os.close(fd)
+    img_4d_zeros_eye.to_filename(filename)
+    niimgs = list(_iter_check_niimg([filename]))
+    assert_array_equal(
+        get_data(niimgs[0]), get_data(_utils.check_niimg(img_4d_zeros_eye))
+    )
+    del niimgs
+    os.remove(filename)
 
     # Regular case
     niimgs = list(_iter_check_niimg(img_2_4d))
