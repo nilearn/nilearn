@@ -325,18 +325,9 @@ def plot_matrix(
         fig.tight_layout()
 
     if title is not None:
-        # Adjust the size
-        text_len = np.max([len(t) for t in title.split("\n")])
-        size = axes.bbox.size[0] / text_len
-        axes.text(
-            0.95,
-            0.95,
-            title,
-            horizontalalignment="right",
-            verticalalignment="top",
-            transform=axes.transAxes,
-            size=size,
-        )
+        axes.set_title(title, size=16)
+        fig.tight_layout()
+
     return display
 
 

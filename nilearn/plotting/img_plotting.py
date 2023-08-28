@@ -32,7 +32,7 @@ from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.plotting.displays._slicers import _get_cbar_ticks
 
 from .. import _utils
-from .._utils import fill_doc
+from .._utils import _compare_version, fill_doc
 from .._utils.extmath import fast_abs_percentile
 from .._utils.ndimage import get_border_data
 from .._utils.niimg import _safe_get_data
@@ -61,42 +61,63 @@ def show():
 # Core, usage-agnostic functions
 
 
-def _get_colorbar_and_data_ranges(stat_map_data, vmax, symmetric_cbar, kwargs,
-                                  force_min_stat_map_value=None):
+def _get_colorbar_and_data_ranges(
+    stat_map_data, vmin=None, vmax=None, symmetric_cbar=True,
+    force_min_stat_map_value=None, symmetric_data_range=True,
+):
     """Set colormap and colorbar limits.
 
-    Used by for plot_stat_map and plot_glass_brain.
+    Used by plot_stat_map, plot_glass_brain and plot_img_on_surf.
 
-    The limits for the colormap will always be set to range from -vmax to vmax.
-    The limits for the colorbar depend on the symmetric_cbar argument, please
-    refer to docstring of plot_stat_map.
-
+    If symmetric_data_range is True, the limits for the colormap will
+    always be set to range from -vmax to vmax. The limits for the colorbar
+    depend on the symmetric_cbar argument, please refer to docstring of
+    plot_stat_map.
     """
-    if 'vmin' in kwargs:
+    if symmetric_data_range and (vmin is not None):
         raise ValueError('this function does not accept a "vmin" '
                          'argument, as it uses a symmetrical range '
                          'defined via the vmax argument. To threshold '
                          'the plotted map, use the "threshold" argument')
 
-    # make sure that the color range is symmetrical
-    if vmax is None or symmetric_cbar in ['auto', False]:
-        # Avoid dealing with masked_array:
-        if hasattr(stat_map_data, '_mask'):
-            stat_map_data = np.asarray(
-                stat_map_data[np.logical_not(stat_map_data._mask)])
-        stat_map_max = np.nanmax(stat_map_data)
-        if force_min_stat_map_value is None:
-            stat_map_min = np.nanmin(stat_map_data)
+    # avoid dealing with masked_array:
+    if hasattr(stat_map_data, '_mask'):
+        stat_map_data = np.asarray(
+            stat_map_data[np.logical_not(stat_map_data._mask)])
+
+    if force_min_stat_map_value is None:
+        stat_map_min = np.nanmin(stat_map_data)
+    else:
+        stat_map_min = force_min_stat_map_value
+    stat_map_max = np.nanmax(stat_map_data)
+
+    if symmetric_cbar == "auto":
+        if symmetric_data_range or (vmin is None) or (vmax is None):
+            symmetric_cbar = stat_map_min < 0 and stat_map_max > 0
         else:
-            stat_map_min = force_min_stat_map_value
+            symmetric_cbar = np.isclose(vmin, -vmax)
 
-    if symmetric_cbar == 'auto':
-        symmetric_cbar = stat_map_min < 0 and stat_map_max > 0
+    # check compatibility between vmin, vmax and symmetric_cbar
+    if symmetric_cbar or symmetric_data_range:
+        if vmin is None and vmax is None:
+            vmax = max(-stat_map_min, stat_map_max)
+            vmin = -vmax
+        elif vmin is None:
+            vmin = -vmax
+        elif vmax is None:
+            vmax = -vmin
+        elif not np.isclose(vmin, -vmax):
+            raise ValueError(
+                "vmin must be equal to -vmax unless symmetric_cbar is False."
+            )
 
+    # set vmin/vmax based on data if they are not already set
+    if vmin is None:
+        vmin = stat_map_min
     if vmax is None:
-        vmax = max(-stat_map_min, stat_map_max)
-    vmin = -vmax
+        vmax = stat_map_max
 
+    # set colorbar limits
     if not symmetric_cbar:
         negative_range = stat_map_max <= 0
         positive_range = stat_map_min >= 0
@@ -111,6 +132,7 @@ def _get_colorbar_and_data_ranges(stat_map_data, vmax, symmetric_cbar, kwargs,
             cbar_vmax = stat_map_max
     else:
         cbar_vmin, cbar_vmax = None, None
+
     return cbar_vmin, cbar_vmax, vmin, vmax
 
 
@@ -917,8 +939,8 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
                   cbar_tick_format="%.2g", figure=None, axes=None,
                   title=None, threshold=1e-6, annotate=True, draw_cross=True,
                   black_bg='auto', cmap=cm.cold_hot, symmetric_cbar="auto",
-                  dim='auto', vmax=None, resampling_interpolation='continuous',
-                  radiological=False, **kwargs):
+                  dim='auto', vmin=None, vmax=None, radiological=False,
+                  resampling_interpolation='continuous', **kwargs):
     """Plot cuts of an ROI/mask image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -960,6 +982,7 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
         Default='auto'.
     %(dim)s
         Default='auto'.
+    %(vmin)s
     %(vmax)s
     %(resampling_interpolation)s
         Default='continuous'.
@@ -987,9 +1010,9 @@ def plot_stat_map(stat_map_img, bg_img=MNI152TEMPLATE, cut_coords=None,
 
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         _safe_get_data(stat_map_img, ensure_finite=True),
-        vmax,
-        symmetric_cbar,
-        kwargs)
+        vmin=vmin,
+        vmax=vmax,
+        symmetric_cbar=symmetric_cbar)
 
     display = _plot_img_with_bg(
         img=stat_map_img, bg_img=bg_img, cut_coords=cut_coords,
@@ -1090,16 +1113,14 @@ def plot_glass_brain(stat_map_img,
         if plot_abs:
             cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
                 _safe_get_data(stat_map_img, ensure_finite=True),
-                vmax,
-                symmetric_cbar,
-                kwargs,
-                0)
+                vmax=vmax,
+                symmetric_cbar=symmetric_cbar,
+                force_min_stat_map_value=0)
         else:
             cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
                 _safe_get_data(stat_map_img, ensure_finite=True),
-                vmax,
-                symmetric_cbar,
-                kwargs)
+                vmax=vmax,
+                symmetric_cbar=symmetric_cbar)
     else:
         cbar_vmin, cbar_vmax = None, None
 
@@ -1547,7 +1568,9 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
             ax0.set_yticks([])
 
         # Carpet plot
-        axes = plt.subplot(gs[1])  # overwrite axes
+        if _compare_version(matplotlib.__version__, ">", "3.7.2"):
+            axes.remove()  # remove axes for newer versions of mpl
+        axes = plt.subplot(gs[1])  # overwrites axes with older versions of mpl
         axes.imshow(
             data.T,
             interpolation='nearest',

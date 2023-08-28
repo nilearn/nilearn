@@ -960,8 +960,8 @@ def _stat_map_to_svg(
         )
     else:
         raise ValueError(
-            "Invalid plot type provided. Acceptable options are"
-            "'slice' or 'glass'."
+            "Invalid plot type provided. "
+            "Acceptable options are 'slice' or 'glass'."
         )
     with pd.option_context("display.precision", 2):
         _add_params_to_plot(table_details, stat_map_plot)

@@ -52,9 +52,9 @@ Changes
 
 - **Backward incompatible change**: Function :func:`~plotting.find_xyz_cut_coords` now takes a ``mask_img`` argument which is a niimg, rather than a ``mask`` argument, which used to be a numpy array.
 
-- The minimum required version for ``scipy`` is now ``0.14``.
+- :bdg-danger:`Deprecation` The minimum required version for ``scipy`` is now ``0.14``.
 
-- Dropped support for ``Nibabel`` older than ``2.0.2``.
+- :bdg-danger:`Deprecation` Dropped support for ``Nibabel`` older than ``2.0.2``.
 
 - Function :func:`~image.smooth_img` no longer accepts smoothing parameter :term:`FWHM` as 0. Behavior is changed in according to the issues with recent ``SciPy`` version ``1.0.0``.
 

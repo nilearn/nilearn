@@ -264,7 +264,7 @@ Enhancements
 Changes
 -------
 
-- Function ``nilearn.datasets.fetch_surf_fsaverage5`` is deprecated and will be removed in a future release. Use function :func:`~datasets.fetch_surf_fsaverage`, with the parameter ``mesh="fsaverage5"`` (the default) instead.
+- :bdg-danger:`Deprecation` Function ``nilearn.datasets.fetch_surf_fsaverage5`` is deprecated and will be removed in a future release. Use function :func:`~datasets.fetch_surf_fsaverage`, with the parameter ``mesh="fsaverage5"`` (the default) instead.
 
 - ``fsaverage5`` surface data files are now shipped directly with Nilearn (see :gh:`1705` for discussion).
 

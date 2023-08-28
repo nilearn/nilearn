@@ -299,7 +299,9 @@ def test_contour_fillings_levels_in_add_contours(img):
     oslicer.add_contours(img, filled=True, levels=[0.0, 0.2])
 
     # levels with only one value
-    oslicer.add_contours(img, filled=True, levels=[0.0])
+    # vmin argument is not needed but added because of matplotlib 3.8.0rc1 bug
+    # see https://github.com/matplotlib/matplotlib/issues/26531
+    oslicer.add_contours(img, filled=True, levels=[0.0], vmin=0.0)
 
     # without passing levels, should work with default levels from
     # matplotlib
@@ -317,7 +319,6 @@ def test_user_given_cmap_with_colorbar(img):
 @pytest.mark.parametrize("display", [OrthoSlicer, LYRZProjector])
 def test_data_complete_mask(display):
     """Test for a special case due to matplotlib 2.1.0.
-
     When the data is completely masked, then we have plotting issues
     See similar issue #9280 reported in matplotlib. This function
     tests the patch added for this particular issue.

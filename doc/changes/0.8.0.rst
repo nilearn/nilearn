@@ -91,9 +91,9 @@ Enhancements
 Changes
 -------
 
-- Python ``3.5`` is no longer supported. We recommend upgrading to Python ``3.7`` (:gh:`2869` by `Nicolas Gensollen`_).
+- :bdg-danger:`Deprecation` Python ``3.5`` is no longer supported. We recommend upgrading to Python ``3.7`` (:gh:`2869` by `Nicolas Gensollen`_).
 
-- Support for Nibabel ``2.x`` is now deprecated and will be removed in the ``0.9`` release. Users with a version of Nibabel ``< 3.0`` will be warned at their first Nilearn import (:gh:`2869` by `Nicolas Gensollen`_).
+- :bdg-danger:`Deprecation` Support for Nibabel ``2.x`` is now deprecated and will be removed in the ``0.9`` release. Users with a version of Nibabel ``< 3.0`` will be warned at their first Nilearn import (:gh:`2869` by `Nicolas Gensollen`_).
 
 - Minimum supported versions of packages have been bumped up:
 
@@ -105,8 +105,8 @@ Changes
 
   (:gh:`2869` by `Nicolas Gensollen`_).
 
-- Function ``sym_to_vec`` from :mod:`nilearn.connectome` was deprecated since release ``0.4`` and has been removed (:gh:`2867` by `Nicolas Gensollen`_).
+- :bdg-danger:`Deprecation` Function ``sym_to_vec`` from :mod:`nilearn.connectome` was deprecated since release ``0.4`` and has been removed (:gh:`2867` by `Nicolas Gensollen`_).
 
-- Function ``nilearn.datasets.fetch_nyu_rest`` was deprecated since release ``0.6.2`` and has been removed (:gh:`2868` by `Nicolas Gensollen`_).
+- :bdg-danger:`Deprecation` Function ``nilearn.datasets.fetch_nyu_rest`` was deprecated since release ``0.6.2`` and has been removed (:gh:`2868` by `Nicolas Gensollen`_).
 
 - Class :class:`~maskers.NiftiMasker` replaces attribute ``sessions`` with ``runs`` and deprecates attribute ``sessions`` in ``0.9.0``. Match the relevant change in function :func:`~signal.clean` (:gh:`2858` by `Hao-Ting Wang`_).
