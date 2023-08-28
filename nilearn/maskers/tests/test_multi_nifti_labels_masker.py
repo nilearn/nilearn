@@ -10,13 +10,19 @@ from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker, NiftiLabelsMasker
 
 
+@pytest.fixture()
+def n_regions():
+    return 9
+
+
+@pytest.fixture()
+def length():
+    return 3
+
+
 def test_multi_nifti_labels_masker_errors(
-    shape_3d_default, affine_eye, img_4d_ones_eye
+    shape_3d_default, affine_eye, img_4d_ones_eye, n_regions, length
 ):
-    n_regions = 9
-
-    length = 3
-
     labels_img = data_gen.generate_labeled_regions(
         shape=shape_3d_default, affine=affine_eye, n_regions=n_regions
     )
@@ -62,12 +68,8 @@ def test_multi_nifti_labels_masker_errors(
 
 
 def test_multi_nifti_labels_masker_errors_shape_affine(
-    shape_3d_default, affine_eye
+    shape_3d_default, affine_eye, n_regions, length
 ):
-    length = 3
-
-    n_regions = 9
-
     labels_img = data_gen.generate_labeled_regions(
         shape=shape_3d_default, affine=affine_eye, n_regions=n_regions
     )
@@ -103,11 +105,10 @@ def test_multi_nifti_labels_masker_errors_shape_affine(
         masker.fit()
 
 
-def test_multi_nifti_labels_masker(shape_3d_default, affine_eye):
+def test_multi_nifti_labels_masker(
+    shape_3d_default, affine_eye, n_regions, length
+):
     # Check working of shape/affine checks
-    n_regions = 9
-    length = 3
-
     fmri11_img, mask11_img = data_gen.generate_fake_fmri(
         shape=shape_3d_default, affine=affine_eye, length=length
     )
@@ -132,9 +133,6 @@ def test_multi_nifti_labels_masker(shape_3d_default, affine_eye):
     assert len(signals11_list) == len(signals_input)
     for signals in signals11_list:
         assert signals.shape == (length, n_regions)
-
-    # NiftiLabelsMasker should not work with 4D + 1D input
-    signals_input = [fmri11_img, fmri11_img]
 
     # Transform, with smoothing (smoke test)
     masker11 = MultiNiftiLabelsMasker(
@@ -204,30 +202,26 @@ def test_multi_nifti_labels_masker_reduction_strategies():
     assert default_masker.strategy == "mean"
 
 
-def test_multi_nifti_labels_masker_resampling():
+def test_multi_nifti_labels_masker_resampling(
+    shape_3d_default, affine_eye, n_regions, length
+):
     # Test resampling in MultiNiftiLabelsMasker
-    shape1 = (10, 11, 12)
-    affine = np.eye(4)
-
     # mask
     shape2 = (16, 17, 18)
 
     # labels
     shape3 = (13, 14, 15)
 
-    n_regions = 9
-    length = 3
-
     # With data of the same affine
     fmri11_img, _ = data_gen.generate_fake_fmri(
-        shape1, affine=affine, length=length
+        shape=shape_3d_default, affine=affine_eye, length=length
     )
     _, mask22_img = data_gen.generate_fake_fmri(
-        shape2, affine=affine, length=length
+        shape2, affine=affine_eye, length=length
     )
 
     labels33_img = data_gen.generate_labeled_regions(
-        shape3, n_regions, affine=affine
+        shape3, n_regions, affine=affine_eye
     )
 
     # Multi-subject example
@@ -271,10 +265,13 @@ def test_multi_nifti_labels_masker_resampling():
         )
         assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
 
+
+def test_multi_nifti_labels_masker_resampling_clipped(
+    shape_3d_default, affine_eye, n_regions, length
+):
     # Test with clipped labels: mask does not contain all labels.
     # Shapes do matter in that case, because there is some resampling
     # taking place.
-    shape1 = (10, 11, 12)  # fmri
     shape2 = (8, 9, 10)  # mask
     shape3 = (16, 18, 20)  # maps
 
@@ -282,10 +279,10 @@ def test_multi_nifti_labels_masker_resampling():
     length = 21
 
     fmri11_img, _ = data_gen.generate_fake_fmri(
-        shape1, affine=affine, length=length
+        shape=shape_3d_default, affine=affine_eye, length=length
     )
     _, mask22_img = data_gen.generate_fake_fmri(
-        shape2, affine=affine, length=length
+        shape2, affine=affine_eye, length=length
     )
 
     # Multi-subject example
@@ -293,7 +290,7 @@ def test_multi_nifti_labels_masker_resampling():
 
     # Target: labels
     labels33_img = data_gen.generate_labeled_regions(
-        shape3, n_regions, affine=affine
+        shape3, n_regions, affine=affine_eye
     )
 
     masker = MultiNiftiLabelsMasker(
