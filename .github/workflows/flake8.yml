@@ -37,3 +37,8 @@ jobs:
         -   name: Run Flake8 on whole file
             shell: bash {0}
             run: flake8 --verbose .
+
+        -   name: Ensure that tests functions are not too long
+            run: |
+                python -m pip install flake8-functions
+                flake8 nilearn/**/tests --select CFQ001 --max-function-length 181
