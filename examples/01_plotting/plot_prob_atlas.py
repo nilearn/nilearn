@@ -27,14 +27,29 @@ from nilearn import datasets, plotting
 # Allen RSN networks
 allen = datasets.fetch_atlas_allen_2011()
 
+# ICBM tissue probability
+icbm = datasets.fetch_icbm152_2009()
+
+# Smith ICA BrainMap 2009
+smith_bm20 = datasets.fetch_atlas_smith_2009(resting=False, dimension=20)[
+    "map"
+]
+
 #########################################################################
 # Visualization
+
+# "contours" example
 plotting.plot_prob_atlas(allen.rsn28, title="Allen2011")
 
-# An optional colorbar can be set
+# "continuous" example
 plotting.plot_prob_atlas(
-    allen.rsn28,
-    title="Allen2011 (with colorbar)",
+    (icbm["wm"], icbm["gm"], icbm["csf"]), title="ICBM tissues"
+)
+
+# "filled_contours" example. An optional colorbar can be set.
+plotting.plot_prob_atlas(
+    smith_bm20,
+    title="Smith2009 20 Brainmap (with colorbar)",
     colorbar=True,
 )
 
@@ -44,9 +59,8 @@ plotting.show()
 # Other probabilistic atlases accessible with nilearn
 # ---------------------------------------------------
 #
-# To save build time, the following code is not executed. You can copy and
-# uncomment it to run it locally to get the same plots as above for each of
-# the listed atlases.
+# To save build time, the following code is not executed. Try running it
+# locally to get the same plots as above for each of the listed atlases.
 
 # # Harvard Oxford Atlas
 # harvard_oxford = datasets.fetch_atlas_harvard_oxford("cort-prob-2mm")
@@ -65,18 +79,12 @@ plotting.show()
 # smith_bm10 = datasets.fetch_atlas_smith_2009(resting=False, dimension=10)[
 #     "map"
 # ]
-# smith_bm20 = datasets.fetch_atlas_smith_2009(resting=False, dimension=20)[
-#     "map"
-# ]
 # smith_bm70 = datasets.fetch_atlas_smith_2009(resting=False, dimension=70)[
 #     "map"
 # ]
 
 # # Multi Subject Dictionary Learning Atlas
 # msdl = datasets.fetch_atlas_msdl()
-
-# # ICBM tissue probability
-# icbm = datasets.fetch_icbm152_2009()
 
 # # Pauli subcortical atlas
 # subcortex = datasets.fetch_atlas_pauli_2017()
@@ -90,15 +98,13 @@ plotting.show()
 
 # # Visualization
 # atlas_types = {
-#    "Harvard_Oxford": harvard_oxford.maps,
-#    "Harvard_Oxford sub": harvard_oxford_sub.maps,
-#    "Smith 2009 10 RSNs": smith_rsn10,
-#    "Smith2009 20 RSNs": smith_rsn20,
-#    "Smith2009 70 RSNs": smith_rsn70,
-#    "Smith2009 20 Brainmap": smith_bm20,
-#    "Smith2009 70 Brainmap": smith_bm70,
+#     "Harvard_Oxford": harvard_oxford.maps,
+#     "Harvard_Oxford sub": harvard_oxford_sub.maps,
+#     "Smith 2009 10 RSNs": smith_rsn10,
+#     "Smith2009 20 RSNs": smith_rsn20,
+#     "Smith2009 70 RSNs": smith_rsn70,
+#     "Smith2009 70 Brainmap": smith_bm70,
 #     "MSDL": msdl.maps,
-#     "ICBM tissues": (icbm["wm"], icbm["gm"], icbm["csf"]),
 #     "Pauli2017 Subcortical Atlas": subcortex.maps,
 #     f"DiFuMo dimension {dim} resolution {res}": difumo.maps,
 # }
