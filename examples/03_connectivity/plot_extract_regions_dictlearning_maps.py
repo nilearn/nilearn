@@ -85,6 +85,7 @@ extractor = RegionExtractor(
     thresholding_strategy="ratio_n_voxels",
     extractor="local_regions",
     standardize="zscore_sample",
+    standardize_confounds="zscore_sample",
     min_region_size=1350,
 )
 # Just call fit() to process for regions extraction
