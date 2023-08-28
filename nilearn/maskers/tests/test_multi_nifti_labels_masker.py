@@ -10,58 +10,115 @@ from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker, NiftiLabelsMasker
 
 
-def test_multi_nifti_labels_masker():
-    # Check working of shape/affine checks
-    shape1 = (13, 11, 12)
-    affine1 = np.eye(4)
-
-    shape2 = (12, 10, 14)
-    affine2 = np.diag((1, 2, 3, 1))
-
+def test_multi_nifti_labels_masker_errors(
+    shape_3d_default, affine_eye, img_4d_ones_eye
+):
     n_regions = 9
+
     length = 3
 
-    fmri11_img, mask11_img = data_gen.generate_fake_fmri(
-        shape1, affine=affine1, length=length
-    )
-    fmri12_img, mask12_img = data_gen.generate_fake_fmri(
-        shape1, affine=affine2, length=length
-    )
-    fmri21_img, mask21_img = data_gen.generate_fake_fmri(
-        shape2, affine=affine1, length=length
-    )
-
-    labels11_img = data_gen.generate_labeled_regions(
-        shape1, affine=affine1, n_regions=n_regions
-    )
-
-    mask_img_4d = nibabel.Nifti1Image(
-        np.ones((2, 2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
+    labels_img = data_gen.generate_labeled_regions(
+        shape=shape_3d_default, affine=affine_eye, n_regions=n_regions
     )
 
     # verify that 4D mask arguments are refused
-    masker = MultiNiftiLabelsMasker(labels11_img, mask_img=mask_img_4d)
+    masker = MultiNiftiLabelsMasker(labels_img, mask_img=img_4d_ones_eye)
+
     with pytest.raises(
         DimensionError,
         match="Input data has incompatible dimensionality: "
-        "Expected dimension is 3D and you provided "
-        "a 4D image.",
+        "Expected dimension is 3D and you provided a 4D image.",
     ):
         masker.fit()
 
     # check exception when transform() called without prior fit()
-    masker11 = MultiNiftiLabelsMasker(labels11_img, resampling_target=None)
+    fmri_img, _ = data_gen.generate_fake_fmri(
+        shape=shape_3d_default, affine=affine_eye, length=length
+    )
+
+    masker = MultiNiftiLabelsMasker(labels_img, resampling_target=None)
+
     with pytest.raises(ValueError, match="has not been fitted. "):
-        masker11.transform(fmri11_img)
+        masker.transform(fmri_img)
 
     # No exception raised here
-    signals11 = masker11.fit().transform(fmri11_img)
-    assert signals11.shape == (length, n_regions)
+    signals = masker.fit().transform(fmri_img)
+    assert signals.shape == (length, n_regions)
 
     # No exception should be raised either
+    masker = MultiNiftiLabelsMasker(labels_img, resampling_target=None)
+    masker.fit()
+    masker.inverse_transform(signals)
+
+    # NiftiLabelsMasker should not work with 4D + 1D input
+    labels_img = data_gen.generate_labeled_regions(
+        shape=shape_3d_default, affine=affine_eye, n_regions=n_regions
+    )
+    signals_input = [fmri_img, fmri_img]
+    masker = NiftiLabelsMasker(labels_img, resampling_target=None)
+
+    with pytest.raises(DimensionError, match="incompatible dimensionality"):
+        masker.fit_transform(signals_input)
+
+
+def test_multi_nifti_labels_masker_errors_shape_affine(
+    shape_3d_default, affine_eye
+):
+    length = 3
+
+    n_regions = 9
+
+    labels_img = data_gen.generate_labeled_regions(
+        shape=shape_3d_default, affine=affine_eye, n_regions=n_regions
+    )
+
+    # Test all kinds of mismatch between shapes and between affines
+    shape2 = (12, 10, 14)
+    affine2 = np.diag((1, 2, 3, 1))
+
+    fmri12_img, mask12_img = data_gen.generate_fake_fmri(
+        shape=shape_3d_default, affine=affine2, length=length
+    )
+    fmri21_img, mask21_img = data_gen.generate_fake_fmri(
+        shape2, affine=affine_eye, length=length
+    )
+
+    masker = MultiNiftiLabelsMasker(labels_img, resampling_target=None)
+    masker.fit()
+    with pytest.raises(ValueError):
+        masker.transform(fmri12_img)
+    with pytest.raises(ValueError):
+        masker.transform(fmri21_img)
+
+    masker = MultiNiftiLabelsMasker(
+        labels_img, mask_img=mask12_img, resampling_target=None
+    )
+    with pytest.raises(ValueError):
+        masker.fit()
+
+    masker = MultiNiftiLabelsMasker(
+        labels_img, mask_img=mask21_img, resampling_target=None
+    )
+    with pytest.raises(ValueError):
+        masker.fit()
+
+
+def test_multi_nifti_labels_masker(shape_3d_default, affine_eye):
+    # Check working of shape/affine checks
+    n_regions = 9
+    length = 3
+
+    fmri11_img, mask11_img = data_gen.generate_fake_fmri(
+        shape=shape_3d_default, affine=affine_eye, length=length
+    )
+
+    labels11_img = data_gen.generate_labeled_regions(
+        shape=shape_3d_default, affine=affine_eye, n_regions=n_regions
+    )
+
     masker11 = MultiNiftiLabelsMasker(labels11_img, resampling_target=None)
-    masker11.fit()
-    masker11.inverse_transform(signals11)
+    signals11 = masker11.fit().transform(fmri11_img)
+    assert signals11.shape == (length, n_regions)
 
     masker11 = MultiNiftiLabelsMasker(
         labels11_img, mask_img=mask11_img, resampling_target=None
@@ -78,29 +135,6 @@ def test_multi_nifti_labels_masker():
 
     # NiftiLabelsMasker should not work with 4D + 1D input
     signals_input = [fmri11_img, fmri11_img]
-    masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
-    with pytest.raises(DimensionError, match="incompatible dimensionality"):
-        masker11.fit_transform(signals_input)
-
-    # Test all kinds of mismatch between shapes and between affines
-    masker11 = MultiNiftiLabelsMasker(labels11_img, resampling_target=None)
-    masker11.fit()
-    with pytest.raises(ValueError):
-        masker11.transform(fmri12_img)
-    with pytest.raises(ValueError):
-        masker11.transform(fmri21_img)
-
-    masker11 = MultiNiftiLabelsMasker(
-        labels11_img, mask_img=mask12_img, resampling_target=None
-    )
-    with pytest.raises(ValueError):
-        masker11.fit()
-
-    masker11 = MultiNiftiLabelsMasker(
-        labels11_img, mask_img=mask21_img, resampling_target=None
-    )
-    with pytest.raises(ValueError):
-        masker11.fit()
 
     # Transform, with smoothing (smoke test)
     masker11 = MultiNiftiLabelsMasker(
@@ -123,6 +157,7 @@ def test_multi_nifti_labels_masker():
     # Call inverse transform (smoke test)
     for signals in signals11_list:
         fmri11_img_r = masker11.inverse_transform(signals)
+
         assert fmri11_img_r.shape == fmri11_img.shape
         np.testing.assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
 
