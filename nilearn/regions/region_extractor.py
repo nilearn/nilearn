@@ -335,6 +335,8 @@ class RegionExtractor(NiftiMapsMasker):
             Recommended to set to True if signals are not already standardized.
             Passed to :class:`~nilearn.maskers.NiftiMapsMasker`.
 
+    %(standardize_confounds)s
+
     %(detrend)s
 
         .. note::
