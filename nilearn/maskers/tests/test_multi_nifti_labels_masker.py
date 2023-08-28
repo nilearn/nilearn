@@ -70,11 +70,11 @@ def test_multi_nifti_labels_masker_errors(
 def test_multi_nifti_labels_masker_errors_shape_affine(
     shape_3d_default, affine_eye, n_regions, length
 ):
+    """Test all kinds of mismatch between shapes and between affines."""
     labels_img = data_gen.generate_labeled_regions(
         shape=shape_3d_default, affine=affine_eye, n_regions=n_regions
     )
 
-    # Test all kinds of mismatch between shapes and between affines
     shape2 = (12, 10, 14)
     affine2 = np.diag((1, 2, 3, 1))
 
@@ -285,9 +285,6 @@ def test_multi_nifti_labels_masker_resampling_clipped(
     shape2 = (8, 9, 10)  # mask
     shape3 = (16, 18, 20)  # maps
 
-    n_regions = 9
-    length = 21
-
     fmri11_img, _ = data_gen.generate_fake_fmri(
         shape=shape_3d_default, affine=affine_eye, length=length
     )
@@ -334,11 +331,27 @@ def test_multi_nifti_labels_masker_resampling_clipped(
         )
         assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
 
+
+def test_multi_nifti_labels_masker_data_atlas_different_shape(
+    affine_eye, n_regions, length
+):
+    shape2 = (8, 9, 10)  # mask
+    shape3 = (16, 18, 20)  # maps
+
     # Test with data and atlas of different shape: the atlas should be
     # resampled to the data
     shape22 = (5, 5, 6)
     affine2 = 2 * np.eye(4)
     affine2[-1, -1] = 1
+
+    _, mask22_img = data_gen.generate_fake_fmri(
+        shape2, affine=affine_eye, length=length
+    )
+
+    # Target: labels
+    labels33_img = data_gen.generate_labeled_regions(
+        shape3, n_regions, affine=affine_eye
+    )
 
     fmri22_img, _ = data_gen.generate_fake_fmri(
         shape22, affine=affine2, length=length
