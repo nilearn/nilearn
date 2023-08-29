@@ -37,7 +37,6 @@ description = "Statistical learning for neuroimaging in Python"
 # Version from setuptools_scm
 dynamic = ["version"]
 license = {text = "new BSD"}
-long_description = {file = "README.rst"}
 maintainers = [{name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}]
 name = "nilearn"
 readme = "README.rst"
