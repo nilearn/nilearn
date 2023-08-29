@@ -9,6 +9,7 @@ import warnings
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 from nilearn._utils import data_gen, testing
 from nilearn._utils.exceptions import DimensionError
@@ -133,7 +134,7 @@ def test_nifti_labels_masker():
     # Call inverse transform (smoke test)
     fmri11_img_r = masker11.inverse_transform(signals11)
     assert fmri11_img_r.shape == fmri11_img.shape
-    np.testing.assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
+    assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
 
 
 def test_nifti_labels_masker_io_shapes():
@@ -390,23 +391,17 @@ def test_nifti_labels_masker_resampling():
     )
 
     masker.fit()
-    np.testing.assert_almost_equal(
-        masker.labels_img_.affine, labels33_img.affine
-    )
+    assert_almost_equal(masker.labels_img_.affine, labels33_img.affine)
     assert masker.labels_img_.shape == labels33_img.shape
 
-    np.testing.assert_almost_equal(
-        masker.mask_img_.affine, masker.labels_img_.affine
-    )
+    assert_almost_equal(masker.mask_img_.affine, masker.labels_img_.affine)
     assert masker.mask_img_.shape == masker.labels_img_.shape[:3]
 
     transformed = masker.transform(fmri11_img)
     assert transformed.shape == (length, n_regions)
 
     fmri11_img_r = masker.inverse_transform(transformed)
-    np.testing.assert_almost_equal(
-        fmri11_img_r.affine, masker.labels_img_.affine
-    )
+    assert_almost_equal(fmri11_img_r.affine, masker.labels_img_.affine)
     assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
 
     # Test with clipped labels: mask does not contain all labels.
@@ -438,14 +433,10 @@ def test_nifti_labels_masker_resampling():
     )
 
     masker.fit()
-    np.testing.assert_almost_equal(
-        masker.labels_img_.affine, labels33_img.affine
-    )
+    assert_almost_equal(masker.labels_img_.affine, labels33_img.affine)
     assert masker.labels_img_.shape == labels33_img.shape
 
-    np.testing.assert_almost_equal(
-        masker.mask_img_.affine, masker.labels_img_.affine
-    )
+    assert_almost_equal(masker.mask_img_.affine, masker.labels_img_.affine)
     assert masker.mask_img_.shape == masker.labels_img_.shape[:3]
 
     uniq_labels = np.unique(get_data(masker.labels_img_))
@@ -458,9 +449,7 @@ def test_nifti_labels_masker_resampling():
     assert (transformed.var(axis=0) == 0).sum() < n_regions
 
     fmri11_img_r = masker.inverse_transform(transformed)
-    np.testing.assert_almost_equal(
-        fmri11_img_r.affine, masker.labels_img_.affine
-    )
+    assert_almost_equal(fmri11_img_r.affine, masker.labels_img_.affine)
     assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
 
     # Test with data and atlas of different shape: the atlas should be
@@ -476,9 +465,7 @@ def test_nifti_labels_masker_resampling():
     masker = NiftiLabelsMasker(labels33_img, mask_img=mask22_img)
 
     masker.fit_transform(fmri22_img)
-    np.testing.assert_array_equal(
-        masker._resampled_labels_img_.affine, affine2
-    )
+    assert_array_equal(masker._resampled_labels_img_.affine, affine2)
 
     # Test with filenames
     with testing.write_tmp_imgs(fmri22_img) as filename:
@@ -520,9 +507,7 @@ def test_nifti_labels_masker_resampling():
         transformed2 = masker.fit_transform(fmri_img)
         # inverse transform again
         compressed_img2 = masker.inverse_transform(transformed2)
-        np.testing.assert_array_equal(
-            get_data(compressed_img), get_data(compressed_img2)
-        )
+        assert_array_equal(get_data(compressed_img), get_data(compressed_img2))
 
 
 def test_standardization(rng):
@@ -547,15 +532,15 @@ def test_standardization(rng):
     masker = NiftiLabelsMasker(labels, standardize="zscore_sample")
     trans_signals = masker.fit_transform(img)
 
-    np.testing.assert_almost_equal(trans_signals.mean(0), 0)
-    np.testing.assert_almost_equal(trans_signals.std(0), 1, decimal=3)
+    assert_almost_equal(trans_signals.mean(0), 0)
+    assert_almost_equal(trans_signals.std(0), 1, decimal=3)
 
     # psc
     masker = NiftiLabelsMasker(labels, standardize="psc")
     trans_signals = masker.fit_transform(img)
 
-    np.testing.assert_almost_equal(trans_signals.mean(0), 0)
-    np.testing.assert_almost_equal(
+    assert_almost_equal(trans_signals.mean(0), 0)
+    assert_almost_equal(
         trans_signals,
         (
             unstandarized_label_signals

@@ -4,7 +4,11 @@ import warnings
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
-from numpy.testing import assert_array_almost_equal, assert_array_equal
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
 
 from nilearn._utils import data_gen
 from nilearn.image import get_data, new_img_like
@@ -193,16 +197,16 @@ def test_standardization(rng):
     # Test the fit
     s = masker.fit_transform(img)
 
-    np.testing.assert_almost_equal(s.mean(), 0)
-    np.testing.assert_almost_equal(s.std(), 1, decimal=1)
+    assert_almost_equal(s.mean(), 0)
+    assert_almost_equal(s.std(), 1, decimal=1)
 
     # test psc
     masker = NiftiSpheresMasker([(1, 1, 1)], standardize="psc")
     # Test the fit
     s = masker.fit_transform(img)
 
-    np.testing.assert_almost_equal(s.mean(), 0)
-    np.testing.assert_almost_equal(
+    assert_almost_equal(s.mean(), 0)
+    assert_almost_equal(
         s.ravel(),
         data[1, 1, 1] / data[1, 1, 1].mean() * 100 - 100,
     )

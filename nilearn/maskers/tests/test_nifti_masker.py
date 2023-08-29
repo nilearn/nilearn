@@ -14,7 +14,11 @@ from tempfile import mkdtemp
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
-from numpy.testing import assert_array_equal
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
 
 from nilearn._utils import data_gen, exceptions, testing
 from nilearn._utils.class_inspect import get_params
@@ -181,7 +185,7 @@ def test_matrix_orientation():
     masker.fit()
     timeseries = masker.transform(fmri)
     recovered = masker.inverse_transform(timeseries)
-    np.testing.assert_array_almost_equal(get_data(recovered), get_data(fmri))
+    assert_array_almost_equal(get_data(recovered), get_data(fmri))
 
 
 def test_mask_3d():
@@ -385,7 +389,7 @@ def test_compute_epi_mask():
 
     # With an array with no zeros, exclude_zeros should not make
     # any difference
-    np.testing.assert_array_equal(get_data(mask1), get_data(mask2))
+    assert_array_equal(get_data(mask1), get_data(mask2))
 
     # Check that padding with zeros does not change the extracted mask
     mean_image2 = np.zeros((30, 30, 3))
@@ -397,7 +401,7 @@ def test_compute_epi_mask():
     )
     masker3.fit(mean_image2)
     mask3 = masker3.mask_img_
-    np.testing.assert_array_equal(get_data(mask1), get_data(mask3)[3:12, 3:12])
+    assert_array_equal(get_data(mask1), get_data(mask3)[3:12, 3:12])
 
     # However, without exclude_zeros, it does
     masker4 = NiftiMasker(mask_strategy="epi", mask_args=dict(opening=False))
@@ -429,7 +433,7 @@ def test_compute_brain_mask(strategy, mask_args, expected_mask):
     masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)
     masker.fit(img)
 
-    np.testing.assert_array_equal(get_data(masker.mask_img_), expected_mask)
+    assert_array_equal(get_data(masker.mask_img_), expected_mask)
 
 
 def test_filter_and_mask_error():
@@ -507,15 +511,15 @@ def test_standardization(rng):
     masker = NiftiMasker(mask, standardize="zscore_sample")
     trans_signals = masker.fit_transform(img)
 
-    np.testing.assert_almost_equal(trans_signals.mean(0), 0)
-    np.testing.assert_almost_equal(trans_signals.std(0), 1, decimal=3)
+    assert_almost_equal(trans_signals.mean(0), 0)
+    assert_almost_equal(trans_signals.std(0), 1, decimal=3)
 
     # psc
     masker = NiftiMasker(mask, standardize="psc")
     trans_signals = masker.fit_transform(img)
 
-    np.testing.assert_almost_equal(trans_signals.mean(0), 0)
-    np.testing.assert_almost_equal(
+    assert_almost_equal(trans_signals.mean(0), 0)
+    assert_almost_equal(
         trans_signals,
         (signals / signals.mean(1)[:, np.newaxis] * 100 - 100).T,
     )
