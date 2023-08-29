@@ -223,6 +223,12 @@ def _img_3d_ones(shape=_shape_3d_default(), affine=_affine_eye()):
     return _img_ones(shape, affine)
 
 
+@pytest.fixture
+def img_3d_ones_eye():
+    """Return a zeros-filled 3D Nifti1Image (identity affine)."""
+    return _img_3d_ones()
+
+
 # ------------------------ 4D IMAGES ------------------------#
 
 
