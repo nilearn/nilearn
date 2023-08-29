@@ -57,18 +57,18 @@ def test_mni152template_is_reordered():
 
 
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
-def test_plot_functions_3d_default_params(plot_func, img_3d_mni, tmpdir):
+def test_plot_functions_3d_default_params(plot_func, img_3d_mni, tmp_path):
     """Smoke tests for 3D plotting functions with default parameters."""
-    filename = str(tmpdir.join("temp.png"))
+    filename = tmp_path / "temp.png"
     plot_func(img_3d_mni, output_file=filename)
     plt.close()
 
 
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize("cbar_tick_format", ["%f", "%i"])
-def test_cbar_tick_format(plot_func, img_3d_mni, cbar_tick_format, tmpdir):
+def test_cbar_tick_format(plot_func, img_3d_mni, cbar_tick_format, tmp_path):
     """Test different colorbar tick format with 3D plotting functions."""
-    filename = str(tmpdir.join("temp.png"))
+    filename = tmp_path / "temp.png"
     plot_func(
         img_3d_mni,
         output_file=filename,
@@ -80,10 +80,10 @@ def test_cbar_tick_format(plot_func, img_3d_mni, cbar_tick_format, tmpdir):
 
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_4D)
 def test_plot_functions_4d_default_params(
-    plot_func, img_3d_mni, testdata_4d_for_plotting, tmpdir
+    plot_func, img_3d_mni, testdata_4d_for_plotting, tmp_path
 ):
     """Smoke-test for 4D plotting functions with default arguments."""
-    filename = str(tmpdir.join("temp.png"))
+    filename = tmp_path / "temp.png"
     kwargs = {"output_file": filename}
     if plot_func == plot_carpet:
         kwargs["mask_img"] = testdata_4d_for_plotting["img_mask"]
