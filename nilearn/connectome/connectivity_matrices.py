@@ -397,12 +397,12 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         Default=False.
     %(standardize)s
 
-    .. note::
+        .. note::
 
-        Added to control passing value to `standardize` of ``signal.clean``
-        to call new behavior since passing "zscore" or True (default) is
-        deprecated. This parameter will be deprecated in version 0.13 and
-        removed in version 0.15.
+            Added to control passing value to `standardize` of ``signal.clean``
+            to call new behavior since passing "zscore" or True (default) is
+            deprecated. This parameter will be deprecated in version 0.13 and
+            removed in version 0.15.
 
     Attributes
     ----------
