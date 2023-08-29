@@ -17,20 +17,16 @@ from nilearn.image import get_data
 from nilearn.maskers import NiftiLabelsMasker, NiftiMasker
 
 
-def test_nifti_labels_masker():
+def test_nifti_labels_masker(affine_eye, length, n_regions):
     """Check working of shape/affine checks."""
-    length = 3
     shape1 = (13, 11, 12, length)
-    affine1 = np.eye(4)
 
     shape2 = (12, 10, 14, length)
     affine2 = np.diag((1, 2, 3, 1))
 
-    n_regions = 9
-
     fmri11_img, mask11_img = data_gen.generate_random_img(
         shape1,
-        affine=affine1,
+        affine=affine_eye,
     )
     fmri12_img, mask12_img = data_gen.generate_random_img(
         shape1,
@@ -38,12 +34,12 @@ def test_nifti_labels_masker():
     )
     fmri21_img, mask21_img = data_gen.generate_random_img(
         shape2,
-        affine=affine1,
+        affine=affine_eye,
     )
 
     labels11_img = data_gen.generate_labeled_regions(
         shape1[:3],
-        affine=affine1,
+        affine=affine_eye,
         n_regions=n_regions,
     )
 
@@ -137,7 +133,7 @@ def test_nifti_labels_masker():
     assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
 
 
-def test_nifti_labels_masker_io_shapes():
+def test_nifti_labels_masker_io_shapes(n_regions, affine_eye):
     """Ensure that NiftiLabelsMasker handles 1D/2D/3D/4D data appropriately.
 
     transform(4D image) --> 2D output, no warning
@@ -146,12 +142,12 @@ def test_nifti_labels_masker_io_shapes():
     inverse_transform(1D array) --> 3D image, no warning
     inverse_transform(2D array with wrong shape) --> IndexError
     """
-    n_regions, n_volumes = 9, 5
+    n_volumes = 5
     shape_3d = (10, 11, 12)
     shape_4d = (10, 11, 12, n_volumes)
     data_1d = np.random.random(n_regions)
     data_2d = np.random.random((n_volumes, n_regions))
-    affine = np.eye(4)
+    affine = affine_eye
 
     img_4d, mask_img = data_gen.generate_random_img(
         shape_4d,
@@ -205,21 +201,19 @@ def test_nifti_labels_masker_io_shapes():
         masker.inverse_transform(data_2d.T)
 
 
-def test_nifti_labels_masker_with_nans_and_infs():
+def test_nifti_labels_masker_with_nans_and_infs(length, n_regions, affine_eye):
     """Apply a NiftiLabelsMasker containing NaNs and infs.
 
     The masker should replace those NaNs and infs with zeros,
     while raising a warning.
     """
-    length = 3
-    n_regions = 9
     fmri_img, mask_img = data_gen.generate_random_img(
         (13, 11, 12, length),
-        affine=np.eye(4),
+        affine=affine_eye,
     )
     labels_img = data_gen.generate_labeled_regions(
         (13, 11, 12),
-        affine=np.eye(4),
+        affine=affine_eye,
         n_regions=n_regions,
     )
     # Introduce nans with data type float
@@ -227,7 +221,7 @@ def test_nifti_labels_masker_with_nans_and_infs():
     labels_data = get_data(labels_img).astype(np.float32)
     labels_data[:, :, 7] = np.nan
     labels_data[:, :, 4] = np.inf
-    labels_img = Nifti1Image(labels_data, np.eye(4))
+    labels_img = Nifti1Image(labels_data, affine_eye)
 
     masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
 
@@ -238,7 +232,7 @@ def test_nifti_labels_masker_with_nans_and_infs():
     assert np.all(np.isfinite(sig))
 
 
-def test_nifti_labels_masker_with_nans_and_infs_in_mask():
+def test_nifti_labels_masker_with_nans_and_infs_in_mask(affine_eye):
     """Apply a NiftiLabelsMasker with a mask containing NaNs and infs.
 
     The masker should replace those NaNs and infs with zeros,
@@ -248,11 +242,11 @@ def test_nifti_labels_masker_with_nans_and_infs_in_mask():
     n_regions = 9
     fmri_img, mask_img = data_gen.generate_random_img(
         (13, 11, 12, length),
-        affine=np.eye(4),
+        affine=affine_eye,
     )
     labels_img = data_gen.generate_labeled_regions(
         (13, 11, 12),
-        affine=np.eye(4),
+        affine=affine_eye,
         n_regions=n_regions,
     )
     # Introduce nans with data type float
@@ -260,7 +254,7 @@ def test_nifti_labels_masker_with_nans_and_infs_in_mask():
     mask_data = get_data(mask_img).astype(np.float32)
     mask_data[:, :, 7] = np.nan
     mask_data[:, :, 4] = np.inf
-    mask_img = Nifti1Image(mask_data, np.eye(4))
+    mask_img = Nifti1Image(mask_data, affine_eye)
 
     masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
 
@@ -271,21 +265,21 @@ def test_nifti_labels_masker_with_nans_and_infs_in_mask():
     assert np.all(np.isfinite(sig))
 
 
-def test_nifti_labels_masker_with_nans_and_infs_in_data():
+def test_nifti_labels_masker_with_nans_and_infs_in_data(
+    affine_eye, length, n_regions
+):
     """Apply a NiftiLabelsMasker to 4D data containing NaNs and infs.
 
     The masker should replace those NaNs and infs with zeros,
     while raising a warning.
     """
-    length = 3
-    n_regions = 9
     fmri_img, mask_img = data_gen.generate_random_img(
         (13, 11, 12, length),
-        affine=np.eye(4),
+        affine=affine_eye,
     )
     labels_img = data_gen.generate_labeled_regions(
         (13, 11, 12),
-        affine=np.eye(4),
+        affine=affine_eye,
         n_regions=n_regions,
     )
     # Introduce nans with data type float
@@ -295,7 +289,7 @@ def test_nifti_labels_masker_with_nans_and_infs_in_data():
     fmri_data = get_data(fmri_img).astype(np.float32)
     fmri_data[:, :, 7, :] = np.nan
     fmri_data[:, :, 4, 0] = np.inf
-    fmri_img = Nifti1Image(fmri_data, np.eye(4))
+    fmri_img = Nifti1Image(fmri_data, affine_eye)
 
     masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
 
@@ -346,11 +340,8 @@ def test_nifti_labels_masker_reduction_strategies():
     assert default_masker.strategy == "mean"
 
 
-def test_nifti_labels_masker_resampling():
+def test_nifti_labels_masker_resampling(n_regions, length, affine_eye):
     """Test resampling in NiftiLabelsMasker."""
-    n_regions = 9
-    length = 3
-
     shape1 = (10, 11, 12, length)
     affine = np.eye(4)
 
@@ -363,17 +354,17 @@ def test_nifti_labels_masker_resampling():
     # With data of the same affine
     fmri11_img, _ = data_gen.generate_random_img(
         shape1,
-        affine=affine,
+        affine=affine_eye,
     )
     _, mask22_img = data_gen.generate_random_img(
         shape2,
-        affine=affine,
+        affine=affine_eye,
     )
 
     labels33_img = data_gen.generate_labeled_regions(
         shape3,
         n_regions,
-        affine=affine,
+        affine=affine_eye,
     )
 
     # Test error checking
@@ -455,7 +446,7 @@ def test_nifti_labels_masker_resampling():
     # Test with data and atlas of different shape: the atlas should be
     # resampled to the data
     shape22 = (5, 5, 6, length)
-    affine2 = 2 * np.eye(4)
+    affine2 = 2 * affine_eye
     affine2[-1, -1] = 1
 
     fmri22_img, _ = data_gen.generate_random_img(
@@ -476,11 +467,11 @@ def test_nifti_labels_masker_resampling():
     # resampled labels having number of labels equal with transformed shape of
     # 2nd dimension. This tests are added based on issue #1673 in Nilearn
     shape = (13, 11, 12, 21)
-    affine = np.eye(4) * 2
+    affine = affine_eye * 2
 
     fmri_img, _ = data_gen.generate_random_img(shape, affine=affine)
     labels_img = data_gen.generate_labeled_regions(
-        (9, 8, 6), affine=np.eye(4), n_regions=10
+        (9, 8, 6), affine=affine_eye, n_regions=10
     )
     for resampling_target in ["data", "labels"]:
         masker = NiftiLabelsMasker(
@@ -551,14 +542,13 @@ def test_standardization(rng):
     )
 
 
-def test_nifti_labels_masker_with_mask():
+def test_nifti_labels_masker_with_mask(affine_eye):
     """Test NiftiLabelsMasker with a separate mask_img parameter."""
     shape = (13, 11, 12, 3)
-    affine = np.eye(4)
-    fmri_img, mask_img = data_gen.generate_random_img(shape, affine=affine)
+    fmri_img, mask_img = data_gen.generate_random_img(shape, affine=affine_eye)
     labels_img = data_gen.generate_labeled_regions(
         shape[:3],
-        affine=affine,
+        affine=affine_eye,
         n_regions=7,
     )
     masker = NiftiLabelsMasker(
@@ -576,19 +566,18 @@ def test_nifti_labels_masker_with_mask():
     assert np.allclose(signals, masked_signals)
 
 
-def test_3d_images():
+def test_3d_images(affine_eye):
     # Test that the NiftiLabelsMasker works with 3D images
-    affine = np.eye(4)
     n_regions = 3
     shape3 = (2, 2, 2)
 
     labels33_img = data_gen.generate_labeled_regions(shape3, n_regions)
     mask_img = Nifti1Image(
         np.ones(shape3, dtype=np.int8),
-        affine=affine,
+        affine=affine_eye,
     )
-    epi_img1 = Nifti1Image(np.ones(shape3), affine=affine)
-    epi_img2 = Nifti1Image(np.ones(shape3), affine=affine)
+    epi_img1 = Nifti1Image(np.ones(shape3), affine=affine_eye)
+    epi_img2 = Nifti1Image(np.ones(shape3), affine=affine_eye)
     masker = NiftiLabelsMasker(labels33_img, mask_img=mask_img)
 
     epis = masker.fit_transform(epi_img1)
