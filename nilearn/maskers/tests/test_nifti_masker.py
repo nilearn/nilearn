@@ -11,9 +11,9 @@ import shutil
 import warnings
 from tempfile import mkdtemp
 
-import nibabel
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
 from nilearn._utils import data_gen, exceptions, testing
@@ -27,7 +27,7 @@ def test_auto_mask():
     """Perform a smoke test on the auto-mask option."""
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
-    img = nibabel.Nifti1Image(data, np.eye(4))
+    img = Nifti1Image(data, np.eye(4))
     masker = NiftiMasker()
     # Smoke test the fit
     masker.fit(img)
@@ -47,9 +47,9 @@ def test_detrend():
     """Check that detrending doesn't do something stupid with 3D images."""
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
-    img = nibabel.Nifti1Image(data, np.eye(4))
+    img = Nifti1Image(data, np.eye(4))
     mask = data.astype("uint8")
-    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+    mask_img = Nifti1Image(mask, np.eye(4))
 
     # Smoke test the fit
     masker = NiftiMasker(mask_img=mask_img, detrend=True)
@@ -62,12 +62,12 @@ def test_fit_transform(y):
     """Check fit_transform of BaseMasker with several input args."""
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
-    img = nibabel.Nifti1Image(data, np.eye(4))
+    img = Nifti1Image(data, np.eye(4))
     mask = data.astype("uint8")
 
     # Smoke test the fit
 
-    for mask_img in [nibabel.Nifti1Image(mask, np.eye(4)), None]:
+    for mask_img in [Nifti1Image(mask, np.eye(4)), None]:
         masker = NiftiMasker(mask_img=mask_img)
         X = masker.fit_transform(X=img, y=y)
         assert np.any(X != 0)
@@ -76,10 +76,10 @@ def test_fit_transform(y):
 def test_fit_transform_warning():
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
-    img = nibabel.Nifti1Image(data, np.eye(4))
+    img = Nifti1Image(data, np.eye(4))
     y = np.ones((9, 9, 9))
     mask = data.astype("uint8")
-    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+    mask_img = Nifti1Image(mask, np.eye(4))
     masker = NiftiMasker(mask_img=mask_img)
     with pytest.warns(
         UserWarning,
@@ -94,9 +94,9 @@ def test_resample():
     """Check that target_affine triggers the right resampling."""
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
-    img = nibabel.Nifti1Image(data, np.eye(4))
+    img = Nifti1Image(data, np.eye(4))
     mask = data.astype("uint8")
-    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+    mask_img = Nifti1Image(mask, np.eye(4))
     masker = NiftiMasker(mask_img=mask_img, target_affine=2 * np.eye(3))
     # Smoke test the fit
     X = masker.fit_transform(img)
@@ -109,12 +109,12 @@ def test_resample_to_mask_warning():
     """
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
-    img = nibabel.Nifti1Image(data, np.eye(4))
+    img = Nifti1Image(data, np.eye(4))
     # defining a mask with different fov than img
     mask = np.zeros((12, 12, 12))
     mask[3:-3, 3:-3, 3:-3] = 10
     mask = mask.astype("uint8")
-    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+    mask_img = Nifti1Image(mask, np.eye(4))
     masker = NiftiMasker(mask_img=mask_img)
     with pytest.warns(
         UserWarning,
@@ -131,7 +131,7 @@ def test_with_files():
     """Test standard masking with filenames."""
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
-    data_img = nibabel.Nifti1Image(data, np.eye(4))
+    data_img = Nifti1Image(data, np.eye(4))
 
     with testing.write_tmp_imgs(data_img) as filename:
         masker = NiftiMasker()
@@ -149,7 +149,7 @@ def test_nan():
     data[:, -1] = np.nan
     data[:, :, -1] = np.nan
     data[3:-3, 3:-3, 3:-3] = 10
-    img = nibabel.Nifti1Image(data, np.eye(4))
+    img = Nifti1Image(data, np.eye(4))
     masker = NiftiMasker(mask_args=dict(opening=0))
     masker.fit(img)
     mask = get_data(masker.mask_img_)
@@ -189,7 +189,7 @@ def test_mask_3d():
     # Dummy mask
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
-    data_img = nibabel.Nifti1Image(data, np.eye(4))
+    data_img = Nifti1Image(data, np.eye(4))
 
     with testing.write_tmp_imgs(data_img, create_files=True) as filename:
         masker = NiftiMasker(mask_img=filename)
@@ -203,14 +203,14 @@ def test_mask_4d():
     mask = np.zeros((10, 10, 10), dtype="int32")
     mask[3:7, 3:7, 3:7] = 1
     mask_bool = mask.astype(bool)
-    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+    mask_img = Nifti1Image(mask, np.eye(4))
 
     # Dummy data
     data = np.zeros((10, 10, 10, 5), dtype="int32")
     data[..., 0] = 1
     data[..., 1] = 2
     data[..., 2] = 3
-    data_img_4d = nibabel.Nifti1Image(data, np.eye(4))
+    data_img_4d = Nifti1Image(data, np.eye(4))
     data_imgs = [
         index_img(data_img_4d, 0),
         index_img(data_img_4d, 1),
@@ -248,12 +248,12 @@ def test_4d_single_scan(rng):
     shape_4d = shape_3d + (1,)
     mask = np.zeros(shape_3d)
     mask[3:7, 3:7, 3:7] = 1
-    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+    mask_img = Nifti1Image(mask, np.eye(4))
 
     data_5d = [rng.random_sample(shape_4d) for _ in range(5)]
     data_4d = [d[..., 0] for d in data_5d]
-    data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
-    data_4d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_4d]
+    data_5d = [Nifti1Image(d, np.eye(4)) for d in data_5d]
+    data_4d = [Nifti1Image(d, np.eye(4)) for d in data_4d]
 
     masker = NiftiMasker(mask_img=mask_img)
 
@@ -280,10 +280,10 @@ def test_5d(rng):
     shape_4d = shape_3d + (3,)
     mask = np.zeros(shape_3d)
     mask[3:7, 3:7, 3:7] = 1
-    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+    mask_img = Nifti1Image(mask, np.eye(4))
 
     data_5d = [rng.random_sample(shape_4d) for _ in range(5)]
-    data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
+    data_5d = [Nifti1Image(d, np.eye(4)) for d in data_5d]
 
     masker = NiftiMasker(mask_img=mask_img)
     masker.fit()
@@ -308,7 +308,7 @@ def test_sessions():
     data[..., -1] = 0
     data[..., 0] = 0
     data[20, 20, 20] = 1
-    data_img = nibabel.Nifti1Image(data, np.eye(4))
+    data_img = Nifti1Image(data, np.eye(4))
     masker = NiftiMasker(runs=np.ones(3, dtype=int))
     with pytest.raises(ValueError):
         masker.fit_transform(data_img)
@@ -320,7 +320,7 @@ def test_joblib_cache():
 
     mask = np.zeros((40, 40, 40))
     mask[20, 20, 20] = 1
-    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+    mask_img = Nifti1Image(mask, np.eye(4))
 
     with testing.write_tmp_imgs(mask_img, create_files=True) as filename:
         masker = NiftiMasker(mask_img=filename)
@@ -345,7 +345,7 @@ def test_joblib_cache():
             shutil.rmtree(cachedir, ignore_errors=True)
 
 
-def test_mask_strategy_errors():
+def test_mask_strategy_errors(rng):
     """Check that mask_strategy errors are raised."""
     # Error with unknown mask_strategy
     mask = NiftiMasker(mask_strategy="oops")
@@ -355,8 +355,8 @@ def test_mask_strategy_errors():
         mask.fit()
     # Warning with deprecated 'template' strategy,
     # plus an exception because there's no resulting mask
-    img = np.random.RandomState(42).uniform(size=(9, 9, 5))
-    img = nibabel.Nifti1Image(img, np.eye(4))
+    img = rng.uniform(size=(9, 9, 5))
+    img = Nifti1Image(img, np.eye(4))
     mask = NiftiMasker(mask_strategy="template")
     with pytest.warns(
         UserWarning, match="Masking strategy 'template' is deprecated."
@@ -371,7 +371,7 @@ def test_compute_epi_mask():
     mean_image = np.ones((9, 9, 3))
     mean_image[3:-2, 3:-2, :] = 10
     mean_image[5, 5, :] = 11
-    mean_image = nibabel.Nifti1Image(mean_image.astype(float), np.eye(4))
+    mean_image = Nifti1Image(mean_image.astype(float), np.eye(4))
 
     masker = NiftiMasker(mask_strategy="epi", mask_args=dict(opening=False))
     masker.fit(mean_image)
@@ -390,7 +390,7 @@ def test_compute_epi_mask():
     # Check that padding with zeros does not change the extracted mask
     mean_image2 = np.zeros((30, 30, 3))
     mean_image2[3:12, 3:12, :] = get_data(mean_image)
-    mean_image2 = nibabel.Nifti1Image(mean_image2, np.eye(4))
+    mean_image2 = Nifti1Image(mean_image2, np.eye(4))
 
     masker3 = NiftiMasker(
         mask_strategy="epi", mask_args=dict(opening=False, exclude_zeros=True)
@@ -437,8 +437,8 @@ def test_filter_and_mask_error():
     mask = np.zeros([20, 30, 40, 2])
     mask[10, 15, 20, :] = 1
 
-    data_img = nibabel.Nifti1Image(data, np.eye(4))
-    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+    data_img = Nifti1Image(data, np.eye(4))
+    mask_img = Nifti1Image(mask, np.eye(4))
 
     masker = NiftiMasker()
     params = get_params(NiftiMasker, masker)
@@ -456,8 +456,8 @@ def test_filter_and_mask():
     data = np.zeros([20, 30, 40, 5])
     mask = np.ones([20, 30, 40])
 
-    data_img = nibabel.Nifti1Image(data, np.eye(4))
-    mask_img = nibabel.Nifti1Image(mask, np.eye(4))
+    data_img = Nifti1Image(data, np.eye(4))
+    mask_img = Nifti1Image(mask, np.eye(4))
 
     masker = NiftiMasker()
     params = get_params(NiftiMasker, masker)
@@ -477,8 +477,8 @@ def test_dtype():
     affine_32 = np.eye(4, dtype=np.float32)
     affine_64 = np.eye(4, dtype=np.float64)
 
-    img_32 = nibabel.Nifti1Image(data_32, affine_32)
-    img_64 = nibabel.Nifti1Image(data_64, affine_64)
+    img_32 = Nifti1Image(data_32, affine_32)
+    img_64 = Nifti1Image(data_64, affine_64)
 
     masker_1 = NiftiMasker(dtype="auto")
     assert masker_1.fit_transform(img_32).dtype == np.float32
@@ -496,12 +496,12 @@ def test_standardization(rng):
     signals = rng.standard_normal(size=(np.prod(data_shape), n_samples))
     means = rng.standard_normal(size=(np.prod(data_shape), 1)) * 50 + 1000
     signals += means
-    img = nibabel.Nifti1Image(
+    img = Nifti1Image(
         signals.reshape(data_shape + (n_samples,)),
         np.eye(4),
     )
 
-    mask = nibabel.Nifti1Image(np.ones(data_shape), np.eye(4))
+    mask = Nifti1Image(np.ones(data_shape), np.eye(4))
 
     # z-score
     masker = NiftiMasker(mask, standardize="zscore_sample")

@@ -1,9 +1,9 @@
 """Test nilearn.maskers.nifti_spheres_masker."""
 import warnings
 
-import nibabel
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from nilearn._utils import data_gen
@@ -11,10 +11,10 @@ from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
 
 
-def test_seed_extraction():
+def test_seed_extraction(rng):
     """Test seed extraction."""
-    data = np.random.RandomState(42).random_sample((3, 3, 3, 5))
-    img = nibabel.Nifti1Image(data, np.eye(4))
+    data = rng.random_sample((3, 3, 3, 5))
+    img = Nifti1Image(data, np.eye(4))
     masker = NiftiSpheresMasker([(1, 1, 1)])
     # Test the fit
     masker.fit()
@@ -23,10 +23,10 @@ def test_seed_extraction():
     assert_array_equal(s[:, 0], data[1, 1, 1])
 
 
-def test_sphere_extraction():
+def test_sphere_extraction(rng):
     """Test sphere extraction."""
-    data = np.random.RandomState(42).random_sample((3, 3, 3, 5))
-    img = nibabel.Nifti1Image(data, np.eye(4))
+    data = rng.random_sample((3, 3, 3, 5))
+    img = Nifti1Image(data, np.eye(4))
     masker = NiftiSpheresMasker([(1, 1, 1)], radius=1)
 
     # Check attributes defined at fit
@@ -54,7 +54,7 @@ def test_sphere_extraction():
     # Now with a mask
     mask_img = np.zeros((3, 3, 3))
     mask_img[1, :, :] = 1
-    mask_img = nibabel.Nifti1Image(mask_img, np.eye(4))
+    mask_img = Nifti1Image(mask_img, np.eye(4))
     masker = NiftiSpheresMasker([(1, 1, 1)], radius=1, mask_img=mask_img)
     masker.fit()
     s = masker.transform(img)
@@ -64,12 +64,12 @@ def test_sphere_extraction():
     )
 
 
-def test_anisotropic_sphere_extraction():
-    data = np.random.RandomState(42).random_sample((3, 3, 3, 5))
+def test_anisotropic_sphere_extraction(rng):
+    data = rng.random_sample((3, 3, 3, 5))
     affine = np.eye(4)
     affine[0, 0] = 2
     affine[2, 2] = 2
-    img = nibabel.Nifti1Image(data, affine)
+    img = Nifti1Image(data, affine)
     masker = NiftiSpheresMasker([(2, 1, 2)], radius=1)
     # Test the fit
     masker.fit()
@@ -83,7 +83,7 @@ def test_anisotropic_sphere_extraction():
     mask_img[1, 0, 1] = 1
     affine_2 = affine.copy()
     affine_2[0, 0] = 4
-    mask_img = nibabel.Nifti1Image(mask_img, affine=affine_2)
+    mask_img = Nifti1Image(mask_img, affine=affine_2)
     masker = NiftiSpheresMasker([(2, 1, 2)], radius=1, mask_img=mask_img)
 
     masker.fit()
@@ -97,13 +97,13 @@ def test_errors():
         masker.fit()
 
 
-def test_nifti_spheres_masker_overlap():
+def test_nifti_spheres_masker_overlap(rng):
     # Test resampling in NiftiMapsMasker
     affine = np.eye(4)
     shape = (5, 5, 5)
 
-    data = np.random.RandomState(42).random_sample(shape + (5,))
-    fmri_img = nibabel.Nifti1Image(data, affine)
+    data = rng.random_sample(shape + (5,))
+    fmri_img = Nifti1Image(data, affine)
 
     seeds = [(0, 0, 0), (2, 2, 2)]
 
@@ -127,11 +127,11 @@ def test_nifti_spheres_masker_overlap():
         noverlapping_masker.fit_transform(fmri_img)
 
 
-def test_small_radius():
+def test_small_radius(rng):
     affine = np.eye(4)
     shape = (3, 3, 3)
 
-    data = np.random.RandomState(42).random_sample(shape)
+    data = rng.random_sample(shape)
     mask = np.zeros(shape)
     mask[1, 1, 1] = 1
     mask[2, 2, 2] = 1
@@ -139,38 +139,38 @@ def test_small_radius():
     seed = (1.4, 1.4, 1.4)
 
     masker = NiftiSpheresMasker(
-        [seed], radius=0.1, mask_img=nibabel.Nifti1Image(mask, affine)
+        [seed], radius=0.1, mask_img=Nifti1Image(mask, affine)
     )
-    masker.fit_transform(nibabel.Nifti1Image(data, affine))
+    masker.fit_transform(Nifti1Image(data, affine))
 
     # Test if masking is taken into account
     mask[1, 1, 1] = 0
     mask[1, 1, 0] = 1
 
     masker = NiftiSpheresMasker(
-        [seed], radius=0.1, mask_img=nibabel.Nifti1Image(mask, affine)
+        [seed], radius=0.1, mask_img=Nifti1Image(mask, affine)
     )
     with pytest.raises(ValueError, match="These spheres are empty"):
-        masker.fit_transform(nibabel.Nifti1Image(data, affine))
+        masker.fit_transform(Nifti1Image(data, affine))
 
     masker = NiftiSpheresMasker(
-        [seed], radius=1.6, mask_img=nibabel.Nifti1Image(mask, affine)
+        [seed], radius=1.6, mask_img=Nifti1Image(mask, affine)
     )
-    masker.fit_transform(nibabel.Nifti1Image(data, affine))
+    masker.fit_transform(Nifti1Image(data, affine))
 
 
-def test_is_nifti_spheres_masker_give_nans():
+def test_is_nifti_spheres_masker_give_nans(rng):
     affine = np.eye(4)
 
     data_with_nans = np.zeros((10, 10, 10), dtype=np.float32)
     data_with_nans[:, :, :] = np.nan
 
-    data_without_nans = np.random.RandomState(42).random_sample((9, 9, 9))
+    data_without_nans = rng.random_sample((9, 9, 9))
     indices = np.nonzero(data_without_nans)
 
     # Leaving nans outside of some data
     data_with_nans[indices] = data_without_nans[indices]
-    img = nibabel.Nifti1Image(data_with_nans, affine)
+    img = Nifti1Image(data_with_nans, affine)
     seed = [(7, 7, 7)]
 
     # Interaction of seed with nans
@@ -178,15 +178,15 @@ def test_is_nifti_spheres_masker_give_nans():
     assert not np.isnan(np.sum(masker.fit_transform(img)))
 
     mask = np.ones((9, 9, 9))
-    mask_img = nibabel.Nifti1Image(mask, affine)
+    mask_img = Nifti1Image(mask, affine)
     # When mask_img is provided, the seed interacts within the brain, so no nan
     masker = NiftiSpheresMasker(seeds=seed, radius=2.0, mask_img=mask_img)
     assert not np.isnan(np.sum(masker.fit_transform(img)))
 
 
-def test_standardization():
-    data = np.random.RandomState(42).random_sample((3, 3, 3, 5))
-    img = nibabel.Nifti1Image(data, np.eye(4))
+def test_standardization(rng):
+    data = rng.random_sample((3, 3, 3, 5))
+    img = Nifti1Image(data, np.eye(4))
 
     # test zscore
     masker = NiftiSpheresMasker([(1, 1, 1)], standardize="zscore_sample")
@@ -208,10 +208,10 @@ def test_standardization():
     )
 
 
-def test_nifti_spheres_masker_inverse_transform():
+def test_nifti_spheres_masker_inverse_transform(rng):
     # Applying the sphere_extraction example from above backwards
-    data = np.random.RandomState(42).random_sample((3, 3, 3, 5))
-    img = nibabel.Nifti1Image(data, np.eye(4))
+    data = rng.random_sample((3, 3, 3, 5))
+    img = Nifti1Image(data, np.eye(4))
     masker = NiftiSpheresMasker([(1, 1, 1)], radius=1)
     # Test the fit
     masker.fit()
@@ -228,7 +228,7 @@ def test_nifti_spheres_masker_inverse_transform():
     # Now with a mask
     mask_img = np.zeros((3, 3, 3))
     mask_img[1, :, :] = 1
-    mask_img = nibabel.Nifti1Image(mask_img, np.eye(4))
+    mask_img = Nifti1Image(mask_img, np.eye(4))
     masker = NiftiSpheresMasker([(1, 1, 1)], radius=1, mask_img=mask_img)
     masker.fit()
     s = masker.transform(img)
@@ -254,7 +254,7 @@ def test_nifti_spheres_masker_inverse_overlap(rng):
     shape = (5, 5, 5)
 
     data = rng.random_sample(shape + (5,))
-    fmri_img = nibabel.Nifti1Image(data, affine)
+    fmri_img = Nifti1Image(data, affine)
 
     # Apply mask image - to allow inversion
     mask_img = new_img_like(fmri_img, np.ones(shape))
@@ -289,11 +289,11 @@ def test_nifti_spheres_masker_inverse_overlap(rng):
         noverlapping_masker.inverse_transform(inv_data)
 
 
-def test_small_radius_inverse():
+def test_small_radius_inverse(rng):
     affine = np.eye(4)
     shape = (3, 3, 3)
 
-    data = np.random.RandomState(42).random_sample(shape)
+    data = rng.random_sample(shape)
     mask = np.zeros(shape)
     mask[1, 1, 1] = 1
     mask[2, 2, 2] = 1
@@ -301,26 +301,26 @@ def test_small_radius_inverse():
     seed = (1.4, 1.4, 1.4)
 
     masker = NiftiSpheresMasker(
-        [seed], radius=0.1, mask_img=nibabel.Nifti1Image(mask, affine)
+        [seed], radius=0.1, mask_img=Nifti1Image(mask, affine)
     )
-    spheres_data = masker.fit_transform(nibabel.Nifti1Image(data, affine))
+    spheres_data = masker.fit_transform(Nifti1Image(data, affine))
     masker.inverse_transform(spheres_data)
     # Test if masking is taken into account
     mask[1, 1, 1] = 0
     mask[1, 1, 0] = 1
 
     masker = NiftiSpheresMasker(
-        [seed], radius=0.1, mask_img=nibabel.Nifti1Image(mask, affine)
+        [seed], radius=0.1, mask_img=Nifti1Image(mask, affine)
     )
-    masker.fit(nibabel.Nifti1Image(data, affine))
+    masker.fit(Nifti1Image(data, affine))
 
     with pytest.raises(ValueError, match="These spheres are empty"):
         masker.inverse_transform(spheres_data)
 
     masker = NiftiSpheresMasker(
-        [seed], radius=1.6, mask_img=nibabel.Nifti1Image(mask, affine)
+        [seed], radius=1.6, mask_img=Nifti1Image(mask, affine)
     )
-    masker.fit(nibabel.Nifti1Image(data, affine))
+    masker.fit(Nifti1Image(data, affine))
     masker.inverse_transform(spheres_data)
 
 

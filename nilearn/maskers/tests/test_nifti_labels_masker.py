@@ -6,9 +6,9 @@ test_masking.py and test_signal.py for details.
 """
 import warnings
 
-import nibabel
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
 
 from nilearn._utils import data_gen, testing
 from nilearn._utils.exceptions import DimensionError
@@ -46,7 +46,7 @@ def test_nifti_labels_masker():
         n_regions=n_regions,
     )
 
-    mask_img_4d = nibabel.Nifti1Image(
+    mask_img_4d = Nifti1Image(
         np.ones((2, 2, 2, 2), dtype=np.int8),
         affine=np.diag((4, 4, 4, 1)),
     )
@@ -226,7 +226,7 @@ def test_nifti_labels_masker_with_nans_and_infs():
     labels_data = get_data(labels_img).astype(np.float32)
     labels_data[:, :, 7] = np.nan
     labels_data[:, :, 4] = np.inf
-    labels_img = nibabel.Nifti1Image(labels_data, np.eye(4))
+    labels_img = Nifti1Image(labels_data, np.eye(4))
 
     masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
 
@@ -259,7 +259,7 @@ def test_nifti_labels_masker_with_nans_and_infs_in_mask():
     mask_data = get_data(mask_img).astype(np.float32)
     mask_data[:, :, 7] = np.nan
     mask_data[:, :, 4] = np.inf
-    mask_img = nibabel.Nifti1Image(mask_data, np.eye(4))
+    mask_img = Nifti1Image(mask_data, np.eye(4))
 
     masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
 
@@ -294,7 +294,7 @@ def test_nifti_labels_masker_with_nans_and_infs_in_data():
     fmri_data = get_data(fmri_img).astype(np.float32)
     fmri_data[:, :, 7, :] = np.nan
     fmri_data[:, :, 4, 0] = np.inf
-    fmri_img = nibabel.Nifti1Image(fmri_data, np.eye(4))
+    fmri_img = Nifti1Image(fmri_data, np.eye(4))
 
     masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
 
@@ -318,8 +318,8 @@ def test_nifti_labels_masker_reduction_strategies():
     labels_data = np.array([[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1]]], dtype=np.int8)
 
     affine = np.eye(4)
-    img = nibabel.Nifti1Image(img_data, affine)
-    labels = nibabel.Nifti1Image(labels_data, affine)
+    img = Nifti1Image(img_data, affine)
+    labels = Nifti1Image(labels_data, affine)
 
     # What NiftiLabelsMasker should return for each reduction strategy?
     expected_results = {
@@ -532,7 +532,7 @@ def test_standardization(rng):
     signals = rng.standard_normal(size=(np.prod(data_shape), n_samples))
     means = rng.standard_normal(size=(np.prod(data_shape), 1)) * 50 + 1000
     signals += means
-    img = nibabel.Nifti1Image(
+    img = Nifti1Image(
         signals.reshape(data_shape + (n_samples,)),
         np.eye(4),
     )
@@ -598,12 +598,12 @@ def test_3d_images():
     shape3 = (2, 2, 2)
 
     labels33_img = data_gen.generate_labeled_regions(shape3, n_regions)
-    mask_img = nibabel.Nifti1Image(
+    mask_img = Nifti1Image(
         np.ones(shape3, dtype=np.int8),
         affine=affine,
     )
-    epi_img1 = nibabel.Nifti1Image(np.ones(shape3), affine=affine)
-    epi_img2 = nibabel.Nifti1Image(np.ones(shape3), affine=affine)
+    epi_img1 = Nifti1Image(np.ones(shape3), affine=affine)
+    epi_img2 = Nifti1Image(np.ones(shape3), affine=affine)
     masker = NiftiLabelsMasker(labels33_img, mask_img=mask_img)
 
     epis = masker.fit_transform(epi_img1)
