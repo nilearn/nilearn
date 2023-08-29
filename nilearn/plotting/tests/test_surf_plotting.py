@@ -1,5 +1,4 @@
 # Tests for functions in surf_plotting.py
-import os
 import re
 import tempfile
 import unittest.mock as mock
