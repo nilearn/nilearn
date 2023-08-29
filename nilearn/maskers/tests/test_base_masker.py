@@ -8,19 +8,16 @@ from nilearn import image
 from nilearn.maskers.nifti_masker import _filter_and_mask
 
 
-def test_cropping_code_paths():
+def test_cropping_code_paths(rng, affine_eye):
     # Will mask data with an identically sampled mask and
     # with a smaller mask. The results must be identical
-    rng = np.random.RandomState(42)
     data = np.zeros([20, 30, 40, 5])
     data[10:15, 5:20, 10:30, :] = 1.0 + rng.uniform(size=(5, 15, 20, 5))
 
-    affine = np.eye(4)
-
-    img = nibabel.Nifti1Image(data, affine=affine)
+    img = nibabel.Nifti1Image(data, affine=affine_eye)
 
     mask = (data[..., 0] > 0).astype("uint8")
-    mask_img = nibabel.Nifti1Image(mask, affine=affine)
+    mask_img = nibabel.Nifti1Image(mask, affine=affine_eye)
 
     # the mask in mask_img has the same shape and affine as the
     # data and should thus avoid resampling

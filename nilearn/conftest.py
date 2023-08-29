@@ -241,29 +241,29 @@ def img_4d_zeros_eye():
 
 
 @pytest.fixture
-def img_4d_ones_eye():
+def img_4d_ones_eye(shape_4d_default, affine_eye):
     """Return a default ones filled 4D Nifti1Image (identity affine)."""
-    return _img_ones(_shape_4d_default(), _affine_eye())
+    return _img_ones(shape_4d_default, affine_eye)
 
 
 @pytest.fixture
-def img_4D_rand_eye():
+def img_4D_rand_eye(shape_4d_default, affine_eye):
     """Return a default random filled 4D Nifti1Image (identity affine)."""
-    data = _rng().rand(*_shape_4d_default())
-    return Nifti1Image(data, _affine_eye())
+    data = _rng().rand(*shape_4d_default)
+    return Nifti1Image(data, affine_eye)
 
 
 @pytest.fixture()
-def testdata_4d_for_plotting():
+def testdata_4d_for_plotting(affine_mni):
     """Random 4D images for testing figures for multivolume data."""
     rng = _rng()
-    img_4d = Nifti1Image(rng.uniform(size=(7, 7, 3, 10)), _affine_mni())
-    img_4d_long = Nifti1Image(rng.uniform(size=(7, 7, 3, 1777)), _affine_mni())
-    img_mask = Nifti1Image(np.ones((7, 7, 3), dtype="uint8"), _affine_mni())
+    img_4d = Nifti1Image(rng.uniform(size=(7, 7, 3, 10)), affine_mni)
+    img_4d_long = Nifti1Image(rng.uniform(size=(7, 7, 3, 1777)), affine_mni)
+    img_mask = Nifti1Image(np.ones((7, 7, 3), dtype="uint8"), affine_mni)
     atlas = np.ones((7, 7, 3), dtype="int32")
     atlas[2:5, :, :] = 2
     atlas[5:8, :, :] = 3
-    img_atlas = Nifti1Image(atlas, _affine_mni())
+    img_atlas = Nifti1Image(atlas, affine_mni)
     atlas_labels = {
         "gm": 1,
         "wm": 2,

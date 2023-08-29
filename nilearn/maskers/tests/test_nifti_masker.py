@@ -242,7 +242,7 @@ def test_mask_4d():
     assert_array_equal(data_trans3, data_trans_direct_diff)
 
 
-def test_4d_single_scan():
+def test_4d_single_scan(rng):
     """Test that list of 4D images with last dim=1 is treated as 3D."""
     shape_3d = (10, 10, 10)
     shape_4d = shape_3d + (1,)
@@ -250,7 +250,6 @@ def test_4d_single_scan():
     mask[3:7, 3:7, 3:7] = 1
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
-    rng = np.random.RandomState(42)
     data_5d = [rng.random_sample(shape_4d) for _ in range(5)]
     data_4d = [d[..., 0] for d in data_5d]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
@@ -275,7 +274,7 @@ def test_4d_single_scan():
     assert_array_equal(data_trans_4d, data_trans_5d)
 
 
-def test_5d():
+def test_5d(rng):
     """Test that list of 4D images with last dim=3 raises a DimensionError."""
     shape_3d = (10, 10, 10)
     shape_4d = shape_3d + (3,)
@@ -283,7 +282,6 @@ def test_5d():
     mask[3:7, 3:7, 3:7] = 1
     mask_img = nibabel.Nifti1Image(mask, np.eye(4))
 
-    rng = np.random.RandomState(42)
     data_5d = [rng.random_sample(shape_4d) for _ in range(5)]
     data_5d = [nibabel.Nifti1Image(d, np.eye(4)) for d in data_5d]
 
@@ -491,8 +489,7 @@ def test_dtype():
     assert masker_2.fit_transform(img_64).dtype == np.float64
 
 
-def test_standardization():
-    rng = np.random.RandomState(42)
+def test_standardization(rng):
     data_shape = (9, 9, 5)
     n_samples = 500
 

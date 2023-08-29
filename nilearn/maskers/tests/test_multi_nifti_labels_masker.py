@@ -7,36 +7,12 @@ from numpy.testing import assert_almost_equal, assert_array_equal
 
 from nilearn._utils import data_gen, testing
 from nilearn._utils.exceptions import DimensionError
-from nilearn.conftest import _affine_eye
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker, NiftiLabelsMasker
 
 
-@pytest.fixture()
-def n_regions():
-    return 9
-
-
-@pytest.fixture()
-def length():
-    return 3
-
-
-@pytest.fixture()
-def shape2():
-    return (8, 9, 10)
-
-
-@pytest.fixture()
-def mask2():
-    _, mask_img = data_gen.generate_fake_fmri(
-        shape=(8, 9, 10), affine=_affine_eye(), length=3
-    )
-    return mask_img
-
-
 def test_multi_nifti_labels_masker_errors(
-    shape_3d_default, affine_eye, img_4d_ones_eye, n_regions, length
+    shape_3d_default, affine_eye, img_4d_ones_eye, n_regions, length, fmri_img
 ):
     labels_img = data_gen.generate_labeled_regions(
         shape=shape_3d_default, affine=affine_eye, n_regions=n_regions
@@ -53,10 +29,6 @@ def test_multi_nifti_labels_masker_errors(
         masker.fit()
 
     # check exception when transform() called without prior fit()
-    fmri_img, _ = data_gen.generate_fake_fmri(
-        shape=shape_3d_default, affine=affine_eye, length=length
-    )
-
     masker = MultiNiftiLabelsMasker(labels_img, resampling_target=None)
 
     with pytest.raises(ValueError, match="has not been fitted. "):
@@ -250,7 +222,7 @@ def test_multi_nifti_labels_masker_resampling_errors(affine_eye, n_regions):
 
 
 def test_multi_nifti_labels_masker_resampling(
-    shape_3d_default, affine_eye, n_regions, length, mask2
+    affine_eye, fmri_img, n_regions, length, mask2
 ):
     # Test resampling in MultiNiftiLabelsMasker
     # With data of the same affine
@@ -274,12 +246,7 @@ def test_multi_nifti_labels_masker_resampling(
     assert masker.mask_img_.shape == masker.labels_img_.shape[:3]
 
     # Multi-subject example
-    fmri_img, _ = data_gen.generate_fake_fmri(
-        shape=shape_3d_default, affine=affine_eye, length=length
-    )
-    fmri_img = [fmri_img, fmri_img]
-
-    transformed = masker.transform(fmri_img)
+    transformed = masker.transform([fmri_img, fmri_img])
     for t in transformed:
         assert t.shape == (length, n_regions)
 
@@ -289,12 +256,12 @@ def test_multi_nifti_labels_masker_resampling(
 
 
 def test_multi_nifti_labels_masker_resampling_clipped(
-    shape_3d_default, affine_eye, n_regions, length, mask2
+    affine_eye, n_regions, length, fmri_img, mask2
 ):
     # Test with clipped labels: mask does not contain all labels.
     # Shapes do matter in that case, because there is some resampling
     # taking place.
-    shape3 = (16, 18, 20)  # maps
+    shape3 = (16, 18, 20)
 
     # Target: labels
     labels_img = data_gen.generate_labeled_regions(
@@ -317,12 +284,7 @@ def test_multi_nifti_labels_masker_resampling_clipped(
     assert len(uniq_labels) - 1 == n_regions
 
     # Multi-subject example
-    fmri_img, _ = data_gen.generate_fake_fmri(
-        shape=shape_3d_default, affine=affine_eye, length=length
-    )
-    fmri_img = [fmri_img, fmri_img]
-
-    transformed = masker.transform(fmri_img)
+    transformed = masker.transform([fmri_img, fmri_img])
     for t in transformed:
         assert t.shape == (length, n_regions)
         # Some regions have been clipped. Resulting signal must be zero
@@ -336,7 +298,7 @@ def test_multi_nifti_labels_masker_resampling_clipped(
 def test_multi_nifti_labels_masker_data_atlas_different_shape(
     affine_eye, n_regions, length, mask2
 ):
-    shape3 = (16, 18, 20)  # maps
+    shape3 = (16, 18, 20)
     # Target: labels
     labels_img = data_gen.generate_labeled_regions(
         shape3, n_regions, affine=affine_eye
@@ -364,7 +326,7 @@ def test_multi_nifti_labels_masker_data_atlas_different_shape(
 
 @pytest.mark.parametrize("resampling_target", ["data", "labels"])
 def test_multi_nifti_labels_masker_resampling_target(
-    resampling_target, shape_3d_default, affine_eye
+    resampling_target, affine_eye, fmri_img, shape_3d_default
 ):
     """Test labels masker with resampling target in 'data', 'labels' to return
     resampled labels having number of labels equal
@@ -375,7 +337,6 @@ def test_multi_nifti_labels_masker_resampling_target(
     fmri_img, _ = data_gen.generate_fake_fmri(
         shape=shape_3d_default, affine=affine_eye * 2, length=21
     )
-
     labels_img = data_gen.generate_labeled_regions(
         (9, 8, 6), affine=affine_eye, n_regions=10
     )

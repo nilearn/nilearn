@@ -525,8 +525,7 @@ def test_nifti_labels_masker_resampling():
         )
 
 
-def test_standardization():
-    rng = np.random.RandomState(42)
+def test_standardization(rng):
     data_shape = (9, 9, 5)
     n_samples = 500
 

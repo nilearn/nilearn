@@ -222,8 +222,7 @@ def test_dtype():
     assert masked_img[0].dtype == np.float32
 
 
-def test_standardization():
-    rng = np.random.RandomState(42)
+def test_standardization(rng):
     data_shape = (9, 9, 5)
     n_samples = 500
 

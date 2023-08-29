@@ -248,9 +248,7 @@ def test_nifti_spheres_masker_inverse_transform():
     assert_array_equal(inverse_map.shape[:3], mask_img.shape)
 
 
-def test_nifti_spheres_masker_inverse_overlap():
-    rng = np.random.RandomState(42)
-
+def test_nifti_spheres_masker_inverse_overlap(rng):
     # Test overlapping data in inverse_transform
     affine = np.eye(4)
     shape = (5, 5, 5)

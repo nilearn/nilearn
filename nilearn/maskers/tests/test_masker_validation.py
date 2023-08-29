@@ -75,7 +75,7 @@ def test_check_embedded_nifti_masker_defaults():
     assert dummy.masker.verbose == 1
 
 
-def test_check_embedded_nifti_masker():
+def test_check_embedded_nifti_masker(affine_eye):
     owner = OwningClass()
     masker = _check_embedded_nifti_masker(owner)
     assert type(masker) is MultiNiftiMasker
@@ -102,8 +102,7 @@ def test_check_embedded_nifti_masker():
 
     # Check use of mask as mask_img
     shape = (6, 8, 10, 5)
-    affine = np.eye(4)
-    mask = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
+    mask = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine_eye)
     owner = OwningClass(mask=mask)
     masker = _check_embedded_nifti_masker(owner)
     assert masker.mask_img is mask
@@ -111,7 +110,7 @@ def test_check_embedded_nifti_masker():
     # Check attribute forwarding
     data = np.zeros((9, 9, 9))
     data[2:-2, 2:-2, 2:-2] = 10
-    imgs = nibabel.Nifti1Image(data, np.eye(4))
+    imgs = nibabel.Nifti1Image(data, affine_eye)
     mask = MultiNiftiMasker()
     mask.fit([[imgs]])
     owner = OwningClass(mask=mask)
