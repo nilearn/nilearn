@@ -10,7 +10,7 @@ from numpy.testing import (
     assert_array_equal,
 )
 
-from nilearn._utils import data_gen
+from nilearn._utils.data_gen import generate_random_img
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
 
@@ -344,11 +344,11 @@ def test_nifti_spheres_masker_io_shapes():
     data_2d = np.random.random((n_volumes, n_regions))
     affine = np.eye(4)
 
-    img_4d, mask_img = data_gen.generate_random_img(
+    img_4d, mask_img = generate_random_img(
         shape_4d,
         affine=affine,
     )
-    img_3d, _ = data_gen.generate_random_img(shape_3d, affine=affine)
+    img_3d, _ = generate_random_img(shape_3d, affine=affine)
 
     masker = NiftiSpheresMasker(
         [(1, 1, 1), (4, 4, 4)],  # number of tuples equal to n_regions

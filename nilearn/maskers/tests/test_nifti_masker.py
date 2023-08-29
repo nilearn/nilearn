@@ -20,8 +20,9 @@ from numpy.testing import (
     assert_array_equal,
 )
 
-from nilearn._utils import data_gen, exceptions, testing
+from nilearn._utils import exceptions, testing
 from nilearn._utils.class_inspect import get_params
+from nilearn._utils.data_gen import generate_fake_fmri, generate_random_img
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import _filter_and_mask
@@ -171,7 +172,7 @@ def test_matrix_orientation():
     # the "step" kind generate heavyside-like signals for each voxel.
     # all signals being identical, standardizing along the wrong axis
     # would leave a null signal. Along the correct axis, the step remains.
-    fmri, mask = data_gen.generate_fake_fmri(shape=(40, 41, 42), kind="step")
+    fmri, mask = generate_fake_fmri(shape=(40, 41, 42), kind="step")
     masker = NiftiMasker(mask_img=mask, standardize=True, detrend=True)
     timeseries = masker.fit_transform(fmri)
     assert timeseries.shape[0] == fmri.shape[3]
@@ -428,7 +429,7 @@ def expected_mask(mask_args):
 @pytest.mark.parametrize("mask_args", [{}, dict(threshold=0.0)])
 def test_compute_brain_mask(strategy, mask_args, expected_mask):
     """Check masker for template masking strategy."""
-    img, _ = data_gen.generate_random_img((9, 9, 5))
+    img, _ = generate_random_img((9, 9, 5))
 
     masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)
     masker.fit(img)
@@ -539,11 +540,11 @@ def test_nifti_masker_io_shapes():
     shape_4d = (10, 11, 12, n_volumes)
     affine = np.eye(4)
 
-    img_4d, mask_img = data_gen.generate_random_img(
+    img_4d, mask_img = generate_random_img(
         shape_4d,
         affine=affine,
     )
-    img_3d, _ = data_gen.generate_random_img(shape_3d, affine=affine)
+    img_3d, _ = generate_random_img(shape_3d, affine=affine)
     n_regions = np.sum(mask_img.get_fdata().astype(bool))
     data_1d = np.random.random(n_regions)
     data_2d = np.random.random((n_volumes, n_regions))
