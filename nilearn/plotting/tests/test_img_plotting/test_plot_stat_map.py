@@ -12,9 +12,9 @@ from nilearn.plotting import plot_stat_map
 from nilearn.plotting.find_cuts import find_cut_slices
 
 
-def test_plot_stat_map_bad_input(img_3d_mni, tmpdir):
+def test_plot_stat_map_bad_input(img_3d_mni, tmp_path):
     """Test for bad input arguments (cf. #510)."""
-    filename = str(tmpdir.join("temp.png"))
+    filename = tmp_path / "temp.png"
     ax = plt.subplot(111, rasterized=True)
     plot_stat_map(
         img_3d_mni,
@@ -29,9 +29,9 @@ def test_plot_stat_map_bad_input(img_3d_mni, tmpdir):
 @pytest.mark.parametrize(
     "params", [{}, {"display_mode": "x", "cut_coords": 3}]
 )
-def test_save_plot_stat_map(params, img_3d_mni, tmpdir):
+def test_save_plot_stat_map(params, img_3d_mni, tmp_path):
     """Test saving figure to file in different ways."""
-    filename = str(tmpdir.join("test.png"))
+    filename = tmp_path / "test.png"
     display = plot_stat_map(img_3d_mni, output_file=filename, **params)
     assert display is None
     display = plot_stat_map(img_3d_mni, **params)
