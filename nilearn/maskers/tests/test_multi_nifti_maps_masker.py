@@ -3,6 +3,7 @@
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 from nilearn._utils import data_gen, testing
 from nilearn._utils.exceptions import DimensionError
@@ -116,7 +117,7 @@ def test_multi_nifti_maps_masker(
     for signals in signals_list:
         fmri_img_r = masker.inverse_transform(signals)
         assert fmri_img_r.shape == fmri_img.shape
-        np.testing.assert_almost_equal(fmri_img_r.affine, fmri_img.affine)
+        assert_almost_equal(fmri_img_r.affine, fmri_img.affine)
 
     # Now try on a masker that has never seen the call to "transform"
     masker2 = MultiNiftiMapsMasker(maps_img, resampling_target=None)
@@ -135,7 +136,7 @@ def test_multi_nifti_maps_masker(
     masker = MultiNiftiMapsMasker(maps_img, mask_img=mask21_img)
 
     masker.fit_transform(fmri22_img)
-    np.testing.assert_array_equal(masker._resampled_maps_img_.affine, affine2)
+    assert_array_equal(masker._resampled_maps_img_.affine, affine2)
 
 
 def test_multi_nifti_maps_masker_resampling(
@@ -188,12 +189,10 @@ def test_multi_nifti_maps_masker_resampling(
     )
 
     masker.fit()
-    np.testing.assert_almost_equal(masker.mask_img_.affine, mask22_img.affine)
+    assert_almost_equal(masker.mask_img_.affine, mask22_img.affine)
     assert masker.mask_img_.shape == mask22_img.shape
 
-    np.testing.assert_almost_equal(
-        masker.mask_img_.affine, masker.maps_img_.affine
-    )
+    assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
     transformed = masker.transform(fmri_img)
@@ -201,9 +200,7 @@ def test_multi_nifti_maps_masker_resampling(
         assert t.shape == (length, n_regions)
 
         fmri_img_r = masker.inverse_transform(t)
-        np.testing.assert_almost_equal(
-            fmri_img_r.affine, masker.maps_img_.affine
-        )
+        assert_almost_equal(fmri_img_r.affine, masker.maps_img_.affine)
         assert fmri_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
 
     # Target: maps
@@ -212,12 +209,10 @@ def test_multi_nifti_maps_masker_resampling(
     )
 
     masker.fit()
-    np.testing.assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
+    assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
     assert masker.maps_img_.shape == maps33_img.shape
 
-    np.testing.assert_almost_equal(
-        masker.mask_img_.affine, masker.maps_img_.affine
-    )
+    assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
     transformed = masker.transform(fmri_img)
@@ -225,9 +220,7 @@ def test_multi_nifti_maps_masker_resampling(
         assert t.shape == (length, n_regions)
 
         fmri_img_r = masker.inverse_transform(t)
-        np.testing.assert_almost_equal(
-            fmri_img_r.affine, masker.maps_img_.affine
-        )
+        assert_almost_equal(fmri_img_r.affine, masker.maps_img_.affine)
         assert fmri_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
 
     # Test with clipped maps: mask does not contain all maps.
@@ -258,12 +251,10 @@ def test_multi_nifti_maps_masker_resampling(
     )
 
     masker.fit()
-    np.testing.assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
+    assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
     assert masker.maps_img_.shape == maps33_img.shape
 
-    np.testing.assert_almost_equal(
-        masker.mask_img_.affine, masker.maps_img_.affine
-    )
+    assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
     transformed = masker.transform(fmri_img)
@@ -273,7 +264,5 @@ def test_multi_nifti_maps_masker_resampling(
         assert (t.var(axis=0) == 0).sum() < n_regions
 
         fmri_img_r = masker.inverse_transform(t)
-        np.testing.assert_almost_equal(
-            fmri_img_r.affine, masker.maps_img_.affine
-        )
+        assert_almost_equal(fmri_img_r.affine, masker.maps_img_.affine)
         assert fmri_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
