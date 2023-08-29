@@ -335,6 +335,8 @@ class RegionExtractor(NiftiMapsMasker):
             Recommended to set to True if signals are not already standardized.
             Passed to :class:`~nilearn.maskers.NiftiMapsMasker`.
 
+    %(standardize_confounds)s
+
     %(detrend)s
 
         .. note::
@@ -392,6 +394,7 @@ class RegionExtractor(NiftiMapsMasker):
         extractor="local_regions",
         smoothing_fwhm=6,
         standardize=False,
+        standardize_confounds=True,
         detrend=False,
         low_pass=None,
         high_pass=None,
@@ -405,6 +408,7 @@ class RegionExtractor(NiftiMapsMasker):
             mask_img=mask_img,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
+            standardize_confounds=standardize_confounds,
             detrend=detrend,
             low_pass=low_pass,
             high_pass=high_pass,
