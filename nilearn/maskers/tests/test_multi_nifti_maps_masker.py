@@ -12,9 +12,7 @@ from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
 
 
 @pytest.mark.parametrize("create_files", (True, False))
-def test_multi_nifti_maps_masker_with_files(
-    create_files, n_regions, length, fmri_img, maps_img
-):
+def test_with_files(create_files, n_regions, length, fmri_img, maps_img):
     with testing.write_tmp_imgs(maps_img, create_files=create_files) as labels:
         masker = MultiNiftiMapsMasker(labels, resampling_target=None)
         signals = masker.fit().transform(fmri_img)
@@ -22,7 +20,7 @@ def test_multi_nifti_maps_masker_with_files(
 
 
 @pytest.mark.parametrize("create_files", (True, False))
-def test_multi_nifti_maps_masker_errors_with_files(
+def test_errors_with_files(
     create_files, affine_eye, shape_3d_default, length, maps_img, shape2
 ):
     affine2 = np.diag((1, 2, 3, 1))
@@ -53,9 +51,7 @@ def test_multi_nifti_maps_masker_errors_with_files(
         del masker
 
 
-def test_multi_nifti_maps_masker_errors(
-    affine_eye, shape_3d_default, n_regions, length, maps_img
-):
+def test_errors(affine_eye, shape_3d_default, n_regions, length, maps_img):
     # Check working of shape/affine checks
     fmri_img, mask_img = generate_fake_fmri(
         shape=shape_3d_default, affine=affine_eye, length=length
@@ -144,6 +140,8 @@ def test_multi_nifti_maps_masker(
     masker2.fit()
     masker2.inverse_transform(signals)
 
+
+def test_with_data_and_atlas_different_shape(affine_eye, length, maps_img):
     # Test with data and atlas of different shape: the atlas should be
     # resampled to the data
     shape2 = (12, 10, 14)
@@ -164,7 +162,7 @@ def test_multi_nifti_maps_masker(
     assert_array_equal(masker._resampled_maps_img_.affine, affine2)
 
 
-def test_multi_nifti_maps_masker_resampling_errors(
+def test_resampling_errors(
     affine_eye,
     n_regions,
 ):
@@ -197,9 +195,7 @@ def test_multi_nifti_maps_masker_resampling_errors(
         )
 
 
-def test_multi_nifti_maps_masker_resampling(
-    affine_eye, n_regions, length, fmri_img, shape2
-):
+def test_resampling(affine_eye, n_regions, length, fmri_img, shape2):
     # Test resampling in MultiNiftiMapsMasker
     shape3 = (16, 17, 18)  # maps
 
@@ -231,9 +227,7 @@ def test_multi_nifti_maps_masker_resampling(
         assert fmri_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
 
 
-def test_multi_nifti_maps_masker_resampling_maps(
-    affine_eye, n_regions, length, fmri_img
-):
+def test_resampling_maps(affine_eye, n_regions, length, fmri_img):
     shape2 = (13, 14, 15)  # mask
     shape3 = (16, 17, 18)  # maps
 
@@ -265,7 +259,7 @@ def test_multi_nifti_maps_masker_resampling_maps(
         assert fmri_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
 
 
-def test_multi_nifti_maps_masker_resampling_clipped_maps(
+def test_resampling_clipped_maps(
     shape2, affine_eye, n_regions, length, fmri_img, shape_3d_default
 ):
     # Test with clipped maps: mask does not contain all maps.
