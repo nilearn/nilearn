@@ -53,6 +53,49 @@ def test_multi_nifti_maps_masker_errors_with_files(
         del masker
 
 
+def test_multi_nifti_maps_masker_errors(
+    affine_eye, shape_3d_default, n_regions, length, maps_img
+):
+    # Check working of shape/affine checks
+    fmri_img, mask_img = generate_fake_fmri(
+        shape=shape_3d_default, affine=affine_eye, length=length
+    )
+
+    masker = MultiNiftiMapsMasker(
+        maps_img, mask_img=mask_img, resampling_target=None
+    )
+
+    with pytest.raises(ValueError, match="has not been fitted. "):
+        masker.transform(fmri_img)
+
+    # NiftiMapsMasker should not work with 4D + 1D input
+    signals_input = [fmri_img, fmri_img]
+    masker = NiftiMapsMasker(maps_img, resampling_target=None)
+
+    with pytest.raises(DimensionError, match="incompatible dimensionality"):
+        masker.fit_transform(signals_input)
+
+    shape2 = (12, 10, 14)
+    _, mask21_img = generate_fake_fmri(
+        shape2, affine=affine_eye, length=length
+    )
+    masker = MultiNiftiMapsMasker(
+        maps_img, mask_img=mask21_img, resampling_target=None
+    )
+    with pytest.raises(ValueError):
+        masker.fit()
+
+    # Transform, with smoothing (smoke test)
+    masker = MultiNiftiMapsMasker(
+        maps_img, smoothing_fwhm=3, resampling_target=None
+    )
+    signals_list = masker.fit().transform(signals_input)
+
+    for signals in signals_list:
+        with pytest.raises(ValueError, match="has not been fitted. "):
+            MultiNiftiMapsMasker(maps_img).inverse_transform(signals)
+
+
 def test_multi_nifti_maps_masker(
     affine_eye, shape_3d_default, n_regions, length, maps_img
 ):
@@ -66,8 +109,6 @@ def test_multi_nifti_maps_masker(
         maps_img, mask_img=mask_img, resampling_target=None
     )
 
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        masker.transform(fmri_img)
     signals = masker.fit().transform(fmri_img)
     assert signals.shape == (length, n_regions)
 
@@ -83,19 +124,6 @@ def test_multi_nifti_maps_masker(
     # NiftiMapsMasker should not work with 4D + 1D input
     signals_input = [fmri_img, fmri_img]
     masker = NiftiMapsMasker(maps_img, resampling_target=None)
-    with pytest.raises(DimensionError, match="incompatible dimensionality"):
-        masker.fit_transform(signals_input)
-
-    shape2 = (12, 10, 14)
-    _, mask21_img = generate_fake_fmri(
-        shape2, affine=affine_eye, length=length
-    )
-
-    masker = MultiNiftiMapsMasker(
-        maps_img, mask_img=mask21_img, resampling_target=None
-    )
-    with pytest.raises(ValueError):
-        masker.fit()
 
     # Transform, with smoothing (smoke test)
     masker = MultiNiftiMapsMasker(
@@ -104,9 +132,6 @@ def test_multi_nifti_maps_masker(
     signals_list = masker.fit().transform(signals_input)
     for signals in signals_list:
         assert signals.shape == (length, n_regions)
-
-        with pytest.raises(ValueError, match="has not been fitted. "):
-            MultiNiftiMapsMasker(maps_img).inverse_transform(signals)
 
     # Call inverse transform (smoke test)
     for signals in signals_list:
@@ -121,26 +146,30 @@ def test_multi_nifti_maps_masker(
 
     # Test with data and atlas of different shape: the atlas should be
     # resampled to the data
+    shape2 = (12, 10, 14)
+    _, mask21_img = generate_fake_fmri(
+        shape2, affine=affine_eye, length=length
+    )
+
     shape22 = (5, 5, 6)
     affine2 = 2 * affine_eye
     affine2[-1, -1] = 1
 
     fmri22_img, _ = generate_fake_fmri(shape22, affine=affine2, length=length)
+
     masker = MultiNiftiMapsMasker(maps_img, mask_img=mask21_img)
 
     masker.fit_transform(fmri22_img)
+
     assert_array_equal(masker._resampled_maps_img_.affine, affine2)
 
 
-def test_multi_nifti_maps_masker_resampling(
-    affine_eye, n_regions, length, fmri_img, shape2
+def test_multi_nifti_maps_masker_resampling_errors(
+    affine_eye,
+    n_regions,
 ):
     # Test resampling in MultiNiftiMapsMasker
     shape3 = (16, 17, 18)  # maps
-
-    _, mask22_img = generate_fake_fmri(
-        shape2, affine=affine_eye, length=length
-    )
 
     maps33_img, _ = generate_maps(shape3, n_regions, affine=affine_eye)
 
@@ -166,6 +195,19 @@ def test_multi_nifti_maps_masker_resampling(
             maps33_img,
             resampling_target="invalid",
         )
+
+
+def test_multi_nifti_maps_masker_resampling(
+    affine_eye, n_regions, length, fmri_img, shape2
+):
+    # Test resampling in MultiNiftiMapsMasker
+    shape3 = (16, 17, 18)  # maps
+
+    _, mask22_img = generate_fake_fmri(
+        shape2, affine=affine_eye, length=length
+    )
+
+    maps33_img, _ = generate_maps(shape3, n_regions, affine=affine_eye)
 
     # Target: mask
     masker = MultiNiftiMapsMasker(
