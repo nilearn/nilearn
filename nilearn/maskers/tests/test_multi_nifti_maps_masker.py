@@ -52,7 +52,7 @@ def test_multi_nifti_maps_masker_errors_with_files(
     fmri12_img, mask12_img = data_gen.generate_fake_fmri(
         shape=shape_3d_default, affine=affine2, length=length
     )
-    fmri21_img, mask21_img = data_gen.generate_fake_fmri(
+    fmri21_img, _ = data_gen.generate_fake_fmri(
         shape2, affine=affine_eye, length=length
     )
 
@@ -169,9 +169,6 @@ def test_multi_nifti_maps_masker_resampling(
     shape2 = (13, 14, 15)  # mask
     shape3 = (16, 17, 18)  # maps
 
-    fmri_img, _ = data_gen.generate_fake_fmri(
-        shape=shape_3d_default, affine=affine_eye, length=length
-    )
     _, mask22_img = data_gen.generate_fake_fmri(
         shape2, affine=affine_eye, length=length
     )
@@ -194,9 +191,6 @@ def test_multi_nifti_maps_masker_resampling(
     ):
         masker.fit()
 
-    # Multi-subject example
-    fmri_img = [fmri_img, fmri_img]
-
     # Test error checking
     with pytest.raises(ValueError):
         MultiNiftiMapsMasker(maps33_img, resampling_target="mask")
@@ -218,6 +212,12 @@ def test_multi_nifti_maps_masker_resampling(
     assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
+    # Multi-subject example
+    fmri_img, _ = data_gen.generate_fake_fmri(
+        shape=shape_3d_default, affine=affine_eye, length=length
+    )
+    fmri_img = [fmri_img, fmri_img]
+
     transformed = masker.transform(fmri_img)
     for t in transformed:
         assert t.shape == (length, n_regions)
@@ -225,6 +225,21 @@ def test_multi_nifti_maps_masker_resampling(
         fmri_img_r = masker.inverse_transform(t)
         assert_almost_equal(fmri_img_r.affine, masker.maps_img_.affine)
         assert fmri_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
+
+
+def test_multi_nifti_maps_masker_resampling_maps(
+    shape_3d_default, affine_eye, n_regions, length
+):
+    shape2 = (13, 14, 15)  # mask
+    shape3 = (16, 17, 18)  # maps
+
+    _, mask22_img = data_gen.generate_fake_fmri(
+        shape2, affine=affine_eye, length=length
+    )
+
+    maps33_img, _ = data_gen.generate_maps(
+        shape3, n_regions, affine=affine_eye
+    )
 
     # Target: maps
     masker = MultiNiftiMapsMasker(
@@ -238,6 +253,12 @@ def test_multi_nifti_maps_masker_resampling(
     assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
+    # Multi-subject example
+    fmri_img, _ = data_gen.generate_fake_fmri(
+        shape=shape_3d_default, affine=affine_eye, length=length
+    )
+    fmri_img = [fmri_img, fmri_img]
+
     transformed = masker.transform(fmri_img)
     for t in transformed:
         assert t.shape == (length, n_regions)
@@ -246,6 +267,10 @@ def test_multi_nifti_maps_masker_resampling(
         assert_almost_equal(fmri_img_r.affine, masker.maps_img_.affine)
         assert fmri_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
 
+
+def test_multi_nifti_maps_masker_resampling_clipped_maps(
+    shape_3d_default, affine_eye, n_regions, length
+):
     # Test with clipped maps: mask does not contain all maps.
     # Shapes do matter in that case
     shape2 = (8, 9, 10)  # mask
@@ -255,9 +280,6 @@ def test_multi_nifti_maps_masker_resampling(
     n_regions = 9
     length = 21
 
-    fmri_img, _ = data_gen.generate_fake_fmri(
-        shape=shape_3d_default, affine=affine_eye, length=length
-    )
     _, mask22_img = data_gen.generate_fake_fmri(
         shape2, length=1, affine=affine2
     )
@@ -265,9 +287,6 @@ def test_multi_nifti_maps_masker_resampling(
     maps33_img, _ = data_gen.generate_maps(
         shape3, n_regions, affine=affine_eye
     )
-
-    # Multi-subject example
-    fmri_img = [fmri_img, fmri_img]
 
     masker = MultiNiftiMapsMasker(
         maps33_img, mask_img=mask22_img, resampling_target="maps"
@@ -279,6 +298,12 @@ def test_multi_nifti_maps_masker_resampling(
 
     assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
+
+    # Multi-subject example
+    fmri_img, _ = data_gen.generate_fake_fmri(
+        shape=shape_3d_default, affine=affine_eye, length=length
+    )
+    fmri_img = [fmri_img, fmri_img]
 
     transformed = masker.transform(fmri_img)
     for t in transformed:
