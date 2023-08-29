@@ -23,16 +23,15 @@ def test_multi_nifti_maps_masker_with_files(
 
 @pytest.mark.parametrize("create_files", (True, False))
 def test_multi_nifti_maps_masker_errors_with_files(
-    create_files, affine_eye, shape_3d_default, length, maps_img
+    create_files, affine_eye, shape_3d_default, length, maps_img, shape2
 ):
-    shape2 = (12, 10, 14)
     affine2 = np.diag((1, 2, 3, 1))
 
     fmri12_img, mask12_img = generate_fake_fmri(
         shape=shape_3d_default, affine=affine2, length=length
     )
     fmri21_img, _ = generate_fake_fmri(
-        shape2, affine=affine_eye, length=length
+        shape=shape2, affine=affine_eye, length=length
     )
 
     with testing.write_tmp_imgs(
