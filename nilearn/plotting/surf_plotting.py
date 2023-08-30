@@ -1623,10 +1623,15 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     if cbar_tick_format == "auto":
         cbar_tick_format = "." if engine == "plotly" else "%i"
+
+    symmetric_cmap = kwargs.get("symmetric_cmap", False)
+    if kwargs.get("symmetric_cmap"):
+        kwargs.pop("symmetric_cmap")
+
     display = plot_surf(mesh, surf_map=roi, bg_map=bg_map,
                         hemi=hemi, view=view, engine=engine,
                         avg_method='median', threshold=threshold,
-                        cmap=cmap,
+                        cmap=cmap, symmetric_cmap=symmetric_cmap,
                         cbar_tick_format=cbar_tick_format,
                         alpha=alpha, bg_on_data=bg_on_data,
                         darkness=darkness, vmin=vmin, vmax=vmax,

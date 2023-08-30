@@ -1126,11 +1126,11 @@ def test_plot_surf_roi_plotly_sym_map():
     vmax = 0.4
     vmin = -0.4
     cmap = "RdYlBu_r"
-    plot_surf_roi(mesh, roi_map=roi_map,  
+    plot_surf_roi(mesh, roi_map=roi_map,
                   hemi='left',
-                  colorbar=False, 
-                  engine="plotly", 
-                  symmetric_cmap=True, 
+                  colorbar=False,
+                  engine="plotly",
+                  symmetric_cmap=True,
                   cmap=cmap,
                   vmax=vmax,
                   vmin=vmin)
