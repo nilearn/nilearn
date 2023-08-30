@@ -13,78 +13,23 @@ import pytest
 from numpy.testing import assert_array_equal
 
 from nilearn._utils.data_gen import basic_paradigm
-from nilearn.conftest import _rng
 from nilearn.glm.first_level import check_events
 
-
-def duplicate_events_paradigm():
-    conditions = ["c0", "c0", "c0", "c0", "c1", "c1"]
-    onsets = [10, 30, 70, 70, 10, 30]
-    durations = [1.0, 1.0, 1.0, 1.0, 1.0, 1]
-    events = pd.DataFrame(
-        {"trial_type": conditions, "onset": onsets, "duration": durations}
-    )
-    return events
-
-
-def modulated_block_paradigm():
-    conditions = ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"]
-    onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    durations = 5 + 5 * _rng().uniform(size=len(onsets))
-    values = _rng().uniform(size=len(onsets))
-    events = pd.DataFrame(
-        {
-            "trial_type": conditions,
-            "onset": onsets,
-            "duration": durations,
-            "modulation": values,
-        }
-    )
-    return events
-
-
-def modulated_event_paradigm():
-    conditions = ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"]
-    onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    durations = 1 * np.ones(9)
-    values = _rng().uniform(size=len(onsets))
-    events = pd.DataFrame(
-        {
-            "trial_type": conditions,
-            "onset": onsets,
-            "durations": durations,
-            "amplitude": values,
-        }
-    )
-    return events
-
-
-def block_paradigm():
-    conditions = ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"]
-    onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
-    durations = 5 * np.ones(9)
-    events = pd.DataFrame(
-        {"trial_type": conditions, "onset": onsets, "duration": durations}
-    )
-    return events
-
-
-def write_events(events, tmpdir):
-    """Function to write events of an experimental paradigm
-    to a file and return the address.
-    """
-    tsvfile = os.path.join(tmpdir, "events.tsv")
-    events.to_csv(tsvfile, sep="\t")
-    return tsvfile
+from ._utils import (
+    _block_paradigm,
+    _duplicate_events_paradigm,
+    _modulated_block_paradigm,
+    _modulated_event_paradigm,
+)
 
 
 def test_check_events():
     events = basic_paradigm()
-    ttype, _, _, modulation = check_events(events)
+    trial_type, _, _, modulation = check_events(events)
 
     # Check that given trial type is right
     assert_array_equal(
-        ttype, ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"]
+        trial_type, ["c0", "c0", "c0", "c1", "c1", "c1", "c2", "c2", "c2"]
     )
 
     # Check that missing modulation yields an array one ones
@@ -138,20 +83,20 @@ def test_check_events_warnings():
     # Missing trial type
     events = events.drop(columns=["trial_type"])
     with pytest.warns(UserWarning, match="'trial_type' column not found"):
-        ttype, onset, duration, modulation = check_events(events)
+        trial_type, onset, duration, modulation = check_events(events)
 
     # Check that missing trial type yields a 'dummy' array
-    assert len(np.unique(ttype)) == 1
-    assert ttype[0] == "dummy"
+    assert len(np.unique(trial_type)) == 1
+    assert trial_type[0] == "dummy"
 
     # An unexpected field is provided
     events["foo"] = np.zeros(len(events))
     with pytest.warns(
         UserWarning, match="Unexpected column 'foo' in events data."
     ):
-        ttype2, onset2, duration2, modulation2 = check_events(events)
+        trial_type2, onset2, duration2, modulation2 = check_events(events)
 
-    assert_array_equal(ttype, ttype2)
+    assert_array_equal(trial_type, trial_type2)
     assert_array_equal(onset, onset2)
     assert_array_equal(duration, duration2)
     assert_array_equal(modulation, modulation2)
@@ -162,24 +107,33 @@ def test_duplicate_events():
     duplicate events.
 
     """
-    events = duplicate_events_paradigm()
+    events = _duplicate_events_paradigm()
 
     # Check that a warning is given to the user
     with pytest.warns(UserWarning, match="Duplicated events were detected."):
-        ttype, onset, duration, modulation = check_events(events)
-    assert_array_equal(ttype, ["c0", "c0", "c0", "c1", "c1"])
+        trial_type, onset, duration, modulation = check_events(events)
+    assert_array_equal(trial_type, ["c0", "c0", "c0", "c1", "c1"])
     assert_array_equal(onset, [10, 30, 70, 10, 30])
     assert_array_equal(duration, [1.0, 1.0, 1.0, 1.0, 1.0])
     # Modulation was updated
     assert_array_equal(modulation, [1, 1, 2, 1, 1])
 
 
+def write_events(events, tmpdir):
+    """Function to write events of an experimental paradigm
+    to a file and return the address.
+    """
+    tsvfile = os.path.join(tmpdir, "events.tsv")
+    events.to_csv(tsvfile, sep="\t")
+    return tsvfile
+
+
 @pytest.mark.parametrize(
     "events",
     [
-        block_paradigm(),
-        modulated_event_paradigm(),
-        modulated_block_paradigm(),
+        _block_paradigm(),
+        _modulated_event_paradigm(),
+        _modulated_block_paradigm(),
         basic_paradigm(),
     ],
 )
