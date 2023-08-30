@@ -346,7 +346,7 @@ def test_design_matrix_repeated_name_in_user_regressors(rng, frame_times):
     hrf_model = "glover"
     ax = rng.standard_normal(size=(len(frame_times), 4))
     with pytest.raises(
-        ValueError, match="'Design matrix columns do not have unique names"
+        ValueError, match="Design matrix columns do not have unique names"
     ):
         design_matrix_light(
             frame_times,
