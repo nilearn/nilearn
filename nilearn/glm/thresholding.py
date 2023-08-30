@@ -273,7 +273,7 @@ def threshold_stats_img(
             return None, threshold
         else:
             raise ValueError(
-                "Map_threshold requires stat_img not to be None"
+                "Map_threshold requires stat_img not to be None "
                 "when the height_control procedure "
                 'is "bonferroni" or "fdr"'
             )

@@ -1,7 +1,10 @@
 """Tests for :func:`nilearn.plotting.plot_carpet`."""
 
+import warnings
+
 import matplotlib.pyplot as plt
 import numpy as np
+import pytest
 
 from nilearn.plotting import plot_carpet
 
@@ -99,3 +102,18 @@ def test_plot_carpet_with_atlas(testdata_4d_for_plotting):
     colorbar = ax.images[0].get_array()
     assert len(np.unique(colorbar)) == len(atlas_labels)
     plt.close(display)
+
+
+def test_plot_carpet_standardize(testdata_4d_for_plotting):
+    """Check warning is raised and then suppressed with setting standardize."""
+    img_4d = testdata_4d_for_plotting["img_4d"]
+    mask_img = testdata_4d_for_plotting["img_mask"]
+    match = "default strategy for standardize"
+
+    with pytest.warns(FutureWarning, match=match):
+        plot_carpet(img_4d, mask_img)
+
+    with warnings.catch_warnings(record=True) as record:
+        plot_carpet(img_4d, mask_img, standardize="zscore_sample")
+        for m in record:
+            assert match not in m.message

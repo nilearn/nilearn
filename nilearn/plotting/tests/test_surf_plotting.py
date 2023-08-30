@@ -1,5 +1,4 @@
 # Tests for functions in surf_plotting.py
-import os
 import re
 import tempfile
 import unittest.mock as mock
@@ -310,12 +309,12 @@ def test_plotly_show(renderer):
 @pytest.mark.skipif(not PLOTLY_INSTALLED or not KALEIDO_INSTALLED,
                     reason=("Plotly and/or kaleido not installed; "
                             "required for this test."))
-def test_plotly_savefig(tmpdir):
-    ps = PlotlySurfaceFigure(go.Figure(), output_file=str(tmpdir / "foo.png"))
-    assert ps.output_file == str(tmpdir / "foo.png")
+def test_plotly_savefig(tmp_path):
+    ps = PlotlySurfaceFigure(go.Figure(), output_file=tmp_path / "foo.png")
+    assert ps.output_file == tmp_path / "foo.png"
     assert ps.figure is not None
     ps.savefig()
-    assert os.path.exists(str(tmpdir / "foo.png"))
+    assert (tmp_path / "foo.png").exists()
 
 
 @pytest.mark.skipif(not PLOTLY_INSTALLED,

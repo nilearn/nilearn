@@ -487,6 +487,14 @@ def test_signal_extraction_with_maps_and_labels(
     maps_img_r = signals_to_img_maps(maps_signals, maps_img, mask_img=mask_img)
     assert maps_img_r.shape == shape_3d_default + (N_TIMEPOINTS,)
 
+
+def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
+    labels_data = get_data(labeled_regions)
+
+    mask_img = _create_mask_with_3_regions_from_labels_data(
+        labels_data, labeled_regions.affine
+    )
+
     # apply img_to_signals_labels with a masking,
     # containing only 3 regions, but
     # not keeping the masked labels
@@ -537,6 +545,25 @@ def test_signal_extraction_with_maps_and_labels(
     # all regions must be kept
     assert labels_signals.shape == (N_TIMEPOINTS, 8)
     assert len(labels_labels) == 8
+
+
+def test_img_to_signals_maps_warnings(
+    labeled_regions, fmri_img, shape_3d_default
+):
+    labels = list(range(N_REGIONS + 1))
+    labels_data = get_data(labeled_regions)
+    # Convert to maps
+    maps_data = np.zeros(shape_3d_default + (N_REGIONS,))
+    for n, l in enumerate(labels):
+        if n == 0:
+            continue
+        maps_data[labels_data == l, n - 1] = 1
+
+    maps_img = Nifti1Image(maps_data, labeled_regions.affine)
+
+    mask_img = _create_mask_with_3_regions_from_labels_data(
+        labels_data, labeled_regions.affine
+    )
 
     # apply img_to_signals_maps with a masking,
     # containing only 3 regions, but

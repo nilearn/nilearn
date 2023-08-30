@@ -1359,7 +1359,8 @@ def plot_markers(node_values, node_coords, node_size='auto',
 def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
                 detrend=True, output_file=None,
                 figure=None, axes=None, vmin=None, vmax=None, title=None,
-                cmap="gray", cmap_labels=plt.cm.gist_ncar):
+                cmap="gray", cmap_labels=plt.cm.gist_ncar,
+                standardize=True):
     """Plot an image representation of voxel intensities across time.
 
     This figure is also known as a "grayplot" or "Power plot".
@@ -1409,6 +1410,14 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
         on the side of the carpet plot.
 
         Default=`plt.cm.gist_ncar`.
+    %(standardize)s
+
+        .. note::
+
+            Added to control passing value to `standardize` of ``signal.clean``
+            to call new behavior since passing "zscore" or True (default) is
+            deprecated. This parameter will be deprecated in version 0.13 and
+            removed in version 0.15.
 
     Returns
     -------
@@ -1473,7 +1482,7 @@ def plot_carpet(img, mask_img=None, mask_labels=None, t_r=None,
 
     # Detrend and standardize data
     if detrend:
-        data = clean(data, t_r=t_r, detrend=True, standardize='zscore')
+        data = clean(data, t_r=t_r, detrend=True, standardize=standardize)
 
     if figure is None:
         if not axes:

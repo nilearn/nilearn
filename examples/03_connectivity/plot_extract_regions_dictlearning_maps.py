@@ -85,6 +85,7 @@ extractor = RegionExtractor(
     thresholding_strategy="ratio_n_voxels",
     extractor="local_regions",
     standardize="zscore_sample",
+    standardize_confounds="zscore_sample",
     min_region_size=1350,
 )
 # Just call fit() to process for regions extraction
@@ -120,7 +121,10 @@ from nilearn.connectome import ConnectivityMeasure
 
 correlations = []
 # Initializing ConnectivityMeasure object with kind='correlation'
-connectome_measure = ConnectivityMeasure(kind="correlation")
+connectome_measure = ConnectivityMeasure(
+    kind="correlation",
+    standardize="zscore_sample",
+)
 for filename, confound in zip(func_filenames, confounds):
     # call transform from RegionExtractor object to extract timeseries signals
     timeseries_each_subject = extractor.transform(filename, confounds=confound)

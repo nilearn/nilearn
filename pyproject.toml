@@ -50,6 +50,7 @@ dev = [
     "flynt",
     "black",
     "flake8-use-fstring",
+    "flake8-functions",
     'codespell',
     'tomli',
     'pre-commit'
