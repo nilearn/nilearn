@@ -67,3 +67,4 @@ Changes
 - :bdg-secondary:`Doc` Replace skipped doctests with default code-blocks (:gh:`3681` in by `Patrick Sadil`_)
 - Move the `~nilearn.plotting.html_surface._mix_colormaps` to `cm.py` in :mod:`~nilearn.plotting` (:gh:`3919` by `Ahmad Chamma`_)
 - Remove deprecation decorator from `~nilearn.glm.regression` (:gh:`3921` by `Ahmad Chamma`_)
+- Example :ref:`sphx_glr_auto_examples_01_plotting_plot_prob_atlas.py` is shortened to speed up build time (:gh:`3934` by `Yasmin Mzayek`_)
