@@ -1116,21 +1116,17 @@ def test_compute_facecolors_matplotlib():
             alpha,
         )
 
-
-def test_plot_surf_roi_plotly_sym_map():
+@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
+def test_plot_surf_roi_sym_map(engine):
     """Regression test for https://github.com/nilearn/nilearn/issues/3941"""
     if not PLOTLY_INSTALLED:
         pytest.skip('Plotly is not installed; required for this test.')
     mesh, roi_map, _ = _generate_data_test_surf_roi()
-    # plot roi
-    vmax = 0.4
-    vmin = -0.4
-    cmap = "RdYlBu_r"
     plot_surf_roi(mesh, roi_map=roi_map,
                   hemi='left',
                   colorbar=False,
-                  engine="plotly",
+                  engine=engine,
                   symmetric_cmap=True,
-                  cmap=cmap,
-                  vmax=vmax,
-                  vmin=vmin)
+                  cmap="RdYlBu_r",
+                  vmax=0.4,
+                  vmin=-0.4)
