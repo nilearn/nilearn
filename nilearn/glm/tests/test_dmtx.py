@@ -90,7 +90,7 @@ def test_cosine_drift():
     # nistats_drifts is placing the constant at the end [:, : - 1]
 
 
-def test_design_matrix_no_experimental_paradigm(frame_times, n_frames):
+def test_design_matrix_no_experimental_paradigm(frame_times):
     # Test design matrix creation when no experimental paradigm is provided
     _, X, names = check_design_matrix(
         make_first_level_design_matrix(
@@ -98,15 +98,13 @@ def test_design_matrix_no_experimental_paradigm(frame_times, n_frames):
         )
     )
     assert len(names) == 4
-    x = np.linspace(-0.5, 0.5, n_frames)
+    x = np.linspace(-0.5, 0.5, len(frame_times))
     assert_almost_equal(X[:, 0], x)
 
 
-def test_design_matrix_regressors_provided_manually(
-    rng, frame_times, n_frames
-):
+def test_design_matrix_regressors_provided_manually(rng, frame_times):
     # test design matrix creation when regressors are provided manually
-    ax = rng.standard_normal(size=(n_frames, 4))
+    ax = rng.standard_normal(size=(len(frame_times), 4))
     _, X, names = check_design_matrix(
         make_first_level_design_matrix(
             frame_times, drift_model="polynomial", drift_order=3, add_regs=ax
@@ -127,17 +125,15 @@ def test_design_matrix_regressors_provided_manually(
     assert_array_equal(names[:4], np.arange(4))
 
 
-def test_design_matrix_regressors_provided_manually_errors(
-    rng, frame_times, n_frames
-):
-    ax = rng.standard_normal(size=(n_frames - 1, 4))
+def test_design_matrix_regressors_provided_manually_errors(rng, frame_times):
+    ax = rng.standard_normal(size=(len(frame_times) - 1, 4))
     with pytest.raises(
         AssertionError,
         match="Incorrect specification of additional regressors:.",
     ):
         make_first_level_design_matrix(frame_times, add_regs=ax)
 
-    ax = rng.standard_normal(size=(n_frames, 4))
+    ax = rng.standard_normal(size=(len(frame_times), 4))
     with pytest.raises(
         ValueError, match="Incorrect number of additional regressor names."
     ):
@@ -204,11 +200,9 @@ def test_design_matrix(
     assert X.shape == (n_frames, nb_regressors)
 
 
-def test_design_matrix_basic_paradigm_and_extra_regressors(
-    rng, frame_times, n_frames
-):
+def test_design_matrix_basic_paradigm_and_extra_regressors(rng, frame_times):
     # basic test based on basic_paradigm, plus user supplied regressors
-    ax = rng.standard_normal(size=(n_frames, 4))
+    ax = rng.standard_normal(size=(len(frame_times), 4))
     X, names = design_matrix_light(
         frame_times,
         events=basic_paradigm(),
@@ -227,7 +221,7 @@ def test_design_matrix_basic_paradigm_and_extra_regressors(
     "fir_delays, nb_regressors", [(None, 7), (range(1, 5), 16)]
 )
 def test_design_matrix_FIR_basic_paradigm(
-    frame_times, fir_delays, nb_regressors, n_frames
+    frame_times, fir_delays, nb_regressors
 ):
     # basic test based on basic_paradigm and FIR
     X, names = design_matrix_light(
@@ -239,10 +233,10 @@ def test_design_matrix_FIR_basic_paradigm(
         fir_delays=fir_delays,
     )
     assert len(names) == nb_regressors
-    assert X.shape == (n_frames, nb_regressors)
+    assert X.shape == (len(frame_times), nb_regressors)
 
 
-def test_design_matrix_FIR_block(frame_times, n_frames):
+def test_design_matrix_FIR_block(frame_times):
     # test FIR models on block designs
     bp = _block_paradigm()
     X, _ = design_matrix_light(
@@ -253,7 +247,7 @@ def test_design_matrix_FIR_block(frame_times, n_frames):
         fir_delays=range(4),
     )
     idx = bp["onset"][bp["trial_type"] == 1].astype(int)
-    assert X.shape == (n_frames, 13)
+    assert X.shape == (len(frame_times), 13)
     assert (X[idx, 4] == 1).all()
     assert (X[idx + 1, 5] == 1).all()
     assert (X[idx + 2, 6] == 1).all()
@@ -359,13 +353,11 @@ def test_design_matrix20(n_frames):
     assert np.any(np.diff(X[:, -2]) != 0)
 
 
-def test_design_matrix_repeated_name_in_user_regressors(
-    rng, frame_times, n_frames
-):
+def test_design_matrix_repeated_name_in_user_regressors(rng, frame_times):
     # basic test on repeated names of user supplied regressors
     events = basic_paradigm()
     hrf_model = "glover"
-    ax = rng.standard_normal(size=(n_frames, 4))
+    ax = rng.standard_normal(size=(len(frame_times), 4))
     with pytest.raises(ValueError):
         design_matrix_light(
             frame_times,
