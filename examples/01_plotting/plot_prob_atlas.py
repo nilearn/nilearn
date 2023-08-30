@@ -105,6 +105,7 @@ plotting.show()
 #         "Smith 2009 10 RSNs": smith_rsn10,
 #         "Smith2009 20 RSNs": smith_rsn20,
 #         "Smith2009 70 RSNs": smith_rsn70,
+#         "Smith2009 10 Brainmap": smith_bm10,
 #         "Smith2009 70 Brainmap": smith_bm70,
 #         "MSDL": msdl.maps,
 #         "Pauli2017 Subcortical Atlas": subcortex.maps,
