@@ -289,37 +289,24 @@ def test_design_matrix_FIR_time_shift(frame_times):
         drift_order=3,
         fir_delays=range(1, 5),
     )
-    onset = events.onset[events.trial_type == "c0"].astype(int)
-    assert np.all(X[onset + 1, 0] > 0.5)
+    ct = events.onset[events.trial_type == "c0"].astype(int)
+    assert np.all(X[ct + 1, 0] > 0.5)
 
 
-def test_design_matrix_scaling_events(frame_times):
-    # Test the effect of scaling on the events
-    events = _modulated_event_paradigm()
-    hrf_model = "glover"
+@pytest.mark.parametrize(
+    "events, idx_offset",
+    [(_modulated_event_paradigm(), 1), (_modulated_block_paradigm(), 3)],
+)
+def test_design_matrix_scaling(events, idx_offset, frame_times):
     X, _ = design_matrix_light(
         frame_times,
         events=events,
-        hrf_model=hrf_model,
+        hrf_model="glover",
         drift_model="polynomial",
         drift_order=3,
     )
-    ct = events.onset[events.trial_type == "c0"].astype(int) + 1
-    assert (X[ct, 0] > 0).all()
-
-
-def test_design_matrix_scaling_blocks(frame_times):
-    # Test the effect of scaling on the blocks
-    events = _modulated_block_paradigm()
-    hrf_model = "glover"
-    X, _ = design_matrix_light(
-        frame_times,
-        events,
-        hrf_model=hrf_model,
-        drift_model="polynomial",
-        drift_order=3,
-    )
-    ct = events.onset[events.trial_type == "c0"].astype(int) + 3
+    idx = events.onset[events.trial_type == "c0"].astype(int)
+    ct = idx + idx_offset
     assert (X[ct, 0] > 0).all()
 
 
@@ -358,7 +345,9 @@ def test_design_matrix_repeated_name_in_user_regressors(rng, frame_times):
     events = basic_paradigm()
     hrf_model = "glover"
     ax = rng.standard_normal(size=(len(frame_times), 4))
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="'Design matrix columns do not have unique names"
+    ):
         design_matrix_light(
             frame_times,
             events,
