@@ -14,6 +14,8 @@ Fixes
 -----
 - Fix bug in ``nilearn.plotting.surf_plotting._plot_surf_matplotlib`` that would make vertices transparent when saving in PDF or SVG format (:gh:`3860` by `Mathieu Dugré`_).
 
+- Fix bug that would prevent using `symmetric_cmap=True` with :func:`~.plotting.surf_plotting.plot_surf_roi` (:gh:`3942` by `Rémi Gau`_).
+
 - Fix bug that would prevent loading the confounds of a gifti file in actual fmriprep datasets (:gh:`3819` by `Rémi Gau`_).
 
 - Fix bug that prevented using dataframes as input for second level GLM when computing contrasts (:gh:`3879` by `Rémi Gau`_).
