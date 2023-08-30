@@ -1116,6 +1116,7 @@ def test_compute_facecolors_matplotlib():
             alpha,
         )
 
+
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_roi_sym_map(engine):
     """Regression test for https://github.com/nilearn/nilearn/issues/3941"""
