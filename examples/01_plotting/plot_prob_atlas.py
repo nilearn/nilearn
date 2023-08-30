@@ -61,57 +61,59 @@ plotting.show()
 #
 # To save build time, the following code is not executed. Try running it
 # locally to get the same plots as above for each of the listed atlases.
-
-# # Harvard Oxford Atlas
-# harvard_oxford = datasets.fetch_atlas_harvard_oxford("cort-prob-2mm")
-# harvard_oxford_sub = datasets.fetch_atlas_harvard_oxford("sub-prob-2mm")
-
-# # Smith ICA Atlas and Brain Maps 2009
-# smith_rsn10 = datasets.fetch_atlas_smith_2009(resting=True, dimension=10)[
-#     "map"
-# ]
-# smith_rsn20 = datasets.fetch_atlas_smith_2009(resting=True, dimension=20)[
-#     "map"
-# ]
-# smith_rsn70 = datasets.fetch_atlas_smith_2009(resting=True, dimension=70)[
-#     "map"
-# ]
-# smith_bm10 = datasets.fetch_atlas_smith_2009(resting=False, dimension=10)[
-#     "map"
-# ]
-# smith_bm70 = datasets.fetch_atlas_smith_2009(resting=False, dimension=70)[
-#     "map"
-# ]
-
-# # Multi Subject Dictionary Learning Atlas
-# msdl = datasets.fetch_atlas_msdl()
-
-# # Pauli subcortical atlas
-# subcortex = datasets.fetch_atlas_pauli_2017()
-
-# # Dictionaries of Functional Modes (“DiFuMo”) atlas
-# dim = 64
-# res = 2
-# difumo = datasets.fetch_atlas_difumo(
-#     dimension=dim, resolution_mm=res, legacy_format=False
-# )
-
-# # Visualization
-# atlas_types = {
-#     "Harvard_Oxford": harvard_oxford.maps,
-#     "Harvard_Oxford sub": harvard_oxford_sub.maps,
-#     "Smith 2009 10 RSNs": smith_rsn10,
-#     "Smith2009 20 RSNs": smith_rsn20,
-#     "Smith2009 70 RSNs": smith_rsn70,
-#     "Smith2009 70 Brainmap": smith_bm70,
-#     "MSDL": msdl.maps,
-#     "Pauli2017 Subcortical Atlas": subcortex.maps,
-#     f"DiFuMo dimension {dim} resolution {res}": difumo.maps,
-# }
-
-# for name, atlas in sorted(atlas_types.items()):
-#     plotting.plot_prob_atlas(atlas, title=name)
-
-# plotting.show()
+#
+# .. code-block:: default
+#
+#     # Harvard Oxford Atlas
+#     harvard_oxford = datasets.fetch_atlas_harvard_oxford("cort-prob-2mm")
+#     harvard_oxford_sub = datasets.fetch_atlas_harvard_oxford("sub-prob-2mm")
+#
+#     # Smith ICA Atlas and Brain Maps 2009
+#     smith_rsn10 = datasets.fetch_atlas_smith_2009(
+#         resting=True, dimension=10
+#     )["map"]
+#     smith_rsn20 = datasets.fetch_atlas_smith_2009(
+#         resting=True, dimension=20
+#     )["map"]
+#     smith_rsn70 = datasets.fetch_atlas_smith_2009(
+#         resting=True, dimension=70
+#     )["map"]
+#     smith_bm10 = datasets.fetch_atlas_smith_2009(
+#         resting=False, dimension=10
+#     )["map"]
+#     smith_bm70 = datasets.fetch_atlas_smith_2009(
+#         resting=False, dimension=70
+#     )["map"]
+#
+#     # Multi Subject Dictionary Learning Atlas
+#     msdl = datasets.fetch_atlas_msdl()
+#
+#     # Pauli subcortical atlas
+#     subcortex = datasets.fetch_atlas_pauli_2017()
+#
+#     # Dictionaries of Functional Modes (“DiFuMo”) atlas
+#     dim = 64
+#     res = 2
+#     difumo = datasets.fetch_atlas_difumo(
+#         dimension=dim, resolution_mm=res, legacy_format=False
+#     )
+#
+#     # Visualization
+#     atlas_types = {
+#         "Harvard_Oxford": harvard_oxford.maps,
+#         "Harvard_Oxford sub": harvard_oxford_sub.maps,
+#         "Smith 2009 10 RSNs": smith_rsn10,
+#         "Smith2009 20 RSNs": smith_rsn20,
+#         "Smith2009 70 RSNs": smith_rsn70,
+#         "Smith2009 70 Brainmap": smith_bm70,
+#         "MSDL": msdl.maps,
+#         "Pauli2017 Subcortical Atlas": subcortex.maps,
+#         f"DiFuMo dimension {dim} resolution {res}": difumo.maps,
+#     }
+#
+#     for name, atlas in sorted(atlas_types.items()):
+#         plotting.plot_prob_atlas(atlas, title=name)
+#
+#     plotting.show()
 
 # sphinx_gallery_dummy_images=3
