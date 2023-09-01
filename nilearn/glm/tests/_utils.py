@@ -140,6 +140,11 @@ def duplicate_events_paradigm():
     onsets = [10, 30, 70, 70, 10, 30]
     durations = [1.0, 1.0, 1.0, 1.0, 1.0, 1]
     events = pd.DataFrame(
-        {"trial_type": conditions, "onset": onsets, "duration": durations}
+        {
+            "trial_type": conditions,
+            "onset": onsets,
+            "duration": durations,
+            "modulation": np.ones(len(onsets)),
+        }
     )
     return events

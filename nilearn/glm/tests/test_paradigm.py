@@ -95,7 +95,11 @@ def test_check_events_warnings():
     # An unexpected field is provided
     events["foo"] = np.zeros(len(events))
     with pytest.warns(
-        UserWarning, match="Unexpected column 'foo' in events data."
+        UserWarning,
+        match=(
+            "The following unexpected columns "
+            "in events data will be ignored: foo"
+        ),
     ):
         trial_type2, onset2, duration2, modulation2 = check_events(events)
 
