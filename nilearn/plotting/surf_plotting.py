@@ -1475,6 +1475,7 @@ def plot_surf_roi(surf_mesh,
                   hemi='left',
                   view='lateral',
                   engine='matplotlib',
+                  avg_method='median',
                   threshold=1e-14,
                   alpha='auto',
                   vmin=None,
@@ -1543,6 +1544,14 @@ def plot_surf_roi(surf_mesh,
 
         Default='matplotlib'.
 
+    %(avg_method)s
+
+        .. note::
+            This option is currently only implemented for the
+            ``matplotlib`` engine.
+
+        Default='median'.
+        
     threshold : a number or None, optional
         Threshold regions that are labelled 0.
         If you want to use 0 as a label, set threshold to None.
@@ -1642,7 +1651,7 @@ def plot_surf_roi(surf_mesh,
                         hemi=hemi,
                         view=view,
                         engine=engine,
-                        avg_method='median',
+                        avg_method=avg_method,
                         threshold=threshold,
                         cmap=cmap,
                         cbar_tick_format=cbar_tick_format,
