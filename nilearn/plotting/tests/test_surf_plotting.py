@@ -1127,5 +1127,5 @@ def test_plot_surf_roi_sym_map(engine, symmetric_cmap):
     plot_surf_roi(mesh, roi_map=roi_map,
                   engine=engine,
                   symmetric_cmap=symmetric_cmap,
-                  darkness=None, # to avoid deprecation warning
+                  darkness=None,  # to avoid deprecation warning
                   cmap="RdYlBu_r")
