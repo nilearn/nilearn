@@ -16,14 +16,14 @@ from nilearn._utils.data_gen import basic_paradigm
 from nilearn.glm.first_level import check_events
 
 from ._utils import (
-    _block_paradigm,
-    _design_with_nan_durations,
-    _design_with_nan_onsets,
-    _design_with_negative_durations,
-    _design_with_null_durations,
-    _duplicate_events_paradigm,
-    _modulated_block_paradigm,
-    _modulated_event_paradigm,
+    block_paradigm,
+    design_with_nan_durations,
+    design_with_nan_onsets,
+    design_with_negative_durations,
+    design_with_null_durations,
+    duplicate_events_paradigm,
+    modulated_block_paradigm,
+    modulated_event_paradigm,
 )
 
 
@@ -111,7 +111,7 @@ def test_duplicate_events():
     duplicate events.
 
     """
-    events = _duplicate_events_paradigm()
+    events = duplicate_events_paradigm()
 
     # Check that a warning is given to the user
     with pytest.warns(UserWarning, match="Duplicated events were detected."):
@@ -135,9 +135,9 @@ def write_events(events, tmpdir):
 @pytest.mark.parametrize(
     "events",
     [
-        _block_paradigm(),
-        _modulated_event_paradigm(),
-        _modulated_block_paradigm(),
+        block_paradigm(),
+        modulated_event_paradigm(),
+        modulated_block_paradigm(),
         basic_paradigm(),
     ],
 )
@@ -155,15 +155,15 @@ def test_check_events_warnings_null_duration():
         UserWarning,
         match="The following conditions contain events with null duration",
     ):
-        check_events(_design_with_null_durations())
+        check_events(design_with_null_durations())
 
 
 @pytest.mark.parametrize(
     "design",
     [
-        _design_with_nan_durations,
-        _design_with_nan_onsets,
-        _design_with_negative_durations,
+        design_with_nan_durations,
+        design_with_nan_onsets,
+        design_with_negative_durations,
     ],
 )
 def test_check_events_null_nan_designs(design):

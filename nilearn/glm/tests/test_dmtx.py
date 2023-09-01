@@ -25,14 +25,14 @@ from nilearn.glm.first_level.design_matrix import (
 )
 
 from ._utils import (
-    _block_paradigm,
-    _design_with_nan_durations,
-    _design_with_nan_onsets,
-    _design_with_negative_durations,
-    _design_with_negative_onsets,
-    _modulated_block_paradigm,
-    _modulated_event_paradigm,
-    _spm_paradigm,
+    block_paradigm,
+    design_with_nan_durations,
+    design_with_nan_onsets,
+    design_with_negative_durations,
+    design_with_negative_onsets,
+    modulated_block_paradigm,
+    modulated_event_paradigm,
+    spm_paradigm,
 )
 
 # load the spm file to test cosine basis
@@ -177,9 +177,9 @@ def test_design_matrix_basic_paradigm_glover_hrf(frame_times):
             8,
         ),
         (basic_paradigm(), "glover + derivative", "polynomial", 3, 0.01, 10),
-        (_block_paradigm(), "glover", "polynomial", 1, 0.01, 5),
-        (_block_paradigm(), "glover", "polynomial", 3, 0.01, 7),
-        (_block_paradigm(), "glover + derivative", "polynomial", 3, 0.01, 10),
+        (block_paradigm(), "glover", "polynomial", 1, 0.01, 5),
+        (block_paradigm(), "glover", "polynomial", 3, 0.01, 7),
+        (block_paradigm(), "glover + derivative", "polynomial", 3, 0.01, 10),
     ],
 )
 def test_design_matrix(
@@ -242,7 +242,7 @@ def test_design_matrix_FIR_basic_paradigm(
 
 def test_design_matrix_FIR_block(frame_times):
     # test FIR models on block designs
-    bp = _block_paradigm()
+    bp = block_paradigm()
     X, _ = design_matrix_light(
         frame_times,
         bp,
@@ -299,7 +299,7 @@ def test_design_matrix_FIR_time_shift(frame_times):
 
 @pytest.mark.parametrize(
     "events, idx_offset",
-    [(_modulated_event_paradigm(), 1), (_modulated_block_paradigm(), 3)],
+    [(modulated_event_paradigm(), 1), (modulated_block_paradigm(), 3)],
 )
 def test_design_matrix_scaling(events, idx_offset, frame_times):
     X, _ = design_matrix_light(
@@ -316,7 +316,7 @@ def test_design_matrix_scaling(events, idx_offset, frame_times):
 
 def test_design_matrix_scaling_FIR_model(frame_times):
     # Test the effect of scaling on a FIR model
-    events = _modulated_event_paradigm()
+    events = modulated_event_paradigm()
     hrf_model = "FIR"
     X, _ = design_matrix_light(
         frame_times,
@@ -335,7 +335,7 @@ def test_design_matrix20(n_frames):
     frame_times = np.arange(
         0, n_frames
     )  # was 127 in old version of _cosine_drift
-    events = _modulated_event_paradigm()
+    events = modulated_event_paradigm()
     X, _ = design_matrix_light(
         frame_times, events, hrf_model="glover", drift_model="cosine"
     )
@@ -416,7 +416,7 @@ def test_csv_io(tmp_path, frame_times):
     # test the csv io on design matrices
     DM = make_first_level_design_matrix(
         frame_times,
-        events=_modulated_event_paradigm(),
+        events=modulated_event_paradigm(),
         hrf_model="glover",
         drift_model="polynomial",
         drift_order=3,
@@ -437,7 +437,7 @@ def test_csv_io(tmp_path, frame_times):
 def test_compare_design_matrix_to_spm(block_duration, array):
     # Check that the nistats design matrix is close enough to the SPM one
     # (it cannot be identical, because the hrf shape is different)
-    events, frame_times = _spm_paradigm(block_duration=block_duration)
+    events, frame_times = spm_paradigm(block_duration=block_duration)
     X1 = make_first_level_design_matrix(frame_times, events, drift_model=None)
     _, matrix, _ = check_design_matrix(X1)
 
@@ -462,9 +462,9 @@ def test_create_second_level_design():
 @pytest.mark.parametrize(
     "design",
     [
-        _design_with_nan_durations,
-        _design_with_nan_onsets,
-        _design_with_negative_durations,
+        design_with_nan_durations,
+        design_with_nan_onsets,
+        design_with_negative_durations,
     ],
 )
 def test_designs_with_null_or_nan_values(frame_times, design):
@@ -481,5 +481,5 @@ def test_designs_with_negative_onsets_warning(frame_times):
         match="Some stimulus onsets are earlier than",
     ):
         make_first_level_design_matrix(
-            events=_design_with_negative_onsets(), frame_times=frame_times
+            events=design_with_negative_onsets(), frame_times=frame_times
         )
