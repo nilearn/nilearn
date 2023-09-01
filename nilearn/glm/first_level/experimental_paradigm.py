@@ -71,6 +71,15 @@ def check_events(events):
         )
         events_copy["trial_type"] = "dummy"
 
+    conditions_with_null_duration = events_copy["trial_type"][
+        events_copy["duration"] == 0
+    ].unique()
+    if len(conditions_with_null_duration) > 0:
+        warnings.warn(
+            "The following conditions contain events with null duration:\n"
+            f"{', '.join(conditions_with_null_duration)}."
+        )
+
     # Handle modulation
     if "modulation" in events_copy.columns:
         print(

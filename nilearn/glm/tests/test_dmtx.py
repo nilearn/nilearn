@@ -26,6 +26,10 @@ from nilearn.glm.first_level.design_matrix import (
 
 from ._utils import (
     _block_paradigm,
+    _design_with_nan_durations,
+    _design_with_nan_onsets,
+    _design_with_negative_durations,
+    _design_with_negative_onsets,
     _modulated_block_paradigm,
     _modulated_event_paradigm,
     _spm_paradigm,
@@ -453,3 +457,29 @@ def test_create_second_level_design():
     assert_array_equal(design, expected_design)
     assert len(design.columns) == 2
     assert len(design) == 2
+
+
+@pytest.mark.parametrize(
+    "design",
+    [
+        _design_with_nan_durations,
+        _design_with_nan_onsets,
+        _design_with_negative_durations,
+    ],
+)
+def test_designs_with_null_or_nan_values(frame_times, design):
+    _, X, names = check_design_matrix(
+        make_first_level_design_matrix(
+            events=design(), frame_times=frame_times
+        )
+    )
+
+
+def test_designs_with_negative_onsets_warning(frame_times):
+    with pytest.warns(
+        UserWarning,
+        match="Some stimulus onsets are earlier than",
+    ):
+        make_first_level_design_matrix(
+            events=_design_with_negative_onsets(), frame_times=frame_times
+        )

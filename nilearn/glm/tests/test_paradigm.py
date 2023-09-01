@@ -17,6 +17,10 @@ from nilearn.glm.first_level import check_events
 
 from ._utils import (
     _block_paradigm,
+    _design_with_nan_durations,
+    _design_with_nan_onsets,
+    _design_with_negative_durations,
+    _design_with_null_durations,
     _duplicate_events_paradigm,
     _modulated_block_paradigm,
     _modulated_event_paradigm,
@@ -143,3 +147,26 @@ def test_read_events(events, tmp_path):
     read_paradigm = pd.read_table(csvfile)
 
     assert (read_paradigm["onset"] == events["onset"]).all()
+
+
+def test_check_events_warnings_null_duration():
+    """Test that events with null duration throw a warning."""
+    with pytest.warns(
+        UserWarning,
+        match="The following conditions contain events with null duration",
+    ):
+        check_events(_design_with_null_durations())
+
+
+@pytest.mark.parametrize(
+    "design",
+    [
+        _design_with_nan_durations,
+        _design_with_nan_onsets,
+        _design_with_negative_durations,
+    ],
+)
+def test_check_events_null_nan_designs(design):
+    """Test that events with nan / null values."""
+    trial_type, onset, duration, modulation = check_events(design())
+    print(trial_type, onset, duration, modulation)
