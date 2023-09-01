@@ -34,6 +34,8 @@ Fixes
 
 - Fix ``fit_transform`` behavior to match when ``fit`` method is passed image data (:gh:`3897` by `Yasmin Mzayek`_)
 
+- Allow using both vmin and threshold with  "plotly" engine to be consistent with "matplotlib" behavior (:gh:`3945` by `Yasmin Mzayek`_)
+
 Enhancements
 ------------
 
