@@ -1121,7 +1121,7 @@ def test_compute_facecolors_matplotlib():
 @pytest.mark.parametrize("avg_method", ["mean", "median"])
 @pytest.mark.parametrize("symmetric_cmap", [True, False, None])
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-def test_plot_surf_roi_sym_map(engine, symmetric_cmap, avg_method):
+def test_plot_surf_roi_default_arguments(engine, symmetric_cmap, avg_method):
     """Regression test for https://github.com/nilearn/nilearn/issues/3941"""
     if not PLOTLY_INSTALLED:
         pytest.skip('Plotly is not installed; required for this test.')
