@@ -9,7 +9,7 @@ def _conditions():
 
 
 def _onsets():
-    return [30, 70, 100, 10, 30, 90, 30, 40, 60]
+    return [0, 70, 100, 10, 30, 90, 30, 40, 60]
 
 
 def _durations():

@@ -60,6 +60,10 @@ def check_events(events):
             raise ValueError(
                 f"The provided events data has no {col_name} column."
             )
+        if events[col_name].isnull().any():
+            raise ValueError(
+                f"The following column must not contain nan values: {col_name}"
+            )
 
     # Make a copy of the dataframe
     events_copy = events.copy()

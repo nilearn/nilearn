@@ -26,9 +26,6 @@ from nilearn.glm.first_level.design_matrix import (
 
 from ._utils import (
     block_paradigm,
-    design_with_nan_durations,
-    design_with_nan_onsets,
-    design_with_negative_durations,
     design_with_negative_onsets,
     modulated_block_paradigm,
     modulated_event_paradigm,
@@ -457,22 +454,6 @@ def test_create_second_level_design():
     assert_array_equal(design, expected_design)
     assert len(design.columns) == 2
     assert len(design) == 2
-
-
-@pytest.mark.parametrize(
-    "design",
-    [
-        design_with_nan_durations,
-        design_with_nan_onsets,
-        design_with_negative_durations,
-    ],
-)
-def test_designs_with_null_or_nan_values(frame_times, design):
-    _, X, names = check_design_matrix(
-        make_first_level_design_matrix(
-            events=design(), frame_times=frame_times
-        )
-    )
 
 
 def test_designs_with_negative_onsets_warning(frame_times):

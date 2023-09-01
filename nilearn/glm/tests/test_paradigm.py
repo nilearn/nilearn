@@ -19,7 +19,6 @@ from ._utils import (
     block_paradigm,
     design_with_nan_durations,
     design_with_nan_onsets,
-    design_with_negative_durations,
     design_with_null_durations,
     duplicate_events_paradigm,
     modulated_block_paradigm,
@@ -163,10 +162,11 @@ def test_check_events_warnings_null_duration():
     [
         design_with_nan_durations,
         design_with_nan_onsets,
-        design_with_negative_durations,
     ],
 )
-def test_check_events_null_nan_designs(design):
-    """Test that events with nan / null values."""
-    trial_type, onset, duration, modulation = check_events(design())
-    print(trial_type, onset, duration, modulation)
+def test_check_events_nan_designs(design):
+    """Test that events with nan values."""
+    with pytest.raises(
+        ValueError, match=("The following column must not contain nan values:")
+    ):
+        check_events(design())
