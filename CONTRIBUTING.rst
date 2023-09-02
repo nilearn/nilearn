@@ -290,7 +290,7 @@ The main conventions we enforce are :
 - meaningful variable names
 - function names are underscore separated (e.g., ``a_nice_function``) and as short as possible
 - public functions exposed in their parent module's init file
-- private function names preceded with a "_" and very explicit
+- private function names preceded with a "_" and very explicit, see also :ref:`private_functions`
 - classes in CamelCase
 - 2 empty lines between functions or classes
 
@@ -350,6 +350,75 @@ This is also useful for writing unit tests.
 
 Writing small functions is not always possible, and we do not recommend trying to reorganize larger,
 but well-tested, older functions in the codebase, unless there is a strong reason to do so (e.g., when adding a new feature).
+
+.. _private_functions:
+
+Guidelines for Private Functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In some cases when private functions are in a private module (filename beginning with an underscore),
+but are used outside of that file, we do not name them with a leading underscore. Example:
+
+.. code-block:: rst
+
+      nilearn
+      ├── image.py             # part of public API
+      ├── __init__.py
+      ├── maskers              # part of public API
+      │   ├── __init__.py
+      │   ├── nifti_masker.py  # part of public API
+      │   └── _validation.py   # private to the maskers module
+      └── _utils.py            # private to the nilearn module
+
+Code inside ``maskers._validation.py``:
+
+.. code-block:: python
+
+      import numpy as np # not part of the public API
+
+      __all__ = ["check_mask_img", "ValidationError"] # all symbols in the public API
+
+
+      def check_mask_img(mask_img):
+      """Public API of _validation module
+
+      can be used in nifti_masker module
+      but not the image module (which cannot import maskers._validation),
+      unless maskers/__init__.py imports it and lists it in __all__
+      to make it part of the maskers module's public API
+      """
+      return _check_mask_shape(mask_img) and _check_mask_values(mask_img)
+
+
+      def _check_mask_shape(mask_img):
+      """Private internal of _validation, cannot be used in nifti_masker"""
+
+
+      def _check_mask_values(mask_img):
+      """Private internal of _validation, cannot be used in nifti_masker"""
+
+
+      class ValidationError(Exception):
+      """Public API of _validation module"""
+
+
+      class _Validator:
+      """Private internal of the _validation module"""
+
+      def validate(self, img):
+            """Public API of _Validator"""
+
+      def _validate_shape(self, img):
+            """Private internal of the _Validator class.
+
+            As we don't use the double leading underscore in nilearn we cannot
+            infer from the name alone if it is considered to be exposed to
+            subclasses or not.
+
+            """
+
+..
+      Source: Jerome Dockes https://github.com/nilearn/nilearn/issues/3628#issuecomment-1515211711
 
 Pre-commit
 ----------
