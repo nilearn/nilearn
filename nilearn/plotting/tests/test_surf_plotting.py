@@ -1117,7 +1117,6 @@ def test_compute_facecolors_matplotlib():
         )
 
 
-
 @pytest.mark.parametrize("avg_method", ["mean", "median"])
 @pytest.mark.parametrize("symmetric_cmap", [True, False, None])
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
@@ -1130,5 +1129,5 @@ def test_plot_surf_roi_default_arguments(engine, symmetric_cmap, avg_method):
                   engine=engine,
                   symmetric_cmap=symmetric_cmap,
                   darkness=None,  # to avoid deprecation warning
-                  cmap="RdYlBu_r", 
+                  cmap="RdYlBu_r",
                   avg_method=avg_method)
