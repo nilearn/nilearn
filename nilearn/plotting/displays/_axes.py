@@ -25,19 +25,22 @@ class BaseAxes:
 
     coord : :obj:`float`
         The coordinate along the direction of the cut.
+    %(radiological)s
     """
 
-    def __init__(self, ax, direction, coord):
+    def __init__(self, ax, direction, coord, radiological=False):
         self.ax = ax
         self.direction = direction
         self.coord = coord
         self._object_bounds = list()
         self.shape = None
+        self.radiological = radiological
 
     def transform_to_2d(self, data, affine):
         """Transform to a 2D."""
-        raise NotImplementedError("'transform_to_2d' needs to be implemented "
-                                  "in derived classes'")
+        raise NotImplementedError(
+            "'transform_to_2d' needs to be implemented in derived classes'"
+        )
 
     def add_object_bounds(self, bounds):
         """Ensure that axes get rescaled when adding object bounds."""
@@ -48,28 +51,29 @@ class BaseAxes:
         if new_object_bounds != old_object_bounds:
             self.ax.axis(self.get_object_bounds())
 
-    def draw_2d(self, data_2d, data_bounds, bounding_box,
-                type='imshow', **kwargs):
+    def draw_2d(
+        self, data_2d, data_bounds, bounding_box, type="imshow", **kwargs
+    ):
         """Draw 2D."""
-        kwargs['origin'] = 'upper'
+        kwargs["origin"] = "upper"
 
-        if self.direction == 'y':
+        if self.direction == "y":
             (xmin, xmax), (_, _), (zmin, zmax) = data_bounds
             (xmin_, xmax_), (_, _), (zmin_, zmax_) = bounding_box
-        elif self.direction in 'xlr':
+        elif self.direction in "xlr":
             (_, _), (xmin, xmax), (zmin, zmax) = data_bounds
             (_, _), (xmin_, xmax_), (zmin_, zmax_) = bounding_box
-        elif self.direction == 'z':
+        elif self.direction == "z":
             (xmin, xmax), (zmin, zmax), (_, _) = data_bounds
             (xmin_, xmax_), (zmin_, zmax_), (_, _) = bounding_box
         else:
-            raise ValueError(f'Invalid value for direction {self.direction}')
+            raise ValueError(f"Invalid value for direction {self.direction}")
         ax = self.ax
         # Here we need to do a copy to avoid having the image changing as
         # we change the data
-        im = getattr(ax, type)(data_2d.copy(),
-                               extent=(xmin, xmax, zmin, zmax),
-                               **kwargs)
+        im = getattr(ax, type)(
+            data_2d.copy(), extent=(xmin, xmax, zmin, zmax), **kwargs
+        )
 
         self.add_object_bounds((xmin_, xmax_, zmin_, zmax_))
         self.shape = data_2d.T.shape
@@ -77,7 +81,7 @@ class BaseAxes:
         # The bounds of the object do not take into account a possible
         # inversion of the axis. As such, we check that the axis is properly
         # inverted when direction is left
-        if self.direction == 'l' and not (ax.get_xlim()[0] > ax.get_xlim()[1]):
+        if self.direction == "l" and not (ax.get_xlim()[0] > ax.get_xlim()[1]):
             ax.invert_xaxis()
         return im
 
@@ -85,7 +89,7 @@ class BaseAxes:
         """Return the bounds of the objects on this axes."""
         if len(self._object_bounds) == 0:
             # Nothing plotted yet
-            return -.01, .01, -.01, .01
+            return -0.01, 0.01, -0.01, 0.01
         xmins, xmaxs, ymins, ymaxs = np.array(self._object_bounds).T
         xmax = max(xmaxs.max(), xmins.max())
         xmin = min(xmins.min(), xmaxs.min())
@@ -106,30 +110,58 @@ class BaseAxes:
             The background color for both text areas.
 
         """
-        if self.direction in 'xlr':
+        if self.direction in "xlr":
             return
         ax = self.ax
-        ax.text(.1, .95, 'L',
-                transform=ax.transAxes,
-                horizontalalignment='left',
-                verticalalignment='top',
-                size=size,
-                bbox=dict(boxstyle="square,pad=0",
-                          ec=bg_color, fc=bg_color, alpha=1),
-                **kwargs)
+        annotation_on_left = "L"
+        annotation_on_right = "R"
+        if self.radiological:
+            ax.invert_xaxis()
+            annotation_on_left = "R"
+            annotation_on_right = "L"
+        ax.text(
+            0.1,
+            0.95,
+            annotation_on_left,
+            transform=ax.transAxes,
+            horizontalalignment="left",
+            verticalalignment="top",
+            size=size,
+            bbox=dict(
+                boxstyle="square,pad=0", ec=bg_color, fc=bg_color, alpha=1
+            ),
+            **kwargs,
+        )
 
-        ax.text(.9, .95, 'R',
-                transform=ax.transAxes,
-                horizontalalignment='right',
-                verticalalignment='top',
-                size=size,
-                bbox=dict(boxstyle="square,pad=0", ec=bg_color, fc=bg_color),
-                **kwargs)
+        ax.text(
+            0.9,
+            0.95,
+            annotation_on_right,
+            transform=ax.transAxes,
+            horizontalalignment="right",
+            verticalalignment="top",
+            size=size,
+            bbox=dict(boxstyle="square,pad=0", ec=bg_color, fc=bg_color),
+            **kwargs,
+        )
 
-    def draw_scale_bar(self, bg_color, size=5.0, units='cm',
-                       fontproperties=None, frameon=False, loc=4, pad=.1,
-                       borderpad=.5, sep=5, size_vertical=0, label_top=False,
-                       color='black', fontsize=None, **kwargs):
+    def draw_scale_bar(
+        self,
+        bg_color,
+        size=5.0,
+        units="cm",
+        fontproperties=None,
+        frameon=False,
+        loc=4,
+        pad=0.1,
+        borderpad=0.5,
+        sep=5,
+        size_vertical=0,
+        label_top=False,
+        color="black",
+        fontsize=None,
+        **kwargs,
+    ):
         """Add a scale bar annotation to the display.
 
         Parameters
@@ -195,13 +227,13 @@ class BaseAxes:
         if fontsize:
             fontproperties.set_size(fontsize)
         width_mm = size
-        if units == 'cm':
+        if units == "cm":
             width_mm *= 10
 
         anchor_size_bar = AnchoredSizeBar(
             axis.transData,
             width_mm,
-            f'{size:g}{units}',
+            f"{size:g}{units}",
             fontproperties=fontproperties,
             frameon=frameon,
             loc=loc,
@@ -211,18 +243,20 @@ class BaseAxes:
             size_vertical=size_vertical,
             label_top=label_top,
             color=color,
-            **kwargs)
+            **kwargs,
+        )
 
         if frameon:
             anchor_size_bar.patch.set_facecolor(bg_color)
-            anchor_size_bar.patch.set_edgecolor('none')
+            anchor_size_bar.patch.set_edgecolor("none")
         axis.add_artist(anchor_size_bar)
 
     def draw_position(self, size, bg_color, **kwargs):
         """``draw_position`` is not implemented in base class and \
         should be implemented in derived classes."""
-        raise NotImplementedError("'draw_position' should be implemented "
-                                  "in derived classes")
+        raise NotImplementedError(
+            "'draw_position' should be implemented in derived classes"
+        )
 
 
 @fill_doc
@@ -252,19 +286,20 @@ class CutAxes(BaseAxes):
 
         """
         coords = [0, 0, 0]
-        if self.direction not in ['x', 'y', 'z']:
-            raise ValueError(f'Invalid value for direction {self.direction}')
-        coords['xyz'.index(self.direction)] = self.coord
-        x_map, y_map, z_map = (int(np.round(c)) for c in
-                               coord_transform(coords[0],
-                                               coords[1],
-                                               coords[2],
-                                               np.linalg.inv(affine)))
-        if self.direction == 'y':
+        if self.direction not in ["x", "y", "z"]:
+            raise ValueError(f"Invalid value for direction {self.direction}")
+        coords["xyz".index(self.direction)] = self.coord
+        x_map, y_map, z_map = (
+            int(np.round(c))
+            for c in coord_transform(
+                coords[0], coords[1], coords[2], np.linalg.inv(affine)
+            )
+        )
+        if self.direction == "y":
             cut = np.rot90(data[:, y_map, :])
-        elif self.direction == 'x':
+        elif self.direction == "x":
             cut = np.rot90(data[x_map, :, :])
-        elif self.direction == 'z':
+        elif self.direction == "z":
             cut = np.rot90(data[:, :, z_map])
         return cut
 
@@ -286,35 +321,41 @@ class CutAxes(BaseAxes):
 
         """
         if decimals:
-            text = f'%s=%.{decimals}f'
+            text = f"%s=%.{decimals}f"
             coord = float(self.coord)
         else:
-            text = '%s=%i'
+            text = "%s=%i"
             coord = self.coord
         ax = self.ax
-        ax.text(0, 0, text % (self.direction, coord),
-                transform=ax.transAxes,
-                horizontalalignment='left',
-                verticalalignment='bottom',
-                size=size,
-                bbox=dict(boxstyle="square,pad=0",
-                          ec=bg_color, fc=bg_color, alpha=1),
-                **kwargs)
+        ax.text(
+            0,
+            0,
+            text % (self.direction, coord),
+            transform=ax.transAxes,
+            horizontalalignment="left",
+            verticalalignment="bottom",
+            size=size,
+            bbox=dict(
+                boxstyle="square,pad=0", ec=bg_color, fc=bg_color, alpha=1
+            ),
+            **kwargs,
+        )
 
 
 def _get_index_from_direction(direction):
     """Return numerical index from direction."""
-    directions = ['x', 'y', 'z']
+    directions = ["x", "y", "z"]
     try:
         # l and r are subcases of x
-        if direction in 'lr':
+        if direction in "lr":
             index = 0
         else:
             index = directions.index(direction)
     except ValueError:
         message = (
-            f'{direction} is not a valid direction. '
-            "Allowed values are 'l', 'r', 'x', 'y' and 'z'")
+            f"{direction} is not a valid direction. "
+            "Allowed values are 'l', 'r', 'x', 'y' and 'z'"
+        )
         raise ValueError(message)
     return index
 
@@ -349,8 +390,10 @@ class GlassBrainAxes(BaseAxes):
 
     """
 
-    def __init__(self, ax, direction, coord, plot_abs=True, **kwargs):
-        super().__init__(ax, direction, coord)
+    def __init__(
+        self, ax, direction, coord, plot_abs=True, radiological=False, **kwargs
+    ):
+        super().__init__(ax, direction, coord, radiological=radiological)
         self._plot_abs = plot_abs
         if ax is not None:
             object_bounds = plot_brain_schematics(ax, direction, **kwargs)
@@ -369,20 +412,22 @@ class GlassBrainAxes(BaseAxes):
             The affine of the volume.
 
         """
-        if self.direction in 'xlr':
+        if self.direction in "xlr":
             max_axis = 0
         else:
-            max_axis = '.yz'.index(self.direction)
+            max_axis = ".yz".index(self.direction)
 
         # set unselected brain hemisphere activations to 0
-        if self.direction == 'l':
-            x_center, _, _, _ = np.dot(np.linalg.inv(affine),
-                                       np.array([0, 0, 0, 1]))
-            data_selection = data[:int(x_center), :, :]
-        elif self.direction == 'r':
-            x_center, _, _, _ = np.dot(np.linalg.inv(affine),
-                                       np.array([0, 0, 0, 1]))
-            data_selection = data[int(x_center):, :, :]
+        if self.direction == "l":
+            x_center, _, _, _ = np.dot(
+                np.linalg.inv(affine), np.array([0, 0, 0, 1])
+            )
+            data_selection = data[: int(x_center), :, :]
+        elif self.direction == "r":
+            x_center, _, _, _ = np.dot(
+                np.linalg.inv(affine), np.array([0, 0, 0, 1])
+            )
+            data_selection = data[int(x_center) :, :, :]
         else:
             data_selection = data
 
@@ -410,8 +455,11 @@ class GlassBrainAxes(BaseAxes):
 
         # This work around can be removed bumping matplotlib > 2.1.0. See #1815
         # in nilearn for the invention of this work around
-        if self.direction == 'l' and data_selection.min() is np.ma.masked and \
-                not (self.ax.get_xlim()[0] > self.ax.get_xlim()[1]):
+        if (
+            self.direction == "l"
+            and data_selection.min() is np.ma.masked
+            and not (self.ax.get_xlim()[0] > self.ax.get_xlim()[1])
+        ):
             self.ax.invert_xaxis()
 
         return np.rot90(maximum_intensity_data)
@@ -432,16 +480,17 @@ class GlassBrainAxes(BaseAxes):
         xdata, ydata = marker_coords_2d.T
 
         # Allow markers only in their respective hemisphere when appropriate
-        if self.direction in 'lr':
-            if not isinstance(marker_color, str) and \
-                    not isinstance(marker_color, np.ndarray):
+        if self.direction in "lr":
+            if not isinstance(marker_color, str) and not isinstance(
+                marker_color, np.ndarray
+            ):
                 marker_color = np.asarray(marker_color)
             relevant_coords = []
             xcoords, ycoords, zcoords = marker_coords.T
             for cidx, xc in enumerate(xcoords):
-                if self.direction == 'r' and xc >= 0:
+                if self.direction == "r" and xc >= 0:
                     relevant_coords.append(cidx)
-                elif self.direction == 'l' and xc <= 0:
+                elif self.direction == "l" and xc <= 0:
                     relevant_coords.append(cidx)
             xdata = xdata[relevant_coords]
             ydata = ydata[relevant_coords]
@@ -450,23 +499,28 @@ class GlassBrainAxes(BaseAxes):
             # making any selection in 'l' or 'r' color.
             # More likely that user wants to display all nodes to be in
             # same color.
-            if not isinstance(marker_color, str) and \
-                    len(marker_color) != 1:
+            if not isinstance(marker_color, str) and len(marker_color) != 1:
                 marker_color = marker_color[relevant_coords]
 
             if not isinstance(marker_size, numbers.Number):
                 marker_size = np.asarray(marker_size)[relevant_coords]
 
-        defaults = {'marker': 'o',
-                    'zorder': 1000}
+        defaults = {"marker": "o", "zorder": 1000}
         for k, v in defaults.items():
             kwargs.setdefault(k, v)
 
-        self.ax.scatter(xdata, ydata, s=marker_size,
-                        c=marker_color, **kwargs)
+        self.ax.scatter(xdata, ydata, s=marker_size, c=marker_color, **kwargs)
 
-    def _add_lines(self, line_coords, line_values, cmap,
-                   vmin=None, vmax=None, directed=False, **kwargs):
+    def _add_lines(
+        self,
+        line_coords,
+        line_values,
+        cmap,
+        vmin=None,
+        vmax=None,
+        directed=False,
+        **kwargs,
+    ):
         """Plot lines.
 
         Parameters
@@ -525,22 +579,22 @@ class GlassBrainAxes(BaseAxes):
         value_to_color = plt.cm.ScalarMappable(norm=norm, cmap=cmap).to_rgba
 
         # Allow lines only in their respective hemisphere when appropriate
-        if self.direction in 'lr':
+        if self.direction in "lr":
             relevant_lines = []
             for lidx, line in enumerate(line_coords):
-                if self.direction == 'r':
+                if self.direction == "r":
                     if line[0, 0] >= 0 and line[1, 0] >= 0:
                         relevant_lines.append(lidx)
-                elif self.direction == 'l':
+                elif self.direction == "l":
                     if line[0, 0] < 0 and line[1, 0] < 0:
                         relevant_lines.append(lidx)
             line_coords = np.array(line_coords)[relevant_lines]
             line_values = line_values[relevant_lines]
 
-        for start_end_point_3d, line_value in zip(
-                line_coords, line_values):
-            start_end_point_2d = _coords_3d_to_2d(start_end_point_3d,
-                                                  self.direction)
+        for start_end_point_3d, line_value in zip(line_coords, line_values):
+            start_end_point_2d = _coords_3d_to_2d(
+                start_end_point_3d, self.direction
+            )
 
             color = value_to_color(line_value)
             abs_line_value = abs(line_value)
@@ -548,8 +602,11 @@ class GlassBrainAxes(BaseAxes):
             # Hacky way to put the strongest connections on top of the weakest
             # note sign does not matter hence using 'abs'
             zorder = 10 + 10 * abs_norm(abs_line_value)
-            this_kwargs = {'color': color, 'linewidth': linewidth,
-                           'zorder': zorder}
+            this_kwargs = {
+                "color": color,
+                "linewidth": linewidth,
+                "zorder": zorder,
+            }
             # kwargs should have priority over this_kwargs so that the
             # user can override the default logic
             this_kwargs.update(kwargs)
@@ -563,15 +620,18 @@ class GlassBrainAxes(BaseAxes):
                 # This can be removed once support for
                 # matplotlib pre 3.1 has been dropped.
                 if dx == dy == 0:
-                    arrow = FancyArrow(xdata[0], ydata[0],
-                                       dx, dy)
+                    arrow = FancyArrow(xdata[0], ydata[0], dx, dy)
                 else:
-                    arrow = FancyArrow(xdata[0], ydata[0],
-                                       dx, dy,
-                                       length_includes_head=True,
-                                       width=linewidth,
-                                       head_width=3 * linewidth,
-                                       **this_kwargs)
+                    arrow = FancyArrow(
+                        xdata[0],
+                        ydata[0],
+                        dx,
+                        dy,
+                        length_includes_head=True,
+                        width=linewidth,
+                        head_width=3 * linewidth,
+                        **this_kwargs,
+                    )
                 self.ax.add_patch(arrow)
             # Otherwise a line
             else:

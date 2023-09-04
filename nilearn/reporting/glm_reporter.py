@@ -438,9 +438,9 @@ def _make_headings(contrasts, title, model):
         If title is user-supplied, then subheading is empty string.
 
     """
-    if type(model) == glm.first_level.FirstLevelModel:
+    if isinstance(model, glm.first_level.FirstLevelModel):
         model_type = "First Level Model"
-    elif type(model) == glm.second_level.SecondLevelModel:
+    elif isinstance(model, glm.second_level.SecondLevelModel):
         model_type = "Second Level Model"
 
     if title:
@@ -960,8 +960,8 @@ def _stat_map_to_svg(
         )
     else:
         raise ValueError(
-            "Invalid plot type provided. Acceptable options are"
-            "'slice' or 'glass'."
+            "Invalid plot type provided. "
+            "Acceptable options are 'slice' or 'glass'."
         )
     with pd.option_context("display.precision", 2):
         _add_params_to_plot(table_details, stat_map_plot)

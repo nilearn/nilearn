@@ -453,7 +453,8 @@ def generate_fake_fmri_data_and_design(shapes,
 def write_fake_fmri_data_and_design(shapes,
                                     rk=3,
                                     affine=np.eye(4),
-                                    random_state=0):
+                                    random_state=0,
+                                    file_path=None):
     """Generate random :term:`fMRI` data \
     and design matrices and write them to disk.
 
@@ -462,18 +463,18 @@ def write_fake_fmri_data_and_design(shapes,
     shapes : :obj:`list` of :obj:`tuple`s of :obj:`int`
         A list of shapes in tuple format.
 
-    rk : :obj:`int`, optional
+    rk : :obj:`int`, default=3
         Number of columns in the design matrix to be generated.
-        Default=3.
 
-    affine : :obj:`numpy.ndarray`, optional
+    affine : :obj:`numpy.ndarray`, default=np.eye(4)
         Affine of returned images.
-        Default=np.eye(4).
 
     random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   optional
+                   default=0
         Random number generator, or seed.
-        Default=0.
+
+    file_path : :obj:`str` or :obj:`pathlib.Path`, default=None
+        Output file path.
 
     Returns
     -------
@@ -491,18 +492,26 @@ def write_fake_fmri_data_and_design(shapes,
     nilearn._utils.data_gen.generate_fake_fmri_data_and_design
 
     """
-    mask_file, fmri_files, design_files = 'mask.nii', [], []
+    if file_path is None:
+        file_path = Path.cwd()
+
+    mask_file, fmri_files, design_files = file_path / 'mask.nii', [], []
+
     rand_gen = check_random_state(random_state)
     for i, shape in enumerate(shapes):
-        fmri_files.append(f'fmri_run{i:d}.nii')
+
         data = rand_gen.randn(*shape)
         data[1:-1, 1:-1, 1:-1] += 100
+        fmri_files.append(str(file_path / f'fmri_run{i:d}.nii'))
         Nifti1Image(data, affine).to_filename(fmri_files[-1])
-        design_files.append(f'dmtx_{i:d}.csv')
+
+        design_files.append(str(file_path / f'dmtx_{i:d}.csv'))
         pd.DataFrame(rand_gen.randn(shape[3], rk),
                      columns=['', '', '']).to_csv(design_files[-1])
+
     Nifti1Image((rand_gen.rand(*shape[:3]) > .5).astype(np.int8),
                 affine).to_filename(mask_file)
+
     return mask_file, fmri_files, design_files
 
 

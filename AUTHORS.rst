@@ -56,12 +56,14 @@ Some other past or present contributors are:
 * `Alexandre Gramfort`_
 * `Alexandre Savio`_
 * `Alexis Thual`_
+* `Alisha Kodibagkar`_
 * `Amadeus Kanaan`_
 * `Ana Luisa Pinho`_
 * `Andrés Hoyos Idrobo`_
 * `Anne-Sophie Kieslinger`_
 * `Ariel Rokem`_
 * `Arthur Mensch`_
+* `Aswin Vijayan`_
 * `Audrey Duran`_
 * `Ben Cipollini`_
 * `Bertrand Thirion`_
@@ -88,6 +90,7 @@ Some other past or present contributors are:
 * `Evan Edmond`_
 * `Fabian Pedregosa`_
 * `Franz Liem`_
+* `François Paugam`_
 * `Gael Varoquaux`_
 * `Gilles de Hollander`_
 * `Greg Kiar`_
@@ -116,6 +119,7 @@ Some other past or present contributors are:
 * `Kamalakar Reddy Daddy`_
 * `Kevin Sitek`_
 * `Koen Helwegen`_
+* `Konrad Wagstyl`_
 * `Konstantin Shmelkov`_
 * `Kshitij Chawla`_
 * `Kun CHEN`_
@@ -127,8 +131,10 @@ Some other past or present contributors are:
 * `Martin Perez-Guevara`_
 * `Martin Wegrzyn`_
 * `Mathias Goncalves`_
+* `Mathieu Dugré`_
 * `Matthias Ekman`_
 * `Matthieu Joulot`_
+* `Maximilian Cosmo Sitter`_
 * `Mehdi Rahim`_
 * `Michael Eickenberg`_
 * `Michael Hanke`_
@@ -143,6 +149,7 @@ Some other past or present contributors are:
 * `Nicolas Gensollen`_
 * `Oliver Warrington`_
 * `Oscar Esteban`_
+* `Patrick Sadil`_
 * `Paul Bogdan`_
 * `Paula Sanz-Leon`_
 * `Peer Herholz`_
@@ -151,6 +158,7 @@ Some other past or present contributors are:
 * `Pierre Glaser`_
 * `Pierre-Olivier Quirion`_
 * `Pradeep Reddy Raamana`_
+* `Rahul Brito`_
 * `Raphael Meudec`_
 * `Robert Luke`_
 * `Robert Williamson`_

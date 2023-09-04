@@ -76,10 +76,9 @@ def test_are_array_identical():
     np.testing.assert_array_almost_equal(orig2, arr2, decimal=10)
 
 
-def test_as_ndarray():
-    # All test cases
-    # input dtype, input order, should copy, output dtype, output order, copied
-    test_cases = [
+@pytest.mark.parametrize(
+    "input_dtype, input_order, copy, output_dtype, output_order, was_copied",
+    [
         # no-op
         (float, "C", False, None, None, False),
         (float, "F", False, None, None, False),
@@ -126,25 +125,32 @@ def test_as_ndarray():
         (bool, "F", True, np.int8, None, True),
         (bool, "C", True, np.int8, "C", True),
         (bool, "F", True, np.int8, "F", True),
-    ]
-
+    ],
+)
+def test_as_ndarray(
+    input_dtype, input_order, copy, output_dtype, output_order, was_copied
+):
     shape = (10, 11)
-    for case in test_cases:
-        in_dtype, in_order, copy, out_dtype, out_order, copied = case
-        arr1 = np.ones(shape, dtype=in_dtype, order=in_order)
-        arr2 = as_ndarray(arr1, copy=copy, dtype=out_dtype, order=out_order)
-        assert not are_arrays_identical(arr1[0], arr2[0]) == copied, str(case)
-        if out_dtype is None:
-            assert arr2.dtype == in_dtype, str(case)
-        else:
-            assert arr2.dtype == out_dtype, str(case)
+    arr1 = np.ones(shape, dtype=input_dtype, order=input_order)
+    arr2 = as_ndarray(arr1, copy=copy, dtype=output_dtype, order=output_order)
 
-        result_order = out_order if out_order is not None else in_order
-        if result_order == "F":
-            assert arr2.flags["F_CONTIGUOUS"], str(case)
-        else:
-            assert arr2.flags["C_CONTIGUOUS"], str(case)
+    # check if nd_array copied the original array or not
+    assert are_arrays_identical(arr1[0], arr2[0]) != was_copied
 
+    if output_dtype is None:
+        assert arr2.dtype == input_dtype
+    else:
+        assert arr2.dtype == output_dtype
+
+    result_order = output_order if output_order is not None else input_order
+
+    if result_order == "F":
+        assert arr2.flags["F_CONTIGUOUS"]
+    else:
+        assert arr2.flags["C_CONTIGUOUS"]
+
+
+def test_as_ndarray_memmap():
     # memmap
     filename = os.path.join(os.path.dirname(__file__), "data", "mmap.dat")
 
@@ -197,6 +203,8 @@ def test_as_ndarray():
     assert arr2.dtype == np.int32
     assert not are_arrays_identical(arr1[0], arr2[0])
 
+
+def test_as_ndarray_more():
     # list
     # same dtype, no copy requested
     arr1 = [0, 1, 2, 3]
@@ -222,8 +230,10 @@ def test_as_ndarray():
     assert not are_arrays_identical(arr1[0], arr2[0])
 
     # Unhandled cases
-    pytest.raises(ValueError, as_ndarray, "test string")
-    pytest.raises(ValueError, as_ndarray, [], order="invalid")
+    with pytest.raises(ValueError):
+        as_ndarray("test_string")
+    with pytest.raises(ValueError):
+        as_ndarray([], order="invalid")
 
 
 def test_csv_to_array(tmp_path):
@@ -236,6 +246,7 @@ def test_csv_to_array(tmp_path):
         assert np.allclose(
             csv_to_array(filename), np.asarray([1.0, 2.0, 3.0, 4.0, 5.0])
         )
-        pytest.raises(TypeError, csv_to_array, filename, delimiters="?!")
+        with pytest.raises(TypeError):
+            csv_to_array(filename, delimiters="?!")
     finally:
         os.remove(filename)

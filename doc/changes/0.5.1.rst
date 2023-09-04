@@ -30,25 +30,25 @@ Changes
 
 - Lighting used for interactive surface plots changed; plots may look a bit different.
 
-- Function :func:`~plotting.view_connectome` default colormap is ``bwr``, consistent with function :func:`~plotting.plot_connectome`.
+- :bdg-info:`Plotting` Function :func:`~plotting.view_connectome` default colormap is ``bwr``, consistent with function :func:`~plotting.plot_connectome`.
 
-- Function :func:`~plotting.view_connectome` parameter names are consistent with function :func:`~plotting.plot_connectome`:
+- :bdg-info:`Plotting` Function :func:`~plotting.view_connectome` parameter names are consistent with function :func:`~plotting.plot_connectome`:
 
   - ``coords`` is now ``node_coord``.
   - ``marker_size`` is now ``node_size``.
   - ``cmap`` is now ``edge_cmap``.
   - ``threshold`` is now ``edge_threshold``.
 
-- Functions :func:`~plotting.view_markers` and :func:`~plotting.view_connectome` can accept different marker sizes for each node / marker.
+- :bdg-info:`Plotting` Functions :func:`~plotting.view_markers` and :func:`~plotting.view_connectome` can accept different marker sizes for each node / marker.
 
-- Function :func:`plotting.view_markers` default marker color is now ``red``, consistent with ``add_markers()``.
+- :bdg-info:`Plotting` Function :func:`plotting.view_markers` default marker color is now ``red``, consistent with ``add_markers()``.
 
-- Function :func:`plotting.view_markers` parameter names are consistent with ``add_markers()``:
+- :bdg-info:`Plotting` Function :func:`plotting.view_markers` parameter names are consistent with ``add_markers()``:
 
   - ``coords`` is now ``marker_coords``.
   - ``colors`` is now ``marker_color``.
 
-- Function :func:`~plotting.view_img_on_surf` now accepts a ``symmetric_cmap`` argument to control whether the colormap is centered around 0 and a ``vmin`` argument.
+- :bdg-info:`Plotting` Function :func:`~plotting.view_img_on_surf` now accepts a ``symmetric_cmap`` argument to control whether the colormap is centered around 0 and a ``vmin`` argument.
 
 - Users can now control the size and fontsize of colorbars in interactive surface and connectome plots, or disable the colorbar.
 
@@ -68,7 +68,7 @@ Fixes
 Known Issues
 ------------
 
-- On Python2, functions :func:`~plotting.view_connectome` and function :func:`~plotting.view_markers` do not show parameters names in function signature when using ``help()`` and similar features. Please refer to their docstrings for this information.
+- :bdg-info:`Plotting` On Python2, functions :func:`~plotting.view_connectome` and function :func:`~plotting.view_markers` do not show parameters names in function signature when using ``help()`` and similar features. Please refer to their docstrings for this information.
 
 - Plotting ``.mgz`` files in MNE is broken.
 

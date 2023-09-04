@@ -296,6 +296,8 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
             k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
         }
 
+        self.cmap = kwargs.get("cmap", "CMRmap_r")
+
     def generate_report(self):
         """Generate a report of the masker."""
         from nilearn.reporting.html_report import generate_report
@@ -357,7 +359,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         init_display = plotting.plot_img(
             img,
             black_bg=False,
-            cmap="CMRmap_r",
+            cmap=self.cmap,
         )
         plt.close()
         if mask is not None:
@@ -386,7 +388,7 @@ class NiftiMasker(BaseMasker, _utils.CacheMixin):
         final_display = plotting.plot_img(
             resampl_img,
             black_bg=False,
-            cmap="CMRmap_r",
+            cmap=self.cmap,
         )
         plt.close()
         final_display.add_contours(

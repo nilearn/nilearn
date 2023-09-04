@@ -4,7 +4,25 @@ import pandas as pd
 
 
 def _optimize_scrub(motion_outliers_index, n_scans, scrub):
-    """Remove continuous segments with fewer than a minimal segment length."""
+    """Remove continuous segments with fewer than a minimal segment length.
+
+    Parameters
+    ----------
+    motion_outliers_index : numpy.ndarray
+        Index array of shape (n_motion_outliers) indicating the volumes
+        that are motion outliers.
+
+    n_scans : int
+        Number of volumes in the functional image.
+
+    scrub : int
+        Minimal segment length. Default to 5 volumes,
+
+    Returns
+    -------
+    motion_outliers_index : numpy.ndarray
+        Index of outlier volumes.
+    """
     # Start by checking if the beginning continuous segment is fewer than
     # a minimal segment length (default to 5)
     if motion_outliers_index[0] < scrub:
@@ -39,7 +57,27 @@ def _optimize_scrub(motion_outliers_index, n_scans, scrub):
 
 
 def _extract_outlier_regressors(confounds):
-    """Separate outlier regressors from other confounds variables."""
+    """Separate outlier one-hot regressors from other confounds \
+    variables and generate a sample mask, indicates the volumes kept.
+
+    Parameters
+    ----------
+    confounds : pandas.DataFrame
+        DataFrame of confounds.
+
+    Returns
+    -------
+    sample_mask : numpy.ndarray
+        Index array of shape (n_samples) indicating the volumes
+        that are not outliers.
+
+    confounds : pandas.DataFrame
+        DataFrame of confounds without the one-hot encoders for
+        outlier regressors.
+
+    outliers : pandas.DataFrame
+        DataFrame of outlier regressors.
+    """
     outlier_cols, confounds_cols = _get_outlier_cols(confounds.columns)
     if outlier_cols:
         outliers = confounds.loc[:, outlier_cols]
@@ -52,7 +90,21 @@ def _extract_outlier_regressors(confounds):
 
 
 def _get_outlier_cols(confounds_columns):
-    """Get outlier regressor column names."""
+    """Get outlier regressor column names.
+
+    Parameters
+    ----------
+    confounds_columns : list
+        List of confounds column names.
+
+    Returns
+    -------
+    outlier_cols : list
+        List of outlier regressor column names.
+
+    confounds_cols : list
+        List of confounds column names without outlier regressors.
+    """
     outlier_cols = {
         col
         for col in confounds_columns
@@ -63,7 +115,20 @@ def _get_outlier_cols(confounds_columns):
 
 
 def _outlier_to_sample_mask(outliers):
-    """Generate sample mask from outlier regressors."""
+    """Generate sample mask from outlier regressors.
+
+    Parameters
+    ----------
+    outliers : pandas.DataFrame
+        DataFrame of outlier regressors. The shape should be
+        (number of volumes, number of outlier regressors).
+
+    Returns
+    -------
+    sample_mask : numpy.ndarray
+        Index array of shape indicating the volumes that are not
+        outliers. (number of volumes - number of outlier regressors, ).
+    """
     outliers_one_hot = outliers.copy()
     if outliers_one_hot.size == 0:  # Do not supply sample mask
         return None  # consistency with nilearn sample_mask

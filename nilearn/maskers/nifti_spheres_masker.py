@@ -398,8 +398,9 @@ class NiftiSpheresMasker(BaseMasker, CacheMixin):
             shape: (number of scans, number of spheres)
 
         """
-        return self.fit().transform(imgs, confounds=confounds,
-                                    sample_mask=sample_mask)
+        return self.fit(imgs).transform(
+            imgs, confounds=confounds, sample_mask=sample_mask
+        )
 
     def _check_fitted(self):
         if not hasattr(self, "seeds_"):

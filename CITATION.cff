@@ -52,6 +52,11 @@ authors:
     family-names: Thual
     website: https://github.com/alexisthual
     affiliation: INRIA, France
+  - given-names: Alisha
+    family-names: Kodibagkar
+    website: https://github.com/alishakodibagkar/
+    affiliation: MIT McGovern Institute, Cambridge, MA, United States
+    orcid: https://orcid.org/0000-0002-0951-242X
   - given-names: Amadeus
     family-names: Kanaan
     website: https://github.com/amadeuskanaan
@@ -70,6 +75,9 @@ authors:
   - given-names: Arthur
     family-names: Mensch
     website: https://www.amensch.fr/
+  - given-names: Aswin
+    family-names: Vijayan
+    website: https://github.com/vaswin0
   - given-names: Audrey
     family-names: Duran
     website: https://github.com/AudreyDuran
@@ -153,6 +161,9 @@ authors:
   - given-names: Franz
     family-names: Liem
     website: https://github.com/fliem
+  - given-names: François
+    family-names: Paugam
+    website: https://github.com/FrancoisPgm
   - given-names: Gael
     family-names: Varoquaux
     website: http://gael-varoquaux.info/
@@ -239,6 +250,9 @@ authors:
   - given-names: Koen
     family-names: Helwegen
     website: https://github.com/koenhelwegen
+  - given-names: Konrad
+    family-names: Wagstyl
+    website: https://github.com/kwagstyl
   - given-names: Konstantin
     family-names: Shmelkov
     website: https://github.com/kshmelkov
@@ -272,12 +286,18 @@ authors:
   - given-names: Mathias
     family-names: Goncalves
     website: https://github.com/mgxd
+  - given-names: Mathieu
+    family-names: Dugré
+    website: https://mathdugre.me
   - given-names: Matthias
     family-names: Ekman
     website: https://github.com/mekman
   - given-names: Matthieu
     family-names: Joulot
     website: https://github.com/MatthieuJoulot
+  - given-names: Maximilian Cosmo
+    family-names: Sitter
+    website: https://github.com/mcsitter
   - given-names: Mehdi
     family-names: Rahim
     website: https://github.com/mrahim
@@ -321,6 +341,11 @@ authors:
   - given-names: Oscar
     family-names: Esteban
     website: https://github.com/oesteban
+  - given-names: Patrick
+    family-names: Sadil
+    website: https://psadil.github.io/psadil
+    affiliation: Department of Biostatistics, Johns Hopkins Bloomberg School of Public
+      Health
   - given-names: Paul
     family-names: Bogdan
     website: https://github.com/paulcbogdan
@@ -347,6 +372,9 @@ authors:
   - given-names: Pradeep Reddy
     family-names: Raamana
     website: https://github.com/raamana
+  - given-names: Rahul
+    family-names: Brito
+    website: https://github.com/Rahul-Brito
   - given-names: Raphael
     family-names: Meudec
     website: https://github.com/RaphaelMeudec

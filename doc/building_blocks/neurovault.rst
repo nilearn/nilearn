@@ -30,13 +30,17 @@ collection's webpage, you can click 'Details' to see its id
 (and more). You can then download it using
 :func:`nilearn.datasets.fetch_neurovault_ids` :
 
-    >>> from nilearn.datasets import fetch_neurovault_ids
-    >>> brainpedia = fetch_neurovault_ids(collection_ids=[1952]) # doctest: +SKIP
+.. code-block:: default
+
+  from nilearn.datasets import fetch_neurovault_ids
+  brainpedia = fetch_neurovault_ids(collection_ids=[1952])
 
 Or if you want some images in particular, rather than whole
 collections :
 
-    >>> brainpedia_subset = fetch_neurovault_ids(image_ids=[32015, 32016]) # doctest: +SKIP
+.. code-block:: default
+
+  brainpedia_subset = fetch_neurovault_ids(image_ids=[32015, 32016])
 
 Selection filters
 -----------------
@@ -60,8 +64,9 @@ For example, many images on Neurovault have a "modality" field in their
 metadata.  :term:`BOLD` images should have it set to "fMRI-BOLD".
 We can ask for :term:`BOLD` images only :
 
-    >>> bold = fetch_neurovault(image_terms={'modality': 'fMRI-BOLD'}, # doctest: +SKIP
-    ... max_images=7) # doctest: +SKIP
+.. code-block:: default
+
+  bold = fetch_neurovault(image_terms={'modality': 'fMRI-BOLD'}, max_images=7)
 
 Here we set the max_images parameter to 7, so that you can try this snippet
 without waiting for a long time. To get all the images which match your
@@ -82,30 +87,34 @@ Extra keyword arguments are treated as additional image filters, so if we want
 to keep the default filters, and add the requirement that the modality should
 be "fMRI-BOLD", we can write:
 
-    >>> bold = fetch_neurovault(modality='fMRI-BOLD', max_images=7) # doctest: +SKIP
+.. code-block:: default
 
+  bold = fetch_neurovault(modality='fMRI-BOLD', max_images=7)
 
 Sometimes the selection criteria are more complex than a simple
 comparison to a single value. For example, we may also be interested
 in CBF and CBV images. In ``nilearn``, the ``dataset.neurovault`` module
 provides ``IsIn`` which makes this easy :
 
-    >>> from nilearn.datasets import neurovault
-    >>> fmri = fetch_neurovault( # doctest: +SKIP
-    ... modality=neurovault.IsIn('fMRI-BOLD', 'fMRI-CBF', 'fMRI-CBV'), # doctest: +SKIP
-    ... max_images=100) # doctest: +SKIP
+.. code-block:: default
+
+  from nilearn.datasets import neurovault
+  fmri = fetch_neurovault(modality=neurovault.IsIn('fMRI-BOLD', 'fMRI-CBF', 'fMRI-CBV'),
+                          max_images=100)
 
 We could also have used ``Contains`` :
 
-    >>> fmri = fetch_neurovault( # doctest: +SKIP
-    ... modality=neurovault.Contains('fMRI'), # doctest: +SKIP
-    ... max_images=7) # doctest: +SKIP
+.. code-block:: default
+
+  fmri = fetch_neurovault(modality=neurovault.Contains('fMRI'), max_images=7)
 
 If we need regular expressions, we can also use ``Pattern`` :
 
-    >>> fmri = fetch_neurovault( # doctest: +SKIP
-    ... modality=neurovault.Pattern('fmri(-.*)?', neurovault.re.IGNORECASE), # doctest: +SKIP
-    ... max_images=7) # doctest: +SKIP
+.. code-block:: default
+
+  fmri = fetch_neurovault(
+    modality=neurovault.Pattern('fmri(-.*)?', neurovault.re.IGNORECASE),
+    max_images=7)
 
 The complete list of such special values available in
 ``nilearn.datasets.neurovault`` is:
@@ -127,9 +136,10 @@ job for images. The default values for these parameters don't filter out
 anything.
 Using a filter rather than a dictionary, the first example becomes:
 
-    >>> bold = fetch_neurovault( # doctest: +SKIP
-    ...     image_filter=lambda meta: meta.get('modality') == 'fMRI-BOLD', # doctest: +SKIP
-    ...     image_terms={}, max_images=7) # doctest: +SKIP
+.. code-block:: default
+
+  bold = fetch_neurovault(image_filter=lambda meta: meta.get('modality') == 'fMRI-BOLD',
+                          image_terms={}, max_images=7)
 
 .. note::
 
@@ -147,8 +157,10 @@ many metadata fields - say, an image should only be kept if its metadata has
 less than 50 fields.  This cannot be done by simply comparing each key in a
 metadata dictionary to a required value, so we need to write our own filter:
 
-  >>> small_meta_images = fetch_neurovault(image_filter=lambda meta: len(meta) < 50, # doctest: +SKIP
-  ...                                      max_images=7) # doctest: +SKIP
+.. code-block:: default
+
+  small_meta_images = fetch_neurovault(image_filter=lambda meta: len(meta) < 50,
+                                       max_images=7)
 
 
 Output

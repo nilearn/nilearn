@@ -217,46 +217,9 @@ def fetch_haxby(
     )
 
 
-@fill_doc
-def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
-    """Download and load the ADHD resting-state dataset.
-
-    See :footcite:`ADHDdataset`.
-
-    Parameters
-    ----------
-    n_subjects : int, optional
-        The number of subjects to load from maximum of 40 subjects.
-        By default, 30 subjects will be loaded. If None is given,
-        all 40 subjects will be loaded. Default=30.
-    %(data_dir)s
-    %(url)s
-    %(resume)s
-    %(verbose)s
-
-    Returns
-    -------
-    data : sklearn.datasets.base.Bunch
-        Dictionary-like object, the interest attributes are :
-
-         - 'func': Paths to functional resting-state images
-         - 'phenotypic': Explanations of preprocessing steps
-         - 'confounds': CSV files containing the nuisance variables
-
-    References
-    ----------
-    .. footbibliography::
-
-    """
-    if url is None:
-        url = "https://www.nitrc.org/frs/download.php/"
-
-    # Preliminary checks and declarations
-    dataset_name = "adhd"
-    data_dir = _get_dataset_dir(
-        dataset_name, data_dir=data_dir, verbose=verbose
-    )
-    ids = [
+def adhd_ids():
+    """Return subject ids for the ADHD dataset."""
+    return [
         "0010042",
         "0010064",
         "0010128",
@@ -298,6 +261,48 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
         "9744150",
         "9750701",
     ]
+
+
+@fill_doc
+def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
+    """Download and load the ADHD resting-state dataset.
+
+    See :footcite:`ADHDdataset`.
+
+    Parameters
+    ----------
+    n_subjects : int, optional
+        The number of subjects to load from maximum of 40 subjects.
+        By default, 30 subjects will be loaded. If None is given,
+        all 40 subjects will be loaded. Default=30.
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
+
+    Returns
+    -------
+    data : sklearn.datasets.base.Bunch
+        Dictionary-like object, the interest attributes are :
+
+         - 'func': Paths to functional resting-state images
+         - 'phenotypic': Explanations of preprocessing steps
+         - 'confounds': CSV files containing the nuisance variables
+
+    References
+    ----------
+    .. footbibliography::
+
+    """
+    if url is None:
+        url = "https://www.nitrc.org/frs/download.php/"
+
+    # Preliminary checks and declarations
+    dataset_name = "adhd"
+    data_dir = _get_dataset_dir(
+        dataset_name, data_dir=data_dir, verbose=verbose
+    )
+    ids = adhd_ids()
     nitrc_ids = range(7782, 7822)
     max_subjects = len(ids)
     if n_subjects is None:
@@ -365,6 +370,51 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
         phenotypic=phenotypic,
         description=fdescr,
     )
+
+
+def miyawaki2008_file_mask():
+    """Return file listing for the miyawaki 2008 dataset."""
+    return [
+        "mask.nii.gz",
+        "LHlag0to1.nii.gz",
+        "LHlag10to11.nii.gz",
+        "LHlag1to2.nii.gz",
+        "LHlag2to3.nii.gz",
+        "LHlag3to4.nii.gz",
+        "LHlag4to5.nii.gz",
+        "LHlag5to6.nii.gz",
+        "LHlag6to7.nii.gz",
+        "LHlag7to8.nii.gz",
+        "LHlag8to9.nii.gz",
+        "LHlag9to10.nii.gz",
+        "LHV1d.nii.gz",
+        "LHV1v.nii.gz",
+        "LHV2d.nii.gz",
+        "LHV2v.nii.gz",
+        "LHV3A.nii.gz",
+        "LHV3.nii.gz",
+        "LHV4v.nii.gz",
+        "LHVP.nii.gz",
+        "RHlag0to1.nii.gz",
+        "RHlag10to11.nii.gz",
+        "RHlag1to2.nii.gz",
+        "RHlag2to3.nii.gz",
+        "RHlag3to4.nii.gz",
+        "RHlag4to5.nii.gz",
+        "RHlag5to6.nii.gz",
+        "RHlag6to7.nii.gz",
+        "RHlag7to8.nii.gz",
+        "RHlag8to9.nii.gz",
+        "RHlag9to10.nii.gz",
+        "RHV1d.nii.gz",
+        "RHV1v.nii.gz",
+        "RHV2d.nii.gz",
+        "RHV2v.nii.gz",
+        "RHV3A.nii.gz",
+        "RHV3.nii.gz",
+        "RHV4v.nii.gz",
+        "RHVP.nii.gz",
+    ]
 
 
 @fill_doc
@@ -448,50 +498,9 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     ]
 
     # Masks
-
     file_mask = [
-        "mask.nii.gz",
-        "LHlag0to1.nii.gz",
-        "LHlag10to11.nii.gz",
-        "LHlag1to2.nii.gz",
-        "LHlag2to3.nii.gz",
-        "LHlag3to4.nii.gz",
-        "LHlag4to5.nii.gz",
-        "LHlag5to6.nii.gz",
-        "LHlag6to7.nii.gz",
-        "LHlag7to8.nii.gz",
-        "LHlag8to9.nii.gz",
-        "LHlag9to10.nii.gz",
-        "LHV1d.nii.gz",
-        "LHV1v.nii.gz",
-        "LHV2d.nii.gz",
-        "LHV2v.nii.gz",
-        "LHV3A.nii.gz",
-        "LHV3.nii.gz",
-        "LHV4v.nii.gz",
-        "LHVP.nii.gz",
-        "RHlag0to1.nii.gz",
-        "RHlag10to11.nii.gz",
-        "RHlag1to2.nii.gz",
-        "RHlag2to3.nii.gz",
-        "RHlag3to4.nii.gz",
-        "RHlag4to5.nii.gz",
-        "RHlag5to6.nii.gz",
-        "RHlag6to7.nii.gz",
-        "RHlag7to8.nii.gz",
-        "RHlag8to9.nii.gz",
-        "RHlag9to10.nii.gz",
-        "RHV1d.nii.gz",
-        "RHV1v.nii.gz",
-        "RHV2d.nii.gz",
-        "RHV2v.nii.gz",
-        "RHV3A.nii.gz",
-        "RHV3.nii.gz",
-        "RHV4v.nii.gz",
-        "RHVP.nii.gz",
+        (os.path.join("mask", m), url, opts) for m in miyawaki2008_file_mask()
     ]
-
-    file_mask = [(os.path.join("mask", m), url, opts) for m in file_mask]
 
     file_names = (
         func_figure + func_random + label_figure + label_random + file_mask
@@ -1478,57 +1487,9 @@ def fetch_megatrawls_netmats(
     )
 
 
-@fill_doc
-def fetch_surf_nki_enhanced(
-    n_subjects=10, data_dir=None, url=None, resume=True, verbose=1
-):
-    """Download and load the NKI enhanced resting-state dataset, \
-    preprocessed and projected to the fsaverage5 space surface.
-
-    See :footcite:`Nooner2012`.
-
-    Direct download link :footcite:`NKIdataset`.
-
-    .. versionadded:: 0.3
-
-    Parameters
-    ----------
-    n_subjects : int, optional
-        The number of subjects to load from maximum of 102 subjects.
-        By default, 10 subjects will be loaded. If None is given,
-        all 102 subjects will be loaded. Default=10.
-    %(data_dir)s
-    %(url)s
-    %(resume)s
-    %(verbose)s
-
-    Returns
-    -------
-    data : sklearn.datasets.base.Bunch
-        Dictionary-like object, the interest attributes are :
-
-        - 'func_left': Paths to Gifti files containing resting state
-                        time series left hemisphere
-        - 'func_right': Paths to Gifti files containing resting state
-                         time series right hemisphere
-        - 'phenotypic': array containing tuple with subject ID, age,
-                         dominant hand and sex for each subject.
-        - 'description': data description of the release and references.
-
-    References
-    ----------
-    .. footbibliography::
-
-    """
-    if url is None:
-        url = "https://www.nitrc.org/frs/download.php/"
-
-    # Preliminary checks and declarations
-    dataset_name = "nki_enhanced_surface"
-    data_dir = _get_dataset_dir(
-        dataset_name, data_dir=data_dir, verbose=verbose
-    )
-    ids = [
+def nki_ids():
+    """Return the subject ids of the NKI dataset."""
+    return [
         "A00028185",
         "A00033747",
         "A00035072",
@@ -1633,7 +1594,60 @@ def fetch_surf_nki_enhanced(
         "A00056949",
     ]
 
+
+@fill_doc
+def fetch_surf_nki_enhanced(
+    n_subjects=10, data_dir=None, url=None, resume=True, verbose=1
+):
+    """Download and load the NKI enhanced resting-state dataset, \
+    preprocessed and projected to the fsaverage5 space surface.
+
+    See :footcite:`Nooner2012`.
+
+    Direct download link :footcite:`NKIdataset`.
+
+    .. versionadded:: 0.3
+
+    Parameters
+    ----------
+    n_subjects : int, optional
+        The number of subjects to load from maximum of 102 subjects.
+        By default, 10 subjects will be loaded. If None is given,
+        all 102 subjects will be loaded. Default=10.
+    %(data_dir)s
+    %(url)s
+    %(resume)s
+    %(verbose)s
+
+    Returns
+    -------
+    data : sklearn.datasets.base.Bunch
+        Dictionary-like object, the interest attributes are :
+
+        - 'func_left': Paths to Gifti files containing resting state
+                        time series left hemisphere
+        - 'func_right': Paths to Gifti files containing resting state
+                         time series right hemisphere
+        - 'phenotypic': array containing tuple with subject ID, age,
+                         dominant hand and sex for each subject.
+        - 'description': data description of the release and references.
+
+    References
+    ----------
+    .. footbibliography::
+
+    """
+    if url is None:
+        url = "https://www.nitrc.org/frs/download.php/"
+
+    # Preliminary checks and declarations
+    dataset_name = "nki_enhanced_surface"
+    data_dir = _get_dataset_dir(
+        dataset_name, data_dir=data_dir, verbose=verbose
+    )
+
     nitrc_ids = range(8260, 8464)
+    ids = nki_ids()
     max_subjects = len(ids)
     if n_subjects is None:
         n_subjects = max_subjects

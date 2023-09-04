@@ -190,6 +190,8 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
 
         self.keep_masked_maps = keep_masked_maps
 
+        self.cmap = kwargs.get("cmap", "CMRmap_r")
+
     def generate_report(self, displayed_maps=10):
         """Generate an HTML report for the current ``NiftiMapsMasker`` object.
 
@@ -343,7 +345,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
                 img,
                 cut_coords=cut_coords[idx],
                 black_bg=False,
-                cmap="CMRmap_r",
+                cmap=self.cmap,
             )
             display.add_overlay(
                 image.index_img(maps_image, idx),
@@ -356,8 +358,15 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
-        All parameters are unused, they are for scikit-learn compatibility.
+        Parameters
+        ----------
+        imgs : :obj:`list` of Niimg-like objects
+            See :ref:`extracting_data`.
+            Image data passed to the reporter.
 
+        y : None
+            This parameter is unused. It is solely included for scikit-learn
+            compatibility.
         """
         # Load images
         repr = _utils._repr_niimgs(self.mask_img, shorten=(not self.verbose))
@@ -439,7 +448,7 @@ class NiftiMapsMasker(BaseMasker, _utils.CacheMixin):
 
     def fit_transform(self, imgs, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction."""
-        return self.fit().transform(
+        return self.fit(imgs).transform(
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 

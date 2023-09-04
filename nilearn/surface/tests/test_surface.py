@@ -544,8 +544,8 @@ def test_sample_locations():
         true_locations = np.asarray([vertex + offsets for vertex in mesh[0]])
         assert_array_equal(locations.shape, true_locations.shape)
         assert_array_almost_equal(true_locations, locations)
-    pytest.raises(ValueError, surface._sample_locations,
-                  mesh, affine, 1., kind='bad_kind')
+    with pytest.raises(ValueError):
+        surface._sample_locations(mesh, affine, 1., kind='bad_kind')
 
 
 @pytest.mark.parametrize("depth", [(0.,), (-1.,), (1.,), (-1., 0., .5)])
@@ -562,24 +562,30 @@ def test_sample_locations_depth(depth, n_points):
 
 @pytest.mark.parametrize(
     "depth,n_points",
-    [(None, 1), (None, 7), ([0.], 8), ([-1.], 8),
-     ([1.], 8), ([-1., 0., .5], 8)])
+    [(None, 1),
+     (None, 7),
+     ([0.], 8),
+     ([-1.], 8),
+     ([1.], 8),
+     ([-1., 0., .5], 8)])
 def test_sample_locations_between_surfaces(depth, n_points):
     inner = flat_mesh(5, 7)
     outer = inner[0] + [0., 0., 1.], inner[1]
+
     locations = surface._sample_locations_between_surfaces(
         outer, inner, np.eye(4), n_points=n_points, depth=depth)
+
     if depth is None:
-        # can be simplified when we drop support for np 1.15
-        # (broadcasting linspace)
         expected = np.asarray(
             [np.linspace(b, a, n_points)
              for (a, b) in zip(inner[0].ravel(), outer[0].ravel())])
         expected = np.rollaxis(
             expected.reshape((*outer[0].shape, n_points)), 2, 1)
+
     else:
         offsets = ([[0., 0., - z] for z in depth])
         expected = np.asarray([vertex + offsets for vertex in outer[0]])
+
     assert np.allclose(locations, expected)
 
 
@@ -649,8 +655,10 @@ def test_projection_matrix():
     assert_array_almost_equal(proj.sum(axis=1)[:7], np.zeros(7))
     assert_array_almost_equal(proj.sum(axis=1)[7:], np.ones(proj.shape[0] - 7))
     # mask and img should have the same shape
-    pytest.raises(ValueError, surface._projection_matrix,
-                  mesh, np.eye(4), img.shape, mask=np.ones((3, 3, 2)))
+    with pytest.raises(ValueError):
+        surface._projection_matrix(
+            mesh, np.eye(4), img.shape, mask=np.ones((3, 3, 2))
+        )
 
 
 def test_sampling_affine():

@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn.conftest import MNI_AFFINE
+from nilearn.conftest import _affine_mni
 from nilearn.image.resampling import coord_transform
 from nilearn.plotting import plot_roi
 
@@ -15,13 +15,15 @@ def demo_plot_roi(**kwargs):
     data = np.zeros((91, 109, 91))
     # Color a asymmetric rectangle around Broca area.
     x, y, z = -52, 10, 22
-    x_map, y_map, z_map = coord_transform(x, y, z, np.linalg.inv(MNI_AFFINE))
+    x_map, y_map, z_map = coord_transform(
+        x, y, z, np.linalg.inv(_affine_mni())
+    )
     data[
         int(x_map) - 5 : int(x_map) + 5,
         int(y_map) - 3 : int(y_map) + 3,
         int(z_map) - 10 : int(z_map) + 10,
     ] = 1
-    img = Nifti1Image(data, MNI_AFFINE)
+    img = Nifti1Image(data, _affine_mni())
     return plot_roi(img, title="Broca's area", **kwargs)
 
 
@@ -61,9 +63,9 @@ def test_plot_roi_view_type_error():
         demo_plot_roi(view_type="flled")
 
 
-def test_demo_plot_roi_output_file(tmpdir):
+def test_demo_plot_roi_output_file(tmp_path):
     """Tests plot_roi file saving capabilities."""
-    filename = str(tmpdir.join("test.png"))
+    filename = tmp_path / "test.png"
     with open(filename, "wb") as fp:
         out = demo_plot_roi(output_file=fp)
     assert out is None

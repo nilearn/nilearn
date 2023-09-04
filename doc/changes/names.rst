@@ -20,6 +20,8 @@
 
 .. _Alexis Thual: https://github.com/alexisthual
 
+.. _Alisha Kodibagkar: https://github.com/alishakodibagkar/
+
 .. _Amadeus Kanaan: https://github.com/amadeuskanaan
 
 .. _Ana Luisa Pinho: https://github.com/alpinho
@@ -31,6 +33,8 @@
 .. _Ariel Rokem: http://arokem.org/
 
 .. _Arthur Mensch: https://www.amensch.fr/
+
+.. _Aswin Vijayan: https://github.com/vaswin0
 
 .. _Audrey Duran: https://github.com/AudreyDuran
 
@@ -83,6 +87,8 @@
 .. _Fabian Pedregosa: https://github.com/fabianp
 
 .. _Franz Liem: https://github.com/fliem
+
+.. _François Paugam: https://github.com/FrancoisPgm
 
 .. _Gael Varoquaux: http://gael-varoquaux.info/
 
@@ -140,6 +146,8 @@
 
 .. _Koen Helwegen: https://github.com/koenhelwegen
 
+.. _Konrad Wagstyl: https://github.com/kwagstyl
+
 .. _Konstantin Shmelkov: https://github.com/kshmelkov
 
 .. _Kshitij Chawla: https://github.com/kchawla-pi
@@ -162,9 +170,13 @@
 
 .. _Mathias Goncalves: https://github.com/mgxd
 
+.. _Mathieu Dugré: https://mathdugre.me
+
 .. _Matthias Ekman: https://github.com/mekman
 
 .. _Matthieu Joulot: https://github.com/MatthieuJoulot
+
+.. _Maximilian Cosmo Sitter: https://github.com/mcsitter
 
 .. _Mehdi Rahim: https://github.com/mrahim
 
@@ -194,6 +206,8 @@
 
 .. _Oscar Esteban: https://github.com/oesteban
 
+.. _Patrick Sadil: https://psadil.github.io/psadil
+
 .. _Paul Bogdan: https://github.com/paulcbogdan
 
 .. _Paula Sanz-Leon: https://github.com/pausz
@@ -209,6 +223,8 @@
 .. _Pierre-Olivier Quirion: https://github.com/poquirion
 
 .. _Pradeep Reddy Raamana: https://github.com/raamana
+
+.. _Rahul Brito: https://github.com/Rahul-Brito
 
 .. _Raphael Meudec: https://github.com/RaphaelMeudec
 
