@@ -815,6 +815,7 @@ def test_plot_surf_roi_error(engine):
     "kwargs", [{"vmin": 2}, {"vmin": 2, "threshold": 5}, {"threshold": 5}]
 )
 def test_plot_surf_roi_colorbar_vmin_equal_across_engines(kwargs):
+    """See issue https://github.com/nilearn/nilearn/issues/3944"""
     if not PLOTLY_INSTALLED:
         pytest.skip("Plotly is not installed; required for this test.")
     mesh = generate_surf()
