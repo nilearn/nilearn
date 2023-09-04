@@ -340,6 +340,15 @@ def test_signals_extraction_with_labels_without_mask(
         assert_almost_equal(signals_r, signals)
         assert labels_r == list(range(1, 9))
 
+
+def test_signals_extraction_with_labels_without_mask_return_masked_atlas(
+    signals, labels_data, labels_img
+):
+    """Test if the returned masked_atlas is correct in \
+    conversion between signals and images \
+    using regions defined by labels."""
+    data_img = signals_to_img_labels(signals=signals, labels_img=labels_img)
+
     # test return_masked_atlas
     signals_r, labels_r, masked_atlas_r = img_to_signals_labels(
         imgs=data_img, labels_img=labels_img,
@@ -401,6 +410,17 @@ def test_signals_extraction_with_labels_with_mask(
 
     assert_almost_equal(signals_r, signals)
     assert labels_r == list(range(1, 9))
+
+
+def test_signals_extraction_with_labels_with_mask_return_masked_atlas(
+    signals, labels_img, labels_data, mask_img
+):
+    """Test if the returned masked_atlas is correct in \
+    conversion between signals and images \
+    using regions defined by labels."""
+    data_img = signals_to_img_labels(
+        signals=signals, labels_img=labels_img, mask_img=mask_img
+    )
 
     # test return_masked_atlas
     # create a mask_img with only 3 regions
