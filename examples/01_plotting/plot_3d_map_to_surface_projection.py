@@ -134,13 +134,13 @@ labels = list(regions_dict.values())
 ##############################################################################
 # Display outlines of the regions of interest on top of a statistical map
 # -----------------------------------------------------------------------
-# 
-# Regions can be outlined using both engines. 
+#
+# Regions can be outlined using both engines.
 
 figure = plotting.plot_surf_stat_map(fsaverage.infl_right,
                                      texture, hemi='right',
                                      title='Surface right hemisphere',
-                                     colorbar=True, 
+                                     colorbar=True,
                                      threshold=1.,
                                      bg_on_data=True,
                                      bg_map=fsaverage.sulc_right)
@@ -152,15 +152,15 @@ plotting.plot_surf_contours(fsaverage.infl_right, parcellation, labels=labels,
 plotting.show()
 
 ##############################################################################
-# The plotly engine allows for enhanced customization of the contours. In 
-# particular, the lines' width can be modified. 
+# The plotly engine allows for enhanced customization of the contours. In
+# particular, the lines' width can be modified.
 #
-# Note that the contours are added with a method of the object that is 
-# returned by :func:`~nilearn.plotting.plot_surf_stat_map`:  
+# Note that the contours are added with a method of the object that is
+# returned by :func:`~nilearn.plotting.plot_surf_stat_map`:
 # :meth:`~nilearn.plotting.displays.PlotlySurfaceFigure.add_contours`.
 
 figure = plotting.plot_surf_stat_map(fsaverage.infl_right,
-                                     texture, 
+                                     texture,
                                      hemi='right',
                                      title='Surface right hemisphere',
                                      colorbar=True,
@@ -173,9 +173,9 @@ figure.add_contours(roi_map=parcellation,
                     levels=regions_indices,
                     labels=labels,
                     lines=[
-                        {"color": "green", "width": 10}, 
+                        {"color": "green", "width": 10},
                         {"color": "purple"}
-                        ]
+                    ]
                     )
 
 figure.show()
