@@ -170,9 +170,12 @@ figure = plotting.plot_surf_stat_map(fsaverage.infl_right,
                                      engine="plotly")
 
 figure.add_contours(roi_map=parcellation,
-                    levels=regions_indices, 
+                    levels=regions_indices,
                     labels=labels,
-                    lines=[{"color": "green", "width": 10}, {"color": "purple"}]
+                    lines=[
+                        {"color": "green", "width": 10}, 
+                        {"color": "purple"}
+                        ]
                     )
 
 figure.show()
