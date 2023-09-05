@@ -84,24 +84,8 @@ def check_events(events):
             "Events should be a Pandas DataFrame. "
             f"A {type(events)} was provided instead."
         )
-    # Column checks
-    for col_name in ["onset", "duration"]:
-        if col_name not in events.columns:
-            raise ValueError(
-                f"The provided events data has no {col_name} column."
-            )
-        if events[col_name].isnull().any():
-            raise ValueError(
-                f"The following column must not contain nan values: {col_name}"
-            )
-        # Make sure we have a numeric type for duration
-        if not is_numeric_dtype(events[col_name]):
-            try:
-                events = events.astype({col_name: float})
-            except ValueError as e:
-                raise ValueError(
-                    f"Could not cast {col_name} to float in events data."
-                ) from e
+
+    events = _check_columns(events)
 
     events_copy = events.copy()
 
@@ -120,6 +104,28 @@ def check_events(events):
     duration = cleaned_events["duration"].values
     modulation = cleaned_events["modulation"].values
     return trial_type, onset, duration, modulation
+
+
+def _check_columns(events):
+    # Column checks
+    for col_name in ["onset", "duration"]:
+        if col_name not in events.columns:
+            raise ValueError(
+                f"The provided events data has no {col_name} column."
+            )
+        if events[col_name].isnull().any():
+            raise ValueError(
+                f"The following column must not contain nan values: {col_name}"
+            )
+        # Make sure we have a numeric type for duration
+        if not is_numeric_dtype(events[col_name]):
+            try:
+                events = events.astype({col_name: float})
+            except ValueError as e:
+                raise ValueError(
+                    f"Could not cast {col_name} to float in events data."
+                ) from e
+    return events
 
 
 def _handle_missing_trial_types(events):
