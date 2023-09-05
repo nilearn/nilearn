@@ -121,16 +121,13 @@ def test_colorscale_symmetric_cmap(vmin, vmax):
 
 
 @pytest.fixture
-def expected_vmin_vmax(values, vmax, vmin, threshold):
+def expected_vmin_vmax(values, vmax, vmin):
     """Returns expected vmin and vmax."""
-    if threshold is None:
-        if vmax is None:
-            return (min(values), max(values))
-        if min(values) < 0:
-            return (-vmax, vmax)
-        return (min(values), vmax) if vmin is None else (vmin, vmax)
-    else:
-        return (0, vmax)
+    if vmax is None:
+        return (min(values), max(values))
+    if min(values) < 0:
+        return (-vmax, vmax)
+    return (min(values), vmax) if vmin is None else (vmin, vmax)
 
 
 @pytest.mark.parametrize(

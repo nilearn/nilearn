@@ -811,6 +811,28 @@ def test_plot_surf_roi_error(engine):
         plot_surf_roi(mesh, roi_map=roi_idx, engine=engine)
 
 
+@pytest.mark.parametrize(
+    "kwargs", [{"vmin": 2}, {"vmin": 2, "threshold": 5}, {"threshold": 5}]
+)
+def test_plot_surf_roi_colorbar_vmin_equal_across_engines(kwargs):
+    """See issue https://github.com/nilearn/nilearn/issues/3944"""
+    if not PLOTLY_INSTALLED:
+        pytest.skip("Plotly is not installed; required for this test.")
+    mesh = generate_surf()
+    roi_map = np.arange(0, len(mesh[0]))
+
+    mpl_plot = plot_surf_roi(
+        mesh, roi_map=roi_map, colorbar=True, engine="matplotlib", **kwargs
+    )
+    plotly_plot = plot_surf_roi(
+        mesh, roi_map=roi_map, colorbar=True, engine="plotly", **kwargs
+    )
+    assert (
+        int(mpl_plot.axes[-1].get_yticklabels()[0].get_text())
+        == plotly_plot.figure.data[1]["cmin"]
+    )
+
+
 def test_plot_img_on_surf_hemispheres_and_orientations(img_3d_mni):
     nii = img_3d_mni
     # Check that all combinations of 1D or 2D hemis and orientations work.
