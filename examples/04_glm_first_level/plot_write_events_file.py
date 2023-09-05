@@ -49,7 +49,6 @@ trial_type_idx = [
     7, 1, 0, 0, 4, 1, 9, 8, 4, 9, 9
 ]
 # fmt: on
-trial_type_idx = trial_type_idx
 
 # %%
 # We may want to map these indices to explicit condition names.
