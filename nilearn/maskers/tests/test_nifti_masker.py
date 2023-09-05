@@ -28,11 +28,11 @@ from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import _filter_and_mask
 
 
-def test_auto_mask():
+def test_auto_mask(shape_3d_default, affine_eye):
     """Perform a smoke test on the auto-mask option."""
-    data = np.zeros((9, 9, 9))
+    data = np.zeros(shape_3d_default)
     data[3:-3, 3:-3, 3:-3] = 10
-    img = Nifti1Image(data, np.eye(4))
+    img = Nifti1Image(data, affine_eye)
     masker = NiftiMasker()
     # Smoke test the fit
     masker.fit(img)
@@ -48,44 +48,45 @@ def test_auto_mask():
         masker2.transform(img)
 
 
-def test_detrend():
+def test_detrend(shape_3d_default, affine_eye):
     """Check that detrending doesn't do something stupid with 3D images."""
-    data = np.zeros((9, 9, 9))
+    data = np.zeros(shape_3d_default)
     data[3:-3, 3:-3, 3:-3] = 10
-    img = Nifti1Image(data, np.eye(4))
+    img = Nifti1Image(data, affine_eye)
     mask = data.astype("uint8")
-    mask_img = Nifti1Image(mask, np.eye(4))
+    mask_img = Nifti1Image(mask, affine_eye)
 
     # Smoke test the fit
     masker = NiftiMasker(mask_img=mask_img, detrend=True)
     X = masker.fit_transform(img)
+
     assert np.any(X != 0)
 
 
 @pytest.mark.parametrize("y", [None, np.ones((9, 9, 9))])
-def test_fit_transform(y):
+def test_fit_transform(y, affine_eye):
     """Check fit_transform of BaseMasker with several input args."""
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
-    img = Nifti1Image(data, np.eye(4))
+    img = Nifti1Image(data, affine_eye)
     mask = data.astype("uint8")
 
     # Smoke test the fit
-
-    for mask_img in [Nifti1Image(mask, np.eye(4)), None]:
+    for mask_img in [Nifti1Image(mask, affine_eye), None]:
         masker = NiftiMasker(mask_img=mask_img)
         X = masker.fit_transform(X=img, y=y)
         assert np.any(X != 0)
 
 
-def test_fit_transform_warning():
+def test_fit_transform_warning(affine_eye):
     data = np.zeros((9, 9, 9))
     data[3:-3, 3:-3, 3:-3] = 10
-    img = Nifti1Image(data, np.eye(4))
+    img = Nifti1Image(data, affine_eye)
     y = np.ones((9, 9, 9))
     mask = data.astype("uint8")
-    mask_img = Nifti1Image(mask, np.eye(4))
+    mask_img = Nifti1Image(mask, affine_eye)
     masker = NiftiMasker(mask_img=mask_img)
+
     with pytest.warns(
         UserWarning,
         match="Generation of a mask has been requested .*"
