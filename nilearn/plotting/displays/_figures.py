@@ -125,10 +125,11 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         Parameters
         ----------
-        roi_map : :obj:`str` or :class:`numpy.ndarray` or :obj:`list` of
-            :class:`numpy.ndarray`. ROI map to be displayed on the surface
+        roi_map : :obj:`str` or :class:`numpy.ndarray` or :obj:`list` of \
+                  :class:`numpy.ndarray`
+            ROI map to be displayed on the surface
             mesh, can be a file (valid formats are .gii, .mgz, .nii,
-            .nii.gz, or Freesurfer specific files such as .annot or .label),
+            .nii.gz, or FreeSurfer specific files such as .annot or .label),
             or a Numpy array with a value for each vertex of the surf_mesh.
             The value at each vertex one inside the ROI and zero inside ROI,
             or an :obj:`int` giving the label number for atlases.
@@ -143,11 +144,11 @@ class PlotlySurfaceFigure(SurfaceFigure):
             Provide :obj:`None` as list entry to skip showing the label of
             that region. If :obj:`None`, no labels are used.
 
-        lines : :obj:`list` of :obj:`dict` giving the properties of the
-            contours, or :obj:`None`, default=None. For valid keys, see
-            :attr:`plotly.graph_objects.Scatter3d.line`. If length 1, the
-            properties defined in that element will be used to draw all
-            requested contours.
+        lines : :obj:`list` of :obj:`dict` giving the properties of the \
+                contours, or :obj:`None`, default=None
+            For valid keys, see :attr:`plotly.graph_objects.Scatter3d.line`.
+            If length 1, the properties defined in that element will be used
+            to draw all requested contours.
         """
         if levels is None:
             levels = np.unique(roi_map)
@@ -189,13 +190,14 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         Parameters
         ----------
-        parc_idx : :class:`numpy.ndarray`, indices of the vertices of the
-            region to be plotted.
+        parc_idx : :class:`numpy.ndarray`
+            Indices of the vertices of the region to be plotted.
 
         Returns
         -------
-        data : :class:`numpy.ndarray` (n_vertices, s) x,y,z coordinates of
-            vertices that trace region of interest.
+        data : :class:`numpy.ndarray`
+             (n_vertices, s) x,y,z coordinates of vertices that trace region
+             of interest.
 
         """
         faces = np.vstack(
