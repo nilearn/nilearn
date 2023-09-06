@@ -10,7 +10,7 @@ from matplotlib.figure import Figure
 from numpy.testing import assert_array_equal
 
 from nilearn.datasets import fetch_surf_fsaverage
-from nilearn.plotting.displays import PlotlySurfaceFigure
+from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
 from nilearn.plotting.surf_plotting import (
     VALID_HEMISPHERES,
     VALID_VIEWS,
@@ -336,6 +336,14 @@ def test_value_error_get_verticies_on_edge():
                        match=("Vertices in parcellation do not "
                               "form region.")):
         figure._get_vertices_on_edge([91])
+
+
+@pytest.mark.skipif(not PLOTLY_INSTALLED,
+                    reason='Plotly is not installed; required for this test.')
+def test_surface_figure_add_contours_raises_not_implemented():
+    figure = SurfaceFigure()
+    with pytest.raises(NotImplementedError):
+        figure.add_contours()
 
 
 @pytest.mark.skipif(not PLOTLY_INSTALLED,
