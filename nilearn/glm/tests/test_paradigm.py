@@ -16,10 +16,13 @@ from nilearn._utils.data_gen import basic_paradigm
 from nilearn.glm.first_level import check_events
 
 from ._utils import (
-    _block_paradigm,
-    _duplicate_events_paradigm,
-    _modulated_block_paradigm,
-    _modulated_event_paradigm,
+    block_paradigm,
+    design_with_nan_durations,
+    design_with_nan_onsets,
+    design_with_null_durations,
+    duplicate_events_paradigm,
+    modulated_block_paradigm,
+    modulated_event_paradigm,
 )
 
 
@@ -92,7 +95,11 @@ def test_check_events_warnings():
     # An unexpected field is provided
     events["foo"] = np.zeros(len(events))
     with pytest.warns(
-        UserWarning, match="Unexpected column 'foo' in events data."
+        UserWarning,
+        match=(
+            "The following unexpected columns "
+            "in events data will be ignored: foo"
+        ),
     ):
         trial_type2, onset2, duration2, modulation2 = check_events(events)
 
@@ -107,7 +114,7 @@ def test_duplicate_events():
     duplicate events.
 
     """
-    events = _duplicate_events_paradigm()
+    events = duplicate_events_paradigm()
 
     # Check that a warning is given to the user
     with pytest.warns(UserWarning, match="Duplicated events were detected."):
@@ -131,9 +138,9 @@ def write_events(events, tmpdir):
 @pytest.mark.parametrize(
     "events",
     [
-        _block_paradigm(),
-        _modulated_event_paradigm(),
-        _modulated_block_paradigm(),
+        block_paradigm(),
+        modulated_event_paradigm(),
+        modulated_block_paradigm(),
         basic_paradigm(),
     ],
 )
@@ -143,3 +150,27 @@ def test_read_events(events, tmp_path):
     read_paradigm = pd.read_table(csvfile)
 
     assert (read_paradigm["onset"] == events["onset"]).all()
+
+
+def test_check_events_warnings_null_duration():
+    """Test that events with null duration throw a warning."""
+    with pytest.warns(
+        UserWarning,
+        match="The following conditions contain events with null duration",
+    ):
+        check_events(design_with_null_durations())
+
+
+@pytest.mark.parametrize(
+    "design",
+    [
+        design_with_nan_durations,
+        design_with_nan_onsets,
+    ],
+)
+def test_check_events_nan_designs(design):
+    """Test that events with nan values."""
+    with pytest.raises(
+        ValueError, match=("The following column must not contain nan values:")
+    ):
+        check_events(design())

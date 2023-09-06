@@ -58,6 +58,7 @@ Enhancements
 Changes
 -------
 
+- `nilearn.glm.first_level.experimental_paradigm.check_events` will now throw a warning if some events have a 0 second duration and will throw an error if an event has ``NaN`` onset or duration (:gh:`3943` by `Rémi Gau`_).
 - Removed old files and test code from deprecated datasets COBRE and NYU resting state (:gh:`3743` by `Michelle Wang`_).
 - :bdg-secondary:`Maint` PEP8 and isort compliance extended to the whole nilearn codebase. (:gh:`3538`, :gh:`3566`, :gh:`3548`, :gh:`3556`, :gh:`3601`, :gh:`3609`, :gh:`3646`, :gh:`3650`, :gh:`3647`, :gh:`3640`, :gh:`3615`, :gh:`3614`, :gh:`3648`,  :gh:`#3651`  by `Rémi Gau`_).
 - :bdg-secondary:`Maint` Finish applying black formatting to most of the codebase. (:gh:`3836`, :gh:`3833`, :gh:`3827`, :gh:`3810`, :gh:`3803`, :gh:`3802`, :gh:`3795`, :gh:`3790`, :gh:`3783`, :gh:`3777` by `Rémi Gau`_).
