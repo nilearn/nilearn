@@ -328,11 +328,11 @@ def test_instantiation_error_plotly_surface_figure(input_obj):
 
 
 @pytest.mark.skipif(not PLOTLY_INSTALLED,
-                    reason='Plotly is not installed; required for this test.')
-def test_value_error_get_verticies_on_edge():
+                    reason="Plotly is not installed; required for this test.")
+def test_value_error_get_vertices_on_edge():
     """
-    Test that calling _get_verticies_on_edge raises a ValueError when called
-    with with indicies that do not form a region.
+    Test that calling _get_vertices_on_edge raises a ValueError when called
+    with with indices that do not form a region.
     """
     mesh = generate_surf()
     figure = plot_surf(mesh, engine="plotly")
@@ -343,7 +343,7 @@ def test_value_error_get_verticies_on_edge():
 
 
 @pytest.mark.skipif(not PLOTLY_INSTALLED,
-                    reason='Plotly is not installed; required for this test.')
+                    reason="Plotly is not installed; required for this test.")
 def test_surface_figure_add_contours_raises_not_implemented():
     """
     Test that calling add_contours method of SurfaceFigure raises a
@@ -355,7 +355,7 @@ def test_surface_figure_add_contours_raises_not_implemented():
 
 
 @pytest.mark.skipif(not PLOTLY_INSTALLED,
-                    reason='Plotly is not installed; required for this test.')
+                    reason="Plotly is not installed; required for this test.")
 @pytest.mark.parametrize(
     "data,expected",
     [
@@ -381,8 +381,8 @@ def test_surface_figure_add_contours_raises_not_implemented():
         )
     ]
 )
-def test_get_verticies_on_edge(data, expected):
-    """Test that _get_vertices_on_edge method returns expected verticies."""
+def test_get_vertices_on_edge(data, expected):
+    """Test that _get_vertices_on_edge method returns expected vertices."""
     # tetrahedron
     coords = np.array(
         [
@@ -405,7 +405,7 @@ def test_get_verticies_on_edge(data, expected):
 
 
 @pytest.mark.skipif(not PLOTLY_INSTALLED,
-                    reason='Plotly is not installed; required for this test.')
+                    reason="Plotly is not installed; required for this test.")
 @pytest.mark.parametrize(
     "levels,labels",
     [
@@ -434,7 +434,7 @@ def test_value_error_add_contours_levels_labels(levels, labels):
 
 
 @pytest.mark.skipif(not PLOTLY_INSTALLED,
-                    reason='Plotly is not installed; required for this test.')
+                    reason="Plotly is not installed; required for this test.")
 @pytest.mark.parametrize(
     "levels,lines",
     [
@@ -463,7 +463,7 @@ def test_value_error_add_contours_levels_lines(levels, lines):
 
 
 @pytest.mark.skipif(not PLOTLY_INSTALLED,
-                    reason='Plotly is not installed; required for this test.')
+                    reason="Plotly is not installed; required for this test.")
 def test_add_contours():
     """Test that add_contours updates data in PlotlySurfaceFigure."""
     mesh, roi_map, _ = _generate_data_test_surf_roi()
@@ -475,7 +475,7 @@ def test_add_contours():
 
 
 @pytest.mark.skipif(not PLOTLY_INSTALLED,
-                    reason='Plotly is not installed; required for this test.')
+                    reason="Plotly is not installed; required for this test.")
 def test_add_contours_has_name():
     """Test that contours added to a PlotlySurfaceFigure can be named."""
     mesh, roi_map, _ = _generate_data_test_surf_roi()
@@ -485,10 +485,10 @@ def test_add_contours_has_name():
 
 
 @pytest.mark.skipif(not PLOTLY_INSTALLED,
-                    reason='Plotly is not installed; required for this test.')
+                    reason="Plotly is not installed; required for this test.")
 def test_add_contours_lines_duplicated():
     """
-    Test that the specificiations of length 1 line provided to add_contours
+    Test that the specifications of length 1 line provided to add_contours
     are duplicated to all requested contours.
     """
     mesh, roi_map, _ = _generate_data_test_surf_roi()
@@ -499,7 +499,7 @@ def test_add_contours_lines_duplicated():
 
 
 @pytest.mark.skipif(not PLOTLY_INSTALLED,
-                    reason='Plotly is not installed; required for this test.')
+                    reason="Plotly is not installed; required for this test.")
 @pytest.mark.parametrize(
     "key,value",
     [
@@ -509,7 +509,7 @@ def test_add_contours_lines_duplicated():
 )
 def test_add_contours_line_properties(key, value):
     """
-    Test that the specificiations of a line provided to add_contours are
+    Test that the specifications of a line provided to add_contours are
     stored in the PlotlySurfaceFigure data.
     """
     mesh, roi_map, _ = _generate_data_test_surf_roi()
