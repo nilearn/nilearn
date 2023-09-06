@@ -145,7 +145,6 @@ class PlotlySurfaceFigure(SurfaceFigure):
             properties defined in that element will be used to draw all of
             the contours.
         """
-        roi = load_surf_data(roi_map)
         if levels is None:
             levels = np.unique(roi_map)
         if labels is None:
@@ -154,11 +153,15 @@ class PlotlySurfaceFigure(SurfaceFigure):
             lines = [None] * len(levels)
         elif len(lines) == 1 and len(levels) > 1:
             lines *= len(levels)
-        if not (len(levels) == len(labels) == len(lines)):
+        if not (len(levels) == len(labels)):
             raise ValueError(
-                "Levels, labels, and lines "
-                "argument need to be either the same length or None."
+                "levels and labels need to be either the same length or None."
             )
+        if not (len(levels) == len(lines)):
+            raise ValueError(
+                "levels and lines need to be either the same length or None."
+            )
+        roi = load_surf_data(roi_map)
 
         traces = []
         for level, label, line in zip(levels, labels, lines):
