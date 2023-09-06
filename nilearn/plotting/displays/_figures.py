@@ -141,8 +141,8 @@ class PlotlySurfaceFigure(SurfaceFigure):
         lines : list of dict giving the properties of the contours, or None,
             optional. For valid keys, see
             :attr:`plotly.graph_objects.Scatter3d.line`. If length 1, the
-            properties defined in that element will be used to draw all of
-            the contours.
+            properties defined in that element will be used to draw all
+            requested contours.
         """
         import plotly.graph_objects as go
 
