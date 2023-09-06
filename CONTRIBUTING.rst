@@ -356,8 +356,20 @@ but well-tested, older functions in the codebase, unless there is a strong reaso
 Guidelines for Private Functions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+We start a name with a leading underscore to indicate that it is an internal implementation detail,
+not to be accessed directly from outside, of the enclosing context:
+
+- the parent module (for a submodule name),
+- the module (for the name of a top-level function, class or global variable),
+- or the class (for a method or attribute name).
+
+Moreover, modules explicitly declare their interface through the ``__all__`` attribute,
+and any name not listed in ``__all__`` should not be accessed from outside the module
+
 In some cases when private functions are in a private module (filename beginning with an underscore),
-but are used outside of that file, we do not name them with a leading underscore. Example:
+but are used outside of that file, we do not name them with a leading underscore.
+
+Example:
 
 .. code-block:: rst
 
