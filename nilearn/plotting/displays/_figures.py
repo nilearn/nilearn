@@ -139,7 +139,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             None, no labels are used.
 
         lines : list of dict giving the properties of the contours, or None,
-            optional. For valid keys, see
+             default=None. For valid keys, see
             :attr:`plotly.graph_objects.Scatter3d.line`. If length 1, the
             properties defined in that element will be used to draw all
             requested contours.
