@@ -3,6 +3,13 @@ from scipy.spatial import distance_matrix
 
 from nilearn.surface.surface import load_surf_data
 
+try:
+    import plotly.graph_objects as go
+except ImportError:
+    PLOTLY_INSTALLED = False
+else:
+    PLOTLY_INSTALLED = True
+
 
 class SurfaceFigure:
     """Abstract class for surface figures.
@@ -71,9 +78,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
     """
 
     def __init__(self, figure=None, output_file=None):
-        try:
-            import plotly.graph_objects as go
-        except ImportError:
+        if not PLOTLY_INSTALLED:
             raise ImportError(
                 "Plotly is required to use `PlotlySurfaceFigure`."
             )
@@ -144,8 +149,6 @@ class PlotlySurfaceFigure(SurfaceFigure):
             properties defined in that element will be used to draw all
             requested contours.
         """
-        import plotly.graph_objects as go
-
         if levels is None:
             levels = np.unique(roi_map)
         if labels is None:
