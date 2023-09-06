@@ -125,26 +125,26 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         Parameters
         ----------
-        roi_map : str or :class:`numpy.ndarray` or list of
-            :class:`numpy.ndarray` ROI map to be displayed on the surface
+        roi_map : :obj:`str` or :class:`numpy.ndarray` or :obj:`list` of
+            :class:`numpy.ndarray`. ROI map to be displayed on the surface
             mesh, can be a file (valid formats are .gii, .mgz, .nii,
             .nii.gz, or Freesurfer specific files such as .annot or .label),
             or a Numpy array with a value for each vertex of the surf_mesh.
             The value at each vertex one inside the ROI and zero inside ROI,
-            or an integer giving the label number for atlases.
+            or an :obj:`int` giving the label number for atlases.
 
-        levels : list of integers, or None, default=None
-            A list of indices of the regions that are to be outlined.
+        levels : :obj:`list` of :obj:`int`, or :obj:`None`, default=None
+            A :obj:`list` of indices of the regions that are to be outlined.
             Every index needs to correspond to one index in roi_map.
-            If None, all regions in roi_map are used.
+            If :obj:`None`, all regions in roi_map are used.
 
-        labels : list of strings or None, or None, default=None
-            A list of labels for the individual regions of interest. Provide
-            None as list entry to skip showing the label of that region. If
-            None, no labels are used.
+        labels : :obj:`list` of :obj:`str` or :obj:`None`, default=None
+            A :obj:`list` of labels for the individual regions of interest.
+            Provide :obj:`None` as list entry to skip showing the label of
+            that region. If :obj:`None`, no labels are used.
 
-        lines : list of dict giving the properties of the contours, or None,
-            default=None. For valid keys, see
+        lines : :obj:`list` of :obj:`dict` giving the properties of the
+            contours, or :obj:`None`, default=None. For valid keys, see
             :attr:`plotly.graph_objects.Scatter3d.line`. If length 1, the
             properties defined in that element will be used to draw all
             requested contours.
@@ -189,8 +189,8 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         Parameters
         ----------
-        parc_idx : numpy.ndarray, indices of the vertices of the region to be
-            plotted.
+        parc_idx : :class:`numpy.ndarray`, indices of the vertices of the
+            region to be plotted.
 
         Returns
         -------
