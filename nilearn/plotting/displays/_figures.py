@@ -133,13 +133,13 @@ class PlotlySurfaceFigure(SurfaceFigure):
             Every index needs to correspond to one index in roi_map.
             If None, all regions in roi_map are used.
 
-        labels : list of strings or None, or None,  default=None
+        labels : list of strings or None, or None, default=None
             A list of labels for the individual regions of interest. Provide
             None as list entry to skip showing the label of that region. If
             None, no labels are used.
 
         lines : list of dict giving the properties of the contours, or None,
-             default=None. For valid keys, see
+            default=None. For valid keys, see
             :attr:`plotly.graph_objects.Scatter3d.line`. If length 1, the
             properties defined in that element will be used to draw all
             requested contours.
