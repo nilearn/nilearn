@@ -1,5 +1,4 @@
 import numpy as np
-import plotly.graph_objects as go
 from scipy.spatial import distance_matrix
 
 from nilearn.surface.surface import load_surf_data
@@ -145,6 +144,8 @@ class PlotlySurfaceFigure(SurfaceFigure):
             properties defined in that element will be used to draw all of
             the contours.
         """
+        import plotly.graph_objects as go
+
         if levels is None:
             levels = np.unique(roi_map)
         if labels is None:

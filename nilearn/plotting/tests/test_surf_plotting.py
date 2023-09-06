@@ -437,7 +437,6 @@ def test_value_error_add_contours_levels_lines(levels, lines):
         )
 
 
-
 @pytest.mark.skipif(not PLOTLY_INSTALLED,
                     reason='Plotly is not installed; required for this test.')
 def test_add_contours():
