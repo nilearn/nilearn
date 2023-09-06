@@ -360,7 +360,7 @@ We start a name with a leading underscore to indicate that it is an internal imp
 not to be accessed directly from outside, of the enclosing context:
 
 - the parent module (for a submodule name),
-- the module (for the name of a top-level function, class or global variable),
+- or the module (for the name of a top-level function, class or global variable),
 - or the class (for a method or attribute name).
 
 Moreover, modules explicitly declare their interface through the ``__all__`` attribute,
