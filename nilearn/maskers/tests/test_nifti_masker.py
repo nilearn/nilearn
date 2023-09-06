@@ -13,6 +13,7 @@ from tempfile import mkdtemp
 
 import numpy as np
 import pytest
+from joblib import Memory, hash
 from nibabel import Nifti1Image
 from numpy.testing import (
     assert_almost_equal,
@@ -28,61 +29,62 @@ from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import _filter_and_mask
 
 
-def test_auto_mask(shape_3d_default, affine_eye):
+@pytest.fixture
+def data(shape_3d_default):
+    tmp = np.zeros(shape_3d_default)
+    tmp[3:-3, 3:-3, 3:-3] = 10
+    return tmp
+
+
+@pytest.fixture
+def img_with_data(data, affine_eye):
+    return Nifti1Image(data, affine_eye)
+
+
+def test_auto_mask(img_with_data):
     """Perform a smoke test on the auto-mask option."""
-    data = np.zeros(shape_3d_default)
-    data[3:-3, 3:-3, 3:-3] = 10
-    img = Nifti1Image(data, affine_eye)
     masker = NiftiMasker()
     # Smoke test the fit
-    masker.fit(img)
+    masker.fit(img_with_data)
     # Smoke test the transform
     # With a 4D img
-    masker.transform([img])
+    masker.transform([img_with_data])
     # With a 3D img
-    masker.transform(img)
+    masker.transform(img_with_data)
 
     # check exception when transform() called without prior fit()
-    masker2 = NiftiMasker(mask_img=img)
+    masker2 = NiftiMasker(mask_img=img_with_data)
     with pytest.raises(ValueError, match="has not been fitted. "):
-        masker2.transform(img)
+        masker2.transform(img_with_data)
 
 
-def test_detrend(shape_3d_default, affine_eye):
+def test_detrend(img_with_data, data, affine_eye):
     """Check that detrending doesn't do something stupid with 3D images."""
-    data = np.zeros(shape_3d_default)
-    data[3:-3, 3:-3, 3:-3] = 10
-    img = Nifti1Image(data, affine_eye)
     mask = data.astype("uint8")
     mask_img = Nifti1Image(mask, affine_eye)
 
     # Smoke test the fit
     masker = NiftiMasker(mask_img=mask_img, detrend=True)
-    X = masker.fit_transform(img)
+    X = masker.fit_transform(img_with_data)
 
     assert np.any(X != 0)
 
 
 @pytest.mark.parametrize("y", [None, np.ones((9, 9, 9))])
-def test_fit_transform(y, affine_eye):
+def test_fit_transform(y, affine_eye, img_with_data, data):
     """Check fit_transform of BaseMasker with several input args."""
-    data = np.zeros((9, 9, 9))
-    data[3:-3, 3:-3, 3:-3] = 10
-    img = Nifti1Image(data, affine_eye)
     mask = data.astype("uint8")
 
     # Smoke test the fit
     for mask_img in [Nifti1Image(mask, affine_eye), None]:
         masker = NiftiMasker(mask_img=mask_img)
-        X = masker.fit_transform(X=img, y=y)
+        X = masker.fit_transform(X=img_with_data, y=y)
         assert np.any(X != 0)
 
 
-def test_fit_transform_warning(affine_eye):
-    data = np.zeros((9, 9, 9))
-    data[3:-3, 3:-3, 3:-3] = 10
-    img = Nifti1Image(data, affine_eye)
+def test_fit_transform_warning(affine_eye, data, img_with_data):
     y = np.ones((9, 9, 9))
+
     mask = data.astype("uint8")
     mask_img = Nifti1Image(mask, affine_eye)
     masker = NiftiMasker(mask_img=mask_img)
@@ -92,35 +94,29 @@ def test_fit_transform_warning(affine_eye):
         match="Generation of a mask has been requested .*"
         "while a mask has been provided at masker creation.",
     ):
-        X = masker.fit_transform(X=img, y=y)
+        X = masker.fit_transform(X=img_with_data, y=y)
         assert np.any(X != 0)
 
 
-def test_resample():
+def test_resample(affine_eye, data, img_with_data):
     """Check that target_affine triggers the right resampling."""
-    data = np.zeros((9, 9, 9))
-    data[3:-3, 3:-3, 3:-3] = 10
-    img = Nifti1Image(data, np.eye(4))
     mask = data.astype("uint8")
-    mask_img = Nifti1Image(mask, np.eye(4))
+    mask_img = Nifti1Image(mask, affine_eye)
     masker = NiftiMasker(mask_img=mask_img, target_affine=2 * np.eye(3))
     # Smoke test the fit
-    X = masker.fit_transform(img)
+    X = masker.fit_transform(img_with_data)
     assert np.any(X != 0)
 
 
-def test_resample_to_mask_warning():
+def test_resample_to_mask_warning(img_with_data, affine_eye):
     """Check that a warning is raised when data is
     being resampled to mask's resolution.
     """
-    data = np.zeros((9, 9, 9))
-    data[3:-3, 3:-3, 3:-3] = 10
-    img = Nifti1Image(data, np.eye(4))
     # defining a mask with different fov than img
     mask = np.zeros((12, 12, 12))
     mask[3:-3, 3:-3, 3:-3] = 10
     mask = mask.astype("uint8")
-    mask_img = Nifti1Image(mask, np.eye(4))
+    mask_img = Nifti1Image(mask, affine_eye)
     masker = NiftiMasker(mask_img=mask_img)
     with pytest.warns(
         UserWarning,
@@ -130,22 +126,18 @@ def test_resample_to_mask_warning():
         "or resample the mask beforehand "
         "to save memory and computation time.",
     ):
-        masker.fit_transform(img)
+        masker.fit_transform(img_with_data)
 
 
-def test_with_files():
+def test_with_files(img_with_data):
     """Test standard masking with filenames."""
-    data = np.zeros((40, 40, 40, 2))
-    data[20, 20, 20] = 1
-    data_img = Nifti1Image(data, np.eye(4))
-
-    with testing.write_tmp_imgs(data_img) as filename:
+    with testing.write_tmp_imgs(img_with_data) as filename:
         masker = NiftiMasker()
         masker.fit(filename)
         masker.transform(filename)
 
 
-def test_nan():
+def test_nan(affine_eye):
     """Check that the masker handles NaNs appropriately."""
     data = np.ones((9, 9, 9))
     data[0] = np.nan
@@ -155,7 +147,7 @@ def test_nan():
     data[:, -1] = np.nan
     data[:, :, -1] = np.nan
     data[3:-3, 3:-3, 3:-3] = 10
-    img = Nifti1Image(data, np.eye(4))
+    img = Nifti1Image(data, affine_eye)
     masker = NiftiMasker(mask_args=dict(opening=0))
     masker.fit(img)
     mask = get_data(masker.mask_img_)
@@ -176,6 +168,7 @@ def test_matrix_orientation():
     fmri, mask = generate_fake_fmri(shape=(40, 41, 42), kind="step")
     masker = NiftiMasker(mask_img=mask, standardize=True, detrend=True)
     timeseries = masker.fit_transform(fmri)
+
     assert timeseries.shape[0] == fmri.shape[3]
     assert timeseries.shape[1] == get_data(mask).sum()
     std = timeseries.std(axis=0)
@@ -190,33 +183,31 @@ def test_matrix_orientation():
     assert_array_almost_equal(get_data(recovered), get_data(fmri))
 
 
-def test_mask_3d():
+def test_mask_3d(affine_eye):
     """Test that the masker raises an error when no data img is provided."""
-    # Dummy mask
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
-    data_img = Nifti1Image(data, np.eye(4))
-
+    data_img = Nifti1Image(data, affine_eye)
     with testing.write_tmp_imgs(data_img, create_files=True) as filename:
         masker = NiftiMasker(mask_img=filename)
         with pytest.raises(TypeError):
             masker.fit()
 
 
-def test_mask_4d():
+def test_mask_4d(affine_eye, shape_3d_default):
     """Test performance with 4D data."""
     # Dummy mask
-    mask = np.zeros((10, 10, 10), dtype="int32")
+    mask = np.zeros(shape_3d_default, dtype="int32")
     mask[3:7, 3:7, 3:7] = 1
     mask_bool = mask.astype(bool)
-    mask_img = Nifti1Image(mask, np.eye(4))
+    mask_img = Nifti1Image(mask, affine_eye)
 
     # Dummy data
     data = np.zeros((10, 10, 10, 5), dtype="int32")
     data[..., 0] = 1
     data[..., 1] = 2
     data[..., 2] = 3
-    data_img_4d = Nifti1Image(data, np.eye(4))
+    data_img_4d = Nifti1Image(data, affine_eye)
     data_imgs = [
         index_img(data_img_4d, 0),
         index_img(data_img_4d, 1),
@@ -248,18 +239,17 @@ def test_mask_4d():
     assert_array_equal(data_trans3, data_trans_direct_diff)
 
 
-def test_4d_single_scan(rng):
+def test_4d_single_scan(rng, affine_eye, shape_3d_default):
     """Test that list of 4D images with last dim=1 is treated as 3D."""
-    shape_3d = (10, 10, 10)
-    shape_4d = shape_3d + (1,)
-    mask = np.zeros(shape_3d)
+    shape_4d = shape_3d_default + (1,)
+    mask = np.zeros(shape_3d_default)
     mask[3:7, 3:7, 3:7] = 1
-    mask_img = Nifti1Image(mask, np.eye(4))
+    mask_img = Nifti1Image(mask, affine_eye)
 
     data_5d = [rng.random_sample(shape_4d) for _ in range(5)]
     data_4d = [d[..., 0] for d in data_5d]
-    data_5d = [Nifti1Image(d, np.eye(4)) for d in data_5d]
-    data_4d = [Nifti1Image(d, np.eye(4)) for d in data_4d]
+    data_5d = [Nifti1Image(d, affine_eye) for d in data_5d]
+    data_4d = [Nifti1Image(d, affine_eye) for d in data_4d]
 
     masker = NiftiMasker(mask_img=mask_img)
 
@@ -280,16 +270,15 @@ def test_4d_single_scan(rng):
     assert_array_equal(data_trans_4d, data_trans_5d)
 
 
-def test_5d(rng):
+def test_5d(rng, affine_eye, shape_3d_default):
     """Test that list of 4D images with last dim=3 raises a DimensionError."""
-    shape_3d = (10, 10, 10)
-    shape_4d = shape_3d + (3,)
-    mask = np.zeros(shape_3d)
+    shape_4d = shape_3d_default + (3,)
+    mask = np.zeros(shape_3d_default)
     mask[3:7, 3:7, 3:7] = 1
-    mask_img = Nifti1Image(mask, np.eye(4))
+    mask_img = Nifti1Image(mask, affine_eye)
 
     data_5d = [rng.random_sample(shape_4d) for _ in range(5)]
-    data_5d = [Nifti1Image(d, np.eye(4)) for d in data_5d]
+    data_5d = [Nifti1Image(d, affine_eye) for d in data_5d]
 
     masker = NiftiMasker(mask_img=mask_img)
     masker.fit()
@@ -303,7 +292,7 @@ def test_5d(rng):
         masker.transform(data_5d)
 
 
-def test_sessions():
+def test_sessions(affine_eye):
     """Test the sessions vector."""
     data = np.ones((40, 40, 40, 4))
     # Create a border, so that the masking work well
@@ -314,21 +303,16 @@ def test_sessions():
     data[..., -1] = 0
     data[..., 0] = 0
     data[20, 20, 20] = 1
-    data_img = Nifti1Image(data, np.eye(4))
+
+    data_img = Nifti1Image(data, affine_eye)
     masker = NiftiMasker(runs=np.ones(3, dtype=int))
     with pytest.raises(ValueError):
         masker.fit_transform(data_img)
 
 
-def test_joblib_cache():
+def test_joblib_cache(img_with_data):
     """Test using joblib cache."""
-    from joblib import Memory, hash
-
-    mask = np.zeros((40, 40, 40))
-    mask[20, 20, 20] = 1
-    mask_img = Nifti1Image(mask, np.eye(4))
-
-    with testing.write_tmp_imgs(mask_img, create_files=True) as filename:
+    with testing.write_tmp_imgs(img_with_data, create_files=True) as filename:
         masker = NiftiMasker(mask_img=filename)
         masker.fit()
         mask_hash = hash(masker.mask_img_)
@@ -340,7 +324,7 @@ def test_joblib_cache():
         cachedir = mkdtemp()
         try:
             masker.memory = Memory(location=cachedir, mmap_mode="r", verbose=0)
-            X = masker.transform(mask_img)
+            X = masker.transform(img_with_data)
             # inverse_transform a first time, so that the result is cached
             out_img = masker.inverse_transform(X)
             out_img = masker.inverse_transform(X)
@@ -351,7 +335,7 @@ def test_joblib_cache():
             shutil.rmtree(cachedir, ignore_errors=True)
 
 
-def test_mask_strategy_errors(rng):
+def test_mask_strategy_errors(img_3d_rand_eye):
     """Check that mask_strategy errors are raised."""
     # Error with unknown mask_strategy
     mask = NiftiMasker(mask_strategy="oops")
@@ -361,23 +345,21 @@ def test_mask_strategy_errors(rng):
         mask.fit()
     # Warning with deprecated 'template' strategy,
     # plus an exception because there's no resulting mask
-    img = rng.uniform(size=(9, 9, 5))
-    img = Nifti1Image(img, np.eye(4))
     mask = NiftiMasker(mask_strategy="template")
     with pytest.warns(
         UserWarning, match="Masking strategy 'template' is deprecated."
     ):
-        mask.fit(img)
+        mask.fit(img_3d_rand_eye)
 
 
-def test_compute_epi_mask():
+def test_compute_epi_mask(affine_eye):
     """Test that the masker class is passing parameters appropriately."""
     # Taken from test_masking.py, but used to test that the masker class
     #   is passing parameters appropriately.
     mean_image = np.ones((9, 9, 3))
     mean_image[3:-2, 3:-2, :] = 10
     mean_image[5, 5, :] = 11
-    mean_image = Nifti1Image(mean_image.astype(float), np.eye(4))
+    mean_image = Nifti1Image(mean_image.astype(float), affine_eye)
 
     masker = NiftiMasker(mask_strategy="epi", mask_args=dict(opening=False))
     masker.fit(mean_image)
@@ -396,7 +378,7 @@ def test_compute_epi_mask():
     # Check that padding with zeros does not change the extracted mask
     mean_image2 = np.zeros((30, 30, 3))
     mean_image2[3:12, 3:12, :] = get_data(mean_image)
-    mean_image2 = Nifti1Image(mean_image2, np.eye(4))
+    mean_image2 = Nifti1Image(mean_image2, affine_eye)
 
     masker3 = NiftiMasker(
         mask_strategy="epi", mask_args=dict(opening=False, exclude_zeros=True)
@@ -414,7 +396,7 @@ def test_compute_epi_mask():
 
 
 @pytest.fixture
-def expected_mask(mask_args):
+def expected_mask(shape_3d_default, mask_args):
     """Create an expected mask."""
     mask = np.zeros((9, 9, 5))
     if mask_args == {}:
@@ -428,7 +410,9 @@ def expected_mask(mask_args):
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )
 @pytest.mark.parametrize("mask_args", [{}, dict(threshold=0.0)])
-def test_compute_brain_mask(strategy, mask_args, expected_mask):
+def test_compute_brain_mask(
+    shape_3d_default, strategy, mask_args, expected_mask
+):
     """Check masker for template masking strategy."""
     img, _ = generate_random_img((9, 9, 5))
 
@@ -438,13 +422,13 @@ def test_compute_brain_mask(strategy, mask_args, expected_mask):
     assert_array_equal(get_data(masker.mask_img_), expected_mask)
 
 
-def test_filter_and_mask_error():
+def test_filter_and_mask_error(affine_eye):
     data = np.zeros([20, 30, 40, 5])
     mask = np.zeros([20, 30, 40, 2])
     mask[10, 15, 20, :] = 1
 
-    data_img = Nifti1Image(data, np.eye(4))
-    mask_img = Nifti1Image(mask, np.eye(4))
+    data_img = Nifti1Image(data, affine_eye)
+    mask_img = Nifti1Image(mask, affine_eye)
 
     masker = NiftiMasker()
     params = get_params(NiftiMasker, masker)
@@ -458,12 +442,12 @@ def test_filter_and_mask_error():
         _filter_and_mask(data_img, mask_img, params)
 
 
-def test_filter_and_mask():
+def test_filter_and_mask(affine_eye):
     data = np.zeros([20, 30, 40, 5])
     mask = np.ones([20, 30, 40])
 
-    data_img = Nifti1Image(data, np.eye(4))
-    mask_img = Nifti1Image(mask, np.eye(4))
+    data_img = Nifti1Image(data, affine_eye)
+    mask_img = Nifti1Image(mask, affine_eye)
 
     masker = NiftiMasker()
     params = get_params(NiftiMasker, masker)
@@ -474,40 +458,36 @@ def test_filter_and_mask():
     assert data.shape == (5, 24000)
 
 
-def test_dtype():
-    data_32 = np.zeros((9, 9, 9), dtype=np.float32)
-    data_64 = np.zeros((9, 9, 9), dtype=np.float64)
-    data_32[2:-2, 2:-2, 2:-2] = 10
-    data_64[2:-2, 2:-2, 2:-2] = 10
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_dtype(dtype):
+    data = np.zeros((9, 9, 9), dtype=dtype)
+    data[2:-2, 2:-2, 2:-2] = 10
 
-    affine_32 = np.eye(4, dtype=np.float32)
-    affine_64 = np.eye(4, dtype=np.float64)
+    affine = np.eye(4, dtype=dtype)
 
-    img_32 = Nifti1Image(data_32, affine_32)
-    img_64 = Nifti1Image(data_64, affine_64)
+    img = Nifti1Image(data, affine)
 
     masker_1 = NiftiMasker(dtype="auto")
-    assert masker_1.fit_transform(img_32).dtype == np.float32
-    assert masker_1.fit_transform(img_64).dtype == np.float32
+    assert masker_1.fit_transform(img).dtype == np.float32
 
     masker_2 = NiftiMasker(dtype="float64")
-    assert masker_2.fit_transform(img_32).dtype == np.float64
-    assert masker_2.fit_transform(img_64).dtype == np.float64
+    assert masker_2.fit_transform(img).dtype == np.float64
 
 
-def test_standardization(rng):
-    data_shape = (9, 9, 5)
+def test_standardization(rng, shape_3d_default, affine_eye):
     n_samples = 500
 
-    signals = rng.standard_normal(size=(np.prod(data_shape), n_samples))
-    means = rng.standard_normal(size=(np.prod(data_shape), 1)) * 50 + 1000
+    signals = rng.standard_normal(size=(np.prod(shape_3d_default), n_samples))
+    means = (
+        rng.standard_normal(size=(np.prod(shape_3d_default), 1)) * 50 + 1000
+    )
     signals += means
     img = Nifti1Image(
-        signals.reshape(data_shape + (n_samples,)),
-        np.eye(4),
+        signals.reshape(shape_3d_default + (n_samples,)),
+        affine_eye,
     )
 
-    mask = Nifti1Image(np.ones(data_shape), np.eye(4))
+    mask = Nifti1Image(np.ones(shape_3d_default), affine_eye)
 
     # z-score
     masker = NiftiMasker(mask, standardize="zscore_sample")
@@ -527,7 +507,7 @@ def test_standardization(rng):
     )
 
 
-def test_nifti_masker_io_shapes():
+def test_nifti_masker_io_shapes(affine_eye, shape_3d_default):
     """Ensure that NiftiMasker handles 1D/2D/3D/4D data appropriately.
 
     transform(4D image) --> 2D output, no warning
@@ -537,15 +517,13 @@ def test_nifti_masker_io_shapes():
     inverse_transform(2D array with wrong shape) --> ValueError
     """
     n_volumes = 5
-    shape_3d = (10, 11, 12)
-    shape_4d = (10, 11, 12, n_volumes)
-    affine = np.eye(4)
+    shape_4d = (*shape_3d_default, n_volumes)
 
     img_4d, mask_img = generate_random_img(
         shape_4d,
-        affine=affine,
+        affine=affine_eye,
     )
-    img_3d, _ = generate_random_img(shape_3d, affine=affine)
+    img_3d, _ = generate_random_img(shape_3d_default, affine=affine_eye)
     n_regions = np.sum(mask_img.get_fdata().astype(bool))
     data_1d = np.random.random(n_regions)
     data_2d = np.random.random((n_volumes, n_regions))
@@ -576,7 +554,7 @@ def test_nifti_masker_io_shapes():
             category=DeprecationWarning,
         )
         test_img = masker.inverse_transform(data_1d)
-        assert test_img.shape == shape_3d
+        assert test_img.shape == shape_3d_default
 
     # DeprecationWarning should *not* be raised for 2D inputs
     with warnings.catch_warnings():
