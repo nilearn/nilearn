@@ -128,7 +128,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             The value at each vertex one inside the ROI and zero inside ROI,
             or an integer giving the label number for atlases.
 
-        levels : list of integers, or None, optional
+        levels : list of integers, or None, default=None
             A list of indices of the regions that are to be outlined.
             Every index needs to correspond to one index in roi_map.
             If None, all regions in roi_map are used.
