@@ -105,6 +105,7 @@ def test_resample(affine_eye, data, img_with_data):
     masker = NiftiMasker(mask_img=mask_img, target_affine=2 * np.eye(3))
     # Smoke test the fit
     X = masker.fit_transform(img_with_data)
+
     assert np.any(X != 0)
 
 
@@ -118,6 +119,7 @@ def test_resample_to_mask_warning(img_with_data, affine_eye):
     mask = mask.astype("uint8")
     mask_img = Nifti1Image(mask, affine_eye)
     masker = NiftiMasker(mask_img=mask_img)
+
     with pytest.warns(
         UserWarning,
         match="imgs are being resampled to the mask_img resolution. "
@@ -151,6 +153,7 @@ def test_nan(affine_eye):
     masker = NiftiMasker(mask_args=dict(opening=0))
     masker.fit(img)
     mask = get_data(masker.mask_img_)
+
     assert mask[1:-1, 1:-1, 1:-1].all()
     assert not mask[0].any()
     assert not mask[:, 0].any()
@@ -188,6 +191,7 @@ def test_mask_3d(affine_eye):
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
     data_img = Nifti1Image(data, affine_eye)
+
     with testing.write_tmp_imgs(data_img, create_files=True) as filename:
         masker = NiftiMasker(mask_img=filename)
         with pytest.raises(TypeError):
@@ -239,17 +243,11 @@ def test_mask_4d(affine_eye, shape_3d_default):
     assert_array_equal(data_trans3, data_trans_direct_diff)
 
 
-def test_4d_single_scan(rng, affine_eye, shape_3d_default):
+def test_4d_single_scan(shape_3d_default, affine_eye, rng):
     """Test that list of 4D images with last dim=1 is treated as 3D."""
-    shape_4d = shape_3d_default + (1,)
     mask = np.zeros(shape_3d_default)
     mask[3:7, 3:7, 3:7] = 1
     mask_img = Nifti1Image(mask, affine_eye)
-
-    data_5d = [rng.random_sample(shape_4d) for _ in range(5)]
-    data_4d = [d[..., 0] for d in data_5d]
-    data_5d = [Nifti1Image(d, affine_eye) for d in data_5d]
-    data_4d = [Nifti1Image(d, affine_eye) for d in data_4d]
 
     masker = NiftiMasker(mask_img=mask_img)
 
@@ -264,23 +262,26 @@ def test_4d_single_scan(rng, affine_eye, shape_3d_default):
     assert hasattr(masker, "n_elements_")
     assert masker.n_elements_ == np.sum(mask)
 
+    shape_4d = shape_3d_default + (1,)
+    data_5d = [rng.random_sample(shape_4d) for _ in range(5)]
+    data_4d = [d[..., 0] for d in data_5d]
+    data_5d = [Nifti1Image(d, affine_eye) for d in data_5d]
+    data_4d = [Nifti1Image(d, affine_eye) for d in data_4d]
+
     data_trans_5d = masker.transform(data_5d)
     data_trans_4d = masker.transform(data_4d)
 
     assert_array_equal(data_trans_4d, data_trans_5d)
 
 
-def test_5d(rng, affine_eye, shape_3d_default):
+def test_5d(img_with_data, affine_eye, shape_3d_default, rng):
     """Test that list of 4D images with last dim=3 raises a DimensionError."""
     shape_4d = shape_3d_default + (3,)
-    mask = np.zeros(shape_3d_default)
-    mask[3:7, 3:7, 3:7] = 1
-    mask_img = Nifti1Image(mask, affine_eye)
 
     data_5d = [rng.random_sample(shape_4d) for _ in range(5)]
     data_5d = [Nifti1Image(d, affine_eye) for d in data_5d]
 
-    masker = NiftiMasker(mask_img=mask_img)
+    masker = NiftiMasker(mask_img=img_with_data)
     masker.fit()
 
     with pytest.raises(
@@ -306,6 +307,7 @@ def test_sessions(affine_eye):
 
     data_img = Nifti1Image(data, affine_eye)
     masker = NiftiMasker(runs=np.ones(3, dtype=int))
+
     with pytest.raises(ValueError):
         masker.fit_transform(data_img)
 
@@ -385,6 +387,7 @@ def test_compute_epi_mask(affine_eye):
     )
     masker3.fit(mean_image2)
     mask3 = masker3.mask_img_
+
     assert_array_equal(get_data(mask1), get_data(mask3)[3:12, 3:12])
 
     # However, without exclude_zeros, it does
@@ -396,7 +399,7 @@ def test_compute_epi_mask(affine_eye):
 
 
 @pytest.fixture
-def expected_mask(shape_3d_default, mask_args):
+def expected_mask(mask_args):
     """Create an expected mask."""
     mask = np.zeros((9, 9, 5))
     if mask_args == {}:
@@ -410,9 +413,7 @@ def expected_mask(shape_3d_default, mask_args):
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )
 @pytest.mark.parametrize("mask_args", [{}, dict(threshold=0.0)])
-def test_compute_brain_mask(
-    shape_3d_default, strategy, mask_args, expected_mask
-):
+def test_compute_brain_mask(strategy, mask_args, expected_mask):
     """Check masker for template masking strategy."""
     img, _ = generate_random_img((9, 9, 5))
 
@@ -455,6 +456,7 @@ def test_filter_and_mask(affine_eye):
 
     # Test return_affine = False
     data = _filter_and_mask(data_img, mask_img, params)
+
     assert data.shape == (5, 24000)
 
 
